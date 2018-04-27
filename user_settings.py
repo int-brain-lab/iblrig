@@ -27,16 +27,23 @@ GENERIC_EDITOR_PLUGINS_LIST = [
 'pybpodgui_plugin_timeline',
 'pybpodgui_plugin_session_history',
 'pybpod_rotaryencoder_module',
-]  # 'pybpod_old_format']
+'water_calibration_plugin']  # 'pybpod_old_format']
+
+
+
+TARGET_BPOD_FIRMWARE_VERSION = '21'
 
 DEFAULT_PROJECT_PATH = 'C:\\IBL_root\\pybpod_projects\\IBL'
 GENERIC_EDITOR_TITLE = 'IBL'
 ############ BPODGUI PLUGIN SETTINGS ############
 
-BOARD_LOG_WINDOW_REFRESH_RATE  = 2000
-SESSIONLOG_PLUGIN_REFRESH_RATE = 1000
-TIMELINE_PLUGIN_REFRESH_RATE   = 1000
+BOARD_LOG_WINDOW_REFRESH_RATE  = 1000
+SESSIONLOG_PLUGIN_REFRESH_RATE = 500
+TIMELINE_PLUGIN_REFRESH_RATE   = 500
 
-PYBOARD_COMMUNICATION_THREAD_REFRESH_TIME  = 2 # timer for thread look for events (seconds)
-PYBOARD_COMMUNICATION_PROCESS_REFRESH_TIME = 2 # timer for process look for events (seconds)
+PYBOARD_COMMUNICATION_THREAD_REFRESH_TIME  = 1 # timer for thread look for events (seconds)
+PYBOARD_COMMUNICATION_PROCESS_REFRESH_TIME = 1 # timer for process look for events (seconds)
 PYBOARD_COMMUNICATION_PROCESS_TIME_2_LIVE  = 0 # wait before killing process (seconds)
+
+
+GENERIC_EDITOR_PLUGINS_PATH = "C:/IBL_root/water-calibration-plugin"

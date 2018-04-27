@@ -1,0 +1,28 @@
+Anaconda
+git clone IBL_root (getURL)
+anaconda prompt
+(base) C:\IBL_root\pybpod>conda env create -f environment-windows-10.yml
+(base) C:\IBL_root\pybpod>conda activate pybpod-environment
+
+Might need to update conda
+ conda update -n base conda
+
+(pybpod-environment) C:\IBL_root\pybpod>conda install scipy
+(pybpod-environment) C:\IBL_root\pybpod>conda install pandas
+
+DO NOT UPGRADE PIP!!
+
+(pybpod-environment) C:\IBL_root\pybpod>pip install sounddevice
+(pybpod-environment) C:\IBL_root\pybpod>pip install python-osc
+
+
+(pybpod-environment) C:\IBL_root\pybpod>python install.py
+
+
+... user settings ... ignore Anaconda
+
+
+
+C:\IBL_root>pybpod
+
+
