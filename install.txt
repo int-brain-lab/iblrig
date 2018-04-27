@@ -19,7 +19,13 @@ DO NOT UPGRADE PIP!!
 (pybpod-environment) C:\IBL_root\pybpod>python install.py
 
 
-... user settings ... ignore Anaconda
+... user settings ... 
+
+install water-calibration-plugin
+
+(pybpod-environment) C:\IBL_root\pybpod>cd ..\water-calibration-plugin
+(pybpod-environment) C:\IBL_root\water-calibration-plugin>python setup.py install OR pip install
+
 
 
 
