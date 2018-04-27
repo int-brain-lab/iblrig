@@ -1,0 +1,4 @@
+conda install scipy
+conda install pandas
+pip install sounddevice
+pip install python-osc
