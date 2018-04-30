@@ -1,5 +1,6 @@
-Anaconda
-git clone IBL_root (getURL)
+git clone -R IBL_root (getURL)
+Install Anaconda to IBL_root
+
 anaconda prompt
 (base) C:\IBL_root\pybpod>conda env create -f environment-windows-10.yml
 (base) C:\IBL_root\pybpod>conda activate pybpod-environment
