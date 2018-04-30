@@ -1,7 +1,8 @@
 git clone -R IBL_root (getURL)
 Install Anaconda to IBL_root
 
-anaconda prompt
+Open anaconda prompt
+Follow instructions of pybpod installation:
 (base) C:\IBL_root\pybpod>conda env create -f environment-windows-10.yml
 (base) C:\IBL_root\pybpod>conda activate pybpod-environment
 
@@ -20,7 +21,7 @@ DO NOT UPGRADE PIP!!
 (pybpod-environment) C:\IBL_root\pybpod>python install.py
 
 
-... user settings ... 
+Copy user_settings.py to pybpod folder 
 
 install water-calibration-plugin
 
@@ -28,8 +29,7 @@ install water-calibration-plugin
 (pybpod-environment) C:\IBL_root\water-calibration-plugin>python setup.py install OR pip install
 
 
-
-
+from anaconda prompt:
 C:\IBL_root>pybpod
 
 
