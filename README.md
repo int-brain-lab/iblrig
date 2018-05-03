@@ -11,7 +11,7 @@ Git, Anaconda and Bonsai. Before starting you should have git installed.
 You can download Bonsai from here (http://bonsai-rx.org/). After installing it you should also install some relevant Bonsai packages from the overhead menu in Tools --> Manage Packages. A list of relevant packages is upcoming, but for now you can install all of them, sorry if the process is slightly tedious.  
 **Note:** If using PointGrey cameras the FlyCap Viewer 32bits AND 64bits should be installed otherwise the PointGrey reletad node won't show.
 
-1. Checkout this repository in your **root folder C:\**:  
+1. Checkout this repository in your **root folder C:\\>**  
 ```posh
 C:\>git clone --recursive https://github.com/int-brain-lab/IBL_root.git .
 ```
