@@ -1,12 +1,17 @@
 # IBL_root
 
-IBL_root is the root folder for the PyBpod/Bonsai task.
+IBL_root is the root folder for the PyBpod/Bonsai task. It requires, for now, to be installed in the root C:\ folder of your windows computer.
 
 ## Dependencies  
-Git, Anaconda and Bonsai. Before starting you should have git installed. 
+Git, Anaconda and Bonsai. Before starting you should have git installed.  
+
 
 ## Installation  
-1. Checkout this repository in your root folder:  
+0. Bonsai needs to be installed in your system as the task will call a Bonsai workflow to display the visual stimulus.  
+You can download Bonsai from here (http://bonsai-rx.org/). After installing it you should also install some relevant Bonsai packages from the overhead menu in Tools --> Manage Packages. A list of relevant packages is upcoming, but for now you can install all of them, sorry if the process is slightly tedious.  
+**Note:** If using PointGrey cameras the FlyCap Viewer 32bits AND 64bits should be installed otherwise the PointGrey reletad node won't show.
+
+1. Checkout this repository in your **root folder C:\**:  
 ```posh
 C:\>git clone --recursive https://github.com/int-brain-lab/IBL_root.git .
 ```
