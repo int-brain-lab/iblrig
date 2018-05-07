@@ -1,3 +1,5 @@
 
 Anaconda3/
 pybpod_data/
+
+*.code-workspace
