@@ -5,3 +5,5 @@ pybpod_data/
 *.code-workspace
 
 \.vscode/
+
+__pycache__/
