@@ -42,6 +42,7 @@ dependencies:
   - pandas=0.22.0=py35h6538335_0
   - scipy=1.0.0=py35h75710e8_0
   - pip:
+    - send2trash==1.4.2
     - cffi==1.11.5
     - pycparser==2.18
     - python-osc==1.6.6
