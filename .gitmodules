@@ -7,3 +7,6 @@
 [submodule "water-calibration-plugin"]
 	path = water-calibration-plugin
 	url = https://bitbucket.org/azi92rach/water-calibration-plugin.git
+[submodule "pybpod"]
+	path = pybpod
+	url = https://bitbucket.org/fchampalimaud/pybpod.git
