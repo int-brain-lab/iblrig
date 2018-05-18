@@ -3,6 +3,7 @@ Anaconda3/
 pybpod_data/
 
 *.code-workspace
+*.sync-conflict*
 
 \.vscode/
 
