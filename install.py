@@ -3,7 +3,7 @@
 # @Author: Niccolò Bonacchi
 # @Date:   2018-06-08 11:04:05
 # @Last Modified by:   Niccolò Bonacchi
-# @Last Modified time: 2018-06-11 14:39:11
+# @Last Modified time: 2018-06-11 14:59:35
 import platform
 import os
 import shutil
@@ -72,6 +72,14 @@ def check_dependencies():
               "Installation will proceed...\n")
 
 
+def check_submodules():
+    os.chdir(IBL_ROOT_PATH)
+    for submodule in SUBMODULES_FOLDERS:
+        if not os.listdir(os.path.join(IBL_ROOT_PATH, submodule)):
+            subprocess.call(["git", "submodule", "update", "--init",
+                             "--recursive"])
+
+
 def install_environment():
     # Install pybpod-environment
     command = '{} env create -f {}'. format(CONDA, os.path.join(
@@ -84,7 +92,7 @@ def install_extra_deps():
     if PYBPOD_ENV is None:
         msg = "Can't install extra dependencies, pybpod-environment not found"
         raise ValueError(msg)
-        break
+        return
     # Define site-packages folder
     install_to = os.path.join(PYBPOD_ENV, SITE_PACKAGES)
 
@@ -102,7 +110,7 @@ def install_pybpod():
     if PYBPOD_ENV is None:
         msg = "Can't install pybpod, pybpod-environment not found"
         raise ValueError(msg)
-        break
+        return
     # Install pybpod
     os.chdir(PYBPOD_PATH)
     subprocess.call([PYTHON, "install.py"])
@@ -115,6 +123,10 @@ def conf_pybpod_settings():
 
 
 def install_water_calibration():
+    if PYBPOD_ENV is None:
+        msg = "Can't install pybpod, pybpod-environment not found"
+        raise ValueError(msg)
+        return
     # Install water-calibration-plugin
     os.chdir(os.path.join(IBL_ROOT_PATH, "water-calibration-plugin"))
     subprocess.call([PYTHON, "setup.py", "install"])
@@ -122,8 +134,10 @@ def install_water_calibration():
 
 if __name__ == '__main__':
     check_dependencies()
+    check_submodules()
     install_environment()
     install_extra_deps()
     install_pybpod()
     conf_pybpod_settings()
     install_water_calibration()
+    pass
