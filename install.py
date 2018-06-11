@@ -37,7 +37,7 @@ if SYSTEM == 'Windows':
     # Find environment
     ENVS = subprocess.check_output([CONDA, "env", "list", "--json"])
     ENVS = json.loads(ENVS.decode('utf-8'))
-    pat = re.compile("^.+/pybpod-environment$")
+    pat = re.compile("^.+pybpod-environment$")
     PYBPOD_ENV = [x for x in ENVS['envs'] if pat.match(x)]
     PYBPOD_ENV = PYBPOD_ENV[0] if PYBPOD_ENV else None
     PYTHON = os.path.join(PYBPOD_ENV, "python.exe")
