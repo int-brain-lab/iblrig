@@ -3,7 +3,7 @@
 # @Author: Niccolò Bonacchi
 # @Date:   2018-06-08 11:04:05
 # @Last Modified by:   Niccolò Bonacchi
-# @Last Modified time: 2018-06-11 14:22:09
+# @Last Modified time: 2018-06-11 14:39:11
 import platform
 import os
 import shutil
@@ -25,14 +25,7 @@ SUBMODULES_FOLDERS = [
 SYSTEM = platform.system()
 ENV_FILE = 'environment-{}.yml'
 
-if SYSTEM == 'Linux':
-    ENV_FILE = ENV_FILE.format('ubuntu-17.10')
-    CONDA = linux_conda
-    SITE_PACKAGES = "lib/python3.6/site-packages"
-    BONSAI = None
-    PIP = "/home/nico/miniconda3/bin/pip"
-    PYTHON = "/home/nico/miniconda3/envs/pybpod-environment/bin/python"
-elif SYSTEM == 'Windows':
+if SYSTEM == 'Windows':
     ENV_FILE = ENV_FILE.format('windows-10')
     CONDA = "conda"
     SITE_PACKAGES = "lib/site-packages"
@@ -48,6 +41,13 @@ elif SYSTEM == 'Windows':
     PYBPOD_ENV = [x for x in ENVS['envs'] if pat.match(x)]
     PYBPOD_ENV = PYBPOD_ENV[0] if PYBPOD_ENV else None
     PYTHON = os.path.join(PYBPOD_ENV, "python.exe")
+elif SYSTEM == 'Linux':
+    ENV_FILE = ENV_FILE.format('ubuntu-17.10')
+    CONDA = linux_conda
+    SITE_PACKAGES = "lib/python3.6/site-packages"
+    BONSAI = None
+    PIP = "/home/nico/miniconda3/bin/pip"
+    PYTHON = "/home/nico/miniconda3/envs/pybpod-environment/bin/python"
 elif SYSTEM == 'Darwin':
     ENV_FILE = ENV_FILE.format('macOSx')
 else:
@@ -84,6 +84,7 @@ def install_extra_deps():
     if PYBPOD_ENV is None:
         msg = "Can't install extra dependencies, pybpod-environment not found"
         raise ValueError(msg)
+        break
     # Define site-packages folder
     install_to = os.path.join(PYBPOD_ENV, SITE_PACKAGES)
 
@@ -98,6 +99,10 @@ def install_extra_deps():
 
 
 def install_pybpod():
+    if PYBPOD_ENV is None:
+        msg = "Can't install pybpod, pybpod-environment not found"
+        raise ValueError(msg)
+        break
     # Install pybpod
     os.chdir(PYBPOD_PATH)
     subprocess.call([PYTHON, "install.py"])
@@ -116,9 +121,9 @@ def install_water_calibration():
 
 
 if __name__ == '__main__':
-    # check_dependencies()
-    # install_environment()
-    # install_extra_deps()
-    # install_pybpod()
-    # conf_pybpod_settings()
-    # install_water_calibration()
+    check_dependencies()
+    install_environment()
+    install_extra_deps()
+    install_pybpod()
+    conf_pybpod_settings()
+    install_water_calibration()
