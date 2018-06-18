@@ -3,7 +3,7 @@
 # @Author: Niccolò Bonacchi
 # @Date:   2018-06-08 11:04:05
 # @Last Modified by:   Niccolò Bonacchi
-# @Last Modified time: 2018-06-12 10:42:16
+# @Last Modified time: 2018-06-18 11:43:09
 import platform
 import os
 import shutil
@@ -104,11 +104,13 @@ def install_extra_deps():
     # Install extra depencencies using conda
     subprocess.call([CONDA, "install", "-n", "pybpod-environment", "scipy"])
     subprocess.call([CONDA, "install", "-n", "pybpod-environment", "pandas"])
+    subprocess.call([CONDA, "install", "-n", "pybpod-environment",
+                     "-c", "conda-forge", "python-sounddevice"])
     # Install extra depencencies using pip
     subprocess.call([PIP, "install", "--target={}".format(install_to),
                      "python-osc"])
-    subprocess.call([PIP, "install", "--target={}".format(install_to),
-                     "sounddevice"])
+    # subprocess.call([PIP, "install", "--target={}".format(install_to),
+    #                  "sounddevice"])
 
 
 def install_pybpod():
