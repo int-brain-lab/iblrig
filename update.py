@@ -3,7 +3,7 @@
 # @Author: Niccolò Bonacchi
 # @Date:   2018-06-08 11:04:05
 # @Last Modified by:   Niccolò Bonacchi
-# @Last Modified time: 2018-06-12 13:32:59
+# @Last Modified time: 2018-06-25 13:57:20
 """
 Usage:
     update.py
@@ -36,32 +36,52 @@ def get_default_remote_branch():
     if 'origin/master' in remote_branches:
         return 'master'
     elif 'origin/HEAD' in remote_branches:
-        default = subprocess.check_output(['git' 'branch' '-r' '--points-at'
+        default = subprocess.check_output(['git', 'branch', '-r', '--points-at',
                                            'origin/HEAD']).decode().split()[-1]
         return default.split('/')[-1]
 
 
 def check_branch(branch):
-    if 'origin/' + branch not in remote_branches:
-        print("Branch {} does not exist on remote".format(branch))
-        return
+    if 'origin/' + branch not in get_remote_branches():
+        print("Branch not found on remote: {}".format(branch))
+        return 1
+    else:
+        return 0
 
 
 def update(branch):
     subprocess.call(['git', 'pull', 'origin', branch])
 
 
+def upgrade():
+    branch = get_current_branch()
+    default_remote_branch = get_default_remote_branch()
+    if default_remote_branch == branch:
+        update(branch)
+    else:
+        subprocess.call(['git', 'checkout', default_remote_branch])
+        update(get_current_branch())
+
+
 if __name__ == '__main__':
     if len(sys.argv) == 1:
-        print("update(CURR_BRANCH)")
-        # update(CURR_BRANCH)
+        print("update({})".format(get_current_branch()))
+        update(get_current_branch())
+        pass
     elif len(sys.argv) == 2:
-        if sys.argv[1] == 'upgrade':
+        help_args = ['-h', '--help', '?']
+        if sys.argv[1] in help_args:
+            print(__doc__)
+            pass
+        elif sys.argv[1] == 'upgrade':
             print("upgrade()")
-            # upgrade()
+            upgrade()
         else:
             branch = sys.argv[1]
-            if 'origin/' + branch in remote_branches:
-                print("update(branch)")
+            if check_branch(branch):
+                pass
             else:
-                print("Branch {} does not exist on remote".format(branch))
+                subprocess.call(['git', 'checkout', branch])
+                update(branch)
+
+        pass
