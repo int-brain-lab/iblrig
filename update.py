@@ -3,7 +3,7 @@
 # @Author: Niccolò Bonacchi
 # @Date:   2018-06-08 11:04:05
 # @Last Modified by:   Niccolò Bonacchi
-# @Last Modified time: 2018-06-25 13:57:20
+# @Last Modified time: 2018-06-26 12:15:44
 """
 Usage:
     update.py
@@ -49,8 +49,13 @@ def check_branch(branch):
         return 0
 
 
+def submodule_update():
+    subprocess.call(['git', 'submodule', 'update'])
+
+
 def update(branch):
     subprocess.call(['git', 'pull', 'origin', branch])
+    submodule_update()
 
 
 def upgrade():
@@ -58,9 +63,11 @@ def upgrade():
     default_remote_branch = get_default_remote_branch()
     if default_remote_branch == branch:
         update(branch)
+        submodule_update()
     else:
         subprocess.call(['git', 'checkout', default_remote_branch])
         update(get_current_branch())
+        submodule_update()
 
 
 if __name__ == '__main__':
