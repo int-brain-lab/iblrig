@@ -3,7 +3,7 @@
 # @Author: Niccolò Bonacchi
 # @Date:   2018-06-08 11:04:05
 # @Last Modified by:   Niccolò Bonacchi
-# @Last Modified time: 2018-06-18 11:43:09
+# @Last Modified time: 2018-06-27 17:52:19
 import platform
 import os
 import shutil
@@ -21,6 +21,34 @@ SUBMODULES_FOLDERS = [
     'pybpod_projects',
     'water-calibration-plugin',
 ]
+
+
+def get_bonsai_path():
+    try:
+        import winreg as wr
+        # HKEY_CLASSES_ROOT\Applications\Bonsai64.exe\shell\open\command
+        Registry = wr.ConnectRegistry(None, wr.HKEY_CLASSES_ROOT)
+        s = "Applications\\Bonsai64.exe\\shell\\open\\command"
+        RawKey = wr.OpenKey(Registry, s)
+        # print(RawKey)
+        out = []
+        try:
+            i = 0
+            while 1:
+                name, value, type = wr.EnumValue(RawKey, i)
+                out = [name, value, i]
+                i += 1
+        except WindowsError:
+            print()
+
+        bonsai_path = out[1].split()[0].strip('"')
+        return bonsai_path
+    except Exception as e:
+        print(e)
+        return None
+
+
+BONSAI = get_bonsai_path()
 # Check on which system you are running and define env_file
 SYSTEM = platform.system()
 ENV_FILE = 'environment-{}.yml'
@@ -29,17 +57,12 @@ if SYSTEM == 'Windows':
     ENV_FILE = ENV_FILE.format('windows-10')
     CONDA = "conda"
     SITE_PACKAGES = "lib/site-packages"
-    BONSAI = os.path.join(os.getenv('USERPROFILE'),
-                          "AppData/Local/Bonsai/Bonsai64.exe")
-    WHERE_BONSAI = ["where", os.path.join(os.getenv('USERPROFILE'),
-                    "AppData/Local/Bonsai:Bonsai64.exe")]
     PIP = "pip"
     PYTHON_FILE = "python.exe"
 elif SYSTEM == 'Linux':
     ENV_FILE = ENV_FILE.format('ubuntu-17.10')
     CONDA = linux_conda
     SITE_PACKAGES = "lib/python3.6/site-packages"
-    BONSAI = None
     PIP = "/home/nico/miniconda3/bin/pip"
     PYTHON_FILE = "bin/python"
 elif SYSTEM == 'Darwin':
@@ -67,13 +90,10 @@ def check_dependencies():
         print(err)
     pass
     # Check if Bonsai is installed
-    try:
-        subprocess.call(WHERE_BONSAI)
-    except Exception as err:
-        print(err, "\n",
-              "WARNING: Bonsai not found in its default folder.\n",
-              "Please install Bonsai in its default folder.\n",
-              "Installation will proceed...\n")
+    if BONSAI is None:
+        print("WARNING: Bonsai not found, task will run with no visual stim\n",
+              "\n",
+              "Installation will proceed... \n")
 
 
 def check_submodules():
