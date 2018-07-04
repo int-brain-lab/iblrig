@@ -144,6 +144,15 @@ def install_pybpod():
     os.chdir(PYBPOD_PATH)
     subprocess.call([PYTHON, "install.py"])
 
+def install_pybpod_modules():
+    PYBPOD_ENV = get_pybpod_env()
+    PIP = os.path.join(PYBPOD_ENV, 'Scripts', 'pip.exe')
+    subprocess.call([PIP, "install", "-e", "water-calibration-plugin"])
+    os.chdir(PYBPOD_PATH)
+    subprocess.call([PIP, "install", "-e", "water-calibration-plugin"])
+    subprocess.call([PIP, "install", "-e", "pybpod-alyx-module"])
+    subprocess.call([PIP, "install", "-e", "pybpod-analogoutput-module"])
+    os.chdir('..')
 
 def conf_pybpod_settings():
     # Copy user settings
@@ -151,17 +160,17 @@ def conf_pybpod_settings():
     shutil.copy(src, PYBPOD_PATH)
 
 
-def install_water_calibration():
-    PYBPOD_ENV = get_pybpod_env()
-    PYTHON = os.path.join(PYBPOD_ENV, PYTHON_FILE)
-    if PYBPOD_ENV is None:
-        msg = "Can't install pybpod, pybpod-environment not found"
-        raise ValueError(msg)
-        return
-    # Install water-calibration-plugin
-    os.chdir(os.path.join(IBL_ROOT_PATH, "water-calibration-plugin"))
-    subprocess.call([PYTHON, "setup.py", "install"])
-    os.chdir('..')
+# def install_water_calibration():
+#     PYBPOD_ENV = get_pybpod_env()
+#     PYTHON = os.path.join(PYBPOD_ENV, PYTHON_FILE)
+#     if PYBPOD_ENV is None:
+#         msg = "Can't install pybpod, pybpod-environment not found"
+#         raise ValueError(msg)
+#         return
+#     # Install water-calibration-plugin
+#     os.chdir(os.path.join(IBL_ROOT_PATH, "water-calibration-plugin"))
+#     subprocess.call([PYTHON, "setup.py", "install"])
+#     os.chdir('..')
 
 
 if __name__ == '__main__':
@@ -170,6 +179,7 @@ if __name__ == '__main__':
     install_environment()
     install_extra_deps()
     install_pybpod()
+    install_pybpod_modules()
     conf_pybpod_settings()
-    install_water_calibration()
+    # install_water_calibration()
     pass
