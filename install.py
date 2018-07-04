@@ -11,8 +11,7 @@ import json
 import subprocess
 import re
 
-# Constants
-linux_conda = "/home/nico/miniconda3/bin/conda"
+# Constants assuming Windows
 IBL_ROOT_PATH = os.getcwd()
 PYBPOD_PATH = os.path.join(IBL_ROOT_PATH, 'pybpod')
 SUBMODULES_FOLDERS = [
@@ -21,6 +20,29 @@ SUBMODULES_FOLDERS = [
     'pybpod_projects',
     'water-calibration-plugin',
 ]
+BONSAI = get_bonsai_path()
+SYSTEM = platform.system()
+BASE_ENV_FILE = 'environment-{}.yml'
+PYBPOD_ENV = get_pybpod_env()
+PIP = os.path.join(PYBPOD_ENV, 'Scripts', 'pip.exe')
+CONDA = "conda"
+ENV_FILE = BASE_ENV_FILE.format('windows-10')
+SITE_PACKAGES = "lib/site-packages"
+PYTHON_FILE = "python.exe"
+PYTHON = os.path.join(PYBPOD_ENV, PYTHON_FILE)
+
+if SYSTEM == 'Linux':
+    ENV_FILE = BASE_ENV_FILE.format('ubuntu-17.10')
+    CONDA = "/home/nico/miniconda3/bin/conda"
+    SITE_PACKAGES = "lib/python3.6/site-packages"
+    PIP = "/home/nico/miniconda3/envs/pybpod-environment/bin/pip"
+    PYTHON_FILE = "bin/python"
+    PYTHON = os.path.join(PYBPOD_ENV, PYTHON_FILE)
+elif SYSTEM == 'Darwin':
+    ENV_FILE = BASE_ENV_FILE.format('macOSx')
+    print("macOSx is not yet supported")
+else:
+    print('Unsupported OS')
 
 
 def get_bonsai_path():
@@ -46,29 +68,6 @@ def get_bonsai_path():
     except Exception as e:
         print(e)
         return None
-
-
-BONSAI = get_bonsai_path()
-# Check on which system you are running and define env_file
-SYSTEM = platform.system()
-ENV_FILE = 'environment-{}.yml'
-
-if SYSTEM == 'Windows':
-    ENV_FILE = ENV_FILE.format('windows-10')
-    CONDA = "conda"
-    SITE_PACKAGES = "lib/site-packages"
-    PIP = "pip"
-    PYTHON_FILE = "python.exe"
-elif SYSTEM == 'Linux':
-    ENV_FILE = ENV_FILE.format('ubuntu-17.10')
-    CONDA = linux_conda
-    SITE_PACKAGES = "lib/python3.6/site-packages"
-    PIP = "/home/nico/miniconda3/bin/pip"
-    PYTHON_FILE = "bin/python"
-elif SYSTEM == 'Darwin':
-    ENV_FILE = ENV_FILE.format('macOSx')
-else:
-    print('Unsupported OS')
 
 
 def get_pybpod_env():
@@ -113,7 +112,6 @@ def install_environment():
 
 
 def install_extra_deps():
-    PYBPOD_ENV = get_pybpod_env()
     if PYBPOD_ENV is None:
         msg = "Can't install extra dependencies, pybpod-environment not found"
         raise ValueError(msg)
@@ -134,8 +132,6 @@ def install_extra_deps():
 
 
 def install_pybpod():
-    PYBPOD_ENV = get_pybpod_env()
-    PYTHON = os.path.join(PYBPOD_ENV, PYTHON_FILE)
     if PYBPOD_ENV is None:
         msg = "Can't install pybpod, pybpod-environment not found"
         raise ValueError(msg)
@@ -145,8 +141,6 @@ def install_pybpod():
     subprocess.call([PYTHON, "install.py"])
 
 def install_pybpod_modules():
-    PYBPOD_ENV = get_pybpod_env()
-    PIP = os.path.join(PYBPOD_ENV, 'Scripts', 'pip.exe')
     subprocess.call([PIP, "install", "-e", "water-calibration-plugin"])
     os.chdir(PYBPOD_PATH)
     subprocess.call([PIP, "install", "-e", "water-calibration-plugin"])
