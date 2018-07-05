@@ -3,13 +3,14 @@
 # @Author: Niccolò Bonacchi
 # @Date:   2018-06-08 11:04:05
 # @Last Modified by:   Niccolò Bonacchi
-# @Last Modified time: 2018-06-27 17:52:19
+# @Last Modified time: 2018-07-05 16:06:38
 import platform
 import os
 import shutil
 import json
 import subprocess
 import re
+import sys
 
 # Constants assuming Windows
 IBL_ROOT_PATH = os.getcwd()
@@ -20,29 +21,16 @@ SUBMODULES_FOLDERS = [
     'pybpod_projects',
     'water-calibration-plugin',
 ]
-BONSAI = get_bonsai_path()
-SYSTEM = platform.system()
-BASE_ENV_FILE = 'environment-{}.yml'
-PYBPOD_ENV = get_pybpod_env()
-PIP = os.path.join(PYBPOD_ENV, 'Scripts', 'pip.exe')
-CONDA = "conda"
-ENV_FILE = BASE_ENV_FILE.format('windows-10')
-SITE_PACKAGES = "lib/site-packages"
-PYTHON_FILE = "python.exe"
-PYTHON = os.path.join(PYBPOD_ENV, PYTHON_FILE)
 
-if SYSTEM == 'Linux':
-    ENV_FILE = BASE_ENV_FILE.format('ubuntu-17.10')
-    CONDA = "/home/nico/miniconda3/bin/conda"
-    SITE_PACKAGES = "lib/python3.6/site-packages"
-    PIP = "/home/nico/miniconda3/envs/pybpod-environment/bin/pip"
-    PYTHON_FILE = "bin/python"
-    PYTHON = os.path.join(PYBPOD_ENV, PYTHON_FILE)
-elif SYSTEM == 'Darwin':
-    ENV_FILE = BASE_ENV_FILE.format('macOSx')
-    print("macOSx is not yet supported")
-else:
-    print('Unsupported OS')
+
+def get_pybpod_env(CONDA):
+    # Find environment
+    ENVS = subprocess.check_output([CONDA, "env", "list", "--json"])
+    ENVS = json.loads(ENVS.decode('utf-8'))
+    pat = re.compile("^.+pybpod-environment$")
+    PYBPOD_ENV = [x for x in ENVS['envs'] if pat.match(x)]
+    PYBPOD_ENV = PYBPOD_ENV[0] if PYBPOD_ENV else None
+    return PYBPOD_ENV
 
 
 def get_bonsai_path():
@@ -65,23 +53,42 @@ def get_bonsai_path():
 
         bonsai_path = out[1].split()[0].strip('"')
         return bonsai_path
-    except Exception as e:
-        print(e)
+    except Exception:
+        print('\nWARNING: BONSAI NOT PRESENT\nContinuing...\n')
         return None
 
 
-def get_pybpod_env():
-    # Find environment
-    ENVS = subprocess.check_output([CONDA, "env", "list", "--json"])
-    ENVS = json.loads(ENVS.decode('utf-8'))
-    pat = re.compile("^.+pybpod-environment$")
-    PYBPOD_ENV = [x for x in ENVS['envs'] if pat.match(x)]
-    PYBPOD_ENV = PYBPOD_ENV[0] if PYBPOD_ENV else None
-    return PYBPOD_ENV
+BONSAI = get_bonsai_path()
+BASE_ENV_FILE = 'environment-{}.yml'
+
+if sys.platform in ['Windows', 'windows', 'win32']:
+    ENV_FILE = BASE_ENV_FILE.format('windows-10')
+    CONDA = "conda"
+    SITE_PACKAGES = os.path.join("lib", "site-packages")
+    PYBPOD_ENV = get_pybpod_env(CONDA)
+    PIP = os.path.join(PYBPOD_ENV, 'Scripts', 'pip.exe')
+    PYTHON_FILE = "python.exe"
+
+elif sys.platform in ['Linux', 'linux']:
+    ENV_FILE = BASE_ENV_FILE.format('ubuntu-17.10')
+    CONDA = os.path.join(sys.prefix, "bin", "conda")
+    SITE_PACKAGES = os.path.join("lib", "python3.6", "site-packages")
+    PYBPOD_ENV = get_pybpod_env(CONDA)
+    PIP = os.path.join(sys.prefix, "envs", "pybpod-environment", "bin", "pip")
+    PYTHON_FILE = os.path.join("bin", "python")
+elif sys.platform in ['Darwin', 'macOSx', 'osx']:
+    ENV_FILE = BASE_ENV_FILE.format('macOSx')
+    print("ERROR: macOSx is not supported yet\nInstallation aborted!")
+else:
+    print('\nERROR: Unsupported OS\nInstallation aborted!')
+
+
+PYTHON = os.path.join(PYBPOD_ENV, PYTHON_FILE)
 
 
 def check_dependencies():
     # Check if Git and conda are installed
+    print('\nINFO: Checking for dependencies:\n')
     try:
         subprocess.check_output(["git", "--version"])
         subprocess.check_output([CONDA])
@@ -96,6 +103,7 @@ def check_dependencies():
 
 
 def check_submodules():
+    print('\nINFO: Checking submodules for initialization:\n')
     os.chdir(IBL_ROOT_PATH)
     for submodule in SUBMODULES_FOLDERS:
         if not os.listdir(os.path.join(IBL_ROOT_PATH, submodule)):
@@ -104,6 +112,7 @@ def check_submodules():
 
 
 def install_environment():
+    print('\nINFO: Installing pybpod-environment:\n')
     # Install pybpod-environment
     command = '{} env create -f {}'. format(CONDA, os.path.join(
         PYBPOD_PATH, ENV_FILE)).split()
@@ -112,6 +121,7 @@ def install_environment():
 
 
 def install_extra_deps():
+    print('\nINFO: Installing IBL specific dependencies:\n')
     if PYBPOD_ENV is None:
         msg = "Can't install extra dependencies, pybpod-environment not found"
         raise ValueError(msg)
@@ -132,6 +142,7 @@ def install_extra_deps():
 
 
 def install_pybpod():
+    print('\nINFO: Installing pybpod:\n')
     if PYBPOD_ENV is None:
         msg = "Can't install pybpod, pybpod-environment not found"
         raise ValueError(msg)
@@ -139,16 +150,20 @@ def install_pybpod():
     # Install pybpod
     os.chdir(PYBPOD_PATH)
     subprocess.call([PYTHON, "install.py"])
+    os.chdir('..')
+
 
 def install_pybpod_modules():
+    print('\nINFO: Installing pybpod modules and plugins:\n')
     subprocess.call([PIP, "install", "-e", "water-calibration-plugin"])
     os.chdir(PYBPOD_PATH)
-    subprocess.call([PIP, "install", "-e", "water-calibration-plugin"])
     subprocess.call([PIP, "install", "-e", "pybpod-alyx-module"])
     subprocess.call([PIP, "install", "-e", "pybpod-analogoutput-module"])
     os.chdir('..')
 
+
 def conf_pybpod_settings():
+    print('\nINFO: Configuring pybpod IBL project:\n')
     # Copy user settings
     src = os.path.join(IBL_ROOT_PATH, 'user_settings.py')
     shutil.copy(src, PYBPOD_PATH)
@@ -176,4 +191,5 @@ if __name__ == '__main__':
     install_pybpod_modules()
     conf_pybpod_settings()
     # install_water_calibration()
+    print("\nINFO: Done!\nYou should be good to go...\n")
     pass

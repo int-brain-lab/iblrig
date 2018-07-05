@@ -3,7 +3,7 @@
 # @Author: Niccolò Bonacchi
 # @Date:   2018-06-08 11:04:05
 # @Last Modified by:   Niccolò Bonacchi
-# @Last Modified time: 2018-06-26 12:15:44
+# @Last Modified time: 2018-07-05 16:14:33
 """
 Usage:
     update.py
@@ -14,7 +14,6 @@ Usage:
         Will pull <branch_name> from origin if exists
 """
 import subprocess
-import os
 import sys
 
 
@@ -50,24 +49,27 @@ def check_branch(branch):
 
 
 def submodule_update():
+    print("Running: git submodule update")
     subprocess.call(['git', 'submodule', 'update'])
 
 
 def update(branch):
+    print("Running update: git pull origin {}".format(branch))
     subprocess.call(['git', 'pull', 'origin', branch])
     submodule_update()
 
 
 def upgrade():
+    print("Checking for upgrades...")
     branch = get_current_branch()
     default_remote_branch = get_default_remote_branch()
     if default_remote_branch == branch:
+        print("No new version found: updating to latest patch of {}".format(branch))
         update(branch)
-        submodule_update()
     else:
+        print("New version found: updating to {}".format(default_remote_branch))
         subprocess.call(['git', 'checkout', default_remote_branch])
         update(get_current_branch())
-        submodule_update()
 
 
 if __name__ == '__main__':
@@ -92,3 +94,4 @@ if __name__ == '__main__':
                 update(branch)
 
         pass
+    print("Done!")
