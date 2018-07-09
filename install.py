@@ -21,7 +21,22 @@ SUBMODULES_FOLDERS = [
     'pybpod_projects',
     'water-calibration-plugin',
 ]
-
+PYBPOD_SUBMODULES_FOLDERS = [
+    'pybpod-alyx-module',
+    'pybpod-gui-plugin-trial-timeline',
+    'pybpod-analogoutput-module',
+    'logging-bootstrap',
+    'pyforms',
+    'pyforms-generic-editor',
+    'pybpod-api',
+    'pybpod-gui-api',
+    'pybpod-gui-plugin',
+    'pybpod-gui-plugin-session-history',
+    'pybpod-gui-plugin-timeline',
+    'pybpod-rotary-encoder-module',
+    'safe-collaborative-architecture',
+    'pge-plugin-terminal'
+]
 
 def get_pybpod_env(CONDA):
     # Find environment
@@ -65,17 +80,10 @@ if sys.platform in ['Windows', 'windows', 'win32']:
     ENV_FILE = BASE_ENV_FILE.format('windows-10')
     CONDA = "conda"
     SITE_PACKAGES = os.path.join("lib", "site-packages")
-    PYBPOD_ENV = get_pybpod_env(CONDA)
-    PIP = os.path.join(PYBPOD_ENV, 'Scripts', 'pip.exe')
-    PYTHON_FILE = "python.exe"
-
 elif sys.platform in ['Linux', 'linux']:
     ENV_FILE = BASE_ENV_FILE.format('ubuntu-17.10')
     CONDA = os.path.join(sys.prefix, "bin", "conda")
     SITE_PACKAGES = os.path.join("lib", "python3.6", "site-packages")
-    PYBPOD_ENV = get_pybpod_env(CONDA)
-    PIP = os.path.join(sys.prefix, "envs", "pybpod-environment", "bin", "pip")
-    PYTHON_FILE = os.path.join("bin", "python")
 elif sys.platform in ['Darwin', 'macOSx', 'osx']:
     ENV_FILE = BASE_ENV_FILE.format('macOSx')
     print("ERROR: macOSx is not supported yet\nInstallation aborted!")
@@ -83,7 +91,23 @@ else:
     print('\nERROR: Unsupported OS\nInstallation aborted!')
 
 
-PYTHON = os.path.join(PYBPOD_ENV, PYTHON_FILE)
+def get_env_constants():
+    if sys.platform in ['Windows', 'windows', 'win32']:
+        PYBPOD_ENV = get_pybpod_env(CONDA)
+        PIP = os.path.join(PYBPOD_ENV, 'Scripts', 'pip.exe')
+        PYTHON_FILE = "python.exe"
+    elif sys.platform in ['Linux', 'linux']:
+        PYBPOD_ENV = get_pybpod_env(CONDA)
+        PIP = os.path.join(sys.prefix, "envs", "pybpod-environment", "bin", "pip")
+        PYTHON_FILE = os.path.join("bin", "python")
+    elif sys.platform in ['Darwin', 'macOSx', 'osx']:
+        print("ERROR: macOSx is not supported yet\nInstallation aborted!")
+    else:
+        print('\nERROR: Unsupported OS\nInstallation aborted!')
+
+    PYTHON = os.path.join(PYBPOD_ENV, PYTHON_FILE)
+    
+    return PYBPOD_ENV, PIP, PYTHON_FILE, PYTHON
 
 
 def check_dependencies():
@@ -156,9 +180,11 @@ def install_pybpod_modules():
     print('\nINFO: Installing pybpod modules and plugins:\n')
     subprocess.call([PIP, "install", "-e", "water-calibration-plugin"])
     os.chdir(PYBPOD_PATH)
-    subprocess.call([PIP, "install", "-e", "pybpod-alyx-module"])
-    subprocess.call([PIP, "install", "-e", "pybpod-analogoutput-module"])
-    subprocess.call([PIP, "install", "-e", "pybpod-gui-plugin-trial-timeline"])
+    for submodule in PYBPOD_SUBMODULES_FOLDERS: 
+        subprocess.call([PIP, "install", "-e", submodule])
+        # subprocess.call([PIP, "install", "-e", "pybpod-alyx-module"])
+        # subprocess.call([PIP, "install", "-e", "pybpod-analogoutput-module"])
+        # subprocess.call([PIP, "install", "-e", "pybpod-gui-plugin-trial-timeline"])
     os.chdir('..')
 
 
@@ -186,8 +212,9 @@ if __name__ == '__main__':
     check_dependencies()
     check_submodules()
     install_environment()
+    PYBPOD_ENV, PIP, PYTHON_FILE, PYTHON = get_env_constants()
     install_extra_deps()
-    install_pybpod()
+    # install_pybpod()
     install_pybpod_modules()
     conf_pybpod_settings()
     # install_water_calibration()
