@@ -137,9 +137,8 @@ def install_extra_deps():
     # Install extra depencencies using pip
     subprocess.call([PIP, "install", "--target={}".format(install_to),
                      "python-osc"])
-    # subprocess.call([PIP, "install", "--target={}".format(install_to),
-    #                  "sounddevice"])
-
+    subprocess.call([CONDA, "install", "-n", "pybpod-environment", "requests"])
+    subprocess.call([CONDA, "install", "-n", "pybpod-environment", "requests", "--update-deps"])
 
 def install_pybpod():
     print('\nINFO: Installing pybpod:\n')
@@ -159,6 +158,7 @@ def install_pybpod_modules():
     os.chdir(PYBPOD_PATH)
     subprocess.call([PIP, "install", "-e", "pybpod-alyx-module"])
     subprocess.call([PIP, "install", "-e", "pybpod-analogoutput-module"])
+    subprocess.call([PIP, "install", "-e", "pybpod-gui-plugin-trial-timeline"])
     os.chdir('..')
 
 
