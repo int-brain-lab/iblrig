@@ -46,7 +46,7 @@ GENERIC_EDITOR_PLUGINS_LIST = [
     'pybpod_rotaryencoder_module',
     'pybpod_alyx_module',
     'pge_plugin_terminal',
-    # 'pybpod_analogoutput_module',
+    'pybpod_analogoutput_module',
     # 'pybpodgui_plugin_oldformat',
 ]
 
