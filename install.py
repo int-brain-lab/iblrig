@@ -3,7 +3,7 @@
 # @Author: Niccolò Bonacchi
 # @Date:   2018-06-08 11:04:05
 # @Last Modified by:   Niccolò Bonacchi
-# @Last Modified time: 2018-07-05 16:06:38
+# @Last Modified time: 2018-07-10 17:48:47
 import platform
 import os
 import shutil
@@ -37,6 +37,7 @@ PYBPOD_SUBMODULES_FOLDERS = [
     'safe-collaborative-architecture',
     'pge-plugin-terminal'
 ]
+
 
 def get_pybpod_env(CONDA):
     # Find environment
@@ -106,7 +107,7 @@ def get_env_constants():
         print('\nERROR: Unsupported OS\nInstallation aborted!')
 
     PYTHON = os.path.join(PYBPOD_ENV, PYTHON_FILE)
-    
+
     return PYBPOD_ENV, PIP, PYTHON_FILE, PYTHON
 
 
@@ -117,8 +118,8 @@ def check_dependencies():
         subprocess.check_output(["git", "--version"])
         subprocess.check_output([CONDA])
     except Exception as err:
-        print(err)
-    pass
+        print(err, "\nEither git or conda were not found on your system\n")
+        return
     # Check if Bonsai is installed
     if BONSAI is None:
         print("WARNING: Bonsai not found, task will run with no visual stim\n",
@@ -164,6 +165,7 @@ def install_extra_deps():
     subprocess.call([CONDA, "install", "-n", "pybpod-environment", "requests"])
     subprocess.call([CONDA, "install", "-n", "pybpod-environment", "requests", "--update-deps"])
 
+
 def install_pybpod():
     print('\nINFO: Installing pybpod:\n')
     if PYBPOD_ENV is None:
@@ -180,7 +182,7 @@ def install_pybpod_modules():
     print('\nINFO: Installing pybpod modules and plugins:\n')
     subprocess.call([PIP, "install", "-e", "water-calibration-plugin"])
     os.chdir(PYBPOD_PATH)
-    for submodule in PYBPOD_SUBMODULES_FOLDERS: 
+    for submodule in PYBPOD_SUBMODULES_FOLDERS:
         subprocess.call([PIP, "install", "-e", submodule])
         # subprocess.call([PIP, "install", "-e", "pybpod-alyx-module"])
         # subprocess.call([PIP, "install", "-e", "pybpod-analogoutput-module"])
