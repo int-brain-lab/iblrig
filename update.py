@@ -3,49 +3,44 @@
 # @Author: Niccolò Bonacchi
 # @Date:   2018-06-08 11:04:05
 # @Last Modified by:   Niccolò Bonacchi
-# @Last Modified time: 2018-07-05 16:14:33
+# @Last Modified time: 2018-07-11 17:39:32
 """
+IBL_root is following the gitflow workflow and semantic versioning convention
+changes in major version number denote breaks in compatibility
+changes in minor vesrion numbers denote added functionality
+changes in patch version number denote hotfixes/bugfixes
+if a branch exists, with version number hyphen "patch" e.g. 1.0.0-patch ,
+this means that version 1.0.0 is receiving bugfixes for the time being and
+while no new functionality will be added it will recieve bug fixes and
+the patch version number might change.
+
+
 Usage:
     update.py
-        Will pull the latest revision of IBL_root current branch
-    update.py   upgrade
-        Will pull the latest revision of IBL_root default branch
-    update.py <branch_name>
-        Will pull <branch_name> from origin if exists
+        Will fetch changes from origin. Nothing is updated yet!
+        Calling update.py will display information on the available versions
+    update.py <version>
+        Will checkout the <version> release and update the submodules
+    update.py -h | --help | ?
+        Displays this docstring.
 """
 import subprocess
 import sys
 
 
-def get_current_branch():
-    curr_branch = subprocess.check_output(['git', 'symbolic-ref', '--short',
-                                           'HEAD'])
-    curr_branch = curr_branch.decode().strip()
-    return curr_branch
+def get_versions():
+    vers = subprocess.check_output(["git", "tag"]).decode().split()
+    print("\nAvailable versions: {}\n".format(vers))
+    return vers
 
 
-def get_remote_branches():
-    remote_branches = subprocess.check_output(['git', 'branch', '-r'
-                                               ]).decode().split()
-    return remote_branches
-
-
-def get_default_remote_branch():
-    remote_branches = get_remote_branches()
-    if 'origin/master' in remote_branches:
-        return 'master'
-    elif 'origin/HEAD' in remote_branches:
-        default = subprocess.check_output(['git', 'branch', '-r', '--points-at',
-                                           'origin/HEAD']).decode().split()[-1]
-        return default.split('/')[-1]
-
-
-def check_branch(branch):
-    if 'origin/' + branch not in get_remote_branches():
-        print("Branch not found on remote: {}".format(branch))
-        return 1
-    else:
-        return 0
+def get_current_version():
+    # tag = subprocess.check_output(["git", "describe",
+    #                                "--tags"]).decode().strip()
+    tag = subprocess.check_output(["git", "tag",
+                                   "--points-at", "HEAD"]).decode().strip()
+    print("\nCurrent version: {}\n".format(tag))
+    return tag
 
 
 def submodule_update():
@@ -53,45 +48,54 @@ def submodule_update():
     subprocess.call(['git', 'submodule', 'update'])
 
 
-def update(branch):
-    print("Running update: git pull origin {}".format(branch))
-    subprocess.call(['git', 'pull', 'origin', branch])
+def pull():
+    subprocess.call(['git', 'pull', 'origin', 'master'])
     submodule_update()
 
 
-def upgrade():
-    print("Checking for upgrades...")
-    branch = get_current_branch()
-    default_remote_branch = get_default_remote_branch()
-    if default_remote_branch == branch:
-        print("No new version found: updating to latest patch of {}".format(branch))
-        update(branch)
+def checkout_version(ver):
+    print("Checking out {}".format(ver))
+    subprocess.call(['git', 'checkout', 'tags/' + ver])
+    submodule_update()
+
+
+def update_remotes():
+    print("Getting info on remote branches from origin")
+    subprocess.call(['git', 'remote', 'update'])
+
+
+def branch_info():
+    print("Current availiable branches:")
+    print(subprocess.check_output(["git", "branch", "-avv"]).decode())
+
+
+def info():
+    update_remotes()
+    # branch_info()
+    ver = get_current_version()
+    versions = get_versions()
+    if not ver:
+        print("WARNING: You appear to be on an untagged release.")
+        print("Try updating to a specific version\n")
     else:
-        print("New version found: updating to {}".format(default_remote_branch))
-        subprocess.call(['git', 'checkout', default_remote_branch])
-        update(get_current_branch())
+        idx = sorted(versions).index(ver) if ver in versions else None
+        if idx + 1 == len(versions):
+            print("\nThe version you have checked out is the latest version\n")
+        else:
+            print("To update to version |{}| type:\n\npython update.py {}\n".format(
+                sorted(versions)[-1], sorted(versions)[-1]))
 
 
 if __name__ == '__main__':
     if len(sys.argv) == 1:
-        print("update({})".format(get_current_branch()))
-        update(get_current_branch())
-        pass
+        info()
     elif len(sys.argv) == 2:
         help_args = ['-h', '--help', '?']
         if sys.argv[1] in help_args:
             print(__doc__)
-            pass
-        elif sys.argv[1] == 'upgrade':
-            print("upgrade()")
-            upgrade()
+        elif sys.argv[1] in get_versions():
+            checkout_version(sys.argv[1])
         else:
-            branch = sys.argv[1]
-            if check_branch(branch):
-                pass
-            else:
-                subprocess.call(['git', 'checkout', branch])
-                update(branch)
+            print("Unknown version...")
 
-        pass
-    print("Done!")
+    print("Done")
