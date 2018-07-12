@@ -3,18 +3,8 @@
 # @Author: Niccolò Bonacchi
 # @Date:   2018-06-08 11:04:05
 # @Last Modified by:   Niccolò Bonacchi
-# @Last Modified time: 2018-07-11 17:39:32
+# @Last Modified time: 2018-07-12 17:10:22
 """
-IBL_root is following the gitflow workflow and semantic versioning convention
-changes in major version number denote breaks in compatibility
-changes in minor vesrion numbers denote added functionality
-changes in patch version number denote hotfixes/bugfixes
-if a branch exists, with version number hyphen "patch" e.g. 1.0.0-patch ,
-this means that version 1.0.0 is receiving bugfixes for the time being and
-while no new functionality will be added it will recieve bug fixes and
-the patch version number might change.
-
-
 Usage:
     update.py
         Will fetch changes from origin. Nothing is updated yet!
@@ -82,7 +72,7 @@ def info():
         if idx + 1 == len(versions):
             print("\nThe version you have checked out is the latest version\n")
         else:
-            print("To update to version |{}| type:\n\npython update.py {}\n".format(
+            print("Newest version |{}| type:\n\npython update.py {}\n".format(
                 sorted(versions)[-1], sorted(versions)[-1]))
 
 
