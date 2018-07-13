@@ -7,8 +7,8 @@ More on gitflow: https://www.atlassian.com/git/tutorials/comparing-workflows/git
 More on semantic versioning: https://semver.org/
 
 If a branch exists, with version number hyphen "patch" e.g. 1.0.0-patch ,
-this means that version 1.0.0 is receiving bugfixes for the time being and
-while no new functionality will be added, it will recieve bug fixes and
+this means that version 1.0.0 is supported for the time being.
+While no new functionality will be added, it will recieve bug fixes and
 the patch version number might change.
 
 ## Dependencies
@@ -43,7 +43,8 @@ water-calibration-plugin*
 ```posh
 (base) C:\IBL_root>python install.py
 ```
-This will take a while and should get your system up and running.
+This will also take a while and should get your system up and running.
+You'll be prompted multiple times by the script, the answer is always yes.
 
 ## Running pybpod
 There is a \*.bat file that will make sure you load the python environment and run the PyBpod GUI in the IBL_root.
