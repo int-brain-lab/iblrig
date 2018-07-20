@@ -82,7 +82,10 @@ if sys.platform in ['Windows', 'windows', 'win32']:
     SITE_PACKAGES = os.path.join("lib", "site-packages")
 elif sys.platform in ['Linux', 'linux']:
     ENV_FILE = BASE_ENV_FILE.format('ubuntu-17.10')
-    CONDA = os.path.join(sys.prefix, "bin", "conda")
+    p = sys.prefix.split(os.sep)
+    p = [x for x in p if 'env' not in x]
+    conda_path = '{}'.format(os.sep).join(p)
+    CONDA = os.path.join(conda_path, "bin", "conda")
     SITE_PACKAGES = os.path.join("lib", "python3.6", "site-packages")
 elif sys.platform in ['Darwin', 'macOSx', 'osx']:
     ENV_FILE = BASE_ENV_FILE.format('macOSx')
@@ -98,8 +101,7 @@ def get_env_constants():
         PYTHON_FILE = "python.exe"
     elif sys.platform in ['Linux', 'linux']:
         PYBPOD_ENV = get_pybpod_env(CONDA)
-        PIP = os.path.join(sys.prefix, "envs",
-                           "pybpod-environment", "bin", "pip")
+        PIP = os.path.join(sys.prefix, "bin", "pip")
         PYTHON_FILE = os.path.join("bin", "python")
     elif sys.platform in ['Darwin', 'macOSx', 'osx']:
         print("ERROR: macOSx is not supported yet\nInstallation aborted!")
