@@ -38,9 +38,9 @@ PYBPOD_SUBMODULES_FOLDERS = [
 ]
 
 
-def get_pybpod_env(CONDA):
+def get_pybpod_env(conda):
     # Find environment
-    ENVS = subprocess.check_output([CONDA, "env", "list", "--json"])
+    ENVS = subprocess.check_output([conda, "env", "list", "--json"])
     ENVS = json.loads(ENVS.decode('utf-8'))
     pat = re.compile("^.+pybpod-environment$")
     PYBPOD_ENV = [x for x in ENVS['envs'] if pat.match(x)]

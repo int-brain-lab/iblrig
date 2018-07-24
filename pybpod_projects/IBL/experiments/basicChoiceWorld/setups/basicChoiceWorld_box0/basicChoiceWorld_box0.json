@@ -1,0 +1,17 @@
+{
+    "__CREATED-ON__": "2018-05-10 13:10:13.461903",
+    "__DEF-TEXT__": "This file contains information about a PyBpod experiment setup.",
+    "__DEF-URL__": "http://pybpod.readthedocs.org",
+    "__EXTERNAL-REF__": [
+        "5e32036f-3e2a-4b57-86a4-9c9e2f19aadb"
+    ],
+    "__SOFTWARE__": "PyBpod GUI API v1.0",
+    "__UPDATED-ON__": "2018-05-10 13:10:13.461903",
+    "__UUID4__": "347e87b4-dca4-46b9-8c0d-914cdad750a3",
+    "board": "box0",
+    "detached": false,
+    "subjects": [],
+    "task": "basicChoiceWorld",
+    "update-variables": false,
+    "variables": []
+}
