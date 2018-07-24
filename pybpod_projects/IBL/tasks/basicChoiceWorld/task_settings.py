@@ -7,8 +7,8 @@ ROTARY_ENCODER_BPOD_SERIAL_PORT_NUM = 1
 # OSC
 OSC_CLIENT_PORT = 7110
 OSC_CLIENT_IP = '127.0.0.1'
-# ROOT_DATA_FOLDER = None -> relative path in  ???
-ROOT_IBL_FOLDER = 'C:\\IBL_root'
+# IBL rig root folder
+IBLRIG_FOLDER = 'C:\\iblrig'
 # TASK
 NTRIALS = 1000  # Number of trials for the current session
 USE_VISUAL_STIMULUS = True  # Run the visual stim in bonsai

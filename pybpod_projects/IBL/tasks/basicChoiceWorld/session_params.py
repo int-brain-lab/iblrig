@@ -137,14 +137,16 @@ class session_param_handler(object):
         # FOLDER STRUCTURE AND DATA FILES
         # =====================================================================
         if platform == 'linux':
-            self.ROOT_IBL_FOLDER = '/home/nico/Projects/IBL/IBL-github/IBL_root'
+            self.IBLRIG_FOLDER = '/home/nico/Projects/IBL/IBL-github/iblrig'
         else:
-            self.ROOT_IBL_FOLDER = self._root_ibl_folder_init()
+            self.IBLRIG_FOLDER = self._iblrig_folder_init()
 
-        self.ROOT_DATA_FOLDER = self._root_data_folder(self.ROOT_IBL_FOLDER)
-        self.VISUAL_STIMULUS_FILE = os.path.join(self.ROOT_IBL_FOLDER,
-                                                 'Bonsai_workflows', 'STIM',
-                                                 'Gabor2D', 'Gabor2D.bonsai')
+        self.ROOT_DATA_FOLDER = self._root_data_folder(self.IBLRIG_FOLDER)
+        self.VISUAL_STIM_FOLDER = os.apth.join(self.ROOT_DATA_FOLDER,
+                                               'visual_stim', 'Gabor2D')
+        self.VISUAL_STIMULUS_FILE = os.path.join(self.IBLRIG_FOLDER,
+                                                 'visual_stim', 'Gabor2D',
+                                                 'Gabor2D.bonsai')
         self.SUBJECT_NAME = self.PYBPOD_SUBJECTS[0]
         self.SUBJECT_FOLDER = self.check_folder(self.ROOT_DATA_FOLDER,
                                                 self.SUBJECT_NAME)
@@ -236,7 +238,7 @@ class session_param_handler(object):
     def run_bonsai(self):
         if self.USE_VISUAL_STIMULUS and self.BONSAI:
             # Copy stimulus folder with bonsai workflow
-            src = 'C:/IBL_root/Bonsai_workflows/STIM/Gabor2D/'
+            src = self.VISUAL_STIM_FOLDER
             dst = os.path.join(self.SESSION_RAW_DATA_FOLDER, 'Gabor2D/')
             shutil.copytree(src, dst)
             # Run Bonsai workflow
@@ -272,11 +274,11 @@ class session_param_handler(object):
             os.mkdir(f)
         return f
 
-    def _root_ibl_folder_init(self):
-        if '/' in self.ROOT_IBL_FOLDER:
-            p = '{}'.format(os.path.sep).join(self.ROOT_IBL_FOLDER.split('/'))
-        elif '\\' in self.ROOT_IBL_FOLDER:
-            p = '{}'.format(os.path.sep).join(self.ROOT_IBL_FOLDER.split('\\'))
+    def _iblrig_folder_init(self):
+        if '/' in self.IBLRIG_FOLDER:
+            p = '{}'.format(os.path.sep).join(self.IBLRIG_FOLDER.split('/'))
+        elif '\\' in self.IBLRIG_FOLDER:
+            p = '{}'.format(os.path.sep).join(self.IBLRIG_FOLDER.split('\\'))
         return p
 
     def _root_data_folder(self, rdf):
@@ -286,7 +288,7 @@ class session_param_handler(object):
             out = self.check_folder(out)
             return out
         except IOError as e:
-            print(e, "\nCouldn't find ROOT_IBL_FOLDER in file system\n")
+            print(e, "\nCouldn't find IBLRIG_FOLDER in file system\n")
 
     def _session_number(self):
         session_nums = [int(x) for x in os.listdir(self.SESSION_DATE_FOLDER)
@@ -400,7 +402,7 @@ class session_param_handler(object):
 
     def _save_task_code(self):
         # Copy behavioral task python code
-        src = os.path.join(self.ROOT_IBL_FOLDER, 'pybpod_projects', 'IBL',
+        src = os.path.join(self.IBLRIG_FOLDER, 'pybpod_projects', 'IBL',
                            'tasks', self.PYBPOD_PROTOCOL)
         dst = os.path.join(self.SESSION_RAW_DATA_FOLDER, self.PYBPOD_PROTOCOL)
         shutil.copytree(src, dst)

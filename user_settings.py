@@ -32,7 +32,7 @@ PYFORMS_GL_ENABLED = False
 PYFORMS_VISVIS_ENABLED = False
 
 GENERIC_EDITOR_TITLE = 'IBL'
-GENERIC_EDITOR_PLUGINS_PATH = 'C:\\IBL_root\\'  # None
+GENERIC_EDITOR_PLUGINS_PATH = 'C:\\iblrig\\'  # None
 GENERIC_EDITOR_PLUGINS_LIST = [
     'water_calibration_plugin',
     'pybranch',
@@ -52,6 +52,6 @@ GENERIC_EDITOR_PLUGINS_LIST = [
 
 TARGET_BPOD_FIRMWARE_VERSION = '21'
 
-DEFAULT_PROJECT_PATH = 'C:\\IBL_root\\pybpod_projects\\IBL'
+DEFAULT_PROJECT_PATH = 'C:\\iblrig\\pybpod_projects\\IBL'
 ALYX_ADDR = 'http://alyx.champalimaud.pt:8000'
 PYBPOD_EXTRA_INFO = {'Users', 'Subjects'}

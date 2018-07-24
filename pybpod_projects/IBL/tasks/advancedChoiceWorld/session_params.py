@@ -138,7 +138,7 @@ class path_helper:
         return session_name
 
     def root_data_folder(root_data_folder):
-        # os.path.abspath('.') is C:\IBL_root\pybpod
+        # os.path.abspath('.') is C:\iblrig\pybpod
         if root_data_folder is None:
             out = '../pybpod_projects/IBL/data/'
         else:

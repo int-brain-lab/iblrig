@@ -28,40 +28,40 @@ Anaconda for windows will ask you to install vs code. VS code is a cross platfor
 
 3. Checkout this repository in your **root folder C:\\>**
 ```posh
-C:\>git clone --recursive https://github.com/int-brain-lab/IBL_root.git
+C:\>git clone --recursive https://github.com/int-brain-lab/iblrig.git
 ```
 This might take a while.
 
-Your IBL_root folder should now look like this:
-*Bonsai_workflows
-pybpod
+Your iblrig folder should now look like this:
+*pybpod
 pybpod_data
 pybpod_projects
+visual_stim
 water-calibration-plugin*
 
-4. Open an Anaconda prompt, navigate to C:\\IBL_root and type:
+4. Open an Anaconda prompt, navigate to C:\\iblrig and type:
 ```posh
-(base) C:\IBL_root>python install.py
+(base) C:\iblrig>python install.py
 ```
 This will also take a while and should get your system up and running.
 You'll be prompted multiple times by the script, the answer is always yes.
 
 ## Running pybpod
-There is a \*.bat file that will make sure you load the python environment and run the PyBpod GUI in the IBL_root.
+There is a \*.bat file that will make sure you load the python environment and run the PyBpod GUI in the iblrig.
 From an Anaconda prompt just type:
 ```posh
-(base) C:\IBL_root>pybpod
+(base) C:\iblrig>pybpod
 ```
-Alternatively if you add IBL_root to the system path you can type pybpod from any folder of the Anaconda prompt.
+Alternatively if you add the iblrig folder to the system path you can type pybpod from any folder of the Anaconda prompt.
 
 ## Updating the task and software
 Updating should be as simple as typing:
 ```posh
-(base) C:\IBL_root>python update.py
+(base) C:\iblrig>python update.py
 ```
 For more information on how to update you can use the flags [ -h | --help | ? ] e.g:
 ```posh
-(base) C:\IBL_root>python update.py -h
+(base) C:\iblrig>python update.py -h
 
 Usage:
     update.py

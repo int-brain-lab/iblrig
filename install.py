@@ -12,8 +12,8 @@ import re
 import sys
 
 # Constants assuming Windows
-IBL_ROOT_PATH = os.getcwd()
-PYBPOD_PATH = os.path.join(IBL_ROOT_PATH, 'pybpod')
+IBLRIG_ROOT_PATH = os.getcwd()
+PYBPOD_PATH = os.path.join(IBLRIG_ROOT_PATH, 'pybpod')
 SUBMODULES_FOLDERS = [
     'pybpod',
     'water-calibration-plugin',
@@ -50,15 +50,15 @@ def get_bonsai_path():
     try:
         import winreg as wr
         # HKEY_CLASSES_ROOT\Applications\Bonsai64.exe\shell\open\command
-        Registry = wr.ConnectRegistry(None, wr.HKEY_CLASSES_ROOT)
+        registry = wr.ConnectRegistry(None, wr.HKEY_CLASSES_ROOT)
         s = "Applications\\Bonsai64.exe\\shell\\open\\command"
-        RawKey = wr.OpenKey(Registry, s)
+        raw_key = wr.OpenKey(registry, s)
         # print(RawKey)
         out = []
         try:
             i = 0
             while 1:
-                name, value, type = wr.EnumValue(RawKey, i)
+                name, value, type = wr.EnumValue(raw_key, i)
                 out = [name, value, i]
                 i += 1
         except WindowsError:
@@ -129,9 +129,9 @@ def check_dependencies():
 
 def check_submodules():
     print('\nINFO: Checking submodules for initialization:\n')
-    os.chdir(IBL_ROOT_PATH)
+    os.chdir(IBLRIG_ROOT_PATH)
     for submodule in SUBMODULES_FOLDERS:
-        if not os.listdir(os.path.join(IBL_ROOT_PATH, submodule)):
+        if not os.listdir(os.path.join(IBLRIG_ROOT_PATH, submodule)):
             subprocess.call(["git", "submodule", "update", "--init",
                              "--recursive"])
 
@@ -150,7 +150,6 @@ def install_extra_deps():
     if PYBPOD_ENV is None:
         msg = "Can't install extra dependencies, pybpod-environment not found"
         raise ValueError(msg)
-        return
     # Define site-packages folder
     install_to = os.path.join(PYBPOD_ENV, SITE_PACKAGES)
 
@@ -172,7 +171,6 @@ def install_pybpod():
     if PYBPOD_ENV is None:
         msg = "Can't install pybpod, pybpod-environment not found"
         raise ValueError(msg)
-        return
     # Install pybpod
     os.chdir(PYBPOD_PATH)
     subprocess.call([PYTHON, "install.py"])
@@ -191,7 +189,7 @@ def install_pybpod_modules():
 def conf_pybpod_settings():
     print('\nINFO: Configuring pybpod IBL project:\n')
     # Copy user settings
-    src = os.path.join(IBL_ROOT_PATH, 'user_settings.py')
+    src = os.path.join(IBLRIG_ROOT_PATH, 'user_settings.py')
     shutil.copy(src, PYBPOD_PATH)
 
 

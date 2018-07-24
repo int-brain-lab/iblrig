@@ -50,11 +50,10 @@ def my_softcode_handler(data):
 # =============================================================================
 if sph.USE_VISUAL_STIMULUS:
     # Copy stimulus folder with bonsai workflow
-    src = 'C:\\IBL_root\\Bonsai_workflows\\STIM\\Gabor2D\\'
+    src = 'C:\\iblrig\\visual_stim\\Gabor2D\\'
     dst = sph.SESSION_DATA_FOLDER + 'Gabor2D\\'
     shutil.copytree(src, dst)
 
-    # 'C:\\IBL_root\\Bonsai_workflows\\STIM\\Gabor2D\\Gabor2Dv0.3.bonsai'
     bns = 'C:\\Users\\User\\AppData\\Local\\Bonsai\\Bonsai64.exe'
     wkfl = sph.SESSION_DATA_FOLDER + 'Gabor2D\\Gabor2Dv0.3.bonsai'
     flags = '--start'  # --noeditor
