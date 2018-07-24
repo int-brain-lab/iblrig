@@ -28,7 +28,7 @@ Anaconda for windows will ask you to install vs code. VS code is a cross platfor
 
 3. Checkout this repository in your **root folder C:\\>**
 ```posh
-C:\>git clone --recursive https://github.com/int-brain-lab/IBL_root.git
+C:\>git clone --recursive https://github.com/int-brain-lab/iblrig.git
 ```
 This might take a while.
 

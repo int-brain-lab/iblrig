@@ -50,15 +50,15 @@ def get_bonsai_path():
     try:
         import winreg as wr
         # HKEY_CLASSES_ROOT\Applications\Bonsai64.exe\shell\open\command
-        Registry = wr.ConnectRegistry(None, wr.HKEY_CLASSES_ROOT)
+        registry = wr.ConnectRegistry(None, wr.HKEY_CLASSES_ROOT)
         s = "Applications\\Bonsai64.exe\\shell\\open\\command"
-        RawKey = wr.OpenKey(Registry, s)
+        raw_key = wr.OpenKey(registry, s)
         # print(RawKey)
         out = []
         try:
             i = 0
             while 1:
-                name, value, type = wr.EnumValue(RawKey, i)
+                name, value, type = wr.EnumValue(raw_key, i)
                 out = [name, value, i]
                 i += 1
         except WindowsError:
@@ -150,7 +150,6 @@ def install_extra_deps():
     if PYBPOD_ENV is None:
         msg = "Can't install extra dependencies, pybpod-environment not found"
         raise ValueError(msg)
-        return
     # Define site-packages folder
     install_to = os.path.join(PYBPOD_ENV, SITE_PACKAGES)
 
@@ -172,7 +171,6 @@ def install_pybpod():
     if PYBPOD_ENV is None:
         msg = "Can't install pybpod, pybpod-environment not found"
         raise ValueError(msg)
-        return
     # Install pybpod
     os.chdir(PYBPOD_PATH)
     subprocess.call([PYTHON, "install.py"])
