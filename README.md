@@ -1,8 +1,8 @@
-# IBL_root
+# iblrig
 
-IBL_root is the root folder for the PyBpod/Bonsai task. It requires, for now, to be installed in the root C:\ folder of your windows computer.
+iblrig is the root folder for the PyBpod/Bonsai task. It requires, for now, to be installed in the root C:\ folder of your windows computer.
 
-IBL_root is using gitflow and semantic versioning conventions.
+iblrig is using gitflow and semantic versioning conventions.
 More on gitflow: https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow
 More on semantic versioning: https://semver.org/
 
@@ -17,7 +17,7 @@ Git, Anaconda and Bonsai. Before starting you should have git installed.
 
 ## Installation
 0. Bonsai needs to be installed in your system as the task will call a Bonsai workflow to display the visual stimulus.
-You can download Bonsai from here (http://bonsai-rx.org/). After installing it you should also install some relevant Bonsai packages from the overhead menu in Tools --> Manage Packages. A list of relevant packages is upcoming, but for now you can install all of them, sorry if the process is slightly tedious.
+You can download Bonsai from here (http://bonsai-rx.org/). After installing it you should also install some relevant Bonsai packages from the overhead menu in Tools --> Manage Packages. A list of relevant packages is upcoming, but for now you can install all of them, especially the bpod library which you can find by selecting Include pre-releases in the package manager, sorry if the process is slightly tedious.
 **Note:** If using PointGrey cameras the FlyCap Viewer 32bits AND 64bits should be installed otherwise the PointGrey reletad node won't show.
 
 1. Install the Anaconda python distribution to your system, you can get it from here:
