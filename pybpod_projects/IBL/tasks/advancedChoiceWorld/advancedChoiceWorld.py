@@ -43,7 +43,7 @@ def my_softcode_handler(data):
 # =============================================================================
 if sph.USE_VISUAL_STIMULUS:
     bns = 'C:\\Users\\User\\AppData\\Local\\Bonsai\\Bonsai.exe'
-    wkfl = 'C:\\IBL_root\\Bonsai_workflows\\STIM\\Gabor2D\\Gabor2Dv0.3.bonsai'
+    wkfl = 'C:\\iblrig\\Bonsai_workflows\\STIM\\Gabor2D\\Gabor2Dv0.3.bonsai'
     flags = '--start'
     bonsai = subprocess.Popen([bns, wkfl, flags])
     time.sleep(5)

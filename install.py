@@ -12,8 +12,8 @@ import re
 import sys
 
 # Constants assuming Windows
-IBL_ROOT_PATH = os.getcwd()
-PYBPOD_PATH = os.path.join(IBL_ROOT_PATH, 'pybpod')
+IBLRIG_ROOT_PATH = os.getcwd()
+PYBPOD_PATH = os.path.join(IBLRIG_ROOT_PATH, 'pybpod')
 SUBMODULES_FOLDERS = [
     'pybpod',
     'water-calibration-plugin',
@@ -129,9 +129,9 @@ def check_dependencies():
 
 def check_submodules():
     print('\nINFO: Checking submodules for initialization:\n')
-    os.chdir(IBL_ROOT_PATH)
+    os.chdir(IBLRIG_ROOT_PATH)
     for submodule in SUBMODULES_FOLDERS:
-        if not os.listdir(os.path.join(IBL_ROOT_PATH, submodule)):
+        if not os.listdir(os.path.join(IBLRIG_ROOT_PATH, submodule)):
             subprocess.call(["git", "submodule", "update", "--init",
                              "--recursive"])
 
@@ -189,7 +189,7 @@ def install_pybpod_modules():
 def conf_pybpod_settings():
     print('\nINFO: Configuring pybpod IBL project:\n')
     # Copy user settings
-    src = os.path.join(IBL_ROOT_PATH, 'user_settings.py')
+    src = os.path.join(IBLRIG_ROOT_PATH, 'user_settings.py')
     shutil.copy(src, PYBPOD_PATH)
 
 

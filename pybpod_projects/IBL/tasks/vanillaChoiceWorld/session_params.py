@@ -148,14 +148,14 @@ class path_helper:
     def root_data_folder(rdf):
         # if running as main
         if __name__ == '__main__' and os.name == 'nt':
-            return 'C:\\IBL_root\\pybpod_projects\\IBL\\data/'
+            return 'C:\\iblrig\\pybpod_projects\\IBL\\data/'
         elif __name__ == '__main__' and os.name == 'posix':
             return '/home/nico/Projects/IBL/IBL-github/pybpod_projects/IBL/\
 data/'
 
         # If no data folder was defined in settings file use default folder
         if rdf is None:
-            out = 'C:/IBL_root/pybpod_data/'  # '../pybpod_projects/IBL/data/'
+            out = 'C:/iblrig/pybpod_data/'  # '../pybpod_projects/IBL/data/'
         else:
             # If folder was defined in settings check if endswith '/'
             out = rdf if rdf.endswith('/') else rdf + '/'
