@@ -15,9 +15,7 @@ import sys
 IBL_ROOT_PATH = os.getcwd()
 PYBPOD_PATH = os.path.join(IBL_ROOT_PATH, 'pybpod')
 SUBMODULES_FOLDERS = [
-    'Bonsai_workflows',
     'pybpod',
-    'pybpod_projects',
     'water-calibration-plugin',
 ]
 PYBPOD_SUBMODULES_FOLDERS = [
