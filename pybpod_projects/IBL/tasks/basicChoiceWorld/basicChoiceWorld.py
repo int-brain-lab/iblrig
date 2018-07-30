@@ -10,6 +10,7 @@
 
 from pybpodapi.protocol import Bpod, StateMachine
 from pybpod_rotaryencoder_module.module_api import RotaryEncoderModule
+from pybpod_rotaryencoder_module.module import RotaryEncoder
 import matplotlib.pyplot as plt
 from dateutil import parser
 import datetime
@@ -62,8 +63,8 @@ rotary_encoder = list(bpod.modules)[0]  # TODO:find by name?
 # rotary_encoder_reset = rotary_encoder.create_resetpositions_trigger()
 rotary_encoder_reset = 1
 bpod.load_serial_message(rotary_encoder, rotary_encoder_reset,
-                         [rotary_encoder.COM_SETZEROPOS,  # ord('Z')
-                          rotary_encoder.COM_ENABLE_ALLTHRESHOLDS])  # ord('E')
+                         [RotaryEncoder.COM_SETZEROPOS,  # ord('Z')
+                          RotaryEncoder.COM_ENABLE_ALLTHRESHOLDS])  # ord('E')
 # Stop the stim
 rotary_encoder_event1 = rotary_encoder_reset + 1
 bpod.load_serial_message(rotary_encoder, rotary_encoder_event1,
