@@ -7,3 +7,10 @@ pybpod_data/
 \.vscode/
 
 __pycache__/
+*.pyc 
+
+sessions/
+IBL/tasks/BurgessTask/__pycache__/
+IBL/tasks/BurgessTask/notes_on_behavior
+
+*.driveupload

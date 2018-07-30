@@ -142,7 +142,7 @@ class session_param_handler(object):
             self.IBLRIG_FOLDER = self._iblrig_folder_init()
 
         self.ROOT_DATA_FOLDER = self._root_data_folder(self.IBLRIG_FOLDER)
-        self.VISUAL_STIM_FOLDER = os.apth.join(self.ROOT_DATA_FOLDER,
+        self.VISUAL_STIM_FOLDER = os.path.join(self.IBLRIG_FOLDER,
                                                'visual_stim', 'Gabor2D')
         self.VISUAL_STIMULUS_FILE = os.path.join(self.IBLRIG_FOLDER,
                                                  'visual_stim', 'Gabor2D',
@@ -223,7 +223,7 @@ class session_param_handler(object):
             try:
                 i = 0
                 while 1:
-                    name, value, type = wr.EnumValue(RawKey, i)
+                    name, value, type_ = wr.EnumValue(RawKey, i)
                     out = [name, value, i]
                     i += 1
             except WindowsError:
