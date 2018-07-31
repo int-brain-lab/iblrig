@@ -242,6 +242,9 @@ class session_param_handler(object):
             dst = os.path.join(self.SESSION_RAW_DATA_FOLDER, 'Gabor2D/')
             shutil.copytree(src, dst)
             # Run Bonsai workflow
+            here = os.getcwd()
+            os.chdir(os.path.join(self.IBLRIG_FOLDER, 'visual_stim', 
+                                  'Gabor2D'))
             bns = self.BONSAI
             wkfl = self.VISUAL_STIMULUS_FILE
             pos = "-p:FileNamePositions=" + os.path.join(
@@ -255,17 +258,18 @@ class session_param_handler(object):
                 "_ibl_encoderTrialInfo.bonsai_raw.csv")
             com = "-p:REPortName=" + self.ROTARY_ENCODER_PORT
             start = '--start'
-            noeditor = '--noeditor'  # Bonsai bug prevents this from working
+            noeditor = '--noeditor'
 
-            bonsai = subprocess.Popen([bns, wkfl, start, pos, evt, itr, com])
+            bonsai = subprocess.Popen([bns, wkfl, noeditor, pos, evt, itr, com])
             time.sleep(5)
             bonsai
+            os.chdir(here)
         else:
             self.USE_VISUAL_STIMULUS = False
 
     @staticmethod
     def check_folder(str1, str2=None):
-        """Checks if folder path exists and if not creates it"""
+        """Check if folder path exists and if not create it."""
         if str2 is not None:
             f = os.path.join(str1, str2)
         else:
@@ -281,10 +285,10 @@ class session_param_handler(object):
             p = '{}'.format(os.path.sep).join(self.IBLRIG_FOLDER.split('\\'))
         return p
 
-    def _root_data_folder(self, rdf):
+    def _root_data_folder(self, iblrig_folder):
         try:
-            os.path.exists(rdf)
-            out = os.path.join(rdf, 'pybpod_data')
+            os.path.exists(iblrig_folder)
+            out = os.path.join(iblrig_folder, 'pybpod_data')
             out = self.check_folder(out)
             return out
         except IOError as e:
