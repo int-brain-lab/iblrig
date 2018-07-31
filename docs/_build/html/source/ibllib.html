@@ -1,0 +1,688 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>ibllib API &mdash; IBL Library  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="oneibl API" href="oneibl.html" />
+    <link rel="prev" title="Welcome to IBL code library documentation!" href="../index.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> IBL Library
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">ibllib API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-ibllib">Module contents</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-ibllib.webclient">ibllib.webclient module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-ibllib.time">ibllib.time module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-ibllib.dsp">ibllib.dsp module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#module-ibllib.dsp.savitzky_golay">ibllib.dsp.savitzky_golay</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-ibllib.dsp.smooth">ibllib.dsp.smooth</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-ibllib.io">ibllib.io module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#module-ibllib.io.raw_data_loaders">ibllib.io.raw_data_loaders</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-ibllib.misc">ibllib.misc module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#module-ibllib.misc.flatten">ibllib.misc.flatten</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-ibllib.misc.timing">ibllib.misc.timing</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="oneibl.html">oneibl API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="alf.html">alf API</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">IBL Library</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>ibllib API</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/source/ibllib.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="ibllib-api">
+<h1>ibllib API<a class="headerlink" href="#ibllib-api" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-ibllib">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-ibllib" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-ibllib.webclient">
+<span id="ibllib-webclient-module"></span><h2>ibllib.webclient module<a class="headerlink" href="#module-ibllib.webclient" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="ibllib.webclient.AlyxClient">
+<em class="property">class </em><code class="descclassname">ibllib.webclient.</code><code class="descname">AlyxClient</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#ibllib.webclient.AlyxClient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class that implements simple GET/POST wrappers for the Alyx REST API
+<a class="reference external" href="http://alyx.readthedocs.io/en/latest/api.html">http://alyx.readthedocs.io/en/latest/api.html</a></p>
+<dl class="method">
+<dt id="ibllib.webclient.AlyxClient.authenticate">
+<code class="descname">authenticate</code><span class="sig-paren">(</span><em>username=''</em>, <em>password=''</em>, <em>base_url=''</em><span class="sig-paren">)</span><a class="headerlink" href="#ibllib.webclient.AlyxClient.authenticate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets a security token from the Alyx REST API to create requests headers.
+Credentials are in the params_secret_template.py file</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>username</strong> (<em>str</em>) – Alyx database user</li>
+<li><strong>password</strong> (<em>str</em>) – Alyx database password</li>
+<li><strong>base_url</strong> (<em>str</em>) – Alyx server address, including port and protocol</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="ibllib.webclient.AlyxClient.get">
+<code class="descname">get</code><span class="sig-paren">(</span><em>rest_query</em><span class="sig-paren">)</span><a class="headerlink" href="#ibllib.webclient.AlyxClient.get" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Sends a GET request to the Alyx server. Will raise an exception on any status_code</dt>
+<dd>other than 200, 201.</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>rest_query</strong> (<em>str</em>) – example: ‘/sessions?user=Hamish’.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(dict/list) json interpreted dictionary from response</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="ibllib.webclient.AlyxClient.post">
+<code class="descname">post</code><span class="sig-paren">(</span><em>rest_query</em><span class="sig-paren">)</span><a class="headerlink" href="#ibllib.webclient.AlyxClient.post" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sends a POST request to the Alyx server.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Param:</th><td class="field-body">rest_query (string).</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">response object</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="ibllib.webclient.dataset_record_to_url">
+<code class="descclassname">ibllib.webclient.</code><code class="descname">dataset_record_to_url</code><span class="sig-paren">(</span><em>dataset_record</em><span class="sig-paren">)</span><a class="headerlink" href="#ibllib.webclient.dataset_record_to_url" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracts a list of files urls from a list of dataset queries.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dataset_record</strong> (<em>list</em>) – dataset Json from a rest request.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(list) a list of strings representing files urls corresponding to the datasets records</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="ibllib.webclient.file_record_to_url">
+<code class="descclassname">ibllib.webclient.</code><code class="descname">file_record_to_url</code><span class="sig-paren">(</span><em>file_records</em>, <em>urls=[]</em><span class="sig-paren">)</span><a class="headerlink" href="#ibllib.webclient.file_record_to_url" title="Permalink to this definition">¶</a></dt>
+<dd><p>Translate a Json dictionary to an usable http url for downlading files.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>file_records</strong> (<em>dict</em>) – json containing a ‘data_url’ field</li>
+<li><strong>urls</strong> (<em>list</em>) – a list of strings containing previous data_urls on which new urls
+will be appended</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">urls: (list) a list of strings representing full data urls</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="ibllib.webclient.http_download_file">
+<code class="descclassname">ibllib.webclient.</code><code class="descname">http_download_file</code><span class="sig-paren">(</span><em>full_link_to_file</em>, <em>*</em>, <em>clobber=False</em>, <em>username=''</em>, <em>password=''</em>, <em>cache_dir=''</em>, <em>verbose=True</em><span class="sig-paren">)</span><a class="headerlink" href="#ibllib.webclient.http_download_file" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>full_link_to_file</strong> (<em>str</em>) – http link to the file.</li>
+<li><strong>clobber</strong> (<em>bool</em>) – [False] If True, force overwrite the existing file.</li>
+<li><strong>username</strong> (<em>str</em>) – [‘’] authentication for password protected file server.</li>
+<li><strong>password</strong> (<em>str</em>) – [‘’] authentication for password protected file server.</li>
+<li><strong>cache_dir</strong> (<em>str</em>) – [‘’] directory in which files are cached; defaults to user’s
+Download directory.</li>
+<li><strong>verbose</strong> (<em>bool</em>) – [True] displays a message for each download.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">(str) a list of the local full path of the downloaded files.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="ibllib.webclient.http_download_file_list">
+<code class="descclassname">ibllib.webclient.</code><code class="descname">http_download_file_list</code><span class="sig-paren">(</span><em>links_to_file_list</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#ibllib.webclient.http_download_file_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Downloads a list of files from the flat Iron from a list of links.
+Same options behaviour as http_download_file</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>links_to_file_list</strong> (<em>list</em>) – list of http links to files.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(list) a list of the local full path of the downloaded files.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-ibllib.time">
+<span id="ibllib-time-module"></span><h2>ibllib.time module<a class="headerlink" href="#module-ibllib.time" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="ibllib.time.date2isostr">
+<code class="descclassname">ibllib.time.</code><code class="descname">date2isostr</code><span class="sig-paren">(</span><em>adate</em><span class="sig-paren">)</span><a class="headerlink" href="#ibllib.time.date2isostr" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ibllib.time.format_date_range">
+<code class="descclassname">ibllib.time.</code><code class="descname">format_date_range</code><span class="sig-paren">(</span><em>date_range</em><span class="sig-paren">)</span><a class="headerlink" href="#ibllib.time.format_date_range" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ibllib.time.isostr2date">
+<code class="descclassname">ibllib.time.</code><code class="descname">isostr2date</code><span class="sig-paren">(</span><em>isostr</em><span class="sig-paren">)</span><a class="headerlink" href="#ibllib.time.isostr2date" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-ibllib.dsp">
+<span id="ibllib-dsp-module"></span><h2>ibllib.dsp module<a class="headerlink" href="#module-ibllib.dsp" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-ibllib.dsp.savitzky_golay">
+<span id="ibllib-dsp-savitzky-golay"></span><h3>ibllib.dsp.savitzky_golay<a class="headerlink" href="#module-ibllib.dsp.savitzky_golay" title="Permalink to this headline">¶</a></h3>
+<p>Created on Wed Jan 14 11:30:29 2015</p>
+<p>&#64;author: nico</p>
+<dl class="function">
+<dt id="ibllib.dsp.savitzky_golay.savitzky_golay">
+<code class="descclassname">ibllib.dsp.savitzky_golay.</code><code class="descname">savitzky_golay</code><span class="sig-paren">(</span><em>y</em>, <em>window_size</em>, <em>order</em>, <em>deriv=0</em>, <em>rate=1</em><span class="sig-paren">)</span><a class="headerlink" href="#ibllib.dsp.savitzky_golay.savitzky_golay" title="Permalink to this definition">¶</a></dt>
+<dd><p>Smoothes input signal with a Savitzky-Golay function.</p>
+<p>Uses a kernel of size “window_size” and a polinomial fit of order “order”.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>y</strong> (<em>[</em><em>type</em><em>]</em>) – [description]</li>
+<li><strong>window_size</strong> (<em>[</em><em>type</em><em>]</em>) – [description]</li>
+<li><strong>order</strong> (<em>[</em><em>type</em><em>]</em>) – [description]</li>
+<li><strong>deriv</strong> – [description], defaults to 0</li>
+<li><strong>deriv</strong> – int, optional</li>
+<li><strong>rate</strong> – [description], defaults to 1</li>
+<li><strong>rate</strong> – int, optional</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first simple">
+<li><strong>ValueError</strong> – [description]</li>
+<li><strong>TypeError</strong> – [description]</li>
+<li><strong>TypeError</strong> – [description]</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">[description]</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">[type]</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-ibllib.dsp.smooth">
+<span id="ibllib-dsp-smooth"></span><h3>ibllib.dsp.smooth<a class="headerlink" href="#module-ibllib.dsp.smooth" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="ibllib.dsp.smooth.smooth">
+<code class="descclassname">ibllib.dsp.smooth.</code><code class="descname">smooth</code><span class="sig-paren">(</span><em>x</em>, <em>window_len=11</em>, <em>window='blackman'</em><span class="sig-paren">)</span><a class="headerlink" href="#ibllib.dsp.smooth.smooth" title="Permalink to this definition">¶</a></dt>
+<dd><p>Smooth the data using a window with requested size.</p>
+<p>This method is based on the convolution of a scaled window with the signal.
+The signal is prepared by introducing reflected copies of the signal
+(with the window size) in both ends so that transient parts are minimized
+in the begining and end part of the output signal.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>x</strong> (<em>list</em><em> or </em><em>numpy.array</em>) – The input signal</li>
+<li><strong>window_len</strong> (<em>int</em><em>, </em><em>optional</em>) – The dimension of the smoothing window,
+should be an <strong>odd</strong> integer, defaults to 11</li>
+<li><strong>window</strong> (<em>str</em><em>, </em><em>optional</em>) – The type of window from [‘flat’, ‘hanning’, ‘hamming’,
+‘bartlett’, ‘blackman’]
+flat window will produce a moving average smoothing,
+defaults to ‘blackman’</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first simple">
+<li><strong>ValueError</strong> – Smooth only accepts 1 dimension arrays.</li>
+<li><strong>ValueError</strong> – Input vector needs to be bigger than window size.</li>
+<li><strong>ValueError</strong> – Window is not one of ‘flat’, ‘hanning’, ‘hamming’,
+‘bartlett’, ‘blackman’</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Smoothed array</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">numpy.array</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="ibllib.dsp.smooth.smooth_demo">
+<code class="descclassname">ibllib.dsp.smooth.</code><code class="descname">smooth_demo</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ibllib.dsp.smooth.smooth_demo" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+</div>
+<div class="section" id="module-ibllib.io">
+<span id="ibllib-io-module"></span><h2>ibllib.io module<a class="headerlink" href="#module-ibllib.io" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-ibllib.io.raw_data_loaders">
+<span id="ibllib-io-raw-data-loaders"></span><h3>ibllib.io.raw_data_loaders<a class="headerlink" href="#module-ibllib.io.raw_data_loaders" title="Permalink to this headline">¶</a></h3>
+<p><strong>Raw Data Loader functions for PyBpod rig.</strong></p>
+<p>Module contains one loader function per raw datafile</p>
+<dl class="function">
+<dt id="ibllib.io.raw_data_loaders.load_data">
+<code class="descclassname">ibllib.io.raw_data_loaders.</code><code class="descname">load_data</code><span class="sig-paren">(</span><em>session_path</em><span class="sig-paren">)</span><a class="headerlink" href="#ibllib.io.raw_data_loaders.load_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load PyBpod data files (.jsonable).</p>
+<p>[description]</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>session_path</strong> (<em>str</em>) – Absolute path of session folder</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A list of len ntrials each trial being a dictionary</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">list of dicts</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="ibllib.io.raw_data_loaders.load_encoder_events">
+<code class="descclassname">ibllib.io.raw_data_loaders.</code><code class="descname">load_encoder_events</code><span class="sig-paren">(</span><em>session_path</em><span class="sig-paren">)</span><a class="headerlink" href="#ibllib.io.raw_data_loaders.load_encoder_events" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load Rotary Encoder (RE) events raw data file.</p>
+<p>Assumes that a folder calles “raw_behavior_data” exists in folder.</p>
+<p>On each trial the RE sends 3 events to Bonsai 1 - meaning trial start/turn
+off the stim; 2 - meaning show the current trial stimulus; and 3 - meaning
+begin the closed loop making the stim move whit the RE. These events are
+triggered by the state machine in the corrensponding states: trial_start,
+stim_on, closed_loop</p>
+<dl class="docutils">
+<dt>Raw datafile Columns:</dt>
+<dd>Event, RE timestamp, Source, data, Bonsai Timestamp</dd>
+</dl>
+<p>Event is always equal ‘Event’ Source is always equal ‘StateMachine’. For
+this reason these columns are dropped.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span><span class="o">.</span><span class="n">columns</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="s1">&#39;re_ts&#39;</span><span class="p">,</span>   <span class="c1"># Rotary Encoder Timestamp  &#39;numpy.int64&#39;</span>
+<span class="go">     &#39;sm_ev&#39;,   # State Machine Event       &#39;numpy.int64&#39;</span>
+<span class="go">     &#39;bns_ts&#39;]  # Bonsai Timestamp          &#39;pandas.Timestamp&#39;</span>
+<span class="go">    # pd.to_datetime(data.bns_ts) to work in datetimes</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>session_path</strong> (<em>[</em><em>type</em><em>]</em>) – [description]</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">dataframe w/ 3 cols and (ntrials * 3) lines</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">Pandas.DataFrame</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="ibllib.io.raw_data_loaders.load_encoder_positions">
+<code class="descclassname">ibllib.io.raw_data_loaders.</code><code class="descname">load_encoder_positions</code><span class="sig-paren">(</span><em>session_path</em><span class="sig-paren">)</span><a class="headerlink" href="#ibllib.io.raw_data_loaders.load_encoder_positions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load Rotary Encoder (RE) positions from raw data file.</p>
+<p>Assumes that a folder calles “raw_behavior_data” exists in folder.</p>
+<p>Variable line number, depends on movements.</p>
+<dl class="docutils">
+<dt>Raw datafile Columns:</dt>
+<dd>Position, RE timestamp, RE Position, Bonsai Timestamp</dd>
+</dl>
+<p>Position is always equal to ‘Position’ so this column was dropped.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span><span class="o">.</span><span class="n">columns</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="s1">&#39;re_ts&#39;</span><span class="p">,</span>   <span class="c1"># Rotary Encoder Timestamp  &#39;numpy.int64&#39;</span>
+<span class="go">     &#39;re_pos&#39;,  # Rotary Encoder position   &#39;numpy.int64&#39;</span>
+<span class="go">     &#39;bns_ts&#39;]  # Bonsai Timestamp          &#39;pandas.Timestamp&#39;</span>
+<span class="go">    # pd.to_datetime(data.bns_ts) to work in datetimes</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>session_path</strong> (<em>str</em>) – Absoulte path of session folder</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">dataframe w/ 3 cols and N positions</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">Pandas.DataFrame</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="ibllib.io.raw_data_loaders.load_encoder_trial_info">
+<code class="descclassname">ibllib.io.raw_data_loaders.</code><code class="descname">load_encoder_trial_info</code><span class="sig-paren">(</span><em>session_path</em><span class="sig-paren">)</span><a class="headerlink" href="#ibllib.io.raw_data_loaders.load_encoder_trial_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load Rotary Encoder trial info from raw data file.</p>
+<p>Assumes that a folder calles “raw_behavior_data” exists in folder.</p>
+<p>Raw datafile Columns:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span><span class="o">.</span><span class="n">columns</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="s1">&#39;trial_num&#39;</span><span class="p">,</span>     <span class="c1"># Trial Number                     &#39;numpy.int64&#39;</span>
+<span class="go">     &#39;stim_pos_init&#39;, # Initial position of visual stim  &#39;numpy.int64&#39;</span>
+<span class="go">     &#39;stim_contrast&#39;, # Contrast of visual stimulus      &#39;numpy.float64&#39;</span>
+<span class="go">     &#39;stim_freq&#39;,     # Frequency of gabor patch         &#39;numpy.float64&#39;</span>
+<span class="go">     &#39;stim_angle&#39;,    # Angle of Gabor 0 = Vertical      &#39;numpy.float64&#39;</span>
+<span class="go">     &#39;stim_gain&#39;,     # Wheel gain (mm/º of stim)        &#39;numpy.float64&#39;</span>
+<span class="go">     &#39;stim_sigma&#39;,    # Size of patch                    &#39;numpy.float64&#39;</span>
+<span class="go">     &#39;bns_ts&#39; ]       # Bonsai Timestamp                 &#39;pandas.Timestamp&#39;</span>
+<span class="go">    # pd.to_datetime(data.bns_ts) to work in datetimes</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>session_path</strong> (<em>str</em>) – Absoulte path of session folder</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">dataframe w/ 8 cols and ntrials lines</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">Pandas.DataFrame</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="ibllib.io.raw_data_loaders.load_settings">
+<code class="descclassname">ibllib.io.raw_data_loaders.</code><code class="descname">load_settings</code><span class="sig-paren">(</span><em>session_path</em><span class="sig-paren">)</span><a class="headerlink" href="#ibllib.io.raw_data_loaders.load_settings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load PyBpod Settings files (.json).</p>
+<p>[description]</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>session_path</strong> (<em>str</em>) – Absolute path of session folder</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Settings dictionary</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="module-ibllib.misc">
+<span id="ibllib-misc-module"></span><h2>ibllib.misc module<a class="headerlink" href="#module-ibllib.misc" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-ibllib.misc.flatten">
+<span id="ibllib-misc-flatten"></span><h3>ibllib.misc.flatten<a class="headerlink" href="#module-ibllib.misc.flatten" title="Permalink to this headline">¶</a></h3>
+<p>Flatten a nested Iterable excluding strings and dicts.</p>
+<p>Converts nested Iterable into flat list. Will not iterate through strings or
+dicts.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">return:</th><td class="field-body">Flattened list or generator object.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">rtype:</th><td class="field-body">list or generator</td>
+</tr>
+</tbody>
+</table>
+<dl class="function">
+<dt id="ibllib.misc.flatten.flatten">
+<code class="descclassname">ibllib.misc.flatten.</code><code class="descname">flatten</code><span class="sig-paren">(</span><em>x</em>, <em>generator=False</em><span class="sig-paren">)</span><a class="headerlink" href="#ibllib.misc.flatten.flatten" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ibllib.misc.flatten.gflatten">
+<code class="descclassname">ibllib.misc.flatten.</code><code class="descname">gflatten</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="headerlink" href="#ibllib.misc.flatten.gflatten" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ibllib.misc.flatten.iflatten">
+<code class="descclassname">ibllib.misc.flatten.</code><code class="descname">iflatten</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="headerlink" href="#ibllib.misc.flatten.iflatten" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-ibllib.misc.timing">
+<span id="ibllib-misc-timing"></span><h3>ibllib.misc.timing<a class="headerlink" href="#module-ibllib.misc.timing" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="ibllib.misc.timing.timing">
+<code class="descclassname">ibllib.misc.timing.</code><code class="descname">timing</code><span class="sig-paren">(</span><em>f</em><span class="sig-paren">)</span><a class="headerlink" href="#ibllib.misc.timing.timing" title="Permalink to this definition">¶</a></dt>
+<dd><p>Timing decorator will print time took in milliseconds</p>
+</dd></dl>
+
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="oneibl.html" class="btn btn-neutral float-right" title="oneibl API" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="../index.html" class="btn btn-neutral" title="Welcome to IBL code library documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, International Brain Laboratory.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

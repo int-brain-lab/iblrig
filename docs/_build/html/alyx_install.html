@@ -1,0 +1,369 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Alyx installation instructions &mdash; IBL Library  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> IBL Library
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="source/ibllib.html">ibllib API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="source/oneibl.html">oneibl API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="source/alf.html">alf API</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">IBL Library</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Alyx installation instructions</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/alyx_install.md.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="alyx-installation-instructions">
+<span id="alyx-installation-instructions"></span><h1>Alyx installation instructions<a class="headerlink" href="#alyx-installation-instructions" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="install-ubuntu-serevr-16-04">
+<span id="install-ubuntu-serevr-16-04"></span><h2>Install ubuntu serevr 16.04<a class="headerlink" href="#install-ubuntu-serevr-16-04" title="Permalink to this headline">¶</a></h2>
+<p>Install ubuntu server 16.04, pick a user name and a server name.</p>
+<p>Information you should remember about your server:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">serverIP</span> <span class="n">address</span>    <span class="n">e</span><span class="o">.</span><span class="n">g</span><span class="o">.</span> <span class="mf">10.40</span><span class="o">.</span><span class="mf">11.137</span>
+<span class="n">servername</span>          <span class="n">e</span><span class="o">.</span><span class="n">g</span><span class="o">.</span> <span class="n">myalyx</span>
+<span class="n">server</span> <span class="n">username</span>     <span class="n">e</span><span class="o">.</span><span class="n">g</span><span class="o">.</span> <span class="n">myuser</span> <span class="p">(</span><span class="n">user</span> <span class="n">should</span> <span class="n">have</span> <span class="n">sudo</span> <span class="n">privileges</span><span class="p">)</span>
+<span class="n">userpassword</span>        <span class="n">e</span><span class="o">.</span><span class="n">g</span><span class="o">.</span> <span class="n">mypass</span>
+</pre></div>
+</div>
+<p>Once ubuntu is installed on your server box you shouldn’t need physical access to it any more.</p>
+<p>From a computer on the same network type:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>someuser@somebox~$ ssh myuser@myalyx
+</pre></div>
+</div>
+<p>OR if your network has no DNS server</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>someuser@somebox~$ myuser@10.40.11.137
+</pre></div>
+</div>
+<p>Type in your password:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>myuser@myalyx&#39;s password: mypass
+myuser@myalyx~$
+</pre></div>
+</div>
+<p>OK, now you can start installing all the required software:</p>
+</div>
+<div class="section" id="postgres-installation-and-setup">
+<span id="postgres-installation-and-setup"></span><h2>Postgres installation and setup<a class="headerlink" href="#postgres-installation-and-setup" title="Permalink to this headline">¶</a></h2>
+<p>Install postgresql and python3-pip (we’ll need this for later) ubuntu server should already have it.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>myuser@myalyx~$ sudo apt-get update
+myuser@myalyx~$ sudo apt-get install python3-pip python3-dev libpq-dev postgresql postgresql-contrib
+</pre></div>
+</div>
+<p>Now to configure your postgresql backend:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>myuser@myalyx~$ sudo -u postgres psql
+</pre></div>
+</div>
+<p>Create a database. pick a name I use the termination db for clarity e.g. labdb</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">postgres</span><span class="o">=</span><span class="c1"># CREATE DATABASE labdb;</span>
+</pre></div>
+</div>
+<p>Create a user and a password e.g. labdbuser, labdbuserpass</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">postgres</span><span class="o">=</span><span class="c1"># CREATE USER labdbuser WITH PASSWORD &#39;labdbuserpass&#39;;</span>
+</pre></div>
+</div>
+<p>Configure user/role</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">postgres</span><span class="o">=</span><span class="c1"># ALTER ROLE labdbuser SET client_encoding TO &#39;utf8&#39;;</span>
+<span class="n">postgres</span><span class="o">=</span><span class="c1"># ALTER ROLE labdbuser SET default_transaction_isolation TO &#39;read committed&#39;;</span>
+<span class="n">postgres</span><span class="o">=</span><span class="c1"># ALTER ROLE labdbuser SET timezone TO &#39;UTC&#39;;</span>
+<span class="n">postgres</span><span class="o">=</span><span class="c1"># GRANT ALL PRIVILEGES ON DATABASE labdb TO labdbuser;</span>
+<span class="n">postgres</span><span class="o">=</span><span class="c1"># ALTER USER labdbuser WITH SUPERUSER;</span>
+<span class="n">postgres</span><span class="o">=</span><span class="c1"># ALTER USER labdbuser WITH CREATEROLE;</span>
+<span class="n">postgres</span><span class="o">=</span><span class="c1"># ALTER USER labdbuser WITH CREATEDB;</span>
+</pre></div>
+</div>
+<p>Now you can list your progress using the command <strong>\l</strong>. you should have something like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">postgres</span><span class="o">=</span><span class="c1"># \l</span>
+                                  <span class="n">List</span> <span class="n">of</span> <span class="n">databases</span>
+   <span class="n">Name</span>    <span class="o">|</span>  <span class="n">Owner</span>   <span class="o">|</span> <span class="n">Encoding</span> <span class="o">|</span>   <span class="n">Collate</span>   <span class="o">|</span>    <span class="n">Ctype</span>    <span class="o">|</span>   <span class="n">Access</span> <span class="n">privileges</span>
+<span class="o">-----------+----------+----------+-------------+-------------+-----------------------</span>
+ <span class="n">labdb</span>     <span class="o">|</span> <span class="n">postgres</span> <span class="o">|</span> <span class="n">UTF8</span>     <span class="o">|</span> <span class="n">en_US</span><span class="o">.</span><span class="n">UTF</span><span class="o">-</span><span class="mi">8</span> <span class="o">|</span> <span class="n">en_US</span><span class="o">.</span><span class="n">UTF</span><span class="o">-</span><span class="mi">8</span> <span class="o">|</span>
+ <span class="n">postgres</span>  <span class="o">|</span> <span class="n">postgres</span> <span class="o">|</span> <span class="n">UTF8</span>     <span class="o">|</span> <span class="n">en_US</span><span class="o">.</span><span class="n">UTF</span><span class="o">-</span><span class="mi">8</span> <span class="o">|</span> <span class="n">en_US</span><span class="o">.</span><span class="n">UTF</span><span class="o">-</span><span class="mi">8</span> <span class="o">|</span>
+ <span class="n">template0</span> <span class="o">|</span> <span class="n">postgres</span> <span class="o">|</span> <span class="n">UTF8</span>     <span class="o">|</span> <span class="n">en_US</span><span class="o">.</span><span class="n">UTF</span><span class="o">-</span><span class="mi">8</span> <span class="o">|</span> <span class="n">en_US</span><span class="o">.</span><span class="n">UTF</span><span class="o">-</span><span class="mi">8</span> <span class="o">|</span> <span class="o">=</span><span class="n">c</span><span class="o">/</span><span class="n">postgres</span>          <span class="o">+</span>
+           <span class="o">|</span>          <span class="o">|</span>          <span class="o">|</span>             <span class="o">|</span>             <span class="o">|</span> <span class="n">postgres</span><span class="o">=</span><span class="n">CTc</span><span class="o">/</span><span class="n">postgres</span>
+ <span class="n">template1</span> <span class="o">|</span> <span class="n">postgres</span> <span class="o">|</span> <span class="n">UTF8</span>     <span class="o">|</span> <span class="n">en_US</span><span class="o">.</span><span class="n">UTF</span><span class="o">-</span><span class="mi">8</span> <span class="o">|</span> <span class="n">en_US</span><span class="o">.</span><span class="n">UTF</span><span class="o">-</span><span class="mi">8</span> <span class="o">|</span> <span class="o">=</span><span class="n">c</span><span class="o">/</span><span class="n">postgres</span>          <span class="o">+</span>
+           <span class="o">|</span>          <span class="o">|</span>          <span class="o">|</span>             <span class="o">|</span>             <span class="o">|</span> <span class="n">postgres</span><span class="o">=</span><span class="n">CTc</span><span class="o">/</span><span class="n">postgres</span>
+<span class="p">(</span><span class="mi">4</span> <span class="n">rows</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>To list users/roles type <strong>\dg</strong> or <strong>\du</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">postgres</span><span class="o">=</span><span class="c1"># \dg</span>
+                                   <span class="n">List</span> <span class="n">of</span> <span class="n">roles</span>
+ <span class="n">Role</span> <span class="n">name</span> <span class="o">|</span>                         <span class="n">Attributes</span>                         <span class="o">|</span> <span class="n">Member</span> <span class="n">of</span>
+<span class="o">-----------+------------------------------------------------------------+-----------</span>
+ <span class="n">labdbuser</span> <span class="o">|</span> <span class="n">Superuser</span><span class="p">,</span> <span class="n">Create</span> <span class="n">role</span><span class="p">,</span> <span class="n">Create</span> <span class="n">DB</span>                          <span class="o">|</span> <span class="p">{}</span>
+ <span class="n">postgres</span>  <span class="o">|</span> <span class="n">Superuser</span><span class="p">,</span> <span class="n">Create</span> <span class="n">role</span><span class="p">,</span> <span class="n">Create</span> <span class="n">DB</span><span class="p">,</span> <span class="n">Replication</span><span class="p">,</span> <span class="n">Bypass</span> <span class="n">RLS</span> <span class="o">|</span> <span class="p">{}</span>
+<span class="o">---</span>
+</pre></div>
+</div>
+<p>Now you can quit postgres prompt and install alyx:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>postgres=# \q
+myuser@myalyx~$
+</pre></div>
+</div>
+</div>
+<div class="section" id="alyx">
+<span id="alyx"></span><h2>Alyx<a class="headerlink" href="#alyx" title="Permalink to this headline">¶</a></h2>
+<p>If not already there, change to your home folder:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>myuser@myalyx~$ cd ~
+</pre></div>
+</div>
+<p>Clone the alyx repo by typing:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>myuser@myalyx~$ sudo git clone https://github.com/cortex-lab/alyx.git
+</pre></div>
+</div>
+<p>Now let’s cd into it and make sure we got the master branch:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>myuser@myalyx~$ cd alyx/
+myuser@myalyx~$ git branch
+---
+* master
+---
+</pre></div>
+</div>
+<p>You should have installed python3-pip earlier so you can now install all the requirements for alyx:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>myuser@myalyx~/alyx$ pip3 install -r requirements.txt
+</pre></div>
+</div>
+<p>Now in order for alyx to run it needs some information about the backend and users of the database we just created.</p>
+<p>To do that, first copy the file secret_settings_template.py and rename it to settings_secret.py:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>myuser@myalyx~/alyx$ sudo cp alyx/alyx/settings_secret_template.py alyx/alyx/settings_secret.py
+</pre></div>
+</div>
+<p>Now change the contents of the file to reflect the configuration created in step 1. like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>myuser@myalyx~/alyx$ sudo nano alyx/alyx/settings_secret.py
+---
+DATABASES = {
+&#39;default&#39;: {
+    &#39;ENGINE&#39;: &#39;django.db.backends.postgresql_psycopg2&#39;,
+    &#39;NAME&#39;: &#39;labdb&#39;,
+    &#39;USER&#39;: &#39;labdbuser&#39;,
+    &#39;PASSWORD&#39;: &#39;labdbuserpass]&#39;,
+    &#39;HOST&#39;: &#39;127.0.0.1&#39;,
+    &#39;PORT&#39;: &#39;5432&#39;,
+    }
+}
+---
+</pre></div>
+</div>
+<p>Now to setup the default configuration of alyx type:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>myuser@myalyx~/alyx$ cd alyx
+myuser@myalyx~/alyx/alyx$ sudo ./rm_all_db_migrations.sh
+myuser@myalyx~/alyx/alyx$ sudo python3 manage.py makemigrations
+myuser@myalyx~/alyx/alyx$ sudo python3 manage.py migrate
+</pre></div>
+</div>
+<p>Finally to run the server to the local network type:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>myuser@myalyx~/alyx/alyx$ sudo python3 manage.py runserver 0.0.0.0:8000
+</pre></div>
+</div>
+<p>In order to see alyx’s welcome page you probably need to add your server to the list of allowed servers in settings.py. It should be in <code class="docutils literal notranslate"><span class="pre">~/alyx/alyx/alyx/settings.py</span></code></p>
+<p>Also it’s a good idea to change the list of superusers and colony manager.</p>
+<p>You’ll need to create a superuser for Alyx by running:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>myuser@myalyx~/alyx/alyx$ sudo python3 manage.py createsuperuser
+</pre></div>
+</div>
+<p>Create the default root user by pressing Enter and set a contact e-mail and password.
+With this user you should be able to set up any other user and select permissions as needed from whithin Alyx itself.</p>
+<p>You can use screen to run the server and detatch form it so you can logoff the ssh session without stopping the server</p>
+<p>Use -S to name the screen session</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>myuser@myalyx~/alyx/alyx$ screen -S alyx
+myuser@myalyx~/alyx/alyx$ sudo python3 manage.py sunserver 0.0.0.0:8000
+</pre></div>
+</div>
+<p>To detach from session type:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>myuser@myalyx~/alyx/alyx$ Ctrl + A d
+</pre></div>
+</div>
+<p>To reattach run:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>myuser@myalyx~/alyx/alyx$ screen -r alyx  # to reattach
+</pre></div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, International Brain Laboratory.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
