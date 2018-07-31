@@ -35,7 +35,6 @@ GENERIC_EDITOR_TITLE = 'IBL'
 GENERIC_EDITOR_PLUGINS_PATH = 'C:\\iblrig\\'  # None
 GENERIC_EDITOR_PLUGINS_LIST = [
     'water_calibration_plugin',
-    'pybranch',
     'pyforms',
     'pyforms_generic_editor',
     'sca',
@@ -46,7 +45,7 @@ GENERIC_EDITOR_PLUGINS_LIST = [
     'pybpod_rotaryencoder_module',
     'pybpod_alyx_module',
     'pge_plugin_terminal',
-    'pybpod_analogoutput_module',
+    'pybpodgui_plugin_waveplayer',
     # 'pybpodgui_plugin_oldformat',
 ]
 
