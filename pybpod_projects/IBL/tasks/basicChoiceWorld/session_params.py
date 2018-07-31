@@ -242,9 +242,9 @@ class session_param_handler(object):
             dst = os.path.join(self.SESSION_RAW_DATA_FOLDER, 'Gabor2D/')
             shutil.copytree(src, dst)
             # Run Bonsai workflow
-            # here = os.getcwd()
-            # os.chdir(os.path.join(self.IBLRIG_FOLDER, 'visual_stim', 
-            #                       'Gabor2D'))
+            here = os.getcwd()
+            os.chdir(os.path.join(self.IBLRIG_FOLDER, 'visual_stim', 
+                                  'Gabor2D'))
             bns = self.BONSAI
             wkfl = self.VISUAL_STIMULUS_FILE
             pos = "-p:FileNamePositions=" + os.path.join(
@@ -260,10 +260,10 @@ class session_param_handler(object):
             start = '--start'
             noeditor = '--noeditor'
 
-            bonsai = subprocess.Popen([bns, wkfl, start, pos, evt, itr, com])
+            bonsai = subprocess.Popen([bns, wkfl, noeditor, pos, evt, itr, com])
             time.sleep(5)
             bonsai
-            # os.chdir(here)
+            os.chdir(here)
         else:
             self.USE_VISUAL_STIMULUS = False
 

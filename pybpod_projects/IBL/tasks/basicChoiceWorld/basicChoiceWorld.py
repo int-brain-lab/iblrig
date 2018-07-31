@@ -3,11 +3,6 @@
 # @Date:   2018-02-02 12:31:13
 # @Last Modified by:   Niccolò Bonacchi
 # @Last Modified time: 2018-06-26 17:23:39
-
-# from pybpodapi.bpod import Bpod
-# from pybpodapi.state_machine import StateMachine
-# from pybpod_rotaryencoder_module.module import RotaryEncoder
-
 from pybpodapi.protocol import Bpod, StateMachine
 from pybpod_rotaryencoder_module.module_api import RotaryEncoderModule
 from pybpod_rotaryencoder_module.module import RotaryEncoder
@@ -21,10 +16,8 @@ import task_settings
 import user_settings
 import online_plots as op
 
-
 global sph
 sph = session_param_handler(task_settings, user_settings)
-# sph.configure_rotary_encoder(RotaryEncoderModule)
 
 
 def bpod_loop_handler():
@@ -70,10 +63,12 @@ rotary_encoder_event1 = rotary_encoder_reset + 1
 bpod.load_serial_message(rotary_encoder, rotary_encoder_event1,
                          [ord('#'), 1])
 # Show the stim
+
 rotary_encoder_event2 = rotary_encoder_reset + 2
 bpod.load_serial_message(rotary_encoder, rotary_encoder_event2,
                          [ord('#'), 2])
 # Close loop
+
 rotary_encoder_event3 = rotary_encoder_reset + 3
 bpod.load_serial_message(rotary_encoder, rotary_encoder_event3,
                          [ord('#'), 3])
@@ -162,7 +157,6 @@ for i in range(sph.NTRIALS):  # Main loop
 
     # Send state machine description to Bpod device
     bpod.send_state_machine(sma)
-
     # Run state machine
     bpod.run_state_machine(sma)
 
@@ -171,7 +165,6 @@ for i in range(sph.NTRIALS):  # Main loop
     op.plot_bars(trial_data, ax=ax_bars)
     psyfun_df = op.update_psyfun_df(trial_data, psyfun_df)
     op.plot_psyfun(trial_data, psyfun_df, ax=ax_psyc)
-    # bdata = op.get_barplot_data(trial_data)
 
     print('\nTRIAL NUM: ', trial_data['trial_num'])
     print('\nNTRIALS CORRECT: ', trial_data['ntrials_correct'])
