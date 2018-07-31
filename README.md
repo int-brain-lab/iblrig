@@ -1,8 +1,8 @@
-# IBL_root
+# iblrig
 
-IBL_root is the root folder for the PyBpod/Bonsai task. It requires, for now, to be installed in the root C:\ folder of your windows computer.
+iblrig is the root folder for the PyBpod/Bonsai task. It requires, for now, to be installed in the root C:\ folder of your windows computer.
 
-IBL_root is using gitflow and semantic versioning conventions.
+iblrig is using gitflow and semantic versioning conventions.
 More on gitflow: https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow
 More on semantic versioning: https://semver.org/
 
@@ -17,7 +17,7 @@ Git, Anaconda and Bonsai. Before starting you should have git installed.
 
 ## Installation
 0. Bonsai needs to be installed in your system as the task will call a Bonsai workflow to display the visual stimulus.
-You can download Bonsai from here (http://bonsai-rx.org/). After installing it you should also install some relevant Bonsai packages from the overhead menu in Tools --> Manage Packages. A list of relevant packages is upcoming, but for now you can install all of them, sorry if the process is slightly tedious.
+You can download Bonsai from here (http://bonsai-rx.org/). After installing it you should also install some relevant Bonsai packages from the overhead menu in Tools --> Manage Packages. A list of relevant packages is upcoming, but for now you can install all of them, especially the bpod library which you can find by selecting Include pre-releases in the package manager, sorry if the process is slightly tedious.
 **Note:** If using PointGrey cameras the FlyCap Viewer 32bits AND 64bits should be installed otherwise the PointGrey reletad node won't show.
 
 1. Install the Anaconda python distribution to your system, you can get it from here:
@@ -28,40 +28,40 @@ Anaconda for windows will ask you to install vs code. VS code is a cross platfor
 
 3. Checkout this repository in your **root folder C:\\>**
 ```posh
-C:\>git clone --recursive https://github.com/int-brain-lab/IBL_root.git
+C:\>git clone --recursive https://github.com/int-brain-lab/iblrig.git
 ```
 This might take a while.
 
-Your IBL_root folder should now look like this:
-*Bonsai_workflows
-pybpod
+Your iblrig folder should now look like this:
+*pybpod
 pybpod_data
 pybpod_projects
+visual_stim
 water-calibration-plugin*
 
-4. Open an Anaconda prompt, navigate to C:\\IBL_root and type:
+4. Open an Anaconda prompt, navigate to C:\\iblrig and type:
 ```posh
-(base) C:\IBL_root>python install.py
+(base) C:\iblrig>python install.py
 ```
 This will also take a while and should get your system up and running.
 You'll be prompted multiple times by the script, the answer is always yes.
 
 ## Running pybpod
-There is a \*.bat file that will make sure you load the python environment and run the PyBpod GUI in the IBL_root.
+There is a \*.bat file that will make sure you load the python environment and run the PyBpod GUI in the iblrig.
 From an Anaconda prompt just type:
 ```posh
-(base) C:\IBL_root>pybpod
+(base) C:\iblrig>pybpod
 ```
-Alternatively if you add IBL_root to the system path you can type pybpod from any folder of the Anaconda prompt.
+Alternatively if you add the iblrig folder to the system path you can type pybpod from any folder of the Anaconda prompt.
 
 ## Updating the task and software
 Updating should be as simple as typing:
 ```posh
-(base) C:\IBL_root>python update.py
+(base) C:\iblrig>python update.py
 ```
 For more information on how to update you can use the flags [ -h | --help | ? ] e.g:
 ```posh
-(base) C:\IBL_root>python update.py -h
+(base) C:\iblrig>python update.py -h
 
 Usage:
     update.py

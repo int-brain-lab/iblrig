@@ -32,10 +32,9 @@ PYFORMS_GL_ENABLED = False
 PYFORMS_VISVIS_ENABLED = False
 
 GENERIC_EDITOR_TITLE = 'IBL'
-GENERIC_EDITOR_PLUGINS_PATH = 'C:\\IBL_root\\'  # None
+GENERIC_EDITOR_PLUGINS_PATH = 'C:\\iblrig\\'  # None
 GENERIC_EDITOR_PLUGINS_LIST = [
     'water_calibration_plugin',
-    'pybranch',
     'pyforms',
     'pyforms_generic_editor',
     'sca',
@@ -46,12 +45,12 @@ GENERIC_EDITOR_PLUGINS_LIST = [
     'pybpod_rotaryencoder_module',
     'pybpod_alyx_module',
     'pge_plugin_terminal',
-    'pybpod_analogoutput_module',
+    #'pybpodgui_plugin_waveplayer',
     # 'pybpodgui_plugin_oldformat',
 ]
 
 TARGET_BPOD_FIRMWARE_VERSION = '21'
 
-DEFAULT_PROJECT_PATH = 'C:\\IBL_root\\pybpod_projects\\IBL'
+DEFAULT_PROJECT_PATH = 'C:\\iblrig\\pybpod_projects\\IBL'
 ALYX_ADDR = 'http://alyx.champalimaud.pt:8000'
 PYBPOD_EXTRA_INFO = {'Users', 'Subjects'}

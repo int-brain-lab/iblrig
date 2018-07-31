@@ -12,12 +12,10 @@ import re
 import sys
 
 # Constants assuming Windows
-IBL_ROOT_PATH = os.getcwd()
-PYBPOD_PATH = os.path.join(IBL_ROOT_PATH, 'pybpod')
+IBLRIG_ROOT_PATH = os.getcwd()
+PYBPOD_PATH = os.path.join(IBLRIG_ROOT_PATH, 'pybpod')
 SUBMODULES_FOLDERS = [
-    'Bonsai_workflows',
     'pybpod',
-    'pybpod_projects',
     'water-calibration-plugin',
 ]
 PYBPOD_SUBMODULES_FOLDERS = [
@@ -38,9 +36,9 @@ PYBPOD_SUBMODULES_FOLDERS = [
 ]
 
 
-def get_pybpod_env(CONDA):
+def get_pybpod_env(conda):
     # Find environment
-    ENVS = subprocess.check_output([CONDA, "env", "list", "--json"])
+    ENVS = subprocess.check_output([conda, "env", "list", "--json"])
     ENVS = json.loads(ENVS.decode('utf-8'))
     pat = re.compile("^.+pybpod-environment$")
     PYBPOD_ENV = [x for x in ENVS['envs'] if pat.match(x)]
@@ -52,15 +50,15 @@ def get_bonsai_path():
     try:
         import winreg as wr
         # HKEY_CLASSES_ROOT\Applications\Bonsai64.exe\shell\open\command
-        Registry = wr.ConnectRegistry(None, wr.HKEY_CLASSES_ROOT)
+        registry = wr.ConnectRegistry(None, wr.HKEY_CLASSES_ROOT)
         s = "Applications\\Bonsai64.exe\\shell\\open\\command"
-        RawKey = wr.OpenKey(Registry, s)
+        raw_key = wr.OpenKey(registry, s)
         # print(RawKey)
         out = []
         try:
             i = 0
             while 1:
-                name, value, type = wr.EnumValue(RawKey, i)
+                name, value, type = wr.EnumValue(raw_key, i)
                 out = [name, value, i]
                 i += 1
         except WindowsError:
@@ -82,7 +80,10 @@ if sys.platform in ['Windows', 'windows', 'win32']:
     SITE_PACKAGES = os.path.join("lib", "site-packages")
 elif sys.platform in ['Linux', 'linux']:
     ENV_FILE = BASE_ENV_FILE.format('ubuntu-17.10')
-    CONDA = os.path.join(sys.prefix, "bin", "conda")
+    p = sys.prefix.split(os.sep)
+    p = [x for x in p if 'env' not in x]
+    conda_path = '{}'.format(os.sep).join(p)
+    CONDA = os.path.join(conda_path, "bin", "conda")
     SITE_PACKAGES = os.path.join("lib", "python3.6", "site-packages")
 elif sys.platform in ['Darwin', 'macOSx', 'osx']:
     ENV_FILE = BASE_ENV_FILE.format('macOSx')
@@ -98,8 +99,7 @@ def get_env_constants():
         PYTHON_FILE = "python.exe"
     elif sys.platform in ['Linux', 'linux']:
         PYBPOD_ENV = get_pybpod_env(CONDA)
-        PIP = os.path.join(sys.prefix, "envs",
-                           "pybpod-environment", "bin", "pip")
+        PIP = os.path.join(sys.prefix, "bin", "pip")
         PYTHON_FILE = os.path.join("bin", "python")
     elif sys.platform in ['Darwin', 'macOSx', 'osx']:
         print("ERROR: macOSx is not supported yet\nInstallation aborted!")
@@ -129,9 +129,9 @@ def check_dependencies():
 
 def check_submodules():
     print('\nINFO: Checking submodules for initialization:\n')
-    os.chdir(IBL_ROOT_PATH)
+    os.chdir(IBLRIG_ROOT_PATH)
     for submodule in SUBMODULES_FOLDERS:
-        if not os.listdir(os.path.join(IBL_ROOT_PATH, submodule)):
+        if not os.listdir(os.path.join(IBLRIG_ROOT_PATH, submodule)):
             subprocess.call(["git", "submodule", "update", "--init",
                              "--recursive"])
 
@@ -150,7 +150,6 @@ def install_extra_deps():
     if PYBPOD_ENV is None:
         msg = "Can't install extra dependencies, pybpod-environment not found"
         raise ValueError(msg)
-        return
     # Define site-packages folder
     install_to = os.path.join(PYBPOD_ENV, SITE_PACKAGES)
 
@@ -172,7 +171,6 @@ def install_pybpod():
     if PYBPOD_ENV is None:
         msg = "Can't install pybpod, pybpod-environment not found"
         raise ValueError(msg)
-        return
     # Install pybpod
     os.chdir(PYBPOD_PATH)
     subprocess.call([PYTHON, "install.py"])
@@ -191,7 +189,7 @@ def install_pybpod_modules():
 def conf_pybpod_settings():
     print('\nINFO: Configuring pybpod IBL project:\n')
     # Copy user settings
-    src = os.path.join(IBL_ROOT_PATH, 'user_settings.py')
+    src = os.path.join(IBLRIG_ROOT_PATH, 'user_settings.py')
     shutil.copy(src, PYBPOD_PATH)
 
 
