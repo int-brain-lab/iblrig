@@ -21,7 +21,7 @@ SUBMODULES_FOLDERS = [
 PYBPOD_SUBMODULES_FOLDERS = [
     'pybpod-alyx-module',
     'pybpod-gui-plugin-trial-timeline',
-    'pybpod-analogoutput-module',
+    'pybpod-gui-plugin-waveplayer',
     'logging-bootstrap',
     'pyforms',
     'pyforms-generic-editor',
@@ -67,7 +67,7 @@ def get_bonsai_path():
         bonsai_path = out[1].split()[0].strip('"')
         return bonsai_path
     except Exception:
-        print('\nWARNING: BONSAI NOT PRESENT\nContinuing...\n')
+        # print('\nWARNING: BONSAI NOT PRESENT\nContinuing...\n')
         return None
 
 
@@ -113,40 +113,53 @@ def get_env_constants():
 
 def check_dependencies():
     # Check if Git and conda are installed
-    print('\nINFO: Checking for dependencies:\n')
+    print('\n\nINFO: Checking for dependencies:')
+    print("N" * 79)
     try:
         subprocess.check_output(["git", "--version"])
+        print("Git... OK")
         subprocess.check_output([CONDA])
+        print("Conda... OK")
     except Exception as err:
         print(err, "\nEither git or conda were not found on your system\n")
         return
     # Check if Bonsai is installed
     if BONSAI is None:
-        print("WARNING: Bonsai not found, task will run with no visual stim\n",
-              "\n",
-              "Installation will proceed... \n")
+        print("WARNING: Bonsai not found, task will run with no visual stim.")
+        print("Installation will proceed...")
+    else:
+        print("Bonsai... OK")
+    print("N" * 79)
+    print("All dependencies OK.")
 
 
 def check_submodules():
-    print('\nINFO: Checking submodules for initialization:\n')
+    print('\n\nINFO: Checking submodules for initialization:')
+    print("N" * 79)
     os.chdir(IBLRIG_ROOT_PATH)
     for submodule in SUBMODULES_FOLDERS:
         if not os.listdir(os.path.join(IBLRIG_ROOT_PATH, submodule)):
             subprocess.call(["git", "submodule", "update", "--init",
                              "--recursive"])
+    print("N" * 79)
+    print("All submodules OK.")
 
 
 def install_environment():
-    print('\nINFO: Installing pybpod-environment:\n')
+    print('\n\nINFO: Installing pybpod-environment:')
+    print("N" * 79)
     # Install pybpod-environment
     command = '{} env create -f {}'. format(CONDA, os.path.join(
         PYBPOD_PATH, ENV_FILE)).split()
 
     subprocess.call(command)
+    print("N" * 79)
+    print("pybpod-environment installed.")
 
 
 def install_extra_deps():
-    print('\nINFO: Installing IBL specific dependencies:\n')
+    print('\n\nINFO: Installing IBL specific dependencies:')
+    print("N" * 79)
     if PYBPOD_ENV is None:
         msg = "Can't install extra dependencies, pybpod-environment not found"
         raise ValueError(msg)
@@ -154,20 +167,32 @@ def install_extra_deps():
     install_to = os.path.join(PYBPOD_ENV, SITE_PACKAGES)
 
     # Install extra depencencies using conda
-    subprocess.call([CONDA, "install", "-n", "pybpod-environment", "scipy"])
-    subprocess.call([CONDA, "install", "-n", "pybpod-environment", "pandas"])
-    subprocess.call([CONDA, "install", "-n", "pybpod-environment",
+    print("N" * 39, 'Installing scipy...')
+    subprocess.call([CONDA, "install", "-y", "-n",
+                     "pybpod-environment", "scipy"])
+    print("N" * 39, 'Installing pandas')
+    subprocess.call([CONDA, "install", "-y", "-n",
+                     "pybpod-environment", "pandas"])
+    print("N" * 39, 'Installing sounddevice')
+    subprocess.call([CONDA, "install", "-y", "-n", "pybpod-environment",
                      "-c", "conda-forge", "python-sounddevice"])
+    print("N" * 39, 'Installing requests')
+    subprocess.call([CONDA, "install", "-y", "-n",
+                     "pybpod-environment", "requests"])
+    print("N" * 39, 'Installing requests dependencies')
+    subprocess.call([CONDA, "install", "-y",
+                     "-n", "pybpod-environment", "requests", "--update-deps"])
     # Install extra depencencies using pip
+    print("N" * 39, '(pip) Installing python-osc')
     subprocess.call([PIP, "install", "--target={}".format(install_to),
                      "python-osc"])
-    subprocess.call([CONDA, "install", "-n", "pybpod-environment", "requests"])
-    subprocess.call([CONDA, "install",
-                     "-n", "pybpod-environment", "requests", "--update-deps"])
+    print("N" * 79)
+    print("IBL specific dependencies installed.")
 
 
 def install_pybpod():
-    print('\nINFO: Installing pybpod:\n')
+    print('\n\nINFO: Installing pybpod:')
+    print("N" * 79)
     if PYBPOD_ENV is None:
         msg = "Can't install pybpod, pybpod-environment not found"
         raise ValueError(msg)
@@ -175,22 +200,30 @@ def install_pybpod():
     os.chdir(PYBPOD_PATH)
     subprocess.call([PYTHON, "install.py"])
     os.chdir('..')
+    print("N" * 79)
+    print("INFO: PyBpod installed.")
 
 
 def install_pybpod_modules():
-    print('\nINFO: Installing pybpod modules and plugins:\n')
+    print('\n\nINFO: Installing pybpod modules and plugins:')
+    print("N" * 79)
     subprocess.call([PIP, "install", "-e", "water-calibration-plugin"])
     os.chdir(PYBPOD_PATH)
     for submodule in PYBPOD_SUBMODULES_FOLDERS:
         subprocess.call([PIP, "install", "-e", submodule])
     os.chdir('..')
+    print("N" * 79)
+    print("PyBpod modules and plugins installed.")
 
 
 def conf_pybpod_settings():
-    print('\nINFO: Configuring pybpod IBL project:\n')
+    print('\n\nINFO: Configuring pybpod IBL project:')
+    print("N" * 79)
     # Copy user settings
     src = os.path.join(IBLRIG_ROOT_PATH, 'user_settings.py')
     shutil.copy(src, PYBPOD_PATH)
+    print("N" * 79)
+    print("Configuration complete.")
 
 
 if __name__ == '__main__':
@@ -201,4 +234,4 @@ if __name__ == '__main__':
     install_extra_deps()
     install_pybpod_modules()
     conf_pybpod_settings()
-    print("\nINFO: Done!\nYou should be good to go...\n")
+    print("\nINFO: Installation concluded!\nYou should be good to go...\n")
