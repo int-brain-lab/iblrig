@@ -4,7 +4,7 @@
 #
 # This file does only contain a selection of the most common options. For a
 # full list see the documentation:
-# http://www.sphinx-doc.org/en/master/config
+# http://www.sphinx-doc.org/en/stable/config
 
 # -- Path setup --------------------------------------------------------------
 
@@ -14,27 +14,25 @@
 #
 import os
 import sys
-import matplotlib
-matplotlib.use('agg')
-sys.path.insert(0, os.path.abspath('.'))
-sys.path.insert(0, os.path.abspath('../python/alf'))
-sys.path.insert(0, os.path.abspath('../python/openneurodata'))
-sys.path.insert(0, os.path.abspath('../python/openneurodata/oneibl'))
-sys.path.insert(0, os.path.abspath('../python'))
-print('Python %s on %s' % (sys.version, sys.platform))
-autodoc_mock_imports = ['_tkinter']
 
+sys.path.insert(0, os.path.abspath('.'))
+sys.path.insert(0, os.path.abspath(
+    '../pybpod_projects/IBL/tasks/basicChoiceWorld'))
+sys.path.insert(0, os.path.abspath(
+    '../pybpod_projects/IBL/tasks/advancedChoiceWorld'))
+sys.path.insert(0, os.path.abspath(
+    '../pybpod_projects/IBL/tasks/FlushWater'))
 
 # -- Project information -----------------------------------------------------
 
-project = 'IBL Library'
-copyright = '2018, International Brain Laboratory'
-author = 'International Brain Laboratory'
+project = 'iblrig'
+copyright = '2018, Niccolò Bonacchi'
+author = 'Niccolò Bonacchi'
 
 # The short X.Y version
-version = ''
+version = '1.1'
 # The full version, including alpha/beta/rc tags
-release = ''
+release = '1.1.0'
 
 
 # -- General configuration ---------------------------------------------------
@@ -46,10 +44,29 @@ release = ''
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['sphinx.ext.autodoc']
+extensions = [
+    'sphinx.ext.autodoc',
+    'sphinx.ext.doctest',
+    'sphinx.ext.intersphinx',
+    'sphinx.ext.todo',
+    'sphinx.ext.coverage',
+    'sphinx.ext.mathjax',
+    'sphinx.ext.ifconfig',
+    'sphinx.ext.viewcode',
+    'sphinx.ext.githubpages',
+]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
+
+# The suffix(es) of source filenames.
+# You can specify multiple suffix as a list of string:
+#
+# source_suffix = ['.rst', '.md']
+source_parsers = {
+    '.md': 'recommonmark.parser.CommonMarkParser',
+}
+source_suffix = ['.rst', '.md']
 
 # The master toctree document.
 master_doc = 'index'
@@ -75,15 +92,13 @@ pygments_style = 'sphinx'
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-# html_theme = 'default'
-# html_theme = 'nature'
 html_theme = 'sphinx_rtd_theme'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
-# html_theme_options = {}
+html_theme_options = {}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -104,7 +119,7 @@ html_static_path = ['_static']
 # -- Options for HTMLHelp output ---------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'one_ibldoc'
+htmlhelp_basename = 'iblrigdoc'
 
 
 # -- Options for LaTeX output ------------------------------------------------
@@ -131,8 +146,8 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'one_ibl.tex', 'one\\_ibl Documentation',
-     'International Brain Laboratory', 'manual'),
+    (master_doc, 'iblrig.tex', 'iblrig Documentation',
+     'Niccolò Bonacchi', 'manual'),
 ]
 
 
@@ -141,7 +156,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'one_ibl', 'one_ibl Documentation',
+    (master_doc, 'iblrig', 'iblrig Documentation',
      [author], 1)
 ]
 
@@ -152,16 +167,41 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'one_ibl', 'one_ibl Documentation',
-     author, 'one_ibl', 'One line description of project.',
+    (master_doc, 'iblrig', 'iblrig Documentation',
+     author, 'iblrig', 'One line description of project.',
      'Miscellaneous'),
 ]
 
-# The suffix(es) of source filenames.
-# You can specify multiple suffix as a list of string:
+
+# -- Options for Epub output -------------------------------------------------
+
+# Bibliographic Dublin Core info.
+epub_title = project
+epub_author = author
+epub_publisher = author
+epub_copyright = copyright
+
+# The unique identifier of the text. This can be a ISBN number
+# or the project homepage.
 #
-# source_suffix = ['.rst', '.md']
-source_parsers = {
-   '.md': 'recommonmark.parser.CommonMarkParser',
-}
-source_suffix = ['.rst', '.md']
+# epub_identifier = ''
+
+# A unique identification for the text.
+#
+# epub_uid = ''
+
+# A list of files that should not be packed into the epub file.
+epub_exclude_files = ['search.html']
+
+
+# -- Extension configuration -------------------------------------------------
+
+# -- Options for intersphinx extension ---------------------------------------
+
+# Example configuration for intersphinx: refer to the Python standard library.
+intersphinx_mapping = {'https://docs.python.org/': None}
+
+# -- Options for todo extension ----------------------------------------------
+
+# If true, `todo` and `todoList` produce output, else they produce nothing.
+todo_include_todos = True
