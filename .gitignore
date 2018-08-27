@@ -9,6 +9,7 @@ pybpod_data/
 __pycache__/
 *.pyc
 docs/_*
+docs/source/_*
 
 sessions/
 IBL/tasks/BurgessTask/__pycache__/
