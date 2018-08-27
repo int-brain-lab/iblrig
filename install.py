@@ -47,29 +47,35 @@ def get_pybpod_env(conda):
 
 
 def get_bonsai_path():
-    try:
-        import winreg as wr
-        # HKEY_CLASSES_ROOT\Applications\Bonsai64.exe\shell\open\command
-        registry = wr.ConnectRegistry(None, wr.HKEY_CLASSES_ROOT)
-        s = "Applications\\Bonsai64.exe\\shell\\open\\command"
-        raw_key = wr.OpenKey(registry, s)
-        # print(RawKey)
-        out = []
-        try:
-            i = 0
-            while 1:
-                name, value, type = wr.EnumValue(raw_key, i)
-                out = [name, value, i]
-                i += 1
-        except WindowsError:
-            print()
-
-        bonsai_path = out[1].split()[0].strip('"')
-        return bonsai_path
-    except Exception:
-        # print('\nWARNING: BONSAI NOT PRESENT\nContinuing...\n')
+    from pathlib import Path
+    BONSAI = Path.home() / "AppData/Local/Bonsai/Bonsai64.exe"
+    BONSAI = os.path.join(os.getenv('HOME'),
+                          "AppData/Local/Bonsai/Bonsai64.exe")
+    if BONSAI.exists():
+        return str(BONSAI)
+    else:
         return None
+    # import winreg as wr
+    #     # HKEY_CLASSES_ROOT\Applications\Bonsai64.exe\shell\open\command
+    #     registry = wr.ConnectRegistry(None, wr.HKEY_CLASSES_ROOT)
+    #     s = "Applications\\Bonsai64.exe\\shell\\open\\command"
+    #     raw_key = wr.OpenKey(registry, s)
+    #     # print(RawKey)
+    #     out = []
+    #     try:
+    #         i = 0
+    #         while 1:
+    #             name, value, type = wr.EnumValue(raw_key, i)
+    #             out = [name, value, i]
+    #             i += 1
+    #     except WindowsError:
+    #         print()
 
+    #     bonsai_path = out[1].split()[0].strip('"')
+    #     return bonsai_path
+    # except Exception:
+    #     # print('\nWARNING: BONSAI NOT PRESENT\nContinuing...\n')
+    #     return None
 
 BONSAI = get_bonsai_path()
 BASE_ENV_FILE = 'environment-{}.yml'
