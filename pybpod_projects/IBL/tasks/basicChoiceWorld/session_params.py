@@ -243,7 +243,7 @@ class session_param_handler(object):
             shutil.copytree(src, dst)
             # Run Bonsai workflow
             here = os.getcwd()
-            os.chdir(os.path.join(self.IBLRIG_FOLDER, 'visual_stim', 
+            os.chdir(os.path.join(self.IBLRIG_FOLDER, 'visual_stim',
                                   'Gabor2D'))
             bns = self.BONSAI
             wkfl = self.VISUAL_STIMULUS_FILE
@@ -260,7 +260,12 @@ class session_param_handler(object):
             start = '--start'
             noeditor = '--noeditor'
 
-            bonsai = subprocess.Popen([bns, wkfl, noeditor, pos, evt, itr, com])
+            if self.BONSAI_EDITOR:
+                bonsai = subprocess.Popen(
+                    [bns, wkfl, start, pos, evt, itr, com])
+            elif not self.BONSAI_EDITOR:
+                bonsai = subprocess.Popen(
+                    [bns, wkfl, noeditor, pos, evt, itr, com])
             time.sleep(5)
             bonsai
             os.chdir(here)
