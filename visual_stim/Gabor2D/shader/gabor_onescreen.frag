@@ -31,7 +31,7 @@ void main(){
     float gabor_angle_rad = gabor_angle / 180. * M_PI; //in radian view angle
     float gabor_freq_ncycles = gabor_freq * 360.; // cycle per entire view rotation (360 deg)
     float locationRX = (positionX*270. - 135.) / 180. * M_PI; //[0, 1] -> [-3/4pi, 3/4pi]
-    float screenDist = 1./6.; // assumes equidistand mouse
+    float screenDist = 1./2.; // assumes equidistand mouse
     float rect = 0.;
     float square_color = color;
 
