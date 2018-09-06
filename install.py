@@ -14,26 +14,6 @@ import sys
 # Constants assuming Windows
 IBLRIG_ROOT_PATH = os.getcwd()
 PYBPOD_PATH = os.path.join(IBLRIG_ROOT_PATH, 'pybpod')
-SUBMODULES_FOLDERS = [
-    'pybpod',
-    'water-calibration-plugin',
-]
-PYBPOD_SUBMODULES_FOLDERS = [
-    'pybpod-alyx-module',
-    'pybpod-gui-plugin-trial-timeline',
-    'pybpod-gui-plugin-waveplayer',
-    'logging-bootstrap',
-    'pyforms',
-    'pyforms-generic-editor',
-    'pybpod-api',
-    'pybpod-gui-api',
-    'pybpod-gui-plugin',
-    'pybpod-gui-plugin-session-history',
-    'pybpod-gui-plugin-timeline',
-    'pybpod-rotary-encoder-module',
-    'safe-collaborative-architecture',
-    'pge-plugin-terminal'
-]
 
 
 def get_pybpod_env(conda):
@@ -116,16 +96,26 @@ def check_dependencies():
     print("All dependencies OK.")
 
 
-def check_submodules():
-    print('\n\nINFO: Checking submodules for initialization:')
+def check_pybpod_for_initialization():
+    print('\n\nINFO: Checking pybpod for initialization:')
     print("N" * 79)
     os.chdir(IBLRIG_ROOT_PATH)
-    for submodule in SUBMODULES_FOLDERS:
-        if not os.listdir(os.path.join(IBLRIG_ROOT_PATH, submodule)):
-            subprocess.call(["git", "submodule", "update", "--init",
-                             "--recursive"])
+    if not os.listdir(PYBPOD_PATH):
+        subprocess.call(["git", "submodule", "update", "--init",
+                         "--recursive"])
     print("N" * 79)
-    print("All submodules OK.")
+    print("PyBpod initialized.")
+
+
+def clone_water_calibration_plugin():
+    print('\n\nINFO: Cloning water-claibration-plugin:')
+    print("N" * 79)
+    os.chdir(os.path.join(PYBPOD_PATH, 'plugins'))
+    subprocess.call(["git", "clone", 
+        'https://bitbucket.org/azi92rach/water-calibration-plugin.git'])
+    os.chdir(IBLRIG_ROOT_PATH)
+    print("N" * 79)
+    print("PyBpod initialized and water-calibration-plugin cloned.")
 
 
 def install_environment():
@@ -150,12 +140,12 @@ def install_extra_deps():
     install_to = os.path.join(PYBPOD_ENV, SITE_PACKAGES)
 
     # Install extra depencencies using conda
-    print("N" * 39, 'Installing scipy...')
-    subprocess.call([CONDA, "install", "-y", "-n",
-                     "pybpod-environment", "scipy"])
-    print("N" * 39, 'Installing pandas')
-    subprocess.call([CONDA, "install", "-y", "-n",
-                     "pybpod-environment", "pandas"])
+    # print("N" * 39, 'Installing scipy...')
+    # subprocess.call([CONDA, "install", "-y", "-n",
+    #                  "pybpod-environment", "scipy"])
+    # print("N" * 39, 'Installing pandas')
+    # subprocess.call([CONDA, "install", "-y", "-n",
+    #                  "pybpod-environment", "pandas"])
     print("N" * 39, 'Installing sounddevice')
     subprocess.call([CONDA, "install", "-y", "-n", "pybpod-environment",
                      "-c", "conda-forge", "python-sounddevice"])
@@ -182,21 +172,19 @@ def install_pybpod():
     # Install pybpod
     os.chdir(PYBPOD_PATH)
     subprocess.call([PYTHON, "install.py"])
-    os.chdir('..')
+    os.chdir(IBLRIG_ROOT_PATH)
     print("N" * 79)
     print("INFO: PyBpod installed.")
 
 
-def install_pybpod_modules():
-    print('\n\nINFO: Installing pybpod modules and plugins:')
+def install_water_calibration_plugin():
+    print('\n\nINFO: Installing water-calibration-plugins:')
     print("N" * 79)
+    os.chdir(os.path.join(PYBPOD_PATH, 'plugins'))
     subprocess.call([PIP, "install", "-e", "water-calibration-plugin"])
     os.chdir(PYBPOD_PATH)
-    for submodule in PYBPOD_SUBMODULES_FOLDERS:
-        subprocess.call([PIP, "install", "-e", submodule])
-    os.chdir('..')
     print("N" * 79)
-    print("PyBpod modules and plugins installed.")
+    print("water-calibration-plugin installed.")
 
 
 def conf_pybpod_settings():
@@ -211,10 +199,12 @@ def conf_pybpod_settings():
 
 if __name__ == '__main__':
     check_dependencies()
-    check_submodules()
+    check_pybpod_for_initialization()
+    clone_water_calibration_plugin()
     install_environment()
     PYBPOD_ENV, PIP, PYTHON_FILE, PYTHON = get_env_constants()
     install_extra_deps()
-    install_pybpod_modules()
+    install_pybpod()
+    install_water_calibration_plugin()
     conf_pybpod_settings()
     print("\nINFO: Installation concluded!\nYou should be good to go...\n")
