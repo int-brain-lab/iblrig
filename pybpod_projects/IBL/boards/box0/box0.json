@@ -3,7 +3,7 @@
     "__DEF-TEXT__": "This file contains the configuration of Bpod board.",
     "__DEF-URL__": "http://pybpod.readthedocs.org",
     "__SOFTWARE__": "PyBpod GUI API v1.0",
-    "__UPDATED-ON__": "2018-09-04 17:25:32.251914",
+    "__UPDATED-ON__": "2018-09-05 18:45:05.658000",
     "__UUID4__": "5e32036f-3e2a-4b57-86a4-9c9e2f19aadb",
     "enabled-behaviorports": [
         true,
