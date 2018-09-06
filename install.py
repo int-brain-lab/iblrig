@@ -123,7 +123,7 @@ def install_environment():
     print("N" * 79)
     # Install pybpod-environment
     command = '{} env create -f {}'. format(CONDA, os.path.join(
-        PYBPOD_PATH, ENV_FILE)).split()
+        PYBPOD_PATH, 'utils', ENV_FILE)).split()
 
     subprocess.call(command)
     print("N" * 79)
