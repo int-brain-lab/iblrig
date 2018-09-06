@@ -7,7 +7,9 @@ pybpod_data/
 \.vscode/
 
 __pycache__/
-*.pyc 
+*.pyc
+docs/_*
+docs/source/_*
 
 sessions/
 IBL/tasks/BurgessTask/__pycache__/
