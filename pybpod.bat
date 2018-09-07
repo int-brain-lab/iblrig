@@ -10,6 +10,6 @@ echo Activating pybpod-environment...
 call activate pybpod-environment %*
 
 echo Launching pybpod...
-::call python -m pybpodgui_plugin %*
-call start-pybpod
+call python -m pybpodgui_plugin %*
+::call start-pybpod
 echo done

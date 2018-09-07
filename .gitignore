@@ -1,18 +1,13 @@
 
-pybpod_data/
+docs/_*
+docs/source/_*
+Subjects/
+water-calibration-plugin/
+sessions/
 
 *.code-workspace
 *.sync-conflict*
-
 \.vscode/
-
 __pycache__/
 *.pyc
-docs/_*
-docs/source/_*
-
-sessions/
-IBL/tasks/BurgessTask/__pycache__/
-IBL/tasks/BurgessTask/notes_on_behavior
-
 *.driveupload
