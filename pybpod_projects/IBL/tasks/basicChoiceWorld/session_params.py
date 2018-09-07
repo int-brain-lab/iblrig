@@ -277,7 +277,7 @@ class session_param_handler(object):
         if main_data_folder is None:
             try:
                 os.path.exists(iblrig_folder)
-                out = os.path.join(iblrig_folder, 'pybpod_data')
+                out = os.path.join(iblrig_folder, 'Subjects')
                 out = self.check_folder(out)
                 return out
             except IOError as e:

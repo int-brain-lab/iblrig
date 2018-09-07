@@ -9,7 +9,7 @@ OSC_CLIENT_PORT = 7110
 OSC_CLIENT_IP = '127.0.0.1'
 # IBL rig root folder
 IBLRIG_FOLDER = 'C:\\iblrig'
-MAIN_DATA_FOLDER = None  # If None data folder will be C:\\iblrig\\pybpod_data
+MAIN_DATA_FOLDER = None  # If None data folder will be C:\\iblrig\\Subjects
 # TASK
 NTRIALS = 1000  # Number of trials for the current session
 USE_VISUAL_STIMULUS = True  # Run the visual stim in bonsai
