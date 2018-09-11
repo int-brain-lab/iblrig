@@ -9,7 +9,7 @@ from pybpodapi.protocol import Bpod, StateMachine
 
 
 my_bpod = Bpod()
-for i in range(10):  # Main loop
+for i in range(30):  # Main loop
 
 	sma = StateMachine(my_bpod)
 
@@ -24,7 +24,7 @@ for i in range(10):  # Main loop
 
 	sma.add_state(
 		state_name='delay',  # Infinite loop (with next state). Only a global timer can save us.
-		state_timer=5.,
+		state_timer=2.,
 		state_change_conditions={Bpod.Events.Tup: 'exit'},
 		output_actions=[])
 

@@ -33,10 +33,12 @@ def softcode_handler(data):
     2 : white_noise
     """
     global sph
+    if data == 0:
+        sph.stop_sound()
     if data == 1:
-        sph.SD.play(sph.GO_TONE, sph.SOUND_SAMPLE_FREQ)
+        sph.play_tone()
     elif data == 2:
-        sph.SD.play(sph.WHITE_NOISE, sph.SOUND_SAMPLE_FREQ)
+        sph.play_noise()
 
     # sph.OSC_CLIENT.send_message("/e", data)
 
@@ -50,7 +52,7 @@ bpod.loop_handler = bpod_loop_handler
 # Soft code handler function can run arbitrary code from within state machine
 bpod.softcode_handler_function = softcode_handler
 # Rotary Encoder State Machine handler
-rotary_encoder = list(bpod.modules)[0]  # TODO:find by name?
+rotary_encoder = [x for x in bpod.modules if x.name == 'RotaryEncoder1'][0]
 # ROTARY ENCODER SEVENTS
 # Set RE position to zero 'Z' + eneable all RE thresholds 'E'
 # rotary_encoder_reset = rotary_encoder.create_resetpositions_trigger()
@@ -94,7 +96,9 @@ for i in range(sph.NTRIALS):  # Main loop
         state_name='trial_start',
         state_timer=0,  # ~100µs hardware irreducible delay
         state_change_conditions={'Tup': 'reset_rotary_encoder'},
-        output_actions=[('Serial1', rotary_encoder_event1)])  # stop stim
+        output_actions=[('Serial1', rotary_encoder_event1),
+                        # ('SoftCode', 0),
+                        ])  # stop stim
 
     sma.add_state(
         state_name='reset_rotary_encoder',

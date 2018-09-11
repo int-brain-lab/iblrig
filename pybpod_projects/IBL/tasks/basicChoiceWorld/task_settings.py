@@ -3,7 +3,6 @@
 # =============================================================================
 # ROTARY ENCODER
 ROTARY_ENCODER_PORT = 'COM3'
-ROTARY_ENCODER_BPOD_SERIAL_PORT_NUM = 1
 # OSC
 OSC_CLIENT_PORT = 7110
 OSC_CLIENT_IP = '127.0.0.1'

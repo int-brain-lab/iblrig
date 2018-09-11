@@ -7,14 +7,14 @@
         "578a19ae-ba93-4a2c-a083-cbce612e7e70"
     ],
     "__SOFTWARE__": "PyBpod GUI API v1.0",
-    "__UPDATED-ON__": "2018-09-05 18:41:15.894736",
+    "__UPDATED-ON__": "2018-09-11 16:32:59.849871",
     "__UUID4__": "ed71380a-3385-4684-af32-d3149819827e",
     "board": "box0",
     "detached": true,
     "subjects": [
         "test_mouse"
     ],
-    "task": "ttl_to_cams",
+    "task": "global_timer_example",
     "update-variables": false,
     "variables": []
 }
