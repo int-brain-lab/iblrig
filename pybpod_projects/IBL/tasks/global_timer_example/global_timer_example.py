@@ -5,7 +5,7 @@
 Example adapted from Josh Sanders' original version on Sanworks Bpod repository
 """
 from pybpodapi.protocol import Bpod, StateMachine
-
+import time
 
 
 my_bpod = Bpod()
@@ -39,12 +39,26 @@ my_bpod.run_state_machine(sma)
 
 print("Current trial info: {0}".format(my_bpod.session.current_trial) )
 
-my_bpod.bpod_module.start_module_relay('AmbientModule1')
-my_bpod.bpod_module.module_write('AmbientModule1', 'R')
-reply = my_bpod.bpod_module.module_read('AmbientModule1', 12)
-my_bpod.bpod_module.stop_modules_relay()
 
-print(reply)
+ambient_module = [x for x in my_bpod.modules if x.name == 'AmbientModule1'][0]
+ambient_module.start_module_relay()
+my_bpod.bpod_modules.module_write(ambient_module, 'R')
+reply = my_bpod.bpod_modules.module_read(ambient_module, 12)
+# time.sleep(2)
+ambient_module.stop_module_relay()
+print('reply:', reply)
+import numpy as np
+Measures = {'Temperature_C': np.frombuffer(bytes(reply[:4]), np.float32),
+			'AirPressure_mb': np.frombuffer(bytes(reply[4:8]), np.float32) / 100,
+			'RelativeHumidity': np.frombuffer(bytes(reply[8:]), np.float32)
+}
+print(Measures)
+# my_bpod.bpod_module.start_module_relay('AmbientModule1')
+# my_bpod.bpod_module.module_write('AmbientModule1', 'R')
+# reply = my_bpod.bpod_module.module_read('AmbientModule1', 12)
+# my_bpod.bpod_module.stop_modules_relay()
+
+# print(reply)
 
 
 
