@@ -35,9 +35,9 @@ class Sounds():
             import sounddevice as sd
         
         devices = sd.query_devices()
-        # sd.default.device = [(i, d) for i, d in enumerate(devices) if '(64)' in d['name']][0][0]
+        sd.default.device = [(i, d) for i, d in enumerate(devices) if 'Speakers' in d['name']][0][0]
         sd.default.latency = 'low'
-        sd.default.channels = 2
+        sd.default.channels = 8
         return sd
 
     def make_sound(frequency=10000, duration=0.1, amplitude=1, fade=0.01):

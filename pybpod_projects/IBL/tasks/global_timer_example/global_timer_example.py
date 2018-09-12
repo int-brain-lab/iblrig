@@ -5,10 +5,11 @@
 Example adapted from Josh Sanders' original version on Sanworks Bpod repository
 """
 from pybpodapi.protocol import Bpod, StateMachine
-
+from ambient_sensor import get_reading
 
 my_bpod = Bpod()
-
+data = get_reading(my_bpod)
+print(data)
 sma = StateMachine(my_bpod)
 
 # Set global timer 1 for 3 seconds

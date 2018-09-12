@@ -5,9 +5,10 @@
 # @Last Modified time: 12-09-2018 03:26:03.033
 from pybpodapi.protocol import Bpod
 import numpy as np
+import os
+import json
 
-
-def get_reading(bpod_instance):
+def get_reading(bpod_instance, save_to=None):
     ambient_module = [x for x in bpod_instance.modules
                       if x.name == 'AmbientModule1'][0]
     ambient_module.start_module_relay()
@@ -21,9 +22,17 @@ def get_reading(bpod_instance):
                 'RelativeHumidity': np.frombuffer(bytes(reply[8:]), np.float32)
                 }
 
+    if save_to is not None:
+        data = {k: v.tolist() for k, v in Measures.items()}
+        with open(os.path.join(save_to, '_ibl_ambientSensor.data.jsonable'), 'a') as f:
+            f.write(json.dumps(data))
+            f.write('\n')
+            
     return Measures
 
 
-if __name__ == '__maii__':
+if __name__ == '__main__':
+    print(os.getcwd())
     my_bpod = Bpod()
     data = get_reading(my_bpod)
+    print(data)

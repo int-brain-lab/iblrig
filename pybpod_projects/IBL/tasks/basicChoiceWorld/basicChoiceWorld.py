@@ -12,6 +12,7 @@ import datetime
 
 from session_params import session_param_handler
 from trial_params import trial_param_handler
+from ambient_sensor import get_reading
 import task_settings
 import user_settings
 import online_plots as op
@@ -47,6 +48,9 @@ def softcode_handler(data):
 # CONNECT TO BPOD
 # =============================================================================
 bpod = Bpod()
+data = get_reading(bpod, save_to=sph.SESSION_RAW_DATA_FOLDER)
+print('\n\n', data, '\n\n')
+
 # Loop handler function is used to flush events for the online plotting
 bpod.loop_handler = bpod_loop_handler
 # Soft code handler function can run arbitrary code from within state machine
