@@ -8,6 +8,7 @@ import numpy as np
 import os
 import json
 
+
 def get_reading(bpod_instance, save_to=None):
     ambient_module = [x for x in bpod_instance.modules
                       if x.name == 'AmbientModule1'][0]
@@ -24,15 +25,24 @@ def get_reading(bpod_instance, save_to=None):
 
     if save_to is not None:
         data = {k: v.tolist() for k, v in Measures.items()}
-        with open(os.path.join(save_to, '_ibl_ambientSensor.data.jsonable'), 'a') as f:
+        with open(os.path.join(save_to, '_ibl_ambientSensor.data.jsonable'),
+                  'a') as f:
             f.write(json.dumps(data))
             f.write('\n')
-            
+
     return Measures
 
 
 if __name__ == '__main__':
-    print(os.getcwd())
-    my_bpod = Bpod()
+    import pybpod.user_settings as settings
+    from pybpodgui_api.models import project
+    p = project.Project()
+    try:
+        p.load(settings.DEFAULT_PROJECT_PATH)
+    except TypeError as blabla:
+        print('PyBpod says:', blabla)
+        pass
+    my_bpod = Bpod(serial_port=p.boards[0].serial_port)
     data = get_reading(my_bpod)
     print(data)
+    my_bpod.close()
