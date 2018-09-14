@@ -40,11 +40,6 @@ def softcode_handler(data):
         sph.play_tone()
     elif data == 2:
         sph.play_noise()
-        data = get_reading(bpod, save_to=sph.SESSION_RAW_DATA_FOLDER)
-        print(data)
-    elif data == 3:
-        data = get_reading(bpod, save_to=sph.SESSION_RAW_DATA_FOLDER)
-        print(data)
     # sph.OSC_CLIENT.send_message("/e", data)
 
 
@@ -103,14 +98,14 @@ for i in range(sph.NTRIALS):  # Main loop
         state_timer=0,  # ~100µs hardware irreducible delay
         state_change_conditions={'Tup': 'reset_rotary_encoder'},
         output_actions=[('Serial1', rotary_encoder_event1),
-                        # ('SoftCode', 0),
+                        ('SoftCode', 0),
                         ])  # stop stim
 
     sma.add_state(
         state_name='reset_rotary_encoder',
         state_timer=0,
         state_change_conditions={'Tup': 'quiescent_period'},
-        output_actions=[('Serial1', rotary_encoder_reset)])
+        output_actions=[])
 
     sma.add_state(  # '>back' | '>reset_timer'
         state_name='quiescent_period',
@@ -118,7 +113,7 @@ for i in range(sph.NTRIALS):  # Main loop
         state_change_conditions={'Tup': 'stim_on',
                                  tph.movement_left: 'reset_rotary_encoder',
                                  tph.movement_right: 'reset_rotary_encoder'},
-        output_actions=[])
+        output_actions=[('Serial1', rotary_encoder_reset)])
 
     sma.add_state(
         state_name='stim_on',
@@ -163,7 +158,7 @@ for i in range(sph.NTRIALS):  # Main loop
         state_name='correct',
         state_timer=tph.iti_correct,
         state_change_conditions={'Tup': 'exit'},
-        output_actions=[('SoftCode', 3)])
+        output_actions=[])
 
     # Send state machine description to Bpod device
     bpod.send_state_machine(sma)
@@ -171,6 +166,7 @@ for i in range(sph.NTRIALS):  # Main loop
     bpod.run_state_machine(sma)  # Locks until state machine 'exit' is reached
 
     trial_data = tph.trial_completed(bpod.session.current_trial.export())
+    data = get_reading(bpod, save_to=sph.SESSION_RAW_DATA_FOLDER)
 
     op.plot_bars(trial_data, ax=ax_bars)
     psyfun_df = op.update_psyfun_df(trial_data, psyfun_df)
@@ -181,6 +177,7 @@ for i in range(sph.NTRIALS):  # Main loop
     print('\nWATER DELIVERED ', trial_data['water_delivered'])
     print('\nTIME FROM START: ', (datetime.datetime.now() -
                                   parser.parse(trial_data['init_datetime'])))
+    print('\n', data)
     print('\n\nStarting trial: ', i + 1)
 
 bpod.close()

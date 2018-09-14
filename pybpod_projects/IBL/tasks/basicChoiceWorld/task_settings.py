@@ -12,7 +12,7 @@ MAIN_DATA_FOLDER = None  # If None data folder will be C:\\iblrig\\Subjects
 # TASK
 NTRIALS = 1000  # Number of trials for the current session
 USE_VISUAL_STIMULUS = True  # Run the visual stim in bonsai
-BONSAI_EDITOR = False  # Whether to open the Bonsai editor or not
+BONSAI_EDITOR = True  # Whether to open the Bonsai editor or not
 REPEAT_ON_ERROR = True
 REPEAT_STIMS = [1., 0.5]
 # REWARDS
@@ -37,6 +37,7 @@ STIM_SIGMA = 9.  # (azimuth_degree) Size of Gabor patch
 # Not adaptive_contrast on a trial be trial basis
 STIM_GAIN = 5.  # (azimuth_degree/mm) Gain of the RE to stimulus movement
 # SOUNDS
+RECORD_SOUND = True
 SOUND_SAMPLE_FREQ = 44100  # 192000  # depends on the sound card. 96000 ?
 WHITE_NOISE_DURATION = ITI_ERROR  # Length of noise burst
 WHITE_NOISE_AMPLITUDE = 0.05
