@@ -8,7 +8,7 @@ out vec4 fragColor;
 
 //#extension GL_OES_standard_derivatives : enable
 #define M_PI 3.14159265358979
-
+//uniform vec2 xc = vec2(0.5, 1.);
 //uniform vec2 texCoord = gl_FragCoord.xy;
 uniform float patch_size = 30.; // in degrees
 uniform float gabor_angle = 0.; // in degrees
@@ -25,6 +25,8 @@ float gauss(float val, float sigma) {
 }
 
 void main(){
+//    float locationX = xc[0];
+//    float gabor_contrast = xc[1];
     float positionX = ((locationX + 1.) / 2.); // transforms [-1, 1] -> [0, 1]
     // TODO: ticks/normalized ticks to deg/tick using gain
     float patch_size_rad = patch_size / 180.* M_PI; //in radian view angle
@@ -38,9 +40,11 @@ void main(){
     if (texCoord.x > 0.95 && texCoord.y < 0.275 ) {
         if(frame_count % 2 == 0){
             //square_color = 1. - square_color;
-            fragColor = vec4(vec3(square_color), 1.0);
-        } //else if (frame_count % 2 != 0){}
-    } else { //here assume 1/3-2/3 is front screen
+            fragColor = vec4(vec3(0.), 1.0);
+        } else if (frame_count % 2 != 0){
+            fragColor = vec4(vec3(1.), 1.0);
+        }
+    } else { 
 
     float X = texCoord.x-(1./2.);
     float Y = texCoord.y-(1./2.);
