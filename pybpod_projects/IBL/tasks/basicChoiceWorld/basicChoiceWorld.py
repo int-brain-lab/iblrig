@@ -40,7 +40,11 @@ def softcode_handler(data):
         sph.play_tone()
     elif data == 2:
         sph.play_noise()
-
+        data = get_reading(bpod, save_to=sph.SESSION_RAW_DATA_FOLDER)
+        print(data)
+    elif data == 3:
+        data = get_reading(bpod, save_to=sph.SESSION_RAW_DATA_FOLDER)
+        print(data)
     # sph.OSC_CLIENT.send_message("/e", data)
 
 
@@ -48,8 +52,6 @@ def softcode_handler(data):
 # CONNECT TO BPOD
 # =============================================================================
 bpod = Bpod()
-data = get_reading(bpod, save_to=sph.SESSION_RAW_DATA_FOLDER)
-print('\n\n', data, '\n\n')
 
 # Loop handler function is used to flush events for the online plotting
 bpod.loop_handler = bpod_loop_handler
@@ -149,7 +151,7 @@ for i in range(sph.NTRIALS):  # Main loop
         state_name='error',
         state_timer=tph.iti_error,
         state_change_conditions={'Tup': 'exit'},
-        output_actions=[('SoftCode', 2)])  # play white noise
+        output_actions=[('SoftCode', 2)])  # play noise + save sensor data
 
     sma.add_state(
         state_name='reward',
@@ -161,12 +163,12 @@ for i in range(sph.NTRIALS):  # Main loop
         state_name='correct',
         state_timer=tph.iti_correct,
         state_change_conditions={'Tup': 'exit'},
-        output_actions=[])
+        output_actions=[('SoftCode', 3)])
 
     # Send state machine description to Bpod device
     bpod.send_state_machine(sma)
     # Run state machine
-    bpod.run_state_machine(sma)
+    bpod.run_state_machine(sma)  # Locks until state machine 'exit' is reached
 
     trial_data = tph.trial_completed(bpod.session.current_trial.export())
 
