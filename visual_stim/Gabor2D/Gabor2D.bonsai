@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <WorkflowBuilder Version="2.3.0">
-  <Workflow xmlns:q2="clr-namespace:Bonsai.Shaders;assembly=Bonsai.Shaders" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:q3="clr-namespace:Bonsai.Dsp;assembly=Bonsai.Dsp" xmlns:q7="clr-namespace:Bonsai.Bpod;assembly=Bonsai.Bpod" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:q5="clr-namespace:Bonsai.IO;assembly=Bonsai.System" xmlns:q4="clr-namespace:Bonsai.Scripting;assembly=Bonsai.Scripting" xmlns:q6="clr-namespace:Bonsai.Audio;assembly=Bonsai.Audio" xmlns:q1="clr-namespace:Bonsai.Osc;assembly=Bonsai.Osc" xmlns="https://horizongir.org/bonsai">
+  <Workflow xmlns:q2="clr-namespace:Bonsai.Shaders;assembly=Bonsai.Shaders" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:q3="clr-namespace:Bonsai.Scripting;assembly=Bonsai.Scripting" xmlns:q7="clr-namespace:Bonsai.Bpod;assembly=Bonsai.Bpod" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:q5="clr-namespace:Bonsai.IO;assembly=Bonsai.System" xmlns:q4="clr-namespace:Bonsai.Dsp;assembly=Bonsai.Dsp" xmlns:q6="clr-namespace:Bonsai.Audio;assembly=Bonsai.Audio" xmlns:q1="clr-namespace:Bonsai.Osc;assembly=Bonsai.Osc" xmlns="https://horizongir.org/bonsai">
     <Nodes>
       <Expression xsi:type="ExternalizedPropertyOfStringReceiveMessage">
         <MemberName>Connection</MemberName>
@@ -17,15 +17,6 @@
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="q2:RenderFrame" />
-      </Expression>
-      <Expression xsi:type="Combinator">
-        <Combinator xsi:type="q3:Rescale">
-          <q3:Min>-180</q3:Min>
-          <q3:Max>180</q3:Max>
-          <q3:RangeMin>-1.333</q3:RangeMin>
-          <q3:RangeMax>1.333</q3:RangeMax>
-          <q3:RescaleType>Linear</q3:RescaleType>
-        </Combinator>
       </Expression>
       <Expression xsi:type="Condition">
         <Name>CLOSE LOOP</Name>
@@ -93,9 +84,6 @@
         <q1:Connection>bpod</q1:Connection>
         <q1:Address>/c</q1:Address>
         <q1:TypeTag>f</q1:TypeTag>
-      </Expression>
-      <Expression xsi:type="q4:ExpressionTransform">
-        <q4:Expression>single(it)</q4:Expression>
       </Expression>
       <Expression xsi:type="Condition">
         <Name>STOP</Name>
@@ -176,8 +164,8 @@ This will work in both directions!! its what we want</Description>
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="CombineLatest" />
             </Expression>
-            <Expression xsi:type="q4:ExpressionTransform">
-              <q4:Expression>single(it)</q4:Expression>
+            <Expression xsi:type="q3:ExpressionTransform">
+              <q3:Expression>single(it)</q3:Expression>
             </Expression>
             <Expression xsi:type="SubscribeSubject">
               <Name>Encoder</Name>
@@ -186,12 +174,12 @@ This will work in both directions!! its what we want</Description>
               <Name>InitPosition</Name>
             </Expression>
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="q3:Rescale">
-                <q3:Min>-180</q3:Min>
-                <q3:Max>180</q3:Max>
-                <q3:RangeMin>-1.333</q3:RangeMin>
-                <q3:RangeMax>1.333</q3:RangeMax>
-                <q3:RescaleType>Clamp</q3:RescaleType>
+              <Combinator xsi:type="q4:Rescale">
+                <q4:Min>-180</q4:Min>
+                <q4:Max>180</q4:Max>
+                <q4:RangeMin>-1.333</q4:RangeMin>
+                <q4:RangeMax>1.333</q4:RangeMax>
+                <q4:RescaleType>Clamp</q4:RescaleType>
               </Combinator>
             </Expression>
             <Expression xsi:type="Combinator">
@@ -200,14 +188,14 @@ This will work in both directions!! its what we want</Description>
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="CombineLatest" />
             </Expression>
-            <Expression xsi:type="q4:ExpressionTransform">
-              <q4:Expression>((Item1+Item2) + 180) % 360 - 180</q4:Expression>
+            <Expression xsi:type="q3:ExpressionTransform">
+              <q3:Expression>((Item1+Item2) + 180) % 360 - 180</q3:Expression>
             </Expression>
-            <Expression xsi:type="q4:ExpressionTransform">
-              <q4:Expression>Math.Abs(int16(it))</q4:Expression>
+            <Expression xsi:type="q3:ExpressionTransform">
+              <q3:Expression>Math.Abs(int16(it))</q3:Expression>
             </Expression>
-            <Expression xsi:type="q4:ExpressionTransform">
-              <q4:Expression>Math.Abs(Int16(it))</q4:Expression>
+            <Expression xsi:type="q3:ExpressionTransform">
+              <q3:Expression>Math.Abs(Int16(it))</q3:Expression>
             </Expression>
             <Expression xsi:type="Subtract" />
             <Expression xsi:type="SubscribeSubject">
@@ -440,75 +428,6 @@ out: value* 2pi</Description>
                 </Edges>
               </Workflow>
             </Expression>
-            <Expression xsi:type="NestedWorkflow">
-              <Name>PhotodiodeSquareUpdate</Name>
-              <Description>Input: Tick
-For every movement of the wheel pulses a square in the top right corner of the quad.</Description>
-              <Workflow>
-                <Nodes>
-                  <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="q2:UpdateUniform">
-                      <q2:UniformName>frame_count</q2:UniformName>
-                      <q2:ShaderName>Gabor</q2:ShaderName>
-                    </Combinator>
-                  </Expression>
-                  <Expression xsi:type="Accumulate" />
-                  <Expression xsi:type="q4:ExpressionTransform">
-                    <q4:Expression>Int16(it/it)</q4:Expression>
-                  </Expression>
-                  <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="Sample" />
-                  </Expression>
-                  <Expression xsi:type="MemberSelector">
-                    <Selector>Source.EventArgs.Time</Selector>
-                  </Expression>
-                  <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="q2:UpdateFrame" />
-                  </Expression>
-                  <Expression xsi:type="WorkflowInput">
-                    <Name>Source1</Name>
-                  </Expression>
-                  <Expression xsi:type="WorkflowOutput" />
-                </Nodes>
-                <Edges>
-                  <Edge>
-                    <From>0</From>
-                    <To>7</To>
-                    <Label>Source1</Label>
-                  </Edge>
-                  <Edge>
-                    <From>1</From>
-                    <To>0</To>
-                    <Label>Source1</Label>
-                  </Edge>
-                  <Edge>
-                    <From>2</From>
-                    <To>1</To>
-                    <Label>Source1</Label>
-                  </Edge>
-                  <Edge>
-                    <From>3</From>
-                    <To>2</To>
-                    <Label>Source1</Label>
-                  </Edge>
-                  <Edge>
-                    <From>4</From>
-                    <To>3</To>
-                    <Label>Source1</Label>
-                  </Edge>
-                  <Edge>
-                    <From>5</From>
-                    <To>4</To>
-                    <Label>Source1</Label>
-                  </Edge>
-                  <Edge>
-                    <From>6</From>
-                    <To>3</To>
-                    <Label>Source2</Label>
-                  </Edge>
-                </Edges>
-              </Workflow>
-            </Expression>
           </Nodes>
           <Edges>
             <Edge>
@@ -554,11 +473,6 @@ For every movement of the wheel pulses a square in the top right corner of the q
             <Edge>
               <From>9</From>
               <To>1</To>
-              <Label>Source1</Label>
-            </Edge>
-            <Edge>
-              <From>9</From>
-              <To>17</To>
               <Label>Source1</Label>
             </Edge>
             <Edge>
@@ -662,7 +576,7 @@ re.pctimestamp.csv
         <Workflow>
           <Nodes>
             <Expression xsi:type="q5:CsvWriter">
-              <q5:FileName>C:\iblrig\Subjects\test_mouse\2018-09-14\25\raw_behavior_data\_ibl_encoderTrialInfo.bonsai_raw.ssv</q5:FileName>
+              <q5:FileName>C:\iblrig\Subjects\test_mouse\2018-09-17\14\raw_behavior_data\_ibl_encoderTrialInfo.bonsai_raw.ssv</q5:FileName>
               <q5:Append>false</q5:Append>
               <q5:Overwrite>false</q5:Overwrite>
               <q5:Suffix>None</q5:Suffix>
@@ -699,14 +613,14 @@ re.pctimestamp.csv
               <Combinator xsi:type="Timestamp" />
             </Expression>
             <Expression xsi:type="q5:CsvWriter">
-              <q5:FileName>C:\iblrig\Subjects\test_mouse\2018-09-14\25\raw_behavior_data\_ibl_encoderEvents.bonsai_raw.ssv</q5:FileName>
+              <q5:FileName>C:\iblrig\Subjects\test_mouse\2018-09-17\14\raw_behavior_data\_ibl_encoderEvents.bonsai_raw.ssv</q5:FileName>
               <q5:Append>false</q5:Append>
               <q5:Overwrite>false</q5:Overwrite>
               <q5:Suffix>None</q5:Suffix>
               <q5:IncludeHeader>false</q5:IncludeHeader>
             </Expression>
             <Expression xsi:type="q5:CsvWriter">
-              <q5:FileName>C:\iblrig\Subjects\test_mouse\2018-09-14\25\raw_behavior_data\_ibl_encoderPositions.bonsai_raw.ssv</q5:FileName>
+              <q5:FileName>C:\iblrig\Subjects\test_mouse\2018-09-17\14\raw_behavior_data\_ibl_encoderPositions.bonsai_raw.ssv</q5:FileName>
               <q5:Append>false</q5:Append>
               <q5:Overwrite>false</q5:Overwrite>
               <q5:Suffix>None</q5:Suffix>
@@ -724,21 +638,21 @@ re.pctimestamp.csv
             <Expression xsi:type="ExternalizedPropertyOfStringCsvWriter">
               <MemberName>FileName</MemberName>
               <Name>FileNameTrialInfo</Name>
-              <Value>C:\iblrig\Subjects\test_mouse\2018-09-14\25\raw_behavior_data\_ibl_encoderTrialInfo.bonsai_raw.ssv</Value>
+              <Value>C:\iblrig\Subjects\test_mouse\2018-09-17\14\raw_behavior_data\_ibl_encoderTrialInfo.bonsai_raw.ssv</Value>
             </Expression>
             <Expression xsi:type="ExternalizedPropertyOfStringCsvWriter">
               <MemberName>FileName</MemberName>
               <Name>FileNameEvents</Name>
-              <Value>C:\iblrig\Subjects\test_mouse\2018-09-14\25\raw_behavior_data\_ibl_encoderEvents.bonsai_raw.ssv</Value>
+              <Value>C:\iblrig\Subjects\test_mouse\2018-09-17\14\raw_behavior_data\_ibl_encoderEvents.bonsai_raw.ssv</Value>
             </Expression>
             <Expression xsi:type="ExternalizedPropertyOfStringCsvWriter">
               <MemberName>FileName</MemberName>
               <Name>FileNamePositions</Name>
-              <Value>C:\iblrig\Subjects\test_mouse\2018-09-14\25\raw_behavior_data\_ibl_encoderPositions.bonsai_raw.ssv</Value>
+              <Value>C:\iblrig\Subjects\test_mouse\2018-09-17\14\raw_behavior_data\_ibl_encoderPositions.bonsai_raw.ssv</Value>
             </Expression>
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="q6:AudioWriter">
-                <q6:FileName>C:\iblrig\Subjects\test_mouse\2018-09-14\25\raw_behavior_data\_ibl_rawMic.data.wav</q6:FileName>
+                <q6:FileName>C:\iblrig\Subjects\test_mouse\2018-09-17\14\raw_behavior_data\_ibl_rawMic.data.wav</q6:FileName>
                 <q6:Suffix>None</q6:Suffix>
                 <q6:Buffered>true</q6:Buffered>
                 <q6:Overwrite>false</q6:Overwrite>
@@ -756,7 +670,7 @@ re.pctimestamp.csv
             <Expression xsi:type="ExternalizedPropertyOfStringAudioWriter">
               <MemberName>FileName</MemberName>
               <Name>FileNameMic</Name>
-              <Value>C:\iblrig\Subjects\test_mouse\2018-09-14\25\raw_behavior_data\_ibl_rawMic.data.wav</Value>
+              <Value>C:\iblrig\Subjects\test_mouse\2018-09-17\14\raw_behavior_data\_ibl_rawMic.data.wav</Value>
             </Expression>
           </Nodes>
           <Edges>
@@ -882,12 +796,6 @@ re.pctimestamp.csv
       <Expression xsi:type="BehaviorSubject">
         <Name>Contrast</Name>
       </Expression>
-      <Expression xsi:type="Combinator">
-        <Combinator xsi:type="q2:UpdateUniform">
-          <q2:UniformName>locationX</q2:UniformName>
-          <q2:ShaderName>Gabor</q2:ShaderName>
-        </Combinator>
-      </Expression>
       <Expression xsi:type="SelectMany">
         <Name>HideStimulus</Name>
         <Workflow>
@@ -895,102 +803,28 @@ re.pctimestamp.csv
             <Expression xsi:type="WorkflowInput">
               <Name>Source1</Name>
             </Expression>
-            <Expression xsi:type="WorkflowOutput" />
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="FloatProperty">
                 <Value>0</Value>
               </Combinator>
             </Expression>
+            <Expression xsi:type="WorkflowOutput" />
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="q2:UpdateUniform">
                 <q2:UniformName>gabor_contrast</q2:UniformName>
                 <q2:ShaderName>Gabor</q2:ShaderName>
               </Combinator>
             </Expression>
-            <Expression xsi:type="NestedWorkflow">
-              <Name>PhotodiodeSquareUpdate</Name>
-              <Description>Input: Tick
-For every movement of the wheel pulses a square in the top right corner of the quad.</Description>
-              <Workflow>
-                <Nodes>
-                  <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="q2:UpdateUniform">
-                      <q2:UniformName>frame_count</q2:UniformName>
-                      <q2:ShaderName>Gabor</q2:ShaderName>
-                    </Combinator>
-                  </Expression>
-                  <Expression xsi:type="Accumulate" />
-                  <Expression xsi:type="q4:ExpressionTransform">
-                    <q4:Expression>Int16(it/it)</q4:Expression>
-                  </Expression>
-                  <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="Sample" />
-                  </Expression>
-                  <Expression xsi:type="MemberSelector">
-                    <Selector>Source.EventArgs.Time</Selector>
-                  </Expression>
-                  <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="q2:UpdateFrame" />
-                  </Expression>
-                  <Expression xsi:type="WorkflowInput">
-                    <Name>Source1</Name>
-                  </Expression>
-                  <Expression xsi:type="WorkflowOutput" />
-                </Nodes>
-                <Edges>
-                  <Edge>
-                    <From>0</From>
-                    <To>7</To>
-                    <Label>Source1</Label>
-                  </Edge>
-                  <Edge>
-                    <From>1</From>
-                    <To>0</To>
-                    <Label>Source1</Label>
-                  </Edge>
-                  <Edge>
-                    <From>2</From>
-                    <To>1</To>
-                    <Label>Source1</Label>
-                  </Edge>
-                  <Edge>
-                    <From>3</From>
-                    <To>2</To>
-                    <Label>Source1</Label>
-                  </Edge>
-                  <Edge>
-                    <From>4</From>
-                    <To>3</To>
-                    <Label>Source1</Label>
-                  </Edge>
-                  <Edge>
-                    <From>5</From>
-                    <To>4</To>
-                    <Label>Source1</Label>
-                  </Edge>
-                  <Edge>
-                    <From>6</From>
-                    <To>3</To>
-                    <Label>Source2</Label>
-                  </Edge>
-                </Edges>
-              </Workflow>
-            </Expression>
           </Nodes>
           <Edges>
             <Edge>
-              <From>2</From>
+              <From>1</From>
               <To>3</To>
               <Label>Source1</Label>
             </Edge>
             <Edge>
-              <From>2</From>
-              <To>4</To>
-              <Label>Source1</Label>
-            </Edge>
-            <Edge>
               <From>3</From>
-              <To>1</To>
+              <To>2</To>
               <Label>Source1</Label>
             </Edge>
           </Edges>
@@ -1020,102 +854,24 @@ probably there is no need to reset the position also
               <Name>InitPosition</Name>
             </Expression>
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="q3:Rescale">
-                <q3:Min>-180</q3:Min>
-                <q3:Max>180</q3:Max>
-                <q3:RangeMin>-1.333</q3:RangeMin>
-                <q3:RangeMax>1.333</q3:RangeMax>
-                <q3:RescaleType>Linear</q3:RescaleType>
+              <Combinator xsi:type="q4:Rescale">
+                <q4:Min>-180</q4:Min>
+                <q4:Max>180</q4:Max>
+                <q4:RangeMin>-1.333</q4:RangeMin>
+                <q4:RangeMax>1.333</q4:RangeMax>
+                <q4:RescaleType>Linear</q4:RescaleType>
               </Combinator>
             </Expression>
-            <Expression xsi:type="q4:ExpressionTransform">
-              <q4:Expression>single(it)</q4:Expression>
+            <Expression xsi:type="q3:ExpressionTransform">
+              <q3:Expression>single(it)</q3:Expression>
             </Expression>
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="q2:UpdateUniform">
-                <q2:UniformName>gabor_contrast</q2:UniformName>
-                <q2:ShaderName>Gabor</q2:ShaderName>
+              <Combinator xsi:type="Take">
+                <Count>1</Count>
               </Combinator>
-            </Expression>
-            <Expression xsi:type="SubscribeSubject">
-              <Name>Contrast</Name>
-            </Expression>
-            <Expression xsi:type="NestedWorkflow">
-              <Name>PhotodiodeSquareUpdate</Name>
-              <Description>Input: Tick
-For every movement of the wheel pulses a square in the top right corner of the quad.</Description>
-              <Workflow>
-                <Nodes>
-                  <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="q2:UpdateUniform">
-                      <q2:UniformName>frame_count</q2:UniformName>
-                      <q2:ShaderName>Gabor</q2:ShaderName>
-                    </Combinator>
-                  </Expression>
-                  <Expression xsi:type="Accumulate" />
-                  <Expression xsi:type="q4:ExpressionTransform">
-                    <q4:Expression>Int16(it/it)</q4:Expression>
-                  </Expression>
-                  <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="Sample" />
-                  </Expression>
-                  <Expression xsi:type="MemberSelector">
-                    <Selector>Source.EventArgs.Time</Selector>
-                  </Expression>
-                  <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="q2:UpdateFrame" />
-                  </Expression>
-                  <Expression xsi:type="WorkflowInput">
-                    <Name>Source1</Name>
-                  </Expression>
-                  <Expression xsi:type="WorkflowOutput" />
-                </Nodes>
-                <Edges>
-                  <Edge>
-                    <From>0</From>
-                    <To>7</To>
-                    <Label>Source1</Label>
-                  </Edge>
-                  <Edge>
-                    <From>1</From>
-                    <To>0</To>
-                    <Label>Source1</Label>
-                  </Edge>
-                  <Edge>
-                    <From>2</From>
-                    <To>1</To>
-                    <Label>Source1</Label>
-                  </Edge>
-                  <Edge>
-                    <From>3</From>
-                    <To>2</To>
-                    <Label>Source1</Label>
-                  </Edge>
-                  <Edge>
-                    <From>4</From>
-                    <To>3</To>
-                    <Label>Source1</Label>
-                  </Edge>
-                  <Edge>
-                    <From>5</From>
-                    <To>4</To>
-                    <Label>Source1</Label>
-                  </Edge>
-                  <Edge>
-                    <From>6</From>
-                    <To>3</To>
-                    <Label>Source2</Label>
-                  </Edge>
-                </Edges>
-              </Workflow>
             </Expression>
           </Nodes>
           <Edges>
-            <Edge>
-              <From>0</From>
-              <To>8</To>
-              <Label>Source1</Label>
-            </Edge>
             <Edge>
               <From>2</From>
               <To>1</To>
@@ -1123,7 +879,7 @@ For every movement of the wheel pulses a square in the top right corner of the q
             </Edge>
             <Edge>
               <From>3</From>
-              <To>4</To>
+              <To>6</To>
               <Label>Source1</Label>
             </Edge>
             <Edge>
@@ -1137,8 +893,8 @@ For every movement of the wheel pulses a square in the top right corner of the q
               <Label>Source1</Label>
             </Edge>
             <Edge>
-              <From>7</From>
-              <To>6</To>
+              <From>6</From>
+              <To>4</To>
               <Label>Source1</Label>
             </Edge>
           </Edges>
@@ -1167,8 +923,8 @@ For every movement of the wheel pulses a square in the top right corner of the q
           <q7:PortName>COM3</q7:PortName>
         </Combinator>
       </Expression>
-      <Expression xsi:type="q4:ExpressionTransform">
-        <q4:Expression>single(it)</q4:Expression>
+      <Expression xsi:type="q3:ExpressionTransform">
+        <q3:Expression>single(it)</q3:Expression>
       </Expression>
       <Expression xsi:type="BehaviorSubject">
         <Name>TrialNum</Name>
@@ -1186,28 +942,28 @@ For every movement of the wheel pulses a square in the top right corner of the q
         <Name>RawEncoderPositions</Name>
       </Expression>
       <Expression xsi:type="Combinator">
-        <Combinator xsi:type="q3:Rescale">
-          <q3:Min>-512</q3:Min>
-          <q3:Max>512</q3:Max>
-          <q3:RangeMin>-180</q3:RangeMin>
-          <q3:RangeMax>180</q3:RangeMax>
-          <q3:RescaleType>Linear</q3:RescaleType>
+        <Combinator xsi:type="q4:Rescale">
+          <q4:Min>-512</q4:Min>
+          <q4:Max>512</q4:Max>
+          <q4:RangeMin>-180</q4:RangeMin>
+          <q4:RangeMax>180</q4:RangeMax>
+          <q4:RescaleType>Linear</q4:RescaleType>
         </Combinator>
       </Expression>
       <Expression xsi:type="ExternalizedPropertyOfStringCsvWriter">
         <MemberName>FileNameTrialInfo</MemberName>
         <Name>FileNameTrialInfo</Name>
-        <Value>C:\iblrig\Subjects\test_mouse\2018-09-14\25\raw_behavior_data\_ibl_encoderTrialInfo.bonsai_raw.ssv</Value>
+        <Value>C:\iblrig\Subjects\test_mouse\2018-09-17\14\raw_behavior_data\_ibl_encoderTrialInfo.bonsai_raw.ssv</Value>
       </Expression>
       <Expression xsi:type="ExternalizedPropertyOfStringCsvWriter">
         <MemberName>FileNameEvents</MemberName>
         <Name>FileNameEvents</Name>
-        <Value>C:\iblrig\Subjects\test_mouse\2018-09-14\25\raw_behavior_data\_ibl_encoderEvents.bonsai_raw.ssv</Value>
+        <Value>C:\iblrig\Subjects\test_mouse\2018-09-17\14\raw_behavior_data\_ibl_encoderEvents.bonsai_raw.ssv</Value>
       </Expression>
       <Expression xsi:type="ExternalizedPropertyOfStringCsvWriter">
         <MemberName>FileNamePositions</MemberName>
         <Name>FileNamePositions</Name>
-        <Value>C:\iblrig\Subjects\test_mouse\2018-09-14\25\raw_behavior_data\_ibl_encoderPositions.bonsai_raw.ssv</Value>
+        <Value>C:\iblrig\Subjects\test_mouse\2018-09-17\14\raw_behavior_data\_ibl_encoderPositions.bonsai_raw.ssv</Value>
       </Expression>
       <Expression xsi:type="WorkflowOutput" />
       <Expression xsi:type="Combinator">
@@ -1226,7 +982,49 @@ For every movement of the wheel pulses a square in the top right corner of the q
       <Expression xsi:type="ExternalizedPropertyOfStringAudioWriter">
         <MemberName>FileNameMic</MemberName>
         <Name>FileNameMic</Name>
-        <Value>C:\iblrig\Subjects\test_mouse\2018-09-14\25\raw_behavior_data\_ibl_rawMic.data.wav</Value>
+        <Value>C:\iblrig\Subjects\test_mouse\2018-09-17\14\raw_behavior_data\_ibl_rawMic.data.wav</Value>
+      </Expression>
+      <Expression xsi:type="SelectMany">
+        <Name>UpdateContrast</Name>
+        <Workflow>
+          <Nodes>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="q2:UpdateUniform">
+                <q2:UniformName>gabor_contrast</q2:UniformName>
+                <q2:ShaderName>Gabor</q2:ShaderName>
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="SubscribeSubject">
+              <Name>Contrast</Name>
+            </Expression>
+            <Expression xsi:type="WorkflowOutput" />
+            <Expression xsi:type="WorkflowInput">
+              <Name>Source1</Name>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="Take">
+                <Count>1</Count>
+              </Combinator>
+            </Expression>
+          </Nodes>
+          <Edges>
+            <Edge>
+              <From>0</From>
+              <To>2</To>
+              <Label>Source1</Label>
+            </Edge>
+            <Edge>
+              <From>1</From>
+              <To>4</To>
+              <Label>Source1</Label>
+            </Edge>
+            <Edge>
+              <From>4</From>
+              <To>0</To>
+              <Label>Source1</Label>
+            </Edge>
+          </Edges>
+        </Workflow>
       </Expression>
     </Nodes>
     <Edges>
@@ -1237,17 +1035,12 @@ For every movement of the wheel pulses a square in the top right corner of the q
       </Edge>
       <Edge>
         <From>0</From>
-        <To>14</To>
-        <Label>Source1</Label>
-      </Edge>
-      <Edge>
-        <From>0</From>
-        <To>27</To>
-        <Label>Source1</Label>
-      </Edge>
-      <Edge>
-        <From>0</From>
         <To>13</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>0</From>
+        <To>25</To>
         <Label>Source1</Label>
       </Edge>
       <Edge>
@@ -1266,18 +1059,18 @@ For every movement of the wheel pulses a square in the top right corner of the q
         <Label>Source1</Label>
       </Edge>
       <Edge>
+        <From>0</From>
+        <To>9</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
         <From>1</From>
         <To>2</To>
         <Label>Source1</Label>
       </Edge>
       <Edge>
-        <From>2</From>
-        <To>4</To>
-        <Label>Source1</Label>
-      </Edge>
-      <Edge>
         <From>3</From>
-        <To>6</To>
+        <To>5</To>
         <Label>Source1</Label>
       </Edge>
       <Edge>
@@ -1292,37 +1085,37 @@ For every movement of the wheel pulses a square in the top right corner of the q
       </Edge>
       <Edge>
         <From>6</From>
-        <To>19</To>
+        <To>47</To>
         <Label>Source1</Label>
       </Edge>
       <Edge>
         <From>7</From>
-        <To>50</To>
+        <To>19</To>
         <Label>Source1</Label>
       </Edge>
       <Edge>
         <From>8</From>
-        <To>21</To>
+        <To>31</To>
         <Label>Source1</Label>
       </Edge>
       <Edge>
         <From>9</From>
-        <To>34</To>
+        <To>21</To>
         <Label>Source1</Label>
       </Edge>
       <Edge>
         <From>10</From>
-        <To>23</To>
+        <To>22</To>
         <Label>Source1</Label>
       </Edge>
       <Edge>
         <From>11</From>
-        <To>24</To>
+        <To>23</To>
         <Label>Source1</Label>
       </Edge>
       <Edge>
         <From>12</From>
-        <To>25</To>
+        <To>24</To>
         <Label>Source1</Label>
       </Edge>
       <Edge>
@@ -1332,142 +1125,137 @@ For every movement of the wheel pulses a square in the top right corner of the q
       </Edge>
       <Edge>
         <From>14</From>
-        <To>28</To>
+        <To>27</To>
         <Label>Source1</Label>
       </Edge>
       <Edge>
         <From>15</From>
-        <To>29</To>
+        <To>28</To>
         <Label>Source1</Label>
       </Edge>
       <Edge>
         <From>16</From>
-        <To>30</To>
+        <To>29</To>
         <Label>Source1</Label>
       </Edge>
       <Edge>
         <From>17</From>
-        <To>31</To>
+        <To>30</To>
         <Label>Source1</Label>
       </Edge>
       <Edge>
-        <From>18</From>
-        <To>32</To>
-        <Label>Source1</Label>
-      </Edge>
-      <Edge>
-        <From>19</From>
-        <To>33</To>
-        <Label>Source1</Label>
-      </Edge>
-      <Edge>
-        <From>24</From>
-        <To>43</To>
-        <Label>Source1</Label>
-      </Edge>
-      <Edge>
-        <From>25</From>
-        <To>42</To>
-        <Label>Source1</Label>
-      </Edge>
-      <Edge>
-        <From>26</From>
-        <To>41</To>
-        <Label>Source1</Label>
-      </Edge>
-      <Edge>
-        <From>27</From>
+        <From>22</From>
         <To>40</To>
         <Label>Source1</Label>
       </Edge>
       <Edge>
-        <From>34</From>
+        <From>23</From>
         <To>39</To>
         <Label>Source1</Label>
       </Edge>
       <Edge>
-        <From>35</From>
-        <To>45</To>
-        <Label>Source1</Label>
-      </Edge>
-      <Edge>
-        <From>36</From>
-        <To>9</To>
-        <Label>Source1</Label>
-      </Edge>
-      <Edge>
-        <From>37</From>
-        <To>44</To>
-        <Label>Source1</Label>
-      </Edge>
-      <Edge>
-        <From>38</From>
-        <To>36</To>
-        <Label>Source1</Label>
-      </Edge>
-      <Edge>
-        <From>38</From>
-        <To>37</To>
-        <Label>Source1</Label>
-      </Edge>
-      <Edge>
-        <From>39</From>
-        <To>16</To>
-        <Label>Source1</Label>
-      </Edge>
-      <Edge>
-        <From>39</From>
-        <To>18</To>
-        <Label>Source1</Label>
-      </Edge>
-      <Edge>
-        <From>39</From>
-        <To>5</To>
-        <Label>Source1</Label>
-      </Edge>
-      <Edge>
-        <From>44</From>
-        <To>35</To>
-        <Label>Source1</Label>
-      </Edge>
-      <Edge>
-        <From>45</From>
-        <To>20</To>
-        <Label>Source1</Label>
-      </Edge>
-      <Edge>
-        <From>46</From>
-        <To>22</To>
-        <Label>Source1</Label>
-      </Edge>
-      <Edge>
-        <From>47</From>
-        <To>22</To>
-        <Label>Source2</Label>
-      </Edge>
-      <Edge>
-        <From>48</From>
-        <To>22</To>
-        <Label>Source3</Label>
-      </Edge>
-      <Edge>
-        <From>50</From>
-        <To>49</To>
-        <Label>Source1</Label>
-      </Edge>
-      <Edge>
-        <From>51</From>
-        <To>50</To>
-        <Label>Source2</Label>
-      </Edge>
-      <Edge>
-        <From>52</From>
+        <From>24</From>
         <To>38</To>
         <Label>Source1</Label>
       </Edge>
       <Edge>
-        <From>53</From>
-        <To>22</To>
+        <From>25</From>
+        <To>37</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>29</From>
+        <To>51</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>31</From>
+        <To>36</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>32</From>
+        <To>42</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>33</From>
+        <To>8</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>34</From>
+        <To>41</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>35</From>
+        <To>33</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>35</From>
+        <To>34</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>36</From>
+        <To>14</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>36</From>
+        <To>16</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>36</From>
+        <To>4</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>41</From>
+        <To>32</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>42</From>
+        <To>18</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>43</From>
+        <To>20</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>44</From>
+        <To>20</To>
+        <Label>Source2</Label>
+      </Edge>
+      <Edge>
+        <From>45</From>
+        <To>20</To>
+        <Label>Source3</Label>
+      </Edge>
+      <Edge>
+        <From>47</From>
+        <To>46</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>48</From>
+        <To>47</To>
+        <Label>Source2</Label>
+      </Edge>
+      <Edge>
+        <From>49</From>
+        <To>35</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>50</From>
+        <To>20</To>
         <Label>Source4</Label>
       </Edge>
     </Edges>
@@ -1476,24 +1264,21 @@ For every movement of the wheel pulses a square in the top right corner of the q
     <Type>Bonsai.Expressions.ExternalizedProperty`2[[System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089],[Bonsai.Osc.ReceiveMessage, Bonsai.Osc, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null]], Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Osc.ReceiveMessage, Bonsai.Osc, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Shaders.RenderFrame, Bonsai.Shaders, Version=0.18.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Dsp.Rescale, Bonsai.Dsp, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Expressions.EqualBuilder, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Expressions.FloatProperty, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Shaders.AspectRatio, Bonsai.Shaders, Version=0.18.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Shaders.WindowClosed, Bonsai.Shaders, Version=0.18.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Scripting.ExpressionTransform, Bonsai.Scripting, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Shaders.UpdateUniform, Bonsai.Shaders, Version=0.18.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Expressions.WorkflowProperty`1[[System.Int16, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089]], Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Reactive.CombineLatest, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Scripting.ExpressionTransform, Bonsai.Scripting, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Dsp.Rescale, Bonsai.Dsp, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Reactive.TakeUntil, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Expressions.SubtractBuilder, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Expressions.MultiplyBuilder, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Expressions.DivideBuilder, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Reactive.Zip, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Expressions.ExternalizedProperty`2[[System.Single, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089],[Bonsai.Expressions.FloatProperty, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null]], Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Reactive.AccumulateBuilder, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Reactive.Sample, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Shaders.UpdateFrame, Bonsai.Shaders, Version=0.18.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.IO.CsvWriter, Bonsai.System, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Reactive.Timestamp, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Expressions.ExternalizedProperty`2[[System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089],[Bonsai.IO.CsvWriter, Bonsai.System, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null]], Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
@@ -1501,6 +1286,7 @@ For every movement of the wheel pulses a square in the top right corner of the q
     <Type>Bonsai.Audio.AudioCapture, Bonsai.Audio, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Expressions.ExternalizedProperty`2[[System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089],[Bonsai.Audio.AudioWriter, Bonsai.Audio, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null]], Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Reactive.Switch, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Reactive.Take, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Shaders.DrawMesh, Bonsai.Shaders, Version=0.18.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Bpod.EncoderEvent, Bonsai.Bpod, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Bpod.EncoderPosition, Bonsai.Bpod, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null</Type>
