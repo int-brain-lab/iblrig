@@ -12,7 +12,7 @@ MAIN_DATA_FOLDER = None  # If None data folder will be C:\\iblrig\\Subjects
 # TASK
 NTRIALS = 1000  # Number of trials for the current session
 USE_VISUAL_STIMULUS = True  # Run the visual stim in bonsai
-BONSAI_EDITOR = True  # Whether to open the Bonsai editor or not
+BONSAI_EDITOR = False  # Whether to open the Bonsai editor or not
 REPEAT_ON_ERROR = True
 REPEAT_STIMS = [1., 0.5]
 # REWARDS

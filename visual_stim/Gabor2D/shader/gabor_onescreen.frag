@@ -17,8 +17,8 @@ uniform float gabor_contrast = 1.0; // [0, 1]
 uniform float gabor_phase = 0. * M_PI; //in radian
 uniform float locationX = 0.5;  // E[0,1] from rotary encoder [-1,1]
 uniform float locationY = 0.5;  // E[0,1]
-uniform int frame_count = 0;
-uniform float color = 1.;
+//uniform int frame_count = 0;
+uniform int color = 0;
 
 float gauss(float val, float sigma) {
     return exp(-(val * val) / (2. * sigma * sigma));
@@ -35,15 +35,17 @@ void main(){
     float locationRX = (positionX*270. - 135.) / 180. * M_PI; //[0, 1] -> [-3/4pi, 3/4pi]
     float screenDist = 1./2.; // assumes equidistand mouse
     float rect = 0.;
-    float square_color = color;
-
+    
     if (texCoord.x > 0.95 && texCoord.y < 0.275 ) {
-        if(frame_count % 2 == 0){
-            //square_color = 1. - square_color;
-            fragColor = vec4(vec3(0.), 1.0);
-        } else if (frame_count % 2 != 0){
-            fragColor = vec4(vec3(1.), 1.0);
-        }
+        // fragColor = vec4(vec3(1., 0., 0.), 1.0);
+                   
+        // if((counter % 2) == 0){
+        // square_color = (square_color + 1) % 2;//flip_int(square_color);
+        // fragColor = vec4(vec3(0., 0., 1.), 1.0);
+        // } 
+        // else if((counter % 2) == 1){
+        fragColor = vec4(vec3(color), 1.0);
+        // }
     } else { 
 
     float X = texCoord.x-(1./2.);
