@@ -184,6 +184,7 @@ class session_param_handler(object):
         # =====================================================================
         # RUN BONSAI
         # =====================================================================
+        self._use_ibl_bonsai = True
         self.BONSAI = self.get_bonsai_path()
         self.run_bonsai()
         # =====================================================================
@@ -212,15 +213,24 @@ class session_param_handler(object):
     # =========================================================================
     # FILES AND FOLDER STRUCTURE
     # =========================================================================
-    @staticmethod
-    def get_bonsai_path():
-        """Checks the default location installation for Bonsai for
-        the bonsai64.exe file, if not found returns None"""
-        BONSAI = Path.home() / "AppData/Local/Bonsai/Bonsai64.exe"
-        if BONSAI.exists():
-            return str(BONSAI)
-        else:
-            return None
+    def get_bonsai_path(self):
+        """Checks for Bonsai folder in iblrig.
+        Returns string with bonsai executable path."""
+        folders = session_param_handler.get_subfolder_paths(
+            os.listdir(self.IBLRIG_FOLDER))
+        bonsai_folder = [x for x in folders if 'Bonsai' in x][0]
+        ibl_bonsai = os.path.join(bonsai_folder, 'Bonsai64.exe')
+
+        preexisting_bonsai = Path.home() / "AppData/Local/Bonsai/Bonsai64.exe"
+        if self._use_ibl_bonsai == True:
+            BONSAI = ibl_bonsai
+        elif self._use_ibl_bonsai == False and preexisting_bonsai.exists():
+            BONSAI = str(preexisting_bonsai)
+        elif self._use_ibl_bonsai == False and not preexisting_bonsai.exists():
+            print("NOT FOUND: {}\n Using packaged Bonsai.".format(
+                str(preexisting_bonsai)))
+            BONSAI = ibl_bonsai
+        return BONSAI
 
     def run_bonsai(self):
         if self.USE_VISUAL_STIMULUS and self.BONSAI:
