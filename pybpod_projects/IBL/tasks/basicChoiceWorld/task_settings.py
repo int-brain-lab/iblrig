@@ -9,6 +9,8 @@ OSC_CLIENT_IP = '127.0.0.1'
 # IBL rig root folder
 IBLRIG_FOLDER = 'C:\\iblrig'
 MAIN_DATA_FOLDER = None  # If None data folder will be C:\\iblrig\\Subjects
+RECORD_SOUND = True
+RECORD_AMBIENT_SENSOR_DATA = True
 # TASK
 NTRIALS = 1000  # Number of trials for the current session
 USE_VISUAL_STIMULUS = True  # Run the visual stim in bonsai
@@ -34,10 +36,8 @@ STIM_CONTRASTS = [1., 0.5, 0.25, 0.125, 0.0625, 0.]  # All possible contrasts
 STIM_FREQ = 0.19  # Probably constant - NOT IN USE
 STIM_ANGLE = 0.  # Vertical orientation of Gabor patch - NOT IN USE
 STIM_SIGMA = 9.  # (azimuth_degree) Size of Gabor patch
-# Not adaptive_contrast on a trial be trial basis
 STIM_GAIN = 5.  # (azimuth_degree/mm) Gain of the RE to stimulus movement
 # SOUNDS
-RECORD_SOUND = True
 SOUND_SAMPLE_FREQ = 44100  # 192000  # depends on the sound card. 96000 ?
 WHITE_NOISE_DURATION = ITI_ERROR  # Length of noise burst
 WHITE_NOISE_AMPLITUDE = 0.05
