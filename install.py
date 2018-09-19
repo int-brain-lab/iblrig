@@ -148,7 +148,7 @@ def install_pybpod():
         raise ValueError(msg)
     # Install pybpod
     os.chdir(PYBPOD_PATH)
-    subprocess.call([PYTHON, "install.py"])
+    subprocess.call([PYTHON, "utils/install.py"])
     os.chdir(IBLRIG_ROOT_PATH)
     print("N" * 79)
     print("INFO: PyBpod installed.")
@@ -202,3 +202,4 @@ if __name__ == '__main__':
     print("\nIts time to install Bonsai:\n  Please install all packages.",
           "\nIMPORTANT: the Bonsai.Bpod package is in the pre-release tab.")
     install_bonsai()
+    
