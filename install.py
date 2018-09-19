@@ -26,17 +26,7 @@ def get_pybpod_env(conda):
     return PYBPOD_ENV
 
 
-def get_bonsai_path():
-    from pathlib import Path
-    BONSAI = Path.home() / "AppData/Local/Bonsai/Bonsai64.exe"
-    if BONSAI.exists():
-        return str(BONSAI)
-    else:
-        return None
-
-BONSAI = get_bonsai_path()
 BASE_ENV_FILE = 'environment-{}.yml'
-
 if sys.platform in ['Windows', 'windows', 'win32']:
     ENV_FILE = BASE_ENV_FILE.format('windows-10')
     CONDA = "conda"
@@ -86,12 +76,6 @@ def check_dependencies():
     except Exception as err:
         print(err, "\nEither git or conda were not found on your system\n")
         return
-    # Check if Bonsai is installed
-    if BONSAI is None:
-        print("WARNING: Bonsai not found, task will run with no visual stim.")
-        print("Installation will proceed...")
-    else:
-        print("Bonsai... OK")
     print("N" * 79)
     print("All dependencies OK.")
 
@@ -111,8 +95,8 @@ def clone_water_calibration_plugin():
     print('\n\nINFO: Cloning water-claibration-plugin:')
     print("N" * 79)
     os.chdir(os.path.join(PYBPOD_PATH, 'plugins'))
-    subprocess.call(["git", "clone", 
-        'https://bitbucket.org/azi92rach/water-calibration-plugin.git'])
+    subprocess.call(["git", "clone",
+                     'https://bitbucket.org/azi92rach/water-calibration-plugin.git'])
     os.chdir(IBLRIG_ROOT_PATH)
     print("N" * 79)
     print("PyBpod initialized and water-calibration-plugin cloned.")
@@ -139,13 +123,6 @@ def install_extra_deps():
     # Define site-packages folder
     install_to = os.path.join(PYBPOD_ENV, SITE_PACKAGES)
 
-    # Install extra depencencies using conda
-    # print("N" * 39, 'Installing scipy...')
-    # subprocess.call([CONDA, "install", "-y", "-n",
-    #                  "pybpod-environment", "scipy"])
-    # print("N" * 39, 'Installing pandas')
-    # subprocess.call([CONDA, "install", "-y", "-n",
-    #                  "pybpod-environment", "pandas"])
     print("N" * 39, 'Installing sounddevice')
     subprocess.call([CONDA, "install", "-y", "-n", "pybpod-environment",
                      "-c", "conda-forge", "python-sounddevice"])
@@ -197,14 +174,31 @@ def conf_pybpod_settings():
     print("Configuration complete.")
 
 
+def install_bonsai():
+    print("\n\nDo you want to install Bonsai now? (y/n):")
+    user_input = input()
+    if user_input == 'y':
+        subprocess.call(os.path.join(IBLRIG_ROOT_PATH,
+                                     'Bonsai-2.3', 'Bonsai64.exe'))
+    elif user_input != 'n' and user_input != 'y':
+        print("Please answer 'y' or 'n'")
+        install_bonsai()
+    elif user_input == 'n':
+        pass
+
+
 if __name__ == '__main__':
     check_dependencies()
     check_pybpod_for_initialization()
     clone_water_calibration_plugin()
     install_environment()
     PYBPOD_ENV, PIP, PYTHON_FILE, PYTHON = get_env_constants()
+    subprocess.call([PYTHON, '-m', 'pip', 'install', '--upgrade', 'pip'])
     install_extra_deps()
-    install_pybpod()
     install_water_calibration_plugin()
+    install_pybpod()
     conf_pybpod_settings()
-    print("\nINFO: Installation concluded!\nYou should be good to go...\n")
+    print("\nINFO: Installation concluded!")
+    print("\nIts time to install Bonsai:\n  Please install all packages.",
+          "\nIMPORTANT: the Bonsai.Bpod package is in the pre-release tab.")
+    install_bonsai()
