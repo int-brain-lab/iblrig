@@ -216,8 +216,7 @@ class session_param_handler(object):
     def get_bonsai_path(self):
         """Checks for Bonsai folder in iblrig.
         Returns string with bonsai executable path."""
-        folders = session_param_handler.get_subfolder_paths(
-            os.listdir(self.IBLRIG_FOLDER))
+        folders = self.get_subfolder_paths(self.IBLRIG_FOLDER)
         bonsai_folder = [x for x in folders if 'Bonsai' in x][0]
         ibl_bonsai = os.path.join(bonsai_folder, 'Bonsai64.exe')
 
