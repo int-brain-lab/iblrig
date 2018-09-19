@@ -1,0 +1,20 @@
+{
+    "__CREATED-ON__": "2018-09-05 16:45:03.257988",
+    "__DEF-TEXT__": "This file contains information about a PyBpod experiment setup.",
+    "__DEF-URL__": "http://pybpod.readthedocs.org",
+    "__EXTERNAL-REF__": [
+        "5e32036f-3e2a-4b57-86a4-9c9e2f19aadb",
+        "578a19ae-ba93-4a2c-a083-cbce612e7e70"
+    ],
+    "__SOFTWARE__": "PyBpod GUI API v1.0",
+    "__UPDATED-ON__": "2018-09-11 16:32:59.849871",
+    "__UUID4__": "ed71380a-3385-4684-af32-d3149819827e",
+    "board": "box0",
+    "detached": true,
+    "subjects": [
+        "test_mouse"
+    ],
+    "task": "global_timer_example",
+    "update-variables": false,
+    "variables": []
+}
