@@ -676,6 +676,46 @@ re.pctimestamp.csv
               <Name>FileNameMic</Name>
               <Value>C:\iblrig\Subjects\test_mouse\2018-09-18\29\raw_behavior_data\_ibl_rawMic.data.wav</Value>
             </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="SubscribeWhen" />
+            </Expression>
+            <Expression xsi:type="ExternalizedPropertyOfBooleanBooleanProperty">
+              <MemberName>Value</MemberName>
+              <Name>RecordSound</Name>
+              <Value>false</Value>
+            </Expression>
+            <Expression xsi:type="Condition">
+              <Workflow>
+                <Nodes>
+                  <Expression xsi:type="WorkflowInput">
+                    <Name>Source1</Name>
+                  </Expression>
+                  <Expression xsi:type="WorkflowOutput" />
+                  <Expression xsi:type="Equal">
+                    <Operand xsi:type="BooleanProperty">
+                      <Value>true</Value>
+                    </Operand>
+                  </Expression>
+                </Nodes>
+                <Edges>
+                  <Edge>
+                    <From>0</From>
+                    <To>2</To>
+                    <Label>Source1</Label>
+                  </Edge>
+                  <Edge>
+                    <From>2</From>
+                    <To>1</To>
+                    <Label>Source1</Label>
+                  </Edge>
+                </Edges>
+              </Workflow>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="BooleanProperty">
+                <Value>false</Value>
+              </Combinator>
+            </Expression>
           </Nodes>
           <Edges>
             <Edge>
@@ -760,13 +800,33 @@ re.pctimestamp.csv
             </Edge>
             <Edge>
               <From>20</From>
-              <To>19</To>
+              <To>22</To>
               <Label>Source1</Label>
             </Edge>
             <Edge>
               <From>21</From>
               <To>19</To>
               <Label>Source2</Label>
+            </Edge>
+            <Edge>
+              <From>22</From>
+              <To>19</To>
+              <Label>Source1</Label>
+            </Edge>
+            <Edge>
+              <From>23</From>
+              <To>25</To>
+              <Label>Source1</Label>
+            </Edge>
+            <Edge>
+              <From>24</From>
+              <To>22</To>
+              <Label>Source2</Label>
+            </Edge>
+            <Edge>
+              <From>25</From>
+              <To>24</To>
+              <Label>Source1</Label>
             </Edge>
           </Edges>
         </Workflow>
@@ -1271,6 +1331,11 @@ probably there is no need to reset the position also
       <Expression xsi:type="MulticastSubject">
         <Name>GaborAngle</Name>
       </Expression>
+      <Expression xsi:type="ExternalizedPropertyOfBooleanBooleanProperty">
+        <MemberName>RecordSound</MemberName>
+        <Name>RecordSound</Name>
+        <Value>false</Value>
+      </Expression>
     </Nodes>
     <Edges>
       <Edge>
@@ -1528,6 +1593,11 @@ probably there is no need to reset the position also
         <To>54</To>
         <Label>Source1</Label>
       </Edge>
+      <Edge>
+        <From>63</From>
+        <To>18</To>
+        <Label>Source5</Label>
+      </Edge>
     </Edges>
   </Workflow>
   <ExtensionTypes>
@@ -1557,6 +1627,9 @@ probably there is no need to reset the position also
     <Type>Bonsai.Audio.AudioWriter, Bonsai.Audio, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Audio.AudioCapture, Bonsai.Audio, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Expressions.ExternalizedProperty`2[[System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089],[Bonsai.Audio.AudioWriter, Bonsai.Audio, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null]], Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Reactive.SubscribeWhen, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Expressions.ExternalizedProperty`2[[System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089],[Bonsai.Expressions.BooleanProperty, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null]], Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Expressions.BooleanProperty, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Reactive.AccumulateBuilder, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Reactive.Take, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Reactive.Switch, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
