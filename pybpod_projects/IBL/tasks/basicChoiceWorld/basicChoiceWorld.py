@@ -12,7 +12,7 @@ import datetime
 
 from session_params import session_param_handler
 from trial_params import trial_param_handler
-from ambient_sensor import get_reading
+import ambient_sensor
 import task_settings
 import user_settings
 import online_plots as op
@@ -165,9 +165,11 @@ for i in range(sph.NTRIALS):  # Main loop
     # Run state machine
     bpod.run_state_machine(sma)  # Locks until state machine 'exit' is reached
 
-    trial_data = tph.trial_completed(bpod.session.current_trial.export())
-    data = get_reading(bpod, save_to=sph.SESSION_RAW_DATA_FOLDER)
+    if sph.RECORD_AMBIENT_SENSOR_DATA:
+        data = ambient_sensor.get_reading(bpod,
+                   save_to=sph.SESSION_RAW_DATA_FOLDER)
 
+    trial_data = tph.trial_completed(bpod.session.current_trial.export())
     op.plot_bars(trial_data, ax=ax_bars)
     psyfun_df = op.update_psyfun_df(trial_data, psyfun_df)
     op.plot_psyfun(trial_data, psyfun_df, ax=ax_psyc)
