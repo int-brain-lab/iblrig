@@ -151,9 +151,6 @@ class session_param_handler(object):
         self.VISUAL_STIMULUS_FILE = os.path.join(self.IBLRIG_FOLDER,
                                                  'visual_stim', 'Gabor2D',
                                                  'Gabor2D.bonsai')
-        self.VISUAL_STIMULUS_FILE_NO_SOUND = os.path.join(self.IBLRIG_FOLDER,
-                                                          'visual_stim', 'Gabor2D',
-                                                          'Gabor2D_no_rec_sound.bonsai')
         self.SUBJECT_NAME = self.PYBPOD_SUBJECTS[0]
         self.SUBJECT_FOLDER = self.check_folder(self.ROOT_DATA_FOLDER,
                                                 self.SUBJECT_NAME)
@@ -236,10 +233,7 @@ class session_param_handler(object):
             os.chdir(os.path.join(self.IBLRIG_FOLDER, 'visual_stim',
                                   'Gabor2D'))
             bns = self.BONSAI
-            if self.RECORD_SOUND:
-                wkfl = self.VISUAL_STIMULUS_FILE
-            else:
-                wkfl = self.VISUAL_STIMULUS_FILE_NO_SOUND
+            wkfl = self.VISUAL_STIMULUS_FILE
 
             pos = "-p:FileNamePositions=" + os.path.join(
                 self.SESSION_RAW_DATA_FOLDER,
@@ -253,16 +247,17 @@ class session_param_handler(object):
             com = "-p:REPortName=" + self.ROTARY_ENCODER_PORT
             mic = "-p:FileNameMic=" + os.path.join(
                 self.SESSION_RAW_DATA_FOLDER, "_ibl_rawMic.data.wav")
+            rec = "-p:RecordSound=" + str(self.RECORD_SOUND)
 
             start = '--start'
             noeditor = '--noeditor'
 
             if self.BONSAI_EDITOR:
                 bonsai = subprocess.Popen(
-                    [bns, wkfl, start, pos, evt, itr, com, mic])
+                    [bns, wkfl, start, pos, evt, itr, com, mic, rec])
             elif not self.BONSAI_EDITOR:
                 bonsai = subprocess.Popen(
-                    [bns, wkfl, noeditor, pos, evt, itr, com, mic])
+                    [bns, wkfl, noeditor, pos, evt, itr, com, mic, rec])
             time.sleep(5)
             bonsai
             os.chdir(here)

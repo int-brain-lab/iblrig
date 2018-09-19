@@ -165,10 +165,6 @@ for i in range(sph.NTRIALS):  # Main loop
     # Run state machine
     bpod.run_state_machine(sma)  # Locks until state machine 'exit' is reached
 
-    if sph.RECORD_AMBIENT_SENSOR_DATA:
-        data = ambient_sensor.get_reading(bpod,
-                   save_to=sph.SESSION_RAW_DATA_FOLDER)
-
     trial_data = tph.trial_completed(bpod.session.current_trial.export())
     op.plot_bars(trial_data, ax=ax_bars)
     psyfun_df = op.update_psyfun_df(trial_data, psyfun_df)
@@ -179,7 +175,11 @@ for i in range(sph.NTRIALS):  # Main loop
     print('\nWATER DELIVERED ', trial_data['water_delivered'])
     print('\nTIME FROM START: ', (datetime.datetime.now() -
                                   parser.parse(trial_data['init_datetime'])))
-    print('\n', data)
+    if sph.RECORD_AMBIENT_SENSOR_DATA:
+        data = ambient_sensor.get_reading(bpod,
+                                          save_to=sph.SESSION_RAW_DATA_FOLDER)
+        print('\nAMBIENT SENSOR DATA: ', data)
+
     print('\n\nStarting trial: ', i + 1)
 
 bpod.close()
