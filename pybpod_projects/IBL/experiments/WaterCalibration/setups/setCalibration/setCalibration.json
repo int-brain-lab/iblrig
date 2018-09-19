@@ -3,21 +3,24 @@
     "__DEF-TEXT__": "This file contains information about a PyBpod experiment setup.",
     "__DEF-URL__": "http://pybpod.readthedocs.org",
     "__EXTERNAL-REF__": [
-        "5e32036f-3e2a-4b57-86a4-9c9e2f19aadb"
+        "5e32036f-3e2a-4b57-86a4-9c9e2f19aadb",
+        "578a19ae-ba93-4a2c-a083-cbce612e7e70"
     ],
     "__SOFTWARE__": "PyBpod GUI API v1.0",
-    "__UPDATED-ON__": "2018-05-10 12:50:54.446601",
+    "__UPDATED-ON__": "2018-09-07 13:22:54.770835",
     "__UUID4__": "5976576f-6881-4237-94f5-2d0919bb088c",
     "board": "box0",
     "detached": false,
-    "subjects": [],
+    "subjects": [
+        "test_mouse"
+    ],
     "task": "water_calibration_task",
     "update-variables": false,
     "variables": [
         {
             "datatype": "string",
             "name": "VAR_0",
-            "value": "150"
+            "value": "10"
         },
         {
             "datatype": "string",
@@ -32,7 +35,7 @@
         {
             "datatype": "string",
             "name": "VAR_3",
-            "value": "0.0672"
+            "value": "0.1"
         }
     ]
 }

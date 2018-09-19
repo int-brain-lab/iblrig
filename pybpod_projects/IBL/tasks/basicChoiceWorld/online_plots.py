@@ -190,7 +190,7 @@ def parse_trial_data(trial_data):
 
 
 if __name__ == '__main__':
-    data_file = '/home/nico/Projects/IBL/IBL-github/iblrig/pybpod_data/\
+    data_file = '/home/nico/Projects/IBL/IBL-github/iblrig/Subjects/\
 test_mouse/2018-05-08/13/pycw_basic.data.json'
 
     def load_raw_data(data_file):

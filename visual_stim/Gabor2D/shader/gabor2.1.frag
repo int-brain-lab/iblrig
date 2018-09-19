@@ -35,7 +35,7 @@ void main(){
     float rect = 0.;
     float square_color = color;
 
-    if (texCoord.x > 0.95 && texCoord.y > 0.575 ) {
+    if (texCoord.x > 0.95 && texCoord.y < 0.275 ) {
         if(frame_count % 2 == 0){
             //square_color = 1. - square_color;
             fragColor = vec4(vec3(square_color), 1.0);
