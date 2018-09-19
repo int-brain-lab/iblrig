@@ -3,17 +3,20 @@
 # @Date:   2018-02-02 17:19:09
 # @Last Modified by:   Niccolò Bonacchi
 # @Last Modified time: 2018-07-12 16:18:59
-import os
-import numpy as np
-import scipy.stats as st
-from pythonosc import udp_client
 import json
-from dateutil import parser
+import os
 import shutil
-import zipfile
-from sys import platform
 import subprocess
 import time
+import zipfile
+from pathlib import Path
+from sys import platform
+
+import numpy as np
+import scipy.stats as st
+from dateutil import parser
+from pythonosc import udp_client
+
 from pybpod_rotaryencoder_module.module_api import RotaryEncoderModule
 
 
@@ -25,43 +28,49 @@ class ComplexEncoder(json.JSONEncoder):
             return json.JSONEncoder.default(self, obj)
 
 
-class sounds():
+class Sounds():
     """Software solution for playing sounds"""
-    def configure_sounddevice(SD=None):
-        if SD is None:
-            import sounddevice as SD
-        SD.default.latency = 'low'
-        SD.default.channels = 2
-        return SD
+    def configure_sounddevice(sd=None):
+        if sd is None:
+            import sounddevice as sd
 
-    def make_sound(frequency=10000, duration=0.1, amplitude=1, fade_in=0.01):
-        """builds sound to feed to sounddevice lib
-        if frequency is set to -1 will produce white noise"""
-        FsOut = 44100  # sample rate, depend on the sound card
-        toneDuration = duration  # sec
-        amplitude = amplitude  # [0->1]
-        frequency = frequency  # Hz
-        onsetDur = fade_in  # sec
+        devices = sd.query_devices()
+        sd.default.device = [(i, d) for i, d in enumerate(
+            devices) if 'Speakers' in d['name']][0][0]
+        sd.default.latency = 'low'
+        sd.default.channels = 8
+        return sd
 
-        tvec = np.linspace(0, toneDuration, toneDuration * FsOut)
-        sound = amplitude * np.sin(2 * np.pi * frequency * tvec)  # sound vec
-        size = FsOut * onsetDur / 2  #
+    def make_sound(frequency=10000, duration=0.1, amplitude=1, fade=0.01):
+        """Build sound to feed to sounddevice lib.
+        If frequency is set to -1 will produce white noise
+        frequency  # Hz
+        amplitude  # [0->1]
+        """
+        sample_rate = 44100  # sample rate, depend on the sound card
+        tone_duration = duration  # sec
+        fade_duration = fade  # sec
+
+        tvec = np.linspace(0, tone_duration, tone_duration * sample_rate)
+        tone = amplitude * np.sin(2 * np.pi * frequency * tvec)  # tone vec
+        size = sample_rate * fade_duration / 2  #
         dist = st.expon(0., size)  # distribution object provided by scipy
         F = dist.cdf  # cumulative density function
-        ker = F(range(int(FsOut * toneDuration)))
-        sound = sound * ker
+        ker1 = F(range(int(sample_rate * tone_duration)))
+        ker2 = ker1[::-1]
+        ker = ker1 * ker2
+        tone = tone * ker
         if frequency == -1:
-            sound = amplitude * np.random.rand(sound.size)
+            tone = amplitude * np.random.rand(tone.size)
+
+        ttl = tone.copy()
+        ttl[:] = 1.
+
+        sound = np.array([tone, ttl]).T
         return sound
 
-    def upload_sound(sound):
-        pass
 
-    def play_sound(sound_trig):
-        pass
-
-
-class rotary_encoder(object):
+class MyRotaryEncoder(object):
 
     def __init__(self, all_thresholds, gain):
         self.all_thresholds = all_thresholds
@@ -77,9 +86,6 @@ class rotary_encoder(object):
 
     def reprJSON(self):
         d = self.__dict__
-        # d['all_thresholds'] = json.dumps(d['all_thresholds'])
-        # d['SET_THRESHOLDS'] = json.dumps(d['SET_THRESHOLDS'])
-        # d['ENABLE_THRESHOLDS'] = json.dumps(d['ENABLE_THRESHOLDS'])
         return d
 
 
@@ -102,14 +108,14 @@ class session_param_handler(object):
         # =====================================================================
         # SOUNDS
         # =====================================================================
-        self.GO_TONE = sounds.make_sound(frequency=self.GO_TONE_FREQUENCY,
+        self.GO_TONE = Sounds.make_sound(frequency=self.GO_TONE_FREQUENCY,
                                          duration=self.GO_TONE_DURATION,
                                          amplitude=self.GO_TONE_AMPLITUDE)
-        self.WHITE_NOISE = sounds.make_sound(
+        self.WHITE_NOISE = Sounds.make_sound(
             frequency=-1,
             duration=self.WHITE_NOISE_DURATION,
             amplitude=self.WHITE_NOISE_AMPLITUDE)
-        self.SD = sounds.configure_sounddevice()
+        self.SD = Sounds.configure_sounddevice()
         # =====================================================================
         # OSC CLIENT
         # =====================================================================
@@ -119,18 +125,15 @@ class session_param_handler(object):
         # =====================================================================
         self.ALL_THRESHOLDS = (self.STIM_POSITIONS +
                                self.QUIESCENCE_THRESHOLDS)
-        self.ROTARY_ENCODER = rotary_encoder(self.ALL_THRESHOLDS,
-                                             self.STIM_GAIN)
+        self.ROTARY_ENCODER = MyRotaryEncoder(self.ALL_THRESHOLDS,
+                                              self.STIM_GAIN)
         # Names of the RE events generated by Bpod
-        self.ENCODER_EVENTS = ['RotaryEncoder{}_{}'.format(
-            self.ROTARY_ENCODER_BPOD_SERIAL_PORT_NUM, x) for x in
-            list(range(1, len(self.ALL_THRESHOLDS) + 1))]
+        self.ENCODER_EVENTS = ['RotaryEncoder1_{}'.format(x) for x in
+                               list(range(1, len(self.ALL_THRESHOLDS) + 1))]
         # Dict mapping threshold crossings with name ov RE event
         self.THRESHOLD_EVENTS = dict(zip(self.ALL_THRESHOLDS,
                                          self.ENCODER_EVENTS))
-        if platform != 'linux':
-            self.ROTARY_ENCODER_PORT = self.ROTARY_ENCODER_PORT
-        else:
+        if platform == 'linux':
             self.ROTARY_ENCODER_PORT = '/dev/ttyACM0'
         self._configure_rotary_encoder(RotaryEncoderModule)
         # =====================================================================
@@ -141,7 +144,8 @@ class session_param_handler(object):
         else:
             self.IBLRIG_FOLDER = self._iblrig_folder_init()
 
-        self.ROOT_DATA_FOLDER = self._root_data_folder(self.IBLRIG_FOLDER)
+        self.ROOT_DATA_FOLDER = self._root_data_folder(self.IBLRIG_FOLDER,
+                                                       self.MAIN_DATA_FOLDER)
         self.VISUAL_STIM_FOLDER = os.path.join(self.IBLRIG_FOLDER,
                                                'visual_stim', 'Gabor2D')
         self.VISUAL_STIMULUS_FILE = os.path.join(self.IBLRIG_FOLDER,
@@ -160,8 +164,8 @@ class session_param_handler(object):
         self.SESSION_RAW_DATA_FOLDER = self.check_folder(self.SESSION_FOLDER,
                                                          'raw_behavior_data')
         self.SESSION_NAME = '{}'.format(os.path.sep).join([self.SUBJECT_NAME,
-                                                          self.SESSION_DATE,
-                                                          self.SESSION_NUMBER
+                                                           self.SESSION_DATE,
+                                                           self.SESSION_NUMBER
                                                            ])
         self.BASE_FILENAME = '_ibl_pycw{}'.format(
             self.PYBPOD_PROTOCOL.split('ChoiceWorld')[0].capitalize())
@@ -180,6 +184,7 @@ class session_param_handler(object):
         # =====================================================================
         # RUN BONSAI
         # =====================================================================
+        self._use_ibl_bonsai = True
         self.BONSAI = self.get_bonsai_path()
         self.run_bonsai()
         # =====================================================================
@@ -208,32 +213,23 @@ class session_param_handler(object):
     # =========================================================================
     # FILES AND FOLDER STRUCTURE
     # =========================================================================
-    @staticmethod
-    def get_bonsai_path():
-        """If on windows machine will check the registry for the location of
-        the bonsai64.exe file, if not found or not on windows returns None"""
-        try:
-            import winreg as wr
-            # HKEY_CLASSES_ROOT\Applications\Bonsai64.exe\shell\open\command
-            Registry = wr.ConnectRegistry(None, wr.HKEY_CLASSES_ROOT)
-            s = "Applications\\Bonsai64.exe\\shell\\open\\command"
-            RawKey = wr.OpenKey(Registry, s)
-            # print(RawKey)
-            out = []
-            try:
-                i = 0
-                while 1:
-                    name, value, type_ = wr.EnumValue(RawKey, i)
-                    out = [name, value, i]
-                    i += 1
-            except WindowsError:
-                print()
+    def get_bonsai_path(self):
+        """Checks for Bonsai folder in iblrig.
+        Returns string with bonsai executable path."""
+        folders = self.get_subfolder_paths(self.IBLRIG_FOLDER)
+        bonsai_folder = [x for x in folders if 'Bonsai' in x][0]
+        ibl_bonsai = os.path.join(bonsai_folder, 'Bonsai64.exe')
 
-            bonsai_path = out[1].split()[0].strip('"')
-            return bonsai_path
-        except Exception as e:
-            print(e)
-            return None
+        preexisting_bonsai = Path.home() / "AppData/Local/Bonsai/Bonsai64.exe"
+        if self._use_ibl_bonsai == True:
+            BONSAI = ibl_bonsai
+        elif self._use_ibl_bonsai == False and preexisting_bonsai.exists():
+            BONSAI = str(preexisting_bonsai)
+        elif self._use_ibl_bonsai == False and not preexisting_bonsai.exists():
+            print("NOT FOUND: {}\n Using packaged Bonsai.".format(
+                str(preexisting_bonsai)))
+            BONSAI = ibl_bonsai
+        return BONSAI
 
     def run_bonsai(self):
         if self.USE_VISUAL_STIMULUS and self.BONSAI:
@@ -243,24 +239,34 @@ class session_param_handler(object):
             shutil.copytree(src, dst)
             # Run Bonsai workflow
             here = os.getcwd()
-            os.chdir(os.path.join(self.IBLRIG_FOLDER, 'visual_stim', 
+            os.chdir(os.path.join(self.IBLRIG_FOLDER, 'visual_stim',
                                   'Gabor2D'))
             bns = self.BONSAI
             wkfl = self.VISUAL_STIMULUS_FILE
+
             pos = "-p:FileNamePositions=" + os.path.join(
                 self.SESSION_RAW_DATA_FOLDER,
-                "_ibl_encoderPositions.bonsai_raw.csv")
+                "_ibl_encoderPositions.bonsai_raw.ssv")
             evt = "-p:FileNameEvents=" + os.path.join(
                 self.SESSION_RAW_DATA_FOLDER,
-                "_ibl_encoderEvents.bonsai_raw.csv")
+                "_ibl_encoderEvents.bonsai_raw.ssv")
             itr = "-p:FileNameTrialInfo=" + os.path.join(
                 self.SESSION_RAW_DATA_FOLDER,
-                "_ibl_encoderTrialInfo.bonsai_raw.csv")
+                "_ibl_encoderTrialInfo.bonsai_raw.ssv")
             com = "-p:REPortName=" + self.ROTARY_ENCODER_PORT
+            mic = "-p:FileNameMic=" + os.path.join(
+                self.SESSION_RAW_DATA_FOLDER, "_ibl_rawMic.data.wav")
+            rec = "-p:RecordSound=" + str(self.RECORD_SOUND)
+
             start = '--start'
             noeditor = '--noeditor'
 
-            bonsai = subprocess.Popen([bns, wkfl, noeditor, pos, evt, itr, com])
+            if self.BONSAI_EDITOR:
+                bonsai = subprocess.Popen(
+                    [bns, wkfl, start, pos, evt, itr, com, mic, rec])
+            elif not self.BONSAI_EDITOR:
+                bonsai = subprocess.Popen(
+                    [bns, wkfl, noeditor, pos, evt, itr, com, mic, rec])
             time.sleep(5)
             bonsai
             os.chdir(here)
@@ -285,14 +291,17 @@ class session_param_handler(object):
             p = '{}'.format(os.path.sep).join(self.IBLRIG_FOLDER.split('\\'))
         return p
 
-    def _root_data_folder(self, iblrig_folder):
-        try:
-            os.path.exists(iblrig_folder)
-            out = os.path.join(iblrig_folder, 'pybpod_data')
-            out = self.check_folder(out)
-            return out
-        except IOError as e:
-            print(e, "\nCouldn't find IBLRIG_FOLDER in file system\n")
+    def _root_data_folder(self, iblrig_folder, main_data_folder):
+        if main_data_folder is None:
+            try:
+                os.path.exists(iblrig_folder)
+                out = os.path.join(iblrig_folder, 'Subjects')
+                out = self.check_folder(out)
+                return out
+            except IOError as e:
+                print(e, "\nCouldn't find IBLRIG_FOLDER in file system\n")
+        else:
+            return main_data_folder
 
     def _session_number(self):
         session_nums = [int(x) for x in os.listdir(self.SESSION_DATE_FOLDER)
@@ -438,9 +447,6 @@ class session_param_handler(object):
             session_param_handler.zipdir(dir, zipf)
         zipf.close()
 
-    # =========================================================================
-    # PUBLIC METHODS
-    # =========================================================================
     def _configure_rotary_encoder(self, RotaryEncoderModule):
         m = RotaryEncoderModule(self.ROTARY_ENCODER_PORT)
         m.set_zero_position()  # Not necessarily needed
@@ -448,10 +454,23 @@ class session_param_handler(object):
         m.enable_thresholds(self.ROTARY_ENCODER.ENABLE_THRESHOLDS)
         m.close()
 
+    # =========================================================================
+    # PUBLIC SOUND METHODS
+    # =========================================================================
+    def play_tone(self):
+        self.SD.play(self.GO_TONE, self.SOUND_SAMPLE_FREQ, mapping=[1, 2])
+
+    def play_noise(self):
+        self.SD.play(self.WHITE_NOISE, self.SOUND_SAMPLE_FREQ, mapping=[1, 2])
+
+    def stop_sound(self):
+        self.SD.stop()
+
 
 if __name__ == '__main__':
+    os.chdir(r'C:\iblrig\pybpod_projects\IBL\tasks\basicChoiceWorld')
     import task_settings as _task_settings
     import _user_settings
     sph = session_param_handler(_task_settings, _user_settings)
     self = sph
-    pass
+    print("Done!")

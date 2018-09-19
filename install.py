@@ -14,26 +14,6 @@ import sys
 # Constants assuming Windows
 IBLRIG_ROOT_PATH = os.getcwd()
 PYBPOD_PATH = os.path.join(IBLRIG_ROOT_PATH, 'pybpod')
-SUBMODULES_FOLDERS = [
-    'pybpod',
-    'water-calibration-plugin',
-]
-PYBPOD_SUBMODULES_FOLDERS = [
-    'pybpod-alyx-module',
-    'pybpod-gui-plugin-trial-timeline',
-    'pybpod-analogoutput-module',
-    'logging-bootstrap',
-    'pyforms',
-    'pyforms-generic-editor',
-    'pybpod-api',
-    'pybpod-gui-api',
-    'pybpod-gui-plugin',
-    'pybpod-gui-plugin-session-history',
-    'pybpod-gui-plugin-timeline',
-    'pybpod-rotary-encoder-module',
-    'safe-collaborative-architecture',
-    'pge-plugin-terminal'
-]
 
 
 def get_pybpod_env(conda):
@@ -46,34 +26,7 @@ def get_pybpod_env(conda):
     return PYBPOD_ENV
 
 
-def get_bonsai_path():
-    try:
-        import winreg as wr
-        # HKEY_CLASSES_ROOT\Applications\Bonsai64.exe\shell\open\command
-        registry = wr.ConnectRegistry(None, wr.HKEY_CLASSES_ROOT)
-        s = "Applications\\Bonsai64.exe\\shell\\open\\command"
-        raw_key = wr.OpenKey(registry, s)
-        # print(RawKey)
-        out = []
-        try:
-            i = 0
-            while 1:
-                name, value, type = wr.EnumValue(raw_key, i)
-                out = [name, value, i]
-                i += 1
-        except WindowsError:
-            print()
-
-        bonsai_path = out[1].split()[0].strip('"')
-        return bonsai_path
-    except Exception:
-        print('\nWARNING: BONSAI NOT PRESENT\nContinuing...\n')
-        return None
-
-
-BONSAI = get_bonsai_path()
 BASE_ENV_FILE = 'environment-{}.yml'
-
 if sys.platform in ['Windows', 'windows', 'win32']:
     ENV_FILE = BASE_ENV_FILE.format('windows-10')
     CONDA = "conda"
@@ -113,92 +66,139 @@ def get_env_constants():
 
 def check_dependencies():
     # Check if Git and conda are installed
-    print('\nINFO: Checking for dependencies:\n')
+    print('\n\nINFO: Checking for dependencies:')
+    print("N" * 79)
     try:
         subprocess.check_output(["git", "--version"])
+        print("Git... OK")
         subprocess.check_output([CONDA])
+        print("Conda... OK")
     except Exception as err:
         print(err, "\nEither git or conda were not found on your system\n")
         return
-    # Check if Bonsai is installed
-    if BONSAI is None:
-        print("WARNING: Bonsai not found, task will run with no visual stim\n",
-              "\n",
-              "Installation will proceed... \n")
+    print("N" * 79)
+    print("All dependencies OK.")
 
 
-def check_submodules():
-    print('\nINFO: Checking submodules for initialization:\n')
+def check_pybpod_for_initialization():
+    print('\n\nINFO: Checking pybpod for initialization:')
+    print("N" * 79)
     os.chdir(IBLRIG_ROOT_PATH)
-    for submodule in SUBMODULES_FOLDERS:
-        if not os.listdir(os.path.join(IBLRIG_ROOT_PATH, submodule)):
-            subprocess.call(["git", "submodule", "update", "--init",
-                             "--recursive"])
+    if not os.listdir(PYBPOD_PATH):
+        subprocess.call(["git", "submodule", "update", "--init",
+                         "--recursive"])
+    print("N" * 79)
+    print("PyBpod initialized.")
+
+
+def clone_water_calibration_plugin():
+    print('\n\nINFO: Cloning water-claibration-plugin:')
+    print("N" * 79)
+    os.chdir(os.path.join(PYBPOD_PATH, 'plugins'))
+    subprocess.call(["git", "clone",
+                     'https://bitbucket.org/azi92rach/water-calibration-plugin.git'])
+    os.chdir(IBLRIG_ROOT_PATH)
+    print("N" * 79)
+    print("PyBpod initialized and water-calibration-plugin cloned.")
 
 
 def install_environment():
-    print('\nINFO: Installing pybpod-environment:\n')
+    print('\n\nINFO: Installing pybpod-environment:')
+    print("N" * 79)
     # Install pybpod-environment
     command = '{} env create -f {}'. format(CONDA, os.path.join(
-        PYBPOD_PATH, ENV_FILE)).split()
+        PYBPOD_PATH, 'utils', ENV_FILE)).split()
 
     subprocess.call(command)
+    print("N" * 79)
+    print("pybpod-environment installed.")
 
 
 def install_extra_deps():
-    print('\nINFO: Installing IBL specific dependencies:\n')
+    print('\n\nINFO: Installing IBL specific dependencies:')
+    print("N" * 79)
     if PYBPOD_ENV is None:
         msg = "Can't install extra dependencies, pybpod-environment not found"
         raise ValueError(msg)
     # Define site-packages folder
     install_to = os.path.join(PYBPOD_ENV, SITE_PACKAGES)
 
-    # Install extra depencencies using conda
-    subprocess.call([CONDA, "install", "-n", "pybpod-environment", "scipy"])
-    subprocess.call([CONDA, "install", "-n", "pybpod-environment", "pandas"])
-    subprocess.call([CONDA, "install", "-n", "pybpod-environment",
+    print("N" * 39, 'Installing sounddevice')
+    subprocess.call([CONDA, "install", "-y", "-n", "pybpod-environment",
                      "-c", "conda-forge", "python-sounddevice"])
+    print("N" * 39, 'Installing requests')
+    subprocess.call([CONDA, "install", "-y", "-n",
+                     "pybpod-environment", "requests"])
+    print("N" * 39, 'Installing requests dependencies')
+    subprocess.call([CONDA, "install", "-y",
+                     "-n", "pybpod-environment", "requests", "--update-deps"])
     # Install extra depencencies using pip
+    print("N" * 39, '(pip) Installing python-osc')
     subprocess.call([PIP, "install", "--target={}".format(install_to),
                      "python-osc"])
-    subprocess.call([CONDA, "install", "-n", "pybpod-environment", "requests"])
-    subprocess.call([CONDA, "install",
-                     "-n", "pybpod-environment", "requests", "--update-deps"])
+    print("N" * 79)
+    print("IBL specific dependencies installed.")
 
 
 def install_pybpod():
-    print('\nINFO: Installing pybpod:\n')
+    print('\n\nINFO: Installing pybpod:')
+    print("N" * 79)
     if PYBPOD_ENV is None:
         msg = "Can't install pybpod, pybpod-environment not found"
         raise ValueError(msg)
     # Install pybpod
     os.chdir(PYBPOD_PATH)
     subprocess.call([PYTHON, "install.py"])
-    os.chdir('..')
+    os.chdir(IBLRIG_ROOT_PATH)
+    print("N" * 79)
+    print("INFO: PyBpod installed.")
 
 
-def install_pybpod_modules():
-    print('\nINFO: Installing pybpod modules and plugins:\n')
+def install_water_calibration_plugin():
+    print('\n\nINFO: Installing water-calibration-plugins:')
+    print("N" * 79)
+    os.chdir(os.path.join(PYBPOD_PATH, 'plugins'))
     subprocess.call([PIP, "install", "-e", "water-calibration-plugin"])
     os.chdir(PYBPOD_PATH)
-    for submodule in PYBPOD_SUBMODULES_FOLDERS:
-        subprocess.call([PIP, "install", "-e", submodule])
-    os.chdir('..')
+    print("N" * 79)
+    print("water-calibration-plugin installed.")
 
 
 def conf_pybpod_settings():
-    print('\nINFO: Configuring pybpod IBL project:\n')
+    print('\n\nINFO: Configuring pybpod IBL project:')
+    print("N" * 79)
     # Copy user settings
     src = os.path.join(IBLRIG_ROOT_PATH, 'user_settings.py')
     shutil.copy(src, PYBPOD_PATH)
+    print("N" * 79)
+    print("Configuration complete.")
+
+
+def install_bonsai():
+    print("\n\nDo you want to install Bonsai now? (y/n):")
+    user_input = input()
+    if user_input == 'y':
+        subprocess.call(os.path.join(IBLRIG_ROOT_PATH,
+                                     'Bonsai-2.3', 'Bonsai64.exe'))
+    elif user_input != 'n' and user_input != 'y':
+        print("Please answer 'y' or 'n'")
+        install_bonsai()
+    elif user_input == 'n':
+        pass
 
 
 if __name__ == '__main__':
     check_dependencies()
-    check_submodules()
+    check_pybpod_for_initialization()
+    clone_water_calibration_plugin()
     install_environment()
     PYBPOD_ENV, PIP, PYTHON_FILE, PYTHON = get_env_constants()
+    subprocess.call([PYTHON, '-m', 'pip', 'install', '--upgrade', 'pip'])
     install_extra_deps()
-    install_pybpod_modules()
+    install_water_calibration_plugin()
+    install_pybpod()
     conf_pybpod_settings()
-    print("\nINFO: Done!\nYou should be good to go...\n")
+    print("\nINFO: Installation concluded!")
+    print("\nIts time to install Bonsai:\n  Please install all packages.",
+          "\nIMPORTANT: the Bonsai.Bpod package is in the pre-release tab.")
+    install_bonsai()

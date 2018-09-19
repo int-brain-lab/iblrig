@@ -19,7 +19,10 @@ import sys
 
 
 def get_versions():
-    vers = subprocess.check_output(["git", "tag"]).decode().split()
+    vers = subprocess.check_output(["git", "ls-remote",
+                                    "--tags", "origin"]).decode().split()
+    vers = [x for x in vers[1::2] if '{' not in x]
+    vers = [x.split('/')[-1] for x in vers]
     print("\nAvailable versions: {}\n".format(vers))
     return vers
 

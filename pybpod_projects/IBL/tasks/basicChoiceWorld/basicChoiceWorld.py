@@ -12,6 +12,7 @@ import datetime
 
 from session_params import session_param_handler
 from trial_params import trial_param_handler
+import ambient_sensor
 import task_settings
 import user_settings
 import online_plots as op
@@ -33,11 +34,12 @@ def softcode_handler(data):
     2 : white_noise
     """
     global sph
+    if data == 0:
+        sph.stop_sound()
     if data == 1:
-        sph.SD.play(sph.GO_TONE, sph.SOUND_SAMPLE_FREQ)
+        sph.play_tone()
     elif data == 2:
-        sph.SD.play(sph.WHITE_NOISE, sph.SOUND_SAMPLE_FREQ)
-
+        sph.play_noise()
     # sph.OSC_CLIENT.send_message("/e", data)
 
 
@@ -45,12 +47,13 @@ def softcode_handler(data):
 # CONNECT TO BPOD
 # =============================================================================
 bpod = Bpod()
+
 # Loop handler function is used to flush events for the online plotting
 bpod.loop_handler = bpod_loop_handler
 # Soft code handler function can run arbitrary code from within state machine
 bpod.softcode_handler_function = softcode_handler
 # Rotary Encoder State Machine handler
-rotary_encoder = list(bpod.modules)[0]  # TODO:find by name?
+rotary_encoder = [x for x in bpod.modules if x.name == 'RotaryEncoder1'][0]
 # ROTARY ENCODER SEVENTS
 # Set RE position to zero 'Z' + eneable all RE thresholds 'E'
 # rotary_encoder_reset = rotary_encoder.create_resetpositions_trigger()
@@ -94,13 +97,15 @@ for i in range(sph.NTRIALS):  # Main loop
         state_name='trial_start',
         state_timer=0,  # ~100µs hardware irreducible delay
         state_change_conditions={'Tup': 'reset_rotary_encoder'},
-        output_actions=[('Serial1', rotary_encoder_event1)])  # stop stim
+        output_actions=[('Serial1', rotary_encoder_event1),
+                        ('SoftCode', 0),
+                        ])  # stop stim
 
     sma.add_state(
         state_name='reset_rotary_encoder',
         state_timer=0,
         state_change_conditions={'Tup': 'quiescent_period'},
-        output_actions=[('Serial1', rotary_encoder_reset)])
+        output_actions=[])
 
     sma.add_state(  # '>back' | '>reset_timer'
         state_name='quiescent_period',
@@ -108,7 +113,7 @@ for i in range(sph.NTRIALS):  # Main loop
         state_change_conditions={'Tup': 'stim_on',
                                  tph.movement_left: 'reset_rotary_encoder',
                                  tph.movement_right: 'reset_rotary_encoder'},
-        output_actions=[])
+        output_actions=[('Serial1', rotary_encoder_reset)])
 
     sma.add_state(
         state_name='stim_on',
@@ -141,7 +146,7 @@ for i in range(sph.NTRIALS):  # Main loop
         state_name='error',
         state_timer=tph.iti_error,
         state_change_conditions={'Tup': 'exit'},
-        output_actions=[('SoftCode', 2)])  # play white noise
+        output_actions=[('SoftCode', 2)])  # play noise + save sensor data
 
     sma.add_state(
         state_name='reward',
@@ -158,10 +163,9 @@ for i in range(sph.NTRIALS):  # Main loop
     # Send state machine description to Bpod device
     bpod.send_state_machine(sma)
     # Run state machine
-    bpod.run_state_machine(sma)
+    bpod.run_state_machine(sma)  # Locks until state machine 'exit' is reached
 
     trial_data = tph.trial_completed(bpod.session.current_trial.export())
-
     op.plot_bars(trial_data, ax=ax_bars)
     psyfun_df = op.update_psyfun_df(trial_data, psyfun_df)
     op.plot_psyfun(trial_data, psyfun_df, ax=ax_psyc)
@@ -171,6 +175,11 @@ for i in range(sph.NTRIALS):  # Main loop
     print('\nWATER DELIVERED ', trial_data['water_delivered'])
     print('\nTIME FROM START: ', (datetime.datetime.now() -
                                   parser.parse(trial_data['init_datetime'])))
+    if sph.RECORD_AMBIENT_SENSOR_DATA:
+        data = ambient_sensor.get_reading(bpod,
+                                          save_to=sph.SESSION_RAW_DATA_FOLDER)
+        print('\nAMBIENT SENSOR DATA: ', data)
+
     print('\n\nStarting trial: ', i + 1)
 
 bpod.close()
