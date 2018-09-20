@@ -16,6 +16,8 @@ Usage:
 """
 import subprocess
 import sys
+import os
+import shutil
 
 
 def get_versions():
@@ -28,8 +30,6 @@ def get_versions():
 
 
 def get_current_version():
-    # tag = subprocess.check_output(["git", "describe",
-    #                                "--tags"]).decode().strip()
     tag = subprocess.check_output(["git", "tag",
                                    "--points-at", "HEAD"]).decode().strip()
     print("\nCurrent version: {}\n".format(tag))
@@ -46,10 +46,34 @@ def pull():
     submodule_update()
 
 
+def pybpod_projects_path():
+    return os.path.join(os.getcwd(), 'pybpod_projects')
+
+
+def backup_pybpod_projects():
+    src = pybpod_projects_path()
+    dst = os.path.join(os.path.expanduser('~'), 'pybpod_projects.bk')
+    shutil.copytree(src, dst,
+        ignore=shutil.ignore_patterns('sessions'))
+
+
+def restore_pybpod_projects_from_backup():
+    src = os.path.join(os.path.expanduser('~'), 'pybpod_projects.bk')
+    dst = os.getcwd()
+    shutil.rmtree(os.path.join(os.getcwd(), 'pybpod_projects'))
+    shutil.move(src, dst)
+    os.rename(os.path.join(os.getcwd(), 'pybpod_projects.bk'),
+              pybpod_projects_path())
+
+
 def checkout_version(ver):
-    print("Checking out {}".format(ver))
+    print("Backing up current pybpod_projects configuration")
+    backup_pybpod_projects()
+    print("\nChecking out {}".format(ver))
     subprocess.call(['git', 'checkout', 'tags/' + ver])
     submodule_update()
+    print("Restoring pybpod_projects")
+    restore_pybpod_projects_from_backup()
 
 
 def update_remotes():
@@ -90,5 +114,4 @@ if __name__ == '__main__':
             checkout_version(sys.argv[1])
         else:
             print("Unknown version...")
-
     print("Done")
