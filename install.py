@@ -72,7 +72,7 @@ def check_dependencies():
         subprocess.check_output(["git", "--version"])
         print("Git... OK")
         subprocess.check_output([CONDA, "update", "-y", "-n", "base",
-            "-c", "defaults", "conda"])
+                                 "-c", "defaults", "conda"])
         print("Conda... OK")
     except Exception as err:
         print(err, "\nEither git or conda were not found on your system\n")
@@ -204,19 +204,23 @@ def install_bonsai():
 
 
 if __name__ == '__main__':
-    check_dependencies()
-    check_pybpod_for_initialization()
-    clone_water_calibration_plugin()
-    install_environment()
-    print("\n\n")
-    PYBPOD_ENV, PIP, PYTHON_FILE, PYTHON = get_env_constants()
-    subprocess.call([PYTHON, '-m', 'pip', 'install', '--upgrade', 'pip'])
-    install_extra_deps()
-    install_water_calibration_plugin()
-    install_pybpod()
-    conf_pybpod_settings()
-    print("\nINFO: Installation concluded!")
-    print("\nIts time to install Bonsai:\n  Please install all packages.",
-          "\nIMPORTANT: the Bonsai.Bpod package is in the pre-release tab.")
-    install_bonsai()
-
+    try:
+        check_dependencies()
+        check_pybpod_for_initialization()
+        clone_water_calibration_plugin()
+        install_environment()
+        print("\n\n")
+        PYBPOD_ENV, PIP, PYTHON_FILE, PYTHON = get_env_constants()
+        subprocess.call([PYTHON, '-m', 'pip', 'install', '--upgrade', 'pip'])
+        install_extra_deps()
+        install_water_calibration_plugin()
+        # install_pybpod()
+        conf_pybpod_settings()
+        print("\nIts time to install Bonsai:\n  Please install all packages.",
+              "\nIMPORTANT: the Bonsai.Bpod package is in the pre-release tab.")
+        install_bonsai()
+        print("Almost done...\nPlease run the following command:\n",
+              r"    activate pybpod-environment && cd pybpod", "\n",
+              r"    python utils\install.py")
+    except IOError as msg:
+        print(msg, "\n\nSOMETHING IS WRONG: Bad! Bad install file!")
