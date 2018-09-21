@@ -88,6 +88,7 @@ plt.pause(1)
 
 for i in range(sph.NTRIALS):  # Main loop
     tph.next_trial()
+    print('\n\nStarting trial: ', i + 1)
 # =============================================================================
 #     Start state machine definition
 # =============================================================================
@@ -171,16 +172,15 @@ for i in range(sph.NTRIALS):  # Main loop
     op.plot_psyfun(trial_data, psyfun_df, ax=ax_psyc)
 
     print('\nTRIAL NUM: ', trial_data['trial_num'])
-    print('\nNTRIALS CORRECT: ', trial_data['ntrials_correct'])
-    print('\nWATER DELIVERED ', trial_data['water_delivered'])
-    print('\nTIME FROM START: ', (datetime.datetime.now() -
+    print('NTRIALS CORRECT: ', trial_data['ntrials_correct'])
+    print('WATER DELIVERED ', trial_data['water_delivered'])
+    print('TIME FROM START: ', (datetime.datetime.now() -
                                   parser.parse(trial_data['init_datetime'])))
     if sph.RECORD_AMBIENT_SENSOR_DATA:
         data = ambient_sensor.get_reading(bpod,
                                           save_to=sph.SESSION_RAW_DATA_FOLDER)
-        print('\nAMBIENT SENSOR DATA: ', data)
+        print('AMBIENT SENSOR DATA: ', data)
 
-    print('\n\nStarting trial: ', i + 1)
 
 bpod.close()
 
