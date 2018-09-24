@@ -14,11 +14,6 @@ Welcome to iblrig's documentation!
 
 
 
-
-
-
-
-
 Indices and tables
 ==================
 
