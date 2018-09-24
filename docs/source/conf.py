@@ -32,7 +32,7 @@ author = 'Niccolò Bonacchi'
 # The short X.Y version
 version = '1.1'
 # The full version, including alpha/beta/rc tags
-release = '1.1.0'
+release = '1.1.4'
 
 
 # -- General configuration ---------------------------------------------------
@@ -119,7 +119,7 @@ html_static_path = ['_static']
 # -- Options for HTMLHelp output ---------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'iblrigdoc'
+htmlhelp_basename = 'iblrigdocs'
 
 
 # -- Options for LaTeX output ------------------------------------------------
