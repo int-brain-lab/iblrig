@@ -51,6 +51,7 @@ def pybpod_projects_path():
 
 
 def backup_pybpod_projects():
+    print("Backing up current pybpod_projects configuration")
     src = pybpod_projects_path()
     dst = os.path.join(os.path.expanduser('~'), 'pybpod_projects.bk')
     shutil.copytree(src, dst,
@@ -58,6 +59,7 @@ def backup_pybpod_projects():
 
 
 def restore_pybpod_projects_from_backup():
+    print("Restoring pybpod_projects")
     src = os.path.join(os.path.expanduser('~'), 'pybpod_projects.bk')
     dst = os.getcwd()
     shutil.rmtree(os.path.join(os.getcwd(), 'pybpod_projects'))
@@ -66,14 +68,21 @@ def restore_pybpod_projects_from_backup():
               pybpod_projects_path())
 
 
+def get_new_tasks():
+    print("Checking for new tasks:")
+    "git fetch"
+    "git ls-tree -r --name-only origin/master | grep tasks"
+    if condition:
+        print("No new task found.")
+    else:
+        print("Downloading new task(s):")
+        # Check latest master and find new tasks
+        "git checkout origin/develop - - pybpod_projects/IBL/tasks/tasks.json"
+
 def checkout_version(ver):
-    print("Backing up current pybpod_projects configuration")
-    backup_pybpod_projects()
     print("\nChecking out {}".format(ver))
     subprocess.call(['git', 'checkout', 'tags/' + ver])
     submodule_update()
-    print("Restoring pybpod_projects")
-    restore_pybpod_projects_from_backup()
 
 
 def update_remotes():
@@ -111,7 +120,11 @@ if __name__ == '__main__':
         if sys.argv[1] in help_args:
             print(__doc__)
         elif sys.argv[1] in get_versions():
+            backup_pybpod_projects()
             checkout_version(sys.argv[1])
+            restore_pybpod_projects_from_backup()
+        elif sys.argv[1] == 'tasks':
+            get_new_tasks()
         else:
             print("Unknown version...")
     print("Done")
