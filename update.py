@@ -114,7 +114,7 @@ def get_new_tasks(branch='master'):
     return missing_files
 
 
-def checkout_missing_task_files(missing_files):
+def checkout_missing_task_files(missing_files, branch='master'):
     for file in missing_files:
         subprocess.call("git checkout origin/{} -- {}".format(branch,
                                                                 file).split())
@@ -168,7 +168,7 @@ if __name__ == '__main__':
             restore_pybpod_projects_from_backup()
         elif sys.argv[1] == 'tasks':
             missing_files = get_new_tasks(branch='master')
-            checkout_missing_task_files(missing_files)
+            checkout_missing_task_files(missing_files, branch='master')
         else:
             print("Unknown version...")
     elif len(sys.argv) == 3:
@@ -176,6 +176,6 @@ if __name__ == '__main__':
             print("Unknown command...")
         elif sys.argv[2] in get_branches():
             missing_files = get_new_tasks(branch=sys.argv[2])
-            checkout_missing_task_files(missing_files)
+            checkout_missing_task_files(missing_files, branch=sys.argv[2])
 
     print("Done")
