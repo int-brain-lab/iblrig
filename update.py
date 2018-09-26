@@ -41,7 +41,7 @@ def get_branches():
                                     "--heads", "origin"]).decode().split()
     branches = [x.split('heads')[-1] for x in branches[1::2]]
     branches = [x[1:] for x in branches]
-    print("\nAvailable versions: {}\n".format(branches))
+    print("\nAvailable branches: {}\n".format(branches))
 
     return branches
 
@@ -49,7 +49,7 @@ def get_branches():
 def get_current_version():
     tag = subprocess.check_output(["git", "tag",
                                    "--points-at", "HEAD"]).decode().strip()
-    print("\nCurrent version: {}\n".format(tag))
+    print("\nCurrent version: {}".format(tag))
     return tag
 
 
@@ -86,7 +86,7 @@ def restore_pybpod_projects_from_backup():
 
 
 def get_new_tasks(branch='master'):
-    print("Checking for new tasks:")
+    print("Checking for new tasks on {}:".format(branch))
     local_tasks_dir = os.path.join(
         os.getcwd(), 'pybpod_projects', 'IBL', 'tasks')
 
@@ -108,8 +108,7 @@ def get_new_tasks(branch='master'):
     missing_files = list(set(remote_task_files) - set(found_files))
     # Remove tasks.json file
     missing_files = [x for x in missing_files if "tasks.json" not in x]
-    print("Found {} new files:".format(len(missing_files)))
-    print(missing_files)
+    print("Found {} new files:".format(len(missing_files)), missing_files)
 
     return missing_files
 
@@ -119,7 +118,6 @@ def checkout_missing_task_files(missing_files, branch='master'):
         subprocess.call("git checkout origin/{} -- {}".format(branch,
                                                                 file).split())
         print("Checked out:", file)
-    print("Done.")
 
 
 def checkout_version(ver):
@@ -129,7 +127,6 @@ def checkout_version(ver):
 
 
 def update_remotes():
-    print("Getting info on remote branches from origin")
     subprocess.call(['git', 'remote', 'update'])
 
 
@@ -144,8 +141,9 @@ def info():
     ver = get_current_version()
     versions = get_versions()
     if not ver:
-        print("WARNING: You appear to be on an untagged release.")
-        print("Try updating to a specific version\n")
+        print("WARNING: You appear to be on an untagged release.",
+              "\n         Try updating to a specific version")
+        print()
     else:
         idx = sorted(versions).index(ver) if ver in versions else None
         if idx + 1 == len(versions):
@@ -159,10 +157,11 @@ if __name__ == '__main__':
     if len(sys.argv) == 1:
         info()
     elif len(sys.argv) == 2:
+        versions = get_versions()
         help_args = ['-h', '--help', '?']
         if sys.argv[1] in help_args:
             print(__doc__)
-        elif sys.argv[1] in get_versions():
+        elif sys.argv[1] in versions:
             backup_pybpod_projects()
             checkout_version(sys.argv[1])
             restore_pybpod_projects_from_backup()
@@ -170,12 +169,16 @@ if __name__ == '__main__':
             missing_files = get_new_tasks(branch='master')
             checkout_missing_task_files(missing_files, branch='master')
         else:
-            print("Unknown version...")
+            print("ERROR:", sys.argv[1],
+                  "is not a  valid command or version number.")
     elif len(sys.argv) == 3:
+        branches = get_branches()
         if sys.argv[1] != 'tasks':
-            print("Unknown command...")
-        elif sys.argv[2] in get_branches():
+            print("ERROR:", "Unknown command...")
+        elif sys.argv[2] not in branches:
+            print("ERROR:", sys.argv[2], "is not a valid branch.")
+        elif sys.argv[2] in branches:
             missing_files = get_new_tasks(branch=sys.argv[2])
             checkout_missing_task_files(missing_files, branch=sys.argv[2])
 
-    print("Done")
+    print("\n")
