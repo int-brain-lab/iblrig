@@ -227,10 +227,16 @@ For more information on how to update you can use the flags
  (base) C:\iblrig>python update.py -h
 
  Usage:
-   update.py
-       Will fetch changes from origin. Nothing is updated yet!
-       Calling update.py will display information on the available versions
-   update.py <version>
-      Will checkout the <version> release and update the submodules
-   update.py -h | --help | ?
-       Displays this docstring.
+    update.py
+        Will fetch changes from origin. Nothing is updated yet!
+        Calling update.py will display information on the available versions
+    update.py <version>
+        Will backup pybpod_projects folder where local configurations live.
+        Will checkout the <version> release, update the submodules, and restore
+        the pybpod_projects folder from backup.
+    update.py tasks
+        Will checkout any task file not present in the local tasks folder.
+    update.py tasks <branch>
+        Will checkout any task file from <branch> not present in local folder.
+    update.py -h | --help | ?
+        Displays this docstring.
