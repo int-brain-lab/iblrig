@@ -10,7 +10,13 @@ Usage:
         Will fetch changes from origin. Nothing is updated yet!
         Calling update.py will display information on the available versions
     update.py <version>
-        Will checkout the <version> release and update the submodules
+        Will backup pybpod_projects folder where local configurations live.
+        Will checkout the <version> release, update the submodules, and restore
+        the pybpod_projects folder from backup.
+    update.py tasks
+        Will checkout any task file not present in the local tasks folder.
+    update.py tasks <branch>
+        Will checkout any task file from <branch> not present in local folder.
     update.py -h | --help | ?
         Displays this docstring.
 """
@@ -18,6 +24,7 @@ import subprocess
 import sys
 import os
 import shutil
+from pathlib import Path
 
 
 def get_versions():
@@ -27,6 +34,16 @@ def get_versions():
     vers = [x.split('/')[-1] for x in vers]
     print("\nAvailable versions: {}\n".format(vers))
     return vers
+
+
+def get_branches():
+    branches = subprocess.check_output(["git", "ls-remote",
+                                    "--heads", "origin"]).decode().split()
+    branches = [x.split('heads')[-1] for x in branches[1::2]]
+    branches = [x[1:] for x in branches]
+    print("\nAvailable versions: {}\n".format(branches))
+
+    return branches
 
 
 def get_current_version():
@@ -68,16 +85,42 @@ def restore_pybpod_projects_from_backup():
               pybpod_projects_path())
 
 
-def get_new_tasks():
+def get_new_tasks(branch='master'):
     print("Checking for new tasks:")
-    "git fetch"
-    "git ls-tree -r --name-only origin/master | grep tasks"
-    if condition:
-        print("No new task found.")
-    else:
-        print("Downloading new task(s):")
-        # Check latest master and find new tasks
-        "git checkout origin/develop - - pybpod_projects/IBL/tasks/tasks.json"
+    local_tasks_dir = os.path.join(
+        os.getcwd(), 'pybpod_projects', 'IBL', 'tasks')
+
+    ltp = Path(local_tasks_dir)
+    local_tasks = [str(x).split(os.sep)[-1]
+                   for x in ltp.glob('*') if x.is_dir()]
+
+    subprocess.call("git fetch".split())
+    all_files = subprocess.check_output(
+        "git ls-tree -r --name-only origin/{}".format(
+            branch).split()).decode().split('\n')
+
+    remote_task_files = [x for x in all_files if 'tasks' in x]
+
+    found_files = []
+    for lt in local_tasks:
+        found_files.extend([x for x in remote_task_files if lt in x])
+
+    missing_files = list(set(remote_task_files) - set(found_files))
+    # Remove tasks.json file
+    missing_files = [x for x in missing_files if "tasks.json" not in x]
+    print("Found {} new files:".format(len(missing_files)))
+    print(missing_files)
+
+    return missing_files
+
+
+def checkout_missing_task_files(missing_files):
+    for file in missing_files:
+        subprocess.call("git checkout origin/{} -- {}".format(branch,
+                                                                file).split())
+        print("Checked out:", file)
+    print("Done.")
+
 
 def checkout_version(ver):
     print("\nChecking out {}".format(ver))
@@ -124,7 +167,15 @@ if __name__ == '__main__':
             checkout_version(sys.argv[1])
             restore_pybpod_projects_from_backup()
         elif sys.argv[1] == 'tasks':
-            get_new_tasks()
+            missing_files = get_new_tasks(branch='master')
+            checkout_missing_task_files(missing_files)
         else:
             print("Unknown version...")
+    elif len(sys.argv) == 3:
+        if sys.argv[1] != 'tasks':
+            print("Unknown command...")
+        elif sys.argv[2] in get_branches():
+            missing_files = get_new_tasks(branch=sys.argv[2])
+            checkout_missing_task_files(missing_files)
+
     print("Done")
