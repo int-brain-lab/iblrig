@@ -167,8 +167,7 @@ class session_param_handler(object):
                                                            self.SESSION_DATE,
                                                            self.SESSION_NUMBER
                                                            ])
-        self.BASE_FILENAME = '_ibl_pycw{}'.format(
-            self.PYBPOD_PROTOCOL.split('ChoiceWorld')[0].capitalize())
+        self.BASE_FILENAME = '_ibl_task'
         self.SETTINGS_FILE_PATH = os.path.join(self.SESSION_RAW_DATA_FOLDER,
                                                self.BASE_FILENAME +
                                                '.settings.json')
