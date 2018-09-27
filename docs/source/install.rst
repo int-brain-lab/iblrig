@@ -4,7 +4,7 @@ Installation
 iblrig
 ------
 
-iblrig is the root folder for the PyBpod/Bonsai task. It requires, for now,
+iblrig is the main folder for the PyBpod/Bonsai task. It requires, for now,
 to be installed in the root **C:\\folder** of your windows computer.
 
 iblrig is using gitflow and semantic versioning conventions.
