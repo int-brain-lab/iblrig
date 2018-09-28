@@ -16,6 +16,7 @@ import numpy as np
 import scipy.stats as st
 from dateutil import parser
 from pythonosc import udp_client
+from sound import Sounds
 
 from pybpod_rotaryencoder_module.module_api import RotaryEncoderModule
 
@@ -26,48 +27,6 @@ class ComplexEncoder(json.JSONEncoder):
             return obj.reprJSON()
         else:
             return json.JSONEncoder.default(self, obj)
-
-
-class Sounds():
-    """Software solution for playing sounds"""
-    def configure_sounddevice(sd=None):
-        if sd is None:
-            import sounddevice as sd
-
-        devices = sd.query_devices()
-        sd.default.device = [(i, d) for i, d in enumerate(
-            devices) if 'Speakers' in d['name']][0][0]
-        sd.default.latency = 'low'
-        sd.default.channels = 8
-        return sd
-
-    def make_sound(frequency=10000, duration=0.1, amplitude=1, fade=0.01):
-        """Build sound to feed to sounddevice lib.
-        If frequency is set to -1 will produce white noise
-        frequency  # Hz
-        amplitude  # [0->1]
-        """
-        sample_rate = 44100  # sample rate, depend on the sound card
-        tone_duration = duration  # sec
-        fade_duration = fade  # sec
-
-        tvec = np.linspace(0, tone_duration, tone_duration * sample_rate)
-        tone = amplitude * np.sin(2 * np.pi * frequency * tvec)  # tone vec
-        size = sample_rate * fade_duration / 2  #
-        dist = st.expon(0., size)  # distribution object provided by scipy
-        F = dist.cdf  # cumulative density function
-        ker1 = F(range(int(sample_rate * tone_duration)))
-        ker2 = ker1[::-1]
-        ker = ker1 * ker2
-        tone = tone * ker
-        if frequency == -1:
-            tone = amplitude * np.random.rand(tone.size)
-
-        ttl = tone.copy()
-        ttl[:] = 1.
-
-        sound = np.array([tone, ttl]).T
-        return sound
 
 
 class MyRotaryEncoder(object):
@@ -106,17 +65,6 @@ class session_param_handler(object):
         self.__dict__.update(us)
         self.deserialize_session_user_settings()
         # =====================================================================
-        # SOUNDS
-        # =====================================================================
-        self.GO_TONE = Sounds.make_sound(frequency=self.GO_TONE_FREQUENCY,
-                                         duration=self.GO_TONE_DURATION,
-                                         amplitude=self.GO_TONE_AMPLITUDE)
-        self.WHITE_NOISE = Sounds.make_sound(
-            frequency=-1,
-            duration=self.WHITE_NOISE_DURATION,
-            amplitude=self.WHITE_NOISE_AMPLITUDE)
-        self.SD = Sounds.configure_sounddevice()
-        # =====================================================================
         # OSC CLIENT
         # =====================================================================
         self.OSC_CLIENT = self._osc_client_init()
@@ -146,6 +94,7 @@ class session_param_handler(object):
 
         self.ROOT_DATA_FOLDER = self._root_data_folder(self.IBLRIG_FOLDER,
                                                        self.MAIN_DATA_FOLDER)
+        self.SOUND_STIM_FOLDER = os.path.join(self.IBLRIG_FOLDER, 'sound_stim')
         self.VISUAL_STIM_FOLDER = os.path.join(self.IBLRIG_FOLDER,
                                                'visual_stim', 'Gabor2D')
         self.VISUAL_STIMULUS_FILE = os.path.join(self.IBLRIG_FOLDER,
@@ -181,6 +130,16 @@ class session_param_handler(object):
         self.PREVIOUS_DATA_FILE = self._previous_data_file()
         self.LAST_TRIAL_DATA = self._load_last_trial()
         self.REWARD_CURRENT = self._init_reward()
+        # =====================================================================
+        # SOUNDS
+        # =====================================================================
+        self.GO_TONE = sound.make_sound(frequency=self.GO_TONE_FREQUENCY,
+                                        duration=self.GO_TONE_DURATION,
+                                        amplitude=self.GO_TONE_AMPLITUDE)
+        self.WHITE_NOISE = sound.make_sound(frequency=-1,
+                                            duration=self.WHITE_NOISE_DURATION,
+                                            amplitude=self.WHITE_NOISE_AMPLITUDE)
+        self.SD = sound.configure_sounddevice()
         # =====================================================================
         # RUN BONSAI
         # =====================================================================
