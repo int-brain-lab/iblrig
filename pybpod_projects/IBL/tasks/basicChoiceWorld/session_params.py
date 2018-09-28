@@ -171,10 +171,10 @@ class session_param_handler(object):
             self.PYBPOD_PROTOCOL.split('ChoiceWorld')[0].capitalize())
         self.SETTINGS_FILE_PATH = os.path.join(self.SESSION_RAW_DATA_FOLDER,
                                                self.BASE_FILENAME +
-                                               '.settings.json')
+                                               'Settings.raw.json')
         self.DATA_FILE_PATH = os.path.join(self.SESSION_RAW_DATA_FOLDER,
                                            self.BASE_FILENAME +
-                                           '.data.jsonable')
+                                           'Data.raw.jsonable')
         # =====================================================================
         # REWARD INITIALIZATION
         # =====================================================================
@@ -244,18 +244,20 @@ class session_param_handler(object):
             bns = self.BONSAI
             wkfl = self.VISUAL_STIMULUS_FILE
 
-            pos = "-p:FileNamePositions=" + os.path.join(
-                self.SESSION_RAW_DATA_FOLDER,
-                "_ibl_encoderPositions.bonsai_raw.ssv")
             evt = "-p:FileNameEvents=" + os.path.join(
                 self.SESSION_RAW_DATA_FOLDER,
-                "_ibl_encoderEvents.bonsai_raw.ssv")
+                "_ibl_encoderEvents.raw.ssv")
+            pos = "-p:FileNamePositions=" + os.path.join(
+                self.SESSION_RAW_DATA_FOLDER,
+                "_ibl_encoderPositions.raw.ssv")
             itr = "-p:FileNameTrialInfo=" + os.path.join(
                 self.SESSION_RAW_DATA_FOLDER,
-                "_ibl_encoderTrialInfo.bonsai_raw.ssv")
-            com = "-p:REPortName=" + self.ROTARY_ENCODER_PORT
+                "_ibl_encoderTrialInfo.raw.ssv")
             mic = "-p:FileNameMic=" + os.path.join(
-                self.SESSION_RAW_DATA_FOLDER, "_ibl_rawMic.data.wav")
+                self.SESSION_RAW_DATA_FOLDER,
+                "_ibl_micData.raw.wav")
+
+            com = "-p:REPortName=" + self.ROTARY_ENCODER_PORT
             rec = "-p:RecordSound=" + str(self.RECORD_SOUND)
 
             start = '--start'
@@ -427,7 +429,7 @@ class session_param_handler(object):
                               self.SESSION_RAW_DATA_FOLDER, x))]
         session_param_handler.zipit(
             folders_to_zip, os.path.join(self.SESSION_RAW_DATA_FOLDER,
-                                         '_ibl_code.files.zip'))
+                                         '_ibl_codeFiles.raw.zip'))
 
         [shutil.rmtree(x) for x in folders_to_zip]
 

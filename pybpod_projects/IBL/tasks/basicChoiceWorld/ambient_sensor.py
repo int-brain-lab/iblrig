@@ -25,7 +25,7 @@ def get_reading(bpod_instance, save_to=None):
 
     if save_to is not None:
         data = {k: v.tolist() for k, v in Measures.items()}
-        with open(os.path.join(save_to, '_ibl_ambientSensor.data.jsonable'),
+        with open(os.path.join(save_to, '_ibl_ambientSensorData.raw.jsonable'),
                   'a') as f:
             f.write(json.dumps(data))
             f.write('\n')
