@@ -84,7 +84,19 @@ def make_sound(rate=44100, frequency=10000, duration=0.1, amplitude=1,
     return sound
 
 
-def save_bin(sound, file_path, uploader=False):
+def save_bin(sound, file_path):
+    """
+    Save binary file for CFSoundcard upload.
+
+    Binary files to be sent to the sound card need to be a single contiguous
+    vector of int32 s. 4 Bytes left speaker, 4 Bytes right speaker, ..., etc.
+
+
+    :param sound: Stereo sound
+    :type sound: 2d numpy.array os shape (n_samples, 2)
+    :param file_path: full path (w/ name) of location where to save the file
+    :type file_path: str
+    """
     bin_sound = (sound * ((2**31) - 1)).astype(np.int32)
 
     if bin_sound.flags.f_contiguous:
@@ -98,9 +110,21 @@ def save_bin(sound, file_path, uploader=False):
 
 
 def uplopad(uploader, file_path, index, type_=0, sample_rate=96):
+    """
+    Uploads a bin file to an index of the non volatile memory of the sound card.
 
+    :param uploader: path of executable for transferring sounds
+    :type uploader: str
+    :param file_path: path of file to be uploaded
+    :type file_path: str
+    :param index: E[2-31] memory bank to upload to
+    :type index: int
+    :param type_: {0: int32, 1: float32} datatype of binary file, defaults to 0
+    :param type_: int, optional
+    :param sample_rate: [96, 192] (KHz) playback sample rate, defaults to 96
+    :param sample_rate: int, optional
+    """
     subprocess.call([uploader, file_path, index, type_, sample_rate] )
-
     return
 
 
