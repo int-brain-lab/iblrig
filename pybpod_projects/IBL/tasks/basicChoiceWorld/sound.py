@@ -6,45 +6,45 @@
 
 import numpy as np
 import subprocess
+import os
+import sys
 
 
-"""Software solution for playing sounds"""
-def configure_sounddevice(sd=None):
+def _configure_sounddevice(sd=None):
     """
     Will import, configure, and return sounddevice module to
     play sounds using onboard sound card.
 
     :param sd: sounddevice module to be configured,
-               defaults to None, will import new module if absent.
+            defaults to None, will import new module if absent.
     :type sd: module, optional
     :return: configured sounddevice module
     :rtype: sounddevice module
     """
     if sd is None:
         import sounddevice as sd
-
-    devices = sd.query_devices()
-    sd.default.device = [(i, d) for i, d in enumerate(
-        devices) if 'Speakers' in d['name']][0][0]
+    if sys.platform == 'linux':
+        sd.default.device = 'default'
+    else:
+        devices = sd.query_devices()
+        sd.default.device = [(i, d) for i, d in enumerate(
+            devices) if 'Speakers' in d['name']][0][0]
     sd.default.latency = 'low'
     sd.default.channels = 8
     return sd
 
+
 def make_sound(rate=44100, frequency=10000, duration=0.1, amplitude=1,
-               fade=0.01, save_path=False):
+            fade=0.01, save_path=False):
     """
-    Build sound to feed to sounddevice lib.
-    If frequency is set to -1 will produce white noise
-    rate = sample rate of the soundcard use 96000 for Bpod and 44100 for onboard
-    frequency
-    duration (s) of the sound
-    amplitude  # [0->1]
+    Build sounds and save bin file for upload to soundcard or play via
+    sounddevice lib.
 
     :param rate: sample rate of the soundcard use 96000 for Bpod,
-                 defaults to 44100
+                    defaults to 44100 for soundcard
     :type rate: int, optional
     :param frequency: (Hz) of the tone, if -1 will create uniform random white
-                      noise, defaults to 10000
+                    noise, defaults to 10000
     :type frequency: int, optional
     :param duration: (s) of sound, defaults to 0.1
     :type duration: float, optional
@@ -53,7 +53,7 @@ def make_sound(rate=44100, frequency=10000, duration=0.1, amplitude=1,
     :param fade: (s) time of fading window rise and decay, defaults to 0.01
     :type fade: float, optional
     :param save_path: path of where to save the bin file for upload to card.
-                      Will not save if False, defaults to False
+                    Will not save if False, defaults to False
     :type save_path: bool/str, optional
     :return: streo sound from mono definitions
     :rtype: np.ndarray with shape (Nsamples, 2)
@@ -79,7 +79,7 @@ def make_sound(rate=44100, frequency=10000, duration=0.1, amplitude=1,
 
     sound = np.array([tone, tone]).T
     if save_path:
-        save_bin(sound, save_path)
+        self.save_bin(sound, save_path)
 
     return sound
 
@@ -109,12 +109,12 @@ def save_bin(sound, file_path):
         bf.writelines(bin_save)
 
 
-def uplopad(uploader, file_path, index, type_=0, sample_rate=96):
+def uplopad(uploader_tool, file_path, index, type_=0, sample_rate=96):
     """
     Uploads a bin file to an index of the non volatile memory of the sound card.
 
-    :param uploader: path of executable for transferring sounds
-    :type uploader: str
+    :param uploader_tool: path of executable for transferring sounds
+    :type uploader_tool: str
     :param file_path: path of file to be uploaded
     :type file_path: str
     :param index: E[2-31] memory bank to upload to
@@ -124,9 +124,17 @@ def uplopad(uploader, file_path, index, type_=0, sample_rate=96):
     :param sample_rate: [96, 192] (KHz) playback sample rate, defaults to 96
     :param sample_rate: int, optional
     """
-    subprocess.call([uploader, file_path, index, type_, sample_rate] )
+    file_name = file_path.split(os.sep)[-1]
+    file_folder = file_path.split(os.sep)[:-1]
+    subprocess.call([uploader_tool, file_path, index, type_, sample_rate])
+
+    log_file = os.path.join(file_folder, 'log')
+    with open(log_file, 'a') as f:
     return
 
+
+def get_uploaded_sounds():
+    pass
 
 
 if __name__ == '__main__':

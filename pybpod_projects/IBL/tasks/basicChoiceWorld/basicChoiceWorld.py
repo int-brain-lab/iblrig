@@ -135,19 +135,19 @@ for i in range(sph.NTRIALS):  # Main loop
                                  tph.event_error: 'error',
                                  tph.event_reward: 'reward'},
         output_actions=[('Serial1', rotary_encoder_event3),  # close stim loop
-                        ('SoftCode', 1)])
+                        sph.out_tone])
 
     sma.add_state(
         state_name='no_go',
         state_timer=tph.iti_error,
         state_change_conditions={'Tup': 'exit'},
-        output_actions=[('SoftCode', 2)])
+        output_actions=[sph.out_noise])
 
     sma.add_state(
         state_name='error',
         state_timer=tph.iti_error,
         state_change_conditions={'Tup': 'exit'},
-        output_actions=[('SoftCode', 2)])  # play noise + save sensor data
+        output_actions=[sph.out_noise])  # play noise
 
     sma.add_state(
         state_name='reward',

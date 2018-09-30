@@ -16,7 +16,7 @@ import numpy as np
 import scipy.stats as st
 from dateutil import parser
 from pythonosc import udp_client
-from sound import Sounds
+import sound
 
 from pybpod_rotaryencoder_module.module_api import RotaryEncoderModule
 
@@ -132,13 +132,30 @@ class session_param_handler(object):
         # =====================================================================
         # SOUNDS
         # =====================================================================
-        self.GO_TONE = sound.make_sound(frequency=self.GO_TONE_FREQUENCY,
-                                        duration=self.GO_TONE_DURATION,
-                                        amplitude=self.GO_TONE_AMPLITUDE)
-        self.WHITE_NOISE = sound.make_sound(frequency=-1,
-                                            duration=self.WHITE_NOISE_DURATION,
-                                            amplitude=self.WHITE_NOISE_AMPLITUDE)
-        self.SD = sound.configure_sounddevice()
+        self.SOUND_SAMPLE_FREQ = 44100 if self.SOFT_SOUND else 96000
+
+        self.SOUND = sound
+
+        self.GO_TONE = self.SOUND.make_sound(
+            rate=self.SOUND_SAMPLE_FREQ,
+            frequency=self.GO_TONE_FREQUENCY,
+            duration=self.GO_TONE_DURATION,
+            amplitude=self.GO_TONE_AMPLITUDE)
+        self.WHITE_NOISE = self.SOUND.make_sound(
+            rate=self.SOUND_SAMPLE_FREQ,
+            frequency=-1,
+            duration=self.WHITE_NOISE_DURATION,
+            amplitude=self.WHITE_NOISE_AMPLITUDE)
+
+        self.SD = self.SOUND.configure_sounddevice()
+
+        self.SAVE_NEW_SOUND = self._save_new_sound()
+        self.UPLOADER_TOOL = os.path.join(os.path.expanduser('~'), 'Documents',
+                                          'HarpSoundBoard', 'SoundUploader',
+                                          'HarpSoundCard.exe')
+
+        self.out_tone = ('SoftCode', 1) if.self.SOFT_SOUND else ('Serial3', tone)
+        self.out_noise = ('SoftCode', 2) if.self.SOFT_SOUND else ('Serial3', noise)
         # =====================================================================
         # RUN BONSAI
         # =====================================================================
@@ -167,6 +184,34 @@ class session_param_handler(object):
         d['OSC_CLIENT'] = str(d['OSC_CLIENT'])
         d['SESSION_DATETIME'] = str(self.SESSION_DATETIME)
         return d
+
+    # =========================================================================
+    # SOUND
+    # =========================================================================
+    def _save_new_sound(self):
+        files = os.listdir(self.SOUND_STIM_FOLDER)
+        fparts = [x.split('_') for x in files]
+        for f in fparts:
+
+
+        [{'index': x[0],
+         'rate': x[1],
+         'type_': x[2],
+         'frequency': x[3],
+         'duration': x[4],
+         'amplitude': x[5],
+         'fade': x[6]} for x in fparts]
+
+        self.SOUND.make_sound()
+
+    def play_tone(self):
+        self.SD.play(self.GO_TONE, self.SOUND_SAMPLE_FREQ, mapping=[1, 2])
+
+    def play_noise(self):
+        self.SD.play(self.WHITE_NOISE, self.SOUND_SAMPLE_FREQ, mapping=[1, 2])
+
+    def stop_sound(self):
+        self.SD.stop()
 
     # =========================================================================
     # FILES AND FOLDER STRUCTURE
@@ -413,18 +458,6 @@ class session_param_handler(object):
         m.set_thresholds(self.ROTARY_ENCODER.SET_THRESHOLDS)
         m.enable_thresholds(self.ROTARY_ENCODER.ENABLE_THRESHOLDS)
         m.close()
-
-    # =========================================================================
-    # PUBLIC SOUND METHODS
-    # =========================================================================
-    def play_tone(self):
-        self.SD.play(self.GO_TONE, self.SOUND_SAMPLE_FREQ, mapping=[1, 2])
-
-    def play_noise(self):
-        self.SD.play(self.WHITE_NOISE, self.SOUND_SAMPLE_FREQ, mapping=[1, 2])
-
-    def stop_sound(self):
-        self.SD.stop()
 
 
 if __name__ == '__main__':
