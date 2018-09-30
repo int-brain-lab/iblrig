@@ -76,6 +76,14 @@ rotary_encoder_event3 = rotary_encoder_reset + 3
 bpod.load_serial_message(rotary_encoder, rotary_encoder_event3,
                          [ord('#'), 3])
 
+# SoundCard
+sound_card = [x for x in bpod.modules if x.name == 'SoundCard'][0]
+P2 = 5
+P3 = 6
+P4 = 7
+bpod.load_serial_message(sound_card, P2, [ord('P'), 2])
+bpod.load_serial_message(sound_card, P3, [ord('P'), 3])
+bpod.load_serial_message(sound_card, P4, [ord('P'), 4])
 # =============================================================================
 # TRIAL PARAMETERS AND STATE MACHINE
 # =============================================================================
