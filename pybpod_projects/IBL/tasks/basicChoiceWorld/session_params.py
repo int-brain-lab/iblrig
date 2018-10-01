@@ -94,7 +94,8 @@ class session_param_handler(object):
 
         self.ROOT_DATA_FOLDER = self._root_data_folder(self.IBLRIG_FOLDER,
                                                        self.MAIN_DATA_FOLDER)
-        self.SOUND_STIM_FOLDER = os.path.join(self.IBLRIG_FOLDER, 'sound_stim')
+        self.SOUND_STIM_FOLDER = os.path.join(self.IBLRIG_FOLDER, 'sound_stim',
+                                              'sounds')
         self.VISUAL_STIM_FOLDER = os.path.join(self.IBLRIG_FOLDER,
                                                'visual_stim', 'Gabor2D')
         self.VISUAL_STIMULUS_FILE = os.path.join(self.IBLRIG_FOLDER,
@@ -133,29 +134,18 @@ class session_param_handler(object):
         # SOUNDS
         # =====================================================================
         self.SOUND_SAMPLE_FREQ = 44100 if self.SOFT_SOUND else 96000
+        self.WHITE_NOISE_DURATION = float(self.WHITE_NOISE_DURATION)
+        self.WHITE_NOISE_AMPLITUDE = float(self.WHITE_NOISE_AMPLITUDE)
+        self.GO_TONE_DURATION = float(self.GO_TONE_DURATION)
+        self.GO_TONE_FREQUENCY = int(self.GO_TONE_FREQUENCY)
+        self.GO_TONE_AMPLITUDE = float(self.GO_TONE_AMPLITUDE)
 
-        self.SOUND = sound
+        self.SD = sound.configure_sounddevice()
 
-        self.GO_TONE = self.SOUND.make_sound(
-            rate=self.SOUND_SAMPLE_FREQ,
-            frequency=self.GO_TONE_FREQUENCY,
-            duration=self.GO_TONE_DURATION,
-            amplitude=self.GO_TONE_AMPLITUDE)
-        self.WHITE_NOISE = self.SOUND.make_sound(
-            rate=self.SOUND_SAMPLE_FREQ,
-            frequency=-1,
-            duration=self.WHITE_NOISE_DURATION,
-            amplitude=self.WHITE_NOISE_AMPLITUDE)
-
-        self.SD = self.SOUND.configure_sounddevice()
-
-        self.SAVE_NEW_SOUND = self._save_new_sound()
         self.UPLOADER_TOOL = os.path.join(os.path.expanduser('~'), 'Documents',
                                           'HarpSoundBoard', 'SoundUploader',
                                           'HarpSoundCard.exe')
-
-        self.out_tone = ('SoftCode', 1) if.self.SOFT_SOUND else ('Serial3', tone)
-        self.out_noise = ('SoftCode', 2) if.self.SOFT_SOUND else ('Serial3', noise)
+        self._init_sounds()
         # =====================================================================
         # RUN BONSAI
         # =====================================================================
@@ -175,11 +165,12 @@ class session_param_handler(object):
     # =========================================================================
     def reprJSON(self):
         d = self.__dict__.copy()
-        d['GO_TONE'] = 'go_tone(freq={}, dur={}, amp={})'.format(
-            self.GO_TONE_FREQUENCY, self.GO_TONE_DURATION,
-            self.GO_TONE_AMPLITUDE)
-        d['WHITE_NOISE'] = 'white_noise(freq=-1, dur={}, amp={})'.format(
-            self.WHITE_NOISE_DURATION, self.WHITE_NOISE_AMPLITUDE)
+        if self.SOFT_SOUND:
+            d['GO_TONE'] = 'go_tone(freq={}, dur={}, amp={})'.format(
+                self.GO_TONE_FREQUENCY, self.GO_TONE_DURATION,
+                self.GO_TONE_AMPLITUDE)
+            d['WHITE_NOISE'] = 'white_noise(freq=-1, dur={}, amp={})'.format(
+                self.WHITE_NOISE_DURATION, self.WHITE_NOISE_AMPLITUDE)
         d['SD'] = str(d['SD'])
         d['OSC_CLIENT'] = str(d['OSC_CLIENT'])
         d['SESSION_DATETIME'] = str(self.SESSION_DATETIME)
@@ -188,21 +179,81 @@ class session_param_handler(object):
     # =========================================================================
     # SOUND
     # =========================================================================
-    def _save_new_sound(self):
-        files = os.listdir(self.SOUND_STIM_FOLDER)
-        fparts = [x.split('_') for x in files]
-        for f in fparts:
+    def _init_sounds(self):
+        if self.SOFT_SOUND:
+            self.GO_TONE = sound.make_sound(
+                rate=self.SOUND_SAMPLE_FREQ,
+                frequency=self.GO_TONE_FREQUENCY,
+                duration=self.GO_TONE_DURATION,
+                amplitude=self.GO_TONE_AMPLITUDE)
+            self.WHITE_NOISE = sound.make_sound(
+                rate=self.SOUND_SAMPLE_FREQ,
+                frequency=-1,
+                duration=self.WHITE_NOISE_DURATION,
+                amplitude=self.WHITE_NOISE_AMPLITUDE)
 
+            self.OUT_TONE = ('SoftCode', 1)
+            self.OUT_NOISE = ('SoftCode', 2)
+        else:
+            files = os.listdir(self.SOUND_STIM_FOLDER)
+            fparts = [x.split('_') for x in files]
+            used_indexes = [int(f[0].split('i')[-1]) for f in fparts]
+            free_indexes = list(range(max(used_indexes)+1, 32))
+            for f in fparts:
+                if (str(int(self.SOUND_SAMPLE_FREQ / 1000)) in f[1] and
+                    str(int(self.WHITE_NOISE_DURATION * 1000)) in f[4] and
+                    str(self.WHITE_NOISE_AMPLITUDE) in f[5]):
+                    self.WHITE_NOISE = 'sound_board_{}'.format(f[0])
+                else:
+                    index = 'i' + str(free_indexes.pop(0))
+                    sound.make_sound(rate=self.SOUND_SAMPLE_FREQ,
+                                    frequency=-1,
+                                    duration=self.WHITE_NOISE_DURATION,
+                                    amplitude=self.WHITE_NOISE_AMPLITUDE,
+                                    fade=0.01,
+                                    save_path=os.path.join(self.SOUND_STIM_FOLDER,
+                                    '{}_{}_{}_{}_{}_{}_{}_{}'.format(
+                                        index,
+                                        self.SOUND_SAMPLE_FREQ,
+                                        'uniform',
+                                        'None',
+                                        self.WHITE_NOISE_DURATION,
+                                        self.WHITE_NOISE_AMPLITUDE,
+                                        'None',
+                                        'None')
+                                    )
+                    )
+                    self.WHITE_NOISE = 'sound_board_{}'.format(index)
+                if (str(int(self.SOUND_SAMPLE_FREQ / 1000)) in f[1] and
+                    str(int(self.GO_TONE_FREQUENCY / 1000)) in f[3] and
+                    str(int(self.GO_TONE_DURATION * 1000)) in f[4] and
+                    str(self.GO_TONE_AMPLITUDE) in f[5]):
+                    self.GO_TONE = 'sound_board_{}'.format(f[0])
+                else:
+                    # Make new file!
+                    index = 'i' + str(free_indexes.pop(0))
+                    sound.make_sound(rate=self.SOUND_SAMPLE_FREQ,
+                                    frequency=self.GO_TONE_FREQUENCY,
+                                    duration=self.GO_TONE_DURATION,
+                                    amplitude=self.GO_TONE_AMPLITUDE,
+                                    fade=0.01,
+                                    save_path=os.path.join(self.SOUND_STIM_FOLDER,
+                                        '{}_{}_{}_{}_{}_{}_{}_{}'.format(
+                                        index,
+                                        self.SOUND_SAMPLE_FREQ,
+                                        'sine',
+                                        self.GO_TONE_FREQUENCY,
+                                        self.GO_TONE_DURATION,
+                                        self.GO_TONE_AMPLITUDE,
+                                        'hanning',
+                                        '0.01')
+                                    )
+                    )
+                    self.GO_TONE = 'sound_board_{}'.format(index)
 
-        [{'index': x[0],
-         'rate': x[1],
-         'type_': x[2],
-         'frequency': x[3],
-         'duration': x[4],
-         'amplitude': x[5],
-         'fade': x[6]} for x in fparts]
-
-        self.SOUND.make_sound()
+            self.SD = None
+            self.OUT_TONE = (self.SOUND_BOARD_BPOD_PORT, self.GO_TONE)
+            self.OUT_NOISE = (self.SOUND_BOARD_BPOD_PORT, self.WHITE_NOISE)
 
     def play_tone(self):
         self.SD.play(self.GO_TONE, self.SOUND_SAMPLE_FREQ, mapping=[1, 2])

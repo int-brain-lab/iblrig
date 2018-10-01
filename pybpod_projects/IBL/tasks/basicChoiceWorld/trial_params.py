@@ -289,6 +289,8 @@ class trial_param_handler(object):
         self.stim_angle = sph.STIM_ANGLE
         self.stim_gain = sph.STIM_GAIN
         self.stim_sigma = sph.STIM_SIGMA
+        self.out_tone = sph.OUT_TONE
+        self.out_noise = sph.OUT_NOISE
 
         # Init trial type objects
         self.ac = adaptive_contrast(sph)

@@ -10,7 +10,7 @@ import os
 import sys
 
 
-def _configure_sounddevice(sd=None):
+def configure_sounddevice(sd=None):
     """
     Will import, configure, and return sounddevice module to
     play sounds using onboard sound card.
