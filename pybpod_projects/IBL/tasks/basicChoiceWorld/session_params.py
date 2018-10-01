@@ -141,11 +141,11 @@ class session_param_handler(object):
         self.GO_TONE_AMPLITUDE = float(self.GO_TONE_AMPLITUDE)
 
         self.SD = sound.configure_sounddevice()
-
+        # TODO: THIS IS CHANGING! + make upload on create!
         self.UPLOADER_TOOL = os.path.join(os.path.expanduser('~'), 'Documents',
                                           'HarpSoundBoard', 'SoundUploader',
                                           'HarpSoundCard.exe')
-        self._init_sounds()
+        self._init_sounds()  # Will create sounds and output actions.
         # =====================================================================
         # RUN BONSAI
         # =====================================================================
