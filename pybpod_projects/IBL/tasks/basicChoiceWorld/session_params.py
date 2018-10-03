@@ -293,12 +293,13 @@ class session_param_handler(object):
         return p
 
     def _root_data_folder(self, iblrig_folder, main_data_folder):
+        iblrig_folder = Path(iblrig_folder)
         if main_data_folder is None:
             try:
-                os.path.exists(iblrig_folder)
-                out = os.path.join(iblrig_folder, 'Subjects')
-                out = self.check_folder(out)
-                return out
+                iblrig_folder.exists()
+                out = iblrig_folder.parent / 'ibldata' / 'Subjects'
+                out.mkdir(parents=True, exist_ok=True)
+                return str(out)
             except IOError as e:
                 print(e, "\nCouldn't find IBLRIG_FOLDER in file system\n")
         else:
