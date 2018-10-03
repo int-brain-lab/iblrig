@@ -167,14 +167,13 @@ class session_param_handler(object):
                                                            self.SESSION_DATE,
                                                            self.SESSION_NUMBER
                                                            ])
-        self.BASE_FILENAME = '_ibl_pycw{}'.format(
-            self.PYBPOD_PROTOCOL.split('ChoiceWorld')[0].capitalize())
+        self.BASE_FILENAME = '_ibl_task'
         self.SETTINGS_FILE_PATH = os.path.join(self.SESSION_RAW_DATA_FOLDER,
                                                self.BASE_FILENAME +
-                                               '.settings.json')
+                                               'Settings.raw.json')
         self.DATA_FILE_PATH = os.path.join(self.SESSION_RAW_DATA_FOLDER,
                                            self.BASE_FILENAME +
-                                           '.data.jsonable')
+                                           'Data.raw.jsonable')
         # =====================================================================
         # REWARD INITIALIZATION
         # =====================================================================
@@ -244,18 +243,20 @@ class session_param_handler(object):
             bns = self.BONSAI
             wkfl = self.VISUAL_STIMULUS_FILE
 
-            pos = "-p:FileNamePositions=" + os.path.join(
-                self.SESSION_RAW_DATA_FOLDER,
-                "_ibl_encoderPositions.bonsai_raw.ssv")
             evt = "-p:FileNameEvents=" + os.path.join(
                 self.SESSION_RAW_DATA_FOLDER,
-                "_ibl_encoderEvents.bonsai_raw.ssv")
+                "_ibl_encoderEvents.raw.ssv")
+            pos = "-p:FileNamePositions=" + os.path.join(
+                self.SESSION_RAW_DATA_FOLDER,
+                "_ibl_encoderPositions.raw.ssv")
             itr = "-p:FileNameTrialInfo=" + os.path.join(
                 self.SESSION_RAW_DATA_FOLDER,
-                "_ibl_encoderTrialInfo.bonsai_raw.ssv")
-            com = "-p:REPortName=" + self.ROTARY_ENCODER_PORT
+                "_ibl_encoderTrialInfo.raw.ssv")
             mic = "-p:FileNameMic=" + os.path.join(
-                self.SESSION_RAW_DATA_FOLDER, "_ibl_rawMic.data.wav")
+                self.SESSION_RAW_DATA_FOLDER,
+                "_ibl_micData.raw.wav")
+
+            com = "-p:REPortName=" + self.ROTARY_ENCODER_PORT
             rec = "-p:RecordSound=" + str(self.RECORD_SOUND)
 
             start = '--start'
@@ -292,12 +293,13 @@ class session_param_handler(object):
         return p
 
     def _root_data_folder(self, iblrig_folder, main_data_folder):
+        iblrig_folder = Path(iblrig_folder)
         if main_data_folder is None:
             try:
-                os.path.exists(iblrig_folder)
-                out = os.path.join(iblrig_folder, 'Subjects')
-                out = self.check_folder(out)
-                return out
+                iblrig_folder.exists()
+                out = iblrig_folder.parent / 'ibldata' / 'Subjects'
+                out.mkdir(parents=True, exist_ok=True)
+                return str(out)
             except IOError as e:
                 print(e, "\nCouldn't find IBLRIG_FOLDER in file system\n")
         else:
@@ -427,7 +429,7 @@ class session_param_handler(object):
                               self.SESSION_RAW_DATA_FOLDER, x))]
         session_param_handler.zipit(
             folders_to_zip, os.path.join(self.SESSION_RAW_DATA_FOLDER,
-                                         '_ibl_code.files.zip'))
+                                         '_ibl_codeFiles.raw.zip'))
 
         [shutil.rmtree(x) for x in folders_to_zip]
 

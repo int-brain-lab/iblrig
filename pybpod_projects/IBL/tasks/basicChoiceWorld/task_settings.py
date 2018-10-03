@@ -8,7 +8,7 @@ OSC_CLIENT_PORT = 7110
 OSC_CLIENT_IP = '127.0.0.1'
 # IBL rig root folder
 IBLRIG_FOLDER = 'C:\\iblrig'
-MAIN_DATA_FOLDER = None  # If None data folder will be C:\\iblrig\\Subjects
+MAIN_DATA_FOLDER = None  # If None data folder will be C:\\ibldata\\Subjects
 RECORD_SOUND = True
 RECORD_AMBIENT_SENSOR_DATA = True
 # TASK

@@ -4,7 +4,7 @@ Installation
 iblrig
 ------
 
-iblrig is the root folder for the PyBpod/Bonsai task. It requires, for now,
+iblrig is the main folder for the PyBpod/Bonsai task. It requires, for now,
 to be installed in the root **C:\\folder** of your windows computer.
 
 iblrig is using gitflow and semantic versioning conventions.
@@ -23,21 +23,6 @@ Dependencies
 Anaconda python distribution, Bonsai and Git.
 Before starting you should have Anaconda and git installed.
 
-
-Bonsai
-______
-
-Bonsai needs to be installed in your system as the task will call a Bonsai
-workflow to display the visual stimulus.
-You can download Bonsai from here (http://bonsai-rx.org/).
-
-After installing it you should also install some relevant Bonsai packages from
-the overhead menu in Tools --> Manage Packages.
-A list of relevant packages is upcoming, but for now you should install all of
-them, especially the bpod library which you can find by selecting
-`Include pre-releases` in the package manager.
-Sorry if the process is slightly tedious.
-**Note:** If using PointGrey cameras the FlyCap Viewer 32bits AND 64bits should be installed otherwise the PointGrey reletad node won't show.
 
 Anaconda Python distribution
 ____________________________
@@ -227,10 +212,16 @@ For more information on how to update you can use the flags
  (base) C:\iblrig>python update.py -h
 
  Usage:
-   update.py
-       Will fetch changes from origin. Nothing is updated yet!
-       Calling update.py will display information on the available versions
-   update.py <version>
-      Will checkout the <version> release and update the submodules
-   update.py -h | --help | ?
-       Displays this docstring.
+    update.py
+        Will fetch changes from origin. Nothing is updated yet!
+        Calling update.py will display information on the available versions
+    update.py <version>
+        Will backup pybpod_projects folder where local configurations live.
+        Will checkout the <version> release, update the submodules, and restore
+        the pybpod_projects folder from backup.
+    update.py tasks
+        Will checkout any task file not present in the local tasks folder.
+    update.py tasks <branch>
+        Will checkout any task file from <branch> not present in local folder.
+    update.py -h | --help | ?
+        Displays this docstring.
