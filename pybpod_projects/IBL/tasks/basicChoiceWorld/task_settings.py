@@ -8,7 +8,7 @@ OSC_CLIENT_PORT = 7110
 OSC_CLIENT_IP = '127.0.0.1'
 # IBL rig root folder
 IBLRIG_FOLDER = 'C:\\iblrig'
-MAIN_DATA_FOLDER = None  # If None data folder will be C:\\iblrig\\Subjects
+MAIN_DATA_FOLDER = None  # If None data folder will be C:\\ibldata\\Subjects
 RECORD_SOUND = True
 RECORD_AMBIENT_SENSOR_DATA = True
 # TASK
@@ -38,12 +38,14 @@ STIM_ANGLE = 0.  # Vertical orientation of Gabor patch - NOT IN USE
 STIM_SIGMA = 9.  # (azimuth_degree) Size of Gabor patch
 STIM_GAIN = 5.  # (azimuth_degree/mm) Gain of the RE to stimulus movement
 # SOUNDS
-SOUND_SAMPLE_FREQ = 44100  # 192000  # depends on the sound card. 96000 ?
+SOFT_SOUND = 'onboard'  # Use software sound 'xonar', 'onboard' or False for BpodSoundCard
+# Moule port where the SoundBoard is connected (ignored if using software sound)
+SOUND_BOARD_BPOD_PORT = 'Serial3'
 WHITE_NOISE_DURATION = ITI_ERROR  # Length of noise burst
 WHITE_NOISE_AMPLITUDE = 0.05
 GO_TONE_DURATION = 0.1  # Length of tone
-GO_TONE_FREQUENCY = 8000  # 10KHz
-GO_TONE_AMPLITUDE = 0.2  # [0->1]
+GO_TONE_FREQUENCY = 10000  # 10KHz
+GO_TONE_AMPLITUDE = 0.5  # [0->1]
 # STAIRCASE_CONTRAST TRIALS
 ST_CONTRAST = 1.
 ST_FREQ = 2
