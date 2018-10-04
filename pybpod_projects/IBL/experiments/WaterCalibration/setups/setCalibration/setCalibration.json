@@ -7,7 +7,7 @@
         "578a19ae-ba93-4a2c-a083-cbce612e7e70"
     ],
     "__SOFTWARE__": "PyBpod GUI API v1.0",
-    "__UPDATED-ON__": "2018-09-07 13:22:54.770835",
+    "__UPDATED-ON__": "2018-10-02 11:09:53.163035",
     "__UUID4__": "5976576f-6881-4237-94f5-2d0919bb088c",
     "board": "box0",
     "detached": false,
@@ -35,7 +35,7 @@
         {
             "datatype": "string",
             "name": "VAR_3",
-            "value": "0.1"
+            "value": "0.14884848484848487"
         }
     ]
 }

@@ -16,6 +16,7 @@ import numpy as np
 import scipy.stats as st
 from dateutil import parser
 from pythonosc import udp_client
+import sound
 
 from pybpod_rotaryencoder_module.module_api import RotaryEncoderModule
 
@@ -26,48 +27,6 @@ class ComplexEncoder(json.JSONEncoder):
             return obj.reprJSON()
         else:
             return json.JSONEncoder.default(self, obj)
-
-
-class Sounds():
-    """Software solution for playing sounds"""
-    def configure_sounddevice(sd=None):
-        if sd is None:
-            import sounddevice as sd
-
-        devices = sd.query_devices()
-        sd.default.device = [(i, d) for i, d in enumerate(
-            devices) if 'Speakers' in d['name']][0][0]
-        sd.default.latency = 'low'
-        sd.default.channels = 8
-        return sd
-
-    def make_sound(frequency=10000, duration=0.1, amplitude=1, fade=0.01):
-        """Build sound to feed to sounddevice lib.
-        If frequency is set to -1 will produce white noise
-        frequency  # Hz
-        amplitude  # [0->1]
-        """
-        sample_rate = 44100  # sample rate, depend on the sound card
-        tone_duration = duration  # sec
-        fade_duration = fade  # sec
-
-        tvec = np.linspace(0, tone_duration, tone_duration * sample_rate)
-        tone = amplitude * np.sin(2 * np.pi * frequency * tvec)  # tone vec
-        size = sample_rate * fade_duration / 2  #
-        dist = st.expon(0., size)  # distribution object provided by scipy
-        F = dist.cdf  # cumulative density function
-        ker1 = F(range(int(sample_rate * tone_duration)))
-        ker2 = ker1[::-1]
-        ker = ker1 * ker2
-        tone = tone * ker
-        if frequency == -1:
-            tone = amplitude * np.random.rand(tone.size)
-
-        ttl = tone.copy()
-        ttl[:] = 1.
-
-        sound = np.array([tone, ttl]).T
-        return sound
 
 
 class MyRotaryEncoder(object):
@@ -106,17 +65,6 @@ class session_param_handler(object):
         self.__dict__.update(us)
         self.deserialize_session_user_settings()
         # =====================================================================
-        # SOUNDS
-        # =====================================================================
-        self.GO_TONE = Sounds.make_sound(frequency=self.GO_TONE_FREQUENCY,
-                                         duration=self.GO_TONE_DURATION,
-                                         amplitude=self.GO_TONE_AMPLITUDE)
-        self.WHITE_NOISE = Sounds.make_sound(
-            frequency=-1,
-            duration=self.WHITE_NOISE_DURATION,
-            amplitude=self.WHITE_NOISE_AMPLITUDE)
-        self.SD = Sounds.configure_sounddevice()
-        # =====================================================================
         # OSC CLIENT
         # =====================================================================
         self.OSC_CLIENT = self._osc_client_init()
@@ -146,6 +94,8 @@ class session_param_handler(object):
 
         self.ROOT_DATA_FOLDER = self._root_data_folder(self.IBLRIG_FOLDER,
                                                        self.MAIN_DATA_FOLDER)
+        self.SOUND_STIM_FOLDER = os.path.join(self.IBLRIG_FOLDER, 'sound_stim',
+                                              'sounds')
         self.VISUAL_STIM_FOLDER = os.path.join(self.IBLRIG_FOLDER,
                                                'visual_stim', 'Gabor2D')
         self.VISUAL_STIMULUS_FILE = os.path.join(self.IBLRIG_FOLDER,
@@ -181,6 +131,22 @@ class session_param_handler(object):
         self.LAST_TRIAL_DATA = self._load_last_trial()
         self.REWARD_CURRENT = self._init_reward()
         # =====================================================================
+        # SOUNDS
+        # =====================================================================
+        self.SOUND_SAMPLE_FREQ = 44100 if self.SOFT_SOUND else 96000
+        self.WHITE_NOISE_DURATION = float(self.WHITE_NOISE_DURATION)
+        self.WHITE_NOISE_AMPLITUDE = float(self.WHITE_NOISE_AMPLITUDE)
+        self.GO_TONE_DURATION = float(self.GO_TONE_DURATION)
+        self.GO_TONE_FREQUENCY = int(self.GO_TONE_FREQUENCY)
+        self.GO_TONE_AMPLITUDE = float(self.GO_TONE_AMPLITUDE)
+
+        self.SD = sound.configure_sounddevice(output=self.SOFT_SOUND)
+        # TODO: THIS IS CHANGING! + make upload on create!
+        self.UPLOADER_TOOL = os.path.join(os.path.expanduser('~'), 'Documents',
+                                          'HarpSoundBoard', 'SoundUploader',
+                                          'HarpSoundCard.exe')
+        self._init_sounds()  # Will create sounds and output actions.
+        # =====================================================================
         # RUN BONSAI
         # =====================================================================
         self._use_ibl_bonsai = True
@@ -199,15 +165,107 @@ class session_param_handler(object):
     # =========================================================================
     def reprJSON(self):
         d = self.__dict__.copy()
-        d['GO_TONE'] = 'go_tone(freq={}, dur={}, amp={})'.format(
-            self.GO_TONE_FREQUENCY, self.GO_TONE_DURATION,
-            self.GO_TONE_AMPLITUDE)
-        d['WHITE_NOISE'] = 'white_noise(freq=-1, dur={}, amp={})'.format(
-            self.WHITE_NOISE_DURATION, self.WHITE_NOISE_AMPLITUDE)
+        if self.SOFT_SOUND:
+            d['GO_TONE'] = 'go_tone(freq={}, dur={}, amp={})'.format(
+                self.GO_TONE_FREQUENCY, self.GO_TONE_DURATION,
+                self.GO_TONE_AMPLITUDE)
+            d['WHITE_NOISE'] = 'white_noise(freq=-1, dur={}, amp={})'.format(
+                self.WHITE_NOISE_DURATION, self.WHITE_NOISE_AMPLITUDE)
         d['SD'] = str(d['SD'])
         d['OSC_CLIENT'] = str(d['OSC_CLIENT'])
         d['SESSION_DATETIME'] = str(self.SESSION_DATETIME)
         return d
+
+    # =========================================================================
+    # SOUND
+    # =========================================================================
+    def _init_sounds(self):
+        if self.SOFT_SOUND:
+            self.GO_TONE = sound.make_sound(
+                rate=self.SOUND_SAMPLE_FREQ,
+                frequency=self.GO_TONE_FREQUENCY,
+                duration=self.GO_TONE_DURATION,
+                amplitude=self.GO_TONE_AMPLITUDE)
+            self.WHITE_NOISE = sound.make_sound(
+                rate=self.SOUND_SAMPLE_FREQ,
+                frequency=-1,
+                duration=self.WHITE_NOISE_DURATION,
+                amplitude=self.WHITE_NOISE_AMPLITUDE)
+
+            self.OUT_TONE = ('SoftCode', 1)
+            self.OUT_NOISE = ('SoftCode', 2)
+        else:
+            files = os.listdir(self.SOUND_STIM_FOLDER)
+            fparts = [x.split('_') for x in files]
+            used_indexes = [int(f[0].split('i')[-1]) for f in fparts]
+            free_indexes = list(range(max(used_indexes)+1, 32))
+            for f in fparts:
+                if (self.SOUND_SAMPLE_FREQ in f[1] and
+                    self.WHITE_NOISE_DURATION in f[4] and
+                        self.WHITE_NOISE_AMPLITUDE in f[5]):
+                    self.WHITE_NOISE = 'sound_board_{}'.format(f[0])
+                else:
+                    index = 'i' + str(free_indexes.pop(0))
+                    isound = sound.make_sound(rate=self.SOUND_SAMPLE_FREQ,
+                                              frequency=-1,
+                                              duration=self.WHITE_NOISE_DURATION,
+                                              amplitude=self.WHITE_NOISE_AMPLITUDE,
+                                              fade=0.01,
+                                              chans=2)
+                    sound.save_bin(isound, os.path.join(self.SOUND_STIM_FOLDER,
+                                                        '{}_{}_{}_{}_{}_{}_{}_{}'.format(
+                                                            index,
+                                                            self.SOUND_SAMPLE_FREQ,
+                                                            'uniform',
+                                                            'None',
+                                                            self.WHITE_NOISE_DURATION,
+                                                            self.WHITE_NOISE_AMPLITUDE,
+                                                            'None',
+                                                            'None'))
+                                   )
+
+                    self.WHITE_NOISE = 'sound_board_{}'.format(index)
+
+                if (self.SOUND_SAMPLE_FREQ in f[1] and
+                    self.GO_TONE_FREQUENCY in f[3] and
+                    self.GO_TONE_DURATION in f[4] and
+                        self.GO_TONE_AMPLITUDE in f[5]):
+                    self.GO_TONE = 'sound_board_{}'.format(f[0])
+                else:
+                    # Make new file!
+                    index = 'i' + str(free_indexes.pop(0))
+                    isound = sound.make_sound(rate=self.SOUND_SAMPLE_FREQ,
+                                              frequency=self.GO_TONE_FREQUENCY,
+                                              duration=self.GO_TONE_DURATION,
+                                              amplitude=self.GO_TONE_AMPLITUDE,
+                                              fade=0.01,
+                                              chans=2)
+                    sound.save_bin(isound, os.path.join(self.SOUND_STIM_FOLDER,
+                                                        '{}_{}_{}_{}_{}_{}_{}_{}'.format(
+                                                            index,
+                                                            self.SOUND_SAMPLE_FREQ,
+                                                            'sine',
+                                                            self.GO_TONE_FREQUENCY,
+                                                            self.GO_TONE_DURATION,
+                                                            self.GO_TONE_AMPLITUDE,
+                                                            'hanning',
+                                                            '0.01')
+                                                        )
+                                   )
+                    self.GO_TONE = 'sound_board_{}'.format(index)
+
+            self.SD = None
+            self.OUT_TONE = (self.SOUND_BOARD_BPOD_PORT, self.GO_TONE)
+            self.OUT_NOISE = (self.SOUND_BOARD_BPOD_PORT, self.WHITE_NOISE)
+
+    def play_tone(self):
+        self.SD.play(self.GO_TONE, self.SOUND_SAMPLE_FREQ, mapping=[1, 2])
+
+    def play_noise(self):
+        self.SD.play(self.WHITE_NOISE, self.SOUND_SAMPLE_FREQ, mapping=[1, 2])
+
+    def stop_sound(self):
+        self.SD.stop()
 
     # =========================================================================
     # FILES AND FOLDER STRUCTURE
@@ -455,18 +513,6 @@ class session_param_handler(object):
         m.set_thresholds(self.ROTARY_ENCODER.SET_THRESHOLDS)
         m.enable_thresholds(self.ROTARY_ENCODER.ENABLE_THRESHOLDS)
         m.close()
-
-    # =========================================================================
-    # PUBLIC SOUND METHODS
-    # =========================================================================
-    def play_tone(self):
-        self.SD.play(self.GO_TONE, self.SOUND_SAMPLE_FREQ, mapping=[1, 2])
-
-    def play_noise(self):
-        self.SD.play(self.WHITE_NOISE, self.SOUND_SAMPLE_FREQ, mapping=[1, 2])
-
-    def stop_sound(self):
-        self.SD.stop()
 
 
 if __name__ == '__main__':
