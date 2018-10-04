@@ -130,6 +130,7 @@ def uplopad(uploader_tool, file_path, index, type_=0, sample_rate=96):
 
     log_file = os.path.join(file_folder, 'log')
     with open(log_file, 'a') as f:
+        pass
     return
 
 
