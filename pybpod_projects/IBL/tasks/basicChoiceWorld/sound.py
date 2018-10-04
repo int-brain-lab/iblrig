@@ -35,7 +35,7 @@ def configure_sounddevice(sd=None):
 
 
 def make_sound(rate=44100, frequency=10000, duration=0.1, amplitude=1,
-            fade=0.01, save_path=False):
+               fade=0.01, chans=2):
     """
     Build sounds and save bin file for upload to soundcard or play via
     sounddevice lib.
@@ -52,9 +52,8 @@ def make_sound(rate=44100, frequency=10000, duration=0.1, amplitude=1,
     :type amplitude: intor float, optional
     :param fade: (s) time of fading window rise and decay, defaults to 0.01
     :type fade: float, optional
-    :param save_path: path of where to save the bin file for upload to card.
-                    Will not save if False, defaults to False
-    :type save_path: bool/str, optional
+    :param chans: [1, 2] number of sound channels, defaults to 2
+    :type chans: int, optional
     :return: streo sound from mono definitions
     :rtype: np.ndarray with shape (Nsamples, 2)
     """
@@ -77,9 +76,10 @@ def make_sound(rate=44100, frequency=10000, duration=0.1, amplitude=1,
     if frequency == -1:
         tone = amplitude * np.random.rand(tone.size)
 
-    sound = np.array([tone, tone]).T
-    if save_path:
-        self.save_bin(sound, save_path)
+    if chans == 1:
+        sound = np.array(tone)
+    elif chans == 2:
+        sound = np.array([tone, tone]).T
 
     return sound
 
@@ -174,7 +174,6 @@ if __name__ == '__main__':
 
     # with open(file_path, 'wb') as bf:
     #     bf.writelines(bin_save)
-
 
     # plt.plot(tone)
     # plt.show()

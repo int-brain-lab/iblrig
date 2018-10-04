@@ -202,53 +202,55 @@ class session_param_handler(object):
             for f in fparts:
                 if (str(int(self.SOUND_SAMPLE_FREQ / 1000)) in f[1] and
                     str(int(self.WHITE_NOISE_DURATION * 1000)) in f[4] and
-                    str(self.WHITE_NOISE_AMPLITUDE) in f[5]):
+                        str(self.WHITE_NOISE_AMPLITUDE) in f[5]):
                     self.WHITE_NOISE = 'sound_board_{}'.format(f[0])
                 else:
                     index = 'i' + str(free_indexes.pop(0))
-                    sound.make_sound(rate=self.SOUND_SAMPLE_FREQ,
-                                    frequency=-1,
-                                    duration=self.WHITE_NOISE_DURATION,
-                                    amplitude=self.WHITE_NOISE_AMPLITUDE,
-                                    fade=0.01,
-                                    save_path=os.path.join(self.SOUND_STIM_FOLDER,
-                                    '{}_{}_{}_{}_{}_{}_{}_{}'.format(
-                                        index,
-                                        self.SOUND_SAMPLE_FREQ,
-                                        'uniform',
-                                        'None',
-                                        self.WHITE_NOISE_DURATION,
-                                        self.WHITE_NOISE_AMPLITUDE,
-                                        'None',
-                                        'None')
-                                    )
-                    )
+                    isound = sound.make_sound(rate=self.SOUND_SAMPLE_FREQ,
+                                              frequency=-1,
+                                              duration=self.WHITE_NOISE_DURATION,
+                                              amplitude=self.WHITE_NOISE_AMPLITUDE,
+                                              fade=0.01,
+                                              chans=2)
+                    sound.save_bin(isound, os.path.join(self.SOUND_STIM_FOLDER,
+                                                        '{}_{}_{}_{}_{}_{}_{}_{}'.format(
+                                                            index,
+                                                            self.SOUND_SAMPLE_FREQ,
+                                                            'uniform',
+                                                            'None',
+                                                            self.WHITE_NOISE_DURATION,
+                                                            self.WHITE_NOISE_AMPLITUDE,
+                                                            'None',
+                                                            'None'))
+                                   )
+
                     self.WHITE_NOISE = 'sound_board_{}'.format(index)
                 if (str(int(self.SOUND_SAMPLE_FREQ / 1000)) in f[1] and
                     str(int(self.GO_TONE_FREQUENCY / 1000)) in f[3] and
                     str(int(self.GO_TONE_DURATION * 1000)) in f[4] and
-                    str(self.GO_TONE_AMPLITUDE) in f[5]):
+                        str(self.GO_TONE_AMPLITUDE) in f[5]):
                     self.GO_TONE = 'sound_board_{}'.format(f[0])
                 else:
                     # Make new file!
                     index = 'i' + str(free_indexes.pop(0))
-                    sound.make_sound(rate=self.SOUND_SAMPLE_FREQ,
-                                    frequency=self.GO_TONE_FREQUENCY,
-                                    duration=self.GO_TONE_DURATION,
-                                    amplitude=self.GO_TONE_AMPLITUDE,
-                                    fade=0.01,
-                                    save_path=os.path.join(self.SOUND_STIM_FOLDER,
-                                        '{}_{}_{}_{}_{}_{}_{}_{}'.format(
-                                        index,
-                                        self.SOUND_SAMPLE_FREQ,
-                                        'sine',
-                                        self.GO_TONE_FREQUENCY,
-                                        self.GO_TONE_DURATION,
-                                        self.GO_TONE_AMPLITUDE,
-                                        'hanning',
-                                        '0.01')
-                                    )
-                    )
+                    isound = sound.make_sound(rate=self.SOUND_SAMPLE_FREQ,
+                                              frequency=self.GO_TONE_FREQUENCY,
+                                              duration=self.GO_TONE_DURATION,
+                                              amplitude=self.GO_TONE_AMPLITUDE,
+                                              fade=0.01,
+                                              chans=2)
+                    sound.save_bin(isound, os.path.join(self.SOUND_STIM_FOLDER,
+                                                        '{}_{}_{}_{}_{}_{}_{}_{}'.format(
+                                                            index,
+                                                            self.SOUND_SAMPLE_FREQ,
+                                                            'sine',
+                                                            self.GO_TONE_FREQUENCY,
+                                                            self.GO_TONE_DURATION,
+                                                            self.GO_TONE_AMPLITUDE,
+                                                            'hanning',
+                                                            '0.01')
+                                                        )
+                                   )
                     self.GO_TONE = 'sound_board_{}'.format(index)
 
             self.SD = None
