@@ -38,8 +38,9 @@ STIM_ANGLE = 0.  # Vertical orientation of Gabor patch - NOT IN USE
 STIM_SIGMA = 9.  # (azimuth_degree) Size of Gabor patch
 STIM_GAIN = 5.  # (azimuth_degree/mm) Gain of the RE to stimulus movement
 # SOUNDS
-SOFT_SOUND = False  # Use software sound or BpodSoundCard if False
-SOUND_BOARD_BPOD_PORT = 'Serial3'  # Moule port where the SoundBoard is connected
+SOFT_SOUND = 'onboard'  # Use software sound 'xonar', 'onboard' or False for BpodSoundCard
+# Moule port where the SoundBoard is connected (ignored if using software sound)
+SOUND_BOARD_BPOD_PORT = 'Serial3'
 WHITE_NOISE_DURATION = ITI_ERROR  # Length of noise burst
 WHITE_NOISE_AMPLITUDE = 0.05
 GO_TONE_DURATION = 0.1  # Length of tone

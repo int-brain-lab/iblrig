@@ -10,7 +10,7 @@ import os
 import sys
 
 
-def configure_sounddevice(sd=None):
+def configure_sounddevice(sd=None, output='onboard'):
     """
     Will import, configure, and return sounddevice module to
     play sounds using onboard sound card.
@@ -26,11 +26,15 @@ def configure_sounddevice(sd=None):
     if sys.platform == 'linux':
         sd.default.device = 'default'
     else:
-        devices = sd.query_devices()
-        sd.default.device = [(i, d) for i, d in enumerate(
-            devices) if 'Speakers' in d['name']][0][0]
-    sd.default.latency = 'low'
-    sd.default.channels = 8
+        if output == 'xonar':
+            devices = sd.query_devices()
+            sd.default.device = [(i, d) for i, d in enumerate(
+                devices) if 'Speakers' in d['name']][0][0]
+            sd.default.latency = 'low'
+            sd.default.channels = 8
+        elif output == 'onboard':
+            sd.default.latency = 'low'
+            sd.default.channels = 8
     return sd
 
 

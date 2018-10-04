@@ -140,7 +140,7 @@ class session_param_handler(object):
         self.GO_TONE_FREQUENCY = int(self.GO_TONE_FREQUENCY)
         self.GO_TONE_AMPLITUDE = float(self.GO_TONE_AMPLITUDE)
 
-        self.SD = sound.configure_sounddevice()
+        self.SD = sound.configure_sounddevice(output=self.SOFT_SOUND)
         # TODO: THIS IS CHANGING! + make upload on create!
         self.UPLOADER_TOOL = os.path.join(os.path.expanduser('~'), 'Documents',
                                           'HarpSoundBoard', 'SoundUploader',
@@ -200,9 +200,9 @@ class session_param_handler(object):
             used_indexes = [int(f[0].split('i')[-1]) for f in fparts]
             free_indexes = list(range(max(used_indexes)+1, 32))
             for f in fparts:
-                if (str(int(self.SOUND_SAMPLE_FREQ / 1000)) in f[1] and
-                    str(int(self.WHITE_NOISE_DURATION * 1000)) in f[4] and
-                        str(self.WHITE_NOISE_AMPLITUDE) in f[5]):
+                if (self.SOUND_SAMPLE_FREQ in f[1] and
+                    self.WHITE_NOISE_DURATION in f[4] and
+                        self.WHITE_NOISE_AMPLITUDE in f[5]):
                     self.WHITE_NOISE = 'sound_board_{}'.format(f[0])
                 else:
                     index = 'i' + str(free_indexes.pop(0))
@@ -225,10 +225,11 @@ class session_param_handler(object):
                                    )
 
                     self.WHITE_NOISE = 'sound_board_{}'.format(index)
-                if (str(int(self.SOUND_SAMPLE_FREQ / 1000)) in f[1] and
-                    str(int(self.GO_TONE_FREQUENCY / 1000)) in f[3] and
-                    str(int(self.GO_TONE_DURATION * 1000)) in f[4] and
-                        str(self.GO_TONE_AMPLITUDE) in f[5]):
+
+                if (self.SOUND_SAMPLE_FREQ in f[1] and
+                    self.GO_TONE_FREQUENCY in f[3] and
+                    self.GO_TONE_DURATION in f[4] and
+                        self.GO_TONE_AMPLITUDE in f[5]):
                     self.GO_TONE = 'sound_board_{}'.format(f[0])
                 else:
                     # Make new file!
