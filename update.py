@@ -122,6 +122,7 @@ def checkout_missing_task_files(missing_files, branch='master'):
 
 def checkout_version(ver):
     print("\nChecking out {}".format(ver))
+    subprocess.call(['git', 'stash'])
     subprocess.call(['git', 'checkout', 'tags/' + ver])
     submodule_update()
 
