@@ -85,7 +85,7 @@ class session_param_handler(object):
             self.ROTARY_ENCODER_PORT = '/dev/ttyACM0'
         self._configure_rotary_encoder(RotaryEncoderModule)
         # =====================================================================
-        # FOLDER STRUCTURE AND DATA FILES
+        # FOLDER STRUCTURE, DATA FILES AND LAST TRIAL DATA
         # =====================================================================
         if platform == 'linux':
             self.IBLRIG_FOLDER = '/home/nico/Projects/IBL/IBL-github/iblrig'
@@ -124,12 +124,12 @@ class session_param_handler(object):
         self.DATA_FILE_PATH = os.path.join(self.SESSION_RAW_DATA_FOLDER,
                                            self.BASE_FILENAME +
                                            'Data.raw.jsonable')
-        # =====================================================================
-        # REWARD INITIALIZATION
-        # =====================================================================
+
         self.PREVIOUS_DATA_FILE = self._previous_data_file()
         self.LAST_TRIAL_DATA = self._load_last_trial()
-        self.REWARD_CURRENT = self._init_reward()
+
+        self.STIM_GAIN = 4. if self.LAST_TRIAL_DATA['trial_num'] >= 200 else 8.
+
         # =====================================================================
         # SOUNDS
         # =====================================================================
@@ -419,21 +419,6 @@ class session_param_handler(object):
                 last_trial = json.loads(line)
                 trial_data.append(last_trial)
         return trial_data[i] if trial_data else None
-
-    # =========================================================================
-    # REWARD
-    # =========================================================================
-    def _init_reward(self):
-        if self.LAST_TRIAL_DATA is None:
-            return self.REWARD_INIT_VALUE
-        else:
-            try:
-                out = (self.LAST_TRIAL_DATA['reward_valve_time'] /
-                       self.LAST_TRIAL_DATA['reward_calibration'])
-            except IOError:
-                out = (self.LAST_TRIAL_DATA['reward_valve_time'] /
-                       self.CALIBRATION_VALUE)
-            return out
 
     # =========================================================================
     # OSC CLIENT

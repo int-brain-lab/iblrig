@@ -36,9 +36,11 @@ class adaptive_contrast(object):
 
     def __init__(self, sph):
         self.type = 'adaptive_contrast'
-        self.buffer_size = sph.AT_BUFFER_SIZE
+        self.buffer_size = sph.AC_BUFFER_SIZE
+        self.perf_crit_one = sph.PERF_CRIT_ONE
+        self.perf_crit_two = sph.PERF_CRIT_TWO
         self.ntrials = 0
-        self.trial_125 = 0
+        # self.trial_125 = 0
         self.previous_session = sph.PREVIOUS_DATA_FILE
         self.last_trial_data = self._load_last_trial_data(sph.LAST_TRIAL_DATA)
         self.contrasts = self._init_contrasts()
@@ -95,41 +97,53 @@ class adaptive_contrast(object):
         elif self.signed_contrast == 0:
             return
 
-        _buffer = self.buffer[row][1:].copy()
-        _buffer.append(int(self.trial_correct))
+        if len(self.buffer[row]) < self.buffer_size:
+            _buffer = self.buffer[row].copy()
+            _buffer.append(int(self.trial_correct))
+        elif len(self.buffer[row]) >= self.buffer_size:
+            _buffer = self.buffer[row][-(self.buffer_size-1):].copy()
+            _buffer.append(int(self.trial_correct))
+
         self.buffer[row] = _buffer
 
     def _update_contrast(self):
         self.value = random.choice(self.contrasts)
 
     def _update_contrasts(self):  # can be done better!
-        if self.ntrials - self.trial_125 == 500:
-            self.contrasts.append(0.)
+        # if self.ntrials - self.trial_125 == 200:
+        #     self.contrasts.append(0.)
 
         if len(self.contrasts) == 2:
-            if (sum(self.buffer[0]) >= self._min_trials_at(0.7, 0.05)) & (
-                    sum(self.buffer[1]) >= self._min_trials_at(0.7, 0.05)):
+            if (sum(self.buffer[0]) >= self._min_trials_at(self.perf_crit_one,
+                    0.05)) & (
+               sum(self.buffer[1]) >= self._min_trials_at(self.perf_crit_one,
+                    0.05)):
                 self.contrasts.append(0.25)
-                self._reset_buffer()
-        elif len(self.contrasts) == 3:
-            if (sum(self.buffer[0]) >= self._min_trials_at(0.5, 0.05)) & (
-                    sum(self.buffer[1]) >= self._min_trials_at(0.5, 0.05)):
                 self.contrasts.append(0.125)
-                self.trial_125 = self.ntrials
+                # self.trial_125 = self.ntrials
                 self._reset_buffer()
+        # elif len(self.contrasts) == 3:
+        #     if (sum(self.buffer[0]) >= self._min_trials_at(0.5, 0.05)) & (
+        #             sum(self.buffer[1]) >= self._min_trials_at(0.5, 0.05)):
+        #         self.contrasts.append(0.125)
+        #         self.trial_125 = self.ntrials
+        #         self._reset_buffer()
         elif len(self.contrasts) == 4:
-            if (sum(self.buffer[0]) >= self._min_trials_at(0.5, 0.05)) & (
-                    sum(self.buffer[1]) >= self._min_trials_at(0.5, 0.05)):
+            if (sum(self.buffer[0]) >= self._min_trials_at(self.perf_crit_two,
+                    0.05)) & (
+                sum(self.buffer[1]) >= self._min_trials_at(self.perf_crit_two,
+                    0.05)):
                 self.contrasts.append(0.0625)
+                self.contrasts.append(0.)
                 self._reset_buffer()
-        elif len(self.contrasts) == 5:
-            if (sum(self.buffer[0]) >= self._min_trials_at(0.5, 0.05)) & (
-                    sum(self.buffer[1]) >= self._min_trials_at(0.5, 0.05)):
-                if 0. not in self.contrasts:
-                    self.contrasts.append(0.)
-                elif 0. in self.contrasts:
-                    self.contrasts.append(0.0625)
-                self._reset_buffer()
+        # elif len(self.contrasts) == 5:
+        #     if (sum(self.buffer[0]) >= self._min_trials_at(0.5, 0.05)) & (
+        #             sum(self.buffer[1]) >= self._min_trials_at(0.5, 0.05)):
+        #         if 0. not in self.contrasts:
+        #             self.contrasts.append(0.)
+        #         elif 0. in self.contrasts:
+        #             self.contrasts.append(0.0625)
+        #         self._reset_buffer()
 
     def _min_trials_at(self, prob, alpha):
         return sum(1 - st.binom.cdf(range(self.buffer_size),
@@ -217,10 +231,8 @@ class trial_param_handler(object):
         self.stim_sigma = sph.STIM_SIGMA
         self.out_tone = sph.OUT_TONE
         self.out_noise = sph.OUT_NOISE
-
         # Init trial type objects
         self.ac = adaptive_contrast(sph)
-        self.sc = staircase_contrast(sph)
         self.rc = repeat_contrast()
         # Dynamic params (Change every trial)
         self.trial_num = 0
@@ -230,22 +242,15 @@ class trial_param_handler(object):
         self.event_reward = sph.THRESHOLD_EVENTS[-self.position]
         self.movement_left = sph.THRESHOLD_EVENTS[sph.QUIESCENCE_THRESHOLDS[0]]
         self.movement_right = sph.THRESHOLD_EVENTS[sph.QUIESCENCE_THRESHOLDS[1]
-                                                   ]
         # Reward amount
-        self.reward_min = sph.REWARD_MIN_VALUE
-        self.reward_step = sph.REWARD_STEP
-        self.reward_crit = sph.REWARD_CRIT
         self.reward_calibration = sph.CALIBRATION_VALUE
-        self.reward_current = sph.REWARD_CURRENT
-
-        self.reward_valve_time = self.reward_current * self.reward_calibration
+        self.reward_amount = sph.REWARD_AMOUNT
+        self.reward_valve_time = self.reward_amount * self.reward_calibration
         self.iti_correct = self.iti_correct_target - self.reward_valve_time
-
         # Performance related params that depend on trial outcome
         self.contrast = self.ac
         self.current_contrast = self.contrast.value
         self.signed_contrast = self.contrast.value * np.sign(self.position)
-
         # Outcome parameters that depend on mouse behavior
         self.trial_correct = None
         self.ntrials_correct = 0
@@ -265,7 +270,7 @@ class trial_param_handler(object):
         self.trial_correct = bool(correct)
         self.ntrials_correct += self.trial_correct
         if self.trial_correct:
-            self.water_delivered = self.water_delivered + self.reward_current
+            self.water_delivered = self.water_delivered + self.reward_amount
 
         self.contrast.trial_completed(self.trial_correct, self.signed_contrast)
 
@@ -293,8 +298,6 @@ class trial_param_handler(object):
         # update + next contrast: update buffers/counters + get next contrast
         # This has to happen before self.contrast is pointing to next trials
         self.contrast.next_trial()
-        # Update staircase available contrasts
-        self.sc.contrasts = self.ac.contrasts
         # update dynamic vars (position and events)
         self._next_dynamic_vars()
         # update vars dependent on trial outcome trial and contrast
@@ -311,13 +314,6 @@ class trial_param_handler(object):
         self.trial_num += 1
         # Update non repeated trials
         self.non_rc_ntrials = self.trial_num - self.rc.ntrials
-        # Update reward
-        if ((not self.non_rc_ntrials % self.reward_crit) &
-                (round(self.reward_current, 1) >=
-                 self.reward_min + self.reward_step)):
-            self.reward_current = round(self.reward_current - 0.1, 1)
-        self.reward_valve_time = self.reward_current * self.reward_calibration
-        self.iti_correct = self.iti_correct_target - self.reward_valve_time
 
         if not self.trial_correct and self.repeat_on_error:
             self.position = self.position
@@ -338,21 +334,20 @@ class trial_param_handler(object):
             # Case incorrect trial, no_repeat
             case = '00*'
         elif (not self.trial_correct and self.repeat_on_error and
-              self.contrast.value in self.repeat_stims):
-            # Case incorrect, repeat on error, repeatable contrast
-            case = '011'
-        elif (not self.trial_correct and self.repeat_on_error and
               self.contrast.value not in self.repeat_stims):
             # Case incorrect, repeat on error, NON repeatable contrast
             case = '010'
+        elif (not self.trial_correct and self.repeat_on_error and
+              self.contrast.value in self.repeat_stims):
+            # Case incorrect, repeat on error, repeatable contrast
+            case = '011'
 
         # Set next contrast
         if case == '011':
             self.contrast = self.rc
             self.contrast.value = self.current_contrast
         else:  # if case == '1**' or case == '00*' or case == '010':
-            self.contrast = (self.ac if self.non_rc_ntrials % self.sc.freq
-                             else self.sc)
+            self.contrast = self.ac
 
         self.current_contrast = self.contrast.value
         self.signed_contrast = self.contrast.value * np.sign(self.position)
@@ -393,7 +388,6 @@ if __name__ == '__main__':
     sph = session_param_handler(_task_settings, _user_settings)
     tph = trial_param_handler(sph)
     ac = adaptive_contrast(sph)
-    sc = staircase_contrast(sph)
     rc = repeat_contrast()
     correct_trial = {'Events timestamps': {'GlobalTimer1_End': [10.0],
                                            'Port2In': [2.2133, 3.6032,
