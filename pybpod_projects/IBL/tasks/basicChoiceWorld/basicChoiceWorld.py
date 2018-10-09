@@ -112,7 +112,7 @@ for i in range(sph.NTRIALS):  # Main loop
         state_name='reset_rotary_encoder',
         state_timer=0,
         state_change_conditions={'Tup': 'quiescent_period'},
-        output_actions=[])
+        output_actions=[('Serial1', rotary_encoder_reset)])
 
     sma.add_state(  # '>back' | '>reset_timer'
         state_name='quiescent_period',
@@ -120,7 +120,7 @@ for i in range(sph.NTRIALS):  # Main loop
         state_change_conditions={'Tup': 'stim_on',
                                  tph.movement_left: 'reset_rotary_encoder',
                                  tph.movement_right: 'reset_rotary_encoder'},
-        output_actions=[('Serial1', rotary_encoder_reset)])
+        output_actions=[])
 
     sma.add_state(
         state_name='stim_on',
