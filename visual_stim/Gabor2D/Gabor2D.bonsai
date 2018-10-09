@@ -133,8 +133,8 @@ This will work in both directions!! its what we want</Description>
                     <Name>Source1</Name>
                   </Expression>
                   <Expression xsi:type="WorkflowOutput" />
-                  <Expression xsi:type="Equal">
-                    <Operand xsi:type="WorkflowPropertyOfInt16">
+                  <Expression xsi:type="LessThan">
+                    <Operand xsi:type="DoubleProperty">
                       <Value>0</Value>
                     </Operand>
                   </Expression>
@@ -184,10 +184,10 @@ This will work in both directions!! its what we want</Description>
               <q3:Expression>((Item1+Item2) + 180) % 360 - 180</q3:Expression>
             </Expression>
             <Expression xsi:type="q3:ExpressionTransform">
-              <q3:Expression>Math.Abs(int16(it))</q3:Expression>
+              <q3:Expression>Math.Abs(it)</q3:Expression>
             </Expression>
             <Expression xsi:type="q3:ExpressionTransform">
-              <q3:Expression>Math.Abs(Int16(it))</q3:Expression>
+              <q3:Expression>Math.Abs(it)</q3:Expression>
             </Expression>
             <Expression xsi:type="Subtract" />
             <Expression xsi:type="SubscribeSubject">
@@ -216,8 +216,9 @@ wheel_perim = whell_radius * 2 * pi</Description>
                         <Expression xsi:type="WorkflowInput">
                           <Name>Source1</Name>
                         </Expression>
+                        <Expression xsi:type="WorkflowOutput" />
                         <Expression xsi:type="NestedWorkflow">
-                          <Name>mm/Wheel_deg</Name>
+                          <Name>deg/mm</Name>
                           <Description>out: wheel_perim / 360
 Value = whhel_radius for wheel_perim</Description>
                           <Workflow>
@@ -226,88 +227,41 @@ Value = whhel_radius for wheel_perim</Description>
                               <Expression xsi:type="Combinator">
                                 <Combinator xsi:type="Zip" />
                               </Expression>
-                              <Expression xsi:type="NestedWorkflow">
-                                <Name>WheelPerim</Name>
-                                <Description>in: value = radius 
-out: value* 2pi</Description>
-                                <Workflow>
-                                  <Nodes>
-                                    <Expression xsi:type="Multiply" />
-                                    <Expression xsi:type="Combinator">
-                                      <Combinator xsi:type="Zip" />
-                                    </Expression>
-                                    <Expression xsi:type="Multiply">
-                                      <Operand xsi:type="FloatProperty">
-                                        <Value>2</Value>
-                                      </Operand>
-                                    </Expression>
-                                    <Expression xsi:type="Combinator">
-                                      <Combinator xsi:type="FloatProperty">
-                                        <Value>31</Value>
-                                      </Combinator>
-                                    </Expression>
-                                    <Expression xsi:type="Combinator">
-                                      <Combinator xsi:type="FloatProperty">
-                                        <Value>3.14159274</Value>
-                                      </Combinator>
-                                    </Expression>
-                                    <Expression xsi:type="WorkflowOutput" />
-                                    <Expression xsi:type="ExternalizedPropertyOfSingleFloatProperty">
-                                      <MemberName>Value</MemberName>
-                                      <Name>Value</Name>
-                                      <Value>31</Value>
-                                    </Expression>
-                                  </Nodes>
-                                  <Edges>
-                                    <Edge>
-                                      <From>0</From>
-                                      <To>5</To>
-                                      <Label>Source1</Label>
-                                    </Edge>
-                                    <Edge>
-                                      <From>1</From>
-                                      <To>0</To>
-                                      <Label>Source1</Label>
-                                    </Edge>
-                                    <Edge>
-                                      <From>2</From>
-                                      <To>1</To>
-                                      <Label>Source1</Label>
-                                    </Edge>
-                                    <Edge>
-                                      <From>3</From>
-                                      <To>1</To>
-                                      <Label>Source2</Label>
-                                    </Edge>
-                                    <Edge>
-                                      <From>4</From>
-                                      <To>2</To>
-                                      <Label>Source1</Label>
-                                    </Edge>
-                                    <Edge>
-                                      <From>6</From>
-                                      <To>3</To>
-                                      <Label>Source1</Label>
-                                    </Edge>
-                                  </Edges>
-                                </Workflow>
-                              </Expression>
                               <Expression xsi:type="Combinator">
                                 <Combinator xsi:type="FloatProperty">
                                   <Value>360</Value>
                                 </Combinator>
                               </Expression>
                               <Expression xsi:type="WorkflowOutput" />
+                              <Expression xsi:type="Multiply" />
+                              <Expression xsi:type="Combinator">
+                                <Combinator xsi:type="Zip" />
+                              </Expression>
+                              <Expression xsi:type="Multiply">
+                                <Operand xsi:type="FloatProperty">
+                                  <Value>2</Value>
+                                </Operand>
+                              </Expression>
+                              <Expression xsi:type="Combinator">
+                                <Combinator xsi:type="FloatProperty">
+                                  <Value>31</Value>
+                                </Combinator>
+                              </Expression>
+                              <Expression xsi:type="Combinator">
+                                <Combinator xsi:type="FloatProperty">
+                                  <Value>3.14159274</Value>
+                                </Combinator>
+                              </Expression>
                               <Expression xsi:type="ExternalizedPropertyOfSingleFloatProperty">
                                 <MemberName>Value</MemberName>
-                                <Name>Value</Name>
+                                <Name>WheelRadius(mm)</Name>
                                 <Value>31</Value>
                               </Expression>
                             </Nodes>
                             <Edges>
                               <Edge>
                                 <From>0</From>
-                                <To>4</To>
+                                <To>3</To>
                                 <Label>Source1</Label>
                               </Edge>
                               <Edge>
@@ -321,30 +275,143 @@ out: value* 2pi</Description>
                                 <Label>Source1</Label>
                               </Edge>
                               <Edge>
-                                <From>3</From>
+                                <From>4</From>
                                 <To>1</To>
                                 <Label>Source2</Label>
                               </Edge>
                               <Edge>
                                 <From>5</From>
-                                <To>2</To>
+                                <To>4</To>
+                                <Label>Source1</Label>
+                              </Edge>
+                              <Edge>
+                                <From>6</From>
+                                <To>5</To>
+                                <Label>Source1</Label>
+                              </Edge>
+                              <Edge>
+                                <From>7</From>
+                                <To>5</To>
+                                <Label>Source2</Label>
+                              </Edge>
+                              <Edge>
+                                <From>8</From>
+                                <To>6</To>
+                                <Label>Source1</Label>
+                              </Edge>
+                              <Edge>
+                                <From>9</From>
+                                <To>7</To>
                                 <Label>Source1</Label>
                               </Edge>
                             </Edges>
                           </Workflow>
                         </Expression>
-                        <Expression xsi:type="WorkflowOutput" />
-                        <Expression xsi:type="ExternalizedPropertyOfSingleFloatProperty">
-                          <MemberName>Value</MemberName>
-                          <Name>Value</Name>
-                          <Value>31</Value>
+                        <Expression xsi:type="NestedWorkflow">
+                          <Name>mm/deg</Name>
+                          <Description>out: wheel_perim / 360
+Value = whhel_radius for wheel_perim</Description>
+                          <Workflow>
+                            <Nodes>
+                              <Expression xsi:type="Divide" />
+                              <Expression xsi:type="Combinator">
+                                <Combinator xsi:type="Zip" />
+                              </Expression>
+                              <Expression xsi:type="Combinator">
+                                <Combinator xsi:type="FloatProperty">
+                                  <Value>360</Value>
+                                </Combinator>
+                              </Expression>
+                              <Expression xsi:type="WorkflowOutput" />
+                              <Expression xsi:type="Multiply" />
+                              <Expression xsi:type="Combinator">
+                                <Combinator xsi:type="Zip" />
+                              </Expression>
+                              <Expression xsi:type="Multiply">
+                                <Operand xsi:type="FloatProperty">
+                                  <Value>2</Value>
+                                </Operand>
+                              </Expression>
+                              <Expression xsi:type="Combinator">
+                                <Combinator xsi:type="FloatProperty">
+                                  <Value>31</Value>
+                                </Combinator>
+                              </Expression>
+                              <Expression xsi:type="Combinator">
+                                <Combinator xsi:type="FloatProperty">
+                                  <Value>3.14159274</Value>
+                                </Combinator>
+                              </Expression>
+                              <Expression xsi:type="ExternalizedPropertyOfSingleFloatProperty">
+                                <MemberName>Value</MemberName>
+                                <Name>WheelRadius(mm)</Name>
+                                <Value>31</Value>
+                              </Expression>
+                            </Nodes>
+                            <Edges>
+                              <Edge>
+                                <From>0</From>
+                                <To>3</To>
+                                <Label>Source1</Label>
+                              </Edge>
+                              <Edge>
+                                <From>1</From>
+                                <To>0</To>
+                                <Label>Source1</Label>
+                              </Edge>
+                              <Edge>
+                                <From>2</From>
+                                <To>1</To>
+                                <Label>Source2</Label>
+                              </Edge>
+                              <Edge>
+                                <From>4</From>
+                                <To>1</To>
+                                <Label>Source1</Label>
+                              </Edge>
+                              <Edge>
+                                <From>5</From>
+                                <To>4</To>
+                                <Label>Source1</Label>
+                              </Edge>
+                              <Edge>
+                                <From>6</From>
+                                <To>5</To>
+                                <Label>Source1</Label>
+                              </Edge>
+                              <Edge>
+                                <From>7</From>
+                                <To>5</To>
+                                <Label>Source2</Label>
+                              </Edge>
+                              <Edge>
+                                <From>8</From>
+                                <To>6</To>
+                                <Label>Source1</Label>
+                              </Edge>
+                              <Edge>
+                                <From>9</From>
+                                <To>7</To>
+                                <Label>Source1</Label>
+                              </Edge>
+                            </Edges>
+                          </Workflow>
                         </Expression>
+                        <Expression xsi:type="Combinator">
+                          <Combinator xsi:type="FloatProperty">
+                            <Value>1</Value>
+                          </Combinator>
+                        </Expression>
+                        <Expression xsi:type="Combinator">
+                          <Combinator xsi:type="Zip" />
+                        </Expression>
+                        <Expression xsi:type="Divide" />
                       </Nodes>
                       <Edges>
                         <Edge>
                           <From>0</From>
-                          <To>4</To>
-                          <Label>Source1</Label>
+                          <To>7</To>
+                          <Label>Source2</Label>
                         </Edge>
                         <Edge>
                           <From>1</From>
@@ -357,12 +424,22 @@ out: value* 2pi</Description>
                           <Label>Source1</Label>
                         </Edge>
                         <Edge>
-                          <From>3</From>
+                          <From>5</From>
                           <To>1</To>
                           <Label>Source2</Label>
                         </Edge>
                         <Edge>
-                          <From>5</From>
+                          <From>6</From>
+                          <To>7</To>
+                          <Label>Source1</Label>
+                        </Edge>
+                        <Edge>
+                          <From>7</From>
+                          <To>8</To>
+                          <Label>Source1</Label>
+                        </Edge>
+                        <Edge>
+                          <From>8</From>
                           <To>3</To>
                           <Label>Source1</Label>
                         </Edge>
@@ -372,16 +449,11 @@ out: value* 2pi</Description>
                   <Expression xsi:type="Combinator">
                     <Combinator xsi:type="CombineLatest" />
                   </Expression>
-                  <Expression xsi:type="Multiply" />
                   <Expression xsi:type="WorkflowInput">
                     <Name>Source1</Name>
                   </Expression>
                   <Expression xsi:type="WorkflowOutput" />
-                  <Expression xsi:type="ExternalizedPropertyOfSingleFloatProperty">
-                    <MemberName>Value</MemberName>
-                    <Name>Value</Name>
-                    <Value>31</Value>
-                  </Expression>
+                  <Expression xsi:type="Divide" />
                   <Expression xsi:type="WorkflowInput">
                     <Name>Source2</Name>
                   </Expression>
@@ -394,26 +466,21 @@ out: value* 2pi</Description>
                   </Edge>
                   <Edge>
                     <From>1</From>
-                    <To>2</To>
-                    <Label>Source1</Label>
-                  </Edge>
-                  <Edge>
-                    <From>2</From>
                     <To>4</To>
                     <Label>Source1</Label>
                   </Edge>
                   <Edge>
-                    <From>3</From>
+                    <From>2</From>
                     <To>1</To>
                     <Label>Source1</Label>
                   </Edge>
                   <Edge>
-                    <From>5</From>
-                    <To>0</To>
-                    <Label>Source2</Label>
+                    <From>4</From>
+                    <To>3</To>
+                    <Label>Source1</Label>
                   </Edge>
                   <Edge>
-                    <From>6</From>
+                    <From>5</From>
                     <To>0</To>
                     <Label>Source1</Label>
                   </Edge>
@@ -580,7 +647,7 @@ re.pctimestamp.csv
         <Workflow>
           <Nodes>
             <Expression xsi:type="q5:CsvWriter">
-              <q5:FileName>C:\iblrig\Subjects\test_mouse\2018-09-18\29\raw_behavior_data\_ibl_encoderTrialInfo.bonsai_raw.ssv</q5:FileName>
+              <q5:FileName>C:\ibldata\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_ibl_encoderTrialInfo.raw.ssv</q5:FileName>
               <q5:Append>false</q5:Append>
               <q5:Overwrite>false</q5:Overwrite>
               <q5:Suffix>None</q5:Suffix>
@@ -617,14 +684,14 @@ re.pctimestamp.csv
               <Combinator xsi:type="Timestamp" />
             </Expression>
             <Expression xsi:type="q5:CsvWriter">
-              <q5:FileName>C:\iblrig\Subjects\test_mouse\2018-09-18\29\raw_behavior_data\_ibl_encoderEvents.bonsai_raw.ssv</q5:FileName>
+              <q5:FileName>C:\ibldata\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_ibl_encoderEvents.raw.ssv</q5:FileName>
               <q5:Append>false</q5:Append>
               <q5:Overwrite>false</q5:Overwrite>
               <q5:Suffix>None</q5:Suffix>
               <q5:IncludeHeader>false</q5:IncludeHeader>
             </Expression>
             <Expression xsi:type="q5:CsvWriter">
-              <q5:FileName>C:\iblrig\Subjects\test_mouse\2018-09-18\29\raw_behavior_data\_ibl_encoderPositions.bonsai_raw.ssv</q5:FileName>
+              <q5:FileName>C:\ibldata\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_ibl_encoderPositions.raw.ssv</q5:FileName>
               <q5:Append>false</q5:Append>
               <q5:Overwrite>false</q5:Overwrite>
               <q5:Suffix>None</q5:Suffix>
@@ -642,21 +709,21 @@ re.pctimestamp.csv
             <Expression xsi:type="ExternalizedPropertyOfStringCsvWriter">
               <MemberName>FileName</MemberName>
               <Name>FileNameTrialInfo</Name>
-              <Value>C:\iblrig\Subjects\test_mouse\2018-09-18\29\raw_behavior_data\_ibl_encoderTrialInfo.bonsai_raw.ssv</Value>
+              <Value>C:\ibldata\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_ibl_encoderTrialInfo.raw.ssv</Value>
             </Expression>
             <Expression xsi:type="ExternalizedPropertyOfStringCsvWriter">
               <MemberName>FileName</MemberName>
               <Name>FileNameEvents</Name>
-              <Value>C:\iblrig\Subjects\test_mouse\2018-09-18\29\raw_behavior_data\_ibl_encoderEvents.bonsai_raw.ssv</Value>
+              <Value>C:\ibldata\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_ibl_encoderEvents.raw.ssv</Value>
             </Expression>
             <Expression xsi:type="ExternalizedPropertyOfStringCsvWriter">
               <MemberName>FileName</MemberName>
               <Name>FileNamePositions</Name>
-              <Value>C:\iblrig\Subjects\test_mouse\2018-09-18\29\raw_behavior_data\_ibl_encoderPositions.bonsai_raw.ssv</Value>
+              <Value>C:\ibldata\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_ibl_encoderPositions.raw.ssv</Value>
             </Expression>
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="q6:AudioWriter">
-                <q6:FileName>C:\iblrig\Subjects\test_mouse\2018-09-18\29\raw_behavior_data\_ibl_rawMic.data.wav</q6:FileName>
+                <q6:FileName>C:\ibldata\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_ibl_micData.raw.wav</q6:FileName>
                 <q6:Suffix>None</q6:Suffix>
                 <q6:Buffered>true</q6:Buffered>
                 <q6:Overwrite>false</q6:Overwrite>
@@ -674,7 +741,7 @@ re.pctimestamp.csv
             <Expression xsi:type="ExternalizedPropertyOfStringAudioWriter">
               <MemberName>FileName</MemberName>
               <Name>FileNameMic</Name>
-              <Value>C:\iblrig\Subjects\test_mouse\2018-09-18\29\raw_behavior_data\_ibl_rawMic.data.wav</Value>
+              <Value>C:\ibldata\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_ibl_micData.raw.wav</Value>
             </Expression>
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="SubscribeWhen" />
@@ -682,7 +749,7 @@ re.pctimestamp.csv
             <Expression xsi:type="ExternalizedPropertyOfBooleanBooleanProperty">
               <MemberName>Value</MemberName>
               <Name>RecordSound</Name>
-              <Value>false</Value>
+              <Value>true</Value>
             </Expression>
             <Expression xsi:type="Condition">
               <Workflow>
@@ -713,7 +780,7 @@ re.pctimestamp.csv
             </Expression>
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="BooleanProperty">
-                <Value>false</Value>
+                <Value>true</Value>
               </Combinator>
             </Expression>
           </Nodes>
@@ -1104,17 +1171,17 @@ re.pctimestamp.csv
       <Expression xsi:type="ExternalizedPropertyOfStringCsvWriter">
         <MemberName>FileNameTrialInfo</MemberName>
         <Name>FileNameTrialInfo</Name>
-        <Value>C:\iblrig\Subjects\test_mouse\2018-09-18\29\raw_behavior_data\_ibl_encoderTrialInfo.bonsai_raw.ssv</Value>
+        <Value>C:\ibldata\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_ibl_encoderTrialInfo.raw.ssv</Value>
       </Expression>
       <Expression xsi:type="ExternalizedPropertyOfStringCsvWriter">
         <MemberName>FileNameEvents</MemberName>
         <Name>FileNameEvents</Name>
-        <Value>C:\iblrig\Subjects\test_mouse\2018-09-18\29\raw_behavior_data\_ibl_encoderEvents.bonsai_raw.ssv</Value>
+        <Value>C:\ibldata\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_ibl_encoderEvents.raw.ssv</Value>
       </Expression>
       <Expression xsi:type="ExternalizedPropertyOfStringCsvWriter">
         <MemberName>FileNamePositions</MemberName>
         <Name>FileNamePositions</Name>
-        <Value>C:\iblrig\Subjects\test_mouse\2018-09-18\29\raw_behavior_data\_ibl_encoderPositions.bonsai_raw.ssv</Value>
+        <Value>C:\ibldata\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_ibl_encoderPositions.raw.ssv</Value>
       </Expression>
       <Expression xsi:type="WorkflowOutput" />
       <Expression xsi:type="Combinator">
@@ -1133,7 +1200,7 @@ re.pctimestamp.csv
       <Expression xsi:type="ExternalizedPropertyOfStringAudioWriter">
         <MemberName>FileNameMic</MemberName>
         <Name>FileNameMic</Name>
-        <Value>C:\iblrig\Subjects\test_mouse\2018-09-18\29\raw_behavior_data\_ibl_rawMic.data.wav</Value>
+        <Value>C:\ibldata\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_ibl_micData.raw.wav</Value>
       </Expression>
       <Expression xsi:type="SelectMany">
         <Name>UpdateContrast</Name>
@@ -1334,7 +1401,7 @@ probably there is no need to reset the position also
       <Expression xsi:type="ExternalizedPropertyOfBooleanBooleanProperty">
         <MemberName>RecordSound</MemberName>
         <Name>RecordSound</Name>
-        <Value>false</Value>
+        <Value>true</Value>
       </Expression>
     </Nodes>
     <Edges>
@@ -1609,7 +1676,8 @@ probably there is no need to reset the position also
     <Type>Bonsai.Shaders.AspectRatio, Bonsai.Shaders, Version=0.18.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Shaders.WindowClosed, Bonsai.Shaders, Version=0.18.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Expressions.MulticastSubjectBuilder, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Expressions.WorkflowProperty`1[[System.Int16, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089]], Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Expressions.LessThanBuilder, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Expressions.DoubleProperty, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Reactive.CombineLatest, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Scripting.ExpressionTransform, Bonsai.Scripting, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Dsp.Rescale, Bonsai.Dsp, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
@@ -1621,9 +1689,9 @@ probably there is no need to reset the position also
     <Type>Bonsai.Expressions.ExternalizedProperty`2[[System.Single, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089],[Bonsai.Expressions.FloatProperty, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null]], Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Expressions.IntProperty, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Shaders.UpdateUniform, Bonsai.Shaders, Version=0.18.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.IO.CsvWriter, Bonsai.System, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.IO.CsvWriter, Bonsai.System, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Reactive.Timestamp, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Expressions.ExternalizedProperty`2[[System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089],[Bonsai.IO.CsvWriter, Bonsai.System, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null]], Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Expressions.ExternalizedProperty`2[[System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089],[Bonsai.IO.CsvWriter, Bonsai.System, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null]], Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Audio.AudioWriter, Bonsai.Audio, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Audio.AudioCapture, Bonsai.Audio, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Expressions.ExternalizedProperty`2[[System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089],[Bonsai.Audio.AudioWriter, Bonsai.Audio, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null]], Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>

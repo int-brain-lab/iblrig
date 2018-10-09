@@ -36,7 +36,7 @@ STIM_CONTRASTS = [1., 0.5, 0.25, 0.125, 0.0625, 0.]  # All possible contrasts
 STIM_FREQ = 0.19  # Probably constant - NOT IN USE
 STIM_ANGLE = 0.  # Vertical orientation of Gabor patch - NOT IN USE
 STIM_SIGMA = 9.  # (azimuth_degree) Size of Gabor patch
-STIM_GAIN = 5.  # (azimuth_degree/mm) Gain of the RE to stimulus movement
+STIM_GAIN = 8.  # (deg/mm) Gain of the stim to wheel movement
 # SOUNDS
 SOFT_SOUND = 'onboard'  # Use software sound 'xonar', 'onboard' or False for BpodSoundCard
 # Moule port where the SoundBoard is connected (ignored if using software sound)

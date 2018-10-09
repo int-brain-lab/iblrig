@@ -34,8 +34,9 @@ class MyRotaryEncoder(object):
     def __init__(self, all_thresholds, gain):
         self.all_thresholds = all_thresholds
         self.wheel_perim = 31 * 2 * np.pi  # = 194,778744523
-        self.wheel_deg_mm = 360 / self.wheel_perim
-        self.factor = self.wheel_deg_mm / gain
+        self.deg_mm = 360 / self.wheel_perim
+        self.mm_deg = self.wheel_perim / 360
+        self.factor = 1 / (self.mm_deg * gain)
         self.SET_THRESHOLDS = [x * self.factor for x in self.all_thresholds]
         self.ENABLE_THRESHOLDS = [(True if x != 0
                                    else False) for x in self.SET_THRESHOLDS]
@@ -395,11 +396,11 @@ class session_param_handler(object):
         prev_data_files = []
         for prev_sess_path in self._previous_session_folders():
             prev_sess_path = os.path.join(prev_sess_path, 'raw_behavior_data')
-            if self.BASE_FILENAME + '.data' in ''.join(os.listdir(
-                                                       prev_sess_path)):
+            if self.BASE_FILENAME + 'Data' in ''.join(os.listdir(
+                    prev_sess_path)):
                 prev_data_files.extend(os.path.join(prev_sess_path, x) for x
                                        in os.listdir(prev_sess_path) if
-                                       self.BASE_FILENAME + '.data' in x)
+                                       self.BASE_FILENAME + 'Data' in x)
 
         return prev_data_files
 
