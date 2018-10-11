@@ -10,7 +10,7 @@ import os
 import sys
 
 
-def configure_sounddevice(sd=None, output='onboard'):
+def configure_sounddevice(sd=None, output='system_default'):
     """
     Will import, configure, and return sounddevice module to
     play sounds using onboard sound card.
@@ -29,17 +29,18 @@ def configure_sounddevice(sd=None, output='onboard'):
         if output == 'xonar':
             devices = sd.query_devices()
             sd.default.device = [(i, d) for i, d in enumerate(
-                devices) if 'Speakers' in d['name']][0][0]
+                devices) if 'Headphones' in d['name']][0][0]
             sd.default.latency = 'low'
-            sd.default.channels = 8
-        elif output == 'onboard':
+            sd.default.channels = 2
+            sd.default.samplerate = 44100
+        elif output == 'system_default':
             sd.default.latency = 'low'
-            sd.default.channels = 8
+            sd.default.channels = 2
     return sd
 
 
 def make_sound(rate=44100, frequency=10000, duration=0.1, amplitude=1,
-               fade=0.01, chans=2):
+               fade=0.01, chans='1+TTL'):
     """
     Build sounds and save bin file for upload to soundcard or play via
     sounddevice lib.
@@ -75,15 +76,26 @@ def make_sound(rate=44100, frequency=10000, duration=0.1, amplitude=1,
     win = np.ones(len(tvec))
     win[:len_fade] = fadein
     win[-len_fade:] = fadeout
+
     tone = tone * win
+    ttl = np.ones(len(tone))
+    null = np.zeros(len(tone))
 
     if frequency == -1:
         tone = amplitude * np.random.rand(tone.size)
 
-    if chans == 1:
+    if chans == 'mono':
         sound = np.array(tone)
-    elif chans == 2:
+    elif chans == 'L':
+        sound = np.array([tone, null]).T
+    elif chans == 'R':
+        sound = np.array([null, tone]).T
+    elif chans == 'stereo':
         sound = np.array([tone, tone]).T
+    elif chans == 'L+TTL':
+        sound = np.array([tone, ttl]).T
+    elif chans == 'TTL+R':
+        sound = np.array([ttl, tone]).T
 
     return sound
 
@@ -143,7 +155,13 @@ def get_uploaded_sounds():
 
 
 if __name__ == '__main__':
-    import matplotlib.pyplot as plt
+    sd = configure_sounddevice()
+    sd.stop()
+    L_TTL = make_sound(chans='L+TTL')
+    sd.play(L_TTL, 44100, mapping=[1, 2])
+    # sd.stop()
+
+    # import matplotlib.pyplot as plt
     # sample_rate = 96000
     # duration=0.1
     # amplitude=1
@@ -183,4 +201,4 @@ if __name__ == '__main__':
     # plt.plot(tone)
     # plt.show()
 
-    # print('')
+    print('i')

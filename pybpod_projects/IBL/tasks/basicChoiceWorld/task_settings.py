@@ -38,7 +38,8 @@ STIM_ANGLE = 0.  # Vertical orientation of Gabor patch - NOT IN USE
 STIM_SIGMA = 9.  # (azimuth_degree) Size of Gabor patch
 STIM_GAIN = 8.  # (deg/mm) Gain of the stim to wheel movement
 # SOUNDS
-SOFT_SOUND = 'onboard'  # Use software sound 'xonar', 'onboard' or False for BpodSoundCard
+# Use software sound 'xonar', 'system_default' or False for BpodSoundCard
+SOFT_SOUND = 'system_default'
 # Moule port where the SoundBoard is connected (ignored if using software sound)
 SOUND_BOARD_BPOD_PORT = 'Serial3'
 WHITE_NOISE_DURATION = ITI_ERROR  # Length of noise burst
