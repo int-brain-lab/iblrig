@@ -10,7 +10,7 @@ import os
 import sys
 
 
-def configure_sounddevice(sd=None, output='system_default'):
+def configure_sounddevice(sd=None, output='sysdefault'):
     """
     Will import, configure, and return sounddevice module to
     play sounds using onboard sound card.
@@ -24,7 +24,11 @@ def configure_sounddevice(sd=None, output='system_default'):
     if sd is None:
         import sounddevice as sd
     if sys.platform == 'linux':
-        sd.default.device = 'default'
+        devices = sd.query_devices()
+        sd.default.device = [(i, d) for i, d in enumerate(
+            devices) if 'sysdefault' in d['name']][0][0]
+        sd.default.latency = 'low'
+        sd.default.channels = 2
     else:
         if output == 'xonar':
             devices = sd.query_devices()
@@ -33,14 +37,14 @@ def configure_sounddevice(sd=None, output='system_default'):
             sd.default.latency = 'low'
             sd.default.channels = 2
             sd.default.samplerate = 44100
-        elif output == 'system_default':
+        elif output == 'sysdefault':
             sd.default.latency = 'low'
             sd.default.channels = 2
     return sd
 
 
 def make_sound(rate=44100, frequency=10000, duration=0.1, amplitude=1,
-               fade=0.01, chans='1+TTL'):
+               fade=0.01, chans='L+TTL'):
     """
     Build sounds and save bin file for upload to soundcard or play via
     sounddevice lib.
@@ -57,8 +61,9 @@ def make_sound(rate=44100, frequency=10000, duration=0.1, amplitude=1,
     :type amplitude: intor float, optional
     :param fade: (s) time of fading window rise and decay, defaults to 0.01
     :type fade: float, optional
-    :param chans: [1, 2] number of sound channels, defaults to 2
-    :type chans: int, optional
+    :param chans: ['mono', 'L', 'R', 'stereo', 'L+TTL', 'TTL+R'] number of sound
+                  channels and type of output, defaults to 'L+TTL'
+    :type chans: str, optional
     :return: streo sound from mono definitions
     :rtype: np.ndarray with shape (Nsamples, 2)
     """
@@ -159,46 +164,5 @@ if __name__ == '__main__':
     sd.stop()
     L_TTL = make_sound(chans='L+TTL')
     sd.play(L_TTL, 44100, mapping=[1, 2])
-    # sd.stop()
-
-    # import matplotlib.pyplot as plt
-    # sample_rate = 96000
-    # duration=0.1
-    # amplitude=1
-    # fade=0.01
-    # frequency=10000
-
-    # sample_rate = 96000  # sample rate, depend on the sound card
-    # tone_duration = duration  # sec
-    # fade_duration = fade  # sec
-
-    # tvec = np.linspace(0, tone_duration, tone_duration * sample_rate)
-    # tone = amplitude * np.sin(2 * np.pi * frequency * tvec)  # tone vec
-
-    # len_fade = int(fade_duration * sample_rate)
-    # fade_io = np.hanning(len_fade * 2)
-    # fadein = fade_io[:len_fade]
-    # fadeout = fade_io[len_fade:]
-    # win = np.ones(len(tvec))
-    # win[:len_fade] = fadein
-    # win[-len_fade:] = fadeout
-    # tone = tone * win
-
-    # sound = np.array([tone, tone]).T
-    # bin_sound = (sound * ((2**31) - 1)).astype(np.int32)
-    # if bin_sound.flags.f_contiguous:
-    #     bin_sound = np.ascontiguousarray(bin_sound)
-
-    # bin_save = bin_sound.reshape(1, np.multiply(*bin_sound.shape))
-
-    # bin_save = np.ascontiguousarray(bin_save)
-
-    # file_path = 'some_file'
-
-    # with open(file_path, 'wb') as bf:
-    #     bf.writelines(bin_save)
-
-    # plt.plot(tone)
-    # plt.show()
 
     print('i')
