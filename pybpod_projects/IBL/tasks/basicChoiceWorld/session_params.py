@@ -419,6 +419,12 @@ class session_param_handler(object):
             for line in f:
                 last_trial = json.loads(line)
                 trial_data.append(last_trial)
+        print("\n\nINFO: PREVIOUS SESSION FOUND @", 
+              "\nLOADING PARAMETERS FROM: {}".format(self.PREVIOUS_DATA_FILE), 
+              "\n\nCURRENT REWARD: {}".format(trial_data[i]["reward_current"]),
+              "\nCURRENT CONTRAST SET: {}".format(trial_data[i]["ac"]["contrasts"]),
+              "\nCURRENT GAIN: {}".format(trial_data[i]["stim_gain"]),
+              "\nBUFFERS LR: {}".format(trial_data[i]["ac"]["buffer"]))
         return trial_data[i] if trial_data else None
 
     # =========================================================================
