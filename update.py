@@ -169,6 +169,8 @@ if __name__ == '__main__':
         elif sys.argv[1] == 'tasks':
             missing_files = get_new_tasks(branch='master')
             checkout_missing_task_files(missing_files, branch='master')
+        elif sys.argv[1] == 'update':
+            pass
         else:
             print("ERROR:", sys.argv[1],
                   "is not a  valid command or version number.")
