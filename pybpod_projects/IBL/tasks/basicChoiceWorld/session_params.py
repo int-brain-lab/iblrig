@@ -212,7 +212,7 @@ class session_param_handler(object):
                                               duration=self.WHITE_NOISE_DURATION,
                                               amplitude=self.WHITE_NOISE_AMPLITUDE,
                                               fade=0.01,
-                                              chans=2)
+                                              chans='L+TTL')
                     sound.save_bin(isound, os.path.join(self.SOUND_STIM_FOLDER,
                                                         '{}_{}_{}_{}_{}_{}_{}_{}'.format(
                                                             index,
@@ -240,7 +240,7 @@ class session_param_handler(object):
                                               duration=self.GO_TONE_DURATION,
                                               amplitude=self.GO_TONE_AMPLITUDE,
                                               fade=0.01,
-                                              chans=2)
+                                              chans='L+TTL')
                     sound.save_bin(isound, os.path.join(self.SOUND_STIM_FOLDER,
                                                         '{}_{}_{}_{}_{}_{}_{}_{}'.format(
                                                             index,
@@ -419,8 +419,8 @@ class session_param_handler(object):
             for line in f:
                 last_trial = json.loads(line)
                 trial_data.append(last_trial)
-        print("\n\nINFO: PREVIOUS SESSION FOUND @", 
-              "\nLOADING PARAMETERS FROM: {}".format(self.PREVIOUS_DATA_FILE), 
+        print("\n\nINFO: PREVIOUS SESSION FOUND @",
+              "\nLOADING PARAMETERS FROM: {}".format(self.PREVIOUS_DATA_FILE),
               "\n\nCURRENT REWARD: {}".format(trial_data[i]["reward_current"]),
               "\nCURRENT CONTRAST SET: {}".format(trial_data[i]["ac"]["contrasts"]),
               "\nCURRENT GAIN: {}".format(trial_data[i]["stim_gain"]),
