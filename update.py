@@ -195,8 +195,9 @@ if __name__ == '__main__':
     # If called with something in front of something in front :P
     elif len(sys.argv) == 3:
         branches = get_branches()
-        # Syntax checks
-        if sys.argv[1] != 'tasks' or sys.argv[1] != 'update':
+        commands = ['tasks', 'update']
+        # Command checks
+        if sys.argv[1] not in commands:
             print("ERROR:", "Unknown command...")
             raise ValueError
         if sys.argv[2] not in branches:
@@ -208,6 +209,4 @@ if __name__ == '__main__':
             checkout_missing_task_files(missing_files, branch=sys.argv[2])
         if sys.argv[1] == 'update' and sys.argv[2] in branches:
             checkout_single_file(file='update.py', branch=sys.argv[2])
-
-
     print("\n")
