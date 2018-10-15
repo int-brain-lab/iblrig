@@ -186,12 +186,16 @@ class session_param_handler(object):
                 rate=self.SOUND_SAMPLE_FREQ,
                 frequency=self.GO_TONE_FREQUENCY,
                 duration=self.GO_TONE_DURATION,
-                amplitude=self.GO_TONE_AMPLITUDE)
+                amplitude=self.GO_TONE_AMPLITUDE,
+                fade=0.01,
+                chans='L+TTL')
             self.WHITE_NOISE = sound.make_sound(
                 rate=self.SOUND_SAMPLE_FREQ,
                 frequency=-1,
                 duration=self.WHITE_NOISE_DURATION,
-                amplitude=self.WHITE_NOISE_AMPLITUDE)
+                amplitude=self.WHITE_NOISE_AMPLITUDE,
+                fade=0.01,
+                chans='L+TTL')
 
             self.OUT_TONE = ('SoftCode', 1)
             self.OUT_NOISE = ('SoftCode', 2)

@@ -99,8 +99,8 @@ for i in range(sph.NTRIALS):  # Main loop
 #     Start state machine definition
 # =============================================================================
     sma = StateMachine(bpod)
-    sma = bpod.SetGlobalTimer(sma, 'TimerID', 1, 'Duration', 0.3,
-                         'OnsetDelay', 0, 'Channel', 'BNC1')
+    sma.set_global_timer(timer_id=1, timer_duration=1, on_set_delay=0, 
+                         channel='BNC1')
 
     sma.add_state(
         state_name='trial_start',
