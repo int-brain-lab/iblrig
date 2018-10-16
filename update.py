@@ -89,7 +89,7 @@ def restore_pybpod_projects_from_backup():
               pybpod_projects_path())
 
 
-def get_new_tasks(branch='master'):
+def get_tasks(branch='master', only_missing=True):
     print("Checking for new tasks on {}:".format(branch))
     local_tasks_dir = os.path.join(
         os.getcwd(), 'pybpod_projects', 'IBL', 'tasks')
@@ -109,12 +109,14 @@ def get_new_tasks(branch='master'):
     for lt in local_tasks:
         found_files.extend([x for x in remote_task_files if lt in x])
 
-    missing_files = list(set(remote_task_files) - set(found_files))
-    # Remove tasks.json file
-    missing_files = [x for x in missing_files if "tasks.json" not in x]
-    print("Found {} new files:".format(len(missing_files)), missing_files)
-
-    return missing_files
+    if only_missing:
+        missing_files = list(set(remote_task_files) - set(found_files))
+        # Remove tasks.json file
+        missing_files = [x for x in missing_files if "tasks.json" not in x]
+        print("Found {} new files:".format(len(missing_files)), missing_files)
+        return missing_files    
+    else:
+        return found_files
 
 
 def checkout_missing_task_files(missing_files, branch='master'):
@@ -127,7 +129,8 @@ def checkout_missing_task_files(missing_files, branch='master'):
 def checkout_single_file(file=None, branch='master'):
     subprocess.call("git checkout origin/{} -- {}".format(branch,
                                                           file).split())
-
+        
+    print("Checked out", file, "from branch", branch)
 
 def checkout_version(ver):
     print("\nChecking out {}".format(ver))
@@ -180,10 +183,12 @@ if __name__ == '__main__':
             backup_pybpod_projects()
             checkout_version(sys.argv[1])
             restore_pybpod_projects_from_backup()
+            task_files = get_tasks(branch='master', only_missing=False)
+            checkout_missing_task_files(task_files, branch='master')
         # UPDATE TASKS
         elif sys.argv[1] == 'tasks':
-            missing_files = get_new_tasks(branch='master')
-            checkout_missing_task_files(missing_files, branch='master')
+            task_files = get_tasks(branch='master', only_missing=False)
+            checkout_missing_task_files(task_files, branch='master')
         # UPDATE UPDATE
         elif sys.argv[1] == 'update':
             checkout_single_file(file='update.py', branch='master')
@@ -205,8 +210,8 @@ if __name__ == '__main__':
             raise ValueError
         # Commands
         if sys.argv[1] == 'tasks' and sys.argv[2] in branches:
-            missing_files = get_new_tasks(branch=sys.argv[2])
-            checkout_missing_task_files(missing_files, branch=sys.argv[2])
+            task_files = get_tasks(branch=sys.argv[2], only_missing=False)
+            checkout_missing_task_files(task_files, branch=sys.argv[2])
         if sys.argv[1] == 'update' and sys.argv[2] in branches:
             checkout_single_file(file='update.py', branch=sys.argv[2])
     print("\n")
