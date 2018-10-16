@@ -141,7 +141,8 @@ class session_param_handler(object):
         self.GO_TONE_FREQUENCY = int(self.GO_TONE_FREQUENCY)
         self.GO_TONE_AMPLITUDE = float(self.GO_TONE_AMPLITUDE)
 
-        self.SD = sound.configure_sounddevice(output=self.SOFT_SOUND)
+        self.SD = sound.configure_sounddevice(output=self.SOFT_SOUND,
+                                              samplerate=self.SOUND_SAMPLE_FREQ)
         # TODO: THIS IS CHANGING! + make upload on create!
         self.UPLOADER_TOOL = os.path.join(os.path.expanduser('~'), 'Documents',
                                           'HarpSoundBoard', 'SoundUploader',
@@ -186,12 +187,16 @@ class session_param_handler(object):
                 rate=self.SOUND_SAMPLE_FREQ,
                 frequency=self.GO_TONE_FREQUENCY,
                 duration=self.GO_TONE_DURATION,
-                amplitude=self.GO_TONE_AMPLITUDE)
+                amplitude=self.GO_TONE_AMPLITUDE,
+                fade=0.01,
+                chans='L+TTL')
             self.WHITE_NOISE = sound.make_sound(
                 rate=self.SOUND_SAMPLE_FREQ,
                 frequency=-1,
                 duration=self.WHITE_NOISE_DURATION,
-                amplitude=self.WHITE_NOISE_AMPLITUDE)
+                amplitude=self.WHITE_NOISE_AMPLITUDE,
+                fade=0.01,
+                chans='L+TTL')
 
             self.OUT_TONE = ('SoftCode', 1)
             self.OUT_NOISE = ('SoftCode', 2)
@@ -419,7 +424,7 @@ class session_param_handler(object):
             for line in f:
                 last_trial = json.loads(line)
                 trial_data.append(last_trial)
-        print("\n\nINFO: PREVIOUS SESSION FOUND @",
+        print("\n\nINFO: PREVIOUS SESSION FOUND",
               "\nLOADING PARAMETERS FROM: {}".format(self.PREVIOUS_DATA_FILE),
               "\n\nCURRENT REWARD: {}".format(trial_data[i]["reward_current"]),
               "\nCURRENT CONTRAST SET: {}".format(trial_data[i]["ac"]["contrasts"]),

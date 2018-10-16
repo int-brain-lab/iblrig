@@ -99,6 +99,8 @@ for i in range(sph.NTRIALS):  # Main loop
 #     Start state machine definition
 # =============================================================================
     sma = StateMachine(bpod)
+    sma.set_global_timer(timer_id=1, timer_duration=1, on_set_delay=0, 
+                         channel='BNC1')
 
     sma.add_state(
         state_name='trial_start',
@@ -106,6 +108,7 @@ for i in range(sph.NTRIALS):  # Main loop
         state_change_conditions={'Tup': 'reset_rotary_encoder'},
         output_actions=[('Serial1', rotary_encoder_e1),
                         ('SoftCode', 0),
+                        ('GlobalTimerTrig', 1),
                         ])  # stop stim
 
     sma.add_state(
