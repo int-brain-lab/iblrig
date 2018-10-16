@@ -75,13 +75,14 @@ bpod.load_serial_message(rotary_encoder, rotary_encoder_e3,
                          [ord('#'), 3])
 
 # SoundCard
-sound_board = [x for x in bpod.modules if x.name == 'SoundBoard1'][0]
-sound_board_i2 = 5
-sound_board_i3 = 6
-sound_board_i4 = 7
-bpod.load_serial_message(sound_board, sound_board_i2, [ord('P'), 2])
-bpod.load_serial_message(sound_board, sound_board_i3, [ord('P'), 3])
-bpod.load_serial_message(sound_board, sound_board_i4, [ord('P'), 4])
+if not sph.SOFT_SOUND:
+    sound_board = [x for x in bpod.modules if x.name == 'SoundBoard1'][0]
+    sound_board_i2 = 5
+    sound_board_i3 = 6
+    sound_board_i4 = 7
+    bpod.load_serial_message(sound_board, sound_board_i2, [ord('P'), 2])
+    bpod.load_serial_message(sound_board, sound_board_i3, [ord('P'), 3])
+    bpod.load_serial_message(sound_board, sound_board_i4, [ord('P'), 4])
 # =============================================================================
 # TRIAL PARAMETERS AND STATE MACHINE
 # =============================================================================
@@ -99,7 +100,7 @@ for i in range(sph.NTRIALS):  # Main loop
 #     Start state machine definition
 # =============================================================================
     sma = StateMachine(bpod)
-    sma.set_global_timer(timer_id=1, timer_duration=1, on_set_delay=0, 
+    sma.set_global_timer(timer_id=1, timer_duration=1, on_set_delay=0,
                          channel='BNC1')
 
     sma.add_state(
