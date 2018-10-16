@@ -9,6 +9,8 @@ Usage:
     update.py
         Will fetch changes from origin. Nothing is updated yet!
         Calling update.py will display information on the available versions
+    update.py -h | --help | ?
+        Displays this docstring.
     update.py <version>
         Will backup pybpod_projects folder where local configurations live.
         Will checkout the <version> release, update the submodules, and restore
@@ -17,8 +19,10 @@ Usage:
         Will checkout any task file not present in the local tasks folder.
     update.py tasks <branch>
         Will checkout any task file from <branch> not present in local folder.
-    update.py -h | --help | ?
-        Displays this docstring.
+    update.py update
+        Will update itself to the latest revision on master.
+    update.py update <branch>
+        Will update itself to the latest revision on <branch>.
 """
 import subprocess
 import sys
@@ -38,7 +42,7 @@ def get_versions():
 
 def get_branches():
     branches = subprocess.check_output(["git", "ls-remote",
-                                    "--heads", "origin"]).decode().split()
+                                        "--heads", "origin"]).decode().split()
     branches = [x.split('heads')[-1] for x in branches[1::2]]
     branches = [x[1:] for x in branches]
     print("\nAvailable branches: {}\n".format(branches))
@@ -72,7 +76,7 @@ def backup_pybpod_projects():
     src = pybpod_projects_path()
     dst = os.path.join(os.path.expanduser('~'), 'pybpod_projects.bk')
     shutil.copytree(src, dst,
-        ignore=shutil.ignore_patterns('sessions'))
+                    ignore=shutil.ignore_patterns('sessions'))
 
 
 def restore_pybpod_projects_from_backup():
@@ -116,12 +120,18 @@ def get_new_tasks(branch='master'):
 def checkout_missing_task_files(missing_files, branch='master'):
     for file in missing_files:
         subprocess.call("git checkout origin/{} -- {}".format(branch,
-                                                                file).split())
+                                                              file).split())
         print("Checked out:", file)
+
+
+def checkout_single_file(file=None, branch='master'):
+    subprocess.call("git checkout origin/{} -- {}".format(branch,
+                                                          file).split())
 
 
 def checkout_version(ver):
     print("\nChecking out {}".format(ver))
+    subprocess.call(['git', 'stash'])
     subprocess.call(['git', 'checkout', 'tags/' + ver])
     submodule_update()
 
@@ -154,31 +164,49 @@ def info():
 
 
 if __name__ == '__main__':
+    # TODO: Use argparse!!
+    # If called alone
     if len(sys.argv) == 1:
         info()
+    # If called with something in front
     elif len(sys.argv) == 2:
         versions = get_versions()
         help_args = ['-h', '--help', '?']
+        # HELP
         if sys.argv[1] in help_args:
             print(__doc__)
+        # UPDATE TO VERSION
         elif sys.argv[1] in versions:
             backup_pybpod_projects()
             checkout_version(sys.argv[1])
             restore_pybpod_projects_from_backup()
+        # UPDATE TASKS
         elif sys.argv[1] == 'tasks':
             missing_files = get_new_tasks(branch='master')
             checkout_missing_task_files(missing_files, branch='master')
+        # UPDATE UPDATE
+        elif sys.argv[1] == 'update':
+            checkout_single_file(file='update.py', branch='master')
+        # UNKNOWN COMMANDS
         else:
             print("ERROR:", sys.argv[1],
                   "is not a  valid command or version number.")
+            raise ValueError
+    # If called with something in front of something in front :P
     elif len(sys.argv) == 3:
         branches = get_branches()
-        if sys.argv[1] != 'tasks':
+        commands = ['tasks', 'update']
+        # Command checks
+        if sys.argv[1] not in commands:
             print("ERROR:", "Unknown command...")
-        elif sys.argv[2] not in branches:
+            raise ValueError
+        if sys.argv[2] not in branches:
             print("ERROR:", sys.argv[2], "is not a valid branch.")
-        elif sys.argv[2] in branches:
+            raise ValueError
+        # Commands
+        if sys.argv[1] == 'tasks' and sys.argv[2] in branches:
             missing_files = get_new_tasks(branch=sys.argv[2])
             checkout_missing_task_files(missing_files, branch=sys.argv[2])
-
+        if sys.argv[1] == 'update' and sys.argv[2] in branches:
+            checkout_single_file(file='update.py', branch=sys.argv[2])
     print("\n")

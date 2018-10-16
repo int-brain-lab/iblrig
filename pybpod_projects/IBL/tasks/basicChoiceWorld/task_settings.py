@@ -36,13 +36,16 @@ STIM_CONTRASTS = [1., 0.5, 0.25, 0.125, 0.0625, 0.]  # All possible contrasts
 STIM_FREQ = 0.19  # Probably constant - NOT IN USE
 STIM_ANGLE = 0.  # Vertical orientation of Gabor patch - NOT IN USE
 STIM_SIGMA = 9.  # (azimuth_degree) Size of Gabor patch
-STIM_GAIN = 5.  # (azimuth_degree/mm) Gain of the RE to stimulus movement
+STIM_GAIN = 8.  # (deg/mm) Gain of the stim to wheel movement
 # SOUNDS
-SOUND_SAMPLE_FREQ = 44100  # 192000  # depends on the sound card. 96000 ?
+# Use software sound 'xonar', 'sysdefault' or False for BpodSoundCard
+SOFT_SOUND = 'xonar'
+# Moule port where the SoundBoard is connected (ignored if using software sound)
+SOUND_BOARD_BPOD_PORT = 'Serial3'
 WHITE_NOISE_DURATION = ITI_ERROR  # Length of noise burst
 WHITE_NOISE_AMPLITUDE = 0.05
 GO_TONE_DURATION = 0.1  # Length of tone
-GO_TONE_FREQUENCY = 8000  # 10KHz
+GO_TONE_FREQUENCY = 10000  # 10KHz
 GO_TONE_AMPLITUDE = 0.2  # [0->1]
 # STAIRCASE_CONTRAST TRIALS
 ST_CONTRAST = 1.

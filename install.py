@@ -224,3 +224,32 @@ if __name__ == '__main__':
               r"    python utils\install.py")
     except IOError as msg:
         print(msg, "\n\nSOMETHING IS WRONG: Bad! Bad install file!")
+
+# Install notes to be integrated in install procedure!
+# https: // bitbucket.org/fchampalimaud/downloads/downloads/
+# DL runtime and soundcard
+
+# Cables need to be inserted for installation
+# Install Runtime
+# next next ...
+
+# REBOOT
+
+# Uncheck windows fast bla bla from sound card installation
+
+# on desktop double click Sound card CF
+
+# Click here
+# open driver folder
+# doubleclick on installer
+# install driver
+
+
+# LAunch Sound generator and uploader
+
+# create sounds
+# i2 and i3
+
+# create sound and send to board... might request to install .NET3.5. just go ahead
+
+# (base) C: \Users\User\Documents\HarpSoundBoard\SoundUploader > HarpSoundCard.exe i4_white_noise_gaussian 4 0 96
