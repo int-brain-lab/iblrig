@@ -10,7 +10,7 @@ import os
 import sys
 
 
-def configure_sounddevice(sd=None, output='sysdefault'):
+def configure_sounddevice(sd=None, output='sysdefault', samplerate=44100):
     """
     Will import, configure, and return sounddevice module to
     play sounds using onboard sound card.
@@ -36,10 +36,11 @@ def configure_sounddevice(sd=None, output='sysdefault'):
                 devices) if 'Headphones' in d['name']][0][0]
             sd.default.latency = 'low'
             sd.default.channels = 2
-            sd.default.samplerate = 44100
+            sd.default.samplerate = samplerate
         elif output == 'sysdefault':
             sd.default.latency = 'low'
             sd.default.channels = 2
+            sd.default.samplerate = samplerate
     return sd
 
 
@@ -160,9 +161,10 @@ def get_uploaded_sounds():
 
 
 if __name__ == '__main__':
-    sd = configure_sounddevice()
+    sd = configure_sounddevice(output='xonar')
     sd.stop()
-    L_TTL = make_sound(chans='L+TTL')
+    L_TTL = make_sound(chans='L+TTL', amplitude=0.2)
+    N_TTL = make_sound(chans='L+TTL', amplitude=-1)
     sd.play(L_TTL, 44100, mapping=[1, 2])
 
     print('i')
