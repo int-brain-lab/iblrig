@@ -8,11 +8,12 @@ import serial
 
 
 if __name__ == '__main__':
+    import matplotlib.pyplot as plt
     frame2ttl = '/dev/ttyACM1'
     ser = serial.Serial(port=frame2ttl, baudrate=115200, timeout=1)
     x = 0
     out = []
-    ser.write(b'S')  # Start the stream
+    ser.write(b'S')  # Start the stream, stream rate 100Hz
     while x < 100:
         # ser.write(b'V')  # ord('V')
         # ser.flushOutput()
@@ -24,4 +25,6 @@ if __name__ == '__main__':
 
     ser.write(b'S')  # Stop the stream
     ser.close()
+    plt.plot(out)
+    plt.show()
     print('Done!')
