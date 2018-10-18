@@ -125,11 +125,13 @@ class session_param_handler(object):
         self.DATA_FILE_PATH = os.path.join(self.SESSION_RAW_DATA_FOLDER,
                                            self.BASE_FILENAME +
                                            'Data.raw.jsonable')
-        # =====================================================================
-        # REWARD INITIALIZATION
-        # =====================================================================
+
         self.PREVIOUS_DATA_FILE = self._previous_data_file()
         self.LAST_TRIAL_DATA = self._load_last_trial()
+        # =====================================================================
+        # ADAPTIVE STUFF
+        # =====================================================================
+        self.STIM_GAIN = 4. if self.LAST_TRIAL_DATA['trial_num'] >= 200 else 8.
         self.REWARD_CURRENT = self._init_reward()
         # =====================================================================
         # SOUNDS
@@ -143,10 +145,7 @@ class session_param_handler(object):
 
         self.SD = sound.configure_sounddevice(output=self.SOFT_SOUND,
                                               samplerate=self.SOUND_SAMPLE_FREQ)
-        # TODO: THIS IS CHANGING! + make upload on create!
-        self.UPLOADER_TOOL = os.path.join(os.path.expanduser('~'), 'Documents',
-                                          'HarpSoundBoard', 'SoundUploader',
-                                          'HarpSoundCard.exe')
+
         self._init_sounds()  # Will create sounds and output actions.
         # =====================================================================
         # RUN BONSAI
@@ -182,6 +181,10 @@ class session_param_handler(object):
     # SOUND
     # =========================================================================
     def _init_sounds(self):
+        # TODO: THIS IS CHANGING! + make upload on create!
+        self.UPLOADER_TOOL = os.path.join(os.path.expanduser('~'), 'Documents',
+                                          'HarpSoundBoard', 'SoundUploader',
+                                          'HarpSoundCard.exe')
         if self.SOFT_SOUND:
             self.GO_TONE = sound.make_sound(
                 rate=self.SOUND_SAMPLE_FREQ,

@@ -131,7 +131,7 @@ def save_bin(sound, file_path):
         bf.writelines(bin_save)
 
 
-def uplopad(uploader_tool, file_path, index, type_=0, sample_rate=96):
+def upload(uploader_tool, file_path, index, type_=0, sample_rate=96):
     """
     Uploads a bin file to an index of the non volatile memory of the sound card.
 

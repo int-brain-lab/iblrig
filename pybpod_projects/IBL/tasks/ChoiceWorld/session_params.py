@@ -34,8 +34,9 @@ class MyRotaryEncoder(object):
     def __init__(self, all_thresholds, gain):
         self.all_thresholds = all_thresholds
         self.wheel_perim = 31 * 2 * np.pi  # = 194,778744523
-        self.wheel_deg_mm = 360 / self.wheel_perim
-        self.factor = self.wheel_deg_mm / gain
+        self.deg_mm = 360 / self.wheel_perim
+        self.mm_deg = self.wheel_perim / 360
+        self.factor = 1 / (self.mm_deg * gain)
         self.SET_THRESHOLDS = [x * self.factor for x in self.all_thresholds]
         self.ENABLE_THRESHOLDS = [(True if x != 0
                                    else False) for x in self.SET_THRESHOLDS]
@@ -67,7 +68,7 @@ class session_param_handler(object):
         # =====================================================================
         # OSC CLIENT
         # =====================================================================
-        self.OSC_CLIENT = self._osc_client_init()
+        self.OSC_CLIENT = self._init_osc_client()
         # =====================================================================
         # ROTARY ENCODER
         # =====================================================================
@@ -85,7 +86,7 @@ class session_param_handler(object):
             self.ROTARY_ENCODER_PORT = '/dev/ttyACM0'
         self._configure_rotary_encoder(RotaryEncoderModule)
         # =====================================================================
-        # FOLDER STRUCTURE, DATA FILES AND LAST TRIAL DATA
+        # FOLDER STRUCTURE AND DATA FILES
         # =====================================================================
         if platform == 'linux':
             self.IBLRIG_FOLDER = '/home/nico/Projects/IBL/IBL-github/iblrig'
@@ -127,9 +128,11 @@ class session_param_handler(object):
 
         self.PREVIOUS_DATA_FILE = self._previous_data_file()
         self.LAST_TRIAL_DATA = self._load_last_trial()
-
+        # =====================================================================
+        # ADAPTIVE STUFF
+        # =====================================================================
         self.STIM_GAIN = 4. if self.LAST_TRIAL_DATA['trial_num'] >= 200 else 8.
-
+        self.REWARD_CURRENT = self._init_reward()
         # =====================================================================
         # SOUNDS
         # =====================================================================
@@ -140,11 +143,9 @@ class session_param_handler(object):
         self.GO_TONE_FREQUENCY = int(self.GO_TONE_FREQUENCY)
         self.GO_TONE_AMPLITUDE = float(self.GO_TONE_AMPLITUDE)
 
-        self.SD = sound.configure_sounddevice(output=self.SOFT_SOUND)
-        # TODO: THIS IS CHANGING! + make upload on create!
-        self.UPLOADER_TOOL = os.path.join(os.path.expanduser('~'), 'Documents',
-                                          'HarpSoundBoard', 'SoundUploader',
-                                          'HarpSoundCard.exe')
+        self.SD = sound.configure_sounddevice(output=self.SOFT_SOUND,
+                                              samplerate=self.SOUND_SAMPLE_FREQ)
+
         self._init_sounds()  # Will create sounds and output actions.
         # =====================================================================
         # RUN BONSAI
@@ -180,17 +181,25 @@ class session_param_handler(object):
     # SOUND
     # =========================================================================
     def _init_sounds(self):
+        # TODO: THIS IS CHANGING! + make upload on create!
+        self.UPLOADER_TOOL = os.path.join(self.IBLRIG_FOLDER, 'sound_stim',
+                                          'HarpSoundBoard', 'Interface',
+                                          'toSoundBoard.exe')
         if self.SOFT_SOUND:
             self.GO_TONE = sound.make_sound(
                 rate=self.SOUND_SAMPLE_FREQ,
                 frequency=self.GO_TONE_FREQUENCY,
                 duration=self.GO_TONE_DURATION,
-                amplitude=self.GO_TONE_AMPLITUDE)
+                amplitude=self.GO_TONE_AMPLITUDE,
+                fade=0.01,
+                chans='L+TTL')
             self.WHITE_NOISE = sound.make_sound(
                 rate=self.SOUND_SAMPLE_FREQ,
                 frequency=-1,
                 duration=self.WHITE_NOISE_DURATION,
-                amplitude=self.WHITE_NOISE_AMPLITUDE)
+                amplitude=self.WHITE_NOISE_AMPLITUDE,
+                fade=0.01,
+                chans='L+TTL')
 
             self.OUT_TONE = ('SoftCode', 1)
             self.OUT_NOISE = ('SoftCode', 2)
@@ -211,7 +220,7 @@ class session_param_handler(object):
                                               duration=self.WHITE_NOISE_DURATION,
                                               amplitude=self.WHITE_NOISE_AMPLITUDE,
                                               fade=0.01,
-                                              chans=2)
+                                              chans='L+TTL')
                     sound.save_bin(isound, os.path.join(self.SOUND_STIM_FOLDER,
                                                         '{}_{}_{}_{}_{}_{}_{}_{}'.format(
                                                             index,
@@ -239,7 +248,7 @@ class session_param_handler(object):
                                               duration=self.GO_TONE_DURATION,
                                               amplitude=self.GO_TONE_AMPLITUDE,
                                               fade=0.01,
-                                              chans=2)
+                                              chans='L+TTL')
                     sound.save_bin(isound, os.path.join(self.SOUND_STIM_FOLDER,
                                                         '{}_{}_{}_{}_{}_{}_{}_{}'.format(
                                                             index,
@@ -395,11 +404,11 @@ class session_param_handler(object):
         prev_data_files = []
         for prev_sess_path in self._previous_session_folders():
             prev_sess_path = os.path.join(prev_sess_path, 'raw_behavior_data')
-            if self.BASE_FILENAME + '.data' in ''.join(os.listdir(
+            if self.BASE_FILENAME + 'Data' in ''.join(os.listdir(
                                                        prev_sess_path)):
                 prev_data_files.extend(os.path.join(prev_sess_path, x) for x
                                        in os.listdir(prev_sess_path) if
-                                       self.BASE_FILENAME + '.data' in x)
+                                       self.BASE_FILENAME + 'Data' in x)
 
         return prev_data_files
 
@@ -418,7 +427,28 @@ class session_param_handler(object):
             for line in f:
                 last_trial = json.loads(line)
                 trial_data.append(last_trial)
+        print("\n\nINFO: PREVIOUS SESSION FOUND",
+              "\nLOADING PARAMETERS FROM: {}".format(self.PREVIOUS_DATA_FILE),
+              "\n\nCURRENT REWARD: {}".format(trial_data[i]["reward_current"]),
+              "\nCURRENT CONTRAST SET: {}".format(trial_data[i]["ac"]["contrasts"]),
+              "\nCURRENT GAIN: {}".format(trial_data[i]["stim_gain"]),
+              "\nBUFFERS LR: {}".format(trial_data[i]["ac"]["buffer"]))
         return trial_data[i] if trial_data else None
+
+    # =========================================================================
+    # REWARD
+    # =========================================================================
+    def _init_reward(self):
+        if self.LAST_TRIAL_DATA is None:
+            return self.REWARD_INIT_VALUE
+        else:
+            try:
+                out = (self.LAST_TRIAL_DATA['reward_valve_time'] /
+                       self.LAST_TRIAL_DATA['reward_calibration'])
+            except IOError:
+                out = (self.LAST_TRIAL_DATA['reward_valve_time'] /
+                       self.CALIBRATION_VALUE)
+            return out
 
     # =========================================================================
     # OSC CLIENT
