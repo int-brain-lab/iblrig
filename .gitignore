@@ -3,7 +3,7 @@ docs/_*
 docs/source/_*
 Subjects/
 water-calibration-plugin/
-pybpod_projects/
+# pybpod_projects/
 sessions/
 
 *.code-workspace
@@ -13,3 +13,4 @@ __pycache__/
 *.pyc
 *.driveupload
 Bonsai-2\.3/
+.DS_Store
