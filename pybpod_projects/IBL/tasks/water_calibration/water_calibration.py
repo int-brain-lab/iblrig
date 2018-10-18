@@ -11,10 +11,10 @@ from pybpodapi.bpod.hardware.output_channels import OutputChannel
 from pybpod_rotaryencoder_module.module_api import RotaryEncoderModule
 
 # ask Nicco if I need to separately import these?
-import serial, time, re, datetime # https://pyserial.readthedocs.io/en/latest/shortintro.html
+import serial, time, re, datetime, os # https://pyserial.readthedocs.io/en/latest/shortintro.html
 import seaborn as sns # for easier plotting at the end
 import pandas as pd
-import matplotlib as plt
+import matplotlib.pyplot as plt
 
 bpod  			 = Bpod()
 COMport_string   = 'COM7'
@@ -64,11 +64,11 @@ def scale_read(COMPORT_string=COMport_string):
 	version = ser.readline()
 	print('Ohaus scale initialized, version %s' %(version.decode("utf-8")))
 
-	# CONFIGURE SOME SETTINGS
-	ser.write(b'0M\r\n')  #scout pro set to grams
-	time.sleep(0.5)
-	ser.write(b'SA\r\n') # don't auto-print, wait for Print command
-	time.sleep(0.5)
+	# # CONFIGURE SOME SETTINGS
+	# # ser.write(b'0M\r\n')  # scout pro set to grams
+	# time.sleep(0.5)
+	# ser.write(b'SA\r\n') # don't auto-print, wait for Print command
+	# time.sleep(0.5)
 
 	# TEST READING THE WEIGHT
 	ser.write(b'IP\r\n') # ping the scale to print
@@ -94,7 +94,7 @@ def scale_read(COMPORT_string=COMport_string):
 target_drop_sizes = [3, 2.5, 2, 1.5] # in ul
 target_drop_sizes = [3, 2]
 ntrials 		  = 10
-precision 		  = 0.3 # ul
+precision 		  = 0.003 # ml
 
 # FIND A BEST GUESS BASED ON A PREVIOUS CALIBRATION FILE?
 bestguess 			= 0.01 # starting point for seconds to open for 1ul of water
@@ -156,31 +156,32 @@ for drop_size in target_drop_sizes:
 
 	# check that we successfully calibrated
 	if calibrated is False:
-		warning('I did not succeed after %d attempts. Something seems seriously wrong. \n' %(attempts))
+		print('Did not succeed after %d attempts. Something seems seriously wrong. \n' %(attempts))
+	else:
+		print('Completed water calibration')
+
 
 # =============================================================================
 # SAVE THE RESULTS FILE	
 # =============================================================================
 
-now = datetime.datetime.now()
-df.to_csv(os.path.join(calibration_path, '%s.csv', %now))
+now = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+df.to_csv(os.path.join(calibration_path, "%s.csv" %now))
 
 # MAKE AN OVERVIEW PLOT
-plt.plot( [0,4],[0,4], color='k') # identity line
-sns.lineplot(x="expected_weight", y="measured_weight",
-             style="drop_size", marker="calibrated", hue="attempt", palette=sns.color_palette("Greens"),
-             data=df, legend=Full)
+f, ax = plt.subplots()
+ax.plot( [0,df.measured_weight.max()],[0,df.measured_weight.max()], color='k') # identity line
+sns.scatterplot(x="target_weight", y="measured_weight",
+             style="target_drop_size", hue="attempt", 
+			 #palette="ch:r=-0.5,l=0.75",
+			 legend="full", data=df)
+ax.axis('equal')
 ax.set(ylabel="Expected weight (g)", xlabel="Measured weight (g)", title="Water calibration %s" %now)
-# lgd = ax.legend(loc='center right', bbox_to_anchor=(2.25, 0.7), ncol=1) # move box outside
-sns.despine(offset=2, trim=True)
-# f.savefig('C:\\iblrig\\pybpod_projects\\IBL\\tasks\\water_calibration\\calibrations\\overview_%s.png' %now)
-f.savefig(os.path.join(calibration_path, '%s.pdf', %now))
+#lgd = ax.legend(loc='center right', bbox_to_anchor=(2.25, 0.7), ncol=1) # move box outside
+f.savefig(os.path.join(calibration_path, '%s.pdf' %now))
 
 # =============================================================================
 # RANDOM STUFF
 # =============================================================================
 
 bpod.close()
-
-if __name__ == '__main__':
-    print('main')

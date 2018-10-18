@@ -3,15 +3,18 @@
     "__DEF-TEXT__": "This file contains information about a PyBpod experiment setup.",
     "__DEF-URL__": "http://pybpod.readthedocs.org",
     "__EXTERNAL-REF__": [
-        "5e32036f-3e2a-4b57-86a4-9c9e2f19aadb"
+        "5e32036f-3e2a-4b57-86a4-9c9e2f19aadb",
+        "578a19ae-ba93-4a2c-a083-cbce612e7e70"
     ],
     "__SOFTWARE__": "PyBpod GUI API v1.0",
-    "__UPDATED-ON__": "2018-05-10 13:10:13.457874",
+    "__UPDATED-ON__": "2018-10-18 18:20:01.824552",
     "__UUID4__": "27d81846-0c30-4ee1-bc24-cf9727769a0a",
-    "board": "box0",
-    "detached": false,
-    "subjects": [],
-    "task": "FlushWater",
+    "board": "cshl_behavior_bpod1",
+    "detached": true,
+    "subjects": [
+        "test_mouse"
+    ],
+    "task": "water_calibration",
     "update-variables": false,
     "variables": []
 }
