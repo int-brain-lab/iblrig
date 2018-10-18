@@ -17,6 +17,16 @@ USE_VISUAL_STIMULUS = True  # Run the visual stim in bonsai
 BONSAI_EDITOR = False  # Whether to open the Bonsai editor or not
 REPEAT_ON_ERROR = True
 REPEAT_STIMS = [1., 0.5]
+# ADAPTIVE PARAMETERS
+ADAPTIVE REWARD = True
+ADAPTIVE_CONTRAST = True
+ADAPTIVE GAIN = True
+# REWARDS
+REWARD_INIT_VALUE = 3  # µl
+REWARD_MIN_VALUE = 2  # µl
+REWARD_STEP = 0.1  # µl
+REWARD_CRIT = 200  # number of trials performed
+CALIBRATION_VALUE = 0.067  # calibrated to 1µl on 2018-05-10
 # REWARD
 REWARD_AMOUNT = 3.  # (µl) Amount of reward to be delivered upon correct choice each trial
 CALIBRATION_VALUE = 0.067  # calibrated to 1µl on 2018-05-10
