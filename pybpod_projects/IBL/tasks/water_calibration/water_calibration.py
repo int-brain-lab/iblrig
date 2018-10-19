@@ -170,16 +170,29 @@ for drop_size in target_drop_sizes:
 now = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 df.to_csv(os.path.join(calibration_path, "%s.csv" %now))
 
-# MAKE AN OVERVIEW PLOT
-f, ax = plt.subplots()
-ax.plot( [0,df.measured_weight.max()],[0,df.measured_weight.max()], color='k') # identity line
-sns.scatterplot(x="target_weight", y="measured_weight",
-             hue="target_drop_size", style="calibrated", size="attempt",
-			 legend="full", data=df)
-ax.axis('equal')
-ax.set(ylabel="Expected weight (g)", xlabel="Measured weight (g)", title="Water calibration %s" %now)
-#lgd = ax.legend(loc='center right', bbox_to_anchor=(2.25, 0.7), ncol=1) # move box outside
-f.savefig(os.path.join(calibration_path, '%s.pdf' %now))
+
+# OUTPUT OVERVIEW FIGURE
+sns.set()
+sns.set_context(context="talk")
+
+# CALIBRATION RESULTS
+f, ax = plt.subplots(1,2, sharex=False, figsize=(15, 7))
+ax[0].plot( [0,df.measured_weight.max()],[0,df.measured_weight.max()], color='k') # identity line
+sns.scatterplot(x="target_weight", y="measured_weight", 
+                style="calibrated", hue="attempt", legend="full", markers=["s", "o"], 
+                size="calibrated", size_order=[1,0],
+                palette="ch:r=-.5,l=.75", data=df, ax=ax[0])
+ax[0].set(xlabel="Target weight (g)", ylabel="Measured weight (g)")
+lgd = ax[0].legend(loc='center', bbox_to_anchor=(0.4, -0.4), ncol=2) # move box outside
+
+# CALIBRATION CURVE
+sns.regplot(x="target_drop_size", y="open_time", 
+            data=df.loc[df["calibrated"] == True], ax=ax[1],
+            ci=None, truncate=True)
+ax[1].set(xlabel="Target drop size (ul)", ylabel="Open time (s)")
+plt.axis('tight')
+title = f.suptitle("Water calibration %s" %now)
+f.savefig(os.path.join(calibration_path, '%s.pdf' %now), bbox_extra_artists=(lgd,title), bbox_inches='tight')
 
 # =============================================================================
 # RANDOM STUFF
