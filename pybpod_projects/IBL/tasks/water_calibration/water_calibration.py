@@ -18,7 +18,7 @@ import matplotlib.pyplot as plt
 
 bpod  			 = Bpod()
 COMport_string   = 'COM7'
-calibration_path = "C:\\ibldata\\calibrations_water"
+calibration_path = "C:\\ibldata\\calibrations_water" # TODO: softcode?
 
 # =============================================================================
 # OPEN THE VALVE FOR A SPECIFIED AMOUNT OF TIME
@@ -62,7 +62,6 @@ def scale_read(COMPORT_string=COMport_string):
 	ser.write(b'V\r\n') 
 	time.sleep(0.5)
 	version = ser.readline()
-	print('Ohaus scale initialized, version %s' %(version.decode("utf-8")))
 
 	# # CONFIGURE SOME SETTINGS
 	# # ser.write(b'0M\r\n')  # scout pro set to grams
@@ -81,6 +80,8 @@ def scale_read(COMPORT_string=COMport_string):
 	grams = re.findall(r"[-+]?\d*\.\d+|\d+",grams)
 	grams = float(grams[0])
 
+	print('Ohaus scale initialized, version %s %fg' %(version.decode("utf-8"), grams))
+
 	return grams
 
 # =============================================================================
@@ -92,12 +93,13 @@ def scale_read(COMPORT_string=COMport_string):
 
 # some settings
 target_drop_sizes = [3, 2.5, 2, 1.5] # in ul
-target_drop_sizes = [3, 2]
-ntrials 		  = 10
-precision 		  = 0.003 # ml
+# target_drop_sizes = [3] # in ul
+ntrials 		  = 100
+precision_perdrop = 0.3 # ul
+precision 		  = precision_perdrop  * ntrials / 1000
 
 # FIND A BEST GUESS BASED ON A PREVIOUS CALIBRATION FILE?
-bestguess 			= 0.01 # starting point for seconds to open for 1ul of water
+bestguess 			= 0.02 # starting point for seconds to open for 1ul of water
 
 # initialize a dataframe with the results
 df = pd.DataFrame(columns=["time", "target_drop_size", "ndrops", "target_weight", 
@@ -114,15 +116,15 @@ for drop_size in target_drop_sizes:
 	calibrated 		= False
 	open_time 		= drop_size * bestguess
 
-	# tare the scale before starting
-	startweight = scale_read(COMport_string)
-
 	# HOW LONG WILL THIS TAKE?
 	eta = open_time * ntrials + 0.5*ntrials
 	print("Calibrating for a drop size of %dul will take approximately %d seconds \n" %(drop_size, eta))
 
 	# 2. drop some water and measure
-	for attempts in range(3):
+	for attempts in range(20):
+
+		# tare the scale before starting
+		startweight = scale_read(COMport_string)
 
 		# 2a. deliver ntrials drops of water
 		water_drop(open_time, ntrials=ntrials, iti=0.5, bpod=bpod)
@@ -172,8 +174,7 @@ df.to_csv(os.path.join(calibration_path, "%s.csv" %now))
 f, ax = plt.subplots()
 ax.plot( [0,df.measured_weight.max()],[0,df.measured_weight.max()], color='k') # identity line
 sns.scatterplot(x="target_weight", y="measured_weight",
-             style="target_drop_size", hue="attempt", 
-			 #palette="ch:r=-0.5,l=0.75",
+             hue="target_drop_size", style="calibrated", size="attempt",
 			 legend="full", data=df)
 ax.axis('equal')
 ax.set(ylabel="Expected weight (g)", xlabel="Measured weight (g)", title="Water calibration %s" %now)
