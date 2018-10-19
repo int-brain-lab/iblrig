@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <WorkflowBuilder Version="2.3.0">
-  <Workflow xmlns:q1="clr-namespace:Bonsai.Shaders;assembly=Bonsai.Shaders" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:q2="clr-namespace:Bonsai.Osc;assembly=Bonsai.Osc" xmlns:q3="clr-namespace:Bonsai.IO;assembly=Bonsai.System" xmlns="https://horizongir.org/bonsai">
+  <Workflow xmlns:q1="clr-namespace:Bonsai.Shaders;assembly=Bonsai.Shaders" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:q2="clr-namespace:Bonsai.Osc;assembly=Bonsai.Osc" xmlns="https://horizongir.org/bonsai">
     <Nodes>
       <Expression xsi:type="BehaviorSubject">
         <Name>Red</Name>
@@ -49,7 +49,7 @@
             <Expression xsi:type="Divide" />
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="FloatProperty">
-                <Value>100</Value>
+                <Value>50</Value>
               </Combinator>
             </Expression>
             <Expression xsi:type="Combinator">
@@ -216,12 +216,6 @@
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="CombineLatest" />
       </Expression>
-      <Expression xsi:type="q3:CsvWriter">
-        <q3:Append>false</q3:Append>
-        <q3:Overwrite>false</q3:Overwrite>
-        <q3:Suffix>None</q3:Suffix>
-        <q3:IncludeHeader>false</q3:IncludeHeader>
-      </Expression>
     </Nodes>
     <Edges>
       <Edge>
@@ -294,11 +288,6 @@
         <To>14</To>
         <Label>Source1</Label>
       </Edge>
-      <Edge>
-        <From>24</From>
-        <To>25</To>
-        <Label>Source1</Label>
-      </Edge>
     </Edges>
   </Workflow>
   <ExtensionTypes>
@@ -315,6 +304,5 @@
     <Type>Bonsai.Shaders.RenderFrame, Bonsai.Shaders, Version=0.18.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Shaders.DrawMesh, Bonsai.Shaders, Version=0.18.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Expressions.MulticastSubjectBuilder, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.IO.CsvWriter, Bonsai.System, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
   </ExtensionTypes>
 </WorkflowBuilder>
