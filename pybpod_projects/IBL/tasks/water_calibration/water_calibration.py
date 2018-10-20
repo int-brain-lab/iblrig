@@ -94,8 +94,8 @@ def scale_read(COMPORT_string=COMport_string):
 # some settings
 target_drop_sizes = [4, 3, 2.5, 2] # in ul
 # target_drop_sizes = [3] # in ul
-ntrials 		  = 500
-precision_perdrop = 0.2 # ul
+ntrials 		  = 10
+precision_perdrop = 10 # ul
 precision 		  = precision_perdrop  * ntrials / 1000
 
 # FIND A BEST GUESS BASED ON A PREVIOUS CALIBRATION FILE?
@@ -167,6 +167,16 @@ for drop_size in target_drop_sizes:
 	else:
 		print('Completed water calibration')
 
+
+# set some data types
+df['target_drop_size'] = df['target_drop_size'].astype("float")
+df['ndrops'] = df['ndrops'].astype("int")
+df['target_weight'] = df['target_weight'].astype("float")
+df['open_time'] = df['open_time'].astype("float")
+df['measured_weight'] = df['measured_weight'].astype("float")
+df['measured_weight'] = df['measured_weight'].astype("float")
+df['attempt'] = df['attempt'].astype("int")
+
 # =============================================================================
 # SAVE THE RESULTS FILE	
 # =============================================================================
@@ -181,17 +191,22 @@ sns.set_context(context="talk")
 # CALIBRATION RESULTS
 f, ax = plt.subplots(1,2, sharex=False, figsize=(15, 7))
 ax[0].plot( [0,df.measured_weight.max()],[0,df.measured_weight.max()], color='k') # identity line
-sns.scatterplot(x="target_weight", y="measured_weight", 
-                style="calibrated", hue="attempt", legend="full", markers=["s", "o"], 
-                size="calibrated", size_order=[1,0],
-                palette="ch:r=-.5,l=.75", data=df, ax=ax[0])
+try:
+	sns.scatterplot(x="target_weight", y="measured_weight", 
+		style="calibrated", hue="attempt", legend="full", markers=["s", "o"], 
+		size="calibrated", size_order=[1,0],
+		palette="ch:r=-.5,l=.75", data=df, ax=ax[0])
+except:
+	sns.scatterplot(x="target_weight", y="measured_weight", 
+		style="calibrated", legend="full", markers=["s", "o"], size_order=[1,0],
+		data=df, ax=ax[0])
 ax[0].set(xlabel="Target weight (g)", ylabel="Measured weight (g)")
 lgd = ax[0].legend(loc='center', bbox_to_anchor=(0.4, -0.4), ncol=2) # move box outside
 
 # CALIBRATION CURVE
 sns.regplot(x="target_drop_size", y="open_time", 
             data=df.loc[df["calibrated"] == True], ax=ax[1],
-            ci=None, truncate=True)
+            truncate=True)
 ax[1].set(xlabel="Target drop size (ul)", ylabel="Open time (s)")
 plt.axis('tight')
 title = f.suptitle("Water calibration %s" %now)
