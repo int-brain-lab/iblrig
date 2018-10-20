@@ -80,7 +80,7 @@ def scale_read(COMPORT_string=COMport_string):
 	grams = re.findall(r"[-+]?\d*\.\d+|\d+",grams)
 	grams = float(grams[0])
 
-	print('Ohaus scale initialized, version %s %fg' %(version.decode("utf-8"), grams))
+	print('Reading Ohaus %s %fg' %(version.decode("utf-8"), grams))
 
 	return grams
 
@@ -92,10 +92,10 @@ def scale_read(COMPORT_string=COMport_string):
 # =============================================================================
 
 # some settings
-target_drop_sizes = [3, 2.5, 2, 1.5] # in ul
+target_drop_sizes = [4, 3, 2.5, 2] # in ul
 # target_drop_sizes = [3] # in ul
-ntrials 		  = 100
-precision_perdrop = 0.3 # ul
+ntrials 		  = 500
+precision_perdrop = 0.2 # ul
 precision 		  = precision_perdrop  * ntrials / 1000
 
 # FIND A BEST GUESS BASED ON A PREVIOUS CALIBRATION FILE?
@@ -124,13 +124,17 @@ for drop_size in target_drop_sizes:
 	for attempts in range(20):
 
 		# tare the scale before starting
-		startweight = scale_read(COMport_string)
+		try: # if there was a previous attempt, grab the last one's final weight as the new starting point
+			startweight = newweight
+		except:
+			startweight = scale_read(COMport_string)
 
 		# 2a. deliver ntrials drops of water
 		water_drop(open_time, ntrials=ntrials, iti=0.5, bpod=bpod)
 
 		# 2b. how much does this weigh?
-		measured_weight = scale_read(COMport_string) - startweight
+		newweight = scale_read(COMport_string)
+		measured_weight = newweight - startweight
 
 		# 2c. is this sufficiently close to what we expected?
 		if (measured_weight < target_weight+precision) & (measured_weight > target_weight-precision):
@@ -151,6 +155,7 @@ for drop_size in target_drop_sizes:
 
 		# 2e. do we need to continue?
 		if calibrated:
+			bestguess = open_time / drop_size
 			break
 		else:
 			# come up with a better next guess - assume linearity
@@ -162,14 +167,12 @@ for drop_size in target_drop_sizes:
 	else:
 		print('Completed water calibration')
 
-
 # =============================================================================
 # SAVE THE RESULTS FILE	
 # =============================================================================
 
 now = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 df.to_csv(os.path.join(calibration_path, "%s.csv" %now))
-
 
 # OUTPUT OVERVIEW FIGURE
 sns.set()
