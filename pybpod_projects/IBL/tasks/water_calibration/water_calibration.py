@@ -11,7 +11,7 @@ from pybpodapi.bpod.hardware.output_channels import OutputChannel
 from pybpod_rotaryencoder_module.module_api import RotaryEncoderModule
 
 # ask Nicco if I need to separately import these?
-import serial, time, re, datetime, os # https://pyserial.readthedocs.io/en/latest/shortintro.html
+import serial, time, re, datetime, os, glob # https://pyserial.readthedocs.io/en/latest/shortintro.html
 import seaborn as sns # for easier plotting at the end
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -98,8 +98,16 @@ ntrials 		  = 10
 precision_perdrop = 10 # ul
 precision 		  = precision_perdrop  * ntrials / 1000
 
-# FIND A BEST GUESS BASED ON A PREVIOUS CALIBRATION FILE?
-bestguess 			= 0.02 # starting point for seconds to open for 1ul of water
+files 			  = glob.glob(os.path.join(calibration_path, "/*.csv"))
+if not a:
+	bestguess 	  = 0.02 # starting point for seconds to open for 1ul of water
+else:
+	files.sort(reverse=True) # sort by date
+	previouscalibration = df.read_csv(os.path.join(calibration_path, files[0]))
+	previouscalibration['open_time'].mean()
+	bestguess = previouscalibration.loc[previouscalibration['calibrated'] == True, 'open_time'] /
+		previouscalibration.loc[previouscalibration['calibrated'] == True, 'target_drop_size']
+	bestguess = bestguess.mean()
 
 # initialize a dataframe with the results
 df = pd.DataFrame(columns=["time", "target_drop_size", "ndrops", "target_weight", 
