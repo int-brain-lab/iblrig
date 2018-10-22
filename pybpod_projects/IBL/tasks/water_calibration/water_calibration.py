@@ -84,8 +84,7 @@ def scale_read(COMPORT_string=COMport_string):
 	grams = grams.strip("gN ")
 	grams = re.findall(r"[-+]?\d*\.\d+|\d+",grams)
 	grams = float(grams[0])
-
-	print('Reading Ohaus %s %fg' %(version.decode("utf-8"), grams))
+	# print('Reading Ohaus %s %fg' %(version.decode("utf-8"), grams))
 
 	return grams
 
@@ -98,14 +97,18 @@ def scale_read(COMPORT_string=COMport_string):
 
 # initialize a dataframe with the results
 df1 		= pd.DataFrame(columns=["time", "open_time", "ndrops", "measured_weight"])
-ntrials 	= 100
-open_times  = range(10, 100, 10) # in milliseconds, 10 to 100ms opening time
+ntrials 	= 300
+open_times  = range(10, 100, 1) # in milliseconds, 10 to 100ms opening time
 
 for open_time in open_times:
 
 	startweight = scale_read(COMport_string)
 	water_drop(open_time/1000, ntrials=ntrials, iti=2, bpod=bpod) # deliver ntrials drops of water
+	time.sleep(1)
 	measured_weight = scale_read(COMport_string) - startweight
+	# summarize
+	print('Weight change = %.2fg: delivered %ful per %fms (averaged over %d drops).' 
+		%(measured_weight, measured_weight / ntrials * 1000, open_time, ntrials)); 
 
 	df1 = df1.append({
 	     "open_time": 			open_time,
@@ -122,12 +125,12 @@ df1['ndrops'] 			= df1['ndrops'].astype("float")
 df1["weight_perdrop"] = df1["measured_weight"] / df1["ndrops"] * 1000 # in ul
 df1.to_csv(os.path.join(calibration_path, "%s_calibration_function.csv" %now))
 
-# FIT A POLYNOMIAL FUNCTION
-z 	= np.polyfit(df1["open_time"], df1["weight_perdrop"], 2)
-p 	= np.poly1d(z)
-xp 	= np.linspace(0, df1["open_time"].max(), 100)
-ax[0].plot(xp, p(xp), '-k')
-func = sp.interpolate.interp1d(p(xp), xp) # for later
+# FIT EXTRAPOLATION FUNCTION
+time2vol 	= sp.interpolate.pchip(df1["open_time"], df1["weight_perdrop"]) # for later
+vol2time 	= sp.interpolate.pchip(df1["open_time"], df1["weight_perdrop"]) # for later
+
+xp 		= np.linspace(0, df1["open_time"].max(), 100)
+ax[0].plot(xp, time2vol(xp), '-k')
 
 # CALIBRATION CURVE
 sns.scatterplot(x="open_time", y="weight_perdrop", data=df1, ax=ax[0])
@@ -169,7 +172,7 @@ for drop_size in target_drop_sizes:
 	calibrated 		= False
 
 	# GRAB OPEN_TIME FROM THE CALIBRATION CURVE
-	open_time 		= func(drop_size)
+	open_time 		= vol2time(drop_size)
 	print(open_time)
 
 	# 2. drop some water and measure
