@@ -16,15 +16,23 @@ import seaborn as sns # for easier plotting at the end
 import pandas as pd
 import matplotlib.pyplot as plt
 
+# SETTINGS SPECIFIED BY THE USER
 bpod  			 = Bpod()
 COMport_string   = 'COM7'
 calibration_path = "C:\\ibldata\\calibrations_water" # TODO: softcode?
+
+# OUTPUT OVERVIEW FIGURE
+sns.set()
+sns.set_context(context="talk")
+
+# TIME OF STARTING THE CALIBRATION
+now = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
 # =============================================================================
 # OPEN THE VALVE FOR A SPECIFIED AMOUNT OF TIME
 # =============================================================================
 
-def water_drop(open_time, ntrials=100, iti=0.5, bpod=bpod):
+def water_drop(open_time, ntrials=100, iti=1, bpod=bpod):
 
 	# Start state machine definition
 	for i in range(ntrials):
@@ -63,13 +71,7 @@ def scale_read(COMPORT_string=COMport_string):
 	time.sleep(0.5)
 	version = ser.readline()
 
-	# # CONFIGURE SOME SETTINGS
-	# # ser.write(b'0M\r\n')  # scout pro set to grams
-	# time.sleep(0.5)
-	# ser.write(b'SA\r\n') # don't auto-print, wait for Print command
-	# time.sleep(0.5)
-
-	# TEST READING THE WEIGHT
+	# READ THE CURRENT WEIGHT
 	ser.write(b'IP\r\n') # ping the scale to print
 	time.sleep(0.5)
 	grams = ser.readline()
@@ -85,29 +87,64 @@ def scale_read(COMPORT_string=COMport_string):
 	return grams
 
 # =============================================================================
-# NOW THE ACTUAL CALIBRATION PROTOCOL
+# FIRST, GENERATE A CALIBRATION CURVE - OPEN TIMES VS DROP SIZE
 # see https://github.com/cortex-lab/Rigbox/blob/5d926cdafdfcb54cd74c77e152d158d3d837a90c/%2Bhw/calibrate.m
 # and https://github.com/sanworks/Bpod_Gen2/blob/14b78143e071c1cfda391b1754dba928ccc27792/Functions/Calibration/Liquid%20Reward/BpodLiquidCalibration.m
 # bpod wiki https://sites.google.com/site/bpoddocumentation/bpod-user-guide/liquid-calibration
 # =============================================================================
 
+# initialize a dataframe with the results
+df1 		= pd.DataFrame(columns=["time", "open_time", "ndrops", "measured_weight"])
+ntrials 	= 100
+open_times  = 10:10:100 # in milliseconds, 10 to 100ms opening time
+
+for open_time in open_times:
+
+	startweight = scale_read(COMport_string)
+	water_drop(open_time*1000, ntrials=ntrials, iti=0.5, bpod=bpod) 		# deliver ntrials drops of water
+	measured_weight = scale_read(COMport_string) - startweight
+
+	df1 = df1.append({
+	     "open_time": 			open_time,
+	     "ndrops":  			ntrials,
+	     "measured_weight": 	measured_weight,
+	     "time": 				datetime.datetime.now(),
+		}, ignore_index=True)
+
+# SAVE
+df1["weight_perdrop"] = df1["measured_weight"] / df1["ndrops"] * 1000 # in ul
+df1.to_csv(os.path.join(calibration_path, "%s_calibration_function.csv" %now))
+
+# FIT A POLYNOMIAL FUNCTION
+z 	= np.polyfit(df1["open_time"], df1["weight_perdrop"], 2)
+p 	= np.poly1d(z)
+xp 	= np.linspace(0, df1["open_time"].max(), 100)
+ax[0].plot(xp, p(xp), '-k')
+f 	= interpolate.interp1d(p(xp), xp) # for later
+
+# CALIBRATION CURVE
+sns.scatterplot(x="open_time", y="measured_weight", data=df1, ax=ax[0])
+ax[0].set(xlabel="Open time (ms)", ylabel="Measured volume (ul)", title="Calibration curve")
+
+# =============================================================================
+# SECOND, TEST THE PRECISION OF ESTIMATED VS MEASURED DROP SIZE
+# =============================================================================
+
 # some settings
-target_drop_sizes = [4, 3, 2.5, 2] # in ul
-# target_drop_sizes = [3] # in ul
-ntrials 		  = 10
-precision_perdrop = 10 # ul
+target_drop_sizes = [1.5:0.1:3] # in ul
+precision_perdrop = 0.1 # ul - the precision should be at most the step size between drop sizes
 precision 		  = precision_perdrop  * ntrials / 1000
 
-files 			  = glob.glob(os.path.join(calibration_path, "/*.csv"))
-if not a:
-	bestguess 	  = 0.02 # starting point for seconds to open for 1ul of water
-else:
-	files.sort(reverse=True) # sort by date
-	previouscalibration = df.read_csv(os.path.join(calibration_path, files[0]))
-	previouscalibration['open_time'].mean()
-	bestguess = previouscalibration.loc[previouscalibration['calibrated'] == True, 'open_time'] /
-		previouscalibration.loc[previouscalibration['calibrated'] == True, 'target_drop_size']
-	bestguess = bestguess.mean()
+# files 			  = glob.glob(os.path.join(calibration_path, "/*.csv"))
+# if not a:
+# 	bestguess 	  = 0.02 # starting point for seconds to open for 1ul of water
+# else:
+# 	files.sort(reverse=True) # sort by date
+# 	previouscalibration = df.read_csv(os.path.join(calibration_path, files[0]))
+# 	previouscalibration['open_time'].mean()
+# 	bestguess = previouscalibration.loc[previouscalibration['calibrated'] == True, 'open_time'] /
+# 		previouscalibration.loc[previouscalibration['calibrated'] == True, 'target_drop_size']
+# 	bestguess = bestguess.mean()
 
 # initialize a dataframe with the results
 df = pd.DataFrame(columns=["time", "target_drop_size", "ndrops", "target_weight", 
@@ -119,10 +156,12 @@ df = pd.DataFrame(columns=["time", "target_drop_size", "ndrops", "target_weight"
 
 for drop_size in target_drop_sizes:
 
-	# 1. specify the expected weight for this drop size
+	# 1. specify the expected total weight for this drop size
 	target_weight 	= drop_size * ntrials / 1000 # in grams
 	calibrated 		= False
-	open_time 		= drop_size * bestguess
+
+	# GRAB OPEN_TIME FROM THE CALIBRATION CURVE
+	open_time 		= f(drop_size)
 
 	# HOW LONG WILL THIS TAKE?
 	eta = open_time * ntrials + 0.5*ntrials
@@ -177,45 +216,35 @@ for drop_size in target_drop_sizes:
 
 
 # set some data types
-df['target_drop_size'] = df['target_drop_size'].astype("float")
-df['ndrops'] = df['ndrops'].astype("int")
-df['target_weight'] = df['target_weight'].astype("float")
-df['open_time'] = df['open_time'].astype("float")
-df['measured_weight'] = df['measured_weight'].astype("float")
-df['measured_weight'] = df['measured_weight'].astype("float")
-df['attempt'] = df['attempt'].astype("int")
+df['target_drop_size'] 	= df['target_drop_size'].astype("float")
+df['ndrops'] 			= df['ndrops'].astype("int")
+df['target_weight'] 	= df['target_weight'].astype("float")
+df['open_time'] 		= df['open_time'].astype("float")
+df['measured_weight'] 	= df['measured_weight'].astype("float")
+df['measured_weight'] 	= df['measured_weight'].astype("float")
+df['attempt'] 			= df['attempt'].astype("int")
 
 # =============================================================================
 # SAVE THE RESULTS FILE	
 # =============================================================================
 
-now = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-df.to_csv(os.path.join(calibration_path, "%s.csv" %now))
-
-# OUTPUT OVERVIEW FIGURE
-sns.set()
-sns.set_context(context="talk")
+df.to_csv(os.path.join(calibration_path, "%s_calibration_check.csv" %now))
 
 # CALIBRATION RESULTS
 f, ax = plt.subplots(1,2, sharex=False, figsize=(15, 7))
-ax[0].plot( [0,df.measured_weight.max()],[0,df.measured_weight.max()], color='k') # identity line
+ax[1].plot( [0,df.measured_weight.max()],[0,df.measured_weight.max()], color='k') # identity line
 try:
 	sns.scatterplot(x="target_weight", y="measured_weight", 
 		style="calibrated", hue="attempt", legend="full", markers=["s", "o"], 
 		size="calibrated", size_order=[1,0],
-		palette="ch:r=-.5,l=.75", data=df, ax=ax[0])
+		palette="ch:r=-.5,l=.75", data=df, ax=ax[1])
 except:
 	sns.scatterplot(x="target_weight", y="measured_weight", 
 		style="calibrated", legend="full", markers=["s", "o"], size_order=[1,0],
-		data=df, ax=ax[0])
-ax[0].set(xlabel="Target weight (g)", ylabel="Measured weight (g)")
-lgd = ax[0].legend(loc='center', bbox_to_anchor=(0.4, -0.4), ncol=2) # move box outside
+		data=df, ax=ax[1])
+ax[1].set(xlabel="Target weight (g)", ylabel="Measured weight (g)")
+lgd = ax[1].legend(loc='center', bbox_to_anchor=(0.4, -0.4), ncol=2) # move box outside
 
-# CALIBRATION CURVE
-sns.regplot(x="target_drop_size", y="open_time", 
-            data=df.loc[df["calibrated"] == True], ax=ax[1],
-            truncate=True)
-ax[1].set(xlabel="Target drop size (ul)", ylabel="Open time (s)")
 plt.axis('tight')
 title = f.suptitle("Water calibration %s" %now)
 f.savefig(os.path.join(calibration_path, '%s.pdf' %now), bbox_extra_artists=(lgd,title), bbox_inches='tight')
