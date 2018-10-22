@@ -15,6 +15,8 @@ import serial, time, re, datetime, os, glob # https://pyserial.readthedocs.io/en
 import seaborn as sns # for easier plotting at the end
 import pandas as pd
 import matplotlib.pyplot as plt
+import numpy as np
+import scipy as sp
 
 # SETTINGS SPECIFIED BY THE USER
 bpod  			 = Bpod()
@@ -24,6 +26,7 @@ calibration_path = "C:\\ibldata\\calibrations_water" # TODO: softcode?
 # OUTPUT OVERVIEW FIGURE
 sns.set()
 sns.set_context(context="talk")
+f, ax = plt.subplots(1,2, sharex=False, figsize=(15, 7))
 
 # TIME OF STARTING THE CALIBRATION
 now = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
@@ -96,12 +99,12 @@ def scale_read(COMPORT_string=COMport_string):
 # initialize a dataframe with the results
 df1 		= pd.DataFrame(columns=["time", "open_time", "ndrops", "measured_weight"])
 ntrials 	= 100
-open_times  = 10:10:100 # in milliseconds, 10 to 100ms opening time
+open_times  = range(10, 100, 10) # in milliseconds, 10 to 100ms opening time
 
 for open_time in open_times:
 
 	startweight = scale_read(COMport_string)
-	water_drop(open_time*1000, ntrials=ntrials, iti=0.5, bpod=bpod) 		# deliver ntrials drops of water
+	water_drop(open_time/1000, ntrials=ntrials, iti=2, bpod=bpod) # deliver ntrials drops of water
 	measured_weight = scale_read(COMport_string) - startweight
 
 	df1 = df1.append({
@@ -112,6 +115,10 @@ for open_time in open_times:
 		}, ignore_index=True)
 
 # SAVE
+df1['open_time'] 		= df1['open_time'].astype("float")
+df1['measured_weight'] 	= df1['measured_weight'].astype("float")
+df1['ndrops'] 			= df1['ndrops'].astype("float")
+
 df1["weight_perdrop"] = df1["measured_weight"] / df1["ndrops"] * 1000 # in ul
 df1.to_csv(os.path.join(calibration_path, "%s_calibration_function.csv" %now))
 
@@ -120,18 +127,19 @@ z 	= np.polyfit(df1["open_time"], df1["weight_perdrop"], 2)
 p 	= np.poly1d(z)
 xp 	= np.linspace(0, df1["open_time"].max(), 100)
 ax[0].plot(xp, p(xp), '-k')
-f 	= interpolate.interp1d(p(xp), xp) # for later
+func = sp.interpolate.interp1d(p(xp), xp) # for later
 
 # CALIBRATION CURVE
-sns.scatterplot(x="open_time", y="measured_weight", data=df1, ax=ax[0])
-ax[0].set(xlabel="Open time (ms)", ylabel="Measured volume (ul)", title="Calibration curve")
+sns.scatterplot(x="open_time", y="weight_perdrop", data=df1, ax=ax[0])
+ax[0].set(xlabel="Open time (ms)", ylabel="Measured volume (ul per drop)", title="Calibration curve")
+f.savefig(os.path.join(calibration_path, '%s_curve.pdf' %now))
 
 # =============================================================================
 # SECOND, TEST THE PRECISION OF ESTIMATED VS MEASURED DROP SIZE
 # =============================================================================
 
 # some settings
-target_drop_sizes = [1.5:0.1:3] # in ul
+target_drop_sizes = np.linspace(1.5, 3, 15) # in ul
 precision_perdrop = 0.1 # ul - the precision should be at most the step size between drop sizes
 precision 		  = precision_perdrop  * ntrials / 1000
 
@@ -161,11 +169,8 @@ for drop_size in target_drop_sizes:
 	calibrated 		= False
 
 	# GRAB OPEN_TIME FROM THE CALIBRATION CURVE
-	open_time 		= f(drop_size)
-
-	# HOW LONG WILL THIS TAKE?
-	eta = open_time * ntrials + 0.5*ntrials
-	print("Calibrating for a drop size of %dul will take approximately %d seconds \n" %(drop_size, eta))
+	open_time 		= func(drop_size)
+	print(open_time)
 
 	# 2. drop some water and measure
 	for attempts in range(20):
@@ -175,6 +180,10 @@ for drop_size in target_drop_sizes:
 			startweight = newweight
 		except:
 			startweight = scale_read(COMport_string)
+
+		# HOW LONG WILL THIS TAKE?
+		eta = open_time * ntrials + 0.5*ntrials
+		print("Calibrating for a drop size of %dul will take approximately %d seconds \n" %(drop_size, eta))
 
 		# 2a. deliver ntrials drops of water
 		water_drop(open_time, ntrials=ntrials, iti=0.5, bpod=bpod)
@@ -231,7 +240,6 @@ df['attempt'] 			= df['attempt'].astype("int")
 df.to_csv(os.path.join(calibration_path, "%s_calibration_check.csv" %now))
 
 # CALIBRATION RESULTS
-f, ax = plt.subplots(1,2, sharex=False, figsize=(15, 7))
 ax[1].plot( [0,df.measured_weight.max()],[0,df.measured_weight.max()], color='k') # identity line
 try:
 	sns.scatterplot(x="target_weight", y="measured_weight", 
