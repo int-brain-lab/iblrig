@@ -1,0 +1,5 @@
+pybpod
+scipy
+python-osc
+sounddevice
+requests
