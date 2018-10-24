@@ -14,21 +14,10 @@ from pathlib import Path
 
 # Constants assuming Windows
 IBLRIG_ROOT_PATH = Path.cwd()
-ENV_FILE = IBLRIG_ROOT_PATH / 'requirements.txt'
+REQUIREMENTS_FILE = IBLRIG_ROOT_PATH / 'requirements.txt'
 # PYBPOD_PATH = os.path.join(IBLRIG_ROOT_PATH, 'pybpod')
 
 
-# def get_pybpod_env(conda):
-#     # Find environment
-#     ENVS = subprocess.check_output([conda, "env", "list", "--json"])
-#     ENVS = json.loads(ENVS.decode('utf-8'))
-#     pat = re.compile("^.+pybpod-environment$")
-#     PYBPOD_ENV = [x for x in ENVS['envs'] if pat.match(x)]
-#     PYBPOD_ENV = PYBPOD_ENV[0] if PYBPOD_ENV else None
-#     return PYBPOD_ENV
-
-
-# BASE_ENV_FILE = 'environment-{}.yml'
 if sys.platform in ['Windows', 'windows', 'win32']:
     CONDA = "conda"
     SITE_PACKAGES = os.path.join("lib", "site-packages")
@@ -44,33 +33,14 @@ else:
     print('\nERROR: Unsupported OS\nInstallation aborted!')
 
 
-def get_env_constants():
-    if sys.platform in ['Windows', 'windows', 'win32']:
-        PYBPOD_ENV = get_pybpod_env(CONDA)
-        PIP = os.path.join(PYBPOD_ENV, 'Scripts', 'pip.exe')
-        PYTHON_FILE = "python.exe"
-    elif sys.platform in ['Linux', 'linux']:
-        PYBPOD_ENV = get_pybpod_env(CONDA)
-        PIP = os.path.join(sys.prefix, "bin", "pip")
-        PYTHON_FILE = os.path.join("bin", "python")
-    elif sys.platform in ['Darwin', 'macOSx', 'osx']:
-        print("ERROR: macOSx is not supported yet\nInstallation aborted!")
-    else:
-        print('\nERROR: Unsupported OS\nInstallation aborted!')
-
-    PYTHON = os.path.join(PYBPOD_ENV, PYTHON_FILE)
-
-    return PYBPOD_ENV, PIP, PYTHON_FILE, PYTHON
-
-
-def check_dependencies():
+def check_dependencies(conda):
     # Check if Git and conda are installed
     print('\n\nINFO: Checking for dependencies:')
     print("N" * 79)
     try:
         subprocess.check_output(["git", "--version"])
         print("Git... OK")
-        subprocess.check_output([CONDA, "update", "-y", "-n", "base",
+        subprocess.check_output([conda, "update", "-y", "-n", "base",
                                  "-c", "defaults", "conda"])
         print("Conda... OK")
     except Exception as err:
@@ -78,6 +48,60 @@ def check_dependencies():
         return
     print("N" * 79)
     print("All dependencies OK.")
+
+
+def install_environment(conda):
+    print('\n\nINFO: Installing iblenv:')
+    print("N" * 79)
+    # Checks id env is already installed
+    env = get_iblenv(conda)
+    # Creates commands
+    create_command = '{} create -n iblenv'. format(conda).split()
+    remove_command = '{} env remove -n iblenv'. format(conda).split()
+    # Installes the env
+    if env:
+        print("Found pre-existing environment in {}".format(env),
+              "\nDo you want to reinstall the environment? (y/n):")
+        user_input = input()
+        if user_input == 'y':
+            subprocess.call(remove_command)
+            subprocess.call(create_command)
+        elif user_input != 'n' and user_input != 'y':
+            print("Please answer 'y' or 'n'")
+            install_environment()
+        elif user_input == 'n':
+            pass
+    else:
+        subprocess.call(create_command)
+
+    print("N" * 79)
+    print("iblenv installed.")
+
+
+def get_iblenv(conda):
+    # Find ibllib environment
+    all_envs = subprocess.check_output([conda, "env", "list", "--json"])
+    all_envs = json.loads(all_envs.decode('utf-8'))
+    pat = re.compile("^.+iblenv$")
+    iblenv = [x for x in all_envs['envs'] if pat.match(x)]
+    iblenv = iblenv[0] if iblenv else None
+    return iblenv
+
+
+def get_iblenv_pip_n_python(conda):
+    iblenv = get_iblenv(conda)
+    if sys.platform in ['Windows', 'windows', 'win32']:
+        pip = os.path.join(iblenv, 'Scripts', 'pip.exe')
+        python = os.path.join(iblenv, "python.exe")
+    elif sys.platform in ['Linux', 'linux']:
+        pip = os.path.join(iblenv, "bin", "pip")
+        python = os.path.join(iblenv, "bin", "python")
+    elif sys.platform in ['Darwin', 'macOSx', 'osx']:
+        print("ERROR: macOSx is not supported yet\nInstallation aborted!")
+    else:
+        print('\nERROR: Unsupported OS\nInstallation aborted!')
+
+    return pip, python
 
 
 # def check_pybpod_for_initialization():
@@ -91,52 +115,14 @@ def check_dependencies():
 #     print("PyBpod initialized.")
 
 
-# def clone_water_calibration_plugin():
-#     print('\n\nINFO: Cloning water-claibration-plugin:')
-#     print("N" * 79)
-#     os.chdir(os.path.join(PYBPOD_PATH, 'plugins'))
-#     subprocess.call(["git", "clone",
-#                      'https://bitbucket.org/azi92rach/water-calibration-plugin.git'])
-#     os.chdir(IBLRIG_ROOT_PATH)
-#     print("N" * 79)
-#     print("PyBpod initialized and water-calibration-plugin cloned.")
-
-
-def install_environment():
-    print('\n\nINFO: Installing pybpod-environment:')
-    print("N" * 79)
-    # Install pybpod-environment
-    env = get_pybpod_env(CONDA)
-    command = '{} env create -f {}'. format(CONDA, os.path.join(
-        PYBPOD_PATH, 'utils', ENV_FILE)).split()
-    force_command = '{} env create -f {} --force'. format(CONDA, os.path.join(
-        PYBPOD_PATH, 'utils', ENV_FILE)).split()
-    if env:
-        print("Found pre-existing environment in {}".format(env),
-              "\nDo you want to reinstall the environment? (y/n):")
-        user_input = input()
-        if user_input == 'y':
-            subprocess.call(force_command)
-        elif user_input != 'n' and user_input != 'y':
-            print("Please answer 'y' or 'n'")
-            install_environment()
-        elif user_input == 'n':
-            pass
-    else:
-        subprocess.call(command)
-
-    print("N" * 79)
-    print("pybpod-environment installed.")
-
-
-def install_extra_deps():
+def install_iblrig_requirements():
     print('\n\nINFO: Installing IBL specific dependencies:')
     print("N" * 79)
-    if PYBPOD_ENV is None:
+    if iblenv is None:
         msg = "Can't install extra dependencies, pybpod-environment not found"
         raise ValueError(msg)
     # Define site-packages folder
-    install_to = os.path.join(PYBPOD_ENV, SITE_PACKAGES)
+    install_to = os.path.join(iblenv, SITE_PACKAGES)
 
     print("N" * 39, 'Installing sounddevice')
     subprocess.call([CONDA, "install", "-y", "-n", "pybpod-environment",
@@ -155,10 +141,21 @@ def install_extra_deps():
     print("IBL specific dependencies installed.")
 
 
-# def install_pybpod():
-#     print('\n\nINFO: Installing pybpod:')
+def clone_ibllib():
+    print('\n\nINFO: Cloning ibllib:')
+    print("N" * 79)
+    os.chdir(str(IBLRIG_ROOT_PATH.parent))
+    subprocess.call(["git", "clone",
+                     'https://github.com/int-brain-lab/ibllib.git'])
+    os.chdir(IBLRIG_ROOT_PATH)
+    print("N" * 79)
+    print("ibllib cloned.")
+
+
+# def install_ibllib():
+#     print('\n\nINFO: Installing ibllib:')
 #     print("N" * 79)
-#     if PYBPOD_ENV is None:
+#     if iblenv is None:
 #         msg = "Can't install pybpod, pybpod-environment not found"
 #         raise ValueError(msg)
 #     # Install pybpod
@@ -203,25 +200,27 @@ def install_bonsai():
 
 
 if __name__ == '__main__':
-    try:
-        check_dependencies()
-        # check_pybpod_for_initialization()
-        # clone_water_calibration_plugin()
-        install_environment()
-        print("\n\n")
-        PYBPOD_ENV, PIP, PYTHON_FILE, PYTHON = get_env_constants()
-        subprocess.call([PYTHON, '-m', 'pip', 'install', '--upgrade', 'pip'])
-        install_extra_deps()
-        install_water_calibration_plugin()
-        # install_pybpod()
-        conf_pybpod_settings()
-        print("\nIts time to install Bonsai:\n  Please install all packages.",
-              "\nIMPORTANT: the Bonsai.Bpod package is in the pre-release tab.")
-        install_bonsai()
-        print("Almost done...\nPlease run the following command:\n",
-              r"    activate pybpod-environment && cd pybpod", "\n",
-              r"    python utils\install.py")
-    except IOError as msg:
-        print(msg, "\n\nSOMETHING IS WRONG: Bad! Bad install file!")
+    iblenv = get_iblenv(CONDA)
+
+    # try:
+    #     check_dependencies()
+    #     check_pybpod_for_initialization()
+    #     clone_water_calibration_plugin()
+    #     install_environment()
+    #     print("\n\n")
+    #     iblenv, PIP, PYTHON_FILE, PYTHON = get_env_constants()
+    #     subprocess.call([PYTHON, '-m', 'pip', 'install', '--upgrade', 'pip'])
+    #     install_extra_deps()
+    #     install_water_calibration_plugin()
+    #     # install_pybpod()
+    #     conf_pybpod_settings()
+    #     print("\nIts time to install Bonsai:\n  Please install all packages.",
+    #           "\nIMPORTANT: the Bonsai.Bpod package is in the pre-release tab.")
+    #     install_bonsai()
+    #     print("Almost done...\nPlease run the following command:\n",
+    #           r"    activate pybpod-environment && cd pybpod", "\n",
+    #           r"    python utils\install.py")
+    # except IOError as msg:
+    #     print(msg, "\n\nSOMETHING IS WRONG: Bad! Bad install file!")
 
 
