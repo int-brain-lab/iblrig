@@ -99,7 +99,7 @@ def scale_read(COMPORT_string=COMport_string):
 # initialize a dataframe with the results
 df1 		= pd.DataFrame(columns=["time", "open_time", "ndrops", "measured_weight"])
 ntrials 	= 100
-open_times  = range(5, 100, 3) # in milliseconds, 10 to 100ms opening time
+open_times  = range(10, 100, 3) # in milliseconds, 10 to 100ms opening time
 
 for open_time in open_times:
 
