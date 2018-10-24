@@ -270,4 +270,5 @@ f.savefig(os.path.join(calibration_path, '%s_curve.pdf' %now))
 # RANDOM STUFF
 # =============================================================================
 
+print('Completed water calibration')
 bpod.close()
