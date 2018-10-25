@@ -20,7 +20,7 @@ import scipy as sp
 
 # SETTINGS SPECIFIED BY THE USER
 bpod  			 = Bpod()
-COMport_string   = 'COM7'
+COMport_string   = 'COM7' # leave NaN for manual weight logging
 calibration_path = "C:\\ibldata\\calibrations_water" # TODO: softcode?
 
 # OUTPUT OVERVIEW FIGURE
@@ -66,26 +66,31 @@ def water_drop(open_time, ntrials=100, iti=1, bpod=bpod):
 
 def scale_read(COMPORT_string=COMport_string):
 
-	# http://dmx.ohaus.com/WorkArea/downloadasset.aspx?id=3600
-    # https://github.com/glansberry/ohaus_scale_data/blob/master/scale.py
-	ser = serial.Serial(COMPORT_string, baudrate=9600, timeout=3)  # open serial port
+	if not COMport_string:
+		# ask the user to manually input
+		grams = float(raw_input("Enter scale read: "))
+		
+	else:
+		# http://dmx.ohaus.com/WorkArea/downloadasset.aspx?id=3600
+	    # https://github.com/glansberry/ohaus_scale_data/blob/master/scale.py
+		ser = serial.Serial(COMPORT_string, baudrate=9600, timeout=3)  # open serial port
 
-	# grab the software version and initialize
-	ser.write(b'V\r\n') 
-	time.sleep(0.5)
-	version = ser.readline()
+		# grab the software version and initialize
+		ser.write(b'V\r\n') 
+		time.sleep(0.5)
+		version = ser.readline()
 
-	# READ THE CURRENT WEIGHT
-	ser.write(b'IP\r\n') # ping the scale to print
-	time.sleep(0.5)
-	grams = ser.readline()
+		# READ THE CURRENT WEIGHT
+		ser.write(b'IP\r\n') # ping the scale to print
+		time.sleep(0.5)
+		grams = ser.readline()
 
-	# extract number 
-	grams = grams.decode("utf-8")
-	grams = grams.strip("gN ")
-	grams = re.findall(r"[-+]?\d*\.\d+|\d+",grams)
-	grams = float(grams[0])
-	# print('Reading Ohaus %s %fg' %(version.decode("utf-8"), grams))
+		# extract number 
+		grams = grams.decode("utf-8")
+		grams = grams.strip("gN ")
+		grams = re.findall(r"[-+]?\d*\.\d+|\d+",grams)
+		grams = float(grams[0])
+		# print('Reading Ohaus %s %fg' %(version.decode("utf-8"), grams))
 
 	return grams
 
