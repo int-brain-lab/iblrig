@@ -34,7 +34,7 @@ PYFORMS_VISVIS_ENABLED = False
 GENERIC_EDITOR_TITLE = 'IBL'
 GENERIC_EDITOR_PLUGINS_PATH = None
 GENERIC_EDITOR_PLUGINS_LIST = [
-    'water_calibration_plugin',
+    #'water_calibration_plugin',
     'pyforms',
     'pyforms_generic_editor',
     'sca',
@@ -49,8 +49,8 @@ GENERIC_EDITOR_PLUGINS_LIST = [
     # 'pybpodgui_plugin_oldformat',
 ]
 
-TARGET_BPOD_FIRMWARE_VERSION = '21'
+TARGET_BPOD_FIRMWARE_VERSION = '22'
 
-DEFAULT_PROJECT_PATH = 'C:\\iblrig\\pybpod_projects\\IBL'
+DEFAULT_PROJECT_PATH = 'C:\\iblrig\\pybpod_projects\\IBL\\'
 ALYX_ADDR = 'https://alyx.internationalbrainlab.org'
 PYBPOD_EXTRA_INFO = {'Users', 'Subjects'}
