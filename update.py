@@ -23,6 +23,9 @@ Usage:
         Will update itself to the latest revision on master.
     update.py update <branch>
         Will update itself to the latest revision on <branch>.
+    update.py reinstall
+        Will reinstall the rig to the latest revision on master.
+
 """
 import subprocess
 import sys
@@ -72,10 +75,15 @@ def pybpod_projects_path():
     return os.path.join(os.getcwd(), 'pybpod_projects')
 
 
-def backup_pybpod_projects():
+def backup_pybpod_projects(filename='pybpod_projects.bk'):
     print("Backing up current pybpod_projects configuration")
     src = pybpod_projects_path()
-    dst = os.path.join(os.path.expanduser('~'), 'pybpod_projects.bk')
+    dst = os.path.join(os.path.expanduser('~'), filename)
+    if os.path.exists(dst):
+        if not str.isdigit(dst[-1]):
+            dst = dst + '0'
+        else:
+            dst = dst + str(int(dst[-1]) + 1)
     shutil.copytree(src, dst,
                     ignore=shutil.ignore_patterns('sessions'))
 
@@ -115,7 +123,7 @@ def get_tasks(branch='master', only_missing=True):
         # Remove tasks.json file
         missing_files = [x for x in missing_files if "tasks.json" not in x]
         print("Found {} new files:".format(len(missing_files)), missing_files)
-        return missing_files    
+        return missing_files
     else:
         return found_files
 
@@ -130,7 +138,7 @@ def checkout_missing_task_files(missing_files, branch='master'):
 def checkout_single_file(file=None, branch='master'):
     subprocess.call("git checkout origin/{} -- {}".format(branch,
                                                           file).split())
-        
+
     print("Checked out", file, "from branch", branch)
 
 def checkout_version(ver):
@@ -138,6 +146,11 @@ def checkout_version(ver):
     subprocess.call(['git', 'stash'])
     subprocess.call(['git', 'checkout', 'tags/' + ver])
     submodule_update()
+
+
+def pop_stash():
+    print("\nPopping stash")
+    subprocess.call(['git', 'stash', 'pop'])
 
 
 def update_remotes():
@@ -183,9 +196,10 @@ if __name__ == '__main__':
         elif sys.argv[1] in versions:
             backup_pybpod_projects()
             checkout_version(sys.argv[1])
-            restore_pybpod_projects_from_backup()
+            # restore_pybpod_projects_from_backup()
             task_files = get_tasks(branch='master', only_missing=False)
             checkout_missing_task_files(task_files, branch='master')
+            pop_stash()
         # UPDATE TASKS
         elif sys.argv[1] == 'tasks':
             task_files = get_tasks(branch='master', only_missing=False)
@@ -193,6 +207,8 @@ if __name__ == '__main__':
         # UPDATE UPDATE
         elif sys.argv[1] == 'update':
             checkout_single_file(file='update.py', branch='master')
+        elif sys.argv[1] == 'reinstall':
+            subprocess.call(['python', 'install.py'])
         # UNKNOWN COMMANDS
         else:
             print("ERROR:", sys.argv[1],
