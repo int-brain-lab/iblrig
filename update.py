@@ -207,6 +207,7 @@ if __name__ == '__main__':
         # UPDATE UPDATE
         elif sys.argv[1] == 'update':
             checkout_single_file(file='update.py', branch='master')
+        # UPDATE REINSTALL
         elif sys.argv[1] == 'reinstall':
             subprocess.call(['python', 'install.py'])
         # UNKNOWN COMMANDS
