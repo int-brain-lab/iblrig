@@ -3,7 +3,6 @@ docs/_*
 docs/source/_*
 Subjects/
 water-calibration-plugin/
-pybpod_projects/
 sessions/
 
 *.code-workspace
