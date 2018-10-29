@@ -145,9 +145,25 @@ def install_iblrig_requirements(conda):
 def clone_ibllib():
     print('\n\nINFO: Cloning ibllib:')
     print("N" * 79)
-    os.chdir(str(IBLRIG_ROOT_PATH.parent))
-    subprocess.call(["git", "clone",
-                     'https://github.com/int-brain-lab/ibllib.git'])
+    os.chdir(IBLRIG_ROOT_PATH.parent)
+    ibllib_path = IBLRIG_ROOT_PATH.parent / 'ibllib'
+    if ibllib_path.exists():
+        print("ibllib folder is already present.",
+        "\nDo you want to reinstall? (y/n)")
+        user_input = input()
+        if user_input == 'n':
+            return
+        elif user_input == 'y':
+            shutil.rmtree(ibllib_path)
+            subprocess.call(["git", "clone",
+                             'https://github.com/int-brain-lab/ibllib.git'])
+        elif user_input != 'n' and user_input != 'y':
+            print("\n Please select either y of n")
+            clone_ibllib()
+    else:
+        subprocess.call(["git", "clone",
+                         'https://github.com/int-brain-lab/ibllib.git'])
+
     os.chdir(IBLRIG_ROOT_PATH)
     print("N" * 79)
     print("ibllib cloned.")
@@ -183,10 +199,6 @@ def install_bonsai():
 
 
 if __name__ == '__main__':
-
-    # iblenv = get_iblenv(CONDA)
-    # pip, python = get_iblenv_pip_n_python(CONDA)
-
     try:
         check_dependencies(CONDA)
         install_environment(CONDA)
