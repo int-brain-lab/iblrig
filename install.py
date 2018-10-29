@@ -137,7 +137,8 @@ def install_iblrig_requirements(conda):
     subprocess.call([pip, "install", "python-osc"])
     subprocess.call([pip, "install", "cython"])
     print("N" * 39, '(pip) Installing PyBpod')
-    subprocess.call([pip, "install", "pybpod"])
+    subprocess.call([pip, "install", "pybpod", "--upgrade"])
+    subprocess.call([pip, "install", "-U", "pybpod"])
     print("N" * 79)
     print("IBLrig requirements installed.")
 
