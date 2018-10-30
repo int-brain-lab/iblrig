@@ -44,6 +44,6 @@ GENERIC_EDITOR_PLUGINS_LIST = [
 
 TARGET_BPOD_FIRMWARE_VERSION = '22'
 
-DEFAULT_PROJECT_PATH = 'C:\\iblrig\\pybpod_projects\\IBL\\'
+DEFAULT_PROJECT_PATH = 'C:\\iblrig\\pybpod_projects\\IBL'
 ALYX_ADDR = 'https://alyx.internationalbrainlab.org'
 PYBPOD_EXTRA_INFO = {'Users', 'Subjects'}
