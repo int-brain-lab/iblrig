@@ -1,20 +1,20 @@
 {
-    "__CREATED-ON__": "2018-05-10 13:10:13.457874",
+    "__CREATED-ON__": "2018-10-30 16:30:59.424082",
     "__DEF-TEXT__": "This file contains information about a PyBpod experiment setup.",
     "__DEF-URL__": "http://pybpod.readthedocs.org",
     "__EXTERNAL-REF__": [
         "5e32036f-3e2a-4b57-86a4-9c9e2f19aadb",
-        "578a19ae-ba93-4a2c-a083-cbce612e7e70"
+        "578a19ae-ba93-4a2c-a083-cbce612e7e71"
     ],
-    "__SOFTWARE__": "PyBpod GUI API v1.0",
-    "__UPDATED-ON__": "2018-10-30 14:33:48.382762",
-    "__UUID4__": "27d81846-0c30-4ee1-bc24-cf9727769a0a",
+    "__SOFTWARE__": "PyBpod GUI API v1.1.2",
+    "__UPDATED-ON__": "2018-10-30 16:43:09.751222",
+    "__UUID4__": "c2393887-9946-4f05-a0e1-cd4e2d69013c",
     "board": "SELECT_BOARD_NAME_(eg., [mainenlab_behavior_box0])",
     "detached": false,
     "subjects": [
-        "_ibl_test_mouse"
+        "_iblrig_calibration"
     ],
-    "task": "FlushWater",
+    "task": "_iblrig_calibration_screen",
     "update-variables": false,
     "variables": []
 }
