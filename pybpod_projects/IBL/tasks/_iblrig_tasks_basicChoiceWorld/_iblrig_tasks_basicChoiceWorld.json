@@ -3,7 +3,7 @@
     "__DEF-TEXT__": "This file contains information about a PyBpod protocol.",
     "__DEF-URL__": "http://pybpod.readthedocs.org",
     "__SOFTWARE__": "PyBpod GUI API v1.0",
-    "__UPDATED-ON__": "2018-10-30 14:48:44.213576",
+    "__UPDATED-ON__": "2018-10-30 16:43:09.747619",
     "__UUID4__": "5cd39621-c6a2-452e-b7c0-3671bf44c832",
     "commands": [
         {
@@ -17,6 +17,6 @@
             "when": 1
         }
     ],
-    "name": "basicChoiceWorld",
+    "name": "_iblrig_tasks_basicChoiceWorld",
     "trigger-softcodes": false
 }

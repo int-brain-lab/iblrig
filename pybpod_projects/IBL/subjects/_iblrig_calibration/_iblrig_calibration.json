@@ -1,0 +1,22 @@
+{
+    "__CREATED-ON__": "2018-05-08 14:08:29.985711",
+    "__DEF-TEXT__": "This file contains information about a subject used on PyBpod GUI.",
+    "__DEF-URL__": "http://pybpod.readthedocs.org",
+    "__SOFTWARE__": "PyBpod GUI API v1.0",
+    "__UPDATED-ON__": "2018-05-08 14:08:19.985711",
+    "__UUID4__": "578a19ae-ba93-4a2c-a083-cbce612e7e71",
+    "alive": null,
+    "alyx_id": null,
+    "birth_date": null,
+    "death_date": null,
+    "description": null,
+    "genotype": null,
+    "line": null,
+    "litter": null,
+    "nickname": null,
+    "responsible_user": null,
+    "sex": null,
+    "species": null,
+    "strain": null,
+    "url": null
+}
