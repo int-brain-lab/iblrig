@@ -4,34 +4,32 @@
 # @Date:   2018-06-08 11:04:05
 # @Last Modified by:   Niccolò Bonacchi
 # @Last Modified time: 2018-07-12 13:08:10
-import os
-import shutil
 import json
-import subprocess
+import os
 import re
+import shutil
+import subprocess
 import sys
 from pathlib import Path
 
-# Constants assuming Windows
+# BEGIN CONSTANT DEFINITION
 IBLRIG_ROOT_PATH = Path.cwd()
 REQUIREMENTS_FILE = IBLRIG_ROOT_PATH / 'requirements.txt'
-# PYBPOD_PATH = os.path.join(IBLRIG_ROOT_PATH, 'pybpod')
 
 
 if sys.platform in ['Windows', 'windows', 'win32']:
     CONDA = "conda"
-    SITE_PACKAGES = os.path.join("lib", "site-packages")
 elif sys.platform in ['Linux', 'linux']:
     p = sys.prefix.split(os.sep)
     p = [x for x in p if 'env' not in x]
     conda_path = '{}'.format(os.sep).join(p)
     CONDA = os.path.join(conda_path, "bin", "conda")
-    SITE_PACKAGES = os.path.join("lib", "python3.6", "site-packages")  # TODO: find latest python instalation!!n
 elif sys.platform in ['Darwin', 'macOSx', 'osx']:
     print("ERROR: macOSx is not supported yet\nInstallation aborted!")
 else:
     print('\nERROR: Unsupported OS\nInstallation aborted!')
 
+# END CONSTANT DEFINITION
 
 def get_iblenv(conda):
     # Find ibllib environment
@@ -117,8 +115,6 @@ def install_iblrig_requirements(conda):
     if iblenv is None:
         msg = "Can't install iblrig requirements, iblenv not found"
         raise ValueError(msg)
-    # Define site-packages folder
-    install_to = os.path.join(iblenv, SITE_PACKAGES)
 
     print("N" * 39, 'Installing scipy')
     subprocess.call([CONDA, "install", "-y",
