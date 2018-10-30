@@ -2,7 +2,6 @@
 docs/_*
 docs/source/_*
 Subjects/
-water-calibration-plugin/
 sessions/
 
 *.code-workspace

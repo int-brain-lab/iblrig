@@ -3,7 +3,7 @@
     "__DEF-TEXT__": "This file contains information about a PyBpod protocol.",
     "__DEF-URL__": "http://pybpod.readthedocs.org",
     "__SOFTWARE__": "PyBpod GUI API v1.0",
-    "__UPDATED-ON__": "2018-10-19 13:08:52.713495",
+    "__UPDATED-ON__": "2018-10-30 14:48:44.213576",
     "__UUID4__": "5cd39621-c6a2-452e-b7c0-3671bf44c832",
     "commands": [
         {
@@ -12,9 +12,9 @@
             "when": 1
         },
         {
-            "script": "..\\..\\..\\..\\iblrig\\pybpod_projects\\IBL\\tasks\\basicChoiceWorld\\task_settings.py",
-            "type": "create_scriptcmd",
-            "when": 0
+            "cmd": "python ..\\..\\..\\cleanup.py",
+            "type": "create_execcmd",
+            "when": 1
         }
     ],
     "name": "basicChoiceWorld",
