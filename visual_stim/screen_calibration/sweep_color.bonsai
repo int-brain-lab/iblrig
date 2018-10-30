@@ -1,30 +1,25 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <WorkflowBuilder Version="2.3.0">
-  <Workflow xmlns:q1="clr-namespace:Bonsai.Shaders;assembly=Bonsai.Shaders" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:q2="clr-namespace:Bonsai.Osc;assembly=Bonsai.Osc" xmlns="https://horizongir.org/bonsai">
+  <Workflow xmlns:q1="clr-namespace:Bonsai.Osc;assembly=Bonsai.Osc" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:q2="clr-namespace:Bonsai.Shaders;assembly=Bonsai.Shaders" xmlns="https://horizongir.org/bonsai">
     <Nodes>
       <Expression xsi:type="BehaviorSubject">
         <Name>Red</Name>
-      </Expression>
-      <Expression xsi:type="Combinator">
-        <Combinator xsi:type="q1:UpdateUniform">
-          <q1:UniformName>Red</q1:UniformName>
-          <q1:ShaderName>sweep</q1:ShaderName>
-        </Combinator>
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="FloatProperty">
           <Value>0</Value>
         </Combinator>
       </Expression>
-      <Expression xsi:type="q2:ReceiveMessage">
-        <q2:Connection>calib_osc</q2:Connection>
-        <q2:Address>/d</q2:Address>
-        <q2:TypeTag>i</q2:TypeTag>
+      <Expression xsi:type="q1:ReceiveMessage">
+        <q1:Connection>calib_osc</q1:Connection>
+        <q1:Address>/d</q1:Address>
+        <q1:TypeTag>i</q1:TypeTag>
       </Expression>
       <Expression xsi:type="Combinator">
-        <Combinator xsi:type="q1:AspectRatio" />
+        <Combinator xsi:type="q2:AspectRatio" />
       </Expression>
       <Expression xsi:type="NestedWorkflow">
+        <Name>Sweeper</Name>
         <Workflow>
           <Nodes>
             <Expression xsi:type="Combinator">
@@ -138,32 +133,29 @@
         </Workflow>
       </Expression>
       <Expression xsi:type="Combinator">
-        <Combinator xsi:type="q1:UpdateUniform">
-          <q1:UniformName>aspectRatio</q1:UniformName>
-          <q1:ShaderName>sweep</q1:ShaderName>
+        <Combinator xsi:type="q2:UpdateUniform">
+          <q2:UniformName>aspectRatio</q2:UniformName>
+          <q2:ShaderName>sweep</q2:ShaderName>
         </Combinator>
       </Expression>
       <Expression xsi:type="Combinator">
-        <Combinator xsi:type="q1:RenderFrame" />
+        <Combinator xsi:type="q2:RenderFrame" />
       </Expression>
-      <Expression xsi:type="q2:ReceiveMessage">
-        <q2:Connection>calib_osc</q2:Connection>
-        <q2:Address>/i</q2:Address>
-        <q2:TypeTag>i</q2:TypeTag>
+      <Expression xsi:type="q1:ReceiveMessage">
+        <q1:Connection>calib_osc</q1:Connection>
+        <q1:Address>/i</q1:Address>
+        <q1:TypeTag>i</q1:TypeTag>
       </Expression>
       <Expression xsi:type="Combinator">
-        <Combinator xsi:type="q1:DrawMesh">
-          <q1:ShaderName>sweep</q1:ShaderName>
-          <q1:MeshName>FullScreenQuad</q1:MeshName>
+        <Combinator xsi:type="q2:DrawMesh">
+          <q2:ShaderName>sweep</q2:ShaderName>
+          <q2:MeshName>FullScreenQuad</q2:MeshName>
         </Combinator>
       </Expression>
       <Expression xsi:type="MulticastSubject">
         <Name>Green</Name>
       </Expression>
       <Expression xsi:type="MulticastSubject">
-        <Name>Red</Name>
-      </Expression>
-      <Expression xsi:type="SubscribeSubject">
         <Name>Red</Name>
       </Expression>
       <Expression xsi:type="BehaviorSubject">
@@ -185,23 +177,62 @@
           <Value>0</Value>
         </Combinator>
       </Expression>
-      <Expression xsi:type="Combinator">
-        <Combinator xsi:type="q1:UpdateUniform">
-          <q1:UniformName>Green</q1:UniformName>
-          <q1:ShaderName>sweep</q1:ShaderName>
-        </Combinator>
+      <Expression xsi:type="MulticastSubject">
+        <Name>Red</Name>
       </Expression>
-      <Expression xsi:type="SubscribeSubject">
-        <Name>Green</Name>
-      </Expression>
-      <Expression xsi:type="Combinator">
-        <Combinator xsi:type="q1:UpdateUniform">
-          <q1:UniformName>Blue</q1:UniformName>
-          <q1:ShaderName>sweep</q1:ShaderName>
-        </Combinator>
-      </Expression>
-      <Expression xsi:type="SubscribeSubject">
+      <Expression xsi:type="MulticastSubject">
         <Name>Blue</Name>
+      </Expression>
+      <Expression xsi:type="NestedWorkflow">
+        <Name>UpdateUniforms</Name>
+        <Workflow>
+          <Nodes>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="q2:UpdateUniform">
+                <q2:UniformName>Red</q2:UniformName>
+                <q2:ShaderName>sweep</q2:ShaderName>
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="SubscribeSubject">
+              <Name>Red</Name>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="q2:UpdateUniform">
+                <q2:UniformName>Green</q2:UniformName>
+                <q2:ShaderName>sweep</q2:ShaderName>
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="q2:UpdateUniform">
+                <q2:UniformName>Blue</q2:UniformName>
+                <q2:ShaderName>sweep</q2:ShaderName>
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="SubscribeSubject">
+              <Name>Green</Name>
+            </Expression>
+            <Expression xsi:type="SubscribeSubject">
+              <Name>Blue</Name>
+            </Expression>
+          </Nodes>
+          <Edges>
+            <Edge>
+              <From>1</From>
+              <To>0</To>
+              <Label>Source1</Label>
+            </Edge>
+            <Edge>
+              <From>4</From>
+              <To>2</To>
+              <Label>Source1</Label>
+            </Edge>
+            <Edge>
+              <From>5</From>
+              <To>3</To>
+              <Label>Source1</Label>
+            </Edge>
+          </Edges>
+        </Workflow>
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="FloatProperty">
@@ -219,79 +250,83 @@
     </Nodes>
     <Edges>
       <Edge>
-        <From>2</From>
+        <From>1</From>
         <To>0</To>
         <Label>Source1</Label>
       </Edge>
       <Edge>
+        <From>2</From>
+        <To>21</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
         <From>3</From>
-        <To>24</To>
+        <To>5</To>
         <Label>Source1</Label>
       </Edge>
       <Edge>
         <From>4</From>
-        <To>6</To>
-        <Label>Source1</Label>
-      </Edge>
-      <Edge>
-        <From>5</From>
-        <To>10</To>
-        <Label>Source1</Label>
-      </Edge>
-      <Edge>
-        <From>6</From>
         <To>9</To>
         <Label>Source1</Label>
       </Edge>
       <Edge>
-        <From>7</From>
-        <To>4</To>
-        <Label>Source1</Label>
-      </Edge>
-      <Edge>
-        <From>10</From>
-        <To>24</To>
-        <Label>Source2</Label>
-      </Edge>
-      <Edge>
-        <From>12</From>
-        <To>1</To>
-        <Label>Source1</Label>
-      </Edge>
-      <Edge>
-        <From>15</From>
-        <To>13</To>
-        <Label>Source1</Label>
-      </Edge>
-      <Edge>
-        <From>17</From>
+        <From>4</From>
         <To>16</To>
         <Label>Source1</Label>
       </Edge>
       <Edge>
-        <From>19</From>
-        <To>18</To>
+        <From>4</From>
+        <To>17</To>
         <Label>Source1</Label>
       </Edge>
       <Edge>
-        <From>21</From>
-        <To>20</To>
+        <From>5</From>
+        <To>8</To>
         <Label>Source1</Label>
       </Edge>
       <Edge>
-        <From>22</From>
+        <From>6</From>
+        <To>3</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>9</From>
+        <To>21</To>
+        <Label>Source3</Label>
+      </Edge>
+      <Edge>
+        <From>13</From>
         <To>11</To>
         <Label>Source1</Label>
       </Edge>
       <Edge>
-        <From>23</From>
+        <From>15</From>
         <To>14</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>16</From>
+        <To>21</To>
+        <Label>Source2</Label>
+      </Edge>
+      <Edge>
+        <From>17</From>
+        <To>21</To>
+        <Label>Source4</Label>
+      </Edge>
+      <Edge>
+        <From>19</From>
+        <To>10</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>20</From>
+        <To>12</To>
         <Label>Source1</Label>
       </Edge>
     </Edges>
   </Workflow>
   <ExtensionTypes>
-    <Type>Bonsai.Shaders.UpdateUniform, Bonsai.Shaders, Version=0.18.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Expressions.FloatProperty, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Osc.ReceiveMessage, Bonsai.Osc, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Shaders.AspectRatio, Bonsai.Shaders, Version=0.18.0.0, Culture=neutral, PublicKeyToken=null</Type>
@@ -301,6 +336,7 @@
     <Type>Bonsai.Reactive.TakeUntil, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Expressions.DivideBuilder, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Expressions.GreaterThanBuilder, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Shaders.UpdateUniform, Bonsai.Shaders, Version=0.18.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Shaders.RenderFrame, Bonsai.Shaders, Version=0.18.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Shaders.DrawMesh, Bonsai.Shaders, Version=0.18.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Expressions.MulticastSubjectBuilder, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
