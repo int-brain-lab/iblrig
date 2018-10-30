@@ -28,28 +28,21 @@ PYFORMS_SILENT_PLUGINS_FINDER = True
 
 PYFORMS_MATPLOTLIB_ENABLED = True
 PYFORMS_WEB_ENABLED = True
-PYFORMS_GL_ENABLED = False
+PYFORMS_GL_ENABLED = True
 PYFORMS_VISVIS_ENABLED = False
 
 GENERIC_EDITOR_TITLE = 'IBL'
 GENERIC_EDITOR_PLUGINS_PATH = None
 GENERIC_EDITOR_PLUGINS_LIST = [
-    'water_calibration_plugin',
-    'pyforms',
-    'pyforms_generic_editor',
-    'sca',
     'pybpodgui_plugin',
     'pybpodgui_plugin_timeline',
     'pybpodgui_plugin_trial_timeline',
     'pybpodgui_plugin_session_history',
     'pybpod_rotaryencoder_module',
     'pybpod_alyx_module',
-    'pge_plugin_terminal',
-    #'pybpodgui_plugin_waveplayer',
-    # 'pybpodgui_plugin_oldformat',
 ]
 
-TARGET_BPOD_FIRMWARE_VERSION = '21'
+TARGET_BPOD_FIRMWARE_VERSION = '22'
 
 DEFAULT_PROJECT_PATH = 'C:\\iblrig\\pybpod_projects\\IBL'
 ALYX_ADDR = 'https://alyx.internationalbrainlab.org'

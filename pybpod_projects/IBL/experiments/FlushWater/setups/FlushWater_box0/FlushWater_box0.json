@@ -3,14 +3,17 @@
     "__DEF-TEXT__": "This file contains information about a PyBpod experiment setup.",
     "__DEF-URL__": "http://pybpod.readthedocs.org",
     "__EXTERNAL-REF__": [
-        "5e32036f-3e2a-4b57-86a4-9c9e2f19aadb"
+        "5e32036f-3e2a-4b57-86a4-9c9e2f19aadb",
+        "578a19ae-ba93-4a2c-a083-cbce612e7e70"
     ],
     "__SOFTWARE__": "PyBpod GUI API v1.0",
-    "__UPDATED-ON__": "2018-05-10 13:10:13.457874",
+    "__UPDATED-ON__": "2018-10-30 14:33:48.382762",
     "__UUID4__": "27d81846-0c30-4ee1-bc24-cf9727769a0a",
-    "board": "box0",
+    "board": "SELECT_BOARD_NAME_(eg., [mainenlab_behavior_box0])",
     "detached": false,
-    "subjects": [],
+    "subjects": [
+        "_ibl_test_mouse"
+    ],
     "task": "FlushWater",
     "update-variables": false,
     "variables": []

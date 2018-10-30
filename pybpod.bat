@@ -3,13 +3,13 @@
 ::set path="%path%;C:\iblrig\"
 ::PAUSE
 echo Finding pybpod folder...
-set pybpod_dir=C:\iblrig\pybpod
-chdir /D %pybpod_dir%
+set projects_dir=C:\iblrig\pybpod_projects
+chdir /D %projects_dir%
 
-echo Activating pybpod-environment...
-call activate pybpod-environment %*
+echo Activating IBL environment...
+call activate iblenv %*
 
 echo Launching pybpod...
-call python -m pybpodgui_plugin %*
-::call start-pybpod
+::call python -m pybpodgui_plugin %*
+call start-pybpod
 echo done

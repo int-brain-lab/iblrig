@@ -3,7 +3,10 @@
 # @Date:   2018-02-20 14:46:10
 # @Last Modified by:   Niccolò Bonacchi
 # @Last Modified time: 2018-05-30 17:31:48
-# matplotlib.use('Qt5Agg')
+import matplotlib
+
+matplotlib.use('Qt5Agg')
+
 import matplotlib.pyplot as plt
 import numpy as np
 import json
@@ -112,7 +115,7 @@ def plot_psyfun(trial_data, psyfun_df, ax=None):
     ax.legend(handles=[y1handle, y2handle], loc='best')
     ax.grid()
     ax.figure.canvas.draw_idle()
-    ax.figure.canvas.update()
+    ax.figure.canvas.draw()
     # ax.figure.canvas.flush_events()
     # plt.pause(0.00001)
     # plt.pause(0.001)
@@ -179,7 +182,7 @@ def plot_bars(trial_data, ax=None):
     ax.set_xlim([0, max(y) + (max(y) * 0.2)])
     ax.legend()
     ax.figure.canvas.draw_idle()
-    ax.figure.canvas.update()
+    ax.figure.canvas.draw()
     # ax.figure.canvas.flush_events()
     # plt.pause(0.00001)
 
