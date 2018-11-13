@@ -1,0 +1,11 @@
+{
+    "__CREATED-ON__": "2018-10-30 16:30:59.421397",
+    "__DEF-TEXT__": "This file contains information about a PyBpod protocol.",
+    "__DEF-URL__": "http://pybpod.readthedocs.org",
+    "__SOFTWARE__": "PyBpod GUI API v1.1.2",
+    "__UPDATED-ON__": "2018-10-30 16:30:59.421397",
+    "__UUID4__": "7037957b-600f-49e4-b806-fe83c151cb82",
+    "commands": [],
+    "name": "_iblrig_calibration_screen",
+    "trigger-softcodes": false
+}

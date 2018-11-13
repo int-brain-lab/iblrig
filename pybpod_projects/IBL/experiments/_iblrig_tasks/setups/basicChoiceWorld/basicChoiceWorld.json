@@ -7,14 +7,14 @@
         "578a19ae-ba93-4a2c-a083-cbce612e7e70"
     ],
     "__SOFTWARE__": "PyBpod GUI API v1.0",
-    "__UPDATED-ON__": "2018-10-02 12:35:26.407133",
+    "__UPDATED-ON__": "2018-10-30 16:43:09.754587",
     "__UUID4__": "347e87b4-dca4-46b9-8c0d-914cdad750a3",
-    "board": "box0",
+    "board": "SELECT_BOARD_NAME_(eg., [mainenlab_behavior_box0])",
     "detached": true,
     "subjects": [
-        "test_mouse"
+        "_iblrig_test_mouse"
     ],
-    "task": "basicChoiceWorld",
+    "task": "_iblrig_tasks_basicChoiceWorld",
     "update-variables": false,
     "variables": []
 }
