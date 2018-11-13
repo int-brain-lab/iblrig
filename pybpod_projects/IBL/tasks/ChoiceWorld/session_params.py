@@ -131,7 +131,9 @@ class session_param_handler(object):
         # =====================================================================
         # ADAPTIVE STUFF
         # =====================================================================
-        self.STIM_GAIN = 4. if self.LAST_TRIAL_DATA['trial_num'] >= 200 else 8.
+        if self.ADAPTIVE_GAIN:
+            self.STIM_GAIN = 4. if self.LAST_TRIAL_DATA['trial_num'] >= 200 else 8.
+
         self.REWARD_CURRENT = self._init_reward()
         # =====================================================================
         # SOUNDS
@@ -430,8 +432,8 @@ class session_param_handler(object):
         print("\n\nINFO: PREVIOUS SESSION FOUND",
               "\nLOADING PARAMETERS FROM: {}".format(self.PREVIOUS_DATA_FILE),
               "\n\nCURRENT REWARD: {}".format(trial_data[i]["reward_current"]),
-              "\nCURRENT CONTRAST SET: {}".format(trial_data[i]["ac"]["contrasts"]),
               "\nCURRENT GAIN: {}".format(trial_data[i]["stim_gain"]),
+              "\nCURRENT CONTRAST SET: {}".format(trial_data[i]["ac"]["contrasts"]),
               "\nBUFFERS LR: {}".format(trial_data[i]["ac"]["buffer"]))
         return trial_data[i] if trial_data else None
 
