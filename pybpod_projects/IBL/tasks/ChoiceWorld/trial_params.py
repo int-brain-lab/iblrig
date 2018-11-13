@@ -9,6 +9,7 @@ import scipy.stats as st
 import json
 import os
 from dateutil import parser
+import math
 
 
 class ComplexEncoder(json.JSONEncoder):
@@ -110,9 +111,6 @@ class adaptive_contrast(object):
         self.value = random.choice(self.contrasts)
 
     def _update_contrasts(self):  # can be done better!
-        # if self.ntrials - self.trial_125 == 200:
-        #     self.contrasts.append(0.)
-
         if len(self.contrasts) == 2:
             if (sum(self.buffer[0]) >= self._min_trials_at(self.perf_crit_one,
                     0.05)) & (
@@ -120,14 +118,7 @@ class adaptive_contrast(object):
                     0.05)):
                 self.contrasts.append(0.25)
                 self.contrasts.append(0.125)
-                # self.trial_125 = self.ntrials
                 self._reset_buffer()
-        # elif len(self.contrasts) == 3:
-        #     if (sum(self.buffer[0]) >= self._min_trials_at(0.5, 0.05)) & (
-        #             sum(self.buffer[1]) >= self._min_trials_at(0.5, 0.05)):
-        #         self.contrasts.append(0.125)
-        #         self.trial_125 = self.ntrials
-        #         self._reset_buffer()
         elif len(self.contrasts) == 4:
             if (sum(self.buffer[0]) >= self._min_trials_at(self.perf_crit_two,
                     0.05)) & (
@@ -136,14 +127,6 @@ class adaptive_contrast(object):
                 self.contrasts.append(0.0625)
                 self.contrasts.append(0.)
                 self._reset_buffer()
-        # elif len(self.contrasts) == 5:
-        #     if (sum(self.buffer[0]) >= self._min_trials_at(0.5, 0.05)) & (
-        #             sum(self.buffer[1]) >= self._min_trials_at(0.5, 0.05)):
-        #         if 0. not in self.contrasts:
-        #             self.contrasts.append(0.)
-        #         elif 0. in self.contrasts:
-        #             self.contrasts.append(0.0625)
-        #         self._reset_buffer()
 
     def _min_trials_at(self, prob, alpha):
         return sum(1 - st.binom.cdf(range(self.buffer_size),
@@ -229,6 +212,7 @@ class trial_param_handler(object):
         self.stim_angle = sph.STIM_ANGLE
         self.stim_gain = sph.STIM_GAIN
         self.stim_sigma = sph.STIM_SIGMA
+        self.stim_phase = 0.
         self.out_tone = sph.OUT_TONE
         self.out_noise = sph.OUT_NOISE
         # Init trial type objects
@@ -298,7 +282,7 @@ class trial_param_handler(object):
         # update + next contrast: update buffers/counters + get next contrast
         # This has to happen before self.contrast is pointing to next trials
         self.contrast.next_trial()
-        # update dynamic vars (position and events)
+        # update dynamic vars (trial_vars, position, and events)
         self._next_dynamic_vars()
         # update vars dependent on trial outcome trial and contrast
         self._next_performance_vars()
@@ -323,6 +307,9 @@ class trial_param_handler(object):
             self.position = random.choice(self.positions)
             self.event_error = self.threshold_events_dict[self.position]
             self.event_reward = self.threshold_events_dict[-self.position]
+
+        self.stim_phase = random.uniform(0, math.pi)
+
         return
 
     def _next_performance_vars(self):
@@ -360,6 +347,7 @@ class trial_param_handler(object):
             USED:
             /t  -> (int)    trial number current
             /p  -> (int)    position of stimulus init for current trial
+            /h  -> (float)  phase of gabor for current trial
             /c  -> (float)  contrast of stimulus for current trial
             /f  -> (float)  frequency of gabor patch for current trial
             /a  -> (float)  angle of gabor patch for current trial
@@ -372,6 +360,7 @@ class trial_param_handler(object):
         # self.position = self.position  # (2/3)*t_position/180
         self.osc_client.send_message("/t", self.trial_num)
         self.osc_client.send_message("/p", self.position)
+        self.osc_client.send_message("/h", self.stim_phase)
         self.osc_client.send_message("/c", self.contrast.value)
         self.osc_client.send_message("/f", self.stim_freq)
         self.osc_client.send_message("/a", self.stim_angle)
