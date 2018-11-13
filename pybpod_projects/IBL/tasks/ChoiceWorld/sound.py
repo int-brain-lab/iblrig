@@ -44,7 +44,7 @@ def configure_sounddevice(sd=None, output='sysdefault', samplerate=44100):
     return sd
 
 
-def make_sound(rate=44100, frequency=10000, duration=0.1, amplitude=1,
+def make_sound(rate=44100, frequency=5000, duration=0.1, amplitude=1,
                fade=0.01, chans='L+TTL'):
     """
     Build sounds and save bin file for upload to soundcard or play via
