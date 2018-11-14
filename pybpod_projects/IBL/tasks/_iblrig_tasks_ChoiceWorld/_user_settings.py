@@ -13,7 +13,7 @@ PYBPOD_API_LOG_FILE  = None
 PYBPOD_API_STREAM2STDOUT = True
 PYBPOD_API_ACCEPT_STDIN  = True
 
-PYBPOD_PROTOCOL     = 'global_timer_example'
+PYBPOD_PROTOCOL     = '_iblrig_tasks_ChoiceWorld'
 PYBPOD_CREATOR      = '["test_user", "b5237473-405d-40e7-b330-42b26ac1b79f", "local"]'
 PYBPOD_PROJECT      = 'test'
 PYBPOD_EXPERIMENT   = 'Untitled experiment 0'

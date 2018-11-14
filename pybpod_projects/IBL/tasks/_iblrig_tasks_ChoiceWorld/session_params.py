@@ -15,10 +15,11 @@ from sys import platform
 import numpy as np
 import scipy.stats as st
 from dateutil import parser
-from pythonosc import udp_client
-import sound
-
 from pybpod_rotaryencoder_module.module_api import RotaryEncoderModule
+from pythonosc import udp_client
+
+import sound
+from path_helper import SessionPathCreator
 
 
 class ComplexEncoder(json.JSONEncoder):
@@ -56,7 +57,7 @@ class session_param_handler(object):
 
     def __init__(self, task_settings, user_settings):
         # =====================================================================
-        # IMPORT task_settings AND user_settings
+        # IMPORT task_settings, user_settings, and SessionPathCreator params
         # =====================================================================
         ts = {i: task_settings.__dict__[i]
               for i in [x for x in dir(task_settings) if '__' not in x]}
@@ -65,6 +66,9 @@ class session_param_handler(object):
               for i in [x for x in dir(user_settings) if '__' not in x]}
         self.__dict__.update(us)
         self.deserialize_session_user_settings()
+        spc = SessionPathCreator(self.IBLRIG_FOLDER, self.MAIN_DATA_FOLDER,
+                                 self.PYBPOD_SUBJECTS[0], self.PYBPOD_PROTOCOL)
+        self.__dict__.update(spc.__dict__)
         # =====================================================================
         # OSC CLIENT
         # =====================================================================
@@ -84,57 +88,17 @@ class session_param_handler(object):
                                          self.ENCODER_EVENTS))
         if platform == 'linux':
             self.ROTARY_ENCODER_PORT = '/dev/ttyACM0'
-        self._configure_rotary_encoder(RotaryEncoderModule)
+        # self._configure_rotary_encoder(RotaryEncoderModule)
         # =====================================================================
         # FOLDER STRUCTURE AND DATA FILES
         # =====================================================================
-        if platform == 'linux':
-            self.IBLRIG_FOLDER = '/home/nico/Projects/IBL/IBL-github/iblrig'
-        else:
-            self.IBLRIG_FOLDER = self._iblrig_folder_init()
-
-        self.ROOT_DATA_FOLDER = self._root_data_folder(self.IBLRIG_FOLDER,
-                                                       self.MAIN_DATA_FOLDER)
-        self.SOUND_STIM_FOLDER = os.path.join(self.IBLRIG_FOLDER, 'sound_stim',
-                                              'sounds')
-        self.VISUAL_STIM_FOLDER = os.path.join(self.IBLRIG_FOLDER,
-                                               'visual_stim', 'Gabor2D')
-        self.VISUAL_STIMULUS_FILE = os.path.join(self.IBLRIG_FOLDER,
-                                                 'visual_stim', 'Gabor2D',
-                                                 'Gabor2D.bonsai')
-        self.SUBJECT_NAME = self.PYBPOD_SUBJECTS[0]
-        self.SUBJECT_FOLDER = self.check_folder(self.ROOT_DATA_FOLDER,
-                                                self.SUBJECT_NAME)
-        self.SESSION_DATETIME = parser.parse(self.PYBPOD_SESSION)
-        self.SESSION_DATE = self.SESSION_DATETIME.date().isoformat()
-        self.SESSION_DATE_FOLDER = self.check_folder(self.SUBJECT_FOLDER,
-                                                     self.SESSION_DATE)
-        self.SESSION_NUMBER = self._session_number()
-        self.SESSION_FOLDER = self.check_folder(self.SESSION_DATE_FOLDER,
-                                                self.SESSION_NUMBER)
-        self.SESSION_RAW_DATA_FOLDER = self.check_folder(self.SESSION_FOLDER,
-                                                         'raw_behavior_data')
-        self.SESSION_NAME = '{}'.format(os.path.sep).join([self.SUBJECT_NAME,
-                                                           self.SESSION_DATE,
-                                                           self.SESSION_NUMBER
-                                                           ])
-        self.BASE_FILENAME = '_ibl_task'
-        self.SETTINGS_FILE_PATH = os.path.join(self.SESSION_RAW_DATA_FOLDER,
-                                               self.BASE_FILENAME +
-                                               'Settings.raw.json')
-        self.DATA_FILE_PATH = os.path.join(self.SESSION_RAW_DATA_FOLDER,
-                                           self.BASE_FILENAME +
-                                           'Data.raw.jsonable')
-
-        self.PREVIOUS_DATA_FILE = self._previous_data_file()
         self.LAST_TRIAL_DATA = self._load_last_trial()
         # =====================================================================
         # ADAPTIVE STUFF
         # =====================================================================
-        if self.ADAPTIVE_GAIN:
-            self.STIM_GAIN = 4. if self.LAST_TRIAL_DATA['trial_num'] >= 200 else 8.
+        self.STIM_GAIN = self._init_stim_gain()
 
-        self.REWARD_CURRENT = self._init_reward()
+        self.REWARD_AMOUNT = self._init_reward()
         # =====================================================================
         # SOUNDS
         # =====================================================================
@@ -152,8 +116,8 @@ class session_param_handler(object):
         # =====================================================================
         # RUN BONSAI
         # =====================================================================
-        self._use_ibl_bonsai = True
-        self.BONSAI = self.get_bonsai_path()
+        self.USE_VISUAL_STIMULUS = False if platform == 'linux' else self.USE_VISUAL_STIMULUS
+        self.BONSAI = spc.get_bonsai_path(use_ibl_bonsai=True)
         self.run_bonsai()
         # =====================================================================
         # SAVE SETTINGS FILE AND TASK CODE
@@ -183,11 +147,8 @@ class session_param_handler(object):
     # SOUND
     # =========================================================================
     def _init_sounds(self):
-        # TODO: THIS IS CHANGING! + make upload on create!
-        self.UPLOADER_TOOL = os.path.join(self.IBLRIG_FOLDER, 'sound_stim',
-                                          'HarpSoundBoard', 'Interface',
-                                          'toSoundBoard.exe')
         if self.SOFT_SOUND:
+            self.UPLOADER_TOOL = None
             self.GO_TONE = sound.make_sound(
                 rate=self.SOUND_SAMPLE_FREQ,
                 frequency=self.GO_TONE_FREQUENCY,
@@ -206,6 +167,10 @@ class session_param_handler(object):
             self.OUT_TONE = ('SoftCode', 1)
             self.OUT_NOISE = ('SoftCode', 2)
         else:
+            # TODO: THIS IS CHANGING! + make upload on create!
+            self.UPLOADER_TOOL = os.path.join(self.IBLRIG_FOLDER, 'sound_stim',
+                                              'HarpSoundBoard', 'Interface',
+                                              'toSoundBoard.exe')
             files = os.listdir(self.SOUND_STIM_FOLDER)
             fparts = [x.split('_') for x in files]
             used_indexes = [int(f[0].split('i')[-1]) for f in fparts]
@@ -281,24 +246,6 @@ class session_param_handler(object):
     # =========================================================================
     # FILES AND FOLDER STRUCTURE
     # =========================================================================
-    def get_bonsai_path(self):
-        """Checks for Bonsai folder in iblrig.
-        Returns string with bonsai executable path."""
-        folders = self.get_subfolder_paths(self.IBLRIG_FOLDER)
-        bonsai_folder = [x for x in folders if 'Bonsai' in x][0]
-        ibl_bonsai = os.path.join(bonsai_folder, 'Bonsai64.exe')
-
-        preexisting_bonsai = Path.home() / "AppData/Local/Bonsai/Bonsai64.exe"
-        if self._use_ibl_bonsai == True:
-            BONSAI = ibl_bonsai
-        elif self._use_ibl_bonsai == False and preexisting_bonsai.exists():
-            BONSAI = str(preexisting_bonsai)
-        elif self._use_ibl_bonsai == False and not preexisting_bonsai.exists():
-            print("NOT FOUND: {}\n Using packaged Bonsai.".format(
-                str(preexisting_bonsai)))
-            BONSAI = ibl_bonsai
-        return BONSAI
-
     def run_bonsai(self):
         if self.USE_VISUAL_STIMULUS and self.BONSAI:
             # Copy stimulus folder with bonsai workflow
@@ -343,84 +290,6 @@ class session_param_handler(object):
         else:
             self.USE_VISUAL_STIMULUS = False
 
-    @staticmethod
-    def check_folder(str1, str2=None):
-        """Check if folder path exists and if not create it."""
-        if str2 is not None:
-            f = os.path.join(str1, str2)
-        else:
-            f = str1
-        if not os.path.exists(f):
-            os.mkdir(f)
-        return f
-
-    def _iblrig_folder_init(self):
-        if '/' in self.IBLRIG_FOLDER:
-            p = '{}'.format(os.path.sep).join(self.IBLRIG_FOLDER.split('/'))
-        elif '\\' in self.IBLRIG_FOLDER:
-            p = '{}'.format(os.path.sep).join(self.IBLRIG_FOLDER.split('\\'))
-        return p
-
-    def _root_data_folder(self, iblrig_folder, main_data_folder):
-        iblrig_folder = Path(iblrig_folder)
-        if main_data_folder is None:
-            try:
-                iblrig_folder.exists()
-                out = iblrig_folder.parent / 'ibldata' / 'Subjects'
-                out.mkdir(parents=True, exist_ok=True)
-                return str(out)
-            except IOError as e:
-                print(e, "\nCouldn't find IBLRIG_FOLDER in file system\n")
-        else:
-            return main_data_folder
-
-    def _session_number(self):
-        session_nums = [int(x) for x in os.listdir(self.SESSION_DATE_FOLDER)
-                        if os.path.isdir(os.path.join(self.SESSION_DATE_FOLDER,
-                                                      x))]
-        if not session_nums:
-            out = str(1)
-        else:
-            out = str(int(max(session_nums)) + 1)
-
-        return out
-
-    @staticmethod
-    def get_subfolder_paths(folder):
-        out = [os.path.join(folder, x) for x in os.listdir(folder)
-               if os.path.isdir(os.path.join(folder, x))]
-        return out
-
-    def _previous_session_folders(self):
-        """
-        """
-        session_folders = []
-        for date in self.get_subfolder_paths(self.SUBJECT_FOLDER):
-            session_folders.extend(self.get_subfolder_paths(date))
-
-        session_folders = [x for x in sorted(session_folders)
-                           if self.SESSION_FOLDER not in x]
-        return session_folders
-
-    def _previous_data_files(self):
-        prev_data_files = []
-        for prev_sess_path in self._previous_session_folders():
-            prev_sess_path = os.path.join(prev_sess_path, 'raw_behavior_data')
-            if self.BASE_FILENAME + 'Data' in ''.join(os.listdir(
-                                                       prev_sess_path)):
-                prev_data_files.extend(os.path.join(prev_sess_path, x) for x
-                                       in os.listdir(prev_sess_path) if
-                                       self.BASE_FILENAME + 'Data' in x)
-
-        return prev_data_files
-
-    def _previous_data_file(self):
-        out = sorted(self._previous_data_files())
-        if out:
-            return out[-1]
-        else:
-            return None
-
     def _load_last_trial(self, i=-1):
         if self.PREVIOUS_DATA_FILE is None:
             return
@@ -431,14 +300,16 @@ class session_param_handler(object):
                 trial_data.append(last_trial)
         print("\n\nINFO: PREVIOUS SESSION FOUND",
               "\nLOADING PARAMETERS FROM: {}".format(self.PREVIOUS_DATA_FILE),
-              "\n\nCURRENT REWARD: {}".format(trial_data[i]["reward_current"]),
-              "\nCURRENT GAIN: {}".format(trial_data[i]["stim_gain"]),
-              "\nCURRENT CONTRAST SET: {}".format(trial_data[i]["ac"]["contrasts"]),
-              "\nBUFFERS LR: {}".format(trial_data[i]["ac"]["buffer"]))
+              "\n\nPREVIOUS NTRIALS:              {}".format(trial_data[i]["trial_num"]),
+              "\nPREVIOUS NTRIALS (no repeats): {}".format(trial_data[i]["non_rc_ntrials"]),
+              "\nLAST REWARD:                   {}".format(trial_data[i]["reward_amount"]),
+              "\nLAST GAIN:                     {}".format(trial_data[i]["stim_gain"]),
+              "\nLAST CONTRAST SET:             {}".format(trial_data[i]["ac"]["contrasts"]),
+              "\nBUFFERS LR:                    {}".format(trial_data[i]["ac"]["buffer"]))
         return trial_data[i] if trial_data else None
 
     # =========================================================================
-    # REWARD
+    # ADAPTIVE REWARD AND GAIN RULES
     # =========================================================================
     def _init_reward(self):
         if self.LAST_TRIAL_DATA is None:
@@ -452,10 +323,17 @@ class session_param_handler(object):
                        self.CALIBRATION_VALUE)
             return out
 
+    def _init_stim_gain(self):
+        if self.LAST_TRIAL_DATA and self.ADAPTIVE_GAIN:
+            stim_gain = 4. if self.LAST_TRIAL_DATA['trial_num'] >= 200 else 8.
+        else:
+            stim_gain = self.STIM_GAIN
+        return stim_gain
+
     # =========================================================================
     # OSC CLIENT
     # =========================================================================
-    def _osc_client_init(self):
+    def _init_osc_client(self):
         osc_client = udp_client.SimpleUDPClient(self.OSC_CLIENT_IP,
                                                 self.OSC_CLIENT_PORT)
         return osc_client
@@ -533,7 +411,7 @@ class session_param_handler(object):
 
 
 if __name__ == '__main__':
-    os.chdir(r'C:\iblrig\pybpod_projects\IBL\tasks\basicChoiceWorld')
+    # os.chdir(r'C:\iblrig\pybpod_projects\IBL\tasks\basicChoiceWorld')
     import task_settings as _task_settings
     import _user_settings
     sph = session_param_handler(_task_settings, _user_settings)
