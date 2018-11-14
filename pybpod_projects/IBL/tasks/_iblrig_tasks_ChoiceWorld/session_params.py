@@ -167,72 +167,7 @@ class session_param_handler(object):
             self.OUT_TONE = ('SoftCode', 1)
             self.OUT_NOISE = ('SoftCode', 2)
         else:
-            # TODO: THIS IS CHANGING! + make upload on create!
-            self.UPLOADER_TOOL = os.path.join(self.IBLRIG_FOLDER, 'sound_stim',
-                                              'HarpSoundBoard', 'Interface',
-                                              'toSoundBoard.exe')
-            files = os.listdir(self.SOUND_STIM_FOLDER)
-            fparts = [x.split('_') for x in files]
-            used_indexes = [int(f[0].split('i')[-1]) for f in fparts]
-            free_indexes = list(range(max(used_indexes)+1, 32))
-            for f in fparts:
-                if (self.SOUND_SAMPLE_FREQ in f[1] and
-                    self.WHITE_NOISE_DURATION in f[4] and
-                        self.WHITE_NOISE_AMPLITUDE in f[5]):
-                    self.WHITE_NOISE = 'sound_board_{}'.format(f[0])
-                else:
-                    index = 'i' + str(free_indexes.pop(0))
-                    isound = sound.make_sound(rate=self.SOUND_SAMPLE_FREQ,
-                                              frequency=-1,
-                                              duration=self.WHITE_NOISE_DURATION,
-                                              amplitude=self.WHITE_NOISE_AMPLITUDE,
-                                              fade=0.01,
-                                              chans='L+TTL')
-                    sound.save_bin(isound, os.path.join(self.SOUND_STIM_FOLDER,
-                                                        '{}_{}_{}_{}_{}_{}_{}_{}'.format(
-                                                            index,
-                                                            self.SOUND_SAMPLE_FREQ,
-                                                            'uniform',
-                                                            'None',
-                                                            self.WHITE_NOISE_DURATION,
-                                                            self.WHITE_NOISE_AMPLITUDE,
-                                                            'None',
-                                                            'None'))
-                                   )
-
-                    self.WHITE_NOISE = 'sound_board_{}'.format(index)
-
-                if (self.SOUND_SAMPLE_FREQ in f[1] and
-                    self.GO_TONE_FREQUENCY in f[3] and
-                    self.GO_TONE_DURATION in f[4] and
-                        self.GO_TONE_AMPLITUDE in f[5]):
-                    self.GO_TONE = 'sound_board_{}'.format(f[0])
-                else:
-                    # Make new file!
-                    index = 'i' + str(free_indexes.pop(0))
-                    isound = sound.make_sound(rate=self.SOUND_SAMPLE_FREQ,
-                                              frequency=self.GO_TONE_FREQUENCY,
-                                              duration=self.GO_TONE_DURATION,
-                                              amplitude=self.GO_TONE_AMPLITUDE,
-                                              fade=0.01,
-                                              chans='L+TTL')
-                    sound.save_bin(isound, os.path.join(self.SOUND_STIM_FOLDER,
-                                                        '{}_{}_{}_{}_{}_{}_{}_{}'.format(
-                                                            index,
-                                                            self.SOUND_SAMPLE_FREQ,
-                                                            'sine',
-                                                            self.GO_TONE_FREQUENCY,
-                                                            self.GO_TONE_DURATION,
-                                                            self.GO_TONE_AMPLITUDE,
-                                                            'hanning',
-                                                            '0.01')
-                                                        )
-                                   )
-                    self.GO_TONE = 'sound_board_{}'.format(index)
-
-            self.SD = None
-            self.OUT_TONE = (self.SOUND_BOARD_BPOD_PORT, self.GO_TONE)
-            self.OUT_NOISE = (self.SOUND_BOARD_BPOD_PORT, self.WHITE_NOISE)
+            print("\n\nSOUND BOARD NOT IMPLEMTNED YET!!\nPLEASE USE SOFT_SOUND='onboard' or 'xonar' in task_settings.py file\n\n")
 
     def play_tone(self):
         self.SD.play(self.GO_TONE, self.SOUND_SAMPLE_FREQ, mapping=[1, 2])
