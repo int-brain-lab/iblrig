@@ -15,8 +15,9 @@ RECORD_AMBIENT_SENSOR_DATA = True
 NTRIALS = 1000  # Number of trials for the current session
 USE_VISUAL_STIMULUS = True  # Run the visual stim in bonsai
 BONSAI_EDITOR = False  # Whether to open the Bonsai editor or not
+CONTRAST_SET = [1., 0.5, 0.25, 0.125, 0.0625, 0.]  # Full contrast set, used if adaptive contrast = False
 REPEAT_ON_ERROR = True
-REPEAT_STIMS = [1., 0.5]
+REPEAT_CONTRASTS = [1., 0.5]
 # STATE TIMERS
 QUIESCENCE_THRESHOLDS = [-2, 2]  # degree
 QUIESCENT_PERIOD = 0.2  # Trial init (quiescent period) enforced
@@ -26,28 +27,33 @@ ITI_CORRECT = 1  # how long the stim should stay visible after CORRECT choice
 ITI_ERROR = 2  # how long the stim should stay visible after ERROR choice
 # ADAPTIVE PARAMETERS
 ADAPTIVE_REWARD = True
-ADAPTIVE_CONTRAST = True
+ADAPTIVE_CONTRAST = True  # MAKE FIXED_CONTRAST OBJECT, swap at init if this is false
 ADAPTIVE_GAIN = True
 # REWARDS
 CALIBRATION_VALUE = 0.067  # calibrated to 1µl on 2018-05-10
-REWARD_INIT_VALUE = 3  # µl
-REWARD_MIN_VALUE = 2  # µl
-REWARD_STEP = 0.1  # µl
-REWARD_CRIT = 200  # number of trials performed
-REWARD_AMOUNT = 3.  # (µl) Amount of reward to be delivered upon correct choice each trial
+REWARD_AMOUNT = 3.  # (µl) Amount of reward to be delivered upon correct choice each trial (ignored if adaptive ON)
 REWARD_TYPE = 'sucrose'  # 15% (Guo et al.. PLoS One 2014)
 REWARD_CONCENTRATION = 0.15
-# ADAPTIVE_CONTRAST TRIALS
-AC_BUFFER_SIZE = 200
-PERF_CRIT_ONE = 0.7  # Criterion for contrasts (0.25 and 0.125) L AND R have to pass
-PERF_CRIT_TWO = 0.65  # Criterion for contrasts (0.0625 and 0.)
+# ADAPTIVE REWARD PARAMETERS (IGNORED IF ADAPTIVE_REWARD = False)
+AR_INIT_VALUE = 3  # µl
+AR_MIN_VALUE = 2  # µl
+AR_STEP = 0.1  # µl
+AR_CRIT = 200  # number of trials performed
+# ADAPTIVE_CONTRAST PARAMETERS (IGNORED IF ADAPTIVE_CONTRAST = False)
+AC_INIT_CONTRASTS = [1., 0.5]  # All possible contrasts [1., 0.5, 0.25, 0.125, 0.0625, 0.]
+AC_BUFFER_SIZE = 50
+AC_PERF_CRIT_ONE = 0.7  # Criterion for adding next contrast L AND R have to pass
+AC_PERF_CRIT_TWO = 0.65  # Criterion for contrast 0.0625
+AC_NTRIALS_TO_ZERO = 200  # Number of trials after 0.125 required to introduce the 0. contrast
 # VISUAL STIM
 STIM_POSITIONS = [-35, 35]  # All possible positions for this session (deg)
-STIM_CONTRASTS = [1., 0.5, 0.25, 0.125, 0.0625, 0.]  # All possible contrasts
 STIM_FREQ = 0.19  # Probably constant - NOT IN USE
 STIM_ANGLE = 0.  # Vertical orientation of Gabor patch - NOT IN USE
 STIM_SIGMA = 7.  # (azimuth_degree) Size of Gabor patch
 STIM_GAIN = 8.  # (azimuth_degree/mm) Gain of the RE to stimulus movement (used if ADAPTIVE_GAIN = FALSE)
+# ADAPTIVE_GAIN PARAMETERS (IGNORED IF ADAPTIVE_GAIN = False)
+AG_INIT_VALUE = 8.  # Adaptive Gain init value (azimuth_degree/mm)
+AG_MIN_VALUE = 4.  # (azimuth_degree/mm)
 # SOUNDS
 SOFT_SOUND = 'onboard'  # Use software sound 'xonar', 'onboard' or False for BpodSoundCard
 SOUND_BOARD_BPOD_PORT = 'Serial3'  # (on Bpod) - Ignored if using SOFT_SOUND

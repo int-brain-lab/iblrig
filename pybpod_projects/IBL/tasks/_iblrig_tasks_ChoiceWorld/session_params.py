@@ -167,7 +167,8 @@ class session_param_handler(object):
             self.OUT_TONE = ('SoftCode', 1)
             self.OUT_NOISE = ('SoftCode', 2)
         else:
-            print("\n\nSOUND BOARD NOT IMPLEMTNED YET!!\nPLEASE USE SOFT_SOUND='onboard' or 'xonar' in task_settings.py file\n\n")
+            print("\n\nSOUND BOARD NOT IMPLEMTNED YET!!",
+            "\nPLEASE USE SOFT_SOUND='onboard' | 'xonar' in task_settings.py\n\n")
 
     def play_tone(self):
         self.SD.play(self.GO_TONE, self.SOUND_SAMPLE_FREQ, mapping=[1, 2])
@@ -247,6 +248,8 @@ class session_param_handler(object):
     # ADAPTIVE REWARD AND GAIN RULES
     # =========================================================================
     def _init_reward(self):
+        if not self.ADAPTIVE_REWARD:
+            return self.REWARD_AMOUNT
         if self.LAST_TRIAL_DATA is None:
             return self.REWARD_INIT_VALUE
         else:
@@ -259,10 +262,12 @@ class session_param_handler(object):
             return out
 
     def _init_stim_gain(self):
-        if self.LAST_TRIAL_DATA and self.ADAPTIVE_GAIN:
-            stim_gain = 4. if self.LAST_TRIAL_DATA['trial_num'] >= 200 else 8.
+        if not self.ADAPTIVE_GAIN:
+            return self.STIM_GAIN
+        if self.LAST_TRIAL_DATA and self.LAST_TRIAL_DATA['trial_num'] >= 200:
+            stim_gain = self.AG_MIN_VALUE
         else:
-            stim_gain = self.STIM_GAIN
+            stim_gain = self.AG_INIT_VALUE
         return stim_gain
 
     # =========================================================================
