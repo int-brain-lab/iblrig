@@ -10,6 +10,9 @@ from pybpodapi.bpod.hardware.events import EventName
 from pybpodapi.bpod.hardware.output_channels import OutputChannel
 from pybpod_rotaryencoder_module.module_api import RotaryEncoderModule
 
+# for dialog box
+import tkinter as tk
+
 # ask Nicco if I need to separately import these?
 import serial, time, re, datetime, os, glob # https://pyserial.readthedocs.io/en/latest/shortintro.html
 import seaborn as sns # for easier plotting at the end
@@ -146,134 +149,34 @@ ax[0].plot(xp, time2vol(xp), '-k')
 sns.scatterplot(x="open_time", y="weight_perdrop", data=df1, ax=ax[0])
 ax[0].set(xlabel="Open time (ms)", ylabel="Measured volume (ul per drop)", title="Calibration curve")
 title = f.suptitle("Water calibration %s" %now)
+plt.show()
 f.savefig(os.path.join(calibration_path, '%s_curve.pdf' %now))
 
 # =============================================================================
-# SECOND, TEST THE PRECISION OF ESTIMATED VS MEASURED DROP SIZE
+# ASK THE USER FOR A LINEAR RANGE
 # =============================================================================
 
-# # some settings
-# target_drop_sizes = np.linspace(1.5, 3, 15) # in ul
-# precision_perdrop = 0.1 # ul - the precision should be at most the step size between drop sizes
-# precision 		  = precision_perdrop  * ntrials / 1000
+tk.messagebox.showinfo("Information", "Calibration curve completed! We're not done yet - \
+	please look at the figure and indicate a min-max range over which the curve is monotonic. \
+	The range of drop volumes should ideally be 1.5-3uL.")
 
-# # files 			  = glob.glob(os.path.join(calibration_path, "/*.csv"))
-# # if not a:
-# # 	bestguess 	  = 0.02 # starting point for seconds to open for 1ul of water
-# # else:
-# # 	files.sort(reverse=True) # sort by date
-# # 	previouscalibration = df.read_csv(os.path.join(calibration_path, files[0]))
-# # 	previouscalibration['open_time'].mean()
-# # 	bestguess = previouscalibration.loc[previouscalibration['calibrated'] == True, 'open_time'] /
-# # 		previouscalibration.loc[previouscalibration['calibrated'] == True, 'target_drop_size']
-# # 	bestguess = bestguess.mean()
+min_open_time = simpledialog.askinteger("Input", "What's the LOWEST opening time (in ms) of the linear (monotonic) range?",
+                                 parent=application_window,
+                                 minvalue=open_times.min(), maxvalue=open_times.max())
 
-# # initialize a dataframe with the results
-# df = pd.DataFrame(columns=["time", "target_drop_size", "ndrops", "target_weight", 
-# "open_time", "measured_weight", "precision", "calibrated", "attempt"])
+max_open_time = simpledialog.askinteger("Input", "What's the HIGHEST opening time (in ms) of the linear (monotonic) range?",
+                                 parent=application_window,
+                                 minvalue=open_times.min(), maxvalue=open_times.max())
 
-# # =============================================================================
-# # LET'S GO
-# # =============================================================================
+ax[0].axhline(x=min_open_time, color='black')
+ax[0].axhline(x=max_open_time, color='black')
 
-# for drop_size in target_drop_sizes:
+plt.show()
+f.savefig(os.path.join(calibration_path, '%s_curve.pdf' %now))
 
-# 	# 1. specify the expected total weight for this drop size
-# 	target_weight 	= drop_size * ntrials / 1000 # in grams
-# 	calibrated 		= False
+# SAVE THE RANGE TOGETHER WITH THE CALIBRATION CURVE - SEPARATE FILE
+df2 = pd.DataFrame.from_dict({'min_open_time': min_open_time, 'max_open_time': max_open_time})
+df2.to_csv(os.path.join(calibration_path, "%s_calibration_range.csv" %now))
 
-# 	# GRAB OPEN_TIME FROM THE CALIBRATION CURVE
-# 	open_time 		= vol2time(drop_size)
-# 	assert(open_time > 0)
-# 	print(open_time)
-
-# 	# 2. drop some water and measure
-# 	for attempts in range(20):
-
-# 		# tare the scale before starting
-# 		try: # if there was a previous attempt, grab the last one's final weight as the new starting point
-# 			startweight = newweight
-# 		except:
-# 			startweight = scale_read(COMport_string)
-
-# 		# HOW LONG WILL THIS TAKE?
-# 		eta = open_time * ntrials + 0.5*ntrials
-# 		print("Calibrating for a drop size of %dul will take approximately %d seconds \n" %(drop_size, eta))
-
-# 		# 2a. deliver ntrials drops of water
-# 		water_drop(open_time, ntrials=ntrials, iti=0.5, bpod=bpod)
-
-# 		# 2b. how much does this weigh?
-# 		newweight = scale_read(COMport_string)
-# 		measured_weight = newweight - startweight
-
-# 		# 2c. is this sufficiently close to what we expected?
-# 		if (measured_weight < target_weight+precision) & (measured_weight > target_weight-precision):
-# 			calibrated = True
-
-# 		# 2d. save to a dataframe
-# 		df = df.append({
-# 		     "target_drop_size": 	drop_size,
-# 		     "ndrops":  			ntrials,
-# 		     "target_weight": 		target_weight,
-# 		     "open_time": 			open_time,
-# 		     "measured_weight": 	measured_weight,
-# 		     "precision": 			precision,
-# 		     "calibrated": 			calibrated,
-# 		     "attempt": 			attempts,
-# 		     "time": 				datetime.datetime.now(),
-# 		      }, ignore_index=True)
-
-# 		# 2e. do we need to continue?
-# 		if calibrated:
-# 			bestguess = open_time / drop_size
-# 			break
-# 		else:
-# 			# come up with a better next guess - assume linearity
-# 			open_time = open_time * (target_weight/measured_weight)
-
-# 	# check that we successfully calibrated
-# 	if calibrated is False:
-# 		print('Did not succeed after %d attempts. Something seems seriously wrong. \n' %(attempts))
-# 	else:
-# 		print('Completed water calibration')
-
-
-# # set some data types
-# df['target_drop_size'] 	= df['target_drop_size'].astype("float")
-# df['ndrops'] 			= df['ndrops'].astype("int")
-# df['target_weight'] 	= df['target_weight'].astype("float")
-# df['open_time'] 		= df['open_time'].astype("float")
-# df['measured_weight'] 	= df['measured_weight'].astype("float")
-# df['measured_weight'] 	= df['measured_weight'].astype("float")
-# df['attempt'] 			= df['attempt'].astype("int")
-
-# # =============================================================================
-# # SAVE THE RESULTS FILE	
-# # =============================================================================
-
-# df.to_csv(os.path.join(calibration_path, "%s_calibration_check.csv" %now))
-
-# # CALIBRATION RESULTS
-# ax[1].plot( [0,df.measured_weight.max()],[0,df.measured_weight.max()], color='k') # identity line
-# try:
-# 	sns.scatterplot(x="target_weight", y="measured_weight", 
-# 		style="calibrated", hue="attempt", legend="full", markers=["s", "o"], 
-# 		size="calibrated", size_order=[1,0],
-# 		palette="ch:r=-.5,l=.75", data=df, ax=ax[1])
-# except:
-# 	sns.scatterplot(x="target_weight", y="measured_weight", 
-# 		style="calibrated", legend="full", markers=["s", "o"], size_order=[1,0],
-# 		data=df, ax=ax[1])
-# ax[1].set(xlabel="Target weight (g)", ylabel="Measured weight (g)")
-# lgd = ax[1].legend(loc='center', bbox_to_anchor=(0.4, -0.4), ncol=2) # move box outside
-
-# plt.axis('tight')
-#f.savefig(os.path.join(calibration_path, '%s.pdf' %now), bbox_extra_artists=(lgd,title), bbox_inches='tight')
-
-# =============================================================================
-# RANDOM STUFF
-# =============================================================================
-
-print('Completed water calibration')
+print('Completed water calibration %s' %now)
 bpod.close()
