@@ -11,7 +11,8 @@ from pybpodapi.bpod.hardware.output_channels import OutputChannel
 from pybpod_rotaryencoder_module.module_api import RotaryEncoderModule
 
 # for dialog box
-import tkinter as tk
+#import tkinter as tk
+from tkinter import messagebox, simpledialog
 
 # ask Nicco if I need to separately import these?
 import serial, time, re, datetime, os, glob # https://pyserial.readthedocs.io/en/latest/shortintro.html
@@ -107,7 +108,7 @@ def scale_read(COMPORT_string=COMport_string):
 # initialize a dataframe with the results
 df1 		= pd.DataFrame(columns=["time", "open_time", "ndrops", "measured_weight"])
 ntrials 	= 100
-open_times  = range(10, 100, 3) # in milliseconds, 10 to 100ms opening time
+open_times  = range(10, 100, 2) # in milliseconds, 10 to 100ms opening time
 
 for open_time in open_times:
 
@@ -149,34 +150,33 @@ ax[0].plot(xp, time2vol(xp), '-k')
 sns.scatterplot(x="open_time", y="weight_perdrop", data=df1, ax=ax[0])
 ax[0].set(xlabel="Open time (ms)", ylabel="Measured volume (ul per drop)", title="Calibration curve")
 title = f.suptitle("Water calibration %s" %now)
-plt.show()
 f.savefig(os.path.join(calibration_path, '%s_curve.pdf' %now))
 
 # =============================================================================
 # ASK THE USER FOR A LINEAR RANGE
 # =============================================================================
 
-tk.messagebox.showinfo("Information", "Calibration curve completed! We're not done yet - \
-	please look at the figure and indicate a min-max range over which the curve is monotonic. \
-	The range of drop volumes should ideally be 1.5-3uL.")
+messagebox.showinfo("Information", "Calibration curve completed! We're not done yet. \n \
+	Please look at the figure and indicate a min-max range over which the curve is monotonic. \n \
+	The range of drop volumes should ideally be 1.5-3uL.\n\n \
+	Close the plot before entering the range.")
+plt.show()
 
 min_open_time = simpledialog.askinteger("Input", "What's the LOWEST opening time (in ms) of the linear (monotonic) range?",
-                                 parent=application_window,
-                                 minvalue=open_times.min(), maxvalue=open_times.max())
+                                 minvalue=np.min(open_times), maxvalue=np.max(open_times))
 
 max_open_time = simpledialog.askinteger("Input", "What's the HIGHEST opening time (in ms) of the linear (monotonic) range?",
-                                 parent=application_window,
-                                 minvalue=open_times.min(), maxvalue=open_times.max())
+                                 minvalue=np.min(open_times), maxvalue=np.max(open_times))
 
-ax[0].axhline(x=min_open_time, color='black')
-ax[0].axhline(x=max_open_time, color='black')
+ax[0].axvline(min_open_time, color='black')
+ax[0].axvline(max_open_time, color='black')
 
 plt.show()
 f.savefig(os.path.join(calibration_path, '%s_curve.pdf' %now))
 
 # SAVE THE RANGE TOGETHER WITH THE CALIBRATION CURVE - SEPARATE FILE
-df2 = pd.DataFrame.from_dict({'min_open_time': min_open_time, 'max_open_time': max_open_time})
+df2 = pd.DataFrame.from_dict({'min_open_time': min_open_time, 'max_open_time': max_open_time, 'index':[0]})
 df2.to_csv(os.path.join(calibration_path, "%s_calibration_range.csv" %now))
-
-print('Completed water calibration %s' %now)
 bpod.close()
+print('Completed water calibration %s' %now)
+
