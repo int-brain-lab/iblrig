@@ -95,40 +95,49 @@ class adaptive_contrast(object):
         self.buffer = np.zeros((2, self.buffer_size, len(self.all_contrasts))).tolist()
 
     def _update_buffer(self):
-        side = 0 if self.signed_contrast < 0 else 1
-        _buffer = np.roll(self.buffer, -1, axis=1)
-        _buffer[:, -1, :] = 0
-        _buffer[side, -1, self.contrast_set.index(self.value)] = 1.
-
+        _buffer = np.asarray(self.buffer)
+        side_idx = 0 if self.signed_contrast < 0 else 1
+        contrast_idx = self.contrast_set.index(self.value)
+        col = _buffer[side_idx, :, contrast_idx]
+        col = np.roll(col, -1)
+        col[-1] = int(self.trial_correct)
+        _buffer[side_idx, :, contrast_idx] = col
         self.buffer = _buffer.tolist()
 
     def _update_contrast(self):
         self.value = random.choice(self.contrast_set)
 
     def _update_contrast_set(self):
+        curr_idx = np.array([True if x in self.contrast_set else False for x in self.all_contrasts])
+        min_idx = sum(curr_idx[:-1]) - 1
+        new_idx = np.array([False for x in self.all_contrasts])
         # Update counter of how mant trials were performend with 0.125 contrast
         if 0.125 in self.contrast_set:
             self.ntrials_125 += 1
-        # sum performances for left and right (all contrasts)
+        # Add zero contrast if ntrials after introducing 0.125 have elapsed
+        if self.ntrials_125 >= self.ntrials_to_zero:
+            new_idx[-1] = True
+        # Sum correct left AND right trials for all contrasts
         _ntrials = np.sum(self.buffer, axis=1)
         # Define crit for next contrast insert
-        if min(self.contrast_set) == 0.125:
+        if 0.125 in self.contrast_set:
             pass_crit = _ntrials > self.perf_crit_two
         else:
             pass_crit = _ntrials > self.perf_crit_one
         # Check if both left AND right have passed criterion
-        idx = np.bitwise_and(pass_crit[0], pass_crit[1])
-        # Ensure that all contrasts that were already introduced are there
-        idx[:len(self.contrast_set)] = True
-        # Add zero contrast if ntrials after introducing 0.125 have elapsed
-        if self.ntrials_125 >= self.ntrials_to_zero:
-            idx[-1] = True
+        pass_idx = np.bitwise_and(pass_crit[0], pass_crit[1])
+        # If lowest contrast passes add new contrast
+        if pass_idx[min_idx]:
+            new_idx[min_idx + 1] = True
+        # Make new_idx
+        new_idx = new_idx | curr_idx | pass_idx
+
         # Finally update the contrast_set
-        self.contrast_set = self.all_contrasts[idx]
+        self.contrast_set = np.asarray(self.all_contrasts)[new_idx].tolist()
 
     def _min_trials_at(self, prob, alpha):
-        return sum(1 - st.binom.cdf(range(self.buffer_size),
-                   self.buffer_size, prob) >= alpha)
+        return int(sum(1 - st.binom.cdf(range(self.buffer_size),
+                   self.buffer_size, prob) >= alpha))
 
     def trial_completed(self, trial_correct, signed_contrast):
         self.ntrials += 1
@@ -179,11 +188,7 @@ class repeat_contrast(object):
         if self.trial_correct:
             self.value = None
         else:
-        #################################################
-        #################################################
             self.value = self.value
-        #################################################
-        #################################################
         self.trial_correct = None
 
 
@@ -199,7 +204,7 @@ class trial_param_handler(object):
         self.init_datetime = parser.parse(sph.PYBPOD_SESSION)
         self.data_file_path = sph.DATA_FILE_PATH
         self.data_file = open(self.data_file_path, 'a')
-        self.positions = sph.STIM_POSITIONS
+        self.position_set = sph.STIM_POSITIONS
         self.contrast_set = sph.CONTRAST_SET
         self.repeat_on_error = sph.REPEAT_ON_ERROR
         self.repeat_contrasts = sph.REPEAT_CONTRASTS
@@ -214,34 +219,31 @@ class trial_param_handler(object):
         self.stim_angle = sph.STIM_ANGLE
         self.stim_gain = sph.STIM_GAIN
         self.stim_sigma = sph.STIM_SIGMA
-        self.stim_phase = 0.
         self.out_tone = sph.OUT_TONE
         self.out_noise = sph.OUT_NOISE
-        # Init trial type objects
-        self.ac = adaptive_contrast(sph)
-        self.rc = repeat_contrast()
-        # Dynamic params (Change every trial)
-        self.trial_num = 0
-        self.non_rc_ntrials = self.trial_num - self.rc.ntrials
-        #################################################
-        #################################################
-        self.position = random.choice(sph.STIM_POSITIONS)
-        #################################################
-        #################################################
-        self.event_error = sph.THRESHOLD_EVENTS[self.position]
-        self.event_reward = sph.THRESHOLD_EVENTS[-self.position]
-        self.movement_left = sph.THRESHOLD_EVENTS[sph.QUIESCENCE_THRESHOLDS[0]]
-        self.movement_right = sph.THRESHOLD_EVENTS[sph.QUIESCENCE_THRESHOLDS[1]
         # Reward amount
         self.reward_calibration = sph.CALIBRATION_VALUE
         self.reward_amount = sph.REWARD_AMOUNT
         self.reward_valve_time = self.reward_amount * self.reward_calibration
         self.iti_correct = self.iti_correct_target - self.reward_valve_time
-        # Performance related params that depend on trial outcome
+        # Init trial type objects
+        self.ac = adaptive_contrast(sph)
+        self.rc = repeat_contrast()
+        # Initialize parameters that may change every trial
+        self.trial_num = 0
+        self.non_rc_ntrials = self.trial_num - self.rc.ntrials
+        self.position = random.choice(sph.STIM_POSITIONS)
+        self.stim_probability_left = sph.STIM_PROBABILITY_LEFT
+        self.stim_phase = 0.
+        self.event_error = sph.THRESHOLD_EVENTS[self.position]
+        self.event_reward = sph.THRESHOLD_EVENTS[-self.position]
+        self.movement_left = sph.THRESHOLD_EVENTS[sph.QUIESCENCE_THRESHOLDS[0]]
+        self.movement_right = sph.THRESHOLD_EVENTS[sph.QUIESCENCE_THRESHOLDS[1]]
+        self.response_buffer = [0] * sph.RESPONSE_BUFFER_LENGTH
+        # Outcome related parmeters
         self.contrast = self.ac
         self.current_contrast = self.contrast.value
         self.signed_contrast = self.contrast.value * np.sign(self.position)
-        # Outcome parameters that depend on mouse behavior
         self.trial_correct = None
         self.ntrials_correct = 0
         self.water_delivered = 0
@@ -256,14 +258,26 @@ class trial_param_handler(object):
             behavior_data['States timestamps']['correct'][0][0])
         error = ~np.isnan(
             behavior_data['States timestamps']['error'][0][0])
-        assert correct is not error
+        no_go = ~np.isnan(
+            behavior_data['States timestamps']['no_go'][0][0])
+        assert correct or error or no_go
+        # Update response buffer -1 for left, 0 for nogo, and 1 for rightward
+        if (correct and self.position < 0) or (error and self.position > 0):
+            self._update_response_buffer(1)
+        elif (correct and self.position > 0) or (error and self.position < 0):
+            self._update_response_buffer(-1)
+        elif no_go:
+            self._update_response_buffer(0)
+        # Update the trial_correct variable
         self.trial_correct = bool(correct)
+        # Increment the trial correct counter
         self.ntrials_correct += self.trial_correct
+        # Update the water delivered
         if self.trial_correct:
             self.water_delivered = self.water_delivered + self.reward_amount
-
+        # Propagate outcome to contrast object
         self.contrast.trial_completed(self.trial_correct, self.signed_contrast)
-
+        #SAVE TRIAL DATA
         params = self.__dict__.copy()
         params.update({'behavior_data': behavior_data})
         # open data_file is not serializable, convert to str
@@ -288,10 +302,19 @@ class trial_param_handler(object):
         # update + next contrast: update buffers/counters + get next contrast
         # This has to happen before self.contrast is pointing to next trials
         self.contrast.next_trial()
-        # update dynamic vars (trial_vars, position, and events)
-        self._next_dynamic_vars()
-        # update vars dependent on trial outcome trial and contrast
-        self._next_performance_vars()
+        # Increment trial number
+        self.trial_num += 1
+        # Update non repeated trials
+        self.non_rc_ntrials = self.trial_num - self.rc.ntrials
+        # Update stimulus phase
+        self.stim_phase = random.uniform(0, math.pi)
+        # Update contrast
+        self._next_contrast()
+        # Update position
+        self.position = self._next_position()
+        # Update state machine events
+        self.event_error = self.threshold_events_dict[self.position]
+        self.event_reward = self.threshold_events_dict[-self.position]
         # Reset outcome variables for next trial
         self.trial_correct = None
         # Open the data file to append the next trial
@@ -299,27 +322,14 @@ class trial_param_handler(object):
         # Send next trial info to Bonsai
         self.send_current_trial_info()
 
-    def _next_dynamic_vars(self):
-        # increment trial number
-        self.trial_num += 1
-        # Update non repeated trials
-        self.non_rc_ntrials = self.trial_num - self.rc.ntrials
+    def _update_response_buffer(self, val):
+        _buffer = self.response_buffer
+        _buffer = np.roll(_buffer, -1, axis=0)
+        _buffer[-1] = val
+        self.response_buffer = _buffer.tolist()
+        return _buffer
 
-        if not self.trial_correct and self.repeat_on_error:
-            self.position = self.position
-            self.event_error = self.threshold_events_dict[self.position]
-            self.event_reward = self.threshold_events_dict[-self.position]
-        else:
-            self.position = random.choice(self.positions)
-            self.event_error = self.threshold_events_dict[self.position]
-            self.event_reward = self.threshold_events_dict[-self.position]
-
-        self.stim_phase = random.uniform(0, math.pi)
-
-        return
-
-    def _next_performance_vars(self):
-        # Decide which case we are in
+    def _next_contrast(self):        # Decide which case we are in
         if self.trial_correct:
             # Case correct trial
             case = '1**'
@@ -345,6 +355,22 @@ class trial_param_handler(object):
         self.current_contrast = self.contrast.value
         self.signed_contrast = self.contrast.value * np.sign(self.position)
         return
+
+    def _next_position(self):
+        if self.contrast.type == 'repeat_contrast':
+            rightward_responses = [int(x) for x in self.response_buffer if x == 1]
+            right_proportion = sum(rightward_responses) / len(self.response_buffer)
+            if random.gauss(right_proportion, 0.5) < 0.5:
+                _position = -35  # show the stim on the left
+            else:
+                _position = 35
+            print("repeat_contrast, bias position:", _position)
+            return _position
+        else:
+            _position = np.random.choice(self.position_set,
+                                         p=[self.stim_probability_left,
+                                            1 - self.stim_probability_left])
+        return int(_position)
 
     def send_current_trial_info(self):
         """
@@ -384,7 +410,9 @@ if __name__ == '__main__':
     tph = trial_param_handler(sph)
     ac = adaptive_contrast(sph)
     rc = repeat_contrast()
-    correct_trial = {'Events timestamps': {'GlobalTimer1_End': [10.0],
+    correct_trial = {'Trial end timestamp': 5.1234,
+                     'Trial start timestamp': 1.1234,
+                     'Events timestamps': {'GlobalTimer1_End': [10.0],
                                            'Port2In': [2.2133, 3.6032,
                                                        4.1014, 4.7648,
                                                        5.1329, 5.6429,
@@ -403,15 +431,17 @@ if __name__ == '__main__':
                                                         8.273, 8.5793]
                                            },
                      'Bpod start timestamp': 0.117,
-                     'States timestamps': {'error': [(np.nan, np.nan)],
+                     'States timestamps': {'no_go': [(np.nan, np.nan)],
+                                           'error': [(np.nan, np.nan)],
                                            'correct': [(0.0001, 10.0)],
                                            'TimerTrig': [(0, 0.0001)],
                                            'Port3Active1': [(np.nan,
                                                              np.nan)]
                                            }
                      }
-
-    error_trial = {'Events timestamps': {'GlobalTimer1_End': [10.0],
+    error_trial = {'Trial start timestamp': 1.1234,
+                   'Trial end timestamp': 5.1234,
+                   'Events timestamps': {'GlobalTimer1_End': [10.0],
                                          'Port2In': [2.2133, 3.6032,
                                                      4.1014, 4.7648,
                                                      5.1329, 5.6429,
@@ -430,8 +460,38 @@ if __name__ == '__main__':
                                                       8.273, 8.5793]
                                          },
                    'Bpod start timestamp': 0.117,
-                   'States timestamps': {'correct': [(np.nan, np.nan)],
+                   'States timestamps': {'no_go': [(np.nan, np.nan)],
+                                         'correct': [(np.nan, np.nan)],
                                          'error': [(0.0001, 10.0)],
+                                         'TimerTrig': [(0, 0.0001)],
+                                         'Port3Active1': [(np.nan,
+                                                           np.nan)]
+                                         }
+                   }
+    no_go_trial = {'Trial start timestamp': 1.1234,
+                   'Trial end timestamp': 5.1234,
+                   'Events timestamps': {'GlobalTimer1_End': [10.0],
+                                         'Port2In': [2.2133, 3.6032,
+                                                     4.1014, 4.7648,
+                                                     5.1329, 5.6429,
+                                                     6.4632, 6.5842,
+                                                     6.8691, 7.1565,
+                                                     7.6357, 7.8717,
+                                                     8.1396, 8.4102],
+                                         'Tup': [0.0001],
+                                         'Port3In': [9.5196],
+                                         'Port2Out': [2.3768, 3.9778,
+                                                      4.4069, 5.0538,
+                                                      5.3777, 5.8241,
+                                                      6.472, 6.7757,
+                                                      7.0552, 7.543,
+                                                      7.7867, 8.0342,
+                                                      8.273, 8.5793]
+                                         },
+                   'Bpod start timestamp': 0.117,
+                   'States timestamps': {'no_go': [(0.0001, 10.0)],
+                                         'correct': [(np.nan, np.nan)],
+                                         'error': [(np.nan, np.nan)],
                                          'TimerTrig': [(0, 0.0001)],
                                          'Port3Active1': [(np.nan,
                                                            np.nan)]
@@ -441,12 +501,11 @@ if __name__ == '__main__':
     # f = open(sph.DATA_FILE_PATH, 'a')
     next_trial_times = []
     trial_completed_times = []
-    for x in range(100):
-
+    for x in range(1000):
         t = time.time()
         tph.next_trial()
         next_trial_times.append(time.time() - t)
-        print('next_trial took: ', next_trial_times[-1], '(s)')
+        # print('next_trial took: ', next_trial_times[-1], '(s)')
         t = time.time()
         data = tph.trial_completed(random.choice([correct_trial, correct_trial,
                                                  correct_trial, correct_trial,
@@ -455,20 +514,24 @@ if __name__ == '__main__':
                                                  correct_trial, correct_trial,
                                                  correct_trial, correct_trial,
                                                  correct_trial, correct_trial,
-                                                 correct_trial, correct_trial,
-                                                 error_trial, error_trial,
-                                                 error_trial, error_trial,
+                                                  correct_trial, correct_trial,
+                                                  correct_trial, correct_trial,
+                                                  error_trial, no_go_trial,
                                                   ]))
         trial_completed_times.append(time.time() - t)
-        print('trial_completed took: ', trial_completed_times[-1], '(s)')
-        print('\n\n')
+        # print('trial_completed took: ', trial_completed_times[-1], '(s)')
+        # print('\n\n')
 
     print('Average next_trial times:', sum(next_trial_times) /
           len(next_trial_times))
     print('Average trial_completed times:', sum(trial_completed_times) /
           len(trial_completed_times))
 
-    # print('\n\n')
+    from ibllib.io import raw_data_loaders as raw
+    data = raw.load_data(sph.SESSION_FOLDER)
+    print([x['ac']['contrast_set'] for x in data[-100:]])
+
+    print('\n\n')
     # trial_data = []
     # with open(sph.DATA_FILE_PATH, 'r') as f:
     #     for line in f:

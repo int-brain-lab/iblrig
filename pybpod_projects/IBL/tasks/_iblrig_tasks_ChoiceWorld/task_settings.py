@@ -32,8 +32,8 @@ ADAPTIVE_GAIN = True
 # REWARDS
 CALIBRATION_VALUE = 0.067  # calibrated to 1µl on 2018-05-10
 REWARD_AMOUNT = 3.  # (µl) Amount of reward to be delivered upon correct choice each trial (ignored if adaptive ON)
-REWARD_TYPE = 'sucrose'  # 15% (Guo et al.. PLoS One 2014)
-REWARD_CONCENTRATION = 0.15
+# Water, Water 10% Sucrose, Water 15% Sucrose, Water 2% Citric Acid (Guo et al.. PLoS One 2014)
+REWARD_TYPE = 'Water'
 # ADAPTIVE REWARD PARAMETERS (IGNORED IF ADAPTIVE_REWARD = False)
 AR_INIT_VALUE = 3  # µl
 AR_MIN_VALUE = 2  # µl
@@ -47,6 +47,7 @@ AC_PERF_CRIT_TWO = 0.65  # Criterion for contrast 0.0625
 AC_NTRIALS_TO_ZERO = 200  # Number of trials after 0.125 required to introduce the 0. contrast
 # VISUAL STIM
 STIM_POSITIONS = [-35, 35]  # All possible positions for this session (deg)
+STIM_PROBABILITY_LEFT = 0.5
 STIM_FREQ = 0.19  # Probably constant - NOT IN USE
 STIM_ANGLE = 0.  # Vertical orientation of Gabor patch - NOT IN USE
 STIM_SIGMA = 7.  # (azimuth_degree) Size of Gabor patch
@@ -62,4 +63,7 @@ WHITE_NOISE_AMPLITUDE = 0.05
 GO_TONE_DURATION = 0.1  # Length of tone
 GO_TONE_FREQUENCY = 5000  # 5KHz
 GO_TONE_AMPLITUDE = 0.2  # [0->1]
+# POSITION BIAS
+TRAINED = False
+RESPONSE_BUFFER_LENGTH = 10
 
