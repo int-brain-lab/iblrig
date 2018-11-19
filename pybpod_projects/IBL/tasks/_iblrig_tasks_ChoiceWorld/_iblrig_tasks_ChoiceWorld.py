@@ -136,7 +136,7 @@ for i in range(sph.NTRIALS):  # Main loop
 
     sma.add_state(
         state_name='closed_loop',
-        state_timer=tph.response_window,  # 3600 no_go will be inexistent
+        state_timer=tph.response_window,
         state_change_conditions={'Tup': 'no_go',
                                  tph.event_error: 'error',
                                  tph.event_reward: 'reward'},
