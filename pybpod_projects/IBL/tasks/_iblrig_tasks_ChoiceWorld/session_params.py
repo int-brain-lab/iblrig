@@ -240,7 +240,7 @@ class session_param_handler(object):
               "\nPREVIOUS NTRIALS (no repeats): {}".format(trial_data[i]["non_rc_ntrials"]),
               "\nLAST REWARD:                   {}".format(trial_data[i]["reward_amount"]),
               "\nLAST GAIN:                     {}".format(trial_data[i]["stim_gain"]),
-              "\nLAST CONTRAST SET:             {}".format(trial_data[i]["ac"]["contrasts"]),
+              "\nLAST CONTRAST SET:             {}".format(trial_data[i]["ac"]["contrast_set"]),
               "\nBUFFERS LR:                    {}".format(trial_data[i]["ac"]["buffer"]))
         return trial_data[i] if trial_data else None
 
@@ -251,7 +251,7 @@ class session_param_handler(object):
         if not self.ADAPTIVE_REWARD:
             return self.REWARD_AMOUNT
         if self.LAST_TRIAL_DATA is None:
-            return self.REWARD_INIT_VALUE
+            return self.AR_INIT_VALUE
         else:
             try:
                 out = (self.LAST_TRIAL_DATA['reward_valve_time'] /
