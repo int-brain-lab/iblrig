@@ -23,17 +23,35 @@ uTest.name = '_iblrig_test_user'
 tScreen = p.create_task()
 tScreen.name = '_iblrig_calibration_screen'
 p.import_task()
-# Create experiments
+
+# Create experiments and setups
 eCal = p.create_experiment()
 eCal.name = '_iblrig_calibration'
-eMisc = p.create_experiment()
-eMisc.name = '_iblrig_misc'
-eTasks = p.create_experiment()
-eTasks.name = '_iblrig_tasks'
-
-#Create setup
+#Create screen calibration
 screen = eCal.create_setup()
 screen.name = 'screen'
 screen.task = '_iblrig_calibration_screen'
 screen.board = 'SELECT_BOARD_NAME_(e.g.[mainenlab_behavior_box0])'
 screen.subjects + [sCal]  # or screen += sCal
+#Create water calibration
+screen = eCal.create_setup()
+screen.name = 'water'
+screen.task = '_iblrig_calibration_water'
+screen.board = 'SELECT_BOARD_NAME_(e.g.[mainenlab_behavior_box0])'
+screen.subjects + [sCal]  # or screen += sCal
+
+eMisc = p.create_experiment()
+eMisc.name = '_iblrig_misc'
+flush_water = eMisc.create_setup()
+flush_water.name = 'flush_water'
+flush_water.task = '_iblrig_misc_flush_water'
+flush_water.board = 'SELECT_BOARD_NAME_(e.g.[mainenlab_behavior_box0])'
+flush_water.subjects + [sTest]
+
+eTasks = p.create_experiment()
+eTasks.name = '_iblrig_tasks'
+basic = eTasks.create_setup()
+basic.name = 'basicChoiceWorld'
+basic.task = '_iblrig_tasks_basicChoiceWorld'
+basic.board = 'SELECT_BOARD_NAME_(e.g.[mainenlab_behavior_box0])'
+# basic.subjects + [sTest]
