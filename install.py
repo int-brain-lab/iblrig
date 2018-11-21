@@ -85,7 +85,7 @@ def install_environment(conda):
     # Checks id env is already installed
     env = get_iblenv(conda)
     # Creates commands
-    create_command = '{} create -y -n iblenv python=3.6.6'. format(conda).split()
+    create_command = '{} create -y -n iblenv python=3.7'. format(conda).split()
     remove_command = '{} env remove -y -n iblenv'. format(conda).split()
     # Installes the env
     if env:
@@ -119,22 +119,17 @@ def install_iblrig_requirements(conda):
     print("N" * 39, 'Installing scipy')
     subprocess.call([CONDA, "install", "-y",
                      "-n", "iblenv", "scipy"])
-    print("N" * 39, 'Installing sounddevice')
-    subprocess.call([CONDA, "install", "-y", "-n", "iblenv",
-                     "-c", "conda-forge", "python-sounddevice"])
     print("N" * 39, 'Installing requests')
     subprocess.call([CONDA, "install", "-y", "-n",
                      "iblenv", "requests"])
-    print("N" * 39, 'Installing requests dependencies')
-    subprocess.call([CONDA, "install", "-y",
-                     "-n", "iblenv", "requests", "--update-deps"])
-    # Install extra depencencies using pip
     print("N" * 39, '(pip) Installing python-osc')
     subprocess.call([pip, "install", "python-osc"])
     subprocess.call([pip, "install", "cython"])
     print("N" * 39, '(pip) Installing PyBpod')
     subprocess.call([pip, "install", "pybpod", "--upgrade"])
-    subprocess.call([pip, "install", "-U", "pybpod"])
+    subprocess.call([pip, "install", "-U", "pybpod"])  # this is for update?
+    print("N" * 39, '(pip) Installing sounddevice')
+    subprocess.call([pip, "install", "sounddevice"])
     print("N" * 79)
     print("IBLrig requirements installed.")
 
@@ -151,9 +146,14 @@ def clone_ibllib():
         if user_input == 'n':
             return
         elif user_input == 'y':
-            shutil.rmtree(ibllib_path)
-            subprocess.call(["git", "clone",
-                             'https://github.com/int-brain-lab/ibllib.git'])
+            try:
+                shutil.rmtree(ibllib_path)
+                subprocess.call(["git", "clone",
+                                 'https://github.com/int-brain-lab/ibllib.git'])
+            except:
+                print("\nCould not delete ibllib folder",
+                "\nPlease delete it manually and retry.")
+                clone_ibllib()
         elif user_input != 'n' and user_input != 'y':
             print("\n Please select either y of n")
             clone_ibllib()
@@ -202,8 +202,7 @@ if __name__ == '__main__':
         install_iblrig_requirements(CONDA)
         clone_ibllib()
         install_ibllib(CONDA)
-        print("\nIts time to install Bonsai:\n  Please install all packages.",
-              "\nIMPORTANT: the Bonsai.Bpod package is in the pre-release tab.")
+        print("\nIts time to install Bonsai:")
         install_bonsai()
         print("\n\nINFO: iblrig installed, you should be good to go!")
     except IOError as msg:
