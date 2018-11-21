@@ -1,20 +1,21 @@
 {
-    "__CREATED-ON__": "2018-05-10 13:10:13.461903",
+    "__CREATED-ON__": "2018-05-08 14:08:19.993038",
     "__DEF-TEXT__": "This file contains information about a PyBpod experiment setup.",
     "__DEF-URL__": "http://pybpod.readthedocs.org",
     "__EXTERNAL-REF__": [
         "5e32036f-3e2a-4b57-86a4-9c9e2f19aadb",
-        "578a19ae-ba93-4a2c-a083-cbce612e7e70"
+        "578a19ae-ba93-4a2c-a083-cbce612e7e70",
+        "51bfd20b-6ec3-480f-9599-1c9ffde86ae3"
     ],
     "__SOFTWARE__": "PyBpod GUI API v1.0",
-    "__UPDATED-ON__": "2018-10-30 16:43:09.754587",
-    "__UUID4__": "347e87b4-dca4-46b9-8c0d-914cdad750a3",
-    "board": "SELECT_BOARD_NAME_(eg., [mainenlab_behavior_box0])",
+    "__UPDATED-ON__": "2018-07-05 17:02:24.299213",
+    "__UUID4__": "89651ad1-db42-4e68-ae71-c8a0ccc6f338",
+    "board": "box0",
     "detached": true,
     "subjects": [
-        "_iblrig_test_mouse"
+        "test_mouse"
     ],
-    "task": "_iblrig_tasks_basicChoiceWorld",
+    "task": "basicChoiceWorld",
     "update-variables": false,
     "variables": []
 }
