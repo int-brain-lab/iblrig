@@ -9,9 +9,9 @@ import shutil
 import zipfile
 import types
 
-# from path_helper import SessionPathCreator
+from path_helper import SessionPathCreator
 
-from pybpod_projects.IBL.tasks._iblrig_calibration_water.path_helper import SessionPathCreator
+# from pybpod_projects.IBL.tasks._iblrig_calibration_water.path_helper import SessionPathCreator
 
 
 class ComplexEncoder(json.JSONEncoder):
