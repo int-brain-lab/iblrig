@@ -9,7 +9,9 @@ import shutil
 import zipfile
 import types
 
-from path_helper import SessionPathCreator
+# from path_helper import SessionPathCreator
+
+from pybpod_projects.IBL.tasks._iblrig_calibration_water.path_helper import SessionPathCreator
 
 
 class ComplexEncoder(json.JSONEncoder):
@@ -108,7 +110,7 @@ class SessionParamHandler(object):
                           for x in os.listdir(self.SESSION_RAW_DATA_FOLDER)
                           if os.path.isdir(os.path.join(
                               self.SESSION_RAW_DATA_FOLDER, x))]
-        session_param_handler.zipit(
+        SessionParamHandler.zipit(
             folders_to_zip, os.path.join(self.SESSION_RAW_DATA_FOLDER,
                                          '_ibl_codeFiles.raw.zip'))
 
@@ -127,5 +129,5 @@ class SessionParamHandler(object):
     def zipit(dir_list, zip_name):
         zipf = zipfile.ZipFile(zip_name, 'w', zipfile.ZIP_DEFLATED)
         for dir in dir_list:
-            session_param_handler.zipdir(dir, zipf)
+            SessionParamHandler.zipdir(dir, zipf)
         zipf.close()

@@ -11,7 +11,6 @@ import json
 import os
 import re
 import time
-from pathlib import Path
 # for dialog box
 #import tkinter as tk
 from tkinter import messagebox, simpledialog
@@ -30,11 +29,13 @@ from pybpodapi.bpod.hardware.output_channels import OutputChannel
 from pybpodapi.state_machine import StateMachine
 
 import user_settings  # PyBpod creates this file on run.
+# import pybpod_projects.IBL.tasks._iblrig_calibration_water._user_settings as user_settings
 from session_params import SessionParamHandler
+# from pybpod_projects.IBL.tasks._iblrig_calibration_water.session_params import SessionParamHandler
 
 task_settings = {
     # os.path.join('C: ', 'iblrig')
-    'IBLRIG_FOLDER': os.path.join('C: ', 'iblrig'),
+    'IBLRIG_FOLDER': "C:\\iblrig",
     'MAIN_DATA_FOLDER': None,  # if None will be C:\ibldata
 }
 
