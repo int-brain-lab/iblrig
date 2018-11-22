@@ -197,16 +197,16 @@ class session_param_handler(object):
 
             evt = "-p:FileNameEvents=" + os.path.join(
                 self.SESSION_RAW_DATA_FOLDER,
-                "_ibl_encoderEvents.raw.ssv")
+                "_iblrig_encoderEvents.raw.ssv")
             pos = "-p:FileNamePositions=" + os.path.join(
                 self.SESSION_RAW_DATA_FOLDER,
-                "_ibl_encoderPositions.raw.ssv")
+                "_iblrig_encoderPositions.raw.ssv")
             itr = "-p:FileNameTrialInfo=" + os.path.join(
                 self.SESSION_RAW_DATA_FOLDER,
-                "_ibl_encoderTrialInfo.raw.ssv")
+                "_iblrig_encoderTrialInfo.raw.ssv")
             mic = "-p:FileNameMic=" + os.path.join(
                 self.SESSION_RAW_DATA_FOLDER,
-                "_ibl_micData.raw.wav")
+                "_iblrig_micData.raw.wav")
 
             com = "-p:REPortName=" + self.ROTARY_ENCODER_PORT
             rec = "-p:RecordSound=" + str(self.RECORD_SOUND)
@@ -322,7 +322,7 @@ class session_param_handler(object):
                               self.SESSION_RAW_DATA_FOLDER, x))]
         session_param_handler.zipit(
             folders_to_zip, os.path.join(self.SESSION_RAW_DATA_FOLDER,
-                                         '_ibl_codeFiles.raw.zip'))
+                                         '_iblrig_codeFiles.raw.zip'))
 
         [shutil.rmtree(x) for x in folders_to_zip]
 
