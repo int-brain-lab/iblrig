@@ -10,11 +10,11 @@
     "__UPDATED-ON__": "2018-10-30 16:35:27.659965",
     "__UUID4__": "528eb170-5574-4734-bf32-e69856d90258",
     "board": "SELECT_BOARD_NAME_(eg., [mainenlab_behavior_box0])",
-    "detached": false,
+    "detached": true,
     "subjects": [
         "_iblrig_calibration"
     ],
-    "task": null,
+    "task": "_iblrig_calibration_water",
     "update-variables": false,
     "variables": []
 }

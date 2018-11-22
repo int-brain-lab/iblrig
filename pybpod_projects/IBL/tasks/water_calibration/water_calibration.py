@@ -3,46 +3,29 @@
 
 # automatic water calibration for pyBpod
 # Anne Urai, CSHL, 2018
-# Edited by Niccolo Bonacchi, CCU, 2018
 
-import datetime
-import glob  # https://pyserial.readthedocs.io/en/latest/shortintro.html
-import json
-import os
-import re
-import time
+from pybpodapi.bpod import Bpod
+from pybpodapi.state_machine import StateMachine
+from pybpodapi.bpod.hardware.events import EventName
+from pybpodapi.bpod.hardware.output_channels import OutputChannel
+from pybpod_rotaryencoder_module.module_api import RotaryEncoderModule
+
 # for dialog box
 #import tkinter as tk
 from tkinter import messagebox, simpledialog
 
+# ask Nicco if I need to separately import these?
+import serial, time, re, datetime, os, glob # https://pyserial.readthedocs.io/en/latest/shortintro.html
+import seaborn as sns # for easier plotting at the end
+import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 import scipy as sp
-import seaborn as sns  # for easier plotting at the end
-# ask Nicco if I need to separately import these?
-import serial
-from pybpod_rotaryencoder_module.module_api import RotaryEncoderModule
-from pybpodapi.bpod import Bpod
-from pybpodapi.bpod.hardware.events import EventName
-from pybpodapi.bpod.hardware.output_channels import OutputChannel
-from pybpodapi.state_machine import StateMachine
 
-import user_settings  # PyBpod creates this file on run.
-# import pybpod_projects.IBL.tasks._iblrig_calibration_water._user_settings as user_settings
-from session_params import SessionParamHandler
-# from pybpod_projects.IBL.tasks._iblrig_calibration_water.session_params import SessionParamHandler
-
-task_settings = {
-    # os.path.join('C: ', 'iblrig')
-    'IBLRIG_FOLDER': "C:\\iblrig",
-    'MAIN_DATA_FOLDER': None,  # if None will be C:\ibldata
-}
-
-sph = SessionParamHandler(task_settings, user_settings)
-
-bpod = Bpod()
-COMport_string = 'COM7'  # leave NaN for manual weight logging
+# SETTINGS SPECIFIED BY THE USER
+bpod  			 = Bpod()
+COMport_string   = 'COM7' # leave NaN for manual weight logging
+calibration_path = "C:\\ibldata\\calibrations_water" # TODO: softcode?
 
 # OUTPUT OVERVIEW FIGURE
 sns.set()
@@ -89,15 +72,15 @@ def scale_read(COMPORT_string=COMport_string):
 
 	if not COMport_string:
 		# ask the user to manually input
-		grams = float(input("Enter scale read: "))
-
+		grams = float(raw_input("Enter scale read: "))
+		
 	else:
 		# http://dmx.ohaus.com/WorkArea/downloadasset.aspx?id=3600
 	    # https://github.com/glansberry/ohaus_scale_data/blob/master/scale.py
 		ser = serial.Serial(COMPORT_string, baudrate=9600, timeout=3)  # open serial port
 
 		# grab the software version and initialize
-		ser.write(b'V\r\n')
+		ser.write(b'V\r\n') 
 		time.sleep(0.5)
 		version = ser.readline()
 
@@ -106,7 +89,7 @@ def scale_read(COMPORT_string=COMport_string):
 		time.sleep(0.5)
 		grams = ser.readline()
 
-		# extract number
+		# extract number 
 		grams = grams.decode("utf-8")
 		grams = grams.strip("gN ")
 		grams = re.findall(r"[-+]?\d*\.\d+|\d+",grams)
@@ -136,8 +119,8 @@ for open_time in open_times:
 		time.sleep(1)
 		measured_weight = scale_read(COMport_string) - startweight
 		# summarize
-		print('Weight change = %.2fg: delivered %ful per %fms (averaged over %d drops).'
-			%(measured_weight, measured_weight / ntrials * 1000, open_time, ntrials));
+		print('Weight change = %.2fg: delivered %ful per %fms (averaged over %d drops).' 
+			%(measured_weight, measured_weight / ntrials * 1000, open_time, ntrials)); 
 
 		df1 = df1.append({
 			"open_time": 			open_time,
@@ -154,7 +137,7 @@ df1['measured_weight'] 	= df1['measured_weight'].astype("float")
 df1['ndrops'] 			= df1['ndrops'].astype("float")
 
 df1["weight_perdrop"] = df1["measured_weight"] / df1["ndrops"] * 1000 # in ul
-df1.to_csv(sph.CALIBRATION_FUNCTION_FILE_PATH)
+df1.to_csv(os.path.join(calibration_path, "%s_calibration_function.csv" %now))
 
 # FIT EXTRAPOLATION FUNCTION
 time2vol 	= sp.interpolate.pchip(df1["open_time"], df1["weight_perdrop"]) # for later
@@ -167,7 +150,7 @@ ax[0].plot(xp, time2vol(xp), '-k')
 sns.scatterplot(x="open_time", y="weight_perdrop", data=df1, ax=ax[0])
 ax[0].set(xlabel="Open time (ms)", ylabel="Measured volume (ul per drop)", title="Calibration curve")
 title = f.suptitle("Water calibration %s" %now)
-f.savefig(sph.CALIBRATION_CURVE_FILE_PATH)
+f.savefig(os.path.join(calibration_path, '%s_curve.pdf' %now))
 
 # =============================================================================
 # ASK THE USER FOR A LINEAR RANGE
@@ -189,10 +172,11 @@ ax[0].axvline(min_open_time, color='black')
 ax[0].axvline(max_open_time, color='black')
 
 plt.show()
-f.savefig(sph.CALIBRATION_CURVE_FILE_PATH)
+f.savefig(os.path.join(calibration_path, '%s_curve.pdf' %now))
 
 # SAVE THE RANGE TOGETHER WITH THE CALIBRATION CURVE - SEPARATE FILE
 df2 = pd.DataFrame.from_dict({'min_open_time': min_open_time, 'max_open_time': max_open_time, 'index':[0]})
-df2.to_csv(sph.CALIBRATION_RANGE_FILE_PATH)
+df2.to_csv(os.path.join(calibration_path, "%s_calibration_range.csv" %now))
 bpod.close()
 print('Completed water calibration %s' %now)
+
