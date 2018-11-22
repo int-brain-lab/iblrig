@@ -182,6 +182,30 @@ def install_ibllib(conda):
     print("INFO: ibllib installed.")
 
 
+def setup_default_project_configuration(conda):
+    print('\n\nINFO: Setting up default project config in ../iblparams:')
+    print("N" * 79)
+    iblenv = get_iblenv(conda)
+    _, python = get_iblenv_pip_n_python(conda)
+    if iblenv is None:
+        msg = "Can't configure iblparams, iblenv not found"
+        raise ValueError(msg)
+    iblparams_path = IBLRIG_ROOT_PATH.parent / 'iblparams'
+    if iblparams_path.exists():
+        print("Found previous configuration.",
+        "\nDo you want to reset to default config? (y/n)")
+        user_input = input()
+        if user_input == 'n':
+            return
+        elif user_input == 'y':
+            subprocess.call([python,
+                            "setup_default_config.py",
+                            str(iblparams_path)])
+        elif user_input != 'n' and user_input != 'y':
+            print("\n Please select either y of n")
+            setup_default_project_configuration(conda)
+
+
 def install_bonsai():
     print("\n\nDo you want to install Bonsai now? (y/n):")
     user_input = input()
@@ -202,6 +226,7 @@ if __name__ == '__main__':
         install_iblrig_requirements(CONDA)
         clone_ibllib()
         install_ibllib(CONDA)
+        setup_default_project_configuration(CONDA)
         print("\nIts time to install Bonsai:")
         install_bonsai()
         print("\n\nINFO: iblrig installed, you should be good to go!")
