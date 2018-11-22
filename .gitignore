@@ -3,7 +3,5 @@ __pycache__/
 \.sonarlint/
 *.pyc
 Bonsai-2\.3/
-docs/_*
-docs/source/_*
-scratch/*
-
+docs/_build
+scratch/
