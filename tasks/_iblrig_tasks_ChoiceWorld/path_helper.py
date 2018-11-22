@@ -12,8 +12,7 @@ from dateutil import parser
 
 
 class SessionPathCreator(object):
-    # add subject name and protocol (maybe have a metadata struct)
-    def __init__(self, iblrig_folder, main_data_folder, subject_name, protocol):
+    def __init__(self, iblrig_folder, main_data_folder, subject_name, protocol):  # add subject name and protocol (maybe have a metadata struct)
         if platform == 'linux':
             self.IBLRIG_FOLDER = '/home/nico/Projects/IBL/IBL-github/iblrig'
         else:
