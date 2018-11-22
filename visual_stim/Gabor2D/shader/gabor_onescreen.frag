@@ -19,6 +19,9 @@ uniform float locationX = 0.5;  // E[0,1] from rotary encoder [-1,1]
 uniform float locationY = 0.5;  // E[0,1]
 //uniform int frame_count = 0;
 uniform int color = 0;
+uniform float R = 1.;
+uniform float G = 1.;
+uniform float B = 1.;
 
 float gauss(float val, float sigma) {
     return exp(-(val * val) / (2. * sigma * sigma));
@@ -32,34 +35,26 @@ void main(){
     float patch_size_rad = patch_size / 180.* M_PI; //in radian view angle
     float gabor_angle_rad = gabor_angle / 180. * M_PI; //in radian view angle
     float gabor_freq_ncycles = gabor_freq * 360.; // cycle per entire view rotation (360 deg)
-    float locationRX = (positionX*270. - 135.) / 180. * M_PI; //[0, 1] -> [-3/4pi, 3/4pi]
-    float screenDist = 1./2.; // assumes equidistand mouse
+    float locationRX = (positionX * 270. - 135.) / 180. * M_PI; //[0, 1] -> [-3/4pi, 3/4pi]
+    float screenDist = 1. / 2.; // assumes equidistand mouse
     float rect = 0.;
-    
+
     if (texCoord.x > 0.95 && texCoord.y < 0.275 ) {
-        // fragColor = vec4(vec3(1., 0., 0.), 1.0);
-                   
-        // if((counter % 2) == 0){
-        // square_color = (square_color + 1) % 2;//flip_int(square_color);
-        // fragColor = vec4(vec3(0., 0., 1.), 1.0);
-        // } 
-        // else if((counter % 2) == 1){
         fragColor = vec4(vec3(color), 1.0);
-        // }
-    } else { 
+    } else {
 
     float X = texCoord.x-(1./2.);
     float Y = texCoord.y-(1./2.);
-    float RX = atan(X/screenDist);
-    float RY = atan(Y/sqrt(screenDist*screenDist + X*X));
-    float RXrot = cos(gabor_angle_rad)*(RX-locationRX) + sin(gabor_angle_rad)*RY;
+    float RX = atan(X / screenDist);
+    float RY = atan(Y / sqrt(screenDist * screenDist + X * X));
+    float RXrot = cos(gabor_angle_rad) * (RX - locationRX) + sin(gabor_angle_rad) * RY;
     float grating = gabor_contrast * sin((gabor_freq_ncycles * RXrot) + gabor_phase);
-    //float grating = 1.;
 
-    float RDist = acos((X*sin(locationRX) + Y*0. + screenDist*cos(locationRX)) / sqrt(X*X + Y*Y + screenDist*screenDist)*1.);
+    float RDist = acos((X * sin(locationRX) + Y * 0. + screenDist * cos(locationRX)) / sqrt(X * X + Y * Y + screenDist * screenDist) * 1.);
     float gaussian = gauss(RDist, patch_size_rad);
-    //float gaussian = 1.;
 
-    fragColor = vec4(0.5 + 0.5 * vec3(gaussian * grating), 1.0);
+    float value = gaussian * grating;
+
+    fragColor = vec4(0.5 + 0.5 * vec3(R * value, G * value, B * value), 1.0);
   }
 }
