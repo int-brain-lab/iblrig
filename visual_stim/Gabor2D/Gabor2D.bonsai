@@ -647,7 +647,7 @@ re.pctimestamp.csv
         <Workflow>
           <Nodes>
             <Expression xsi:type="q5:CsvWriter">
-              <q5:FileName>C:\iblrig_data\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_ibl_encoderTrialInfo.raw.ssv</q5:FileName>
+              <q5:FileName>C:\iblrig_data\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_iblrig_encoderTrialInfo.raw.ssv</q5:FileName>
               <q5:Append>false</q5:Append>
               <q5:Overwrite>false</q5:Overwrite>
               <q5:Suffix>None</q5:Suffix>
@@ -684,14 +684,14 @@ re.pctimestamp.csv
               <Combinator xsi:type="Timestamp" />
             </Expression>
             <Expression xsi:type="q5:CsvWriter">
-              <q5:FileName>C:\iblrig_data\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_ibl_encoderEvents.raw.ssv</q5:FileName>
+              <q5:FileName>C:\iblrig_data\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_iblrig_encoderEvents.raw.ssv</q5:FileName>
               <q5:Append>false</q5:Append>
               <q5:Overwrite>false</q5:Overwrite>
               <q5:Suffix>None</q5:Suffix>
               <q5:IncludeHeader>false</q5:IncludeHeader>
             </Expression>
             <Expression xsi:type="q5:CsvWriter">
-              <q5:FileName>C:\iblrig_data\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_ibl_encoderPositions.raw.ssv</q5:FileName>
+              <q5:FileName>C:\iblrig_data\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_iblrig_encoderPositions.raw.ssv</q5:FileName>
               <q5:Append>false</q5:Append>
               <q5:Overwrite>false</q5:Overwrite>
               <q5:Suffix>None</q5:Suffix>
@@ -709,21 +709,21 @@ re.pctimestamp.csv
             <Expression xsi:type="ExternalizedPropertyOfStringCsvWriter">
               <MemberName>FileName</MemberName>
               <Name>FileNameTrialInfo</Name>
-              <Value>C:\iblrig_data\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_ibl_encoderTrialInfo.raw.ssv</Value>
+              <Value>C:\iblrig_data\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_iblrig_encoderTrialInfo.raw.ssv</Value>
             </Expression>
             <Expression xsi:type="ExternalizedPropertyOfStringCsvWriter">
               <MemberName>FileName</MemberName>
               <Name>FileNameEvents</Name>
-              <Value>C:\iblrig_data\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_ibl_encoderEvents.raw.ssv</Value>
+              <Value>C:\iblrig_data\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_iblrig_encoderEvents.raw.ssv</Value>
             </Expression>
             <Expression xsi:type="ExternalizedPropertyOfStringCsvWriter">
               <MemberName>FileName</MemberName>
               <Name>FileNamePositions</Name>
-              <Value>C:\iblrig_data\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_ibl_encoderPositions.raw.ssv</Value>
+              <Value>C:\iblrig_data\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_iblrig_encoderPositions.raw.ssv</Value>
             </Expression>
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="q6:AudioWriter">
-                <q6:FileName>C:\iblrig_data\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_ibl_micData.raw.wav</q6:FileName>
+                <q6:FileName>C:\iblrig_data\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_iblrig_micData.raw.wav</q6:FileName>
                 <q6:Suffix>None</q6:Suffix>
                 <q6:Buffered>true</q6:Buffered>
                 <q6:Overwrite>false</q6:Overwrite>
@@ -741,7 +741,7 @@ re.pctimestamp.csv
             <Expression xsi:type="ExternalizedPropertyOfStringAudioWriter">
               <MemberName>FileName</MemberName>
               <Name>FileNameMic</Name>
-              <Value>C:\iblrig_data\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_ibl_micData.raw.wav</Value>
+              <Value>C:\iblrig_data\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_iblrig_micData.raw.wav</Value>
             </Expression>
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="SubscribeWhen" />
@@ -1171,17 +1171,17 @@ re.pctimestamp.csv
       <Expression xsi:type="ExternalizedPropertyOfStringCsvWriter">
         <MemberName>FileNameTrialInfo</MemberName>
         <Name>FileNameTrialInfo</Name>
-        <Value>C:\iblrig_data\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_ibl_encoderTrialInfo.raw.ssv</Value>
+        <Value>C:\iblrig_data\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_iblrig_encoderTrialInfo.raw.ssv</Value>
       </Expression>
       <Expression xsi:type="ExternalizedPropertyOfStringCsvWriter">
         <MemberName>FileNameEvents</MemberName>
         <Name>FileNameEvents</Name>
-        <Value>C:\iblrig_data\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_ibl_encoderEvents.raw.ssv</Value>
+        <Value>C:\iblrig_data\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_iblrig_encoderEvents.raw.ssv</Value>
       </Expression>
       <Expression xsi:type="ExternalizedPropertyOfStringCsvWriter">
         <MemberName>FileNamePositions</MemberName>
         <Name>FileNamePositions</Name>
-        <Value>C:\iblrig_data\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_ibl_encoderPositions.raw.ssv</Value>
+        <Value>C:\iblrig_data\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_iblrig_encoderPositions.raw.ssv</Value>
       </Expression>
       <Expression xsi:type="WorkflowOutput" />
       <Expression xsi:type="Combinator">
@@ -1200,7 +1200,7 @@ re.pctimestamp.csv
       <Expression xsi:type="ExternalizedPropertyOfStringAudioWriter">
         <MemberName>FileNameMic</MemberName>
         <Name>FileNameMic</Name>
-        <Value>C:\iblrig_data\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_ibl_micData.raw.wav</Value>
+        <Value>C:\iblrig_data\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_iblrig_micData.raw.wav</Value>
       </Expression>
       <Expression xsi:type="SelectMany">
         <Name>UpdateContrast</Name>

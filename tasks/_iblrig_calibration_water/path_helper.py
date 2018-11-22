@@ -67,7 +67,7 @@ class SessionPathCreator(object):
         else:
             return main_data_folder
 
-    def get_bonsai_path(self, use_ibl_bonsai=True):
+    def get_bonsai_path(self, use_iblrig_bonsai=True):
         """Checks for Bonsai folder in iblrig.
         Returns string with bonsai executable path."""
         folders = self.get_subfolder_paths(self.IBLRIG_FOLDER)
@@ -75,11 +75,11 @@ class SessionPathCreator(object):
         ibl_bonsai = os.path.join(bonsai_folder, 'Bonsai64.exe')
 
         preexisting_bonsai = Path.home() / "AppData/Local/Bonsai/Bonsai64.exe"
-        if use_ibl_bonsai == True:
+        if use_iblrig_bonsai == True:
             BONSAI = ibl_bonsai
-        elif use_ibl_bonsai == False and preexisting_bonsai.exists():
+        elif use_iblrig_bonsai == False and preexisting_bonsai.exists():
             BONSAI = str(preexisting_bonsai)
-        elif use_ibl_bonsai == False and not preexisting_bonsai.exists():
+        elif use_iblrig_bonsai == False and not preexisting_bonsai.exists():
             print("NOT FOUND: {}\n Using packaged Bonsai.".format(
                 str(preexisting_bonsai)))
             BONSAI = ibl_bonsai

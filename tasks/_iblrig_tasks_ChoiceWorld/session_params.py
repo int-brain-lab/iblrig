@@ -117,7 +117,7 @@ class session_param_handler(object):
         # RUN BONSAI
         # =====================================================================
         self.USE_VISUAL_STIMULUS = False if platform == 'linux' else self.USE_VISUAL_STIMULUS
-        self.BONSAI = spc.get_bonsai_path(use_ibl_bonsai=True)
+        self.BONSAI = spc.get_bonsai_path(use_iblrig_bonsai=True)
         self.run_bonsai()
         # =====================================================================
         # SAVE SETTINGS FILE AND TASK CODE
