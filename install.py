@@ -183,15 +183,15 @@ def install_ibllib(conda):
 
 
 def setup_default_project_configuration(conda):
-    print('\n\nINFO: Setting up default project config in ../iblparams:')
+    print('\n\nINFO: Setting up default project config in ../iblrig_params:')
     print("N" * 79)
     iblenv = get_iblenv(conda)
     _, python = get_iblenv_pip_n_python(conda)
     if iblenv is None:
-        msg = "Can't configure iblparams, iblenv not found"
+        msg = "Can't configure iblrig_params, iblenv not found"
         raise ValueError(msg)
-    iblparams_path = IBLRIG_ROOT_PATH.parent / 'iblparams'
-    if iblparams_path.exists():
+    iblrig_params_path = IBLRIG_ROOT_PATH.parent / 'iblrig_params'
+    if iblrig_params_path.exists():
         print("Found previous configuration.",
         "\nDo you want to reset to default config? (y/n)")
         user_input = input()
@@ -200,7 +200,7 @@ def setup_default_project_configuration(conda):
         elif user_input == 'y':
             subprocess.call([python,
                             "setup_default_config.py",
-                            str(iblparams_path)])
+                            str(iblrig_params_path)])
         elif user_input != 'n' and user_input != 'y':
             print("\n Please select either y of n")
             setup_default_project_configuration(conda)

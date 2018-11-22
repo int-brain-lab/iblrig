@@ -364,7 +364,7 @@ class session_param_handler(object):
         if main_data_folder is None:
             try:
                 iblrig_folder.exists()
-                out = iblrig_folder.parent / 'ibldata' / 'Subjects'
+                out = iblrig_folder.parent / 'iblrig_data' / 'Subjects'
                 out.mkdir(parents=True, exist_ok=True)
                 return str(out)
             except IOError as e:

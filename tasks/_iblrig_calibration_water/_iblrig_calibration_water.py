@@ -36,7 +36,7 @@ from session_params import SessionParamHandler
 task_settings = {
     # os.path.join('C: ', 'iblrig')
     'IBLRIG_FOLDER': "C:\\iblrig",
-    'MAIN_DATA_FOLDER': None,  # if None will be C:\ibldata
+    'MAIN_DATA_FOLDER': None,  # if None will be C:\iblrig_data
 }
 
 sph = SessionParamHandler(task_settings, user_settings)

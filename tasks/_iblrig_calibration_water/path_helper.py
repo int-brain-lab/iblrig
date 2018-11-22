@@ -44,7 +44,7 @@ class SessionPathCreator(object):
                                                            self.SESSION_NUMBER,
                                                            protocol,
                                                            ])
-        self.BASE_FILENAME = '_ibl_task'
+        self.BASE_FILENAME = '_iblrig_task'
         self.SETTINGS_FILE_PATH = os.path.join(self.SESSION_RAW_DATA_FOLDER,
                                                self.BASE_FILENAME +
                                                'Settings.raw.json')
@@ -59,7 +59,7 @@ class SessionPathCreator(object):
         if main_data_folder is None:
             try:
                 iblrig_folder.exists()
-                out = iblrig_folder.parent / 'ibldata' / 'Subjects'
+                out = iblrig_folder.parent / 'iblrig_data' / 'Subjects'
                 out.mkdir(parents=True, exist_ok=True)
                 return str(out)
             except IOError as e:
@@ -114,7 +114,7 @@ class SessionPathCreator(object):
         if main_data_folder is None:
             try:
                 iblrig_folder.exists()
-                out = iblrig_folder.parent / 'ibldata' / 'Subjects'
+                out = iblrig_folder.parent / 'iblrig_data' / 'Subjects'
                 out.mkdir(parents=True, exist_ok=True)
                 return str(out)
             except IOError as e:

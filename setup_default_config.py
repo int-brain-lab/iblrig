@@ -9,9 +9,9 @@ from pathlib import Path
 from pybpodgui_api.models.project import Project
 
 
-def main(iblparams_path):
-    iblparams_path = Path(iblparams_path)
-    iblproject_path = iblparams_path / 'IBL'
+def main(iblrig_params_path):
+    iblrig_params_path = Path(iblrig_params_path)
+    iblproject_path = iblrig_params_path / 'IBL'
     # CREATE IBL PROJECT
     p = Project()
     p.name = 'IBL'
@@ -118,12 +118,12 @@ def main(iblparams_path):
     p.save(iblproject_path)
 
 
-def copy_code_files_to_iblparams(iblparams_path):
-    # Copy user_settings and cleanup.py to iblparams_path
-    # Copy all *.py files in iblrig_path to iblparams_path/IBL/tasks/<task_name>/*
-    # <task_name> file should be deleted from iblparams folder before copying it
-    iblparams_path = Path(iblparams_path)
-    iblrig_path = iblparams_path.parent / 'iblrig'
+def copy_code_files_to_iblrig_params(iblrig_params_path):
+    # Copy user_settings and cleanup.py to iblrig_params_path
+    # Copy all *.py files in iblrig_path to iblrig_params_path/IBL/tasks/<task_name>/*
+    # <task_name> file should be deleted from iblrig_params folder before copying it
+    iblrig_params_path = Path(iblrig_params_path)
+    iblrig_path = iblrig_params_path.parent / 'iblrig'
 
 
 if __name__ == "__main__":
