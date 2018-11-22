@@ -374,9 +374,16 @@ class session_param_handler(object):
                         if os.path.isdir(os.path.join(self.SESSION_DATE_FOLDER,
                                                       x))]
         if not session_nums:
-            out = str(1)
+            out = 1
         else:
-            out = str(int(max(session_nums)) + 1)
+            out = int(max(session_nums)) + 1
+
+        if len(str(out)) == 1:
+            out = '00' + str(out)
+        elif len(str(out)) == 2:
+            out = '0' + str(out)
+        else:
+            out = str(out)
 
         return out
 
