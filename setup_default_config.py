@@ -109,10 +109,16 @@ def main(iblrig_params_path):
     basic.board = 'SELECT_BOARD_NAME_(e.g.[mainenlab_behavior_box0])'
     # basic.subjects + [sTest]
 
-    # Create ChoiceWorld setup
+    # Create trainingChoiceWorld setup
     basic = eTasks.create_setup()
-    basic.name = 'ChoiceWorld'
-    basic.task = '_iblrig_tasks_ChoiceWorld'
+    basic.name = 'trainingChoiceWorld'
+    basic.task = '_iblrig_tasks_trainingChoiceWorld'
+    basic.board = 'SELECT_BOARD_NAME_(e.g.[mainenlab_behavior_box0])'
+
+    # Create biasedChoiceWorld setup
+    basic = eTasks.create_setup()
+    basic.name = 'biasedChoiceWorld'
+    basic.task = '_iblrig_tasks_biasedChoiceWorld'
     basic.board = 'SELECT_BOARD_NAME_(e.g.[mainenlab_behavior_box0])'
 
     p.save(iblproject_path)
