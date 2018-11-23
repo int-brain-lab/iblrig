@@ -57,7 +57,6 @@ def get_iblenv_pip_n_python(conda):
         return
 
     subprocess.call([python, '-m', 'pip', 'install', '--upgrade', 'pip'])
-    subprocess.call([pip, 'install', '--upgrade', 'pip'])
 
     return pip, python
 
@@ -144,7 +143,7 @@ def clone_ibllib():
         "\nDo you want to reinstall? (y/n)")
         user_input = input()
         if user_input == 'n':
-            return
+            return user_input
         elif user_input == 'y':
             try:
                 shutil.rmtree(ibllib_path)
@@ -166,7 +165,10 @@ def clone_ibllib():
     print("ibllib cloned.")
 
 
-def install_ibllib(conda):
+def install_ibllib(conda, user_input=False):
+    if user_input == 'n':
+        return
+
     print('\n\nINFO: Installing ibllib:')
     print("N" * 79)
     iblenv = get_iblenv(conda)
@@ -182,7 +184,7 @@ def install_ibllib(conda):
     print("INFO: ibllib installed.")
 
 
-def setup_default_project_configuration(conda):
+def configure_iblrig_params(conda):
     print('\n\nINFO: Setting up default project config in ../iblrig_params:')
     print("N" * 79)
     iblenv = get_iblenv(conda)
@@ -192,7 +194,7 @@ def setup_default_project_configuration(conda):
         raise ValueError(msg)
     iblrig_params_path = IBLRIG_ROOT_PATH.parent / 'iblrig_params'
     if iblrig_params_path.exists():
-        print("Found previous configuration.",
+        print("Found previous configuration in {}".format(str(iblrig_params_path)),
         "\nDo you want to reset to default config? (y/n)")
         user_input = input()
         if user_input == 'n':
@@ -203,7 +205,11 @@ def setup_default_project_configuration(conda):
                             str(iblrig_params_path)])
         elif user_input != 'n' and user_input != 'y':
             print("\n Please select either y of n")
-            setup_default_project_configuration(conda)
+            configure_iblrig_params(conda)
+    else:
+        subprocess.call([python,
+                         "setup_default_config.py", str(iblrig_params_path)])
+
 
 
 def install_bonsai():
@@ -224,9 +230,9 @@ if __name__ == '__main__':
         check_dependencies(CONDA)
         install_environment(CONDA)
         install_iblrig_requirements(CONDA)
-        clone_ibllib()
-        install_ibllib(CONDA)
-        setup_default_project_configuration(CONDA)
+        yn = clone_ibllib()
+        install_ibllib(CONDA, user_input=yn)
+        configure_iblrig_params(CONDA)
         print("\nIts time to install Bonsai:")
         install_bonsai()
         print("\n\nINFO: iblrig installed, you should be good to go!")
