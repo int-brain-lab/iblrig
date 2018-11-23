@@ -149,6 +149,7 @@ def main(iblrig_params_path):
     basic.name = 'basicChoiceWorld'
     basic.task = '_iblrig_tasks_basicChoiceWorld'
     basic.board = BOARD_NAME
+    basic.detached = True
     # basic.subjects + [sTest]
 
     # Create trainingChoiceWorld setup
@@ -156,12 +157,14 @@ def main(iblrig_params_path):
     training.name = 'trainingChoiceWorld'
     training.task = '_iblrig_tasks_trainingChoiceWorld'
     training.board = BOARD_NAME
+    training.detached = True
 
     # Create biasedChoiceWorld setup
     biased = eTasks.create_setup()
     biased.name = 'biasedChoiceWorld'
     biased.task = '_iblrig_tasks_biasedChoiceWorld'
     biased.board = BOARD_NAME
+    biased.detached = True
 
     p.save(iblproject_path)
 

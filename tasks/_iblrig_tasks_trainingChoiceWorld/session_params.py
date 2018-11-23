@@ -74,6 +74,15 @@ class session_param_handler(object):
         # =====================================================================
         self.OSC_CLIENT = self._init_osc_client()
         # =====================================================================
+        # FOLDER STRUCTURE AND DATA FILES
+        # =====================================================================
+        self.LAST_TRIAL_DATA = self._load_last_trial()
+        self.REWARD_AMOUNT = self._init_reward()
+        # =====================================================================
+        # ADAPTIVE STUFF
+        # =====================================================================
+        self.STIM_GAIN = self._init_stim_gain()
+        # =====================================================================
         # ROTARY ENCODER
         # =====================================================================
         self.ALL_THRESHOLDS = (self.STIM_POSITIONS +
@@ -89,16 +98,6 @@ class session_param_handler(object):
         if platform == 'linux':
             self.ROTARY_ENCODER_PORT = '/dev/ttyACM0'
         # self._configure_rotary_encoder(RotaryEncoderModule)
-        # =====================================================================
-        # FOLDER STRUCTURE AND DATA FILES
-        # =====================================================================
-        self.LAST_TRIAL_DATA = self._load_last_trial()
-        # =====================================================================
-        # ADAPTIVE STUFF
-        # =====================================================================
-        self.STIM_GAIN = self._init_stim_gain()
-
-        self.REWARD_AMOUNT = self._init_reward()
         # =====================================================================
         # SOUNDS
         # =====================================================================
@@ -310,8 +309,8 @@ class session_param_handler(object):
 
     def _save_task_code(self):
         # Copy behavioral task python code
-        src = os.path.join(self.IBLRIG_FOLDER, 'pybpod_projects', 'IBL',
-                           'tasks', self.PYBPOD_PROTOCOL)
+        src = os.path.join(self.IBLRIG_PARAMS_FOLDER, 'IBL', 'tasks',
+                           self.PYBPOD_PROTOCOL)
         dst = os.path.join(self.SESSION_RAW_DATA_FOLDER, self.PYBPOD_PROTOCOL)
         shutil.copytree(src, dst)
         # zip all existing folders

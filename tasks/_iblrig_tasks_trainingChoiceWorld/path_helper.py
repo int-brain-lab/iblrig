@@ -17,6 +17,7 @@ class SessionPathCreator(object):
             self.IBLRIG_FOLDER = '/home/nico/Projects/IBL/IBL-github/iblrig'
         else:
             self.IBLRIG_FOLDER = str(Path(iblrig_folder))
+        self.IBLRIG_PARAMS_FOLDER = str(Path(self.IBLRIG_FOLDER).parent / 'iblrig_params')
         self.ROOT_DATA_FOLDER = self._root_data_folder(self.IBLRIG_FOLDER,
                                                        main_data_folder)
         self.SOUND_STIM_FOLDER = os.path.join(self.IBLRIG_FOLDER, 'sound_stim',
