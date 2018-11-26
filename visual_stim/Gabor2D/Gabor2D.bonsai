@@ -635,14 +635,15 @@ Value = whhel_radius for wheel_perim</Description>
       <Expression xsi:type="NestedWorkflow">
         <Name>SaveData</Name>
         <Description>Needs a Published Subject with the RE data stream
+Saves Rotary Encoder events, positions and trial info from pybpod
+Optionally saves ultrasonic microphone data.
 
-Saves Rotary Encoder position
-Saves Rotary Encoder timestamp
-Saves Bonsai Timestamp
-3 different files, as per ALF specification:
-re.position.csv
-re.timestamp.cv
-re.pctimestamp.csv
+3/4 different files, as per ALF specification:
+_iblrig_encoderEvents.raw.ssv
+_iblrig_encoderPositions.raw.ssv
+_iblrig_encoderTrialInfo.raw.ssv
+Optional:
+_iblrig_micData.raw.wav
 </Description>
         <Workflow>
           <Nodes>
@@ -709,17 +710,17 @@ re.pctimestamp.csv
             <Expression xsi:type="ExternalizedPropertyOfStringCsvWriter">
               <MemberName>FileName</MemberName>
               <Name>FileNameTrialInfo</Name>
-              <Value>C:\iblrig_data\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_iblrig_encoderTrialInfo.raw.ssv</Value>
+              <Value>C:\iblrig_data\Subjects\_iblrig_test_mouse\2018-10-09\32\raw_behavior_data\_iblrig_encoderTrialInfo.raw.ssv</Value>
             </Expression>
             <Expression xsi:type="ExternalizedPropertyOfStringCsvWriter">
               <MemberName>FileName</MemberName>
               <Name>FileNameEvents</Name>
-              <Value>C:\iblrig_data\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_iblrig_encoderEvents.raw.ssv</Value>
+              <Value>C:\iblrig_data\Subjects\_iblrig_test_mouse\2018-10-09\32\raw_behavior_data\_iblrig_encoderEvents.raw.ssv</Value>
             </Expression>
             <Expression xsi:type="ExternalizedPropertyOfStringCsvWriter">
               <MemberName>FileName</MemberName>
               <Name>FileNamePositions</Name>
-              <Value>C:\iblrig_data\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_iblrig_encoderPositions.raw.ssv</Value>
+              <Value>C:\iblrig_data\Subjects\_iblrig_test_mouse\2018-10-09\32\raw_behavior_data\_iblrig_encoderPositions.raw.ssv</Value>
             </Expression>
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="q6:AudioWriter">
@@ -741,7 +742,7 @@ re.pctimestamp.csv
             <Expression xsi:type="ExternalizedPropertyOfStringAudioWriter">
               <MemberName>FileName</MemberName>
               <Name>FileNameMic</Name>
-              <Value>C:\iblrig_data\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_iblrig_micData.raw.wav</Value>
+              <Value>C:\iblrig_data\Subjects\_iblrig_test_mouse\2018-10-09\32\raw_behavior_data\_iblrig_micData.raw.wav</Value>
             </Expression>
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="SubscribeWhen" />
