@@ -78,7 +78,7 @@ def get_barplot_data(trial_data):
     out['trial_num'] = trial_data['trial_num']
     out['ntrials_repeated'] = trial_data['rc']['ntrials']
     out['ntrials_adaptive'] = trial_data['ac']['ntrials']
-    out['ntrials_staircase'] = trial_data['sc']['ntrials']
+    # out['ntrials_staircase'] = trial_data['sc']['ntrials']
     out['ntrials_correct'] = trial_data['ntrials_correct']
     out['ntrials_err'] = out['trial_num'] - out['ntrials_correct']
     out['water_delivered'] = trial_data['water_delivered']
@@ -112,7 +112,7 @@ def plot_psyfun(trial_data, psyfun_df, ax=None):
     ax.legend(handles=[y1handle, y2handle], loc='best')
     ax.grid()
     ax.figure.canvas.draw_idle()
-    ax.figure.canvas.update()
+    # ax.figure.canvas.update()
     # ax.figure.canvas.flush_events()
     # plt.pause(0.00001)
     # plt.pause(0.001)
@@ -155,12 +155,12 @@ def plot_bars(trial_data, ax=None):
     ax.barh(2, bar_data['ntrials_adaptive'], width,
             left=bar_data['ntrials_repeated'], color="orange",
             label='Adaptive')
-    ax.barh(2, bar_data['ntrials_staircase'], width,
-            left=(bar_data['ntrials_repeated'] + bar_data['ntrials_adaptive']),
-            color="purple", label='Staircase')
+    # ax.barh(2, bar_data['ntrials_staircase'], width,
+    #         left=(bar_data['ntrials_repeated'] + bar_data['ntrials_adaptive']),
+    #         color="purple", label='Staircase')
     make_bar_texts(ax, 2, [bar_data['ntrials_repeated'],
                    bar_data['ntrials_adaptive'],
-                   bar_data['ntrials_staircase']])
+                   ])  # bar_data['ntrials_staircase']
 
     ax.barh(1, bar_data['ntrials_correct'], width, color="green",
             label='Correct')
@@ -179,7 +179,7 @@ def plot_bars(trial_data, ax=None):
     ax.set_xlim([0, max(y) + (max(y) * 0.2)])
     ax.legend()
     ax.figure.canvas.draw_idle()
-    ax.figure.canvas.update()
+    # ax.figure.canvas.update()
     # ax.figure.canvas.flush_events()
     # plt.pause(0.00001)
 
