@@ -33,7 +33,7 @@ def configure_sounddevice(sd=None, output='sysdefault', samplerate=44100):
         if output == 'xonar':
             devices = sd.query_devices()
             sd.default.device = [(i, d) for i, d in enumerate(
-                devices) if 'Headphones' in d['name']][0][0]
+                devices) if 'XONAR SOUND CARD(64)' in d['name']][0][0]  # XONAR SOUND CARD(64)
             sd.default.latency = 'low'
             sd.default.channels = 2
             sd.default.samplerate = samplerate
@@ -84,7 +84,9 @@ def make_sound(rate=44100, frequency=5000, duration=0.1, amplitude=1,
     win[-len_fade:] = fadeout
 
     tone = tone * win
-    ttl = np.ones(len(tone))
+    ttl = np.ones(len(tone)) * 0.99
+    one_ms = round(sample_rate/1000) * 10
+    ttl[one_ms:] = 0
     null = np.zeros(len(tone))
 
     if frequency == -1:
