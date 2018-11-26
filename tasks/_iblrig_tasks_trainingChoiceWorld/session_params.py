@@ -101,7 +101,13 @@ class session_param_handler(object):
         # =====================================================================
         # SOUNDS
         # =====================================================================
-        self.SOUND_SAMPLE_FREQ = 44100 if self.SOFT_SOUND else 96000
+        if self.SOFT_SOUND == 'xonar':
+            self.SOUND_SAMPLE_FREQ = 192000
+        elif self.SOFT_SOUND == 'sysdefault':
+            self.SOUND_SAMPLE_FREQ = 44100
+        elif self.SOFT_SOUND is None:
+            self.SOUND_SAMPLE_FREQ = 96000
+
         self.WHITE_NOISE_DURATION = float(self.WHITE_NOISE_DURATION)
         self.WHITE_NOISE_AMPLITUDE = float(self.WHITE_NOISE_AMPLITUDE)
         self.GO_TONE_DURATION = float(self.GO_TONE_DURATION)
@@ -170,10 +176,10 @@ class session_param_handler(object):
             "\nPLEASE USE SOFT_SOUND='onboard' | 'xonar' in task_settings.py\n\n")
 
     def play_tone(self):
-        self.SD.play(self.GO_TONE, self.SOUND_SAMPLE_FREQ, mapping=[1, 2])
+        self.SD.play(self.GO_TONE, self.SOUND_SAMPLE_FREQ)  # , mapping=[1, 2])
 
     def play_noise(self):
-        self.SD.play(self.WHITE_NOISE, self.SOUND_SAMPLE_FREQ, mapping=[1, 2])
+        self.SD.play(self.WHITE_NOISE, self.SOUND_SAMPLE_FREQ)  # , mapping=[1, 2])
 
     def stop_sound(self):
         self.SD.stop()
