@@ -11,7 +11,8 @@ from pathlib import Path
 from pybpodgui_api.models.project import Project
 
 
-def copy_code_files_to_iblrig_params(iblrig_params_path, task=None):
+def copy_code_files_to_iblrig_params(iblrig_params_path, task=None, 
+                                     exclude_filename=None):
     # Copy user_settings and cleanup.py to iblrig_params_path
     # Copy all *.py files in iblrig_path to iblrig_params_path/IBL/tasks/<task_name>/*
     # <task_name> file should be deleted from iblrig_params folder before copying it
@@ -20,7 +21,10 @@ def copy_code_files_to_iblrig_params(iblrig_params_path, task=None):
     iblrig_path = iblrig_params_path.parent / 'iblrig'
     iblrig_tasks_path = iblrig_path / 'tasks'
 
-    def copy_files(src_folder, dst_folder, glob='*', exclude_filename='task_settings.py'):
+    if exclude_filename is None:
+        exclude_filename = 'random_stuff'
+    
+    def copy_files(src_folder, dst_folder, glob='*', exclude_filename=exclude_filename):
         src_folder = Path(src_folder)
         dst_folder = Path(dst_folder)
         src_list = [x for x in src_folder.glob(glob) if x.is_file() and exclude_filename not in str(x)]

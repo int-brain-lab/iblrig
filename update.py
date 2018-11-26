@@ -73,7 +73,8 @@ def iblrig_params_path():
 
 
 def import_tasks():
-    copy_code_files_to_iblrig_params(iblrig_params_path())
+    copy_code_files_to_iblrig_params(iblrig_params_path(), 
+                                     exclude_filename='task_settings.py')
 
 
 def checkout_version(ver):
