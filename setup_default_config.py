@@ -11,7 +11,7 @@ from pathlib import Path
 from pybpodgui_api.models.project import Project
 
 
-def copy_code_files_to_iblrig_params(iblrig_params_path):
+def copy_code_files_to_iblrig_params(iblrig_params_path, task=None):
     # Copy user_settings and cleanup.py to iblrig_params_path
     # Copy all *.py files in iblrig_path to iblrig_params_path/IBL/tasks/<task_name>/*
     # <task_name> file should be deleted from iblrig_params folder before copying it
@@ -26,13 +26,17 @@ def copy_code_files_to_iblrig_params(iblrig_params_path):
         src_list = [x for x in src_folder.glob(glob) if x.is_file()]
         for f in src_list:
             shutil.copy(f, dst_folder)
-
-    # Copy cleanup and user_settings
-    print('\nS:',str(iblrig_tasks_path), '\nD:', str(iblrig_params_path))
-    copy_files(iblrig_tasks_path, iblrig_params_path)
+            print(f"Copied {f} to {dst_folder}")
 
     # Copy all tasks
     tasks = [x for x in iblrig_tasks_path.glob('*') if x.is_dir()]
+    if task:
+        tasks = [t for t in tasks if task in str(t)]
+    else:
+        # Copy cleanup and user_settings
+        print('\nS:',str(iblrig_tasks_path), '\nD:', str(iblrig_params_path))
+        copy_files(iblrig_tasks_path, iblrig_params_path)
+    
     for sf in tasks:
         df = iblrig_params_tasks_path / sf.name
         df.mkdir(parents=True, exist_ok=True)
@@ -175,8 +179,9 @@ def main(iblrig_params_path):
 
 if __name__ == "__main__":
     if len(sys.argv) == 1:
-        iblrig_params_path = '/home/nico/Projects/IBL/IBL-github/iblrig_params'
-        main(iblrig_params_path)
+        # iblrig_params_path = '/home/nico/Projects/IBL/IBL-github/iblrig_params'
+        # main(iblrig_params_path)
+        copy_code_files_to_iblrig_params('C:\\iblrig_params', task='_iblrig_tasks_trainingChoiceWorld')
     elif len(sys.argv) == 2:
         print(f"copying task files to {sys.argv[1]}")
         main(sys.argv[1])
