@@ -36,7 +36,7 @@ def get_versions():
                                     "--tags", "origin"]).decode().split()
     vers = [x for x in vers[1::2] if '{' not in x]
     vers = [x.split('/')[-1] for x in vers]
-    available = [x for x in vers if x >= '1.1.5']
+    available = [x for x in vers if x >= '2.0.0']
     print("\nAvailable versions: {}\n".format(available))
     return vers
 
@@ -73,7 +73,7 @@ def iblrig_params_path():
 
 
 def import_tasks():
-    copy_code_files_to_iblrig_params(iblrig_params_path(), 
+    copy_code_files_to_iblrig_params(iblrig_params_path(),
                                      exclude_filename='task_settings.py')
 
 
