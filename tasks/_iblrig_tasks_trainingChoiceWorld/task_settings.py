@@ -2,14 +2,14 @@
 # TASK PARAMETER DEFINITION (should appear on GUI) init trial objects values
 # =============================================================================
 # ROTARY ENCODER
-ROTARY_ENCODER_PORT = 'COM3'
+ROTARY_ENCODER_PORT = 'COM4'
 # OSC
 OSC_CLIENT_PORT = 7110
 OSC_CLIENT_IP = '127.0.0.1'
 # IBL rig root folder
 IBLRIG_FOLDER = 'C:\\iblrig'
 MAIN_DATA_FOLDER = None  # If None data folder will be C:\\iblrig_data\\Subjects
-RECORD_SOUND = False
+RECORD_SOUND = True
 RECORD_AMBIENT_SENSOR_DATA = True
 # TASK
 NTRIALS = 1000  # Number of trials for the current session
@@ -21,7 +21,7 @@ REPEAT_CONTRASTS = [1., 0.5]
 # STATE TIMERS
 QUIESCENCE_THRESHOLDS = [-2, 2]  # degree
 QUIESCENT_PERIOD = 0.2  # Trial init (quiescent period) enforced
-INTERACTIVE_DELAY = 0.  # how long after stim onset the CL starts
+INTERACTIVE_DELAY = 0.1  # how long after stim onset the CL starts
 RESPONSE_WINDOW = 60  # Time to move the wheel after go tone (seconds)
 ITI_CORRECT = 1  # how long the stim should stay visible after CORRECT choice
 ITI_ERROR = 2  # how long the stim should stay visible after ERROR choice
@@ -48,7 +48,7 @@ AC_NTRIALS_TO_ZERO = 200  # Number of trials after 0.125 required to introduce t
 # VISUAL STIM
 STIM_POSITIONS = [-35, 35]  # All possible positions for this session (deg)
 STIM_PROBABILITY_LEFT = 0.5
-STIM_FREQ = 0.19  # Probably constant - NOT IN USE
+STIM_FREQ = 0.10  # Probably constant - NOT IN USE
 STIM_ANGLE = 0.  # Vertical orientation of Gabor patch - NOT IN USE
 STIM_SIGMA = 7.  # (azimuth_degree) Size of Gabor patch
 STIM_GAIN = 8.  # (azimuth_degree/mm) Gain of the RE to stimulus movement (used if ADAPTIVE_GAIN = FALSE)
@@ -56,7 +56,7 @@ STIM_GAIN = 8.  # (azimuth_degree/mm) Gain of the RE to stimulus movement (used 
 AG_INIT_VALUE = 8.  # Adaptive Gain init value (azimuth_degree/mm)
 AG_MIN_VALUE = 4.  # (azimuth_degree/mm)
 # SOUNDS
-SOFT_SOUND = 'onboard'  # Use software sound 'xonar', 'onboard' or False for BpodSoundCard
+SOFT_SOUND = 'xonar'  # Use software sound 'xonar', 'sysdefault' or False for BpodSoundCard
 SOUND_BOARD_BPOD_PORT = 'Serial3'  # (on Bpod) - Ignored if using SOFT_SOUND
 WHITE_NOISE_DURATION = 0.5  # Length of noise burst
 WHITE_NOISE_AMPLITUDE = 0.05
@@ -66,4 +66,3 @@ GO_TONE_AMPLITUDE = 0.2  # [0->1]
 # POSITION BIAS
 TRAINED = False
 RESPONSE_BUFFER_LENGTH = 10
-
