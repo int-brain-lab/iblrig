@@ -20,10 +20,10 @@ def copy_code_files_to_iblrig_params(iblrig_params_path, task=None):
     iblrig_path = iblrig_params_path.parent / 'iblrig'
     iblrig_tasks_path = iblrig_path / 'tasks'
 
-    def copy_files(src_folder, dst_folder, glob='*'):
+    def copy_files(src_folder, dst_folder, glob='*', exclude_filename='task_settings.py'):
         src_folder = Path(src_folder)
         dst_folder = Path(dst_folder)
-        src_list = [x for x in src_folder.glob(glob) if x.is_file()]
+        src_list = [x for x in src_folder.glob(glob) if x.is_file() and exclude_filename not in str(x)]
         for f in src_list:
             shutil.copy(f, dst_folder)
             print(f"Copied {f} to {dst_folder}")
