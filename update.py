@@ -12,19 +12,15 @@ Usage:
     update.py -h | --help | ?
         Displays this docstring.
     update.py <version>
-        Will backup pybpod_projects folder where local configurations live.
-        Will checkout the <version> release, update the submodules, and restore
-        the pybpod_projects folder from backup.
-    update.py tasks
-        Will checkout any task file not present in the local tasks folder.
-    update.py tasks <branch>
-        Will checkout any task file from <branch> not present in local folder.
+        Will checkout the <version> release and import the task files to pybpod.
+    update.py <branch>
+        Will checkout the latest commit of <branch> and import the task files to pybpod.
+    update.py reinstall
+        Will reinstall the rig to the latest revision on master.
     update.py update
         Will update itself to the latest revision on master.
     update.py update <branch>
         Will update itself to the latest revision on <branch>.
-    update.py reinstall
-        Will reinstall the rig to the latest revision on master.
 
 """
 import subprocess
@@ -32,6 +28,7 @@ import sys
 import os
 import shutil
 from pathlib import Path
+from setup_default_config import copy_code_files_to_iblrig_params
 
 
 def get_versions():
@@ -39,7 +36,7 @@ def get_versions():
                                     "--tags", "origin"]).decode().split()
     vers = [x for x in vers[1::2] if '{' not in x]
     vers = [x.split('/')[-1] for x in vers]
-    available = [x for x in vers if x >= '1.1.5']
+    available = [x for x in vers if x >= '2.0.0']
     print("\nAvailable versions: {}\n".format(available))
     return vers
 
@@ -71,68 +68,23 @@ def pull():
     submodule_update()
 
 
-def pybpod_projects_path():
-    return os.path.join(os.getcwd(), 'pybpod_projects')
+def iblrig_params_path():
+    return str(Path(os.getcwd()).parent / 'iblrig_params')
 
 
-def backup_pybpod_projects(filename='pybpod_projects.bk'):
-    print("Backing up current pybpod_projects configuration")
-    src = pybpod_projects_path()
-    dst = os.path.join(os.path.expanduser('~'), filename)
-    if os.path.exists(dst):
-        if not str.isdigit(dst[-1]):
-            dst = dst + '0'
-        else:
-            dst = dst + str(int(dst[-1]) + 1)
-    shutil.copytree(src, dst,
-                    ignore=shutil.ignore_patterns('sessions'))
+def import_tasks():
+    copy_code_files_to_iblrig_params(iblrig_params_path(),
+                                     exclude_filename='task_settings.py')
 
 
-def restore_pybpod_projects_from_backup():
-    print("Restoring pybpod_projects")
-    src = os.path.join(os.path.expanduser('~'), 'pybpod_projects.bk')
-    dst = os.getcwd()
-    shutil.rmtree(os.path.join(os.getcwd(), 'pybpod_projects'))
-    shutil.move(src, dst)
-    os.rename(os.path.join(os.getcwd(), 'pybpod_projects.bk'),
-              pybpod_projects_path())
+def checkout_version(ver):
+    print("\nChecking out {}".format(ver))
+    subprocess.call(['git', 'checkout', 'tags/' + ver])
 
 
-def get_tasks(branch='master', only_missing=True):
-    print("Checking for new tasks on {}:".format(branch))
-    local_tasks_dir = os.path.join(
-        os.getcwd(), 'pybpod_projects', 'IBL', 'tasks')
-
-    ltp = Path(local_tasks_dir)
-    local_tasks = [str(x).split(os.sep)[-1]
-                   for x in ltp.glob('*') if x.is_dir()]
-
-    subprocess.call("git fetch".split())
-    all_files = subprocess.check_output(
-        "git ls-tree -r --name-only origin/{}".format(
-            branch).split()).decode().split('\n')
-
-    remote_task_files = [x for x in all_files if 'tasks' in x]
-
-    found_files = []
-    for lt in local_tasks:
-        found_files.extend([x for x in remote_task_files if lt in x])
-
-    if only_missing:
-        missing_files = list(set(remote_task_files) - set(found_files))
-        # Remove tasks.json file
-        missing_files = [x for x in missing_files if "tasks.json" not in x]
-        print("Found {} new files:".format(len(missing_files)), missing_files)
-        return missing_files
-    else:
-        return found_files
-
-
-def checkout_missing_task_files(missing_files, branch='master'):
-    for file in missing_files:
-        subprocess.call("git checkout origin/{} -- {}".format(branch,
-                                                              file).split())
-        print("Checked out:", file)
+def checkout_branch(ver):
+    print("\nChecking out {}".format(ver))
+    subprocess.call(['git', 'checkout', ver])
 
 
 def checkout_single_file(file=None, branch='master'):
@@ -140,17 +92,6 @@ def checkout_single_file(file=None, branch='master'):
                                                           file).split())
 
     print("Checked out", file, "from branch", branch)
-
-def checkout_version(ver):
-    print("\nChecking out {}".format(ver))
-    subprocess.call(['git', 'stash'])
-    subprocess.call(['git', 'checkout', 'tags/' + ver])
-    submodule_update()
-
-
-def pop_stash():
-    print("\nPopping stash")
-    subprocess.call(['git', 'stash', 'pop'])
 
 
 def update_remotes():
@@ -188,23 +129,19 @@ if __name__ == '__main__':
     # If called with something in front
     elif len(sys.argv) == 2:
         versions = get_versions()
+        branches = get_branches()
         help_args = ['-h', '--help', '?']
         # HELP
         if sys.argv[1] in help_args:
             print(__doc__)
         # UPDATE TO VERSION
         elif sys.argv[1] in versions:
-            backup_pybpod_projects()
             checkout_version(sys.argv[1])
-            # restore_pybpod_projects_from_backup()
-            task_files = get_tasks(branch='master', only_missing=False)
-            checkout_missing_task_files(task_files, branch='master')
-            pop_stash()
-        # UPDATE TASKS
-        elif sys.argv[1] == 'tasks':
-            task_files = get_tasks(branch='master', only_missing=False)
-            checkout_missing_task_files(task_files, branch='master')
-        # UPDATE UPDATE
+            import_tasks()
+        elif sys.argv[1] in branches:
+            checkout_branch(sys.argv[1])
+            import_tasks()
+       # UPDATE UPDATE
         elif sys.argv[1] == 'update':
             checkout_single_file(file='update.py', branch='master')
         # UPDATE REINSTALL
@@ -218,7 +155,7 @@ if __name__ == '__main__':
     # If called with something in front of something in front :P
     elif len(sys.argv) == 3:
         branches = get_branches()
-        commands = ['tasks', 'update']
+        commands = ['update']
         # Command checks
         if sys.argv[1] not in commands:
             print("ERROR:", "Unknown command...")
@@ -227,9 +164,6 @@ if __name__ == '__main__':
             print("ERROR:", sys.argv[2], "is not a valid branch.")
             raise ValueError
         # Commands
-        if sys.argv[1] == 'tasks' and sys.argv[2] in branches:
-            task_files = get_tasks(branch=sys.argv[2], only_missing=False)
-            checkout_missing_task_files(task_files, branch=sys.argv[2])
         if sys.argv[1] == 'update' and sys.argv[2] in branches:
             checkout_single_file(file='update.py', branch=sys.argv[2])
     print("\n")

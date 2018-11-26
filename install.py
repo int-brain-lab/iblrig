@@ -57,7 +57,6 @@ def get_iblenv_pip_n_python(conda):
         return
 
     subprocess.call([python, '-m', 'pip', 'install', '--upgrade', 'pip'])
-    subprocess.call([pip, 'install', '--upgrade', 'pip'])
 
     return pip, python
 
@@ -128,6 +127,8 @@ def install_iblrig_requirements(conda):
     print("N" * 39, '(pip) Installing PyBpod')
     subprocess.call([pip, "install", "pybpod", "--upgrade"])
     subprocess.call([pip, "install", "-U", "pybpod"])  # this is for update?
+    print("N" * 39, '(pip) Installing Alyx plugin')
+    subprocess.call([pip, "install", "pybpod-gui-plugin-alyx", "--upgrade"])
     print("N" * 39, '(pip) Installing sounddevice')
     subprocess.call([pip, "install", "sounddevice"])
     print("N" * 79)
@@ -144,7 +145,7 @@ def clone_ibllib():
         "\nDo you want to reinstall? (y/n)")
         user_input = input()
         if user_input == 'n':
-            return
+            return user_input
         elif user_input == 'y':
             try:
                 shutil.rmtree(ibllib_path)
@@ -166,7 +167,10 @@ def clone_ibllib():
     print("ibllib cloned.")
 
 
-def install_ibllib(conda):
+def install_ibllib(conda, user_input=False):
+    if user_input == 'n':
+        return
+
     print('\n\nINFO: Installing ibllib:')
     print("N" * 79)
     iblenv = get_iblenv(conda)
@@ -180,6 +184,34 @@ def install_ibllib(conda):
     os.chdir(IBLRIG_ROOT_PATH)
     print("N" * 79)
     print("INFO: ibllib installed.")
+
+
+def configure_iblrig_params(conda):
+    print('\n\nINFO: Setting up default project config in ../iblrig_params:')
+    print("N" * 79)
+    iblenv = get_iblenv(conda)
+    _, python = get_iblenv_pip_n_python(conda)
+    if iblenv is None:
+        msg = "Can't configure iblrig_params, iblenv not found"
+        raise ValueError(msg)
+    iblrig_params_path = IBLRIG_ROOT_PATH.parent / 'iblrig_params'
+    if iblrig_params_path.exists():
+        print("Found previous configuration in {}".format(str(iblrig_params_path)),
+        "\nDo you want to reset to default config? (y/n)")
+        user_input = input()
+        if user_input == 'n':
+            return
+        elif user_input == 'y':
+            subprocess.call([python,
+                            "setup_default_config.py",
+                            str(iblrig_params_path)])
+        elif user_input != 'n' and user_input != 'y':
+            print("\n Please select either y of n")
+            configure_iblrig_params(conda)
+    else:
+        subprocess.call([python,
+                         "setup_default_config.py", str(iblrig_params_path)])
+
 
 
 def install_bonsai():
@@ -200,8 +232,9 @@ if __name__ == '__main__':
         check_dependencies(CONDA)
         install_environment(CONDA)
         install_iblrig_requirements(CONDA)
-        clone_ibllib()
-        install_ibllib(CONDA)
+        yn = clone_ibllib()
+        install_ibllib(CONDA, user_input=yn)
+        configure_iblrig_params(CONDA)
         print("\nIts time to install Bonsai:")
         install_bonsai()
         print("\n\nINFO: iblrig installed, you should be good to go!")
