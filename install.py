@@ -127,6 +127,8 @@ def install_iblrig_requirements(conda):
     print("N" * 39, '(pip) Installing PyBpod')
     subprocess.call([pip, "install", "pybpod", "--upgrade"])
     subprocess.call([pip, "install", "-U", "pybpod"])  # this is for update?
+    print("N" * 39, '(pip) Installing Alyx plugin')
+    subprocess.call([pip, "install", "pybpod-gui-plugin-alyx", "--upgrade"])
     print("N" * 39, '(pip) Installing sounddevice')
     subprocess.call([pip, "install", "sounddevice"])
     print("N" * 79)
