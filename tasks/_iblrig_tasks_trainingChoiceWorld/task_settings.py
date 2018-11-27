@@ -9,8 +9,10 @@ OSC_CLIENT_IP = '127.0.0.1'
 # IBL rig root folder
 IBLRIG_FOLDER = 'C:\\iblrig'
 MAIN_DATA_FOLDER = None  # If None data folder will be C:\\iblrig_data\\Subjects
+# SOUND, AMBIENT SENSOR, AND VIDEO RECORDINGS
 RECORD_SOUND = True
 RECORD_AMBIENT_SENSOR_DATA = True
+RECORD_VIDEO = True
 # TASK
 NTRIALS = 1000  # Number of trials for the current session
 USE_VISUAL_STIMULUS = True  # Run the visual stim in bonsai
@@ -62,7 +64,7 @@ WHITE_NOISE_DURATION = 0.5  # Length of noise burst
 WHITE_NOISE_AMPLITUDE = 0.05
 GO_TONE_DURATION = 0.1  # Length of tone
 GO_TONE_FREQUENCY = 5000  # 5KHz
-GO_TONE_AMPLITUDE = 0.2  # [0->1]
+GO_TONE_AMPLITUDE = 0.1  # [0->1]
 # POSITION BIAS
 TRAINED = False
 RESPONSE_BUFFER_LENGTH = 10
