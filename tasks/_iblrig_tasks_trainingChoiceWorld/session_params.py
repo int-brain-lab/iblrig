@@ -50,7 +50,7 @@ class MyRotaryEncoder(object):
         return d
 
 
-class session_param_handler(object):
+class SessionParamHandler(object):
     """Session object imports user_settings and task_settings
     will and calculates other secondary session parameters,
     runs Bonsai and saves all params in a settings file.json"""
@@ -325,7 +325,7 @@ class session_param_handler(object):
                           for x in os.listdir(self.SESSION_RAW_DATA_FOLDER)
                           if os.path.isdir(os.path.join(
                               self.SESSION_RAW_DATA_FOLDER, x))]
-        session_param_handler.zipit(
+        SessionParamHandler.zipit(
             folders_to_zip, os.path.join(self.SESSION_RAW_DATA_FOLDER,
                                          '_iblrig_codeFiles.raw.zip'))
 
@@ -344,7 +344,7 @@ class session_param_handler(object):
     def zipit(dir_list, zip_name):
         zipf = zipfile.ZipFile(zip_name, 'w', zipfile.ZIP_DEFLATED)
         for dir in dir_list:
-            session_param_handler.zipdir(dir, zipf)
+            SessionParamHandler.zipdir(dir, zipf)
         zipf.close()
 
     def _configure_rotary_encoder(self, RotaryEncoderModule):
@@ -359,6 +359,6 @@ if __name__ == '__main__':
     # os.chdir(r'C:\iblrig\pybpod_projects\IBL\tasks\basicChoiceWorld')
     import task_settings as _task_settings
     import _user_settings
-    sph = session_param_handler(_task_settings, _user_settings)
+    sph = SessionParamHandler(_task_settings, _user_settings)
     self = sph
     print("Done!")

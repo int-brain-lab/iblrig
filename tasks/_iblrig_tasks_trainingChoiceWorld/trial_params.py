@@ -192,7 +192,7 @@ class repeat_contrast(object):
         self.trial_correct = None
 
 
-class trial_param_handler(object):
+class TrialParamHandler(object):
     """All trial parameters for the current trial.
     On self.trial_completed a JSON serializable string containing state/event
     data and all the parameters is returned to be printed out and saved by
@@ -402,12 +402,12 @@ class trial_param_handler(object):
 
 if __name__ == '__main__':
 
-    from session_params import session_param_handler
+    from session_params import SessionParamHandler
     import time
     import task_settings as _task_settings
     import _user_settings
-    sph = session_param_handler(_task_settings, _user_settings)
-    tph = trial_param_handler(sph)
+    sph = SessionParamHandler(_task_settings, _user_settings)
+    tph = TrialParamHandler(sph)
     ac = adaptive_contrast(sph)
     rc = repeat_contrast()
     correct_trial = {'Trial end timestamp': 5.1234,
