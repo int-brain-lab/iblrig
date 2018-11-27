@@ -20,7 +20,7 @@ class ComplexEncoder(json.JSONEncoder):
             return json.JSONEncoder.default(self, obj)
 
 
-class adaptive_contrast(object):
+class AdaptiveContrast(object):
     """Adaptive contrast trials happen whenever staircase contrasts do not.
     In any particular trial a contrast is drawn from a self.contrasts pool
     pseudo-randomly. This pool is loaded from the last trial of the previous
@@ -36,7 +36,7 @@ class adaptive_contrast(object):
     """
 
     def __init__(self, sph):
-        self.type = 'adaptive_contrast'
+        self.type = 'AdaptiveContrast'
         self.all_contrasts = sph.CONTRAST_SET
         self.init_contrasts = sph.AC_INIT_CONTRASTS
         self.buffer_size = sph.AC_BUFFER_SIZE
@@ -153,11 +153,11 @@ class adaptive_contrast(object):
         self.trial_correct = None
 
 
-class repeat_contrast(object):
+class RepeatContrast(object):
     """Dummy trial object will count repeat trials and reset contrast to none
     if trial correct"""
     def __init__(self):
-        self.type = 'repeat_contrast'
+        self.type = 'RepeatContrast'
         self.ntrials = 0
         self._contrast = None
         self.trial_correct = None
@@ -227,8 +227,8 @@ class TrialParamHandler(object):
         self.reward_valve_time = self.reward_amount * self.reward_calibration
         self.iti_correct = self.iti_correct_target - self.reward_valve_time
         # Init trial type objects
-        self.ac = adaptive_contrast(sph)
-        self.rc = repeat_contrast()
+        self.ac = AdaptiveContrast(sph)
+        self.rc = RepeatContrast()
         # Initialize parameters that may change every trial
         self.trial_num = 0
         self.non_rc_ntrials = self.trial_num - self.rc.ntrials
@@ -357,14 +357,14 @@ class TrialParamHandler(object):
         return
 
     def _next_position(self):
-        if self.contrast.type == 'repeat_contrast':
+        if self.contrast.type == 'RepeatContrast':
             rightward_responses = [int(x) for x in self.response_buffer if x == 1]
             right_proportion = sum(rightward_responses) / len(self.response_buffer)
             if random.gauss(right_proportion, 0.5) < 0.5:
                 _position = -35  # show the stim on the left
             else:
                 _position = 35
-            print("repeat_contrast, bias position:", _position)
+            print("RepeatContrast, bias position:", _position)
             return _position
         else:
             _position = np.random.choice(self.position_set,
@@ -408,8 +408,8 @@ if __name__ == '__main__':
     import _user_settings
     sph = SessionParamHandler(_task_settings, _user_settings)
     tph = TrialParamHandler(sph)
-    ac = adaptive_contrast(sph)
-    rc = repeat_contrast()
+    ac = AdaptiveContrast(sph)
+    rc = RepeatContrast()
     correct_trial = {'Trial end timestamp': 5.1234,
                      'Trial start timestamp': 1.1234,
                      'Events timestamps': {'GlobalTimer1_End': [10.0],

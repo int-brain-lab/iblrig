@@ -50,7 +50,7 @@ def p_hat_err(X, n):
 
 
 def update_psyfun_df(trial_data, psyfun_df):
-    if trial_data['contrast']['type'] == 'repeat_contrast':
+    if trial_data['contrast']['type'] == 'RepeatContrast':
         return psyfun_df
 
     td = trial_data
@@ -222,7 +222,7 @@ test_mouse/2018-05-08/13/pycw_basic.data.json'
 
         df = pd.concat(trials, axis=1)
 
-        no_repeat = df[df.trial_type != 'repeat_contrast']
+        no_repeat = df[df.trial_type != 'RepeatContrast']
         return df if repeat_trials else no_repeat
 
     def psyfun_df_from_path(data_file, repeat_trials=False):
