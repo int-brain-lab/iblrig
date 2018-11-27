@@ -123,7 +123,7 @@ class SessionParamHandler(object):
         # =====================================================================
         self.USE_VISUAL_STIMULUS = False if platform == 'linux' else self.USE_VISUAL_STIMULUS
         self.BONSAI = spc.get_bonsai_path(use_iblrig_bonsai=True)
-        self.run_bonsai()
+        self.start_visual_stim()
         # =====================================================================
         # SAVE SETTINGS FILE AND TASK CODE
         # =====================================================================
@@ -185,9 +185,9 @@ class SessionParamHandler(object):
         self.SD.stop()
 
     # =========================================================================
-    # FILES AND FOLDER STRUCTURE
+    # BONSAI WORKFLOWS
     # =========================================================================
-    def run_bonsai(self):
+    def start_visual_stim(self):
         if self.USE_VISUAL_STIMULUS and self.BONSAI:
             # Copy stimulus folder with bonsai workflow
             src = self.VISUAL_STIM_FOLDER
@@ -195,8 +195,7 @@ class SessionParamHandler(object):
             shutil.copytree(src, dst)
             # Run Bonsai workflow
             here = os.getcwd()
-            os.chdir(os.path.join(self.IBLRIG_FOLDER, 'visual_stim',
-                                  'Gabor2D'))
+            os.chdir(self.VISUAL_STIM_FOLDER)
             bns = self.BONSAI
             wkfl = self.VISUAL_STIMULUS_FILE
 
@@ -226,11 +225,39 @@ class SessionParamHandler(object):
                 bonsai = subprocess.Popen(
                     [bns, wkfl, noeditor, pos, evt, itr, com, mic, rec])
             time.sleep(5)
-            bonsai
             os.chdir(here)
         else:
             self.USE_VISUAL_STIMULUS = False
 
+    def start_camera_recording(self):
+        # Copy video recording folder with bonsai workflow
+        src = self.VIDEO_RECORDING_FOLDER
+        dst = os.path.join(self.SESSION_RAW_VIDEO_DATA_FOLDER,
+                           'camera_recordings')
+        shutil.copytree(src, dst)
+        # Run Workflow
+        here = os.getcwd()
+        os.chdir(self.VIDEO_RECORDING_FOLDER)
+
+        bns = self.BONSAI
+        wkfl = self.VIDEO_RECORDING_FILE
+
+        ts = '-p:TimestampsFileName=' + os.path.join(
+            self.SESSION_RAW_VIDEO_DATA_FOLDER,
+            '_iblrig_leftCamera.timestamps.ssv')
+        vid = '-p:VideoFileName=' + os.path.join(
+            self.SESSION_RAW_VIDEO_DATA_FOLDER,
+            '_iblrig_leftCamera.raw.avi')
+        rec = '-p:SaveVideo=' + str(self.RECORD_VIDEO)
+
+        start = '--start'
+
+        bonsai = subprocess.Popen([bns, wkfl, start, ts, vid, rec])
+        time.sleep(1)
+        os.chdir(here)
+    # =========================================================================
+    # LAST TRIAL DATA
+    # =========================================================================
     def _load_last_trial(self, i=-1):
         if self.PREVIOUS_DATA_FILE is None:
             return
