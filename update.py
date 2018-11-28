@@ -21,6 +21,11 @@ Usage:
         Will update itself to the latest revision on master.
     update.py update <branch>
         Will update itself to the latest revision on <branch>.
+    update.py tasks
+        Will reimport tasks to pybpod with overwriting task_settings.py.
+    update.py tasks <branch>
+        Will checkout latest revision of <branch> and import tasks overwriting task_settings.py.
+
 
 """
 import subprocess
@@ -75,6 +80,11 @@ def iblrig_params_path():
 def import_tasks():
     copy_code_files_to_iblrig_params(iblrig_params_path(),
                                      exclude_filename='task_settings.py')
+
+
+def import_tasks_with_settings():
+    copy_code_files_to_iblrig_params(iblrig_params_path(),
+                                     exclude_filename=None)
 
 
 def checkout_version(ver):
@@ -141,12 +151,14 @@ if __name__ == '__main__':
         elif sys.argv[1] in branches:
             checkout_branch(sys.argv[1])
             import_tasks()
-       # UPDATE UPDATE
+        # UPDATE UPDATE
         elif sys.argv[1] == 'update':
             checkout_single_file(file='update.py', branch='master')
         # UPDATE REINSTALL
         elif sys.argv[1] == 'reinstall':
             subprocess.call(['python', 'install.py'])
+        elif sys.argv[1] == 'tasks':
+            import_tasks_with_settings()
         # UNKNOWN COMMANDS
         else:
             print("ERROR:", sys.argv[1],
@@ -155,7 +167,7 @@ if __name__ == '__main__':
     # If called with something in front of something in front :P
     elif len(sys.argv) == 3:
         branches = get_branches()
-        commands = ['update']
+        commands = ['update', 'tasks']
         # Command checks
         if sys.argv[1] not in commands:
             print("ERROR:", "Unknown command...")
@@ -166,4 +178,7 @@ if __name__ == '__main__':
         # Commands
         if sys.argv[1] == 'update' and sys.argv[2] in branches:
             checkout_single_file(file='update.py', branch=sys.argv[2])
+        elif sys.argv[1] == 'tasks' and sys.argv[2] in branches:
+            checkout_branch(sys.argv[2])
+            import_tasks_with_settings()
     print("\n")

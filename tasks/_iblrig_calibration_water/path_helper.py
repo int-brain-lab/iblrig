@@ -18,15 +18,24 @@ class SessionPathCreator(object):
             self.IBLRIG_FOLDER = '/home/nico/Projects/IBL/IBL-github/iblrig'
         else:
             self.IBLRIG_FOLDER = str(Path(iblrig_folder))
+        self.IBLRIG_PARAMS_FOLDER = str(
+            Path(self.IBLRIG_FOLDER).parent / 'iblrig_params')
         self.ROOT_DATA_FOLDER = self._root_data_folder(self.IBLRIG_FOLDER,
                                                        main_data_folder)
         self.SOUND_STIM_FOLDER = os.path.join(self.IBLRIG_FOLDER, 'sound_stim',
                                               'sounds')
         self.VISUAL_STIM_FOLDER = os.path.join(self.IBLRIG_FOLDER,
                                                'visual_stim', 'Gabor2D')
+        self.VIDEO_RECORDING_FOLDER = os.path.join(self.IBLRIG_FOLDER,
+                                                   'visual_stim',
+                                                   'camera_recordings')
         self.VISUAL_STIMULUS_FILE = os.path.join(self.IBLRIG_FOLDER,
                                                  'visual_stim', 'Gabor2D',
                                                  'Gabor2D.bonsai')
+        self.VIDEO_RECORDING_FILE = os.path.join(self.IBLRIG_FOLDER,
+                                                 'visual_stim',
+                                                 'camera_recordings',
+                                                 'one_camera.bonsai')
         self.SUBJECT_NAME = subject_name
         self.SUBJECT_FOLDER = self.check_folder(self.ROOT_DATA_FOLDER,
                                                 self.SUBJECT_NAME)
@@ -39,6 +48,12 @@ class SessionPathCreator(object):
                                                 self.SESSION_NUMBER)
         self.SESSION_RAW_DATA_FOLDER = self.check_folder(self.SESSION_FOLDER,
                                                          'raw_behavior_data')
+        self.SESSION_RAW_VIDEO_DATA_FOLDER = self.check_folder(self.SESSION_FOLDER,
+                                                               'raw_video_data')
+        self.SESSION_RAW_EPHYS_DATA_FOLDER = self.check_folder(self.SESSION_FOLDER,
+                                                               'raw_video_data')
+        self.SESSION_RAW_IMAGING_DATA_FOLDER = self.check_folder(self.SESSION_FOLDER,
+                                                                 'raw_video_data')
         self.SESSION_NAME = '{}'.format(os.path.sep).join([self.SUBJECT_NAME,
                                                            self.SESSION_DATE,
                                                            self.SESSION_NUMBER,

@@ -29,20 +29,15 @@ from pybpodapi.bpod.hardware.output_channels import OutputChannel
 from pybpodapi.state_machine import StateMachine
 
 import user_settings  # PyBpod creates this file on run.
+import task_settings
 # import pybpod_projects.IBL.tasks._iblrig_calibration_water._user_settings as user_settings
 from session_params import SessionParamHandler
 # from pybpod_projects.IBL.tasks._iblrig_calibration_water.session_params import SessionParamHandler
 
-task_settings = {
-    # os.path.join('C: ', 'iblrig')
-    'IBLRIG_FOLDER': "C:\\iblrig",
-    'MAIN_DATA_FOLDER': None,  # if None will be C:\iblrig_data
-}
-
 sph = SessionParamHandler(task_settings, user_settings)
 
 bpod = Bpod()
-COMport_string = 'COM7'  # leave NaN for manual weight logging
+COMport_string = sph.OAHUS_SCALE_PORT
 
 # OUTPUT OVERVIEW FIGURE
 sns.set()

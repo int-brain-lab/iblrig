@@ -11,7 +11,7 @@ from pathlib import Path
 from pybpodgui_api.models.project import Project
 
 
-def copy_code_files_to_iblrig_params(iblrig_params_path, task=None, 
+def copy_code_files_to_iblrig_params(iblrig_params_path, task=None,
                                      exclude_filename=None):
     # Copy user_settings and cleanup.py to iblrig_params_path
     # Copy all *.py files in iblrig_path to iblrig_params_path/IBL/tasks/<task_name>/*
@@ -23,7 +23,7 @@ def copy_code_files_to_iblrig_params(iblrig_params_path, task=None,
 
     if exclude_filename is None:
         exclude_filename = 'random_stuff'
-    
+
     def copy_files(src_folder, dst_folder, glob='*', exclude_filename=exclude_filename):
         src_folder = Path(src_folder)
         dst_folder = Path(dst_folder)
@@ -40,7 +40,7 @@ def copy_code_files_to_iblrig_params(iblrig_params_path, task=None,
         # Copy cleanup and user_settings
         print('\nS:',str(iblrig_tasks_path), '\nD:', str(iblrig_params_path))
         copy_files(iblrig_tasks_path, iblrig_params_path)
-    
+
     for sf in tasks:
         df = iblrig_params_tasks_path / sf.name
         df.mkdir(parents=True, exist_ok=True)
@@ -89,22 +89,15 @@ def main(iblrig_params_path):
     tFlush_execCleanup.cmd = "python ..\\..\\..\\cleanup.py"
     tFlush_execCleanup.when = tFlush_execCleanup.WHEN_POST
 
-    # Create _iblrig_tasks_basicChoiceWorld
-    tBasic = p.create_task()
-    tBasic.name = '_iblrig_tasks_basicChoiceWorld'
-    tBasic_execBonsai = tBasic.create_execcmd()
-    tBasic_execBonsai.cmd = "python bonsai_stop.py"
-    tBasic_execBonsai.when = tBasic_execBonsai.WHEN_POST
-    tBasic_execCleanup = tBasic.create_execcmd()
-    tBasic_execCleanup.cmd = "python ..\\..\\..\\cleanup.py"
-    tBasic_execCleanup.when = tBasic_execCleanup.WHEN_POST
-
     # Create _iblrig_tasks_trainingChoiceWorld
     tTrainingCW = p.create_task()
     tTrainingCW.name = '_iblrig_tasks_trainingChoiceWorld'
     tTrainingCW_execBonsai = tTrainingCW.create_execcmd()
-    tTrainingCW_execBonsai.cmd = "python bonsai_stop.py"
+    tTrainingCW_execBonsai.cmd = "python bonsai_stop.py 7110"
     tTrainingCW_execBonsai.when = tTrainingCW_execBonsai.WHEN_POST
+    tTrainingCW_execBonsai2 = tTrainingCW.create_execcmd()
+    tTrainingCW_execBonsai2.cmd = "python bonsai_stop.py 7111"
+    tTrainingCW_execBonsai2.when = tTrainingCW_execBonsai2.WHEN_POST
     tTrainingCW_execCleanup = tTrainingCW.create_execcmd()
     tTrainingCW_execCleanup.cmd = "python ..\\..\\..\\cleanup.py"
     tTrainingCW_execCleanup.when = tTrainingCW_execCleanup.WHEN_POST
@@ -113,8 +106,11 @@ def main(iblrig_params_path):
     tBiased = p.create_task()
     tBiased.name = '_iblrig_tasks_biasedChoiceWorld'
     tBiased_execBonsai = tBiased.create_execcmd()
-    tBiased_execBonsai.cmd = "python bonsai_stop.py"
+    tBiased_execBonsai.cmd = "python bonsai_stop.py 7110"
     tBiased_execBonsai.when = tBiased_execBonsai.WHEN_POST
+    tBiased_execBonsai2 = tBiased.create_execcmd()
+    tBiased_execBonsai2.cmd = "python bonsai_stop.py 7111"
+    tBiased_execBonsai2.when = tBiased_execBonsai2.WHEN_POST
     tBiased_execCleanup = tBiased.create_execcmd()
     tBiased_execCleanup.cmd = "python ..\\..\\..\\cleanup.py"
     tBiased_execCleanup.when = tBiased_execCleanup.WHEN_POST
@@ -183,9 +179,9 @@ def main(iblrig_params_path):
 
 if __name__ == "__main__":
     if len(sys.argv) == 1:
-        # iblrig_params_path = '/home/nico/Projects/IBL/IBL-github/iblrig_params'
-        # main(iblrig_params_path)
-        copy_code_files_to_iblrig_params('C:\\iblrig_params', task='_iblrig_tasks_trainingChoiceWorld')
+        iblrig_params_path = '/home/nico/Projects/IBL/IBL-github/iblrig_params'
+        main(iblrig_params_path)
+        # copy_code_files_to_iblrig_params('C:\\iblrig_params', task='_iblrig_tasks_trainingChoiceWorld')
     elif len(sys.argv) == 2:
         print(f"copying task files to {sys.argv[1]}")
         main(sys.argv[1])

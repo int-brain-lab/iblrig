@@ -10,15 +10,15 @@ import matplotlib.pyplot as plt
 from dateutil import parser
 import datetime
 
-from session_params import session_param_handler
-from trial_params import trial_param_handler
+from session_params import SessionParamHandler
+from trial_params import TrialParamHandler
 import ambient_sensor
 import task_settings
 import user_settings
 import online_plots as op
 
 global sph
-sph = session_param_handler(task_settings, user_settings)
+sph = SessionParamHandler(task_settings, user_settings)
 
 
 def bpod_loop_handler():
@@ -78,12 +78,13 @@ bpod.load_serial_message(rotary_encoder, rotary_encoder_e3,
 # TRIAL PARAMETERS AND STATE MACHINE
 # =============================================================================
 global tph
-tph = trial_param_handler(sph)
+tph = TrialParamHandler(sph)
 
 f, ax_bars, ax_psyc = op.make_fig()
 psyfun_df = op.make_psyfun_df()
 plt.pause(1)
 
+sph.start_camera_recording()
 for i in range(sph.NTRIALS):  # Main loop
     tph.next_trial()
     print('\n\nStarting trial: ', i + 1)

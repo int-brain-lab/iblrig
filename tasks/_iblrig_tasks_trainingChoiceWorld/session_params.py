@@ -50,7 +50,7 @@ class MyRotaryEncoder(object):
         return d
 
 
-class session_param_handler(object):
+class SessionParamHandler(object):
     """Session object imports user_settings and task_settings
     will and calculates other secondary session parameters,
     runs Bonsai and saves all params in a settings file.json"""
@@ -123,11 +123,13 @@ class session_param_handler(object):
         # =====================================================================
         self.USE_VISUAL_STIMULUS = False if platform == 'linux' else self.USE_VISUAL_STIMULUS
         self.BONSAI = spc.get_bonsai_path(use_iblrig_bonsai=True)
-        self.run_bonsai()
+        self.start_visual_stim()
         # =====================================================================
         # SAVE SETTINGS FILE AND TASK CODE
         # =====================================================================
         self._save_session_settings()
+        
+        self._copy_task_code()
         self._save_task_code()
 
     # =========================================================================
@@ -185,18 +187,13 @@ class session_param_handler(object):
         self.SD.stop()
 
     # =========================================================================
-    # FILES AND FOLDER STRUCTURE
+    # BONSAI WORKFLOWS
     # =========================================================================
-    def run_bonsai(self):
+    def start_visual_stim(self):
         if self.USE_VISUAL_STIMULUS and self.BONSAI:
-            # Copy stimulus folder with bonsai workflow
-            src = self.VISUAL_STIM_FOLDER
-            dst = os.path.join(self.SESSION_RAW_DATA_FOLDER, 'Gabor2D/')
-            shutil.copytree(src, dst)
             # Run Bonsai workflow
             here = os.getcwd()
-            os.chdir(os.path.join(self.IBLRIG_FOLDER, 'visual_stim',
-                                  'Gabor2D'))
+            os.chdir(self.VISUAL_STIM_FOLDER)
             bns = self.BONSAI
             wkfl = self.VISUAL_STIMULUS_FILE
 
@@ -226,11 +223,34 @@ class session_param_handler(object):
                 bonsai = subprocess.Popen(
                     [bns, wkfl, noeditor, pos, evt, itr, com, mic, rec])
             time.sleep(5)
-            bonsai
             os.chdir(here)
         else:
             self.USE_VISUAL_STIMULUS = False
 
+    def start_camera_recording(self):
+        # Run Workflow
+        here = os.getcwd()
+        os.chdir(self.VIDEO_RECORDING_FOLDER)
+
+        bns = self.BONSAI
+        wkfl = self.VIDEO_RECORDING_FILE
+
+        ts = '-p:TimestampsFileName=' + os.path.join(
+            self.SESSION_RAW_VIDEO_DATA_FOLDER,
+            '_iblrig_leftCamera.timestamps.ssv')
+        vid = '-p:VideoFileName=' + os.path.join(
+            self.SESSION_RAW_VIDEO_DATA_FOLDER,
+            '_iblrig_leftCamera.raw.avi')
+        rec = '-p:SaveVideo=' + str(self.RECORD_VIDEO)
+
+        start = '--start'
+
+        bonsai = subprocess.Popen([bns, wkfl, start, ts, vid, rec])
+        time.sleep(1)
+        os.chdir(here)
+    # =========================================================================
+    # LAST TRIAL DATA
+    # =========================================================================
     def _load_last_trial(self, i=-1):
         if self.PREVIOUS_DATA_FILE is None:
             return
@@ -305,7 +325,7 @@ class session_param_handler(object):
             self.PYBPOD_SUBJECT_EXTRA = self.PYBPOD_SUBJECT_EXTRA[0]
 
     # =========================================================================
-    # SERIALIZE AND SAVE
+    # SERIALIZE, COPY AND SAVE
     # =========================================================================
     def _save_session_settings(self):
         with open(self.SETTINGS_FILE_PATH, 'a') as f:
@@ -313,23 +333,42 @@ class session_param_handler(object):
             f.write('\n')
         return
 
-    def _save_task_code(self):
+    def _copy_task_code(self):
         # Copy behavioral task python code
         src = os.path.join(self.IBLRIG_PARAMS_FOLDER, 'IBL', 'tasks',
                            self.PYBPOD_PROTOCOL)
         dst = os.path.join(self.SESSION_RAW_DATA_FOLDER, self.PYBPOD_PROTOCOL)
         shutil.copytree(src, dst)
+         # Copy stimulus folder with bonsai workflow
+        src = self.VISUAL_STIM_FOLDER
+        dst = os.path.join(self.SESSION_RAW_DATA_FOLDER, 'Gabor2D/')
+        shutil.copytree(src, dst)
+        # Copy video recording folder with bonsai workflow
+        src = self.VIDEO_RECORDING_FOLDER
+        dst = os.path.join(self.SESSION_RAW_VIDEO_DATA_FOLDER,
+                           'camera_recordings')
+        shutil.copytree(src, dst)
+
+    def _save_task_code(self):
         # zip all existing folders
         # Should be the task code folder and if available stimulus code folder
-        folders_to_zip = [os.path.join(self.SESSION_RAW_DATA_FOLDER, x)
+        behavior_code_files = [os.path.join(self.SESSION_RAW_DATA_FOLDER, x)
                           for x in os.listdir(self.SESSION_RAW_DATA_FOLDER)
                           if os.path.isdir(os.path.join(
                               self.SESSION_RAW_DATA_FOLDER, x))]
-        session_param_handler.zipit(
-            folders_to_zip, os.path.join(self.SESSION_RAW_DATA_FOLDER,
-                                         '_iblrig_codeFiles.raw.zip'))
+        SessionParamHandler.zipit(
+            behavior_code_files, os.path.join(self.SESSION_RAW_DATA_FOLDER,
+                                         '_iblrig_TaskCodeFiles.raw.zip'))
+        
+        video_code_files = [os.path.join(self.SESSION_RAW_VIDEO_DATA_FOLDER, x)
+                          for x in os.listdir(self.SESSION_RAW_VIDEO_DATA_FOLDER)
+                          if os.path.isdir(os.path.join(
+                              self.SESSION_RAW_VIDEO_DATA_FOLDER, x))]
+        SessionParamHandler.zipit(
+            video_code_files, os.path.join(self.SESSION_RAW_VIDEO_DATA_FOLDER,
+                                         '_iblrig_VideoCodeFiles.raw.zip'))
 
-        [shutil.rmtree(x) for x in folders_to_zip]
+        [shutil.rmtree(x) for x in behavior_code_files + video_code_files]
 
     @staticmethod
     def zipdir(path, ziph):
@@ -344,7 +383,7 @@ class session_param_handler(object):
     def zipit(dir_list, zip_name):
         zipf = zipfile.ZipFile(zip_name, 'w', zipfile.ZIP_DEFLATED)
         for dir in dir_list:
-            session_param_handler.zipdir(dir, zipf)
+            SessionParamHandler.zipdir(dir, zipf)
         zipf.close()
 
     def _configure_rotary_encoder(self, RotaryEncoderModule):
@@ -359,6 +398,6 @@ if __name__ == '__main__':
     # os.chdir(r'C:\iblrig\pybpod_projects\IBL\tasks\basicChoiceWorld')
     import task_settings as _task_settings
     import _user_settings
-    sph = session_param_handler(_task_settings, _user_settings)
+    sph = SessionParamHandler(_task_settings, _user_settings)
     self = sph
     print("Done!")
