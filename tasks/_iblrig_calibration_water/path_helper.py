@@ -48,12 +48,12 @@ class SessionPathCreator(object):
                                                 self.SESSION_NUMBER)
         self.SESSION_RAW_DATA_FOLDER = self.check_folder(self.SESSION_FOLDER,
                                                          'raw_behavior_data')
-        self.SESSION_RAW_VIDEO_DATA_FOLDER = self.check_folder(self.SESSION_FOLDER,
-                                                               'raw_video_data')
-        self.SESSION_RAW_EPHYS_DATA_FOLDER = self.check_folder(self.SESSION_FOLDER,
-                                                               'raw_video_data')
-        self.SESSION_RAW_IMAGING_DATA_FOLDER = self.check_folder(self.SESSION_FOLDER,
-                                                                 'raw_video_data')
+        # self.SESSION_RAW_VIDEO_DATA_FOLDER = self.check_folder(self.SESSION_FOLDER,
+        #                                                        'raw_video_data')
+        # self.SESSION_RAW_EPHYS_DATA_FOLDER = self.check_folder(self.SESSION_FOLDER,
+        #                                                        'raw_ephys_data')
+        # self.SESSION_RAW_IMAGING_DATA_FOLDER = self.check_folder(self.SESSION_FOLDER,
+        #                                                          'raw_imaging_data')
         self.SESSION_NAME = '{}'.format(os.path.sep).join([self.SUBJECT_NAME,
                                                            self.SESSION_DATE,
                                                            self.SESSION_NUMBER,

@@ -56,6 +56,8 @@ class SessionParamHandler(object):
         # FOLDER STRUCTURE AND DATA FILES
         # =====================================================================
         self._save_session_settings()
+
+        self._copy_task_code()
         self._save_task_code()
 
     # =========================================================================
@@ -98,12 +100,14 @@ class SessionParamHandler(object):
             f.write('\n')
         return
 
-    def _save_task_code(self):
+    def _copy_task_code(self):
         # Copy behavioral task python code
-        src = os.path.join(self.IBLRIG_FOLDER, 'pybpod_projects', 'IBL',
-                           'tasks', self.PYBPOD_PROTOCOL)
+        src = os.path.join(self.IBLRIG_PARAMS_FOLDER, 'IBL', 'tasks',
+                           self.PYBPOD_PROTOCOL)
         dst = os.path.join(self.SESSION_RAW_DATA_FOLDER, self.PYBPOD_PROTOCOL)
         shutil.copytree(src, dst)
+
+    def _save_task_code(self):
         # zip all existing folders
         # Should be the task code folder and if available stimulus code folder
         folders_to_zip = [os.path.join(self.SESSION_RAW_DATA_FOLDER, x)
