@@ -128,6 +128,8 @@ class SessionParamHandler(object):
         # SAVE SETTINGS FILE AND TASK CODE
         # =====================================================================
         self._save_session_settings()
+        
+        self._copy_task_code()
         self._save_task_code()
 
     # =========================================================================
@@ -189,10 +191,6 @@ class SessionParamHandler(object):
     # =========================================================================
     def start_visual_stim(self):
         if self.USE_VISUAL_STIMULUS and self.BONSAI:
-            # Copy stimulus folder with bonsai workflow
-            src = self.VISUAL_STIM_FOLDER
-            dst = os.path.join(self.SESSION_RAW_DATA_FOLDER, 'Gabor2D/')
-            shutil.copytree(src, dst)
             # Run Bonsai workflow
             here = os.getcwd()
             os.chdir(self.VISUAL_STIM_FOLDER)
@@ -230,11 +228,6 @@ class SessionParamHandler(object):
             self.USE_VISUAL_STIMULUS = False
 
     def start_camera_recording(self):
-        # Copy video recording folder with bonsai workflow
-        src = self.VIDEO_RECORDING_FOLDER
-        dst = os.path.join(self.SESSION_RAW_VIDEO_DATA_FOLDER,
-                           'camera_recordings')
-        shutil.copytree(src, dst)
         # Run Workflow
         here = os.getcwd()
         os.chdir(self.VIDEO_RECORDING_FOLDER)
@@ -332,7 +325,7 @@ class SessionParamHandler(object):
             self.PYBPOD_SUBJECT_EXTRA = self.PYBPOD_SUBJECT_EXTRA[0]
 
     # =========================================================================
-    # SERIALIZE AND SAVE
+    # SERIALIZE, COPY AND SAVE
     # =========================================================================
     def _save_session_settings(self):
         with open(self.SETTINGS_FILE_PATH, 'a') as f:
@@ -340,23 +333,42 @@ class SessionParamHandler(object):
             f.write('\n')
         return
 
-    def _save_task_code(self):
+    def _copy_task_code(self):
         # Copy behavioral task python code
         src = os.path.join(self.IBLRIG_PARAMS_FOLDER, 'IBL', 'tasks',
                            self.PYBPOD_PROTOCOL)
         dst = os.path.join(self.SESSION_RAW_DATA_FOLDER, self.PYBPOD_PROTOCOL)
         shutil.copytree(src, dst)
+         # Copy stimulus folder with bonsai workflow
+        src = self.VISUAL_STIM_FOLDER
+        dst = os.path.join(self.SESSION_RAW_DATA_FOLDER, 'Gabor2D/')
+        shutil.copytree(src, dst)
+        # Copy video recording folder with bonsai workflow
+        src = self.VIDEO_RECORDING_FOLDER
+        dst = os.path.join(self.SESSION_RAW_VIDEO_DATA_FOLDER,
+                           'camera_recordings')
+        shutil.copytree(src, dst)
+
+    def _save_task_code(self):
         # zip all existing folders
         # Should be the task code folder and if available stimulus code folder
-        folders_to_zip = [os.path.join(self.SESSION_RAW_DATA_FOLDER, x)
+        behavior_code_files = [os.path.join(self.SESSION_RAW_DATA_FOLDER, x)
                           for x in os.listdir(self.SESSION_RAW_DATA_FOLDER)
                           if os.path.isdir(os.path.join(
                               self.SESSION_RAW_DATA_FOLDER, x))]
         SessionParamHandler.zipit(
-            folders_to_zip, os.path.join(self.SESSION_RAW_DATA_FOLDER,
-                                         '_iblrig_codeFiles.raw.zip'))
+            behavior_code_files, os.path.join(self.SESSION_RAW_DATA_FOLDER,
+                                         '_iblrig_TaskCodeFiles.raw.zip'))
+        
+        video_code_files = [os.path.join(self.SESSION_RAW_VIDEO_DATA_FOLDER, x)
+                          for x in os.listdir(self.SESSION_RAW_VIDEO_DATA_FOLDER)
+                          if os.path.isdir(os.path.join(
+                              self.SESSION_RAW_VIDEO_DATA_FOLDER, x))]
+        SessionParamHandler.zipit(
+            video_code_files, os.path.join(self.SESSION_RAW_VIDEO_DATA_FOLDER,
+                                         '_iblrig_VideoCodeFiles.raw.zip'))
 
-        [shutil.rmtree(x) for x in folders_to_zip]
+        [shutil.rmtree(x) for x in behavior_code_files + video_code_files]
 
     @staticmethod
     def zipdir(path, ziph):
