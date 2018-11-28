@@ -97,7 +97,8 @@ class SessionParamHandler(object):
                                          self.ENCODER_EVENTS))
         if platform == 'linux':
             self.ROTARY_ENCODER_PORT = '/dev/ttyACM0'
-        # self._configure_rotary_encoder(RotaryEncoderModule)
+
+        self._configure_rotary_encoder(RotaryEncoderModule)
         # =====================================================================
         # SOUNDS
         # =====================================================================
@@ -128,7 +129,7 @@ class SessionParamHandler(object):
         # SAVE SETTINGS FILE AND TASK CODE
         # =====================================================================
         self._save_session_settings()
-        
+
         self._copy_task_code()
         self._save_task_code()
 
@@ -359,7 +360,7 @@ class SessionParamHandler(object):
         SessionParamHandler.zipit(
             behavior_code_files, os.path.join(self.SESSION_RAW_DATA_FOLDER,
                                          '_iblrig_TaskCodeFiles.raw.zip'))
-        
+
         video_code_files = [os.path.join(self.SESSION_RAW_VIDEO_DATA_FOLDER, x)
                           for x in os.listdir(self.SESSION_RAW_VIDEO_DATA_FOLDER)
                           if os.path.isdir(os.path.join(
