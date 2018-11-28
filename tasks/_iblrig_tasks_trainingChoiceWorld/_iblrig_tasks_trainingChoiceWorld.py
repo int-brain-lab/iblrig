@@ -84,6 +84,7 @@ f, ax_bars, ax_psyc = op.make_fig()
 psyfun_df = op.make_psyfun_df()
 plt.pause(1)
 
+sph.start_camera_recording()
 for i in range(sph.NTRIALS):  # Main loop
     tph.next_trial()
     print('\n\nStarting trial: ', i + 1)
