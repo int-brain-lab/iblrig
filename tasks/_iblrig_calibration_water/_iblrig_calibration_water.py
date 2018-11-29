@@ -147,8 +147,9 @@ for open_time in open_times:
     if sph.OAHUS_SCALE_PORT:
         startweight = scale_read(sph.OAHUS_SCALE_PORT)
     else:
-        startweight = numinput(f"Start Weight (gr) [{open_time}ms]",
-                               "Enter the starting weight diplayed on the scale (gr):", default=stopweight)
+        startweight = stopweight
+		# startweight = numinput(f"Start Weight (gr) [{open_time}ms]",
+        #                        "Enter the starting weight diplayed on the scale (gr):", default=stopweight)
     # Run the state machine
     water_drop(open_time/1000, ntrials=ntrials, iti=sph.IPI,
                bpod=bpod)  # deliver ntrials drops of water
