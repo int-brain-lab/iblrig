@@ -8,4 +8,11 @@ Main settings file for water calibration protocol
 """
 IBLRIG_FOLDER = "C:\\iblrig"
 MAIN_DATA_FOLDER = None  # if None will be C:\\iblrig_data
-OAHUS_SCALE_PORT = None  # 'COM5'  # Set to None for manual weight logging
+OAHUS_SCALE_PORT = None  # 'COM2'  # Set to None for manual weight logging
+
+MIN_OPEN_TIME = 10  # (ms)
+MAX_OPEN_TIME = 100  # (ms)
+STEP = 20  # (ms)
+
+NTRIALS = 1  # number of drops per open time to average across
+IPI = 0.5  # (s) Inter Pulse Inster
