@@ -11,25 +11,20 @@ import json
 import os
 import re
 import time
-# for dialog box
-#import tkinter as tk
-from tkinter import messagebox, simpledialog
+from tkinter import messagebox, simpledialog  # for dialog box
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import scipy as sp
 import seaborn as sns  # for easier plotting at the end
-# ask Nicco if I need to separately import these?
 import serial
 from pybpodapi.bpod import Bpod
 from pybpodapi.state_machine import StateMachine
 
-import user_settings  # PyBpod creates this file on run.
 import task_settings
-# import pybpod_projects.IBL.tasks._iblrig_calibration_water._user_settings as user_settings
+import user_settings  # PyBpod creates this file on run.
 from session_params import SessionParamHandler
-# from pybpod_projects.IBL.tasks._iblrig_calibration_water.session_params import SessionParamHandler
 
 sph = SessionParamHandler(task_settings, user_settings)
 
@@ -41,7 +36,9 @@ sns.set_context(context="talk")
 f, ax = plt.subplots(1, 2, sharex=False, figsize=(15, 7))
 
 # TIME OF STARTING THE CALIBRATION
-now = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+now = datetime.datetime.now()._local_timezone().strftime("%Y-%m-%d_%H-%M-%S")
+# e.g. '2018-11-30T17:01:04.146888+00:00'
+now = datetime.datetime.now().astimezone().isoformat()
 print(now)
 
 # =============================================================================
@@ -75,6 +72,9 @@ def water_drop(open_time, ntrials=100, iti=1, bpod='bpod_instance'):
         # Send state machine description to Bpod device and run
         bpod.send_state_machine(sma)
         bpod.run_state_machine(sma)
+		# Get the timestamps of the implemented state machine ?
+		# bpod.session.current_trial.export()
+
 
 # =============================================================================
 # READ INFO FROM THE OHAUS SCALE
@@ -140,27 +140,25 @@ df1 = pd.DataFrame(columns=["time", "open_time", "ndrops", "measured_weight"])
 ntrials = sph.NTRIALS
 # in milliseconds, 10 to 100ms opening time
 open_times = range(sph.MIN_OPEN_TIME, sph.MAX_OPEN_TIME, sph.STEP)
-stopweight = 0
+open_times = [i for i in range(
+	sph.MIN_OPEN_TIME, sph.MAX_OPEN_TIME, sph.STEP) for _ in range(sph.PASSES)]
+stopweight = 0  # can ask user if scale not tared
 
 for open_time in open_times:
-    time.sleep(1)
-    if sph.OAHUS_SCALE_PORT:
-        startweight = scale_read(sph.OAHUS_SCALE_PORT)
-    else:
-        startweight = stopweight
-		# startweight = numinput(f"Start Weight (gr) [{open_time}ms]",
-        #                        "Enter the starting weight diplayed on the scale (gr):", default=stopweight)
-    # Run the state machine
-    water_drop(open_time/1000, ntrials=ntrials, iti=sph.IPI,
-               bpod=bpod)  # deliver ntrials drops of water
-    time.sleep(1)
-
+	pass_ = 1 if pass_ % sph.PASSES == 0 else pass_
+	# Set the startweight to be the last recorded stopweight
+	startweight = stopweight
+	# Run the state machine; deliver ntrials drops of water
+    water_drop(open_time / 1000, ntrials=ntrials, iti=sph.IPI, bpod=bpod)
+    # wait for the scale update delay
+	time.sleep(1)
+	# Get the value
     if sph.OAHUS_SCALE_PORT:
         stopweight = scale_read(sph.OAHUS_SCALE_PORT)
     else:
-        stopweight = numinput(f"End Weight (gr) [{open_time}ms]",
+        stopweight = numinput(f"End Weight (gr) [{open_time}ms pass {pass_}]",
                               "Enter the final weight diplayed on the scale (gr):")
-
+	# get the value of the amout of water delivered
     measured_weight = stopweight - startweight
     # summarize
     print(f'Weight change = {measured_weight}g |',
@@ -173,22 +171,20 @@ for open_time in open_times:
         "measured_weight": measured_weight,
         "time": datetime.datetime.now(),
     }, ignore_index=True)
+	pass_ += 1
 
 # SAVE
 df1['open_time'] = df1['open_time'].astype("float")
 df1['measured_weight'] = df1['measured_weight'].astype("float")
 df1['ndrops'] = df1['ndrops'].astype("float")
-
 df1["weight_perdrop"] = df1["measured_weight"] / df1["ndrops"] * 1000  # in ul
 df1.to_csv(sph.CALIBRATION_FUNCTION_FILE_PATH)
 
 # FIT EXTRAPOLATION FUNCTION
 time2vol = sp.interpolate.pchip(
     df1["open_time"], df1["weight_perdrop"])  # for later
-vol2time = sp.interpolate.pchip(
-    df1["open_time"], df1["weight_perdrop"])  # for later
 
-xp = np.linspace(0, df1["open_time"].max(), ntrials)
+xp = np.linspace(0, df1["open_time"].max(), ntrials * sph.PASSES)
 ax[0].plot(xp, time2vol(xp), '-k')
 
 # CALIBRATION CURVE
@@ -198,31 +194,11 @@ ax[0].set(xlabel="Open time (ms)",
 title = f.suptitle(f"Water calibration {now}")
 f.savefig(sph.CALIBRATION_CURVE_FILE_PATH)
 
-# # =============================================================================
-# # ASK THE USER FOR A LINEAR RANGE
-# # =============================================================================
-
-# messagebox.showinfo("Information", "Calibration curve completed! We're not done yet. \n \
-#     Please look at the figure and indicate a min-max range over which the curve is monotonic. \n \
-#     The range of drop volumes should ideally be 1.5-3uL.\n\n \
-#     Close the plot before entering the range.")
-# plt.show()
-
-# min_open_time = numinput(
-#     "Input", "What's the LOWEST opening time (in ms) of the linear (monotonic) range?")
-
-# max_open_time = numinput(
-#     "Input", "What's the HIGHEST opening time (in ms) of the linear (monotonic) range?")
-
-# ax[0].axvline(min_open_time, color='black')
-# ax[0].axvline(max_open_time, color='black')
-
-# plt.show()
-# f.savefig(sph.CALIBRATION_CURVE_FILE_PATH)
-
-# # SAVE THE RANGE TOGETHER WITH THE CALIBRATION CURVE - SEPARATE FILE
-# df2 = pd.DataFrame.from_dict(
-#     {'min_open_time': min_open_time, 'max_open_time': max_open_time, 'index': [0]})
-# df2.to_csv(sph.CALIBRATION_RANGE_FILE_PATH)
-# bpod.close()
 print(f'Completed water calibration {now}')
+
+
+if __name__ == '__main__':
+	root_data_folder = '/home/nico/Projects/IBL/IBL-github/iblrig_data/Subjects'
+	session = '_iblrig_calibration/2018-11-28/4'
+	data_file = '/raw_behavior_data/_iblrig_calibration_water_function.csv'
+	df = pd.DataFrame.from_csv(os.path.join(root_data_folder, session, data_file)
