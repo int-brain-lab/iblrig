@@ -85,7 +85,7 @@ class SessionParamHandler(object):
         self.REWARD_AMOUNT = self._init_reward_amount()
         self.CALIB_FUNC = self._init_calib_func()
         self.REWARD_VALVE_TIME = self._init_reward_valve_time()
-        
+
         self.STIM_GAIN = self._init_stim_gain()
         # =====================================================================
         # ROTARY ENCODER
@@ -309,6 +309,11 @@ class SessionParamHandler(object):
         else:
             out = self.CALIBRATION_VALUE / 3 * self.REWARD_AMOUNT
 
+        print("\n\nREWARD_VALVE_TIME:", out, "\n\n")
+        if out >= 1:
+            print("\n\nREWARD_VALVE_TIME:", out, "\n\n",
+                  "Probably because of a BAD calibration file...")
+            raise(ValueError)
         return float(out)
             
 
