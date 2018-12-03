@@ -193,7 +193,7 @@ class SessionPathCreator(object):
         water_cal_files = sorted(water_cal_files, 
                                  key=lambda x: int(x.parent.parent.name))
         
-        return str(sorted(water_cal_files)[-1])
+        return str(water_cal_files[-1])
 
        
 if __name__ == "__main__":

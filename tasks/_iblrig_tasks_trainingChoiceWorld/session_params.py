@@ -154,6 +154,7 @@ class SessionParamHandler(object):
         d['SD'] = str(d['SD'])
         d['OSC_CLIENT'] = str(d['OSC_CLIENT'])
         d['SESSION_DATETIME'] = str(self.SESSION_DATETIME)
+        d['CALIB_FUNC'] = str(d['CALIB_FUNC'])
         return d
 
     # =========================================================================
@@ -294,7 +295,7 @@ class SessionParamHandler(object):
     def _init_calib_func(self):
         if self.LATEST_WATER_CALIBRATION_FILE:
             # Load last calibration df1
-            df1 = pd.DataFrame().from_csv(self.LATEST_WATER_CALIBRATION_FILE)
+            df1 = pd.read_csv(self.LATEST_WATER_CALIBRATION_FILE)
             # make interp func 
             vol2time = sp.interpolate.pchip(df1["weight_perdrop"], df1["open_time"])
             return vol2time
@@ -308,7 +309,7 @@ class SessionParamHandler(object):
         else:
             out = self.CALIBRATION_VALUE / 3 * self.REWARD_AMOUNT
 
-        return out
+        return float(out)
             
 
     def _init_stim_gain(self):
