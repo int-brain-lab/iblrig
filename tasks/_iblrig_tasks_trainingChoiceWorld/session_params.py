@@ -304,15 +304,20 @@ class SessionParamHandler(object):
 
     def _init_reward_valve_time(self):
         # Calc reward valve time
-        if self.AUTOMATIC_CALIBRATION and self.CALIB_FUNC is not None:
-                out = self.CALIB_FUNC(self.REWARD_AMOUNT) 
-        else:
+        if not self.AUTOMATIC_CALIBRATION:
             out = self.CALIBRATION_VALUE / 3 * self.REWARD_AMOUNT
-
+        elif self.AUTOMATIC_CALIBRATION and self.CALIB_FUNC is not None:
+            out = self.CALIB_FUNC(self.REWARD_AMOUNT) 
+        elif self.AUTOMATIC_CALIBRATION and self.CALIB_FUNC is None:
+            print("\n\nNO CALIBRATION FILE WAS FOUND:",
+                  "\nPlease Calibrate the rig or use a manual calibration value.",
+                  "\n\n")
+            raise ValueError
         print("\n\nREWARD_VALVE_TIME:", out, "\n\n")
         if out >= 1:
-            print("\n\nREWARD_VALVE_TIME:", out, "\n\n",
-                  "Probably because of a BAD calibration file...")
+            print("\n\nREWARD_VALVE_TIME is too high!:", out,
+                  "\nProbably because of a BAD calibration file...",
+                  "\nPlease Calibrate the rig or use a manual calibration value.")
             raise(ValueError)
         return float(out)
             
