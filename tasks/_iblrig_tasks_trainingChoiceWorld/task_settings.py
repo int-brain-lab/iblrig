@@ -22,20 +22,21 @@ REPEAT_ON_ERROR = True
 REPEAT_CONTRASTS = [1., 0.5]
 # STATE TIMERS
 QUIESCENCE_THRESHOLDS = [-2, 2]  # degree
-QUIESCENT_PERIOD = 0.2  # Trial init (quiescent period) enforced
+QUIESCENT_PERIOD = 0.2  # + x, where x~exp(0.35), t ∈ 0.2 <= R <= 0.5
 INTERACTIVE_DELAY = 0.1  # how long after stim onset the CL starts
 RESPONSE_WINDOW = 60  # Time to move the wheel after go tone (seconds)
 ITI_CORRECT = 1  # how long the stim should stay visible after CORRECT choice
 ITI_ERROR = 2  # how long the stim should stay visible after ERROR choice
 # ADAPTIVE PARAMETERS
-ADAPTIVE_REWARD = True
+ADAPTIVE_REWARD = True  # wether to increase reware at session start usin AR_* criteria
 ADAPTIVE_CONTRAST = True  # MAKE FIXED_CONTRAST OBJECT, swap at init if this is false
 ADAPTIVE_GAIN = True
 # REWARDS
-CALIBRATION_VALUE = 0.067  # calibrated to 1µl on 2018-05-10
-REWARD_AMOUNT = 3.  # (µl) Amount of reward to be delivered upon correct choice each trial (ignored if adaptive ON)
+AUTOMATIC_CALIBRATION = True  # Wether to look for a calibration session and func to define the valve opening time
+CALIBRATION_VALUE = 0.067  # calibration value for 3ul of target reward amount (ignored if automatic ON)
+REWARD_AMOUNT = 3.  # (µl) Amount of reward to be delivered upon correct choice each trial (overwitten if adaptive ON)
 # Water, Water 10% Sucrose, Water 15% Sucrose, Water 2% Citric Acid (Guo et al.. PLoS One 2014)
-REWARD_TYPE = 'Water'
+REWARD_TYPE = 'Water 15% Sucrose'
 # ADAPTIVE REWARD PARAMETERS (IGNORED IF ADAPTIVE_REWARD = False)
 AR_INIT_VALUE = 3  # µl
 AR_MIN_VALUE = 2  # µl
@@ -65,6 +66,5 @@ WHITE_NOISE_AMPLITUDE = 0.05
 GO_TONE_DURATION = 0.1  # Length of tone
 GO_TONE_FREQUENCY = 5000  # 5KHz
 GO_TONE_AMPLITUDE = 0.1  # [0->1]
-# POSITION BIAS
-TRAINED = False
+# POSITION BIAS FOR REPEATED TRIALS
 RESPONSE_BUFFER_LENGTH = 10

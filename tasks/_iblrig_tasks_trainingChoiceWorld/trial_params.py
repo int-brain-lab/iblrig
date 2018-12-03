@@ -209,7 +209,8 @@ class TrialParamHandler(object):
         self.repeat_on_error = sph.REPEAT_ON_ERROR
         self.repeat_contrasts = sph.REPEAT_CONTRASTS
         self.threshold_events_dict = sph.THRESHOLD_EVENTS
-        self.quiescent_period = sph.QUIESCENT_PERIOD
+        self.quiescent_period_base = sph.QUIESCENT_PERIOD
+        self.quiescent_period = self.quiescent_period_base + self.exp()
         self.response_window = sph.RESPONSE_WINDOW
         self.interactive_delay = sph.INTERACTIVE_DELAY
         self.iti_error = sph.ITI_ERROR
@@ -222,9 +223,8 @@ class TrialParamHandler(object):
         self.out_tone = sph.OUT_TONE
         self.out_noise = sph.OUT_NOISE
         # Reward amount
-        self.reward_calibration = sph.CALIBRATION_VALUE
         self.reward_amount = sph.REWARD_AMOUNT
-        self.reward_valve_time = self.reward_amount * self.reward_calibration
+        self.reward_valve_time = sph.REWARD_VALVE_TIME
         self.iti_correct = self.iti_correct_target - self.reward_valve_time
         # Init trial type objects
         self.ac = AdaptiveContrast(sph)
@@ -306,6 +306,8 @@ class TrialParamHandler(object):
         self.trial_num += 1
         # Update non repeated trials
         self.non_rc_ntrials = self.trial_num - self.rc.ntrials
+        # Update quiescent period
+        self.quiescent_period = self.quiescent_period_base + self.exp()
         # Update stimulus phase
         self.stim_phase = random.uniform(0, math.pi)
         # Update contrast
@@ -321,6 +323,13 @@ class TrialParamHandler(object):
         self.data_file = open(self.data_file_path, 'a')
         # Send next trial info to Bonsai
         self.send_current_trial_info()
+
+    def exp(self):
+        x = np.random.exponential(0.35)
+        if 0.2 <= x <= 0.5:
+            return x
+        else:
+            return self.exp()
 
     def _update_response_buffer(self, val):
         _buffer = self.response_buffer
@@ -364,7 +373,7 @@ class TrialParamHandler(object):
                 _position = -35  # show the stim on the left
             else:
                 _position = 35
-            print("RepeatContrast, bias position:", _position)
+            print("Next trial: RepeatContrast, biased position:", _position)
             return _position
         else:
             _position = np.random.choice(self.position_set,
@@ -527,9 +536,9 @@ if __name__ == '__main__':
     print('Average trial_completed times:', sum(trial_completed_times) /
           len(trial_completed_times))
 
-    from ibllib.io import raw_data_loaders as raw
-    data = raw.load_data(sph.SESSION_FOLDER)
-    print([x['ac']['contrast_set'] for x in data[-100:]])
+    # from ibllib.io import raw_data_loaders as raw
+    # data = raw.load_data(sph.SESSION_FOLDER)
+    # print([x['ac']['contrast_set'] for x in data[-100:]])
 
     print('\n\n')
     # trial_data = []

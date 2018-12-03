@@ -13,10 +13,12 @@ from pathlib import Path
 from sys import platform
 
 import numpy as np
+import scipy as sp
 import scipy.stats as st
 from dateutil import parser
 from pybpod_rotaryencoder_module.module_api import RotaryEncoderModule
 from pythonosc import udp_client
+import pandas as pd
 
 import sound
 from path_helper import SessionPathCreator
@@ -74,13 +76,16 @@ class SessionParamHandler(object):
         # =====================================================================
         self.OSC_CLIENT = self._init_osc_client()
         # =====================================================================
-        # FOLDER STRUCTURE AND DATA FILES
+        # PREVIOUS DATA FILE
         # =====================================================================
         self.LAST_TRIAL_DATA = self._load_last_trial()
-        self.REWARD_AMOUNT = self._init_reward()
         # =====================================================================
         # ADAPTIVE STUFF
         # =====================================================================
+        self.REWARD_AMOUNT = self._init_reward_amount()
+        self.CALIB_FUNC = self._init_calib_func()
+        self.REWARD_VALVE_TIME = self._init_reward_valve_time()
+
         self.STIM_GAIN = self._init_stim_gain()
         # =====================================================================
         # ROTARY ENCODER
@@ -149,6 +154,7 @@ class SessionParamHandler(object):
         d['SD'] = str(d['SD'])
         d['OSC_CLIENT'] = str(d['OSC_CLIENT'])
         d['SESSION_DATETIME'] = str(self.SESSION_DATETIME)
+        d['CALIB_FUNC'] = str(d['CALIB_FUNC'])
         return d
 
     # =========================================================================
@@ -273,19 +279,48 @@ class SessionParamHandler(object):
     # =========================================================================
     # ADAPTIVE REWARD AND GAIN RULES
     # =========================================================================
-    def _init_reward(self):
+    def _init_reward_amount(self):
         if not self.ADAPTIVE_REWARD:
             return self.REWARD_AMOUNT
         if self.LAST_TRIAL_DATA is None:
             return self.AR_INIT_VALUE
+        elif self.LAST_TRIAL_DATA and self.LAST_TRIAL_DATA['trial_num'] < 200:
+            out = self.LAST_TRIAL_DATA['reward_amount']
+        elif self.LAST_TRIAL_DATA and self.LAST_TRIAL_DATA['trial_num'] >= 200:
+            out = self.LAST_TRIAL_DATA['reward_amount'] - self.AR_STEP
+            out = self.AR_MIN_VALUE if out <= self.AR_MIN_VALUE else out
+        
+        return out
+
+    def _init_calib_func(self):
+        if self.LATEST_WATER_CALIBRATION_FILE:
+            # Load last calibration df1
+            df1 = pd.read_csv(self.LATEST_WATER_CALIBRATION_FILE)
+            # make interp func 
+            vol2time = sp.interpolate.pchip(df1["weight_perdrop"], df1["open_time"])
+            return vol2time
         else:
-            try:
-                out = (self.LAST_TRIAL_DATA['reward_valve_time'] /
-                       self.LAST_TRIAL_DATA['reward_calibration'])
-            except IOError:
-                out = (self.LAST_TRIAL_DATA['reward_valve_time'] /
-                       self.CALIBRATION_VALUE)
-            return out
+            return
+
+    def _init_reward_valve_time(self):
+        # Calc reward valve time
+        if not self.AUTOMATIC_CALIBRATION:
+            out = self.CALIBRATION_VALUE / 3 * self.REWARD_AMOUNT
+        elif self.AUTOMATIC_CALIBRATION and self.CALIB_FUNC is not None:
+            out = self.CALIB_FUNC(self.REWARD_AMOUNT) 
+        elif self.AUTOMATIC_CALIBRATION and self.CALIB_FUNC is None:
+            print("\n\nNO CALIBRATION FILE WAS FOUND:",
+                  "\nPlease Calibrate the rig or use a manual calibration value.",
+                  "\n\n")
+            raise ValueError
+        print("\n\nREWARD_VALVE_TIME:", out, "\n\n")
+        if out >= 1:
+            print("\n\nREWARD_VALVE_TIME is too high!:", out,
+                  "\nProbably because of a BAD calibration file...",
+                  "\nPlease Calibrate the rig or use a manual calibration value.")
+            raise(ValueError)
+        return float(out)
+            
 
     def _init_stim_gain(self):
         if not self.ADAPTIVE_GAIN:

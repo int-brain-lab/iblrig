@@ -12,7 +12,8 @@ from dateutil import parser
 
 
 class SessionPathCreator(object):
-    def __init__(self, iblrig_folder, main_data_folder, subject_name, protocol):  # add subject name and protocol (maybe have a metadata struct)
+    def __init__(self, iblrig_folder, main_data_folder, subject_name, 
+                 protocol, make_folders=True):  # add subject name and protocol (maybe have a metadata struct)
         if platform == 'linux':
             self.IBLRIG_FOLDER = '/home/nico/Projects/IBL/IBL-github/iblrig'
         else:
@@ -65,6 +66,7 @@ class SessionPathCreator(object):
                                            self.BASE_FILENAME +
                                            'Data.raw.jsonable')
 
+        self.LATEST_WATER_CALIBRATION_FILE = self._latest_water_calibration_file()
         self.PREVIOUS_DATA_FILE = self._previous_data_file()
 
     def _root_data_folder(self, iblrig_folder, main_data_folder):
@@ -176,9 +178,26 @@ class SessionPathCreator(object):
         else:
             return None
 
+    def _latest_water_calibration_file(self):
+        rdf = Path(self.ROOT_DATA_FOLDER)
+        cal = rdf / '_iblrig_calibration'
+        cal_session_folders = []
+        for date in self.get_subfolder_paths(str(cal)):
+            cal_session_folders.extend(self.get_subfolder_paths(date))
+        water_cal_files = []
+        for session in cal_session_folders:
+            session = Path(session) / 'raw_behavior_data'
+            water_cal_files.extend(list(session.glob(
+                '_iblrig_calibration_water_function.csv')))
+        
+        water_cal_files = sorted(water_cal_files, 
+                                 key=lambda x: int(x.parent.parent.name))
+        
+        return str(water_cal_files[-1])
 
+       
 if __name__ == "__main__":
-    spc = SessionPathCreator('some/path', None, 'test_mouse', 'ChoiceWorld')
+    spc = SessionPathCreator('C:\\iblrig', None, '_iblrig_test_mouse', 'trainingChoiceWorld')
     print("\nBASE_FILENAME:", spc.BASE_FILENAME,
           "\nPREVIOUS_DATA_FILE:", spc.PREVIOUS_DATA_FILE,
           "\nSESSION_DATETIME:", spc.SESSION_DATETIME,
@@ -196,5 +215,6 @@ if __name__ == "__main__":
           "\nSESSION_FOLDER:", spc.SESSION_FOLDER,
           "\nSESSION_RAW_DATA_FOLDER:", spc.SESSION_RAW_DATA_FOLDER,
           "\nSUBJECT_FOLDER:", spc.SUBJECT_FOLDER,
-          "\nVISUAL_STIM_FOLDER:", spc.VISUAL_STIM_FOLDER)
+          "\nVISUAL_STIM_FOLDER:", spc.VISUAL_STIM_FOLDER,
+          "\nLATEST_WATER_CALIBRATION_FILE:", spc.LATEST_WATER_CALIBRATION_FILE)
     print('.')
