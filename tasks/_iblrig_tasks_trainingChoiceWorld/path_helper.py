@@ -36,22 +36,22 @@ class SessionPathCreator(object):
                                                  'camera_recordings',
                                                  'one_camera.bonsai')
         self.SUBJECT_NAME = subject_name
-        self.SUBJECT_FOLDER = os.path.join(self.ROOT_DATA_FOLDER,
+        self.SUBJECT_FOLDER = self.check_folder(self.ROOT_DATA_FOLDER,
                                                 self.SUBJECT_NAME)
         self.SESSION_DATETIME = datetime.datetime.now()
         self.SESSION_DATE = self.SESSION_DATETIME.date().isoformat()
-        self.SESSION_DATE_FOLDER = os.path.join(self.SUBJECT_FOLDER,
+        self.SESSION_DATE_FOLDER = self.check_folder(self.SUBJECT_FOLDER,
                                                      self.SESSION_DATE)
         self.SESSION_NUMBER = self._session_number()
-        self.SESSION_FOLDER = os.path.join(self.SESSION_DATE_FOLDER,
+        self.SESSION_FOLDER = self.check_folder(self.SESSION_DATE_FOLDER,
                                                 self.SESSION_NUMBER)
-        self.SESSION_RAW_DATA_FOLDER = os.path.join(self.SESSION_FOLDER,
+        self.SESSION_RAW_DATA_FOLDER = self.check_folder(self.SESSION_FOLDER,
                                                          'raw_behavior_data')
-        self.SESSION_RAW_VIDEO_DATA_FOLDER = os.path.join(self.SESSION_FOLDER,
+        self.SESSION_RAW_VIDEO_DATA_FOLDER = self.check_folder(self.SESSION_FOLDER,
                                                                'raw_video_data')
-        self.SESSION_RAW_EPHYS_DATA_FOLDER = os.path.join(self.SESSION_FOLDER,
+        self.SESSION_RAW_EPHYS_DATA_FOLDER = self.check_folder(self.SESSION_FOLDER,
                                                                'raw_video_data')
-        self.SESSION_RAW_IMAGING_DATA_FOLDER = os.path.join(self.SESSION_FOLDER,
+        self.SESSION_RAW_IMAGING_DATA_FOLDER = self.check_folder(self.SESSION_FOLDER,
                                                                'raw_video_data')
         self.SESSION_NAME = '{}'.format(os.path.sep).join([self.SUBJECT_NAME,
                                                            self.SESSION_DATE,
@@ -68,15 +68,6 @@ class SessionPathCreator(object):
 
         self.LATEST_WATER_CALIBRATION_FILE = self._latest_water_calibration_file()
         self.PREVIOUS_DATA_FILE = self._previous_data_file()
-
-        if make_folders:
-            self.check_folder(self.SUBJECT_FOLDER)
-            self.check_folder(self.SESSION_DATE_FOLDER)
-            self.check_folder(self.SESSION_FOLDER)
-            self.check_folder(self.SESSION_RAW_DATA_FOLDER)
-            self.check_folder(self.SESSION_RAW_VIDEO_DATA_FOLDER)
-            self.check_folder(self.SESSION_RAW_EPHYS_DATA_FOLDER)
-            self.check_folder(self.SESSION_RAW_IMAGING_DATA_FOLDER)
 
     def _root_data_folder(self, iblrig_folder, main_data_folder):
         iblrig_folder = Path(iblrig_folder)
