@@ -186,14 +186,18 @@ class SessionPathCreator(object):
             cal_session_folders.extend(self.get_subfolder_paths(date))
         water_cal_files = []
         for session in cal_session_folders:
-            session = Path(session)
+            session = Path(session) / 'raw_behavior_data'
             water_cal_files.extend(list(session.glob(
                 '_iblrig_calibration_water_function.csv')))
+        
+        water_cal_files = sorted(water_cal_files, 
+                                 key=lambda x: int(x.parent.parent.name))
+        
         return str(sorted(water_cal_files)[-1])
 
        
 if __name__ == "__main__":
-    spc = SessionPathCreator('some/path', None, 'test_mouse', 'ChoiceWorld')
+    spc = SessionPathCreator('C:\\iblrig', None, '_iblrig_test_mouse', 'trainingChoiceWorld')
     print("\nBASE_FILENAME:", spc.BASE_FILENAME,
           "\nPREVIOUS_DATA_FILE:", spc.PREVIOUS_DATA_FILE,
           "\nSESSION_DATETIME:", spc.SESSION_DATETIME,
@@ -211,5 +215,6 @@ if __name__ == "__main__":
           "\nSESSION_FOLDER:", spc.SESSION_FOLDER,
           "\nSESSION_RAW_DATA_FOLDER:", spc.SESSION_RAW_DATA_FOLDER,
           "\nSUBJECT_FOLDER:", spc.SUBJECT_FOLDER,
-          "\nVISUAL_STIM_FOLDER:", spc.VISUAL_STIM_FOLDER)
+          "\nVISUAL_STIM_FOLDER:", spc.VISUAL_STIM_FOLDER,
+          "\LATEST_WATER_CALIBRATION_FILE:", spc.LATEST_WATER_CALIBRATION_FILE)
     print('.')
