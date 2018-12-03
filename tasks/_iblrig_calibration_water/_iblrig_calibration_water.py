@@ -23,7 +23,7 @@ from pybpodapi.bpod import Bpod
 from pybpodapi.state_machine import StateMachine
 
 import task_settings
-import user_settings  # PyBpod creates this file on run.
+import _user_settings as user_settings    # PyBpod creates this file on run.
 from session_params import SessionParamHandler
 
 sph = SessionParamHandler(task_settings, user_settings)
@@ -36,9 +36,14 @@ sns.set_context(context="talk")
 f, ax = plt.subplots(1, 2, sharex=False, figsize=(15, 7))
 
 # TIME OF STARTING THE CALIBRATION
-now = datetime.datetime.now()._local_timezone().strftime("%Y-%m-%d_%H-%M-%S")
-# e.g. '2018-11-30T17:01:04.146888+00:00'
-now = datetime.datetime.now().astimezone().isoformat()
+now = datetime.datetime.utcnow().astimezone().isoformat()
+#  e.g. now = '2018-11-30T17:01:04.146888+00:00'
+# >>> datetime.datetime.fromisoformat(now)
+# datetime.datetime(2018, 11, 30, 17, 3, 51, 408746,
+#                   tzinfo=datetime.timezone.utc)
+# >>> datetime.datetime.fromisoformat(now).astimezone()
+# datetime.datetime(2018, 11, 30, 17, 3, 51, 408746,
+#                   tzinfo=datetime.timezone(datetime.timedelta(0), 'WET'))
 print(now)
 
 # =============================================================================
@@ -72,8 +77,8 @@ def water_drop(open_time, ntrials=100, iti=1, bpod='bpod_instance'):
         # Send state machine description to Bpod device and run
         bpod.send_state_machine(sma)
         bpod.run_state_machine(sma)
-		# Get the timestamps of the implemented state machine ?
-		# bpod.session.current_trial.export()
+        # Get the timestamps of the implemented state machine ?
+        # bpod.session.current_trial.export()
 
 
 # =============================================================================
@@ -141,24 +146,25 @@ ntrials = sph.NTRIALS
 # in milliseconds, 10 to 100ms opening time
 open_times = range(sph.MIN_OPEN_TIME, sph.MAX_OPEN_TIME, sph.STEP)
 open_times = [i for i in range(
-	sph.MIN_OPEN_TIME, sph.MAX_OPEN_TIME, sph.STEP) for _ in range(sph.PASSES)]
+    sph.MIN_OPEN_TIME, sph.MAX_OPEN_TIME, sph.STEP) for _ in range(sph.PASSES)]
 stopweight = 0  # can ask user if scale not tared
 
+pass_ = 1
 for open_time in open_times:
-	pass_ = 1 if pass_ % sph.PASSES == 0 else pass_
-	# Set the startweight to be the last recorded stopweight
-	startweight = stopweight
-	# Run the state machine; deliver ntrials drops of water
+    pass_ = 1 if pass_ % sph.PASSES == 0 else pass_
+    # Set the startweight to be the last recorded stopweight
+    startweight = stopweight
+    # Run the state machine; deliver ntrials drops of water
     water_drop(open_time / 1000, ntrials=ntrials, iti=sph.IPI, bpod=bpod)
     # wait for the scale update delay
-	time.sleep(1)
-	# Get the value
+    time.sleep(1)
+    # Get the value
     if sph.OAHUS_SCALE_PORT:
         stopweight = scale_read(sph.OAHUS_SCALE_PORT)
     else:
         stopweight = numinput(f"End Weight (gr) [{open_time}ms pass {pass_}]",
                               "Enter the final weight diplayed on the scale (gr):")
-	# get the value of the amout of water delivered
+    # get the value of the amout of water delivered
     measured_weight = stopweight - startweight
     # summarize
     print(f'Weight change = {measured_weight}g |',
@@ -171,7 +177,7 @@ for open_time in open_times:
         "measured_weight": measured_weight,
         "time": datetime.datetime.now(),
     }, ignore_index=True)
-	pass_ += 1
+    pass_ += 1
 
 # SAVE
 df1['open_time'] = df1['open_time'].astype("float")
@@ -198,7 +204,7 @@ print(f'Completed water calibration {now}')
 
 
 if __name__ == '__main__':
-	root_data_folder = '/home/nico/Projects/IBL/IBL-github/iblrig_data/Subjects'
-	session = '_iblrig_calibration/2018-11-28/4'
-	data_file = '/raw_behavior_data/_iblrig_calibration_water_function.csv'
-	df = pd.DataFrame.from_csv(os.path.join(root_data_folder, session, data_file)
+    root_data_folder = '/home/nico/Projects/IBL/IBL-github/iblrig_data/Subjects'
+    session = '_iblrig_calibration/2018-11-28/4'
+    data_file = '/raw_behavior_data/_iblrig_calibration_water_function.csv'
+    df = pd.DataFrame.from_csv(os.path.join(root_data_folder, session, data_file))
