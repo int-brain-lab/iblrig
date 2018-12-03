@@ -36,7 +36,7 @@ AUTOMATIC_CALIBRATION = True  # Wether to look for a calibration session and fun
 CALIBRATION_VALUE = 0.067  # calibration value for 3ul of target reward amount (ignored if automatic ON)
 REWARD_AMOUNT = 3.  # (µl) Amount of reward to be delivered upon correct choice each trial (overwitten if adaptive ON)
 # Water, Water 10% Sucrose, Water 15% Sucrose, Water 2% Citric Acid (Guo et al.. PLoS One 2014)
-REWARD_TYPE = 'Water'
+REWARD_TYPE = 'Water 15% Sucrose'
 # ADAPTIVE REWARD PARAMETERS (IGNORED IF ADAPTIVE_REWARD = False)
 AR_INIT_VALUE = 3  # µl
 AR_MIN_VALUE = 2  # µl
@@ -66,6 +66,5 @@ WHITE_NOISE_AMPLITUDE = 0.05
 GO_TONE_DURATION = 0.1  # Length of tone
 GO_TONE_FREQUENCY = 5000  # 5KHz
 GO_TONE_AMPLITUDE = 0.1  # [0->1]
-# POSITION BIAS
-TRAINED = False
+# POSITION BIAS FOR REPEATED TRIALS
 RESPONSE_BUFFER_LENGTH = 10
