@@ -12,7 +12,8 @@ from dateutil import parser
 
 
 class SessionPathCreator(object):
-    def __init__(self, iblrig_folder, main_data_folder, subject_name, protocol):  # add subject name and protocol (maybe have a metadata struct)
+    def __init__(self, iblrig_folder, main_data_folder, subject_name, 
+                 protocol, make_folders=True):  # add subject name and protocol (maybe have a metadata struct)
         if platform == 'linux':
             self.IBLRIG_FOLDER = '/home/nico/Projects/IBL/IBL-github/iblrig'
         else:
@@ -35,22 +36,22 @@ class SessionPathCreator(object):
                                                  'camera_recordings',
                                                  'one_camera.bonsai')
         self.SUBJECT_NAME = subject_name
-        self.SUBJECT_FOLDER = self.check_folder(self.ROOT_DATA_FOLDER,
+        self.SUBJECT_FOLDER = os.path.join(self.ROOT_DATA_FOLDER,
                                                 self.SUBJECT_NAME)
         self.SESSION_DATETIME = datetime.datetime.now()
         self.SESSION_DATE = self.SESSION_DATETIME.date().isoformat()
-        self.SESSION_DATE_FOLDER = self.check_folder(self.SUBJECT_FOLDER,
+        self.SESSION_DATE_FOLDER = os.path.join(self.SUBJECT_FOLDER,
                                                      self.SESSION_DATE)
         self.SESSION_NUMBER = self._session_number()
-        self.SESSION_FOLDER = self.check_folder(self.SESSION_DATE_FOLDER,
+        self.SESSION_FOLDER = os.path.join(self.SESSION_DATE_FOLDER,
                                                 self.SESSION_NUMBER)
-        self.SESSION_RAW_DATA_FOLDER = self.check_folder(self.SESSION_FOLDER,
+        self.SESSION_RAW_DATA_FOLDER = os.path.join(self.SESSION_FOLDER,
                                                          'raw_behavior_data')
-        self.SESSION_RAW_VIDEO_DATA_FOLDER = self.check_folder(self.SESSION_FOLDER,
+        self.SESSION_RAW_VIDEO_DATA_FOLDER = os.path.join(self.SESSION_FOLDER,
                                                                'raw_video_data')
-        self.SESSION_RAW_EPHYS_DATA_FOLDER = self.check_folder(self.SESSION_FOLDER,
+        self.SESSION_RAW_EPHYS_DATA_FOLDER = os.path.join(self.SESSION_FOLDER,
                                                                'raw_video_data')
-        self.SESSION_RAW_IMAGING_DATA_FOLDER = self.check_folder(self.SESSION_FOLDER,
+        self.SESSION_RAW_IMAGING_DATA_FOLDER = os.path.join(self.SESSION_FOLDER,
                                                                'raw_video_data')
         self.SESSION_NAME = '{}'.format(os.path.sep).join([self.SUBJECT_NAME,
                                                            self.SESSION_DATE,
@@ -65,7 +66,17 @@ class SessionPathCreator(object):
                                            self.BASE_FILENAME +
                                            'Data.raw.jsonable')
 
+        self.LATEST_WATER_CALIBRATION_FILE = self._latest_water_calibration_file()
         self.PREVIOUS_DATA_FILE = self._previous_data_file()
+
+        if make_folders:
+            self.check_folder(self.SUBJECT_FOLDER)
+            self.check_folder(self.SESSION_DATE_FOLDER)
+            self.check_folder(self.SESSION_FOLDER)
+            self.check_folder(self.SESSION_RAW_DATA_FOLDER)
+            self.check_folder(self.SESSION_RAW_VIDEO_DATA_FOLDER)
+            self.check_folder(self.SESSION_RAW_EPHYS_DATA_FOLDER)
+            self.check_folder(self.SESSION_RAW_IMAGING_DATA_FOLDER)
 
     def _root_data_folder(self, iblrig_folder, main_data_folder):
         iblrig_folder = Path(iblrig_folder)
@@ -176,7 +187,20 @@ class SessionPathCreator(object):
         else:
             return None
 
+    def _latest_water_calibration_file(self):
+        rdf = Path(self.ROOT_DATA_FOLDER)
+        cal = rdf / '_iblrig_calibration'
+        cal_session_folders = []
+        for date in self.get_subfolder_paths(str(cal)):
+            cal_session_folders.extend(self.get_subfolder_paths(date))
+        water_cal_files = []
+        for session in cal_session_folders:
+            session = Path(session)
+            water_cal_files.extend(list(session.glob(
+                '_iblrig_calibration_water_function.csv')))
+        return str(sorted(water_cal_files)[-1])
 
+       
 if __name__ == "__main__":
     spc = SessionPathCreator('some/path', None, 'test_mouse', 'ChoiceWorld')
     print("\nBASE_FILENAME:", spc.BASE_FILENAME,

@@ -223,9 +223,8 @@ class TrialParamHandler(object):
         self.out_tone = sph.OUT_TONE
         self.out_noise = sph.OUT_NOISE
         # Reward amount
-        self.reward_calibration = sph.CALIBRATION_VALUE
         self.reward_amount = sph.REWARD_AMOUNT
-        self.reward_valve_time = self.reward_amount * self.reward_calibration
+        self.reward_valve_time = sph.REWARD_VALVE_TIME
         self.iti_correct = self.iti_correct_target - self.reward_valve_time
         # Init trial type objects
         self.ac = AdaptiveContrast(sph)

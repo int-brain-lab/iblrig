@@ -28,12 +28,13 @@ RESPONSE_WINDOW = 60  # Time to move the wheel after go tone (seconds)
 ITI_CORRECT = 1  # how long the stim should stay visible after CORRECT choice
 ITI_ERROR = 2  # how long the stim should stay visible after ERROR choice
 # ADAPTIVE PARAMETERS
-ADAPTIVE_REWARD = True
+ADAPTIVE_REWARD = True  # wether to increase reware at session start usin AR_* criteria
 ADAPTIVE_CONTRAST = True  # MAKE FIXED_CONTRAST OBJECT, swap at init if this is false
 ADAPTIVE_GAIN = True
 # REWARDS
-CALIBRATION_VALUE = 0.067  # calibrated to 1µl on 2018-05-10
-REWARD_AMOUNT = 3.  # (µl) Amount of reward to be delivered upon correct choice each trial (ignored if adaptive ON)
+AUTOMATIC_CALIBRATION = True  # Wether to look for a calibration session and func to define the valve opening time
+CALIBRATION_VALUE = 0.067  # calibration value for 3ul of target reward amount (ignored if automatic ON)
+REWARD_AMOUNT = 3.  # (µl) Amount of reward to be delivered upon correct choice each trial (overwitten if adaptive ON)
 # Water, Water 10% Sucrose, Water 15% Sucrose, Water 2% Citric Acid (Guo et al.. PLoS One 2014)
 REWARD_TYPE = 'Water'
 # ADAPTIVE REWARD PARAMETERS (IGNORED IF ADAPTIVE_REWARD = False)
