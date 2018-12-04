@@ -13,12 +13,12 @@ from pathlib import Path
 from sys import platform
 
 import numpy as np
+import pandas as pd
 import scipy as sp
 import scipy.stats as st
 from dateutil import parser
 from pybpod_rotaryencoder_module.module_api import RotaryEncoderModule
 from pythonosc import udp_client
-import pandas as pd
 
 import sound
 from path_helper import SessionPathCreator
@@ -182,13 +182,13 @@ class SessionParamHandler(object):
             self.OUT_NOISE = ('SoftCode', 2)
         else:
             print("\n\nSOUND BOARD NOT IMPLEMTNED YET!!",
-            "\nPLEASE USE SOFT_SOUND='onboard' | 'xonar' in task_settings.py\n\n")
+                  "\nPLEASE USE SOFT_SOUND='onboard' | 'xonar' in task_settings.py\n\n")
 
     def play_tone(self):
         self.SD.play(self.GO_TONE, self.SOUND_SAMPLE_FREQ)  # , mapping=[1, 2])
 
     def play_noise(self):
-        self.SD.play(self.WHITE_NOISE, self.SOUND_SAMPLE_FREQ)  # , mapping=[1, 2])
+        self.SD.play(self.WHITE_NOISE, self.SOUND_SAMPLE_FREQ)
 
     def stop_sound(self):
         self.SD.stop()
@@ -268,12 +268,19 @@ class SessionParamHandler(object):
                 trial_data.append(last_trial)
         print("\n\nINFO: PREVIOUS SESSION FOUND",
               "\nLOADING PARAMETERS FROM: {}".format(self.PREVIOUS_DATA_FILE),
-              "\n\nPREVIOUS NTRIALS:              {}".format(trial_data[i]["trial_num"]),
-              "\nPREVIOUS NTRIALS (no repeats): {}".format(trial_data[i]["non_rc_ntrials"]),
-              "\nLAST REWARD:                   {}".format(trial_data[i]["reward_amount"]),
-              "\nLAST GAIN:                     {}".format(trial_data[i]["stim_gain"]),
-              "\nLAST CONTRAST SET:             {}".format(trial_data[i]["ac"]["contrast_set"]),
-              "\nBUFFERS LR:                    {}".format(trial_data[i]["ac"]["buffer"]))
+              "\n\nPREVIOUS NTRIALS:              {}".format(
+                  trial_data[i]["trial_num"]),
+              "\nPREVIOUS NTRIALS (no repeats): {}".format(
+                  trial_data[i]["non_rc_ntrials"]),
+              "\nLAST REWARD:                   {}".format(
+                  trial_data[i]["reward_amount"]),
+              "\nLAST GAIN:                     {}".format(
+                  trial_data[i]["stim_gain"]),
+              "\nLAST CONTRAST SET:             {}".format(
+                  trial_data[i]["ac"]["contrast_set"]),
+              "\nBUFFERS LR:                    {}".format(
+                  trial_data[i]["ac"]["buffer"]))
+
         return trial_data[i] if trial_data else None
 
     # =========================================================================
@@ -289,16 +296,17 @@ class SessionParamHandler(object):
         elif self.LAST_TRIAL_DATA and self.LAST_TRIAL_DATA['trial_num'] >= 200:
             out = self.LAST_TRIAL_DATA['reward_amount'] - self.AR_STEP
             out = self.AR_MIN_VALUE if out <= self.AR_MIN_VALUE else out
-        
+
         return out
 
     def _init_calib_func(self):
         if self.LATEST_WATER_CALIBRATION_FILE:
             # Load last calibration df1
             df1 = pd.read_csv(self.LATEST_WATER_CALIBRATION_FILE)
-            # make interp func 
-            vol2time = sp.interpolate.pchip(df1["weight_perdrop"], df1["open_time"])
-            return vol2time
+            # make interp func
+            time2vol = sp.interpolate.pchip(
+                df1["open_time"], df1["weight_perdrop"])
+            return time2vol
         else:
             return
 
@@ -307,7 +315,10 @@ class SessionParamHandler(object):
         if not self.AUTOMATIC_CALIBRATION:
             out = self.CALIBRATION_VALUE / 3 * self.REWARD_AMOUNT
         elif self.AUTOMATIC_CALIBRATION and self.CALIB_FUNC is not None:
-            out = self.CALIB_FUNC(self.REWARD_AMOUNT) 
+            out = 0
+            while np.round(self.CALIB_FUNC(out), 3) < self.REWARD_AMOUNT:
+                out += 1
+            out /= 1000
         elif self.AUTOMATIC_CALIBRATION and self.CALIB_FUNC is None:
             print("\n\nNO CALIBRATION FILE WAS FOUND:",
                   "\nPlease Calibrate the rig or use a manual calibration value.",
@@ -320,7 +331,6 @@ class SessionParamHandler(object):
                   "\nPlease Calibrate the rig or use a manual calibration value.")
             raise(ValueError)
         return float(out)
-            
 
     def _init_stim_gain(self):
         if not self.ADAPTIVE_GAIN:
@@ -375,7 +385,7 @@ class SessionParamHandler(object):
                            self.PYBPOD_PROTOCOL)
         dst = os.path.join(self.SESSION_RAW_DATA_FOLDER, self.PYBPOD_PROTOCOL)
         shutil.copytree(src, dst)
-         # Copy stimulus folder with bonsai workflow
+        # Copy stimulus folder with bonsai workflow
         src = self.VISUAL_STIM_FOLDER
         dst = os.path.join(self.SESSION_RAW_DATA_FOLDER, 'Gabor2D/')
         shutil.copytree(src, dst)
@@ -389,20 +399,20 @@ class SessionParamHandler(object):
         # zip all existing folders
         # Should be the task code folder and if available stimulus code folder
         behavior_code_files = [os.path.join(self.SESSION_RAW_DATA_FOLDER, x)
-                          for x in os.listdir(self.SESSION_RAW_DATA_FOLDER)
-                          if os.path.isdir(os.path.join(
-                              self.SESSION_RAW_DATA_FOLDER, x))]
+                               for x in os.listdir(self.SESSION_RAW_DATA_FOLDER)
+                               if os.path.isdir(os.path.join(
+                                   self.SESSION_RAW_DATA_FOLDER, x))]
         SessionParamHandler.zipit(
             behavior_code_files, os.path.join(self.SESSION_RAW_DATA_FOLDER,
-                                         '_iblrig_TaskCodeFiles.raw.zip'))
+                                              '_iblrig_TaskCodeFiles.raw.zip'))
 
         video_code_files = [os.path.join(self.SESSION_RAW_VIDEO_DATA_FOLDER, x)
-                          for x in os.listdir(self.SESSION_RAW_VIDEO_DATA_FOLDER)
-                          if os.path.isdir(os.path.join(
-                              self.SESSION_RAW_VIDEO_DATA_FOLDER, x))]
+                            for x in os.listdir(self.SESSION_RAW_VIDEO_DATA_FOLDER)
+                            if os.path.isdir(os.path.join(
+                                self.SESSION_RAW_VIDEO_DATA_FOLDER, x))]
         SessionParamHandler.zipit(
             video_code_files, os.path.join(self.SESSION_RAW_VIDEO_DATA_FOLDER,
-                                         '_iblrig_VideoCodeFiles.raw.zip'))
+                                           '_iblrig_VideoCodeFiles.raw.zip'))
 
         [shutil.rmtree(x) for x in behavior_code_files + video_code_files]
 
