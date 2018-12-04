@@ -7,7 +7,7 @@ from pybpodapi.bpod.hardware.output_channels import OutputChannel
 from pybpod_rotaryencoder_module.module_api import RotaryEncoderModule
 
 ntrials = 1
-valve_on_time = 10
+valve_on_time = 1000
 iti = 0.9
 
 # =============================================================================
