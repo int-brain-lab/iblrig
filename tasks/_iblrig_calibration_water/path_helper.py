@@ -18,8 +18,7 @@ class SessionPathCreator(object):
             self.IBLRIG_FOLDER = '/home/nico/Projects/IBL/IBL-github/iblrig'
         else:
             self.IBLRIG_FOLDER = str(Path(iblrig_folder))
-        self.IBLRIG_PARAMS_FOLDER = str(
-            Path(self.IBLRIG_FOLDER).parent / 'iblrig_params')
+        self.IBLRIG_PARAMS_FOLDER = str(Path(self.IBLRIG_FOLDER).parent / 'iblrig_params')
         self.ROOT_DATA_FOLDER = self._root_data_folder(self.IBLRIG_FOLDER,
                                                        main_data_folder)
         self.SOUND_STIM_FOLDER = os.path.join(self.IBLRIG_FOLDER, 'sound_stim',
@@ -67,6 +66,7 @@ class SessionPathCreator(object):
                                            self.BASE_FILENAME +
                                            'Data.raw.jsonable')
 
+        self.LATEST_WATER_CALIBRATION_FILE = self._latest_water_calibration_file()
         self.PREVIOUS_DATA_FILE = self._previous_data_file()
 
     def _root_data_folder(self, iblrig_folder, main_data_folder):
@@ -135,17 +135,26 @@ class SessionPathCreator(object):
             except IOError as e:
                 print(e, "\nCouldn't find IBLRIG_FOLDER in file system\n")
         else:
-            return main_data_folder
+            mdf = Path(main_data_folder)
+            if mdf.name != 'Subjects':
+                out = str(mdf / 'Subjects')
+            elif mdf.name == 'Subjects':
+                out = str(mdf)
+            self.check_folder(out)
+            return out
 
     def _session_number(self):
         session_nums = [int(x) for x in os.listdir(self.SESSION_DATE_FOLDER)
                         if os.path.isdir(os.path.join(self.SESSION_DATE_FOLDER,
                                                       x))]
         if not session_nums:
-            out = str(1)
-        else:
+            out = '00' + str(1)
+        elif max(session_nums) < 9:
+            out = '00' + str(int(max(session_nums)) + 1)
+        elif 99 > max(session_nums) == 9:
+            out = '0' + str(int(max(session_nums)) + 1)
+        elif max(session_nums) > 99:
             out = str(int(max(session_nums)) + 1)
-
         return out
 
     def _previous_session_folders(self):
@@ -178,9 +187,35 @@ class SessionPathCreator(object):
         else:
             return None
 
+def _latest_water_calibration_file(self):
+        rdf = Path(self.ROOT_DATA_FOLDER)
+        cal = rdf / '_iblrig_calibration'
+        if not cal.exists():
+            return None
+        cal_session_folders = []
+        for date in self.get_subfolder_paths(str(cal)):
+            cal_session_folders.extend(self.get_subfolder_paths(date))
+        water_cal_files = []
+        for session in cal_session_folders:
+            session = Path(session) / 'raw_behavior_data'
+            water_cal_files.extend(list(session.glob(
+                '_iblrig_calibration_water_function.csv')))
+
+        water_cal_files = sorted(water_cal_files,
+                                 key=lambda x: int(x.parent.parent.name))
+
+        if water_cal_files:
+            return str(water_cal_files[-1])
+        else:
+            return
+
 
 if __name__ == "__main__":
-    spc = SessionPathCreator('some/path', None, 'test_mouse', 'ChoiceWorld')
+    # spc = SessionPathCreator('C:\\iblrig', None, '_iblrig_test_mouse', 'trainingChoiceWorld')
+    spc = SessionPathCreator('/home/nico/Projects/IBL/IBL-github/iblrig',
+                             '/home/nico/Projects/IBL/IBL-github/iblrig/scratch/Subjects',
+                             '_iblrig_test_mouse', 'trainingChoiceWorld')
+
     print("\nBASE_FILENAME:", spc.BASE_FILENAME,
           "\nPREVIOUS_DATA_FILE:", spc.PREVIOUS_DATA_FILE,
           "\nSESSION_DATETIME:", spc.SESSION_DATETIME,
@@ -198,5 +233,6 @@ if __name__ == "__main__":
           "\nSESSION_FOLDER:", spc.SESSION_FOLDER,
           "\nSESSION_RAW_DATA_FOLDER:", spc.SESSION_RAW_DATA_FOLDER,
           "\nSUBJECT_FOLDER:", spc.SUBJECT_FOLDER,
-          "\nVISUAL_STIM_FOLDER:", spc.VISUAL_STIM_FOLDER)
+          "\nVISUAL_STIM_FOLDER:", spc.VISUAL_STIM_FOLDER,
+          "\nLATEST_WATER_CALIBRATION_FILE:", spc.LATEST_WATER_CALIBRATION_FILE)
     print('.')

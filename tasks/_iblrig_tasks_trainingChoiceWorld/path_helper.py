@@ -12,8 +12,8 @@ from dateutil import parser
 
 
 class SessionPathCreator(object):
-    def __init__(self, iblrig_folder, main_data_folder, subject_name,
-                 protocol, make_folders=True):  # add subject name and protocol (maybe have a metadata struct)
+    # add subject name and protocol (maybe have a metadata struct)
+    def __init__(self, iblrig_folder, main_data_folder, subject_name, protocol):
         if platform == 'linux':
             self.IBLRIG_FOLDER = '/home/nico/Projects/IBL/IBL-github/iblrig'
         else:
@@ -135,17 +135,26 @@ class SessionPathCreator(object):
             except IOError as e:
                 print(e, "\nCouldn't find IBLRIG_FOLDER in file system\n")
         else:
-            return main_data_folder
+            mdf = Path(main_data_folder)
+            if mdf.name != 'Subjects':
+                out = str(mdf / 'Subjects')
+            elif mdf.name == 'Subjects':
+                out = str(mdf)
+            self.check_folder(out)
+            return out
 
     def _session_number(self):
         session_nums = [int(x) for x in os.listdir(self.SESSION_DATE_FOLDER)
                         if os.path.isdir(os.path.join(self.SESSION_DATE_FOLDER,
                                                       x))]
         if not session_nums:
-            out = str(1)
-        else:
+            out = '00' + str(1)
+        elif max(session_nums) < 9:
+            out = '00' + str(int(max(session_nums)) + 1)
+        elif 99 > max(session_nums) == 9:
+            out = '0' + str(int(max(session_nums)) + 1)
+        elif max(session_nums) > 99:
             out = str(int(max(session_nums)) + 1)
-
         return out
 
     def _previous_session_folders(self):
@@ -181,6 +190,8 @@ class SessionPathCreator(object):
     def _latest_water_calibration_file(self):
         rdf = Path(self.ROOT_DATA_FOLDER)
         cal = rdf / '_iblrig_calibration'
+        if not cal.exists():
+            return None
         cal_session_folders = []
         for date in self.get_subfolder_paths(str(cal)):
             cal_session_folders.extend(self.get_subfolder_paths(date))
@@ -200,7 +211,11 @@ class SessionPathCreator(object):
 
 
 if __name__ == "__main__":
-    spc = SessionPathCreator('C:\\iblrig', None, '_iblrig_test_mouse', 'trainingChoiceWorld')
+    # spc = SessionPathCreator('C:\\iblrig', None, '_iblrig_test_mouse', 'trainingChoiceWorld')
+    spc = SessionPathCreator('/home/nico/Projects/IBL/IBL-github/iblrig',
+                             '/home/nico/Projects/IBL/IBL-github/iblrig/scratch/Subjects',
+                             '_iblrig_test_mouse', 'trainingChoiceWorld')
+
     print("\nBASE_FILENAME:", spc.BASE_FILENAME,
           "\nPREVIOUS_DATA_FILE:", spc.PREVIOUS_DATA_FILE,
           "\nSESSION_DATETIME:", spc.SESSION_DATETIME,
