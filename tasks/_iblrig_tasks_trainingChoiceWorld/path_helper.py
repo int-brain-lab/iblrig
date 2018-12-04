@@ -12,7 +12,7 @@ from dateutil import parser
 
 
 class SessionPathCreator(object):
-    def __init__(self, iblrig_folder, main_data_folder, subject_name, 
+    def __init__(self, iblrig_folder, main_data_folder, subject_name,
                  protocol, make_folders=True):  # add subject name and protocol (maybe have a metadata struct)
         if platform == 'linux':
             self.IBLRIG_FOLDER = '/home/nico/Projects/IBL/IBL-github/iblrig'
@@ -189,13 +189,16 @@ class SessionPathCreator(object):
             session = Path(session) / 'raw_behavior_data'
             water_cal_files.extend(list(session.glob(
                 '_iblrig_calibration_water_function.csv')))
-        
-        water_cal_files = sorted(water_cal_files, 
-                                 key=lambda x: int(x.parent.parent.name))
-        
-        return str(water_cal_files[-1])
 
-       
+        water_cal_files = sorted(water_cal_files,
+                                 key=lambda x: int(x.parent.parent.name))
+
+        if water_cal_files:
+            return str(water_cal_files[-1])
+        else:
+            return
+
+
 if __name__ == "__main__":
     spc = SessionPathCreator('C:\\iblrig', None, '_iblrig_test_mouse', 'trainingChoiceWorld')
     print("\nBASE_FILENAME:", spc.BASE_FILENAME,
