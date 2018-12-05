@@ -29,7 +29,7 @@ from session_params import SessionParamHandler
 
 sph = SessionParamHandler(task_settings, user_settings)
 
-bpod = Bpod('COM3')
+bpod = Bpod()
 
 # OUTPUT OVERVIEW FIGURE
 sns.set()
@@ -171,20 +171,20 @@ for open_time in open_times:
     print(f'Weight change = {measured_weight}g |',
           f'delivered {measured_weight / ntrials * 1000}ul per',
           f'{open_time}ms (averaged over {ntrials} drops).')
-    
+
     mw.append(measured_weight)
-    
+
     if pass_ % sph.PASSES == 0:
         df1 = df1.append({
             "open_time": open_time,
             "ndrops": ntrials,
-            "npasses": sph.PASSES, 
+            "npasses": sph.PASSES,
             "mean_measured_weight": np.mean(mw),
             "std_measured_weight": np.std(mw),
             "time": datetime.datetime.now(),
         }, ignore_index=True)
-    
-        pass_ = 1 
+
+        pass_ = 1
         mw = []
     else:
         pass_ += 1
