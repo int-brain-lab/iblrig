@@ -155,12 +155,8 @@ def plot_bars(trial_data, ax=None):
     ax.barh(2, bar_data['ntrials_adaptive'], width,
             left=bar_data['ntrials_repeated'], color="orange",
             label='Adaptive')
-    # ax.barh(2, bar_data['ntrials_staircase'], width,
-    #         left=(bar_data['ntrials_repeated'] + bar_data['ntrials_adaptive']),
-    #         color="purple", label='Staircase')
     make_bar_texts(ax, 2, [bar_data['ntrials_repeated'],
-                   bar_data['ntrials_adaptive'],
-                   ])  # bar_data['ntrials_staircase']
+                   bar_data['ntrials_adaptive']])
 
     ax.barh(1, bar_data['ntrials_correct'], width, color="green",
             label='Correct')
@@ -242,12 +238,7 @@ test_mouse/2018-05-08/13/pycw_basic.data.json'
     trial_data = data[-1]
     psyfun_df = make_psyfun_df()
     f, ax_bars, ax_psyc = make_fig()
-    # f = plt.figure()  # figsize=(19.2, 10.8), dpi=100)
-    # ax_bars = plt.subplot2grid((2, 1), (0, 0), rowspan=1, colspan=1)
-    # ax_psyc = plt.subplot2grid((2, 1), (1, 0), rowspan=1, colspan=1)
-    # f.show()
-    # f.canvas.draw_idle()
-    # f.show()
+
     i = -1
     trial_data = data[i]
 
@@ -256,18 +247,3 @@ test_mouse/2018-05-08/13/pycw_basic.data.json'
         interval = update_psyfun_df(trial_data, psyfun_df)
 
     plot_psyfun(trial_data, psyfun_df, ax=ax_psyc)
-    # plt.show()
-    # f.canvas.draw_idle()
-
-    # df = session_df_from_path(data_file)
-    # psyfun_df = psyfun_df_from_path(data_file)
-    # update_plot(plot_bars, ax, data[-1], 3)
-
-    # fig = plt.figure()
-    # ax = fig.add_subplot(111)
-    # line1, = ax.plot(x, y, 'r-')  # Returns a tuple of line objects
-    # # plt.show()
-    # for phase in np.linspace(0, 10 * np.pi, 500):
-    #     line1.set_ydata(np.sin(x + phase))
-    #     fig.canvas.draw()
-    #     fig.canvas.flush_events()

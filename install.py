@@ -28,12 +28,12 @@ elif sys.platform in ['Darwin', 'macOSx', 'osx']:
     print("ERROR: macOSx is not supported yet\nInstallation aborted!")
 else:
     print('\nERROR: Unsupported OS\nInstallation aborted!')
-
 # END CONSTANT DEFINITION
 
-def get_iblenv(conda):
+
+def get_iblenv():
     # Find ibllib environment
-    all_envs = subprocess.check_output([conda, "env", "list", "--json"])
+    all_envs = subprocess.check_output(["conda", "env", "list", "--json"])
     all_envs = json.loads(all_envs.decode('utf-8'))
     pat = re.compile("^.+iblenv$")
     iblenv = [x for x in all_envs['envs'] if pat.match(x)]
@@ -41,8 +41,8 @@ def get_iblenv(conda):
     return iblenv
 
 
-def get_iblenv_pip_n_python(conda):
-    iblenv = get_iblenv(conda)
+def get_ibllib_python():
+    iblenv = get_iblenv()
     if sys.platform in ['Windows', 'windows', 'win32']:
         pip = os.path.join(iblenv, 'Scripts', 'pip.exe')
         python = os.path.join(iblenv, "python.exe")
@@ -56,21 +56,20 @@ def get_iblenv_pip_n_python(conda):
         print('\nERROR: Unsupported OS\nInstallation aborted!')
         return
 
-    subprocess.call([python, '-m', 'pip', 'install', '--upgrade', 'pip'])
-
-    return pip, python
+    return python
 
 
-def check_dependencies(conda):
+def check_dependencies():
     # Check if Git and conda are installed
     print('\n\nINFO: Checking for dependencies:')
     print("N" * 79)
     try:
         subprocess.check_output(["git", "--version"])
         print("Git... OK")
-        subprocess.check_output([conda, "update", "-y", "-n", "base",
-                                 "-c", "defaults", "conda"])
+        os.system("conda update -y -n base -c defaults conda")
         print("Conda... OK")
+        os.system("python -m pip install --upgrade pip")
+        print("pip... OK")
     except Exception as err:
         print(err, "\nEither git or conda were not found on your system\n")
         return
@@ -78,59 +77,53 @@ def check_dependencies(conda):
     print("All dependencies OK.")
 
 
-def install_environment(conda):
+def install_environment():
     print('\n\nINFO: Installing iblenv:')
     print("N" * 79)
     # Checks id env is already installed
-    env = get_iblenv(conda)
+    env = get_iblenv()
     # Creates commands
-    create_command = '{} create -y -n iblenv python=3.7'. format(conda).split()
-    remove_command = '{} env remove -y -n iblenv'. format(conda).split()
+    create_command = 'conda create -y -n iblenv python=3.7'
+    remove_command = 'conda env remove -y -n iblenv'
     # Installes the env
     if env:
         print("Found pre-existing environment in {}".format(env),
               "\nDo you want to reinstall the environment? (y/n):")
         user_input = input()
         if user_input == 'y':
-            subprocess.call(remove_command)
-            install_environment(conda)
+            os.system(remove_command)
+            install_environment()
         elif user_input != 'n' and user_input != 'y':
             print("Please answer 'y' or 'n'")
-            install_environment(conda)
+            install_environment()
         elif user_input == 'n':
             pass
     else:
-        subprocess.call(create_command)
+        os.system(create_command)
+        os.system("activate iblenv && python -m pip install --upgrade pip")
 
     print("N" * 79)
     print("iblenv installed.")
 
 
-def install_iblrig_requirements(conda):
+def install_iblrig_requirements():
     print('\n\nINFO: Installing IBLrig requirements:')
     print("N" * 79)
-    iblenv = get_iblenv(conda)
-    pip, _ = get_iblenv_pip_n_python(conda)
-    if iblenv is None:
-        msg = "Can't install iblrig requirements, iblenv not found"
-        raise ValueError(msg)
-
     print("N" * 39, 'Installing scipy')
-    subprocess.call([CONDA, "install", "-y",
-                     "-n", "iblenv", "scipy"])
+    os.system("conda install -y -n iblenv scipy")
     print("N" * 39, 'Installing requests')
-    subprocess.call([CONDA, "install", "-y", "-n",
-                     "iblenv", "requests"])
+    os.system("conda install -y -n iblenv requests")
+
     print("N" * 39, '(pip) Installing python-osc')
-    subprocess.call([pip, "install", "python-osc"])
-    subprocess.call([pip, "install", "cython"])
-    print("N" * 39, '(pip) Installing PyBpod')
-    subprocess.call([pip, "install", "pybpod", "--upgrade"])
-    subprocess.call([pip, "install", "-U", "pybpod"])  # this is for update?
-    print("N" * 39, '(pip) Installing Alyx plugin')
-    subprocess.call([pip, "install", "pybpod-gui-plugin-alyx", "--upgrade"])
+    os.system("activate iblenv && pip install python-osc")
+    os.system("activate iblenv && pip install cython")
     print("N" * 39, '(pip) Installing sounddevice')
-    subprocess.call([pip, "install", "sounddevice"])
+    os.system("activate iblenv && pip install sounddevice")
+    print("N" * 39, '(pip) Installing PyBpod')
+    os.system("activate iblenv && pip install pybpod --upgrade")
+    os.system("activate iblenv && pip install -U pybpod")
+    print("N" * 39, '(pip) Installing Alyx plugin')
+    os.system("activate iblenv && pip install pybpod-gui-plugin-alyx --upgrade")
     print("N" * 79)
     print("IBLrig requirements installed.")
 
@@ -142,18 +135,18 @@ def clone_ibllib():
     ibllib_path = IBLRIG_ROOT_PATH.parent / 'ibllib'
     if ibllib_path.exists():
         print("ibllib folder is already present.",
-        "\nDo you want to reinstall? (y/n)")
+              "\nDo you want to reinstall? (y/n)")
         user_input = input()
         if user_input == 'n':
             return user_input
         elif user_input == 'y':
             try:
-                shutil.rmtree(ibllib_path)
+                os.system(f"rd /s /q {ibllib_path}")
                 subprocess.call(["git", "clone",
                                  'https://github.com/int-brain-lab/ibllib.git'])
             except:
                 print("\nCould not delete ibllib folder",
-                "\nPlease delete it manually and retry.")
+                      "\nPlease delete it manually and retry.")
                 clone_ibllib()
         elif user_input != 'n' and user_input != 'y':
             print("\n Please select either y of n")
@@ -167,51 +160,44 @@ def clone_ibllib():
     print("ibllib cloned.")
 
 
-def install_ibllib(conda, user_input=False):
+def install_ibllib(user_input=False):
     if user_input == 'n':
         return
 
     print('\n\nINFO: Installing ibllib:')
     print("N" * 79)
-    iblenv = get_iblenv(conda)
-    pip, _ = get_iblenv_pip_n_python(conda)
-    if iblenv is None:
-        msg = "Can't install ibllib to iblenv, iblenv not found"
-        raise ValueError(msg)
-    # Install iblenv
     os.chdir(IBLRIG_ROOT_PATH.parent / 'ibllib/python')
-    subprocess.call([pip, "install", "-e", "."])
+    os.system("conda activate iblenv && pip install -e .")
     os.chdir(IBLRIG_ROOT_PATH)
     print("N" * 79)
     print("INFO: ibllib installed.")
 
 
-def configure_iblrig_params(conda):
+def configure_iblrig_params():
     print('\n\nINFO: Setting up default project config in ../iblrig_params:')
     print("N" * 79)
-    iblenv = get_iblenv(conda)
-    _, python = get_iblenv_pip_n_python(conda)
+    iblenv = get_iblenv()
+    python = get_ibllib_python()
     if iblenv is None:
         msg = "Can't configure iblrig_params, iblenv not found"
         raise ValueError(msg)
     iblrig_params_path = IBLRIG_ROOT_PATH.parent / 'iblrig_params'
     if iblrig_params_path.exists():
         print("Found previous configuration in {}".format(str(iblrig_params_path)),
-        "\nDo you want to reset to default config? (y/n)")
+              "\nDo you want to reset to default config? (y/n)")
         user_input = input()
         if user_input == 'n':
             return
         elif user_input == 'y':
             subprocess.call([python,
-                            "setup_default_config.py",
-                            str(iblrig_params_path)])
+                             "setup_default_config.py",
+                             str(iblrig_params_path)])
         elif user_input != 'n' and user_input != 'y':
             print("\n Please select either y of n")
-            configure_iblrig_params(conda)
+            configure_iblrig_params()
     else:
         subprocess.call([python,
                          "setup_default_config.py", str(iblrig_params_path)])
-
 
 
 def install_bonsai():
@@ -229,12 +215,12 @@ def install_bonsai():
 
 if __name__ == '__main__':
     try:
-        check_dependencies(CONDA)
-        install_environment(CONDA)
-        install_iblrig_requirements(CONDA)
+        check_dependencies()
+        install_environment()
+        install_iblrig_requirements()
         yn = clone_ibllib()
-        install_ibllib(CONDA, user_input=yn)
-        configure_iblrig_params(CONDA)
+        install_ibllib(user_input=yn)
+        configure_iblrig_params()
         print("\nIts time to install Bonsai:")
         install_bonsai()
         print("\n\nINFO: iblrig installed, you should be good to go!")

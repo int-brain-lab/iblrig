@@ -80,11 +80,13 @@ class AdaptiveContrast(object):
 
     def _init_buffer(self):
         if self.previous_session is None or not self.last_trial_data:
-            _buffer = np.zeros((2, self.buffer_size, len(self.all_contrasts))).tolist()
+            _buffer = np.zeros((2, self.buffer_size,
+                                len(self.all_contrasts))).tolist()
         else:
             _buffer = self.last_trial_data['ac']['buffer']
             if len(_buffer) > 2:
-                _buffer = np.zeros((2, self.buffer_size, len(self.all_contrasts))).tolist()
+                _buffer = np.zeros((2, self.buffer_size,
+                                    len(self.all_contrasts))).tolist()
         return _buffer
 
     def _init_contrast(self):
@@ -92,7 +94,8 @@ class AdaptiveContrast(object):
         return _contrast
 
     def _reset_buffer(self):
-        self.buffer = np.zeros((2, self.buffer_size, len(self.all_contrasts))).tolist()
+        self.buffer = np.zeros((2, self.buffer_size,
+                                len(self.all_contrasts))).tolist()
 
     def _update_buffer(self):
         _buffer = np.asarray(self.buffer)
@@ -108,7 +111,9 @@ class AdaptiveContrast(object):
         self.value = random.choice(self.contrast_set)
 
     def _update_contrast_set(self):
-        curr_idx = np.array([True if x in self.contrast_set else False for x in self.all_contrasts])
+        curr_idx = np.array(
+            [True if x in self.contrast_set else False
+             for x in self.all_contrasts])
         min_idx = sum(curr_idx[:-1]) - 1
         new_idx = np.array([False for x in self.all_contrasts])
         # Update counter of how mant trials were performend with 0.125 contrast
@@ -238,7 +243,8 @@ class TrialParamHandler(object):
         self.event_error = sph.THRESHOLD_EVENTS[self.position]
         self.event_reward = sph.THRESHOLD_EVENTS[-self.position]
         self.movement_left = sph.THRESHOLD_EVENTS[sph.QUIESCENCE_THRESHOLDS[0]]
-        self.movement_right = sph.THRESHOLD_EVENTS[sph.QUIESCENCE_THRESHOLDS[1]]
+        self.movement_right = sph.THRESHOLD_EVENTS[sph.QUIESCENCE_THRESHOLDS[1]
+                                                   ]
         self.response_buffer = [0] * sph.RESPONSE_BUFFER_LENGTH
         # Outcome related parmeters
         self.contrast = self.ac
@@ -277,7 +283,7 @@ class TrialParamHandler(object):
             self.water_delivered = self.water_delivered + self.reward_amount
         # Propagate outcome to contrast object
         self.contrast.trial_completed(self.trial_correct, self.signed_contrast)
-        #SAVE TRIAL DATA
+        # SAVE TRIAL DATA
         params = self.__dict__.copy()
         params.update({'behavior_data': behavior_data})
         # open data_file is not serializable, convert to str
@@ -367,8 +373,8 @@ class TrialParamHandler(object):
 
     def _next_position(self):
         if self.contrast.type == 'RepeatContrast':
-            rightward_responses = [int(x) for x in self.response_buffer if x == 1]
-            right_proportion = sum(rightward_responses) / len(self.response_buffer)
+            right_responses = [int(x) for x in self.response_buffer if x == 1]
+            right_proportion = sum(right_responses) / len(self.response_buffer)
             if random.gauss(right_proportion, 0.5) < 0.5:
                 _position = -35  # show the stim on the left
             else:
