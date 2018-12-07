@@ -28,8 +28,8 @@ elif sys.platform in ['Darwin', 'macOSx', 'osx']:
     print("ERROR: macOSx is not supported yet\nInstallation aborted!")
 else:
     print('\nERROR: Unsupported OS\nInstallation aborted!')
-
 # END CONSTANT DEFINITION
+
 
 def get_iblenv(conda):
     # Find ibllib environment
@@ -55,9 +55,7 @@ def get_iblenv_pip_n_python(conda):
     else:
         print('\nERROR: Unsupported OS\nInstallation aborted!')
         return
-
     subprocess.call([python, '-m', 'pip', 'install', '--upgrade', 'pip'])
-
     return pip, python
 
 
@@ -142,7 +140,7 @@ def clone_ibllib():
     ibllib_path = IBLRIG_ROOT_PATH.parent / 'ibllib'
     if ibllib_path.exists():
         print("ibllib folder is already present.",
-        "\nDo you want to reinstall? (y/n)")
+              "\nDo you want to reinstall? (y/n)")
         user_input = input()
         if user_input == 'n':
             return user_input
@@ -150,10 +148,10 @@ def clone_ibllib():
             try:
                 shutil.rmtree(ibllib_path)
                 subprocess.call(["git", "clone",
-                                 'https://github.com/int-brain-lab/ibllib.git'])
-            except:
+                                'https://github.com/int-brain-lab/ibllib.git'])
+            except IOError:
                 print("\nCould not delete ibllib folder",
-                "\nPlease delete it manually and retry.")
+                      "\nPlease delete it manually and retry.")
                 clone_ibllib()
         elif user_input != 'n' and user_input != 'y':
             print("\n Please select either y of n")
@@ -169,6 +167,7 @@ def clone_ibllib():
 
 def install_ibllib(conda, user_input=False):
     if user_input == 'n':
+        print("Skipping ibllib installation...")
         return
 
     print('\n\nINFO: Installing ibllib:')
@@ -196,22 +195,21 @@ def configure_iblrig_params(conda):
         raise ValueError(msg)
     iblrig_params_path = IBLRIG_ROOT_PATH.parent / 'iblrig_params'
     if iblrig_params_path.exists():
-        print("Found previous configuration in {}".format(str(iblrig_params_path)),
-        "\nDo you want to reset to default config? (y/n)")
+        print(f"Found previous configuration in {str(iblrig_params_path)}",
+              "\nDo you want to reset to default config? (y/n)")
         user_input = input()
         if user_input == 'n':
             return
         elif user_input == 'y':
             subprocess.call([python,
                             "setup_default_config.py",
-                            str(iblrig_params_path)])
+                             str(iblrig_params_path)])
         elif user_input != 'n' and user_input != 'y':
             print("\n Please select either y of n")
             configure_iblrig_params(conda)
     else:
         subprocess.call([python,
                          "setup_default_config.py", str(iblrig_params_path)])
-
 
 
 def install_bonsai():

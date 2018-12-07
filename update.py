@@ -12,9 +12,10 @@ Usage:
     update.py -h | --help | ?
         Displays this docstring.
     update.py <version>
-        Will checkout the <version> release and import the task files to pybpod.
+        Will checkout the <version> release and import task files to pybpod.
     update.py <branch>
-        Will checkout the latest commit of <branch> and import the task files to pybpod.
+        Will checkout the latest commit of <branch> and import task files to
+        pybpod.
     update.py reinstall
         Will reinstall the rig to the latest revision on master.
     update.py update
@@ -24,14 +25,14 @@ Usage:
     update.py tasks
         Will reimport tasks to pybpod with overwriting task_settings.py.
     update.py tasks <branch>
-        Will checkout latest revision of <branch> and import tasks overwriting task_settings.py.
+        Will checkout latest revision of <branch> and import tasks overwriting
+        task_settings.py.
 
 
 """
 import subprocess
 import sys
 import os
-import shutil
 from pathlib import Path
 from setup_default_config import copy_code_files_to_iblrig_params
 
@@ -63,14 +64,8 @@ def get_current_version():
     return tag
 
 
-def submodule_update():
-    print("Running: git submodule update")
-    subprocess.call(['git', 'submodule', 'update'])
-
-
-def pull():
-    subprocess.call(['git', 'pull', 'origin', 'master'])
-    submodule_update()
+def pull(branch):
+    subprocess.call(['git', 'pull', 'origin', branch])
 
 
 def iblrig_params_path():
@@ -92,9 +87,10 @@ def checkout_version(ver):
     subprocess.call(['git', 'checkout', 'tags/' + ver])
 
 
-def checkout_branch(ver):
-    print("\nChecking out {}".format(ver))
-    subprocess.call(['git', 'checkout', ver])
+def checkout_branch(branch):
+    print("\nChecking out {}".format(branch))
+    subprocess.call(['git', 'checkout', branch])
+    pull(branch)
 
 
 def checkout_single_file(file=None, branch='master'):

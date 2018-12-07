@@ -9,14 +9,11 @@ import shutil
 import subprocess
 import time
 import zipfile
-from pathlib import Path
 from sys import platform
 
 import numpy as np
 import pandas as pd
 import scipy as sp
-import scipy.stats as st
-from dateutil import parser
 from pybpod_rotaryencoder_module.module_api import RotaryEncoderModule
 from pythonosc import udp_client
 
@@ -120,14 +117,15 @@ class SessionParamHandler(object):
         self.GO_TONE_FREQUENCY = int(self.GO_TONE_FREQUENCY)
         self.GO_TONE_AMPLITUDE = float(self.GO_TONE_AMPLITUDE)
 
-        self.SD = sound.configure_sounddevice(output=self.SOFT_SOUND,
-                                              samplerate=self.SOUND_SAMPLE_FREQ)
+        self.SD = sound.configure_sounddevice(
+            output=self.SOFT_SOUND, samplerate=self.SOUND_SAMPLE_FREQ)
 
         self._init_sounds()  # Will create sounds and output actions.
         # =====================================================================
         # RUN BONSAI
         # =====================================================================
-        self.USE_VISUAL_STIMULUS = False if platform == 'linux' else self.USE_VISUAL_STIMULUS
+        if platform == 'linux':
+            self.USE_VISUAL_STIMULUS = False
         self.BONSAI = spc.get_bonsai_path(use_iblrig_bonsai=True)
         self.start_visual_stim()
         # =====================================================================
@@ -182,7 +180,8 @@ class SessionParamHandler(object):
             self.OUT_NOISE = ('SoftCode', 2)
         else:
             print("\n\nSOUND BOARD NOT IMPLEMTNED YET!!",
-                  "\nPLEASE USE SOFT_SOUND='onboard' | 'xonar' in task_settings.py\n\n")
+                  "\nPLEASE USE SOFT_SOUND =",
+                  "'sysdefault' or 'xonar' in task_settings.py\n\n")
 
     def play_tone(self):
         self.SD.play(self.GO_TONE, self.SOUND_SAMPLE_FREQ)  # , mapping=[1, 2])
@@ -224,10 +223,10 @@ class SessionParamHandler(object):
             noeditor = '--noeditor'
 
             if self.BONSAI_EDITOR:
-                bonsai = subprocess.Popen(
+                subprocess.Popen(
                     [bns, wkfl, start, pos, evt, itr, com, mic, rec])
             elif not self.BONSAI_EDITOR:
-                bonsai = subprocess.Popen(
+                subprocess.Popen(
                     [bns, wkfl, noeditor, pos, evt, itr, com, mic, rec])
             time.sleep(5)
             os.chdir(here)
@@ -252,9 +251,10 @@ class SessionParamHandler(object):
 
         start = '--start'
 
-        bonsai = subprocess.Popen([bns, wkfl, start, ts, vid, rec])
+        subprocess.Popen([bns, wkfl, start, ts, vid, rec])
         time.sleep(1)
         os.chdir(here)
+
     # =========================================================================
     # LAST TRIAL DATA
     # =========================================================================
@@ -321,14 +321,14 @@ class SessionParamHandler(object):
             out /= 1000
         elif self.AUTOMATIC_CALIBRATION and self.CALIB_FUNC is None:
             print("\n\nNO CALIBRATION FILE WAS FOUND:",
-                  "\nPlease Calibrate the rig or use a manual calibration value.",
+                  "\nCalibrate the rig or use a manual calibration value.",
                   "\n\n")
             raise ValueError
         print("\n\nREWARD_VALVE_TIME:", out, "\n\n")
         if out >= 1:
             print("\n\nREWARD_VALVE_TIME is too high!:", out,
                   "\nProbably because of a BAD calibration file...",
-                  "\nPlease Calibrate the rig or use a manual calibration value.")
+                  "\nCalibrate the rig or use a manual calibration value.")
             raise(ValueError)
         return float(out)
 
@@ -398,18 +398,20 @@ class SessionParamHandler(object):
     def _save_task_code(self):
         # zip all existing folders
         # Should be the task code folder and if available stimulus code folder
-        behavior_code_files = [os.path.join(self.SESSION_RAW_DATA_FOLDER, x)
-                               for x in os.listdir(self.SESSION_RAW_DATA_FOLDER)
-                               if os.path.isdir(os.path.join(
-                                   self.SESSION_RAW_DATA_FOLDER, x))]
+        behavior_code_files = [
+            os.path.join(self.SESSION_RAW_DATA_FOLDER, x)
+            for x in os.listdir(self.SESSION_RAW_DATA_FOLDER)
+            if os.path.isdir(os.path.join(self.SESSION_RAW_DATA_FOLDER, x))
+        ]
         SessionParamHandler.zipit(
             behavior_code_files, os.path.join(self.SESSION_RAW_DATA_FOLDER,
                                               '_iblrig_TaskCodeFiles.raw.zip'))
 
-        video_code_files = [os.path.join(self.SESSION_RAW_VIDEO_DATA_FOLDER, x)
-                            for x in os.listdir(self.SESSION_RAW_VIDEO_DATA_FOLDER)
-                            if os.path.isdir(os.path.join(
-                                self.SESSION_RAW_VIDEO_DATA_FOLDER, x))]
+        video_code_files = [
+            os.path.join(self.SESSION_RAW_VIDEO_DATA_FOLDER, x)
+            for x in os.listdir(self.SESSION_RAW_VIDEO_DATA_FOLDER)
+            if os.path.isdir(os.path.join(
+                self.SESSION_RAW_VIDEO_DATA_FOLDER, x))]
         SessionParamHandler.zipit(
             video_code_files, os.path.join(self.SESSION_RAW_VIDEO_DATA_FOLDER,
                                            '_iblrig_VideoCodeFiles.raw.zip'))

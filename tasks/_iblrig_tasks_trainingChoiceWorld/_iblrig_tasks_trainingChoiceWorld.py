@@ -4,7 +4,6 @@
 # @Last Modified by:   Niccolò Bonacchi
 # @Last Modified time: 2018-10-09 13:32:28
 from pybpodapi.protocol import Bpod, StateMachine
-from pybpod_rotaryencoder_module.module_api import RotaryEncoderModule
 from pybpod_rotaryencoder_module.module import RotaryEncoder
 import matplotlib.pyplot as plt
 from dateutil import parser
@@ -174,7 +173,7 @@ for i in range(sph.NTRIALS):  # Main loop
     print('NTRIALS CORRECT: ', trial_data['ntrials_correct'])
     print('WATER DELIVERED ', trial_data['water_delivered'])
     print('TIME FROM START: ', (datetime.datetime.now() -
-                                  parser.parse(trial_data['init_datetime'])))
+                                parser.parse(trial_data['init_datetime'])))
     if sph.RECORD_AMBIENT_SENSOR_DATA:
         data = ambient_sensor.get_reading(bpod,
                                           save_to=sph.SESSION_RAW_DATA_FOLDER)
