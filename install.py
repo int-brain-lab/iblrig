@@ -14,19 +14,8 @@ from pathlib import Path
 
 # BEGIN CONSTANT DEFINITION
 IBLRIG_ROOT_PATH = Path.cwd()
-REQUIREMENTS_FILE = IBLRIG_ROOT_PATH / 'requirements.txt'
 
-
-if sys.platform in ['Windows', 'windows', 'win32']:
-    CONDA = "conda"
-elif sys.platform in ['Linux', 'linux']:
-    p = sys.prefix.split(os.sep)
-    p = [x for x in p if 'env' not in x]
-    conda_path = '{}'.format(os.sep).join(p)
-    CONDA = os.path.join(conda_path, "bin", "conda")
-elif sys.platform in ['Darwin', 'macOSx', 'osx']:
-    print("ERROR: macOSx is not supported yet\nInstallation aborted!")
-else:
+if sys.platform not in ['Windows', 'windows', 'win32']:
     print('\nERROR: Unsupported OS\nInstallation aborted!')
 # END CONSTANT DEFINITION
 
@@ -41,22 +30,12 @@ def get_iblenv():
     return iblenv
 
 
-def get_ibllib_python():
+def get_ibllib_python(rpip=False):
     iblenv = get_iblenv()
-    if sys.platform in ['Windows', 'windows', 'win32']:
-        pip = os.path.join(iblenv, 'Scripts', 'pip.exe')
-        python = os.path.join(iblenv, "python.exe")
-    elif sys.platform in ['Linux', 'linux']:
-        pip = os.path.join(iblenv, "bin", "pip")
-        python = os.path.join(iblenv, "bin", "python")
-    elif sys.platform in ['Darwin', 'macOSx', 'osx']:
-        print("ERROR: macOSx is not supported yet\nInstallation aborted!")
-        return
-    else:
-        print('\nERROR: Unsupported OS\nInstallation aborted!')
-        return
+    pip = os.path.join(iblenv, 'Scripts', 'pip.exe')
+    python = os.path.join(iblenv, "python.exe")
 
-    return python
+    return python if not rpip else pip
 
 
 def check_dependencies():
@@ -65,13 +44,13 @@ def check_dependencies():
     print("N" * 79)
     try:
         subprocess.check_output(["git", "--version"])
-        print("Git... OK")
+        print("git... OK")
         os.system("conda update -y -n base -c defaults conda")
-        print("Conda... OK")
+        print("conda... OK")
         os.system("python -m pip install --upgrade pip")
         print("pip... OK")
     except Exception as err:
-        print(err, "\nEither git or conda were not found on your system\n")
+        print(err, "\nEither git, conda, or pip were not found.\n")
         return
     print("N" * 79)
     print("All dependencies OK.")
@@ -142,8 +121,7 @@ def clone_ibllib():
         elif user_input == 'y':
             try:
                 os.system(f"rd /s /q {ibllib_path}")
-                subprocess.call(["git", "clone",
-                                 'https://github.com/int-brain-lab/ibllib.git'])
+                clone_ibllib()
             except:
                 print("\nCould not delete ibllib folder",
                       "\nPlease delete it manually and retry.")
@@ -183,21 +161,20 @@ def configure_iblrig_params():
         raise ValueError(msg)
     iblrig_params_path = IBLRIG_ROOT_PATH.parent / 'iblrig_params'
     if iblrig_params_path.exists():
-        print("Found previous configuration in {}".format(str(iblrig_params_path)),
+        print(f"Found previous configuration in {str(iblrig_params_path)}",
               "\nDo you want to reset to default config? (y/n)")
         user_input = input()
         if user_input == 'n':
             return
         elif user_input == 'y':
-            subprocess.call([python,
-                             "setup_default_config.py",
+            subprocess.call([python, "setup_default_config.py",
                              str(iblrig_params_path)])
         elif user_input != 'n' and user_input != 'y':
             print("\n Please select either y of n")
             configure_iblrig_params()
     else:
-        subprocess.call([python,
-                         "setup_default_config.py", str(iblrig_params_path)])
+        subprocess.call([python, "setup_default_config.py",
+                         str(iblrig_params_path)])
 
 
 def install_bonsai():
