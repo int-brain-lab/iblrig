@@ -18,6 +18,8 @@ Usage:
         pybpod.
     update.py reinstall
         Will reinstall the rig to the latest revision on master.
+    update.py ibllib
+        Will reset ibllib to latest revision on master and install to iblenv.
     update.py update
         Will update itself to the latest revision on master.
     update.py update <branch>
@@ -159,6 +161,9 @@ if __name__ == '__main__':
         elif sys.argv[1] in branches:
             checkout_branch(sys.argv[1])
             import_tasks()
+        # UPDATE IBLLIB
+        elif sys.argv[1] == 'ibllib':
+            update_ibllib()
         # UPDATE UPDATE
         elif sys.argv[1] == 'update':
             checkout_single_file(file='update.py', branch='master')
