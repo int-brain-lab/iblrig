@@ -6,12 +6,9 @@
 # Edited by Niccolo Bonacchi, CCU, 2018
 
 import datetime
-import glob  # https://pyserial.readthedocs.io/en/latest/shortintro.html
-import json
-import os
 import re
 import time
-from tkinter import messagebox, simpledialog  # for dialog box
+from tkinter import simpledialog  # for dialog box
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -21,10 +18,9 @@ import seaborn as sns  # for easier plotting at the end
 import serial
 from pybpodapi.bpod import Bpod
 from pybpodapi.state_machine import StateMachine
-import sys
-sys.path.append('C:\\iblrig\\tasks\\_iblrig_calibration_water\\')
+
+import user_settings  # PyBpod creates this file on run.
 import task_settings
-import _user_settings as user_settings    # PyBpod creates this file on run.
 from session_params import SessionParamHandler
 
 sph = SessionParamHandler(task_settings, user_settings)
@@ -142,7 +138,8 @@ def numinput(title, prompt, default=None, minval=None, maxval=None):
 
 
 # initialize a dataframe with the results
-df1 = pd.DataFrame(columns=["time", "open_time", "ndrops", "mean_measured_weight", "std_measured_weight"])
+df1 = pd.DataFrame(columns=["time", "open_time", "ndrops",
+                            "mean_measured_weight", "std_measured_weight"])
 ntrials = sph.NTRIALS
 # in milliseconds, 10 to 100ms opening time
 open_times = range(sph.MIN_OPEN_TIME, sph.MAX_OPEN_TIME, sph.STEP)
@@ -164,7 +161,7 @@ for open_time in open_times:
         stopweight = scale_read(sph.OAHUS_SCALE_PORT)
     else:
         stopweight = numinput(f"End Weight (gr) [{open_time}ms pass {pass_}]",
-                              "Enter the final weight diplayed on the scale (gr):")
+                              "Enter the weight diplayed on the scale (gr):")
     # get the value of the amout of water delivered
     measured_weight = stopweight - startweight
     # summarize
@@ -193,11 +190,12 @@ for open_time in open_times:
 df1['open_time'] = df1['open_time'].astype("float")
 df1['mean_measured_weight'] = df1['mean_measured_weight'].astype("float")
 df1['ndrops'] = df1['ndrops'].astype("float")
-df1["weight_perdrop"] = df1["mean_measured_weight"] / df1["ndrops"] * 1000  # in ul
+df1["weight_perdrop"] = df1["mean_measured_weight"] / df1["ndrops"]
+df1["weight_perdrop"] = df1["weight_perdrop"] * 1000  # in µl
 df1.to_csv(sph.CALIBRATION_FUNCTION_FILE_PATH)
 
 # FIT EXTRAPOLATION FUNCTION
-time2vol = sp.interpolate.pchip(df1["open_time"], df1["weight_perdrop"])  # for later
+time2vol = sp.interpolate.pchip(df1["open_time"], df1["weight_perdrop"])
 
 xp = np.linspace(0, df1["open_time"].max(), ntrials * sph.PASSES)
 ax[0].plot(xp, time2vol(xp), '-k')
@@ -215,7 +213,9 @@ print(f'Completed water calibration {now}')
 
 if __name__ == '__main__':
     pass
-    # root_data_folder = '/home/nico/Projects/IBL/IBL-github/iblrig_data/Subjects'
+    # root_data_folder = '/home/nico/Projects/IBL/IBL-github/iblrig_data/'
+    # root_data_folder += 'Subjects'
     # session = '_iblrig_calibration/2018-11-28/4'
     # data_file = '/raw_behavior_data/_iblrig_calibration_water_function.csv'
-    # df = pd.DataFrame.from_csv(os.path.join(root_data_folder, session, data_file))
+    # df = pd.DataFrame.from_csv(os.path.join(root_data_folder, session,
+    # data_file))

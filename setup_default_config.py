@@ -3,7 +3,6 @@
 # @Date: Tuesday, November 20th 2018, 9:21:15 am
 # @Last Modified by: Niccolò Bonacchi
 # @Last Modified time: 20-11-2018 09:21:34.3434
-import os
 import shutil
 import sys
 from pathlib import Path
@@ -13,9 +12,9 @@ from pybpodgui_api.models.project import Project
 
 def copy_code_files_to_iblrig_params(iblrig_params_path, task=None,
                                      exclude_filename=None):
-    # Copy user_settings and cleanup.py to iblrig_params_path
-    # Copy all *.py files in iblrig_path to iblrig_params_path/IBL/tasks/<task_name>/*
-    # <task_name> file should be deleted from iblrig_params folder before copying it
+    """Copy all files in root tasks folder to iblrig_params_path
+    Copy all *.py files in iblrig_path to iblrig_params/IBL/tasks/<task_name>/*
+    """
     iblrig_params_path = Path(iblrig_params_path)
     iblrig_params_tasks_path = iblrig_params_path / 'IBL' / 'tasks'
     iblrig_path = iblrig_params_path.parent / 'iblrig'
@@ -24,10 +23,12 @@ def copy_code_files_to_iblrig_params(iblrig_params_path, task=None,
     if exclude_filename is None:
         exclude_filename = 'random_stuff'
 
-    def copy_files(src_folder, dst_folder, glob='*', exclude_filename=exclude_filename):
+    def copy_files(src_folder, dst_folder, glob='*',
+                   exclude_filename=exclude_filename):
         src_folder = Path(src_folder)
         dst_folder = Path(dst_folder)
-        src_list = [x for x in src_folder.glob(glob) if x.is_file() and exclude_filename not in str(x)]
+        src_list = [x for x in src_folder.glob(glob)
+                    if x.is_file() and exclude_filename not in str(x)]
         for f in src_list:
             shutil.copy(f, dst_folder)
             print(f"Copied {f} to {dst_folder}")
@@ -38,7 +39,7 @@ def copy_code_files_to_iblrig_params(iblrig_params_path, task=None,
         tasks = [t for t in tasks if task in str(t)]
     else:
         # Copy cleanup and user_settings
-        print('\nS:',str(iblrig_tasks_path), '\nD:', str(iblrig_params_path))
+        print('\nS:', str(iblrig_tasks_path), '\nD:', str(iblrig_params_path))
         copy_files(iblrig_tasks_path, iblrig_params_path)
 
     for sf in tasks:
@@ -179,10 +180,7 @@ def main(iblrig_params_path):
 
 if __name__ == "__main__":
     if len(sys.argv) == 1:
-        iblrig_params_path = '/home/nico/Projects/IBL/IBL-github/iblrig_params'
-        main(iblrig_params_path)
-        # copy_code_files_to_iblrig_params('C:\\iblrig_params', task='_iblrig_tasks_trainingChoiceWorld')
+        print("Please select a path for iblrig_params folder")
     elif len(sys.argv) == 2:
-        print(f"copying task files to {sys.argv[1]}")
+        print(f"Copying task files to: {sys.argv[1]}")
         main(sys.argv[1])
-

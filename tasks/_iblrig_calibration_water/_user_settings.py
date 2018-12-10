@@ -13,13 +13,13 @@ PYBPOD_API_LOG_FILE  = None
 PYBPOD_API_STREAM2STDOUT = False
 PYBPOD_API_ACCEPT_STDIN  = True
 
-PYBPOD_PROTOCOL 	= '_iblrig_calibration_water'
+PYBPOD_PROTOCOL     = '_iblrig_calibration_water'
 PYBPOD_CREATOR      = '["_iblrig_test_user", "389ecceb-85f6-4559-9134-69dcdd909fab", "local"]'
-PYBPOD_PROJECT 		= 'IBL'
-PYBPOD_EXPERIMENT 	= 'basicChoiceWorld'
-PYBPOD_BOARD 		= 'box0'
-PYBPOD_SETUP 		= 'basicChoiceWorld_box0'
-PYBPOD_SESSION 		= '20181012-193939'
+PYBPOD_PROJECT      = 'IBL'
+PYBPOD_EXPERIMENT   = 'basicChoiceWorld'
+PYBPOD_BOARD        = 'box0'
+PYBPOD_SETUP        = 'basicChoiceWorld_box0'
+PYBPOD_SESSION      = '20181012-193939'
 PYBPOD_SESSION_PATH = 'C:\\iblrig\\pybpod_projects\\IBL\\experiments\\basicChoiceWorld\\setups\\basicChoiceWorld_box0\\sessions\\20181012-193939'
 PYBPOD_SUBJECTS = [
     "['_iblrig_calibration', '578a19ae-ba93-4a2c-a083-cbce612e7e70']"]

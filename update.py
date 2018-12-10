@@ -18,6 +18,8 @@ Usage:
         pybpod.
     update.py reinstall
         Will reinstall the rig to the latest revision on master.
+    update.py ibllib
+        Will reset ibllib to latest revision on master and install to iblenv.
     update.py update
         Will update itself to the latest revision on master.
     update.py update <branch>
@@ -30,11 +32,14 @@ Usage:
 
 
 """
+import os
 import subprocess
 import sys
-import os
 from pathlib import Path
+
 from setup_default_config import copy_code_files_to_iblrig_params
+
+IBLRIG_ROOT_PATH = Path.cwd()
 
 
 def get_versions():
@@ -104,6 +109,15 @@ def update_remotes():
     subprocess.call(['git', 'remote', 'update'])
 
 
+def update_ibllib():
+    os.chdir(IBLRIG_ROOT_PATH.parent / 'ibllib')
+    subprocess.call(["git", "reset", "--hard"])
+    subprocess.call(["git", "pull"])
+    os.chdir("./python")
+    os.system("conda activate iblenv && pip install -e .")
+    os.chdir(IBLRIG_ROOT_PATH)
+
+
 def branch_info():
     print("Current availiable branches:")
     print(subprocess.check_output(["git", "branch", "-avv"]).decode())
@@ -147,6 +161,9 @@ if __name__ == '__main__':
         elif sys.argv[1] in branches:
             checkout_branch(sys.argv[1])
             import_tasks()
+        # UPDATE IBLLIB
+        elif sys.argv[1] == 'ibllib':
+            update_ibllib()
         # UPDATE UPDATE
         elif sys.argv[1] == 'update':
             checkout_single_file(file='update.py', branch='master')
