@@ -11,8 +11,6 @@ import types
 
 from path_helper import SessionPathCreator
 
-# from pybpod_projects.IBL.tasks._iblrig_calibration_water.path_helper import SessionPathCreator
-
 
 class ComplexEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -31,9 +29,11 @@ class SessionParamHandler(object):
         # =====================================================================
         # IMPORT task_settings, user_settings, and SessionPathCreator params
         # =====================================================================
-        if type(task_settings) == types.ModuleType:
-            ts = {i: task_settings.__dict__[i]
-                for i in [x for x in dir(task_settings) if '__' not in x]}
+        if isinstance(task_settings, types.ModuleType):
+            ts = {
+                i: task_settings.__dict__[i]
+                for i in [x for x in dir(task_settings) if '__' not in x]
+                }
         elif type(task_settings) == dict:
             ts = task_settings
         self.__dict__.update(ts)
@@ -45,12 +45,15 @@ class SessionParamHandler(object):
         spc = SessionPathCreator(self.IBLRIG_FOLDER, self.MAIN_DATA_FOLDER,
                                  self.PYBPOD_SUBJECTS[0], self.PYBPOD_PROTOCOL)
         self.__dict__.update(spc.__dict__)
-        self.CALIBRATION_FUNCTION_FILE_PATH = os.path.join(self.SESSION_RAW_DATA_FOLDER,
-                                                          '_iblrig_calibration_water_function.csv')
-        self.CALIBRATION_RANGE_FILE_PATH = os.path.join(self.SESSION_RAW_DATA_FOLDER,
-                                                    '_iblrig_calibration_water_range.csv')
-        self.CALIBRATION_CURVE_FILE_PATH = os.path.join(self.SESSION_RAW_DATA_FOLDER,
-                                                    '_iblrig_calibration_water_curve.pdf')
+        self.CALIBRATION_FUNCTION_FILE_PATH = os.path.join(
+            self.SESSION_RAW_DATA_FOLDER,
+            '_iblrig_calibration_water_function.csv')
+        self.CALIBRATION_RANGE_FILE_PATH = os.path.join(
+            self.SESSION_RAW_DATA_FOLDER,
+            '_iblrig_calibration_water_range.csv')
+        self.CALIBRATION_CURVE_FILE_PATH = os.path.join(
+            self.SESSION_RAW_DATA_FOLDER,
+            '_iblrig_calibration_water_curve.pdf')
 
         # =====================================================================
         # FOLDER STRUCTURE AND DATA FILES

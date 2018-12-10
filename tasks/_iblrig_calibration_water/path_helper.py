@@ -8,17 +8,17 @@ import os
 from pathlib import Path
 from sys import platform
 
-from dateutil import parser
-
 
 class SessionPathCreator(object):
     # add subject name and protocol (maybe have a metadata struct)
-    def __init__(self, iblrig_folder, main_data_folder, subject_name, protocol):
+    def __init__(self, iblrig_folder, main_data_folder,
+                 subject_name, protocol):
         if platform == 'linux':
             self.IBLRIG_FOLDER = '/home/nico/Projects/IBL/IBL-github/iblrig'
         else:
             self.IBLRIG_FOLDER = str(Path(iblrig_folder))
-        self.IBLRIG_PARAMS_FOLDER = str(Path(self.IBLRIG_FOLDER).parent / 'iblrig_params')
+        self.IBLRIG_PARAMS_FOLDER = str(
+            Path(self.IBLRIG_FOLDER).parent / 'iblrig_params')
         self.ROOT_DATA_FOLDER = self._root_data_folder(self.IBLRIG_FOLDER,
                                                        main_data_folder)
         self.SOUND_STIM_FOLDER = os.path.join(self.IBLRIG_FOLDER, 'sound_stim',
@@ -47,12 +47,12 @@ class SessionPathCreator(object):
                                                 self.SESSION_NUMBER)
         self.SESSION_RAW_DATA_FOLDER = self.check_folder(self.SESSION_FOLDER,
                                                          'raw_behavior_data')
-        # self.SESSION_RAW_VIDEO_DATA_FOLDER = self.check_folder(self.SESSION_FOLDER,
-        #                                                        'raw_video_data')
-        # self.SESSION_RAW_EPHYS_DATA_FOLDER = self.check_folder(self.SESSION_FOLDER,
-        #                                                        'raw_ephys_data')
-        # self.SESSION_RAW_IMAGING_DATA_FOLDER = self.check_folder(self.SESSION_FOLDER,
-        #                                                          'raw_imaging_data')
+        # self.SESSION_RAW_VIDEO_DATA_FOLDER = self.check_folder(
+        #   self.SESSION_FOLDER, 'raw_video_data')
+        # self.SESSION_RAW_EPHYS_DATA_FOLDER = self.check_folder(
+        #   self.SESSION_FOLDER, 'raw_ephys_data')
+        # self.SESSION_RAW_IMAGING_DATA_FOLDER = self.check_folder(
+        #   self.SESSION_FOLDER, 'raw_imaging_data')
         self.SESSION_NAME = '{}'.format(os.path.sep).join([self.SUBJECT_NAME,
                                                            self.SESSION_DATE,
                                                            self.SESSION_NUMBER,
@@ -69,19 +69,6 @@ class SessionPathCreator(object):
         self.LATEST_WATER_CALIBRATION_FILE = self._latest_water_calibration_file()
         self.PREVIOUS_DATA_FILE = self._previous_data_file()
 
-    def _root_data_folder(self, iblrig_folder, main_data_folder):
-        iblrig_folder = Path(iblrig_folder)
-        if main_data_folder is None:
-            try:
-                iblrig_folder.exists()
-                out = iblrig_folder.parent / 'iblrig_data' / 'Subjects'
-                out.mkdir(parents=True, exist_ok=True)
-                return str(out)
-            except IOError as e:
-                print(e, "\nCouldn't find IBLRIG_FOLDER in file system\n")
-        else:
-            return main_data_folder
-
     def get_bonsai_path(self, use_iblrig_bonsai=True):
         """Checks for Bonsai folder in iblrig.
         Returns string with bonsai executable path."""
@@ -90,11 +77,11 @@ class SessionPathCreator(object):
         ibl_bonsai = os.path.join(bonsai_folder, 'Bonsai64.exe')
 
         preexisting_bonsai = Path.home() / "AppData/Local/Bonsai/Bonsai64.exe"
-        if use_iblrig_bonsai == True:
+        if use_iblrig_bonsai is True:
             BONSAI = ibl_bonsai
-        elif use_iblrig_bonsai == False and preexisting_bonsai.exists():
+        elif use_iblrig_bonsai is False and preexisting_bonsai.exists():
             BONSAI = str(preexisting_bonsai)
-        elif use_iblrig_bonsai == False and not preexisting_bonsai.exists():
+        elif use_iblrig_bonsai is False and not preexisting_bonsai.exists():
             print("NOT FOUND: {}\n Using packaged Bonsai.".format(
                 str(preexisting_bonsai)))
             BONSAI = ibl_bonsai
@@ -187,6 +174,7 @@ class SessionPathCreator(object):
         else:
             return None
 
+
 def _latest_water_calibration_file(self):
         rdf = Path(self.ROOT_DATA_FOLDER)
         cal = rdf / '_iblrig_calibration'
@@ -211,28 +199,31 @@ def _latest_water_calibration_file(self):
 
 
 if __name__ == "__main__":
-    # spc = SessionPathCreator('C:\\iblrig', None, '_iblrig_test_mouse', 'trainingChoiceWorld')
-    spc = SessionPathCreator('/home/nico/Projects/IBL/IBL-github/iblrig',
-                             '/home/nico/Projects/IBL/IBL-github/iblrig/scratch/Subjects',
-                             '_iblrig_test_mouse', 'trainingChoiceWorld')
+    # spc = SessionPathCreator('C:\\iblrig', None, '_iblrig_test_mouse',
+    #   'trainingChoiceWorld')
+    spc = SessionPathCreator(
+        '/home/nico/Projects/IBL/IBL-github/iblrig',
+        '/home/nico/Projects/IBL/IBL-github/iblrig/scratch/Subjects',
+        '_iblrig_test_mouse', 'trainingChoiceWorld')
 
-    print("\nBASE_FILENAME:", spc.BASE_FILENAME,
-          "\nPREVIOUS_DATA_FILE:", spc.PREVIOUS_DATA_FILE,
-          "\nSESSION_DATETIME:", spc.SESSION_DATETIME,
-          "\nSESSION_NAME:", spc.SESSION_NAME,
-          "\nSETTINGS_FILE_PATH:", spc.SETTINGS_FILE_PATH,
-          "\nSUBJECT_NAME:", spc.SUBJECT_NAME,
-          "\nDATA_FILE_PATH:", spc.DATA_FILE_PATH,
-          "\nROOT_DATA_FOLDER:", spc.ROOT_DATA_FOLDER,
-          "\nSESSION_DATE_FOLDER:", spc.SESSION_DATE_FOLDER,
-          "\nSESSION_NUMBER:", spc.SESSION_NUMBER,
-          "\nSOUND_STIM_FOLDER:", spc.SOUND_STIM_FOLDER,
-          "\nVISUAL_STIMULUS_FILE:", spc.VISUAL_STIMULUS_FILE,
-          "\nIBLRIG_FOLDER:", spc.IBLRIG_FOLDER,
-          "\nSESSION_DATE:", spc.SESSION_DATE,
-          "\nSESSION_FOLDER:", spc.SESSION_FOLDER,
-          "\nSESSION_RAW_DATA_FOLDER:", spc.SESSION_RAW_DATA_FOLDER,
-          "\nSUBJECT_FOLDER:", spc.SUBJECT_FOLDER,
-          "\nVISUAL_STIM_FOLDER:", spc.VISUAL_STIM_FOLDER,
-          "\nLATEST_WATER_CALIBRATION_FILE:", spc.LATEST_WATER_CALIBRATION_FILE)
+    print(
+        "\nBASE_FILENAME:", spc.BASE_FILENAME,
+        "\nPREVIOUS_DATA_FILE:", spc.PREVIOUS_DATA_FILE,
+        "\nSESSION_DATETIME:", spc.SESSION_DATETIME,
+        "\nSESSION_NAME:", spc.SESSION_NAME,
+        "\nSETTINGS_FILE_PATH:", spc.SETTINGS_FILE_PATH,
+        "\nSUBJECT_NAME:", spc.SUBJECT_NAME,
+        "\nDATA_FILE_PATH:", spc.DATA_FILE_PATH,
+        "\nROOT_DATA_FOLDER:", spc.ROOT_DATA_FOLDER,
+        "\nSESSION_DATE_FOLDER:", spc.SESSION_DATE_FOLDER,
+        "\nSESSION_NUMBER:", spc.SESSION_NUMBER,
+        "\nSOUND_STIM_FOLDER:", spc.SOUND_STIM_FOLDER,
+        "\nVISUAL_STIMULUS_FILE:", spc.VISUAL_STIMULUS_FILE,
+        "\nIBLRIG_FOLDER:", spc.IBLRIG_FOLDER,
+        "\nSESSION_DATE:", spc.SESSION_DATE,
+        "\nSESSION_FOLDER:", spc.SESSION_FOLDER,
+        "\nSESSION_RAW_DATA_FOLDER:", spc.SESSION_RAW_DATA_FOLDER,
+        "\nSUBJECT_FOLDER:", spc.SUBJECT_FOLDER,
+        "\nVISUAL_STIM_FOLDER:", spc.VISUAL_STIM_FOLDER,
+        "\nLATEST_WATER_CALIBRATION_FILE:", spc.LATEST_WATER_CALIBRATION_FILE)
     print('.')
