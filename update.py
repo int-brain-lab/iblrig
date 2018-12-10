@@ -30,11 +30,14 @@ Usage:
 
 
 """
+import os
 import subprocess
 import sys
-import os
 from pathlib import Path
+
 from setup_default_config import copy_code_files_to_iblrig_params
+
+IBLRIG_ROOT_PATH = Path.cwd()
 
 
 def get_versions():
@@ -102,6 +105,15 @@ def checkout_single_file(file=None, branch='master'):
 
 def update_remotes():
     subprocess.call(['git', 'remote', 'update'])
+
+
+def update_ibllib():
+    os.chdir(IBLRIG_ROOT_PATH.parent / 'ibllib')
+    subprocess.call(["git", "reset", "--hard"])
+    subprocess.call(["git", "pull"])
+    os.chdir("./python")
+    os.system("conda activate iblenv && pip install -e .")
+    os.chdir(IBLRIG_ROOT_PATH)
 
 
 def branch_info():
