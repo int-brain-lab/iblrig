@@ -66,7 +66,8 @@ class SessionParamHandler(object):
         self.__dict__.update(us)
         self.deserialize_session_user_settings()
         spc = SessionPathCreator(self.IBLRIG_FOLDER, self.MAIN_DATA_FOLDER,
-                                 self.PYBPOD_SUBJECTS[0], self.PYBPOD_PROTOCOL)
+                                 self.PYBPOD_SUBJECTS[0], self.PYBPOD_PROTOCOL,
+                                 self.PYBPOD_BOARD)
         self.__dict__.update(spc.__dict__)
         # =====================================================================
         # OSC CLIENT
