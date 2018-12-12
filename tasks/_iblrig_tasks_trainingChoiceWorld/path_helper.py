@@ -4,6 +4,7 @@
 # @Last Modified by: Niccolò Bonacchi
 # @Last Modified time: 14-11-2018 10:41:08.088
 import datetime
+import json
 import os
 import subprocess
 from pathlib import Path
@@ -200,9 +201,11 @@ class SessionPathCreator(object):
         cal = rdf / '_iblrig_calibration'
         if not cal.exists():
             return None
+
         cal_session_folders = []
         for date in self.get_subfolder_paths(str(cal)):
             cal_session_folders.extend(self.get_subfolder_paths(date))
+
         water_cal_files = []
         for session in cal_session_folders:
             session = Path(session) / 'raw_behavior_data'
@@ -212,10 +215,22 @@ class SessionPathCreator(object):
         water_cal_files = sorted(water_cal_files,
                                  key=lambda x: int(x.parent.parent.name))
 
-        if water_cal_files:
-            return str(water_cal_files[-1])
-        else:
+        if not water_cal_files:
             return
+
+        water_cal_settings = [x.parent / "_iblrig_taskSettings.raw.json"
+                            for x in water_cal_files]
+        same_board_cal_files = []
+        for fcal, s in zip(water_cal_files, water_cal_settings):
+            if s.exists():
+                with open(str(s), 'r') as f:
+                    settings = json.loads(f.readline())
+                if settings['PYBPOD_BOARD'] == self.BOARD:
+                    same_board_cal_files.append(fcal)
+
+        same_board_cal_files = sorted(same_board_cal_files,
+                                      key=lambda x: int(x.parent.parent.name))
+        return str(same_board_cal_files[-1])
 
 
 if __name__ == "__main__":
