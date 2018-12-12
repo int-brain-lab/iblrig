@@ -239,7 +239,7 @@ if __name__ == "__main__":
     spc = SessionPathCreator(
         '/home/nico/Projects/IBL/IBL-github/iblrig',
         '/home/nico/Projects/IBL/IBL-github/iblrig/scratch/Subjects',
-        '_iblrig_test_mouse', 'trainingChoiceWorld')
+        '_iblrig_test_mouse', 'trainingChoiceWorld', 'box0')
 
     print(
         "\nBASE_FILENAME:", spc.BASE_FILENAME,
