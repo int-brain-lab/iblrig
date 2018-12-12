@@ -230,7 +230,10 @@ class SessionPathCreator(object):
 
         same_board_cal_files = sorted(same_board_cal_files,
                                       key=lambda x: int(x.parent.parent.name))
-        return str(same_board_cal_files[-1])
+        if same_board_cal_files:
+            return str(same_board_cal_files[-1])
+        else:
+            return
 
 
 if __name__ == "__main__":
