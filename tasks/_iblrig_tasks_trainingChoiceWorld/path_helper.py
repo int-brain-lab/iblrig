@@ -13,7 +13,7 @@ from sys import platform
 class SessionPathCreator(object):
     # add subject name and protocol (maybe have a metadata struct)
     def __init__(self, iblrig_folder, main_data_folder,
-                 subject_name, protocol):
+                 subject_name, protocol, board=False):
         if platform == 'linux':
             self.IBLRIG_FOLDER = '/home/nico/Projects/IBL/IBL-github/iblrig'
         else:
@@ -25,6 +25,7 @@ class SessionPathCreator(object):
             Path(self.IBLRIG_FOLDER).parent / 'iblrig_params')
         self.ROOT_DATA_FOLDER = self._root_data_folder(self.IBLRIG_FOLDER,
                                                        main_data_folder)
+        self.BOARD = board
         self.SOUND_STIM_FOLDER = os.path.join(self.IBLRIG_FOLDER, 'sound_stim',
                                               'sounds')
         self.VISUAL_STIM_FOLDER = os.path.join(self.IBLRIG_FOLDER,
@@ -60,7 +61,7 @@ class SessionPathCreator(object):
         self.SESSION_NAME = '{}'.format(os.path.sep).join([self.SUBJECT_NAME,
                                                            self.SESSION_DATE,
                                                            self.SESSION_NUMBER,
-                                                           protocol,
+                                                           protocol, board
                                                            ])
         self.BASE_FILENAME = '_iblrig_task'
         self.SETTINGS_FILE_PATH = os.path.join(self.SESSION_RAW_DATA_FOLDER,
