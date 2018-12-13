@@ -71,7 +71,7 @@ class SessionParamHandler(object):
                                  self.PYBPOD_BOARD)
         self.__dict__.update(spc.__dict__)
         # =====================================================================
-        # OSC CLIENT
+        # SUBJECT
         # =====================================================================
         self.SUBJECT_WEIGHT = self.get_subject_weight()
         # =====================================================================
@@ -197,6 +197,13 @@ class SessionParamHandler(object):
     # SERIALIZER
     # =========================================================================
     def reprJSON(self):
+        def remove_from_dict(sx):
+            if "weighings" in sx.keys():
+                sx["weighings"] = None
+            if "water_administration" in sx.keys():
+                sx["water_administration"] = None
+            return sx
+
         d = self.__dict__.copy()
         if self.SOFT_SOUND:
             d['GO_TONE'] = 'go_tone(freq={}, dur={}, amp={})'.format(
@@ -208,6 +215,14 @@ class SessionParamHandler(object):
         d['OSC_CLIENT'] = str(d['OSC_CLIENT'])
         d['SESSION_DATETIME'] = str(self.SESSION_DATETIME)
         d['CALIB_FUNC'] = str(d['CALIB_FUNC'])
+        if isinstance(d['PYBPOD_SUBJECT_EXTRA'], list):
+            sub = []
+            for sx in d['PYBPOD_SUBJECT_EXTRA']:
+                sub.append(remove_from_dict(sx))
+            d['PYBPOD_SUBJECT_EXTRA'] = sub
+        elif isinstance(d['PYBPOD_SUBJECT_EXTRA'], dict):
+            d['PYBPOD_SUBJECT_EXTRA'] = remove_from_dict(sx)
+
         return d
 
     # =========================================================================
