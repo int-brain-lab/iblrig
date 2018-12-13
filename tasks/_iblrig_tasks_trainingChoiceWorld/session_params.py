@@ -55,10 +55,11 @@ class SessionParamHandler(object):
     runs Bonsai and saves all params in a settings file.json"""
 
     def __init__(self, task_settings, user_settings):
+        self.DEBUG = False
+        make = False if self.DEBUG else True
         # =====================================================================
         # IMPORT task_settings, user_settings, and SessionPathCreator params
         # =====================================================================
-        self.DEBUG = False
         ts = {i: task_settings.__dict__[i]
               for i in [x for x in dir(task_settings) if '__' not in x]}
         self.__dict__.update(ts)
@@ -66,9 +67,10 @@ class SessionParamHandler(object):
               for i in [x for x in dir(user_settings) if '__' not in x]}
         self.__dict__.update(us)
         self.deserialize_session_user_settings()
-        spc = SessionPathCreator(self.IBLRIG_FOLDER, self.MAIN_DATA_FOLDER,
-                                 self.PYBPOD_SUBJECTS[0], self.PYBPOD_PROTOCOL,
-                                 self.PYBPOD_BOARD)
+        spc = SessionPathCreator(self.IBLRIG_FOLDER, self.IBLRIG_DATA_FOLDER,
+                                 self.PYBPOD_SUBJECTS[0],
+                                 protocol=self.PYBPOD_PROTOCOL,
+                                 board=self.PYBPOD_BOARD, make=make)
         self.__dict__.update(spc.__dict__)
         # =====================================================================
         # SUBJECT
@@ -137,10 +139,11 @@ class SessionParamHandler(object):
         # =====================================================================
         # SAVE SETTINGS FILE AND TASK CODE
         # =====================================================================
-        self._save_session_settings()
+        if not self.DEBUG:
+            self._save_session_settings()
 
-        self._copy_task_code()
-        self._save_task_code()
+            self._copy_task_code()
+            self._save_task_code()
 
     # =========================================================================
     # STATIC METHODS
@@ -151,7 +154,7 @@ class SessionParamHandler(object):
         Pop up a dialog window for input of a number.
         Arguments:
         title: is the title of the dialog window,
-        prompt: is a text mostly describing what numerical information to input.
+        prompt: is a text describing what numerical information to input.
         default: default value
         minval: minimum value for imput
         maxval: maximum value for input
@@ -165,7 +168,7 @@ class SessionParamHandler(object):
         >>> numinput("Poker", "Your stakes:", 1000, minval=10, maxval=10000)
         """
         import tkinter as tk
-        from tkinter import messagebox, simpledialog
+        from tkinter import simpledialog
         root = tk.Tk()
         root.withdraw()
         return simpledialog.askfloat(title, prompt, initialvalue=default,
