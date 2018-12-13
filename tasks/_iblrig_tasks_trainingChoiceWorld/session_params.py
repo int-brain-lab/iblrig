@@ -58,6 +58,7 @@ class SessionParamHandler(object):
         # =====================================================================
         # IMPORT task_settings, user_settings, and SessionPathCreator params
         # =====================================================================
+        self.DEBUG = False
         ts = {i: task_settings.__dict__[i]
               for i in [x for x in dir(task_settings) if '__' not in x]}
         self.__dict__.update(ts)
@@ -365,6 +366,8 @@ class SessionParamHandler(object):
             return
 
     def _init_reward_valve_time(self):
+        if self.DEBUG:
+            self.AUTOMATIC_CALIBRATION = False
         # Calc reward valve time
         if not self.AUTOMATIC_CALIBRATION:
             out = self.CALIBRATION_VALUE / 3 * self.REWARD_AMOUNT
@@ -473,6 +476,8 @@ class SessionParamHandler(object):
         [shutil.rmtree(x) for x in behavior_code_files + video_code_files]
 
     def _configure_rotary_encoder(self, RotaryEncoderModule):
+        if self.DEBUG:
+            return
         m = RotaryEncoderModule(self.ROTARY_ENCODER_PORT)
         m.set_zero_position()  # Not necessarily needed
         m.set_thresholds(self.ROTARY_ENCODER.SET_THRESHOLDS)
