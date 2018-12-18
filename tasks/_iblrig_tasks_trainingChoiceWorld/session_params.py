@@ -224,7 +224,8 @@ class SessionParamHandler(object):
                 sub.append(remove_from_dict(sx))
             d['PYBPOD_SUBJECT_EXTRA'] = sub
         elif isinstance(d['PYBPOD_SUBJECT_EXTRA'], dict):
-            d['PYBPOD_SUBJECT_EXTRA'] = remove_from_dict(sx)
+            d['PYBPOD_SUBJECT_EXTRA'] = remove_from_dict(
+                d['PYBPOD_SUBJECT_EXTRA'])
 
         return d
 
@@ -494,7 +495,7 @@ class SessionParamHandler(object):
         [shutil.rmtree(x) for x in behavior_code_files + video_code_files]
 
     def _configure_rotary_encoder(self, RotaryEncoderModule):
-        if self.DEBUG:
+        if self.DEBUG or platform == 'linux':
             return
         m = RotaryEncoderModule(self.ROTARY_ENCODER_PORT)
         m.set_zero_position()  # Not necessarily needed
