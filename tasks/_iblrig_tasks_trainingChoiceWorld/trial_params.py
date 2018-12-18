@@ -46,7 +46,7 @@ class AdaptiveContrast(object):
         self.ntrials = 0
         self.ntrials_125 = 0
         self.previous_session = sph.PREVIOUS_DATA_FILE
-        self.last_trial_data = self._load_last_trial_data(sph.LAST_TRIAL_DATA)
+        self.last_trial_data = sph.LAST_TRIAL_DATA
 
         self.contrast_set = self._init_contrast_set()
         self.buffer = self._init_buffer()
@@ -59,17 +59,6 @@ class AdaptiveContrast(object):
 
     def reprJSON(self):
         return self.__dict__
-
-    def _load_last_trial_data(self, sph_last_trial_data):
-        if (self.previous_session is None or
-                os.stat(self.previous_session).st_size == 0):
-            print('###################################')
-            print('## WARNING: USING DEFAULT VALUES ##')
-            print('###################################')
-            print('  [no previous session was found]  ')
-            return
-        else:
-            return sph_last_trial_data
 
     def _init_contrast_set(self):
         if self.previous_session is None or not self.last_trial_data:

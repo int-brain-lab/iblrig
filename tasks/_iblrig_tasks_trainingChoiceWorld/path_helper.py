@@ -168,7 +168,7 @@ class SessionPathCreator(object):
             out = '00' + str(1)
         elif max(session_nums) < 9:
             out = '00' + str(int(max(session_nums)) + 1)
-        elif 99 > max(session_nums) == 9:
+        elif 99 > max(session_nums) >= 9:
             out = '0' + str(int(max(session_nums)) + 1)
         elif max(session_nums) > 99:
             out = str(int(max(session_nums)) + 1)
@@ -198,13 +198,19 @@ class SessionPathCreator(object):
                                        in os.listdir(prev_sess_path) if
                                        self.BASE_FILENAME + 'Data' in x)
 
-        return prev_data_files
+        out = [x for x in prev_data_files if os.stat(x).st_size != 0]
+        return out
 
     def _previous_data_file(self):
         out = sorted(self._previous_data_files())
         if out:
             return out[-1]
         else:
+            print('#######################################')
+            print('## WARNING:  WILL USE DEFAULT VALUES ##')
+            print('#######################################')
+            print(' [no previous valid session was found] ')
+
             return None
 
     def _latest_water_calib_file(self, board):
@@ -255,7 +261,7 @@ if __name__ == "__main__":
     # 'trainingChoiceWorld')
     spc = SessionPathCreator(
         '/home/nico/Projects/IBL/IBL-github/iblrig',
-        '/home/nico/Projects/IBL/IBL-github/iblrig/scratch/new',
+        '/home/nico/Projects/IBL/IBL-github/iblrig_data',  #/scratch/new',
         '_iblrig_test_mouse', protocol='trainingChoiceWorld', board='box0',
         make=True)
 
