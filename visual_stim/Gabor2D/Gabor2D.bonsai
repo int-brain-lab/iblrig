@@ -1,12 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<WorkflowBuilder Version="2.3.0">
-  <Workflow xmlns:q2="clr-namespace:Bonsai.Shaders;assembly=Bonsai.Shaders" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:q3="clr-namespace:Bonsai.Scripting;assembly=Bonsai.Scripting" xmlns:q7="clr-namespace:Bonsai.Bpod;assembly=Bonsai.Bpod" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:q5="clr-namespace:Bonsai.IO;assembly=Bonsai.System" xmlns:q4="clr-namespace:Bonsai.Dsp;assembly=Bonsai.Dsp" xmlns:q6="clr-namespace:Bonsai.Audio;assembly=Bonsai.Audio" xmlns:q1="clr-namespace:Bonsai.Osc;assembly=Bonsai.Osc" xmlns="https://horizongir.org/bonsai">
+<WorkflowBuilder Version="2.4.0-preview">
+  <Workflow xmlns:q2="clr-namespace:Bonsai.Shaders;assembly=Bonsai.Shaders" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:q3="clr-namespace:Bonsai.Bpod;assembly=Bonsai.Bpod" xmlns:q7="clr-namespace:Bonsai.Audio;assembly=Bonsai.Audio" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:q5="clr-namespace:Bonsai.Dsp;assembly=Bonsai.Dsp" xmlns:q4="clr-namespace:Bonsai.Scripting;assembly=Bonsai.Scripting" xmlns:q6="clr-namespace:Bonsai.IO;assembly=Bonsai.System" xmlns:q1="clr-namespace:Bonsai.Osc;assembly=Bonsai.Osc" xmlns="https://horizongir.org/bonsai">
     <Nodes>
-      <Expression xsi:type="ExternalizedPropertyOfStringReceiveMessage">
-        <MemberName>Connection</MemberName>
-        <Name>Connection</Name>
-        <Value>bpod</Value>
-      </Expression>
       <Expression xsi:type="q1:ReceiveMessage">
         <q1:Connection>bpod</q1:Connection>
         <q1:Address>/p</q1:Address>
@@ -17,34 +12,6 @@
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="q2:RenderFrame" />
-      </Expression>
-      <Expression xsi:type="Condition">
-        <Name>CLOSE LOOP</Name>
-        <Workflow>
-          <Nodes>
-            <Expression xsi:type="WorkflowInput">
-              <Name>Source1</Name>
-            </Expression>
-            <Expression xsi:type="WorkflowOutput" />
-            <Expression xsi:type="Equal">
-              <Operand xsi:type="FloatProperty">
-                <Value>3</Value>
-              </Operand>
-            </Expression>
-          </Nodes>
-          <Edges>
-            <Edge>
-              <From>0</From>
-              <To>2</To>
-              <Label>Source1</Label>
-            </Edge>
-            <Edge>
-              <From>2</From>
-              <To>1</To>
-              <Label>Source1</Label>
-            </Edge>
-          </Edges>
-        </Workflow>
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="q2:AspectRatio" />
@@ -80,6 +47,316 @@
         <q1:Address>/c</q1:Address>
         <q1:TypeTag>f</q1:TypeTag>
       </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q2:UpdateUniform">
+          <q2:UniformName>aspectRatio</q2:UniformName>
+          <q2:ShaderName>Gabor</q2:ShaderName>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="BehaviorSubject">
+        <Name>Encoder</Name>
+      </Expression>
+      <Expression xsi:type="BehaviorSubject">
+        <Name>Gain</Name>
+      </Expression>
+      <Expression xsi:type="MulticastSubject">
+        <Name>GaborSize</Name>
+      </Expression>
+      <Expression xsi:type="q1:ReceiveMessage">
+        <q1:Connection>bpod</q1:Connection>
+        <q1:Address>/t</q1:Address>
+        <q1:TypeTag>i</q1:TypeTag>
+      </Expression>
+      <Expression xsi:type="BehaviorSubject">
+        <Name>Contrast</Name>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="Switch" />
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q2:DrawMesh">
+          <q2:ShaderName>Gabor</q2:ShaderName>
+          <q2:MeshName>FullscreenQuad</q2:MeshName>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="MemberSelector">
+        <Selector>Data</Selector>
+      </Expression>
+      <Expression xsi:type="MemberSelector">
+        <Selector>Position</Selector>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q3:EncoderEvent" />
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q3:EncoderPosition" />
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q3:Encoder">
+          <q3:PortName>COM4</q3:PortName>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="q4:ExpressionTransform">
+        <q4:Expression>single(it)</q4:Expression>
+      </Expression>
+      <Expression xsi:type="BehaviorSubject">
+        <Name>TrialNum</Name>
+      </Expression>
+      <Expression xsi:type="BehaviorSubject">
+        <Name>StimFreq</Name>
+      </Expression>
+      <Expression xsi:type="BehaviorSubject">
+        <Name>StimAngle</Name>
+      </Expression>
+      <Expression xsi:type="BehaviorSubject">
+        <Name>StimSize</Name>
+      </Expression>
+      <Expression xsi:type="BehaviorSubject">
+        <Name>RawEncoderPositions</Name>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q5:Rescale">
+          <q5:Min>-512</q5:Min>
+          <q5:Max>512</q5:Max>
+          <q5:RangeMin>-180</q5:RangeMin>
+          <q5:RangeMax>180</q5:RangeMax>
+          <q5:RescaleType>Linear</q5:RescaleType>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="WorkflowOutput" />
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="TakeUntil" />
+      </Expression>
+      <Expression xsi:type="q1:ReceiveMessage">
+        <q1:Connection>bpod</q1:Connection>
+        <q1:Address>/x</q1:Address>
+        <q1:TypeTag>i</q1:TypeTag>
+      </Expression>
+      <Expression xsi:type="BehaviorSubject">
+        <Name>GaborContrast</Name>
+      </Expression>
+      <Expression xsi:type="BehaviorSubject">
+        <Name>GaborPosition</Name>
+      </Expression>
+      <Expression xsi:type="BehaviorSubject">
+        <Name>GaborColor</Name>
+      </Expression>
+      <Expression xsi:type="BehaviorSubject">
+        <Name>GaborFreq</Name>
+      </Expression>
+      <Expression xsi:type="BehaviorSubject">
+        <Name>GaborAngle</Name>
+      </Expression>
+      <Expression xsi:type="BehaviorSubject">
+        <Name>GaborSize</Name>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="FloatProperty">
+          <Value>0</Value>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="FloatProperty">
+          <Value>0.5</Value>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="IntProperty">
+          <Value>0</Value>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="FloatProperty">
+          <Value>0.19</Value>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="FloatProperty">
+          <Value>0</Value>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="FloatProperty">
+          <Value>30</Value>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="MulticastSubject">
+        <Name>GaborFreq</Name>
+      </Expression>
+      <Expression xsi:type="MulticastSubject">
+        <Name>GaborAngle</Name>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="FloatProperty">
+          <Value>0</Value>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="BehaviorSubject">
+        <Name>GaborPhase</Name>
+      </Expression>
+      <Expression xsi:type="q1:ReceiveMessage">
+        <q1:Connection>bpod</q1:Connection>
+        <q1:Address>/h</q1:Address>
+        <q1:TypeTag>f</q1:TypeTag>
+      </Expression>
+      <Expression xsi:type="MulticastSubject">
+        <Name>GaborPhase</Name>
+      </Expression>
+      <Expression xsi:type="ExternalizedProperty">
+        <MemberName>Connection</MemberName>
+        <Name>Connection</Name>
+      </Expression>
+      <Expression xsi:type="ExternalizedProperty">
+        <MemberName>FileNameTrialInfo</MemberName>
+        <Name>FileNameTrialInfo</Name>
+      </Expression>
+      <Expression xsi:type="ExternalizedProperty">
+        <MemberName>FileNameEvents</MemberName>
+        <Name>FileNameEvents</Name>
+      </Expression>
+      <Expression xsi:type="ExternalizedProperty">
+        <MemberName>FileNamePositions</MemberName>
+        <Name>FileNamePositions</Name>
+      </Expression>
+      <Expression xsi:type="ExternalizedProperty">
+        <MemberName>PortName</MemberName>
+        <Name>REPortName</Name>
+      </Expression>
+      <Expression xsi:type="ExternalizedProperty">
+        <MemberName>FileNameMic</MemberName>
+        <Name>FileNameMic</Name>
+      </Expression>
+      <Expression xsi:type="ExternalizedProperty">
+        <MemberName>RecordSound</MemberName>
+        <Name>RecordSound</Name>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="Take">
+          <Count>1</Count>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="Take">
+          <Count>1</Count>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="Take">
+          <Count>1</Count>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="Take">
+          <Count>1</Count>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="Take">
+          <Count>1</Count>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="Take">
+          <Count>1</Count>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="Take">
+          <Count>1</Count>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q2:CreateWindow">
+          <q2:Width>640</q2:Width>
+          <q2:Height>480</q2:Height>
+          <q2:VSync>On</q2:VSync>
+          <q2:SwapSync>true</q2:SwapSync>
+          <q2:ClearColor>Black</q2:ClearColor>
+          <q2:ClearMask>DepthBufferBit ColorBufferBit</q2:ClearMask>
+          <q2:CursorVisible>true</q2:CursorVisible>
+          <q2:Location xsi:nil="true" />
+          <q2:WindowBorder>Resizable</q2:WindowBorder>
+          <q2:WindowState>Fullscreen</q2:WindowState>
+          <q2:DisplayDevice>Second</q2:DisplayDevice>
+          <q2:TargetRenderFrequency>0</q2:TargetRenderFrequency>
+          <q2:RenderState />
+          <q2:GraphicsMode>
+            <q2:ColorFormat>
+              <q2:Red>8</q2:Red>
+              <q2:Green>8</q2:Green>
+              <q2:Blue>8</q2:Blue>
+              <q2:Alpha>8</q2:Alpha>
+            </q2:ColorFormat>
+            <q2:Depth>16</q2:Depth>
+            <q2:Stencil>0</q2:Stencil>
+            <q2:Samples>0</q2:Samples>
+            <q2:AccumulatorFormat>
+              <q2:Red>0</q2:Red>
+              <q2:Green>0</q2:Green>
+              <q2:Blue>0</q2:Blue>
+              <q2:Alpha>0</q2:Alpha>
+            </q2:AccumulatorFormat>
+            <q2:Buffers>2</q2:Buffers>
+            <q2:Stereo>false</q2:Stereo>
+          </q2:GraphicsMode>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q2:ShaderResources">
+          <q2:Shaders>
+            <q2:ShaderConfiguration xsi:type="q2:Material">
+              <q2:Name>Gabor</q2:Name>
+              <q2:RenderState />
+              <q2:ShaderUniforms />
+              <q2:BufferBindings />
+              <q2:FramebufferAttachments />
+              <q2:VertexShader>shader\quad.vert</q2:VertexShader>
+              <q2:FragmentShader>shader\gabor_onescreen.frag</q2:FragmentShader>
+            </q2:ShaderConfiguration>
+          </q2:Shaders>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q2:MeshResources">
+          <q2:Meshes>
+            <q2:MeshConfiguration xsi:type="q2:TexturedQuad">
+              <q2:Name>FullscreenQuad</q2:Name>
+              <q2:QuadEffects>None</q2:QuadEffects>
+            </q2:MeshConfiguration>
+          </q2:Meshes>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q2:LoadResources" />
+      </Expression>
+      <Expression xsi:type="Condition">
+        <Name>CLOSE LOOP</Name>
+        <Workflow>
+          <Nodes>
+            <Expression xsi:type="WorkflowInput">
+              <Name>Source1</Name>
+            </Expression>
+            <Expression xsi:type="WorkflowOutput" />
+            <Expression xsi:type="Equal">
+              <Operand xsi:type="FloatProperty">
+                <Value>3</Value>
+              </Operand>
+            </Expression>
+          </Nodes>
+          <Edges>
+            <Edge>
+              <From>0</From>
+              <To>2</To>
+              <Label>Source1</Label>
+            </Edge>
+            <Edge>
+              <From>2</From>
+              <To>1</To>
+              <Label>Source1</Label>
+            </Edge>
+          </Edges>
+        </Workflow>
+      </Expression>
       <Expression xsi:type="Condition">
         <Name>STOP</Name>
         <Workflow>
@@ -108,7 +385,7 @@
           </Edges>
         </Workflow>
       </Expression>
-      <Expression xsi:type="WindowWorkflow">
+      <Expression xsi:type="CreateObservable">
         <Name>ClosedLoopStimulus</Name>
         <Description>Add stop condition after combine latest:
 If sum == 0 its in the middle this works fine
@@ -124,6 +401,57 @@ This will work in both directions!! its what we want</Description>
             <Expression xsi:type="WorkflowOutput" />
             <Expression xsi:type="MulticastSubject">
               <Name>GaborColor</Name>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="CombineLatest" />
+            </Expression>
+            <Expression xsi:type="q4:ExpressionTransform">
+              <q4:Expression>single(it)</q4:Expression>
+            </Expression>
+            <Expression xsi:type="SubscribeSubject">
+              <Name>Encoder</Name>
+            </Expression>
+            <Expression xsi:type="SubscribeSubject">
+              <Name>InitPosition</Name>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="q5:Rescale">
+                <q5:Min>-180</q5:Min>
+                <q5:Max>180</q5:Max>
+                <q5:RangeMin>-1.333</q5:RangeMin>
+                <q5:RangeMax>1.333</q5:RangeMax>
+                <q5:RescaleType>Clamp</q5:RescaleType>
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="TakeUntil" />
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="CombineLatest" />
+            </Expression>
+            <Expression xsi:type="q4:ExpressionTransform">
+              <q4:Expression>((Item1+Item2) + 180) % 360 - 180</q4:Expression>
+            </Expression>
+            <Expression xsi:type="q4:ExpressionTransform">
+              <q4:Expression>Math.Abs(it)</q4:Expression>
+            </Expression>
+            <Expression xsi:type="q4:ExpressionTransform">
+              <q4:Expression>Math.Abs(it)</q4:Expression>
+            </Expression>
+            <Expression xsi:type="Subtract" />
+            <Expression xsi:type="SubscribeSubject">
+              <Name>Gain</Name>
+            </Expression>
+            <Expression xsi:type="MulticastSubject">
+              <Name>GaborPosition</Name>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="IntProperty">
+                <Value>1</Value>
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="Sample" />
             </Expression>
             <Expression xsi:type="Condition">
               <Name>StopCondition</Name>
@@ -153,46 +481,6 @@ This will work in both directions!! its what we want</Description>
                 </Edges>
               </Workflow>
             </Expression>
-            <Expression xsi:type="Combinator">
-              <Combinator xsi:type="CombineLatest" />
-            </Expression>
-            <Expression xsi:type="q3:ExpressionTransform">
-              <q3:Expression>single(it)</q3:Expression>
-            </Expression>
-            <Expression xsi:type="SubscribeSubject">
-              <Name>Encoder</Name>
-            </Expression>
-            <Expression xsi:type="SubscribeSubject">
-              <Name>InitPosition</Name>
-            </Expression>
-            <Expression xsi:type="Combinator">
-              <Combinator xsi:type="q4:Rescale">
-                <q4:Min>-180</q4:Min>
-                <q4:Max>180</q4:Max>
-                <q4:RangeMin>-1.333</q4:RangeMin>
-                <q4:RangeMax>1.333</q4:RangeMax>
-                <q4:RescaleType>Clamp</q4:RescaleType>
-              </Combinator>
-            </Expression>
-            <Expression xsi:type="Combinator">
-              <Combinator xsi:type="TakeUntil" />
-            </Expression>
-            <Expression xsi:type="Combinator">
-              <Combinator xsi:type="CombineLatest" />
-            </Expression>
-            <Expression xsi:type="q3:ExpressionTransform">
-              <q3:Expression>((Item1+Item2) + 180) % 360 - 180</q3:Expression>
-            </Expression>
-            <Expression xsi:type="q3:ExpressionTransform">
-              <q3:Expression>Math.Abs(it)</q3:Expression>
-            </Expression>
-            <Expression xsi:type="q3:ExpressionTransform">
-              <q3:Expression>Math.Abs(it)</q3:Expression>
-            </Expression>
-            <Expression xsi:type="Subtract" />
-            <Expression xsi:type="SubscribeSubject">
-              <Name>Gain</Name>
-            </Expression>
             <Expression xsi:type="NestedWorkflow">
               <Name>GainConverter</Name>
               <Description>Inputs: RotaryEncoder, Gain
@@ -200,6 +488,17 @@ Multiplies deg from encoder to GainFactor given Gain for a particular Value of w
 </Description>
               <Workflow>
                 <Nodes>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="CombineLatest" />
+                  </Expression>
+                  <Expression xsi:type="WorkflowInput">
+                    <Name>Source1</Name>
+                  </Expression>
+                  <Expression xsi:type="WorkflowOutput" />
+                  <Expression xsi:type="Divide" />
+                  <Expression xsi:type="WorkflowInput">
+                    <Name>Source2</Name>
+                  </Expression>
                   <Expression xsi:type="NestedWorkflow">
                     <Name>GainFactor</Name>
                     <Description>Input: Gain
@@ -217,6 +516,15 @@ wheel_perim = whell_radius * 2 * pi</Description>
                           <Name>Source1</Name>
                         </Expression>
                         <Expression xsi:type="WorkflowOutput" />
+                        <Expression xsi:type="Combinator">
+                          <Combinator xsi:type="FloatProperty">
+                            <Value>1</Value>
+                          </Combinator>
+                        </Expression>
+                        <Expression xsi:type="Combinator">
+                          <Combinator xsi:type="Zip" />
+                        </Expression>
+                        <Expression xsi:type="Divide" />
                         <Expression xsi:type="NestedWorkflow">
                           <Name>deg/mm</Name>
                           <Description>out: wheel_perim / 360
@@ -252,10 +560,9 @@ Value = whhel_radius for wheel_perim</Description>
                                   <Value>3.14159274</Value>
                                 </Combinator>
                               </Expression>
-                              <Expression xsi:type="ExternalizedPropertyOfSingleFloatProperty">
+                              <Expression xsi:type="ExternalizedProperty">
                                 <MemberName>Value</MemberName>
                                 <Name>WheelRadius(mm)</Name>
-                                <Value>31</Value>
                               </Expression>
                             </Nodes>
                             <Edges>
@@ -342,10 +649,9 @@ Value = whhel_radius for wheel_perim</Description>
                                   <Value>3.14159274</Value>
                                 </Combinator>
                               </Expression>
-                              <Expression xsi:type="ExternalizedPropertyOfSingleFloatProperty">
+                              <Expression xsi:type="ExternalizedProperty">
                                 <MemberName>Value</MemberName>
                                 <Name>WheelRadius(mm)</Name>
-                                <Value>31</Value>
                               </Expression>
                             </Nodes>
                             <Edges>
@@ -397,20 +703,11 @@ Value = whhel_radius for wheel_perim</Description>
                             </Edges>
                           </Workflow>
                         </Expression>
-                        <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="FloatProperty">
-                            <Value>1</Value>
-                          </Combinator>
-                        </Expression>
-                        <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="Zip" />
-                        </Expression>
-                        <Expression xsi:type="Divide" />
                       </Nodes>
                       <Edges>
                         <Edge>
                           <From>0</From>
-                          <To>7</To>
+                          <To>5</To>
                           <Label>Source2</Label>
                         </Edge>
                         <Edge>
@@ -424,173 +721,164 @@ Value = whhel_radius for wheel_perim</Description>
                           <Label>Source1</Label>
                         </Edge>
                         <Edge>
-                          <From>5</From>
-                          <To>1</To>
-                          <Label>Source2</Label>
-                        </Edge>
-                        <Edge>
-                          <From>6</From>
-                          <To>7</To>
+                          <From>4</From>
+                          <To>5</To>
                           <Label>Source1</Label>
                         </Edge>
                         <Edge>
-                          <From>7</From>
-                          <To>8</To>
+                          <From>5</From>
+                          <To>6</To>
+                          <Label>Source1</Label>
+                        </Edge>
+                        <Edge>
+                          <From>6</From>
+                          <To>3</To>
                           <Label>Source1</Label>
                         </Edge>
                         <Edge>
                           <From>8</From>
-                          <To>3</To>
-                          <Label>Source1</Label>
+                          <To>1</To>
+                          <Label>Source2</Label>
                         </Edge>
                       </Edges>
                     </Workflow>
-                  </Expression>
-                  <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="CombineLatest" />
-                  </Expression>
-                  <Expression xsi:type="WorkflowInput">
-                    <Name>Source1</Name>
-                  </Expression>
-                  <Expression xsi:type="WorkflowOutput" />
-                  <Expression xsi:type="Divide" />
-                  <Expression xsi:type="WorkflowInput">
-                    <Name>Source2</Name>
                   </Expression>
                 </Nodes>
                 <Edges>
                   <Edge>
                     <From>0</From>
-                    <To>1</To>
-                    <Label>Source2</Label>
-                  </Edge>
-                  <Edge>
-                    <From>1</From>
-                    <To>4</To>
+                    <To>3</To>
                     <Label>Source1</Label>
                   </Edge>
                   <Edge>
-                    <From>2</From>
-                    <To>1</To>
+                    <From>1</From>
+                    <To>0</To>
+                    <Label>Source1</Label>
+                  </Edge>
+                  <Edge>
+                    <From>3</From>
+                    <To>2</To>
                     <Label>Source1</Label>
                   </Edge>
                   <Edge>
                     <From>4</From>
-                    <To>3</To>
+                    <To>5</To>
                     <Label>Source1</Label>
                   </Edge>
                   <Edge>
                     <From>5</From>
                     <To>0</To>
-                    <Label>Source1</Label>
+                    <Label>Source2</Label>
                   </Edge>
                 </Edges>
               </Workflow>
-            </Expression>
-            <Expression xsi:type="MulticastSubject">
-              <Name>GaborPosition</Name>
-            </Expression>
-            <Expression xsi:type="Combinator">
-              <Combinator xsi:type="IntProperty">
-                <Value>1</Value>
-              </Combinator>
             </Expression>
           </Nodes>
           <Edges>
             <Edge>
               <From>3</From>
-              <To>9</To>
-              <Label>Source2</Label>
-            </Edge>
-            <Edge>
-              <From>4</From>
-              <To>11</To>
-              <Label>Source1</Label>
-            </Edge>
-            <Edge>
-              <From>5</From>
               <To>17</To>
               <Label>Source1</Label>
             </Edge>
             <Edge>
+              <From>4</From>
+              <To>15</To>
+              <Label>Source1</Label>
+            </Edge>
+            <Edge>
+              <From>4</From>
+              <To>16</To>
+              <Label>Source1</Label>
+            </Edge>
+            <Edge>
               <From>5</From>
-              <To>18</To>
+              <To>19</To>
               <Label>Source1</Label>
             </Edge>
             <Edge>
               <From>6</From>
-              <To>16</To>
+              <To>3</To>
+              <Label>Source2</Label>
+            </Edge>
+            <Edge>
+              <From>6</From>
+              <To>11</To>
               <Label>Source1</Label>
             </Edge>
             <Edge>
               <From>7</From>
               <To>4</To>
-              <Label>Source2</Label>
-            </Edge>
-            <Edge>
-              <From>7</From>
-              <To>12</To>
               <Label>Source1</Label>
             </Edge>
             <Edge>
               <From>8</From>
-              <To>5</To>
-              <Label>Source1</Label>
-            </Edge>
-            <Edge>
-              <From>9</From>
               <To>1</To>
               <Label>Source1</Label>
             </Edge>
             <Edge>
-              <From>10</From>
-              <To>14</To>
-              <Label>Source1</Label>
-            </Edge>
-            <Edge>
-              <From>11</From>
-              <To>8</To>
-              <Label>Source1</Label>
-            </Edge>
-            <Edge>
-              <From>12</From>
-              <To>10</To>
-              <Label>Source1</Label>
-            </Edge>
-            <Edge>
-              <From>13</From>
-              <To>10</To>
-              <Label>Source2</Label>
-            </Edge>
-            <Edge>
-              <From>14</From>
-              <To>3</To>
-              <Label>Source1</Label>
-            </Edge>
-            <Edge>
-              <From>15</From>
-              <To>16</To>
-              <Label>Source2</Label>
-            </Edge>
-            <Edge>
-              <From>16</From>
-              <To>4</To>
-              <Label>Source1</Label>
-            </Edge>
-            <Edge>
-              <From>16</From>
+              <From>9</From>
               <To>13</To>
               <Label>Source1</Label>
             </Edge>
             <Edge>
-              <From>17</From>
+              <From>10</From>
+              <To>7</To>
+              <Label>Source1</Label>
+            </Edge>
+            <Edge>
+              <From>11</From>
               <To>9</To>
               <Label>Source1</Label>
             </Edge>
             <Edge>
-              <From>18</From>
+              <From>12</From>
+              <To>9</To>
+              <Label>Source2</Label>
+            </Edge>
+            <Edge>
+              <From>13</From>
+              <To>18</To>
+              <Label>Source1</Label>
+            </Edge>
+            <Edge>
+              <From>14</From>
+              <To>19</To>
+              <Label>Source2</Label>
+            </Edge>
+            <Edge>
+              <From>15</From>
+              <To>8</To>
+              <Label>Source1</Label>
+            </Edge>
+            <Edge>
+              <From>16</From>
               <To>2</To>
               <Label>Source1</Label>
+            </Edge>
+            <Edge>
+              <From>17</From>
+              <To>10</To>
+              <Label>Source1</Label>
+            </Edge>
+            <Edge>
+              <From>18</From>
+              <To>8</To>
+              <Label>Source2</Label>
+            </Edge>
+            <Edge>
+              <From>19</From>
+              <To>3</To>
+              <Label>Source1</Label>
+            </Edge>
+            <Edge>
+              <From>19</From>
+              <To>12</To>
+              <Label>Source1</Label>
+            </Edge>
+            <Edge>
+              <From>19</From>
+              <To>17</To>
+              <Label>Source2</Label>
             </Edge>
           </Edges>
         </Workflow>
@@ -623,15 +911,6 @@ Value = whhel_radius for wheel_perim</Description>
           </Edges>
         </Workflow>
       </Expression>
-      <Expression xsi:type="Combinator">
-        <Combinator xsi:type="q2:UpdateUniform">
-          <q2:UniformName>aspectRatio</q2:UniformName>
-          <q2:ShaderName>Gabor</q2:ShaderName>
-        </Combinator>
-      </Expression>
-      <Expression xsi:type="BehaviorSubject">
-        <Name>Encoder</Name>
-      </Expression>
       <Expression xsi:type="NestedWorkflow">
         <Name>SaveData</Name>
         <Description>Needs a Published Subject with the RE data stream
@@ -647,12 +926,13 @@ _iblrig_micData.raw.wav
 </Description>
         <Workflow>
           <Nodes>
-            <Expression xsi:type="q5:CsvWriter">
-              <q5:FileName>C:\iblrig_data\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_iblrig_encoderTrialInfo.raw.ssv</q5:FileName>
-              <q5:Append>false</q5:Append>
-              <q5:Overwrite>false</q5:Overwrite>
-              <q5:Suffix>None</q5:Suffix>
-              <q5:IncludeHeader>false</q5:IncludeHeader>
+            <Expression xsi:type="q6:CsvWriter">
+              <q6:FileName>C:\iblrig_data\Subjects\_iblrig_test_mouse_2\2018-12-18\003\raw_behavior_data\_iblrig_encoderTrialInfo.raw.ssv</q6:FileName>
+              <q6:Append>false</q6:Append>
+              <q6:Overwrite>false</q6:Overwrite>
+              <q6:Suffix>None</q6:Suffix>
+              <q6:IncludeHeader>false</q6:IncludeHeader>
+              <q6:CompatibilityMode>true</q6:CompatibilityMode>
             </Expression>
             <Expression xsi:type="SubscribeSubject">
               <Name>StimAngle</Name>
@@ -684,19 +964,21 @@ _iblrig_micData.raw.wav
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="Timestamp" />
             </Expression>
-            <Expression xsi:type="q5:CsvWriter">
-              <q5:FileName>C:\iblrig_data\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_iblrig_encoderEvents.raw.ssv</q5:FileName>
-              <q5:Append>false</q5:Append>
-              <q5:Overwrite>false</q5:Overwrite>
-              <q5:Suffix>None</q5:Suffix>
-              <q5:IncludeHeader>false</q5:IncludeHeader>
+            <Expression xsi:type="q6:CsvWriter">
+              <q6:FileName>C:\iblrig_data\Subjects\_iblrig_test_mouse_2\2018-12-18\003\raw_behavior_data\_iblrig_encoderEvents.raw.ssv</q6:FileName>
+              <q6:Append>false</q6:Append>
+              <q6:Overwrite>false</q6:Overwrite>
+              <q6:Suffix>None</q6:Suffix>
+              <q6:IncludeHeader>false</q6:IncludeHeader>
+              <q6:CompatibilityMode>true</q6:CompatibilityMode>
             </Expression>
-            <Expression xsi:type="q5:CsvWriter">
-              <q5:FileName>C:\iblrig_data\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_iblrig_encoderPositions.raw.ssv</q5:FileName>
-              <q5:Append>false</q5:Append>
-              <q5:Overwrite>false</q5:Overwrite>
-              <q5:Suffix>None</q5:Suffix>
-              <q5:IncludeHeader>false</q5:IncludeHeader>
+            <Expression xsi:type="q6:CsvWriter">
+              <q6:FileName>C:\iblrig_data\Subjects\_iblrig_test_mouse_2\2018-12-18\003\raw_behavior_data\_iblrig_encoderPositions.raw.ssv</q6:FileName>
+              <q6:Append>false</q6:Append>
+              <q6:Overwrite>false</q6:Overwrite>
+              <q6:Suffix>None</q6:Suffix>
+              <q6:IncludeHeader>false</q6:IncludeHeader>
+              <q6:CompatibilityMode>true</q6:CompatibilityMode>
             </Expression>
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="Timestamp" />
@@ -707,50 +989,50 @@ _iblrig_micData.raw.wav
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="Timestamp" />
             </Expression>
-            <Expression xsi:type="ExternalizedPropertyOfStringCsvWriter">
-              <MemberName>FileName</MemberName>
-              <Name>FileNameTrialInfo</Name>
-              <Value>C:\iblrig_data\Subjects\_iblrig_test_mouse\2018-10-09\32\raw_behavior_data\_iblrig_encoderTrialInfo.raw.ssv</Value>
-            </Expression>
-            <Expression xsi:type="ExternalizedPropertyOfStringCsvWriter">
-              <MemberName>FileName</MemberName>
-              <Name>FileNameEvents</Name>
-              <Value>C:\iblrig_data\Subjects\_iblrig_test_mouse\2018-10-09\32\raw_behavior_data\_iblrig_encoderEvents.raw.ssv</Value>
-            </Expression>
-            <Expression xsi:type="ExternalizedPropertyOfStringCsvWriter">
-              <MemberName>FileName</MemberName>
-              <Name>FileNamePositions</Name>
-              <Value>C:\iblrig_data\Subjects\_iblrig_test_mouse\2018-10-09\32\raw_behavior_data\_iblrig_encoderPositions.raw.ssv</Value>
-            </Expression>
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="q6:AudioWriter">
-                <q6:FileName>C:\iblrig_data\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_iblrig_micData.raw.wav</q6:FileName>
-                <q6:Suffix>None</q6:Suffix>
-                <q6:Buffered>true</q6:Buffered>
-                <q6:Overwrite>false</q6:Overwrite>
-                <q6:SamplingFrequency>200000</q6:SamplingFrequency>
+              <Combinator xsi:type="q7:AudioWriter">
+                <q7:FileName>C:\iblrig_data\Subjects\_iblrig_test_mouse_2\2018-12-18\003\raw_behavior_data\_iblrig_micData.raw.wav</q7:FileName>
+                <q7:Suffix>None</q7:Suffix>
+                <q7:Buffered>true</q7:Buffered>
+                <q7:Overwrite>false</q7:Overwrite>
+                <q7:SamplingFrequency>200000</q7:SamplingFrequency>
               </Combinator>
             </Expression>
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="q6:AudioCapture">
-                <q6:DeviceName>Microphone (UltraMic 200K 16 bi</q6:DeviceName>
-                <q6:Frequency>200000</q6:Frequency>
-                <q6:SampleFormat>Mono16</q6:SampleFormat>
-                <q6:BufferLength>10</q6:BufferLength>
+              <Combinator xsi:type="q7:AudioCapture">
+                <q7:DeviceName>Microphone (UltraMic 200K 16 bi</q7:DeviceName>
+                <q7:Frequency>200000</q7:Frequency>
+                <q7:SampleFormat>Mono16</q7:SampleFormat>
+                <q7:BufferLength>10</q7:BufferLength>
               </Combinator>
-            </Expression>
-            <Expression xsi:type="ExternalizedPropertyOfStringAudioWriter">
-              <MemberName>FileName</MemberName>
-              <Name>FileNameMic</Name>
-              <Value>C:\iblrig_data\Subjects\_iblrig_test_mouse\2018-10-09\32\raw_behavior_data\_iblrig_micData.raw.wav</Value>
             </Expression>
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="SubscribeWhen" />
             </Expression>
-            <Expression xsi:type="ExternalizedPropertyOfBooleanBooleanProperty">
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="BooleanProperty">
+                <Value>true</Value>
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="ExternalizedProperty">
+              <MemberName>FileName</MemberName>
+              <Name>FileNameTrialInfo</Name>
+            </Expression>
+            <Expression xsi:type="ExternalizedProperty">
+              <MemberName>FileName</MemberName>
+              <Name>FileNameEvents</Name>
+            </Expression>
+            <Expression xsi:type="ExternalizedProperty">
+              <MemberName>FileName</MemberName>
+              <Name>FileNamePositions</Name>
+            </Expression>
+            <Expression xsi:type="ExternalizedProperty">
+              <MemberName>FileName</MemberName>
+              <Name>FileNameMic</Name>
+            </Expression>
+            <Expression xsi:type="ExternalizedProperty">
               <MemberName>Value</MemberName>
               <Name>RecordSound</Name>
-              <Value>true</Value>
             </Expression>
             <Expression xsi:type="Condition">
               <Workflow>
@@ -778,11 +1060,6 @@ _iblrig_micData.raw.wav
                   </Edge>
                 </Edges>
               </Workflow>
-            </Expression>
-            <Expression xsi:type="Combinator">
-              <Combinator xsi:type="BooleanProperty">
-                <Value>true</Value>
-              </Combinator>
             </Expression>
           </Nodes>
           <Edges>
@@ -852,58 +1129,52 @@ _iblrig_micData.raw.wav
               <Label>Source1</Label>
             </Edge>
             <Edge>
-              <From>16</From>
-              <To>0</To>
-              <Label>Source2</Label>
-            </Edge>
-            <Edge>
               <From>17</From>
-              <To>11</To>
-              <Label>Source2</Label>
+              <To>18</To>
+              <Label>Source1</Label>
             </Edge>
             <Edge>
               <From>18</From>
-              <To>12</To>
-              <Label>Source2</Label>
-            </Edge>
-            <Edge>
-              <From>20</From>
-              <To>22</To>
+              <To>16</To>
               <Label>Source1</Label>
             </Edge>
             <Edge>
-              <From>21</From>
-              <To>19</To>
-              <Label>Source2</Label>
-            </Edge>
-            <Edge>
-              <From>22</From>
-              <To>19</To>
-              <Label>Source1</Label>
-            </Edge>
-            <Edge>
-              <From>23</From>
+              <From>19</From>
               <To>25</To>
               <Label>Source1</Label>
             </Edge>
             <Edge>
-              <From>24</From>
-              <To>22</To>
+              <From>20</From>
+              <To>0</To>
               <Label>Source2</Label>
             </Edge>
             <Edge>
-              <From>25</From>
-              <To>24</To>
+              <From>21</From>
+              <To>11</To>
+              <Label>Source2</Label>
+            </Edge>
+            <Edge>
+              <From>22</From>
+              <To>12</To>
+              <Label>Source2</Label>
+            </Edge>
+            <Edge>
+              <From>23</From>
+              <To>16</To>
+              <Label>Source2</Label>
+            </Edge>
+            <Edge>
+              <From>24</From>
+              <To>19</To>
               <Label>Source1</Label>
+            </Edge>
+            <Edge>
+              <From>25</From>
+              <To>18</To>
+              <Label>Source2</Label>
             </Edge>
           </Edges>
         </Workflow>
-      </Expression>
-      <Expression xsi:type="BehaviorSubject">
-        <Name>Gain</Name>
-      </Expression>
-      <Expression xsi:type="MulticastSubject">
-        <Name>GaborSize</Name>
       </Expression>
       <Expression xsi:type="NestedWorkflow">
         <Name>UniformUpdates</Name>
@@ -945,14 +1216,18 @@ _iblrig_micData.raw.wav
                 <q2:ShaderName>Gabor</q2:ShaderName>
               </Combinator>
             </Expression>
-            <Expression xsi:type="SubscribeSubject">
-              <Name>GaborColor</Name>
+            <Expression xsi:type="Disable">
+              <Builder xsi:type="SubscribeSubject">
+                <Name>GaborColor</Name>
+              </Builder>
             </Expression>
-            <Expression xsi:type="Combinator">
-              <Combinator xsi:type="q2:UpdateUniform">
-                <q2:UniformName>color</q2:UniformName>
-                <q2:ShaderName>Gabor</q2:ShaderName>
-              </Combinator>
+            <Expression xsi:type="Disable">
+              <Builder xsi:type="Combinator">
+                <Combinator xsi:type="q2:UpdateUniform">
+                  <q2:UniformName>color</q2:UniformName>
+                  <q2:ShaderName>Gabor</q2:ShaderName>
+                </Combinator>
+              </Builder>
             </Expression>
             <Expression xsi:type="SubscribeSubject">
               <Name>GaborPosition</Name>
@@ -963,10 +1238,80 @@ _iblrig_micData.raw.wav
                 <q2:ShaderName>Gabor</q2:ShaderName>
               </Combinator>
             </Expression>
-            <Expression xsi:type="q3:ExpressionTransform">
-              <q3:Expression>it%2</q3:Expression>
+            <Expression xsi:type="Disable">
+              <Builder xsi:type="q4:ExpressionTransform">
+                <q4:Expression>it%2</q4:Expression>
+              </Builder>
+            </Expression>
+            <Expression xsi:type="Disable">
+              <Builder xsi:type="Accumulate" />
+            </Expression>
+            <Expression xsi:type="SubscribeSubject">
+              <Name>GaborPhase</Name>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="q2:UpdateUniform">
+                <q2:UniformName>gabor_phase</q2:UniformName>
+                <q2:ShaderName>Gabor</q2:ShaderName>
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="q2:RenderFrame" />
+            </Expression>
+            <Expression xsi:type="SubscribeSubject">
+              <Name>GaborColor</Name>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="CombineLatest" />
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="Sample" />
+            </Expression>
+            <Expression xsi:type="MemberSelector">
+              <Selector>Item2</Selector>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="DistinctUntilChanged" />
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="q2:UpdateUniform">
+                <q2:UniformName>color</q2:UniformName>
+                <q2:ShaderName>Gabor</q2:ShaderName>
+              </Combinator>
             </Expression>
             <Expression xsi:type="Accumulate" />
+            <Expression xsi:type="q4:ExpressionTransform">
+              <q4:Expression>it%2</q4:Expression>
+            </Expression>
+            <Expression xsi:type="Disable">
+              <Builder xsi:type="Condition">
+                <Workflow>
+                  <Nodes>
+                    <Expression xsi:type="WorkflowInput">
+                      <Name>Source1</Name>
+                    </Expression>
+                    <Expression xsi:type="WorkflowOutput" />
+                    <Expression xsi:type="Equal">
+                      <Operand xsi:type="IntProperty">
+                        <Value>1</Value>
+                      </Operand>
+                    </Expression>
+                  </Nodes>
+                  <Edges>
+                    <Edge>
+                      <From>0</From>
+                      <To>2</To>
+                      <Label>Source1</Label>
+                    </Edge>
+                    <Edge>
+                      <From>2</From>
+                      <To>1</To>
+                      <Label>Source1</Label>
+                    </Edge>
+                  </Edges>
+                </Workflow>
+              </Builder>
+            </Expression>
             <Expression xsi:type="Condition">
               <Workflow>
                 <Nodes>
@@ -994,15 +1339,6 @@ _iblrig_micData.raw.wav
                 </Edges>
               </Workflow>
             </Expression>
-            <Expression xsi:type="SubscribeSubject">
-              <Name>GaborPhase</Name>
-            </Expression>
-            <Expression xsi:type="Combinator">
-              <Combinator xsi:type="q2:UpdateUniform">
-                <q2:UniformName>gabor_phase</q2:UniformName>
-                <q2:ShaderName>Gabor</q2:ShaderName>
-              </Combinator>
-            </Expression>
           </Nodes>
           <Edges>
             <Edge>
@@ -1027,7 +1363,7 @@ _iblrig_micData.raw.wav
             </Edge>
             <Edge>
               <From>8</From>
-              <To>14</To>
+              <To>25</To>
               <Label>Source1</Label>
             </Edge>
             <Edge>
@@ -1047,24 +1383,66 @@ _iblrig_micData.raw.wav
             </Edge>
             <Edge>
               <From>14</From>
+              <To>15</To>
+              <Label>Source1</Label>
+            </Edge>
+            <Edge>
+              <From>16</From>
+              <To>18</To>
+              <Label>Source1</Label>
+            </Edge>
+            <Edge>
+              <From>16</From>
+              <To>19</To>
+              <Label>Source2</Label>
+            </Edge>
+            <Edge>
+              <From>17</From>
+              <To>26</To>
+              <Label>Source1</Label>
+            </Edge>
+            <Edge>
+              <From>18</From>
+              <To>19</To>
+              <Label>Source1</Label>
+            </Edge>
+            <Edge>
+              <From>19</From>
+              <To>20</To>
+              <Label>Source1</Label>
+            </Edge>
+            <Edge>
+              <From>20</From>
+              <To>21</To>
+              <Label>Source1</Label>
+            </Edge>
+            <Edge>
+              <From>21</From>
+              <To>22</To>
+              <Label>Source1</Label>
+            </Edge>
+            <Edge>
+              <From>23</From>
+              <To>24</To>
+              <Label>Source1</Label>
+            </Edge>
+            <Edge>
+              <From>24</From>
+              <To>18</To>
+              <Label>Source2</Label>
+            </Edge>
+            <Edge>
+              <From>25</From>
               <To>13</To>
               <Label>Source1</Label>
             </Edge>
             <Edge>
-              <From>15</From>
-              <To>16</To>
+              <From>26</From>
+              <To>23</To>
               <Label>Source1</Label>
             </Edge>
           </Edges>
         </Workflow>
-      </Expression>
-      <Expression xsi:type="q1:ReceiveMessage">
-        <q1:Connection>bpod</q1:Connection>
-        <q1:Address>/t</q1:Address>
-        <q1:TypeTag>i</q1:TypeTag>
-      </Expression>
-      <Expression xsi:type="BehaviorSubject">
-        <Name>Contrast</Name>
       </Expression>
       <Expression xsi:type="SelectMany">
         <Name>HideStimulus</Name>
@@ -1129,93 +1507,6 @@ _iblrig_micData.raw.wav
             </Edge>
           </Edges>
         </Workflow>
-      </Expression>
-      <Expression xsi:type="Combinator">
-        <Combinator xsi:type="Switch" />
-      </Expression>
-      <Expression xsi:type="Combinator">
-        <Combinator xsi:type="q2:DrawMesh">
-          <q2:ShaderName>Gabor</q2:ShaderName>
-          <q2:MeshName>FullscreenQuad</q2:MeshName>
-        </Combinator>
-      </Expression>
-      <Expression xsi:type="MemberSelector">
-        <Selector>Source.Data</Selector>
-      </Expression>
-      <Expression xsi:type="MemberSelector">
-        <Selector>Source.Position</Selector>
-      </Expression>
-      <Expression xsi:type="Combinator">
-        <Combinator xsi:type="q7:EncoderEvent" />
-      </Expression>
-      <Expression xsi:type="Combinator">
-        <Combinator xsi:type="q7:EncoderPosition" />
-      </Expression>
-      <Expression xsi:type="Combinator">
-        <Combinator xsi:type="q7:Encoder">
-          <q7:PortName>COM3</q7:PortName>
-        </Combinator>
-      </Expression>
-      <Expression xsi:type="q3:ExpressionTransform">
-        <q3:Expression>single(it)</q3:Expression>
-      </Expression>
-      <Expression xsi:type="BehaviorSubject">
-        <Name>TrialNum</Name>
-      </Expression>
-      <Expression xsi:type="BehaviorSubject">
-        <Name>StimFreq</Name>
-      </Expression>
-      <Expression xsi:type="BehaviorSubject">
-        <Name>StimAngle</Name>
-      </Expression>
-      <Expression xsi:type="BehaviorSubject">
-        <Name>StimSize</Name>
-      </Expression>
-      <Expression xsi:type="BehaviorSubject">
-        <Name>RawEncoderPositions</Name>
-      </Expression>
-      <Expression xsi:type="Combinator">
-        <Combinator xsi:type="q4:Rescale">
-          <q4:Min>-512</q4:Min>
-          <q4:Max>512</q4:Max>
-          <q4:RangeMin>-180</q4:RangeMin>
-          <q4:RangeMax>180</q4:RangeMax>
-          <q4:RescaleType>Linear</q4:RescaleType>
-        </Combinator>
-      </Expression>
-      <Expression xsi:type="ExternalizedPropertyOfStringCsvWriter">
-        <MemberName>FileNameTrialInfo</MemberName>
-        <Name>FileNameTrialInfo</Name>
-        <Value>C:\iblrig_data\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_iblrig_encoderTrialInfo.raw.ssv</Value>
-      </Expression>
-      <Expression xsi:type="ExternalizedPropertyOfStringCsvWriter">
-        <MemberName>FileNameEvents</MemberName>
-        <Name>FileNameEvents</Name>
-        <Value>C:\iblrig_data\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_iblrig_encoderEvents.raw.ssv</Value>
-      </Expression>
-      <Expression xsi:type="ExternalizedPropertyOfStringCsvWriter">
-        <MemberName>FileNamePositions</MemberName>
-        <Name>FileNamePositions</Name>
-        <Value>C:\iblrig_data\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_iblrig_encoderPositions.raw.ssv</Value>
-      </Expression>
-      <Expression xsi:type="WorkflowOutput" />
-      <Expression xsi:type="Combinator">
-        <Combinator xsi:type="TakeUntil" />
-      </Expression>
-      <Expression xsi:type="q1:ReceiveMessage">
-        <q1:Connection>bpod</q1:Connection>
-        <q1:Address>/x</q1:Address>
-        <q1:TypeTag>i</q1:TypeTag>
-      </Expression>
-      <Expression xsi:type="ExternalizedPropertyOfStringEncoder">
-        <MemberName>PortName</MemberName>
-        <Name>REPortName</Name>
-        <Value>COM3</Value>
-      </Expression>
-      <Expression xsi:type="ExternalizedPropertyOfStringAudioWriter">
-        <MemberName>FileNameMic</MemberName>
-        <Name>FileNameMic</Name>
-        <Value>C:\iblrig_data\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_iblrig_micData.raw.wav</Value>
       </Expression>
       <Expression xsi:type="SelectMany">
         <Name>UpdateContrast</Name>
@@ -1289,16 +1580,16 @@ probably there is no need to reset the position also
               <Name>InitPosition</Name>
             </Expression>
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="q4:Rescale">
-                <q4:Min>-180</q4:Min>
-                <q4:Max>180</q4:Max>
-                <q4:RangeMin>-1.333</q4:RangeMin>
-                <q4:RangeMax>1.333</q4:RangeMax>
-                <q4:RescaleType>Linear</q4:RescaleType>
+              <Combinator xsi:type="q5:Rescale">
+                <q5:Min>-180</q5:Min>
+                <q5:Max>180</q5:Max>
+                <q5:RangeMin>-1.333</q5:RangeMin>
+                <q5:RangeMax>1.333</q5:RangeMax>
+                <q5:RescaleType>Linear</q5:RescaleType>
               </Combinator>
             </Expression>
-            <Expression xsi:type="q3:ExpressionTransform">
-              <q3:Expression>single(it)</q3:Expression>
+            <Expression xsi:type="q4:ExpressionTransform">
+              <q4:Expression>single(it)</q4:Expression>
             </Expression>
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="Sample" />
@@ -1359,81 +1650,6 @@ probably there is no need to reset the position also
           </Edges>
         </Workflow>
       </Expression>
-      <Expression xsi:type="BehaviorSubject">
-        <Name>GaborContrast</Name>
-      </Expression>
-      <Expression xsi:type="BehaviorSubject">
-        <Name>GaborPosition</Name>
-      </Expression>
-      <Expression xsi:type="BehaviorSubject">
-        <Name>GaborColor</Name>
-      </Expression>
-      <Expression xsi:type="BehaviorSubject">
-        <Name>GaborFreq</Name>
-      </Expression>
-      <Expression xsi:type="BehaviorSubject">
-        <Name>GaborAngle</Name>
-      </Expression>
-      <Expression xsi:type="BehaviorSubject">
-        <Name>GaborSize</Name>
-      </Expression>
-      <Expression xsi:type="Combinator">
-        <Combinator xsi:type="FloatProperty">
-          <Value>0</Value>
-        </Combinator>
-      </Expression>
-      <Expression xsi:type="Combinator">
-        <Combinator xsi:type="FloatProperty">
-          <Value>0.5</Value>
-        </Combinator>
-      </Expression>
-      <Expression xsi:type="Combinator">
-        <Combinator xsi:type="IntProperty">
-          <Value>0</Value>
-        </Combinator>
-      </Expression>
-      <Expression xsi:type="Combinator">
-        <Combinator xsi:type="FloatProperty">
-          <Value>0.19</Value>
-        </Combinator>
-      </Expression>
-      <Expression xsi:type="Combinator">
-        <Combinator xsi:type="FloatProperty">
-          <Value>0</Value>
-        </Combinator>
-      </Expression>
-      <Expression xsi:type="Combinator">
-        <Combinator xsi:type="FloatProperty">
-          <Value>30</Value>
-        </Combinator>
-      </Expression>
-      <Expression xsi:type="MulticastSubject">
-        <Name>GaborFreq</Name>
-      </Expression>
-      <Expression xsi:type="MulticastSubject">
-        <Name>GaborAngle</Name>
-      </Expression>
-      <Expression xsi:type="ExternalizedPropertyOfBooleanBooleanProperty">
-        <MemberName>RecordSound</MemberName>
-        <Name>RecordSound</Name>
-        <Value>true</Value>
-      </Expression>
-      <Expression xsi:type="Combinator">
-        <Combinator xsi:type="FloatProperty">
-          <Value>0</Value>
-        </Combinator>
-      </Expression>
-      <Expression xsi:type="BehaviorSubject">
-        <Name>GaborPhase</Name>
-      </Expression>
-      <Expression xsi:type="q1:ReceiveMessage">
-        <q1:Connection>bpod</q1:Connection>
-        <q1:Address>/h</q1:Address>
-        <q1:TypeTag>f</q1:TypeTag>
-      </Expression>
-      <Expression xsi:type="MulticastSubject">
-        <Name>GaborPhase</Name>
-      </Expression>
     </Nodes>
     <Edges>
       <Edge>
@@ -1442,268 +1658,283 @@ probably there is no need to reset the position also
         <Label>Source1</Label>
       </Edge>
       <Edge>
-        <From>0</From>
-        <To>12</To>
-        <Label>Source1</Label>
-      </Edge>
-      <Edge>
-        <From>0</From>
-        <To>22</To>
-        <Label>Source1</Label>
-      </Edge>
-      <Edge>
-        <From>0</From>
-        <To>11</To>
-        <Label>Source1</Label>
-      </Edge>
-      <Edge>
-        <From>0</From>
-        <To>10</To>
-        <Label>Source1</Label>
-      </Edge>
-      <Edge>
-        <From>0</From>
-        <To>9</To>
-        <Label>Source1</Label>
-      </Edge>
-      <Edge>
-        <From>0</From>
-        <To>8</To>
-        <Label>Source1</Label>
-      </Edge>
-      <Edge>
-        <From>0</From>
-        <To>66</To>
-        <Label>Source1</Label>
-      </Edge>
-      <Edge>
-        <From>1</From>
-        <To>2</To>
+        <From>2</From>
+        <To>3</To>
         <Label>Source1</Label>
       </Edge>
       <Edge>
         <From>3</From>
-        <To>5</To>
+        <To>11</To>
         <Label>Source1</Label>
       </Edge>
       <Edge>
         <From>4</From>
-        <To>14</To>
-        <Label>Source1</Label>
-      </Edge>
-      <Edge>
-        <From>5</From>
-        <To>16</To>
-        <Label>Source1</Label>
-      </Edge>
-      <Edge>
-        <From>6</From>
-        <To>43</To>
-        <Label>Source1</Label>
-      </Edge>
-      <Edge>
-        <From>7</From>
-        <To>27</To>
-        <Label>Source1</Label>
-      </Edge>
-      <Edge>
-        <From>8</From>
-        <To>19</To>
-        <Label>Source1</Label>
-      </Edge>
-      <Edge>
-        <From>9</From>
-        <To>36</To>
-        <Label>Source1</Label>
-      </Edge>
-      <Edge>
-        <From>10</From>
-        <To>35</To>
-        <Label>Source1</Label>
-      </Edge>
-      <Edge>
-        <From>11</From>
-        <To>34</To>
-        <Label>Source1</Label>
-      </Edge>
-      <Edge>
-        <From>12</From>
-        <To>23</To>
-        <Label>Source1</Label>
-      </Edge>
-      <Edge>
-        <From>13</From>
-        <To>24</To>
-        <Label>Source1</Label>
-      </Edge>
-      <Edge>
-        <From>14</From>
-        <To>25</To>
-        <Label>Source1</Label>
-      </Edge>
-      <Edge>
-        <From>15</From>
-        <To>48</To>
-        <Label>Source1</Label>
-      </Edge>
-      <Edge>
-        <From>16</From>
-        <To>26</To>
-        <Label>Source1</Label>
-      </Edge>
-      <Edge>
-        <From>22</From>
-        <To>33</To>
-        <Label>Source1</Label>
-      </Edge>
-      <Edge>
-        <From>27</From>
         <To>32</To>
         <Label>Source1</Label>
       </Edge>
       <Edge>
-        <From>28</From>
-        <To>38</To>
+        <From>5</From>
+        <To>19</To>
         <Label>Source1</Label>
       </Edge>
       <Edge>
-        <From>29</From>
-        <To>7</To>
-        <Label>Source1</Label>
-      </Edge>
-      <Edge>
-        <From>30</From>
-        <To>37</To>
-        <Label>Source1</Label>
-      </Edge>
-      <Edge>
-        <From>31</From>
-        <To>29</To>
-        <Label>Source1</Label>
-      </Edge>
-      <Edge>
-        <From>31</From>
-        <To>30</To>
-        <Label>Source1</Label>
-      </Edge>
-      <Edge>
-        <From>32</From>
+        <From>6</From>
         <To>13</To>
         <Label>Source1</Label>
       </Edge>
       <Edge>
-        <From>32</From>
-        <To>15</To>
-        <Label>Source1</Label>
-      </Edge>
-      <Edge>
-        <From>32</From>
-        <To>4</To>
-        <Label>Source1</Label>
-      </Edge>
-      <Edge>
-        <From>34</From>
-        <To>61</To>
-        <Label>Source1</Label>
-      </Edge>
-      <Edge>
-        <From>35</From>
-        <To>62</To>
-        <Label>Source1</Label>
-      </Edge>
-      <Edge>
-        <From>36</From>
-        <To>20</To>
-        <Label>Source1</Label>
-      </Edge>
-      <Edge>
-        <From>37</From>
+        <From>7</From>
         <To>28</To>
         <Label>Source1</Label>
       </Edge>
       <Edge>
-        <From>38</From>
-        <To>17</To>
+        <From>8</From>
+        <To>27</To>
         <Label>Source1</Label>
       </Edge>
       <Edge>
-        <From>39</From>
+        <From>9</From>
+        <To>26</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>10</From>
+        <To>16</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>11</From>
         <To>18</To>
         <Label>Source1</Label>
       </Edge>
       <Edge>
-        <From>40</From>
-        <To>18</To>
-        <Label>Source2</Label>
-      </Edge>
-      <Edge>
-        <From>41</From>
-        <To>18</To>
-        <Label>Source3</Label>
-      </Edge>
-      <Edge>
-        <From>43</From>
-        <To>42</To>
+        <From>15</From>
+        <To>25</To>
         <Label>Source1</Label>
       </Edge>
       <Edge>
-        <From>44</From>
-        <To>43</To>
-        <Label>Source2</Label>
-      </Edge>
-      <Edge>
-        <From>45</From>
-        <To>31</To>
+        <From>19</From>
+        <To>24</To>
         <Label>Source1</Label>
       </Edge>
       <Edge>
-        <From>46</From>
-        <To>18</To>
-        <Label>Source4</Label>
+        <From>20</From>
+        <To>30</To>
+        <Label>Source1</Label>
       </Edge>
       <Edge>
-        <From>48</From>
+        <From>21</From>
+        <To>5</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>22</From>
+        <To>29</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>23</From>
+        <To>21</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>23</From>
+        <To>22</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>24</From>
+        <To>71</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>24</From>
+        <To>73</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>24</From>
+        <To>70</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>26</From>
+        <To>46</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>27</From>
         <To>47</To>
         <Label>Source1</Label>
       </Edge>
       <Edge>
-        <From>55</From>
-        <To>49</To>
+        <From>28</From>
+        <To>14</To>
         <Label>Source1</Label>
       </Edge>
       <Edge>
-        <From>56</From>
-        <To>50</To>
+        <From>29</From>
+        <To>20</To>
         <Label>Source1</Label>
       </Edge>
       <Edge>
-        <From>57</From>
+        <From>30</From>
+        <To>12</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>32</From>
+        <To>31</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>33</From>
+        <To>32</To>
+        <Label>Source2</Label>
+      </Edge>
+      <Edge>
+        <From>40</From>
+        <To>59</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>41</From>
+        <To>60</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>42</From>
+        <To>61</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>43</From>
+        <To>62</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>44</From>
+        <To>63</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>45</From>
+        <To>64</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>48</From>
+        <To>65</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>50</From>
         <To>51</To>
         <Label>Source1</Label>
       </Edge>
       <Edge>
-        <From>58</From>
-        <To>52</To>
+        <From>52</From>
+        <To>0</To>
         <Label>Source1</Label>
       </Edge>
       <Edge>
+        <From>52</From>
+        <To>10</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>52</From>
+        <To>15</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>52</From>
+        <To>9</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>52</From>
+        <To>8</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>52</From>
+        <To>7</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>52</From>
+        <To>6</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>52</From>
+        <To>50</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>53</From>
+        <To>74</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>54</From>
+        <To>74</To>
+        <Label>Source2</Label>
+      </Edge>
+      <Edge>
+        <From>55</From>
+        <To>74</To>
+        <Label>Source3</Label>
+      </Edge>
+      <Edge>
+        <From>56</From>
+        <To>23</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>57</From>
+        <To>74</To>
+        <Label>Source4</Label>
+      </Edge>
+      <Edge>
+        <From>58</From>
+        <To>74</To>
+        <Label>Source5</Label>
+      </Edge>
+      <Edge>
         <From>59</From>
-        <To>53</To>
+        <To>34</To>
         <Label>Source1</Label>
       </Edge>
       <Edge>
         <From>60</From>
-        <To>54</To>
+        <To>35</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>61</From>
+        <To>36</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>62</From>
+        <To>37</To>
         <Label>Source1</Label>
       </Edge>
       <Edge>
         <From>63</From>
-        <To>18</To>
-        <Label>Source5</Label>
+        <To>38</To>
+        <Label>Source1</Label>
       </Edge>
       <Edge>
         <From>64</From>
-        <To>65</To>
+        <To>39</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>65</From>
+        <To>49</To>
         <Label>Source1</Label>
       </Edge>
       <Edge>
@@ -1711,47 +1942,81 @@ probably there is no need to reset the position also
         <To>67</To>
         <Label>Source1</Label>
       </Edge>
+      <Edge>
+        <From>67</From>
+        <To>68</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>68</From>
+        <To>69</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>70</From>
+        <To>72</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>71</From>
+        <To>76</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>72</From>
+        <To>17</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>73</From>
+        <To>78</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>78</From>
+        <To>77</To>
+        <Label>Source1</Label>
+      </Edge>
     </Edges>
   </Workflow>
   <ExtensionTypes>
-    <Type>Bonsai.Expressions.ExternalizedProperty`2[[System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089],[Bonsai.Osc.ReceiveMessage, Bonsai.Osc, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null]], Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Osc.ReceiveMessage, Bonsai.Osc, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Shaders.RenderFrame, Bonsai.Shaders, Version=0.18.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Expressions.EqualBuilder, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Expressions.FloatProperty, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Shaders.AspectRatio, Bonsai.Shaders, Version=0.18.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Shaders.WindowClosed, Bonsai.Shaders, Version=0.18.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Expressions.MulticastSubjectBuilder, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Expressions.LessThanBuilder, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Expressions.DoubleProperty, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Reactive.CombineLatest, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Scripting.ExpressionTransform, Bonsai.Scripting, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Dsp.Rescale, Bonsai.Dsp, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Reactive.TakeUntil, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Expressions.SubtractBuilder, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Expressions.MultiplyBuilder, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Expressions.DivideBuilder, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Reactive.Zip, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Expressions.ExternalizedProperty`2[[System.Single, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089],[Bonsai.Expressions.FloatProperty, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null]], Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Expressions.IntProperty, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Shaders.UpdateUniform, Bonsai.Shaders, Version=0.18.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.IO.CsvWriter, Bonsai.System, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Reactive.Timestamp, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Expressions.ExternalizedProperty`2[[System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089],[Bonsai.IO.CsvWriter, Bonsai.System, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null]], Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Audio.AudioWriter, Bonsai.Audio, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Audio.AudioCapture, Bonsai.Audio, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Expressions.ExternalizedProperty`2[[System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089],[Bonsai.Audio.AudioWriter, Bonsai.Audio, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null]], Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Reactive.SubscribeWhen, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Expressions.ExternalizedProperty`2[[System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089],[Bonsai.Expressions.BooleanProperty, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null]], Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Expressions.BooleanProperty, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Reactive.AccumulateBuilder, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Reactive.Take, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Reactive.Switch, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Shaders.DrawMesh, Bonsai.Shaders, Version=0.18.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Osc.ReceiveMessage, Bonsai.Osc, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Shaders.RenderFrame, Bonsai.Shaders, Version=0.19.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Shaders.AspectRatio, Bonsai.Shaders, Version=0.19.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Shaders.WindowClosed, Bonsai.Shaders, Version=0.19.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Shaders.UpdateUniform, Bonsai.Shaders, Version=0.19.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Expressions.MulticastSubjectBuilder, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Reactive.Switch, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Shaders.DrawMesh, Bonsai.Shaders, Version=0.19.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Bpod.EncoderEvent, Bonsai.Bpod, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Bpod.EncoderPosition, Bonsai.Bpod, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Bpod.Encoder, Bonsai.Bpod, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Expressions.ExternalizedProperty`2[[System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089],[Bonsai.Bpod.Encoder, Bonsai.Bpod, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null]], Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Reactive.Sample, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Scripting.ExpressionTransform, Bonsai.Scripting, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Dsp.Rescale, Bonsai.Dsp, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Reactive.TakeUntil, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Expressions.FloatProperty, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Expressions.IntProperty, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Reactive.Take, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Shaders.CreateWindow, Bonsai.Shaders, Version=0.19.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Shaders.ShaderResources, Bonsai.Shaders, Version=0.19.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Shaders.MeshResources, Bonsai.Shaders, Version=0.19.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Shaders.LoadResources, Bonsai.Shaders, Version=0.19.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Expressions.EqualBuilder, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Reactive.CombineLatest, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Expressions.SubtractBuilder, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Reactive.Sample, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Expressions.LessThanBuilder, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Expressions.DoubleProperty, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Expressions.DivideBuilder, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Expressions.MultiplyBuilder, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Reactive.Zip, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.IO.CsvWriter, Bonsai.System, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Reactive.Timestamp, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Audio.AudioWriter, Bonsai.Audio, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Audio.AudioCapture, Bonsai.Audio, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Reactive.SubscribeWhen, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Expressions.BooleanProperty, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Reactive.AccumulateBuilder, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Reactive.DistinctUntilChanged, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
   </ExtensionTypes>
 </WorkflowBuilder>
