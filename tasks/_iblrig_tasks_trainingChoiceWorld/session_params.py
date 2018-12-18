@@ -490,7 +490,7 @@ class SessionParamHandler(object):
                 self.SESSION_RAW_VIDEO_DATA_FOLDER, x))]
         SessionParamHandler.zipit(
             video_code_files, os.path.join(self.SESSION_RAW_VIDEO_DATA_FOLDER,
-                                           '_iblrig_tideoCodeFiles.raw.zip'))
+                                           '_iblrig_videoCodeFiles.raw.zip'))
 
         [shutil.rmtree(x) for x in behavior_code_files + video_code_files]
 
