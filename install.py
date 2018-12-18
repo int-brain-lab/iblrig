@@ -100,7 +100,7 @@ def install_iblrig_requirements():
     os.system("activate iblenv && pip install sounddevice")
     print("N" * 39, '(pip) Installing PyBpod')
     os.system("activate iblenv && pip install pybpod --upgrade")
-    os.system("activate iblenv && pip install -U pybpod")
+    # os.system("activate iblenv && pip install -U pybpod")
     print("N" * 39, '(pip) Installing Alyx plugin')
     os.system("activate iblenv && pip install pybpod-gui-plugin-alyx --upgrade")
     print("N" * 79)
