@@ -8,6 +8,7 @@ import numpy as np
 import scipy.stats as st
 import json
 import os
+from pathlib import Path
 from dateutil import parser
 import math
 
@@ -284,6 +285,10 @@ class TrialParamHandler(object):
         self.data_file.write(out)
         self.data_file.write('\n')
         self.data_file.close()
+        # If more than 42 trials save transfer_me.flag
+        if self.trial_num == 42:
+            flag = Path(self.data_file_path).parent.parent / 'transfer_me.flag'
+            open(flag, 'a').close()
         return json.loads(out)
 
     def next_trial(self):
