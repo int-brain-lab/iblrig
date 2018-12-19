@@ -298,6 +298,8 @@ class TrialParamHandler(object):
             # Send next trial info to Bonsai
             self.send_current_trial_info()
             return
+        # STOPPING CRITERIONS
+
         self.data_file = str(self.data_file)
         # update + next contrast: update buffers/counters + get next contrast
         # This has to happen before self.contrast is pointing to next trials
