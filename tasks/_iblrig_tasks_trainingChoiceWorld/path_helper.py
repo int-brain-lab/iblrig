@@ -94,7 +94,7 @@ class SessionPathCreator(object):
         os.chdir(self.IBLRIG_FOLDER)
         out = subprocess.check_output(["git", "rev-parse", "HEAD"]).decode()
         os.chdir(here)
-        return out
+        return out.strip()
 
     def _get_iblrig_version_tag(self):
         here = os.getcwd()
