@@ -226,7 +226,7 @@ class SessionParamHandler(object):
         elif isinstance(d['PYBPOD_SUBJECT_EXTRA'], dict):
             d['PYBPOD_SUBJECT_EXTRA'] = remove_from_dict(
                 d['PYBPOD_SUBJECT_EXTRA'])
-
+        d['LAST_TRIAL_DATA'] = None
         return d
 
     # =========================================================================
