@@ -8,11 +8,12 @@ OSC_CLIENT_PORT = 7110
 OSC_CLIENT_IP = '127.0.0.1'
 # IBL rig root folder
 IBLRIG_FOLDER = 'C:\\iblrig'
-IBLRIG_DATA_FOLDER = None  # If None data folder will be C:\\iblrig_data
+IBLRIG_DATA_FOLDER = None  # If None data folder will be ..\\iblrig_data from IBLRIG_FOLDER
 # SOUND, AMBIENT SENSOR, AND VIDEO RECORDINGS
 RECORD_SOUND = True
 RECORD_AMBIENT_SENSOR_DATA = True
 RECORD_VIDEO = True
+OPEN_CAMERA_VIEW = True  # if RECORD_VIDEO == True OPEN_CAMERA_VIEW is ignored 
 # TASK
 NTRIALS = 1000  # Number of trials for the current session
 USE_VISUAL_STIMULUS = True  # Run the visual stim in bonsai
@@ -36,7 +37,7 @@ AUTOMATIC_CALIBRATION = False  # Wether to look for a calibration session and fu
 CALIBRATION_VALUE = 0.067  # calibration value for 3ul of target reward amount (ignored if automatic ON)
 REWARD_AMOUNT = 3.  # (µl) Amount of reward to be delivered upon correct choice each trial (overwitten if adaptive ON)
 # Water, Water 10% Sucrose, Water 15% Sucrose, Water 2% Citric Acid (Guo et al.. PLoS One 2014)
-REWARD_TYPE = 'Water 15% Sucrose'
+REWARD_TYPE = 'Water 10% Sucrose'
 # ADAPTIVE REWARD PARAMETERS (IGNORED IF ADAPTIVE_REWARD = False)
 AR_INIT_VALUE = 3  # µl
 AR_MIN_VALUE = 2  # µl
