@@ -179,6 +179,12 @@ for i in range(sph.NTRIALS):  # Main loop
                                           save_to=sph.SESSION_RAW_DATA_FOLDER)
         print('AMBIENT SENSOR DATA: ', data)
 
+    if tph.check_stop_criterions():
+        fig = plt.figure()
+        fig = plt.figure(figsize=(16, 9))
+        fig.patch.set_facecolor('xkcd:mint green')
+        fig.show()
+        bpod.close()
 
 bpod.close()
 

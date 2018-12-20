@@ -36,8 +36,9 @@ class SessionPathCreator(object):
             self.IBLRIG_FOLDER, 'visual_stim', 'camera_recordings')
         self.VISUAL_STIMULUS_FILE = os.path.join(
             self.IBLRIG_FOLDER, 'visual_stim', 'Gabor2D', 'Gabor2D.bonsai')
-        self.VIDEO_RECORDING_FILE = os.path.join(self.IBLRIG_FOLDER,
-            'visual_stim', 'camera_recordings', 'one_camera.bonsai')
+        self.VIDEO_RECORDING_FILE = os.path.join(
+            self.IBLRIG_FOLDER, 'visual_stim', 'camera_recordings',
+            'one_camera.bonsai')
         self.SUBJECT_NAME = subject_name
         self.SUBJECT_FOLDER = os.path.join(
             self.IBLRIG_DATA_SUBJECTS_FOLDER, self.SUBJECT_NAME)
@@ -261,7 +262,7 @@ if __name__ == "__main__":
     # 'trainingChoiceWorld')
     spc = SessionPathCreator(
         '/home/nico/Projects/IBL/IBL-github/iblrig',
-        '/home/nico/Projects/IBL/IBL-github/iblrig_data',  #/scratch/new',
+        '/home/nico/Projects/IBL/IBL-github/iblrig_data',  # /scratch/new',
         '_iblrig_test_mouse', protocol='trainingChoiceWorld', board='box0',
         make=True)
 

@@ -194,7 +194,8 @@ class SessionParamHandler(object):
     # METHODS
     # =========================================================================
     def get_subject_weight(self):
-        return self.numinput(f"{self.PYBPOD_SUBJECTS[0]}", "Weight (gr):")
+        return self.numinput(
+            "Subject weighing (gr) ", f"{self.PYBPOD_SUBJECTS[0]} weight (gr):")
 
     # =========================================================================
     # SERIALIZER
