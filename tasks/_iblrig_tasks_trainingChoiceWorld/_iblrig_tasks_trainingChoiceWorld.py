@@ -170,21 +170,21 @@ for i in range(sph.NTRIALS):  # Main loop
     op.plot_psyfun(trial_data, psyfun_df, ax=ax_psyc)
 
     print('\nTRIAL NUM: ', trial_data['trial_num'])
+    print('RESPONSE TIME: ', tph.response_time_buffer[-1])
     print('NTRIALS CORRECT: ', trial_data['ntrials_correct'])
-    print('WATER DELIVERED ', trial_data['water_delivered'])
+    print('WATER DELIVERED: ', trial_data['water_delivered'])
     print('TIME FROM START: ', (datetime.datetime.now() -
                                 parser.parse(trial_data['init_datetime'])))
     if sph.RECORD_AMBIENT_SENSOR_DATA:
         data = ambient_sensor.get_reading(bpod,
                                           save_to=sph.SESSION_RAW_DATA_FOLDER)
-        print('AMBIENT SENSOR DATA: ', data)
-
+        print('AMBIENT SENSOR DATA: saved')
     if tph.check_stop_criterions():
-        fig = plt.figure()
-        fig = plt.figure(figsize=(16, 9))
-        fig.patch.set_facecolor('xkcd:mint green')
-        fig.show()
-        bpod.close()
+        print("\n", 
+        "\n\nSTOPPING CRITERIA ACHIEVED TASK HAS STOPPED!\
+         \nPLEASE REMOVE THE MOUSE" 
+        * 100)
+        break  # Will jump out of the trial loop 
 
 bpod.close()
 

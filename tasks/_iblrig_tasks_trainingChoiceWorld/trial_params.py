@@ -305,10 +305,11 @@ class TrialParamHandler(object):
         if time_up <= datetime.datetime.now() and self.trial_num <= 400:
             return 1
 
-        # Median response time of latest 20 trials > than 5 times
+        # Median response time of latest N = 20 trials > than 5 times
         # the median response time and more than 400 trials performed
-        if len(self.response_time_buffer) >= 20 and self.trial_num > 400:
-            latest_median = np.median(self.response_time_buffer[-20:])
+        N, T = 20, 400
+        if len(self.response_time_buffer) >= N and self.trial_num > T:
+            latest_median = np.median(self.response_time_buffer[-N:])
             all_median = np.median(self.response_time_buffer)
 
             if latest_median > all_median * 5:
