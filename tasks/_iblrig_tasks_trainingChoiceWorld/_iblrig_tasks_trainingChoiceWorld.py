@@ -179,11 +179,12 @@ for i in range(sph.NTRIALS):  # Main loop
         data = ambient_sensor.get_reading(bpod,
                                           save_to=sph.SESSION_RAW_DATA_FOLDER)
         print('AMBIENT SENSOR DATA: saved')
-    if tph.check_stop_criterions():
+
+    if tph.check_stop_criterions() and sph.USE_AUTOMATIC_STOPPING_CRITERIONS:
         print("\n",
-        "\n\nSTOPPING CRITERIA ACHIEVED TASK HAS STOPPED!\
-         \nPLEASE REMOVE THE MOUSE"
-        * 100)
+              "\n\nSTOPPING CRITERIA ACHIEVED TASK HAS STOPPED!\
+              \nPLEASE REMOVE THE MOUSE"
+              * 50)
         f.patch.set_facecolor('xkcd:mint green')
 
 bpod.close()

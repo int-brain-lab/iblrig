@@ -404,21 +404,25 @@ class SessionParamHandler(object):
                   "\nCalibrate the rig or use a manual calibration value.",
                   "\n\n")
             raise ValueError
+
         print("\n\nREWARD_VALVE_TIME:", out, "\n\n")
         if out >= 1:
             print("\n\nREWARD_VALVE_TIME is too high!:", out,
                   "\nProbably because of a BAD calibration file...",
                   "\nCalibrate the rig or use a manual calibration value.")
             raise(ValueError)
+
         return float(out)
 
     def _init_stim_gain(self):
         if not self.ADAPTIVE_GAIN:
             return self.STIM_GAIN
+
         if self.LAST_TRIAL_DATA and self.LAST_TRIAL_DATA['trial_num'] >= 200:
             stim_gain = self.AG_MIN_VALUE
         else:
             stim_gain = self.AG_INIT_VALUE
+
         return stim_gain
 
     # =========================================================================

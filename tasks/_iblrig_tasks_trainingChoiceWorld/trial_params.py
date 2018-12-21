@@ -38,21 +38,23 @@ class AdaptiveContrast(object):
 
     def __init__(self, sph):
         self.type = 'AdaptiveContrast'
+        self.use_me = sph.ADAPTIVE_CONTRAST
         self.all_contrasts = sph.CONTRAST_SET
         self.init_contrasts = sph.AC_INIT_CONTRASTS
         self.buffer_size = sph.AC_BUFFER_SIZE
-        self.perf_crit_one = self._min_trials_at(sph.AC_PERF_CRIT_ONE, 0.05)
-        self.perf_crit_two = self._min_trials_at(sph.AC_PERF_CRIT_TWO, 0.05)
+        self.perf_crit = self._min_trials_at(sph.AC_PERF_CRIT, 0.05)
+        self.ntrials_to_six = sph.AC_NTRIALS_TO_SIX
         self.ntrials_to_zero = sph.AC_NTRIALS_TO_ZERO
+        self.ntrials_to_remove_50 = sph.AC_NTRIALS_TO_REMOVE_50
         self.ntrials = 0
-        self.ntrials_125 = 0
         self.previous_session = sph.PREVIOUS_DATA_FILE
         self.last_trial_data = sph.LAST_TRIAL_DATA
 
+        self.ntrials_125 = self._init_ntrials_125()
         self.contrast_set = self._init_contrast_set()
         self.buffer = self._init_buffer()
-
         self.value = self._init_contrast()
+
         self.trial_correct = None
         self.signed_contrast = None
 
@@ -61,11 +63,20 @@ class AdaptiveContrast(object):
     def reprJSON(self):
         return self.__dict__
 
+    def _init_ntrials_125(self):
+        if self.previous_session is None or not self.last_trial_data:
+            out = 0
+        else:
+            out = self.last_trial_data['ac']['ntrials_125']
+
+        return out
+
     def _init_contrast_set(self):
         if self.previous_session is None or not self.last_trial_data:
             _contrasts = self.init_contrasts
         else:
             _contrasts = self.last_trial_data['ac']['contrast_set']
+
         return _contrasts
 
     def _init_buffer(self):
@@ -98,37 +109,42 @@ class AdaptiveContrast(object):
         self.buffer = _buffer.tolist()
 
     def _update_contrast(self):
-        self.value = random.choice(self.contrast_set)
+        if self.use_me:
+            self.value = random.choice(self.contrast_set)
+        else:
+            self.value = np.random.choice(self.all_contrasts)
 
     def _update_contrast_set(self):
-        curr_idx = np.array(
-            [True if x in self.contrast_set else False
-             for x in self.all_contrasts])
-        min_idx = sum(curr_idx[:-1]) - 1
-        new_idx = np.array([False for x in self.all_contrasts])
         # Update counter of how mant trials were performend with 0.125 contrast
         if 0.125 in self.contrast_set:
             self.ntrials_125 += 1
-        # Add zero contrast if ntrials after introducing 0.125 have elapsed
-        if self.ntrials_125 >= self.ntrials_to_zero:
-            new_idx[-1] = True
         # Sum correct left AND right trials for all contrasts
         _ntrials = np.sum(self.buffer, axis=1)
         # Define crit for next contrast insert
-        if 0.125 in self.contrast_set:
-            pass_crit = _ntrials > self.perf_crit_two
-        else:
-            pass_crit = _ntrials > self.perf_crit_one
+        pass_crit = _ntrials > self.perf_crit
         # Check if both left AND right have passed criterion
         pass_idx = np.bitwise_and(pass_crit[0], pass_crit[1])
-        # If lowest contrast passes add new contrast
-        if pass_idx[min_idx]:
-            new_idx[min_idx + 1] = True
-        # Make new_idx
-        new_idx = new_idx | curr_idx | pass_idx
+        # If 1.0 and 0.5 contrasts pass add 0.25
+        if pass_idx[0] and pass_idx[1] and 0.25 not in self.contrast_set:
+            self.contrast_set.append(0.25)
+        if pass_idx[2] and 0.125 not in self.contrast_set:
+            self.contrast_set.append(0.125)
 
-        # Finally update the contrast_set
-        self.contrast_set = np.asarray(self.all_contrasts)[new_idx].tolist()
+        # Add 6% contrast if ntrials after introducing 0.125 have elapsed
+        if (self.ntrials_125 >= self.ntrials_to_six
+                and 0.0625 not in self.contrast_set):
+            self.contrast_set.append(0.0625)
+        # Add 0% contrast if ntrials after introducing 0.125 have elapsed
+        if (self.ntrials_125 >= self.ntrials_to_zero
+                and 0.0 not in self.contrast_set):
+            self.contrast_set.append(0.0)
+        # Remove 50% contrast if ntrials after introducing 0.125 have elapsed
+        if (self.ntrials_125 >= self.ntrials_to_remove_50
+                and 0.5 in self.contrast_set):
+            self.contrast_set.pop(1)
+
+        self.contrast_set = sorted(self.contrast_set)
+        self.contrast_set.reverse()
 
     def _min_trials_at(self, prob, alpha):
         return int(sum(1 - st.binom.cdf(range(self.buffer_size),
@@ -452,7 +468,7 @@ if __name__ == '__main__':
     # f = open(sph.DATA_FILE_PATH, 'a')
     next_trial_times = []
     trial_completed_times = []
-    for x in range(10):
+    for x in range(1000):
         t = time.time()
         tph.next_trial()
         next_trial_times.append(time.time() - t)
@@ -462,23 +478,10 @@ if __name__ == '__main__':
             [correct_trial, error_trial, no_go_trial], p=[0.8, 0.15, 0.05]))
         trial_completed_times.append(time.time() - t)
 
-        print(tph.check_stop_criterions())
-        # print('trial_completed took: ', trial_completed_times[-1], '(s)')
-        # print('\n\n')
-
     print('Average next_trial times:', sum(next_trial_times) /
           len(next_trial_times))
     print('Average trial_completed times:', sum(trial_completed_times) /
           len(trial_completed_times))
 
-    # from ibllib.io import raw_data_loaders as raw
-    # data = raw.load_data(sph.SESSION_FOLDER)
-    # print([x['ac']['contrast_set'] for x in data[-100:]])
-
+    print(tph.ac.contrast_set)
     print('\n\n')
-    # trial_data = []
-    # with open(sph.DATA_FILE_PATH, 'r') as f:
-    #     for line in f:
-    #         last_trial = json.loads(line)
-    #         trial_data.append(last_trial)
-    # print(last_trial)
