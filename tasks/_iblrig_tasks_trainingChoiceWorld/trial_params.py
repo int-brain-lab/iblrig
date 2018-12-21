@@ -457,6 +457,7 @@ if __name__ == '__main__':
     import time
     import task_settings as _task_settings
     import _user_settings
+    _task_settings.AUTOMATIC_CALIBRATION = False
     sph = SessionParamHandler(_task_settings, _user_settings)
     tph = TrialParamHandler(sph)
     ac = AdaptiveContrast(sph)

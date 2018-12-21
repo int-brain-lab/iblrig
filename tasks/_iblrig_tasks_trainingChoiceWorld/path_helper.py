@@ -76,6 +76,9 @@ class SessionPathCreator(object):
             board)
 
         self.PREVIOUS_DATA_FILE = self._previous_data_file()
+        self.PREVIOUS_SETTINGS_FILE = self._previous_settings_file()
+        self.PREVIOUS_SESSION_PATH = str(
+            Path(self.PREVIOUS_DATA_FILE).parent.parent)
         if make:
             self.make_missing_folders()
 
@@ -189,8 +192,10 @@ class SessionPathCreator(object):
                            if self.SESSION_FOLDER not in x]
         return session_folders
 
-    def _previous_data_files(self):
+    def _previous_data_files(self, typ='data'):
+
         prev_data_files = []
+        prev_session_files = []
         for prev_sess_path in self._previous_session_folders():
             prev_sess_path = os.path.join(prev_sess_path, 'raw_behavior_data')
             if self.BASE_FILENAME + 'Data' in ''.join(os.listdir(
@@ -198,9 +203,15 @@ class SessionPathCreator(object):
                 prev_data_files.extend(os.path.join(prev_sess_path, x) for x
                                        in os.listdir(prev_sess_path) if
                                        self.BASE_FILENAME + 'Data' in x)
+                prev_session_files.extend(os.path.join(prev_sess_path, x) for x
+                                       in os.listdir(prev_sess_path) if
+                                       self.BASE_FILENAME + 'Settings' in x)
 
-        out = [x for x in prev_data_files if os.stat(x).st_size != 0]
-        return out
+        data_out = [x for x in prev_data_files if os.stat(x).st_size != 0]
+        settings_out = [
+            x for x in prev_session_files if os.stat(x).st_size != 0]
+
+        return data_out if typ == 'data' else settings_out
 
     def _previous_data_file(self):
         out = sorted(self._previous_data_files())
@@ -212,6 +223,13 @@ class SessionPathCreator(object):
             print('#######################################')
             print(' [no previous valid session was found] ')
 
+            return None
+
+    def _previous_settings_file(self):
+        out = sorted(self._previous_data_files(typ='settings'))
+        if out:
+            return out[-1]
+        else:
             return None
 
     def _latest_water_calib_file(self, board):
@@ -264,7 +282,7 @@ if __name__ == "__main__":
         '/home/nico/Projects/IBL/IBL-github/iblrig',
         '/home/nico/Projects/IBL/IBL-github/iblrig_data',  # /scratch/new',
         '_iblrig_test_mouse', protocol='trainingChoiceWorld', board='box0',
-        make=True)
+        make=False)
 
     print(
         "\nIBLRIG_VERSION_TAG", spc.IBLRIG_VERSION_TAG,
@@ -289,5 +307,7 @@ if __name__ == "__main__":
         "\nDATA_FILE_PATH:", spc.DATA_FILE_PATH,
         "\nLATEST_WATER_CALIBRATION_FILE:", spc.LATEST_WATER_CALIBRATION_FILE,
         "\nPREVIOUS_DATA_FILE:", spc.PREVIOUS_DATA_FILE,
+        "\nPREVIOUS_SETTINGS_FILE:", spc.PREVIOUS_SETTINGS_FILE,
+        "\nPREVIOUS_SESSION_PATH:", spc.PREVIOUS_SESSION_PATH,
     )
     print('.')

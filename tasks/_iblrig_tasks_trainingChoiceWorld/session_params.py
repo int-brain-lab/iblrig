@@ -17,6 +17,7 @@ import scipy as sp
 from pybpod_rotaryencoder_module.module_api import RotaryEncoderModule
 from pythonosc import udp_client
 
+import ibllib.io.raw_data_loaders as raw
 import sound
 from path_helper import SessionPathCreator
 
@@ -83,9 +84,10 @@ class SessionParamHandler(object):
         self.OSC_CLIENT_IP = '127.0.0.1'
         self.OSC_CLIENT = self._init_osc_client()
         # =====================================================================
-        # PREVIOUS DATA FILE
+        # PREVIOUS DATA FILES
         # =====================================================================
         self.LAST_TRIAL_DATA = self._load_last_trial()
+        self.LAST_SETTINGS_DATA = self._load_last_settings_file()
         # =====================================================================
         # ADAPTIVE STUFF
         # =====================================================================
@@ -230,6 +232,8 @@ class SessionParamHandler(object):
             d['PYBPOD_SUBJECT_EXTRA'] = remove_from_dict(
                 d['PYBPOD_SUBJECT_EXTRA'])
         d['LAST_TRIAL_DATA'] = None
+        d['LAST_SETTINGS_DATA'] = None
+
         return d
 
     # =========================================================================
@@ -341,11 +345,7 @@ class SessionParamHandler(object):
     def _load_last_trial(self, i=-1):
         if self.PREVIOUS_DATA_FILE is None:
             return
-        trial_data = []
-        with open(self.PREVIOUS_DATA_FILE, 'r') as f:
-            for line in f:
-                last_trial = json.loads(line)
-                trial_data.append(last_trial)
+        trial_data = raw.load_data(self.PREVIOUS_SESSION_PATH)
         print("\n\nINFO: PREVIOUS SESSION FOUND",
               "\nLOADING PARAMETERS FROM: {}".format(self.PREVIOUS_DATA_FILE),
               "\n\nPREVIOUS NTRIALS:              {}".format(
@@ -363,12 +363,19 @@ class SessionParamHandler(object):
 
         return trial_data[i] if trial_data else None
 
+    def _load_last_settings_file(self):
+        if self.PREVIOUS_SETTINGS_FILE is None:
+            return
+
+        return raw.load_settings(self.PREVIOUS_SESSION_PATH)
+
     # =========================================================================
     # ADAPTIVE REWARD AND GAIN RULES
     # =========================================================================
     def _init_reward_amount(self):
         if not self.ADAPTIVE_REWARD:
             return self.REWARD_AMOUNT
+
         if self.LAST_TRIAL_DATA is None:
             return self.AR_INIT_VALUE
         elif self.LAST_TRIAL_DATA and self.LAST_TRIAL_DATA['trial_num'] < 200:
@@ -376,6 +383,16 @@ class SessionParamHandler(object):
         elif self.LAST_TRIAL_DATA and self.LAST_TRIAL_DATA['trial_num'] >= 200:
             out = self.LAST_TRIAL_DATA['reward_amount'] - self.AR_STEP
             out = self.AR_MIN_VALUE if out <= self.AR_MIN_VALUE else out
+
+        previous_weight_factor = self.LAST_SETTINGS_DATA['SUBJECT_WEIGHT'] / 25
+        previous_water = self.LAST_TRIAL_DATA['water_delivered'] / 1000
+
+        if previous_water < previous_weight_factor:
+            out = self.LAST_TRIAL_DATA['reward_amount'] + self.AR_STEP
+
+        print(f"\nREWARD AMONT: {out}")
+        print(f"PREVIOUS WEIGHT: {self.LAST_SETTINGS_DATA['SUBJECT_WEIGHT']}")
+        print(f"PREVIOUS WATER DRANK: {self.LAST_TRIAL_DATA['water_delivered']}")
 
         return out
 
@@ -517,6 +534,7 @@ class SessionParamHandler(object):
 if __name__ == '__main__':
     # os.chdir(r'C:\iblrig\pybpod_projects\IBL\tasks\basicChoiceWorld')
     import task_settings as _task_settings
+    _task_settings.AUTOMATIC_CALIBRATION = False
     import _user_settings
     sph = SessionParamHandler(_task_settings, _user_settings)
     self = sph
