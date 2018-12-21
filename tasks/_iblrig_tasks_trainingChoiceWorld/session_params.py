@@ -384,6 +384,9 @@ class SessionParamHandler(object):
             out = self.LAST_TRIAL_DATA['reward_amount'] - self.AR_STEP
             out = self.AR_MIN_VALUE if out <= self.AR_MIN_VALUE else out
 
+        if 'SUBJECT_WEIGHT' not in self.LAST_SETTINGS_DATA.keys():
+            return out
+
         previous_weight_factor = self.LAST_SETTINGS_DATA['SUBJECT_WEIGHT'] / 25
         previous_water = self.LAST_TRIAL_DATA['water_delivered'] / 1000
 
