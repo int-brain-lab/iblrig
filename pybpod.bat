@@ -3,7 +3,7 @@
 ::set path="%path%;C:\iblrig\"
 ::PAUSE
 echo Finding pybpod folder...
-set projects_dir=C:\iblrig_params
+set projects_dir=..\iblrig_params
 chdir /D %projects_dir%
 
 echo Activating IBL environment...

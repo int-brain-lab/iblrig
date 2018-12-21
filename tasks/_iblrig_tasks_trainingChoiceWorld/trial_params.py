@@ -7,7 +7,8 @@ import random
 import numpy as np
 import scipy.stats as st
 import json
-import os
+import datetime
+from pathlib import Path
 from dateutil import parser
 import math
 
@@ -37,21 +38,23 @@ class AdaptiveContrast(object):
 
     def __init__(self, sph):
         self.type = 'AdaptiveContrast'
+        self.use_me = sph.ADAPTIVE_CONTRAST
         self.all_contrasts = sph.CONTRAST_SET
         self.init_contrasts = sph.AC_INIT_CONTRASTS
         self.buffer_size = sph.AC_BUFFER_SIZE
-        self.perf_crit_one = self._min_trials_at(sph.AC_PERF_CRIT_ONE, 0.05)
-        self.perf_crit_two = self._min_trials_at(sph.AC_PERF_CRIT_TWO, 0.05)
+        self.perf_crit = self._min_trials_at(sph.AC_PERF_CRIT, 0.05)
+        self.ntrials_to_six = sph.AC_NTRIALS_TO_SIX
         self.ntrials_to_zero = sph.AC_NTRIALS_TO_ZERO
+        self.ntrials_to_remove_50 = sph.AC_NTRIALS_TO_REMOVE_50
         self.ntrials = 0
-        self.ntrials_125 = 0
         self.previous_session = sph.PREVIOUS_DATA_FILE
-        self.last_trial_data = self._load_last_trial_data(sph.LAST_TRIAL_DATA)
+        self.last_trial_data = sph.LAST_TRIAL_DATA
 
+        self.ntrials_125 = self._init_ntrials_125()
         self.contrast_set = self._init_contrast_set()
         self.buffer = self._init_buffer()
-
         self.value = self._init_contrast()
+
         self.trial_correct = None
         self.signed_contrast = None
 
@@ -60,22 +63,20 @@ class AdaptiveContrast(object):
     def reprJSON(self):
         return self.__dict__
 
-    def _load_last_trial_data(self, sph_last_trial_data):
-        if (self.previous_session is None or
-                os.stat(self.previous_session).st_size == 0):
-            print('###################################')
-            print('## WARNING: USING DEFAULT VALUES ##')
-            print('###################################')
-            print('  [no previous session was found]  ')
-            return
+    def _init_ntrials_125(self):
+        if self.previous_session is None or not self.last_trial_data:
+            out = 0
         else:
-            return sph_last_trial_data
+            out = self.last_trial_data['ac']['ntrials_125']
+
+        return out
 
     def _init_contrast_set(self):
         if self.previous_session is None or not self.last_trial_data:
             _contrasts = self.init_contrasts
         else:
             _contrasts = self.last_trial_data['ac']['contrast_set']
+
         return _contrasts
 
     def _init_buffer(self):
@@ -108,37 +109,42 @@ class AdaptiveContrast(object):
         self.buffer = _buffer.tolist()
 
     def _update_contrast(self):
-        self.value = random.choice(self.contrast_set)
+        if self.use_me:
+            self.value = random.choice(self.contrast_set)
+        else:
+            self.value = np.random.choice(self.all_contrasts)
 
     def _update_contrast_set(self):
-        curr_idx = np.array(
-            [True if x in self.contrast_set else False
-             for x in self.all_contrasts])
-        min_idx = sum(curr_idx[:-1]) - 1
-        new_idx = np.array([False for x in self.all_contrasts])
         # Update counter of how mant trials were performend with 0.125 contrast
         if 0.125 in self.contrast_set:
             self.ntrials_125 += 1
-        # Add zero contrast if ntrials after introducing 0.125 have elapsed
-        if self.ntrials_125 >= self.ntrials_to_zero:
-            new_idx[-1] = True
         # Sum correct left AND right trials for all contrasts
         _ntrials = np.sum(self.buffer, axis=1)
         # Define crit for next contrast insert
-        if 0.125 in self.contrast_set:
-            pass_crit = _ntrials > self.perf_crit_two
-        else:
-            pass_crit = _ntrials > self.perf_crit_one
+        pass_crit = _ntrials > self.perf_crit
         # Check if both left AND right have passed criterion
         pass_idx = np.bitwise_and(pass_crit[0], pass_crit[1])
-        # If lowest contrast passes add new contrast
-        if pass_idx[min_idx]:
-            new_idx[min_idx + 1] = True
-        # Make new_idx
-        new_idx = new_idx | curr_idx | pass_idx
+        # If 1.0 and 0.5 contrasts pass add 0.25
+        if pass_idx[0] and pass_idx[1] and 0.25 not in self.contrast_set:
+            self.contrast_set.append(0.25)
+        if pass_idx[2] and 0.125 not in self.contrast_set:
+            self.contrast_set.append(0.125)
 
-        # Finally update the contrast_set
-        self.contrast_set = np.asarray(self.all_contrasts)[new_idx].tolist()
+        # Add 6% contrast if ntrials after introducing 0.125 have elapsed
+        if (self.ntrials_125 >= self.ntrials_to_six
+                and 0.0625 not in self.contrast_set):
+            self.contrast_set.append(0.0625)
+        # Add 0% contrast if ntrials after introducing 0.125 have elapsed
+        if (self.ntrials_125 >= self.ntrials_to_zero
+                and 0.0 not in self.contrast_set):
+            self.contrast_set.append(0.0)
+        # Remove 50% contrast if ntrials after introducing 0.125 have elapsed
+        if (self.ntrials_125 >= self.ntrials_to_remove_50
+                and 0.5 in self.contrast_set):
+            self.contrast_set.pop(1)
+
+        self.contrast_set = sorted(self.contrast_set)
+        self.contrast_set.reverse()
 
     def _min_trials_at(self, prob, alpha):
         return int(sum(1 - st.binom.cdf(range(self.buffer_size),
@@ -246,6 +252,7 @@ class TrialParamHandler(object):
         self.movement_right = sph.THRESHOLD_EVENTS[sph.QUIESCENCE_THRESHOLDS[1]
                                                    ]
         self.response_buffer = [0] * sph.RESPONSE_BUFFER_LENGTH
+        self.response_time_buffer = []
         # Outcome related parmeters
         self.contrast = self.ac
         self.current_contrast = self.contrast.value
@@ -267,6 +274,12 @@ class TrialParamHandler(object):
         no_go = ~np.isnan(
             behavior_data['States timestamps']['no_go'][0][0])
         assert correct or error or no_go
+        # Get the response_time for this trial
+        response_time = (
+            behavior_data['States timestamps']['closed_loop'][0][1]
+            - behavior_data['States timestamps']['stim_on'][0][0])
+        # Add it to the buffer
+        self.response_time_buffer.append(response_time)
         # Update response buffer -1 for left, 0 for nogo, and 1 for rightward
         if (correct and self.position < 0) or (error and self.position > 0):
             self._update_response_buffer(1)
@@ -295,7 +308,30 @@ class TrialParamHandler(object):
         self.data_file.write(out)
         self.data_file.write('\n')
         self.data_file.close()
+        # If more than 42 trials save transfer_me.flag
+        if self.trial_num == 42:
+            flag = Path(self.data_file_path).parent.parent / 'transfer_me.flag'
+            open(flag, 'a').close()
         return json.loads(out)
+
+    def check_stop_criterions(self):
+        # STOPPING CRITERIONS
+        # < than 400 trials in 45 minutes
+        time_up = self.init_datetime + datetime.timedelta(minutes=45)
+        if time_up <= datetime.datetime.now() and self.trial_num <= 400:
+            return 1
+
+        # Median response time of latest N = 20 trials > than 5 times
+        # the median response time and more than 400 trials performed
+        N, T = 20, 400
+        if len(self.response_time_buffer) >= N and self.trial_num > T:
+            latest_median = np.median(self.response_time_buffer[-N:])
+            all_median = np.median(self.response_time_buffer)
+
+            if latest_median > all_median * 5:
+                return 2
+
+        return False
 
     def next_trial(self):
         # First trial exception
@@ -421,98 +457,15 @@ if __name__ == '__main__':
     import time
     import task_settings as _task_settings
     import _user_settings
+    _task_settings.AUTOMATIC_CALIBRATION = False
     sph = SessionParamHandler(_task_settings, _user_settings)
     tph = TrialParamHandler(sph)
     ac = AdaptiveContrast(sph)
     rc = RepeatContrast()
-    correct_trial = {'Trial end timestamp': 5.1234,
-                     'Trial start timestamp': 1.1234,
-                     'Events timestamps': {'GlobalTimer1_End': [10.0],
-                                           'Port2In': [2.2133, 3.6032,
-                                                       4.1014, 4.7648,
-                                                       5.1329, 5.6429,
-                                                       6.4632, 6.5842,
-                                                       6.8691, 7.1565,
-                                                       7.6357, 7.8717,
-                                                       8.1396, 8.4102],
-                                           'Tup': [0.0001],
-                                           'Port3In': [9.5196],
-                                           'Port2Out': [2.3768, 3.9778,
-                                                        4.4069, 5.0538,
-                                                        5.3777, 5.8241,
-                                                        6.472, 6.7757,
-                                                        7.0552, 7.543,
-                                                        7.7867, 8.0342,
-                                                        8.273, 8.5793]
-                                           },
-                     'Bpod start timestamp': 0.117,
-                     'States timestamps': {'no_go': [(np.nan, np.nan)],
-                                           'error': [(np.nan, np.nan)],
-                                           'correct': [(0.0001, 10.0)],
-                                           'TimerTrig': [(0, 0.0001)],
-                                           'Port3Active1': [(np.nan,
-                                                             np.nan)]
-                                           }
-                     }
-    error_trial = {'Trial start timestamp': 1.1234,
-                   'Trial end timestamp': 5.1234,
-                   'Events timestamps': {'GlobalTimer1_End': [10.0],
-                                         'Port2In': [2.2133, 3.6032,
-                                                     4.1014, 4.7648,
-                                                     5.1329, 5.6429,
-                                                     6.4632, 6.5842,
-                                                     6.8691, 7.1565,
-                                                     7.6357, 7.8717,
-                                                     8.1396, 8.4102],
-                                         'Tup': [0.0001],
-                                         'Port3In': [9.5196],
-                                         'Port2Out': [2.3768, 3.9778,
-                                                      4.4069, 5.0538,
-                                                      5.3777, 5.8241,
-                                                      6.472, 6.7757,
-                                                      7.0552, 7.543,
-                                                      7.7867, 8.0342,
-                                                      8.273, 8.5793]
-                                         },
-                   'Bpod start timestamp': 0.117,
-                   'States timestamps': {'no_go': [(np.nan, np.nan)],
-                                         'correct': [(np.nan, np.nan)],
-                                         'error': [(0.0001, 10.0)],
-                                         'TimerTrig': [(0, 0.0001)],
-                                         'Port3Active1': [(np.nan,
-                                                           np.nan)]
-                                         }
-                   }
-    no_go_trial = {'Trial start timestamp': 1.1234,
-                   'Trial end timestamp': 5.1234,
-                   'Events timestamps': {'GlobalTimer1_End': [10.0],
-                                         'Port2In': [2.2133, 3.6032,
-                                                     4.1014, 4.7648,
-                                                     5.1329, 5.6429,
-                                                     6.4632, 6.5842,
-                                                     6.8691, 7.1565,
-                                                     7.6357, 7.8717,
-                                                     8.1396, 8.4102],
-                                         'Tup': [0.0001],
-                                         'Port3In': [9.5196],
-                                         'Port2Out': [2.3768, 3.9778,
-                                                      4.4069, 5.0538,
-                                                      5.3777, 5.8241,
-                                                      6.472, 6.7757,
-                                                      7.0552, 7.543,
-                                                      7.7867, 8.0342,
-                                                      8.273, 8.5793]
-                                         },
-                   'Bpod start timestamp': 0.117,
-                   'States timestamps': {'no_go': [(0.0001, 10.0)],
-                                         'correct': [(np.nan, np.nan)],
-                                         'error': [(np.nan, np.nan)],
-                                         'TimerTrig': [(0, 0.0001)],
-                                         'Port3Active1': [(np.nan,
-                                                           np.nan)]
-                                         }
-                   }
 
+    correct_trial = {'Bpod start timestamp': 0.0, 'Trial start timestamp': 15.570999999999998, 'Trial end timestamp': 50.578703, 'States timestamps': {'trial_start': [[15.570999999999998, 15.571099999999998]], 'reset_rotary_encoder': [[15.571099999999998, 15.571199999999997], [15.671399999999998, 15.671499999999998], [15.765699999999999, 15.765799999999999], [15.793999999999997, 15.794099999999997], [15.8112, 15.8113], [15.825199999999999, 15.825299999999999], [15.838099999999997, 15.838199999999997], [15.851599999999998, 15.851699999999997], [15.871199999999998, 15.871299999999998], [15.946299999999997, 15.946399999999997], [16.0142, 16.0143], [16.036699999999996, 16.0368], [16.055, 16.0551], [16.0708, 16.070899999999998], [16.0858, 16.0859], [16.099999999999998, 16.100099999999998], [16.1147, 16.1148], [16.1316, 16.1317], [16.150999999999996, 16.1511], [16.171599999999998, 16.171699999999998], [16.192899999999998, 16.192999999999998], [16.214899999999997, 16.214999999999996], [16.238599999999998, 16.238699999999998], [16.263399999999997, 16.263499999999997], [16.2901, 16.2902], [16.3163, 16.316399999999998], [16.3401, 16.3402], [16.362699999999997, 16.362799999999996], [16.385499999999997, 16.385599999999997], [16.4121, 16.4122], [16.4976, 16.4977], [16.542299999999997, 16.542399999999997], [16.615899999999996, 16.616], [16.9041, 16.9042]], 'quiescent_period': [[15.571199999999997, 15.671399999999998], [15.671499999999998, 15.765699999999999], [15.765799999999999, 15.793999999999997], [15.794099999999997, 15.8112], [15.8113, 15.825199999999999], [15.825299999999999, 15.838099999999997], [15.838199999999997, 15.851599999999998], [15.851699999999997, 15.871199999999998], [15.871299999999998, 15.946299999999997], [15.946399999999997, 16.0142], [16.0143, 16.036699999999996], [16.0368, 16.055], [16.0551, 16.0708], [16.070899999999998, 16.0858], [16.0859, 16.099999999999998], [16.100099999999998, 16.1147], [16.1148, 16.1316], [16.1317, 16.150999999999996], [16.1511, 16.171599999999998], [16.171699999999998, 16.192899999999998], [16.192999999999998, 16.214899999999997], [16.214999999999996, 16.238599999999998], [16.238699999999998, 16.263399999999997], [16.263499999999997, 16.2901], [16.2902, 16.3163], [16.316399999999998, 16.3401], [16.3402, 16.362699999999997], [16.362799999999996, 16.385499999999997], [16.385599999999997, 16.4121], [16.4122, 16.4976], [16.4977, 16.542299999999997], [16.542399999999997, 16.615899999999996], [16.616, 16.9041], [16.9042, 17.3646]], 'stim_on': [[17.3646, 17.464599999999997]], 'reset2_rotary_encoder': [[17.464599999999997, 17.464699999999997]], 'closed_loop': [[17.464699999999997, 49.5787]], 'reward': [[49.5787, 49.7357]], 'correct': [[49.7357, 50.5787]], 'no_go': [[np.nan, np.nan]], 'error': [[np.nan, np.nan]]}, 'Events timestamps': {'Tup': [15.571099999999998, 15.571199999999997, 15.671499999999998, 15.765799999999999, 15.794099999999997, 15.8113, 15.825299999999999, 15.838199999999997, 15.851699999999997, 15.871299999999998, 15.946399999999997, 16.0143, 16.0368, 16.0551, 16.070899999999998, 16.0859, 16.100099999999998, 16.1148, 16.1317, 16.1511, 16.171699999999998, 16.192999999999998, 16.214999999999996, 16.238699999999998, 16.263499999999997, 16.2902, 16.316399999999998, 16.3402, 16.362799999999996, 16.385599999999997, 16.4122, 16.4977, 16.542399999999997, 16.616, 16.9042, 17.3646, 17.464599999999997, 17.464699999999997, 49.7357, 50.5787], 'BNC1Low': [15.637299999999996, 17.5215, 18.539299999999997, 19.436799999999998, 19.5706, 20.554499999999997, 21.504299999999997, 22.6711, 25.2047, 26.254399999999997, 26.7207, 29.3714, 29.8217, 30.9204, 30.986399999999996, 31.387700000000002, 31.770000000000003, 31.9047, 32.5047, 32.6044, 33.8876, 33.9882, 34.1033, 34.1703, 34.5395, 35.62, 36.7697, 37.236, 37.2703, 37.305, 37.3701, 37.4382, 37.7558, 38.1703, 38.3527, 38.4197, 38.5538, 38.620200000000004, 39.936699999999995, 40.6881, 41.7549, 42.5024, 42.585, 43.035999999999994, 44.1039, 49.2046, 49.4698, 49.5368, 49.6195], 'RotaryEncoder1_4': [15.671399999999998, 15.765699999999999, 15.793999999999997, 15.8112, 15.825199999999999, 15.838099999999997, 15.851599999999998, 15.871199999999998, 15.946299999999997, 16.0142, 16.036699999999996, 16.055, 16.0708, 16.0858, 16.099999999999998, 16.1147, 16.1316, 16.150999999999996, 16.171599999999998, 16.192899999999998, 16.214899999999997, 16.238599999999998, 16.263399999999997, 16.2901, 16.3163, 16.3401, 16.362699999999997, 16.385499999999997, 16.4121, 16.4976, 16.542299999999997, 16.615899999999996, 16.9041, 18.5982], 'BNC1High': [17.406499999999998, 18.4564, 18.656399999999998, 19.5231, 19.639799999999997, 21.323, 21.573, 24.0396, 25.3395, 26.356099999999998, 28.3894, 29.422599999999996, 30.8226, 30.9559, 31.022599999999997, 31.7226, 31.822499999999998, 31.939100000000003, 32.5556, 33.422599999999996, 33.939, 34.0391, 34.1224, 34.2891, 35.2105, 36.522299999999994, 37.1889, 37.2387, 37.2724, 37.3222, 37.4056, 37.4723, 37.8723, 38.238899999999994, 38.3722, 38.4723, 38.5723, 39.4222, 40.0555, 40.9388, 42.3555, 42.522, 42.7554, 43.672000000000004, 46.5053, 49.321799999999996, 49.4718, 49.571799999999996], 'RotaryEncoder1_3': [33.9907], 'RotaryEncoder1_2': [49.5787]}}
+    error_trial = {'Bpod start timestamp': 0.0, 'Trial start timestamp': 0.0, 'Trial end timestamp': 15.485902, 'States timestamps': {'trial_start': [[0.0, 0.00010000000000021103]], 'reset_rotary_encoder': [[0.00010000000000021103, 0.00019999999999997797], [0.4855999999999998, 0.4857], [0.5165000000000002, 0.5166], [0.5331999999999999, 0.5333000000000001], [0.5461999999999998, 0.5463], [0.5590999999999999, 0.5592000000000001], [0.5741, 0.5742000000000003], [0.5952999999999999, 0.5954000000000002]], 'quiescent_period': [[0.00019999999999997797, 0.4855999999999998], [0.4857, 0.5165000000000002], [0.5166, 0.5331999999999999], [0.5333000000000001, 0.5461999999999998], [0.5463, 0.5590999999999999], [0.5592000000000001, 0.5741], [0.5742000000000003, 0.5952999999999999], [0.5954000000000002, 1.1006]], 'stim_on': [[1.1006, 1.2006000000000006]], 'reset2_rotary_encoder': [[1.2006000000000006, 1.2007000000000003]], 'closed_loop': [[1.2007000000000003, 13.4859]], 'error': [[13.4859, 15.4859]], 'no_go': [[np.nan, np.nan]], 'reward': [[np.nan, np.nan]], 'correct': [[np.nan, np.nan]]}, 'Events timestamps': {'Tup': [0.00010000000000021103, 0.00019999999999997797, 0.4857, 0.5166, 0.5333000000000001, 0.5463, 0.5592000000000001, 0.5742000000000003, 0.5954000000000002, 1.1006, 1.2006000000000006, 1.2007000000000003, 15.4859], 'BNC1High': [0.07390000000000008, 1.3236999999999997, 1.7572, 2.5072, 5.1071, 10.1735, 10.273399999999999, 10.3065, 10.8901, 11.023399999999999, 11.64, 11.739999999999998, 11.9068, 12.04, 12.3067, 12.6066, 12.773399999999999, 12.940000000000001, 13.3734, 13.423300000000001, 13.523399999999999], 'RotaryEncoder1_4': [0.4855999999999998, 0.5165000000000002, 0.5331999999999999, 0.5461999999999998, 0.5590999999999999, 0.5741, 0.5952999999999999, 1.7535999999999996], 'BNC1Low': [1.1719, 1.5057, 1.8071000000000002, 3.6715, 9.321200000000001, 10.2713, 10.304300000000001, 10.822600000000001, 10.938099999999999, 11.0551, 11.7211, 11.822099999999999, 12.023399999999999, 12.188400000000001, 12.3885, 12.6557, 12.8888, 13.1539, 13.405999999999999, 13.4541], 'RotaryEncoder1_3': [1.1886, 11.780000000000001], 'RotaryEncoder1_1': [13.4859]}}
+    no_go_trial = {'Bpod start timestamp': 0.0, 'Trial start timestamp': 2950.106299, 'Trial end timestamp': 3012.791701, 'States timestamps': {'trial_start': [[2950.106299, 2950.1063990000002]], 'reset_rotary_encoder': [[2950.1063990000002, 2950.106499], [2950.120499, 2950.120599], [2950.139099, 2950.139199], [2950.161899, 2950.161999], [2950.194099, 2950.194199]], 'quiescent_period': [[2950.106499, 2950.120499], [2950.120599, 2950.139099], [2950.139199, 2950.161899], [2950.161999, 2950.194099], [2950.194199, 2950.691599]], 'stim_on': [[2950.691599, 2950.791599]], 'reset2_rotary_encoder': [[2950.791599, 2950.791699]], 'closed_loop': [[2950.791699, 3010.791699]], 'no_go': [[3010.791699, 3012.791699]], 'error': [[np.nan, np.nan]], 'reward': [[np.nan, np.nan]], 'correct': [[np.nan, np.nan]]}, 'Events timestamps': {'Tup': [2950.1063990000002, 2950.106499, 2950.120599, 2950.139199, 2950.161999, 2950.194199, 2950.691599, 2950.791599, 2950.791699, 3010.791699, 3012.791699], 'RotaryEncoder1_3': [2950.120499, 2950.139099, 2950.161899, 2950.194099, 2981.703499], 'BNC1Low': [2950.181299, 2950.8635990000002, 2960.946299, 2961.162399, 2961.262399, 2976.078899, 2981.678699, 2981.761199, 2981.828799, 2981.862799, 2981.928699, 2982.0121990000002, 2995.844699, 2996.912299, 2997.028199, 2997.161899, 2997.311999, 2997.978999, 3005.278699, 3005.427699, 3005.4786990000002, 3005.610799, 3005.927599, 3011.129099, 3011.178199, 3011.245099], 'BNC1High': [2950.750499, 2960.766799, 2960.983499, 2961.183399, 2975.849599, 2981.549399, 2981.715999, 2981.799199, 2981.832599, 2981.899299, 2981.965999, 2982.099399, 2995.865499, 2996.9152990000002, 2997.082199, 2997.215499, 2997.415399, 3005.2484990000003, 3005.365199, 3005.448499, 3005.515099, 3005.881899, 3006.065199, 3011.148299, 3011.181399], 'RotaryEncoder1_4': [2961.126499], 'RotaryEncoder1_1': [3011.1679990000002]}}
     # f = open(sph.DATA_FILE_PATH, 'a')
     next_trial_times = []
     trial_completed_times = []
@@ -522,34 +475,14 @@ if __name__ == '__main__':
         next_trial_times.append(time.time() - t)
         # print('next_trial took: ', next_trial_times[-1], '(s)')
         t = time.time()
-        data = tph.trial_completed(random.choice([correct_trial, correct_trial,
-                                                 correct_trial, correct_trial,
-                                                 correct_trial, correct_trial,
-                                                 correct_trial, correct_trial,
-                                                 correct_trial, correct_trial,
-                                                 correct_trial, correct_trial,
-                                                 correct_trial, correct_trial,
-                                                  correct_trial, correct_trial,
-                                                  correct_trial, correct_trial,
-                                                  error_trial, no_go_trial,
-                                                  ]))
+        data = tph.trial_completed(np.random.choice(
+            [correct_trial, error_trial, no_go_trial], p=[0.8, 0.15, 0.05]))
         trial_completed_times.append(time.time() - t)
-        # print('trial_completed took: ', trial_completed_times[-1], '(s)')
-        # print('\n\n')
 
     print('Average next_trial times:', sum(next_trial_times) /
           len(next_trial_times))
     print('Average trial_completed times:', sum(trial_completed_times) /
           len(trial_completed_times))
 
-    # from ibllib.io import raw_data_loaders as raw
-    # data = raw.load_data(sph.SESSION_FOLDER)
-    # print([x['ac']['contrast_set'] for x in data[-100:]])
-
+    print(tph.ac.contrast_set)
     print('\n\n')
-    # trial_data = []
-    # with open(sph.DATA_FILE_PATH, 'r') as f:
-    #     for line in f:
-    #         last_trial = json.loads(line)
-    #         trial_data.append(last_trial)
-    # print(last_trial)

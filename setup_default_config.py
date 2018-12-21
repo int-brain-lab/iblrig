@@ -149,14 +149,7 @@ def main(iblrig_params_path):
     # Create _iblrig_tasks experiment
     eTasks = p.create_experiment()
     eTasks.name = '_iblrig_tasks'
-    # Create basicChoiceWorld setup
-    basic = eTasks.create_setup()
-    basic.name = 'basicChoiceWorld'
-    basic.task = '_iblrig_tasks_basicChoiceWorld'
-    basic.board = BOARD_NAME
-    basic.detached = True
-    # basic.subjects + [sTest]
-
+    
     # Create trainingChoiceWorld setup
     training = eTasks.create_setup()
     training.name = 'trainingChoiceWorld'

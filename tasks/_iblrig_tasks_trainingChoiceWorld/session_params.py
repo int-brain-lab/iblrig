@@ -17,6 +17,7 @@ import scipy as sp
 from pybpod_rotaryencoder_module.module_api import RotaryEncoderModule
 from pythonosc import udp_client
 
+import ibllib.io.raw_data_loaders as raw
 import sound
 from path_helper import SessionPathCreator
 
@@ -55,6 +56,8 @@ class SessionParamHandler(object):
     runs Bonsai and saves all params in a settings file.json"""
 
     def __init__(self, task_settings, user_settings):
+        self.DEBUG = False
+        make = False if self.DEBUG else True
         # =====================================================================
         # IMPORT task_settings, user_settings, and SessionPathCreator params
         # =====================================================================
@@ -65,17 +68,26 @@ class SessionParamHandler(object):
               for i in [x for x in dir(user_settings) if '__' not in x]}
         self.__dict__.update(us)
         self.deserialize_session_user_settings()
-        spc = SessionPathCreator(self.IBLRIG_FOLDER, self.MAIN_DATA_FOLDER,
-                                 self.PYBPOD_SUBJECTS[0], self.PYBPOD_PROTOCOL)
+        spc = SessionPathCreator(self.IBLRIG_FOLDER, self.IBLRIG_DATA_FOLDER,
+                                 self.PYBPOD_SUBJECTS[0],
+                                 protocol=self.PYBPOD_PROTOCOL,
+                                 board=self.PYBPOD_BOARD, make=make)
         self.__dict__.update(spc.__dict__)
+        # =====================================================================
+        # SUBJECT
+        # =====================================================================
+        self.SUBJECT_WEIGHT = self.get_subject_weight()
         # =====================================================================
         # OSC CLIENT
         # =====================================================================
+        self.OSC_CLIENT_PORT = 7110
+        self.OSC_CLIENT_IP = '127.0.0.1'
         self.OSC_CLIENT = self._init_osc_client()
         # =====================================================================
-        # PREVIOUS DATA FILE
+        # PREVIOUS DATA FILES
         # =====================================================================
         self.LAST_TRIAL_DATA = self._load_last_trial()
+        self.LAST_SETTINGS_DATA = self._load_last_settings_file()
         # =====================================================================
         # ADAPTIVE STUFF
         # =====================================================================
@@ -131,17 +143,75 @@ class SessionParamHandler(object):
         # =====================================================================
         # SAVE SETTINGS FILE AND TASK CODE
         # =====================================================================
-        self._save_session_settings()
+        if not self.DEBUG:
+            self._save_session_settings()
 
-        self._copy_task_code()
-        self._save_task_code()
+            self._copy_task_code()
+            self._save_task_code()
+
+    # =========================================================================
+    # STATIC METHODS
+    # =========================================================================
+    @staticmethod
+    def numinput(title, prompt, default=None, minval=None, maxval=None):
+        """ From turtle lib:
+        Pop up a dialog window for input of a number.
+        Arguments:
+        title: is the title of the dialog window,
+        prompt: is a text describing what numerical information to input.
+        default: default value
+        minval: minimum value for imput
+        maxval: maximum value for input
+
+        The number input must be in the range minval .. maxval if these are
+        given. If not, a hint is issued and the dialog remains open for
+        correction. Return the number input.
+        If the dialog is canceled,  return None.
+
+        Example:
+        >>> numinput("Poker", "Your stakes:", 1000, minval=10, maxval=10000)
+        """
+        import tkinter as tk
+        from tkinter import simpledialog
+        root = tk.Tk()
+        root.withdraw()
+        return simpledialog.askfloat(title, prompt, initialvalue=default,
+                                     minvalue=minval, maxvalue=maxval)
+
+    @staticmethod
+    def zipdir(path, ziph):
+        # ziph is zipfile handle
+        for root, dirs, files in os.walk(path):
+            for file in files:
+                ziph.write(os.path.join(root, file),
+                           os.path.relpath(os.path.join(root, file),
+                                           os.path.join(path, '..')))
+
+    @staticmethod
+    def zipit(dir_list, zip_name):
+        zipf = zipfile.ZipFile(zip_name, 'w', zipfile.ZIP_DEFLATED)
+        for dir in dir_list:
+            SessionParamHandler.zipdir(dir, zipf)
+        zipf.close()
 
     # =========================================================================
     # METHODS
     # =========================================================================
+    def get_subject_weight(self):
+        return self.numinput(
+            "Subject weighing (gr)", f"{self.PYBPOD_SUBJECTS[0]} weight (gr):")
+
+    # =========================================================================
     # SERIALIZER
     # =========================================================================
     def reprJSON(self):
+        def remove_from_dict(sx):
+            if "weighings" in sx.keys():
+                sx["weighings"] = None
+            if "water_administration" in sx.keys():
+                sx["water_administration"] = None
+            return sx
+
         d = self.__dict__.copy()
         if self.SOFT_SOUND:
             d['GO_TONE'] = 'go_tone(freq={}, dur={}, amp={})'.format(
@@ -151,8 +221,19 @@ class SessionParamHandler(object):
                 self.WHITE_NOISE_DURATION, self.WHITE_NOISE_AMPLITUDE)
         d['SD'] = str(d['SD'])
         d['OSC_CLIENT'] = str(d['OSC_CLIENT'])
-        d['SESSION_DATETIME'] = str(self.SESSION_DATETIME)
+        d['SESSION_DATETIME'] = self.SESSION_DATETIME.isoformat()
         d['CALIB_FUNC'] = str(d['CALIB_FUNC'])
+        if isinstance(d['PYBPOD_SUBJECT_EXTRA'], list):
+            sub = []
+            for sx in d['PYBPOD_SUBJECT_EXTRA']:
+                sub.append(remove_from_dict(sx))
+            d['PYBPOD_SUBJECT_EXTRA'] = sub
+        elif isinstance(d['PYBPOD_SUBJECT_EXTRA'], dict):
+            d['PYBPOD_SUBJECT_EXTRA'] = remove_from_dict(
+                d['PYBPOD_SUBJECT_EXTRA'])
+        d['LAST_TRIAL_DATA'] = None
+        d['LAST_SETTINGS_DATA'] = None
+
         return d
 
     # =========================================================================
@@ -234,6 +315,9 @@ class SessionParamHandler(object):
             self.USE_VISUAL_STIMULUS = False
 
     def start_camera_recording(self):
+        if (self.RECORD_VIDEO is False
+                and self.OPEN_CAMERA_VIEW is False):
+            return
         # Run Workflow
         here = os.getcwd()
         os.chdir(self.VIDEO_RECORDING_FOLDER)
@@ -261,11 +345,7 @@ class SessionParamHandler(object):
     def _load_last_trial(self, i=-1):
         if self.PREVIOUS_DATA_FILE is None:
             return
-        trial_data = []
-        with open(self.PREVIOUS_DATA_FILE, 'r') as f:
-            for line in f:
-                last_trial = json.loads(line)
-                trial_data.append(last_trial)
+        trial_data = raw.load_data(self.PREVIOUS_SESSION_PATH)
         print("\n\nINFO: PREVIOUS SESSION FOUND",
               "\nLOADING PARAMETERS FROM: {}".format(self.PREVIOUS_DATA_FILE),
               "\n\nPREVIOUS NTRIALS:              {}".format(
@@ -283,12 +363,19 @@ class SessionParamHandler(object):
 
         return trial_data[i] if trial_data else None
 
+    def _load_last_settings_file(self):
+        if self.PREVIOUS_SETTINGS_FILE is None:
+            return
+
+        return raw.load_settings(self.PREVIOUS_SESSION_PATH)
+
     # =========================================================================
     # ADAPTIVE REWARD AND GAIN RULES
     # =========================================================================
     def _init_reward_amount(self):
         if not self.ADAPTIVE_REWARD:
             return self.REWARD_AMOUNT
+
         if self.LAST_TRIAL_DATA is None:
             return self.AR_INIT_VALUE
         elif self.LAST_TRIAL_DATA and self.LAST_TRIAL_DATA['trial_num'] < 200:
@@ -296,6 +383,19 @@ class SessionParamHandler(object):
         elif self.LAST_TRIAL_DATA and self.LAST_TRIAL_DATA['trial_num'] >= 200:
             out = self.LAST_TRIAL_DATA['reward_amount'] - self.AR_STEP
             out = self.AR_MIN_VALUE if out <= self.AR_MIN_VALUE else out
+
+        if 'SUBJECT_WEIGHT' not in self.LAST_SETTINGS_DATA.keys():
+            return out
+
+        previous_weight_factor = self.LAST_SETTINGS_DATA['SUBJECT_WEIGHT'] / 25
+        previous_water = self.LAST_TRIAL_DATA['water_delivered'] / 1000
+
+        if previous_water < previous_weight_factor:
+            out = self.LAST_TRIAL_DATA['reward_amount'] + self.AR_STEP
+
+        print(f"\nREWARD AMONT: {out}")
+        print(f"PREVIOUS WEIGHT: {self.LAST_SETTINGS_DATA['SUBJECT_WEIGHT']}")
+        print(f"PREVIOUS WATER DRANK: {self.LAST_TRIAL_DATA['water_delivered']}")
 
         return out
 
@@ -311,6 +411,8 @@ class SessionParamHandler(object):
             return
 
     def _init_reward_valve_time(self):
+        if self.DEBUG:
+            self.AUTOMATIC_CALIBRATION = False
         # Calc reward valve time
         if not self.AUTOMATIC_CALIBRATION:
             out = self.CALIBRATION_VALUE / 3 * self.REWARD_AMOUNT
@@ -324,21 +426,25 @@ class SessionParamHandler(object):
                   "\nCalibrate the rig or use a manual calibration value.",
                   "\n\n")
             raise ValueError
+
         print("\n\nREWARD_VALVE_TIME:", out, "\n\n")
         if out >= 1:
             print("\n\nREWARD_VALVE_TIME is too high!:", out,
                   "\nProbably because of a BAD calibration file...",
                   "\nCalibrate the rig or use a manual calibration value.")
             raise(ValueError)
+
         return float(out)
 
     def _init_stim_gain(self):
         if not self.ADAPTIVE_GAIN:
             return self.STIM_GAIN
+
         if self.LAST_TRIAL_DATA and self.LAST_TRIAL_DATA['trial_num'] >= 200:
             stim_gain = self.AG_MIN_VALUE
         else:
             stim_gain = self.AG_INIT_VALUE
+
         return stim_gain
 
     # =========================================================================
@@ -375,7 +481,7 @@ class SessionParamHandler(object):
     # =========================================================================
     def _save_session_settings(self):
         with open(self.SETTINGS_FILE_PATH, 'a') as f:
-            f.write(json.dumps(self, cls=ComplexEncoder))
+            f.write(json.dumps(self, cls=ComplexEncoder, indent=1))
             f.write('\n')
         return
 
@@ -405,7 +511,7 @@ class SessionParamHandler(object):
         ]
         SessionParamHandler.zipit(
             behavior_code_files, os.path.join(self.SESSION_RAW_DATA_FOLDER,
-                                              '_iblrig_TaskCodeFiles.raw.zip'))
+                                              '_iblrig_taskCodeFiles.raw.zip'))
 
         video_code_files = [
             os.path.join(self.SESSION_RAW_VIDEO_DATA_FOLDER, x)
@@ -414,27 +520,13 @@ class SessionParamHandler(object):
                 self.SESSION_RAW_VIDEO_DATA_FOLDER, x))]
         SessionParamHandler.zipit(
             video_code_files, os.path.join(self.SESSION_RAW_VIDEO_DATA_FOLDER,
-                                           '_iblrig_VideoCodeFiles.raw.zip'))
+                                           '_iblrig_videoCodeFiles.raw.zip'))
 
         [shutil.rmtree(x) for x in behavior_code_files + video_code_files]
 
-    @staticmethod
-    def zipdir(path, ziph):
-        # ziph is zipfile handle
-        for root, dirs, files in os.walk(path):
-            for file in files:
-                ziph.write(os.path.join(root, file),
-                           os.path.relpath(os.path.join(root, file),
-                                           os.path.join(path, '..')))
-
-    @staticmethod
-    def zipit(dir_list, zip_name):
-        zipf = zipfile.ZipFile(zip_name, 'w', zipfile.ZIP_DEFLATED)
-        for dir in dir_list:
-            SessionParamHandler.zipdir(dir, zipf)
-        zipf.close()
-
     def _configure_rotary_encoder(self, RotaryEncoderModule):
+        if self.DEBUG or platform == 'linux':
+            return
         m = RotaryEncoderModule(self.ROTARY_ENCODER_PORT)
         m.set_zero_position()  # Not necessarily needed
         m.set_thresholds(self.ROTARY_ENCODER.SET_THRESHOLDS)
@@ -445,6 +537,7 @@ class SessionParamHandler(object):
 if __name__ == '__main__':
     # os.chdir(r'C:\iblrig\pybpod_projects\IBL\tasks\basicChoiceWorld')
     import task_settings as _task_settings
+    _task_settings.AUTOMATIC_CALIBRATION = False
     import _user_settings
     sph = SessionParamHandler(_task_settings, _user_settings)
     self = sph

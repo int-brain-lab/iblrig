@@ -8,6 +8,7 @@
 import datetime
 import re
 import time
+import tkinter as tk
 from tkinter import simpledialog  # for dialog box
 
 import matplotlib.pyplot as plt
@@ -19,9 +20,12 @@ import serial
 from pybpodapi.bpod import Bpod
 from pybpodapi.state_machine import StateMachine
 
-import user_settings  # PyBpod creates this file on run.
 import task_settings
+import user_settings  # PyBpod creates this file on run.
 from session_params import SessionParamHandler
+
+root = tk.Tk()
+root.withdraw()
 
 sph = SessionParamHandler(task_settings, user_settings)
 
@@ -160,7 +164,7 @@ for open_time in open_times:
     if sph.OAHUS_SCALE_PORT:
         stopweight = scale_read(sph.OAHUS_SCALE_PORT)
     else:
-        stopweight = numinput(f"End Weight (gr) [{open_time}ms pass {pass_}]",
+        stopweight = numinput(f"{open_time}ms pass {pass_}",
                               "Enter the weight diplayed on the scale (gr):")
     # get the value of the amout of water delivered
     measured_weight = stopweight - startweight

@@ -495,6 +495,9 @@ Value = whhel_radius for wheel_perim</Description>
                 <Value>1</Value>
               </Combinator>
             </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="Sample" />
+            </Expression>
           </Nodes>
           <Edges>
             <Edge>
@@ -504,7 +507,7 @@ Value = whhel_radius for wheel_perim</Description>
             </Edge>
             <Edge>
               <From>4</From>
-              <To>11</To>
+              <To>19</To>
               <Label>Source1</Label>
             </Edge>
             <Edge>
@@ -583,6 +586,11 @@ Value = whhel_radius for wheel_perim</Description>
               <Label>Source1</Label>
             </Edge>
             <Edge>
+              <From>16</From>
+              <To>19</To>
+              <Label>Source2</Label>
+            </Edge>
+            <Edge>
               <From>17</From>
               <To>9</To>
               <Label>Source1</Label>
@@ -590,6 +598,11 @@ Value = whhel_radius for wheel_perim</Description>
             <Edge>
               <From>18</From>
               <To>2</To>
+              <Label>Source1</Label>
+            </Edge>
+            <Edge>
+              <From>19</From>
+              <To>11</To>
               <Label>Source1</Label>
             </Edge>
           </Edges>
@@ -1003,6 +1016,21 @@ _iblrig_micData.raw.wav
                 <q2:ShaderName>Gabor</q2:ShaderName>
               </Combinator>
             </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="q2:RenderFrame" />
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="CombineLatest" />
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="Sample" />
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="DistinctUntilChanged" />
+            </Expression>
+            <Expression xsi:type="MemberSelector">
+              <Selector>Source.Item2</Selector>
+            </Expression>
           </Nodes>
           <Edges>
             <Edge>
@@ -1037,8 +1065,8 @@ _iblrig_micData.raw.wav
             </Edge>
             <Edge>
               <From>12</From>
-              <To>9</To>
-              <Label>Source1</Label>
+              <To>18</To>
+              <Label>Source2</Label>
             </Edge>
             <Edge>
               <From>13</From>
@@ -1053,6 +1081,36 @@ _iblrig_micData.raw.wav
             <Edge>
               <From>15</From>
               <To>16</To>
+              <Label>Source1</Label>
+            </Edge>
+            <Edge>
+              <From>17</From>
+              <To>18</To>
+              <Label>Source1</Label>
+            </Edge>
+            <Edge>
+              <From>17</From>
+              <To>19</To>
+              <Label>Source2</Label>
+            </Edge>
+            <Edge>
+              <From>18</From>
+              <To>19</To>
+              <Label>Source1</Label>
+            </Edge>
+            <Edge>
+              <From>19</From>
+              <To>21</To>
+              <Label>Source1</Label>
+            </Edge>
+            <Edge>
+              <From>20</From>
+              <To>9</To>
+              <Label>Source1</Label>
+            </Edge>
+            <Edge>
+              <From>21</From>
+              <To>20</To>
               <Label>Source1</Label>
             </Edge>
           </Edges>
@@ -1734,6 +1792,7 @@ probably there is no need to reset the position also
     <Type>Bonsai.Reactive.Zip, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Expressions.ExternalizedProperty`2[[System.Single, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089],[Bonsai.Expressions.FloatProperty, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null]], Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Expressions.IntProperty, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Reactive.Sample, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Shaders.UpdateUniform, Bonsai.Shaders, Version=0.18.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.IO.CsvWriter, Bonsai.System, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Reactive.Timestamp, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
@@ -1745,6 +1804,7 @@ probably there is no need to reset the position also
     <Type>Bonsai.Expressions.ExternalizedProperty`2[[System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089],[Bonsai.Expressions.BooleanProperty, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null]], Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Expressions.BooleanProperty, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Reactive.AccumulateBuilder, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Reactive.DistinctUntilChanged, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Reactive.Take, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Reactive.Switch, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Shaders.DrawMesh, Bonsai.Shaders, Version=0.18.0.0, Culture=neutral, PublicKeyToken=null</Type>
@@ -1752,6 +1812,5 @@ probably there is no need to reset the position also
     <Type>Bonsai.Bpod.EncoderPosition, Bonsai.Bpod, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Bpod.Encoder, Bonsai.Bpod, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Expressions.ExternalizedProperty`2[[System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089],[Bonsai.Bpod.Encoder, Bonsai.Bpod, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null]], Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Reactive.Sample, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
   </ExtensionTypes>
 </WorkflowBuilder>
