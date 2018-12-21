@@ -79,6 +79,8 @@ class SessionParamHandler(object):
         # =====================================================================
         # OSC CLIENT
         # =====================================================================
+        self.OSC_CLIENT_PORT = 7110
+        self.OSC_CLIENT_IP = '127.0.0.1'
         self.OSC_CLIENT = self._init_osc_client()
         # =====================================================================
         # PREVIOUS DATA FILE
