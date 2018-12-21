@@ -195,7 +195,7 @@ class SessionParamHandler(object):
     # =========================================================================
     def get_subject_weight(self):
         return self.numinput(
-            "Subject weighing (gr) ", f"{self.PYBPOD_SUBJECTS[0]} weight (gr):")
+            "Subject weighing (gr)", f"{self.PYBPOD_SUBJECTS[0]} weight (gr):")
 
     # =========================================================================
     # SERIALIZER
@@ -309,8 +309,8 @@ class SessionParamHandler(object):
             self.USE_VISUAL_STIMULUS = False
 
     def start_camera_recording(self):
-        if (self.RECORD_VIDEO is False 
-            and self.OPEN_CAMERA_VIEW is False):
+        if (self.RECORD_VIDEO is False
+                and self.OPEN_CAMERA_VIEW is False):
             return
         # Run Workflow
         here = os.getcwd()

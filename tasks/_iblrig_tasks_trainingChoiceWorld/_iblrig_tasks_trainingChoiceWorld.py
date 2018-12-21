@@ -180,11 +180,11 @@ for i in range(sph.NTRIALS):  # Main loop
                                           save_to=sph.SESSION_RAW_DATA_FOLDER)
         print('AMBIENT SENSOR DATA: saved')
     if tph.check_stop_criterions():
-        print("\n", 
+        print("\n",
         "\n\nSTOPPING CRITERIA ACHIEVED TASK HAS STOPPED!\
-         \nPLEASE REMOVE THE MOUSE" 
+         \nPLEASE REMOVE THE MOUSE"
         * 100)
-        break  # Will jump out of the trial loop 
+        f.patch.set_facecolor('xkcd:mint green')
 
 bpod.close()
 
