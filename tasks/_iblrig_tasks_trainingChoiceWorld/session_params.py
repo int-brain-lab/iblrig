@@ -366,7 +366,7 @@ class SessionParamHandler(object):
         return trial_data[i] if trial_data else None
 
     def _load_last_settings_file(self):
-        if self.PREVIOUS_SETTINGS_FILE is None:
+        if not self.PREVIOUS_SETTINGS_FILE:
             return
 
         return raw.load_settings(self.PREVIOUS_SESSION_PATH)
@@ -395,7 +395,7 @@ class SessionParamHandler(object):
         if previous_water < previous_weight_factor:
             out = self.LAST_TRIAL_DATA['reward_amount'] + self.AR_STEP
 
-        print(f"\nREWARD AMONT: {out}")
+        print(f"\nREWARD AMOUNT: {out}")
         print(f"PREVIOUS WEIGHT: {self.LAST_SETTINGS_DATA['SUBJECT_WEIGHT']}")
         print(f"PREVIOUS WATER DRANK: {self.LAST_TRIAL_DATA['water_delivered']}")
 
