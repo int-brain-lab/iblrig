@@ -33,11 +33,11 @@ class SessionPathCreator(object):
         self.VISUAL_STIM_FOLDER = os.path.join(
             self.IBLRIG_FOLDER, 'visual_stim', 'Gabor2D')
         self.VIDEO_RECORDING_FOLDER = os.path.join(
-            self.IBLRIG_FOLDER, 'visual_stim', 'camera_recordings')
+            self.IBLRIG_FOLDER, 'camera', 'camera_recordings')
         self.VISUAL_STIMULUS_FILE = os.path.join(
             self.IBLRIG_FOLDER, 'visual_stim', 'Gabor2D', 'Gabor2D.bonsai')
         self.VIDEO_RECORDING_FILE = os.path.join(
-            self.IBLRIG_FOLDER, 'visual_stim', 'camera_recordings',
+            self.IBLRIG_FOLDER, 'camera', 'camera_recordings',
             'one_camera.bonsai')
         self.SUBJECT_NAME = subject_name
         self.SUBJECT_FOLDER = os.path.join(

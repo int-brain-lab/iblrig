@@ -73,6 +73,8 @@ class SessionParamHandler(object):
                                  protocol=self.PYBPOD_PROTOCOL,
                                  board=self.PYBPOD_BOARD, make=make)
         self.__dict__.update(spc.__dict__)
+        if self.INTERACTIVE_DELAY < 0.1:
+            self.INTERACTIVE_DELAY = 0.1
         # =====================================================================
         # SUBJECT
         # =====================================================================
