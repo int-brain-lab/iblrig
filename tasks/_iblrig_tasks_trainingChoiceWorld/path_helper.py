@@ -77,8 +77,8 @@ class SessionPathCreator(object):
 
         self.PREVIOUS_DATA_FILE = self._previous_data_file()
         self.PREVIOUS_SETTINGS_FILE = self._previous_settings_file()
-        self.PREVIOUS_SESSION_PATH = str(
-            Path(self.PREVIOUS_DATA_FILE).parent.parent)
+        self.PREVIOUS_SESSION_PATH = self._previous_session_path()
+
         if make:
             self.make_missing_folders()
 
@@ -231,6 +231,14 @@ class SessionPathCreator(object):
             return out[-1]
         else:
             return None
+
+    def _previous_session_path(self):
+        if self.PREVIOUS_DATA_FILE is not None:
+            out = str(Path(self.PREVIOUS_DATA_FILE).parent.parent)
+        else:
+            out = None
+
+        return out
 
     def _latest_water_calib_file(self, board):
         dsf = Path(self.IBLRIG_DATA_SUBJECTS_FOLDER)
