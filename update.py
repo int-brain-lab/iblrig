@@ -89,12 +89,14 @@ def import_tasks_with_settings():
 
 def checkout_version(ver):
     print("\nChecking out {}".format(ver))
+    subprocess.call(["git", "reset", "--hard"])
     subprocess.call(['git', 'checkout', 'tags/' + ver])
 
 
 def checkout_branch(branch):
     print("\nChecking out {}".format(branch))
     subprocess.call(['git', 'checkout', branch])
+    subprocess.call(["git", "reset", "--hard"])
     pull(branch)
 
 
