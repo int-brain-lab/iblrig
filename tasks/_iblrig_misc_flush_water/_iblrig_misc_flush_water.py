@@ -1,10 +1,11 @@
-# !/usr/bin/python3
-# -*- coding: utf-8 -*-
+# -*- coding:utf-8 -*-
+# @Author: Niccolò Bonacchi
+# @Date: Friday, January 4th 2019, 11:52:41 am
+# @Last Modified by: Niccolò Bonacchi
+# @Last Modified time: 4-01-2019 11:52:45.4545
+
 from pybpodapi.bpod import Bpod
 from pybpodapi.state_machine import StateMachine
-from pybpodapi.bpod.hardware.events import EventName
-from pybpodapi.bpod.hardware.output_channels import OutputChannel
-from pybpod_rotaryencoder_module.module_api import RotaryEncoderModule
 
 ntrials = 1
 valve_on_time = 1000
