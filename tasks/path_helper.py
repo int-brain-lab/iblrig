@@ -248,6 +248,7 @@ class SessionPathCreator(object):
         return out
 
     def _latest_water_calib_file(self, board):
+        print(f"\nLooking for calibration of board: {board}")
         dsf = Path(self.IBLRIG_DATA_SUBJECTS_FOLDER)
         cal = dsf / '_iblrig_calibration'
         if not cal.exists():
