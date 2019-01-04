@@ -94,10 +94,10 @@ def main(iblrig_params_path):
     tTrainingCW = p.create_task()
     tTrainingCW.name = '_iblrig_tasks_trainingChoiceWorld'
     tTrainingCW_execBonsai = tTrainingCW.create_execcmd()
-    tTrainingCW_execBonsai.cmd = "python bonsai_stop.py 7110"
+    tTrainingCW_execBonsai.cmd = "python ..\\..\\..\\bonsai_stop.py 7110"
     tTrainingCW_execBonsai.when = tTrainingCW_execBonsai.WHEN_POST
     tTrainingCW_execBonsai2 = tTrainingCW.create_execcmd()
-    tTrainingCW_execBonsai2.cmd = "python bonsai_stop.py 7111"
+    tTrainingCW_execBonsai2.cmd = "python ..\\..\\..\\bonsai_stop.py 7111"
     tTrainingCW_execBonsai2.when = tTrainingCW_execBonsai2.WHEN_POST
     tTrainingCW_execCleanup = tTrainingCW.create_execcmd()
     tTrainingCW_execCleanup.cmd = "python ..\\..\\..\\cleanup.py"
@@ -107,10 +107,10 @@ def main(iblrig_params_path):
     tBiased = p.create_task()
     tBiased.name = '_iblrig_tasks_biasedChoiceWorld'
     tBiased_execBonsai = tBiased.create_execcmd()
-    tBiased_execBonsai.cmd = "python bonsai_stop.py 7110"
+    tBiased_execBonsai.cmd = "python ..\\..\\..\\bonsai_stop.py 7110"
     tBiased_execBonsai.when = tBiased_execBonsai.WHEN_POST
     tBiased_execBonsai2 = tBiased.create_execcmd()
-    tBiased_execBonsai2.cmd = "python bonsai_stop.py 7111"
+    tBiased_execBonsai2.cmd = "python ..\\..\\..\\bonsai_stop.py 7111"
     tBiased_execBonsai2.when = tBiased_execBonsai2.WHEN_POST
     tBiased_execCleanup = tBiased.create_execcmd()
     tBiased_execCleanup.cmd = "python ..\\..\\..\\cleanup.py"
@@ -149,7 +149,7 @@ def main(iblrig_params_path):
     # Create _iblrig_tasks experiment
     eTasks = p.create_experiment()
     eTasks.name = '_iblrig_tasks'
-    
+
     # Create trainingChoiceWorld setup
     training = eTasks.create_setup()
     training.name = 'trainingChoiceWorld'

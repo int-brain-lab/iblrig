@@ -9,7 +9,9 @@ import shutil
 import subprocess
 import time
 import zipfile
+import sys
 from sys import platform
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -19,6 +21,8 @@ from pythonosc import udp_client
 
 import ibllib.io.raw_data_loaders as raw
 import sound
+sys.path.append(str(Path(__file__).parent.parent))
+sys.path.append(str(Path(__file__).parent.parent.parent.parent))
 from path_helper import SessionPathCreator
 
 
