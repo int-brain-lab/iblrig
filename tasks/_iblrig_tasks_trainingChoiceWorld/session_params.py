@@ -544,7 +544,7 @@ if __name__ == '__main__':
     # os.chdir(r'C:\iblrig\pybpod_projects\IBL\tasks\basicChoiceWorld')
     import task_settings as _task_settings
     _task_settings.AUTOMATIC_CALIBRATION = False
-    import _user_settings
+    import scratch._user_settings as _user_settings
     sph = SessionParamHandler(_task_settings, _user_settings)
     self = sph
     print("Done!")
