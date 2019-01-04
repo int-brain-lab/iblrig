@@ -189,6 +189,7 @@ def update_pybpod_config(iblrig_params_path):
     p.save(iblproject_path)
 
     iblrig_params_tasks_path = iblrig_params_path / 'IBL' / 'tasks'
+    iblrig_path = iblrig_params_path.parent / 'iblrig'
     iblrig_tasks_path = iblrig_path / 'tasks'
     task_names = [x.name for x in iblrig_tasks_path.glob('*') if x.is_dir()]
     task_paths = [iblrig_params_tasks_path / x for x in task_names]
