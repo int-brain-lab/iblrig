@@ -80,16 +80,26 @@ class SessionPathCreator(object):
         self.PREVIOUS_SESSION_PATH = self._previous_session_path()
 
         if make:
-            self.make_missing_folders()
+            self.make_missing_folders(make)
 
-    def make_missing_folders(self):
-        self.make_folder(self.IBLRIG_DATA_FOLDER)
-        self.make_folder(self.IBLRIG_DATA_SUBJECTS_FOLDER)
-        self.make_folder(self.SUBJECT_FOLDER)
-        self.make_folder(self.SESSION_DATE_FOLDER)
-        self.make_folder(self.SESSION_FOLDER)
-        self.make_folder(self.SESSION_RAW_DATA_FOLDER)
-        self.make_folder(self.SESSION_RAW_VIDEO_DATA_FOLDER)
+    def make_missing_folders(self, makelist):
+        if isinstance(makelist, bool):
+            self.make_folder(self.IBLRIG_DATA_FOLDER)
+            self.make_folder(self.IBLRIG_DATA_SUBJECTS_FOLDER)
+            self.make_folder(self.SUBJECT_FOLDER)
+            self.make_folder(self.SESSION_DATE_FOLDER)
+            self.make_folder(self.SESSION_FOLDER)
+            self.make_folder(self.SESSION_RAW_DATA_FOLDER)
+        elif isinstance(makelist, list):
+            self.make_missing_folders(True)
+            if 'video' in makelist:
+                self.make_folder(self.SESSION_RAW_VIDEO_DATA_FOLDER)
+            if 'ephys' in makelist:
+                self.make_folder(self.SESSION_RAW_EPHYS_DATA_FOLDER)
+            if 'imag' in makelist:
+                self.make_folder(self.SESSION_RAW_IMAGING_DATA_FOLDER)
+
+            return
         # self.make_folder(self.SESSION_RAW_EPHYS_DATA_FOLDER)
         # self.make_folder(self.SESSION_RAW_IMAGING_DATA_FOLDER)
 
@@ -290,7 +300,7 @@ if __name__ == "__main__":
         '/home/nico/Projects/IBL/IBL-github/iblrig',
         '/home/nico/Projects/IBL/IBL-github/iblrig_data',  # /scratch/new',
         '_iblrig_test_mouse', protocol='trainingChoiceWorld', board='box0',
-        make=False)
+        make=['video', 'ephys', 'imag'])
 
     print(
         "\nIBLRIG_VERSION_TAG", spc.IBLRIG_VERSION_TAG,

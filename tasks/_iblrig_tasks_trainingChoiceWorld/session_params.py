@@ -61,7 +61,7 @@ class SessionParamHandler(object):
 
     def __init__(self, task_settings, user_settings):
         self.DEBUG = False
-        make = False if self.DEBUG else True
+        make = False if self.DEBUG else ['video']
         # =====================================================================
         # IMPORT task_settings, user_settings, and SessionPathCreator params
         # =====================================================================
