@@ -140,11 +140,13 @@ class SessionParamHandler(object):
 
         self._init_sounds()  # Will create sounds and output actions.
         # =====================================================================
-        # RUN BONSAI
+        # RUN VISUAL STIM
         # =====================================================================
         if platform == 'linux':
             self.USE_VISUAL_STIMULUS = False
         self.BONSAI = spc.get_bonsai_path(use_iblrig_bonsai=True)
+        self.VISUAL_STIMULUS_FILE = str(
+            Path(self.VISUAL_STIM_FOLDER) / 'Gabor2D' / 'Gabor2D.bonsai')
         self.start_visual_stim()
         # =====================================================================
         # SAVE SETTINGS FILE AND TASK CODE
@@ -286,7 +288,7 @@ class SessionParamHandler(object):
         if self.USE_VISUAL_STIMULUS and self.BONSAI:
             # Run Bonsai workflow
             here = os.getcwd()
-            os.chdir(self.VISUAL_STIM_FOLDER)
+            os.chdir(str(Path(self.VISUAL_STIM_FOLDER) / 'Gabor2D'))
             bns = self.BONSAI
             wkfl = self.VISUAL_STIMULUS_FILE
 
@@ -498,7 +500,7 @@ class SessionParamHandler(object):
         dst = os.path.join(self.SESSION_RAW_DATA_FOLDER, self.PYBPOD_PROTOCOL)
         shutil.copytree(src, dst)
         # Copy stimulus folder with bonsai workflow
-        src = self.VISUAL_STIM_FOLDER
+        src = str(Path(self.VISUAL_STIM_FOLDER) / 'Gabor2D')
         dst = os.path.join(self.SESSION_RAW_DATA_FOLDER, 'Gabor2D/')
         shutil.copytree(src, dst)
         # Copy video recording folder with bonsai workflow

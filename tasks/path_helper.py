@@ -28,14 +28,11 @@ class SessionPathCreator(object):
             self.IBLRIG_FOLDER, iblrig_data_folder)
         self.IBLRIG_DATA_SUBJECTS_FOLDER = str(
             Path(self.IBLRIG_DATA_FOLDER) / 'Subjects')
-        self.SOUND_STIM_FOLDER = os.path.join(
-            self.IBLRIG_FOLDER, 'sound_stim', 'sounds')
-        self.VISUAL_STIM_FOLDER = os.path.join(
-            self.IBLRIG_FOLDER, 'visual_stim', 'Gabor2D')
+        self.SOUND_STIM_FOLDER = str(
+            Path(self.IBLRIG_FOLDER) / 'sound_stim')
+        self.VISUAL_STIM_FOLDER = str(Path(self.IBLRIG_FOLDER) / 'visual_stim')
         self.VIDEO_RECORDING_FOLDER = os.path.join(
             self.IBLRIG_FOLDER, 'camera', 'camera_recordings')
-        self.VISUAL_STIMULUS_FILE = os.path.join(
-            self.IBLRIG_FOLDER, 'visual_stim', 'Gabor2D', 'Gabor2D.bonsai')
         self.VIDEO_RECORDING_FILE = os.path.join(
             self.IBLRIG_FOLDER, 'camera', 'camera_recordings',
             'one_camera.bonsai')
@@ -49,8 +46,8 @@ class SessionPathCreator(object):
 
         self.SESSION_NUMBER = self._session_number()
 
-        self.SESSION_FOLDER = os.path.join(
-            self.SESSION_DATE_FOLDER, self.SESSION_NUMBER)
+        self.SESSION_FOLDER = str(
+            Path(self.SESSION_DATE_FOLDER) / self.SESSION_NUMBER)
         self.SESSION_RAW_DATA_FOLDER = os.path.join(
             self.SESSION_FOLDER, 'raw_behavior_data')
         self.SESSION_RAW_VIDEO_DATA_FOLDER = os.path.join(
