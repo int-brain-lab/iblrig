@@ -38,7 +38,7 @@ def copy_code_files_to_iblrig_params(iblrig_params_path, task=None,
     if task:
         tasks = [t for t in tasks if task in str(t)]
     else:
-        # Copy cleanup and user_settings
+        # Copy cleanup, user_settings, path_helper and bonsai_stop
         print('\nS:', str(iblrig_tasks_path), '\nD:', str(iblrig_params_path))
         copy_files(iblrig_tasks_path, iblrig_params_path)
 
@@ -169,6 +169,35 @@ def main(iblrig_params_path):
     copy_code_files_to_iblrig_params(iblrig_params_path)
 
     return
+
+
+def update_pybpod_config(iblrig_params_path):
+    """for update to 3.3.1+
+    Change location of post script bonsai_stop.py to ..\\..\\..\\bonsai_stop.py
+    and remove path_helper.py and _user_settings.py from task code.
+    """
+    iblrig_params_path = Path(iblrig_params_path)
+    iblproject_path = iblrig_params_path / 'IBL'
+
+    p = Project()
+    p.load(iblproject_path)
+    for t in p.tasks:
+        for c in t.commands:
+            c.cmd = c.cmd.replace(
+                ' bonsai_stop.py', ' ..\\..\\..\\bonsai_stop.py')
+            print(c.cmd)
+    p.save(iblproject_path)
+
+    iblrig_params_tasks_path = iblrig_params_path / 'IBL' / 'tasks'
+    iblrig_tasks_path = iblrig_path / 'tasks'
+    task_names = [x.name for x in iblrig_tasks_path.glob('*') if x.is_dir()]
+    task_paths = [iblrig_params_tasks_path / x for x in task_names]
+    for x in task_paths:
+        if (x / 'path_helper.py').exists():
+            (x / 'path_helper.py').unlink()
+    for x in task_paths:
+        if (x / '_user_settings.py').exists():
+            (x / '_user_settings.py').unlink()
 
 
 if __name__ == "__main__":
