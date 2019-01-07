@@ -37,7 +37,8 @@ import subprocess
 import sys
 from pathlib import Path
 
-from setup_default_config import copy_code_files_to_iblrig_params
+from setup_default_config import (copy_code_files_to_iblrig_params,
+                                  update_pybpod_config)
 
 IBLRIG_ROOT_PATH = Path.cwd()
 
@@ -62,6 +63,13 @@ def get_branches():
     return branches
 
 
+def get_current_branch():
+    branch = subprocess.check_output(
+        ['git', 'branch', '--points-at', 'HEAD']).decode().strip().strip('* ')
+
+    return branch
+
+
 def get_current_version():
     tag = subprocess.check_output(["git", "tag",
                                    "--points-at", "HEAD"]).decode().strip()
@@ -78,11 +86,15 @@ def iblrig_params_path():
 
 
 def import_tasks():
+    if get_current_version() > '3.3.0' or get_current_branch() == 'develop':
+        update_pybpod_config(iblrig_params_path())
     copy_code_files_to_iblrig_params(iblrig_params_path(),
                                      exclude_filename='task_settings.py')
 
 
 def import_tasks_with_settings():
+    if get_current_version() > '3.3.0' or get_current_branch() == 'develop':
+        update_pybpod_config(iblrig_params_path())
     copy_code_files_to_iblrig_params(iblrig_params_path(),
                                      exclude_filename=None)
 

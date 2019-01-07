@@ -10,6 +10,8 @@ import subprocess
 from pathlib import Path
 from sys import platform
 
+from ibllib.io import raw_data_loaders as raw
+
 
 class SessionPathCreator(object):
     # add subject name and protocol (maybe have a metadata struct)
@@ -19,6 +21,8 @@ class SessionPathCreator(object):
             self.IBLRIG_FOLDER = '/home/nico/Projects/IBL/IBL-github/iblrig'
         else:
             self.IBLRIG_FOLDER = str(Path(iblrig_folder))
+        self._BOARD = board
+        self._PROTOCOL = protocol
         self.IBLRIG_COMMIT_HASH = self._get_iblrig_commit_hash()
         self.IBLRIG_VERSION_TAG = self._get_iblrig_version_tag()
 
@@ -28,14 +32,11 @@ class SessionPathCreator(object):
             self.IBLRIG_FOLDER, iblrig_data_folder)
         self.IBLRIG_DATA_SUBJECTS_FOLDER = str(
             Path(self.IBLRIG_DATA_FOLDER) / 'Subjects')
-        self.SOUND_STIM_FOLDER = os.path.join(
-            self.IBLRIG_FOLDER, 'sound_stim', 'sounds')
-        self.VISUAL_STIM_FOLDER = os.path.join(
-            self.IBLRIG_FOLDER, 'visual_stim', 'Gabor2D')
+        self.SOUND_STIM_FOLDER = str(
+            Path(self.IBLRIG_FOLDER) / 'sound_stim')
+        self.VISUAL_STIM_FOLDER = str(Path(self.IBLRIG_FOLDER) / 'visual_stim')
         self.VIDEO_RECORDING_FOLDER = os.path.join(
             self.IBLRIG_FOLDER, 'camera', 'camera_recordings')
-        self.VISUAL_STIMULUS_FILE = os.path.join(
-            self.IBLRIG_FOLDER, 'visual_stim', 'Gabor2D', 'Gabor2D.bonsai')
         self.VIDEO_RECORDING_FILE = os.path.join(
             self.IBLRIG_FOLDER, 'camera', 'camera_recordings',
             'one_camera.bonsai')
@@ -49,8 +50,8 @@ class SessionPathCreator(object):
 
         self.SESSION_NUMBER = self._session_number()
 
-        self.SESSION_FOLDER = os.path.join(
-            self.SESSION_DATE_FOLDER, self.SESSION_NUMBER)
+        self.SESSION_FOLDER = str(
+            Path(self.SESSION_DATE_FOLDER) / self.SESSION_NUMBER)
         self.SESSION_RAW_DATA_FOLDER = os.path.join(
             self.SESSION_FOLDER, 'raw_behavior_data')
         self.SESSION_RAW_VIDEO_DATA_FOLDER = os.path.join(
@@ -62,7 +63,7 @@ class SessionPathCreator(object):
 
         self.SESSION_COMPOUND_NAME = '{}'.format(os.path.sep).join(
             [self.SUBJECT_NAME, self.SESSION_DATE, self.SESSION_NUMBER,
-             protocol, board])
+             self._PROTOCOL, self._BOARD])
 
         self.BASE_FILENAME = '_iblrig_task'
         self.SETTINGS_FILE_PATH = os.path.join(self.SESSION_RAW_DATA_FOLDER,
@@ -72,24 +73,33 @@ class SessionPathCreator(object):
                                            self.BASE_FILENAME +
                                            'Data.raw.jsonable')
 
-        self.LATEST_WATER_CALIBRATION_FILE = self._latest_water_calib_file(
-            board)
+        self.LATEST_WATER_CALIBRATION_FILE = self._latest_water_calib_file()
 
         self.PREVIOUS_DATA_FILE = self._previous_data_file()
         self.PREVIOUS_SETTINGS_FILE = self._previous_settings_file()
         self.PREVIOUS_SESSION_PATH = self._previous_session_path()
 
         if make:
-            self.make_missing_folders()
+            self.make_missing_folders(make)
 
-    def make_missing_folders(self):
-        self.make_folder(self.IBLRIG_DATA_FOLDER)
-        self.make_folder(self.IBLRIG_DATA_SUBJECTS_FOLDER)
-        self.make_folder(self.SUBJECT_FOLDER)
-        self.make_folder(self.SESSION_DATE_FOLDER)
-        self.make_folder(self.SESSION_FOLDER)
-        self.make_folder(self.SESSION_RAW_DATA_FOLDER)
-        self.make_folder(self.SESSION_RAW_VIDEO_DATA_FOLDER)
+    def make_missing_folders(self, makelist):
+        if isinstance(makelist, bool):
+            self.make_folder(self.IBLRIG_DATA_FOLDER)
+            self.make_folder(self.IBLRIG_DATA_SUBJECTS_FOLDER)
+            self.make_folder(self.SUBJECT_FOLDER)
+            self.make_folder(self.SESSION_DATE_FOLDER)
+            self.make_folder(self.SESSION_FOLDER)
+            self.make_folder(self.SESSION_RAW_DATA_FOLDER)
+        elif isinstance(makelist, list):
+            self.make_missing_folders(True)
+            if 'video' in makelist:
+                self.make_folder(self.SESSION_RAW_VIDEO_DATA_FOLDER)
+            if 'ephys' in makelist:
+                self.make_folder(self.SESSION_RAW_EPHYS_DATA_FOLDER)
+            if 'imag' in makelist:
+                self.make_folder(self.SESSION_RAW_IMAGING_DATA_FOLDER)
+
+            return
         # self.make_folder(self.SESSION_RAW_EPHYS_DATA_FOLDER)
         # self.make_folder(self.SESSION_RAW_IMAGING_DATA_FOLDER)
 
@@ -193,23 +203,25 @@ class SessionPathCreator(object):
         return session_folders
 
     def _previous_data_files(self, typ='data'):
-
         prev_data_files = []
         prev_session_files = []
+        data_fname = self.BASE_FILENAME + 'Data.raw.jsonable'
+        settings_fname = self.BASE_FILENAME + 'Settings.raw.json'
         for prev_sess_path in self._previous_session_folders():
-            prev_sess_path = os.path.join(prev_sess_path, 'raw_behavior_data')
-            if self.BASE_FILENAME + 'Data' in ''.join(os.listdir(
-                    prev_sess_path)):
-                prev_data_files.extend(os.path.join(prev_sess_path, x) for x
-                                       in os.listdir(prev_sess_path) if
-                                       self.BASE_FILENAME + 'Data' in x)
-                prev_session_files.extend(os.path.join(prev_sess_path, x) for x
-                                       in os.listdir(prev_sess_path) if
-                                       self.BASE_FILENAME + 'Settings' in x)
-
-        data_out = [x for x in prev_data_files if os.stat(x).st_size != 0]
-        settings_out = [
-            x for x in prev_session_files if os.stat(x).st_size != 0]
+            prev_sess_path = Path(prev_sess_path) / 'raw_behavior_data'
+            # Get all data and settings file if they both exist
+            if ((prev_sess_path / data_fname).exists() and
+                    (prev_sess_path / settings_fname).exists()):
+                prev_data_files.append(prev_sess_path / data_fname)
+                prev_session_files.append(prev_sess_path / settings_fname)
+        # Remove empty files
+        ds_out = [(d, s) for d, s in zip(prev_data_files, prev_session_files)
+                  if d.stat().st_size != 0 and s.stat().st_size != 0]
+        # Remove sessions of different task protocols
+        ds_out = [(d, s) for d, s in ds_out if self._PROTOCOL in
+                  raw.load_settings(str(s.parent.parent))['PYBPOD_PROTOCOL']]
+        data_out = [str(d) for d, s in ds_out]
+        settings_out = [str(s) for d, s in ds_out]
 
         return data_out if typ == 'data' else settings_out
 
@@ -240,13 +252,14 @@ class SessionPathCreator(object):
 
         return out
 
-    def _latest_water_calib_file(self, board):
+    def _latest_water_calib_file(self):
+        print(f"\nLooking for calibration of board: {self._BOARD}")
         dsf = Path(self.IBLRIG_DATA_SUBJECTS_FOLDER)
         cal = dsf / '_iblrig_calibration'
         if not cal.exists():
             return None
 
-        if not board:
+        if not self._BOARD:
             return None
 
         cal_session_folders = []
@@ -270,9 +283,8 @@ class SessionPathCreator(object):
         same_board_cal_files = []
         for fcal, s in zip(water_cal_files, water_cal_settings):
             if s.exists():
-                with open(str(s), 'r') as f:
-                    settings = json.loads(f.readline())
-                if settings['PYBPOD_BOARD'] == board:
+                settings = raw.load_settings(str(s.parent.parent))
+                if settings['PYBPOD_BOARD'] == self._BOARD:
                     same_board_cal_files.append(fcal)
 
         same_board_cal_files = sorted(same_board_cal_files,
@@ -290,7 +302,7 @@ if __name__ == "__main__":
         '/home/nico/Projects/IBL/IBL-github/iblrig',
         '/home/nico/Projects/IBL/IBL-github/iblrig_data',  # /scratch/new',
         '_iblrig_test_mouse', protocol='trainingChoiceWorld', board='box0',
-        make=False)
+        make=['video', 'ephys', 'imag'])
 
     print(
         "\nIBLRIG_VERSION_TAG", spc.IBLRIG_VERSION_TAG,
@@ -309,7 +321,6 @@ if __name__ == "__main__":
         "\nSUBJECT_FOLDER:", spc.SUBJECT_FOLDER,
         "\nSOUND_STIM_FOLDER:", spc.SOUND_STIM_FOLDER,
         "\nVISUAL_STIM_FOLDER:", spc.VISUAL_STIM_FOLDER,
-        "\nVISUAL_STIMULUS_FILE:", spc.VISUAL_STIMULUS_FILE,
         "\nBASE_FILENAME:", spc.BASE_FILENAME,
         "\nSETTINGS_FILE_PATH:", spc.SETTINGS_FILE_PATH,
         "\nDATA_FILE_PATH:", spc.DATA_FILE_PATH,
