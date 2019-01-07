@@ -116,6 +116,7 @@ for i in range(sph.NTRIALS):  # Main loop
 
     print('TRIAL NUM: ', trial_data['trial_num'])
     print('WATER DELIVERED: ', trial_data['water_delivered'])
+    print('DELAY TO WATER WAS: ', trial_data['delay_to_stim_center'])
     print('TIME FROM START: ', (datetime.datetime.now() -
                                 parser.parse(trial_data['init_datetime'])))
 

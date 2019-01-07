@@ -13,11 +13,11 @@ RECORD_VIDEO = True
 OPEN_CAMERA_VIEW = True  # if RECORD_VIDEO == True OPEN_CAMERA_VIEW is True
 # TASK
 NTRIALS = 2000  # Number of trials for the current session
-USE_AUTOMATIC_STOPPING_CRITERIONS = True  # Weather to check for the Automatic stopping criterions or not
 USE_VISUAL_STIMULUS = True  # Run the visual stim in bonsai
 BONSAI_EDITOR = False  # Whether to open the visual stim Bonsai editor or not
 # STATE TIMERS
-ITI = 1  # how long the stim should stay visible
+ITI = 1  # Length of gray screen between trials
+DELAY_TO_STIM_CENTER = 10  # mean of normal dist with sd of 2
 # VISUAL STIM
 STIM_POSITIONS = [-35, 35]  # All possible positions for this session (deg)
 STIM_FREQ = 0.10  # cycle/visual degree

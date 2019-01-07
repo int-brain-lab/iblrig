@@ -356,8 +356,8 @@ class SessionParamHandler(object):
         dst = os.path.join(self.SESSION_RAW_DATA_FOLDER, self.PYBPOD_PROTOCOL)
         shutil.copytree(src, dst)
         # Copy stimulus folder with bonsai workflow
-        src = str(Path(self.VISUAL_STIM_FOLDER) / 'PassiveGabor2D')
-        dst = str(Path(self.SESSION_RAW_DATA_FOLDER) / 'PassiveGabor2D')
+        src = str(Path(self.VISUAL_STIM_FOLDER) / self.VISUAL_STIMULUS_TYPE)
+        dst = str(Path(self.SESSION_RAW_DATA_FOLDER) / self.VISUAL_STIMULUS_TYPE)
         shutil.copytree(src, dst)
         # Copy video recording folder with bonsai workflow
         src = self.VIDEO_RECORDING_FOLDER
