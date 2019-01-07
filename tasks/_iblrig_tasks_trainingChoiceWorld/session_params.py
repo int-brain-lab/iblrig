@@ -145,8 +145,10 @@ class SessionParamHandler(object):
         if platform == 'linux':
             self.USE_VISUAL_STIMULUS = False
         self.BONSAI = spc.get_bonsai_path(use_iblrig_bonsai=True)
+        self.VISUAL_STIMULUS_TYPE = 'TrainingGabor2D'
         self.VISUAL_STIMULUS_FILE = str(
-            Path(self.VISUAL_STIM_FOLDER) / 'Gabor2D' / 'Gabor2D.bonsai')
+            Path(self.VISUAL_STIM_FOLDER) /
+            self.VISUAL_STIMULUS_TYPE / 'Gabor2D.bonsai')
         self.start_visual_stim()
         # =====================================================================
         # SAVE SETTINGS FILE AND TASK CODE
@@ -288,7 +290,8 @@ class SessionParamHandler(object):
         if self.USE_VISUAL_STIMULUS and self.BONSAI:
             # Run Bonsai workflow
             here = os.getcwd()
-            os.chdir(str(Path(self.VISUAL_STIM_FOLDER) / 'Gabor2D'))
+            os.chdir(str(
+                Path(self.VISUAL_STIM_FOLDER) / self.VISUAL_STIMULUS_TYPE))
             bns = self.BONSAI
             wkfl = self.VISUAL_STIMULUS_FILE
 
@@ -500,8 +503,9 @@ class SessionParamHandler(object):
         dst = os.path.join(self.SESSION_RAW_DATA_FOLDER, self.PYBPOD_PROTOCOL)
         shutil.copytree(src, dst)
         # Copy stimulus folder with bonsai workflow
-        src = str(Path(self.VISUAL_STIM_FOLDER) / 'Gabor2D')
-        dst = os.path.join(self.SESSION_RAW_DATA_FOLDER, 'Gabor2D/')
+        src = str(Path(self.VISUAL_STIM_FOLDER) / self.VISUAL_STIMULUS_TYPE)
+        dst = os.path.join(self.SESSION_RAW_DATA_FOLDER, 
+                           self.VISUAL_STIMULUS_TYPE)
         shutil.copytree(src, dst)
         # Copy video recording folder with bonsai workflow
         src = self.VIDEO_RECORDING_FOLDER
