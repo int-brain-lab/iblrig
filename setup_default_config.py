@@ -75,6 +75,9 @@ def main(iblrig_params_path):
     tScreen_execCleanup = tScreen.create_execcmd()
     tScreen_execCleanup.cmd = "python ..\\..\\..\\cleanup.py"
     tScreen_execCleanup.when = tScreen_execCleanup.WHEN_POST
+    tScreen_execBonsai = tScreen.create_execcmd()
+    tScreen_execBonsai.cmd = "python ..\\..\\..\\bonsai_stop.py 7110"
+    tScreen_execBonsai.when = tScreen_execBonsai.WHEN_POST
 
     # Create _iblrig_calibration_water
     tWater = p.create_task()
