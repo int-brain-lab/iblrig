@@ -90,6 +90,19 @@ def main(iblrig_params_path):
     tFlush_execCleanup.cmd = "python ..\\..\\..\\cleanup.py"
     tFlush_execCleanup.when = tFlush_execCleanup.WHEN_POST
 
+    # Create _iblrig_tasks_habituationChoiceWorld
+    tHabituationCW = p.create_task()
+    tHabituationCW.name = '_iblrig_tasks_habituationChoiceWorld'
+    tHabituationCW_execBonsai = tHabituationCW.create_execcmd()
+    tHabituationCW_execBonsai.cmd = "python ..\\..\\..\\bonsai_stop.py 7110"
+    tHabituationCW_execBonsai.when = tHabituationCW_execBonsai.WHEN_POST
+    tHabituationCW_execBonsai2 = tHabituationCW.create_execcmd()
+    tHabituationCW_execBonsai2.cmd = "python ..\\..\\..\\bonsai_stop.py 7111"
+    tHabituationCW_execBonsai2.when = tHabituationCW_execBonsai2.WHEN_POST
+    tHabituationCW_execCleanup = tHabituationCW.create_execcmd()
+    tHabituationCW_execCleanup.cmd = "python ..\\..\\..\\cleanup.py"
+    tHabituationCW_execCleanup.when = tHabituationCW_execCleanup.WHEN_POST
+
     # Create _iblrig_tasks_trainingChoiceWorld
     tTrainingCW = p.create_task()
     tTrainingCW.name = '_iblrig_tasks_trainingChoiceWorld'
@@ -149,6 +162,13 @@ def main(iblrig_params_path):
     # Create _iblrig_tasks experiment
     eTasks = p.create_experiment()
     eTasks.name = '_iblrig_tasks'
+
+    # Create habituationChoiceWorld setup
+    training = eTasks.create_setup()
+    training.name = 'habituationChoiceWorld'
+    training.task = '_iblrig_tasks_habituationChoiceWorld'
+    training.board = BOARD_NAME
+    training.detached = True
 
     # Create trainingChoiceWorld setup
     training = eTasks.create_setup()
