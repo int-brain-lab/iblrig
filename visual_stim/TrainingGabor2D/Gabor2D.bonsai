@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <WorkflowBuilder Version="2.3.0">
-  <Workflow xmlns:q2="clr-namespace:Bonsai.Shaders;assembly=Bonsai.Shaders" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:q3="clr-namespace:Bonsai.Scripting;assembly=Bonsai.Scripting" xmlns:q7="clr-namespace:Bonsai.Bpod;assembly=Bonsai.Bpod" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:q5="clr-namespace:Bonsai.IO;assembly=Bonsai.System" xmlns:q4="clr-namespace:Bonsai.Dsp;assembly=Bonsai.Dsp" xmlns:q6="clr-namespace:Bonsai.Audio;assembly=Bonsai.Audio" xmlns:q1="clr-namespace:Bonsai.Osc;assembly=Bonsai.Osc" xmlns="https://horizongir.org/bonsai">
+  <Workflow xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:q1="clr-namespace:Bonsai.Osc;assembly=Bonsai.Osc" xmlns:q2="clr-namespace:Bonsai.Shaders;assembly=Bonsai.Shaders" xmlns:q3="clr-namespace:Bonsai.Scripting;assembly=Bonsai.Scripting" xmlns:q4="clr-namespace:Bonsai.Dsp;assembly=Bonsai.Dsp" xmlns:q5="clr-namespace:Bonsai.IO;assembly=Bonsai.System" xmlns:q6="clr-namespace:Bonsai.Audio;assembly=Bonsai.Audio" xmlns:q7="clr-namespace:Bonsai.Bpod;assembly=Bonsai.Bpod" xmlns="https://horizongir.org/bonsai">
     <Nodes>
       <Expression xsi:type="ExternalizedPropertyOfStringReceiveMessage">
         <MemberName>Connection</MemberName>
@@ -797,6 +797,12 @@ _iblrig_micData.raw.wav
                 <Value>true</Value>
               </Combinator>
             </Expression>
+            <Expression xsi:type="SubscribeSubject">
+              <Name>GaborPhase</Name>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="Zip" />
+            </Expression>
           </Nodes>
           <Edges>
             <Edge>
@@ -811,7 +817,7 @@ _iblrig_micData.raw.wav
             </Edge>
             <Edge>
               <From>3</From>
-              <To>15</To>
+              <To>27</To>
               <Label>Source1</Label>
             </Edge>
             <Edge>
@@ -907,6 +913,16 @@ _iblrig_micData.raw.wav
             <Edge>
               <From>25</From>
               <To>24</To>
+              <Label>Source1</Label>
+            </Edge>
+            <Edge>
+              <From>26</From>
+              <To>27</To>
+              <Label>Source2</Label>
+            </Edge>
+            <Edge>
+              <From>27</From>
+              <To>15</To>
               <Label>Source1</Label>
             </Edge>
           </Edges>
