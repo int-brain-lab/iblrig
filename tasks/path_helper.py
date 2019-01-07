@@ -10,6 +10,8 @@ import subprocess
 from pathlib import Path
 from sys import platform
 
+from ibllib.io import raw_data_loaders as raw
+
 
 class SessionPathCreator(object):
     # add subject name and protocol (maybe have a metadata struct)
@@ -19,6 +21,8 @@ class SessionPathCreator(object):
             self.IBLRIG_FOLDER = '/home/nico/Projects/IBL/IBL-github/iblrig'
         else:
             self.IBLRIG_FOLDER = str(Path(iblrig_folder))
+        self._BOARD = board
+        self._PROTOCOL = protocol
         self.IBLRIG_COMMIT_HASH = self._get_iblrig_commit_hash()
         self.IBLRIG_VERSION_TAG = self._get_iblrig_version_tag()
 
@@ -59,7 +63,7 @@ class SessionPathCreator(object):
 
         self.SESSION_COMPOUND_NAME = '{}'.format(os.path.sep).join(
             [self.SUBJECT_NAME, self.SESSION_DATE, self.SESSION_NUMBER,
-             protocol, board])
+             self._PROTOCOL, self._BOARD])
 
         self.BASE_FILENAME = '_iblrig_task'
         self.SETTINGS_FILE_PATH = os.path.join(self.SESSION_RAW_DATA_FOLDER,
@@ -70,7 +74,7 @@ class SessionPathCreator(object):
                                            'Data.raw.jsonable')
 
         self.LATEST_WATER_CALIBRATION_FILE = self._latest_water_calib_file(
-            board)
+            self._BOARD)
 
         self.PREVIOUS_DATA_FILE = self._previous_data_file()
         self.PREVIOUS_SETTINGS_FILE = self._previous_settings_file()
@@ -200,23 +204,25 @@ class SessionPathCreator(object):
         return session_folders
 
     def _previous_data_files(self, typ='data'):
-
         prev_data_files = []
         prev_session_files = []
+        data_fname = self.BASE_FILENAME + 'Data.raw.jsonable'
+        settings_fname = self.BASE_FILENAME + 'Settings.raw.json'
         for prev_sess_path in self._previous_session_folders():
-            prev_sess_path = os.path.join(prev_sess_path, 'raw_behavior_data')
-            if self.BASE_FILENAME + 'Data' in ''.join(os.listdir(
-                    prev_sess_path)):
-                prev_data_files.extend(os.path.join(prev_sess_path, x) for x
-                                       in os.listdir(prev_sess_path) if
-                                       self.BASE_FILENAME + 'Data' in x)
-                prev_session_files.extend(os.path.join(prev_sess_path, x) for x
-                                       in os.listdir(prev_sess_path) if
-                                       self.BASE_FILENAME + 'Settings' in x)
-
-        data_out = [x for x in prev_data_files if os.stat(x).st_size != 0]
-        settings_out = [
-            x for x in prev_session_files if os.stat(x).st_size != 0]
+            prev_sess_path = Path(prev_sess_path) / 'raw_behavior_data'
+            # Get all data and settings file if they both exist
+            if ((prev_sess_path / data_fname).exists() and
+                    (prev_sess_path / settings_fname).exists()):
+                prev_data_files.append(prev_sess_path / data_fname)
+                prev_session_files.append(prev_sess_path / settings_fname)
+        # Remove empty files
+        ds_out = [(d, s) for d, s in zip(prev_data_files, prev_session_files)
+                  if d.stat().st_size != 0 and s.stat().st_size != 0]
+        # Remove sessions of different task protocols
+        ds_out = [(d, s) for d, s in ds_out if self._PROTOCOL in
+                  raw.load_settings(str(s.parent.parent))['PYBPOD_PROTOCOL']]
+        data_out = [str(d) for d, s in ds_out]
+        settings_out = [str(s) for d, s in ds_out]
 
         return data_out if typ == 'data' else settings_out
 
@@ -247,14 +253,14 @@ class SessionPathCreator(object):
 
         return out
 
-    def _latest_water_calib_file(self, board):
-        print(f"\nLooking for calibration of board: {board}")
+    def _latest_water_calib_file(self):
+        print(f"\nLooking for calibration of board: {self._BOARD}")
         dsf = Path(self.IBLRIG_DATA_SUBJECTS_FOLDER)
         cal = dsf / '_iblrig_calibration'
         if not cal.exists():
             return None
 
-        if not board:
+        if not self._BOARD:
             return None
 
         cal_session_folders = []
@@ -278,9 +284,8 @@ class SessionPathCreator(object):
         same_board_cal_files = []
         for fcal, s in zip(water_cal_files, water_cal_settings):
             if s.exists():
-                with open(str(s), 'r') as f:
-                    settings = json.loads(f.readline())
-                if settings['PYBPOD_BOARD'] == board:
+                settings = raw.load_settings(str(s.parent.parent))
+                if settings['PYBPOD_BOARD'] == self._BOARD:
                     same_board_cal_files.append(fcal)
 
         same_board_cal_files = sorted(same_board_cal_files,
@@ -317,7 +322,6 @@ if __name__ == "__main__":
         "\nSUBJECT_FOLDER:", spc.SUBJECT_FOLDER,
         "\nSOUND_STIM_FOLDER:", spc.SOUND_STIM_FOLDER,
         "\nVISUAL_STIM_FOLDER:", spc.VISUAL_STIM_FOLDER,
-        "\nVISUAL_STIMULUS_FILE:", spc.VISUAL_STIMULUS_FILE,
         "\nBASE_FILENAME:", spc.BASE_FILENAME,
         "\nSETTINGS_FILE_PATH:", spc.SETTINGS_FILE_PATH,
         "\nDATA_FILE_PATH:", spc.DATA_FILE_PATH,
