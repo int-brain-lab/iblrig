@@ -167,11 +167,11 @@ def main(iblrig_params_path):
     eTasks.name = '_iblrig_tasks'
 
     # Create habituationChoiceWorld setup
-    training = eTasks.create_setup()
-    training.name = 'habituationChoiceWorld'
-    training.task = '_iblrig_tasks_habituationChoiceWorld'
-    training.board = BOARD_NAME
-    training.detached = True
+    habituation = eTasks.create_setup()
+    habituation.name = 'habituationChoiceWorld'
+    habituation.task = '_iblrig_tasks_habituationChoiceWorld'
+    habituation.board = BOARD_NAME
+    habituation.detached = True
 
     # Create trainingChoiceWorld setup
     training = eTasks.create_setup()
@@ -198,6 +198,7 @@ def update_pybpod_config(iblrig_params_path):
     """for update to 3.3.1+
     Change location of post script bonsai_stop.py to ..\\..\\..\\bonsai_stop.py
     and remove path_helper.py and _user_settings.py from task code.
+    Add habituationChoiceWorld task and setup
     """
     iblrig_params_path = Path(iblrig_params_path)
     iblproject_path = iblrig_params_path / 'IBL'
@@ -219,10 +220,35 @@ def update_pybpod_config(iblrig_params_path):
     for x in task_paths:
         if (x / 'path_helper.py').exists():
             (x / 'path_helper.py').unlink()
-    for x in task_paths:
         if (x / '_user_settings.py').exists():
             (x / '_user_settings.py').unlink()
 
+    EXPERIMENT_tasks = [e for e in p.experiments if e.name ==
+                         '_iblrig_tasks'][0]
+
+    SETUP_hCW = [s for s in EXPERIMENT_tasks.setups if s.name ==
+                 'habituationChoiceWorld']
+    if not SETUP_hCW:
+        habituation = EXPERIMENT_tasks.create_setup()
+        habituation.name = 'habituationChoiceWorld'
+        habituation.task = '_iblrig_tasks_habituationChoiceWorld'
+        habituation.board = p.boards[0]
+        habituation.detached = True
+
+    TASK_hCW = [t for t in p.tasks if t.name ==
+                '_iblrig_tasks_habituationChoiceWorld']
+    if not TASK_hCW:
+        tHabituationCW = p.create_task()
+        tHabituationCW.name = '_iblrig_tasks_habituationChoiceWorld'
+        tHabituationCW_execBonsai = tHabituationCW.create_execcmd()
+        tHabituationCW_execBonsai.cmd = "python ..\\..\\..\\bonsai_stop.py 7110"
+        tHabituationCW_execBonsai.when = tHabituationCW_execBonsai.WHEN_POST
+        tHabituationCW_execBonsai2 = tHabituationCW.create_execcmd()
+        tHabituationCW_execBonsai2.cmd = "python ..\\..\\..\\bonsai_stop.py 7111"
+        tHabituationCW_execBonsai2.when = tHabituationCW_execBonsai2.WHEN_POST
+        tHabituationCW_execCleanup = tHabituationCW.create_execcmd()
+        tHabituationCW_execCleanup.cmd = "python ..\\..\\..\\cleanup.py"
+        tHabituationCW_execCleanup.when = tHabituationCW_execCleanup.WHEN_POST
 
 if __name__ == "__main__":
     if len(sys.argv) == 1:
