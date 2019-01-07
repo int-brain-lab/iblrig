@@ -131,7 +131,7 @@ if __name__ == '__main__':
     from session_params import SessionParamHandler
     import time
     import task_settings as _task_settings
-    import _user_settings
+    import scratch._user_settings as _user_settings
     _task_settings.AUTOMATIC_CALIBRATION = False
     sph = SessionParamHandler(_task_settings, _user_settings)
     tph = TrialParamHandler(sph)
