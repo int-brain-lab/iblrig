@@ -220,9 +220,6 @@ class SessionParamHandler(object):
             evt = "-p:FileNameEvents=" + os.path.join(
                 self.SESSION_RAW_DATA_FOLDER,
                 "_iblrig_encoderEvents.raw.ssv")
-            pos = "-p:FileNamePositions=" + os.path.join(
-                self.SESSION_RAW_DATA_FOLDER,
-                "_iblrig_encoderPositions.raw.ssv")
             itr = "-p:FileNameTrialInfo=" + os.path.join(
                 self.SESSION_RAW_DATA_FOLDER,
                 "_iblrig_encoderTrialInfo.raw.ssv")
@@ -238,10 +235,10 @@ class SessionParamHandler(object):
 
             if self.BONSAI_EDITOR:
                 subprocess.Popen(
-                    [bns, wkfl, start, pos, evt, itr, com, mic, rec])
+                    [bns, wkfl, start, evt, itr, com, mic, rec])
             elif not self.BONSAI_EDITOR:
                 subprocess.Popen(
-                    [bns, wkfl, noeditor, pos, evt, itr, com, mic, rec])
+                    [bns, wkfl, noeditor, evt, itr, com, mic, rec])
             time.sleep(5)
             os.chdir(here)
         else:
