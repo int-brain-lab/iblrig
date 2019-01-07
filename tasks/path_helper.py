@@ -73,8 +73,7 @@ class SessionPathCreator(object):
                                            self.BASE_FILENAME +
                                            'Data.raw.jsonable')
 
-        self.LATEST_WATER_CALIBRATION_FILE = self._latest_water_calib_file(
-            self._BOARD)
+        self.LATEST_WATER_CALIBRATION_FILE = self._latest_water_calib_file()
 
         self.PREVIOUS_DATA_FILE = self._previous_data_file()
         self.PREVIOUS_SETTINGS_FILE = self._previous_settings_file()
