@@ -18,6 +18,8 @@ Usage:
         pybpod.
     update.py reinstall
         Will reinstall the rig to the latest revision on master.
+    update.py config
+        Will update the pybpod default config.
     update.py ibllib
         Will reset ibllib to latest revision on master and install to iblenv.
     update.py update
@@ -186,6 +188,8 @@ if __name__ == '__main__':
             os.system("conda deactivate && python install.py")
         elif sys.argv[1] == 'tasks':
             import_tasks_with_settings()
+        elif sys.argv[1] == 'config':
+            update_pybpod_config(iblrig_params_path())
         # UNKNOWN COMMANDS
         else:
             print("ERROR:", sys.argv[1],

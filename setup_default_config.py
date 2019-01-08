@@ -210,7 +210,6 @@ def update_pybpod_config(iblrig_params_path):
             c.cmd = c.cmd.replace(
                 ' bonsai_stop.py', ' ..\\..\\..\\bonsai_stop.py')
             print(c.cmd)
-    p.save(iblproject_path)
 
     iblrig_params_tasks_path = iblrig_params_path / 'IBL' / 'tasks'
     iblrig_path = iblrig_params_path.parent / 'iblrig'
@@ -249,6 +248,9 @@ def update_pybpod_config(iblrig_params_path):
         tHabituationCW_execCleanup = tHabituationCW.create_execcmd()
         tHabituationCW_execCleanup.cmd = "python ..\\..\\..\\cleanup.py"
         tHabituationCW_execCleanup.when = tHabituationCW_execCleanup.WHEN_POST
+
+    p.save(iblproject_path)
+
 
 if __name__ == "__main__":
     if len(sys.argv) == 1:
