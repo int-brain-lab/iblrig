@@ -50,7 +50,7 @@
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="q1:LoadImage">
-          <q1:FileName>fc2_save_2018-12-20-160436-0000.tif</q1:FileName>
+          <q1:FileName>rig_video_template.png</q1:FileName>
           <q1:Mode>Grayscale</q1:Mode>
         </Combinator>
       </Expression>
@@ -88,7 +88,7 @@
         <Combinator xsi:type="q1:Threshold">
           <q1:ThresholdValue>150</q1:ThresholdValue>
           <q1:MaxValue>255</q1:MaxValue>
-          <q1:ThresholdType>Binary</q1:ThresholdType>
+          <q1:ThresholdType>BinaryInv</q1:ThresholdType>
         </Combinator>
       </Expression>
       <Expression xsi:type="Combinator">

@@ -2,7 +2,7 @@
 # @Author: Niccolò Bonacchi
 # @Date: Tuesday, November 20th 2018, 9:21:15 am
 # @Last Modified by: Niccolò Bonacchi
-# @Last Modified time: 20-11-2018 09:21:34.3434
+# @Last Modified time: 9-01-2019 10:46:01.011
 import shutil
 import sys
 from pathlib import Path
@@ -48,170 +48,7 @@ def copy_code_files_to_iblrig_params(iblrig_params_path, task=None,
         copy_files(sf, df)
 
 
-def main(iblrig_params_path):
-    iblrig_params_path = Path(iblrig_params_path)
-    iblproject_path = iblrig_params_path / 'IBL'
-    # _iblrig_labname_behavior_#
-    BOARD_NAME = 'SELECT_BOARD_NAME_(e.g.[_iblrig_mainenlab_behavior_0])'
-    # CREATE IBL PROJECT
-    p = Project()
-    p.name = 'IBL'
-    # CREATE BPOD BOARD
-    b = p.create_board()
-    b.name = BOARD_NAME
-    # CREATE SUBJECTS
-    sCal = p.create_subject()
-    sCal.name = '_iblrig_calibration'
-    sTest = p.create_subject()
-    sTest.name = '_iblrig_test_mouse'
-    # CREATE USERS
-    uTest = p.create_user()
-    uTest.name = '_iblrig_test_user'
-
-    # CREATE TASKS (EVERYTHING EXCEPT THE ACTUAL CODE - NEED IMPORT FOR THAT)
-    # Create _iblrig_calibration_screen
-    tScreen = p.create_task()
-    tScreen.name = '_iblrig_calibration_screen'
-    tScreen_execCleanup = tScreen.create_execcmd()
-    tScreen_execCleanup.cmd = "python ..\\..\\..\\cleanup.py"
-    tScreen_execCleanup.when = tScreen_execCleanup.WHEN_POST
-    tScreen_execBonsai = tScreen.create_execcmd()
-    tScreen_execBonsai.cmd = "python ..\\..\\..\\bonsai_stop.py 7110"
-    tScreen_execBonsai.when = tScreen_execBonsai.WHEN_POST
-
-    # Create _iblrig_calibration_water
-    tWater = p.create_task()
-    tWater.name = '_iblrig_calibration_water'
-    tWater_execCleanup = tWater.create_execcmd()
-    tWater_execCleanup.cmd = "python ..\\..\\..\\cleanup.py"
-    tWater_execCleanup.when = tWater_execCleanup.WHEN_POST
-
-    # Create _iblrig_misc_flush_water
-    tFlush = p.create_task()
-    tFlush.name = '_iblrig_misc_flush_water'
-    tFlush_execCleanup = tFlush.create_execcmd()
-    tFlush_execCleanup.cmd = "python ..\\..\\..\\cleanup.py"
-    tFlush_execCleanup.when = tFlush_execCleanup.WHEN_POST
-
-    # Create _iblrig_tasks_habituationChoiceWorld
-    tHabituationCW = p.create_task()
-    tHabituationCW.name = '_iblrig_tasks_habituationChoiceWorld'
-    tHabituationCW_execBonsai = tHabituationCW.create_execcmd()
-    tHabituationCW_execBonsai.cmd = "python ..\\..\\..\\bonsai_stop.py 7110"
-    tHabituationCW_execBonsai.when = tHabituationCW_execBonsai.WHEN_POST
-    tHabituationCW_execBonsai2 = tHabituationCW.create_execcmd()
-    tHabituationCW_execBonsai2.cmd = "python ..\\..\\..\\bonsai_stop.py 7111"
-    tHabituationCW_execBonsai2.when = tHabituationCW_execBonsai2.WHEN_POST
-    tHabituationCW_execCleanup = tHabituationCW.create_execcmd()
-    tHabituationCW_execCleanup.cmd = "python ..\\..\\..\\cleanup.py"
-    tHabituationCW_execCleanup.when = tHabituationCW_execCleanup.WHEN_POST
-
-    # Create _iblrig_tasks_trainingChoiceWorld
-    tTrainingCW = p.create_task()
-    tTrainingCW.name = '_iblrig_tasks_trainingChoiceWorld'
-    tTrainingCW_execBonsai = tTrainingCW.create_execcmd()
-    tTrainingCW_execBonsai.cmd = "python ..\\..\\..\\bonsai_stop.py 7110"
-    tTrainingCW_execBonsai.when = tTrainingCW_execBonsai.WHEN_POST
-    tTrainingCW_execBonsai2 = tTrainingCW.create_execcmd()
-    tTrainingCW_execBonsai2.cmd = "python ..\\..\\..\\bonsai_stop.py 7111"
-    tTrainingCW_execBonsai2.when = tTrainingCW_execBonsai2.WHEN_POST
-    tTrainingCW_execCleanup = tTrainingCW.create_execcmd()
-    tTrainingCW_execCleanup.cmd = "python ..\\..\\..\\cleanup.py"
-    tTrainingCW_execCleanup.when = tTrainingCW_execCleanup.WHEN_POST
-
-    # Create _iblrig_tasks_biasedChoiceWorld
-    tBiased = p.create_task()
-    tBiased.name = '_iblrig_tasks_biasedChoiceWorld'
-    tBiased_execBonsai = tBiased.create_execcmd()
-    tBiased_execBonsai.cmd = "python ..\\..\\..\\bonsai_stop.py 7110"
-    tBiased_execBonsai.when = tBiased_execBonsai.WHEN_POST
-    tBiased_execBonsai2 = tBiased.create_execcmd()
-    tBiased_execBonsai2.cmd = "python ..\\..\\..\\bonsai_stop.py 7111"
-    tBiased_execBonsai2.when = tBiased_execBonsai2.WHEN_POST
-    tBiased_execCleanup = tBiased.create_execcmd()
-    tBiased_execCleanup.cmd = "python ..\\..\\..\\cleanup.py"
-    tBiased_execCleanup.when = tBiased_execCleanup.WHEN_POST
-
-    # CREATE EXPERIMENTS AND SETUPS
-    # Calibration experiment
-    eCal = p.create_experiment()
-    eCal.name = '_iblrig_calibration'
-    # Create screen calibration
-    screen = eCal.create_setup()
-    screen.name = 'screen'
-    screen.task = '_iblrig_calibration_screen'
-    screen.board = BOARD_NAME
-    screen.subjects + [sCal]  # or screen += sCal
-    screen.detached = True
-    # Create water calibration
-    water = eCal.create_setup()
-    water.name = 'water'
-    water.task = '_iblrig_calibration_water'
-    water.board = BOARD_NAME
-    water.subjects + [sCal]  # or water += sCal
-    water.detached = True
-
-    # Create _iblrig_misc experiment
-    eMisc = p.create_experiment()
-    eMisc.name = '_iblrig_misc'
-    # Create flush_water setup
-    flush_water = eMisc.create_setup()
-    flush_water.name = 'flush_water'
-    flush_water.task = '_iblrig_misc_flush_water'
-    flush_water.board = BOARD_NAME
-    flush_water.subjects + [sTest]
-    flush_water.detached = True
-
-    # Create _iblrig_tasks experiment
-    eTasks = p.create_experiment()
-    eTasks.name = '_iblrig_tasks'
-
-    # Create habituationChoiceWorld setup
-    habituation = eTasks.create_setup()
-    habituation.name = 'habituationChoiceWorld'
-    habituation.task = '_iblrig_tasks_habituationChoiceWorld'
-    habituation.board = BOARD_NAME
-    habituation.detached = True
-
-    # Create trainingChoiceWorld setup
-    training = eTasks.create_setup()
-    training.name = 'trainingChoiceWorld'
-    training.task = '_iblrig_tasks_trainingChoiceWorld'
-    training.board = BOARD_NAME
-    training.detached = True
-
-    # Create biasedChoiceWorld setup
-    biased = eTasks.create_setup()
-    biased.name = 'biasedChoiceWorld'
-    biased.task = '_iblrig_tasks_biasedChoiceWorld'
-    biased.board = BOARD_NAME
-    biased.detached = True
-
-    p.save(iblproject_path)
-
-    copy_code_files_to_iblrig_params(iblrig_params_path)
-
-    return
-
-
-def update_pybpod_config(iblrig_params_path):
-    """for update to 3.3.1+
-    Change location of post script bonsai_stop.py to ..\\..\\..\\bonsai_stop.py
-    and remove path_helper.py and _user_settings.py from task code.
-    Add habituationChoiceWorld task and setup
-    """
-    iblrig_params_path = Path(iblrig_params_path)
-    iblproject_path = iblrig_params_path / 'IBL'
-
-    p = Project()
-    p.load(iblproject_path)
-    for t in p.tasks:
-        for c in t.commands:
-            c.cmd = c.cmd.replace(
-                ' bonsai_stop.py', ' ..\\..\\..\\bonsai_stop.py')
-            print(c.cmd)
-    p.save(iblproject_path)
-
+def delete_untracked_files(iblrig_params_path):
     iblrig_params_tasks_path = iblrig_params_path / 'IBL' / 'tasks'
     iblrig_path = iblrig_params_path.parent / 'iblrig'
     iblrig_tasks_path = iblrig_path / 'tasks'
@@ -223,32 +60,243 @@ def update_pybpod_config(iblrig_params_path):
         if (x / '_user_settings.py').exists():
             (x / '_user_settings.py').unlink()
 
-    EXPERIMENT_tasks = [e for e in p.experiments if e.name ==
-                         '_iblrig_tasks'][0]
 
-    SETUP_hCW = [s for s in EXPERIMENT_tasks.setups if s.name ==
-                 'habituationChoiceWorld']
-    if not SETUP_hCW:
-        habituation = EXPERIMENT_tasks.create_setup()
-        habituation.name = 'habituationChoiceWorld'
-        habituation.task = '_iblrig_tasks_habituationChoiceWorld'
-        habituation.board = p.boards[0]
-        habituation.detached = True
+def create_subject(iblproject_path, subject_name: str):
+    p = Project()
+    p.load(iblproject_path)
+    if p.find_subject(subject_name) is None:
+        subject = p.create_subject()
+        subject.name = subject_name
+        p.save(iblproject_path)
+        print(f"Created subject: {subject_name}")
+    else:
+        subject = p.find_subject(subject_name)
+        print(f"Skipping creation: Subject <{subject.name}> already exists")
 
-    TASK_hCW = [t for t in p.tasks if t.name ==
-                '_iblrig_tasks_habituationChoiceWorld']
-    if not TASK_hCW:
-        tHabituationCW = p.create_task()
-        tHabituationCW.name = '_iblrig_tasks_habituationChoiceWorld'
-        tHabituationCW_execBonsai = tHabituationCW.create_execcmd()
-        tHabituationCW_execBonsai.cmd = "python ..\\..\\..\\bonsai_stop.py 7110"
-        tHabituationCW_execBonsai.when = tHabituationCW_execBonsai.WHEN_POST
-        tHabituationCW_execBonsai2 = tHabituationCW.create_execcmd()
-        tHabituationCW_execBonsai2.cmd = "python ..\\..\\..\\bonsai_stop.py 7111"
-        tHabituationCW_execBonsai2.when = tHabituationCW_execBonsai2.WHEN_POST
-        tHabituationCW_execCleanup = tHabituationCW.create_execcmd()
-        tHabituationCW_execCleanup.cmd = "python ..\\..\\..\\cleanup.py"
-        tHabituationCW_execCleanup.when = tHabituationCW_execCleanup.WHEN_POST
+
+def create_task(iblproject_path, task_name: str):
+    p = Project()
+    p.load(iblproject_path)
+    task = p.find_task(task_name)
+    if task is None:
+        task = p.create_task()
+        task.name = task_name
+        p.save(iblproject_path)
+        print(f"Created task: {task_name}")
+    else:
+        print(f"Skipping creation: Task {task.name} already exists")
+
+
+def create_task_cleanup_command(task):
+    command = task.create_execcmd()
+    command.cmd = "python ..\\..\\..\\cleanup.py"
+    command.when = command.WHEN_POST
+    when = 'POST' if command.when == 1 else 'PRE'
+    print(f"    Added <{when}> command <{command.cmd}> to <{task.name}>")
+
+    return task
+
+
+def create_task_bonsai_stop_command(task, port: int = 7110):
+    command = task.create_execcmd()
+    command.cmd = f"python ..\\..\\..\\bonsai_stop.py {port}"
+    command.when = command.WHEN_POST
+    when = 'POST' if command.when == 1 else 'PRE'
+    print(f"    Added <{when}> command <{command.cmd}> to <{task.name}>")
+
+    return task
+
+
+def config_task(iblproject_path, task_name: str):
+    p = Project()
+    p.load(iblproject_path)
+    task = p.find_task(task_name)
+    print(f"  Configuring task <{task.name}>")
+    task._commands = []
+
+    if task.name == '_iblrig_calibration_screen':
+        task = create_task_bonsai_stop_command(task, port=7110)
+        task = create_task_cleanup_command(task)
+    if task.name == '_iblrig_calibration_water':
+        task = create_task_cleanup_command(task)
+    if task.name == '_iblrig_misc_flush_water':
+        task = create_task_cleanup_command(task)
+    # For all of tasks stop the stim 7110, stop the recording 7111 and cleanup
+    if '_iblrig_tasks' in task.name:
+        task = create_task_bonsai_stop_command(task, port=7110)
+        task = create_task_bonsai_stop_command(task, port=7111)
+        task = create_task_cleanup_command(task)
+
+    p.save(iblproject_path)
+    print("    Task configured")
+
+
+def create_experiment(iblproject_path, exp_name: str):
+    p = Project()
+    p.load(iblproject_path)
+    exp = [e for e in p.experiments if e.name == exp_name]
+    if not exp:
+        exp = p.create_experiment()
+        exp.name = exp_name
+        p.save(iblproject_path)
+        print(f"Created experiment: {exp.name}")
+    else:
+        exp = exp[0]
+        print(f"Skipping creation: Experiment {exp.name} already exists")
+
+
+def create_setup(exp, setup_name: str, board: str, subj: str):
+    # task name is defined as the experiment_name + '_' + setup_name
+    # Create or get preexisting setup
+    setup = [s for s in exp.setups if s.name == setup_name]
+    if not setup:
+        setup = exp.create_setup()
+    else:
+        setup = setup[0]
+
+    setup.name = setup_name
+    setup.task = exp.name + '_' + setup_name
+    setup.board = board
+    setup._subjects = []
+    setup.subjects + [subj]
+    setup.detached = True
+
+    return setup
+
+
+def create_experiment_setups(iblproject_path, exp_name: str):
+    p = Project()
+    p.load(iblproject_path)
+    exp = [e for e in p.experiments if e.name == exp_name]
+    if not exp:
+        print(f'Experiment {exp} not found')
+        raise KeyError
+    else:
+        exp = exp[0]
+
+    if exp.name == '_iblrig_calibration':
+        screen = create_setup(exp, 'screen', p.boards[0].name, exp.name)
+        water = create_setup(exp, 'water', p.boards[0].name, exp.name)
+
+    if exp.name == '_iblrig_misc':
+        flush_water = create_setup(
+            exp, 'flush_water', p.boards[0].name, '_iblrig_test_mouse')
+
+    if exp.name == '_iblrig_tasks':
+        biasedChoiceWorld = create_setup(
+            exp, 'biasedChoiceWorld', p.boards[0].name, None)
+        habituationChoiceWorld = create_setup(
+            exp, 'habituationChoiceWorld', p.boards[0].name, None)
+        trainingChoiceWorld = create_setup(
+            exp, 'trainingChoiceWorld', p.boards[0].name, None)
+
+    p.save(iblproject_path)
+
+
+def create_ibl_project(iblproject_path):
+    p = Project()
+    try:
+        p.load(iblproject_path)
+        print(f"Skipping creation: IBL project found <{iblproject_path}>")
+    except:
+        p.name = 'IBL'
+        p.save(iblproject_path)
+        print("Created: IBL project")
+
+
+def create_ibl_board(iblproject_path):
+    p = Project()
+    p.load(iblproject_path)
+    if not p.boards:
+        BOARD_NAME = 'SELECT_BOARD_NAME_(e.g.[_iblrig_mainenlab_behavior_0])'
+        b = p.create_board()
+        b.name = BOARD_NAME
+        p.save(iblproject_path)
+        print("Created: IBL default board (please remember to rename it)")
+    else:
+        print(f"Skipping creation: Board found with name <{p.boards[0].name}>")
+
+
+def create_ibl_subjects(iblproject_path):
+    create_subject(iblproject_path, subject_name='_iblrg_calibration')
+    create_subject(iblproject_path, subject_name='_iblrig_test_mouse')
+
+
+def create_ibl_users(iblproject_path):
+    p = Project()
+    p.load(iblproject_path)
+    if p.find_user('_iblrig_test_user') is None:
+        user = p.create_user()
+        user.name = '_iblrig_test_user'
+        p.save(iblproject_path)
+        print(f"Created: IBL default user <{user.name}>")
+    else:
+        user = p.find_user('_iblrig_test_user')
+        print(f"Skipping creation: User <{user.name}> already exists")
+
+
+def create_ibl_tasks(iblproject_path):
+    task_names = [
+        '_iblrig_calibration_screen',
+        '_iblrig_calibration_water',
+        '_iblrig_misc_flush_water',
+        '_iblrig_tasks_biasedChoiceWorld',
+        '_iblrig_tasks_habituationChoiceWorld',
+        '_iblrig_tasks_trainingChoiceWorld',
+    ]
+    for task_name in task_names:
+        create_task(iblproject_path, task_name=task_name)
+        config_task(iblproject_path, task_name=task_name)
+
+
+def create_ibl_experiments(iblproject_path):
+    experiment_names = [
+        '_iblrig_calibration',
+        '_iblrig_misc',
+        '_iblrig_tasks',
+    ]
+    for exp_name in experiment_names:
+        create_experiment(iblproject_path, exp_name=exp_name)
+
+
+def create_ibl_setups(iblproject_path):
+    experiment_names = [
+        '_iblrig_calibration',
+        '_iblrig_misc',
+        '_iblrig_tasks',
+    ]
+    for exp_name in experiment_names:
+        print(f"Creating setups for experiment <{exp_name}>")
+        create_experiment_setups(iblproject_path, exp_name=exp_name)
+    print("Done")
+
+
+def update_pybpod_config(iblrig_params_path):
+    """for update to 3.3.1+
+    Change location of post script bonsai_stop.py to ..\\..\\..\\bonsai_stop.py
+    and remove path_helper.py and _user_settings.py from task code.
+    Add habituationChoiceWorld task and setup
+    """
+    iblrig_params_path = Path(iblrig_params_path)
+    iblproject_path = iblrig_params_path / 'IBL'
+
+    create_ibl_project(iblproject_path)
+    delete_untracked_files(iblrig_params_path)
+
+    create_ibl_board(iblproject_path)
+    create_ibl_subjects(iblproject_path)
+    create_ibl_users(iblproject_path)
+    create_ibl_tasks(iblproject_path)
+
+    create_ibl_experiments(iblproject_path)
+    create_ibl_setups(iblproject_path)
+
+
+def main(iblrig_params_path):
+    update_pybpod_config(iblrig_params_path)
+    copy_code_files_to_iblrig_params(iblrig_params_path)
+    return
+
 
 if __name__ == "__main__":
     if len(sys.argv) == 1:
@@ -256,3 +304,18 @@ if __name__ == "__main__":
     elif len(sys.argv) == 2:
         print(f"Copying task files to: {sys.argv[1]}")
         main(sys.argv[1])
+    # iblrig_params_path = '/home/nico/Projects/IBL/IBL-github/scratch/IBL_params'
+    # iblrig_params_path = Path(iblrig_params_path)
+    # iblproject_path = iblrig_params_path / 'IBL'
+
+    # create_ibl_project(iblproject_path)
+    # delete_untracked_files(iblrig_params_path)
+
+    # create_ibl_board(iblproject_path)
+    # create_ibl_subjects(iblproject_path)
+    # create_ibl_users(iblproject_path)
+    # create_ibl_tasks(iblproject_path)
+
+    # create_ibl_experiments(iblproject_path)
+    # create_ibl_setups(iblproject_path)
+    # print('.')
