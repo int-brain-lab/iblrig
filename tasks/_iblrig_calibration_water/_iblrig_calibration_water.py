@@ -210,6 +210,7 @@ ax[0].set(xlabel="Open time (ms)",
           ylabel="Measured volume (ul per drop)", title="Calibration curve")
 title = f.suptitle(f"Water calibration {now}")
 f.savefig(sph.CALIBRATION_CURVE_FILE_PATH)
+f.show()
 
 bpod.close()
 print(f'Completed water calibration {now}')
