@@ -152,6 +152,7 @@ open_times = [i for i in range(
 stopweight = 0  # can ask user if scale not tared
 
 pass_ = 1
+progress = 0
 mw = []
 for open_time in open_times:
     # Set the startweight to be the last recorded stopweight
@@ -189,6 +190,12 @@ for open_time in open_times:
         mw = []
     else:
         pass_ += 1
+
+    max_prog = len(open_times) * self.PASSES
+    progress += 1
+
+    print(f'{progress / max_prog * 100}%',
+          f'- Pass {pass_}/{self.PASSES} @ {open_time}ms done.')
 
 # SAVE
 df1['open_time'] = df1['open_time'].astype("float")
