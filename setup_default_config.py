@@ -218,7 +218,7 @@ def create_ibl_board(iblproject_path):
 
 
 def create_ibl_subjects(iblproject_path):
-    create_subject(iblproject_path, subject_name='_iblrg_calibration')
+    create_subject(iblproject_path, subject_name='_iblrig_calibration')
     create_subject(iblproject_path, subject_name='_iblrig_test_mouse')
 
 
