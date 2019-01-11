@@ -35,11 +35,12 @@ def get_reading(bpod_instance, save_to=None):
 
 
 if __name__ == '__main__':
-    import pybpod.user_settings as settings
     from pybpodgui_api.models import project
+    root = '/home/nico/Projects/IBL/IBL-github/iblrig/scratch'
+    path = root + '/test_iblrig_params/IBL'
     p = project.Project()
     try:
-        p.load(settings.DEFAULT_PROJECT_PATH)
+        p.load(path)
     except TypeError as blabla:
         print('PyBpod says:', blabla)
         pass
