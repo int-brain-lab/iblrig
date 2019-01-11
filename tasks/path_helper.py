@@ -4,15 +4,16 @@
 # @Last Modified by: Niccolò Bonacchi
 # @Last Modified time: 14-11-2018 10:41:08.088
 import datetime
-import json
+import logging
 import os
 import subprocess
 from pathlib import Path
 from sys import platform
 
+import init_logging
 from ibllib.io import raw_data_loaders as raw
 
-
+logger_ = logging.getLogger('iblrig')
 class SessionPathCreator(object):
     # add subject name and protocol (maybe have a metadata struct)
     def __init__(self, iblrig_folder, iblrig_data_folder, subject_name,
@@ -108,6 +109,8 @@ class SessionPathCreator(object):
         os.chdir(self.IBLRIG_FOLDER)
         out = subprocess.check_output(["git", "rev-parse", "HEAD"]).decode()
         os.chdir(here)
+        if not out:
+            logger_.warning("Commit hash is empty string")
         return out.strip()
 
     def _get_iblrig_version_tag(self):
@@ -116,6 +119,8 @@ class SessionPathCreator(object):
         tag = subprocess.check_output(["git", "tag",
                                        "--points-at", "HEAD"]).decode().strip()
         os.chdir(here)
+        if not tag:
+            logger_.warning("NOT FOUND: iblrig version tag")
         return tag
 
     def get_bonsai_path(self, use_iblrig_bonsai=True):
@@ -131,8 +136,8 @@ class SessionPathCreator(object):
         elif use_iblrig_bonsai is False and preexisting_bonsai.exists():
             BONSAI = str(preexisting_bonsai)
         elif use_iblrig_bonsai is False and not preexisting_bonsai.exists():
-            print("NOT FOUND: {}\n Using packaged Bonsai.".format(
-                str(preexisting_bonsai)))
+            logger_.warning(
+                f"NOT FOUND: {preexisting_bonsai}. Using packaged Bonsai")
             BONSAI = ibl_bonsai
         return BONSAI
 
@@ -158,7 +163,7 @@ class SessionPathCreator(object):
     def _iblrig_data_folder_init(self, iblrig_folder, iblrig_data_folder):
         iblrig_folder = Path(iblrig_folder)
         if not iblrig_folder.exists():
-            print("\nCouldn't find IBLRIG_FOLDER on file system\n")
+            logger_.error("Couldn't find IBLRIG_FOLDER on file system")
             raise IOError
 
         if iblrig_data_folder is None:
@@ -192,7 +197,10 @@ class SessionPathCreator(object):
         """
         """
         session_folders = []
-        if not Path(self.SUBJECT_FOLDER).exists():
+        subj_folder = Path(self.SUBJECT_FOLDER)
+        if not subj_folder.exists():
+            logger_.info(
+             f'NOT FOUND: No previous sessions for subject {subj_folder.name}')
             return session_folders
 
         for date in self.get_subfolder_paths(self.SUBJECT_FOLDER):
@@ -200,6 +208,10 @@ class SessionPathCreator(object):
 
         session_folders = [x for x in sorted(session_folders)
                            if self.SESSION_FOLDER not in x]
+        if not session_folders:
+            logger_.info(
+             f'NOT FOUND: No previous sessions for subject {subj_folder.name}')
+
         return session_folders
 
     def _previous_data_files(self, typ='data'):
@@ -222,6 +234,12 @@ class SessionPathCreator(object):
                   raw.load_settings(str(s.parent.parent))['PYBPOD_PROTOCOL']]
         data_out = [str(d) for d, s in ds_out]
         settings_out = [str(s) for d, s in ds_out]
+        if not data_out:
+            logger_.info(
+                f'NOT FOUND: Previous data files for task {self._PROTOCOL}')
+        if not settings_out:
+            logger_.info(
+                f'NOT FOUND: Previous settings files for task {self._PROTOCOL}')
 
         return data_out if typ == 'data' else settings_out
 
@@ -230,10 +248,10 @@ class SessionPathCreator(object):
         if out:
             return out[-1]
         else:
-            print('#######################################')
-            print('## WARNING:  WILL USE DEFAULT VALUES ##')
-            print('#######################################')
-            print(' [no previous valid session was found] ')
+            logger_.warning('#########################################')
+            logger_.warning('##          USING INIT VALUES          ##')
+            logger_.warning('## no previous valid session was found ##')
+            logger_.warning('#########################################')
 
             return None
 
@@ -253,13 +271,15 @@ class SessionPathCreator(object):
         return out
 
     def _latest_water_calib_file(self):
-        print(f"\nLooking for calibration of board: {self._BOARD}")
+        logger_.info(f"\nLooking for calibration of board: {self._BOARD}")
         dsf = Path(self.IBLRIG_DATA_SUBJECTS_FOLDER)
         cal = dsf / '_iblrig_calibration'
         if not cal.exists():
+            logger_.info(f'NOT FOUND: Calibration subject {str(cal)}')
             return None
 
         if not self._BOARD:
+            logger_.info(f'NOT FOUND: Board {str(self._BOARD)}')
             return None
 
         cal_session_folders = []
@@ -276,6 +296,8 @@ class SessionPathCreator(object):
                                  key=lambda x: int(x.parent.parent.name))
 
         if not water_cal_files:
+            logger_.info(
+                f'NOT FOUND: Calibration files for board {self._BOARD}')
             return
 
         water_cal_settings = [x.parent / "_iblrig_taskSettings.raw.json"
@@ -286,12 +308,21 @@ class SessionPathCreator(object):
                 settings = raw.load_settings(str(s.parent.parent))
                 if settings['PYBPOD_BOARD'] == self._BOARD:
                     same_board_cal_files.append(fcal)
+                else:
+                    logger_.info(
+                        f'NOT FOUND: PYBPOD_BOARD in settings file {str(s)}')
+
+            else:
+                logger_.info(
+                    f'NOT FOUND: Settings file for data file {str(fcal)}.')
 
         same_board_cal_files = sorted(same_board_cal_files,
                                       key=lambda x: int(x.parent.parent.name))
         if same_board_cal_files:
             return str(same_board_cal_files[-1])
         else:
+            logger_.warning(
+             f'No valid calibration files were found for board {self._BOARD}')
             return
 
 
@@ -300,7 +331,7 @@ if __name__ == "__main__":
     # 'trainingChoiceWorld')
     spc = SessionPathCreator(
         '/home/nico/Projects/IBL/IBL-github/iblrig',
-        '/home/nico/Projects/IBL/IBL-github/iblrig_data',  # /scratch/new',
+        '/home/nico/Projects/IBL/IBL-github/iblrig/scratch/test_iblrig_data',  # /scratch/new',
         '_iblrig_test_mouse', protocol='trainingChoiceWorld', board='box0',
         make=['video', 'ephys', 'imag'])
 
