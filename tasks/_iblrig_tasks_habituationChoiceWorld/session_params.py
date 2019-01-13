@@ -131,6 +131,15 @@ class SessionParamHandler(object):
     # STATIC METHODS
     # =========================================================================
     @staticmethod
+    def bpod_lights(comport: str, command: int):
+        import serial
+        import struct
+        ser = serial.Serial(port=comport, baudrate=115200, timeout=1)
+        ser.write(struct.pack('cB', b':', command))
+        ser.close()
+        return
+
+    @staticmethod
     def numinput(title, prompt, default=None, minval=None, maxval=None):
         """ From turtle lib:
         Pop up a dialog window for input of a number.

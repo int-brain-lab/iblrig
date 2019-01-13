@@ -4,6 +4,7 @@
 # @Last Modified by:   Niccolò Bonacchi
 # @Last Modified time: 2018-10-09 13:32:28
 from pybpodapi.protocol import Bpod, StateMachine
+from pybpodgui_api.models.project import Project
 from pybpod_rotaryencoder_module.module import RotaryEncoder
 from dateutil import parser
 import datetime
@@ -17,6 +18,12 @@ import user_settings
 global sph
 sph = SessionParamHandler(task_settings, user_settings)
 
+# TODO: check if this works
+# p = Project()
+# p.load(Path(__file__).parent.parent.parent)
+# bpod_serial_port = p.boards[0].serial_port
+
+# sph.bpod_ligts(sph.PYBPOD_SERIAL_PORT, 0)
 
 def softcode_handler(data):
     """
