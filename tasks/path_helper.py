@@ -86,7 +86,7 @@ class SessionPathCreator(object):
             Path(self.IBLRIG_PARAMS_FOLDER) / '.bpod_comports.json')
         if make:
             self.make_missing_folders(make)
-        
+
         self.COM = self._init_com()
 
     def make_missing_folders(self, makelist):
@@ -114,7 +114,7 @@ class SessionPathCreator(object):
             Path(self.IBLRIG_PARAMS_FOLDER) / 'IBL'))
         out = None
         if Path(self.BPOD_COMPORTS_FILE).exists():
-            # If file exists open file 
+            # If file exists open file
             with open(self.BPOD_COMPORTS_FILE, 'r') as f:
                 out = json.load(f)
             # Use the GUI defined COM port for BPOD
@@ -122,7 +122,7 @@ class SessionPathCreator(object):
             logger.debug(f".bpod_comports.json exists with content: {out}")
         else:
             # If no file exists create empty file
-            comports = {'BPOD': None, 'ROTARY_ENCODER': None, 
+            comports = {'BPOD': None, 'ROTARY_ENCODER': None,
                 'FRAME2TTL': None}
             comports['BPOD'] = p.boards[0].serial_port
             out = comports
@@ -281,10 +281,14 @@ class SessionPathCreator(object):
         if out:
             return out[-1]
         else:
-            logger.warning('#########################################')
-            logger.warning('##          USING INIT VALUES          ##')
-            logger.warning('## no previous valid session was found ##')
-            logger.warning('#########################################')
+            msg = """
+            #########################################
+            ##          USING INIT VALUES          ##
+            #########################################
+            ## no previous valid session was found ##
+            #########################################
+            """
+            logger.warning(msg)
 
             return None
 
