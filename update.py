@@ -24,13 +24,6 @@ Usage:
         Will update itself to the latest revision on master.
     update.py update <branch>
         Will update itself to the latest revision on <branch>.
-    update.py tasks
-        Will reimport tasks to pybpod with overwriting task_settings.py.
-    update.py tasks <branch>
-        Will checkout latest revision of <branch> and import tasks overwriting
-        task_settings.py.
-
-
 """
 import os
 import subprocess
@@ -86,13 +79,6 @@ def iblrig_params_path():
 
 
 def import_tasks():
-    if get_current_version() > '3.3.0' or get_current_branch() == 'develop':
-        update_pybpod_config(iblrig_params_path())
-    copy_code_files_to_iblrig_params(iblrig_params_path(),
-                                     exclude_filename='task_settings.py')
-
-
-def import_tasks_with_settings():
     if get_current_version() > '3.3.0' or get_current_branch() == 'develop':
         update_pybpod_config(iblrig_params_path())
     copy_code_files_to_iblrig_params(iblrig_params_path(),
@@ -184,8 +170,6 @@ if __name__ == '__main__':
         # UPDATE REINSTALL
         elif sys.argv[1] == 'reinstall':
             os.system("conda deactivate && python install.py")
-        elif sys.argv[1] == 'tasks':
-            import_tasks_with_settings()
         # UNKNOWN COMMANDS
         else:
             print("ERROR:", sys.argv[1],
@@ -194,7 +178,7 @@ if __name__ == '__main__':
     # If called with something in front of something in front :P
     elif len(sys.argv) == 3:
         branches = get_branches()
-        commands = ['update', 'tasks']
+        commands = ['update']
         # Command checks
         if sys.argv[1] not in commands:
             print("ERROR:", "Unknown command...")
@@ -205,7 +189,5 @@ if __name__ == '__main__':
         # Commands
         if sys.argv[1] == 'update' and sys.argv[2] in branches:
             checkout_single_file(file='update.py', branch=sys.argv[2])
-        elif sys.argv[1] == 'tasks' and sys.argv[2] in branches:
-            checkout_branch(sys.argv[2])
-            import_tasks_with_settings()
+
     print("\n")
