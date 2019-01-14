@@ -110,8 +110,7 @@ class SessionPathCreator(object):
 
     def _init_com(self) -> dict:
         p = Project()
-        p.load(str(
-            Path(self.IBLRIG_PARAMS_FOLDER) / 'IBL'))
+        p.load(str(Path(self.IBLRIG_PARAMS_FOLDER) / 'IBL'))
         out = None
         if Path(self.BPOD_COMPORTS_FILE).exists():
             # If file exists open file
@@ -272,7 +271,7 @@ class SessionPathCreator(object):
                 f'NOT FOUND: Previous data files for task {self._PROTOCOL}')
         if not settings_out:
             logger.info(
-                f'NOT FOUND: Previous settings files for task {self._PROTOCOL}')
+              f'NOT FOUND: Previous settings files for task {self._PROTOCOL}')
 
         return data_out if typ == 'data' else settings_out
 
