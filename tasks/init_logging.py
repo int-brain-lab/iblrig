@@ -6,8 +6,9 @@
 import platform
 import logging
 USE_LOGGING = True
+#%(asctime)s,%(msecs)d 
 if USE_LOGGING:
-    logging.basicConfig(format='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
+    logging.basicConfig(format='%(levelname)-4s [%(filename)s:%(lineno)d] %(asctime)s,%(msecs)d\n        %(message)s\n',
                         datefmt='%Y-%m-%dT%H:%M:%S')
     # add some colours for an easier log experience
     if platform == 'linux':
@@ -22,7 +23,7 @@ if USE_LOGGING:
         logging.addLevelName(
             logging.CRITICAL, "\033[1;35m%s\033[1;0m" % logging.getLevelName(logging.CRITICAL))
 
-    logger_ = logging.getLogger('iblrig').setLevel(logging.INFO)
+    logger = logging.getLogger('iblrig').setLevel(logging.INFO)
 
 else:
     # deactivate all log calls for use as a library

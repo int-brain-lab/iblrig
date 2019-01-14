@@ -9,11 +9,13 @@ import os
 import subprocess
 from pathlib import Path
 from sys import platform
+import json
 
 import init_logging
 from ibllib.io import raw_data_loaders as raw
+from pybpodgui_api.models.project import Project
 
-logger_ = logging.getLogger('iblrig')
+logger = logging.getLogger('iblrig')
 class SessionPathCreator(object):
     # add subject name and protocol (maybe have a metadata struct)
     def __init__(self, iblrig_folder, iblrig_data_folder, subject_name,
@@ -80,8 +82,12 @@ class SessionPathCreator(object):
         self.PREVIOUS_SETTINGS_FILE = self._previous_settings_file()
         self.PREVIOUS_SESSION_PATH = self._previous_session_path()
 
+        self.BPOD_COMPORTS_FILE = str(
+            Path(self.IBLRIG_PARAMS_FOLDER) / '.bpod_comports.json')
         if make:
             self.make_missing_folders(make)
+        
+        self.COM = self._init_com()
 
     def make_missing_folders(self, makelist):
         if isinstance(makelist, bool):
@@ -101,8 +107,28 @@ class SessionPathCreator(object):
                 self.make_folder(self.SESSION_RAW_IMAGING_DATA_FOLDER)
 
             return
-        # self.make_folder(self.SESSION_RAW_EPHYS_DATA_FOLDER)
-        # self.make_folder(self.SESSION_RAW_IMAGING_DATA_FOLDER)
+
+    def _init_com(self) -> dict:
+        p = Project()
+        p.load(str(
+            Path(self.IBLRIG_PARAMS_FOLDER) / 'IBL'))
+        out = None
+        if Path(self.BPOD_COMPORTS_FILE).exists():
+            # If file exists open file 
+            with open(self.BPOD_COMPORTS_FILE, 'r') as f:
+                out = json.load(f)
+            # Use the GUI defined COM port for BPOD
+            out['BPOD'] = p.boards[0].serial_port
+            logger.debug(f".bpod_comports.json exists with content: {out}")
+        else:
+            # If no file exists create empty file
+            comports = {'BPOD': None, 'ROTARY_ENCODER': None, 
+                'FRAME2TTL': None}
+            comports['BPOD'] = p.boards[0].serial_port
+            out = comports
+            logger.debug(f"Calling create with comports: {comports}")
+            self.create_bpod_comport_file(self.BPOD_COMPORTS_FILE, comports)
+        return out
 
     def _get_iblrig_commit_hash(self):
         here = os.getcwd()
@@ -110,7 +136,7 @@ class SessionPathCreator(object):
         out = subprocess.check_output(["git", "rev-parse", "HEAD"]).decode()
         os.chdir(here)
         if not out:
-            logger_.warning("Commit hash is empty string")
+            logger.warning("Commit hash is empty string")
         return out.strip()
 
     def _get_iblrig_version_tag(self):
@@ -120,7 +146,7 @@ class SessionPathCreator(object):
                                        "--points-at", "HEAD"]).decode().strip()
         os.chdir(here)
         if not tag:
-            logger_.warning("NOT FOUND: iblrig version tag")
+            logger.warning("NOT FOUND: iblrig version tag")
         return tag
 
     def get_bonsai_path(self, use_iblrig_bonsai=True):
@@ -136,10 +162,17 @@ class SessionPathCreator(object):
         elif use_iblrig_bonsai is False and preexisting_bonsai.exists():
             BONSAI = str(preexisting_bonsai)
         elif use_iblrig_bonsai is False and not preexisting_bonsai.exists():
-            logger_.warning(
+            logger.warning(
                 f"NOT FOUND: {preexisting_bonsai}. Using packaged Bonsai")
             BONSAI = ibl_bonsai
         return BONSAI
+
+    @staticmethod
+    def create_bpod_comport_file(fpath: str or Path, comports: dict):
+        with open(fpath, 'w') as f:
+            json.dump(comports, f, indent=1)
+        logger.debug(f"Json dumped {comports} to {fpath}")
+        return
 
     @staticmethod
     def make_folder(str1):
@@ -163,7 +196,7 @@ class SessionPathCreator(object):
     def _iblrig_data_folder_init(self, iblrig_folder, iblrig_data_folder):
         iblrig_folder = Path(iblrig_folder)
         if not iblrig_folder.exists():
-            logger_.error("Couldn't find IBLRIG_FOLDER on file system")
+            logger.error("Couldn't find IBLRIG_FOLDER on file system")
             raise IOError
 
         if iblrig_data_folder is None:
@@ -199,7 +232,7 @@ class SessionPathCreator(object):
         session_folders = []
         subj_folder = Path(self.SUBJECT_FOLDER)
         if not subj_folder.exists():
-            logger_.info(
+            logger.info(
              f'NOT FOUND: No previous sessions for subject {subj_folder.name}')
             return session_folders
 
@@ -209,7 +242,7 @@ class SessionPathCreator(object):
         session_folders = [x for x in sorted(session_folders)
                            if self.SESSION_FOLDER not in x]
         if not session_folders:
-            logger_.info(
+            logger.info(
              f'NOT FOUND: No previous sessions for subject {subj_folder.name}')
 
         return session_folders
@@ -235,10 +268,10 @@ class SessionPathCreator(object):
         data_out = [str(d) for d, s in ds_out]
         settings_out = [str(s) for d, s in ds_out]
         if not data_out:
-            logger_.info(
+            logger.info(
                 f'NOT FOUND: Previous data files for task {self._PROTOCOL}')
         if not settings_out:
-            logger_.info(
+            logger.info(
                 f'NOT FOUND: Previous settings files for task {self._PROTOCOL}')
 
         return data_out if typ == 'data' else settings_out
@@ -248,10 +281,10 @@ class SessionPathCreator(object):
         if out:
             return out[-1]
         else:
-            logger_.warning('#########################################')
-            logger_.warning('##          USING INIT VALUES          ##')
-            logger_.warning('## no previous valid session was found ##')
-            logger_.warning('#########################################')
+            logger.warning('#########################################')
+            logger.warning('##          USING INIT VALUES          ##')
+            logger.warning('## no previous valid session was found ##')
+            logger.warning('#########################################')
 
             return None
 
@@ -271,15 +304,15 @@ class SessionPathCreator(object):
         return out
 
     def _latest_water_calib_file(self):
-        logger_.info(f"\nLooking for calibration of board: {self._BOARD}")
+        logger.info(f"Looking for calibration of board: {self._BOARD}")
         dsf = Path(self.IBLRIG_DATA_SUBJECTS_FOLDER)
         cal = dsf / '_iblrig_calibration'
         if not cal.exists():
-            logger_.info(f'NOT FOUND: Calibration subject {str(cal)}')
+            logger.info(f'NOT FOUND: Calibration subject {str(cal)}')
             return None
 
         if not self._BOARD:
-            logger_.info(f'NOT FOUND: Board {str(self._BOARD)}')
+            logger.info(f'NOT FOUND: Board {str(self._BOARD)}')
             return None
 
         cal_session_folders = []
@@ -296,7 +329,7 @@ class SessionPathCreator(object):
                                  key=lambda x: int(x.parent.parent.name))
 
         if not water_cal_files:
-            logger_.info(
+            logger.info(
                 f'NOT FOUND: Calibration files for board {self._BOARD}')
             return
 
@@ -309,11 +342,11 @@ class SessionPathCreator(object):
                 if settings['PYBPOD_BOARD'] == self._BOARD:
                     same_board_cal_files.append(fcal)
                 else:
-                    logger_.info(
+                    logger.info(
                         f'NOT FOUND: PYBPOD_BOARD in settings file {str(s)}')
 
             else:
-                logger_.info(
+                logger.info(
                     f'NOT FOUND: Settings file for data file {str(fcal)}.')
 
         same_board_cal_files = sorted(same_board_cal_files,
@@ -321,7 +354,7 @@ class SessionPathCreator(object):
         if same_board_cal_files:
             return str(same_board_cal_files[-1])
         else:
-            logger_.warning(
+            logger.warning(
              f'No valid calibration files were found for board {self._BOARD}')
             return
 
