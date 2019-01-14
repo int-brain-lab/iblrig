@@ -10,16 +10,17 @@ if USE_LOGGING:
     logging.basicConfig(format='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
                         datefmt='%Y-%m-%dT%H:%M:%S')
     # add some colours for an easier log experience
-    logging.addLevelName(
-        logging.DEBUG, "\033[0;34m%s\033[0;0m" % logging.getLevelName(logging.DEBUG))
-    logging.addLevelName(
-        logging.INFO, "\033[0;37m%s\033[0;0m" % logging.getLevelName(logging.INFO))
-    logging.addLevelName(
-        logging.WARNING, "\033[0;33m%s\033[0;0m" % logging.getLevelName(logging.WARNING))
-    logging.addLevelName(
-        logging.ERROR, "\033[1;31m%s\033[1;0m" % logging.getLevelName(logging.ERROR))
-    logging.addLevelName(
-        logging.CRITICAL, "\033[1;35m%s\033[1;0m" % logging.getLevelName(logging.CRITICAL))
+    if platform == 'linux:
+        logging.addLevelName(
+            logging.DEBUG, "\033[0;34m%s\033[0;0m" % logging.getLevelName(logging.DEBUG))
+        logging.addLevelName(
+            logging.INFO, "\033[0;37m%s\033[0;0m" % logging.getLevelName(logging.INFO))
+        logging.addLevelName(
+            logging.WARNING, "\033[0;33m%s\033[0;0m" % logging.getLevelName(logging.WARNING))
+        logging.addLevelName(
+            logging.ERROR, "\033[1;31m%s\033[1;0m" % logging.getLevelName(logging.ERROR))
+        logging.addLevelName(
+            logging.CRITICAL, "\033[1;35m%s\033[1;0m" % logging.getLevelName(logging.CRITICAL))
 
     logger_ = logging.getLogger('iblrig').setLevel(logging.INFO)
 
