@@ -10,7 +10,7 @@ if USE_LOGGING:
     logging.basicConfig(format='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
                         datefmt='%Y-%m-%dT%H:%M:%S')
     # add some colours for an easier log experience
-    if platform == 'linux:
+    if platform == 'linux':
         logging.addLevelName(
             logging.DEBUG, "\033[0;34m%s\033[0;0m" % logging.getLevelName(logging.DEBUG))
         logging.addLevelName(
