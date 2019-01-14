@@ -10,9 +10,12 @@ import zipfile
 import types
 import sys
 from pathlib import Path
+import logging
+
 sys.path.append(str(Path(__file__).parent.parent))
 sys.path.append(str(Path(__file__).parent.parent.parent.parent))
 from path_helper import SessionPathCreator
+logger = logging.getLogger('iblrig')
 
 
 class ComplexEncoder(json.JSONEncoder):
@@ -50,6 +53,7 @@ class SessionParamHandler(object):
                                  protocol=self.PYBPOD_PROTOCOL,
                                  board=self.PYBPOD_BOARD, make=True)
         self.__dict__.update(spc.__dict__)
+
         self.CALIBRATION_FUNCTION_FILE_PATH = os.path.join(
             self.SESSION_RAW_DATA_FOLDER,
             '_iblrig_calibration_water_function.csv')
@@ -61,15 +65,13 @@ class SessionParamHandler(object):
             '_iblrig_calibration_water_curve.pdf')
 
         # =====================================================================
-        # FOLDER STRUCTURE AND DATA FILES
+        # SAVE SETTINGS AND CODE FILES
         # =====================================================================
         self._save_session_settings()
 
         self._copy_task_code()
         self._save_task_code()
 
-    # =========================================================================
-    # METHODS
     # =========================================================================
     # SERIALIZER
     # =========================================================================

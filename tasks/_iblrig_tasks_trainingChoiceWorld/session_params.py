@@ -12,10 +12,12 @@ import zipfile
 import sys
 from sys import platform
 from pathlib import Path
+import logging
 
 import numpy as np
 import pandas as pd
 import scipy as sp
+import scipy.interpolate as interp
 from pybpod_rotaryencoder_module.module_api import RotaryEncoderModule
 from pythonosc import udp_client
 
@@ -24,6 +26,7 @@ import sound
 sys.path.append(str(Path(__file__).parent.parent))
 sys.path.append(str(Path(__file__).parent.parent.parent.parent))
 from path_helper import SessionPathCreator
+logger = logging.getLogger('iblrig')
 
 
 class ComplexEncoder(json.JSONEncoder):
@@ -59,8 +62,8 @@ class SessionParamHandler(object):
     will and calculates other secondary session parameters,
     runs Bonsai and saves all params in a settings file.json"""
 
-    def __init__(self, task_settings, user_settings):
-        self.DEBUG = False
+    def __init__(self, task_settings, user_settings, debug=False):
+        self.DEBUG = debug
         make = False if self.DEBUG else ['video']
         # =====================================================================
         # IMPORT task_settings, user_settings, and SessionPathCreator params
@@ -77,6 +80,8 @@ class SessionParamHandler(object):
                                  protocol=self.PYBPOD_PROTOCOL,
                                  board=self.PYBPOD_BOARD, make=make)
         self.__dict__.update(spc.__dict__)
+        self._check_com_config()
+
         if self.INTERACTIVE_DELAY < 0.1:
             self.INTERACTIVE_DELAY = 0.1
         # =====================================================================
@@ -115,10 +120,8 @@ class SessionParamHandler(object):
         # Dict mapping threshold crossings with name ov RE event
         self.THRESHOLD_EVENTS = dict(zip(self.ALL_THRESHOLDS,
                                          self.ENCODER_EVENTS))
-        if platform == 'linux':
-            self.ROTARY_ENCODER_PORT = '/dev/ttyACM0'
-
-        self._configure_rotary_encoder(RotaryEncoderModule)
+        if not self.DEBUG:
+            self._configure_rotary_encoder(RotaryEncoderModule)
         # =====================================================================
         # SOUNDS
         # =====================================================================
@@ -142,8 +145,6 @@ class SessionParamHandler(object):
         # =====================================================================
         # RUN VISUAL STIM
         # =====================================================================
-        if platform == 'linux':
-            self.USE_VISUAL_STIMULUS = False
         self.BONSAI = spc.get_bonsai_path(use_iblrig_bonsai=True)
         self.VISUAL_STIMULUS_TYPE = 'TrainingGabor2D'
         self.VISUAL_STIMULUS_FILE = str(
@@ -158,6 +159,26 @@ class SessionParamHandler(object):
 
             self._copy_task_code()
             self._save_task_code()
+            self.bpod_lights(0)
+
+    def _check_com_config(self):
+        comports = {'BPOD': self.COM['BPOD'], 'ROTARY_ENCODER': None,
+                    'FRAME2TTL': None}
+        logger.info(f"COM: {str(self.COM)}")
+        if not self.COM['ROTARY_ENCODER']:
+            comports['ROTARY_ENCODER'] = self.strinput(
+                "RIG CONFIG",
+                "Please insert ROTARY ENCODER COM port (e.g. COM9): ").upper()
+            SessionPathCreator.create_bpod_comport_file(
+                self.BPOD_COMPORTS_FILE, comports)
+            self.COM = comports
+        if not self.COM['FRAME2TTL']:
+            comports['FRAME2TTL'] = self.strinput(
+                "RIG CONFIG",
+                "Please insert FRAME2TTL COM port (e.g. COM9): ").upper()
+            SessionPathCreator.create_bpod_comport_file(
+                self.BPOD_COMPORTS_FILE, comports)
+            self.COM = comports
 
     # =========================================================================
     # STATIC METHODS
@@ -189,6 +210,18 @@ class SessionParamHandler(object):
                                      minvalue=minval, maxvalue=maxval)
 
     @staticmethod
+    def strinput(title, prompt, default=None):
+        """
+        Example:
+        >>> strinput("RIG CONFIG", "Insert RE com port:", default="COM")
+        """
+        import tkinter as tk
+        from tkinter import simpledialog
+        root = tk.Tk()
+        root.withdraw()
+        return simpledialog.askstring(title, prompt, initialvalue='COM')
+
+    @staticmethod
     def zipdir(path, ziph):
         # ziph is zipfile handle
         for root, dirs, files in os.walk(path):
@@ -210,6 +243,10 @@ class SessionParamHandler(object):
     def get_subject_weight(self):
         return self.numinput(
             "Subject weighing (gr)", f"{self.PYBPOD_SUBJECTS[0]} weight (gr):")
+
+    def bpod_lights(self, command: int):
+        fpath = Path(self.IBLRIG_PARAMS_FOLDER) / 'bpod_lights.py'
+        os.system(f"python {fpath} {command}")
 
     # =========================================================================
     # SERIALIZER
@@ -308,7 +345,7 @@ class SessionParamHandler(object):
                 self.SESSION_RAW_DATA_FOLDER,
                 "_iblrig_micData.raw.wav")
 
-            com = "-p:REPortName=" + self.ROTARY_ENCODER_PORT
+            com = "-p:REPortName=" + self.COM['ROTARY_ENCODER']
             rec = "-p:RecordSound=" + str(self.RECORD_SOUND)
 
             start = '--start'
@@ -406,7 +443,8 @@ class SessionParamHandler(object):
 
         print(f"\nREWARD AMOUNT: {out}")
         print(f"PREVIOUS WEIGHT: {self.LAST_SETTINGS_DATA['SUBJECT_WEIGHT']}")
-        print(f"PREVIOUS WATER DRANK: {self.LAST_TRIAL_DATA['water_delivered']}")
+        print(
+            f"PREVIOUS WATER DRANK: {self.LAST_TRIAL_DATA['water_delivered']}")
 
         return out
 
@@ -415,15 +453,12 @@ class SessionParamHandler(object):
             # Load last calibration df1
             df1 = pd.read_csv(self.LATEST_WATER_CALIBRATION_FILE)
             # make interp func
-            time2vol = sp.interpolate.pchip(
-                df1["open_time"], df1["weight_perdrop"])
+            time2vol = interp.pchip(df1["open_time"], df1["weight_perdrop"])
             return time2vol
         else:
             return
 
     def _init_reward_valve_time(self):
-        if self.DEBUG:
-            self.AUTOMATIC_CALIBRATION = False
         # Calc reward valve time
         if not self.AUTOMATIC_CALIBRATION:
             out = self.CALIBRATION_VALUE / 3 * self.REWARD_AMOUNT
@@ -481,9 +516,8 @@ class SessionParamHandler(object):
             print("ERROR: Multiple subjects found in PYBPOD_SUBJECTS")
             raise IOError
 
-        self.PYBPOD_SUBJECT_EXTRA = [json.loads(x) for x in
-                                     self.PYBPOD_SUBJECT_EXTRA[1:-1
-                                                               ].split('","')]
+        self.PYBPOD_SUBJECT_EXTRA = [
+          json.loads(x) for x in self.PYBPOD_SUBJECT_EXTRA[1:-1].split('","')]
         if len(self.PYBPOD_SUBJECT_EXTRA) == 1:
             self.PYBPOD_SUBJECT_EXTRA = self.PYBPOD_SUBJECT_EXTRA[0]
 
@@ -504,8 +538,8 @@ class SessionParamHandler(object):
         shutil.copytree(src, dst)
         # Copy stimulus folder with bonsai workflow
         src = str(Path(self.VISUAL_STIM_FOLDER) / self.VISUAL_STIMULUS_TYPE)
-        dst = os.path.join(self.SESSION_RAW_DATA_FOLDER, 
-                           self.VISUAL_STIMULUS_TYPE)
+        dst = str(Path(self.SESSION_RAW_DATA_FOLDER) /
+                  self.VISUAL_STIMULUS_TYPE)
         shutil.copytree(src, dst)
         # Copy video recording folder with bonsai workflow
         src = self.VIDEO_RECORDING_FOLDER
@@ -537,9 +571,7 @@ class SessionParamHandler(object):
         [shutil.rmtree(x) for x in behavior_code_files + video_code_files]
 
     def _configure_rotary_encoder(self, RotaryEncoderModule):
-        if self.DEBUG or platform == 'linux':
-            return
-        m = RotaryEncoderModule(self.ROTARY_ENCODER_PORT)
+        m = RotaryEncoderModule(self.COM['ROTARY_ENCODER'])
         m.set_zero_position()  # Not necessarily needed
         m.set_thresholds(self.ROTARY_ENCODER.SET_THRESHOLDS)
         m.enable_thresholds(self.ROTARY_ENCODER.ENABLE_THRESHOLDS)
@@ -547,10 +579,22 @@ class SessionParamHandler(object):
 
 
 if __name__ == '__main__':
-    # os.chdir(r'C:\iblrig\pybpod_projects\IBL\tasks\basicChoiceWorld')
+    """
+    SessionParamHandler debug flag disables:
+        makeing folders/files;
+        running auto calib;
+        calling bonsai
+        turning off lights of bpod board
+    """
     import task_settings as _task_settings
-    _task_settings.AUTOMATIC_CALIBRATION = False
     import scratch._user_settings as _user_settings
-    sph = SessionParamHandler(_task_settings, _user_settings)
+
+    if platform == 'linux':
+        _task_settings.AUTOMATIC_CALIBRATION = False
+        _task_settings.USE_VISUAL_STIMULUS = False
+        s = "/home/nico/Projects/IBL/IBL-github/iblrig/scratch/test_iblrig_data"
+        _task_settings.IBLRIG_DATA_FOLDER = s
+
+    sph = SessionParamHandler(_task_settings, _user_settings, debug=True)
     self = sph
     print("Done!")
