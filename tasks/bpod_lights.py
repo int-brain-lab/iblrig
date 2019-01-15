@@ -13,7 +13,7 @@ def get_com(key='BPOD'):
     fpath = Path(__file__).parent / '.bpod_comports.json'
     with open(fpath, 'r') as f:
         comports = json.load(f)
-    logger.debug
+    logger.debug(f"Found {key} on port {comports['BPOD']}")
     return comports['BPOD']
 
 
@@ -23,6 +23,7 @@ def main(comport: str, command: int):
     ser = serial.Serial(port=comport, baudrate=115200, timeout=1)
     ser.write(struct.pack('cB', b':', command))
     ser.close()
+    logger.debug(f"Sent <:{command}> to {comport}")
     return
 
 

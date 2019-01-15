@@ -3,14 +3,19 @@
 # @Date:   2018-02-02 14:06:34
 # @Last Modified by:   Niccolò Bonacchi
 # @Last Modified time: 2018-06-26 17:36:59
+import time
+import datetime
+import json
+import logging
+import math
 import random
+from pathlib import Path
+
 import numpy as np
 import scipy.stats as st
-import json
-import datetime
-from pathlib import Path
 from dateutil import parser
-import math
+
+logger = logging.getLogger('iblrig')
 
 
 class ComplexEncoder(json.JSONEncoder):
@@ -293,7 +298,7 @@ class TrialParamHandler(object):
         self.ntrials_correct += self.trial_correct
         # Update the water delivered
         if self.trial_correct:
-            self.water_delivered = self.water_delivered + self.reward_amount
+            self.water_delivered += self.reward_amount
         # Propagate outcome to contrast object
         self.contrast.trial_completed(self.trial_correct, self.signed_contrast)
         # SAVE TRIAL DATA
@@ -415,7 +420,8 @@ class TrialParamHandler(object):
                 _position = -35  # show the stim on the left
             else:
                 _position = 35
-            print("Next trial: RepeatContrast, biased position:", _position)
+            logger.info(
+                f"Next trial: RepeatContrast, biased position: {_position}")
             return _position
         else:
             _position = np.random.choice(self.position_set,
@@ -439,7 +445,7 @@ class TrialParamHandler(object):
             /e  -> (int)    events transitions  USED BY SOFTCODE HANDLER FUNC
         """
         if self.osc_client is None:
-            print('Can''t send message without an OSC client: client is None')
+            logger.warning("Can't send trial info to Bonsai osc_client = None")
         # self.position = self.position  # (2/3)*t_position/180
         self.osc_client.send_message("/t", self.trial_num)
         self.osc_client.send_message("/p", self.position)
@@ -452,13 +458,19 @@ class TrialParamHandler(object):
 
 
 if __name__ == '__main__':
-
     from session_params import SessionParamHandler
-    import time
+    from sys import platform
     import task_settings as _task_settings
-    import _user_settings
-    _task_settings.AUTOMATIC_CALIBRATION = False
-    sph = SessionParamHandler(_task_settings, _user_settings)
+    import scratch._user_settings as _user_settings
+    if platform == 'linux':
+        r = "/home/nico/Projects/IBL/IBL-github/iblrig"
+        _task_settings.IBLRIG_FOLDER = r
+        d = "/home/nico/Projects/IBL/IBL-github/iblrig/scratch/test_iblrig_data"
+        _task_settings.IBLRIG_DATA_FOLDER = d
+        _task_settings.AUTOMATIC_CALIBRATION = False
+        _task_settings.USE_VISUAL_STIMULUS = False
+
+    sph = SessionParamHandler(_task_settings, _user_settings, debug=True)
     tph = TrialParamHandler(sph)
     ac = AdaptiveContrast(sph)
     rc = RepeatContrast()

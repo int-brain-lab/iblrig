@@ -26,6 +26,7 @@ import sound
 sys.path.append(str(Path(__file__).parent.parent))
 sys.path.append(str(Path(__file__).parent.parent.parent.parent))
 from path_helper import SessionPathCreator
+import init_logging
 logger = logging.getLogger('iblrig')
 
 
@@ -62,9 +63,9 @@ class SessionParamHandler(object):
     will and calculates other secondary session parameters,
     runs Bonsai and saves all params in a settings file.json"""
 
-    def __init__(self, task_settings, user_settings, debug=False):
+    def __init__(self, task_settings, user_settings, debug=False, fmake=True):
         self.DEBUG = debug
-        make = False if self.DEBUG else ['video']
+        make = False if not fmake else ['video']
         # =====================================================================
         # IMPORT task_settings, user_settings, and SessionPathCreator params
         # =====================================================================
@@ -449,11 +450,18 @@ class SessionParamHandler(object):
         return out
 
     def _init_calib_func(self):
+        if not self.AUTOMATIC_CALIBRATION:
+            return
+
         if self.LATEST_WATER_CALIBRATION_FILE:
             # Load last calibration df1
             df1 = pd.read_csv(self.LATEST_WATER_CALIBRATION_FILE)
             # make interp func
-            time2vol = interp.pchip(df1["open_time"], df1["weight_perdrop"])
+            if df1.empty:
+                logger.error(f"Water calibration file is emtpy!")
+                raise(ValueError)
+            time2vol = sp.interpolate.pchip(df1["open_time"],
+                                            df1["weight_perdrop"])
             return time2vol
         else:
             return
@@ -580,21 +588,24 @@ class SessionParamHandler(object):
 
 if __name__ == '__main__':
     """
+    SessionParamHandler fmake flag=False disables:
+        making folders/files;
     SessionParamHandler debug flag disables:
-        makeing folders/files;
         running auto calib;
         calling bonsai
         turning off lights of bpod board
     """
     import task_settings as _task_settings
     import scratch._user_settings as _user_settings
-
     if platform == 'linux':
+        r = "/home/nico/Projects/IBL/IBL-github/iblrig"
+        _task_settings.IBLRIG_FOLDER = r
+        d = "/home/nico/Projects/IBL/IBL-github/iblrig/scratch/test_iblrig_data"
+        _task_settings.IBLRIG_DATA_FOLDER = d
         _task_settings.AUTOMATIC_CALIBRATION = False
         _task_settings.USE_VISUAL_STIMULUS = False
-        s = "/home/nico/Projects/IBL/IBL-github/iblrig/scratch/test_iblrig_data"
-        _task_settings.IBLRIG_DATA_FOLDER = s
 
-    sph = SessionParamHandler(_task_settings, _user_settings, debug=True)
+    sph = SessionParamHandler(_task_settings, _user_settings,
+                              debug=True, fmake=False)
     self = sph
     print("Done!")
