@@ -8,14 +8,8 @@ import logging
 USE_LOGGING = True
 #%(asctime)s,%(msecs)d
 if USE_LOGGING:
-    BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE = range(8)
-    RESET_SEQ = "\033[0m"
-    COLOR_SEQ = "\033[1;%dm"
-    BOLD_SEQ = "\033[1m"
-    level = '$BOLD%(levelname)-4s$RESET '.replace(
-        "$BOLD", BOLD_SEQ).replace("$RESET", RESET_SEQ)
-    fname = '[%(processName)s:$BOLD%(filename)s$RESET:%(lineno)d] '.replace(
-        "$BOLD", BOLD_SEQ).replace("$RESET", RESET_SEQ)
+    level = '%(levelname)-4s '
+    fname = '[%(processName)s:%(filename)s:%(lineno)d] '
     mstime = '%(asctime)s.%(msecs)d\n'
     msg = '        %(message)s'
     log_format = level + fname + mstime + msg
@@ -23,6 +17,19 @@ if USE_LOGGING:
     logging.basicConfig(format=log_format, datefmt='%Y-%m-%dT%H:%M:%S')
 
     if platform == 'linux':
+        BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE = range(8)
+        RESET_SEQ = "\033[0m"
+        COLOR_SEQ = "\033[1;%dm"
+        BOLD_SEQ = "\033[1m"
+        level = '$BOLD%(levelname)-4s$RESET '.replace(
+            "$BOLD", BOLD_SEQ).replace("$RESET", RESET_SEQ)
+        fname = '[%(processName)s:$BOLD%(filename)s$RESET:%(lineno)d] '.replace(
+            "$BOLD", BOLD_SEQ).replace("$RESET", RESET_SEQ)
+        mstime = '%(asctime)s.%(msecs)d\n'
+        msg = '        %(message)s'
+        log_format = level + fname + mstime + msg
+
+        logging.basicConfig(format=log_format, datefmt='%Y-%m-%dT%H:%M:%S')
         COLORS = {
             'WARNING': YELLOW,
             'INFO': WHITE,
@@ -55,7 +62,7 @@ if USE_LOGGING:
         logging.addLevelName(logging.CRITICAL, coloredLevelName('CRITICAL'))
             # "\033[1;35m%s\033[1;0m" % logging.getLevelName(logging.CRITICAL))
 
-    logger = logging.getLogger('iblrig').setLevel(logging.DEBUG)
+    logger = logging.getLogger('iblrig').setLevel(logging.INFO)
 
 else:
     # deactivate all log calls for use as a library
