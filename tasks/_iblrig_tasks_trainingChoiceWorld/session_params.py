@@ -165,11 +165,13 @@ class SessionParamHandler(object):
     def _check_com_config(self):
         comports = {'BPOD': self.COM['BPOD'], 'ROTARY_ENCODER': None,
                     'FRAME2TTL': None}
-        logger.info(f"COM: {str(self.COM)}")
+        logger.info(f"COMPORTS: {str(self.COM)}")
         if not self.COM['ROTARY_ENCODER']:
             comports['ROTARY_ENCODER'] = self.strinput(
                 "RIG CONFIG",
                 "Please insert ROTARY ENCODER COM port (e.g. COM9): ").upper()
+            logger.info(
+                f"Updating comport file with ROTARY_ENCODER port {comports['ROTARY_ENCODER']}")
             SessionPathCreator.create_bpod_comport_file(
                 self.BPOD_COMPORTS_FILE, comports)
             self.COM = comports
@@ -177,6 +179,8 @@ class SessionParamHandler(object):
             comports['FRAME2TTL'] = self.strinput(
                 "RIG CONFIG",
                 "Please insert FRAME2TTL COM port (e.g. COM9): ").upper()
+            logger.info(
+                f"Updating comport file with FRAME2TTL port {comports['FRAME2TTL']}")
             SessionPathCreator.create_bpod_comport_file(
                 self.BPOD_COMPORTS_FILE, comports)
             self.COM = comports
