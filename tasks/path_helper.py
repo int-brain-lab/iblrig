@@ -388,11 +388,11 @@ class SessionPathCreator(object):
                 if settings['PYBPOD_BOARD'] == self._BOARD:
                     same_board_cal_files.append(fcal)
                 else:
-                    logger.info(
+                    logger.debug(
                         f'NOT FOUND: PYBPOD_BOARD in settings file {str(s)}')
 
             else:
-                logger.info(
+                logger.debug(
                     f'NOT FOUND: Settings file for data file {str(fcal)}.')
 
         same_board_cal_files = sorted(same_board_cal_files,
@@ -418,29 +418,15 @@ if __name__ == "__main__":
         '_iblrig_test_mouse', protocol='trainingChoiceWorld',
         board='_iblrig_mainenlab_behavior_0', make=['video', 'ephys', 'imag'])
 
-    print(
-        "\nIBLRIG_VERSION_TAG:", spc.IBLRIG_VERSION_TAG,
-        "\nIBLRIG_COMMIT_HASH:", spc.IBLRIG_COMMIT_HASH,
-        "\nIBLRIG_FOLDER:", spc.IBLRIG_FOLDER,
-        "\nIBLRIG_DATA_FOLDER:", spc.IBLRIG_DATA_FOLDER,
-        "\nIBLRIG_DATA_SUBJECTS_FOLDER:", spc.IBLRIG_DATA_SUBJECTS_FOLDER,
-        "\nSESSION_DATE_FOLDER:", spc.SESSION_DATE_FOLDER,
-        "\nSESSION_NUMBER:", spc.SESSION_NUMBER,
-        "\nSESSION_DATE:", spc.SESSION_DATE,
-        "\nSESSION_FOLDER:", spc.SESSION_FOLDER,
-        "\nSESSION_RAW_DATA_FOLDER:", spc.SESSION_RAW_DATA_FOLDER,
-        "\nSESSION_DATETIME:", spc.SESSION_DATETIME,
-        "\nSESSION_COMPOUND_NAME:", spc.SESSION_COMPOUND_NAME,
-        "\nSUBJECT_NAME:", spc.SUBJECT_NAME,
-        "\nSUBJECT_FOLDER:", spc.SUBJECT_FOLDER,
-        "\nSOUND_STIM_FOLDER:", spc.SOUND_STIM_FOLDER,
-        "\nVISUAL_STIM_FOLDER:", spc.VISUAL_STIM_FOLDER,
-        "\nBASE_FILENAME:", spc.BASE_FILENAME,
-        "\nSETTINGS_FILE_PATH:", spc.SETTINGS_FILE_PATH,
-        "\nDATA_FILE_PATH:", spc.DATA_FILE_PATH,
-        "\nLATEST_WATER_CALIBRATION_FILE:", spc.LATEST_WATER_CALIBRATION_FILE,
-        "\nPREVIOUS_DATA_FILE:", spc.PREVIOUS_DATA_FILE,
-        "\nPREVIOUS_SETTINGS_FILE:", spc.PREVIOUS_SETTINGS_FILE,
-        "\nPREVIOUS_SESSION_PATH:", spc.PREVIOUS_SESSION_PATH,
-    )
+    for k in spc.__dict__:
+        print(f"{k}: {spc.__dict__[k]}")
+
+    # User info and warnings
+    for k in spc.__dict__:
+        if not spc.__dict__[k]:
+            logger.info(f"NOT FOUND: {k}")
+            if k == 'IBLRIG_VERSION_TAG':
+                logger.warning()
+            if k == 'LATEST_WATER_CALIBRATION_FILE':
+                pass
     print('.')
