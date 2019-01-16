@@ -18,13 +18,6 @@ import user_settings
 global sph
 sph = SessionParamHandler(task_settings, user_settings)
 
-# TODO: check if this works
-# p = Project()
-# p.load(Path(__file__).parent.parent.parent)
-# bpod_serial_port = p.boards[0].serial_port
-
-# sph.bpod_ligts(sph.PYBPOD_SERIAL_PORT, 0)
-
 def softcode_handler(data):
     """
     Soft codes should work with resasonable latency considering our limiting

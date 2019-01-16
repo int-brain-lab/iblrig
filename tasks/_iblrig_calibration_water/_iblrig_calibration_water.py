@@ -203,7 +203,8 @@ df1['mean_measured_weight'] = df1['mean_measured_weight'].astype("float")
 df1['ndrops'] = df1['ndrops'].astype("float")
 df1["weight_perdrop"] = df1["mean_measured_weight"] / df1["ndrops"]
 df1["weight_perdrop"] = df1["weight_perdrop"] * 1000  # in µl
-df1.to_csv(sph.CALIBRATION_FUNCTION_FILE_PATH)
+if not df1.empty:
+    df1.to_csv(sph.CALIBRATION_FUNCTION_FILE_PATH)
 
 # FIT EXTRAPOLATION FUNCTION
 time2vol = sp.interpolate.pchip(df1["open_time"], df1["weight_perdrop"])

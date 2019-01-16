@@ -11,6 +11,7 @@ import time
 import zipfile
 import sys
 from sys import platform
+import logging
 
 import numpy as np
 import pandas as pd
@@ -22,7 +23,7 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent))
 sys.path.append(str(Path(__file__).parent.parent.parent.parent))
 from path_helper import SessionPathCreator
-
+logger = logging.getLogger('iblrig')
 
 class ComplexEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -75,6 +76,7 @@ class SessionParamHandler(object):
                                  protocol=self.PYBPOD_PROTOCOL,
                                  board=self.PYBPOD_BOARD, make=make)
         self.__dict__.update(spc.__dict__)
+        self._check_com_config()
         # =====================================================================
         # SUBJECT
         # =====================================================================
@@ -103,9 +105,7 @@ class SessionParamHandler(object):
         # Dict mapping threshold crossings with name ov RE event
         self.THRESHOLD_EVENTS = dict(zip(self.ALL_THRESHOLDS,
                                          self.ENCODER_EVENTS))
-        if platform == 'linux':
-            self.ROTARY_ENCODER_PORT = '/dev/ttyACM0'
-
+        
         self._configure_rotary_encoder(RotaryEncoderModule)
         # =====================================================================
         # RUN VISUAL STIM
@@ -126,18 +126,29 @@ class SessionParamHandler(object):
 
             self._copy_task_code()
             self._save_task_code()
-
+        self.bpod_lights(0)
+    
+    def _check_com_config(self):
+        comports = {'BPOD': self.COM['BPOD'], 'ROTARY_ENCODER': None, 
+                    'FRAME2TTL': None}
+        logger.info(f"COM: {str(self.COM)}")
+        if not self.COM['ROTARY_ENCODER']:
+            comports['ROTARY_ENCODER'] = self.strinput("RIG CONFIG",
+                "Please insert ROTARY ENCODER COM port (e.g. COM9): "
+            ).upper()
+            SessionPathCreator.create_bpod_comport_file(
+                self.BPOD_COMPORTS_FILE, comports)
+            self.COM = comports
+        if not self.COM['FRAME2TTL']:
+            comports['FRAME2TTL'] = self.strinput("RIG CONFIG",
+                "Please insert FRAME2TTL COM port (e.g. COM9): "
+            ).upper()
+            SessionPathCreator.create_bpod_comport_file(
+                self.BPOD_COMPORTS_FILE, comports)
+            self.COM = comports
     # =========================================================================
     # STATIC METHODS
     # =========================================================================
-    @staticmethod
-    def bpod_lights(comport: str, command: int):
-        import serial
-        import struct
-        ser = serial.Serial(port=comport, baudrate=115200, timeout=1)
-        ser.write(struct.pack('cB', b':', command))
-        ser.close()
-        return
 
     @staticmethod
     def numinput(title, prompt, default=None, minval=None, maxval=None):
@@ -164,6 +175,18 @@ class SessionParamHandler(object):
         root.withdraw()
         return simpledialog.askfloat(title, prompt, initialvalue=default,
                                      minvalue=minval, maxvalue=maxval)
+    
+    @staticmethod
+    def strinput(title, prompt, default=None):
+        """ 
+        Example:
+        >>> strinput("RIG CONFIG", "Insert RE com port:", default="COM")
+        """
+        import tkinter as tk
+        from tkinter import simpledialog
+        root = tk.Tk()
+        root.withdraw()
+        return simpledialog.askstring(title, prompt, initialvalue='COM')
 
     @staticmethod
     def zipdir(path, ziph):
@@ -187,6 +210,9 @@ class SessionParamHandler(object):
     def get_subject_weight(self):
         return self.numinput(
             "Subject weighing (gr)", f"{self.PYBPOD_SUBJECTS[0]} weight (gr):")
+
+    def bpod_lights(self, command: int):
+        os.system(f"python {self.IBLRIG_PARAMS_FOLDER}\\bpod_lights.py {command}")
 
     # =========================================================================
     # SERIALIZER
@@ -236,7 +262,7 @@ class SessionParamHandler(object):
                 self.SESSION_RAW_DATA_FOLDER,
                 "_iblrig_micData.raw.wav")
 
-            com = "-p:REPortName=" + self.ROTARY_ENCODER_PORT
+            com = "-p:REPortName=" + self.COM['ROTARY_ENCODER']
             rec = "-p:RecordSound=" + str(self.RECORD_SOUND)
 
             start = '--start'
@@ -397,7 +423,7 @@ class SessionParamHandler(object):
     def _configure_rotary_encoder(self, RotaryEncoderModule):
         if self.DEBUG or platform == 'linux':
             return
-        m = RotaryEncoderModule(self.ROTARY_ENCODER_PORT)
+        m = RotaryEncoderModule(self.COM['ROTARY_ENCODER'])
         m.set_zero_position()  # Not necessarily needed
         m.set_thresholds(self.ROTARY_ENCODER.SET_THRESHOLDS)
         m.enable_thresholds(self.ROTARY_ENCODER.ENABLE_THRESHOLDS)
