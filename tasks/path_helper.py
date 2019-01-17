@@ -85,6 +85,8 @@ class SessionPathCreator(object):
 
         self.COM = self._init_com()
 
+        self.display_logs()
+
     def make_missing_folders(self, makelist):
         if isinstance(makelist, bool):
             logger.debug(f"Making default folders")
@@ -137,7 +139,7 @@ class SessionPathCreator(object):
         out = subprocess.check_output(["git", "rev-parse", "HEAD"]).decode()
         os.chdir(here)
         if not out:
-            logger.warning("Commit hash is empty string")
+            logger.debug("Commit hash is empty string")
         logger.debug(f"Found commit hash {out}")
         return out.strip()
 
@@ -148,7 +150,7 @@ class SessionPathCreator(object):
                                        "--points-at", "HEAD"]).decode().strip()
         os.chdir(here)
         if not tag:
-            logger.warning("NOT FOUND: iblrig version tag")
+            logger.debug("NOT FOUND: iblrig version tag")
         logger.debug(f"Found iblrig version tag {tag}")
         return tag
 
@@ -395,53 +397,54 @@ class SessionPathCreator(object):
                 f"Latest water calibration file: {same_board_cal_files[-1]}")
             return str(same_board_cal_files[-1])
         else:
-            logger.warning(
+            logger.debug(
              f'No valid calibration files were found for board {self._BOARD}')
             return
 
+    def display_logs(self):
+        # User info and warnings
+        for k in self.__dict__:
+            if not self.__dict__[k]:
+                logger.info(f"NOT FOUND: {k}")
+                if k == 'IBLRIG_VERSION_TAG':
+                    msg = """
+                ##########################################
+                    NOT FOUND: IBLRIG_VERSION_TAG
+                ##########################################
+                You appear to be on an uncommitted version
+                of iblrig. Please run iblrig/update.py to
+                check which is the latest version.
+                ##########################################
+                    """
+                    logger.warning(msg)
+
+                if k == 'PREVIOUS_DATA_FILE':
+                    msg = """
+                ##########################################
+                    NOT FOUND: PREVIOUS_DATA_FILE
+                ##########################################
+                            USING INIT VALUES
+                ##########################################
+                    """
+                    logger.warning(msg)
+                if k == 'LATEST_WATER_CALIBRATION_FILE':
+                    msg = """
+                ##########################################
+                NOT FOUND: LATEST_WATER_CALIBRATION_FILE
+                ##########################################
+                    """
+                    logger.warning(msg)
 
 if __name__ == "__main__":
     # spc = SessionPathCreator('C:\\iblrig', None, '_iblrig_test_mouse',
     # 'trainingChoiceWorld')
     spc = SessionPathCreator(
-        '/coder/mnt/nbonacchi/iblrig', None,  # /home/nico/Projects/IBL/IBL-github/iblrig',
-        # '/home/nico/Projects/IBL/IBL-github/iblrig/scratch/test_iblrig_data',
+        '/home/nico/Projects/IBL/IBL-github/iblrig',  # '/coder/mnt/nbonacchi/iblrig', None,
+        '/home/nico/Projects/IBL/IBL-github/iblrig/scratch/test_iblrig_data',
         '_iblrig_test_mouse', protocol='trainingChoiceWorld',
         board='_iblrig_mainenlab_behavior_0', make=['video', 'ephys', 'imag'])
 
     for k in spc.__dict__:
         print(f"{k}: {spc.__dict__[k]}")
 
-    # User info and warnings
-    for k in spc.__dict__:
-        if not spc.__dict__[k]:
-            logger.info(f"NOT FOUND: {k}")
-            if k == 'IBLRIG_VERSION_TAG':
-                msg = """
-            ##########################################
-                   NOT FOUND: IBLRIG_VERSION_TAG
-            ##########################################
-            You appear to be on an uncommitted version 
-            of iblrig. Please run iblrig/update.py to 
-            check which is the latest version.
-            ##########################################
-                """
-                logger.warning(msg)
-                    
-            if k == 'PREVIOUS_DATA_FILE':
-                msg = """
-            ##########################################
-                   NOT FOUND: PREVIOUS_DATA_FILE    
-            ##########################################
-                        USING INIT VALUES            
-            ##########################################
-                """
-                logger.warning(msg)
-            if k == 'LATEST_WATER_CALIBRATION_FILE':
-                msg = """
-            ##########################################
-             NOT FOUND: LATEST_WATER_CALIBRATION_FILE   
-            ##########################################
-                """
-                logger.warning(msg)
     print('.')
