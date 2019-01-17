@@ -360,7 +360,7 @@ class TrialParamHandler(object):
         # Update contrast
         self._next_contrast()
         # Update position
-        self.position = self._next_position()
+        self.position, self.stim_probability_left = self._next_position()
         # Update state machine events
         self.event_error = self.threshold_events_dict[self.position]
         self.event_reward = self.threshold_events_dict[-self.position]
@@ -416,7 +416,8 @@ class TrialParamHandler(object):
         if self.contrast.type == 'RepeatContrast':
             right_responses = [int(x) for x in self.response_buffer if x == 1]
             right_proportion = sum(right_responses) / len(self.response_buffer)
-            if random.gauss(right_proportion, 0.5) < 0.5:
+            probRight = random.gauss(right_proportion, 0.5)
+            if probRight < 0.5:
                 _position = -35  # show the stim on the left
             else:
                 _position = 35
@@ -427,7 +428,7 @@ class TrialParamHandler(object):
             _position = np.random.choice(self.position_set,
                                          p=[self.stim_probability_left,
                                             1 - self.stim_probability_left])
-        return int(_position)
+        return int(_position), 1 - right_proportion
 
     def send_current_trial_info(self):
         """
