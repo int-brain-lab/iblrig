@@ -215,7 +215,7 @@ class SessionParamHandler(object):
                                      minvalue=minval, maxvalue=maxval)
 
     @staticmethod
-    def strinput(title, prompt, default=None):
+    def strinput(title, prompt, default='COM'):
         """
         Example:
         >>> strinput("RIG CONFIG", "Insert RE com port:", default="COM")
@@ -224,7 +224,7 @@ class SessionParamHandler(object):
         from tkinter import simpledialog
         root = tk.Tk()
         root.withdraw()
-        return simpledialog.askstring(title, prompt, initialvalue='COM')
+        return simpledialog.askstring(title, prompt, initialvalue=default)
 
     @staticmethod
     def zipdir(path, ziph):
