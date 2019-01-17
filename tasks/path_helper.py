@@ -121,7 +121,7 @@ class SessionPathCreator(object):
             out['BPOD'] = p.boards[0].serial_port
             logger.debug(f".bpod_comports.json exists with content: {out}")
         else:
-            logger.info(f"NOT FOUND: COM ports definition file")
+            logger.debug(f"NOT FOUND: COM ports definition file")
             # If no file exists create empty file
             comports = {'BPOD': None, 'ROTARY_ENCODER': None,
                 'FRAME2TTL': None}
@@ -165,7 +165,7 @@ class SessionPathCreator(object):
         elif use_iblrig_bonsai is False and preexisting_bonsai.exists():
             BONSAI = str(preexisting_bonsai)
         elif use_iblrig_bonsai is False and not preexisting_bonsai.exists():
-            logger.info(
+            logger.debug(
                 f"NOT FOUND: {preexisting_bonsai}. Using packaged Bonsai")
             BONSAI = ibl_bonsai
         logger.debug(f"Found Bonsai executable: {BONSAI}")
@@ -250,7 +250,7 @@ class SessionPathCreator(object):
         subj_folder = Path(self.SUBJECT_FOLDER)
         subj_name = subj_folder.name
         if not subj_folder.exists():
-            logger.info(
+            logger.debug(
                 f'NOT FOUND: No previous sessions for subject {subj_name}')
             return sess_folders
 
@@ -260,7 +260,7 @@ class SessionPathCreator(object):
         sess_folders = [x for x in sorted(sess_folders)
                         if self.SESSION_FOLDER not in x]
         if not sess_folders:
-            logger.info(
+            logger.debug(
                 f'NOT FOUND: No previous sessions for subject {subj_name}')
 
         logger.debug(
@@ -295,10 +295,10 @@ class SessionPathCreator(object):
         data_out = [str(d) for d, s in ds_out]
         settings_out = [str(s) for d, s in ds_out]
         if not data_out:
-            logger.info(
+            logger.debug(
                 f'NOT FOUND: Previous data files for task {self._PROTOCOL}')
         if not settings_out:
-            logger.info(
+            logger.debug(
               f'NOT FOUND: Previous settings files for task {self._PROTOCOL}')
         logger.debug(f"Reurning {typ} files")
 
@@ -311,16 +311,7 @@ class SessionPathCreator(object):
             logger.debug(f"Previous data file: {out[-1]}")
             return out[-1]
         else:
-            logger.info("NOT FOUND: Previous data file")
-            msg = """
-            #########################################
-            ##          USING INIT VALUES          ##
-            #########################################
-            ## no previous valid session was found ##
-            #########################################
-            """
-            logger.warning(msg)
-
+            logger.debug("NOT FOUND: Previous data file")
             return None
 
     def _previous_settings_file(self):
@@ -330,7 +321,7 @@ class SessionPathCreator(object):
             logger.debug(f"Previous settings file: {out[-1]}")
             return out[-1]
         else:
-            logger.info("NOT FOUND: Previous settings file")
+            logger.debug("NOT FOUND: Previous settings file")
             return None
 
     def _previous_session_path(self):
@@ -340,7 +331,7 @@ class SessionPathCreator(object):
             logger.debug(f"Previous session path: {out}")
         else:
             out = None
-            logger.info("NOT FOUND: Previous session path")
+            logger.debug("NOT FOUND: Previous session path")
 
         return out
 
@@ -349,11 +340,11 @@ class SessionPathCreator(object):
         dsf = Path(self.IBLRIG_DATA_SUBJECTS_FOLDER)
         cal = dsf / '_iblrig_calibration'
         if not cal.exists():
-            logger.info(f'NOT FOUND: Calibration subject {str(cal)}')
+            logger.debug(f'NOT FOUND: Calibration subject {str(cal)}')
             return None
 
         if not self._BOARD:
-            logger.info(f'NOT FOUND: Board {str(self._BOARD)}')
+            logger.debug(f'NOT FOUND: Board {str(self._BOARD)}')
             return None
 
         cal_session_folders = []
@@ -374,7 +365,7 @@ class SessionPathCreator(object):
 
         # Should add check for file.stat().st_size != 0
         if not water_cal_files:
-            logger.info(
+            logger.debug(
                 f'NOT FOUND: Water calibration files for board {self._BOARD}')
             return
 
@@ -413,8 +404,8 @@ if __name__ == "__main__":
     # spc = SessionPathCreator('C:\\iblrig', None, '_iblrig_test_mouse',
     # 'trainingChoiceWorld')
     spc = SessionPathCreator(
-        '/home/nico/Projects/IBL/IBL-github/iblrig',
-        '/home/nico/Projects/IBL/IBL-github/iblrig/scratch/test_iblrig_data',  # /scratch/new',
+        '/coder/mnt/nbonacchi/iblrig', None,  # /home/nico/Projects/IBL/IBL-github/iblrig',
+        # '/home/nico/Projects/IBL/IBL-github/iblrig/scratch/test_iblrig_data',
         '_iblrig_test_mouse', protocol='trainingChoiceWorld',
         board='_iblrig_mainenlab_behavior_0', make=['video', 'ephys', 'imag'])
 
@@ -426,7 +417,31 @@ if __name__ == "__main__":
         if not spc.__dict__[k]:
             logger.info(f"NOT FOUND: {k}")
             if k == 'IBLRIG_VERSION_TAG':
-                logger.warning()
+                msg = """
+            ##########################################
+                   NOT FOUND: IBLRIG_VERSION_TAG
+            ##########################################
+            You appear to be on an uncommitted version 
+            of iblrig. Please run iblrig/update.py to 
+            check which is the latest version.
+            ##########################################
+                """
+                logger.warning(msg)
+                    
+            if k == 'PREVIOUS_DATA_FILE':
+                msg = """
+            ##########################################
+                   NOT FOUND: PREVIOUS_DATA_FILE    
+            ##########################################
+                        USING INIT VALUES            
+            ##########################################
+                """
+                logger.warning(msg)
             if k == 'LATEST_WATER_CALIBRATION_FILE':
-                pass
+                msg = """
+            ##########################################
+             NOT FOUND: LATEST_WATER_CALIBRATION_FILE   
+            ##########################################
+                """
+                logger.warning(msg)
     print('.')
