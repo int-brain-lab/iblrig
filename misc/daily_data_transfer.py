@@ -9,15 +9,16 @@ import sys
 from pathlib import Path
 
 
-def main(local_folder, remote_folder):
-    today = datetime.datetime.now().date().isoformat()
+def main(local_folder: str, remote_folder: str, day: str = None) -> None:
+    if day is None:
+        day = datetime.datetime.now().date().isoformat()
     local_folder = Path(local_folder) / "Subjects"
     remote_folder = Path(remote_folder) / "Subjects"
 
     # Get all date folders of today
     todays_sessions = []
     for subject in local_folder.glob("*"):
-        todays_sessions.extend([x for x in subject.glob("*") if today in x.name])
+        todays_sessions.extend([x for x in subject.glob("*") if day in x.name])
 
     # Get all session paths for today
     all_sessions = []
@@ -46,4 +47,7 @@ def main(local_folder, remote_folder):
 if __name__ == "__main__":
     # local_folder = "/home/nico/Projects/IBL/IBL-github/iblrig/scratch/test_iblrig_data"
     # remote_folder = "/home/nico/Projects/IBL/IBL-github/iblrig/scratch/test_iblrig_data_on_server"
-    main(sys.argv[1], sys.argv[2])
+    if len(sys.argv == 3):
+        main(sys.argv[1], sys.argv[2])
+    elif len(sys.argv) == 4:
+        main(sys.argv[1], sys.argv[2], sys.argv[3])
