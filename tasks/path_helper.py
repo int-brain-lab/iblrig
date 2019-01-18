@@ -408,31 +408,28 @@ class SessionPathCreator(object):
                 logger.info(f"NOT FOUND: {k}")
                 if k == 'IBLRIG_VERSION_TAG':
                     msg = """
-                ##########################################
-                    NOT FOUND: IBLRIG_VERSION_TAG
-                ##########################################
-                You appear to be on an uncommitted version
-                of iblrig. Please run iblrig/update.py to
-                check which is the latest version.
-                ##########################################
-                    """
+        ##########################################
+            NOT FOUND: IBLRIG_VERSION_TAG
+        ##########################################
+        You appear to be on an uncommitted version
+        of iblrig. Please run iblrig/update.py to
+        check which is the latest version.
+        ##########################################"""
                     logger.warning(msg)
 
                 if k == 'PREVIOUS_DATA_FILE':
                     msg = """
-                ##########################################
-                    NOT FOUND: PREVIOUS_DATA_FILE
-                ##########################################
-                            USING INIT VALUES
-                ##########################################
-                    """
+        ##########################################
+            NOT FOUND: PREVIOUS_DATA_FILE
+        ##########################################
+                    USING INIT VALUES
+        ##########################################"""
                     logger.warning(msg)
                 if k == 'LATEST_WATER_CALIBRATION_FILE':
                     msg = """
-                ##########################################
-                NOT FOUND: LATEST_WATER_CALIBRATION_FILE
-                ##########################################
-                    """
+        ##########################################
+        NOT FOUND: LATEST_WATER_CALIBRATION_FILE
+        ##########################################"""
                     logger.warning(msg)
 
 if __name__ == "__main__":
@@ -444,6 +441,7 @@ if __name__ == "__main__":
         '_iblrig_test_mouse', protocol='trainingChoiceWorld',
         board='_iblrig_mainenlab_behavior_0', make=['video', 'ephys', 'imag'])
 
+    print("")
     for k in spc.__dict__:
         print(f"{k}: {spc.__dict__[k]}")
 

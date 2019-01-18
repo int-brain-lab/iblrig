@@ -9,28 +9,23 @@ import logging
 USE_LOGGING = True
 #%(asctime)s,%(msecs)d
 if USE_LOGGING:
-    level = '%(levelname)-4s '
+    level = '\n%(levelname)-4s: '
     fname = '[%(processName)s:%(filename)s:%(lineno)d] '
-    mstime = '%(asctime)s.%(msecs)d\n'
-    msg = '        %(message)s'
-    log_format = level + fname + mstime + msg
+    mstime = '%(asctime)s.%(msecs)d'
+    msg = '%(message)s'
+    spacer = '------> '
 
-    logging.basicConfig(format=log_format, datefmt='%Y-%m-%dT%H:%M:%S')
-
-    if platform == 'linux':
-        BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE = range(8)
-        RESET_SEQ = "\033[0m"
-        COLOR_SEQ = "\033[1;%dm"
-        BOLD_SEQ = "\033[1m"
-        level = '$BOLD%(levelname)-4s$RESET '.replace(
-            "$BOLD", BOLD_SEQ).replace("$RESET", RESET_SEQ)
-        fname = '[%(processName)s:$BOLD%(filename)s$RESET:%(lineno)d] '.replace(
-            "$BOLD", BOLD_SEQ).replace("$RESET", RESET_SEQ)
-        mstime = '%(asctime)s.%(msecs)d\n'
-        msg = '        %(message)s'
-        log_format = level + fname + mstime + msg
-
+    if platform == 'win32':
+        log_format = level + msg + '\n' + spacer + fname + mstime
         logging.basicConfig(format=log_format, datefmt='%Y-%m-%dT%H:%M:%S')
+    elif platform == 'linux':
+        RESET = "\033[0m"
+        COLOR = "\033[1;%dm"
+        BOLD = "\033[1m"
+        log_format = BOLD + level + RESET + BOLD + msg + RESET + \
+            '\n' + spacer + fname + mstime
+        logging.basicConfig(format=log_format, datefmt='%Y-%m-%dT%H:%M:%S')
+        BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE = range(8)
         COLORS = {
             'WARNING': YELLOW,
             'INFO': WHITE,
@@ -47,8 +42,8 @@ if USE_LOGGING:
         }
 
         def coloredLevelName(levelname: str) -> str:
-            out = COLOR_SEQ % (30 + COLORS[levelname]) + \
-                LEVELNAMES[levelname] + RESET_SEQ
+            out = COLOR % (30 + COLORS[levelname]) + \
+                LEVELNAMES[levelname] + RESET
 
             return out
         # add some colours for an easier log experience
