@@ -23,7 +23,8 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent))
 sys.path.append(str(Path(__file__).parent.parent.parent.parent))
 from path_helper import SessionPathCreator
-logger = logging.getLogger('iblrig')
+log = logging.getLogger('iblrig')
+
 
 class ComplexEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -58,9 +59,9 @@ class SessionParamHandler(object):
     will and calculates other secondary session parameters,
     runs Bonsai and saves all params in a settings file.json"""
 
-    def __init__(self, task_settings, user_settings, debug=False):
+    def __init__(self, task_settings, user_settings, debug=False, fmake=True):
         self.DEBUG = debug
-        make = False if self.DEBUG else True
+        make = False if not fmake else ['video']
         # =====================================================================
         # IMPORT task_settings, user_settings, and SessionPathCreator params
         # =====================================================================
@@ -105,7 +106,7 @@ class SessionParamHandler(object):
         # Dict mapping threshold crossings with name ov RE event
         self.THRESHOLD_EVENTS = dict(zip(self.ALL_THRESHOLDS,
                                          self.ENCODER_EVENTS))
-        
+
         self._configure_rotary_encoder(RotaryEncoderModule)
         # =====================================================================
         # RUN VISUAL STIM
@@ -126,12 +127,12 @@ class SessionParamHandler(object):
 
             self._copy_task_code()
             self._save_task_code()
-        self.bpod_lights(0)
-    
+            self.bpod_lights(0)
+
     def _check_com_config(self):
-        comports = {'BPOD': self.COM['BPOD'], 'ROTARY_ENCODER': None, 
+        comports = {'BPOD': self.COM['BPOD'], 'ROTARY_ENCODER': None,
                     'FRAME2TTL': None}
-        logger.info(f"COM: {str(self.COM)}")
+        log.info(f"COM: {str(self.COM)}")
         if not self.COM['ROTARY_ENCODER']:
             comports['ROTARY_ENCODER'] = self.strinput("RIG CONFIG",
                 "Please insert ROTARY ENCODER COM port (e.g. COM9): "
@@ -175,10 +176,10 @@ class SessionParamHandler(object):
         root.withdraw()
         return simpledialog.askfloat(title, prompt, initialvalue=default,
                                      minvalue=minval, maxvalue=maxval)
-    
+
     @staticmethod
     def strinput(title, prompt, default=None):
-        """ 
+        """
         Example:
         >>> strinput("RIG CONFIG", "Insert RE com port:", default="COM")
         """
@@ -212,7 +213,8 @@ class SessionParamHandler(object):
             "Subject weighing (gr)", f"{self.PYBPOD_SUBJECTS[0]} weight (gr):")
 
     def bpod_lights(self, command: int):
-        os.system(f"python {self.IBLRIG_PARAMS_FOLDER}\\bpod_lights.py {command}")
+        fopen = Path(self.IBLRIG_PARAMS_FOLDER) / 'bpod_lights.py'
+        os.system(f"python {fopen} {command}")
 
     # =========================================================================
     # SERIALIZER
@@ -330,16 +332,35 @@ class SessionParamHandler(object):
                 out += 1
             out /= 1000
         elif self.AUTOMATIC_CALIBRATION and self.CALIB_FUNC is None:
-            print("\n\nNO CALIBRATION FILE WAS FOUND:",
-                  "\nCalibrate the rig or use a manual calibration value.",
-                  "\n\n")
+            msg = """
+        ##########################################
+               NOT FOUND: CALIBRATION FILE
+        ##########################################
+                Please calibrate the rig
+
+                          OR
+
+             set AUTOMATIC_CALIBRATION = False
+             and use a manual calibration value
+        ##########################################"""
+            log.error(msg)
             raise ValueError
 
-        print("\n\nREWARD_VALVE_TIME:", out, "\n\n")
+        log.info(f"REWARD_VALVE_TIME: {out}")
         if out >= 1:
-            print("\n\nREWARD_VALVE_TIME is too high!:", out,
-                  "\nProbably because of a BAD calibration file...",
-                  "\nCalibrate the rig or use a manual calibration value.")
+            msg = """
+        ##########################################
+           REWARD_VALVE_TIME is too high!: >1s
+        ##########################################
+        Probably because of a BAD calibration file
+                Please calibrate the rig
+
+                          OR
+
+             set AUTOMATIC_CALIBRATION = False
+             and use a manual calibration value
+        ##########################################"""
+            log.error(msg)
             raise(ValueError)
 
         return float(out)
@@ -363,7 +384,7 @@ class SessionParamHandler(object):
         if len(self.PYBPOD_SUBJECTS) == 1:
             self.PYBPOD_SUBJECTS = self.PYBPOD_SUBJECTS[0]
         else:
-            print("ERROR: Multiple subjects found in PYBPOD_SUBJECTS")
+            log.error("Multiple subjects found in PYBPOD_SUBJECTS")
             raise IOError
 
         self.PYBPOD_SUBJECT_EXTRA = [
@@ -431,10 +452,27 @@ class SessionParamHandler(object):
 
 
 if __name__ == '__main__':
-    # os.chdir(r'C:\iblrig\pybpod_projects\IBL\tasks\basicChoiceWorld')
+    """
+    SessionParamHandler fmake flag=False disables:
+        making folders/files;
+    SessionParamHandler debug flag disables:
+        running auto calib;
+        calling bonsai
+        turning off lights of bpod board
+    """
     import task_settings as _task_settings
-    _task_settings.AUTOMATIC_CALIBRATION = False
     import scratch._user_settings as _user_settings
-    sph = SessionParamHandler(_task_settings, _user_settings)
+    if platform == 'linux':
+        r = "/home/nico/Projects/IBL/IBL-github/iblrig"
+        _task_settings.IBLRIG_FOLDER = r
+        d = "/home/nico/Projects/IBL/IBL-github/iblrig/scratch/test_iblrig_data"
+        _task_settings.IBLRIG_DATA_FOLDER = d
+        _task_settings.AUTOMATIC_CALIBRATION = False
+        _task_settings.USE_VISUAL_STIMULUS = False
+
+    sph = SessionParamHandler(_task_settings, _user_settings, debug=True,
+                              fmake=False)
+    # for k in sph.__dict__:
+    #     print(f"{k}: {sph.__dict__[k]}")
     self = sph
     print("Done!")
