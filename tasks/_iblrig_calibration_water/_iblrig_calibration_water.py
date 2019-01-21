@@ -149,7 +149,12 @@ ntrials = sph.NTRIALS
 open_times = range(sph.MIN_OPEN_TIME, sph.MAX_OPEN_TIME, sph.STEP)
 open_times = [i for i in range(
     sph.MIN_OPEN_TIME, sph.MAX_OPEN_TIME, sph.STEP) for _ in range(sph.PASSES)]
-stopweight = 0  # can ask user if scale not tared
+
+if sph.OAHUS_SCALE_PORT:
+    stopweight = scale_read(sph.OAHUS_SCALE_PORT)
+else:
+    stopweight = numinput(f"{open_time}ms pass {pass_}",
+                            "Enter the weight diplayed on the scale (gr):")
 
 pass_ = 1
 progress = 0
