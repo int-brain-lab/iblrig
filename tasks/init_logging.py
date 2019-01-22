@@ -57,9 +57,6 @@ if USE_LOGGING:
             # "\033[1;31m%s\033[1;0m" % logging.getLevelName(logging.ERROR))
         logging.addLevelName(logging.CRITICAL, coloredLevelName('CRITICAL'))
             # "\033[1;35m%s\033[1;0m" % logging.getLevelName(logging.CRITICAL))
-
-    logger = logging.getLogger('iblrig').setLevel(logging.INFO)
-
 else:
     # deactivate all log calls for use as a library
     logging.getLogger('iblrig').addHandler(logging.NullHandler())
