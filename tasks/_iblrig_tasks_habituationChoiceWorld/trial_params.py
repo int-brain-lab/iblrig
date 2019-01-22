@@ -5,12 +5,14 @@
 # @Last Modified time: 2018-06-26 17:36:59
 import random
 import numpy as np
-import scipy.stats as st
 import json
-import datetime
 from pathlib import Path
 from dateutil import parser
 import math
+
+import logging
+
+log = logging.getLogger('iblrig')
 
 
 class ComplexEncoder(json.JSONEncoder):
@@ -124,7 +126,9 @@ class TrialParamHandler(object):
             /e  -> (int)    events transitions  USED BY SOFTCODE HANDLER FUNC
         """
         if self.osc_client is None:
-            print('Can''t send message without an OSC client: client is None')
+            log.error(
+                'Can''t send message without an OSC client: client is None')
+            raise(EnvironmentError)
         # self.position = self.position  # (2/3)*t_position/180
         self.osc_client.send_message("/t", self.trial_num)
         self.osc_client.send_message("/p", self.position)
