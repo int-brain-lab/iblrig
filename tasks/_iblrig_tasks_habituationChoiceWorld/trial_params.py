@@ -78,6 +78,8 @@ class TrialParamHandler(object):
         if self.trial_num == 42:
             flag = Path(self.data_file_path).parent.parent / 'transfer_me.flag'
             open(flag, 'a').close()
+            flag2 = Path(self.data_file_path).parent.parent / 'create_me.flag'
+            open(flag2, 'a').close()
         return json.loads(out)
 
     def next_trial(self):

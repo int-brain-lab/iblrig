@@ -10,6 +10,7 @@ import re
 import time
 import tkinter as tk
 from tkinter import simpledialog  # for dialog box
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -228,6 +229,11 @@ f.show()
 bpod.close()
 print(f'Completed water calibration {now}')
 
+# Create flag
+flag = Path(sph.SESSION_FOLDER) / 'transfer_me.flag'
+open(flag, 'a').close()
+flag2 = Path(sph.SESSION_FOLDER) / 'create_me.flag'
+open(flag2, 'a').close()
 
 if __name__ == '__main__':
     pass
