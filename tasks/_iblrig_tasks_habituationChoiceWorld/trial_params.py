@@ -128,7 +128,7 @@ class TrialParamHandler(object):
         if self.osc_client is None:
             log.error(
                 'Can''t send message without an OSC client: client is None')
-            raise(EnvironmentError)
+            raise(UnboundLocalError)
         # self.position = self.position  # (2/3)*t_position/180
         self.osc_client.send_message("/t", self.trial_num)
         self.osc_client.send_message("/p", self.position)

@@ -15,8 +15,7 @@ import numpy as np
 import scipy.stats as st
 from dateutil import parser
 
-logger = logging.getLogger('iblrig')
-
+log = logging.getLogger('iblrig').setLevel(logging.INFO)
 
 class ComplexEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -431,13 +430,13 @@ class TrialParamHandler(object):
                 _position = -35  # show the stim on the left
             else:
                 _position = 35
-            logger.debug(
+            log.debug(
                 f"Next trial: RepeatContrast, biased position: {_position}")
         else:
             _position = np.random.choice(self.position_set,
                                          p=[self.stim_probability_left,
                                             1 - self.stim_probability_left])
-        logger.debug(f"stim_probability_left: {str(1-right_proportion)}")
+        log.debug(f"stim_probability_left: {str(1-right_proportion)}")
         return (int(_position), 1 - right_proportion)
 
     def send_current_trial_info(self):
@@ -456,7 +455,8 @@ class TrialParamHandler(object):
             /e  -> (int)    events transitions  USED BY SOFTCODE HANDLER FUNC
         """
         if self.osc_client is None:
-            logger.warning("Can't send trial info to Bonsai osc_client = None")
+            log.error("Can't send trial info to Bonsai osc_client = None")
+            raise(UnboundLocalError)
         # self.position = self.position  # (2/3)*t_position/180
         self.osc_client.send_message("/t", self.trial_num)
         self.osc_client.send_message("/p", self.position)
