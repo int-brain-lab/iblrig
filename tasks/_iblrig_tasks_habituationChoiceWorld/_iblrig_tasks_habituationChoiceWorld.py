@@ -71,7 +71,7 @@ sph.start_camera_recording()
 
 for i in range(sph.NTRIALS):  # Main loop
     tph.next_trial()
-    log.info('Starting trial: ', i + 1)
+    log.info(f'Starting trial: {i + 1}')
 # =============================================================================
 #     Start state machine definition
 # =============================================================================
@@ -127,7 +127,6 @@ for i in range(sph.NTRIALS):  # Main loop
 ##########################################
 TRIAL NUM: {trial_data['trial_num']}
 DELAY TO WATER WAS: {trial_data['delay_to_stim_center']}
-NTRIALS CORRECT: {trial_data['ntrials_correct']}
 WATER DELIVERED: {trial_data['water_delivered']}
 TIME FROM START: {elapsed_time}
 AMBIENT SENSOR DATA: {as_msg}
