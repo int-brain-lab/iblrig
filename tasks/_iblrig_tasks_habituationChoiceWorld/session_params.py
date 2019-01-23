@@ -213,7 +213,7 @@ class SessionParamHandler(object):
         _weight = self.numinput(
             "Subject weighing (gr)", f"{self.PYBPOD_SUBJECTS[0]} weight (gr):")
         if _weight is None:
-            self.get_subject_weight()
+            return self.get_subject_weight()
 
         return _weight
 
