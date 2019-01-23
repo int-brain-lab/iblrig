@@ -8,6 +8,7 @@ from pybpod_rotaryencoder_module.module import RotaryEncoder
 import matplotlib.pyplot as plt
 from dateutil import parser
 import datetime
+import logging
 
 from session_params import SessionParamHandler
 from trial_params import TrialParamHandler
@@ -15,6 +16,9 @@ import ambient_sensor
 import task_settings
 import user_settings
 import online_plots as op
+
+log = logging.getLogger('iblrig')
+log.setLevel(logging.INFO)
 
 global sph
 sph = SessionParamHandler(task_settings, user_settings)
@@ -86,7 +90,7 @@ plt.pause(1)
 sph.start_camera_recording()
 for i in range(sph.NTRIALS):  # Main loop
     tph.next_trial()
-    print('\n\nStarting trial: ', i + 1)
+    log.info('Starting trial: ', i + 1)
 # =============================================================================
 #     Start state machine definition
 # =============================================================================
@@ -169,23 +173,43 @@ for i in range(sph.NTRIALS):  # Main loop
     psyfun_df = op.update_psyfun_df(trial_data, psyfun_df)
     op.plot_psyfun(trial_data, psyfun_df, ax=ax_psyc)
 
-    print('\nTRIAL NUM: ', trial_data['trial_num'])
-    print('RESPONSE TIME: ', tph.response_time_buffer[-1])
-    print('NTRIALS CORRECT: ', trial_data['ntrials_correct'])
-    print('WATER DELIVERED: ', trial_data['water_delivered'])
-    print('TIME FROM START: ', (datetime.datetime.now() -
-                                parser.parse(trial_data['init_datetime'])))
+    elapsed_time = datetime.datetime.now(
+        ) - parser.parse(trial_data['init_datetime'])
+    as_msg = 'not saved - deactivated in task settings'
+
     if sph.RECORD_AMBIENT_SENSOR_DATA:
         data = ambient_sensor.get_reading(bpod,
                                           save_to=sph.SESSION_RAW_DATA_FOLDER)
-        print('AMBIENT SENSOR DATA: saved')
+        as_msg = 'saved'
 
-    if tph.check_stop_criterions() and sph.USE_AUTOMATIC_STOPPING_CRITERIONS:
-        print("\n",
-              "\n\nSTOPPING CRITERIA ACHIEVED TASK HAS STOPPED!\
-              \nPLEASE REMOVE THE MOUSE"
-              * 50)
-        f.patch.set_facecolor('xkcd:mint green')
+    msg = f"""
+##########################################
+TRIAL NUM:              {trial_data['trial_num']}
+STIM POSITION:          {trial_data['position']}
+STIM CONTRAST:          {trial_data['contrast']['value']}
+STIM PHASE:             {trial_data['stim_phase']}
+STIM PROB LEFT:         {trial_data['stim_probability_left']}
+RESPONSE TIME:          {trial_data['response_time_buffer'][-1]}
+
+TRIAL CORRECT:          {trial_data['trial_correct']}
+
+NTRIALS CORRECT:        {trial_data['ntrials_correct']}
+WATER DELIVERED:        {trial_data['water_delivered']}
+TIME FROM START:        {elapsed_time}
+AMBIENT SENSOR DATA:    {as_msg}
+##########################################"""
+    log.info(msg)
+    stop_crit = tph.check_stop_criterions()
+    if stop_crit and sph.USE_AUTOMATIC_STOPPING_CRITERIONS:
+        if stop_crit == 1:
+            msg = "STOPPING CRITERIA Nº1: PLEASE STOP TASK AND REMOVE MOUSE\
+            \n< 400 trials in 45min"
+            f.patch.set_facecolor('xkcd:mint green')
+        elif stop_crit == 2:
+            msg = "STOPPING CRITERIA Nº2: PLEASE STOP TASK AND REMOVE MOUSE\
+            \nMouse seems to be inactive"
+            f.patch.set_facecolor('xkcd:yellow')
+        [log.warning(msg) for x in range(5)]
 
 bpod.close()
 

@@ -27,7 +27,7 @@ sys.path.append(str(Path(__file__).parent.parent))
 sys.path.append(str(Path(__file__).parent.parent.parent.parent))
 from path_helper import SessionPathCreator
 import init_logging
-logger = logging.getLogger('iblrig')
+log = logging.getLogger('iblrig')
 
 
 class ComplexEncoder(json.JSONEncoder):
@@ -165,12 +165,12 @@ class SessionParamHandler(object):
     def _check_com_config(self):
         comports = {'BPOD': self.COM['BPOD'], 'ROTARY_ENCODER': None,
                     'FRAME2TTL': None}
-        logger.debug(f"COMPORTS: {str(self.COM)}")
+        log.debug(f"COMPORTS: {str(self.COM)}")
         if not self.COM['ROTARY_ENCODER']:
             comports['ROTARY_ENCODER'] = self.strinput(
                 "RIG CONFIG",
                 "Please insert ROTARY ENCODER COM port (e.g. COM9): ").upper()
-            logger.debug(
+            log.debug(
                 f"Updating comport file with ROTARY_ENCODER port {comports['ROTARY_ENCODER']}")
             SessionPathCreator.create_bpod_comport_file(
                 self.BPOD_COMPORTS_FILE, comports)
@@ -179,7 +179,7 @@ class SessionParamHandler(object):
             comports['FRAME2TTL'] = self.strinput(
                 "RIG CONFIG",
                 "Please insert FRAME2TTL COM port (e.g. COM9): ").upper()
-            logger.debug(
+            log.debug(
                 f"Updating comport file with FRAME2TTL port {comports['FRAME2TTL']}")
             SessionPathCreator.create_bpod_comport_file(
                 self.BPOD_COMPORTS_FILE, comports)
@@ -251,7 +251,7 @@ class SessionParamHandler(object):
         if _weight is None:
             self.get_subject_weight()
 
-        return
+        return _weight
 
     def bpod_lights(self, command: int):
         fpath = Path(self.IBLRIG_PARAMS_FOLDER) / 'bpod_lights.py'
@@ -316,9 +316,16 @@ class SessionParamHandler(object):
             self.OUT_TONE = ('SoftCode', 1)
             self.OUT_NOISE = ('SoftCode', 2)
         else:
-            print("\n\nSOUND BOARD NOT IMPLEMTNED YET!!",
-                  "\nPLEASE USE SOFT_SOUND =",
-                  "'sysdefault' or 'xonar' in task_settings.py\n\n")
+            msg = f"""
+        ##########################################
+        SOUND BOARD NOT IMPLEMTNED YET!!",
+        PLEASE GO TO:
+        iblrig_params/IBL/tasks/{self.PYBPOD_PROTOCOL}/task_settings.py
+        and set
+          SOFT_SOUND = 'sysdefault'
+        ##########################################"""
+            log.error(msg)
+            raise(NotImplementedError)
 
     def play_tone(self):
         self.SD.play(self.GO_TONE, self.SOUND_SAMPLE_FREQ)  # , mapping=[1, 2])
@@ -403,20 +410,6 @@ class SessionParamHandler(object):
         if self.PREVIOUS_DATA_FILE is None:
             return
         trial_data = raw.load_data(self.PREVIOUS_SESSION_PATH)
-        print("\n\nINFO: PREVIOUS SESSION FOUND",
-              "\nLOADING PARAMETERS FROM: {}".format(self.PREVIOUS_DATA_FILE),
-              "\n\nPREVIOUS NTRIALS:              {}".format(
-                  trial_data[i]["trial_num"]),
-              "\nPREVIOUS NTRIALS (no repeats): {}".format(
-                  trial_data[i]["non_rc_ntrials"]),
-              "\nLAST REWARD:                   {}".format(
-                  trial_data[i]["reward_amount"]),
-              "\nLAST GAIN:                     {}".format(
-                  trial_data[i]["stim_gain"]),
-              "\nLAST CONTRAST SET:             {}".format(
-                  trial_data[i]["ac"]["contrast_set"]),
-              "\nBUFFERS LR:                    {}".format(
-                  trial_data[i]["ac"]["buffer"]))
 
         return trial_data[i] if trial_data else None
 
@@ -450,11 +443,6 @@ class SessionParamHandler(object):
         if previous_water < previous_weight_factor:
             out = self.LAST_TRIAL_DATA['reward_amount'] + self.AR_STEP
 
-        print(f"\nREWARD AMOUNT: {out}")
-        print(f"PREVIOUS WEIGHT: {self.LAST_SETTINGS_DATA['SUBJECT_WEIGHT']}")
-        print(
-            f"PREVIOUS WATER DRANK: {self.LAST_TRIAL_DATA['water_delivered']}")
-
         return out
 
     def _init_calib_func(self):
@@ -466,7 +454,11 @@ class SessionParamHandler(object):
             df1 = pd.read_csv(self.LATEST_WATER_CALIBRATION_FILE)
             # make interp func
             if df1.empty:
-                logger.error(f"Water calibration file is emtpy!")
+                msg = f"""
+            ##########################################
+                 Water calibration file is emtpy!
+            ##########################################"""
+                log.error(msg)
                 raise(ValueError)
             time2vol = sp.interpolate.pchip(df1["open_time"],
                                             df1["weight_perdrop"])
@@ -484,16 +476,32 @@ class SessionParamHandler(object):
                 out += 1
             out /= 1000
         elif self.AUTOMATIC_CALIBRATION and self.CALIB_FUNC is None:
-            print("\n\nNO CALIBRATION FILE WAS FOUND:",
-                  "\nCalibrate the rig or use a manual calibration value.",
-                  "\n\n")
-            raise ValueError
+            msg = """
+            ##########################################
+                  NO CALIBRATION FILE WAS FOUND:
+            Calibrate the rig or use a manual calibration
+            PLEASE GO TO:
+            iblrig_params/IBL/tasks/{self.PYBPOD_PROTOCOL}/task_settings.py
+            and set:
+              AUTOMATIC_CALIBRATION = False
+              CALIBRATION_VALUE = <MANUAL_CALIBRATION>
+            ##########################################"""
+            log.error(msg)
+            raise(ValueError)
 
-        print("\n\nREWARD_VALVE_TIME:", out, "\n\n")
         if out >= 1:
-            print("\n\nREWARD_VALVE_TIME is too high!:", out,
-                  "\nProbably because of a BAD calibration file...",
-                  "\nCalibrate the rig or use a manual calibration value.")
+            msg = """
+            ##########################################
+                REWARD VALVE TIME IS TOO HIGH!
+            Probably because of a BAD calibration file
+            Calibrate the rig or use a manual calibration
+            PLEASE GO TO:
+            iblrig_params/IBL/tasks/{self.PYBPOD_PROTOCOL}/task_settings.py
+            and set:
+              AUTOMATIC_CALIBRATION = False
+              CALIBRATION_VALUE = <MANUAL_CALIBRATION>
+            ##########################################"""
+            log.error(msg)
             raise(ValueError)
 
         return float(out)
@@ -529,8 +537,8 @@ class SessionParamHandler(object):
         if len(self.PYBPOD_SUBJECTS) == 1:
             self.PYBPOD_SUBJECTS = self.PYBPOD_SUBJECTS[0]
         else:
-            print("ERROR: Multiple subjects found in PYBPOD_SUBJECTS")
-            raise IOError
+            log.error("Multiple subjects found in PYBPOD_SUBJECTS")
+            raise(IOError)
 
         self.PYBPOD_SUBJECT_EXTRA = [
           json.loads(x) for x in self.PYBPOD_SUBJECT_EXTRA[1:-1].split('","')]
@@ -593,6 +601,34 @@ class SessionParamHandler(object):
         m.enable_thresholds(self.ROTARY_ENCODER.ENABLE_THRESHOLDS)
         m.close()
 
+    def display_logs(self):
+        if self.PREVIOUS_DATA_FILE:
+            msg = f"""
+        ##########################################
+        PREVIOUS SESSION FOUND
+        LOADING PARAMETERS FROM: {self.PREVIOUS_DATA_FILE}
+
+        PREVIOUS NTRIALS:              {self.LAST_TRIAL_DATA["trial_num"]}
+        PREVIOUS NTRIALS (no repeats): {self.LAST_TRIAL_DATA["non_rc_ntrials"]}
+        PREVIOUS WATER DRANK: {self.LAST_TRIAL_DATA['water_delivered']}
+        LAST REWARD:                   {self.LAST_TRIAL_DATA["reward_amount"]}
+        LAST GAIN:                     {self.LAST_TRIAL_DATA["stim_gain"]}
+        LAST CONTRAST SET:             {self.LAST_TRIAL_DATA["ac"]["contrast_set"]}
+        BUFFERS:                       {'loaded'}
+        PREVIOUS WEIGHT:               {self.LAST_SETTINGS_DATA['SUBJECT_WEIGHT']}
+        ##########################################"""
+            log.info(msg)
+
+        msg = f"""
+        ##########################################
+        ADAPTIVE VALUES FOR CURRENT SESSION
+
+        REWARD AMOUNT:      {self.REWARD_AMOUNT} µl
+        VALVE OPEN TIME:    {self.REWARD_VALVE_TIME} sec
+        GAIN:               {self.STIM_GAIN} azimuth_degree/mm
+        ##########################################"""
+        log.info(msg)
+
 
 if __name__ == '__main__':
     """
@@ -616,6 +652,7 @@ if __name__ == '__main__':
     sph = SessionParamHandler(_task_settings, _user_settings,
                               debug=True, fmake=False)
     for k in sph.__dict__:
-        print(f"{k}: {sph.__dict__[k]}")
+        if sph.__dict__[k] is None:
+            print(f"{k}: {sph.__dict__[k]}")
     self = sph
     print("Done!")

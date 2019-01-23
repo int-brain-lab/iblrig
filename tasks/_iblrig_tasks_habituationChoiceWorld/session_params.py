@@ -209,13 +209,13 @@ class SessionParamHandler(object):
     # =========================================================================
     # METHODS
     # =========================================================================
-    def get_subject_weight(self): 
-        _weight = self.numinput( 
-            "Subject weighing (gr)", f"{self.PYBPOD_SUBJECTS[0]} weight (gr):") 
-        if _weight is None: 
-            self.get_subject_weight() 
- 
-        return
+    def get_subject_weight(self):
+        _weight = self.numinput(
+            "Subject weighing (gr)", f"{self.PYBPOD_SUBJECTS[0]} weight (gr):")
+        if _weight is None:
+            self.get_subject_weight()
+
+        return _weight
 
     def bpod_lights(self, command: int):
         fopen = Path(self.IBLRIG_PARAMS_FOLDER) / 'bpod_lights.py'
