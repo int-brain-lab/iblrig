@@ -107,6 +107,16 @@ def create_task_bonsai_stop_command(task, port: int = 7110):
     return task
 
 
+def create_task_bpod_lights_command(task, onoff: int):
+    command = task.create_execcmd()
+    command.cmd = f"python ..\\..\\..\\bpod_lights.py {onoff}"
+    command.when = command.WHEN_POST
+    when = 'POST' if command.when == 1 else 'PRE'
+    print(f"    Added <{when}> command <{command.cmd}> to <{task.name}>")
+
+    return task
+
+
 def config_task(iblproject_path, task_name: str):
     p = Project()
     p.load(iblproject_path)
@@ -126,6 +136,7 @@ def config_task(iblproject_path, task_name: str):
         task = create_task_bonsai_stop_command(task, port=7110)
         task = create_task_bonsai_stop_command(task, port=7111)
         task = create_task_cleanup_command(task)
+        task = create_task_bpod_lights_command(task, onoff=1)
 
     p.save(iblproject_path)
     print("    Task configured")
@@ -218,7 +229,7 @@ def create_ibl_board(iblproject_path):
 
 
 def create_ibl_subjects(iblproject_path):
-    create_subject(iblproject_path, subject_name='_iblrg_calibration')
+    create_subject(iblproject_path, subject_name='_iblrig_calibration')
     create_subject(iblproject_path, subject_name='_iblrig_test_mouse')
 
 

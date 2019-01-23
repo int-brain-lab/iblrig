@@ -10,6 +10,7 @@ import re
 import time
 import tkinter as tk
 from tkinter import simpledialog  # for dialog box
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -149,9 +150,15 @@ ntrials = sph.NTRIALS
 open_times = range(sph.MIN_OPEN_TIME, sph.MAX_OPEN_TIME, sph.STEP)
 open_times = [i for i in range(
     sph.MIN_OPEN_TIME, sph.MAX_OPEN_TIME, sph.STEP) for _ in range(sph.PASSES)]
-stopweight = 0  # can ask user if scale not tared
+
+if sph.OAHUS_SCALE_PORT:
+    stopweight = scale_read(sph.OAHUS_SCALE_PORT)
+else:
+    stopweight = numinput(f"{open_time}ms pass {pass_}",
+                            "Enter the weight diplayed on the scale (gr):")
 
 pass_ = 1
+progress = 0
 mw = []
 for open_time in open_times:
     # Set the startweight to be the last recorded stopweight
@@ -190,13 +197,20 @@ for open_time in open_times:
     else:
         pass_ += 1
 
+    max_prog = len(open_times) * self.PASSES
+    progress += 1
+
+    print(f'{progress / max_prog * 100}%',
+          f'- Pass {pass_}/{self.PASSES} @ {open_time}ms done.')
+
 # SAVE
 df1['open_time'] = df1['open_time'].astype("float")
 df1['mean_measured_weight'] = df1['mean_measured_weight'].astype("float")
 df1['ndrops'] = df1['ndrops'].astype("float")
 df1["weight_perdrop"] = df1["mean_measured_weight"] / df1["ndrops"]
 df1["weight_perdrop"] = df1["weight_perdrop"] * 1000  # in µl
-df1.to_csv(sph.CALIBRATION_FUNCTION_FILE_PATH)
+if not df1.empty:
+    df1.to_csv(sph.CALIBRATION_FUNCTION_FILE_PATH)
 
 # FIT EXTRAPOLATION FUNCTION
 time2vol = sp.interpolate.pchip(df1["open_time"], df1["weight_perdrop"])
@@ -215,6 +229,11 @@ f.show()
 bpod.close()
 print(f'Completed water calibration {now}')
 
+# Create flag
+flag = Path(sph.SESSION_FOLDER) / 'transfer_me.flag'
+open(flag, 'a').close()
+flag2 = Path(sph.SESSION_FOLDER) / 'create_me.flag'
+open(flag2, 'a').close()
 
 if __name__ == '__main__':
     pass

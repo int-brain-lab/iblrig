@@ -3,15 +3,20 @@
 # @Date:   2018-02-02 14:06:34
 # @Last Modified by:   Niccolò Bonacchi
 # @Last Modified time: 2018-06-26 17:36:59
+import time
+import datetime
+import json
+import logging
+import math
 import random
+from pathlib import Path
+
 import numpy as np
 import scipy.stats as st
-import json
-import datetime
-from pathlib import Path
 from dateutil import parser
-import math
 
+log = logging.getLogger('iblrig')
+log.setLevel(logging.INFO)
 
 class ComplexEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -91,7 +96,7 @@ class AdaptiveContrast(object):
         return _buffer
 
     def _init_contrast(self):
-        _contrast = random.choice(self.contrast_set)
+        _contrast = np.random.choice(self.contrast_set)
         return _contrast
 
     def _reset_buffer(self):
@@ -109,8 +114,15 @@ class AdaptiveContrast(object):
         self.buffer = _buffer.tolist()
 
     def _update_contrast(self):
-        if self.use_me:
-            self.value = random.choice(self.contrast_set)
+        if ((self.use_me) and (0 in self.contrast_set)):
+            # p = [1/(n-1 + 0.5)] * (n - 1)
+            n_1 = len(self.contrast_set) - 1
+            z = n_1 + 0.5
+            p = [1/z] * (n_1 + 1)
+            p[-1] *= 0.5
+            self.value = np.random.choice(self.contrast_set, p=p)
+        elif self.use_me:
+            self.value = np.random.choice(self.contrast_set)
         else:
             self.value = np.random.choice(self.all_contrasts)
 
@@ -216,7 +228,6 @@ class TrialParamHandler(object):
         self.data_file_path = sph.DATA_FILE_PATH
         self.data_file = open(self.data_file_path, 'a')
         self.position_set = sph.STIM_POSITIONS
-        self.contrast_set = sph.CONTRAST_SET
         self.repeat_on_error = sph.REPEAT_ON_ERROR
         self.repeat_contrasts = sph.REPEAT_CONTRASTS
         self.threshold_events_dict = sph.THRESHOLD_EVENTS
@@ -241,6 +252,7 @@ class TrialParamHandler(object):
         self.ac = AdaptiveContrast(sph)
         self.rc = RepeatContrast()
         # Initialize parameters that may change every trial
+        self.contrast_set = sph.CONTRAST_SET
         self.trial_num = 0
         self.non_rc_ntrials = self.trial_num - self.rc.ntrials
         self.position = random.choice(sph.STIM_POSITIONS)
@@ -293,7 +305,7 @@ class TrialParamHandler(object):
         self.ntrials_correct += self.trial_correct
         # Update the water delivered
         if self.trial_correct:
-            self.water_delivered = self.water_delivered + self.reward_amount
+            self.water_delivered += self.reward_amount
         # Propagate outcome to contrast object
         self.contrast.trial_completed(self.trial_correct, self.signed_contrast)
         # SAVE TRIAL DATA
@@ -312,6 +324,8 @@ class TrialParamHandler(object):
         if self.trial_num == 42:
             flag = Path(self.data_file_path).parent.parent / 'transfer_me.flag'
             open(flag, 'a').close()
+            flag2 = Path(self.data_file_path).parent.parent / 'create_me.flag'
+            open(flag2, 'a').close()
         return json.loads(out)
 
     def check_stop_criterions(self):
@@ -355,7 +369,7 @@ class TrialParamHandler(object):
         # Update contrast
         self._next_contrast()
         # Update position
-        self.position = self._next_position()
+        self.position, self.stim_probability_left = self._next_position()
         # Update state machine events
         self.event_error = self.threshold_events_dict[self.position]
         self.event_reward = self.threshold_events_dict[-self.position]
@@ -408,20 +422,23 @@ class TrialParamHandler(object):
         return
 
     def _next_position(self):
+        right_proportion = 0.5
         if self.contrast.type == 'RepeatContrast':
             right_responses = [int(x) for x in self.response_buffer if x == 1]
             right_proportion = sum(right_responses) / len(self.response_buffer)
-            if random.gauss(right_proportion, 0.5) < 0.5:
+            probRight = random.gauss(right_proportion, 0.5)
+            if probRight < 0.5:
                 _position = -35  # show the stim on the left
             else:
                 _position = 35
-            print("Next trial: RepeatContrast, biased position:", _position)
-            return _position
+            log.debug(
+                f"Next trial: RepeatContrast, biased position: {_position}")
         else:
             _position = np.random.choice(self.position_set,
                                          p=[self.stim_probability_left,
                                             1 - self.stim_probability_left])
-        return int(_position)
+        log.debug(f"stim_probability_left: {str(1-right_proportion)}")
+        return (int(_position), 1 - right_proportion)
 
     def send_current_trial_info(self):
         """
@@ -439,7 +456,8 @@ class TrialParamHandler(object):
             /e  -> (int)    events transitions  USED BY SOFTCODE HANDLER FUNC
         """
         if self.osc_client is None:
-            print('Can''t send message without an OSC client: client is None')
+            log.error("Can't send trial info to Bonsai osc_client = None")
+            raise(UnboundLocalError)
         # self.position = self.position  # (2/3)*t_position/180
         self.osc_client.send_message("/t", self.trial_num)
         self.osc_client.send_message("/p", self.position)
@@ -452,13 +470,19 @@ class TrialParamHandler(object):
 
 
 if __name__ == '__main__':
-
     from session_params import SessionParamHandler
-    import time
+    from sys import platform
     import task_settings as _task_settings
-    import _user_settings
-    _task_settings.AUTOMATIC_CALIBRATION = False
-    sph = SessionParamHandler(_task_settings, _user_settings)
+    import scratch._user_settings as _user_settings
+    if platform == 'linux':
+        r = "/home/nico/Projects/IBL/IBL-github/iblrig"
+        _task_settings.IBLRIG_FOLDER = r
+        d = "/home/nico/Projects/IBL/IBL-github/iblrig/scratch/test_iblrig_data"
+        _task_settings.IBLRIG_DATA_FOLDER = d
+        _task_settings.AUTOMATIC_CALIBRATION = False
+        _task_settings.USE_VISUAL_STIMULUS = False
+
+    sph = SessionParamHandler(_task_settings, _user_settings, debug=True)
     tph = TrialParamHandler(sph)
     ac = AdaptiveContrast(sph)
     rc = RepeatContrast()
@@ -469,7 +493,7 @@ if __name__ == '__main__':
     # f = open(sph.DATA_FILE_PATH, 'a')
     next_trial_times = []
     trial_completed_times = []
-    for x in range(1000):
+    for x in range(3000):
         t = time.time()
         tph.next_trial()
         next_trial_times.append(time.time() - t)
@@ -478,6 +502,10 @@ if __name__ == '__main__':
         data = tph.trial_completed(np.random.choice(
             [correct_trial, error_trial, no_go_trial], p=[0.8, 0.15, 0.05]))
         trial_completed_times.append(time.time() - t)
+        print(tph.contrast.type)
+        if tph.contrast.type == 'AdaptiveContrast':
+            print(tph.contrast.contrast_set)
+        print(tph.contrast.value)
 
     print('Average next_trial times:', sum(next_trial_times) /
           len(next_trial_times))

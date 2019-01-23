@@ -7,12 +7,16 @@ from pybpodapi.protocol import Bpod, StateMachine
 from pybpod_rotaryencoder_module.module import RotaryEncoder
 from dateutil import parser
 import datetime
+import logging
 
 from session_params import SessionParamHandler
 from trial_params import TrialParamHandler
 import ambient_sensor
 import task_settings
 import user_settings
+
+log = logging.getLogger('iblrig')
+log.setLevel(logging.INFO)
 
 global sph
 sph = SessionParamHandler(task_settings, user_settings)
@@ -67,7 +71,7 @@ sph.start_camera_recording()
 
 for i in range(sph.NTRIALS):  # Main loop
     tph.next_trial()
-    print('\n\nStarting trial: ', i + 1)
+    log.info(f'Starting trial: {i + 1}')
 # =============================================================================
 #     Start state machine definition
 # =============================================================================
@@ -109,16 +113,25 @@ for i in range(sph.NTRIALS):  # Main loop
     bpod.run_state_machine(sma)  # Locks until state machine 'exit' is reached
 
     trial_data = tph.trial_completed(bpod.session.current_trial.export())
+
+    elapsed_time = datetime.datetime.now(
+    ) - parser.parse(trial_data['init_datetime'])
+    as_msg = 'not saved - deactivated in task settings'
+
     if sph.RECORD_AMBIENT_SENSOR_DATA:
         data = ambient_sensor.get_reading(bpod,
                                           save_to=sph.SESSION_RAW_DATA_FOLDER)
-        print('\nAMBIENT SENSOR DATA: saved')
+        as_msg = 'saved'
 
-    print('TRIAL NUM: ', trial_data['trial_num'])
-    print('WATER DELIVERED: ', trial_data['water_delivered'])
-    print('DELAY TO WATER WAS: ', trial_data['delay_to_stim_center'])
-    print('TIME FROM START: ', (datetime.datetime.now() -
-                                parser.parse(trial_data['init_datetime'])))
+    msg = f"""
+##########################################
+TRIAL NUM: {trial_data['trial_num']}
+DELAY TO WATER WAS: {trial_data['delay_to_stim_center']}
+WATER DELIVERED: {trial_data['water_delivered']}
+TIME FROM START: {elapsed_time}
+AMBIENT SENSOR DATA: {as_msg}
+##########################################"""
+    log.info(msg)
 
 bpod.close()
 

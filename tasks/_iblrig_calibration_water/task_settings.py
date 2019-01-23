@@ -10,9 +10,9 @@ IBLRIG_FOLDER = "C:\\iblrig"
 IBLRIG_DATA_FOLDER = None  # If None will be ..\\iblrig_data from IBLRIG_FOLDER
 OAHUS_SCALE_PORT = None  # 'COM2'  # Set to None for manual weight logging
 
-MIN_OPEN_TIME = 10  # (ms)
-MAX_OPEN_TIME = 100  # (ms)
-STEP = 5  # (ms)
+MIN_OPEN_TIME = 50  # (ms)
+MAX_OPEN_TIME = 201  # (ms)
+STEP = 50  # (ms)
 PASSES = 3  # number of times to repeat the same open_time per run
 
 NTRIALS = 100  # number of drops per open time to average across
