@@ -162,6 +162,8 @@ class SessionParamHandler(object):
             self._save_task_code()
             self.bpod_lights(0)
 
+        self.display_logs()
+
     def _check_com_config(self):
         comports = {'BPOD': self.COM['BPOD'], 'ROTARY_ENCODER': None,
                     'FRAME2TTL': None}
