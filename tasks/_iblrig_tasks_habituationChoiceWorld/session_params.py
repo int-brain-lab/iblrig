@@ -16,6 +16,7 @@ import logging
 import numpy as np
 import pandas as pd
 import scipy as sp
+import scipy.interpolate as interp
 from pybpod_rotaryencoder_module.module_api import RotaryEncoderModule
 from pythonosc import udp_client
 from pathlib import Path
@@ -208,9 +209,13 @@ class SessionParamHandler(object):
     # =========================================================================
     # METHODS
     # =========================================================================
-    def get_subject_weight(self):
-        return self.numinput(
-            "Subject weighing (gr)", f"{self.PYBPOD_SUBJECTS[0]} weight (gr):")
+    def get_subject_weight(self): 
+        _weight = self.numinput( 
+            "Subject weighing (gr)", f"{self.PYBPOD_SUBJECTS[0]} weight (gr):") 
+        if _weight is None: 
+            self.get_subject_weight() 
+ 
+        return
 
     def bpod_lights(self, command: int):
         fopen = Path(self.IBLRIG_PARAMS_FOLDER) / 'bpod_lights.py'
@@ -314,8 +319,7 @@ class SessionParamHandler(object):
             # Load last calibration df1
             df1 = pd.read_csv(self.LATEST_WATER_CALIBRATION_FILE)
             # make interp func
-            time2vol = sp.interpolate.pchip(
-                df1["open_time"], df1["weight_perdrop"])
+            time2vol = interp.pchip(df1["open_time"], df1["weight_perdrop"])
             return time2vol
         else:
             return
