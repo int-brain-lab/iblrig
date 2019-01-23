@@ -15,7 +15,8 @@ import numpy as np
 import scipy.stats as st
 from dateutil import parser
 
-log = logging.getLogger('iblrig').setLevel(logging.INFO)
+log = logging.getLogger('iblrig')
+log.setLevel(logging.INFO)
 
 class ComplexEncoder(json.JSONEncoder):
     def default(self, obj):
