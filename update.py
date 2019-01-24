@@ -116,7 +116,7 @@ def update_ibllib():
     os.chdir("./python")
     if 'ciso8601' not in os.popen("conda list").read().split():
         os.system(
-            "conda activate iblenv && conda install -c conda-forge ciso8601")
+            "conda activate iblenv && conda install -c conda-forge -y ciso8601")
 
     os.system("conda activate iblenv && pip install -e .")
     os.chdir(IBLRIG_ROOT_PATH)
