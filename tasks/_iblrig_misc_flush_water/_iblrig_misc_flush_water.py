@@ -27,11 +27,17 @@ for i in range(ntrials):
 # =============================================================================
     sma = StateMachine(bpod)
     sma.add_state(
+        state_name='init',
+        state_timer=0,
+        state_change_conditions={'Tup': 'reward'},
+        output_actions=[])
+
+    sma.add_state(
         state_name='reward',
         state_timer=valve_on_time,
         state_change_conditions={'Tup': 'iti'},
-        output_actions=[('Valve1', 1),
-                        ])
+        output_actions=[('Valve1', 255)])
+
     sma.add_state(
         state_name='iti',
         state_timer=iti,

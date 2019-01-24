@@ -197,11 +197,11 @@ for open_time in open_times:
     else:
         pass_ += 1
 
-    max_prog = len(open_times) * self.PASSES
+    max_prog = len(open_times) * sph.PASSES
     progress += 1
 
     print(f'{progress / max_prog * 100}%',
-          f'- Pass {pass_}/{self.PASSES} @ {open_time}ms done.')
+          f'- Pass {pass_}/{sph.PASSES} @ {open_time}ms done.')
 
 # SAVE
 df1['open_time'] = df1['open_time'].astype("float")
