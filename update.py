@@ -114,6 +114,10 @@ def update_ibllib():
     subprocess.call(["git", "reset", "--hard"])
     subprocess.call(["git", "pull"])
     os.chdir("./python")
+    if 'ciso8601' not in os.popen("conda list").read().split():
+        os.system(
+            "conda activate iblenv && conda install -c conda-forge ciso8601")
+
     os.system("conda activate iblenv && pip install -e .")
     os.chdir(IBLRIG_ROOT_PATH)
 
@@ -158,9 +162,11 @@ if __name__ == '__main__':
         elif sys.argv[1] in versions:
             checkout_version(sys.argv[1])
             import_tasks()
+            update_ibllib()
         elif sys.argv[1] in branches:
             checkout_branch(sys.argv[1])
             import_tasks()
+            update_ibllib()
         # UPDATE IBLLIB
         elif sys.argv[1] == 'ibllib':
             update_ibllib()
@@ -178,7 +184,7 @@ if __name__ == '__main__':
     # If called with something in front of something in front :P
     elif len(sys.argv) == 3:
         branches = get_branches()
-        commands = ['update']
+        commands = ['update' 'ibllib']
         # Command checks
         if sys.argv[1] not in commands:
             print("ERROR:", "Unknown command...")
@@ -186,8 +192,13 @@ if __name__ == '__main__':
         if sys.argv[2] not in branches:
             print("ERROR:", sys.argv[2], "is not a valid branch.")
             raise ValueError
+        if sys.argv[2] not in ['master', 'develop']:
+            print("ERROR:", sys.argv[2], "is not a valid branch.")
+            raise ValueError
         # Commands
         if sys.argv[1] == 'update' and sys.argv[2] in branches:
+            checkout_single_file(file='update.py', branch=sys.argv[2])
+        if sys.argv[1] == 'ibllib' and sys.argv[2] in ['master', 'develop']:
             checkout_single_file(file='update.py', branch=sys.argv[2])
 
     print("\n")
