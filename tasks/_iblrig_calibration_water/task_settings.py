@@ -16,4 +16,4 @@ STEP = 50  # (ms)
 PASSES = 3  # number of times to repeat the same open_time per run
 
 NTRIALS = 100  # number of drops per open time to average across
-IPI = 0.5  # (s) Inter Pulse Interval
+IPI = 0.1  # (s) Inter Pulse Interval
