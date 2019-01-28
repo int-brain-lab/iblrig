@@ -1380,14 +1380,6 @@ probably there is no need to reset the position also
             <Expression xsi:type="MulticastSubject">
               <Name>GaborPosition</Name>
             </Expression>
-            <Expression xsi:type="Combinator">
-              <Combinator xsi:type="IntProperty">
-                <Value>0</Value>
-              </Combinator>
-            </Expression>
-            <Expression xsi:type="MulticastSubject">
-              <Name>GaborColor</Name>
-            </Expression>
           </Nodes>
           <Edges>
             <Edge>
@@ -1411,11 +1403,6 @@ probably there is no need to reset the position also
               <Label>Source1</Label>
             </Edge>
             <Edge>
-              <From>4</From>
-              <To>7</To>
-              <Label>Source1</Label>
-            </Edge>
-            <Edge>
               <From>5</From>
               <To>3</To>
               <Label>Source1</Label>
@@ -1423,11 +1410,6 @@ probably there is no need to reset the position also
             <Edge>
               <From>6</From>
               <To>1</To>
-              <Label>Source1</Label>
-            </Edge>
-            <Edge>
-              <From>7</From>
-              <To>8</To>
               <Label>Source1</Label>
             </Edge>
           </Edges>
@@ -1507,6 +1489,44 @@ probably there is no need to reset the position also
       </Expression>
       <Expression xsi:type="MulticastSubject">
         <Name>GaborPhase</Name>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="FloatProperty">
+          <Value>0.95</Value>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="FloatProperty">
+          <Value>0.15</Value>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="BehaviorSubject">
+        <Name>SyncSquareX</Name>
+      </Expression>
+      <Expression xsi:type="BehaviorSubject">
+        <Name>SyncSquareY</Name>
+      </Expression>
+      <Expression xsi:type="ExternalizedPropertyOfSingleFloatProperty">
+        <MemberName>Value</MemberName>
+        <Name>sync_x</Name>
+        <Value>0.95</Value>
+      </Expression>
+      <Expression xsi:type="ExternalizedPropertyOfSingleFloatProperty">
+        <MemberName>Value</MemberName>
+        <Name>sync_y</Name>
+        <Value>0.15</Value>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q2:UpdateUniform">
+          <q2:UniformName>sync_square_x</q2:UniformName>
+          <q2:ShaderName>Gabor</q2:ShaderName>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q2:UpdateUniform">
+          <q2:UniformName>sync_square_y</q2:UniformName>
+          <q2:ShaderName>Gabor</q2:ShaderName>
+        </Combinator>
       </Expression>
     </Nodes>
     <Edges>
@@ -1783,6 +1803,36 @@ probably there is no need to reset the position also
       <Edge>
         <From>66</From>
         <To>67</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>68</From>
+        <To>70</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>69</From>
+        <To>71</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>70</From>
+        <To>74</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>71</From>
+        <To>75</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>72</From>
+        <To>68</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>73</From>
+        <To>69</To>
         <Label>Source1</Label>
       </Edge>
     </Edges>
