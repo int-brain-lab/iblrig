@@ -88,6 +88,8 @@ def install_environment():
 def install_iblrig_requirements():
     print('\n\nINFO: Installing IBLrig requirements:')
     print("N" * 79)
+    print("N" * 39, 'Installing git')
+    os.system("conda install -y -n iblenv git")
     print("N" * 39, 'Installing scipy')
     os.system("conda install -y -n iblenv scipy")
     print("N" * 39, 'Installing requests')
