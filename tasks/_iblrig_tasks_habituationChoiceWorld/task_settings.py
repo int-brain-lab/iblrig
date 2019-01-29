@@ -28,3 +28,8 @@ STIM_ANGLE = 0.  # Vertical orientation of Gabor patch - NOT IN USE
 STIM_SIGMA = 7.  # (azimuth_degree²) Size of Gabor patch
 # CONTRASTS
 CONTRAST_SET = [1.]  # Full contrast set, used if adaptive contrast = False
+# SOUNDS
+SOFT_SOUND = 'sysdefault'  # Use software sound 'xonar', 'sysdefault' or False for BpodSoundCard
+GO_TONE_DURATION = 0.1  # Length of tone
+GO_TONE_FREQUENCY = 5000  # 5KHz
+GO_TONE_AMPLITUDE = 0.1  # [0->1]

@@ -24,6 +24,7 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent))
 sys.path.append(str(Path(__file__).parent.parent.parent.parent))
 from path_helper import SessionPathCreator
+import sound
 log = logging.getLogger('iblrig')
 
 
@@ -109,6 +110,24 @@ class SessionParamHandler(object):
                                          self.ENCODER_EVENTS))
 
         self._configure_rotary_encoder(RotaryEncoderModule)
+        # =====================================================================
+        # SOUNDS
+        # =====================================================================
+        if self.SOFT_SOUND == 'xonar':
+            self.SOUND_SAMPLE_FREQ = 192000
+        elif self.SOFT_SOUND == 'sysdefault':
+            self.SOUND_SAMPLE_FREQ = 44100
+        elif self.SOFT_SOUND is None:
+            self.SOUND_SAMPLE_FREQ = 96000
+
+        self.GO_TONE_DURATION = float(self.GO_TONE_DURATION)
+        self.GO_TONE_FREQUENCY = int(self.GO_TONE_FREQUENCY)
+        self.GO_TONE_AMPLITUDE = float(self.GO_TONE_AMPLITUDE)
+
+        self.SD = sound.configure_sounddevice(
+            output=self.SOFT_SOUND, samplerate=self.SOUND_SAMPLE_FREQ)
+
+        self._init_sounds()  # Will create sounds and output actions.
         # =====================================================================
         # RUN VISUAL STIM
         # =====================================================================
@@ -246,6 +265,39 @@ class SessionParamHandler(object):
                 d['PYBPOD_SUBJECT_EXTRA'])
 
         return d
+
+    # =========================================================================
+    # SOUND
+    # =========================================================================
+    def _init_sounds(self):
+        if self.SOFT_SOUND:
+            self.UPLOADER_TOOL = None
+            self.GO_TONE = sound.make_sound(
+                rate=self.SOUND_SAMPLE_FREQ,
+                frequency=self.GO_TONE_FREQUENCY,
+                duration=self.GO_TONE_DURATION,
+                amplitude=self.GO_TONE_AMPLITUDE,
+                fade=0.01,
+                chans='L+TTL')
+
+            self.OUT_TONE = ('SoftCode', 1)
+        else:
+            msg = f"""
+        ##########################################
+        SOUND BOARD NOT IMPLEMTNED YET!!",
+        PLEASE GO TO:
+        iblrig_params/IBL/tasks/{self.PYBPOD_PROTOCOL}/task_settings.py
+        and set
+          SOFT_SOUND = 'sysdefault' or 'xonar'
+        ##########################################"""
+            log.error(msg)
+            raise(NotImplementedError)
+
+    def play(self):
+        self.SD.play(self.GO_TONE, self.SOUND_SAMPLE_FREQ)  # , mapping=[1, 2])
+
+    def stop_sound(self):
+        self.SD.stop()
 
     # =========================================================================
     # BONSAI WORKFLOWS

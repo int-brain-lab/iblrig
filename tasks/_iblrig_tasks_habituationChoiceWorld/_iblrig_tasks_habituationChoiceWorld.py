@@ -35,8 +35,6 @@ def softcode_handler(data):
         sph.stop_sound()
     if data == 1:
         sph.play_tone()
-    elif data == 2:
-        sph.play_noise()
 
 
 # =============================================================================
@@ -87,7 +85,8 @@ for i in range(sph.NTRIALS):  # Main loop
         state_name='stim_on',
         state_timer=tph.delay_to_stim_center,
         state_change_conditions={'Tup': 'stim_center'},
-        output_actions=[('Serial1', re_show_stim)])
+        output_actions=[('Serial1', re_show_stim),
+                        tph.out_tone])
 
     sma.add_state(
         state_name='stim_center',
