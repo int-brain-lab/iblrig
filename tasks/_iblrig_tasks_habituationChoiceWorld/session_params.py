@@ -338,15 +338,17 @@ class SessionParamHandler(object):
             com = "-p:REPortName=" + self.COM['ROTARY_ENCODER']
             rec = "-p:RecordSound=" + str(self.RECORD_SOUND)
 
+            sync_x = "-p:sync_x=" + str(self.SYNC_SQUARE_X) 
+            sync_y = "-p:sync_y=" + str(self.SYNC_SQUARE_Y)
             start = '--start'
             noeditor = '--noeditor'
 
             if self.BONSAI_EDITOR:
                 subprocess.Popen(
-                    [bns, wkfl, start, evt, itr, com, mic, rec])
+                    [bns, wkfl, start, evt, itr, com, mic, rec, sync_x, sync_y]) 
             elif not self.BONSAI_EDITOR:
                 subprocess.Popen(
-                    [bns, wkfl, noeditor, evt, itr, com, mic, rec])
+                    [bns, wkfl, noeditor, evt, itr, com, mic, rec, sync_x, sync_y]) 
             time.sleep(5)
             os.chdir(here)
         else:

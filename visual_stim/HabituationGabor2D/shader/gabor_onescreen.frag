@@ -19,9 +19,12 @@ uniform float locationX = 0.5;  // E[0,1] from rotary encoder [-1,1]
 uniform float locationY = 0.5;  // E[0,1]
 //uniform int frame_count = 0;
 uniform int color = 0;
-uniform float R = 1.;
-uniform float G = 1.;
-uniform float B = 1.;
+uniform float R = 0.5;
+uniform float G = 0.5;
+uniform float B = 0.5;
+uniform float brightness = 0.5;
+uniform float sync_square_x = 0.95;
+uniform float sync_square_y = 0.17;
 
 float gauss(float val, float sigma) {
     return exp(-(val * val) / (2. * sigma * sigma));
@@ -39,7 +42,7 @@ void main(){
     float screenDist = 1. / 2.; // assumes equidistand mouse
     float rect = 0.;
 
-    if (texCoord.x > 0.95 && texCoord.y < 0.275 ) {
+    if (texCoord.x > sync_square_x && texCoord.y < sync_square_y ) {
         fragColor = vec4(vec3(color), 1.0);
     } else {
 
@@ -55,6 +58,6 @@ void main(){
 
     float value = gaussian * grating;
 
-    fragColor = vec4(0.5 + 0.5 * vec3(R * value, G * value, B * value), 1.0);
+    fragColor = vec4(brightness + vec3(R * value, G * value, B * value), 1.0);
   }
 }

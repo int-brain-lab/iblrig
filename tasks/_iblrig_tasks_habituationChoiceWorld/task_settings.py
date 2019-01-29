@@ -26,6 +26,8 @@ STIM_POSITIONS = [-35, 35]  # All possible positions for this session (deg)
 STIM_FREQ = 0.10  # cycle/visual degree
 STIM_ANGLE = 0.  # Vertical orientation of Gabor patch - NOT IN USE
 STIM_SIGMA = 7.  # (azimuth_degree²) Size of Gabor patch
+SYNC_SQUARE_X = 0.95
+SYNC_SQUARE_Y = 0.17
 # CONTRASTS
 CONTRAST_SET = [1.]  # Full contrast set, used if adaptive contrast = False
 # SOUNDS

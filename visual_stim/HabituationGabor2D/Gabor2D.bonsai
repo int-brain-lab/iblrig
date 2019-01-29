@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <WorkflowBuilder Version="2.3.0">
-  <Workflow xmlns:q2="clr-namespace:Bonsai.Shaders;assembly=Bonsai.Shaders" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:q3="clr-namespace:Bonsai.IO;assembly=Bonsai.System" xmlns:q7="clr-namespace:Bonsai.Dsp;assembly=Bonsai.Dsp" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:q5="clr-namespace:Bonsai.Scripting;assembly=Bonsai.Scripting" xmlns:q4="clr-namespace:Bonsai.Audio;assembly=Bonsai.Audio" xmlns:q6="clr-namespace:Bonsai.Bpod;assembly=Bonsai.Bpod" xmlns:q1="clr-namespace:Bonsai.Osc;assembly=Bonsai.Osc" xmlns="https://horizongir.org/bonsai">
+  <Workflow xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:q1="clr-namespace:Bonsai.Osc;assembly=Bonsai.Osc" xmlns:q2="clr-namespace:Bonsai.Shaders;assembly=Bonsai.Shaders" xmlns:q3="clr-namespace:Bonsai.IO;assembly=Bonsai.System" xmlns:q4="clr-namespace:Bonsai.Audio;assembly=Bonsai.Audio" xmlns:q5="clr-namespace:Bonsai.Scripting;assembly=Bonsai.Scripting" xmlns:q6="clr-namespace:Bonsai.Bpod;assembly=Bonsai.Bpod" xmlns:q7="clr-namespace:Bonsai.Dsp;assembly=Bonsai.Dsp" xmlns="https://horizongir.org/bonsai">
     <Nodes>
       <Expression xsi:type="ExternalizedPropertyOfStringReceiveMessage">
         <MemberName>Connection</MemberName>
@@ -818,14 +818,6 @@ probably there is no need to reset the position also
             <Expression xsi:type="MulticastSubject">
               <Name>GaborPosition</Name>
             </Expression>
-            <Expression xsi:type="Combinator">
-              <Combinator xsi:type="IntProperty">
-                <Value>0</Value>
-              </Combinator>
-            </Expression>
-            <Expression xsi:type="MulticastSubject">
-              <Name>GaborColor</Name>
-            </Expression>
           </Nodes>
           <Edges>
             <Edge>
@@ -849,11 +841,6 @@ probably there is no need to reset the position also
               <Label>Source1</Label>
             </Edge>
             <Edge>
-              <From>4</From>
-              <To>7</To>
-              <Label>Source1</Label>
-            </Edge>
-            <Edge>
               <From>5</From>
               <To>3</To>
               <Label>Source1</Label>
@@ -861,11 +848,6 @@ probably there is no need to reset the position also
             <Edge>
               <From>6</From>
               <To>1</To>
-              <Label>Source1</Label>
-            </Edge>
-            <Edge>
-              <From>7</From>
-              <To>8</To>
               <Label>Source1</Label>
             </Edge>
           </Edges>
@@ -1032,6 +1014,44 @@ probably there is no need to reset the position also
             </Edge>
           </Edges>
         </Workflow>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q2:UpdateUniform">
+          <q2:UniformName>sync_square_x</q2:UniformName>
+          <q2:ShaderName>Gabor</q2:ShaderName>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q2:UpdateUniform">
+          <q2:UniformName>sync_square_y</q2:UniformName>
+          <q2:ShaderName>Gabor</q2:ShaderName>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="BehaviorSubject">
+        <Name>SyncSquareX</Name>
+      </Expression>
+      <Expression xsi:type="BehaviorSubject">
+        <Name>SyncSquareY</Name>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="FloatProperty">
+          <Value>0.95</Value>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="FloatProperty">
+          <Value>0.15</Value>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="ExternalizedPropertyOfSingleFloatProperty">
+        <MemberName>Value</MemberName>
+        <Name>sync_x</Name>
+        <Value>0.95</Value>
+      </Expression>
+      <Expression xsi:type="ExternalizedPropertyOfSingleFloatProperty">
+        <MemberName>Value</MemberName>
+        <Name>sync_y</Name>
+        <Value>0.15</Value>
       </Expression>
     </Nodes>
     <Edges>
@@ -1275,6 +1295,36 @@ probably there is no need to reset the position also
         <To>59</To>
         <Label>Source1</Label>
       </Edge>
+      <Edge>
+        <From>63</From>
+        <To>61</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>64</From>
+        <To>62</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>65</From>
+        <To>63</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>66</From>
+        <To>64</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>67</From>
+        <To>65</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>68</From>
+        <To>66</To>
+        <Label>Source1</Label>
+      </Edge>
     </Edges>
   </Workflow>
   <ExtensionTypes>
@@ -1310,5 +1360,6 @@ probably there is no need to reset the position also
     <Type>Bonsai.Reactive.TakeUntil, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Expressions.ExternalizedProperty`2[[System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089],[Bonsai.Bpod.Encoder, Bonsai.Bpod, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null]], Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Dsp.Rescale, Bonsai.Dsp, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Expressions.ExternalizedProperty`2[[System.Single, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089],[Bonsai.Expressions.FloatProperty, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null]], Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
   </ExtensionTypes>
 </WorkflowBuilder>
