@@ -493,15 +493,16 @@ if __name__ == '__main__':
     # f = open(sph.DATA_FILE_PATH, 'a')
     next_trial_times = []
     trial_completed_times = []
-    for x in range(3000):
+    for x in range(1000):
         t = time.time()
         tph.next_trial()
         next_trial_times.append(time.time() - t)
         # print('next_trial took: ', next_trial_times[-1], '(s)')
         t = time.time()
         data = tph.trial_completed(np.random.choice(
-            [correct_trial, error_trial, no_go_trial], p=[0.8, 0.15, 0.05]))
+            [correct_trial, error_trial, no_go_trial], p=[0.9, 0.05, 0.05]))
         trial_completed_times.append(time.time() - t)
+        print('\n', x)
         print(tph.contrast.type)
         if tph.contrast.type == 'AdaptiveContrast':
             print(tph.contrast.contrast_set)

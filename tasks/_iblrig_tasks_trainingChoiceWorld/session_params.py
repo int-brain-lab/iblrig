@@ -22,11 +22,11 @@ from pybpod_rotaryencoder_module.module_api import RotaryEncoderModule
 from pythonosc import udp_client
 
 import ibllib.io.raw_data_loaders as raw
-import sound
 sys.path.append(str(Path(__file__).parent.parent))
 sys.path.append(str(Path(__file__).parent.parent.parent.parent))
 from path_helper import SessionPathCreator
 import init_logging
+import sound
 log = logging.getLogger('iblrig')
 
 
@@ -322,7 +322,7 @@ class SessionParamHandler(object):
         PLEASE GO TO:
         iblrig_params/IBL/tasks/{self.PYBPOD_PROTOCOL}/task_settings.py
         and set
-          SOFT_SOUND = 'sysdefault'
+          SOFT_SOUND = 'sysdefault' or 'xonar'
         ##########################################"""
             log.error(msg)
             raise(NotImplementedError)
