@@ -257,6 +257,14 @@ class SessionParamHandler(object):
         fpath = Path(self.IBLRIG_PARAMS_FOLDER) / 'bpod_lights.py'
         os.system(f"python {fpath} {command}")
 
+    def get_port_events(events: dict, name: str = '') -> list:
+        out: list = []
+        for k in events:
+            if name in k:
+                out.extend(events[k])
+        out = sorted(out)
+
+        return out
     # =========================================================================
     # SERIALIZER
     # =========================================================================
