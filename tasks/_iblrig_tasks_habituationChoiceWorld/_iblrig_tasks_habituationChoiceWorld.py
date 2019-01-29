@@ -117,19 +117,17 @@ for i in range(sph.NTRIALS):  # Main loop
     elapsed_time = datetime.datetime.now(
     ) - parser.parse(trial_data['init_datetime'])
 
-    ev_tup = tevents['Tup']
     ev_bnc1 = sph.get_port_events(tevents, name='BNC1')
     ev_bnc2 = sph.get_port_events(tevents, name='BNC2')
-    ev_re = sph.get_port_events(tevents, name='Rotary')
     ev_port1 = sph.get_port_events(tevents, name='Port1')
 
     NOT_SAVED = 'not saved - deactivated in task settings'
-    WARNING = 'WARNING: COULD NOT FIND DATA ON {}'
+    NOT_FOUND = 'COULD NOT FIND DATA ON {}'
 
     as_msg = NOT_SAVED
-    bnc1_msg = WARNING.format('BNC1') if not ev_bnc1 else 'OK'
-    bnc2_msg = WARNING.format('BNC2') if not ev_bnc2 else 'OK'
-    port1_msg = WARNING.format('Port1') if not ev_port1 else 'OK'
+    bnc1_msg = NOT_FOUND.format('BNC1') if not ev_bnc1 else 'OK'
+    bnc2_msg = NOT_FOUND.format('BNC2') if not ev_bnc2 else 'OK'
+    port1_msg = NOT_FOUND.format('Port1') if not ev_port1 else 'OK'
 
     if sph.RECORD_AMBIENT_SENSOR_DATA:
         data = ambient_sensor.get_reading(bpod,
@@ -143,12 +141,19 @@ DELAY TO WATER WAS: {trial_data['delay_to_stim_center']}
 WATER DELIVERED: {trial_data['water_delivered']}
 TIME FROM START: {elapsed_time}
 AMBIENT SENSOR DATA: {as_msg}
----SYNC PULSES---
-VISUAL STIMULUS SYNC: {bnc1_msg}
-SOUND SYNC: {bnc2_msg}
-CAMERA SYNC: {port1_msg}
 ##########################################"""
     log.info(msg)
+    
+    warn_msg = f"""
+        ##########################################
+                NOT FOUND: SYNC PULSES
+        ##########################################
+        VISUAL STIMULUS SYNC: {bnc1_msg}
+        SOUND SYNC: {bnc2_msg}
+        CAMERA SYNC: {port1_msg}
+        ##########################################"""
+    if not ev_bnc1 or not ev_bnc2 or not ev_port1:
+        log.warning(warn_msg)
 
 bpod.close()
 
