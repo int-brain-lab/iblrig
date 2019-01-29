@@ -61,6 +61,8 @@ def delete_untracked_files(iblrig_params_path):
             (x / '_user_settings.py').unlink()
         if (x / 'sound.py').exists():
             (x / 'sound.py').unlink()
+        if (x / 'ambient_sensor.py').exists():
+            (x / 'ambient_sensor.py').unlink()
 
 
 def create_subject(iblproject_path, subject_name: str):
