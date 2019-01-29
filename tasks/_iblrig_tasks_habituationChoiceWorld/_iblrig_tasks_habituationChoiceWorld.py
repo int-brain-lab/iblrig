@@ -112,7 +112,7 @@ for i in range(sph.NTRIALS):  # Main loop
     bpod.run_state_machine(sma)  # Locks until state machine 'exit' is reached
 
     trial_data = tph.trial_completed(bpod.session.current_trial.export())
-    tevents = trial_data['Events timestamps']
+    tevents = trial_data['behavior_data']['Events timestamps']
 
     elapsed_time = datetime.datetime.now(
     ) - parser.parse(trial_data['init_datetime'])

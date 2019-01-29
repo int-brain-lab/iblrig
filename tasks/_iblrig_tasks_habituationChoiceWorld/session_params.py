@@ -261,6 +261,11 @@ class SessionParamHandler(object):
             return sx
 
         d = self.__dict__.copy()
+        if self.SOFT_SOUND:
+            d['GO_TONE'] = 'go_tone(freq={}, dur={}, amp={})'.format(
+                self.GO_TONE_FREQUENCY, self.GO_TONE_DURATION,
+                self.GO_TONE_AMPLITUDE)
+        d['SD'] = str(d['SD'])
         d['OSC_CLIENT'] = str(d['OSC_CLIENT'])
         d['SESSION_DATETIME'] = self.SESSION_DATETIME.isoformat()
         d['CALIB_FUNC'] = str(d['CALIB_FUNC'])
@@ -302,7 +307,7 @@ class SessionParamHandler(object):
             log.error(msg)
             raise(NotImplementedError)
 
-    def play(self):
+    def play_tone(self):
         self.SD.play(self.GO_TONE, self.SOUND_SAMPLE_FREQ)  # , mapping=[1, 2])
 
     def stop_sound(self):
