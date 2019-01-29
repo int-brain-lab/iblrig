@@ -154,7 +154,7 @@ open_times = [i for i in range(
 if sph.OAHUS_SCALE_PORT:
     stopweight = scale_read(sph.OAHUS_SCALE_PORT)
 else:
-    stopweight = numinput(f"{open_time}ms pass {pass_}",
+    stopweight = numinput(f"Initialize weight",
                             "Enter the weight diplayed on the scale (gr):")
 
 pass_ = 1

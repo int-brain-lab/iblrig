@@ -106,7 +106,7 @@ class SessionParamHandler(object):
     # =========================================================================
     def _save_session_settings(self):
         with open(self.SETTINGS_FILE_PATH, 'a') as f:
-            f.write(json.dumps(self, cls=ComplexEncoder))
+            f.write(json.dumps(self, cls=ComplexEncoder, indent=1))
             f.write('\n')
         return
 

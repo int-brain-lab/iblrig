@@ -24,6 +24,8 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent))
 sys.path.append(str(Path(__file__).parent.parent.parent.parent))
 from path_helper import SessionPathCreator
+import sound
+import ambient_sensor
 log = logging.getLogger('iblrig')
 
 
@@ -109,6 +111,24 @@ class SessionParamHandler(object):
                                          self.ENCODER_EVENTS))
 
         self._configure_rotary_encoder(RotaryEncoderModule)
+        # =====================================================================
+        # SOUNDS
+        # =====================================================================
+        if self.SOFT_SOUND == 'xonar':
+            self.SOUND_SAMPLE_FREQ = 192000
+        elif self.SOFT_SOUND == 'sysdefault':
+            self.SOUND_SAMPLE_FREQ = 44100
+        elif self.SOFT_SOUND is None:
+            self.SOUND_SAMPLE_FREQ = 96000
+
+        self.GO_TONE_DURATION = float(self.GO_TONE_DURATION)
+        self.GO_TONE_FREQUENCY = int(self.GO_TONE_FREQUENCY)
+        self.GO_TONE_AMPLITUDE = float(self.GO_TONE_AMPLITUDE)
+
+        self.SD = sound.configure_sounddevice(
+            output=self.SOFT_SOUND, samplerate=self.SOUND_SAMPLE_FREQ)
+
+        self._init_sounds()  # Will create sounds and output actions.
         # =====================================================================
         # RUN VISUAL STIM
         # =====================================================================
@@ -206,9 +226,23 @@ class SessionParamHandler(object):
             SessionParamHandler.zipdir(dir, zipf)
         zipf.close()
 
+    @staticmethod
+    def get_port_events(events: dict, name: str = '') -> list:
+        out: list = []
+        for k in events:
+            if name in k:
+                out.extend(events[k])
+        out = sorted(out)
+
+        return out
+    
     # =========================================================================
     # METHODS
     # =========================================================================
+    def save_ambient_sensor_reading(self, bpod_instance):
+        return ambient_sensor.get_reading(bpod_instance, 
+                                          save_to=self.SESSION_RAW_DATA_FOLDER)
+
     def get_subject_weight(self):
         _weight = self.numinput(
             "Subject weighing (gr)", f"{self.PYBPOD_SUBJECTS[0]} weight (gr):")
@@ -233,6 +267,11 @@ class SessionParamHandler(object):
             return sx
 
         d = self.__dict__.copy()
+        if self.SOFT_SOUND:
+            d['GO_TONE'] = 'go_tone(freq={}, dur={}, amp={})'.format(
+                self.GO_TONE_FREQUENCY, self.GO_TONE_DURATION,
+                self.GO_TONE_AMPLITUDE)
+        d['SD'] = str(d['SD'])
         d['OSC_CLIENT'] = str(d['OSC_CLIENT'])
         d['SESSION_DATETIME'] = self.SESSION_DATETIME.isoformat()
         d['CALIB_FUNC'] = str(d['CALIB_FUNC'])
@@ -246,6 +285,39 @@ class SessionParamHandler(object):
                 d['PYBPOD_SUBJECT_EXTRA'])
 
         return d
+
+    # =========================================================================
+    # SOUND
+    # =========================================================================
+    def _init_sounds(self):
+        if self.SOFT_SOUND:
+            self.UPLOADER_TOOL = None
+            self.GO_TONE = sound.make_sound(
+                rate=self.SOUND_SAMPLE_FREQ,
+                frequency=self.GO_TONE_FREQUENCY,
+                duration=self.GO_TONE_DURATION,
+                amplitude=self.GO_TONE_AMPLITUDE,
+                fade=0.01,
+                chans='L+TTL')
+
+            self.OUT_TONE = ('SoftCode', 1)
+        else:
+            msg = f"""
+        ##########################################
+        SOUND BOARD NOT IMPLEMTNED YET!!",
+        PLEASE GO TO:
+        iblrig_params/IBL/tasks/{self.PYBPOD_PROTOCOL}/task_settings.py
+        and set
+          SOFT_SOUND = 'sysdefault' or 'xonar'
+        ##########################################"""
+            log.error(msg)
+            raise(NotImplementedError)
+
+    def play_tone(self):
+        self.SD.play(self.GO_TONE, self.SOUND_SAMPLE_FREQ)  # , mapping=[1, 2])
+
+    def stop_sound(self):
+        self.SD.stop()
 
     # =========================================================================
     # BONSAI WORKFLOWS
@@ -272,15 +344,17 @@ class SessionParamHandler(object):
             com = "-p:REPortName=" + self.COM['ROTARY_ENCODER']
             rec = "-p:RecordSound=" + str(self.RECORD_SOUND)
 
+            sync_x = "-p:sync_x=" + str(self.SYNC_SQUARE_X) 
+            sync_y = "-p:sync_y=" + str(self.SYNC_SQUARE_Y)
             start = '--start'
             noeditor = '--noeditor'
 
             if self.BONSAI_EDITOR:
                 subprocess.Popen(
-                    [bns, wkfl, start, evt, itr, com, mic, rec])
+                    [bns, wkfl, start, evt, itr, com, mic, rec, sync_x, sync_y]) 
             elif not self.BONSAI_EDITOR:
                 subprocess.Popen(
-                    [bns, wkfl, noeditor, evt, itr, com, mic, rec])
+                    [bns, wkfl, noeditor, evt, itr, com, mic, rec, sync_x, sync_y]) 
             time.sleep(5)
             os.chdir(here)
         else:

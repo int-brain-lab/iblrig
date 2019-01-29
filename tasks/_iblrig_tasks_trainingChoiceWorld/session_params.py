@@ -22,11 +22,12 @@ from pybpod_rotaryencoder_module.module_api import RotaryEncoderModule
 from pythonosc import udp_client
 
 import ibllib.io.raw_data_loaders as raw
-import sound
 sys.path.append(str(Path(__file__).parent.parent))
 sys.path.append(str(Path(__file__).parent.parent.parent.parent))
 from path_helper import SessionPathCreator
 import init_logging
+import sound
+import ambient_sensor
 log = logging.getLogger('iblrig')
 
 
@@ -83,8 +84,6 @@ class SessionParamHandler(object):
         self.__dict__.update(spc.__dict__)
         self._check_com_config()
 
-        if self.INTERACTIVE_DELAY < 0.1:
-            self.INTERACTIVE_DELAY = 0.1
         # =====================================================================
         # SUBJECT
         # =====================================================================
@@ -244,9 +243,22 @@ class SessionParamHandler(object):
             SessionParamHandler.zipdir(dir, zipf)
         zipf.close()
 
+    @staticmethod
+    def get_port_events(events: dict, name: str = '') -> list:
+        out: list = []
+        for k in events:
+            if name in k:
+                out.extend(events[k])
+        out = sorted(out)
+
+        return out
     # =========================================================================
     # METHODS
     # =========================================================================
+    def save_ambient_sensor_reading(self, bpod_instance):
+        return ambient_sensor.get_reading(bpod_instance, 
+                                          save_to=self.SESSION_RAW_DATA_FOLDER)
+    
     def get_subject_weight(self):
         _weight = self.numinput(
             "Subject weighing (gr)", f"{self.PYBPOD_SUBJECTS[0]} weight (gr):")
@@ -324,7 +336,7 @@ class SessionParamHandler(object):
         PLEASE GO TO:
         iblrig_params/IBL/tasks/{self.PYBPOD_PROTOCOL}/task_settings.py
         and set
-          SOFT_SOUND = 'sysdefault'
+          SOFT_SOUND = 'sysdefault' or 'xonar'
         ##########################################"""
             log.error(msg)
             raise(NotImplementedError)
@@ -366,15 +378,17 @@ class SessionParamHandler(object):
             com = "-p:REPortName=" + self.COM['ROTARY_ENCODER']
             rec = "-p:RecordSound=" + str(self.RECORD_SOUND)
 
+            sync_x = "-p:sync_x=" + str(self.SYNC_SQUARE_X)
+            sync_y = "-p:sync_y=" + str(self.SYNC_SQUARE_Y)
             start = '--start'
             noeditor = '--noeditor'
 
             if self.BONSAI_EDITOR:
                 subprocess.Popen(
-                    [bns, wkfl, start, pos, evt, itr, com, mic, rec])
+                    [bns, wkfl, start, pos, evt, itr, com, mic, rec, sync_x, sync_y])
             elif not self.BONSAI_EDITOR:
                 subprocess.Popen(
-                    [bns, wkfl, noeditor, pos, evt, itr, com, mic, rec])
+                    [bns, wkfl, noeditor, pos, evt, itr, com, mic, rec, sync_x, sync_y])
             time.sleep(5)
             os.chdir(here)
         else:

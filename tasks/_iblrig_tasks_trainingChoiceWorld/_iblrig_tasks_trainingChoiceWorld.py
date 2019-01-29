@@ -12,7 +12,6 @@ import logging
 
 from session_params import SessionParamHandler
 from trial_params import TrialParamHandler
-import ambient_sensor
 import task_settings
 import user_settings
 import online_plots as op
@@ -169,17 +168,29 @@ for i in range(sph.NTRIALS):  # Main loop
     bpod.run_state_machine(sma)  # Locks until state machine 'exit' is reached
 
     trial_data = tph.trial_completed(bpod.session.current_trial.export())
+    
     op.plot_bars(trial_data, ax=ax_bars)
     psyfun_df = op.update_psyfun_df(trial_data, psyfun_df)
     op.plot_psyfun(trial_data, psyfun_df, ax=ax_psyc)
 
     elapsed_time = datetime.datetime.now(
         ) - parser.parse(trial_data['init_datetime'])
-    as_msg = 'not saved - deactivated in task settings'
+    
+    tevents = trial_data['behavior_data']['Events timestamps']
+    ev_bnc1 = sph.get_port_events(tevents, name='BNC1')
+    ev_bnc2 = sph.get_port_events(tevents, name='BNC2')
+    ev_port1 = sph.get_port_events(tevents, name='Port1')
 
+    NOT_SAVED = 'not saved - deactivated in task settings'
+    NOT_FOUND = 'COULD NOT FIND DATA ON {}'
+
+    as_msg = NOT_SAVED
+    bnc1_msg = NOT_FOUND.format('BNC1') if not ev_bnc1 else 'OK'
+    bnc2_msg = NOT_FOUND.format('BNC2') if not ev_bnc2 else 'OK'
+    port1_msg = NOT_FOUND.format('Port1') if not ev_port1 else 'OK'
+    
     if sph.RECORD_AMBIENT_SENSOR_DATA:
-        data = ambient_sensor.get_reading(bpod,
-                                          save_to=sph.SESSION_RAW_DATA_FOLDER)
+        data = sph.save_ambient_sensor_reading(bpod)
         as_msg = 'saved'
 
     msg = f"""
@@ -200,6 +211,18 @@ TIME FROM START:        {elapsed_time}
 AMBIENT SENSOR DATA:    {as_msg}
 ##########################################"""
     log.info(msg)
+    
+    warn_msg = f"""
+        ##########################################
+                NOT FOUND: SYNC PULSES
+        ##########################################
+        VISUAL STIMULUS SYNC: {bnc1_msg}
+        SOUND SYNC: {bnc2_msg}
+        CAMERA SYNC: {port1_msg}
+        ##########################################"""
+    if not ev_bnc1 or not ev_bnc2 or not ev_port1:
+        log.warning(warn_msg)
+
     stop_crit = tph.check_stop_criterions()
     if stop_crit and sph.USE_AUTOMATIC_STOPPING_CRITERIONS:
         if stop_crit == 1:

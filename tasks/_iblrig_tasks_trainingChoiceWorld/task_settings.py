@@ -23,7 +23,7 @@ REPEAT_ON_ERROR = True
 # STATE TIMERS
 QUIESCENCE_THRESHOLDS = [-2, 2]  # degree
 QUIESCENT_PERIOD = 0.2  # + x, where x~exp(0.35), t ∈ 0.2 <= R <= 0.5
-INTERACTIVE_DELAY = 0.1  # how long after stim onset the CL starts
+INTERACTIVE_DELAY = 0.0  # how long after stim onset the CL starts
 RESPONSE_WINDOW = 60  # Time to move the wheel after go tone (seconds)
 ITI_CORRECT = 1  # how long the stim should stay visible after CORRECT choice
 ITI_ERROR = 2  # how long the stim should stay visible after ERROR choice
@@ -34,6 +34,9 @@ STIM_FREQ = 0.10  # Probably constant - NOT IN USE
 STIM_ANGLE = 0.  # Vertical orientation of Gabor patch - NOT IN USE
 STIM_SIGMA = 7.  # (azimuth_degree) Size of Gabor patch
 STIM_GAIN = 8.  # (azimuth_degree/mm) Gain of the RE to stimulus movement (used if ADAPTIVE_GAIN = FALSE)
+SYNC_SQUARE_X = 0.95
+SYNC_SQUARE_Y = 0.17
+
 # SOUNDS
 SOFT_SOUND = 'sysdefault'  # Use software sound 'xonar', 'sysdefault' or False for BpodSoundCard
 SOUND_BOARD_BPOD_PORT = 'Serial3'  # (on Bpod) - Ignored if using SOFT_SOUND
