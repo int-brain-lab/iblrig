@@ -25,6 +25,7 @@ sys.path.append(str(Path(__file__).parent.parent))
 sys.path.append(str(Path(__file__).parent.parent.parent.parent))
 from path_helper import SessionPathCreator
 import sound
+import ambient_sensor
 log = logging.getLogger('iblrig')
 
 
@@ -234,9 +235,14 @@ class SessionParamHandler(object):
         out = sorted(out)
 
         return out
+    
     # =========================================================================
     # METHODS
     # =========================================================================
+    def save_ambient_sensor_reading(self, bpod_instance):
+        return ambient_sensor.get_reading(bpod_instance, 
+                                          save_to=self.SESSION_RAW_DATA_FOLDER)
+
     def get_subject_weight(self):
         _weight = self.numinput(
             "Subject weighing (gr)", f"{self.PYBPOD_SUBJECTS[0]} weight (gr):")

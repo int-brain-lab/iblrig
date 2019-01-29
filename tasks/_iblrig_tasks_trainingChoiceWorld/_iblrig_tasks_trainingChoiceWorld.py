@@ -12,7 +12,6 @@ import logging
 
 from session_params import SessionParamHandler
 from trial_params import TrialParamHandler
-import ambient_sensor
 import task_settings
 import user_settings
 import online_plots as op
@@ -191,8 +190,7 @@ for i in range(sph.NTRIALS):  # Main loop
     port1_msg = NOT_FOUND.format('Port1') if not ev_port1 else 'OK'
     
     if sph.RECORD_AMBIENT_SENSOR_DATA:
-        data = ambient_sensor.get_reading(bpod,
-                                          save_to=sph.SESSION_RAW_DATA_FOLDER)
+        data = sph.save_ambient_sensor_reading(bpod)
         as_msg = 'saved'
 
     msg = f"""
