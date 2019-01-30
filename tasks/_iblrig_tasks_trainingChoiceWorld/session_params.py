@@ -25,7 +25,6 @@ import ibllib.io.raw_data_loaders as raw
 sys.path.append(str(Path(__file__).parent.parent))
 sys.path.append(str(Path(__file__).parent.parent.parent.parent))
 from path_helper import SessionPathCreator
-import init_logging
 import sound
 import ambient_sensor
 log = logging.getLogger('iblrig')
@@ -256,9 +255,9 @@ class SessionParamHandler(object):
     # METHODS
     # =========================================================================
     def save_ambient_sensor_reading(self, bpod_instance):
-        return ambient_sensor.get_reading(bpod_instance, 
+        return ambient_sensor.get_reading(bpod_instance,
                                           save_to=self.SESSION_RAW_DATA_FOLDER)
-    
+
     def get_subject_weight(self):
         _weight = self.numinput(
             "Subject weighing (gr)", f"{self.PYBPOD_SUBJECTS[0]} weight (gr):")
@@ -620,29 +619,29 @@ class SessionParamHandler(object):
     def display_logs(self):
         if self.PREVIOUS_DATA_FILE:
             msg = f"""
-        ##########################################
-        PREVIOUS SESSION FOUND
-        LOADING PARAMETERS FROM: {self.PREVIOUS_DATA_FILE}
+##########################################
+PREVIOUS SESSION FOUND
+LOADING PARAMETERS FROM: {self.PREVIOUS_DATA_FILE}
 
-        PREVIOUS NTRIALS:              {self.LAST_TRIAL_DATA["trial_num"]}
-        PREVIOUS NTRIALS (no repeats): {self.LAST_TRIAL_DATA["non_rc_ntrials"]}
-        PREVIOUS WATER DRANK: {self.LAST_TRIAL_DATA['water_delivered']}
-        LAST REWARD:                   {self.LAST_TRIAL_DATA["reward_amount"]}
-        LAST GAIN:                     {self.LAST_TRIAL_DATA["stim_gain"]}
-        LAST CONTRAST SET:             {self.LAST_TRIAL_DATA["ac"]["contrast_set"]}
-        BUFFERS:                       {'loaded'}
-        PREVIOUS WEIGHT:               {self.LAST_SETTINGS_DATA['SUBJECT_WEIGHT']}
-        ##########################################"""
+PREVIOUS NTRIALS:              {self.LAST_TRIAL_DATA["trial_num"]}
+PREVIOUS NTRIALS (no repeats): {self.LAST_TRIAL_DATA["non_rc_ntrials"]}
+PREVIOUS WATER DRANK: {self.LAST_TRIAL_DATA['water_delivered']}
+LAST REWARD:                   {self.LAST_TRIAL_DATA["reward_amount"]}
+LAST GAIN:                     {self.LAST_TRIAL_DATA["stim_gain"]}
+LAST CONTRAST SET:             {self.LAST_TRIAL_DATA["ac"]["contrast_set"]}
+BUFFERS:                       {'loaded'}
+PREVIOUS WEIGHT:               {self.LAST_SETTINGS_DATA['SUBJECT_WEIGHT']}
+##########################################"""
             log.info(msg)
 
         msg = f"""
-        ##########################################
-        ADAPTIVE VALUES FOR CURRENT SESSION
+##########################################
+ADAPTIVE VALUES FOR CURRENT SESSION
 
-        REWARD AMOUNT:      {self.REWARD_AMOUNT} µl
-        VALVE OPEN TIME:    {self.REWARD_VALVE_TIME} sec
-        GAIN:               {self.STIM_GAIN} azimuth_degree/mm
-        ##########################################"""
+REWARD AMOUNT:      {self.REWARD_AMOUNT} µl
+VALVE OPEN TIME:    {self.REWARD_VALVE_TIME} sec
+GAIN:               {self.STIM_GAIN} azimuth_degree/mm
+##########################################"""
         log.info(msg)
 
 
