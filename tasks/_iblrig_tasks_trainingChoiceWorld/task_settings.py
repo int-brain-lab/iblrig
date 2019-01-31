@@ -49,7 +49,7 @@ GO_TONE_AMPLITUDE = 0.1  # [0->1]
 # ADAPTIVE REWARD PARAMETERS (IGNORED IF ADAPTIVE_REWARD = False)
 ADAPTIVE_REWARD = True  # wether to increase reware at session start usin AR_* criteria
 AR_INIT_VALUE = 3  # µl
-AR_MIN_VALUE = 1.5  # µl
+AR_MIN_VALUE = 1.5  # (µl) 1.5 µl for sugar water, 2 µl for normal water
 AR_STEP = 0.1  # µl
 AR_CRIT = 200  # number of trials performed
 # CONTRASTS
