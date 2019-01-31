@@ -18,6 +18,7 @@ from dateutil import parser
 log = logging.getLogger('iblrig')
 log.setLevel(logging.INFO)
 
+
 class ComplexEncoder(json.JSONEncoder):
     def default(self, obj):
         if hasattr(obj, 'reprJSON'):
@@ -244,6 +245,7 @@ class TrialParamHandler(object):
         self.stim_sigma = sph.STIM_SIGMA
         self.out_tone = sph.OUT_TONE
         self.out_noise = sph.OUT_NOISE
+        self.poop_count = sph.POOP_COUNT
         # Reward amount
         self.reward_amount = sph.REWARD_AMOUNT
         self.reward_valve_time = sph.REWARD_VALVE_TIME
@@ -326,6 +328,9 @@ class TrialParamHandler(object):
             open(flag, 'a').close()
             flag2 = Path(self.data_file_path).parent.parent / 'create_me.flag'
             open(flag2, 'a').close()
+            flag3 = Path(self.data_file_path).parent.parent / 'poop_count.flag'
+            if self.poop_count:
+                open(flag3, 'a').close()
         return json.loads(out)
 
     def check_stop_criterions(self):
