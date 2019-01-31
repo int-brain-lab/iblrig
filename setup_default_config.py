@@ -111,11 +111,38 @@ def create_task_bonsai_stop_command(task, port: int = 7110):
     return task
 
 
-def create_task_bpod_lights_command(task, onoff: int):
+def create_task_bpod_lights_command(task, onoff: int, when: str = 'POST'):
     command = task.create_execcmd()
     command.cmd = f"python ..\\..\\..\\bpod_lights.py {onoff}"
+    if when == 'POST':
+        command.when = command.WHEN_POST
+    elif when == 'PRE':
+        command.when = command.WHEN_PRE
+
+    print(f"    Added <{when}> command <{command.cmd}> to <{task.name}>")
+
+    return task
+
+
+def create_task_poop_command(task, when: str = 'POST'):
+    command = task.create_execcmd()
+    command.cmd = f"python ..\\..\\..\\poop_count.py"
     command.when = command.WHEN_POST
     when = 'POST' if command.when == 1 else 'PRE'
+
+    print(f"    Added <{when}> command <{command.cmd}> to <{task.name}>")
+
+    return task
+
+
+def create_task_create_command(task, when: str = 'POST'):
+    command = task.create_execcmd()
+    command.cmd = f"python ..\\..\\..\\create_session.py"
+    if when == 'POST':
+        command.when = command.WHEN_POST
+    elif when == 'PRE':
+        command.when = command.WHEN_PRE
+
     print(f"    Added <{when}> command <{command.cmd}> to <{task.name}>")
 
     return task
@@ -140,7 +167,14 @@ def config_task(iblproject_path, task_name: str):
         task = create_task_bonsai_stop_command(task, port=7110)
         task = create_task_bonsai_stop_command(task, port=7111)
         task = create_task_cleanup_command(task)
-        task = create_task_bpod_lights_command(task, onoff=1)
+        task = create_task_bpod_lights_command(task, onoff=1, when='POST')
+    if task.name == '_iblrig_tasks_trainingChoiceWorld':
+        task = create_task_poop_command()
+        task = create_task_create_command()
+    if task.name == '_iblrig_tasks_habituationChoiceWorld':
+        task = create_task_create_command()
+    if task.name == '_iblrig_tasks_biasedChoiceWorld':
+        task = create_task_create_command()
 
     p.save(iblproject_path)
     print("    Task configured")
@@ -319,7 +353,8 @@ if __name__ == "__main__":
     elif len(sys.argv) == 2:
         print(f"Copying task files to: {sys.argv[1]}")
         main(sys.argv[1])
-    # iblrig_params_path = '/home/nico/Projects/IBL/IBL-github/scratch/IBL_params'
+    # iblrig_params_path = \
+    # '/home/nico/Projects/IBL/IBL-github/scratch/IBL_params'
     # iblrig_params_path = Path(iblrig_params_path)
     # iblproject_path = iblrig_params_path / 'IBL'
 
