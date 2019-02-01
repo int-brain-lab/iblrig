@@ -35,3 +35,5 @@ SOFT_SOUND = 'sysdefault'  # Use software sound 'xonar', 'sysdefault' or False f
 GO_TONE_DURATION = 0.1  # Length of tone
 GO_TONE_FREQUENCY = 5000  # 5KHz
 GO_TONE_AMPLITUDE = 0.1  # [0->1]
+# POOP COUNT LOGGING
+POOP_COUNT = True  # Wether to ask for a poop count at the end of the session

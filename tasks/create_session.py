@@ -10,9 +10,11 @@ import oneibl.params
 from alf.one_iblrig import create
 
 
+IBLRIG_DATA = Path(__file__).parent.parent / 'iblrig_data' / 'Subjects'
+
 if __name__ == "__main__":
     pfile = Path(params.getfile('one_params'))
     if not pfile.exists():
         oneibl.params.setup_alyx_params()
 
-    create()
+    create(IBLRIG_DATA, dry=False)
