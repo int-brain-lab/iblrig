@@ -8,8 +8,10 @@ from tkinter import simpledialog
 from pathlib import Path
 from ibllib.io import raw_data_loaders as raw
 import shutil
+import json
+import ciso8601
 
-IBLRIG_DATA = Path(__file__).parent.parent / 'iblrig_data' / 'Subjects'
+IBLRIG_DATA = Path().cwd().parent.parent.parent.parent / 'iblrig_data' / 'Subjects'
 
 
 def patch_settings_file(session_path: str, patch: dict) -> None:
@@ -34,19 +36,19 @@ def numinput(title, prompt, default=None, minval=None, maxval=None):
     elif not ans:
         return numinput(
             title, prompt, default=default, minval=minval, maxval=maxval)
-    return
+    return ans
 
 
 def main() -> None:
     poop_flags = list(IBLRIG_DATA.rglob('poop_count.flag'))
-
-    if len(poop_flags) != 1:
-        print('Too many or no poop flags found... exiting')
+    poop_flags = sorted(poop_flags, key=lambda x: (
+        ciso8601.parse_datetime(x.parent.parent.name), int(x.parent.name)))
+    if not poop_flags:
         return
-
-    flag = poop_flags[0]
-
-    poop_count = numinput('Poop up window', 'Enter poop pellet count')
+    flag = poop_flags[-1]
+    session_name = '/'.join(flag.parent.parts[-3:])
+    poop_count = numinput('Poop up window', 
+        f'Enter poop pellet count for session: \n{session_name}')
     patch = {'POOP_COUNT': poop_count}
     patch_settings_file(str(flag.parent), patch)
     flag.unlink()
@@ -55,4 +57,5 @@ if __name__ == "__main__":
     main()
     # IBLRIG_DATA = '/home/nico/Projects/IBL/IBL-github/iblrig/scratch/test_iblrig_data/Subjects'
     # IBLRIG_DATA = Path(IBLRIG_DATA)
-    print('.')
+    # print('.')
+    
