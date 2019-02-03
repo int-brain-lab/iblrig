@@ -135,9 +135,9 @@ def create_task_poop_command(task, when: str = 'POST'):
     return task
 
 
-def create_task_create_command(task, when: str = 'POST'):
+def create_task_create_command(task, when: str = 'POST', patch: bool = True):
     command = task.create_execcmd()
-    command.cmd = f"python ..\\..\\..\\create_session.py"
+    command.cmd = f"python ..\\..\\..\\create_session.py --patch={patch}"
     if when == 'POST':
         command.when = command.WHEN_POST
     elif when == 'PRE':
@@ -168,12 +168,6 @@ def config_task(iblproject_path, task_name: str):
         task = create_task_bonsai_stop_command(task, port=7111)
         task = create_task_cleanup_command(task)
         task = create_task_bpod_lights_command(task, onoff=1, when='POST')
-    if task.name == '_iblrig_tasks_trainingChoiceWorld':
-        task = create_task_poop_command(task)
-        task = create_task_create_command(task)
-    if task.name == '_iblrig_tasks_habituationChoiceWorld':
-        task = create_task_create_command(task)
-    if task.name == '_iblrig_tasks_biasedChoiceWorld':
         task = create_task_create_command(task)
 
     p.save(iblproject_path)
