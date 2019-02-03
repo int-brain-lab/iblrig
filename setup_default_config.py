@@ -168,7 +168,12 @@ def config_task(iblproject_path, task_name: str):
         task = create_task_bonsai_stop_command(task, port=7111)
         task = create_task_cleanup_command(task)
         task = create_task_bpod_lights_command(task, onoff=1, when='POST')
-        task = create_task_create_command(task)
+    if task.name == '_iblrig_tasks_habituationChoiceWorld':
+        task = create_task_create_command(task, patch=True)
+    if task.name == '_iblrig_tasks_trainingChoiceWorld':
+        task = create_task_create_command(task, patch=True)
+    if task.name == '_iblrig_tasks_biasedChoiceWorld':
+        task = create_task_create_command(task, patch=False)
 
     p.save(iblproject_path)
     print("    Task configured")
