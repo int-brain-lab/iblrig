@@ -3,10 +3,9 @@
 # @Date: Thursday, January 31st 2019, 4:12:19 pm
 # @Last Modified by: Niccolò Bonacchi
 # @Last Modified time: 31-01-2019 04:12:21.2121
-import tkinter as tk
-from tkinter import simpledialog
 from pathlib import Path
 from ibllib.io import raw_data_loaders as raw
+from graphic import numinput
 import shutil
 import json
 import ciso8601
@@ -14,29 +13,23 @@ import ciso8601
 IBLRIG_DATA = Path().cwd().parent.parent.parent.parent / 'iblrig_data' / 'Subjects'
 
 
-def patch_settings_file(session_path: str, patch: dict) -> None:
-    settings = raw.load_settings(session_path)
+def patch_settings_file(sess_or_file: str, patch: dict) -> None:
+    sess_or_file = Path(sess_or_file)
+    if sess_or_file.is_file() and sess_or_f.name.endswith('_iblrig_taskSettings.raw.json'):
+        session = sess_or_file.parent.parent
+    elif sess_or_file.is_dir() and sess_or_file.name.isdecimal():
+        file = sess_or_file / 'raw_behavior_data' / '_iblrig_taskSettings.raw.json'
+    else:
+        print('not a settings file or a session folder')
+        return
+
+    settings = raw.load_settings(session)
     settings.update(patch)
-    sett_file = Path(session_path) / 'raw_behavior_data' / \
-        '_iblrig_taskSettings.raw.json'
-    with open(sett_file, 'w') as f:
+    with open(file, 'w') as f:
             f.write(json.dumps(settings, indent=1))
             f.write('\n')
 
     return
-
-
-def numinput(title, prompt, default=None, minval=None, maxval=None):
-    root = tk.Tk()
-    root.withdraw()
-    ans = simpledialog.askinteger(
-        title, prompt, initialvalue=default, minvalue=minval, maxvalue=maxval)
-    if ans == 0:
-        return ans
-    elif not ans:
-        return numinput(
-            title, prompt, default=default, minval=minval, maxval=maxval)
-    return ans
 
 
 def main() -> None:
@@ -47,7 +40,7 @@ def main() -> None:
         return
     flag = poop_flags[-1]
     session_name = '/'.join(flag.parent.parts[-3:])
-    poop_count = numinput('Poop up window', 
+    poop_count = numinput('Poop up window',
         f'Enter poop pellet count for session: \n{session_name}')
     patch = {'POOP_COUNT': poop_count}
     patch_settings_file(str(flag.parent), patch)
@@ -58,4 +51,3 @@ if __name__ == "__main__":
     # IBLRIG_DATA = '/home/nico/Projects/IBL/IBL-github/iblrig/scratch/test_iblrig_data/Subjects'
     # IBLRIG_DATA = Path(IBLRIG_DATA)
     # print('.')
-    
