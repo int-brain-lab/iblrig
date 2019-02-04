@@ -72,6 +72,7 @@ class SessionPathCreator(object):
                                            'Data.raw.jsonable')
 
         self.LATEST_WATER_CALIBRATION_FILE = self._latest_water_calib_file()
+        self.LATEST_WATER_CALIB_RANGE_FILE = self._latest_water_range_file()
 
         self.PREVIOUS_DATA_FILE = self._previous_data_file()
         self.PREVIOUS_SETTINGS_FILE = self._previous_settings_file()
@@ -399,6 +400,14 @@ class SessionPathCreator(object):
             logger.debug(
              f'No valid calibration files were found for board {self._BOARD}')
             return
+
+    def _latest_water_range_file(self):
+        wcfile = Path(self.LATEST_WATER_CALIBRATION_FILE)
+        wcrange = wcfile.parent / '_iblrig_calibration_water_range.csv'
+        if wcrange.exists():
+            return str(wcrange)
+        else:
+            logger.info(f"{wcrange.name} not found. Using full curve.")
 
     def display_logs(self):
         # User info and warnings
