@@ -31,7 +31,7 @@ SYNC_SQUARE_Y = 0.17
 # CONTRASTS
 CONTRAST_SET = [1.]  # Full contrast set, used if adaptive contrast = False
 # SOUNDS
-SOFT_SOUND = 'sysdefault'  # Use software sound 'xonar', 'sysdefault' or False for BpodSoundCard
+SOFT_SOUND = 'xonar'  # Use software sound 'xonar', 'sysdefault' or False for BpodSoundCard
 GO_TONE_DURATION = 0.1  # Length of tone
 GO_TONE_FREQUENCY = 5000  # 5KHz
 GO_TONE_AMPLITUDE = 0.1  # [0->1]
