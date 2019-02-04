@@ -346,6 +346,8 @@ class SessionPathCreator(object):
             logger.debug(f'NOT FOUND: Calibration subject {str(cal)}')
             return None
 
+        return None
+
 
     def _latest_water_calib_file(self):
         logger.debug(f"Looking for calibration file of board: {self._BOARD}")
