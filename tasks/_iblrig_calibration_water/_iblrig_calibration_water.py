@@ -9,7 +9,7 @@ import datetime
 import re
 import time
 import tkinter as tk
-from tkinter import simpledialog  # for dialog box
+from tkinter import messagebox
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -135,7 +135,7 @@ if sph.OAHUS_SCALE_PORT:
     stopweight = scale_read(sph.OAHUS_SCALE_PORT)
 else:
     stopweight = numinput(f"Initialize weight",
-                            "Enter the weight diplayed on the scale (gr):")
+                          "Enter the weight diplayed on the scale (gr):")
 
 pass_ = 1
 progress = 0
