@@ -60,9 +60,8 @@ class SessionPathCreator(object):
         self.SESSION_RAW_IMAGING_DATA_FOLDER = os.path.join(
             self.SESSION_FOLDER, 'raw_imaging_data')
 
-        self.SESSION_COMPOUND_NAME = '{}'.format(os.path.sep).join(
-            [self.SUBJECT_NAME, self.SESSION_DATE, self.SESSION_NUMBER,
-             self._PROTOCOL, self._BOARD])
+        self.SESSION_NAME = '{}'.format(os.path.sep).join(
+            [self.SUBJECT_NAME, self.SESSION_DATE, self.SESSION_NUMBER])
 
         self.BASE_FILENAME = '_iblrig_task'
         self.SETTINGS_FILE_PATH = os.path.join(self.SESSION_RAW_DATA_FOLDER,
