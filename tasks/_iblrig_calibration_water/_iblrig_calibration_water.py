@@ -20,6 +20,7 @@ import seaborn as sns  # for easier plotting at the end
 import serial
 from pybpodapi.bpod import Bpod
 from pybpodapi.state_machine import StateMachine
+from ibllib.graphic import numinput
 
 import task_settings
 import user_settings  # PyBpod creates this file on run.
@@ -112,27 +113,6 @@ def scale_read(COMport_string):
     # print('Reading Ohaus %s %fg' %(version.decode("utf-8"), grams))
 
     return grams
-
-
-def numinput(title, prompt, default=None, minval=None, maxval=None):
-    """Pop up a dialog window for input of a number.
-    Arguments:
-    title: is the title of the dialog window,
-    prompt: is a text mostly describing what numerical information to input.
-    default: default value
-    minval: minimum value for imput
-    maxval: maximum value for input
-
-    The number input must be in the range minval .. maxval if these are
-    given. If not, a hint is issued and the dialog remains open for
-    correction. Return the number input.
-    If the dialog is canceled,  return None.
-
-    Example:
-    >>> numinput("Poker", "Your stakes:", 1000, minval=10, maxval=10000)
-    """
-    return simpledialog.askfloat(title, prompt, initialvalue=default,
-                                 minvalue=minval, maxvalue=maxval)
 
 # =============================================================================
 # FIRST, GENERATE A CALIBRATION CURVE - OPEN TIMES VS DROP SIZE

@@ -20,6 +20,7 @@ import scipy.interpolate as interp
 from pybpod_rotaryencoder_module.module_api import RotaryEncoderModule
 from pythonosc import udp_client
 from pathlib import Path
+from ibllib.graphic import numinput, strinput
 
 sys.path.append(str(Path(__file__).parent.parent))
 sys.path.append(str(Path(__file__).parent.parent.parent.parent))
@@ -156,61 +157,24 @@ class SessionParamHandler(object):
                     'FRAME2TTL': None}
         log.info(f"COM: {str(self.COM)}")
         if not self.COM['ROTARY_ENCODER']:
-            comports['ROTARY_ENCODER'] = self.strinput("RIG CONFIG",
-                "Please insert ROTARY ENCODER COM port (e.g. COM9): "
-            ).upper()
+            comports['ROTARY_ENCODER'] = self.strinput(
+                "RIG CONFIG",
+                "Please insert ROTARY ENCODER COM port (e.g. COM9): ",
+                default='COM').upper()
             SessionPathCreator.create_bpod_comport_file(
                 self.BPOD_COMPORTS_FILE, comports)
             self.COM = comports
         if not self.COM['FRAME2TTL']:
-            comports['FRAME2TTL'] = self.strinput("RIG CONFIG",
-                "Please insert FRAME2TTL COM port (e.g. COM9): "
-            ).upper()
+            comports['FRAME2TTL'] = self.strinput(
+                "RIG CONFIG", "Please insert FRAME2TTL COM port (e.g. COM9): ",
+                default='COM').upper()
             SessionPathCreator.create_bpod_comport_file(
                 self.BPOD_COMPORTS_FILE, comports)
             self.COM = comports
+
     # =========================================================================
     # STATIC METHODS
     # =========================================================================
-
-    @staticmethod
-    def numinput(title, prompt, default=None, minval=None, maxval=None):
-        """ From turtle lib:
-        Pop up a dialog window for input of a number.
-        Arguments:
-        title: is the title of the dialog window,
-        prompt: is a text describing what numerical information to input.
-        default: default value
-        minval: minimum value for imput
-        maxval: maximum value for input
-
-        The number input must be in the range minval .. maxval if these are
-        given. If not, a hint is issued and the dialog remains open for
-        correction. Return the number input.
-        If the dialog is canceled,  return None.
-
-        Example:
-        >>> numinput("Poker", "Your stakes:", 1000, minval=10, maxval=10000)
-        """
-        import tkinter as tk
-        from tkinter import simpledialog
-        root = tk.Tk()
-        root.withdraw()
-        return simpledialog.askfloat(title, prompt, initialvalue=default,
-                                     minvalue=minval, maxvalue=maxval)
-
-    @staticmethod
-    def strinput(title, prompt, default=None):
-        """
-        Example:
-        >>> strinput("RIG CONFIG", "Insert RE com port:", default="COM")
-        """
-        import tkinter as tk
-        from tkinter import simpledialog
-        root = tk.Tk()
-        root.withdraw()
-        return simpledialog.askstring(title, prompt, initialvalue='COM')
-
     @staticmethod
     def zipdir(path, ziph):
         # ziph is zipfile handle
@@ -240,6 +204,12 @@ class SessionParamHandler(object):
     # =========================================================================
     # METHODS
     # =========================================================================
+    def numinput(self, *args, **kwargs):
+        return numinput(*args, **kwargs)
+
+    def strinput(self, *args, **kwargs):
+        return strinput(*args, **kwargs)
+
     def save_ambient_sensor_reading(self, bpod_instance):
         return ambient_sensor.get_reading(bpod_instance,
                                           save_to=self.SESSION_RAW_DATA_FOLDER)

@@ -69,5 +69,5 @@ AG_INIT_VALUE = 8.  # Adaptive Gain init value (azimuth_degree/mm)
 AG_MIN_VALUE = 4.  # (azimuth_degree/mm)
 # POSITION BIAS FOR REPEATED TRIALS
 RESPONSE_BUFFER_LENGTH = 10
-# POOP COUNL LOGGING
+# POOP COUNT LOGGING
 POOP_COUNT = True  # Wether to ask for a poop count at the end of the session

@@ -5,7 +5,7 @@
 # @Last Modified time: 31-01-2019 04:12:21.2121
 from pathlib import Path
 from ibllib.io import raw_data_loaders as raw
-from graphic import numinput
+from ibllib.graphic import numinput
 import shutil
 import json
 import ciso8601
