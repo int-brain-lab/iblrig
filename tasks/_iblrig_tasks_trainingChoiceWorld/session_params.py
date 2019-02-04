@@ -145,6 +145,7 @@ class SessionParamHandler(object):
         # =====================================================================
         # RUN VISUAL STIM
         # =====================================================================
+        self._init_screen_calibration()
         self.BONSAI = spc.get_bonsai_path(use_iblrig_bonsai=True)
         self.VISUAL_STIMULUS_TYPE = 'TrainingGabor2D'
         self.VISUAL_STIMULUS_FILE = str(
@@ -320,6 +321,9 @@ class SessionParamHandler(object):
 
     def stop_sound(self):
         self.SD.stop()
+
+    def _init_screen_calibration(self):
+        pass
 
     # =========================================================================
     # BONSAI WORKFLOWS
