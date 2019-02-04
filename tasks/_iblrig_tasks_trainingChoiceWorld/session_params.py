@@ -104,6 +104,7 @@ class SessionParamHandler(object):
         # =====================================================================
         self.REWARD_AMOUNT = self._init_reward_amount()
         self.CALIB_FUNC = self._init_calib_func()
+        self.CALIB_FUNC_RANGE = self._init_calib_func_range()
         self.REWARD_VALVE_TIME = self._init_reward_valve_time()
 
         self.STIM_GAIN = self._init_stim_gain()
@@ -453,14 +454,41 @@ class SessionParamHandler(object):
         else:
             return
 
+    def _init_calib_func_range(self) -> tuple:
+
+        min_open_time = 0
+        max_open_time = 1000
+        msg = f"""
+        ##########################################
+        NOT FOUND: WATER RANGE CALIBRATION FILE
+        ##########################################
+             File might be missing or empty
+                range set to (0, 1000)ms
+        ##########################################"""
+
+        if self.LATEST_WATER_CALIB_RANGE_FILE:
+            # Load last calibration r ange df1
+            df1 = pd.read_csv(self.LATEST_WATER_CALIB_RANGE_FILE)
+            if not df1.empty:
+                min_open_time = df1['min_open_time']
+                max_open_time = df1['max_open_time']
+            else:
+                log.warning(msg)
+        else:
+            log.warning(msg)
+
+        return min_open_time, max_open_time
+
     def _init_reward_valve_time(self):
         # Calc reward valve time
         if not self.AUTOMATIC_CALIBRATION:
             out = self.CALIBRATION_VALUE / 3 * self.REWARD_AMOUNT
         elif self.AUTOMATIC_CALIBRATION and self.CALIB_FUNC is not None:
-            out = 0
+            out = self.CALIB_FUNC_RANGE[0]
             while np.round(self.CALIB_FUNC(out), 3) < self.REWARD_AMOUNT:
                 out += 1
+                if out >= self.CALIB_FUNC_RANGE[1]:
+                    break
             out /= 1000
         elif self.AUTOMATIC_CALIBRATION and self.CALIB_FUNC is None:
             msg = """
