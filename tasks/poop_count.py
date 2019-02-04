@@ -17,8 +17,10 @@ def patch_settings_file(sess_or_file: str, patch: dict) -> None:
     sess_or_file = Path(sess_or_file)
     if sess_or_file.is_file() and sess_or_f.name.endswith('_iblrig_taskSettings.raw.json'):
         session = sess_or_file.parent.parent
+        file = sess_or_file
     elif sess_or_file.is_dir() and sess_or_file.name.isdecimal():
         file = sess_or_file / 'raw_behavior_data' / '_iblrig_taskSettings.raw.json'
+        session = sess_or_file
     else:
         print('not a settings file or a session folder')
         return
