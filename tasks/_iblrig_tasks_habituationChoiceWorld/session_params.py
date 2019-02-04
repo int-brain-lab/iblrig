@@ -97,6 +97,7 @@ class SessionParamHandler(object):
         # ADAPTIVE STUFF
         # =====================================================================
         self.CALIB_FUNC = self._init_calib_func()
+        self.CALIB_FUNC_RANGE = self._init_calib_func_range()
         self.REWARD_VALVE_TIME = self._init_reward_valve_time()
         self.STIM_GAIN = 8.
         # =====================================================================
@@ -360,14 +361,49 @@ class SessionParamHandler(object):
     # ADAPTIVE REWARD AND GAIN RULES
     # =========================================================================
     def _init_calib_func(self):
+        if not self.AUTOMATIC_CALIBRATION:
+            return
+
         if self.LATEST_WATER_CALIBRATION_FILE:
             # Load last calibration df1
             df1 = pd.read_csv(self.LATEST_WATER_CALIBRATION_FILE)
             # make interp func
-            time2vol = interp.pchip(df1["open_time"], df1["weight_perdrop"])
+            if df1.empty:
+                msg = f"""
+            ##########################################
+                 Water calibration file is emtpy!
+            ##########################################"""
+                log.error(msg)
+                raise(ValueError)
+            time2vol = sp.interpolate.pchip(df1["open_time"],
+                                            df1["weight_perdrop"])
             return time2vol
         else:
             return
+
+    def _init_calib_func_range(self) -> tuple:
+        min_open_time = 0
+        max_open_time = 1000
+        msg = f"""
+        ##########################################
+        NOT FOUND: WATER RANGE CALIBRATION FILE
+        ##########################################
+             File might be missing or empty
+                range set to (0, 1000)ms
+        ##########################################"""
+
+        if self.LATEST_WATER_CALIB_RANGE_FILE:
+            # Load last calibration r ange df1
+            df1 = pd.read_csv(self.LATEST_WATER_CALIB_RANGE_FILE)
+            if not df1.empty:
+                min_open_time = df1['min_open_time']
+                max_open_time = df1['max_open_time']
+            else:
+                log.warning(msg)
+        else:
+            log.warning(msg)
+
+        return min_open_time, max_open_time
 
     def _init_reward_valve_time(self):
         if self.DEBUG:
@@ -376,9 +412,11 @@ class SessionParamHandler(object):
         if not self.AUTOMATIC_CALIBRATION:
             out = self.CALIBRATION_VALUE / 3 * self.REWARD_AMOUNT
         elif self.AUTOMATIC_CALIBRATION and self.CALIB_FUNC is not None:
-            out = 0
+            out = self.CALIB_FUNC_RANGE[0]
             while np.round(self.CALIB_FUNC(out), 3) < self.REWARD_AMOUNT:
                 out += 1
+                if out >= self.CALIB_FUNC_RANGE[1]:
+                    break
             out /= 1000
         elif self.AUTOMATIC_CALIBRATION and self.CALIB_FUNC is None:
             msg = """
