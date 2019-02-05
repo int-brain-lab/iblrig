@@ -407,7 +407,7 @@ class SessionPathCreator(object):
         if wcrange.exists():
             return str(wcrange)
         else:
-            logger.info(f"{wcrange.name} not found. Using full curve.")
+            return
 
     def display_logs(self):
         # User info and warnings
@@ -438,6 +438,15 @@ class SessionPathCreator(object):
         ##########################################
         NOT FOUND: LATEST_WATER_CALIBRATION_FILE
         ##########################################"""
+                    logger.warning(msg)
+                if k == 'LATEST_WATER_CALIB_RANGE_FILE':
+                    msg = """
+        ##########################################
+        NOT FOUND: LATEST_WATER_CALIB_RANGE_FILE
+        ##########################################
+                  Using ms range(0, 1000)
+        ##########################################
+        """
                     logger.warning(msg)
 
 if __name__ == "__main__":
