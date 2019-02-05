@@ -9,7 +9,7 @@ import datetime
 import re
 import time
 import tkinter as tk
-from tkinter import simpledialog  # for dialog box
+from tkinter import messagebox
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -135,7 +135,7 @@ if sph.OAHUS_SCALE_PORT:
     stopweight = scale_read(sph.OAHUS_SCALE_PORT)
 else:
     stopweight = numinput(f"Initialize weight",
-                            "Enter the weight diplayed on the scale (gr):")
+                          "Enter the weight diplayed on the scale (gr):")
 
 pass_ = 1
 progress = 0
@@ -204,8 +204,33 @@ ax[0].set(xlabel="Open time (ms)",
           ylabel="Measured volume (ul per drop)", title="Calibration curve")
 title = f.suptitle(f"Water calibration {now}")
 f.savefig(sph.CALIBRATION_CURVE_FILE_PATH)
-f.show()
 
+# =============================================================================
+# ASK THE USER FOR A LINEAR RANGE
+# =============================================================================
+
+messagebox.showinfo("Information", "Calibration curve completed! We're not done yet. \n \
+    Please look at the figure and indicate a min-max range over which the curve is monotonic. \n \
+    The range of drop volumes should ideally be 1.5-3uL.\n\n \
+    Close the plot before entering the range.")
+plt.show()
+
+min_open_time = numinput(
+    "Input", "What's the LOWEST opening time (in ms) of the linear (monotonic) range?")
+
+max_open_time = numinput(
+    "Input", "What's the HIGHEST opening time (in ms) of the linear (monotonic) range?")
+
+ax[0].axvline(min_open_time, color='black')
+ax[0].axvline(max_open_time, color='black')
+
+plt.show()
+f.savefig(sph.CALIBRATION_CURVE_FILE_PATH)
+
+# SAVE THE RANGE TOGETHER WITH THE CALIBRATION CURVE - SEPARATE FILE
+df2 = pd.DataFrame.from_dict(
+    {'min_open_time': min_open_time, 'max_open_time': max_open_time, 'index': [0]})
+df2.to_csv(sph.CALIBRATION_RANGE_FILE_PATH)
 bpod.close()
 print(f'Completed water calibration {now}')
 
