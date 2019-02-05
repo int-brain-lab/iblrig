@@ -95,15 +95,11 @@ class SessionParamHandler(object):
         self.OSC_CLIENT_IP = '127.0.0.1'
         self.OSC_CLIENT = self._init_osc_client()
         # =====================================================================
-        # PREVIOUS DATA FILES
-        # =====================================================================
-        self.LAST_TRIAL_DATA = self._load_last_trial()
-        self.LAST_SETTINGS_DATA = self._load_last_settings_file()
-        # =====================================================================
         # ADAPTIVE STUFF
         # =====================================================================
         self.REWARD_AMOUNT = sph.REWARD_AMOUNT
         self.CALIB_FUNC = self._init_calib_func()
+        self.CALIB_FUNC_RANGE = self._init_calib_func_range()
         self.REWARD_VALVE_TIME = self._init_reward_valve_time()
 
         self.STIM_GAIN = sph.STIM_GAIN
@@ -146,7 +142,7 @@ class SessionParamHandler(object):
         # RUN VISUAL STIM
         # =====================================================================
         self.BONSAI = spc.get_bonsai_path(use_iblrig_bonsai=True)
-        self.VISUAL_STIMULUS_TYPE = 'TrainingGabor2D'
+        self.VISUAL_STIMULUS_TYPE = 'biasedGabor2D'
         self.VISUAL_STIMULUS_FILE = str(
             Path(self.VISUAL_STIM_FOLDER) /
             self.VISUAL_STIMULUS_TYPE / 'Gabor2D.bonsai')
@@ -231,12 +227,9 @@ class SessionParamHandler(object):
                                           save_to=self.SESSION_RAW_DATA_FOLDER)
 
     def get_subject_weight(self):
-        _weight = self.numinput(
-            "Subject weighing (gr)", f"{self.PYBPOD_SUBJECTS[0]} weight (gr):")
-        if _weight is None:
-            return self.get_subject_weight()
-
-        return _weight
+        return self.numinput(
+            "Subject weighing (gr)", f"{self.PYBPOD_SUBJECTS[0]} weight (gr):",
+            nullable=False)
 
     def bpod_lights(self, command: int):
         fpath = Path(self.IBLRIG_PARAMS_FOLDER) / 'bpod_lights.py'
@@ -272,8 +265,6 @@ class SessionParamHandler(object):
         elif isinstance(d['PYBPOD_SUBJECT_EXTRA'], dict):
             d['PYBPOD_SUBJECT_EXTRA'] = remove_from_dict(
                 d['PYBPOD_SUBJECT_EXTRA'])
-        d['LAST_TRIAL_DATA'] = None
-        d['LAST_SETTINGS_DATA'] = None
 
         return d
 
@@ -393,19 +384,6 @@ class SessionParamHandler(object):
     # =========================================================================
     # LAST TRIAL DATA
     # =========================================================================
-    def _load_last_trial(self, i=-1):
-        if self.PREVIOUS_DATA_FILE is None:
-            return
-        trial_data = raw.load_data(self.PREVIOUS_SESSION_PATH)
-
-        return trial_data[i] if trial_data else None
-
-    def _load_last_settings_file(self):
-        if not self.PREVIOUS_SETTINGS_FILE:
-            return
-
-        return raw.load_settings(self.PREVIOUS_SESSION_PATH)
-
     def _init_calib_func(self):
         if not self.AUTOMATIC_CALIBRATION:
             return
@@ -426,6 +404,31 @@ class SessionParamHandler(object):
             return time2vol
         else:
             return
+
+    def _init_calib_func_range(self) -> tuple:
+
+        min_open_time = 0
+        max_open_time = 1000
+        msg = f"""
+        ##########################################
+        NOT FOUND: WATER RANGE CALIBRATION FILE
+        ##########################################
+             File might be missing or empty
+                range set to (0, 1000)ms
+        ##########################################"""
+
+        if self.LATEST_WATER_CALIB_RANGE_FILE:
+            # Load last calibration r ange df1
+            df1 = pd.read_csv(self.LATEST_WATER_CALIB_RANGE_FILE)
+            if not df1.empty:
+                min_open_time = df1['min_open_time']
+                max_open_time = df1['max_open_time']
+            else:
+                log.warning(msg)
+        else:
+            log.warning(msg)
+
+        return min_open_time, max_open_time
 
     def _init_reward_valve_time(self):
         # Calc reward valve time
@@ -552,23 +555,6 @@ class SessionParamHandler(object):
         m.close()
 
     def display_logs(self):
-        if self.PREVIOUS_DATA_FILE:
-            msg = f"""
-##########################################
-PREVIOUS SESSION FOUND
-LOADING PARAMETERS FROM: {self.PREVIOUS_DATA_FILE}
-
-PREVIOUS NTRIALS:              {self.LAST_TRIAL_DATA["trial_num"]}
-PREVIOUS NTRIALS (no repeats): {self.LAST_TRIAL_DATA["non_rc_ntrials"]}
-PREVIOUS WATER DRANK: {self.LAST_TRIAL_DATA['water_delivered']}
-LAST REWARD:                   {self.LAST_TRIAL_DATA["reward_amount"]}
-LAST GAIN:                     {self.LAST_TRIAL_DATA["stim_gain"]}
-LAST CONTRAST SET:             {self.LAST_TRIAL_DATA["ac"]["contrast_set"]}
-BUFFERS:                       {'loaded'}
-PREVIOUS WEIGHT:               {self.LAST_SETTINGS_DATA['SUBJECT_WEIGHT']}
-##########################################"""
-            log.info(msg)
-
         msg = f"""
 ##########################################
 ADAPTIVE VALUES FOR CURRENT SESSION
