@@ -8,6 +8,8 @@ import numpy as np
 import subprocess
 import os
 import sys
+import logging
+log = logging.getLogger('iblrig')
 
 
 def configure_sounddevice(sd=None, output='sysdefault', samplerate=44100):
@@ -148,18 +150,63 @@ def upload(uploader_tool, file_path, index, type_=0, sample_rate=96):
     :param sample_rate: [96, 192] (KHz) playback sample rate, defaults to 96
     :param sample_rate: int, optional
     """
-    file_name = file_path.split(os.sep)[-1]
+    file_name = file_path.split(os.sep)[-1]  # noqa
     file_folder = file_path.split(os.sep)[:-1]
     subprocess.call([uploader_tool, file_path, index, type_, sample_rate])
 
     log_file = os.path.join(file_folder, 'log')
-    with open(log_file, 'a') as f:
+    with open(log_file, 'a') as f:  # noqa
         pass
     return
 
 
 def get_uploaded_sounds():
     pass
+
+
+def sound_sample_freq(soft_sound):
+    if soft_sound == 'xonar':
+        ssf = 192000
+    elif soft_sound == 'sysdefault':
+        ssf = 44100
+    elif soft_sound is None:
+        ssf = 96000
+
+    return ssf
+
+
+def init_sounds(sph_obj):
+    if sph_obj.SOFT_SOUND:
+        sph_obj.GO_TONE = make_sound(
+            rate=sph_obj.SOUND_SAMPLE_FREQ,
+            frequency=sph_obj.GO_TONE_FREQUENCY,
+            duration=sph_obj.GO_TONE_DURATION,
+            amplitude=sph_obj.GO_TONE_AMPLITUDE,
+            fade=0.01,
+            chans='L+TTL')
+        sph_obj.WHITE_NOISE = make_sound(
+            rate=sph_obj.SOUND_SAMPLE_FREQ,
+            frequency=-1,
+            duration=sph_obj.WHITE_NOISE_DURATION,
+            amplitude=sph_obj.WHITE_NOISE_AMPLITUDE,
+            fade=0.01,
+            chans='L+TTL')
+
+        sph_obj.OUT_TONE = ('SoftCode', 1)
+        sph_obj.OUT_NOISE = ('SoftCode', 2)
+
+        return sph_obj
+    else:
+        msg = f"""
+    ##########################################
+    SOUND BOARD NOT IMPLEMTNED YET!!",
+    PLEASE GO TO:
+    iblrig_params/IBL/tasks/{sph_obj.PYBPOD_PROTOCOL}/task_settings.py
+    and set
+        SOFT_SOUND = 'sysdefault' or 'xonar'
+    ##########################################"""
+        log.error(msg)
+        raise(NotImplementedError)
 
 
 if __name__ == '__main__':
