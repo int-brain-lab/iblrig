@@ -73,6 +73,7 @@ class SessionParamHandler(object):
         self.CALIB_FUNC_RANGE = adaptive.init_calib_func_range(self)
         self.REWARD_VALVE_TIME = adaptive.init_reward_valve_time(self)
         self.STIM_GAIN = adaptive.init_stim_gain(self)
+        self = adaptive.impulsive_control(self)
         # =====================================================================
         # ROTARY ENCODER
         # =====================================================================

@@ -146,3 +146,34 @@ def load_data(previous_session_path, i=-1):
 
 def load_settings(previous_session_path):
     return raw.load_settings(previous_session_path)
+
+
+def impulsive_control(sph_obj):
+    crit_1 = True  # 50% perf on one side ~100% on other
+    crit_2 = True  # Median RT on hard (<50%) contrasts < 300ms
+    crit_3 = True  # Getting enough water
+
+    data = raw.load_data(sph_obj.PREVIOUS_SESSION_PATH)
+
+    trial_side =
+    trial_correct =
+    trial_contrast =
+    rt =
+
+    # Check crit 3
+    previous_weight_factor = sph_obj.LAST_SETTINGS_DATA['SUBJECT_WEIGHT'] / 25
+    previous_water = sph_obj.LAST_TRIAL_DATA['water_delivered'] / 1000
+
+    if previous_water < previous_weight_factor:
+        crit_3 = False
+
+
+    if crit_1 and crit_2 and crit_3:
+        # Reward decrease
+        sph_obj.REWARD_AMOUNT -= sph_obj.AR_STEP  # 0.1 µl
+        if sph_obj.REWARD_AMOUNT < sph_obj.AR_MIN_VALUE:
+            sph_obj.REWARD_AMOUNT = sph_obj.AR_MIN_VALUE
+        # Increase timeout error
+        sph_obj.ITI_ERROR = 3.
+        # Introduce interactive delay
+        sph_obj.INTERACTIVE_DELAY = 0.250  # sec
