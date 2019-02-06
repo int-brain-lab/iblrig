@@ -175,28 +175,8 @@ def sound_sample_freq(soft_sound):
     return ssf
 
 
-def init_sounds(sph_obj):
-    if sph_obj.SOFT_SOUND:
-        sph_obj.GO_TONE = make_sound(
-            rate=sph_obj.SOUND_SAMPLE_FREQ,
-            frequency=sph_obj.GO_TONE_FREQUENCY,
-            duration=sph_obj.GO_TONE_DURATION,
-            amplitude=sph_obj.GO_TONE_AMPLITUDE,
-            fade=0.01,
-            chans='L+TTL')
-        sph_obj.WHITE_NOISE = make_sound(
-            rate=sph_obj.SOUND_SAMPLE_FREQ,
-            frequency=-1,
-            duration=sph_obj.WHITE_NOISE_DURATION,
-            amplitude=sph_obj.WHITE_NOISE_AMPLITUDE,
-            fade=0.01,
-            chans='L+TTL')
-
-        sph_obj.OUT_TONE = ('SoftCode', 1)
-        sph_obj.OUT_NOISE = ('SoftCode', 2)
-
-        return sph_obj
-    else:
+def init_sounds(sph_obj, tone=True, noise=True):
+    if not sph_obj.SOFT_SOUND:
         msg = f"""
     ##########################################
     SOUND BOARD NOT IMPLEMTNED YET!!",
@@ -207,7 +187,23 @@ def init_sounds(sph_obj):
     ##########################################"""
         log.error(msg)
         raise(NotImplementedError)
-
+    if tone:
+        sph_obj.GO_TONE = make_sound(
+            rate=sph_obj.SOUND_SAMPLE_FREQ,
+            frequency=sph_obj.GO_TONE_FREQUENCY,
+            duration=sph_obj.GO_TONE_DURATION,
+            amplitude=sph_obj.GO_TONE_AMPLITUDE,
+            fade=0.01,
+            chans='L+TTL')
+    if noise:
+        sph_obj.WHITE_NOISE = make_sound(
+            rate=sph_obj.SOUND_SAMPLE_FREQ,
+            frequency=-1,
+            duration=sph_obj.WHITE_NOISE_DURATION,
+            amplitude=sph_obj.WHITE_NOISE_AMPLITUDE,
+            fade=0.01,
+            chans='L+TTL')
+    return sph_obj
 
 if __name__ == '__main__':
     sd = configure_sounddevice(output='xonar')
