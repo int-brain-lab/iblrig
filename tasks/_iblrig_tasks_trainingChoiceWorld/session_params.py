@@ -3,60 +3,25 @@
 # @Date:   2018-02-02 17:19:09
 # @Last Modified by:   Niccolò Bonacchi
 # @Last Modified time: 2018-07-12 16:18:59
-import json
 import os
-import shutil
-import subprocess
-import time
-import zipfile
 import sys
 from sys import platform
 from pathlib import Path
 import logging
 
-import numpy as np
-import pandas as pd
-import scipy as sp
-import scipy.interpolate as interp
-from pybpod_rotaryencoder_module.module_api import RotaryEncoderModule
 from pythonosc import udp_client
 
-import ibllib.io.raw_data_loaders as raw
-from ibllib.graphic import numinput, strinput
-sys.path.append(str(Path(__file__).parent.parent))
-sys.path.append(str(Path(__file__).parent.parent.parent.parent))
-from path_helper import SessionPathCreator
-import sound
+from ibllib.graphic import numinput
+sys.path.append(str(Path(__file__).parent.parent))  # noqa
+sys.path.append(str(Path(__file__).parent.parent.parent.parent))  # noqa
+import adaptive
 import ambient_sensor
+import bonsai
+import iotasks
+import sound
+from path_helper import SessionPathCreator
+from rotary_encoder import MyRotaryEncoder
 log = logging.getLogger('iblrig')
-
-
-class ComplexEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if hasattr(obj, 'reprJSON'):
-            return obj.reprJSON()
-        else:
-            return json.JSONEncoder.default(self, obj)
-
-
-class MyRotaryEncoder(object):
-
-    def __init__(self, all_thresholds, gain):
-        self.all_thresholds = all_thresholds
-        self.wheel_perim = 31 * 2 * np.pi  # = 194,778744523
-        self.deg_mm = 360 / self.wheel_perim
-        self.mm_deg = self.wheel_perim / 360
-        self.factor = 1 / (self.mm_deg * gain)
-        self.SET_THRESHOLDS = [x * self.factor for x in self.all_thresholds]
-        self.ENABLE_THRESHOLDS = [(True if x != 0
-                                   else False) for x in self.SET_THRESHOLDS]
-        # ENABLE_THRESHOLDS needs 8 bools even if only 2 thresholds are set
-        while len(self.ENABLE_THRESHOLDS) < 8:
-            self.ENABLE_THRESHOLDS.append(False)
-
-    def reprJSON(self):
-        d = self.__dict__
-        return d
 
 
 class SessionParamHandler(object):
@@ -76,13 +41,12 @@ class SessionParamHandler(object):
         us = {i: user_settings.__dict__[i]
               for i in [x for x in dir(user_settings) if '__' not in x]}
         self.__dict__.update(us)
-        self.deserialize_session_user_settings()
+        self = iotasks.deserialize_pybpod_user_settings(self)
         spc = SessionPathCreator(self.IBLRIG_FOLDER, self.IBLRIG_DATA_FOLDER,
                                  self.PYBPOD_SUBJECTS[0],
                                  protocol=self.PYBPOD_PROTOCOL,
                                  board=self.PYBPOD_BOARD, make=make)
         self.__dict__.update(spc.__dict__)
-        self._check_com_config()
 
         # =====================================================================
         # SUBJECT
@@ -93,44 +57,34 @@ class SessionParamHandler(object):
         # =====================================================================
         self.OSC_CLIENT_PORT = 7110
         self.OSC_CLIENT_IP = '127.0.0.1'
-        self.OSC_CLIENT = self._init_osc_client()
+        self.OSC_CLIENT = udp_client.SimpleUDPClient(self.OSC_CLIENT_IP,
+                                                     self.OSC_CLIENT_PORT)
         # =====================================================================
         # PREVIOUS DATA FILES
         # =====================================================================
-        self.LAST_TRIAL_DATA = self._load_last_trial()
-        self.LAST_SETTINGS_DATA = self._load_last_settings_file()
+        self.LAST_TRIAL_DATA = adaptive.load_data(self.PREVIOUS_SESSION_PATH)
+        self.LAST_SETTINGS_DATA = adaptive.load_settings(
+            self.PREVIOUS_SESSION_PATH)
         # =====================================================================
         # ADAPTIVE STUFF
         # =====================================================================
-        self.REWARD_AMOUNT = self._init_reward_amount()
-        self.CALIB_FUNC = self._init_calib_func()
-        self.REWARD_VALVE_TIME = self._init_reward_valve_time()
-
-        self.STIM_GAIN = self._init_stim_gain()
+        self.REWARD_AMOUNT = adaptive.init_reward_amount(self)
+        self.CALIB_FUNC = adaptive.init_calib_func(self)
+        self.CALIB_FUNC_RANGE = adaptive.init_calib_func_range(self)
+        self.REWARD_VALVE_TIME = adaptive.init_reward_valve_time(self)
+        self.STIM_GAIN = adaptive.init_stim_gain(self)
         # =====================================================================
         # ROTARY ENCODER
         # =====================================================================
         self.ALL_THRESHOLDS = (self.STIM_POSITIONS +
                                self.QUIESCENCE_THRESHOLDS)
         self.ROTARY_ENCODER = MyRotaryEncoder(self.ALL_THRESHOLDS,
-                                              self.STIM_GAIN)
-        # Names of the RE events generated by Bpod
-        self.ENCODER_EVENTS = ['RotaryEncoder1_{}'.format(x) for x in
-                               list(range(1, len(self.ALL_THRESHOLDS) + 1))]
-        # Dict mapping threshold crossings with name ov RE event
-        self.THRESHOLD_EVENTS = dict(zip(self.ALL_THRESHOLDS,
-                                         self.ENCODER_EVENTS))
-        if not self.DEBUG:
-            self._configure_rotary_encoder(RotaryEncoderModule)
+                                              self.STIM_GAIN,
+                                              self.COM['ROTARY_ENCODER'])
         # =====================================================================
         # SOUNDS
         # =====================================================================
-        if self.SOFT_SOUND == 'xonar':
-            self.SOUND_SAMPLE_FREQ = 192000
-        elif self.SOFT_SOUND == 'sysdefault':
-            self.SOUND_SAMPLE_FREQ = 44100
-        elif self.SOFT_SOUND is None:
-            self.SOUND_SAMPLE_FREQ = 96000
+        self.SOUND_SAMPLE_FREQ = sound.sound_sample_freq(self.SOFT_SOUND)
 
         self.WHITE_NOISE_DURATION = float(self.WHITE_NOISE_DURATION)
         self.WHITE_NOISE_AMPLITUDE = float(self.WHITE_NOISE_AMPLITUDE)
@@ -140,111 +94,65 @@ class SessionParamHandler(object):
 
         self.SD = sound.configure_sounddevice(
             output=self.SOFT_SOUND, samplerate=self.SOUND_SAMPLE_FREQ)
-
-        self._init_sounds()  # Will create sounds and output actions.
+        # Create sounds and output actions of state machine
+        self.UPLOADER_TOOL = None
+        self.GO_TONE = None
+        self.WHITE_NOISE = None
+        self = sound.init_sounds(self)
+        self.OUT_TONE = ('SoftCode', 1) if self.SOFT_SOUND else None
+        self.OUT_NOISE = ('SoftCode', 2) if self.SOFT_SOUND else None
         # =====================================================================
         # RUN VISUAL STIM
         # =====================================================================
-        self._init_screen_calibration()
-        self.BONSAI = spc.get_bonsai_path(use_iblrig_bonsai=True)
-        self.VISUAL_STIMULUS_TYPE = 'TrainingGabor2D'
-        self.VISUAL_STIMULUS_FILE = str(
-            Path(self.VISUAL_STIM_FOLDER) /
-            self.VISUAL_STIMULUS_TYPE / 'Gabor2D.bonsai')
-        self.start_visual_stim()
+        bonsai.start_visual_stim(self)
         # =====================================================================
         # SAVE SETTINGS FILE AND TASK CODE
         # =====================================================================
         if not self.DEBUG:
-            self._save_session_settings()
-
-            self._copy_task_code()
-            self._save_task_code()
+            iotasks.save_session_settings(self)
+            iotasks.copy_task_code(self)
+            iotasks.save_task_code(self)
             self.bpod_lights(0)
 
         self.display_logs()
 
-    def _check_com_config(self):
-        comports = {'BPOD': self.COM['BPOD'], 'ROTARY_ENCODER': None,
-                    'FRAME2TTL': None}
-        log.debug(f"COMPORTS: {str(self.COM)}")
-        if not self.COM['ROTARY_ENCODER']:
-            comports['ROTARY_ENCODER'] = self.strinput(
-                "RIG CONFIG",
-                "Please insert ROTARY ENCODER COM port (e.g. COM9): ",
-                default='COM').upper()
-            log.debug(
-                f"Updating comport file with ROTARY_ENCODER port {comports['ROTARY_ENCODER']}")
-            SessionPathCreator.create_bpod_comport_file(
-                self.BPOD_COMPORTS_FILE, comports)
-            self.COM = comports
-        if not self.COM['FRAME2TTL']:
-            comports['FRAME2TTL'] = self.strinput(
-                "RIG CONFIG",
-                "Please insert FRAME2TTL COM port (e.g. COM9): ", default='COM'
-                ).upper()
-            log.debug(
-                f"Updating comport file with FRAME2TTL port {comports['FRAME2TTL']}")
-            SessionPathCreator.create_bpod_comport_file(
-                self.BPOD_COMPORTS_FILE, comports)
-            self.COM = comports
-
-    # =========================================================================
-    # STATIC METHODS
-    # =========================================================================
-    @staticmethod
-    def zipdir(path, ziph):
-        # ziph is zipfile handle
-        for root, dirs, files in os.walk(path):
-            for file in files:
-                ziph.write(os.path.join(root, file),
-                           os.path.relpath(os.path.join(root, file),
-                                           os.path.join(path, '..')))
-
-    @staticmethod
-    def zipit(dir_list, zip_name):
-        zipf = zipfile.ZipFile(zip_name, 'w', zipfile.ZIP_DEFLATED)
-        for dir in dir_list:
-            SessionParamHandler.zipdir(dir, zipf)
-        zipf.close()
-
-    @staticmethod
-    def get_port_events(events: dict, name: str = '') -> list:
-        out: list = []
-        for k in events:
-            if name in k:
-                out.extend(events[k])
-        out = sorted(out)
-
-        return out
-
     # =========================================================================
     # METHODS
     # =========================================================================
-    def numinput(self, *args, **kwargs):
-        return numinput(*args, **kwargs)
-
-    def strinput(self, *args, **kwargs):
-        return strinput(*args, **kwargs)
-
     def save_ambient_sensor_reading(self, bpod_instance):
         return ambient_sensor.get_reading(bpod_instance,
                                           save_to=self.SESSION_RAW_DATA_FOLDER)
 
     def get_subject_weight(self):
-        _weight = self.numinput(
-            "Subject weighing (gr)", f"{self.PYBPOD_SUBJECTS[0]} weight (gr):")
-        if _weight is None:
-            return self.get_subject_weight()
-
-        return _weight
+        return numinput(
+            "Subject weighing (gr)", f"{self.PYBPOD_SUBJECTS[0]} weight (gr):",
+            nullable=False)
 
     def bpod_lights(self, command: int):
         fpath = Path(self.IBLRIG_PARAMS_FOLDER) / 'bpod_lights.py'
         os.system(f"python {fpath} {command}")
 
+    # Bonsai start camera called from main task file
+    def start_camera_recording(self):
+        return bonsai.start_camera_recording(self)
+
+    def get_port_events(self, events, name=''):
+        return iotasks.get_port_events(events, name=name)
+
     # =========================================================================
-    # SERIALIZER
+    # SOUND INTERFACE FOR STATE MACHINE
+    # =========================================================================
+    def play_tone(self):
+        self.SD.play(self.GO_TONE, self.SOUND_SAMPLE_FREQ)
+
+    def play_noise(self):
+        self.SD.play(self.WHITE_NOISE, self.SOUND_SAMPLE_FREQ)
+
+    def stop_sound(self):
+        self.SD.stop()
+
+    # =========================================================================
+    # JSON ENCODER PATCHES
     # =========================================================================
     def reprJSON(self):
         def remove_from_dict(sx):
@@ -321,9 +229,6 @@ class SessionParamHandler(object):
 
     def stop_sound(self):
         self.SD.stop()
-
-    def _init_screen_calibration(self):
-        pass
 
     # =========================================================================
     # BONSAI WORKFLOWS
@@ -635,13 +540,14 @@ if __name__ == '__main__':
     if platform == 'linux':
         r = "/home/nico/Projects/IBL/IBL-github/iblrig"
         _task_settings.IBLRIG_FOLDER = r
-        d = "/home/nico/Projects/IBL/IBL-github/iblrig/scratch/test_iblrig_data"
+        d = ("/home/nico/Projects/IBL/IBL-github/iblrig/scratch/" +
+             "test_iblrig_data")
         _task_settings.IBLRIG_DATA_FOLDER = d
         _task_settings.AUTOMATIC_CALIBRATION = False
         _task_settings.USE_VISUAL_STIMULUS = False
 
     sph = SessionParamHandler(_task_settings, _user_settings,
-                              debug=True, fmake=False)
+                              debug=False, fmake=True)
     for k in sph.__dict__:
         if sph.__dict__[k] is None:
             print(f"{k}: {sph.__dict__[k]}")
