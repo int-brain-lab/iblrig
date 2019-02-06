@@ -136,6 +136,9 @@ class SessionParamHandler(object):
     def start_camera_recording(self):
         return bonsai.start_camera_recording(self)
 
+    def get_port_events(self, events, name=''):
+        return iotasks.get_port_events(events, name=name)
+
     # =====================================================================
     # SOUND INTERFACE FOR STATE MACHINE
     # =====================================================================
