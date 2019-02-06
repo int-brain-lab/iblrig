@@ -11,7 +11,6 @@ import logging
 
 from pythonosc import udp_client
 
-import ibllib.io.raw_data_loaders as raw
 from ibllib.graphic import numinput
 sys.path.append(str(Path(__file__).parent.parent))  # noqa
 sys.path.append(str(Path(__file__).parent.parent.parent.parent))  # noqa
@@ -63,8 +62,9 @@ class SessionParamHandler(object):
         # =====================================================================
         # PREVIOUS DATA FILES
         # =====================================================================
-        self.LAST_TRIAL_DATA = raw.load_data(self.PREVIOUS_SESSION_PATH)
-        self.LAST_SETTINGS_DATA = raw.load_settings(self.PREVIOUS_SESSION_PATH)
+        self.LAST_TRIAL_DATA = adaptive.load_data(self.PREVIOUS_SESSION_PATH)
+        self.LAST_SETTINGS_DATA = adaptive.load_settings(
+            self.PREVIOUS_SESSION_PATH)
         # =====================================================================
         # ADAPTIVE STUFF
         # =====================================================================

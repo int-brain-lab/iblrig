@@ -7,6 +7,7 @@ import logging
 import numpy as np
 import pandas as pd
 import scipy as sp
+import ibllib.io.raw_data_loaders as raw
 
 log = logging.getLogger('iblrig')
 
@@ -17,11 +18,9 @@ def init_reward_amount(sph_obj):
 
     if sph_obj.LAST_TRIAL_DATA is None:
         return sph_obj.AR_INIT_VALUE
-    elif sph_obj.LAST_TRIAL_DATA and sph_obj.LAST_TRIAL_DATA[
-            'trial_num'] < 200:
+    elif sph_obj.LAST_TRIAL_DATA and sph_obj.LAST_TRIAL_DATA['trial_num'] < 200:  # noqa
         out = sph_obj.LAST_TRIAL_DATA['reward_amount']
-    elif sph_obj.LAST_TRIAL_DATA and sph_obj.LAST_TRIAL_DATA[
-            'trial_num'] >= 200:
+    elif sph_obj.LAST_TRIAL_DATA and sph_obj.LAST_TRIAL_DATA['trial_num'] >= 200:  # noqa
         out = sph_obj.LAST_TRIAL_DATA['reward_amount'] - sph_obj.AR_STEP
         out = sph_obj.AR_MIN_VALUE if out <= sph_obj.AR_MIN_VALUE else out
 
@@ -138,3 +137,12 @@ def init_stim_gain(sph_obj):
         stim_gain = sph_obj.AG_INIT_VALUE
 
     return stim_gain
+
+
+def load_data(previous_session_path, i=-1):
+    trial_data = raw.load_data(previous_session_path)
+    return trial_data[i] if trial_data else None
+
+
+def load_settings(previous_session_path):
+    return raw.load_settings(previous_session_path)
