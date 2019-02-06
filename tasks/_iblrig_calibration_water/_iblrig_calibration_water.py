@@ -9,7 +9,7 @@ import datetime
 import re
 import time
 import tkinter as tk
-from tkinter import simpledialog  # for dialog box
+from tkinter import messagebox
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -20,6 +20,7 @@ import seaborn as sns  # for easier plotting at the end
 import serial
 from pybpodapi.bpod import Bpod
 from pybpodapi.state_machine import StateMachine
+from ibllib.graphic import numinput
 
 import task_settings
 import user_settings  # PyBpod creates this file on run.
@@ -113,27 +114,6 @@ def scale_read(COMport_string):
 
     return grams
 
-
-def numinput(title, prompt, default=None, minval=None, maxval=None):
-    """Pop up a dialog window for input of a number.
-    Arguments:
-    title: is the title of the dialog window,
-    prompt: is a text mostly describing what numerical information to input.
-    default: default value
-    minval: minimum value for imput
-    maxval: maximum value for input
-
-    The number input must be in the range minval .. maxval if these are
-    given. If not, a hint is issued and the dialog remains open for
-    correction. Return the number input.
-    If the dialog is canceled,  return None.
-
-    Example:
-    >>> numinput("Poker", "Your stakes:", 1000, minval=10, maxval=10000)
-    """
-    return simpledialog.askfloat(title, prompt, initialvalue=default,
-                                 minvalue=minval, maxvalue=maxval)
-
 # =============================================================================
 # FIRST, GENERATE A CALIBRATION CURVE - OPEN TIMES VS DROP SIZE
 # see https://github.com/cortex-lab/Rigbox/blob/5d926cdafdfcb54cd74c77e152d158d3d837a90c/%2Bhw/calibrate.m
@@ -155,7 +135,7 @@ if sph.OAHUS_SCALE_PORT:
     stopweight = scale_read(sph.OAHUS_SCALE_PORT)
 else:
     stopweight = numinput(f"Initialize weight",
-                            "Enter the weight diplayed on the scale (gr):")
+                          "Enter the weight diplayed on the scale (gr):")
 
 pass_ = 1
 progress = 0
@@ -224,8 +204,33 @@ ax[0].set(xlabel="Open time (ms)",
           ylabel="Measured volume (ul per drop)", title="Calibration curve")
 title = f.suptitle(f"Water calibration {now}")
 f.savefig(sph.CALIBRATION_CURVE_FILE_PATH)
-f.show()
 
+# =============================================================================
+# ASK THE USER FOR A LINEAR RANGE
+# =============================================================================
+
+messagebox.showinfo("Information", "Calibration curve completed! We're not done yet. \n \
+    Please look at the figure and indicate a min-max range over which the curve is monotonic. \n \
+    The range of drop volumes should ideally be 1.5-3uL.\n\n \
+    Close the plot before entering the range.")
+plt.show()
+
+min_open_time = numinput(
+    "Input", "What's the LOWEST opening time (in ms) of the linear (monotonic) range?")
+
+max_open_time = numinput(
+    "Input", "What's the HIGHEST opening time (in ms) of the linear (monotonic) range?")
+
+ax[0].axvline(min_open_time, color='black')
+ax[0].axvline(max_open_time, color='black')
+
+plt.show()
+f.savefig(sph.CALIBRATION_CURVE_FILE_PATH)
+
+# SAVE THE RANGE TOGETHER WITH THE CALIBRATION CURVE - SEPARATE FILE
+df2 = pd.DataFrame.from_dict(
+    {'min_open_time': min_open_time, 'max_open_time': max_open_time, 'index': [0]})
+df2.to_csv(sph.CALIBRATION_RANGE_FILE_PATH)
 bpod.close()
 print(f'Completed water calibration {now}')
 

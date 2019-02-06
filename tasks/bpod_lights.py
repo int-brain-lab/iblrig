@@ -6,15 +6,15 @@ from pathlib import Path
 
 import serial
 
-logger = logging.getLogger('iblrig')
+log = logging.getLogger('iblrig')
 
 
 def get_com(key='BPOD'):
     fpath = Path(__file__).parent / '.bpod_comports.json'
     with open(fpath, 'r') as f:
         comports = json.load(f)
-    logger.debug(f"Found {key} on port {comports['BPOD']}")
-    return comports['BPOD']
+    log.debug(f"Found {key} on port {comports[key]}")
+    return comports[key]
 
 
 def main(comport: str, command: int):
@@ -23,7 +23,7 @@ def main(comport: str, command: int):
     ser = serial.Serial(port=comport, baudrate=115200, timeout=1)
     ser.write(struct.pack('cB', b':', command))
     ser.close()
-    logger.debug(f"Sent <:{command}> to {comport}")
+    log.debug(f"Sent <:{command}> to {comport}")
     return
 
 
