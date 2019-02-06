@@ -98,9 +98,9 @@ class SessionParamHandler(object):
         self.UPLOADER_TOOL = None
         self.GO_TONE = None
         self.WHITE_NOISE = None
-        self.OUT_TONE = None
-        self.OUT_NOISE = None
         self = sound.init_sounds(self)
+        self.OUT_TONE = ('SoftCode', 1) if self.SOFT_SOUND else None
+        self.OUT_NOISE = ('SoftCode', 2) if self.SOFT_SOUND else None
         # =====================================================================
         # RUN VISUAL STIM
         # =====================================================================
@@ -139,9 +139,9 @@ class SessionParamHandler(object):
     def get_port_events(self, events, name=''):
         return iotasks.get_port_events(events, name=name)
 
-    # =====================================================================
+    # =========================================================================
     # SOUND INTERFACE FOR STATE MACHINE
-    # =====================================================================
+    # =========================================================================
     def play_tone(self):
         self.SD.play(self.GO_TONE, self.SOUND_SAMPLE_FREQ)
 

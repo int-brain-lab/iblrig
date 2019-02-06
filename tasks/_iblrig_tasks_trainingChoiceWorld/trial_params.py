@@ -14,17 +14,12 @@ from pathlib import Path
 import numpy as np
 import scipy.stats as st
 from dateutil import parser
+import sys
+sys.path.append(str(Path(__file__).parent.parent))  # noqa
+sys.path.append(str(Path(__file__).parent.parent.parent.parent))  # noqa
+from iotasks import ComplexEncoder
 
 log = logging.getLogger('iblrig')
-log.setLevel(logging.INFO)
-
-
-class ComplexEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if hasattr(obj, 'reprJSON'):
-            return obj.reprJSON()
-        else:
-            return json.JSONEncoder.default(self, obj)
 
 
 class AdaptiveContrast(object):
