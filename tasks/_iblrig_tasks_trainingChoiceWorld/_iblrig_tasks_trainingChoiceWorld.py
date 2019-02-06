@@ -168,14 +168,14 @@ for i in range(sph.NTRIALS):  # Main loop
     bpod.run_state_machine(sma)  # Locks until state machine 'exit' is reached
 
     trial_data = tph.trial_completed(bpod.session.current_trial.export())
-    
+
     op.plot_bars(trial_data, ax=ax_bars)
     psyfun_df = op.update_psyfun_df(trial_data, psyfun_df)
     op.plot_psyfun(trial_data, psyfun_df, ax=ax_psyc)
 
     elapsed_time = datetime.datetime.now(
         ) - parser.parse(trial_data['init_datetime'])
-    
+
     tevents = trial_data['behavior_data']['Events timestamps']
     ev_bnc1 = sph.get_port_events(tevents, name='BNC1')
     ev_bnc2 = sph.get_port_events(tevents, name='BNC2')
@@ -188,30 +188,30 @@ for i in range(sph.NTRIALS):  # Main loop
     bnc1_msg = NOT_FOUND.format('BNC1') if not ev_bnc1 else 'OK'
     bnc2_msg = NOT_FOUND.format('BNC2') if not ev_bnc2 else 'OK'
     port1_msg = NOT_FOUND.format('Port1') if not ev_port1 else 'OK'
-    
+
     if sph.RECORD_AMBIENT_SENSOR_DATA:
         data = sph.save_ambient_sensor_reading(bpod)
         as_msg = 'saved'
 
     msg = f"""
 ##########################################
-TRIAL NUM:              {trial_data['trial_num']}
-STIM POSITION:          {trial_data['position']}
-STIM CONTRAST:          {trial_data['contrast']['value']}
-STIM PHASE:             {trial_data['stim_phase']}
-STIM PROB LEFT:         {trial_data['stim_probability_left']}
-RESPONSE TIME:          {trial_data['response_time_buffer'][-1]}
+TRIAL NUM:            {trial_data['trial_num']}
+STIM POSITION:        {trial_data['position']}
+STIM CONTRAST:        {trial_data['contrast']['value']}
+STIM PHASE:           {trial_data['stim_phase']}
+STIM PROB LEFT:       {trial_data['stim_probability_left']}
+RESPONSE TIME:        {trial_data['response_time_buffer'][-1]}
 
-TRIAL CORRECT:          {trial_data['trial_correct']}
+TRIAL CORRECT:        {trial_data['trial_correct']}
 
-NTRIALS CORRECT:        {trial_data['ntrials_correct']}
-NTRIALS ERROR:          {trial_data['trial_num'] - trial_data['ntrials_correct']}
-WATER DELIVERED:        {trial_data['water_delivered']}
-TIME FROM START:        {elapsed_time}
-AMBIENT SENSOR DATA:    {as_msg}
+NTRIALS CORRECT:      {trial_data['ntrials_correct']}
+NTRIALS ERROR:        {trial_data['trial_num'] - trial_data['ntrials_correct']}
+WATER DELIVERED:      {trial_data['water_delivered']}
+TIME FROM START:      {elapsed_time}
+AMBIENT SENSOR DATA:  {as_msg}
 ##########################################"""
     log.info(msg)
-    
+
     warn_msg = f"""
         ##########################################
                 NOT FOUND: SYNC PULSES

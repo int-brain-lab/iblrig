@@ -10,11 +10,15 @@ import subprocess
 from pathlib import Path
 import json
 
-import init_logging
+import init_logging  # noqa
 from ibllib.io import raw_data_loaders as raw
+from ibllib.graphic import strinput
+
 from pybpodgui_api.models.project import Project
 
 logger = logging.getLogger('iblrig')
+
+
 class SessionPathCreator(object):
     # add subject name and protocol (maybe have a metadata struct)
     def __init__(self, iblrig_folder, iblrig_data_folder, subject_name,
@@ -31,17 +35,27 @@ class SessionPathCreator(object):
             self.IBLRIG_FOLDER, iblrig_data_folder)
         self.IBLRIG_DATA_SUBJECTS_FOLDER = str(
             Path(self.IBLRIG_DATA_FOLDER) / 'Subjects')
+
         self.SOUND_STIM_FOLDER = str(
             Path(self.IBLRIG_FOLDER) / 'sound_stim')
+
         self.VISUAL_STIM_FOLDER = str(Path(self.IBLRIG_FOLDER) / 'visual_stim')
+        self.BONSAI = self.get_bonsai_path(use_iblrig_bonsai=True)
+        self.VISUAL_STIMULUS_TYPE = self._visual_stim_type()
+        self.VISUAL_STIMULUS_FILE = str(
+            Path(self.VISUAL_STIM_FOLDER) /
+            self.VISUAL_STIMULUS_TYPE / 'Gabor2D.bonsai')
+
         self.VIDEO_RECORDING_FOLDER = os.path.join(
             self.IBLRIG_FOLDER, 'camera', 'camera_recordings')
         self.VIDEO_RECORDING_FILE = os.path.join(
             self.IBLRIG_FOLDER, 'camera', 'camera_recordings',
             'one_camera.bonsai')
+
         self.SUBJECT_NAME = subject_name
         self.SUBJECT_FOLDER = os.path.join(
             self.IBLRIG_DATA_SUBJECTS_FOLDER, self.SUBJECT_NAME)
+
         self.SESSION_DATETIME = datetime.datetime.now()
         self.SESSION_DATE = self.SESSION_DATETIME.date().isoformat()
         self.SESSION_DATE_FOLDER = os.path.join(
@@ -84,6 +98,7 @@ class SessionPathCreator(object):
             self.make_missing_folders(make)
 
         self.COM = self._init_com()
+        self._check_com_config()
 
         self.display_logs()
 
@@ -108,6 +123,14 @@ class SessionPathCreator(object):
 
         return
 
+    def _visual_stim_type(self):
+        if 'habituation' in self._PROTOCOL:
+            return 'HabituationGabor2D'
+        if 'training' in self._PROTOCOL:
+            return 'TrainingGabor2D'
+        if 'biased' in self._PROTOCOL:
+            return 'BiasedGabor2D'
+
     def _init_com(self) -> dict:
         logger.debug("Initializing COM ports")
         p = Project()
@@ -125,13 +148,36 @@ class SessionPathCreator(object):
         else:
             logger.debug(f"NOT FOUND: COM ports definition file")
             # If no file exists create empty file
-            comports = {'BPOD': None, 'ROTARY_ENCODER': None,
-                'FRAME2TTL': None}
+            comports = {
+                'BPOD': None, 'ROTARY_ENCODER': None, 'FRAME2TTL': None}
             comports['BPOD'] = p.boards[0].serial_port
             out = comports
             logger.debug(f"Calling create with comports: {comports}")
             self.create_bpod_comport_file(self.BPOD_COMPORTS_FILE, comports)
         return out
+
+    def _check_com_config(self):
+        comports = {'BPOD': self.COM['BPOD'], 'ROTARY_ENCODER': None,
+                    'FRAME2TTL': None}
+        logger.debug(f"COMPORTS: {str(self.COM)}")
+        if not self.COM['ROTARY_ENCODER']:
+            comports['ROTARY_ENCODER'] = strinput(
+                "RIG CONFIG",
+                "Please insert ROTARY ENCODER COM port (e.g. COM9): ",
+                default='COM')
+            logger.debug("Updating comport file with ROTARY_ENCODER port " +
+                         f"{comports['ROTARY_ENCODER']}")
+            self.create_bpod_comport_file(self.BPOD_COMPORTS_FILE, comports)
+            self.COM = comports
+        if not self.COM['FRAME2TTL']:
+            comports['FRAME2TTL'] = strinput(
+                "RIG CONFIG",
+                "Please insert FRAME2TTL COM port (e.g. COM9): ", default='COM'
+            )
+            logger.debug("Updating comport file with FRAME2TTL port " +
+                         f"{comports['FRAME2TTL']}")
+            self.create_bpod_comport_file(self.BPOD_COMPORTS_FILE, comports)
+            self.COM = comports
 
     def _get_iblrig_commit_hash(self):
         here = os.getcwd()
@@ -449,11 +495,13 @@ class SessionPathCreator(object):
         """
                     logger.warning(msg)
 
+
 if __name__ == "__main__":
     # spc = SessionPathCreator('C:\\iblrig', None, '_iblrig_test_mouse',
     # 'trainingChoiceWorld')
+    # '/coder/mnt/nbonacchi/iblrig', None,
     spc = SessionPathCreator(
-        '/home/nico/Projects/IBL/IBL-github/iblrig',  # '/coder/mnt/nbonacchi/iblrig', None,
+        '/home/nico/Projects/IBL/IBL-github/iblrig',
         '/home/nico/Projects/IBL/IBL-github/iblrig/scratch/test_iblrig_data',
         '_iblrig_test_mouse', protocol='trainingChoiceWorld',
         board='_iblrig_mainenlab_behavior_0', make=['video', 'ephys', 'imag'])

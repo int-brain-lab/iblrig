@@ -8,6 +8,9 @@ import numpy as np
 import subprocess
 import os
 import sys
+import platform
+import logging
+log = logging.getLogger('iblrig')
 
 
 def configure_sounddevice(sd=None, output='sysdefault', samplerate=44100):
@@ -21,26 +24,23 @@ def configure_sounddevice(sd=None, output='sysdefault', samplerate=44100):
     :return: configured sounddevice module
     :rtype: sounddevice module
     """
+    if not output:
+        return
+    if sys.platform == 'linux' or platform.node() == 'IBLRIG000':
+        output = 'sysdefault'
     if sd is None:
         import sounddevice as sd
-    if sys.platform == 'linux':
+    if output == 'xonar':
         devices = sd.query_devices()
         sd.default.device = [(i, d) for i, d in enumerate(
-            devices) if 'sysdefault' in d['name']][0][0]
+            devices) if 'XONAR SOUND CARD(64)' in d['name']][0][0]
         sd.default.latency = 'low'
         sd.default.channels = 2
-    else:
-        if output == 'xonar':
-            devices = sd.query_devices()
-            sd.default.device = [(i, d) for i, d in enumerate(
-                devices) if 'XONAR SOUND CARD(64)' in d['name']][0][0]
-            sd.default.latency = 'low'
-            sd.default.channels = 2
-            sd.default.samplerate = samplerate
-        elif output == 'sysdefault':
-            sd.default.latency = 'low'
-            sd.default.channels = 2
-            sd.default.samplerate = samplerate
+        sd.default.samplerate = samplerate
+    elif output == 'sysdefault':
+        sd.default.latency = 'low'
+        sd.default.channels = 2
+        sd.default.samplerate = samplerate
     return sd
 
 
@@ -148,18 +148,60 @@ def upload(uploader_tool, file_path, index, type_=0, sample_rate=96):
     :param sample_rate: [96, 192] (KHz) playback sample rate, defaults to 96
     :param sample_rate: int, optional
     """
-    file_name = file_path.split(os.sep)[-1]
+    file_name = file_path.split(os.sep)[-1]  # noqa
     file_folder = file_path.split(os.sep)[:-1]
     subprocess.call([uploader_tool, file_path, index, type_, sample_rate])
 
     log_file = os.path.join(file_folder, 'log')
-    with open(log_file, 'a') as f:
+    with open(log_file, 'a') as f:  # noqa
         pass
     return
 
 
 def get_uploaded_sounds():
     pass
+
+
+def sound_sample_freq(soft_sound):
+    if soft_sound == 'xonar':
+        ssf = 192000
+    elif soft_sound == 'sysdefault':
+        ssf = 44100
+    elif soft_sound is None:
+        ssf = 96000
+
+    return ssf
+
+
+def init_sounds(sph_obj, tone=True, noise=True):
+    if not sph_obj.SOFT_SOUND:
+        msg = f"""
+    ##########################################
+    SOUND BOARD NOT IMPLEMTNED YET!!",
+    PLEASE GO TO:
+    iblrig_params/IBL/tasks/{sph_obj.PYBPOD_PROTOCOL}/task_settings.py
+    and set
+        SOFT_SOUND = 'sysdefault' or 'xonar'
+    ##########################################"""
+        log.error(msg)
+        raise(NotImplementedError)
+    if tone:
+        sph_obj.GO_TONE = make_sound(
+            rate=sph_obj.SOUND_SAMPLE_FREQ,
+            frequency=sph_obj.GO_TONE_FREQUENCY,
+            duration=sph_obj.GO_TONE_DURATION,
+            amplitude=sph_obj.GO_TONE_AMPLITUDE,
+            fade=0.01,
+            chans='L+TTL')
+    if noise:
+        sph_obj.WHITE_NOISE = make_sound(
+            rate=sph_obj.SOUND_SAMPLE_FREQ,
+            frequency=-1,
+            duration=sph_obj.WHITE_NOISE_DURATION,
+            amplitude=sph_obj.WHITE_NOISE_AMPLITUDE,
+            fade=0.01,
+            chans='L+TTL')
+    return sph_obj
 
 
 if __name__ == '__main__':

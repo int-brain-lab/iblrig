@@ -134,21 +134,21 @@ for i in range(sph.NTRIALS):  # Main loop
 
     msg = f"""
 ##########################################
-TRIAL NUM: {trial_data['trial_num']}
-DELAY TO WATER WAS: {trial_data['delay_to_stim_center']}
-WATER DELIVERED: {trial_data['water_delivered']}
-TIME FROM START: {elapsed_time}
-AMBIENT SENSOR DATA: {as_msg}
+TRIAL NUM:              {trial_data['trial_num']}
+DELAY TO WATER WAS:     {trial_data['delay_to_stim_center']}
+WATER DELIVERED:        {trial_data['water_delivered']}
+TIME FROM START:        {elapsed_time}
+AMBIENT SENSOR DATA:    {as_msg}
 ##########################################"""
     log.info(msg)
-    
+
     warn_msg = f"""
         ##########################################
                 NOT FOUND: SYNC PULSES
         ##########################################
-        VISUAL STIMULUS SYNC: {bnc1_msg}
-        SOUND SYNC: {bnc2_msg}
-        CAMERA SYNC: {port1_msg}
+        VISUAL STIMULUS SYNC:   {bnc1_msg}
+        SOUND SYNC:             {bnc2_msg}
+        CAMERA SYNC:            {port1_msg}
         ##########################################"""
     if not ev_bnc1 or not ev_bnc2 or not ev_port1:
         log.warning(warn_msg)
