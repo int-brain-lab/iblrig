@@ -8,6 +8,7 @@ import numpy as np
 import subprocess
 import os
 import sys
+import platform
 import logging
 log = logging.getLogger('iblrig')
 
@@ -23,26 +24,23 @@ def configure_sounddevice(sd=None, output='sysdefault', samplerate=44100):
     :return: configured sounddevice module
     :rtype: sounddevice module
     """
+    if not output:
+        return
+    if sys.platform == 'linux' or platform.node() == 'IBLRIG000':
+        output = 'sysdefault'
     if sd is None:
         import sounddevice as sd
-    if sys.platform == 'linux':
+    if output == 'xonar':
         devices = sd.query_devices()
         sd.default.device = [(i, d) for i, d in enumerate(
-            devices) if 'sysdefault' in d['name']][0][0]
+            devices) if 'XONAR SOUND CARD(64)' in d['name']][0][0]
         sd.default.latency = 'low'
         sd.default.channels = 2
-    else:
-        if output == 'xonar':
-            devices = sd.query_devices()
-            sd.default.device = [(i, d) for i, d in enumerate(
-                devices) if 'XONAR SOUND CARD(64)' in d['name']][0][0]
-            sd.default.latency = 'low'
-            sd.default.channels = 2
-            sd.default.samplerate = samplerate
-        elif output == 'sysdefault':
-            sd.default.latency = 'low'
-            sd.default.channels = 2
-            sd.default.samplerate = samplerate
+        sd.default.samplerate = samplerate
+    elif output == 'sysdefault':
+        sd.default.latency = 'low'
+        sd.default.channels = 2
+        sd.default.samplerate = samplerate
     return sd
 
 
