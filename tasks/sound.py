@@ -205,6 +205,7 @@ def init_sounds(sph_obj, tone=True, noise=True):
             chans='L+TTL')
     return sph_obj
 
+
 if __name__ == '__main__':
     sd = configure_sounddevice(output='xonar')
     sd.stop()

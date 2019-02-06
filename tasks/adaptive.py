@@ -6,7 +6,7 @@
 import logging
 import numpy as np
 import pandas as pd
-import scipy as sp
+import scipy.interpolate
 import ibllib.io.raw_data_loaders as raw
 
 log = logging.getLogger('iblrig')
@@ -51,8 +51,8 @@ def init_calib_func(sph_obj):
         ##########################################"""
             log.error(msg)
             raise(ValueError)
-        time2vol = sp.interpolate.pchip(df1["open_time"],
-                                        df1["weight_perdrop"])
+        time2vol = scipy.interpolate.pchip(df1["open_time"],
+                                           df1["weight_perdrop"])
         return time2vol
     else:
         return

@@ -40,13 +40,16 @@ def start_visual_stim(sph_obj):
         noeditor = '--noeditor'
 
         if sph_obj.BONSAI_EDITOR:
-            subprocess.Popen(
-                [bns, wkfl, start,
-                 pos, evt, itr, com, mic, rec, sync_x, sync_y])
+            editor = start
         elif not sph_obj.BONSAI_EDITOR:
+            editor = noeditor
+        if 'habituation' in sph_obj.PYBPOD_PROTOCOL:
             subprocess.Popen(
-                [bns, wkfl, noeditor,
-                 pos, evt, itr, com, mic, rec, sync_x, sync_y])
+                [bns, wkfl, editor, evt, itr, com, mic, rec, sync_x, sync_y])
+        elif 'training' in sph_obj.PYBPOD_PROTOCOL:
+            subprocess.Popen(
+                [bns, wkfl, editor, pos,
+                 evt, itr, com, mic, rec, sync_x, sync_y])
         time.sleep(5)
         os.chdir(here)
     else:

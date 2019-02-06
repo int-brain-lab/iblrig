@@ -75,12 +75,7 @@ class SessionParamHandler(object):
         # =====================================================================
         # SOUNDS
         # =====================================================================
-        if self.SOFT_SOUND == 'xonar':
-            self.SOUND_SAMPLE_FREQ = 192000
-        elif self.SOFT_SOUND == 'sysdefault':
-            self.SOUND_SAMPLE_FREQ = 44100
-        elif self.SOFT_SOUND is None:
-            self.SOUND_SAMPLE_FREQ = 96000
+        self.SOUND_SAMPLE_FREQ = sound.sound_sample_freq(self.SOFT_SOUND)
 
         self.GO_TONE_DURATION = float(self.GO_TONE_DURATION)
         self.GO_TONE_FREQUENCY = int(self.GO_TONE_FREQUENCY)
@@ -89,7 +84,12 @@ class SessionParamHandler(object):
         self.SD = sound.configure_sounddevice(
             output=self.SOFT_SOUND, samplerate=self.SOUND_SAMPLE_FREQ)
 
+        self.UPLOADER_TOOL = None
+        self.GO_TONE = None
+        self.WHITE_NOISE = None
         self = sound.init_sounds(self, noise=False)
+        self.OUT_TONE = ('SoftCode', 1) if self.SOFT_SOUND else None
+        self.OUT_NOISE = ('SoftCode', 2) if self.SOFT_SOUND else None
         # =====================================================================
         # RUN VISUAL STIM
         # =====================================================================
