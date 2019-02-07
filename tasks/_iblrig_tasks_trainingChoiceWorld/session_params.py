@@ -73,6 +73,8 @@ class SessionParamHandler(object):
         self.CALIB_FUNC_RANGE = adaptive.init_calib_func_range(self)
         self.REWARD_VALVE_TIME = adaptive.init_reward_valve_time(self)
         self.STIM_GAIN = adaptive.init_stim_gain(self)
+        self.IMPULIVE_CONTROL = 'OFF'
+        self = adaptive.impulsive_control(self)
         # =====================================================================
         # ROTARY ENCODER
         # =====================================================================
@@ -98,7 +100,7 @@ class SessionParamHandler(object):
         self.UPLOADER_TOOL = None
         self.GO_TONE = None
         self.WHITE_NOISE = None
-        self = sound.init_sounds(self)
+        self = sound.init_sounds(self)  # sets GO_TONE and WHITE_NOISE
         self.OUT_TONE = ('SoftCode', 1) if self.SOFT_SOUND else None
         self.OUT_NOISE = ('SoftCode', 2) if self.SOFT_SOUND else None
         # =====================================================================
@@ -211,6 +213,7 @@ ADAPTIVE VALUES FOR CURRENT SESSION
 REWARD AMOUNT:      {self.REWARD_AMOUNT} µl
 VALVE OPEN TIME:    {self.REWARD_VALVE_TIME} sec
 GAIN:               {self.STIM_GAIN} azimuth_degree/mm
+IMPULSIVE CONTROL   {self.IMPULIVE_CONTROL}
 ##########################################"""
         log.info(msg)
 
