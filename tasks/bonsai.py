@@ -7,8 +7,13 @@ import os
 import subprocess
 from pathlib import Path
 import time
+import logging
+log = logging.getLogger('iblrig')
 
 
+# =====================================================================
+# SESSION PARAM HANDLER OBJECT METHODS
+# =====================================================================
 def start_visual_stim(sph_obj):
     if sph_obj.USE_VISUAL_STIMULUS and sph_obj.BONSAI:
         # Run Bonsai workflow
@@ -80,3 +85,35 @@ def start_camera_recording(sph_obj):
     subprocess.Popen([bns, wkfl, start, ts, vid, rec])
     time.sleep(1)
     os.chdir(here)
+
+
+# =====================================================================
+# TRIAL PARAM HANDLER OBJECT METHODS
+# =====================================================================
+def send_current_trial_info(tph_obj):
+        """
+        Sends all info relevant for stim production to Bonsai using OSC
+        OSC channels:
+            USED:
+            /t  -> (int)    trial number current
+            /p  -> (int)    position of stimulus init for current trial
+            /h  -> (float)  phase of gabor for current trial
+            /c  -> (float)  contrast of stimulus for current trial
+            /f  -> (float)  frequency of gabor patch for current trial
+            /a  -> (float)  angle of gabor patch for current trial
+            /g  -> (float)  gain of RE to visual stim displacement
+            /s  -> (float)  sigma of the 2D gaussian of gabor
+            /e  -> (int)    events transitions  USED BY SOFTCODE HANDLER FUNC
+        """
+        if tph_obj.osc_client is None:
+            log.error("Can't send trial info to Bonsai osc_client = None")
+            raise(UnboundLocalError)
+        # tph_obj.position = tph_obj.position  # (2/3)*t_position/180
+        tph_obj.osc_client.send_message("/t", tph_obj.trial_num)
+        tph_obj.osc_client.send_message("/p", tph_obj.position)
+        tph_obj.osc_client.send_message("/h", tph_obj.stim_phase)
+        tph_obj.osc_client.send_message("/c", tph_obj.contrast.value)
+        tph_obj.osc_client.send_message("/f", tph_obj.stim_freq)
+        tph_obj.osc_client.send_message("/a", tph_obj.stim_angle)
+        tph_obj.osc_client.send_message("/g", tph_obj.stim_gain)
+        tph_obj.osc_client.send_message("/s", tph_obj.stim_sigma)
