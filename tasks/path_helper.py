@@ -448,6 +448,9 @@ class SessionPathCreator(object):
             return
 
     def _latest_water_range_file(self):
+        if self.LATEST_WATER_CALIBRATION_FILE is None:
+            return
+
         wcfile = Path(self.LATEST_WATER_CALIBRATION_FILE)
         wcrange = wcfile.parent / '_iblrig_calibration_water_range.csv'
         if wcrange.exists():
