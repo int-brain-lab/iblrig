@@ -4,7 +4,6 @@
 # @Last Modified by:   Niccolò Bonacchi
 # @Last Modified time: 2018-06-26 17:36:59
 import time
-import datetime
 import json
 import logging
 import math
@@ -14,206 +13,12 @@ from pathlib import Path
 import numpy as np
 import scipy.stats as st
 from dateutil import parser
-
+import sys
+sys.path.append(str(Path(__file__).parent.parent))  # noqa
+sys.path.append(str(Path(__file__).parent.parent.parent.parent))  # noqa
+from iotasks import ComplexEncoder
+import bonsai
 log = logging.getLogger('iblrig')
-log.setLevel(logging.INFO)
-
-
-class ComplexEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if hasattr(obj, 'reprJSON'):
-            return obj.reprJSON()
-        else:
-            return json.JSONEncoder.default(self, obj)
-
-
-class AdaptiveContrast(object):
-    """Adaptive contrast trials happen whenever staircase contrasts do not.
-    In any particular trial a contrast is drawn from a self.contrasts pool
-    pseudo-randomly. This pool is loaded from the last trial of the previous
-    session (in data['ac']['contrasts']). If previous session is inexistant
-    contrast pool is initialized with [1., 0.5].
-    The number of correct trials in a buffer of self.buffer_size is calculated
-    and compared to a binomial distribution with alpha = 0.05 at differnt
-    probabilities (self._update_contrasts). if enough correct trials are
-    achieved the contrasts pool is increased. Similiarly to the contrasts pool
-    the buffer is also loaded from the previous session (data['ac']['buffer'])
-    every time a contrast value is added to the contrasts pool the buffer is
-    reset.
-    """
-
-    def __init__(self, sph):
-        self.type = 'AdaptiveContrast'
-        self.use_me = sph.ADAPTIVE_CONTRAST
-        self.all_contrasts = sph.CONTRAST_SET
-        self.init_contrasts = sph.AC_INIT_CONTRASTS
-        self.buffer_size = sph.AC_BUFFER_SIZE
-        self.perf_crit = self._min_trials_at(sph.AC_PERF_CRIT, 0.05)
-        self.ntrials_to_six = sph.AC_NTRIALS_TO_SIX
-        self.ntrials_to_zero = sph.AC_NTRIALS_TO_ZERO
-        self.ntrials_to_remove_50 = sph.AC_NTRIALS_TO_REMOVE_50
-        self.ntrials = 0
-        self.previous_session = sph.PREVIOUS_DATA_FILE
-        self.last_trial_data = sph.LAST_TRIAL_DATA
-
-        self.ntrials_125 = self._init_ntrials_125()
-        self.contrast_set = self._init_contrast_set()
-        self.buffer = self._init_buffer()
-        self.value = self._init_contrast()
-
-        self.trial_correct = None
-        self.signed_contrast = None
-
-        self.last_trial_data = None
-
-    def reprJSON(self):
-        return self.__dict__
-
-    def _init_ntrials_125(self):
-        if self.previous_session is None or not self.last_trial_data:
-            out = 0
-        else:
-            out = self.last_trial_data['ac']['ntrials_125']
-
-        return out
-
-    def _init_contrast_set(self):
-        if self.previous_session is None or not self.last_trial_data:
-            _contrasts = self.init_contrasts
-        else:
-            _contrasts = self.last_trial_data['ac']['contrast_set']
-
-        return _contrasts
-
-    def _init_buffer(self):
-        if self.previous_session is None or not self.last_trial_data:
-            _buffer = np.zeros((2, self.buffer_size,
-                                len(self.all_contrasts))).tolist()
-        else:
-            _buffer = self.last_trial_data['ac']['buffer']
-            if len(_buffer) > 2:
-                _buffer = np.zeros((2, self.buffer_size,
-                                    len(self.all_contrasts))).tolist()
-        return _buffer
-
-    def _init_contrast(self):
-        _contrast = np.random.choice(self.contrast_set)
-        return _contrast
-
-    def _reset_buffer(self):
-        self.buffer = np.zeros((2, self.buffer_size,
-                                len(self.all_contrasts))).tolist()
-
-    def _update_buffer(self):
-        _buffer = np.asarray(self.buffer)
-        side_idx = 0 if self.signed_contrast < 0 else 1
-        contrast_idx = self.contrast_set.index(self.value)
-        col = _buffer[side_idx, :, contrast_idx]
-        col = np.roll(col, -1)
-        col[-1] = int(self.trial_correct)
-        _buffer[side_idx, :, contrast_idx] = col
-        self.buffer = _buffer.tolist()
-
-    def _update_contrast(self):
-        if ((self.use_me) and (0 in self.contrast_set)):
-            # p = [1/(n-1 + 0.5)] * (n - 1)
-            n_1 = len(self.contrast_set) - 1
-            z = n_1 + 0.5
-            p = [1/z] * (n_1 + 1)
-            p[-1] *= 0.5
-            self.value = np.random.choice(self.contrast_set, p=p)
-        elif self.use_me:
-            self.value = np.random.choice(self.contrast_set)
-        else:
-            self.value = np.random.choice(self.all_contrasts)
-
-    def _update_contrast_set(self):
-        # Update counter of how mant trials were performend with 0.125 contrast
-        if 0.125 in self.contrast_set:
-            self.ntrials_125 += 1
-        # Sum correct left AND right trials for all contrasts
-        _ntrials = np.sum(self.buffer, axis=1)
-        # Define crit for next contrast insert
-        pass_crit = _ntrials > self.perf_crit
-        # Check if both left AND right have passed criterion
-        pass_idx = np.bitwise_and(pass_crit[0], pass_crit[1])
-        # If 1.0 and 0.5 contrasts pass add 0.25
-        if pass_idx[0] and pass_idx[1] and 0.25 not in self.contrast_set:
-            self.contrast_set.append(0.25)
-        if pass_idx[2] and 0.125 not in self.contrast_set:
-            self.contrast_set.append(0.125)
-
-        # Add 6% contrast if ntrials after introducing 0.125 have elapsed
-        if (self.ntrials_125 >= self.ntrials_to_six
-                and 0.0625 not in self.contrast_set):
-            self.contrast_set.append(0.0625)
-        # Add 0% contrast if ntrials after introducing 0.125 have elapsed
-        if (self.ntrials_125 >= self.ntrials_to_zero
-                and 0.0 not in self.contrast_set):
-            self.contrast_set.append(0.0)
-        # Remove 50% contrast if ntrials after introducing 0.125 have elapsed
-        if (self.ntrials_125 >= self.ntrials_to_remove_50
-                and 0.5 in self.contrast_set):
-            self.contrast_set.pop(1)
-
-        self.contrast_set = sorted(self.contrast_set)
-        self.contrast_set.reverse()
-
-    def _min_trials_at(self, prob, alpha):
-        return int(sum(1 - st.binom.cdf(range(self.buffer_size),
-                   self.buffer_size, prob) >= alpha))
-
-    def trial_completed(self, trial_correct, signed_contrast):
-        self.ntrials += 1
-        self.trial_correct = trial_correct
-        self.signed_contrast = signed_contrast
-
-    def next_trial(self):
-        """Updates obj with behavioral outcome from trial.trial_completed
-        and calculates next contrast"""
-        self._update_buffer()
-        self._update_contrast_set()
-        self._update_contrast()
-        self.trial_correct = None
-
-
-class RepeatContrast(object):
-    """Dummy trial object will count repeat trials and reset contrast to none
-    if trial correct"""
-    def __init__(self):
-        self.type = 'RepeatContrast'
-        self.ntrials = 0
-        self._contrast = None
-        self.trial_correct = None
-        # add if not correct contrast don't repeat
-
-    def reprJSON(self):
-        d = self.__dict__
-        c = {'value': self.value}
-        d.update(c)
-        return d  # "\n\n    " + str(d) + "\n\n"
-
-    @property
-    def value(self):
-        return self._contrast
-
-    @value.setter
-    def value(self, previous_contrast):
-        self._contrast = previous_contrast
-
-    def trial_completed(self, trial_correct, signed_contrast):
-        self.ntrials += 1
-        self.trial_correct = trial_correct
-
-    def next_trial(self):
-        """Updates obj with behavioral outcome from trial.trial_completed
-        and keeps contrast in case of mistake and sets contrast to None in
-        case of correct trial -> exits from repeat trials"""
-        if self.trial_correct:
-            self.value = None
-        else:
-            self.value = self.value
-        self.trial_correct = None
 
 
 class TrialParamHandler(object):
@@ -231,7 +36,7 @@ class TrialParamHandler(object):
         self.position_set = sph.STIM_POSITIONS
         self.repeat_on_error = sph.REPEAT_ON_ERROR
         self.repeat_contrasts = sph.REPEAT_CONTRASTS
-        self.threshold_events_dict = sph.THRESHOLD_EVENTS
+        self.threshold_events_dict = sph.ROTARY_ENCODER.THRESHOLD_EVENTS
         self.quiescent_period_base = sph.QUIESCENT_PERIOD
         self.quiescent_period = self.quiescent_period_base + self.exp()
         self.response_window = sph.RESPONSE_WINDOW
@@ -260,11 +65,12 @@ class TrialParamHandler(object):
         self.position = random.choice(sph.STIM_POSITIONS)
         self.stim_probability_left = sph.STIM_PROBABILITY_LEFT
         self.stim_phase = 0.
-        self.event_error = sph.THRESHOLD_EVENTS[self.position]
-        self.event_reward = sph.THRESHOLD_EVENTS[-self.position]
-        self.movement_left = sph.THRESHOLD_EVENTS[sph.QUIESCENCE_THRESHOLDS[0]]
-        self.movement_right = sph.THRESHOLD_EVENTS[sph.QUIESCENCE_THRESHOLDS[1]
-                                                   ]
+        self.event_error = self.threshold_events_dict[self.position]
+        self.event_reward = self.threshold_events_dict[-self.position]
+        self.movement_left = (
+            self.threshold_events_dict[sph.QUIESCENCE_THRESHOLDS[0]])
+        self.movement_right = (
+            self.threshold_events_dict[sph.QUIESCENCE_THRESHOLDS[1]])
         self.response_buffer = [0] * sph.RESPONSE_BUFFER_LENGTH
         self.response_time_buffer = []
         # Outcome related parmeters
@@ -296,11 +102,11 @@ class TrialParamHandler(object):
         self.response_time_buffer.append(response_time)
         # Update response buffer -1 for left, 0 for nogo, and 1 for rightward
         if (correct and self.position < 0) or (error and self.position > 0):
-            self._update_response_buffer(1)
+            self._update_buffer(self.response_buffer, 1)
         elif (correct and self.position > 0) or (error and self.position < 0):
-            self._update_response_buffer(-1)
+            self._update_buffer(self.response_buffer, -1)
         elif no_go:
-            self._update_response_buffer(0)
+            self._update_buffer(self.response_buffer, 0)
         # Update the trial_correct variable
         self.trial_correct = bool(correct)
         # Increment the trial correct counter
@@ -333,31 +139,12 @@ class TrialParamHandler(object):
                 open(flag3, 'a').close()
         return json.loads(out)
 
-    def check_stop_criterions(self):
-        # STOPPING CRITERIONS
-        # < than 400 trials in 45 minutes
-        time_up = self.init_datetime + datetime.timedelta(minutes=45)
-        if time_up <= datetime.datetime.now() and self.trial_num <= 400:
-            return 1
-
-        # Median response time of latest N = 20 trials > than 5 times
-        # the median response time and more than 400 trials performed
-        N, T = 20, 400
-        if len(self.response_time_buffer) >= N and self.trial_num > T:
-            latest_median = np.median(self.response_time_buffer[-N:])
-            all_median = np.median(self.response_time_buffer)
-
-            if latest_median > all_median * 5:
-                return 2
-
-        return False
-
     def next_trial(self):
         # First trial exception
         if self.trial_num == 0:
             self.trial_num += 1
             # Send next trial info to Bonsai
-            self.send_current_trial_info()
+            bonsai.send_current_trial_info(self)
             return
         self.data_file = str(self.data_file)
         # update + next contrast: update buffers/counters + get next contrast
@@ -383,7 +170,7 @@ class TrialParamHandler(object):
         # Open the data file to append the next trial
         self.data_file = open(self.data_file_path, 'a')
         # Send next trial info to Bonsai
-        self.send_current_trial_info()
+        bonsai.send_current_trial_info(self)
 
     def exp(self):
         x = np.random.exponential(0.35)
@@ -392,12 +179,11 @@ class TrialParamHandler(object):
         else:
             return self.exp()
 
-    def _update_response_buffer(self, val):
-        _buffer = self.response_buffer
-        _buffer = np.roll(_buffer, -1, axis=0)
-        _buffer[-1] = val
-        self.response_buffer = _buffer.tolist()
-        return _buffer
+    @staticmethod
+    def _update_buffer(buffer, val):
+        buffer = np.roll(buffer, -1, axis=0)
+        buffer[-1] = val
+        return buffer.tolist()
 
     def _next_contrast(self):        # Decide which case we are in
         if self.trial_correct:
@@ -445,34 +231,6 @@ class TrialParamHandler(object):
         log.debug(f"stim_probability_left: {str(1-right_proportion)}")
         return (int(_position), 1 - right_proportion)
 
-    def send_current_trial_info(self):
-        """
-        Sends all info relevant for stim production to Bonsai using OSC
-        OSC channels:
-            USED:
-            /t  -> (int)    trial number current
-            /p  -> (int)    position of stimulus init for current trial
-            /h  -> (float)  phase of gabor for current trial
-            /c  -> (float)  contrast of stimulus for current trial
-            /f  -> (float)  frequency of gabor patch for current trial
-            /a  -> (float)  angle of gabor patch for current trial
-            /g  -> (float)  gain of RE to visual stim displacement
-            /s  -> (float)  sigma of the 2D gaussian of gabor
-            /e  -> (int)    events transitions  USED BY SOFTCODE HANDLER FUNC
-        """
-        if self.osc_client is None:
-            log.error("Can't send trial info to Bonsai osc_client = None")
-            raise(UnboundLocalError)
-        # self.position = self.position  # (2/3)*t_position/180
-        self.osc_client.send_message("/t", self.trial_num)
-        self.osc_client.send_message("/p", self.position)
-        self.osc_client.send_message("/h", self.stim_phase)
-        self.osc_client.send_message("/c", self.contrast.value)
-        self.osc_client.send_message("/f", self.stim_freq)
-        self.osc_client.send_message("/a", self.stim_angle)
-        self.osc_client.send_message("/g", self.stim_gain)
-        self.osc_client.send_message("/s", self.stim_sigma)
-
 
 if __name__ == '__main__':
     from session_params import SessionParamHandler
@@ -482,7 +240,7 @@ if __name__ == '__main__':
     if platform == 'linux':
         r = "/home/nico/Projects/IBL/IBL-github/iblrig"
         _task_settings.IBLRIG_FOLDER = r
-        d = "/home/nico/Projects/IBL/IBL-github/iblrig/scratch/test_iblrig_data"
+        d = "/home/nico/Projects/IBL/IBL-github/iblrig/scratch/test_iblrig_data"  # noqa
         _task_settings.IBLRIG_DATA_FOLDER = d
         _task_settings.AUTOMATIC_CALIBRATION = False
         _task_settings.USE_VISUAL_STIMULUS = False
@@ -492,9 +250,9 @@ if __name__ == '__main__':
     ac = AdaptiveContrast(sph)
     rc = RepeatContrast()
 
-    correct_trial = {'Bpod start timestamp': 0.0, 'Trial start timestamp': 15.570999999999998, 'Trial end timestamp': 50.578703, 'States timestamps': {'trial_start': [[15.570999999999998, 15.571099999999998]], 'reset_rotary_encoder': [[15.571099999999998, 15.571199999999997], [15.671399999999998, 15.671499999999998], [15.765699999999999, 15.765799999999999], [15.793999999999997, 15.794099999999997], [15.8112, 15.8113], [15.825199999999999, 15.825299999999999], [15.838099999999997, 15.838199999999997], [15.851599999999998, 15.851699999999997], [15.871199999999998, 15.871299999999998], [15.946299999999997, 15.946399999999997], [16.0142, 16.0143], [16.036699999999996, 16.0368], [16.055, 16.0551], [16.0708, 16.070899999999998], [16.0858, 16.0859], [16.099999999999998, 16.100099999999998], [16.1147, 16.1148], [16.1316, 16.1317], [16.150999999999996, 16.1511], [16.171599999999998, 16.171699999999998], [16.192899999999998, 16.192999999999998], [16.214899999999997, 16.214999999999996], [16.238599999999998, 16.238699999999998], [16.263399999999997, 16.263499999999997], [16.2901, 16.2902], [16.3163, 16.316399999999998], [16.3401, 16.3402], [16.362699999999997, 16.362799999999996], [16.385499999999997, 16.385599999999997], [16.4121, 16.4122], [16.4976, 16.4977], [16.542299999999997, 16.542399999999997], [16.615899999999996, 16.616], [16.9041, 16.9042]], 'quiescent_period': [[15.571199999999997, 15.671399999999998], [15.671499999999998, 15.765699999999999], [15.765799999999999, 15.793999999999997], [15.794099999999997, 15.8112], [15.8113, 15.825199999999999], [15.825299999999999, 15.838099999999997], [15.838199999999997, 15.851599999999998], [15.851699999999997, 15.871199999999998], [15.871299999999998, 15.946299999999997], [15.946399999999997, 16.0142], [16.0143, 16.036699999999996], [16.0368, 16.055], [16.0551, 16.0708], [16.070899999999998, 16.0858], [16.0859, 16.099999999999998], [16.100099999999998, 16.1147], [16.1148, 16.1316], [16.1317, 16.150999999999996], [16.1511, 16.171599999999998], [16.171699999999998, 16.192899999999998], [16.192999999999998, 16.214899999999997], [16.214999999999996, 16.238599999999998], [16.238699999999998, 16.263399999999997], [16.263499999999997, 16.2901], [16.2902, 16.3163], [16.316399999999998, 16.3401], [16.3402, 16.362699999999997], [16.362799999999996, 16.385499999999997], [16.385599999999997, 16.4121], [16.4122, 16.4976], [16.4977, 16.542299999999997], [16.542399999999997, 16.615899999999996], [16.616, 16.9041], [16.9042, 17.3646]], 'stim_on': [[17.3646, 17.464599999999997]], 'reset2_rotary_encoder': [[17.464599999999997, 17.464699999999997]], 'closed_loop': [[17.464699999999997, 49.5787]], 'reward': [[49.5787, 49.7357]], 'correct': [[49.7357, 50.5787]], 'no_go': [[np.nan, np.nan]], 'error': [[np.nan, np.nan]]}, 'Events timestamps': {'Tup': [15.571099999999998, 15.571199999999997, 15.671499999999998, 15.765799999999999, 15.794099999999997, 15.8113, 15.825299999999999, 15.838199999999997, 15.851699999999997, 15.871299999999998, 15.946399999999997, 16.0143, 16.0368, 16.0551, 16.070899999999998, 16.0859, 16.100099999999998, 16.1148, 16.1317, 16.1511, 16.171699999999998, 16.192999999999998, 16.214999999999996, 16.238699999999998, 16.263499999999997, 16.2902, 16.316399999999998, 16.3402, 16.362799999999996, 16.385599999999997, 16.4122, 16.4977, 16.542399999999997, 16.616, 16.9042, 17.3646, 17.464599999999997, 17.464699999999997, 49.7357, 50.5787], 'BNC1Low': [15.637299999999996, 17.5215, 18.539299999999997, 19.436799999999998, 19.5706, 20.554499999999997, 21.504299999999997, 22.6711, 25.2047, 26.254399999999997, 26.7207, 29.3714, 29.8217, 30.9204, 30.986399999999996, 31.387700000000002, 31.770000000000003, 31.9047, 32.5047, 32.6044, 33.8876, 33.9882, 34.1033, 34.1703, 34.5395, 35.62, 36.7697, 37.236, 37.2703, 37.305, 37.3701, 37.4382, 37.7558, 38.1703, 38.3527, 38.4197, 38.5538, 38.620200000000004, 39.936699999999995, 40.6881, 41.7549, 42.5024, 42.585, 43.035999999999994, 44.1039, 49.2046, 49.4698, 49.5368, 49.6195], 'RotaryEncoder1_4': [15.671399999999998, 15.765699999999999, 15.793999999999997, 15.8112, 15.825199999999999, 15.838099999999997, 15.851599999999998, 15.871199999999998, 15.946299999999997, 16.0142, 16.036699999999996, 16.055, 16.0708, 16.0858, 16.099999999999998, 16.1147, 16.1316, 16.150999999999996, 16.171599999999998, 16.192899999999998, 16.214899999999997, 16.238599999999998, 16.263399999999997, 16.2901, 16.3163, 16.3401, 16.362699999999997, 16.385499999999997, 16.4121, 16.4976, 16.542299999999997, 16.615899999999996, 16.9041, 18.5982], 'BNC1High': [17.406499999999998, 18.4564, 18.656399999999998, 19.5231, 19.639799999999997, 21.323, 21.573, 24.0396, 25.3395, 26.356099999999998, 28.3894, 29.422599999999996, 30.8226, 30.9559, 31.022599999999997, 31.7226, 31.822499999999998, 31.939100000000003, 32.5556, 33.422599999999996, 33.939, 34.0391, 34.1224, 34.2891, 35.2105, 36.522299999999994, 37.1889, 37.2387, 37.2724, 37.3222, 37.4056, 37.4723, 37.8723, 38.238899999999994, 38.3722, 38.4723, 38.5723, 39.4222, 40.0555, 40.9388, 42.3555, 42.522, 42.7554, 43.672000000000004, 46.5053, 49.321799999999996, 49.4718, 49.571799999999996], 'RotaryEncoder1_3': [33.9907], 'RotaryEncoder1_2': [49.5787]}}
-    error_trial = {'Bpod start timestamp': 0.0, 'Trial start timestamp': 0.0, 'Trial end timestamp': 15.485902, 'States timestamps': {'trial_start': [[0.0, 0.00010000000000021103]], 'reset_rotary_encoder': [[0.00010000000000021103, 0.00019999999999997797], [0.4855999999999998, 0.4857], [0.5165000000000002, 0.5166], [0.5331999999999999, 0.5333000000000001], [0.5461999999999998, 0.5463], [0.5590999999999999, 0.5592000000000001], [0.5741, 0.5742000000000003], [0.5952999999999999, 0.5954000000000002]], 'quiescent_period': [[0.00019999999999997797, 0.4855999999999998], [0.4857, 0.5165000000000002], [0.5166, 0.5331999999999999], [0.5333000000000001, 0.5461999999999998], [0.5463, 0.5590999999999999], [0.5592000000000001, 0.5741], [0.5742000000000003, 0.5952999999999999], [0.5954000000000002, 1.1006]], 'stim_on': [[1.1006, 1.2006000000000006]], 'reset2_rotary_encoder': [[1.2006000000000006, 1.2007000000000003]], 'closed_loop': [[1.2007000000000003, 13.4859]], 'error': [[13.4859, 15.4859]], 'no_go': [[np.nan, np.nan]], 'reward': [[np.nan, np.nan]], 'correct': [[np.nan, np.nan]]}, 'Events timestamps': {'Tup': [0.00010000000000021103, 0.00019999999999997797, 0.4857, 0.5166, 0.5333000000000001, 0.5463, 0.5592000000000001, 0.5742000000000003, 0.5954000000000002, 1.1006, 1.2006000000000006, 1.2007000000000003, 15.4859], 'BNC1High': [0.07390000000000008, 1.3236999999999997, 1.7572, 2.5072, 5.1071, 10.1735, 10.273399999999999, 10.3065, 10.8901, 11.023399999999999, 11.64, 11.739999999999998, 11.9068, 12.04, 12.3067, 12.6066, 12.773399999999999, 12.940000000000001, 13.3734, 13.423300000000001, 13.523399999999999], 'RotaryEncoder1_4': [0.4855999999999998, 0.5165000000000002, 0.5331999999999999, 0.5461999999999998, 0.5590999999999999, 0.5741, 0.5952999999999999, 1.7535999999999996], 'BNC1Low': [1.1719, 1.5057, 1.8071000000000002, 3.6715, 9.321200000000001, 10.2713, 10.304300000000001, 10.822600000000001, 10.938099999999999, 11.0551, 11.7211, 11.822099999999999, 12.023399999999999, 12.188400000000001, 12.3885, 12.6557, 12.8888, 13.1539, 13.405999999999999, 13.4541], 'RotaryEncoder1_3': [1.1886, 11.780000000000001], 'RotaryEncoder1_1': [13.4859]}}
-    no_go_trial = {'Bpod start timestamp': 0.0, 'Trial start timestamp': 2950.106299, 'Trial end timestamp': 3012.791701, 'States timestamps': {'trial_start': [[2950.106299, 2950.1063990000002]], 'reset_rotary_encoder': [[2950.1063990000002, 2950.106499], [2950.120499, 2950.120599], [2950.139099, 2950.139199], [2950.161899, 2950.161999], [2950.194099, 2950.194199]], 'quiescent_period': [[2950.106499, 2950.120499], [2950.120599, 2950.139099], [2950.139199, 2950.161899], [2950.161999, 2950.194099], [2950.194199, 2950.691599]], 'stim_on': [[2950.691599, 2950.791599]], 'reset2_rotary_encoder': [[2950.791599, 2950.791699]], 'closed_loop': [[2950.791699, 3010.791699]], 'no_go': [[3010.791699, 3012.791699]], 'error': [[np.nan, np.nan]], 'reward': [[np.nan, np.nan]], 'correct': [[np.nan, np.nan]]}, 'Events timestamps': {'Tup': [2950.1063990000002, 2950.106499, 2950.120599, 2950.139199, 2950.161999, 2950.194199, 2950.691599, 2950.791599, 2950.791699, 3010.791699, 3012.791699], 'RotaryEncoder1_3': [2950.120499, 2950.139099, 2950.161899, 2950.194099, 2981.703499], 'BNC1Low': [2950.181299, 2950.8635990000002, 2960.946299, 2961.162399, 2961.262399, 2976.078899, 2981.678699, 2981.761199, 2981.828799, 2981.862799, 2981.928699, 2982.0121990000002, 2995.844699, 2996.912299, 2997.028199, 2997.161899, 2997.311999, 2997.978999, 3005.278699, 3005.427699, 3005.4786990000002, 3005.610799, 3005.927599, 3011.129099, 3011.178199, 3011.245099], 'BNC1High': [2950.750499, 2960.766799, 2960.983499, 2961.183399, 2975.849599, 2981.549399, 2981.715999, 2981.799199, 2981.832599, 2981.899299, 2981.965999, 2982.099399, 2995.865499, 2996.9152990000002, 2997.082199, 2997.215499, 2997.415399, 3005.2484990000003, 3005.365199, 3005.448499, 3005.515099, 3005.881899, 3006.065199, 3011.148299, 3011.181399], 'RotaryEncoder1_4': [2961.126499], 'RotaryEncoder1_1': [3011.1679990000002]}}
+    correct_trial = {'Bpod start timestamp': 0.0, 'Trial start timestamp': 15.570999999999998, 'Trial end timestamp': 50.578703, 'States timestamps': {'trial_start': [[15.570999999999998, 15.571099999999998]], 'reset_rotary_encoder': [[15.571099999999998, 15.571199999999997], [15.671399999999998, 15.671499999999998], [15.765699999999999, 15.765799999999999], [15.793999999999997, 15.794099999999997], [15.8112, 15.8113], [15.825199999999999, 15.825299999999999], [15.838099999999997, 15.838199999999997], [15.851599999999998, 15.851699999999997], [15.871199999999998, 15.871299999999998], [15.946299999999997, 15.946399999999997], [16.0142, 16.0143], [16.036699999999996, 16.0368], [16.055, 16.0551], [16.0708, 16.070899999999998], [16.0858, 16.0859], [16.099999999999998, 16.100099999999998], [16.1147, 16.1148], [16.1316, 16.1317], [16.150999999999996, 16.1511], [16.171599999999998, 16.171699999999998], [16.192899999999998, 16.192999999999998], [16.214899999999997, 16.214999999999996], [16.238599999999998, 16.238699999999998], [16.263399999999997, 16.263499999999997], [16.2901, 16.2902], [16.3163, 16.316399999999998], [16.3401, 16.3402], [16.362699999999997, 16.362799999999996], [16.385499999999997, 16.385599999999997], [16.4121, 16.4122], [16.4976, 16.4977], [16.542299999999997, 16.542399999999997], [16.615899999999996, 16.616], [16.9041, 16.9042]], 'quiescent_period': [[15.571199999999997, 15.671399999999998], [15.671499999999998, 15.765699999999999], [15.765799999999999, 15.793999999999997], [15.794099999999997, 15.8112], [15.8113, 15.825199999999999], [15.825299999999999, 15.838099999999997], [15.838199999999997, 15.851599999999998], [15.851699999999997, 15.871199999999998], [15.871299999999998, 15.946299999999997], [15.946399999999997, 16.0142], [16.0143, 16.036699999999996], [16.0368, 16.055], [16.0551, 16.0708], [16.070899999999998, 16.0858], [16.0859, 16.099999999999998], [16.100099999999998, 16.1147], [16.1148, 16.1316], [16.1317, 16.150999999999996], [16.1511, 16.171599999999998], [16.171699999999998, 16.192899999999998], [16.192999999999998, 16.214899999999997], [16.214999999999996, 16.238599999999998], [16.238699999999998, 16.263399999999997], [16.263499999999997, 16.2901], [16.2902, 16.3163], [16.316399999999998, 16.3401], [16.3402, 16.362699999999997], [16.362799999999996, 16.385499999999997], [16.385599999999997, 16.4121], [16.4122, 16.4976], [16.4977, 16.542299999999997], [16.542399999999997, 16.615899999999996], [16.616, 16.9041], [16.9042, 17.3646]], 'stim_on': [[17.3646, 17.464599999999997]], 'reset2_rotary_encoder': [[17.464599999999997, 17.464699999999997]], 'closed_loop': [[17.464699999999997, 49.5787]], 'reward': [[49.5787, 49.7357]], 'correct': [[49.7357, 50.5787]], 'no_go': [[np.nan, np.nan]], 'error': [[np.nan, np.nan]]}, 'Events timestamps': {'Tup': [15.571099999999998, 15.571199999999997, 15.671499999999998, 15.765799999999999, 15.794099999999997, 15.8113, 15.825299999999999, 15.838199999999997, 15.851699999999997, 15.871299999999998, 15.946399999999997, 16.0143, 16.0368, 16.0551, 16.070899999999998, 16.0859, 16.100099999999998, 16.1148, 16.1317, 16.1511, 16.171699999999998, 16.192999999999998, 16.214999999999996, 16.238699999999998, 16.263499999999997, 16.2902, 16.316399999999998, 16.3402, 16.362799999999996, 16.385599999999997, 16.4122, 16.4977, 16.542399999999997, 16.616, 16.9042, 17.3646, 17.464599999999997, 17.464699999999997, 49.7357, 50.5787], 'BNC1Low': [15.637299999999996, 17.5215, 18.539299999999997, 19.436799999999998, 19.5706, 20.554499999999997, 21.504299999999997, 22.6711, 25.2047, 26.254399999999997, 26.7207, 29.3714, 29.8217, 30.9204, 30.986399999999996, 31.387700000000002, 31.770000000000003, 31.9047, 32.5047, 32.6044, 33.8876, 33.9882, 34.1033, 34.1703, 34.5395, 35.62, 36.7697, 37.236, 37.2703, 37.305, 37.3701, 37.4382, 37.7558, 38.1703, 38.3527, 38.4197, 38.5538, 38.620200000000004, 39.936699999999995, 40.6881, 41.7549, 42.5024, 42.585, 43.035999999999994, 44.1039, 49.2046, 49.4698, 49.5368, 49.6195], 'RotaryEncoder1_4': [15.671399999999998, 15.765699999999999, 15.793999999999997, 15.8112, 15.825199999999999, 15.838099999999997, 15.851599999999998, 15.871199999999998, 15.946299999999997, 16.0142, 16.036699999999996, 16.055, 16.0708, 16.0858, 16.099999999999998, 16.1147, 16.1316, 16.150999999999996, 16.171599999999998, 16.192899999999998, 16.214899999999997, 16.238599999999998, 16.263399999999997, 16.2901, 16.3163, 16.3401, 16.362699999999997, 16.385499999999997, 16.4121, 16.4976, 16.542299999999997, 16.615899999999996, 16.9041, 18.5982], 'BNC1High': [17.406499999999998, 18.4564, 18.656399999999998, 19.5231, 19.639799999999997, 21.323, 21.573, 24.0396, 25.3395, 26.356099999999998, 28.3894, 29.422599999999996, 30.8226, 30.9559, 31.022599999999997, 31.7226, 31.822499999999998, 31.939100000000003, 32.5556, 33.422599999999996, 33.939, 34.0391, 34.1224, 34.2891, 35.2105, 36.522299999999994, 37.1889, 37.2387, 37.2724, 37.3222, 37.4056, 37.4723, 37.8723, 38.238899999999994, 38.3722, 38.4723, 38.5723, 39.4222, 40.0555, 40.9388, 42.3555, 42.522, 42.7554, 43.672000000000004, 46.5053, 49.321799999999996, 49.4718, 49.571799999999996], 'RotaryEncoder1_3': [33.9907], 'RotaryEncoder1_2': [49.5787]}}  # noqa
+    error_trial = {'Bpod start timestamp': 0.0, 'Trial start timestamp': 0.0, 'Trial end timestamp': 15.485902, 'States timestamps': {'trial_start': [[0.0, 0.00010000000000021103]], 'reset_rotary_encoder': [[0.00010000000000021103, 0.00019999999999997797], [0.4855999999999998, 0.4857], [0.5165000000000002, 0.5166], [0.5331999999999999, 0.5333000000000001], [0.5461999999999998, 0.5463], [0.5590999999999999, 0.5592000000000001], [0.5741, 0.5742000000000003], [0.5952999999999999, 0.5954000000000002]], 'quiescent_period': [[0.00019999999999997797, 0.4855999999999998], [0.4857, 0.5165000000000002], [0.5166, 0.5331999999999999], [0.5333000000000001, 0.5461999999999998], [0.5463, 0.5590999999999999], [0.5592000000000001, 0.5741], [0.5742000000000003, 0.5952999999999999], [0.5954000000000002, 1.1006]], 'stim_on': [[1.1006, 1.2006000000000006]], 'reset2_rotary_encoder': [[1.2006000000000006, 1.2007000000000003]], 'closed_loop': [[1.2007000000000003, 13.4859]], 'error': [[13.4859, 15.4859]], 'no_go': [[np.nan, np.nan]], 'reward': [[np.nan, np.nan]], 'correct': [[np.nan, np.nan]]}, 'Events timestamps': {'Tup': [0.00010000000000021103, 0.00019999999999997797, 0.4857, 0.5166, 0.5333000000000001, 0.5463, 0.5592000000000001, 0.5742000000000003, 0.5954000000000002, 1.1006, 1.2006000000000006, 1.2007000000000003, 15.4859], 'BNC1High': [0.07390000000000008, 1.3236999999999997, 1.7572, 2.5072, 5.1071, 10.1735, 10.273399999999999, 10.3065, 10.8901, 11.023399999999999, 11.64, 11.739999999999998, 11.9068, 12.04, 12.3067, 12.6066, 12.773399999999999, 12.940000000000001, 13.3734, 13.423300000000001, 13.523399999999999], 'RotaryEncoder1_4': [0.4855999999999998, 0.5165000000000002, 0.5331999999999999, 0.5461999999999998, 0.5590999999999999, 0.5741, 0.5952999999999999, 1.7535999999999996], 'BNC1Low': [1.1719, 1.5057, 1.8071000000000002, 3.6715, 9.321200000000001, 10.2713, 10.304300000000001, 10.822600000000001, 10.938099999999999, 11.0551, 11.7211, 11.822099999999999, 12.023399999999999, 12.188400000000001, 12.3885, 12.6557, 12.8888, 13.1539, 13.405999999999999, 13.4541], 'RotaryEncoder1_3': [1.1886, 11.780000000000001], 'RotaryEncoder1_1': [13.4859]}}  # noqa
+    no_go_trial = {'Bpod start timestamp': 0.0, 'Trial start timestamp': 2950.106299, 'Trial end timestamp': 3012.791701, 'States timestamps': {'trial_start': [[2950.106299, 2950.1063990000002]], 'reset_rotary_encoder': [[2950.1063990000002, 2950.106499], [2950.120499, 2950.120599], [2950.139099, 2950.139199], [2950.161899, 2950.161999], [2950.194099, 2950.194199]], 'quiescent_period': [[2950.106499, 2950.120499], [2950.120599, 2950.139099], [2950.139199, 2950.161899], [2950.161999, 2950.194099], [2950.194199, 2950.691599]], 'stim_on': [[2950.691599, 2950.791599]], 'reset2_rotary_encoder': [[2950.791599, 2950.791699]], 'closed_loop': [[2950.791699, 3010.791699]], 'no_go': [[3010.791699, 3012.791699]], 'error': [[np.nan, np.nan]], 'reward': [[np.nan, np.nan]], 'correct': [[np.nan, np.nan]]}, 'Events timestamps': {'Tup': [2950.1063990000002, 2950.106499, 2950.120599, 2950.139199, 2950.161999, 2950.194199, 2950.691599, 2950.791599, 2950.791699, 3010.791699, 3012.791699], 'RotaryEncoder1_3': [2950.120499, 2950.139099, 2950.161899, 2950.194099, 2981.703499], 'BNC1Low': [2950.181299, 2950.8635990000002, 2960.946299, 2961.162399, 2961.262399, 2976.078899, 2981.678699, 2981.761199, 2981.828799, 2981.862799, 2981.928699, 2982.0121990000002, 2995.844699, 2996.912299, 2997.028199, 2997.161899, 2997.311999, 2997.978999, 3005.278699, 3005.427699, 3005.4786990000002, 3005.610799, 3005.927599, 3011.129099, 3011.178199, 3011.245099], 'BNC1High': [2950.750499, 2960.766799, 2960.983499, 2961.183399, 2975.849599, 2981.549399, 2981.715999, 2981.799199, 2981.832599, 2981.899299, 2981.965999, 2982.099399, 2995.865499, 2996.9152990000002, 2997.082199, 2997.215499, 2997.415399, 3005.2484990000003, 3005.365199, 3005.448499, 3005.515099, 3005.881899, 3006.065199, 3011.148299, 3011.181399], 'RotaryEncoder1_4': [2961.126499], 'RotaryEncoder1_1': [3011.1679990000002]}}  # noqa
     # f = open(sph.DATA_FILE_PATH, 'a')
     next_trial_times = []
     trial_completed_times = []
