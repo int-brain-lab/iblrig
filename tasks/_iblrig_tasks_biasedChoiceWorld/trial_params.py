@@ -160,9 +160,9 @@ class TrialParamHandler(object):
         self.stim_probability_left = blocks.update_probability_left(
             self.block_trial_num, self.stim_probability_left)
         # Update position
-        self.position = np.random.choice(self.position_set,
-                                         p=[self.stim_probability_left,
-                                            1 - self.stim_probability_left])
+        self.position = int(np.random.choice(
+            self.position_set,
+            p=[self.stim_probability_left, 1 - self.stim_probability_left]))
         # Update contrast
         self.contrast = misc.draw_contrast(
             self.contrast_set, prob_type=self.contrast_set_probability_type)
@@ -217,7 +217,9 @@ if __name__ == '__main__':
         data = tph.trial_completed(np.random.choice(
             [correct_trial, error_trial, no_go_trial], p=[0.9, 0.05, 0.05]))
         trial_completed_times.append(time.time() - t)
-        print('\nBLOCK LEN: ', tph.block_len)
+        print('\nBLOCK NUM: ', tph.block_num)
+        print('BLOCK LEN: ', tph.block_len)
+        print('BLOCK TRIAL NUM: ', tph.block_trial_num)
         print('PROBABILITY_LEFT: ', tph.stim_probability_left)
         print('SIGNED CONTRAST: ', tph.signed_contrast)
 

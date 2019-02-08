@@ -12,7 +12,7 @@ def get_block_len(factor, min_, max_):
 
 def update_block_params(tph):
     tph.block_trial_num += 1
-    if tph.block_trial_num == tph.block_len:
+    if tph.block_trial_num > tph.block_len:
         tph.block_num += 1
         tph.block_trial_num = 1
         tph.block_len = get_block_len(
