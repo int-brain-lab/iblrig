@@ -485,13 +485,13 @@ class SessionPathCreator(object):
                 if k == 'LATEST_WATER_CALIBRATION_FILE':
                     msg = """
         ##########################################
-        NOT FOUND: LATEST_WATER_CALIBRATION_FILE
+         NOT FOUND: LATEST_WATER_CALIBRATION_FILE
         ##########################################"""
                     logger.warning(msg)
                 if k == 'LATEST_WATER_CALIB_RANGE_FILE':
                     msg = """
         ##########################################
-        NOT FOUND: LATEST_WATER_CALIB_RANGE_FILE
+         NOT FOUND: LATEST_WATER_CALIB_RANGE_FILE
         ##########################################
                   Using ms range(0, 1000)
         ##########################################
