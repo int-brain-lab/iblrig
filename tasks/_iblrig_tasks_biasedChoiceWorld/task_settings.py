@@ -21,29 +21,30 @@ USE_VISUAL_STIMULUS = True  # Run the visual stim in bonsai
 BONSAI_EDITOR = False  # Whether to open the visual stim Bonsai editor or not
 REPEAT_ON_ERROR = True
 # STATE TIMERS
+QUIESCENCE_THRESHOLDS = [-2, 2]  # degree
 QUIESCENT_PERIOD = 0.2  # + x, where x~exp(0.35), t ∈ 0.2 <= R <= 0.5
 INTERACTIVE_DELAY = 0.0  # (s) how long after stim onset the CL starts
 RESPONSE_WINDOW = 60  # Time to move the wheel after go tone (seconds)
 ITI_CORRECT = 1  # how long the stim should stay visible after CORRECT choice
 ITI_ERROR = 2  # how long the stim should stay visible after ERROR choice
-### VISUAL STIM
-QUIESCENCE_THRESHOLDS = [-2, 2]  # degree
-# CONTRASTS
-CONTRAST_SET = [1., 0.25, 0.125, 0.0625, 0.]  # Full contrast set
-# POSITIONS
-STIM_POSITIONS = [-35, 35]  # All possible positions for this session (deg)
-STIM_PROBABILITY_LEFT = 0.5
-
-STIM_BLOCKS = [80., 20.]
-BLOCK_LEN = texp(50, min=20, max=100)
-
+# VISUAL STIM
 STIM_FREQ = 0.10  # Probably constant - NOT IN USE
 STIM_ANGLE = 0.  # Vertical orientation of Gabor patch - NOT IN USE
 STIM_SIGMA = 7.  # (azimuth_degree) Size of Gabor patch
 STIM_GAIN = 4.  # (azimuth_degree/mm) Gain of the RE to stimulus movement
 SYNC_SQUARE_X = 0.95
 SYNC_SQUARE_Y = 0.17
-### SOUNDS
+# BLOCKS
+BLOCK_PROBABILITY_SET = [0.2, 0.8]
+BLOCK_LEN_FACTOR = 50
+BLOCK_LEN_MIN = 20
+BLOCK_LEN_MAX = 100
+# POSITIONS
+STIM_POSITIONS = [-35, 35]  # All possible positions for this session (deg)
+# CONTRASTS
+CONTRAST_SET = [1., 0.25, 0.125, 0.0625, 0.]  # Full contrast set
+CONTRAST_SET_PROBABILITY_TYPE = 'biased'  # or 'uniform'. 'biased' will half the probability of drawing a 0.  # noqa
+# SOUNDS
 SOFT_SOUND = 'xonar'  # Use software sound 'xonar', 'sysdefault' or False for BpodSoundCard  # noqa
 SOUND_BOARD_BPOD_PORT = 'Serial3'  # (on Bpod) - Ignored if using SOFT_SOUND
 WHITE_NOISE_DURATION = 0.5  # Length of noise burst
