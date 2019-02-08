@@ -30,6 +30,7 @@ class TrialParamHandler(object):
         # Constants from settings
         self.init_datetime = parser.parse(sph.PYBPOD_SESSION)
         self.task_protocol = sph.PYBPOD_PROTOCOL
+        self.elapsed_time = 0
         self.data_file_path = sph.DATA_FILE_PATH
         self.data_file = open(self.data_file_path, 'a')
         self.position_set = sph.STIM_POSITIONS
@@ -62,7 +63,9 @@ class TrialParamHandler(object):
 
     def trial_completed(self, behavior_data):
         """Update outcome variables using bpod.session.current_trial
-        Check trial for state entries, first value of first tuple"""
+        Check trial for state entries, first value of first tuple """
+        # Update elapsed_time
+        self.elapsed_time = datetime.datetime.now() - self.init_datetime
         # SAVE TRIAL DATA
         params = self.__dict__.copy()
         params.update({'behavior_data': behavior_data})
@@ -70,6 +73,7 @@ class TrialParamHandler(object):
         params['data_file'] = str(params['data_file'])
         params['osc_client'] = 'osc_client_pointer'
         params['init_datetime'] = params['init_datetime'].isoformat()
+        params['elapsed_time'] = str(params['elapsed_time'])
 
         out = json.dumps(params, cls=ComplexEncoder)
         self.data_file.write(out)

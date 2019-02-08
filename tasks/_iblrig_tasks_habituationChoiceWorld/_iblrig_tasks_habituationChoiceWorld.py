@@ -113,9 +113,6 @@ for i in range(sph.NTRIALS):  # Main loop
     trial_data = tph.trial_completed(bpod.session.current_trial.export())
     tevents = trial_data['behavior_data']['Events timestamps']
 
-    elapsed_time = datetime.datetime.now(
-    ) - parser.parse(trial_data['init_datetime'])
-
     ev_bnc1 = sph.get_port_events(tevents, name='BNC1')
     ev_bnc2 = sph.get_port_events(tevents, name='BNC2')
     ev_port1 = sph.get_port_events(tevents, name='Port1')
@@ -137,7 +134,7 @@ for i in range(sph.NTRIALS):  # Main loop
 TRIAL NUM:              {trial_data['trial_num']}
 DELAY TO WATER WAS:     {trial_data['delay_to_stim_center']}
 WATER DELIVERED:        {trial_data['water_delivered']}
-TIME FROM START:        {elapsed_time}
+TIME FROM START:        {trial_data['elapsed_time']}
 AMBIENT SENSOR DATA:    {as_msg}
 ##########################################"""
     log.info(msg)
