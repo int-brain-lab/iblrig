@@ -65,10 +65,10 @@ def init_calib_func_range(sph_obj) -> tuple:
     max_open_time = 1000
     msg = f"""
         ##########################################
-        NOT FOUND: WATER RANGE CALIBRATION FILE
+            NOT FOUND: WATER RANGE CALIBRATION
         ##########################################
-                File might be missing or empty
-                range set to (0, 1000)ms
+                        File empty
+                 range set to (0, 1000)ms
         ##########################################"""
 
     if sph_obj.LATEST_WATER_CALIB_RANGE_FILE:
@@ -79,8 +79,6 @@ def init_calib_func_range(sph_obj) -> tuple:
             max_open_time = df1['max_open_time']
         else:
             log.warning(msg)
-    else:
-        log.warning(msg)
 
     return min_open_time, max_open_time
 
@@ -138,15 +136,6 @@ def init_stim_gain(sph_obj):
         stim_gain = sph_obj.AG_INIT_VALUE
 
     return stim_gain
-
-
-def load_data(previous_session_path, i=-1):
-    trial_data = raw.load_data(previous_session_path)
-    return trial_data[i] if trial_data else None
-
-
-def load_settings(previous_session_path):
-    return raw.load_settings(previous_session_path)
 
 
 def impulsive_control(sph_obj):

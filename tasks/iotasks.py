@@ -8,7 +8,8 @@ import logging
 import shutil
 from pathlib import Path
 import zipfile
-import numpy as np
+import ibllib.io.raw_data_loaders as raw
+
 
 import os
 
@@ -111,37 +112,10 @@ def zipit(dir_list, zip_name):
     zipf.close()
 
 
-def get_port_events(events: dict, name: str = '') -> list:
-    out: list = []
-    for k in events:
-        if name in k:
-            out.extend(events[k])
-    out = sorted(out)
-
-    return out
+def load_data(previous_session_path, i=-1):
+    trial_data = raw.load_data(previous_session_path)
+    return trial_data[i] if trial_data else None
 
 
-def update_buffer(buffer: list, val) -> list:
-        buffer = np.roll(buffer, -1, axis=0)
-        buffer[-1] = val
-        return buffer.tolist()
-
-
-def texp(factor: float = 0.35, min_: float = 0.2, max_: float = 0.5) -> float:
-        """Truncated exponential
-        mean = 0.35
-        min = 0.2
-        max = 0.5
-        """
-        print(factor, min_, max_)
-        x = np.random.exponential(factor)
-        print(x, min_, max_)
-        if min_ <= x <= max_:
-            return x
-        else:
-            return texp()
-
-
-
-if __name__ == "__main__":
-    texp()
+def load_settings(previous_session_path):
+    return raw.load_settings(previous_session_path)
