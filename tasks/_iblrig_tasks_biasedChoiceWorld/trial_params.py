@@ -18,6 +18,7 @@ sys.path.append(str(Path(__file__).parent.parent))  # noqa
 sys.path.append(str(Path(__file__).parent.parent.parent.parent))  # noqa
 from iotasks import ComplexEncoder
 import bonsai
+import iotasks
 log = logging.getLogger('iblrig')
 
 
@@ -38,7 +39,7 @@ class TrialParamHandler(object):
         self.repeat_contrasts = sph.REPEAT_CONTRASTS
         self.threshold_events_dict = sph.ROTARY_ENCODER.THRESHOLD_EVENTS
         self.quiescent_period_base = sph.QUIESCENT_PERIOD
-        self.quiescent_period = self.quiescent_period_base + self.exp()
+        self.quiescent_period = self.quiescent_period_base + iotasks.texp()
         self.response_window = sph.RESPONSE_WINDOW
         self.interactive_delay = sph.INTERACTIVE_DELAY
         self.iti_error = sph.ITI_ERROR
@@ -55,9 +56,6 @@ class TrialParamHandler(object):
         self.reward_amount = sph.REWARD_AMOUNT
         self.reward_valve_time = sph.REWARD_VALVE_TIME
         self.iti_correct = self.iti_correct_target - self.reward_valve_time
-        # Init trial type objects
-        self.ac = AdaptiveContrast(sph)
-        self.rc = RepeatContrast()
         # Initialize parameters that may change every trial
         self.contrast_set = sph.CONTRAST_SET
         self.trial_num = 0
@@ -73,10 +71,10 @@ class TrialParamHandler(object):
             self.threshold_events_dict[sph.QUIESCENCE_THRESHOLDS[1]])
         self.response_buffer = [0] * sph.RESPONSE_BUFFER_LENGTH
         self.response_time_buffer = []
-        # Outcome related parmeters
-        self.contrast = self.ac
+        self.contrast = 0
         self.current_contrast = self.contrast.value
         self.signed_contrast = self.contrast.value * np.sign(self.position)
+        # Outcome related parmeters
         self.trial_correct = None
         self.ntrials_correct = 0
         self.water_delivered = 0
@@ -94,19 +92,19 @@ class TrialParamHandler(object):
         no_go = ~np.isnan(
             behavior_data['States timestamps']['no_go'][0][0])
         assert correct or error or no_go
-        # Get the response_time for this trial
-        response_time = (
-            behavior_data['States timestamps']['closed_loop'][0][1]
-            - behavior_data['States timestamps']['stim_on'][0][0])
-        # Add it to the buffer
-        self.response_time_buffer.append(response_time)
-        # Update response buffer -1 for left, 0 for nogo, and 1 for rightward
-        if (correct and self.position < 0) or (error and self.position > 0):
-            self._update_buffer(self.response_buffer, 1)
-        elif (correct and self.position > 0) or (error and self.position < 0):
-            self._update_buffer(self.response_buffer, -1)
-        elif no_go:
-            self._update_buffer(self.response_buffer, 0)
+        # # Get the response_time for this trial
+        # response_time = (
+        #     behavior_data['States timestamps']['closed_loop'][0][1]
+        #     - behavior_data['States timestamps']['stim_on'][0][0])
+        # # Add it to the buffer
+        # self.response_time_buffer.append(response_time)
+        # # Update response buffer -1 for left, 0 for nogo, and 1 for rightward
+        # if (correct and self.position < 0) or (error and self.position > 0):
+        #     self._update_buffer(self.response_buffer, 1)
+        # elif (correct and self.position > 0) or (error and self.position < 0):
+        #     self._update_buffer(self.response_buffer, -1)
+        # elif no_go:
+        #     self._update_buffer(self.response_buffer, 0)
         # Update the trial_correct variable
         self.trial_correct = bool(correct)
         # Increment the trial correct counter
@@ -114,8 +112,8 @@ class TrialParamHandler(object):
         # Update the water delivered
         if self.trial_correct:
             self.water_delivered += self.reward_amount
-        # Propagate outcome to contrast object
-        self.contrast.trial_completed(self.trial_correct, self.signed_contrast)
+        # # Propagate outcome to contrast object
+        # self.contrast.trial_completed(self.trial_correct, self.signed_contrast)
         # SAVE TRIAL DATA
         params = self.__dict__.copy()
         params.update({'behavior_data': behavior_data})
@@ -147,15 +145,15 @@ class TrialParamHandler(object):
             bonsai.send_current_trial_info(self)
             return
         self.data_file = str(self.data_file)
-        # update + next contrast: update buffers/counters + get next contrast
-        # This has to happen before self.contrast is pointing to next trials
-        self.contrast.next_trial()
+        # # update + next contrast: update buffers/counters + get next contrast
+        # # This has to happen before self.contrast is pointing to next trials
+        # self.contrast.next_trial()
         # Increment trial number
         self.trial_num += 1
-        # Update non repeated trials
-        self.non_rc_ntrials = self.trial_num - self.rc.ntrials
+        # # Update non repeated trials
+        # self.non_rc_ntrials = self.trial_num - self.rc.ntrials
         # Update quiescent period
-        self.quiescent_period = self.quiescent_period_base + self.exp()
+        self.quiescent_period = self.quiescent_period_base + iotasks.texp()
         # Update stimulus phase
         self.stim_phase = random.uniform(0, math.pi)
         # Update contrast
@@ -171,19 +169,6 @@ class TrialParamHandler(object):
         self.data_file = open(self.data_file_path, 'a')
         # Send next trial info to Bonsai
         bonsai.send_current_trial_info(self)
-
-    def exp(self):
-        x = np.random.exponential(0.35)
-        if 0.2 <= x <= 0.5:
-            return x
-        else:
-            return self.exp()
-
-    @staticmethod
-    def _update_buffer(buffer, val):
-        buffer = np.roll(buffer, -1, axis=0)
-        buffer[-1] = val
-        return buffer.tolist()
 
     def _next_contrast(self):        # Decide which case we are in
         if self.trial_correct:
