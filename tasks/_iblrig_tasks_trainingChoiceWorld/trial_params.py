@@ -19,6 +19,7 @@ sys.path.append(str(Path(__file__).parent.parent))  # noqa
 sys.path.append(str(Path(__file__).parent.parent.parent.parent))  # noqa
 from iotasks import ComplexEncoder
 import bonsai
+import misc
 
 log = logging.getLogger('iblrig')
 
@@ -294,11 +295,11 @@ class TrialParamHandler(object):
         self.response_time_buffer.append(response_time)
         # Update response buffer -1 for left, 0 for nogo, and 1 for rightward
         if (correct and self.position < 0) or (error and self.position > 0):
-            self._update_response_buffer(1)
+            self.response_buffer = misc.update_buffer(self.response_buffer, 1)
         elif (correct and self.position > 0) or (error and self.position < 0):
-            self._update_response_buffer(-1)
+            self.response_buffer = misc.update_buffer(self.response_buffer, -1)
         elif no_go:
-            self._update_response_buffer(0)
+            self.response_buffer = misc.update_buffer(self.response_buffer, 0)
         # Update the trial_correct variable
         self.trial_correct = bool(correct)
         # Increment the trial correct counter
@@ -389,13 +390,6 @@ class TrialParamHandler(object):
             return x
         else:
             return self.exp()
-
-    def _update_response_buffer(self, val):
-        _buffer = self.response_buffer
-        _buffer = np.roll(_buffer, -1, axis=0)
-        _buffer[-1] = val
-        self.response_buffer = _buffer.tolist()
-        return _buffer
 
     def _next_contrast(self):        # Decide which case we are in
         if self.trial_correct:
