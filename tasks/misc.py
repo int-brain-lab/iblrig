@@ -5,6 +5,7 @@
 # @Last Modified time: 8-02-2019 12:51:53.5353
 import numpy as np
 import datetime
+from pathlib import Path
 
 
 def get_port_events(events: dict, name: str = '') -> list:
@@ -68,6 +69,16 @@ def check_stop_criterions(init_datetime, rt_buffer, trial_num) -> int:
         return False
 
 
-def get_trial_rt(behavior_data):
+def get_trial_rt(behavior_data) -> float:
     return (behavior_data['States timestamps']['closed_loop'][0][1] -
             behavior_data['States timestamps']['stim_on'][0][0])
+
+
+def create_flags(data_file_path, poop_count) -> None:
+    flag = Path(data_file_path).parent.parent / 'transfer_me.flag'
+    open(flag, 'a').close()
+    flag2 = Path(data_file_path).parent.parent / 'create_me.flag'
+    open(flag2, 'a').close()
+    flag3 = Path(data_file_path).parent.parent / 'poop_count.flag'
+    if poop_count:
+        open(flag3, 'a').close()

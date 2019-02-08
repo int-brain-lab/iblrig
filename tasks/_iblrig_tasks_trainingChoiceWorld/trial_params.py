@@ -323,13 +323,8 @@ class TrialParamHandler(object):
         self.data_file.close()
         # If more than 42 trials save transfer_me.flag
         if self.trial_num == 42:
-            flag = Path(self.data_file_path).parent.parent / 'transfer_me.flag'
-            open(flag, 'a').close()
-            flag2 = Path(self.data_file_path).parent.parent / 'create_me.flag'
-            open(flag2, 'a').close()
-            flag3 = Path(self.data_file_path).parent.parent / 'poop_count.flag'
-            if self.poop_count:
-                open(flag3, 'a').close()
+            misc.create_flags(self.data_file_path, self.poop_count)
+
         return json.loads(out)
 
     def check_stop_criterions(self):
