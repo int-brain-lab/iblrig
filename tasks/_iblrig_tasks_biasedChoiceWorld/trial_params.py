@@ -20,6 +20,7 @@ from iotasks import ComplexEncoder
 import bonsai
 import misc
 import blocks
+import adaptive
 log = logging.getLogger('iblrig')
 
 
@@ -87,13 +88,15 @@ class TrialParamHandler(object):
             self.threshold_events_dict[sph.QUIESCENCE_THRESHOLDS[0]])
         self.movement_right = (
             self.threshold_events_dict[sph.QUIESCENCE_THRESHOLDS[1]])
+        self.response_time_buffer = []
         # Outcome related parmeters
         self.trial_correct = None
         self.ntrials_correct = 0
         self.water_delivered = 0
 
-    # def reprJSON(self):
-    #     return self.__dict__
+    def check_stop_criterions(self):
+        return misc.check_stop_criterions(
+            self.init_datetime, self.response_time_buffer, self.trial_num)
 
     def trial_completed(self, behavior_data):
         """Update outcome variables using bpod.session.current_trial
@@ -107,6 +110,8 @@ class TrialParamHandler(object):
         no_go = ~np.isnan(
             behavior_data['States timestamps']['no_go'][0][0])
         assert correct or error or no_go
+        # Add trial's response time to the buffer
+        self.response_time_buffer.append(misc.get_trial_rt(behavior_data))
         # Update the trial_correct variable
         self.trial_correct = bool(correct)
         # Increment the trial correct counter
