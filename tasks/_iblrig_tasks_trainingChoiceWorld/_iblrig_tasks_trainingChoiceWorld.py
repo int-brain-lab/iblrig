@@ -6,8 +6,6 @@
 from pybpodapi.protocol import Bpod, StateMachine
 from pybpod_rotaryencoder_module.module import RotaryEncoder
 import matplotlib.pyplot as plt
-from dateutil import parser
-import datetime
 import logging
 
 from session_params import SessionParamHandler

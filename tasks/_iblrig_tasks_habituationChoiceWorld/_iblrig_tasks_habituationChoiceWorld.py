@@ -5,8 +5,6 @@
 # @Last Modified time: 2018-10-09 13:32:28
 from pybpodapi.protocol import Bpod, StateMachine
 from pybpod_rotaryencoder_module.module import RotaryEncoder
-from dateutil import parser
-import datetime
 import logging
 
 from session_params import SessionParamHandler
