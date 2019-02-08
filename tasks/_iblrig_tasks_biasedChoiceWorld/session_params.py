@@ -68,13 +68,10 @@ class SessionParamHandler(object):
         # =====================================================================
         # ADAPTIVE STUFF
         # =====================================================================
-        self.REWARD_AMOUNT = adaptive.init_reward_amount(self)
         self.CALIB_FUNC = adaptive.init_calib_func(self)
         self.CALIB_FUNC_RANGE = adaptive.init_calib_func_range(self)
         self.REWARD_VALVE_TIME = adaptive.init_reward_valve_time(self)
-        self.STIM_GAIN = adaptive.init_stim_gain(self)
-        self.IMPULIVE_CONTROL = 'OFF'
-        self = adaptive.impulsive_control(self)
+
         # =====================================================================
         # ROTARY ENCODER
         # =====================================================================
@@ -196,26 +193,12 @@ PREVIOUS SESSION FOUND
 LOADING PARAMETERS FROM: {self.PREVIOUS_DATA_FILE}
 
 PREVIOUS NTRIALS:              {self.LAST_TRIAL_DATA["trial_num"]}
-PREVIOUS NTRIALS (no repeats): {self.LAST_TRIAL_DATA["non_rc_ntrials"]}
 PREVIOUS WATER DRANK: {self.LAST_TRIAL_DATA['water_delivered']}
 LAST REWARD:                   {self.LAST_TRIAL_DATA["reward_amount"]}
 LAST GAIN:                     {self.LAST_TRIAL_DATA["stim_gain"]}
-LAST CONTRAST SET:             {self.LAST_TRIAL_DATA["ac"]["contrast_set"]}
-BUFFERS:                       {'loaded'}
 PREVIOUS WEIGHT:               {self.LAST_SETTINGS_DATA['SUBJECT_WEIGHT']}
 ##########################################"""
             log.info(msg)
-
-        msg = f"""
-##########################################
-ADAPTIVE VALUES FOR CURRENT SESSION
-
-REWARD AMOUNT:      {self.REWARD_AMOUNT} µl
-VALVE OPEN TIME:    {self.REWARD_VALVE_TIME} sec
-GAIN:               {self.STIM_GAIN} azimuth_degree/mm
-IMPULSIVE CONTROL   {self.IMPULIVE_CONTROL}
-##########################################"""
-        log.info(msg)
 
 
 if __name__ == '__main__':
@@ -229,6 +212,15 @@ if __name__ == '__main__':
     """
     import task_settings as _task_settings
     import scratch._user_settings as _user_settings
+    import datetime
+    dt = datetime.datetime.now()
+    dt = [str(dt.year), str(dt.month), str(dt.day),
+          str(dt.hour), str(dt.minute), str(dt.second)]
+    dt = [x if int(x) >= 10 else '0' + x for x in dt]
+    dt.insert(3, '-')
+    _user_settings.PYBPOD_SESSION = ''.join(dt)
+    _user_settings.PYBPOD_SETUP = 'biasedChoiceWorld'
+    _user_settings.PYBPOD_PROTOCOL = '_iblrig_tasks_biasedChoiceWorld'
     if platform == 'linux':
         r = "/home/nico/Projects/IBL/IBL-github/iblrig"
         _task_settings.IBLRIG_FOLDER = r

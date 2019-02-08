@@ -8,6 +8,8 @@ import logging
 import shutil
 from pathlib import Path
 import zipfile
+import ibllib.io.raw_data_loaders as raw
+
 
 import os
 
@@ -110,11 +112,10 @@ def zipit(dir_list, zip_name):
     zipf.close()
 
 
-def get_port_events(events: dict, name: str = '') -> list:
-    out: list = []
-    for k in events:
-        if name in k:
-            out.extend(events[k])
-    out = sorted(out)
+def load_data(previous_session_path, i=-1):
+    trial_data = raw.load_data(previous_session_path)
+    return trial_data[i] if trial_data else None
 
-    return out
+
+def load_settings(previous_session_path):
+    return raw.load_settings(previous_session_path)
