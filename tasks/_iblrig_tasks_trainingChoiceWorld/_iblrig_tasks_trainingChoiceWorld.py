@@ -173,9 +173,6 @@ for i in range(sph.NTRIALS):  # Main loop
     psyfun_df = op.update_psyfun_df(trial_data, psyfun_df)
     op.plot_psyfun(trial_data, psyfun_df, ax=ax_psyc)
 
-    elapsed_time = datetime.datetime.now(
-        ) - parser.parse(trial_data['init_datetime'])
-
     tevents = trial_data['behavior_data']['Events timestamps']
     ev_bnc1 = sph.get_port_events(tevents, name='BNC1')
     ev_bnc2 = sph.get_port_events(tevents, name='BNC2')
@@ -207,7 +204,7 @@ TRIAL CORRECT:        {trial_data['trial_correct']}
 NTRIALS CORRECT:      {trial_data['ntrials_correct']}
 NTRIALS ERROR:        {trial_data['trial_num'] - trial_data['ntrials_correct']}
 WATER DELIVERED:      {trial_data['water_delivered']}
-TIME FROM START:      {elapsed_time}
+TIME FROM START:      {trial_data['elapsed_time']}
 AMBIENT SENSOR DATA:  {as_msg}
 ##########################################"""
     log.info(msg)
