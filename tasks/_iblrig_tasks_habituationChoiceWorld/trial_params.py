@@ -14,6 +14,7 @@ import logging
 sys.path.append(str(Path(__file__).parent.parent))  # noqa
 sys.path.append(str(Path(__file__).parent.parent.parent.parent))  # noqa
 from iotasks import ComplexEncoder
+import bonsai
 
 log = logging.getLogger('iblrig')
 
@@ -28,6 +29,7 @@ class TrialParamHandler(object):
     def __init__(self, sph):
         # Constants from settings
         self.init_datetime = parser.parse(sph.PYBPOD_SESSION)
+        self.task_protocol = sph.PYBPOD_PROTOCOL
         self.data_file_path = sph.DATA_FILE_PATH
         self.data_file = open(self.data_file_path, 'a')
         self.position_set = sph.STIM_POSITIONS
@@ -89,7 +91,7 @@ class TrialParamHandler(object):
         if self.trial_num == 0:
             self.trial_num += 1
             # Send next trial info to Bonsai
-            self.send_current_trial_info()
+            bonsai.send_current_trial_info(self)
             return
         self.data_file = str(self.data_file)
         # Increment trial number
@@ -108,45 +110,31 @@ class TrialParamHandler(object):
         # Open the data file to append the next trial
         self.data_file = open(self.data_file_path, 'a')
         # Send next trial info to Bonsai
-        self.send_current_trial_info()
-
-    def send_current_trial_info(self):
-        """
-        Sends all info relevant for stim production to Bonsai using OSC
-        OSC channels:
-            USED:
-            /t  -> (int)    trial number current
-            /p  -> (int)    position of stimulus init for current trial
-            /h  -> (float)  phase of gabor for current trial
-            /c  -> (float)  contrast of stimulus for current trial
-            /f  -> (float)  frequency of gabor patch for current trial
-            /a  -> (float)  angle of gabor patch for current trial
-            /g  -> (float)  gain of RE to visual stim displacement
-            /s  -> (float)  sigma of the 2D gaussian of gabor
-            /e  -> (int)    events transitions  USED BY SOFTCODE HANDLER FUNC
-        """
-        if self.osc_client is None:
-            log.error(
-                'Can''t send message without an OSC client: client is None')
-            raise(UnboundLocalError)
-        # self.position = self.position  # (2/3)*t_position/180
-        self.osc_client.send_message("/t", self.trial_num)
-        self.osc_client.send_message("/p", self.position)
-        self.osc_client.send_message("/h", self.stim_phase)
-        self.osc_client.send_message("/c", self.contrast)
-        self.osc_client.send_message("/f", self.stim_freq)
-        self.osc_client.send_message("/a", self.stim_angle)
-        self.osc_client.send_message("/g", self.stim_gain)
-        self.osc_client.send_message("/s", self.stim_sigma)
+        bonsai.send_current_trial_info(self)
 
 
 if __name__ == '__main__':
-
     from session_params import SessionParamHandler
+    from sys import platform
     import time
     import task_settings as _task_settings
     import scratch._user_settings as _user_settings
-    _task_settings.AUTOMATIC_CALIBRATION = False
+    import datetime
+    dt = datetime.datetime.now()
+    dt = [str(dt.year), str(dt.month), str(dt.day),
+          str(dt.hour), str(dt.minute), str(dt.second)]
+    dt = [x if int(x) >= 10 else '0' + x for x in dt]
+    dt.insert(3, '-')
+    _user_settings.PYBPOD_SESSION = ''.join(dt)
+    _user_settings.PYBPOD_SETUP = 'habituationChoiceWorld'
+    _user_settings.PYBPOD_PROTOCOL = '_iblrig_tasks_habituationChoiceWorld'
+    if platform == 'linux':
+        r = "/home/nico/Projects/IBL/IBL-github/iblrig"
+        _task_settings.IBLRIG_FOLDER = r
+        d = "/home/nico/Projects/IBL/IBL-github/iblrig/scratch/test_iblrig_data"  # noqa
+        _task_settings.IBLRIG_DATA_FOLDER = d
+        _task_settings.AUTOMATIC_CALIBRATION = False
+        _task_settings.USE_VISUAL_STIMULUS = False
     sph = SessionParamHandler(_task_settings, _user_settings)
     tph = TrialParamHandler(sph)
 

@@ -14,71 +14,71 @@ log = logging.getLogger('iblrig')
 # =====================================================================
 # SESSION PARAM HANDLER OBJECT METHODS
 # =====================================================================
-def start_visual_stim(sph_obj):
-    if sph_obj.USE_VISUAL_STIMULUS and sph_obj.BONSAI:
+def start_visual_stim(sph):
+    if sph.USE_VISUAL_STIMULUS and sph.BONSAI:
         # Run Bonsai workflow
         here = os.getcwd()
         os.chdir(str(
-            Path(sph_obj.VISUAL_STIM_FOLDER) / sph_obj.VISUAL_STIMULUS_TYPE))
-        bns = sph_obj.BONSAI
-        wkfl = sph_obj.VISUAL_STIMULUS_FILE
+            Path(sph.VISUAL_STIM_FOLDER) / sph.VISUAL_STIMULUS_TYPE))
+        bns = sph.BONSAI
+        wkfl = sph.VISUAL_STIMULUS_FILE
 
         evt = "-p:FileNameEvents=" + os.path.join(
-            sph_obj.SESSION_RAW_DATA_FOLDER,
+            sph.SESSION_RAW_DATA_FOLDER,
             "_iblrig_encoderEvents.raw.ssv")
         pos = "-p:FileNamePositions=" + os.path.join(
-            sph_obj.SESSION_RAW_DATA_FOLDER,
+            sph.SESSION_RAW_DATA_FOLDER,
             "_iblrig_encoderPositions.raw.ssv")
         itr = "-p:FileNameTrialInfo=" + os.path.join(
-            sph_obj.SESSION_RAW_DATA_FOLDER,
+            sph.SESSION_RAW_DATA_FOLDER,
             "_iblrig_encoderTrialInfo.raw.ssv")
         mic = "-p:FileNameMic=" + os.path.join(
-            sph_obj.SESSION_RAW_DATA_FOLDER,
+            sph.SESSION_RAW_DATA_FOLDER,
             "_iblrig_micData.raw.wav")
 
-        com = "-p:REPortName=" + sph_obj.COM['ROTARY_ENCODER']
-        rec = "-p:RecordSound=" + str(sph_obj.RECORD_SOUND)
+        com = "-p:REPortName=" + sph.COM['ROTARY_ENCODER']
+        rec = "-p:RecordSound=" + str(sph.RECORD_SOUND)
 
-        sync_x = "-p:sync_x=" + str(sph_obj.SYNC_SQUARE_X)
-        sync_y = "-p:sync_y=" + str(sph_obj.SYNC_SQUARE_Y)
+        sync_x = "-p:sync_x=" + str(sph.SYNC_SQUARE_X)
+        sync_y = "-p:sync_y=" + str(sph.SYNC_SQUARE_Y)
         start = '--start'
         noeditor = '--noeditor'
 
-        if sph_obj.BONSAI_EDITOR:
+        if sph.BONSAI_EDITOR:
             editor = start
-        elif not sph_obj.BONSAI_EDITOR:
+        elif not sph.BONSAI_EDITOR:
             editor = noeditor
-        if 'habituation' in sph_obj.PYBPOD_PROTOCOL:
+        if 'habituation' in sph.PYBPOD_PROTOCOL:
             subprocess.Popen(
                 [bns, wkfl, editor, evt, itr, com, mic, rec, sync_x, sync_y])
-        elif 'training' in sph_obj.PYBPOD_PROTOCOL:
+        else:
             subprocess.Popen(
                 [bns, wkfl, editor, pos,
                  evt, itr, com, mic, rec, sync_x, sync_y])
         time.sleep(5)
         os.chdir(here)
     else:
-        sph_obj.USE_VISUAL_STIMULUS = False
+        sph.USE_VISUAL_STIMULUS = False
 
 
-def start_camera_recording(sph_obj):
-    if (sph_obj.RECORD_VIDEO is False
-            and sph_obj.OPEN_CAMERA_VIEW is False):
+def start_camera_recording(sph):
+    if (sph.RECORD_VIDEO is False
+            and sph.OPEN_CAMERA_VIEW is False):
         return
     # Run Workflow
     here = os.getcwd()
-    os.chdir(sph_obj.VIDEO_RECORDING_FOLDER)
+    os.chdir(sph.VIDEO_RECORDING_FOLDER)
 
-    bns = sph_obj.BONSAI
-    wkfl = sph_obj.VIDEO_RECORDING_FILE
+    bns = sph.BONSAI
+    wkfl = sph.VIDEO_RECORDING_FILE
 
     ts = '-p:TimestampsFileName=' + os.path.join(
-        sph_obj.SESSION_RAW_VIDEO_DATA_FOLDER,
+        sph.SESSION_RAW_VIDEO_DATA_FOLDER,
         '_iblrig_leftCamera.timestamps.ssv')
     vid = '-p:VideoFileName=' + os.path.join(
-        sph_obj.SESSION_RAW_VIDEO_DATA_FOLDER,
+        sph.SESSION_RAW_VIDEO_DATA_FOLDER,
         '_iblrig_leftCamera.raw.avi')
-    rec = '-p:SaveVideo=' + str(sph_obj.RECORD_VIDEO)
+    rec = '-p:SaveVideo=' + str(sph.RECORD_VIDEO)
 
     start = '--start'
 
@@ -90,7 +90,7 @@ def start_camera_recording(sph_obj):
 # =====================================================================
 # TRIAL PARAM HANDLER OBJECT METHODS
 # =====================================================================
-def send_current_trial_info(tph_obj):
+def send_current_trial_info(tph):
         """
         Sends all info relevant for stim production to Bonsai using OSC
         OSC channels:
@@ -105,15 +105,18 @@ def send_current_trial_info(tph_obj):
             /s  -> (float)  sigma of the 2D gaussian of gabor
             /e  -> (int)    events transitions  USED BY SOFTCODE HANDLER FUNC
         """
-        if tph_obj.osc_client is None:
+        if tph.osc_client is None:
             log.error("Can't send trial info to Bonsai osc_client = None")
             raise(UnboundLocalError)
-        # tph_obj.position = tph_obj.position  # (2/3)*t_position/180
-        tph_obj.osc_client.send_message("/t", tph_obj.trial_num)
-        tph_obj.osc_client.send_message("/p", tph_obj.position)
-        tph_obj.osc_client.send_message("/h", tph_obj.stim_phase)
-        tph_obj.osc_client.send_message("/c", tph_obj.contrast.value)
-        tph_obj.osc_client.send_message("/f", tph_obj.stim_freq)
-        tph_obj.osc_client.send_message("/a", tph_obj.stim_angle)
-        tph_obj.osc_client.send_message("/g", tph_obj.stim_gain)
-        tph_obj.osc_client.send_message("/s", tph_obj.stim_sigma)
+        # tph.position = tph.position  # (2/3)*t_position/180
+        tph.osc_client.send_message("/t", tph.trial_num)
+        tph.osc_client.send_message("/p", tph.position)
+        tph.osc_client.send_message("/h", tph.stim_phase)
+        if 'training' in tph.task_protocol:
+            tph.osc_client.send_message("/c", tph.contrast.value)
+        else:
+            tph.osc_client.send_message("/c", tph.contrast)
+        tph.osc_client.send_message("/f", tph.stim_freq)
+        tph.osc_client.send_message("/a", tph.stim_angle)
+        tph.osc_client.send_message("/g", tph.stim_gain)
+        tph.osc_client.send_message("/s", tph.stim_sigma)
