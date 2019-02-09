@@ -3,16 +3,16 @@
 # =============================================================================
 # IBL rig root folder
 IBLRIG_FOLDER = 'C:\\iblrig'
-IBLRIG_DATA_FOLDER = None  # If None data folder will be ..\\iblrig_data from IBLRIG_FOLDER
+IBLRIG_DATA_FOLDER = None  # If None data folder will be ..\\iblrig_data from IBLRIG_FOLDER  # noqa
 # SOUND, AMBIENT SENSOR, AND VIDEO RECORDINGS
 RECORD_SOUND = True
 RECORD_AMBIENT_SENSOR_DATA = True
 RECORD_VIDEO = True
 OPEN_CAMERA_VIEW = True  # if RECORD_VIDEO == True OPEN_CAMERA_VIEW is True
 # REWARDS
-AUTOMATIC_CALIBRATION = True  # Wether to look for a calibration session and func to define the valve opening time
-CALIBRATION_VALUE = 0.067  # calibration value for 3ul of target reward amount (ignored if automatic ON)
-REWARD_TYPE = 'Water 10% Sucrose'  # Water, Water 10% Sucrose, Water 15% Sucrose, Water 2% Citric Acid (Guo et al.. PLoS One 2014)
+AUTOMATIC_CALIBRATION = True  # Wether to look for a calibration session and func to define the valve opening time  # noqa
+CALIBRATION_VALUE = 0.067  # calibration value for 3ul of target reward amount (ignored if automatic ON)  # noqa
+REWARD_TYPE = 'Water 10% Sucrose'  # Water, Water 10% Sucrose, Water 15% Sucrose, Water 2% Citric Acid (Guo et al.. PLoS One 2014)  # noqa
 REWARD_AMOUNT = 3.  # (µl) Target resward amount
 # TASK
 NTRIALS = 2000  # Number of trials for the current session
@@ -31,7 +31,7 @@ SYNC_SQUARE_Y = 0.17
 # CONTRASTS
 CONTRAST_SET = [1.]  # Full contrast set, used if adaptive contrast = False
 # SOUNDS
-SOFT_SOUND = 'xonar'  # Use software sound 'xonar', 'sysdefault' or False for BpodSoundCard
+SOFT_SOUND = 'xonar'  # Use software sound 'xonar', 'sysdefault' or False for BpodSoundCard  # noqa
 GO_TONE_DURATION = 0.1  # Length of tone
 GO_TONE_FREQUENCY = 5000  # 5KHz
 GO_TONE_AMPLITUDE = 0.1  # [0->1]
