@@ -152,6 +152,9 @@ def impulsive_control(sph):
     # Check crit 1
     l_trial_correct = trial_correct[signed_contrast < 0]
     r_trial_correct = trial_correct[signed_contrast > 0]
+    if len(l_trial_correct) == 0  or len(r_trial_correct) == 0:
+        return sph
+
     p_left = sum(l_trial_correct) / len(l_trial_correct)
     p_righ = sum(r_trial_correct) / len(r_trial_correct)
     if np.abs(p_left - p_righ) >= 0.4:
