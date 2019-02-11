@@ -194,9 +194,13 @@ TRIAL NUM:            {trial_data['trial_num']}
 STIM POSITION:        {trial_data['position']}
 STIM CONTRAST:        {trial_data['contrast']}
 STIM PHASE:           {trial_data['stim_phase']}
-STIM PROB LEFT:       {trial_data['stim_probability_left']}
-RESPONSE TIME:        {trial_data['response_time_buffer'][-1]}
 
+BLOCK LENGTH:         {trial_data['block_len']}
+BLOCK NUMBER:         {trial_data['block_num']}
+TRIALS IN BLOCK:      {trial_data['block_trial_num']}
+STIM PROB LEFT:       {trial_data['stim_probability_left']}
+
+RESPONSE TIME:        {trial_data['response_time_buffer'][-1]}
 TRIAL CORRECT:        {trial_data['trial_correct']}
 
 NTRIALS CORRECT:      {trial_data['ntrials_correct']}
