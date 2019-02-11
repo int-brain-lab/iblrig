@@ -3,20 +3,23 @@
 # @Date:   2018-02-02 14:06:34
 # @Last Modified by:   Niccolò Bonacchi
 # @Last Modified time: 2018-06-26 17:36:59
-import random
-import numpy as np
+import time
 import json
+import logging
+import math
+import random
 from pathlib import Path
 from dateutil import parser
 import datetime
-import math
+
+import numpy as np
 import sys
-import logging
 sys.path.append(str(Path(__file__).parent.parent))  # noqa
 sys.path.append(str(Path(__file__).parent.parent.parent.parent))  # noqa
 from iotasks import ComplexEncoder
 import bonsai
 import misc
+import blocks
 
 log = logging.getLogger('iblrig')
 
@@ -37,46 +40,95 @@ class TrialParamHandler(object):
         self.data_file = open(self.data_file_path, 'a')
         self.position_set = sph.STIM_POSITIONS
         self.contrast_set = sph.CONTRAST_SET
-        self.iti_target = sph.ITI
+        self.contrast_set_probability_type = sph.CONTRAST_SET_PROBABILITY_TYPE
+        self.repeat_on_error = sph.REPEAT_ON_ERROR
+        self.threshold_events_dict = sph.ROTARY_ENCODER.THRESHOLD_EVENTS
+        self.quiescent_period_base = sph.QUIESCENT_PERIOD
+        self.quiescent_period = self.quiescent_period_base + misc.texp()
+        self.response_window = sph.RESPONSE_WINDOW
+        self.interactive_delay = sph.INTERACTIVE_DELAY
+        self.iti_error = sph.ITI_ERROR
+        self.iti_correct_target = sph.ITI_CORRECT
         self.osc_client = sph.OSC_CLIENT
         self.stim_freq = sph.STIM_FREQ
         self.stim_angle = sph.STIM_ANGLE
         self.stim_gain = sph.STIM_GAIN
         self.stim_sigma = sph.STIM_SIGMA
         self.out_tone = sph.OUT_TONE
+        self.out_noise = sph.OUT_NOISE
         self.poop_count = sph.POOP_COUNT
         # Reward amount
         self.reward_amount = sph.REWARD_AMOUNT
         self.reward_valve_time = sph.REWARD_VALVE_TIME
-        self.iti = self.iti_target - self.reward_valve_time
+        self.iti_correct = self.iti_correct_target - self.reward_valve_time
         # Initialize parameters that may change every trial
         self.trial_num = 0
-        self.position = random.choice(self.position_set)
         self.stim_phase = 0.
-        self.contrast = random.choice(self.contrast_set)
-        self.delay_to_stim_center_mean = sph.DELAY_TO_STIM_CENTER
-        self.delay_to_stim_center = np.random.normal(
-            self.delay_to_stim_center_mean, 2)
+
+        self.block_num = 0
+        self.block_trial_num = 0
+        self.block_len_factor = sph.BLOCK_LEN_FACTOR
+        self.block_len_min = sph.BLOCK_LEN_MIN
+        self.block_len_max = sph.BLOCK_LEN_MAX
+        self.block_probability_set = sph.BLOCK_PROBABILITY_SET
+        self.block_len = blocks.get_block_len(self.block_len_factor,
+                                              self.block_len_min,
+                                              self.block_len_max)
+        # Position
+        self.stim_probability_left = np.random.choice(
+            self.block_probability_set)
+        self.position = random.choice(sph.STIM_POSITIONS)
+        # Contrast
+        self.contrast = misc.draw_contrast(self.contrast_set)
         self.signed_contrast = self.contrast * np.sign(self.position)
+        # RE event names
+        self.event_error = self.threshold_events_dict[self.position]
+        self.event_reward = self.threshold_events_dict[-self.position]
+        self.movement_left = (
+            self.threshold_events_dict[sph.QUIESCENCE_THRESHOLDS[0]])
+        self.movement_right = (
+            self.threshold_events_dict[sph.QUIESCENCE_THRESHOLDS[1]])
+        self.response_time_buffer = []
+        # Outcome related parmeters
+        self.trial_correct = None
+        self.ntrials_correct = 0
         self.water_delivered = 0
 
-    def reprJSON(self):
-        return self.__dict__
+    def check_stop_criterions(self):
+        return misc.check_stop_criterions(
+            self.init_datetime, self.response_time_buffer, self.trial_num)
 
     def trial_completed(self, behavior_data):
         """Update outcome variables using bpod.session.current_trial
-        Check trial for state entries, first value of first tuple """
+        Check trial for state entries, first value of first tuple"""
         # Update elapsed_time
         self.elapsed_time = datetime.datetime.now() - self.init_datetime
+        correct = ~np.isnan(
+            behavior_data['States timestamps']['correct'][0][0])
+        error = ~np.isnan(
+            behavior_data['States timestamps']['error'][0][0])
+        no_go = ~np.isnan(
+            behavior_data['States timestamps']['no_go'][0][0])
+        assert correct or error or no_go
+        # Add trial's response time to the buffer
+        self.response_time_buffer.append(misc.get_trial_rt(behavior_data))
+        # Update the trial_correct variable
+        self.trial_correct = bool(correct)
+        # Increment the trial correct counter
+        self.ntrials_correct += self.trial_correct
+        # Update the water delivered
+        if self.trial_correct:
+            self.water_delivered += self.reward_amount
         # SAVE TRIAL DATA
         params = self.__dict__.copy()
         params.update({'behavior_data': behavior_data})
-        # open data_file is not serializable, convert to str
+        # Convert to str all non serializable params
         params['data_file'] = str(params['data_file'])
         params['osc_client'] = 'osc_client_pointer'
         params['init_datetime'] = params['init_datetime'].isoformat()
         params['elapsed_time'] = str(params['elapsed_time'])
-
+        params['position'] = int(params['position'])
+        # Dump and save
         out = json.dumps(params, cls=ComplexEncoder)
         self.data_file.write(out)
         self.data_file.write('\n')
@@ -84,30 +136,42 @@ class TrialParamHandler(object):
         # If more than 42 trials save transfer_me.flag
         if self.trial_num == 42:
             misc.create_flags(self.data_file_path, self.poop_count)
-
         return json.loads(out)
 
     def next_trial(self):
         # First trial exception
         if self.trial_num == 0:
             self.trial_num += 1
+            self.block_num += 1
+            self.block_trial_num += 1
             # Send next trial info to Bonsai
             bonsai.send_current_trial_info(self)
             return
         self.data_file = str(self.data_file)
         # Increment trial number
         self.trial_num += 1
-        # Update contrast
-        self.contrast = random.choice(self.contrast_set)
+        # Update quiescent period
+        self.quiescent_period = self.quiescent_period_base + misc.texp()
         # Update stimulus phase
         self.stim_phase = random.uniform(0, math.pi)
+        # Update block
+        self = blocks.update_block_params(self)
+        # Update stim probability left
+        self.stim_probability_left = blocks.update_probability_left(
+            self.block_trial_num, self.stim_probability_left)
         # Update position
-        self.position = random.choice(self.position_set)
-        # Update delay to stimulus center
-        self.delay_to_stim_center = np.random.normal(
-            self.delay_to_stim_center_mean, 2)
-        # Update water delivered
-        self.water_delivered += self.reward_amount
+        self.position = int(np.random.choice(
+            self.position_set,
+            p=[self.stim_probability_left, 1 - self.stim_probability_left]))
+        # Update contrast
+        self.contrast = misc.draw_contrast(
+            self.contrast_set, prob_type=self.contrast_set_probability_type)
+        self.signed_contrast = self.contrast * np.sign(self.position)
+        # Update state machine events
+        self.event_error = self.threshold_events_dict[self.position]
+        self.event_reward = self.threshold_events_dict[-self.position]
+        # Reset outcome variables for next trial
+        self.trial_correct = None
         # Open the data file to append the next trial
         self.data_file = open(self.data_file_path, 'a')
         # Send next trial info to Bonsai
@@ -117,18 +181,16 @@ class TrialParamHandler(object):
 if __name__ == '__main__':
     from session_params import SessionParamHandler
     from sys import platform
-    import time
     import task_settings as _task_settings
     import scratch._user_settings as _user_settings
-    import datetime
     dt = datetime.datetime.now()
     dt = [str(dt.year), str(dt.month), str(dt.day),
           str(dt.hour), str(dt.minute), str(dt.second)]
     dt = [x if int(x) >= 10 else '0' + x for x in dt]
     dt.insert(3, '-')
     _user_settings.PYBPOD_SESSION = ''.join(dt)
-    _user_settings.PYBPOD_SETUP = 'habituationChoiceWorld'
-    _user_settings.PYBPOD_PROTOCOL = '_iblrig_tasks_habituationChoiceWorld'
+    _user_settings.PYBPOD_SETUP = 'biasedChoiceWorld'
+    _user_settings.PYBPOD_PROTOCOL = '_iblrig_tasks_biasedChoiceWorld'
     if platform == 'linux':
         r = "/home/nico/Projects/IBL/IBL-github/iblrig"
         _task_settings.IBLRIG_FOLDER = r
@@ -136,7 +198,8 @@ if __name__ == '__main__':
         _task_settings.IBLRIG_DATA_FOLDER = d
         _task_settings.AUTOMATIC_CALIBRATION = False
         _task_settings.USE_VISUAL_STIMULUS = False
-    sph = SessionParamHandler(_task_settings, _user_settings)
+
+    sph = SessionParamHandler(_task_settings, _user_settings, debug=False)
     tph = TrialParamHandler(sph)
 
     correct_trial = {'Bpod start timestamp': 0.0, 'Trial start timestamp': 15.570999999999998, 'Trial end timestamp': 50.578703, 'States timestamps': {'trial_start': [[15.570999999999998, 15.571099999999998]], 'reset_rotary_encoder': [[15.571099999999998, 15.571199999999997], [15.671399999999998, 15.671499999999998], [15.765699999999999, 15.765799999999999], [15.793999999999997, 15.794099999999997], [15.8112, 15.8113], [15.825199999999999, 15.825299999999999], [15.838099999999997, 15.838199999999997], [15.851599999999998, 15.851699999999997], [15.871199999999998, 15.871299999999998], [15.946299999999997, 15.946399999999997], [16.0142, 16.0143], [16.036699999999996, 16.0368], [16.055, 16.0551], [16.0708, 16.070899999999998], [16.0858, 16.0859], [16.099999999999998, 16.100099999999998], [16.1147, 16.1148], [16.1316, 16.1317], [16.150999999999996, 16.1511], [16.171599999999998, 16.171699999999998], [16.192899999999998, 16.192999999999998], [16.214899999999997, 16.214999999999996], [16.238599999999998, 16.238699999999998], [16.263399999999997, 16.263499999999997], [16.2901, 16.2902], [16.3163, 16.316399999999998], [16.3401, 16.3402], [16.362699999999997, 16.362799999999996], [16.385499999999997, 16.385599999999997], [16.4121, 16.4122], [16.4976, 16.4977], [16.542299999999997, 16.542399999999997], [16.615899999999996, 16.616], [16.9041, 16.9042]], 'quiescent_period': [[15.571199999999997, 15.671399999999998], [15.671499999999998, 15.765699999999999], [15.765799999999999, 15.793999999999997], [15.794099999999997, 15.8112], [15.8113, 15.825199999999999], [15.825299999999999, 15.838099999999997], [15.838199999999997, 15.851599999999998], [15.851699999999997, 15.871199999999998], [15.871299999999998, 15.946299999999997], [15.946399999999997, 16.0142], [16.0143, 16.036699999999996], [16.0368, 16.055], [16.0551, 16.0708], [16.070899999999998, 16.0858], [16.0859, 16.099999999999998], [16.100099999999998, 16.1147], [16.1148, 16.1316], [16.1317, 16.150999999999996], [16.1511, 16.171599999999998], [16.171699999999998, 16.192899999999998], [16.192999999999998, 16.214899999999997], [16.214999999999996, 16.238599999999998], [16.238699999999998, 16.263399999999997], [16.263499999999997, 16.2901], [16.2902, 16.3163], [16.316399999999998, 16.3401], [16.3402, 16.362699999999997], [16.362799999999996, 16.385499999999997], [16.385599999999997, 16.4121], [16.4122, 16.4976], [16.4977, 16.542299999999997], [16.542399999999997, 16.615899999999996], [16.616, 16.9041], [16.9042, 17.3646]], 'stim_on': [[17.3646, 17.464599999999997]], 'reset2_rotary_encoder': [[17.464599999999997, 17.464699999999997]], 'closed_loop': [[17.464699999999997, 49.5787]], 'reward': [[49.5787, 49.7357]], 'correct': [[49.7357, 50.5787]], 'no_go': [[np.nan, np.nan]], 'error': [[np.nan, np.nan]]}, 'Events timestamps': {'Tup': [15.571099999999998, 15.571199999999997, 15.671499999999998, 15.765799999999999, 15.794099999999997, 15.8113, 15.825299999999999, 15.838199999999997, 15.851699999999997, 15.871299999999998, 15.946399999999997, 16.0143, 16.0368, 16.0551, 16.070899999999998, 16.0859, 16.100099999999998, 16.1148, 16.1317, 16.1511, 16.171699999999998, 16.192999999999998, 16.214999999999996, 16.238699999999998, 16.263499999999997, 16.2902, 16.316399999999998, 16.3402, 16.362799999999996, 16.385599999999997, 16.4122, 16.4977, 16.542399999999997, 16.616, 16.9042, 17.3646, 17.464599999999997, 17.464699999999997, 49.7357, 50.5787], 'BNC1Low': [15.637299999999996, 17.5215, 18.539299999999997, 19.436799999999998, 19.5706, 20.554499999999997, 21.504299999999997, 22.6711, 25.2047, 26.254399999999997, 26.7207, 29.3714, 29.8217, 30.9204, 30.986399999999996, 31.387700000000002, 31.770000000000003, 31.9047, 32.5047, 32.6044, 33.8876, 33.9882, 34.1033, 34.1703, 34.5395, 35.62, 36.7697, 37.236, 37.2703, 37.305, 37.3701, 37.4382, 37.7558, 38.1703, 38.3527, 38.4197, 38.5538, 38.620200000000004, 39.936699999999995, 40.6881, 41.7549, 42.5024, 42.585, 43.035999999999994, 44.1039, 49.2046, 49.4698, 49.5368, 49.6195], 'RotaryEncoder1_4': [15.671399999999998, 15.765699999999999, 15.793999999999997, 15.8112, 15.825199999999999, 15.838099999999997, 15.851599999999998, 15.871199999999998, 15.946299999999997, 16.0142, 16.036699999999996, 16.055, 16.0708, 16.0858, 16.099999999999998, 16.1147, 16.1316, 16.150999999999996, 16.171599999999998, 16.192899999999998, 16.214899999999997, 16.238599999999998, 16.263399999999997, 16.2901, 16.3163, 16.3401, 16.362699999999997, 16.385499999999997, 16.4121, 16.4976, 16.542299999999997, 16.615899999999996, 16.9041, 18.5982], 'BNC1High': [17.406499999999998, 18.4564, 18.656399999999998, 19.5231, 19.639799999999997, 21.323, 21.573, 24.0396, 25.3395, 26.356099999999998, 28.3894, 29.422599999999996, 30.8226, 30.9559, 31.022599999999997, 31.7226, 31.822499999999998, 31.939100000000003, 32.5556, 33.422599999999996, 33.939, 34.0391, 34.1224, 34.2891, 35.2105, 36.522299999999994, 37.1889, 37.2387, 37.2724, 37.3222, 37.4056, 37.4723, 37.8723, 38.238899999999994, 38.3722, 38.4723, 38.5723, 39.4222, 40.0555, 40.9388, 42.3555, 42.522, 42.7554, 43.672000000000004, 46.5053, 49.321799999999996, 49.4718, 49.571799999999996], 'RotaryEncoder1_3': [33.9907], 'RotaryEncoder1_2': [49.5787]}}  # noqa
@@ -149,16 +212,20 @@ if __name__ == '__main__':
         t = time.time()
         tph.next_trial()
         next_trial_times.append(time.time() - t)
-        print('next_trial took: ', next_trial_times[-1], '(s)')
+        # print('next_trial took: ', next_trial_times[-1], '(s)')
         t = time.time()
         data = tph.trial_completed(np.random.choice(
-            [correct_trial, error_trial, no_go_trial], p=[0.8, 0.15, 0.05]))
+            [correct_trial, error_trial, no_go_trial], p=[0.9, 0.05, 0.05]))
         trial_completed_times.append(time.time() - t)
+        print('\nBLOCK NUM: ', tph.block_num)
+        print('BLOCK LEN: ', tph.block_len)
+        print('BLOCK TRIAL NUM: ', tph.block_trial_num)
+        print('PROBABILITY_LEFT: ', tph.stim_probability_left)
+        print('SIGNED CONTRAST: ', tph.signed_contrast)
 
-    print('Average next_trial times:', sum(next_trial_times) /
+    print('\nAverage next_trial times:', sum(next_trial_times) /
           len(next_trial_times))
     print('Average trial_completed times:', sum(trial_completed_times) /
           len(trial_completed_times))
 
-    print(tph.contrast_set)
     print('\n\n')

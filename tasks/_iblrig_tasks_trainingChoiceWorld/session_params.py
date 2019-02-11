@@ -18,6 +18,7 @@ import adaptive
 import ambient_sensor
 import bonsai
 import iotasks
+import misc
 import sound
 from path_helper import SessionPathCreator
 from rotary_encoder import MyRotaryEncoder
@@ -62,8 +63,8 @@ class SessionParamHandler(object):
         # =====================================================================
         # PREVIOUS DATA FILES
         # =====================================================================
-        self.LAST_TRIAL_DATA = adaptive.load_data(self.PREVIOUS_SESSION_PATH)
-        self.LAST_SETTINGS_DATA = adaptive.load_settings(
+        self.LAST_TRIAL_DATA = iotasks.load_data(self.PREVIOUS_SESSION_PATH)
+        self.LAST_SETTINGS_DATA = iotasks.load_settings(
             self.PREVIOUS_SESSION_PATH)
         # =====================================================================
         # ADAPTIVE STUFF
@@ -73,6 +74,8 @@ class SessionParamHandler(object):
         self.CALIB_FUNC_RANGE = adaptive.init_calib_func_range(self)
         self.REWARD_VALVE_TIME = adaptive.init_reward_valve_time(self)
         self.STIM_GAIN = adaptive.init_stim_gain(self)
+        self.IMPULIVE_CONTROL = 'OFF'
+        self = adaptive.impulsive_control(self)
         # =====================================================================
         # ROTARY ENCODER
         # =====================================================================
@@ -98,7 +101,7 @@ class SessionParamHandler(object):
         self.UPLOADER_TOOL = None
         self.GO_TONE = None
         self.WHITE_NOISE = None
-        self = sound.init_sounds(self)
+        self = sound.init_sounds(self)  # sets GO_TONE and WHITE_NOISE
         self.OUT_TONE = ('SoftCode', 1) if self.SOFT_SOUND else None
         self.OUT_NOISE = ('SoftCode', 2) if self.SOFT_SOUND else None
         # =====================================================================
@@ -137,7 +140,7 @@ class SessionParamHandler(object):
         return bonsai.start_camera_recording(self)
 
     def get_port_events(self, events, name=''):
-        return iotasks.get_port_events(events, name=name)
+        return misc.get_port_events(events, name=name)
 
     # =========================================================================
     # SOUND INTERFACE FOR STATE MACHINE
@@ -211,6 +214,7 @@ ADAPTIVE VALUES FOR CURRENT SESSION
 REWARD AMOUNT:      {self.REWARD_AMOUNT} µl
 VALVE OPEN TIME:    {self.REWARD_VALVE_TIME} sec
 GAIN:               {self.STIM_GAIN} azimuth_degree/mm
+IMPULSIVE CONTROL   {self.IMPULIVE_CONTROL}
 ##########################################"""
         log.info(msg)
 
