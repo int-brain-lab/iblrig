@@ -18,6 +18,7 @@ import adaptive
 import ambient_sensor
 import bonsai
 import iotasks
+import misc
 import sound
 from path_helper import SessionPathCreator
 from rotary_encoder import MyRotaryEncoder
@@ -136,7 +137,7 @@ class SessionParamHandler(object):
         return bonsai.start_camera_recording(self)
 
     def get_port_events(self, events, name=''):
-        return iotasks.get_port_events(events, name=name)
+        return misc.get_port_events(events, name=name)
 
     # =========================================================================
     # SOUND INTERFACE FOR STATE MACHINE

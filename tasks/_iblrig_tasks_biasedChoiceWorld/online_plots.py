@@ -50,11 +50,11 @@ def p_hat_err(X, n):
 
 
 def update_psyfun_df(trial_data, psyfun_df):
-    if trial_data['contrast']['type'] == 'RepeatContrast':
-        return psyfun_df
+    # if trial_data['contrast']['type'] == 'RepeatContrast':
+    #     return psyfun_df
 
     td = trial_data
-    idx = trial_data['current_contrast'] * np.sign(trial_data['position'])
+    idx = trial_data['contrast'] * np.sign(trial_data['position'])
     psyfun_df.ix[idx].ntrials += 1
     response_left = (((td['position'] == 90) & td['trial_correct']) |
                      ((td['position'] == -90) & ~td['trial_correct']))
@@ -76,8 +76,8 @@ def update_psyfun_df(trial_data, psyfun_df):
 def get_barplot_data(trial_data):
     out = {}
     out['trial_num'] = trial_data['trial_num']
-    out['ntrials_repeated'] = trial_data['rc']['ntrials']
-    out['ntrials_adaptive'] = trial_data['ac']['ntrials']
+    # out['ntrials_repeated'] = trial_data['rc']['ntrials']
+    # out['ntrials_adaptive'] = trial_data['ac']['ntrials']
     # out['ntrials_staircase'] = trial_data['sc']['ntrials']
     out['ntrials_correct'] = trial_data['ntrials_correct']
     out['ntrials_err'] = out['trial_num'] - out['ntrials_correct']
@@ -150,13 +150,13 @@ def plot_bars(trial_data, ax=None):
     ax.text(max(y) / 10, 3, str(bar_data['time_from_start']),
             color='black', fontweight='bold', size='x-large')
 
-    ax.barh(2, bar_data['ntrials_repeated'], width, color="pink",
-            label='Repeated')
-    ax.barh(2, bar_data['ntrials_adaptive'], width,
-            left=bar_data['ntrials_repeated'], color="orange",
-            label='Adaptive')
-    make_bar_texts(ax, 2, [bar_data['ntrials_repeated'],
-                   bar_data['ntrials_adaptive']])
+    # ax.barh(2, bar_data['ntrials_repeated'], width, color="pink",
+    #         label='Repeated')
+    # ax.barh(2, bar_data['ntrials_adaptive'], width,
+    #         left=bar_data['ntrials_repeated'], color="orange",
+    #         label='Adaptive')
+    # make_bar_texts(ax, 2, [bar_data['ntrials_repeated'],
+    #                bar_data['ntrials_adaptive']])
 
     ax.barh(1, bar_data['ntrials_correct'], width, color="green",
             label='Correct')

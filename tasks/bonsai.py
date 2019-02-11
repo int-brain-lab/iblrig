@@ -48,6 +48,7 @@ def start_visual_stim(sph):
             editor = start
         elif not sph.BONSAI_EDITOR:
             editor = noeditor
+
         if 'habituation' in sph.PYBPOD_PROTOCOL:
             subprocess.Popen(
                 [bns, wkfl, editor, evt, itr, com, mic, rec, sync_x, sync_y])

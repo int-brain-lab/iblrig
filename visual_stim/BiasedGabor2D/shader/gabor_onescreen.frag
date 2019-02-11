@@ -57,7 +57,6 @@ void main(){
     float gaussian = gauss(RDist, patch_size_rad);
 
     float value = gaussian * grating;
-
     fragColor = vec4(brightness + vec3(R * value, G * value, B * value), 1.0);
   }
 }

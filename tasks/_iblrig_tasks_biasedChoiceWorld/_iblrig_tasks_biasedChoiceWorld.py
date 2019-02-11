@@ -192,7 +192,7 @@ for i in range(sph.NTRIALS):  # Main loop
 ##########################################
 TRIAL NUM:            {trial_data['trial_num']}
 STIM POSITION:        {trial_data['position']}
-STIM CONTRAST:        {trial_data['contrast']['value']}
+STIM CONTRAST:        {trial_data['contrast']}
 STIM PHASE:           {trial_data['stim_phase']}
 STIM PROB LEFT:       {trial_data['stim_probability_left']}
 RESPONSE TIME:        {trial_data['response_time_buffer'][-1]}
