@@ -120,7 +120,7 @@ if __name__ == '__main__':
     import time
     import task_settings as _task_settings
     import scratch._user_settings as _user_settings
-    import datetime
+    import datetime  # noqa
     dt = datetime.datetime.now()
     dt = [str(dt.year), str(dt.month), str(dt.day),
           str(dt.hour), str(dt.minute), str(dt.second)]
