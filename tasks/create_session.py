@@ -3,7 +3,6 @@
 # @Date: Thursday, January 31st 2019, 1:15:46 pm
 # @Last Modified by: Niccolò Bonacchi
 # @Last Modified time: 31-01-2019 01:15:49.4949
-import sys
 from pathlib import Path
 import argparse
 import ibllib.io.params as params
@@ -11,7 +10,7 @@ import oneibl.params
 from alf.one_iblrig import create
 from poop_count import main as poop
 
-IBLRIG_DATA = Path().cwd().parent.parent.parent.parent / 'iblrig_data' / 'Subjects'
+IBLRIG_DATA = Path().cwd().parent.parent.parent.parent / 'iblrig_data' / 'Subjects'  # noqa
 
 
 def main():
@@ -24,10 +23,10 @@ def main():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Create session in Alyx')
-    parser.add_argument('--patch',
-        help='Ask for a poop count before registering', required=False,
-        default=True, type=bool)
-    args = parser.parse_args()  # returns data from the options specified (echo)
+    parser.add_argument(
+        '--patch', help='Ask for a poop count before registering',
+        required=False, default=True, type=bool)
+    args = parser.parse_args()
 
     if args.patch:
         poop()

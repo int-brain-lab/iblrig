@@ -192,11 +192,15 @@ for i in range(sph.NTRIALS):  # Main loop
 ##########################################
 TRIAL NUM:            {trial_data['trial_num']}
 STIM POSITION:        {trial_data['position']}
-STIM CONTRAST:        {trial_data['contrast']['value']}
+STIM CONTRAST:        {trial_data['contrast']}
 STIM PHASE:           {trial_data['stim_phase']}
-STIM PROB LEFT:       {trial_data['stim_probability_left']}
-RESPONSE TIME:        {trial_data['response_time_buffer'][-1]}
 
+BLOCK LENGTH:         {trial_data['block_len']}
+BLOCK NUMBER:         {trial_data['block_num']}
+TRIALS IN BLOCK:      {trial_data['block_trial_num']}
+STIM PROB LEFT:       {trial_data['stim_probability_left']}
+
+RESPONSE TIME:        {trial_data['response_time_buffer'][-1]}
 TRIAL CORRECT:        {trial_data['trial_correct']}
 
 NTRIALS CORRECT:      {trial_data['ntrials_correct']}
@@ -222,7 +226,7 @@ AMBIENT SENSOR DATA:  {as_msg}
     if stop_crit and sph.USE_AUTOMATIC_STOPPING_CRITERIONS:
         if stop_crit == 1:
             msg = "STOPPING CRITERIA Nº1: PLEASE STOP TASK AND REMOVE MOUSE\
-            \n< 400 trials in 45min"
+            \n < 400 trials in 45min"
             f.patch.set_facecolor('xkcd:mint green')
         elif stop_crit == 2:
             msg = "STOPPING CRITERIA Nº2: PLEASE STOP TASK AND REMOVE MOUSE\

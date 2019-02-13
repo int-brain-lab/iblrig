@@ -6,12 +6,12 @@
 import os
 import sys
 from sys import platform
+from pathlib import Path
 import logging
 
 from pythonosc import udp_client
-from pathlib import Path
-from ibllib.graphic import numinput
 
+from ibllib.graphic import numinput
 sys.path.append(str(Path(__file__).parent.parent))  # noqa
 sys.path.append(str(Path(__file__).parent.parent.parent.parent))  # noqa
 import adaptive
@@ -48,6 +48,7 @@ class SessionParamHandler(object):
                                  protocol=self.PYBPOD_PROTOCOL,
                                  board=self.PYBPOD_BOARD, make=make)
         self.__dict__.update(spc.__dict__)
+
         # =====================================================================
         # SUBJECT
         # =====================================================================
@@ -60,16 +61,23 @@ class SessionParamHandler(object):
         self.OSC_CLIENT = udp_client.SimpleUDPClient(self.OSC_CLIENT_IP,
                                                      self.OSC_CLIENT_PORT)
         # =====================================================================
+        # PREVIOUS DATA FILES
+        # =====================================================================
+        self.LAST_TRIAL_DATA = iotasks.load_data(self.PREVIOUS_SESSION_PATH)
+        self.LAST_SETTINGS_DATA = iotasks.load_settings(
+            self.PREVIOUS_SESSION_PATH)
+        # =====================================================================
         # ADAPTIVE STUFF
         # =====================================================================
         self.CALIB_FUNC = adaptive.init_calib_func(self)
         self.CALIB_FUNC_RANGE = adaptive.init_calib_func_range(self)
         self.REWARD_VALVE_TIME = adaptive.init_reward_valve_time(self)
-        self.STIM_GAIN = 8.
+
         # =====================================================================
         # ROTARY ENCODER
         # =====================================================================
-        self.ALL_THRESHOLDS = self.STIM_POSITIONS
+        self.ALL_THRESHOLDS = (self.STIM_POSITIONS +
+                               self.QUIESCENCE_THRESHOLDS)
         self.ROTARY_ENCODER = MyRotaryEncoder(self.ALL_THRESHOLDS,
                                               self.STIM_GAIN,
                                               self.COM['ROTARY_ENCODER'])
@@ -78,17 +86,19 @@ class SessionParamHandler(object):
         # =====================================================================
         self.SOUND_SAMPLE_FREQ = sound.sound_sample_freq(self.SOFT_SOUND)
 
+        self.WHITE_NOISE_DURATION = float(self.WHITE_NOISE_DURATION)
+        self.WHITE_NOISE_AMPLITUDE = float(self.WHITE_NOISE_AMPLITUDE)
         self.GO_TONE_DURATION = float(self.GO_TONE_DURATION)
         self.GO_TONE_FREQUENCY = int(self.GO_TONE_FREQUENCY)
         self.GO_TONE_AMPLITUDE = float(self.GO_TONE_AMPLITUDE)
 
         self.SD = sound.configure_sounddevice(
             output=self.SOFT_SOUND, samplerate=self.SOUND_SAMPLE_FREQ)
-
+        # Create sounds and output actions of state machine
         self.UPLOADER_TOOL = None
         self.GO_TONE = None
         self.WHITE_NOISE = None
-        self = sound.init_sounds(self, noise=False)
+        self = sound.init_sounds(self)  # sets GO_TONE and WHITE_NOISE
         self.OUT_TONE = ('SoftCode', 1) if self.SOFT_SOUND else None
         self.OUT_NOISE = ('SoftCode', 2) if self.SOFT_SOUND else None
         # =====================================================================
@@ -103,6 +113,8 @@ class SessionParamHandler(object):
             iotasks.copy_task_code(self)
             iotasks.save_task_code(self)
             self.bpod_lights(0)
+
+        self.display_logs()
 
     # =========================================================================
     # METHODS
@@ -133,6 +145,9 @@ class SessionParamHandler(object):
     def play_tone(self):
         self.SD.play(self.GO_TONE, self.SOUND_SAMPLE_FREQ)
 
+    def play_noise(self):
+        self.SD.play(self.WHITE_NOISE, self.SOUND_SAMPLE_FREQ)
+
     def stop_sound(self):
         self.SD.stop()
 
@@ -152,6 +167,8 @@ class SessionParamHandler(object):
             d['GO_TONE'] = 'go_tone(freq={}, dur={}, amp={})'.format(
                 self.GO_TONE_FREQUENCY, self.GO_TONE_DURATION,
                 self.GO_TONE_AMPLITUDE)
+            d['WHITE_NOISE'] = 'white_noise(freq=-1, dur={}, amp={})'.format(
+                self.WHITE_NOISE_DURATION, self.WHITE_NOISE_AMPLITUDE)
         d['SD'] = str(d['SD'])
         d['OSC_CLIENT'] = str(d['OSC_CLIENT'])
         d['SESSION_DATETIME'] = self.SESSION_DATETIME.isoformat()
@@ -164,8 +181,25 @@ class SessionParamHandler(object):
         elif isinstance(d['PYBPOD_SUBJECT_EXTRA'], dict):
             d['PYBPOD_SUBJECT_EXTRA'] = remove_from_dict(
                 d['PYBPOD_SUBJECT_EXTRA'])
+        d['LAST_TRIAL_DATA'] = None
+        d['LAST_SETTINGS_DATA'] = None
 
         return d
+
+    def display_logs(self):
+        if self.PREVIOUS_DATA_FILE:
+            msg = f"""
+##########################################
+PREVIOUS SESSION FOUND
+LOADING PARAMETERS FROM: {self.PREVIOUS_DATA_FILE}
+
+PREVIOUS NTRIALS:              {self.LAST_TRIAL_DATA["trial_num"]}
+PREVIOUS WATER DRANK: {self.LAST_TRIAL_DATA['water_delivered']}
+LAST REWARD:                   {self.LAST_TRIAL_DATA["reward_amount"]}
+LAST GAIN:                     {self.LAST_TRIAL_DATA["stim_gain"]}
+PREVIOUS WEIGHT:               {self.LAST_SETTINGS_DATA['SUBJECT_WEIGHT']}
+##########################################"""
+            log.info(msg)
 
 
 if __name__ == '__main__':
@@ -179,17 +213,28 @@ if __name__ == '__main__':
     """
     import task_settings as _task_settings
     import scratch._user_settings as _user_settings
+    import datetime
+    dt = datetime.datetime.now()
+    dt = [str(dt.year), str(dt.month), str(dt.day),
+          str(dt.hour), str(dt.minute), str(dt.second)]
+    dt = [x if int(x) >= 10 else '0' + x for x in dt]
+    dt.insert(3, '-')
+    _user_settings.PYBPOD_SESSION = ''.join(dt)
+    _user_settings.PYBPOD_SETUP = 'biasedChoiceWorld'
+    _user_settings.PYBPOD_PROTOCOL = '_iblrig_tasks_biasedChoiceWorld'
     if platform == 'linux':
         r = "/home/nico/Projects/IBL/IBL-github/iblrig"
         _task_settings.IBLRIG_FOLDER = r
-        d = "/home/nico/Projects/IBL/IBL-github/iblrig/scratch/test_iblrig_data"  # noqa
+        d = ("/home/nico/Projects/IBL/IBL-github/iblrig/scratch/" +
+             "test_iblrig_data")
         _task_settings.IBLRIG_DATA_FOLDER = d
         _task_settings.AUTOMATIC_CALIBRATION = False
         _task_settings.USE_VISUAL_STIMULUS = False
 
-    sph = SessionParamHandler(_task_settings, _user_settings, debug=True,
-                              fmake=False)
-    # for k in sph.__dict__:
-    #     print(f"{k}: {sph.__dict__[k]}")
+    sph = SessionParamHandler(_task_settings, _user_settings,
+                              debug=False, fmake=True)
+    for k in sph.__dict__:
+        if sph.__dict__[k] is None:
+            print(f"{k}: {sph.__dict__[k]}")
     self = sph
     print("Done!")

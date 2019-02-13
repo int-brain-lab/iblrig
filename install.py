@@ -30,7 +30,7 @@ def get_iblenv():
     return iblenv
 
 
-def get_ibllib_python(rpip=False):
+def get_iblenv_python(rpip=False):
     iblenv = get_iblenv()
     pip = os.path.join(iblenv, 'Scripts', 'pip.exe')
     python = os.path.join(iblenv, "python.exe")
@@ -159,10 +159,10 @@ def configure_iblrig_params():
     print('\n\nINFO: Setting up default project config in ../iblrig_params:')
     print("N" * 79)
     iblenv = get_iblenv()
-    python = get_ibllib_python()
     if iblenv is None:
         msg = "Can't configure iblrig_params, iblenv not found"
         raise ValueError(msg)
+    python = get_iblenv_python()
     iblrig_params_path = IBLRIG_ROOT_PATH.parent / 'iblrig_params'
     if iblrig_params_path.exists():
         print(f"Found previous configuration in {str(iblrig_params_path)}",
