@@ -126,10 +126,12 @@ class SessionPathCreator(object):
     def _visual_stim_type(self):
         if 'habituation' in self._PROTOCOL:
             return 'HabituationGabor2D'
-        if 'training' in self._PROTOCOL:
+        elif 'training' in self._PROTOCOL:
             return 'TrainingGabor2D'
-        if 'biased' in self._PROTOCOL:
+        elif 'biased' in self._PROTOCOL:
             return 'BiasedGabor2D'
+        else:
+            return ''
 
     def _init_com(self) -> dict:
         logger.debug("Initializing COM ports")
