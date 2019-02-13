@@ -71,13 +71,12 @@ class TrialParamHandler(object):
         self.block_len_min = sph.BLOCK_LEN_MIN
         self.block_len_max = sph.BLOCK_LEN_MAX
         self.block_probability_set = sph.BLOCK_PROBABILITY_SET
-        self.block_len = blocks.get_block_len(self.block_len_factor,
-                                              self.block_len_min,
-                                              self.block_len_max)
+        self.block_init_5050 = sph.BLOCK_INIT_5050
+        self.block_len = blocks.init_block_len(self)
         # Position
-        self.stim_probability_left = np.random.choice(
-            self.block_probability_set)
-        self.position = random.choice(sph.STIM_POSITIONS)
+        self.stim_probability_left = blocks.init_probability_left(self)
+        self.position = blocks.draw_position(
+            self.position_set, self.stim_probability_left)
         # Contrast
         self.contrast = misc.draw_contrast(self.contrast_set)
         self.signed_contrast = self.contrast * np.sign(self.position)
@@ -97,6 +96,43 @@ class TrialParamHandler(object):
     def check_stop_criterions(self):
         return misc.check_stop_criterions(
             self.init_datetime, self.response_time_buffer, self.trial_num)
+
+    def next_trial(self):
+        # First trial exception
+        if self.trial_num == 0:
+            self.trial_num += 1
+            self.block_num += 1
+            self.block_trial_num += 1
+            # Send next trial info to Bonsai
+            bonsai.send_current_trial_info(self)
+            return
+        self.data_file = str(self.data_file)
+        # Increment trial number
+        self.trial_num += 1
+        # Update quiescent period
+        self.quiescent_period = self.quiescent_period_base + misc.texp()
+        # Update stimulus phase
+        self.stim_phase = random.uniform(0, math.pi)
+        # Update block
+        self = blocks.update_block_params(self)
+        # Update stim probability left
+        self.stim_probability_left = blocks.update_probability_left(self)
+        # Update position
+        self.position = blocks.draw_position(
+            self.position_set, self.stim_probability_left)
+        # Update contrast
+        self.contrast = misc.draw_contrast(
+            self.contrast_set, prob_type=self.contrast_set_probability_type)
+        self.signed_contrast = self.contrast * np.sign(self.position)
+        # Update state machine events
+        self.event_error = self.threshold_events_dict[self.position]
+        self.event_reward = self.threshold_events_dict[-self.position]
+        # Reset outcome variables for next trial
+        self.trial_correct = None
+        # Open the data file to append the next trial
+        self.data_file = open(self.data_file_path, 'a')
+        # Send next trial info to Bonsai
+        bonsai.send_current_trial_info(self)
 
     def trial_completed(self, behavior_data):
         """Update outcome variables using bpod.session.current_trial
@@ -138,45 +174,6 @@ class TrialParamHandler(object):
             misc.create_flags(self.data_file_path, self.poop_count)
         return json.loads(out)
 
-    def next_trial(self):
-        # First trial exception
-        if self.trial_num == 0:
-            self.trial_num += 1
-            self.block_num += 1
-            self.block_trial_num += 1
-            # Send next trial info to Bonsai
-            bonsai.send_current_trial_info(self)
-            return
-        self.data_file = str(self.data_file)
-        # Increment trial number
-        self.trial_num += 1
-        # Update quiescent period
-        self.quiescent_period = self.quiescent_period_base + misc.texp()
-        # Update stimulus phase
-        self.stim_phase = random.uniform(0, math.pi)
-        # Update block
-        self = blocks.update_block_params(self)
-        # Update stim probability left
-        self.stim_probability_left = blocks.update_probability_left(
-            self.block_trial_num, self.stim_probability_left)
-        # Update position
-        self.position = int(np.random.choice(
-            self.position_set,
-            p=[self.stim_probability_left, 1 - self.stim_probability_left]))
-        # Update contrast
-        self.contrast = misc.draw_contrast(
-            self.contrast_set, prob_type=self.contrast_set_probability_type)
-        self.signed_contrast = self.contrast * np.sign(self.position)
-        # Update state machine events
-        self.event_error = self.threshold_events_dict[self.position]
-        self.event_reward = self.threshold_events_dict[-self.position]
-        # Reset outcome variables for next trial
-        self.trial_correct = None
-        # Open the data file to append the next trial
-        self.data_file = open(self.data_file_path, 'a')
-        # Send next trial info to Bonsai
-        bonsai.send_current_trial_info(self)
-
 
 if __name__ == '__main__':
     from session_params import SessionParamHandler
@@ -198,6 +195,7 @@ if __name__ == '__main__':
         _task_settings.IBLRIG_DATA_FOLDER = d
         _task_settings.AUTOMATIC_CALIBRATION = False
         _task_settings.USE_VISUAL_STIMULUS = False
+        _task_settings.BLOCK_INIT_5050 = False
 
     sph = SessionParamHandler(_task_settings, _user_settings, debug=False)
     tph = TrialParamHandler(sph)
@@ -217,11 +215,14 @@ if __name__ == '__main__':
         data = tph.trial_completed(np.random.choice(
             [correct_trial, error_trial, no_go_trial], p=[0.9, 0.05, 0.05]))
         trial_completed_times.append(time.time() - t)
-        print('\nBLOCK NUM: ', tph.block_num)
-        print('BLOCK LEN: ', tph.block_len)
-        print('BLOCK TRIAL NUM: ', tph.block_trial_num)
-        print('PROBABILITY_LEFT: ', tph.stim_probability_left)
-        print('SIGNED CONTRAST: ', tph.signed_contrast)
+        print('\nBLOCK NUM: {:>16}'.format(tph.block_num))
+        print('BLOCK TRIAL NUM: {:>10s}'.format(
+            f'{tph.block_trial_num}/{tph.block_len}'))
+        print('PROBABILITY_LEFT: {:>9}'.format(tph.stim_probability_left))
+        print('SIGNED CONTRAST: {:>10}'.format(tph.signed_contrast))
+
+        if x == 90:
+            print('break')
 
     print('\nAverage next_trial times:', sum(next_trial_times) /
           len(next_trial_times))
