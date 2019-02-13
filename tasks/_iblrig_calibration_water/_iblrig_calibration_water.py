@@ -98,7 +98,7 @@ def scale_read(COMport_string):
     # grab the software version and initialize
     ser.write(b'V\r\n')
     time.sleep(0.5)
-    version = ser.readline()
+    version = ser.readline()  # noqa
 
     # READ THE CURRENT WEIGHT
     ser.write(b'IP\r\n')  # ping the scale to print
@@ -116,9 +116,9 @@ def scale_read(COMport_string):
 
 # =============================================================================
 # FIRST, GENERATE A CALIBRATION CURVE - OPEN TIMES VS DROP SIZE
-# see https://github.com/cortex-lab/Rigbox/blob/5d926cdafdfcb54cd74c77e152d158d3d837a90c/%2Bhw/calibrate.m
-# and https://github.com/sanworks/Bpod_Gen2/blob/14b78143e071c1cfda391b1754dba928ccc27792/Functions/Calibration/Liquid%20Reward/BpodLiquidCalibration.m
-# bpod wiki https://sites.google.com/site/bpoddocumentation/bpod-user-guide/liquid-calibration
+# see https://github.com/cortex-lab/Rigbox/blob/5d926cdafdfcb54cd74c77e152d158d3d837a90c/%2Bhw/calibrate.m  # noqa
+# and https://github.com/sanworks/Bpod_Gen2/blob/14b78143e071c1cfda391b1754dba928ccc27792/Functions/Calibration/Liquid%20Reward/BpodLiquidCalibration.m  # noqa
+# bpod wiki https://sites.google.com/site/bpoddocumentation/bpod-user-guide/liquid-calibration  # noqa
 # =============================================================================
 
 
@@ -209,17 +209,23 @@ f.savefig(sph.CALIBRATION_CURVE_FILE_PATH)
 # ASK THE USER FOR A LINEAR RANGE
 # =============================================================================
 
-messagebox.showinfo("Information", "Calibration curve completed! We're not done yet. \n \
-    Please look at the figure and indicate a min-max range over which the curve is monotonic. \n \
+messagebox.showinfo(
+    "Information",
+    "Calibration curve completed! We're not done yet. \n \
+    Please look at the figure and indicate a min - max range \n \
+    over which the curve is monotonic. \n \
     The range of drop volumes should ideally be 1.5-3uL.\n\n \
-    Close the plot before entering the range.")
+    Close the plot before entering the range. "
+)
 plt.show()
 
 min_open_time = numinput(
-    "Input", "What's the LOWEST opening time (in ms) of the linear (monotonic) range?")
+    "Input",
+    "What's the LOWEST opening time (in ms) of the linear (monotonic) range?")
 
 max_open_time = numinput(
-    "Input", "What's the HIGHEST opening time (in ms) of the linear (monotonic) range?")
+    "Input",
+    "What's the HIGHEST opening time (in ms) of the linear (monotonic) range?")
 
 ax[0].axvline(min_open_time, color='black')
 ax[0].axvline(max_open_time, color='black')
@@ -229,7 +235,11 @@ f.savefig(sph.CALIBRATION_CURVE_FILE_PATH)
 
 # SAVE THE RANGE TOGETHER WITH THE CALIBRATION CURVE - SEPARATE FILE
 df2 = pd.DataFrame.from_dict(
-    {'min_open_time': min_open_time, 'max_open_time': max_open_time, 'index': [0]})
+    {'min_open_time': min_open_time,
+     'max_open_time': max_open_time,
+     'index': [0]
+     }
+)
 df2.to_csv(sph.CALIBRATION_RANGE_FILE_PATH)
 bpod.close()
 print(f'Completed water calibration {now}')
