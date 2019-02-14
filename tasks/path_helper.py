@@ -27,8 +27,10 @@ class SessionPathCreator(object):
         self._BOARD = board
         self._PROTOCOL = protocol
         self.IBLRIG_COMMIT_HASH = self._get_iblrig_commit_hash()
-        self.IBLRIG_VERSION_TAG = self._get_iblrig_version_tag()
+        self.IBLRIG_VERSION_TAG = self._get_version_tag(self.IBLRIG_FOLDER)
 
+        self.IBLLIB_FOLDER = str(Path(self.IBLRIG_FOLDER).parent / 'ibllib')
+        self.IBLLIB_VERSION_TAG = self._get_version_tag(self.IBLLIB_FOLDER)
         self.IBLRIG_PARAMS_FOLDER = str(
             Path(self.IBLRIG_FOLDER).parent / 'iblrig_params')
         self.IBLRIG_DATA_FOLDER = self._iblrig_data_folder_init(
@@ -191,15 +193,15 @@ class SessionPathCreator(object):
         logger.debug(f"Found commit hash {out}")
         return out.strip()
 
-    def _get_iblrig_version_tag(self):
+    def _get_version_tag(self, repo_path):
         here = os.getcwd()
-        os.chdir(self.IBLRIG_FOLDER)
+        os.chdir(repo_path)
         tag = subprocess.check_output(["git", "tag",
                                        "--points-at", "HEAD"]).decode().strip()
         os.chdir(here)
         if not tag:
-            logger.debug("NOT FOUND: iblrig version tag")
-        logger.debug(f"Found iblrig version tag {tag}")
+            logger.debug(f"NOT FOUND: Version TAG for {repo_path}")
+        logger.debug(f"Found version tag {tag}")
         return tag
 
     def get_bonsai_path(self, use_iblrig_bonsai=True):
