@@ -11,6 +11,7 @@ import time
 import tkinter as tk
 from tkinter import messagebox
 from pathlib import Path
+import os
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -25,9 +26,6 @@ from ibllib.graphic import numinput
 import task_settings
 import user_settings  # PyBpod creates this file on run.
 from session_params import SessionParamHandler
-
-root = tk.Tk()
-root.withdraw()
 
 sph = SessionParamHandler(task_settings, user_settings)
 
@@ -204,11 +202,12 @@ ax[0].set(xlabel="Open time (ms)",
           ylabel="Measured volume (ul per drop)", title="Calibration curve")
 title = f.suptitle(f"Water calibration {now}")
 f.savefig(sph.CALIBRATION_CURVE_FILE_PATH)
-
+os.system(sph.CALIBRATION_CURVE_FILE_PATH)
 # =============================================================================
 # ASK THE USER FOR A LINEAR RANGE
 # =============================================================================
-
+root = tk.Tk()
+root.withdraw()
 messagebox.showinfo(
     "Information",
     "Calibration curve completed! We're not done yet. \n \
@@ -217,8 +216,7 @@ messagebox.showinfo(
     The range of drop volumes should ideally be 1.5-3uL.\n\n \
     Close the plot before entering the range. "
 )
-plt.show()
-
+root.quit()
 min_open_time = numinput(
     "Input",
     "What's the LOWEST opening time (in ms) of the linear (monotonic) range?")
@@ -230,8 +228,7 @@ max_open_time = numinput(
 ax[0].axvline(min_open_time, color='black')
 ax[0].axvline(max_open_time, color='black')
 
-plt.show()
-f.savefig(sph.CALIBRATION_CURVE_FILE_PATH)
+f.savefig(sph.CALIBRATION_CURVE_FILE_PATH[:-4] + '_range.pdf')
 
 # SAVE THE RANGE TOGETHER WITH THE CALIBRATION CURVE - SEPARATE FILE
 df2 = pd.DataFrame.from_dict(
@@ -241,6 +238,7 @@ df2 = pd.DataFrame.from_dict(
      }
 )
 df2.to_csv(sph.CALIBRATION_RANGE_FILE_PATH)
+os.system(sph.CALIBRATION_CURVE_FILE_PATH[:-4] + '_range.pdf')
 bpod.close()
 print(f'Completed water calibration {now}')
 
