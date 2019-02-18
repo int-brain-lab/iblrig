@@ -213,8 +213,7 @@ messagebox.showinfo(
     "Calibration curve completed! We're not done yet. \n \
     Please look at the figure and indicate a min - max range \n \
     over which the curve is monotonic. \n \
-    The range of drop volumes should ideally be 1.5-3uL.\n\n \
-    Close the plot before entering the range. "
+    The range of drop volumes should ideally be 1.5-3uL."
 )
 root.quit()
 min_open_time = numinput(
@@ -247,6 +246,15 @@ flag = Path(sph.SESSION_FOLDER) / 'transfer_me.flag'
 open(flag, 'a').close()
 flag2 = Path(sph.SESSION_FOLDER) / 'create_me.flag'
 open(flag2, 'a').close()
+
+root = tk.Tk()
+root.withdraw()
+messagebox.showinfo(
+    "Information",
+    "Calibration completed!\n\
+    You can close the plots now."
+)
+root.quit()
 
 if __name__ == '__main__':
     pass
