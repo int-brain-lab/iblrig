@@ -6,44 +6,44 @@
 import serial
 from pythonosc import udp_client
 import time
+import sys
+import threading
 
-# osc_client = udp_client.SimpleUDPClient('127.0.0.1', 6667)
 
-# frame2ttl = 'COM6'  # /dev/ttyACM1'
-# ser = serial.Serial(port=frame2ttl, baudrate=115200, timeout=1)
-# ser.write(b'S')  # Start the stream, stream rate 100Hz
+class Frame2TTLReader(object):
+    def __init__(self, comport='COM6'):
+        self.osc_client = udp_client.SimpleUDPClient('127.0.0.1', 6667)
+        self.frame2ttl = comport  # /dev/ttyACM1'
+        self.ser = serial.Serial(
+            port=self.frame2ttl, baudrate=115200, timeout=1)
+        self.ser.write(b'S')  # Start the stream, stream rate 100Hz
+        self.ser.write(b'S')  # Start the stream, stream rate 100Hz
+        self.read = True
 
-# i = 0
-# while True:
-#     d = ser.read(4)
-#     d = int.from_bytes(d, byteorder='little')
-#     osc_client.send_message("/d", d)
-#     i += 1
-#     if i == 99:
-#         osc_client.send_message("/i", 1)
-#         i = 0
-    
+    def read_and_send_data(self):
+        i = 0
+        while self.read:
+            d = self.ser.read(4)
+            d = int.from_bytes(d, byteorder='little')
+            self.osc_client.send_message("/d", d)
+            i += 1
+            if i == 100:
+                self.osc_client.send_message("/i", i)
+                i = 0
+            print(i, d)
 
-    
+
+    def stop(self):
+        self.read = False
+        print('Done!')
+
+
+def main(comport):
+    obj = Frame2TTLReader(comport)
+    return obj
 
 if __name__ == '__main__':
-    osc_client = udp_client.SimpleUDPClient('127.0.0.1', 6667)
-
-    frame2ttl = 'COM6'  # /dev/ttyACM1'
-    ser = serial.Serial(port=frame2ttl, baudrate=115200, timeout=1)
-    ser.write(b'S')  # Start the stream, stream rate 100Hz
-    ser.write(b'S')  # Start the stream, stream rate 100Hz
-
-    i = 0
-    while True:
-        d = ser.read(4)
-        d = int.from_bytes(d, byteorder='little')
-        osc_client.send_message("/d", d)
-        i += 1
-        if i == 100:
-            osc_client.send_message("/i", i)
-            i = 0
-        
-            
-        print(i, d)
-    print('Done!')
+    # main(sys.argv[1])
+    comport = 'COM6'
+    obj = Frame2TTLReader(comport)
+    print('.')
