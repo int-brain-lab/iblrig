@@ -75,8 +75,8 @@ def init_calib_func_range(sph) -> tuple:
         # Load last calibration r ange df1
         df1 = pd.read_csv(sph.LATEST_WATER_CALIB_RANGE_FILE)
         if not df1.empty:
-            min_open_time = df1['min_open_time']
-            max_open_time = df1['max_open_time']
+            min_open_time = df1.min_open_time.iloc[0]
+            max_open_time = df1.max_open_time.iloc[0]
         else:
             log.warning(msg)
 
@@ -192,3 +192,11 @@ if __name__ == "__main__":
     sess_path = ('/home/nico/Projects/IBL/IBL-github/iblrig' +
                  '/scratch/test_iblrig_data/Subjects/ZM_335/2018-12-13/001')
     data = raw.load_data(sess_path)
+    sess_path = '/mnt/s0/IntegrationTests/Subjects_init/_iblrig_calibration/2019-02-21/003/raw_behavior_data' # noqa
+
+    class SPH(object):
+        def __init__(self):
+            self.LATEST_WATER_CALIB_RANGE_FILE = sess_path + '/_iblrig_calibration_water_range.csv'  # noqa
+
+    sph = SPH()
+    init_calib_func_range(sph)
