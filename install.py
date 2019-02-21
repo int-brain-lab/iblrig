@@ -95,7 +95,7 @@ def install_iblrig_requirements():
     print("N" * 39, 'Installing requests')
     os.system("conda install -y -n iblenv requests")
     print("N" * 39, 'Installing ciso8601')
-    os.system("conda install -y -n iblenv ciso8601")
+    os.system("conda install -y -n iblenv -c conda-forge ciso8601")
 
     print("N" * 39, '(pip) Installing python-osc')
     os.system("activate iblenv && pip install python-osc")
