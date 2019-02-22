@@ -65,7 +65,7 @@ def init_calib_func_range(sph) -> tuple:
     max_open_time = 1000
     msg = f"""
         ##########################################
-            NOT FOUND: WATER RANGE CALIBRATION
+            NOT FOUND: WATER CALIBRATION RANGE
         ##########################################
                         File empty
                      using full range
