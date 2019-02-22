@@ -30,14 +30,6 @@ def get_iblenv():
     return iblenv
 
 
-def get_iblenv_python(rpip=False):
-    iblenv = get_iblenv()
-    pip = os.path.join(iblenv, 'Scripts', 'pip.exe')
-    python = os.path.join(iblenv, "python.exe")
-
-    return python if not rpip else pip
-
-
 def check_dependencies():
     # Check if Git and conda are installed
     print('\n\nINFO: Checking for dependencies:')
@@ -103,10 +95,12 @@ def install_iblrig_requirements():
     print("N" * 39, '(pip) Installing sounddevice')
     os.system("activate iblenv && pip install sounddevice")
     print("N" * 39, '(pip) Installing PyBpod')
-    os.system("activate iblenv && pip install pybpod --upgrade")
+    os.system(
+        "activate iblenv && pip install --upgrade --force-reinstall pybpod")
     # os.system("activate iblenv && pip install -U pybpod")
     print("N" * 39, '(pip) Installing Alyx plugin')
-    os.system("activate iblenv && pip install pybpod-gui-plugin-alyx --upgrade")
+    os.system(
+        "activate iblenv && pip install --upgrade pybpod-gui-plugin-alyx")
     print("N" * 79)
     print("IBLrig requirements installed.")
 
@@ -162,7 +156,6 @@ def configure_iblrig_params():
     if iblenv is None:
         msg = "Can't configure iblrig_params, iblenv not found"
         raise ValueError(msg)
-    python = get_iblenv_python()
     iblrig_params_path = IBLRIG_ROOT_PATH.parent / 'iblrig_params'
     if iblrig_params_path.exists():
         print(f"Found previous configuration in {str(iblrig_params_path)}",
@@ -171,8 +164,12 @@ def configure_iblrig_params():
         if user_input == 'n':
             return
         elif user_input == 'y':
-            subprocess.call([python, "setup_default_config.py",
-                             str(iblrig_params_path)])
+            here = os.getcwd()
+            os.chdir(IBLRIG_ROOT_PATH)
+            os.system(''.join(
+                ["conda activate iblenv && python setup_default_config.py ",
+                 iblrig_params_path]))
+            os.chdir(here)
         elif user_input != 'n' and user_input != 'y':
             print("\n Please select either y of n")
             configure_iblrig_params()
