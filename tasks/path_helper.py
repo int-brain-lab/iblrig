@@ -26,11 +26,12 @@ class SessionPathCreator(object):
         self.IBLRIG_FOLDER = str(Path(iblrig_folder))
         self._BOARD = board
         self._PROTOCOL = protocol
-        self.IBLRIG_COMMIT_HASH = self._get_iblrig_commit_hash()
+        self.IBLRIG_COMMIT_HASH = self._get_commit_hash()
         self.IBLRIG_VERSION_TAG = self._get_version_tag(self.IBLRIG_FOLDER)
 
         self.IBLLIB_FOLDER = str(Path(self.IBLRIG_FOLDER).parent / 'ibllib')
         self.IBLLIB_VERSION_TAG = self._get_version_tag(self.IBLLIB_FOLDER)
+        self.IBLLIB_COMMIT_HASH = self._get_commit_hash(which='ibllib')
         self.IBLRIG_PARAMS_FOLDER = str(
             Path(self.IBLRIG_FOLDER).parent / 'iblrig_params')
         self.IBLRIG_DATA_FOLDER = self._iblrig_data_folder_init(
@@ -183,9 +184,12 @@ class SessionPathCreator(object):
             self.create_bpod_comport_file(self.BPOD_COMPORTS_FILE, comports)
             self.COM = comports
 
-    def _get_iblrig_commit_hash(self):
+    def _get_commit_hash(self, which='iblrig'):
         here = os.getcwd()
-        os.chdir(self.IBLRIG_FOLDER)
+        if which == 'iblrig':
+            os.chdir(self.IBLRIG_FOLDER)
+        elif which == 'ibllib':
+            os.chdir(self.IBLLIB_FOLDER)
         out = subprocess.check_output(["git", "rev-parse", "HEAD"]).decode()
         os.chdir(here)
         if not out:
