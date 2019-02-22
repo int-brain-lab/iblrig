@@ -12,15 +12,21 @@ from dateutil import parser
 import datetime
 
 
-def make_fig():
+def make_fig(sph):
     plt.ion()
     f = plt.figure()  # figsize=(19.2, 10.8), dpi=100)
     ax_bars = plt.subplot2grid((2, 1), (0, 0), rowspan=1, colspan=1)
     ax_psyc = plt.subplot2grid((2, 1), (1, 0), rowspan=1, colspan=1)
     f.canvas.draw_idle()
     plt.show()
+
+    f.suptitle()
     # plt.pause(0.001)
     return (f, ax_bars, ax_psyc)
+
+
+def update_fig():
+    pass
 
 
 def make_psyfun_df():

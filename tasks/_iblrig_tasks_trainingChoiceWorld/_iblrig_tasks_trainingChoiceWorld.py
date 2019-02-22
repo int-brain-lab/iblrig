@@ -80,7 +80,7 @@ bpod.load_serial_message(rotary_encoder, rotary_encoder_e3,
 global tph
 tph = TrialParamHandler(sph)
 
-f, ax_bars, ax_psyc = op.make_fig()
+f, ax_bars, ax_psyc = op.make_fig(sph)
 psyfun_df = op.make_psyfun_df()
 plt.pause(1)
 
