@@ -20,6 +20,9 @@ sys.path.append(str(Path(__file__).parent.parent.parent.parent))  # noqa
 from iotasks import ComplexEncoder
 import bonsai
 import misc
+import ambient_sensor
+from check_sync_pulses import sync_check
+
 
 log = logging.getLogger('iblrig')
 
@@ -245,6 +248,8 @@ class TrialParamHandler(object):
         self.out_tone = sph.OUT_TONE
         self.out_noise = sph.OUT_NOISE
         self.poop_count = sph.POOP_COUNT
+        self.save_ambient_data = sph.RECORD_AMBIENT_SENSOR_DATA
+        self.as_msg = 'saved' if self.save_ambient_data else 'not saved'
         # Reward amount
         self.reward_amount = sph.REWARD_AMOUNT
         self.reward_valve_time = sph.REWARD_VALVE_TIME
@@ -267,6 +272,7 @@ class TrialParamHandler(object):
             self.threshold_events_dict[sph.QUIESCENCE_THRESHOLDS[1]])
         self.response_buffer = [0] * sph.RESPONSE_BUFFER_LENGTH
         self.response_time_buffer = []
+        self.response_time = None
         # Outcome related parmeters
         self.contrast = self.ac
         self.current_contrast = self.contrast.value
@@ -274,6 +280,10 @@ class TrialParamHandler(object):
         self.trial_correct = None
         self.ntrials_correct = 0
         self.water_delivered = 0
+        self.behavior_data = []
+        # Plotting stuff
+        self.signed_contrast_buffer = []
+        self.response_side_buffer = []
 
     def reprJSON(self):
         return self.__dict__
@@ -283,22 +293,31 @@ class TrialParamHandler(object):
         Check trial for state entries, first value of first tuple """
         # Update elapsed_time
         self.elapsed_time = datetime.datetime.now() - self.init_datetime
+        self.behavior_data = behavior_data
         correct = ~np.isnan(
-            behavior_data['States timestamps']['correct'][0][0])
+            self.behavior_data['States timestamps']['correct'][0][0])
         error = ~np.isnan(
-            behavior_data['States timestamps']['error'][0][0])
+            self.behavior_data['States timestamps']['error'][0][0])
         no_go = ~np.isnan(
-            behavior_data['States timestamps']['no_go'][0][0])
+            self.behavior_data['States timestamps']['no_go'][0][0])
         assert correct or error or no_go
         # Add trial's response time to the buffer
-        self.response_time_buffer.append(misc.get_trial_rt(behavior_data))
+        rt = misc.get_trial_rt(self.behavior_data)
+        self.response_time_buffer.append(rt)
+        self.response_time = rt
+        # Add signed contrast to the buffer
+        self.signed_contrast_buffer.append(self.signed_contrast)
+        self.response_side_buffer.append
         # Update response buffer -1 for left, 0 for nogo, and 1 for rightward
         if (correct and self.position < 0) or (error and self.position > 0):
             self.response_buffer = misc.update_buffer(self.response_buffer, 1)
+            self.response_side_buffer.append(1)
         elif (correct and self.position > 0) or (error and self.position < 0):
             self.response_buffer = misc.update_buffer(self.response_buffer, -1)
+            self.response_side_buffer.append(-1)
         elif no_go:
             self.response_buffer = misc.update_buffer(self.response_buffer, 0)
+            self.response_side_buffer.append(0)
         # Update the trial_correct variable
         self.trial_correct = bool(correct)
         # Increment the trial correct counter
@@ -310,12 +329,14 @@ class TrialParamHandler(object):
         self.contrast.trial_completed(self.trial_correct, self.signed_contrast)
         # SAVE TRIAL DATA
         params = self.__dict__.copy()
-        params.update({'behavior_data': behavior_data})
         # open data_file is not serializable, convert to str
         params['data_file'] = str(params['data_file'])
         params['osc_client'] = 'osc_client_pointer'
         params['init_datetime'] = params['init_datetime'].isoformat()
         params['elapsed_time'] = str(params['elapsed_time'])
+        params['signed_contrast_buffer'] = ''
+        params['response_side_buffer'] = ''
+        params['response_time_buffer'] = ''
 
         out = json.dumps(params, cls=ComplexEncoder)
         self.data_file.write(out)
@@ -325,11 +346,37 @@ class TrialParamHandler(object):
         if self.trial_num == 42:
             misc.create_flags(self.data_file_path, self.poop_count)
 
-        return json.loads(out)
+        return self
 
     def check_stop_criterions(self):
         return misc.check_stop_criterions(
             self.init_datetime, self.response_time_buffer, self.trial_num)
+
+    def check_sync_pulses(self):
+        return sync_check(self)
+
+    def save_ambient_sensor_data(self, bpod_instance, destination):
+        return ambient_sensor.get_reading(bpod_instance, save_to=destination)
+
+    def show_trial_log(self):
+        msg = f"""
+##########################################
+TRIAL NUM:            {self.trial_num}
+STIM POSITION:        {self.position}
+STIM CONTRAST:        {self.contrast.value}
+STIM PHASE:           {self.stim_phase}
+STIM PROB LEFT:       {self.stim_probability_left}
+RESPONSE TIME:        {self.response_time}
+
+TRIAL CORRECT:        {self.trial_correct}
+
+NTRIALS CORRECT:      {self.ntrials_correct}
+NTRIALS ERROR:        {self.trial_num - self.ntrials_correct}
+WATER DELIVERED:      {self.water_delivered}
+TIME FROM START:      {self.elapsed_time}
+AMBIENT SENSOR DATA:  {self.as_msg}
+##########################################"""
+        log.info(msg)
 
     def next_trial(self):
         # First trial exception
@@ -451,6 +498,7 @@ if __name__ == '__main__':
         t = time.time()
         data = tph.trial_completed(np.random.choice(
             [correct_trial, error_trial, no_go_trial], p=[0.9, 0.05, 0.05]))
+        tph.show_trial_log()
         trial_completed_times.append(time.time() - t)
         print('\n', x)
         print(tph.contrast.type)
