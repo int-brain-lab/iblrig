@@ -46,4 +46,5 @@ if __name__ == '__main__':
     # main(sys.argv[1])
     comport = 'COM6'
     obj = Frame2TTLReader(comport)
+    obj.read_and_send_data()
     print('.')

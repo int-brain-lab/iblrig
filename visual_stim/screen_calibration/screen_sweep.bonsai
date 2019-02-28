@@ -397,6 +397,7 @@ def process(value):
         <Name>Data</Name>
       </Expression>
       <Expression xsi:type="NestedWorkflow">
+        <Name>SaveData</Name>
         <Workflow>
           <Nodes>
             <Expression xsi:type="ExternalizedPropertyOfStringCsvWriter">
@@ -537,15 +538,117 @@ def process(value):
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="StringProperty">
-          <Value>RG</Value>
+          <Value>RGB</Value>
         </Combinator>
       </Expression>
       <Expression xsi:type="ExternalizedPropertyOfStringStringProperty">
         <MemberName>Value</MemberName>
         <Name>RGB</Name>
-        <Value>RG</Value>
+        <Value>RGB</Value>
       </Expression>
       <Expression xsi:type="WorkflowOutput" />
+      <Expression xsi:type="Condition">
+        <Name>G in RGB?</Name>
+        <Workflow>
+          <Nodes>
+            <Expression xsi:type="WorkflowInput">
+              <Name>Source1</Name>
+            </Expression>
+            <Expression xsi:type="WorkflowOutput" />
+            <Expression xsi:type="SubscribeSubject">
+              <Name>RGB</Name>
+            </Expression>
+            <Expression xsi:type="q3:PythonTransform">
+              <q3:Script>@returns(bool)
+def process(value):
+  return 'G' in value</q3:Script>
+            </Expression>
+          </Nodes>
+          <Edges>
+            <Edge>
+              <From>2</From>
+              <To>3</To>
+              <Label>Source1</Label>
+            </Edge>
+            <Edge>
+              <From>3</From>
+              <To>1</To>
+              <Label>Source1</Label>
+            </Edge>
+          </Edges>
+        </Workflow>
+      </Expression>
+      <Expression xsi:type="Condition">
+        <Name>B in RGB?</Name>
+        <Workflow>
+          <Nodes>
+            <Expression xsi:type="WorkflowInput">
+              <Name>Source1</Name>
+            </Expression>
+            <Expression xsi:type="WorkflowOutput" />
+            <Expression xsi:type="SubscribeSubject">
+              <Name>RGB</Name>
+            </Expression>
+            <Expression xsi:type="q3:PythonTransform">
+              <q3:Script>@returns(bool)
+def process(value):
+  return 'B' in value</q3:Script>
+            </Expression>
+          </Nodes>
+          <Edges>
+            <Edge>
+              <From>2</From>
+              <To>3</To>
+              <Label>Source1</Label>
+            </Edge>
+            <Edge>
+              <From>3</From>
+              <To>1</To>
+              <Label>Source1</Label>
+            </Edge>
+          </Edges>
+        </Workflow>
+      </Expression>
+      <Expression xsi:type="SubscribeSubject">
+        <Name>Red</Name>
+      </Expression>
+      <Expression xsi:type="Condition">
+        <Name>R in RGB?</Name>
+        <Workflow>
+          <Nodes>
+            <Expression xsi:type="WorkflowInput">
+              <Name>Source1</Name>
+            </Expression>
+            <Expression xsi:type="WorkflowOutput" />
+            <Expression xsi:type="SubscribeSubject">
+              <Name>RGB</Name>
+            </Expression>
+            <Expression xsi:type="q3:PythonTransform">
+              <q3:Script>@returns(bool)
+def process(value):
+  return 'R' in value</q3:Script>
+            </Expression>
+          </Nodes>
+          <Edges>
+            <Edge>
+              <From>2</From>
+              <To>3</To>
+              <Label>Source1</Label>
+            </Edge>
+            <Edge>
+              <From>3</From>
+              <To>1</To>
+              <Label>Source1</Label>
+            </Edge>
+          </Edges>
+        </Workflow>
+      </Expression>
+      <Expression xsi:type="SubscribeSubject">
+        <Name>Green</Name>
+      </Expression>
+      <Expression xsi:type="SubscribeSubject">
+        <Name>Blue</Name>
+      </Expression>
     </Nodes>
     <Edges>
       <Edge>
@@ -565,17 +668,17 @@ def process(value):
       </Edge>
       <Edge>
         <From>4</From>
-        <To>14</To>
+        <To>30</To>
         <Label>Source1</Label>
       </Edge>
       <Edge>
         <From>4</From>
-        <To>9</To>
+        <To>27</To>
         <Label>Source1</Label>
       </Edge>
       <Edge>
         <From>4</From>
-        <To>15</To>
+        <To>28</To>
         <Label>Source1</Label>
       </Edge>
       <Edge>
@@ -599,11 +702,6 @@ def process(value):
         <Label>Source2</Label>
       </Edge>
       <Edge>
-        <From>9</From>
-        <To>17</To>
-        <Label>Source3</Label>
-      </Edge>
-      <Edge>
         <From>11</From>
         <To>10</To>
         <Label>Source1</Label>
@@ -612,16 +710,6 @@ def process(value):
         <From>13</From>
         <To>12</To>
         <Label>Source1</Label>
-      </Edge>
-      <Edge>
-        <From>14</From>
-        <To>17</To>
-        <Label>Source2</Label>
-      </Edge>
-      <Edge>
-        <From>15</From>
-        <To>17</To>
-        <Label>Source4</Label>
       </Edge>
       <Edge>
         <From>17</From>
@@ -657,6 +745,36 @@ def process(value):
         <From>25</From>
         <To>24</To>
         <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>27</From>
+        <To>9</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>28</From>
+        <To>15</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>29</From>
+        <To>17</To>
+        <Label>Source2</Label>
+      </Edge>
+      <Edge>
+        <From>30</From>
+        <To>14</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>31</From>
+        <To>17</To>
+        <Label>Source3</Label>
+      </Edge>
+      <Edge>
+        <From>32</From>
+        <To>17</To>
+        <Label>Source4</Label>
       </Edge>
     </Edges>
   </Workflow>
