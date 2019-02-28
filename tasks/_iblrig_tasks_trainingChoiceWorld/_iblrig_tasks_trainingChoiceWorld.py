@@ -163,7 +163,6 @@ for i in range(sph.NTRIALS):  # Main loop
     bpod.send_state_machine(sma)
     # Run state machine
     bpod.run_state_machine(sma)  # Locks until state machine 'exit' is reached
-
     tph = tph.trial_completed(bpod.session.current_trial.export())
     # Update online plots
     op.update_fig(f, axes, tph)

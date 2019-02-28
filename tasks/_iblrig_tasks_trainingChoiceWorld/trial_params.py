@@ -62,7 +62,6 @@ class AdaptiveContrast(object):
         self.value = self._init_contrast()
 
         self.trial_correct = None
-        self.signed_contrast = None
 
         self.last_trial_data = None
 
@@ -104,9 +103,9 @@ class AdaptiveContrast(object):
         self.buffer = np.zeros((2, self.buffer_size,
                                 len(self.all_contrasts))).tolist()
 
-    def _update_buffer(self):
+    def _update_buffer(self, prev_position):
         _buffer = np.asarray(self.buffer)
-        side_idx = 0 if self.signed_contrast < 0 else 1
+        side_idx = 0 if prev_position < 0 else 1
         contrast_idx = self.contrast_set.index(self.value)
         col = _buffer[side_idx, :, contrast_idx]
         col = np.roll(col, -1)
@@ -163,15 +162,14 @@ class AdaptiveContrast(object):
         return int(sum(1 - st.binom.cdf(range(self.buffer_size),
                    self.buffer_size, prob) >= alpha))
 
-    def trial_completed(self, trial_correct, signed_contrast):
+    def trial_completed(self, trial_correct):
         self.ntrials += 1
         self.trial_correct = trial_correct
-        self.signed_contrast = signed_contrast
 
-    def next_trial(self):
+    def next_trial(self, prev_position):
         """Updates obj with behavioral outcome from trial.trial_completed
         and calculates next contrast"""
-        self._update_buffer()
+        self._update_buffer(prev_position)
         self._update_contrast_set()
         self._update_contrast()
         self.trial_correct = None
@@ -201,11 +199,11 @@ class RepeatContrast(object):
     def value(self, previous_contrast):
         self._contrast = previous_contrast
 
-    def trial_completed(self, trial_correct, signed_contrast):
+    def trial_completed(self, trial_correct):
         self.ntrials += 1
         self.trial_correct = trial_correct
 
-    def next_trial(self):
+    def next_trial(self, prev_position):
         """Updates obj with behavioral outcome from trial.trial_completed
         and keeps contrast in case of mistake and sets contrast to None in
         case of correct trial -> exits from repeat trials"""
@@ -277,12 +275,12 @@ class TrialParamHandler(object):
         self.contrast = self.ac
         self.current_contrast = self.contrast.value
         self.signed_contrast = self.contrast.value * np.sign(self.position)
+        self.signed_contrast_buffer = [self.signed_contrast]
         self.trial_correct = None
         self.ntrials_correct = 0
         self.water_delivered = 0
         self.behavior_data = []
         # Plotting stuff
-        self.signed_contrast_buffer = []
         self.response_side_buffer = []
 
     def reprJSON(self):
@@ -305,9 +303,6 @@ class TrialParamHandler(object):
         rt = misc.get_trial_rt(self.behavior_data)
         self.response_time_buffer.append(rt)
         self.response_time = rt
-        # Add signed contrast to the buffer
-        self.signed_contrast_buffer.append(self.signed_contrast)
-        self.response_side_buffer.append
         # Update response buffer -1 for left, 0 for nogo, and 1 for rightward
         if (correct and self.position < 0) or (error and self.position > 0):
             self.response_buffer = misc.update_buffer(self.response_buffer, 1)
@@ -326,7 +321,9 @@ class TrialParamHandler(object):
         if self.trial_correct:
             self.water_delivered += self.reward_amount
         # Propagate outcome to contrast object
-        self.contrast.trial_completed(self.trial_correct, self.signed_contrast)
+        self.contrast.trial_completed(self.trial_correct)
+        # Update non repeated trials
+        self.non_rc_ntrials = self.trial_num - self.rc.ntrials
         # SAVE TRIAL DATA
         params = self.__dict__.copy()
         # open data_file is not serializable, convert to str
@@ -388,11 +385,9 @@ AMBIENT SENSOR DATA:  {self.as_msg}
         self.data_file = str(self.data_file)
         # update + next contrast: update buffers/counters + get next contrast
         # This has to happen before self.contrast is pointing to next trials
-        self.contrast.next_trial()
+        self.contrast.next_trial(self.position)  # still prev_position
         # Increment trial number
         self.trial_num += 1
-        # Update non repeated trials
-        self.non_rc_ntrials = self.trial_num - self.rc.ntrials
         # Update quiescent period
         self.quiescent_period = self.quiescent_period_base + misc.texp()
         # Update stimulus phase
@@ -436,6 +431,7 @@ AMBIENT SENSOR DATA:  {self.as_msg}
 
         self.current_contrast = self.contrast.value
         self.signed_contrast = self.contrast.value * np.sign(self.position)
+        self.signed_contrast_buffer.append(self.signed_contrast)
         return
 
     def _next_position(self):
