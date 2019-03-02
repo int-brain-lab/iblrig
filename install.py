@@ -7,7 +7,6 @@
 import json
 import os
 import re
-import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -71,7 +70,7 @@ def install_environment():
             pass
     else:
         os.system(create_command)
-        os.system("activate iblenv && python -m pip install --upgrade pip")
+        os.system("conda activate iblenv && python -m pip install --upgrade pip")  # noqa
 
     print("N" * 79)
     print("iblenv installed.")
@@ -90,17 +89,17 @@ def install_iblrig_requirements():
     os.system("conda install -y -n iblenv -c conda-forge ciso8601")
 
     print("N" * 39, '(pip) Installing python-osc')
-    os.system("activate iblenv && pip install python-osc")
-    os.system("activate iblenv && pip install cython")
+    os.system("conda activate iblenv && pip install python-osc")
+    os.system("conda activate iblenv && pip install cython")
     print("N" * 39, '(pip) Installing sounddevice')
-    os.system("activate iblenv && pip install sounddevice")
+    os.system("conda activate iblenv && pip install sounddevice")
     print("N" * 39, '(pip) Installing PyBpod')
     os.system(
-        "activate iblenv && pip install --upgrade --force-reinstall pybpod")
+        "conda activate iblenv && pip install --upgrade --force-reinstall pybpod")  # noqa
     # os.system("activate iblenv && pip install -U pybpod")
     print("N" * 39, '(pip) Installing Alyx plugin')
     os.system(
-        "activate iblenv && pip install --upgrade pybpod-gui-plugin-alyx")
+        "conda activate iblenv && pip install --upgrade pybpod-gui-plugin-alyx")  # noqa
     print("N" * 79)
     print("IBLrig requirements installed.")
 
@@ -174,8 +173,9 @@ def configure_iblrig_params():
             print("\n Please select either y of n")
             configure_iblrig_params()
     else:
-        subprocess.call([python, "setup_default_config.py",
-                         str(iblrig_params_path)])
+        os.system(''.join(
+            ["conda activate iblenv && python setup_default_config.py ",
+             iblrig_params_path]))
 
 
 def install_bonsai():
