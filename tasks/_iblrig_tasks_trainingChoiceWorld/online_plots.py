@@ -40,6 +40,7 @@ def update_fig(f, axes, tph):
     plot_psych(psych_data, ax=ax_psych)
     plot_chron(chron_data, ax=ax_chron)
     plot_vars(vars_data, ax=ax_vars)
+    plt.pause(0.001)
 
 
 def get_barplot_data(tph):
@@ -197,7 +198,7 @@ def plot_vars(vars_data, ax=None):
     ax.bar(x[0], median_rt, width, color="cyan",
             label='Median RT')
     ax.bar(x[1], prop_correct, width, color="green",
-            label='Median RT')
+            label='Proportion correct')
     ax.legend(loc='best')
     ax.figure.canvas.draw_idle()
 

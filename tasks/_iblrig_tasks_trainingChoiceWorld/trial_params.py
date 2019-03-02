@@ -457,6 +457,8 @@ AMBIENT SENSOR DATA:  {self.as_msg}
 if __name__ == '__main__':
     from session_params import SessionParamHandler
     from sys import platform
+    import matplotlib.pyplot as plt
+    import online_plots as op
     import task_settings as _task_settings
     import scratch._user_settings as _user_settings
     dt = datetime.datetime.now()
@@ -486,14 +488,21 @@ if __name__ == '__main__':
     # f = open(sph.DATA_FILE_PATH, 'a')
     next_trial_times = []
     trial_completed_times = []
+
+    f, axes = op.make_fig(sph)
+    plt.pause(1)
+
     for x in range(100):
         t = time.time()
         tph.next_trial()
         next_trial_times.append(time.time() - t)
         # print('next_trial took: ', next_trial_times[-1], '(s)')
         t = time.time()
-        data = tph.trial_completed(np.random.choice(
-            [correct_trial, error_trial, no_go_trial], p=[0.9, 0.05, 0.05]))
+        # tph = tph.trial_completed(np.random.choice(
+        #     [correct_trial, error_trial, no_go_trial], p=[0.9, 0.05, 0.05]))
+        tph = tph.trial_completed(correct_trial)
+        op.update_fig(f, axes, tph)
+
         tph.show_trial_log()
         trial_completed_times.append(time.time() - t)
         print('\n', x)
