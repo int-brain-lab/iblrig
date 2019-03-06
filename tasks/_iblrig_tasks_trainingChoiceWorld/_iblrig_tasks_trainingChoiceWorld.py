@@ -80,8 +80,7 @@ bpod.load_serial_message(rotary_encoder, rotary_encoder_e3,
 global tph
 tph = TrialParamHandler(sph)
 
-f, ax_bars, ax_psyc = op.make_fig()
-psyfun_df = op.make_psyfun_df()
+f, axes = op.make_fig(sph)
 plt.pause(1)
 
 sph.start_camera_recording()
@@ -164,59 +163,12 @@ for i in range(sph.NTRIALS):  # Main loop
     bpod.send_state_machine(sma)
     # Run state machine
     bpod.run_state_machine(sma)  # Locks until state machine 'exit' is reached
+    tph = tph.trial_completed(bpod.session.current_trial.export())
+    # Update online plots
+    op.update_fig(f, axes, tph)
 
-    trial_data = tph.trial_completed(bpod.session.current_trial.export())
-
-    op.plot_bars(trial_data, ax=ax_bars)
-    psyfun_df = op.update_psyfun_df(trial_data, psyfun_df)
-    op.plot_psyfun(trial_data, psyfun_df, ax=ax_psyc)
-
-    tevents = trial_data['behavior_data']['Events timestamps']
-    ev_bnc1 = sph.get_port_events(tevents, name='BNC1')
-    ev_bnc2 = sph.get_port_events(tevents, name='BNC2')
-    ev_port1 = sph.get_port_events(tevents, name='Port1')
-
-    NOT_SAVED = 'not saved - deactivated in task settings'
-    NOT_FOUND = 'COULD NOT FIND DATA ON {}'
-
-    as_msg = NOT_SAVED
-    bnc1_msg = NOT_FOUND.format('BNC1') if not ev_bnc1 else 'OK'
-    bnc2_msg = NOT_FOUND.format('BNC2') if not ev_bnc2 else 'OK'
-    port1_msg = NOT_FOUND.format('Port1') if not ev_port1 else 'OK'
-
-    if sph.RECORD_AMBIENT_SENSOR_DATA:
-        data = sph.save_ambient_sensor_reading(bpod)
-        as_msg = 'saved'
-
-    msg = f"""
-##########################################
-TRIAL NUM:            {trial_data['trial_num']}
-STIM POSITION:        {trial_data['position']}
-STIM CONTRAST:        {trial_data['contrast']['value']}
-STIM PHASE:           {trial_data['stim_phase']}
-STIM PROB LEFT:       {trial_data['stim_probability_left']}
-RESPONSE TIME:        {trial_data['response_time_buffer'][-1]}
-
-TRIAL CORRECT:        {trial_data['trial_correct']}
-
-NTRIALS CORRECT:      {trial_data['ntrials_correct']}
-NTRIALS ERROR:        {trial_data['trial_num'] - trial_data['ntrials_correct']}
-WATER DELIVERED:      {trial_data['water_delivered']}
-TIME FROM START:      {trial_data['elapsed_time']}
-AMBIENT SENSOR DATA:  {as_msg}
-##########################################"""
-    log.info(msg)
-
-    warn_msg = f"""
-        ##########################################
-                NOT FOUND: SYNC PULSES
-        ##########################################
-        VISUAL STIMULUS SYNC: {bnc1_msg}
-        SOUND SYNC: {bnc2_msg}
-        CAMERA SYNC: {port1_msg}
-        ##########################################"""
-    if not ev_bnc1 or not ev_bnc2 or not ev_port1:
-        log.warning(warn_msg)
+    tph.save_ambient_sensor_data(bpod, sph.SESSION_RAW_DATA_FOLDER)
+    tph.show_trial_log()
 
     stop_crit = tph.check_stop_criterions()
     if stop_crit and sph.USE_AUTOMATIC_STOPPING_CRITERIONS:

@@ -6,125 +6,96 @@
 # matplotlib.use('Qt5Agg')
 import matplotlib.pyplot as plt
 import numpy as np
-import json
-import pandas as pd
-from dateutil import parser
-import datetime
 
 
-def make_fig():
+def make_fig(sph):
     plt.ion()
     f = plt.figure()  # figsize=(19.2, 10.8), dpi=100)
-    ax_bars = plt.subplot2grid((2, 1), (0, 0), rowspan=1, colspan=1)
-    ax_psyc = plt.subplot2grid((2, 1), (1, 0), rowspan=1, colspan=1)
+    ax_bars = plt.subplot2grid((2, 2), (0, 0), rowspan=1, colspan=1)
+    ax_psych = plt.subplot2grid((2, 2), (0, 1), rowspan=1, colspan=1)
+    ax_chron = plt.subplot2grid((2, 2), (1, 0), rowspan=1, colspan=1)
+    ax_vars = plt.subplot2grid((2, 2), (1, 1), rowspan=1, colspan=1)
+    ax_vars2 = ax_vars.twinx()
     f.canvas.draw_idle()
     plt.show()
+
+    f.suptitle(
+        f'{sph.SUBJECT_NAME} - {sph.SUBJECT_WEIGHT}gr - {sph.SESSION_DATETIME}')  # noqa
+
+    axes = (ax_bars, ax_psych, ax_chron, ax_vars, ax_vars2)
     # plt.pause(0.001)
-    return (f, ax_bars, ax_psyc)
+    return (f, axes)
 
 
-def make_psyfun_df():
-    idx = pd.Float64Index([-1.0, -0.5, -0.25, -0.125, -0.0625, 0.0,
-                          0.0625, 0.125, 0.25, 0.5, 1.0],
-                          dtype='float64', name='signed_contrast')
-    nrr = pd.Series(np.zeros(11), index=idx, name='nresponses_right')
-    nrl = pd.Series(np.zeros(11), index=idx, name='nresponses_left')
-    nt = pd.Series(np.zeros(11), index=idx, name='ntrials')
-    p_hat_left = pd.Series(np.zeros(11), index=idx, name='p_hat_left')
-    p_hat_right = pd.Series(np.zeros(11), index=idx, name='p_hat_right')
-    err = pd.Series(np.zeros(11), index=idx, name='error')
-    psyfun_df = pd.concat([nrr, nrl, nt, p_hat_left, p_hat_right, err], axis=1)
-    return psyfun_df
+def update_fig(f, axes, tph):
+    ax_bars, ax_psych, ax_chron, ax_vars, ax_vars2 = axes
+
+    bar_data = get_barplot_data(tph)
+    psych_data = get_psych_data(tph)
+    chron_data = get_chron_data(tph)
+    vars_data = get_vars_data(tph)
+
+    plot_bars(bar_data, ax=ax_bars)
+    plot_psych(psych_data, ax=ax_psych)
+    plot_chron(chron_data, ax=ax_chron)
+    plot_vars(vars_data, ax=ax_vars, ax2=ax_vars2)
+    plt.pause(0.001)
 
 
-def p_hat_err(X, n):
-    """ Probabilities and Errors calculated using
-    https://en.wikipedia.org/wiki/Binomial_proportion_confidence_interval
-    #Agresti%E2%80%93Coull_interval """
-    alpha = 0.05
-    z = 1 - (alpha / 2)
-    n_hat = n + z**2
-    p_hat = (1 / n_hat) * (X + ((z**2) / 2))
-    err = z * np.sqrt((p_hat / n_hat) * (1 - p_hat))
-    return p_hat, err
-
-
-def update_psyfun_df(trial_data, psyfun_df):
-    if trial_data['contrast']['type'] == 'RepeatContrast':
-        return psyfun_df
-
-    td = trial_data
-    idx = trial_data['current_contrast'] * np.sign(trial_data['position'])
-    psyfun_df.ix[idx].ntrials += 1
-    response_left = (((td['position'] == 90) & td['trial_correct']) |
-                     ((td['position'] == -90) & ~td['trial_correct']))
-    response_right = not response_left
-    psyfun_df.ix[idx].nresponses_left += response_left
-    psyfun_df.ix[idx].nresponses_right += response_right
-
-    n = psyfun_df.ix[idx].ntrials
-    Xl = psyfun_df.ix[idx].nresponses_left
-    Xr = psyfun_df.ix[idx].nresponses_right
-    p_hat_l, err = p_hat_err(Xl, n)
-    p_hat_r, err = p_hat_err(Xr, n)
-    psyfun_df.ix[idx].p_hat_left = p_hat_l
-    psyfun_df.ix[idx].p_hat_right = p_hat_r
-    psyfun_df.ix[idx].error = err
-    return psyfun_df
-
-
-def get_barplot_data(trial_data):
+def get_barplot_data(tph):
     out = {}
-    out['trial_num'] = trial_data['trial_num']
-    out['ntrials_repeated'] = trial_data['rc']['ntrials']
-    out['ntrials_adaptive'] = trial_data['ac']['ntrials']
-    # out['ntrials_staircase'] = trial_data['sc']['ntrials']
-    out['ntrials_correct'] = trial_data['ntrials_correct']
+    out['trial_num'] = tph.trial_num
+    out['ntrials_repeated'] = tph.rc.ntrials
+    out['ntrials_adaptive'] = tph.ac.ntrials
+    out['ntrials_correct'] = tph.ntrials_correct
     out['ntrials_err'] = out['trial_num'] - out['ntrials_correct']
-    out['water_delivered'] = trial_data['water_delivered']
-
-    out['time_from_start'] = (datetime.datetime.now() -
-                              parser.parse(trial_data['init_datetime']))
+    out['water_delivered'] = np.round(tph.water_delivered, 3)
+    out['time_from_start'] = tph.elapsed_time
     return out
 
 
-def plot_psyfun(trial_data, psyfun_df, ax=None):
+def get_psych_data(tph):
+    sig_contrasts_all = [
+        -1., -0.5, -0.25, -0.125, -0.0625, 0., 0.0625, 0.125, 0.25, 0.5, 1.]
+    sig_contrasts_all = tph.ac.contrast_set.copy()
+    sig_contrasts_all.extend([-x for x in sig_contrasts_all])
+    sig_contrasts_all = np.sort(sig_contrasts_all)
+    sig_contrasts = np.array(tph.signed_contrast_buffer)
+    response_side_buffer = np.array(tph.response_side_buffer)
+    ntrials_ccw = np.array([sum(response_side_buffer[sig_contrasts == x] < 0)
+                            for x in sig_contrasts_all])
+    ntrials = np.array(
+        [sum(sig_contrasts == x) for x in sig_contrasts_all])
+    prop_resp_ccw = ntrials_ccw / ntrials
+    return sig_contrasts_all, prop_resp_ccw
+
+
+def get_chron_data(tph):
+    sig_contrasts_all = [
+        - 1., - 0.5, -0.25, -0.125, -0.0625, 0., 0.0625, 0.125, 0.25, 0.5, 1.]
+    sig_contrasts_all = tph.ac.contrast_set.copy()
+    sig_contrasts_all.extend([-x for x in sig_contrasts_all])
+    sig_contrasts_all = np.sort(sig_contrasts_all)
+    sig_contrasts = np.array(tph.signed_contrast_buffer)
+    resopnse_time_buffer = np.array(tph.response_time_buffer)
+    rts = [np.median(resopnse_time_buffer[sig_contrasts == x])
+           for x in sig_contrasts_all]
+    return sig_contrasts_all, rts
+
+
+def get_vars_data(tph):
+    median_rt = np.median(tph.response_time_buffer)
+    prop_correct = tph.ntrials_correct / tph.non_rc_ntrials
+    return median_rt, prop_correct
+
+
+# plotters
+
+def plot_bars(bar_data, ax=None):
     if ax is None:
         # f = plt.figure()  # figsize=(19.2, 10.8), dpi=100)
         ax = plt.subplot2grid((1, 1), (0, 0), rowspan=1, colspan=1)
     ax.cla()
-
-    x = psyfun_df.index.values
-    y1 = psyfun_df.p_hat_left
-    y2 = psyfun_df.p_hat_right
-    yerr = psyfun_df.error.values
-
-    ax.axhline(0.5, color='gray', ls='--', alpha=0.5)
-    y1handle = ax.fill_between(x, y1 - yerr, y1 + yerr, label=y1.name,
-                               color='pink')
-    y2handle = ax.fill_between(x, y2 - yerr, y2 + yerr, label=y2.name,
-                               color='orange')
-    ax.plot(x, y1, c='k')
-    ax.plot(x, y2, c='k')
-    ax.set_ylim([0, 1])
-    ax.legend(handles=[y1handle, y2handle], loc='best')
-    ax.grid()
-    ax.figure.canvas.draw_idle()
-    # ax.figure.canvas.update()
-    # ax.figure.canvas.flush_events()
-    # plt.pause(0.00001)
-    # plt.pause(0.001)
-
-    return
-
-
-def plot_bars(trial_data, ax=None):
-    if ax is None:
-        # f = plt.figure()  # figsize=(19.2, 10.8), dpi=100)
-        ax = plt.subplot2grid((1, 1), (0, 0), rowspan=1, colspan=1)
-    ax.cla()
-
-    bar_data = get_barplot_data(trial_data)
 
     def make_bar_texts(ax, ypos, vars):
         left = 0
@@ -173,75 +144,79 @@ def plot_bars(trial_data, ax=None):
     ax.set_xlim([0, max(y) + (max(y) * 0.2)])
     ax.legend()
     ax.figure.canvas.draw_idle()
-    # ax.figure.canvas.update()
-    # ax.figure.canvas.flush_events()
-    # plt.pause(0.00001)
 
 
-def parse_trial_data(trial_data):
-    out = json.loads(trial_data)
-    return out
+def plot_psych(psych_data, ax=None):
+
+    if ax is None:
+        # f = plt.figure()  # figsize=(19.2, 10.8), dpi=100)
+        ax = plt.subplot2grid((1, 1), (0, 0), rowspan=1, colspan=1)
+    ax.cla()
+
+    x = psych_data[0]
+    y = psych_data[1]
+    y = [0 if np.isnan(i) else i for i in y]
+
+    ax.plot(x, y, c='k', label='CCW responses', marker='o', ls='-')
+
+    ax.axhline(0.5, color='gray', ls='--', alpha=0.5)
+    ax.axvline(0.0, color='gray', ls='--', alpha=0.5)
+    ax.set_ylim([-0.1, 1.1])
+    ax.legend(loc='best')
+    ax.grid()
+    ax.figure.canvas.draw_idle()
+    return
+
+
+def plot_chron(chron_data, ax=None):
+    if ax is None:
+        # f = plt.figure()  # figsize=(19.2, 10.8), dpi=100)
+        ax = plt.subplot2grid((1, 1), (0, 0), rowspan=1, colspan=1)
+    ax.cla()
+
+    x = chron_data[0]
+    y = chron_data[1]
+    y = [0 if np.isnan(i) else i for i in y]
+
+    ax.plot(x, y, c='k', label='Median time to respond', marker='o', ls='-')
+
+    ax.axhline(0.5, color='gray', ls='--', alpha=0.5)
+    ax.axvline(0.0, color='gray', ls='--', alpha=0.5)
+    ax.legend(loc='best')
+    ax.grid()
+    ax.figure.canvas.draw_idle()
+    return
+
+
+def plot_vars(vars_data, ax=None, ax2=None):
+    if ax is None:
+        # f = plt.figure()  # figsize=(19.2, 10.8), dpi=100)
+        ax = plt.subplot2grid((1, 1), (0, 0), rowspan=1, colspan=1)
+        ax2 = ax.twinx()
+    if ax2 is None:
+        ax2 = ax.twinx()
+
+    ax.cla()
+    ax2.cla()
+
+    # ax.figure.tight_layout()  # or right y-label is slightly clipped
+    width = 0.75
+
+    x = [0, 1]
+    median_rt = vars_data[0]
+    prop_correct = vars_data[1]
+
+    ax.bar(x[0], median_rt, width, color="cyan",
+           label='Median RT')
+
+    ax2.bar(x[1], prop_correct, width, color="green",
+            label='Proportion correct')
+    ax2.set_ylim([0, 1.1])
+    ax.legend(loc='lower left')
+    ax2.legend(loc='lower right')
+    ax.figure.canvas.draw_idle()
+    ax2.figure.canvas.draw_idle()
 
 
 if __name__ == '__main__':
-    data_file = '/home/nico/Projects/IBL/IBL-github/iblrig/Subjects/\
-test_mouse/2018-05-08/13/pycw_basic.data.json'
-
-    def load_raw_data(data_file):
-        data = []
-        with open(data_file, 'r') as f:
-            for line in f:
-                data.append(json.loads(line))
-        return data
-
-    def session_df_from_path(data_file, repeat_trials=False):
-        data = load_raw_data(data_file)
-
-        trial_type = pd.Series([x['trial']['type'] for x in data],
-                               name='trial_type')
-        contrast = pd.Series([x['contrast'] for x in data], name='contrast')
-        position = pd.Series([x['position'] for x in data], name='position')
-        correct = pd.Series([x['trial_correct'] for x in data], name='correct')
-        response_right = pd.Series(((position == 90) & ~correct) |
-                                   ((position == -90) & correct),
-                                   name='response_right')
-        response_left = pd.Series(((position == 90) & correct) |
-                                  ((position == -90) & ~correct),
-                                  name='response_left')
-        signed_contrast = pd.Series(contrast * np.sign(position),
-                                    name='signed_contrast')
-
-        trials = [trial_type, contrast, position, correct, response_right,
-                  response_left, signed_contrast]
-
-        df = pd.concat(trials, axis=1)
-
-        no_repeat = df[df.trial_type != 'RepeatContrast']
-        return df if repeat_trials else no_repeat
-
-    def psyfun_df_from_path(data_file, repeat_trials=False):
-        df = session_df_from_path(data_file, repeat_trials=repeat_trials)
-
-        psyfunR = df.groupby('signed_contrast').response_right.mean()
-        psyfunR.name = 'mean_response_right'
-        psyfunL = df.groupby('signed_contrast').response_left.mean()
-        psyfunL.name = 'mean_response_left'
-        psyfunsem = df.groupby('signed_contrast').response_right.sem()
-        psyfunsem.name = 'sem'
-        out_df = pd.concat([psyfunR, psyfunL, psyfunsem], axis=1)
-
-        return out_df
-
-    data = load_raw_data(data_file)
-    trial_data = data[-1]
-    psyfun_df = make_psyfun_df()
-    f, ax_bars, ax_psyc = make_fig()
-
-    i = -1
-    trial_data = data[i]
-
-    plot_bars(trial_data, ax=ax_bars)
-    for trial_data in data:
-        interval = update_psyfun_df(trial_data, psyfun_df)
-
-    plot_psyfun(trial_data, psyfun_df, ax=ax_psyc)
+    pass
