@@ -85,12 +85,10 @@ def get_barplot_data(trial_data):
 
     out['time_from_start'] = (datetime.datetime.now() -
                               parser.parse(trial_data['init_datetime']))
-
     return out
 
 
 def plot_psyfun(trial_data, psyfun_df, ax=None):
-
     if ax is None:
         # f = plt.figure()  # figsize=(19.2, 10.8), dpi=100)
         ax = plt.subplot2grid((1, 1), (0, 0), rowspan=1, colspan=1)
