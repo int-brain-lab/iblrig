@@ -75,7 +75,6 @@ def get_chron_data(tph):
         - 1., - 0.5, -0.25, -0.125, -0.0625, 0., 0.0625, 0.125, 0.25, 0.5, 1.]
     sig_contrasts = np.array(tph.signed_contrast_buffer)
     resopnse_time_buffer = np.array(tph.response_time_buffer)
-    print(resopnse_time_buffer)
     rts = [np.median(resopnse_time_buffer[sig_contrasts == x])
            for x in sig_contrasts_all]
     return sig_contrasts_all, rts
@@ -132,7 +131,7 @@ def plot_bars(bar_data, ax=None):
     make_bar_texts(ax, 1, [bar_data['ntrials_correct'],
                    bar_data['ntrials_err']])
 
-    ax.barh(0, bar_data['water_delivered'], width, color="blue")
+    ax.barh(0, round(bar_data['water_delivered'], 3), width, color="blue")
     ax.text(bar_data['water_delivered'] + 1, 0,
             str(bar_data['water_delivered']), color='blue', fontweight='bold',
             size='x-large')
