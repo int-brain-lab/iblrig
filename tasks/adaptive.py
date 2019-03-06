@@ -48,7 +48,7 @@ def init_calib_func(sph):
         if df1.empty:
             msg = f"""
         ##########################################
-                Water calibration file is emtpy!
+             Water calibration file is emtpy!
         ##########################################"""
             log.error(msg)
             raise(ValueError)
@@ -65,10 +65,10 @@ def init_calib_func_range(sph) -> tuple:
     max_open_time = 1000
     msg = f"""
         ##########################################
-            NOT FOUND: WATER RANGE CALIBRATION
+            NOT FOUND: WATER CALIBRATION RANGE
         ##########################################
                         File empty
-                 range set to (0, 1000)ms
+                     using full range
         ##########################################"""
 
     if sph.LATEST_WATER_CALIB_RANGE_FILE:

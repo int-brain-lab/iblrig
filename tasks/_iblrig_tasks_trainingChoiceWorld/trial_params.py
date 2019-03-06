@@ -224,7 +224,6 @@ class TrialParamHandler(object):
         # Constants from settings
         self.init_datetime = parser.parse(sph.PYBPOD_SESSION)
         self.task_protocol = sph.PYBPOD_PROTOCOL
-        self.elapsed_time = 0
         self.data_file_path = sph.DATA_FILE_PATH
         self.data_file = open(self.data_file_path, 'a')
         self.position_set = sph.STIM_POSITIONS
@@ -255,7 +254,6 @@ class TrialParamHandler(object):
         # Initialize parameters that may change every trial
         self.contrast_set = sph.CONTRAST_SET
         self.trial_num = 0
-        self.non_rc_ntrials = self.trial_num - self.rc.ntrials
         self.position = random.choice(sph.STIM_POSITIONS)
         self.stim_probability_left = sph.STIM_PROBABILITY_LEFT
         self.stim_phase = 0.
@@ -265,15 +263,22 @@ class TrialParamHandler(object):
             self.threshold_events_dict[sph.QUIESCENCE_THRESHOLDS[0]])
         self.movement_right = (
             self.threshold_events_dict[sph.QUIESCENCE_THRESHOLDS[1]])
-        self.response_buffer = [0] * sph.RESPONSE_BUFFER_LENGTH
-        self.response_time_buffer = []
         # Outcome related parmeters
         self.contrast = self.ac
         self.current_contrast = self.contrast.value
         self.signed_contrast = self.contrast.value * np.sign(self.position)
+        self.signed_contrast_buffer = [self.signed_contrast]
+        # Trial Completed params
+        self.elapsed_time = 0
+        self.behavior_data = []
+        self.response_time = None
+        self.response_time_buffer = []
+        self.response_buffer = [0] * sph.RESPONSE_BUFFER_LENGTH
+        self.response_side_buffer = []
         self.trial_correct = None
         self.ntrials_correct = 0
         self.water_delivered = 0
+        self.non_rc_ntrials = self.trial_num - self.rc.ntrials
 
     def reprJSON(self):
         return self.__dict__
@@ -291,7 +296,8 @@ class TrialParamHandler(object):
             behavior_data['States timestamps']['no_go'][0][0])
         assert correct or error or no_go
         # Add trial's response time to the buffer
-        self.response_time_buffer.append(misc.get_trial_rt(behavior_data))
+        self.response_time = misc.get_trial_rt(self.behavior_data)
+        self.response_time_buffer.append(self.response_time)
         # Update response buffer -1 for left, 0 for nogo, and 1 for rightward
         if (correct and self.position < 0) or (error and self.position > 0):
             self.response_buffer = misc.update_buffer(self.response_buffer, 1)
@@ -306,8 +312,12 @@ class TrialParamHandler(object):
         # Update the water delivered
         if self.trial_correct:
             self.water_delivered += self.reward_amount
+
         # Propagate outcome to contrast object
-        self.contrast.trial_completed(self.trial_correct, self.signed_contrast)
+        self.contrast.trial_completed(self.trial_correct)
+        # Update non repeated trials
+        self.non_rc_ntrials = self.trial_num - self.rc.ntrials
+
         # SAVE TRIAL DATA
         params = self.__dict__.copy()
         params.update({'behavior_data': behavior_data})
@@ -341,7 +351,8 @@ class TrialParamHandler(object):
         self.data_file = str(self.data_file)
         # update + next contrast: update buffers/counters + get next contrast
         # This has to happen before self.contrast is pointing to next trials
-        self.contrast.next_trial()
+        self.contrast.next_trial(self.position)  # still prev_position
+
         # Increment trial number
         self.trial_num += 1
         # Update non repeated trials
@@ -354,6 +365,9 @@ class TrialParamHandler(object):
         self._next_contrast()
         # Update position
         self.position, self.stim_probability_left = self._next_position()
+        # Update signed_contrast and buffer (AFTER position update)
+        self.signed_contrast = self.contrast.value * np.sign(self.position)
+        self.signed_contrast_buffer.append(self.signed_contrast)
         # Update state machine events
         self.event_error = self.threshold_events_dict[self.position]
         self.event_reward = self.threshold_events_dict[-self.position]
@@ -388,7 +402,6 @@ class TrialParamHandler(object):
             self.contrast = self.ac
 
         self.current_contrast = self.contrast.value
-        self.signed_contrast = self.contrast.value * np.sign(self.position)
         return
 
     def _next_position(self):
@@ -425,9 +438,9 @@ if __name__ == '__main__':
     _user_settings.PYBPOD_SETUP = 'trainingChoiceWorld'
     _user_settings.PYBPOD_PROTOCOL = '_iblrig_tasks_trainingChoiceWorld'
     if platform == 'linux':
-        r = "/home/nico/Projects/IBL/IBL-github/iblrig"
+        r = "/home/nico/Projects/IBL/iblrig"
         _task_settings.IBLRIG_FOLDER = r
-        d = "/home/nico/Projects/IBL/IBL-github/iblrig/scratch/test_iblrig_data"  # noqa
+        d = "/home/nico/Projects/IBL/iblrig/scratch/test_iblrig_data"  # noqa
         _task_settings.IBLRIG_DATA_FOLDER = d
         _task_settings.AUTOMATIC_CALIBRATION = False
         _task_settings.USE_VISUAL_STIMULUS = False

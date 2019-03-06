@@ -74,7 +74,7 @@ class SessionParamHandler(object):
         self.CALIB_FUNC_RANGE = adaptive.init_calib_func_range(self)
         self.REWARD_VALVE_TIME = adaptive.init_reward_valve_time(self)
         self.STIM_GAIN = adaptive.init_stim_gain(self)
-        self.IMPULIVE_CONTROL = 'OFF'
+        self.IMPULSIVE_CONTROL = 'OFF'
         self = adaptive.impulsive_control(self)
         # =====================================================================
         # ROTARY ENCODER
@@ -214,7 +214,7 @@ ADAPTIVE VALUES FOR CURRENT SESSION
 REWARD AMOUNT:      {self.REWARD_AMOUNT} µl
 VALVE OPEN TIME:    {self.REWARD_VALVE_TIME} sec
 GAIN:               {self.STIM_GAIN} azimuth_degree/mm
-IMPULSIVE CONTROL   {self.IMPULIVE_CONTROL}
+IMPULSIVE CONTROL   {self.IMPULSIVE_CONTROL}
 ##########################################"""
         log.info(msg)
 
