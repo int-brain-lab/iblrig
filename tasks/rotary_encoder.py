@@ -35,6 +35,8 @@ class MyRotaryEncoder(object):
         return d
 
     def configure(self):
+        if self.RE_PORT == 'COM#':
+            return
         m = RotaryEncoderModule(self.RE_PORT)
         m.set_zero_position()  # Not necessarily needed
         m.set_thresholds(self.SET_THRESHOLDS)
