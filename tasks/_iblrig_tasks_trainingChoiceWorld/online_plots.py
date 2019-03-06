@@ -6,8 +6,6 @@
 # matplotlib.use('Qt5Agg')
 import matplotlib.pyplot as plt
 import numpy as np
-import json
-import pandas as pd
 
 
 def make_fig(sph):
@@ -17,19 +15,20 @@ def make_fig(sph):
     ax_psych = plt.subplot2grid((2, 2), (0, 1), rowspan=1, colspan=1)
     ax_chron = plt.subplot2grid((2, 2), (1, 0), rowspan=1, colspan=1)
     ax_vars = plt.subplot2grid((2, 2), (1, 1), rowspan=1, colspan=1)
+    ax_vars2 = ax_vars.twinx()
     f.canvas.draw_idle()
     plt.show()
 
     f.suptitle(
         f'{sph.SUBJECT_NAME} - {sph.SUBJECT_WEIGHT}gr - {sph.SESSION_DATETIME}')  # noqa
 
-    axes = (ax_bars, ax_psych, ax_chron, ax_vars)
+    axes = (ax_bars, ax_psych, ax_chron, ax_vars, ax_vars2)
     # plt.pause(0.001)
     return (f, axes)
 
 
 def update_fig(f, axes, tph):
-    ax_bars, ax_psych, ax_chron, ax_vars = axes
+    ax_bars, ax_psych, ax_chron, ax_vars, ax_vars2 = axes
 
     bar_data = get_barplot_data(tph)
     psych_data = get_psych_data(tph)
@@ -39,7 +38,7 @@ def update_fig(f, axes, tph):
     plot_bars(bar_data, ax=ax_bars)
     plot_psych(psych_data, ax=ax_psych)
     plot_chron(chron_data, ax=ax_chron)
-    plot_vars(vars_data, ax=ax_vars)
+    plot_vars(vars_data, ax=ax_vars, ax2=ax_vars2)
     plt.pause(0.001)
 
 
@@ -50,7 +49,7 @@ def get_barplot_data(tph):
     out['ntrials_adaptive'] = tph.ac.ntrials
     out['ntrials_correct'] = tph.ntrials_correct
     out['ntrials_err'] = out['trial_num'] - out['ntrials_correct']
-    out['water_delivered'] = tph.water_delivered
+    out['water_delivered'] = np.round(tph.water_delivered, 3)
     out['time_from_start'] = tph.elapsed_time
     return out
 
@@ -58,12 +57,13 @@ def get_barplot_data(tph):
 def get_psych_data(tph):
     sig_contrasts_all = [
         -1., -0.5, -0.25, -0.125, -0.0625, 0., 0.0625, 0.125, 0.25, 0.5, 1.]
+    sig_contrasts_all = tph.ac.contrast_set.copy()
+    sig_contrasts_all.extend([-x for x in sig_contrasts_all])
+    sig_contrasts_all = np.sort(sig_contrasts_all)
     sig_contrasts = np.array(tph.signed_contrast_buffer)
-    print(sig_contrasts)
     response_side_buffer = np.array(tph.response_side_buffer)
-    print(response_side_buffer)
-    ntrials_ccw = [sum(response_side_buffer[sig_contrasts == x] < 0)
-                   for x in sig_contrasts_all]
+    ntrials_ccw = np.array([sum(response_side_buffer[sig_contrasts == x] < 0)
+                            for x in sig_contrasts_all])
     ntrials = np.array(
         [sum(sig_contrasts == x) for x in sig_contrasts_all])
     prop_resp_ccw = ntrials_ccw / ntrials
@@ -73,6 +73,9 @@ def get_psych_data(tph):
 def get_chron_data(tph):
     sig_contrasts_all = [
         - 1., - 0.5, -0.25, -0.125, -0.0625, 0., 0.0625, 0.125, 0.25, 0.5, 1.]
+    sig_contrasts_all = tph.ac.contrast_set.copy()
+    sig_contrasts_all.extend([-x for x in sig_contrasts_all])
+    sig_contrasts_all = np.sort(sig_contrasts_all)
     sig_contrasts = np.array(tph.signed_contrast_buffer)
     resopnse_time_buffer = np.array(tph.response_time_buffer)
     rts = [np.median(resopnse_time_buffer[sig_contrasts == x])
@@ -131,7 +134,7 @@ def plot_bars(bar_data, ax=None):
     make_bar_texts(ax, 1, [bar_data['ntrials_correct'],
                    bar_data['ntrials_err']])
 
-    ax.barh(0, round(bar_data['water_delivered'], 3), width, color="blue")
+    ax.barh(0, bar_data['water_delivered'], width, color="blue")
     ax.text(bar_data['water_delivered'] + 1, 0,
             str(bar_data['water_delivered']), color='blue', fontweight='bold',
             size='x-large')
@@ -152,12 +155,13 @@ def plot_psych(psych_data, ax=None):
 
     x = psych_data[0]
     y = psych_data[1]
+    y = [0 if np.isnan(i) else i for i in y]
 
-    ax.plot(x, y, c='k', label='CCW responses', ls='-.')
+    ax.plot(x, y, c='k', label='CCW responses', marker='o', ls='-')
 
     ax.axhline(0.5, color='gray', ls='--', alpha=0.5)
-    ax.axvline(0.5, color='gray', ls='--', alpha=0.5)
-    ax.set_ylim([0, 1])
+    ax.axvline(0.0, color='gray', ls='--', alpha=0.5)
+    ax.set_ylim([-0.1, 1.1])
     ax.legend(loc='best')
     ax.grid()
     ax.figure.canvas.draw_idle()
@@ -172,22 +176,30 @@ def plot_chron(chron_data, ax=None):
 
     x = chron_data[0]
     y = chron_data[1]
+    y = [0 if np.isnan(i) else i for i in y]
 
-    ax.plot(x, y, c='k', label='Time to respond', ls='-.')
+    ax.plot(x, y, c='k', label='Median time to respond', marker='o', ls='-')
 
     ax.axhline(0.5, color='gray', ls='--', alpha=0.5)
-    ax.axvline(0.5, color='gray', ls='--', alpha=0.5)
+    ax.axvline(0.0, color='gray', ls='--', alpha=0.5)
     ax.legend(loc='best')
     ax.grid()
     ax.figure.canvas.draw_idle()
     return
 
 
-def plot_vars(vars_data, ax=None):
+def plot_vars(vars_data, ax=None, ax2=None):
     if ax is None:
         # f = plt.figure()  # figsize=(19.2, 10.8), dpi=100)
         ax = plt.subplot2grid((1, 1), (0, 0), rowspan=1, colspan=1)
+        ax2 = ax.twinx()
+    if ax2 is None:
+        ax2 = ax.twinx()
+
     ax.cla()
+    ax2.cla()
+
+    # ax.figure.tight_layout()  # or right y-label is slightly clipped
     width = 0.75
 
     x = [0, 1]
@@ -195,11 +207,15 @@ def plot_vars(vars_data, ax=None):
     prop_correct = vars_data[1]
 
     ax.bar(x[0], median_rt, width, color="cyan",
-            label='Median RT')
-    ax.bar(x[1], prop_correct, width, color="green",
+           label='Median RT')
+
+    ax2.bar(x[1], prop_correct, width, color="green",
             label='Proportion correct')
-    ax.legend(loc='best')
+    ax2.set_ylim([0, 1.1])
+    ax.legend(loc='lower left')
+    ax2.legend(loc='lower right')
     ax.figure.canvas.draw_idle()
+    ax2.figure.canvas.draw_idle()
 
 
 if __name__ == '__main__':

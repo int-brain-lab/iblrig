@@ -370,7 +370,7 @@ TRIAL CORRECT:        {self.trial_correct}
 
 NTRIALS CORRECT:      {self.ntrials_correct}
 NTRIALS ERROR:        {self.trial_num - self.ntrials_correct}
-WATER DELIVERED:      {self.water_delivered}
+WATER DELIVERED:      {np.round(self.water_delivered, 3)}
 TIME FROM START:      {self.elapsed_time}
 AMBIENT SENSOR DATA:  {self.as_msg}
 ##########################################"""
@@ -400,6 +400,7 @@ AMBIENT SENSOR DATA:  {self.as_msg}
         self.position, self.stim_probability_left = self._next_position()
         # Update signed_contrast and buffer (AFTER position update)
         self.signed_contrast = self.contrast.value * np.sign(self.position)
+        print('#############Next trial signed contrast:', self.signed_contrast)
         self.signed_contrast_buffer.append(self.signed_contrast)
         # Update state machine events
         self.event_error = self.threshold_events_dict[self.position]
@@ -501,9 +502,9 @@ if __name__ == '__main__':
         next_trial_times.append(time.time() - t)
         # print('next_trial took: ', next_trial_times[-1], '(s)')
         t = time.time()
-        # tph = tph.trial_completed(np.random.choice(
-        #     [correct_trial, error_trial, no_go_trial], p=[0.9, 0.05, 0.05]))
-        tph = tph.trial_completed(correct_trial)
+        tph = tph.trial_completed(np.random.choice(
+            [correct_trial, error_trial, no_go_trial], p=[0.8, 0.1, 0.1]))
+        # tph = tph.trial_completed(correct_trial)
         op.update_fig(f, axes, tph)
 
         tph.show_trial_log()
