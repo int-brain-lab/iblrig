@@ -167,7 +167,7 @@ def configure_iblrig_params():
             os.chdir(IBLRIG_ROOT_PATH)
             os.system(''.join(
                 ["conda activate iblenv && python setup_default_config.py ",
-                 iblrig_params_path]))
+                 str(iblrig_params_path)]))
             os.chdir(here)
         elif user_input != 'n' and user_input != 'y':
             print("\n Please select either y of n")
@@ -175,7 +175,7 @@ def configure_iblrig_params():
     else:
         os.system(''.join(
             ["conda activate iblenv && python setup_default_config.py ",
-             iblrig_params_path]))
+             str(iblrig_params_path)]))
 
 
 def install_bonsai():
