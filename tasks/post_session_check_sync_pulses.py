@@ -27,7 +27,13 @@ if __name__ == '__main__':
     session_data_file = Path(sys.argv[1])
     if not session_data_file.exists():
         raise (FileNotFoundError)
-    data = raw.load_data(session_data_file.parent.parent)
+    if session_data_file.name.endswith('.jsonable'):
+        data = raw.load_data(session_data_file.parent.parent)
+    else:
+        try:
+            data = raw.load_data(session_data_file)
+        except Exception:
+            print('Not a file or a valid session folder')
     unsynced_trial_count = 0
     frame2ttl = []
     sound = []
