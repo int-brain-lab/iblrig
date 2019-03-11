@@ -246,7 +246,6 @@ class TrialParamHandler(object):
         self.out_noise = sph.OUT_NOISE
         self.poop_count = sph.POOP_COUNT
         self.save_ambient_data = sph.RECORD_AMBIENT_SENSOR_DATA
-        self.as_msg = 'saved' if self.save_ambient_data else 'not saved'
         # Reward amount
         self.reward_amount = sph.REWARD_AMOUNT
         self.reward_valve_time = sph.REWARD_VALVE_TIME
@@ -354,9 +353,13 @@ class TrialParamHandler(object):
         return sync_check(self)
 
     def save_ambient_sensor_data(self, bpod_instance, destination):
-        return ambient_sensor.get_reading(bpod_instance, save_to=destination)
+        if self.save_ambient_data:
+            return ambient_sensor.get_reading(
+                bpod_instance, save_to=destination)
+        else:
+            return 'Saving of ambient sensor data disabled in task settings'
 
-    def show_trial_log(self):
+    def show_trial_log(self, temperature=None):
         msg = f"""
 ##########################################
 TRIAL NUM:            {self.trial_num}
@@ -370,9 +373,9 @@ TRIAL CORRECT:        {self.trial_correct}
 
 NTRIALS CORRECT:      {self.ntrials_correct}
 NTRIALS ERROR:        {self.trial_num - self.ntrials_correct}
-WATER DELIVERED:      {np.round(self.water_delivered, 3)}
+WATER DELIVERED:      {np.round(self.water_delivered, 3)} µl
 TIME FROM START:      {self.elapsed_time}
-AMBIENT SENSOR DATA:  {self.as_msg}
+TEMPERATURE:          {temperature} ºC
 ##########################################"""
         log.info(msg)
 
@@ -400,7 +403,6 @@ AMBIENT SENSOR DATA:  {self.as_msg}
         self.position, self.stim_probability_left = self._next_position()
         # Update signed_contrast and buffer (AFTER position update)
         self.signed_contrast = self.contrast.value * np.sign(self.position)
-        print('#############Next trial signed contrast:', self.signed_contrast)
         self.signed_contrast_buffer.append(self.signed_contrast)
         # Update state machine events
         self.event_error = self.threshold_events_dict[self.position]
