@@ -19,6 +19,8 @@ sys.path.append(str(Path(__file__).parent.parent.parent.parent))  # noqa
 from iotasks import ComplexEncoder
 import bonsai
 import misc
+import ambient_sensor
+from check_sync_pulses import sync_check
 import blocks
 
 log = logging.getLogger('iblrig')
@@ -35,7 +37,6 @@ class TrialParamHandler(object):
         # Constants from settings
         self.init_datetime = parser.parse(sph.PYBPOD_SESSION)
         self.task_protocol = sph.PYBPOD_PROTOCOL
-        self.elapsed_time = 0
         self.data_file_path = sph.DATA_FILE_PATH
         self.data_file = open(self.data_file_path, 'a')
         self.position_set = sph.STIM_POSITIONS
@@ -75,11 +76,13 @@ class TrialParamHandler(object):
         self.block_len = blocks.init_block_len(self)
         # Position
         self.stim_probability_left = blocks.init_probability_left(self)
+        self.stim_probability_left_buffer = [self.stim_probability_left]
         self.position = blocks.draw_position(
             self.position_set, self.stim_probability_left)
         # Contrast
         self.contrast = misc.draw_contrast(self.contrast_set)
         self.signed_contrast = self.contrast * np.sign(self.position)
+        self.signed_contrast_buffer = [self.signed_contrast]
         # RE event names
         self.event_error = self.threshold_events_dict[self.position]
         self.event_reward = self.threshold_events_dict[-self.position]
@@ -87,8 +90,12 @@ class TrialParamHandler(object):
             self.threshold_events_dict[sph.QUIESCENCE_THRESHOLDS[0]])
         self.movement_right = (
             self.threshold_events_dict[sph.QUIESCENCE_THRESHOLDS[1]])
+        # Trial Completed params
+        self.elapsed_time = 0
+        self.behavior_data = []
+        self.response_time = None
         self.response_time_buffer = []
-        # Outcome related parmeters
+        self.response_side_buffer = []
         self.trial_correct = None
         self.ntrials_correct = 0
         self.water_delivered = 0
@@ -96,6 +103,40 @@ class TrialParamHandler(object):
     def check_stop_criterions(self):
         return misc.check_stop_criterions(
             self.init_datetime, self.response_time_buffer, self.trial_num)
+
+    def check_sync_pulses(self):
+        return sync_check(self)
+
+    def save_ambient_sensor_data(self, bpod_instance, destination):
+        if self.save_ambient_data:
+            return ambient_sensor.get_reading(
+                bpod_instance, save_to=destination)
+        else:
+            return 'Saving of ambient sensor data disabled in task settings'
+
+    def show_trial_log(self, temperature=None):
+        msg = f"""
+##########################################
+TRIAL NUM:            {self.trial_num}
+STIM POSITION:        {self.position}
+STIM CONTRAST:        {self.contrast}
+STIM PHASE:           {self.stim_phase}
+
+BLOCK LENGTH:         {self.block_len}
+BLOCK NUMBER:         {self.block_num}
+TRIALS IN BLOCK:      {self.block_trial_num}
+STIM PROB LEFT:       {self.stim_probability_left}
+
+RESPONSE TIME:        {self.response_time_buffer[-1]}
+TRIAL CORRECT:        {self.trial_correct}
+
+NTRIALS CORRECT:      {self.ntrials_correct}
+NTRIALS ERROR:        {self.trial_num - self.ntrials_correct}
+WATER DELIVERED:      {np.round(self.water_delivered, 3)} µl
+TIME FROM START:      {self.elapsed_time}
+TEMPERATURE:          {temperature} ºC
+##########################################"""
+        log.info(msg)
 
     def next_trial(self):
         # First trial exception
@@ -117,13 +158,16 @@ class TrialParamHandler(object):
         self = blocks.update_block_params(self)
         # Update stim probability left
         self.stim_probability_left = blocks.update_probability_left(self)
+        self.stim_probability_left_buffer.append(self.stim_probability_left)
         # Update position
         self.position = blocks.draw_position(
             self.position_set, self.stim_probability_left)
         # Update contrast
         self.contrast = misc.draw_contrast(
             self.contrast_set, prob_type=self.contrast_set_probability_type)
+        # Update signed_contrast and buffer (AFTER position update)
         self.signed_contrast = self.contrast * np.sign(self.position)
+        self.signed_contrast_buffer.append(self.signed_contrast)
         # Update state machine events
         self.event_error = self.threshold_events_dict[self.position]
         self.event_reward = self.threshold_events_dict[-self.position]
@@ -139,15 +183,24 @@ class TrialParamHandler(object):
         Check trial for state entries, first value of first tuple"""
         # Update elapsed_time
         self.elapsed_time = datetime.datetime.now() - self.init_datetime
+        self.behavior_data = behavior_data
         correct = ~np.isnan(
-            behavior_data['States timestamps']['correct'][0][0])
+            self.behavior_data['States timestamps']['correct'][0][0])
         error = ~np.isnan(
-            behavior_data['States timestamps']['error'][0][0])
+            self.behavior_data['States timestamps']['error'][0][0])
         no_go = ~np.isnan(
-            behavior_data['States timestamps']['no_go'][0][0])
+            self.behavior_data['States timestamps']['no_go'][0][0])
         assert correct or error or no_go
         # Add trial's response time to the buffer
-        self.response_time_buffer.append(misc.get_trial_rt(behavior_data))
+        self.response_time = misc.get_trial_rt(self.behavior_data)
+        self.response_time_buffer.append(self.response_time)
+        # Update response buffer -1 for left, 0 for nogo, and 1 for rightward
+        if (correct and self.position < 0) or (error and self.position > 0):
+            self.response_side_buffer.append(1)
+        elif (correct and self.position > 0) or (error and self.position < 0):
+            self.response_side_buffer.append(-1)
+        elif no_go:
+            self.response_side_buffer.append(0)
         # Update the trial_correct variable
         self.trial_correct = bool(correct)
         # Increment the trial correct counter
@@ -155,6 +208,7 @@ class TrialParamHandler(object):
         # Update the water delivered
         if self.trial_correct:
             self.water_delivered += self.reward_amount
+
         # SAVE TRIAL DATA
         params = self.__dict__.copy()
         params.update({'behavior_data': behavior_data})
@@ -164,6 +218,9 @@ class TrialParamHandler(object):
         params['init_datetime'] = params['init_datetime'].isoformat()
         params['elapsed_time'] = str(params['elapsed_time'])
         params['position'] = int(params['position'])
+        params['signed_contrast_buffer'] = ''
+        params['response_side_buffer'] = ''
+        params['response_time_buffer'] = ''
         # Dump and save
         out = json.dumps(params, cls=ComplexEncoder)
         self.data_file.write(out)
@@ -172,12 +229,15 @@ class TrialParamHandler(object):
         # If more than 42 trials save transfer_me.flag
         if self.trial_num == 42:
             misc.create_flags(self.data_file_path, self.poop_count)
-        return json.loads(out)
+
+        return self
 
 
 if __name__ == '__main__':
     from session_params import SessionParamHandler
     from sys import platform
+    import matplotlib.pyplot as plt
+    import online_plots as op
     import task_settings as _task_settings
     import scratch._user_settings as _user_settings
     dt = datetime.datetime.now()
@@ -206,14 +266,23 @@ if __name__ == '__main__':
     # f = open(sph.DATA_FILE_PATH, 'a')
     next_trial_times = []
     trial_completed_times = []
+
+    f, axes = op.make_fig(sph)
+    plt.pause(1)
+
     for x in range(1000):
         t = time.time()
         tph.next_trial()
         next_trial_times.append(time.time() - t)
         # print('next_trial took: ', next_trial_times[-1], '(s)')
         t = time.time()
-        data = tph.trial_completed(np.random.choice(
+        tph = tph.trial_completed(np.random.choice(
             [correct_trial, error_trial, no_go_trial], p=[0.9, 0.05, 0.05]))
+
+        op.update_fig(f, axes, tph)
+
+        tph.show_trial_log()
+
         trial_completed_times.append(time.time() - t)
         print('\nBLOCK NUM: {:>16}'.format(tph.block_num))
         print('BLOCK TRIAL NUM: {:>10s}'.format(
