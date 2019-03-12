@@ -18,7 +18,6 @@ import adaptive
 import ambient_sensor
 import bonsai
 import iotasks
-import misc
 import sound
 from path_helper import SessionPathCreator
 from rotary_encoder import MyRotaryEncoder
