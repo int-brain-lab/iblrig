@@ -137,7 +137,7 @@ def info():
               "\n         Try updating to a specific version")
         print()
     else:
-        idx = sorted(versions).index(ver) if ver in versions else None
+        idx = sorted(versions).index(ver) if ver in versions else 0
         if idx + 1 == len(versions):
             print("\nThe version you have checked out is the latest version\n")
         else:
@@ -145,11 +145,23 @@ def info():
                 sorted(versions)[-1], sorted(versions)[-1]))
 
 
+def update_to_latest():
+    ver = get_current_version()
+    versions = get_versions()
+    idx = sorted(versions).index(ver) if ver in versions else 0
+    if idx + 1 == len(versions):
+        return
+    else:
+        checkout_version(sorted(versions)[-1])
+        import_tasks()
+        update_ibllib()
+
+
 if __name__ == '__main__':
     # TODO: Use argparse!!
     # If called alone
     if len(sys.argv) == 1:
-        info()
+        update_to_latest()
     # If called with something in front
     elif len(sys.argv) == 2:
         versions = get_versions()
@@ -170,6 +182,9 @@ if __name__ == '__main__':
         # UPDATE IBLLIB
         elif sys.argv[1] == 'ibllib':
             update_ibllib()
+        # UPDATE INFO
+        elif sys.argv[1] == 'info':
+            info()
         # UPDATE UPDATE
         elif sys.argv[1] == 'update':
             checkout_single_file(file='update.py', branch='master')
