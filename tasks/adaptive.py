@@ -189,7 +189,7 @@ def impulsive_control(sph):
 
 
 if __name__ == "__main__":
-    sess_path = ('/home/nico/Projects/IBL/IBL-github/iblrig' +
+    sess_path = ('/home/nico/Projects/IBL/github/iblrig' +
                  '/scratch/test_iblrig_data/Subjects/ZM_335/2018-12-13/001')
     data = raw.load_data(sess_path)
     sess_path = '/mnt/s0/IntegrationTests/Subjects_init/_iblrig_calibration/2019-02-21/003/raw_behavior_data' # noqa

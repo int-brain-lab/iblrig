@@ -479,9 +479,9 @@ if __name__ == '__main__':
     _user_settings.PYBPOD_SETUP = 'trainingChoiceWorld'
     _user_settings.PYBPOD_PROTOCOL = '_iblrig_tasks_trainingChoiceWorld'
     if platform == 'linux':
-        r = "/home/nico/Projects/IBL/iblrig"
+        r = "/home/nico/Projects/IBL/github/iblrig"
         _task_settings.IBLRIG_FOLDER = r
-        d = "/home/nico/Projects/IBL/iblrig/scratch/test_iblrig_data"  # noqa
+        d = "/home/nico/Projects/IBL/github/iblrig/scratch/test_iblrig_data"  # noqa
         _task_settings.IBLRIG_DATA_FOLDER = d
         _task_settings.AUTOMATIC_CALIBRATION = False
         _task_settings.USE_VISUAL_STIMULUS = False
