@@ -100,6 +100,10 @@ def check_stop_criterions(init_datetime, rt_buffer, trial_num) -> int:
             if latest_median > all_median * 5:
                 return 2
 
+        end_time = init_datetime + datetime.timedelta(minutes=90)
+        if end_time <= datetime.datetime.now():
+            return 3
+
         return False
 
 
