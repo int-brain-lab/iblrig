@@ -36,7 +36,7 @@ def get_reading(bpod_instance, save_to=None):
 
 if __name__ == '__main__':
     from pybpodgui_api.models import project
-    root = '/home/nico/Projects/IBL/IBL-github/iblrig/scratch'
+    root = '/home/nico/Projects/IBL/github/iblrig/scratch'
     path = root + '/test_iblrig_params/IBL'
     p = project.Project()
     try:

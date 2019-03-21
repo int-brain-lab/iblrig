@@ -512,8 +512,8 @@ if __name__ == "__main__":
     # 'trainingChoiceWorld')
     # '/coder/mnt/nbonacchi/iblrig', None,
     spc = SessionPathCreator(
-        '/home/nico/Projects/IBL/IBL-github/iblrig',
-        '/home/nico/Projects/IBL/IBL-github/iblrig/scratch/test_iblrig_data',
+        '/home/nico/Projects/IBL/github/iblrig',
+        '/home/nico/Projects/IBL/github/iblrig/scratch/test_iblrig_data',
         '_iblrig_test_mouse', protocol='trainingChoiceWorld',
         board='_iblrig_mainenlab_behavior_0', make=['video', 'ephys', 'imag'])
 

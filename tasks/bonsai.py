@@ -84,7 +84,7 @@ def start_camera_recording(sph):
     start = '--start'
 
     subprocess.Popen([bns, wkfl, start, ts, vid, rec])
-    time.sleep(2)
+    time.sleep(1)
     os.chdir(here)
 
 

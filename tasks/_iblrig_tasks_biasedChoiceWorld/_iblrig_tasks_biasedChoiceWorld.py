@@ -36,10 +36,12 @@ def softcode_handler(data):
     global sph
     if data == 0:
         sph.stop_sound()
-    if data == 1:
+    elif data == 1:
         sph.play_tone()
     elif data == 2:
         sph.play_noise()
+    elif data == 3:
+        sph.start_camera_recording()
     # sph.OSC_CLIENT.send_message("/e", data)
 
 
@@ -56,23 +58,20 @@ bpod.softcode_handler_function = softcode_handler
 rotary_encoder = [x for x in bpod.modules if x.name == 'RotaryEncoder1'][0]
 # ROTARY ENCODER SEVENTS
 # Set RE position to zero 'Z' + eneable all RE thresholds 'E'
-# rotary_encoder_reset = rotary_encoder.create_resetpositions_trigger()
-rotary_encoder_reset = 1
-bpod.load_serial_message(rotary_encoder, rotary_encoder_reset,
+# re_reset = rotary_encoder.create_resetpositions_trigger()
+re_reset = 1
+bpod.load_serial_message(rotary_encoder, re_reset,
                          [RotaryEncoder.COM_SETZEROPOS,  # ord('Z')
                           RotaryEncoder.COM_ENABLE_ALLTHRESHOLDS])  # ord('E')
 # Stop the stim
-rotary_encoder_e1 = rotary_encoder_reset + 1
-bpod.load_serial_message(rotary_encoder, rotary_encoder_e1,
-                         [ord('#'), 1])
+re_stop_stim = re_reset + 1
+bpod.load_serial_message(rotary_encoder, re_stop_stim, [ord('#'), 1])
 # Show the stim
-rotary_encoder_e2 = rotary_encoder_reset + 2
-bpod.load_serial_message(rotary_encoder, rotary_encoder_e2,
-                         [ord('#'), 2])
+re_show_stim = re_reset + 2
+bpod.load_serial_message(rotary_encoder, re_show_stim, [ord('#'), 2])
 # Close loop
-rotary_encoder_e3 = rotary_encoder_reset + 3
-bpod.load_serial_message(rotary_encoder, rotary_encoder_e3,
-                         [ord('#'), 3])
+re_close_loop = re_reset + 3
+bpod.load_serial_message(rotary_encoder, re_close_loop, [ord('#'), 3])
 
 # =============================================================================
 # TRIAL PARAMETERS AND STATE MACHINE
@@ -83,7 +82,6 @@ tph = TrialParamHandler(sph)
 f, axes = op.make_fig(sph)
 plt.pause(1)
 
-sph.start_camera_recording()
 for i in range(sph.NTRIALS):  # Main loop
     tph.next_trial()
     log.info(f'Starting trial: {i + 1}')
@@ -92,19 +90,26 @@ for i in range(sph.NTRIALS):  # Main loop
 # =============================================================================
     sma = StateMachine(bpod)
 
+    if i == 0:  # First trial exception start camera
+        sma.add_state(
+            state_name='trial_start',
+            state_timer=0,  # ~100µs hardware irreducible delay
+            state_change_conditions={'Tup': 'reset_rotary_encoder'},
+            output_actions=[('Serial1', re_stop_stim),
+                            ('SoftCode', 3)])  # sart camera
+
     sma.add_state(
         state_name='trial_start',
         state_timer=0,  # ~100µs hardware irreducible delay
         state_change_conditions={'Tup': 'reset_rotary_encoder'},
-        output_actions=[('Serial1', rotary_encoder_e1),
-                        ('SoftCode', 0),
-                        ])  # stop stim
+        output_actions=[('Serial1', re_stop_stim),
+                        ('SoftCode', 0)])  # stop stim
 
     sma.add_state(
         state_name='reset_rotary_encoder',
         state_timer=0,
         state_change_conditions={'Tup': 'quiescent_period'},
-        output_actions=[('Serial1', rotary_encoder_reset)])
+        output_actions=[('Serial1', re_reset)])
 
     sma.add_state(  # '>back' | '>reset_timer'
         state_name='quiescent_period',
@@ -118,13 +123,13 @@ for i in range(sph.NTRIALS):  # Main loop
         state_name='stim_on',
         state_timer=tph.interactive_delay,
         state_change_conditions={'Tup': 'reset2_rotary_encoder'},
-        output_actions=[('Serial1', rotary_encoder_e2)])  # show stim
+        output_actions=[('Serial1', re_show_stim)])
 
     sma.add_state(
         state_name='reset2_rotary_encoder',
         state_timer=0,
         state_change_conditions={'Tup': 'closed_loop'},
-        output_actions=[('Serial1', rotary_encoder_reset)])
+        output_actions=[('Serial1', re_reset)])
 
     sma.add_state(
         state_name='closed_loop',
@@ -132,8 +137,7 @@ for i in range(sph.NTRIALS):  # Main loop
         state_change_conditions={'Tup': 'no_go',
                                  tph.event_error: 'error',
                                  tph.event_reward: 'reward'},
-        output_actions=[('Serial1', rotary_encoder_e3),  # close stim loop
-                        tph.out_tone])
+        output_actions=[('Serial1', re_close_loop), tph.out_tone])
 
     sma.add_state(
         state_name='no_go',
@@ -145,7 +149,7 @@ for i in range(sph.NTRIALS):  # Main loop
         state_name='error',
         state_timer=tph.iti_error,
         state_change_conditions={'Tup': 'exit'},
-        output_actions=[tph.out_noise])  # play noise
+        output_actions=[tph.out_noise])
 
     sma.add_state(
         state_name='reward',
