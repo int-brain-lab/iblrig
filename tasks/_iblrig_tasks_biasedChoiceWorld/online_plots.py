@@ -55,18 +55,18 @@ def get_barplot_data(tph):
 
 
 def get_psych_data(tph):
-    sig_contrasts_all = [
-        -1., -0.5, -0.25, -0.125, -0.0625, 0., 0.0625, 0.125, 0.25, 0.5, 1.]
     sig_contrasts_all = tph.contrast_set.copy()
     sig_contrasts_all.extend([-x for x in sig_contrasts_all])
     sig_contrasts_all = np.sort(sig_contrasts_all)
-    sig_contrasts = np.array(tph.signed_contrast_buffer)
+    sig_contrasts_buffer = np.array(tph.signed_contrast_buffer)
     response_side_buffer = np.array(tph.response_side_buffer)
-    ntrials_ccw = np.array([sum(response_side_buffer[sig_contrasts == x] < 0)
-                            for x in sig_contrasts_all])
+    ntrials_ccw = np.array([
+        sum(response_side_buffer[sig_contrasts_buffer == x] < 0)
+        for x in sig_contrasts_all])
     ntrials = np.array(
         [sum(sig_contrasts == x) for x in sig_contrasts_all])
     prop_resp_ccw = ntrials_ccw / ntrials
+
     return sig_contrasts_all, prop_resp_ccw
 
 
