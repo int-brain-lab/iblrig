@@ -45,42 +45,64 @@ def update_fig(f, axes, tph):
 def get_barplot_data(tph):
     out = {}
     out['trial_num'] = tph.trial_num
-    # out['ntrials_repeated'] = tph.rc.ntrials
-    # out['ntrials_adaptive'] = tph.ac.ntrials
+    out['block_num'] = tph.block_num
+    out['block_trial_num'] = tph.block_trial_num
+    out['block_len'] = tph.block_len
     out['ntrials_correct'] = tph.ntrials_correct
     out['ntrials_err'] = out['trial_num'] - out['ntrials_correct']
     out['water_delivered'] = np.round(tph.water_delivered, 3)
     out['time_from_start'] = tph.elapsed_time
+    out['stim_pl'] = tph.stim_probability_left
     return out
 
 
 def get_psych_data(tph):
-    sig_contrasts_all = tph.contrast_set.copy()
-    sig_contrasts_all.extend([-x for x in sig_contrasts_all])
+    sig_contrasts_all = np.array(tph.contrast_set)
+    sig_contrasts_all = np.append(
+        sig_contrasts_all, [-x for x in sig_contrasts_all if x != 0])
     sig_contrasts_all = np.sort(sig_contrasts_all)
+
     sig_contrasts_buffer = np.array(tph.signed_contrast_buffer)
     response_side_buffer = np.array(tph.response_side_buffer)
-    ntrials_ccw = np.array([
-        sum(response_side_buffer[sig_contrasts_buffer == x] < 0)
-        for x in sig_contrasts_all])
-    ntrials = np.array(
-        [sum(sig_contrasts == x) for x in sig_contrasts_all])
-    prop_resp_ccw = ntrials_ccw / ntrials
+    stim_probability_left_buffer = np.array(tph.stim_probability_left_buffer)
 
-    return sig_contrasts_all, prop_resp_ccw
+    def get_prop_ccw_resp(stim_prob_left):
+        ntrialsccw = np.array([
+            sum(response_side_buffer[(
+                stim_probability_left_buffer == stim_prob_left) & (
+                sig_contrasts_buffer == x)] < 0) for x in sig_contrasts_all])
+        ntrials = np.array([
+            sum((sig_contrasts_buffer == x) & (
+                stim_probability_left_buffer == stim_prob_left))
+            for x in sig_contrasts_all])
+        prop_resp_ccw = [x / y if y != 0 else 0 for x, y in zip(ntrialsccw,
+                                                                ntrials)]
+        return prop_resp_ccw
+
+    prop_resp_ccw02 = get_prop_ccw_resp(0.2)
+    prop_resp_ccw05 = get_prop_ccw_resp(0.5)
+    prop_resp_ccw08 = get_prop_ccw_resp(0.8)
+
+    return sig_contrasts_all, prop_resp_ccw02, prop_resp_ccw05, prop_resp_ccw08
 
 
 def get_chron_data(tph):
-    sig_contrasts_all = [
-        - 1., - 0.5, -0.25, -0.125, -0.0625, 0., 0.0625, 0.125, 0.25, 0.5, 1.]
     sig_contrasts_all = tph.contrast_set.copy()
     sig_contrasts_all.extend([-x for x in sig_contrasts_all])
     sig_contrasts_all = np.sort(sig_contrasts_all)
-    sig_contrasts = np.array(tph.signed_contrast_buffer)
+    signed_contrast_buffer = np.array(tph.signed_contrast_buffer)
     resopnse_time_buffer = np.array(tph.response_time_buffer)
-    rts = [np.median(resopnse_time_buffer[sig_contrasts == x])
-           for x in sig_contrasts_all]
-    return sig_contrasts_all, rts
+    stim_probability_left_buffer = np.array(tph.stim_probability_left_buffer)
+
+    def get_rts(stim_prob_left):
+        rts = [np.median(resopnse_time_buffer[(
+            signed_contrast_buffer == x) & (
+            stim_probability_left_buffer == stim_prob_left)])
+            for x in sig_contrasts_all]
+        rts = [x if not np.isnan(x) else 0 for x in rts]
+        return rts
+    rts02, rts05, rts08 = get_rts(0.2), get_rts(0.5), get_rts(0.8)
+    return sig_contrasts_all, rts02, rts05, rts08
 
 
 def get_vars_data(tph):
@@ -97,67 +119,87 @@ def plot_bars(bar_data, ax=None):
         ax = plt.subplot2grid((1, 1), (0, 0), rowspan=1, colspan=1)
     ax.cla()
 
-    def make_bar_texts(ax, ypos, vars):
-        left = 0
-        for var in vars:
-            ax.text(left + (var * .15), ypos, str(var), color='black',
-                    fontweight='bold', size='x-large')
-            left += var
-        else:
-            ax.text(left + (var * .15), ypos, str(left), color='black',
-                    fontweight='bold', size='x-large', alpha=0.5)
-    width = 0.75
-    xlabels = ['Water\nDelivered\n(µl)', 'Performance',
-               'Trial\nTypes', 'Session\nDuration']
+    width = 0.5
+    xlabels = ['Water\nDelivered\n(µl)', 'Trial\nOutcome',
+               'Current\nBlock', 'Session\nDuration']
     y = [bar_data['trial_num'], bar_data['ntrials_correct'],
          bar_data['water_delivered'], 0]
     x = range(len(xlabels))  # the x locations for the groups
-
+    #############################################################
     ax.barh(3, 0, width, color="black")
     # ax.barh(0, bar_data['trial_num'], width, color="gray")
-
-    ax.text(max(y) / 10, 3, str(bar_data['time_from_start']),
+    ax.text(1, 3, str(bar_data['time_from_start']),
             color='black', fontweight='bold', size='x-large')
+    #############################################################
+    if bar_data['stim_pl'] == 0.2:
+        clr = 'green'
+    elif bar_data['stim_pl'] == 0.5:
+        clr = 'black'
+    elif bar_data['stim_pl'] == 0.8:
+        clr = 'blue'
+    ax.barh(2, bar_data['block_len'], width, color=clr,
+            label='Block Length')
+    ax.barh(2, bar_data['block_trial_num'], width,
+            color="gray", label='Trials in current block')
+    ax.barh(2, bar_data['block_num'], width,
+            left=bar_data['block_len'], color="orange",
+            label='Block number')
 
-    # ax.barh(2, bar_data['ntrials_repeated'], width, color="pink",
-    #         label='Repeated')
-    # ax.barh(2, bar_data['ntrials_adaptive'], width,
-    #         left=bar_data['ntrials_repeated'], color="orange",
-    #         label='Adaptive')
-    # make_bar_texts(ax, 2, [bar_data['ntrials_repeated'],
-    #                        bar_data['ntrials_adaptive']])
-
+    ax.text(1, 2.26,  # bar_data['block_len'] + bar_data['block_num'] +
+            '{} / {} of block #{}'.format(bar_data['block_trial_num'],
+                                          bar_data['block_len'],
+                                          bar_data['block_num']),
+            color='black', fontweight='bold',
+            size='x-large')
+    #############################################################
     ax.barh(1, bar_data['ntrials_correct'], width, color="green",
             label='Correct')
     ax.barh(1, bar_data['ntrials_err'], width,
             left=bar_data['ntrials_correct'], color="red", label='Error')
-    make_bar_texts(ax, 1, [bar_data['ntrials_correct'],
-                           bar_data['ntrials_err']])
 
+    left = 0
+    ax.text(left + 1, 1.26,
+            str(bar_data['ntrials_correct']), color='green', fontweight='bold',
+            size='x-large')
+    left += bar_data['ntrials_correct']
+    ax.text(left + 1, 1.26,  # - (bar_data['ntrials_err'] / 2)
+            str(bar_data['ntrials_err']), color='red', fontweight='bold',
+            size='x-large')
+    left += bar_data['ntrials_err']
+    ax.text(left + 1, 1,
+            str(bar_data['ntrials_correct'] + bar_data['ntrials_err']),
+            color='black', fontweight='bold',
+            size='x-large')
+
+    #############################################################
     ax.barh(0, bar_data['water_delivered'], width, color="blue")
-    ax.text(bar_data['water_delivered'] + 1, 0,
+    ax.text(1, 0.26,  # bar_data['water_delivered'] +
             str(bar_data['water_delivered']), color='blue', fontweight='bold',
             size='x-large')
+    #############################################################
 
     ax.set_yticks([i for i in x])
     ax.set_yticklabels(xlabels, minor=False)
-    ax.set_xlim([0, max(y) + (max(y) * 0.2)])
+    # ax.set_xlim([0, 100])
     ax.legend()
     ax.figure.canvas.draw_idle()
 
 
 def plot_psych(psych_data, ax=None):
-
     if ax is None:
         # f = plt.figure()  # figsize=(19.2, 10.8), dpi=100)
         ax = plt.subplot2grid((1, 1), (0, 0), rowspan=1, colspan=1)
     ax.cla()
 
     x = psych_data[0]
-    y = psych_data[1]
-    y = [0 if np.isnan(i) else i for i in y]
+    y02 = psych_data[1]
+    y05 = psych_data[2]
+    y08 = psych_data[3]
 
-    ax.plot(x, y, c='k', label='CCW responses', marker='o', ls='-')
+    ax.plot(x, y05, c='k', label='CCW responses 50/50',
+            marker='o', ls='-', alpha=0.5)
+    ax.plot(x, y02, c='g', label='CCW responses 20/80', marker='o', ls='-')
+    ax.plot(x, y08, c='b', label='CCW responses 80/20', marker='o', ls='-')
 
     ax.axhline(0.5, color='gray', ls='--', alpha=0.5)
     ax.axvline(0.0, color='gray', ls='--', alpha=0.5)
@@ -175,10 +217,16 @@ def plot_chron(chron_data, ax=None):
     ax.cla()
 
     x = chron_data[0]
-    y = chron_data[1]
-    y = [0 if np.isnan(i) else i for i in y]
+    y02 = chron_data[1]
+    y05 = chron_data[2]
+    y08 = chron_data[3]
 
-    ax.plot(x, y, c='k', label='Median time to respond', marker='o', ls='-')
+    ax.plot(x, y05, c='k',
+            label='Median response time 50/50', marker='o', ls='-', alpha=0.5)
+    ax.plot(x, y02, c='g',
+            label='Median response time 20/80', marker='o', ls='-')
+    ax.plot(x, y08, c='b',
+            label='Median response time 80/20', marker='o', ls='-')
 
     ax.axhline(0.5, color='gray', ls='--', alpha=0.5)
     ax.axvline(0.0, color='gray', ls='--', alpha=0.5)
@@ -200,7 +248,7 @@ def plot_vars(vars_data, ax=None, ax2=None):
     ax2.cla()
 
     # ax.figure.tight_layout()  # or right y-label is slightly clipped
-    width = 0.75
+    width = 0.5
 
     x = [0, 1]
     median_rt = vars_data[0]

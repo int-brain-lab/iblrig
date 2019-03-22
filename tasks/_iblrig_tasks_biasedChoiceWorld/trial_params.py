@@ -79,8 +79,10 @@ class TrialParamHandler(object):
         self.stim_probability_left_buffer = [self.stim_probability_left]
         self.position = blocks.draw_position(
             self.position_set, self.stim_probability_left)
+        self.position_buffer = [self.position]
         # Contrast
         self.contrast = misc.draw_contrast(self.contrast_set)
+        self.contrast_buffer = [self.contrast]
         self.signed_contrast = self.contrast * np.sign(self.position)
         self.signed_contrast_buffer = [self.signed_contrast]
         # RE event names
@@ -97,6 +99,7 @@ class TrialParamHandler(object):
         self.response_time_buffer = []
         self.response_side_buffer = []
         self.trial_correct = None
+        self.trial_correct_buffer = []
         self.ntrials_correct = 0
         self.water_delivered = 0
 
@@ -122,8 +125,8 @@ STIM POSITION:        {self.position}
 STIM CONTRAST:        {self.contrast}
 STIM PHASE:           {self.stim_phase}
 
-BLOCK LENGTH:         {self.block_len}
 BLOCK NUMBER:         {self.block_num}
+BLOCK LENGTH:         {self.block_len}
 TRIALS IN BLOCK:      {self.block_trial_num}
 STIM PROB LEFT:       {self.stim_probability_left}
 
@@ -156,16 +159,18 @@ TEMPERATURE:          {temperature} ºC
         self.stim_phase = random.uniform(0, math.pi)
         # Update block
         self = blocks.update_block_params(self)
-        # Update stim probability left
+        # Update stim probability left + buffer
         self.stim_probability_left = blocks.update_probability_left(self)
         self.stim_probability_left_buffer.append(self.stim_probability_left)
-        # Update position
+        # Update position + buffer
         self.position = blocks.draw_position(
             self.position_set, self.stim_probability_left)
-        # Update contrast
+        self.position_buffer.append(self.position)
+        # Update contrast + buffer
         self.contrast = misc.draw_contrast(
             self.contrast_set, prob_type=self.contrast_set_probability_type)
-        # Update signed_contrast and buffer (AFTER position update)
+        self.contrast_buffer.append(self.contrast)
+        # Update signed_contrast + buffer (AFTER position update)
         self.signed_contrast = self.contrast * np.sign(self.position)
         self.signed_contrast_buffer.append(self.signed_contrast)
         # Update state machine events
@@ -201,8 +206,9 @@ TEMPERATURE:          {temperature} ºC
             self.response_side_buffer.append(-1)
         elif no_go:
             self.response_side_buffer.append(0)
-        # Update the trial_correct variable
+        # Update the trial_correct variable + buffer
         self.trial_correct = bool(correct)
+        self.trial_correct_buffer.append(self.trial_correct)
         # Increment the trial correct counter
         self.ntrials_correct += self.trial_correct
         # Update the water delivered
@@ -280,7 +286,8 @@ if __name__ == '__main__':
         tph = tph.trial_completed(np.random.choice(
             [correct_trial, error_trial, no_go_trial], p=[0.9, 0.05, 0.05]))
 
-        op.update_fig(f, axes, tph)
+        if not x % 50:
+            op.update_fig(f, axes, tph)
 
         tph.show_trial_log()
 
@@ -293,6 +300,7 @@ if __name__ == '__main__':
 
         if x == 90:
             print('break')
+    op.update_fig(f, axes, tph)
 
     print('\nAverage next_trial times:', sum(next_trial_times) /
           len(next_trial_times))
