@@ -246,6 +246,8 @@ class TrialParamHandler(object):
         self.out_noise = sph.OUT_NOISE
         self.poop_count = sph.POOP_COUNT
         self.save_ambient_data = sph.RECORD_AMBIENT_SENSOR_DATA
+        self.as_data = {'Temperature_C': 0, 'AirPressure_mb': 0,
+                        'RelativeHumidity': 0}
         # Reward amount
         self.reward_amount = sph.REWARD_AMOUNT
         self.reward_valve_time = sph.REWARD_VALVE_TIME
@@ -354,15 +356,17 @@ class TrialParamHandler(object):
 
     def save_ambient_sensor_data(self, bpod_instance, destination):
         if self.save_ambient_data:
-            return ambient_sensor.get_reading(
+            self.as_data = ambient_sensor.get_reading(
                 bpod_instance, save_to=destination)
+            return self.as_data
         else:
             msg = 'Disabled in task settings'
             null_measures = {'Temperature_C': msg, 'AirPressure_mb': msg,
                              'RelativeHumidity': msg}
-            return null_measures
+            self.as_data = null_measures
+            return self.as_data
 
-    def show_trial_log(self, temperature=None):
+    def show_trial_log(self):
         msg = f"""
 ##########################################
 TRIAL NUM:            {self.trial_num}
@@ -378,7 +382,9 @@ NTRIALS CORRECT:      {self.ntrials_correct}
 NTRIALS ERROR:        {self.trial_num - self.ntrials_correct}
 WATER DELIVERED:      {np.round(self.water_delivered, 3)} µl
 TIME FROM START:      {self.elapsed_time}
-TEMPERATURE:          {temperature} ºC
+TEMPERATURE:          {self.as_data['Temperature_C']} ºC
+AIR PRESSURE:         {self.as_data['AirPressure_mb']} mb
+RELATIVE HUMIDITY:    {self.as_data['RelativeHumidity']} %
 ##########################################"""
         log.info(msg)
 

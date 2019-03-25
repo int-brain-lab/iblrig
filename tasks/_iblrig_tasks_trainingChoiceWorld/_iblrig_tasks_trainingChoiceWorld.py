@@ -173,7 +173,7 @@ for i in range(sph.NTRIALS):  # Main loop
     tph = tph.trial_completed(bpod.session.current_trial.export())
 
     as_data = tph.save_ambient_sensor_data(bpod, sph.SESSION_RAW_DATA_FOLDER)
-    tph.show_trial_log(as_data['Temperature_C'])
+    tph.show_trial_log()
 
     # Update online plots
     op.update_fig(f, axes, tph)

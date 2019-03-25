@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from pathlib import Path
 
+
 def make_fig(sph):
     plt.ion()
     f = plt.figure()  # figsize=(19.2, 10.8), dpi=100)
@@ -44,6 +45,7 @@ def update_fig(f, axes, tph):
     fname = Path(tph.data_file_path).parent / 'online_plot.png'
     f.savefig(fname)
 
+
 def get_barplot_data(tph):
     out = {}
     out['trial_num'] = tph.trial_num
@@ -64,20 +66,20 @@ def get_psych_data(tph):
         sig_contrasts_all, [-x for x in sig_contrasts_all if x != 0])
     sig_contrasts_all = np.sort(sig_contrasts_all)
 
-    sig_contrasts_buffer = np.array(tph.signed_contrast_buffer)
+    signed_contrast_buffer = np.array(tph.signed_contrast_buffer)
     response_side_buffer = np.array(tph.response_side_buffer)
     stim_probability_left_buffer = np.array(tph.stim_probability_left_buffer)
 
     def get_prop_ccw_resp(stim_prob_left):
-        ntrialsccw = np.array([
+        ntrials_ccw = np.array([
             sum(response_side_buffer[(
                 stim_probability_left_buffer == stim_prob_left) & (
-                sig_contrasts_buffer == x)] < 0) for x in sig_contrasts_all])
+                signed_contrast_buffer == x)] < 0) for x in sig_contrasts_all])
         ntrials = np.array([
-            sum((sig_contrasts_buffer == x) & (
+            sum((signed_contrast_buffer == x) & (
                 stim_probability_left_buffer == stim_prob_left))
             for x in sig_contrasts_all])
-        prop_resp_ccw = [x / y if y != 0 else 0 for x, y in zip(ntrialsccw,
+        prop_resp_ccw = [x / y if y != 0 else 0 for x, y in zip(ntrials_ccw,
                                                                 ntrials)]
         return prop_resp_ccw
 
@@ -92,6 +94,7 @@ def get_chron_data(tph):
     sig_contrasts_all = tph.contrast_set.copy()
     sig_contrasts_all.extend([-x for x in sig_contrasts_all])
     sig_contrasts_all = np.sort(sig_contrasts_all)
+
     signed_contrast_buffer = np.array(tph.signed_contrast_buffer)
     resopnse_time_buffer = np.array(tph.response_time_buffer)
     stim_probability_left_buffer = np.array(tph.stim_probability_left_buffer)
@@ -103,7 +106,9 @@ def get_chron_data(tph):
             for x in sig_contrasts_all]
         rts = [x if not np.isnan(x) else 0 for x in rts]
         return rts
+
     rts02, rts05, rts08 = get_rts(0.2), get_rts(0.5), get_rts(0.8)
+
     return sig_contrasts_all, rts02, rts05, rts08
 
 

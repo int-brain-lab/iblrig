@@ -125,7 +125,6 @@ class TrialParamHandler(object):
             self.as_data = null_measures
             return self.as_data
 
-
     def show_trial_log(self):
         msg = f"""
 ##########################################
@@ -148,7 +147,7 @@ WATER DELIVERED:      {np.round(self.water_delivered, 3)} µl
 TIME FROM START:      {self.elapsed_time}
 TEMPERATURE:          {self.as_data['Temperature_C']} ºC
 AIR PRESSURE:         {self.as_data['AirPressure_mb']} mb
-RELATIVE HUMIDITY:    {self.as_data['RelativeHumidity']}
+RELATIVE HUMIDITY:    {self.as_data['RelativeHumidity']} %
 ##########################################"""
         log.info(msg)
 
