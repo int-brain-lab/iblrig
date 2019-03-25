@@ -17,7 +17,7 @@ log = logging.getLogger('iblrig')
 
 
 def sync_check(tph):
-    events = tph.trial_data['behavior_data']['Events timestamps']
+    events = tph.behavior_data['Events timestamps']
     ev_bnc1 = get_port_events(events, name='BNC1')
     ev_bnc2 = get_port_events(events, name='BNC2')
     ev_port1 = get_port_events(events, name='Port1')

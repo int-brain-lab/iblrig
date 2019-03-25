@@ -80,12 +80,12 @@ for i in range(sph.NTRIALS):  # Main loop
             state_change_conditions={'Tup': 'reset_rotary_encoder'},
             output_actions=[('Serial1', re_stop_stim),
                             ('SoftCode', 3)])  # sart camera
-
-    sma.add_state(
-        state_name='trial_start',
-        state_timer=1,  # Stim off for 1 sec
-        state_change_conditions={'Tup': 'stim_on'},
-        output_actions=[('Serial1', re_stop_stim)])
+    else:
+        sma.add_state(
+            state_name='trial_start',
+            state_timer=1,  # Stim off for 1 sec
+            state_change_conditions={'Tup': 'stim_on'},
+            output_actions=[('Serial1', re_stop_stim)])
 
     sma.add_state(
         state_name='stim_on',
