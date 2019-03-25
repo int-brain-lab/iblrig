@@ -6,6 +6,7 @@
 # matplotlib.use('Qt5Agg')
 import matplotlib.pyplot as plt
 import numpy as np
+from pathlib import Path
 
 
 def make_fig(sph):
@@ -41,6 +42,9 @@ def update_fig(f, axes, tph):
     plot_vars(vars_data, ax=ax_vars, ax2=ax_vars2)
     plt.pause(0.001)
 
+    fname = Path(tph.data_file_path).parent / 'online_plot.png'
+    f.savefig(fname)
+
 
 def get_barplot_data(tph):
     out = {}
@@ -55,38 +59,47 @@ def get_barplot_data(tph):
 
 
 def get_psych_data(tph):
-    sig_contrasts_all = [
-        -1., -0.5, -0.25, -0.125, -0.0625, 0., 0.0625, 0.125, 0.25, 0.5, 1.]
-    sig_contrasts_all = tph.ac.contrast_set.copy()
-    sig_contrasts_all.extend([-x for x in sig_contrasts_all])
+    sig_contrasts_all = np.array(tph.contrast_set)
+    sig_contrasts_all = np.append(
+        sig_contrasts_all, [-x for x in sig_contrasts_all if x != 0])
     sig_contrasts_all = np.sort(sig_contrasts_all)
-    sig_contrasts = np.array(tph.signed_contrast_buffer)
+
+    sig_contrast_buffer = np.array(tph.signed_contrast_buffer)
     response_side_buffer = np.array(tph.response_side_buffer)
-    ntrials_ccw = np.array([sum(response_side_buffer[sig_contrasts == x] < 0)
-                            for x in sig_contrasts_all])
+
+    ntrials_ccw = np.array([
+        sum(response_side_buffer[sig_contrast_buffer == x] < 0)
+        for x in sig_contrasts_all])
     ntrials = np.array(
-        [sum(sig_contrasts == x) for x in sig_contrasts_all])
-    prop_resp_ccw = ntrials_ccw / ntrials
+        [sum(sig_contrast_buffer == x) for x in sig_contrasts_all])
+
+    prop_resp_ccw = [x / y if y != 0 else 0 for x, y in zip(ntrials_ccw,
+                                                            ntrials)]
     return sig_contrasts_all, prop_resp_ccw
 
 
 def get_chron_data(tph):
-    sig_contrasts_all = [
-        - 1., - 0.5, -0.25, -0.125, -0.0625, 0., 0.0625, 0.125, 0.25, 0.5, 1.]
-    sig_contrasts_all = tph.ac.contrast_set.copy()
+    sig_contrasts_all = tph.contrast_set.copy()
     sig_contrasts_all.extend([-x for x in sig_contrasts_all])
     sig_contrasts_all = np.sort(sig_contrasts_all)
-    sig_contrasts = np.array(tph.signed_contrast_buffer)
+
+    signed_contrast_buffer = np.array(tph.signed_contrast_buffer)
     resopnse_time_buffer = np.array(tph.response_time_buffer)
-    rts = [np.median(resopnse_time_buffer[sig_contrasts == x])
+    rts = [np.median(resopnse_time_buffer[signed_contrast_buffer == x])
            for x in sig_contrasts_all]
+    rts = [x if not np.isnan(x) else 0 for x in rts]
+
     return sig_contrasts_all, rts
 
 
 def get_vars_data(tph):
-    median_rt = np.median(tph.response_time_buffer)
-    prop_correct = tph.ntrials_correct / tph.non_rc_ntrials
-    return median_rt, prop_correct
+    out = {}
+    out['median_rt'] = np.median(tph.response_time_buffer) * 1000
+    out['prop_correct'] = tph.ntrials_correct / tph.trial_num
+    out['Temperature_C'] = tph.as_data['Temperature_C']
+    out['AirPressure_mb'] = tph.as_data['AirPressure_mb']
+    out['RelativeHumidity'] = tph.as_data['RelativeHumidity']
+    return out
 
 
 # plotters
@@ -202,14 +215,20 @@ def plot_vars(vars_data, ax=None, ax2=None):
     # ax.figure.tight_layout()  # or right y-label is slightly clipped
     width = 0.75
 
-    x = [0, 1]
-    median_rt = vars_data[0]
-    prop_correct = vars_data[1]
+    x = [0, 1, 2, 3, 4]
+    median_rt = vars_data['median_rt'] / 10
+    prop_correct = vars_data['prop_correct']
+    temp = vars_data['Temperature_C']
+    rel_hum = vars_data['RelativeHumidity'] / 100
 
     ax.bar(x[0], median_rt, width, color="cyan",
-           label='Median RT')
+           label='Median RT (10^1ms)')
+    ax.bar(x[1], temp, width, color="magenta",
+           label='Temperature (ºC)')
 
-    ax2.bar(x[1], prop_correct, width, color="green",
+    ax2.bar(x[3], rel_hum, width, color="yellow",
+            label='Relative humidity')
+    ax2.bar(x[4], prop_correct, width, color="black",
             label='Proportion correct')
     ax2.set_ylim([0, 1.1])
     ax.legend(loc='lower left')

@@ -51,6 +51,6 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-    # IBLRIG_DATA = '/home/nico/Projects/IBL/IBL-github/iblrig/scratch/test_iblrig_data/Subjects'  # noqa
+    # IBLRIG_DATA = '/home/nico/Projects/IBL/github/iblrig/scratch/test_iblrig_data/Subjects'  # noqa
     # IBLRIG_DATA = Path(IBLRIG_DATA)
     # print('.')

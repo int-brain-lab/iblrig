@@ -110,15 +110,21 @@ def update_remotes():
 
 
 def update_ibllib():
-    os.chdir(IBLRIG_ROOT_PATH.parent / 'ibllib')
-    subprocess.call(["git", "reset", "--hard"])
-    subprocess.call(["git", "pull"])
-    os.chdir("./python")
     if 'ciso8601' not in os.popen("conda list").read().split():
-        os.system(
-            "conda activate iblenv && conda install -c conda-forge -y ciso8601")
+        os.system("conda install -n iblenv -c conda-forge -y ciso8601")
+    new_install_location = IBLRIG_ROOT_PATH / 'src' / 'ibllib'
+    old_install_location = IBLRIG_ROOT_PATH.parent / 'ibllib'
 
-    os.system("conda activate iblenv && pip install -e .")
+    if new_install_location.exists():
+        os.chdir(new_install_location)
+        subprocess.call(["git", "reset", "--hard"])
+        subprocess.call(["git", "pull"])
+
+    if old_install_location.exists():
+        os.chdir(old_install_location)
+        subprocess.call(["git", "reset", "--hard"])
+        subprocess.call(["git", "pull"])
+
     os.chdir(IBLRIG_ROOT_PATH)
 
 
@@ -137,7 +143,7 @@ def info():
               "\n         Try updating to a specific version")
         print()
     else:
-        idx = sorted(versions).index(ver) if ver in versions else None
+        idx = sorted(versions).index(ver) if ver in versions else 0
         if idx + 1 == len(versions):
             print("\nThe version you have checked out is the latest version\n")
         else:
@@ -145,11 +151,23 @@ def info():
                 sorted(versions)[-1], sorted(versions)[-1]))
 
 
+def update_to_latest():
+    ver = get_current_version()
+    versions = get_versions()
+    idx = sorted(versions).index(ver) if ver in versions else 0
+    if idx + 1 == len(versions):
+        return
+    else:
+        checkout_version(sorted(versions)[-1])
+        import_tasks()
+        update_ibllib()
+
+
 if __name__ == '__main__':
     # TODO: Use argparse!!
     # If called alone
     if len(sys.argv) == 1:
-        info()
+        update_to_latest()
     # If called with something in front
     elif len(sys.argv) == 2:
         versions = get_versions()
@@ -170,6 +188,9 @@ if __name__ == '__main__':
         # UPDATE IBLLIB
         elif sys.argv[1] == 'ibllib':
             update_ibllib()
+        # UPDATE INFO
+        elif sys.argv[1] == 'info':
+            info()
         # UPDATE UPDATE
         elif sys.argv[1] == 'update':
             checkout_single_file(file='update.py', branch='master')

@@ -31,12 +31,12 @@ def get_reading(bpod_instance, save_to=None):
             f.write(json.dumps(data))
             f.write('\n')
 
-    return Measures
+    return {k: v.tolist()[0] for k, v in Measures.items()}
 
 
 if __name__ == '__main__':
     from pybpodgui_api.models import project
-    root = '/home/nico/Projects/IBL/IBL-github/iblrig/scratch'
+    root = '/home/nico/Projects/IBL/github/iblrig/scratch'
     path = root + '/test_iblrig_params/IBL'
     p = project.Project()
     try:

@@ -246,7 +246,8 @@ class TrialParamHandler(object):
         self.out_noise = sph.OUT_NOISE
         self.poop_count = sph.POOP_COUNT
         self.save_ambient_data = sph.RECORD_AMBIENT_SENSOR_DATA
-        self.as_msg = 'saved' if self.save_ambient_data else 'not saved'
+        self.as_data = {'Temperature_C': 0, 'AirPressure_mb': 0,
+                        'RelativeHumidity': 0}
         # Reward amount
         self.reward_amount = sph.REWARD_AMOUNT
         self.reward_valve_time = sph.REWARD_VALVE_TIME
@@ -354,7 +355,16 @@ class TrialParamHandler(object):
         return sync_check(self)
 
     def save_ambient_sensor_data(self, bpod_instance, destination):
-        return ambient_sensor.get_reading(bpod_instance, save_to=destination)
+        if self.save_ambient_data:
+            self.as_data = ambient_sensor.get_reading(
+                bpod_instance, save_to=destination)
+            return self.as_data
+        else:
+            msg = 'Disabled in task settings'
+            null_measures = {'Temperature_C': msg, 'AirPressure_mb': msg,
+                             'RelativeHumidity': msg}
+            self.as_data = null_measures
+            return self.as_data
 
     def show_trial_log(self):
         msg = f"""
@@ -370,9 +380,11 @@ TRIAL CORRECT:        {self.trial_correct}
 
 NTRIALS CORRECT:      {self.ntrials_correct}
 NTRIALS ERROR:        {self.trial_num - self.ntrials_correct}
-WATER DELIVERED:      {np.round(self.water_delivered, 3)}
+WATER DELIVERED:      {np.round(self.water_delivered, 3)} µl
 TIME FROM START:      {self.elapsed_time}
-AMBIENT SENSOR DATA:  {self.as_msg}
+TEMPERATURE:          {self.as_data['Temperature_C']} ºC
+AIR PRESSURE:         {self.as_data['AirPressure_mb']} mb
+RELATIVE HUMIDITY:    {self.as_data['RelativeHumidity']} %
 ##########################################"""
         log.info(msg)
 
@@ -400,7 +412,6 @@ AMBIENT SENSOR DATA:  {self.as_msg}
         self.position, self.stim_probability_left = self._next_position()
         # Update signed_contrast and buffer (AFTER position update)
         self.signed_contrast = self.contrast.value * np.sign(self.position)
-        print('#############Next trial signed contrast:', self.signed_contrast)
         self.signed_contrast_buffer.append(self.signed_contrast)
         # Update state machine events
         self.event_error = self.threshold_events_dict[self.position]
@@ -474,9 +485,9 @@ if __name__ == '__main__':
     _user_settings.PYBPOD_SETUP = 'trainingChoiceWorld'
     _user_settings.PYBPOD_PROTOCOL = '_iblrig_tasks_trainingChoiceWorld'
     if platform == 'linux':
-        r = "/home/nico/Projects/IBL/iblrig"
+        r = "/home/nico/Projects/IBL/github/iblrig"
         _task_settings.IBLRIG_FOLDER = r
-        d = "/home/nico/Projects/IBL/iblrig/scratch/test_iblrig_data"  # noqa
+        d = "/home/nico/Projects/IBL/github/iblrig/scratch/test_iblrig_data"  # noqa
         _task_settings.IBLRIG_DATA_FOLDER = d
         _task_settings.AUTOMATIC_CALIBRATION = False
         _task_settings.USE_VISUAL_STIMULUS = False

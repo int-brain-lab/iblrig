@@ -1,0 +1,20 @@
+This function returns the current light measurement value of the Frame2TTL sensor. It is useful for validating the sensor, and for checking the brightness range of your ipad screen.
+
+1. Identify the COM port of your Frame2TTL. On most IBL PCs, this is COM6. 
+2. Copy this folder to C:\
+3. Open an Anaconda prompt and navigate to C:\F2TTL
+4. run the following:
+
+python -c "import F2TTL; F2TTL.measureLight('COM6')"
+
+This will take 250 light measurements and return the average to the terminal.
+Units are in microseconds, and lower numbers indicate brighter light.
+(Details in: https://ams.com/documents/20143/36005/TSL235R_DS000120_3-00.pdf)
+
+5. Use the white (rgb=255,255,255) and black (rgb=0,0,0) images in this folder to change the pixels under the sensor. You should see:
+
+White: ~8-12
+Black: ~500-50,000
+
+For Frame2TTL to output TTL pulses indicating new frames, 
+white must be <40 and black must be >80.

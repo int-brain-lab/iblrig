@@ -36,10 +36,12 @@ def softcode_handler(data):
     global sph
     if data == 0:
         sph.stop_sound()
-    if data == 1:
+    elif data == 1:
         sph.play_tone()
     elif data == 2:
         sph.play_noise()
+    elif data == 3:
+        sph.start_camera_recording()
     # sph.OSC_CLIENT.send_message("/e", data)
 
 
@@ -56,23 +58,20 @@ bpod.softcode_handler_function = softcode_handler
 rotary_encoder = [x for x in bpod.modules if x.name == 'RotaryEncoder1'][0]
 # ROTARY ENCODER SEVENTS
 # Set RE position to zero 'Z' + eneable all RE thresholds 'E'
-# rotary_encoder_reset = rotary_encoder.create_resetpositions_trigger()
-rotary_encoder_reset = 1
-bpod.load_serial_message(rotary_encoder, rotary_encoder_reset,
+# re_reset = rotary_encoder.create_resetpositions_trigger()
+re_reset = 1
+bpod.load_serial_message(rotary_encoder, re_reset,
                          [RotaryEncoder.COM_SETZEROPOS,  # ord('Z')
                           RotaryEncoder.COM_ENABLE_ALLTHRESHOLDS])  # ord('E')
 # Stop the stim
-rotary_encoder_e1 = rotary_encoder_reset + 1
-bpod.load_serial_message(rotary_encoder, rotary_encoder_e1,
-                         [ord('#'), 1])
+re_stop_stim = re_reset + 1
+bpod.load_serial_message(rotary_encoder, re_stop_stim, [ord('#'), 1])
 # Show the stim
-rotary_encoder_e2 = rotary_encoder_reset + 2
-bpod.load_serial_message(rotary_encoder, rotary_encoder_e2,
-                         [ord('#'), 2])
+re_show_stim = re_reset + 2
+bpod.load_serial_message(rotary_encoder, re_show_stim, [ord('#'), 2])
 # Close loop
-rotary_encoder_e3 = rotary_encoder_reset + 3
-bpod.load_serial_message(rotary_encoder, rotary_encoder_e3,
-                         [ord('#'), 3])
+re_close_loop = re_reset + 3
+bpod.load_serial_message(rotary_encoder, re_close_loop, [ord('#'), 3])
 
 # =============================================================================
 # TRIAL PARAMETERS AND STATE MACHINE
@@ -80,11 +79,9 @@ bpod.load_serial_message(rotary_encoder, rotary_encoder_e3,
 global tph
 tph = TrialParamHandler(sph)
 
-f, ax_bars, ax_psyc = op.make_fig()
-psyfun_df = op.make_psyfun_df()
+f, axes = op.make_fig(sph)
 plt.pause(1)
 
-sph.start_camera_recording()
 for i in range(sph.NTRIALS):  # Main loop
     tph.next_trial()
     log.info(f'Starting trial: {i + 1}')
@@ -93,19 +90,26 @@ for i in range(sph.NTRIALS):  # Main loop
 # =============================================================================
     sma = StateMachine(bpod)
 
-    sma.add_state(
-        state_name='trial_start',
-        state_timer=0,  # ~100µs hardware irreducible delay
-        state_change_conditions={'Tup': 'reset_rotary_encoder'},
-        output_actions=[('Serial1', rotary_encoder_e1),
-                        ('SoftCode', 0),
-                        ])  # stop stim
+    if i == 0:  # First trial exception start camera
+        sma.add_state(
+            state_name='trial_start',
+            state_timer=0,  # ~100µs hardware irreducible delay
+            state_change_conditions={'Tup': 'reset_rotary_encoder'},
+            output_actions=[('Serial1', re_stop_stim),
+                            ('SoftCode', 3)])  # sart camera
+    else:
+        sma.add_state(
+            state_name='trial_start',
+            state_timer=0,  # ~100µs hardware irreducible delay
+            state_change_conditions={'Tup': 'reset_rotary_encoder'},
+            output_actions=[('Serial1', re_stop_stim),
+                            ('SoftCode', 0)])  # stop stim
 
     sma.add_state(
         state_name='reset_rotary_encoder',
         state_timer=0,
         state_change_conditions={'Tup': 'quiescent_period'},
-        output_actions=[('Serial1', rotary_encoder_reset)])
+        output_actions=[('Serial1', re_reset)])
 
     sma.add_state(  # '>back' | '>reset_timer'
         state_name='quiescent_period',
@@ -119,13 +123,13 @@ for i in range(sph.NTRIALS):  # Main loop
         state_name='stim_on',
         state_timer=tph.interactive_delay,
         state_change_conditions={'Tup': 'reset2_rotary_encoder'},
-        output_actions=[('Serial1', rotary_encoder_e2)])  # show stim
+        output_actions=[('Serial1', re_show_stim)])
 
     sma.add_state(
         state_name='reset2_rotary_encoder',
         state_timer=0,
         state_change_conditions={'Tup': 'closed_loop'},
-        output_actions=[('Serial1', rotary_encoder_reset)])
+        output_actions=[('Serial1', re_reset)])
 
     sma.add_state(
         state_name='closed_loop',
@@ -133,8 +137,7 @@ for i in range(sph.NTRIALS):  # Main loop
         state_change_conditions={'Tup': 'no_go',
                                  tph.event_error: 'error',
                                  tph.event_reward: 'reward'},
-        output_actions=[('Serial1', rotary_encoder_e3),  # close stim loop
-                        tph.out_tone])
+        output_actions=[('Serial1', re_close_loop), tph.out_tone])
 
     sma.add_state(
         state_name='no_go',
@@ -146,7 +149,7 @@ for i in range(sph.NTRIALS):  # Main loop
         state_name='error',
         state_timer=tph.iti_error,
         state_change_conditions={'Tup': 'exit'},
-        output_actions=[tph.out_noise])  # play noise
+        output_actions=[tph.out_noise])
 
     sma.add_state(
         state_name='reward',
@@ -164,64 +167,15 @@ for i in range(sph.NTRIALS):  # Main loop
     bpod.send_state_machine(sma)
     # Run state machine
     bpod.run_state_machine(sma)  # Locks until state machine 'exit' is reached
+    tph = tph.trial_completed(bpod.session.current_trial.export())
 
-    trial_data = tph.trial_completed(bpod.session.current_trial.export())
+    as_data = tph.save_ambient_sensor_data(bpod, sph.SESSION_RAW_DATA_FOLDER)
+    tph.show_trial_log()
 
-    op.plot_bars(trial_data, ax=ax_bars)
-    psyfun_df = op.update_psyfun_df(trial_data, psyfun_df)
-    op.plot_psyfun(trial_data, psyfun_df, ax=ax_psyc)
+    # Update online plots
+    op.update_fig(f, axes, tph)
 
-    tevents = trial_data['behavior_data']['Events timestamps']
-    ev_bnc1 = sph.get_port_events(tevents, name='BNC1')
-    ev_bnc2 = sph.get_port_events(tevents, name='BNC2')
-    ev_port1 = sph.get_port_events(tevents, name='Port1')
-
-    NOT_SAVED = 'not saved - deactivated in task settings'
-    NOT_FOUND = 'COULD NOT FIND DATA ON {}'
-
-    as_msg = NOT_SAVED
-    bnc1_msg = NOT_FOUND.format('BNC1') if not ev_bnc1 else 'OK'
-    bnc2_msg = NOT_FOUND.format('BNC2') if not ev_bnc2 else 'OK'
-    port1_msg = NOT_FOUND.format('Port1') if not ev_port1 else 'OK'
-
-    if sph.RECORD_AMBIENT_SENSOR_DATA:
-        data = sph.save_ambient_sensor_reading(bpod)
-        as_msg = 'saved'
-
-    msg = f"""
-##########################################
-TRIAL NUM:            {trial_data['trial_num']}
-STIM POSITION:        {trial_data['position']}
-STIM CONTRAST:        {trial_data['contrast']}
-STIM PHASE:           {trial_data['stim_phase']}
-
-BLOCK LENGTH:         {trial_data['block_len']}
-BLOCK NUMBER:         {trial_data['block_num']}
-TRIALS IN BLOCK:      {trial_data['block_trial_num']}
-STIM PROB LEFT:       {trial_data['stim_probability_left']}
-
-RESPONSE TIME:        {trial_data['response_time_buffer'][-1]}
-TRIAL CORRECT:        {trial_data['trial_correct']}
-
-NTRIALS CORRECT:      {trial_data['ntrials_correct']}
-NTRIALS ERROR:        {trial_data['trial_num'] - trial_data['ntrials_correct']}
-WATER DELIVERED:      {trial_data['water_delivered']}
-TIME FROM START:      {trial_data['elapsed_time']}
-AMBIENT SENSOR DATA:  {as_msg}
-##########################################"""
-    log.info(msg)
-
-    warn_msg = f"""
-        ##########################################
-                NOT FOUND: SYNC PULSES
-        ##########################################
-        VISUAL STIMULUS SYNC: {bnc1_msg}
-        SOUND SYNC: {bnc2_msg}
-        CAMERA SYNC: {port1_msg}
-        ##########################################"""
-    if not ev_bnc1 or not ev_bnc2 or not ev_port1:
-        log.warning(warn_msg)
-
+    tph.check_sync_pulses()
     stop_crit = tph.check_stop_criterions()
     if stop_crit and sph.USE_AUTOMATIC_STOPPING_CRITERIONS:
         if stop_crit == 1:
@@ -232,6 +186,10 @@ AMBIENT SENSOR DATA:  {as_msg}
             msg = "STOPPING CRITERIA Nº2: PLEASE STOP TASK AND REMOVE MOUSE\
             \nMouse seems to be inactive"
             f.patch.set_facecolor('xkcd:yellow')
+        elif stop_crit == 3:
+            msg = "STOPPING CRITERIA Nº3: PLEASE STOP TASK AND REMOVE MOUSE\
+            \n> 90 minutes have passed since session start"
+            f.patch.set_facecolor('xkcd:red')
         [log.warning(msg) for x in range(5)]
 
 bpod.close()
