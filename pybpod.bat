@@ -1,15 +1,19 @@
 @echo off
-::echo Adding current directory to system path...
-::set path="%path%;C:\iblrig\"
-::PAUSE
-echo Finding pybpod folder...
+set iblrig_dir=C:\iblrig
 set projects_dir=C:\iblrig_params
-chdir /D %projects_dir%
 
 echo Activating IBL environment...
 call activate iblenv %*
 
+echo Finding iblrig folder...
+chdir /D %iblrig_dir%
+
+echo Updating iblrig...
+call python update.py
+
+echo Finding pybpod folder...
+chdir /D %projects_dir%
+
 echo Launching pybpod...
-::call python -m pybpodgui_plugin %*
 call start-pybpod
 echo done
