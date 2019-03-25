@@ -106,9 +106,14 @@ def get_chron_data(tph):
 
 
 def get_vars_data(tph):
-    median_rt = np.median(tph.response_time_buffer)
-    prop_correct = tph.ntrials_correct / tph.trial_num
-    return median_rt, prop_correct
+    out = {}
+    out['median_rt'] = np.median(tph.response_time_buffer)
+    out['prop_correct'] = tph.ntrials_correct / tph.trial_num
+    out['Temperature_C'] = tph.as_data['Temperature_C']
+    out['AirPressure_mb'] = tph.as_data['AirPressure_mb']
+    out['RelativeHumidity'] = tph.as_data['RelativeHumidity']
+
+    return out
 
 
 # plotters
@@ -250,14 +255,20 @@ def plot_vars(vars_data, ax=None, ax2=None):
     # ax.figure.tight_layout()  # or right y-label is slightly clipped
     width = 0.5
 
-    x = [0, 1]
-    median_rt = vars_data[0]
-    prop_correct = vars_data[1]
+    x = [0, 1, 2, 3]
+    median_rt = vars_data['median_rt']
+    prop_correct = vars_data['prop_correct']
+    temp = vars_data['Temperature_C']
+    rel_hum = vars_data['RelativeHumidity'] / 100
 
     ax.bar(x[0], median_rt, width, color="cyan",
            label='Median RT')
+    ax.bar(x[1], temp, width, color="magenta",
+           label='Temperature (ºC)')
 
-    ax2.bar(x[1], prop_correct, width, color="green",
+    ax2.bar(x[2], rel_hum, width, color="yellow",
+            label='Relative humidity')
+    ax2.bar(x[3], prop_correct, width, color="black",
             label='Proportion correct')
     ax2.set_ylim([0, 1.1])
     ax.legend(loc='lower left')

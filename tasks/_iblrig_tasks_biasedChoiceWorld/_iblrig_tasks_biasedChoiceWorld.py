@@ -168,11 +168,12 @@ for i in range(sph.NTRIALS):  # Main loop
     # Run state machine
     bpod.run_state_machine(sma)  # Locks until state machine 'exit' is reached
     tph = tph.trial_completed(bpod.session.current_trial.export())
-    # Update online plots
-    op.update_fig(f, axes, tph)
 
     as_data = tph.save_ambient_sensor_data(bpod, sph.SESSION_RAW_DATA_FOLDER)
     tph.show_trial_log(as_data['Temperature_C'])
+
+    # Update online plots
+    op.update_fig(f, axes, tph)
 
     tph.check_sync_pulses()
     stop_crit = tph.check_stop_criterions()
@@ -185,6 +186,10 @@ for i in range(sph.NTRIALS):  # Main loop
             msg = "STOPPING CRITERIA Nº2: PLEASE STOP TASK AND REMOVE MOUSE\
             \nMouse seems to be inactive"
             f.patch.set_facecolor('xkcd:yellow')
+        elif stop_crit == 3:
+            msg = "STOPPING CRITERIA Nº3: PLEASE STOP TASK AND REMOVE MOUSE\
+            \n> 90 minutes have passed since session start"
+            f.patch.set_facecolor('xkcd:red')
         [log.warning(msg) for x in range(5)]
 
 bpod.close()

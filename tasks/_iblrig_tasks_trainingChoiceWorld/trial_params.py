@@ -357,7 +357,7 @@ class TrialParamHandler(object):
             return ambient_sensor.get_reading(
                 bpod_instance, save_to=destination)
         else:
-            msg = 'Saving of ambient sensor data disabled in task settings'
+            msg = 'Disabled in task settings'
             null_measures = {'Temperature_C': msg, 'AirPressure_mb': msg,
                              'RelativeHumidity': msg}
             return null_measures
