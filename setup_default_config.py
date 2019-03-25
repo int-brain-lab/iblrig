@@ -223,19 +223,19 @@ def create_experiment_setups(iblproject_path, exp_name: str):
         exp = exp[0]
 
     if exp.name == '_iblrig_calibration':
-        screen = create_setup(exp, 'screen', p.boards[0].name, exp.name)
-        water = create_setup(exp, 'water', p.boards[0].name, exp.name)
+        screen = create_setup(exp, 'screen', p.boards[0].name, exp.name)  # noqa
+        water = create_setup(exp, 'water', p.boards[0].name, exp.name)  # noqa
 
     if exp.name == '_iblrig_misc':
-        flush_water = create_setup(
+        flush_water = create_setup(  # noqa
             exp, 'flush_water', p.boards[0].name, '_iblrig_test_mouse')
 
     if exp.name == '_iblrig_tasks':
-        biasedChoiceWorld = create_setup(
+        biasedChoiceWorld = create_setup(  # noqa
             exp, 'biasedChoiceWorld', p.boards[0].name, None)
-        habituationChoiceWorld = create_setup(
+        habituationChoiceWorld = create_setup(  # noqa
             exp, 'habituationChoiceWorld', p.boards[0].name, None)
-        trainingChoiceWorld = create_setup(
+        trainingChoiceWorld = create_setup(  # noqa
             exp, 'trainingChoiceWorld', p.boards[0].name, None)
 
     p.save(iblproject_path)
@@ -246,7 +246,7 @@ def create_ibl_project(iblproject_path):
     try:
         p.load(iblproject_path)
         print(f"Skipping creation: IBL project found <{iblproject_path}>")
-    except:
+    except:  # noqa
         p.name = 'IBL'
         p.save(iblproject_path)
         print("Created: IBL project")

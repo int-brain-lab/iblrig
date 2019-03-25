@@ -133,8 +133,6 @@ def plot_bars(bar_data, ax=None):
     width = 0.5
     xlabels = ['Water\nDelivered\n(µl)', 'Trial\nOutcome',
                'Current\nBlock', 'Session\nDuration']
-    y = [bar_data['trial_num'], bar_data['ntrials_correct'],
-         bar_data['water_delivered'], 0]
     x = range(len(xlabels))  # the x locations for the groups
     #############################################################
     ax.barh(3, 0, width, color="black")

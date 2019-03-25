@@ -90,6 +90,7 @@ def install_deps():
     os.system("conda activate iblenv && pip install -r requirements.txt")
     os.system("conda install -y -n iblenv -c conda-forge ciso8601==2.1.1")
 
+
 def install_iblrig_requirements():
     print('\n\nINFO: Installing IBLrig requirements:')
     print("N" * 79)
@@ -133,7 +134,7 @@ def clone_ibllib():
             try:
                 os.system(f"rd /s /q {ibllib_path}")
                 return clone_ibllib()
-            except:
+            except:  # noqa
                 print("\nCould not delete ibllib folder",
                       "\nPlease delete it manually and retry.")
                 return clone_ibllib()
