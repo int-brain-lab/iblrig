@@ -43,10 +43,13 @@ def check_dependencies():
     print("N" * 79)
     try:
         subprocess.check_output(["git", "--version"])
+        os.system("git --version")
         print("git... OK")
-        os.system("conda update -y -n base -c defaults conda")
+        # os.system("conda update -y -n base -c defaults conda")
+        os.system("conda -V")
         print("conda... OK")
-        os.system("python -m pip install --upgrade pip")
+        # os.system("python -m pip install --upgrade pip")
+        os.system("pip -V")
         print("pip... OK")
     except Exception as err:
         print(err, "\nEither git, conda, or pip were not found.\n")
@@ -70,10 +73,10 @@ def install_environment():
         user_input = input()
         if user_input == 'y':
             os.system(remove_command)
-            install_environment()
+            return install_environment()
         elif user_input != 'n' and user_input != 'y':
             print("Please answer 'y' or 'n'")
-            install_environment()
+            return install_environment()
         elif user_input == 'n':
             pass
     else:
@@ -102,8 +105,8 @@ def install_iblrig_requirements():
     print("N" * 39, '(pip) Installing sounddevice')
     os.system("conda activate iblenv && pip install sounddevice")
     print("N" * 39, '(pip) Installing PyBpod')
-    os.system(
-        "conda activate iblenv && pip install --upgrade --force-reinstall pybpod")  # noqa
+    os.system("conda activate iblenv && pip install pybpod -U")
+    # os.system("conda activate iblenv && pip install --upgrade --force-reinstall pybpod")  # noqa
     # os.system("activate iblenv && pip install -U pybpod")
     print("N" * 39, '(pip) Installing Alyx plugin')
     os.system(
@@ -126,14 +129,14 @@ def clone_ibllib():
         elif user_input == 'y':
             try:
                 os.system(f"rd /s /q {ibllib_path}")
-                clone_ibllib()
+                return clone_ibllib()
             except:
                 print("\nCould not delete ibllib folder",
                       "\nPlease delete it manually and retry.")
-                clone_ibllib()
+                return clone_ibllib()
         elif user_input != 'n' and user_input != 'y':
             print("\n Please select either y of n")
-            clone_ibllib()
+            return clone_ibllib()
     else:
         subprocess.call(["git", "clone",
                          'https://github.com/int-brain-lab/ibllib.git'])
@@ -176,7 +179,7 @@ def configure_iblrig_params():
                              str(iblrig_params_path)])
         elif user_input != 'n' and user_input != 'y':
             print("\n Please select either y of n")
-            configure_iblrig_params()
+            return configure_iblrig_params()
     else:
         subprocess.call([python, "setup_default_config.py",
                          str(iblrig_params_path)])
@@ -190,7 +193,7 @@ def install_bonsai():
                                      'Bonsai-2.3', 'Bonsai64.exe'))
     elif user_input != 'n' and user_input != 'y':
         print("Please answer 'y' or 'n'")
-        install_bonsai()
+        return install_bonsai()
     elif user_input == 'n':
         pass
 
