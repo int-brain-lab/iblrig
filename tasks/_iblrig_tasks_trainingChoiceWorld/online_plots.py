@@ -6,7 +6,7 @@
 # matplotlib.use('Qt5Agg')
 import matplotlib.pyplot as plt
 import numpy as np
-
+from pathlib import Path
 
 def make_fig(sph):
     plt.ion()
@@ -40,6 +40,9 @@ def update_fig(f, axes, tph):
     plot_chron(chron_data, ax=ax_chron)
     plot_vars(vars_data, ax=ax_vars, ax2=ax_vars2)
     plt.pause(0.001)
+
+    fname = Path(tph.data_file_path).parent / 'online_plot.png'
+    f.savefig(fname)
 
 
 def get_barplot_data(tph):
