@@ -273,7 +273,6 @@ if __name__ == '__main__':
         _task_settings.USE_VISUAL_STIMULUS = False
         _task_settings.BLOCK_INIT_5050 = True
 
-
     sph = SessionParamHandler(_task_settings, _user_settings, debug=False)
     tph = TrialParamHandler(sph)
 
