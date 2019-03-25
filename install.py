@@ -78,14 +78,17 @@ def install_environment():
             print("Please answer 'y' or 'n'")
             return install_environment()
         elif user_input == 'n':
-            pass
+            return
     else:
         os.system(create_command)
         os.system("conda activate iblenv && python -m pip install --upgrade pip")  # noqa
-
     print("N" * 79)
     print("iblenv installed.")
 
+
+def install_deps():
+    os.system("conda activate iblenv && pip install -r requirements.txt")
+    os.system("conda install -y -n iblenv -c conda-forge ciso8601==2.1.1")
 
 def install_iblrig_requirements():
     print('\n\nINFO: Installing IBLrig requirements:')
@@ -195,16 +198,19 @@ def install_bonsai():
         print("Please answer 'y' or 'n'")
         return install_bonsai()
     elif user_input == 'n':
-        pass
+        return
 
 
 if __name__ == '__main__':
     try:
         check_dependencies()
         install_environment()
-        install_iblrig_requirements()
-        yn = clone_ibllib()
-        install_ibllib(user_input=yn)
+        if sys.argv[1] == 'new':
+            install_deps()
+        else:
+            install_iblrig_requirements()
+            yn = clone_ibllib()
+            install_ibllib(user_input=yn)
         configure_iblrig_params()
         print("\nIts time to install Bonsai:")
         install_bonsai()

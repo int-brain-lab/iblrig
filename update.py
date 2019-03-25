@@ -110,11 +110,21 @@ def update_remotes():
 
 
 def update_ibllib():
-    os.chdir(IBLRIG_ROOT_PATH.parent / 'ibllib')
-    subprocess.call(["git", "reset", "--hard"])
-    subprocess.call(["git", "pull"])
     if 'ciso8601' not in os.popen("conda list").read().split():
         os.system("conda install -n iblenv -c conda-forge -y ciso8601")
+    new_install_location = IBLRIG_ROOT_PATH / 'src' / 'ibllib'
+    old_install_location = IBLRIG_ROOT_PATH.parent / 'ibllib'
+
+    if new_install_location.exists():
+        os.chdir(new_install_location)
+        subprocess.call(["git", "reset", "--hard"])
+        subprocess.call(["git", "pull"])
+
+    if old_install_location.exists():
+        os.chdir(old_install_location)
+        subprocess.call(["git", "reset", "--hard"])
+        subprocess.call(["git", "pull"])
+
     os.chdir(IBLRIG_ROOT_PATH)
 
 
