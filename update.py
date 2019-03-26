@@ -27,7 +27,6 @@ Usage:
 """
 import os
 import subprocess
-import sys
 from pathlib import Path
 import argparse
 
@@ -188,7 +187,7 @@ def main(args):
             checkout_single_file(file='update.py', branch='master')
 
         if args.v and args.v in VERSIONS:
-            checkout_version(sys.argv[1])
+            checkout_version(args.v)
             import_tasks()
             update_ibllib()
         elif args.v and args.v not in VERSIONS:
