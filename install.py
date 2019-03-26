@@ -114,6 +114,8 @@ def install_iblrig_requirements():
     os.system("conda activate iblenv && pip install pybpod -U")
     # os.system("conda activate iblenv && pip install --upgrade --force-reinstall pybpod")  # noqa
     # os.system("activate iblenv && pip install -U pybpod")
+    print("N" * 39, '(pip) Installing PyQtWebEngine')
+    os.system("conda activate iblenv && pip install PyQtWebEngine")
     print("N" * 39, '(pip) Installing Alyx plugin')
     os.system(
         "conda activate iblenv && pip install --upgrade pybpod-gui-plugin-alyx")  # noqa
