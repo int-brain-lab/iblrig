@@ -10,12 +10,14 @@ import re
 import subprocess
 import sys
 from pathlib import Path
+import argparse
+
 
 # BEGIN CONSTANT DEFINITION
 IBLRIG_ROOT_PATH = Path.cwd()
 
 if sys.platform not in ['Windows', 'windows', 'win32']:
-    print('\nERROR: Unsupported OS\nInstallation aborted!')
+    print('\nERROR: Unsupported OS\nInstallation might not work!')
 # END CONSTANT DEFINITION
 
 
@@ -203,15 +205,22 @@ def install_bonsai():
 
 
 if __name__ == '__main__':
+    ALLOWED_ACTIONS = ['new']
+    parser = argparse.ArgumentParser(description='Install iblrig')
+    parser.add_argument('-a', required=False, default=False,
+                        help='Actions: ' + ','.join(ALLOWED_ACTIONS))
+    args = parser.parse_args()
+
     try:
         check_dependencies()
         install_environment()
-        if sys.argv[1] == 'new':
+        if args.a and args.a == 'new':
             install_deps()
         else:
             install_iblrig_requirements()
             yn = clone_ibllib()
             install_ibllib(user_input=yn)
+
         configure_iblrig_params()
         print("\nIts time to install Bonsai:")
         install_bonsai()
