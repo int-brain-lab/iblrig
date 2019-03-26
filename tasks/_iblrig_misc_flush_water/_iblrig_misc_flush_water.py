@@ -8,7 +8,7 @@ from pybpodapi.bpod import Bpod
 from pybpodapi.state_machine import StateMachine
 
 ntrials = 1
-valve_on_time = 1000
+valve_on_time = 3600
 iti = 0.9
 
 # =============================================================================

@@ -10,12 +10,14 @@ import re
 import subprocess
 import sys
 from pathlib import Path
+import argparse
+
 
 # BEGIN CONSTANT DEFINITION
 IBLRIG_ROOT_PATH = Path.cwd()
 
 if sys.platform not in ['Windows', 'windows', 'win32']:
-    print('\nERROR: Unsupported OS\nInstallation aborted!')
+    print('\nERROR: Unsupported OS\nInstallation might not work!')
 # END CONSTANT DEFINITION
 
 
@@ -112,6 +114,8 @@ def install_iblrig_requirements():
     os.system("conda activate iblenv && pip install pybpod -U")
     # os.system("conda activate iblenv && pip install --upgrade --force-reinstall pybpod")  # noqa
     # os.system("activate iblenv && pip install -U pybpod")
+    print("N" * 39, '(pip) Installing PyQtWebEngine')
+    os.system("conda activate iblenv && pip install PyQtWebEngine")
     print("N" * 39, '(pip) Installing Alyx plugin')
     os.system(
         "conda activate iblenv && pip install --upgrade pybpod-gui-plugin-alyx")  # noqa
@@ -203,15 +207,22 @@ def install_bonsai():
 
 
 if __name__ == '__main__':
+    ALLOWED_ACTIONS = ['new']
+    parser = argparse.ArgumentParser(description='Install iblrig')
+    parser.add_argument('--new', required=False, default=False,
+                        action='store_true', help='Use new install procedure')
+    args = parser.parse_args()
+
     try:
         check_dependencies()
         install_environment()
-        if sys.argv[1] == 'new':
+        if args.new:
             install_deps()
-        else:
+        elif not args.new:
             install_iblrig_requirements()
             yn = clone_ibllib()
             install_ibllib(user_input=yn)
+
         configure_iblrig_params()
         print("\nIts time to install Bonsai:")
         install_bonsai()
