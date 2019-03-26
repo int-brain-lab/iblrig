@@ -209,16 +209,16 @@ def install_bonsai():
 if __name__ == '__main__':
     ALLOWED_ACTIONS = ['new']
     parser = argparse.ArgumentParser(description='Install iblrig')
-    parser.add_argument('-a', required=False, default=False,
-                        help='Actions: ' + ','.join(ALLOWED_ACTIONS))
+    parser.add_argument('--new', required=False, default=False,
+                        action='store_true', help='Use new install procedure')
     args = parser.parse_args()
 
     try:
         check_dependencies()
         install_environment()
-        if args.a and args.a == 'new':
+        if args.new:
             install_deps()
-        else:
+        elif not args.new:
             install_iblrig_requirements()
             yn = clone_ibllib()
             install_ibllib(user_input=yn)
