@@ -234,9 +234,14 @@ RELATIVE HUMIDITY:    {self.as_data['RelativeHumidity']} %
         params['init_datetime'] = params['init_datetime'].isoformat()
         params['elapsed_time'] = str(params['elapsed_time'])
         params['position'] = int(params['position'])
+        # Delete buffered data
+        params['stim_probability_left_buffer'] = ''
+        params['position_buffer'] = ''
+        params['contrast_buffer'] = ''
         params['signed_contrast_buffer'] = ''
-        params['response_side_buffer'] = ''
         params['response_time_buffer'] = ''
+        params['response_side_buffer'] = ''
+        params['trial_correct_buffer'] = ''
         # Dump and save
         out = json.dumps(params, cls=ComplexEncoder)
         self.data_file.write(out)

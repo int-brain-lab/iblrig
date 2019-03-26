@@ -333,9 +333,14 @@ class TrialParamHandler(object):
         params['osc_client'] = 'osc_client_pointer'
         params['init_datetime'] = params['init_datetime'].isoformat()
         params['elapsed_time'] = str(params['elapsed_time'])
+        # Delete buffered data
+        # params['stim_probability_left_buffer'] = ''
+        # params['position_buffer'] = ''
+        # params['contrast_buffer'] = ''
         params['signed_contrast_buffer'] = ''
-        params['response_side_buffer'] = ''
         params['response_time_buffer'] = ''
+        params['response_side_buffer'] = ''
+        # params['trial_correct_buffer'] = ''
 
         out = json.dumps(params, cls=ComplexEncoder)
         self.data_file.write(out)
