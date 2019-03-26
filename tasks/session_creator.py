@@ -13,7 +13,7 @@ prob_mat = np.matmul(probs_positions.reshape(2, 1),
                      probs_contrasts.reshape(1, 5))
 
 
-# def make_positions():
+# def make_contrasts():
 len_block = [90]
 pos = [-35] * int(len_block[0] / 2) + [35] * int(len_block[0] / 2)
 cont = np.sort(contrasts.tolist() * 10)[::-1][:-5].tolist() * 2

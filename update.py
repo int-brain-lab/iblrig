@@ -29,11 +29,10 @@ import os
 import subprocess
 import sys
 from pathlib import Path
+import argparse
 
 from setup_default_config import (copy_code_files_to_iblrig_params,
                                   update_pybpod_config)
-
-IBLRIG_ROOT_PATH = Path.cwd()
 
 
 def get_versions():
@@ -41,8 +40,8 @@ def get_versions():
                                     "--tags", "origin"]).decode().split()
     vers = [x for x in vers[1::2] if '{' not in x]
     vers = [x.split('/')[-1] for x in vers]
-    available = [x for x in vers if x >= '2.0.0']
-    print("\nAvailable versions: {}\n".format(available))
+    available = [x for x in vers if x >= '3.6.0']
+    print("Available versions: {}".format(available))
     return vers
 
 
@@ -51,7 +50,7 @@ def get_branches():
                                         "--heads", "origin"]).decode().split()
     branches = [x.split('heads')[-1] for x in branches[1::2]]
     branches = [x[1:] for x in branches]
-    print("\nAvailable branches: {}\n".format(branches))
+    print("Available branches: {}".format(branches))
 
     return branches
 
@@ -66,7 +65,7 @@ def get_current_branch():
 def get_current_version():
     tag = subprocess.check_output(["git", "tag",
                                    "--points-at", "HEAD"]).decode().strip()
-    print("\nCurrent version: {}".format(tag))
+    print("Current version: {}".format(tag))
     return tag
 
 
@@ -79,7 +78,7 @@ def iblrig_params_path():
 
 
 def import_tasks():
-    if get_current_version() > '3.3.0' or get_current_branch() == 'develop':
+    if VER > '3.3.0' or get_current_branch() == 'develop':
         update_pybpod_config(iblrig_params_path())
     copy_code_files_to_iblrig_params(iblrig_params_path(),
                                      exclude_filename=None)
@@ -136,24 +135,23 @@ def branch_info():
 def info():
     update_remotes()
     # branch_info()
-    ver = get_current_version()
-    versions = get_versions()
+    ver = VER
+    versions = VERSIONS
     if not ver:
         print("WARNING: You appear to be on an untagged release.",
               "\n         Try updating to a specific version")
-        print()
     else:
         idx = sorted(versions).index(ver) if ver in versions else 0
         if idx + 1 == len(versions):
-            print("\nThe version you have checked out is the latest version\n")
+            print("The version you have checked out is the latest version\n")
         else:
             print("Newest version |{}| type:\n\npython update.py {}\n".format(
                 sorted(versions)[-1], sorted(versions)[-1]))
 
 
 def update_to_latest():
-    ver = get_current_version()
-    versions = get_versions()
+    ver = VER
+    versions = VERSIONS
     idx = sorted(versions).index(ver) if ver in versions else 0
     if idx + 1 == len(versions):
         return
@@ -163,63 +161,69 @@ def update_to_latest():
         update_ibllib()
 
 
-if __name__ == '__main__':
-    # TODO: Use argparse!!
-    # If called alone
-    if len(sys.argv) == 1:
+def main(args):
+    nargs_passed = sum([True for x in args.__dict__.values() if x])
+
+    if not any(args.__dict__.values()):
         update_to_latest()
-    # If called with something in front
-    elif len(sys.argv) == 2:
-        versions = get_versions()
-        branches = get_branches()
-        help_args = ['-h', '--help', '?']
-        # HELP
-        if sys.argv[1] in help_args:
-            print(__doc__)
-        # UPDATE TO VERSION
-        elif sys.argv[1] in versions:
+
+    if nargs_passed == 2:
+        if args.update and args.b:
+            if args.b not in BRANCHES:
+                print('Not found:', args.b)
+                return
+            checkout_single_file(file='update.py', branch=args.b)
+        else:
+            print(NotImplemented)
+        return
+    elif nargs_passed == 1:
+        if args.b and args.b in BRANCHES:
+            checkout_branch(args.b)
+            import_tasks()
+            update_ibllib()
+        elif args.b and args.b not in BRANCHES:
+            print('Branch', args.b, 'not found')
+
+        if args.update:
+            checkout_single_file(file='update.py', branch='master')
+
+        if args.v and args.v in VERSIONS:
             checkout_version(sys.argv[1])
             import_tasks()
             update_ibllib()
-        elif sys.argv[1] in branches:
-            checkout_branch(sys.argv[1])
-            import_tasks()
-            update_ibllib()
-        # UPDATE IBLLIB
-        elif sys.argv[1] == 'ibllib':
-            update_ibllib()
-        # UPDATE INFO
-        elif sys.argv[1] == 'info':
-            info()
-        # UPDATE UPDATE
-        elif sys.argv[1] == 'update':
-            checkout_single_file(file='update.py', branch='master')
-        # UPDATE REINSTALL
-        elif sys.argv[1] == 'reinstall':
-            os.system("conda deactivate && python install.py")
-        # UNKNOWN COMMANDS
-        else:
-            print("ERROR:", sys.argv[1],
-                  "is not a  valid command or version number.")
-            raise ValueError
-    # If called with something in front of something in front :P
-    elif len(sys.argv) == 3:
-        branches = get_branches()
-        commands = ['update' 'ibllib']
-        # Command checks
-        if sys.argv[1] not in commands:
-            print("ERROR:", "Unknown command...")
-            raise ValueError
-        if sys.argv[2] not in branches:
-            print("ERROR:", sys.argv[2], "is not a valid branch.")
-            raise ValueError
-        if sys.argv[2] not in ['master', 'develop']:
-            print("ERROR:", sys.argv[2], "is not a valid branch.")
-            raise ValueError
-        # Commands
-        if sys.argv[1] == 'update' and sys.argv[2] in branches:
-            checkout_single_file(file='update.py', branch=sys.argv[2])
-        if sys.argv[1] == 'ibllib' and sys.argv[2] in ['master', 'develop']:
-            checkout_single_file(file='update.py', branch=sys.argv[2])
+        elif args.v and args.v not in VERSIONS:
+            print('Version', args.v, 'not found')
 
-    print("\n")
+        if args.reinstall:
+            os.system("conda deactivate && python install.py")
+
+        if args.ibllib:
+            update_ibllib()
+
+        if args.info:
+            info()
+        return
+
+
+if __name__ == '__main__':
+    IBLRIG_ROOT_PATH = Path.cwd()
+    VERSIONS = get_versions()
+    BRANCHES = get_branches()
+    VER = get_current_version()
+    parser = argparse.ArgumentParser(description='Install iblrig')
+    parser.add_argument('-v', required=False, default=False,
+                        help='Available versions: ' + str(VERSIONS))
+    parser.add_argument('-b', required=False, default=False,
+                        help='Available branches: ' + str(BRANCHES))
+    parser.add_argument('--reinstall', required=False, default=False,
+                        action='store_true', help='Reinstall iblrig')
+    parser.add_argument('--ibllib', required=False, default=False,
+                        action='store_true', help='Update ibllib only')
+    parser.add_argument('--update', required=False, default=False,
+                        action='store_true', help='Update self: update.py')
+    parser.add_argument('--info', required=False, default=False,
+                        action='store_true',
+                        help='Disply information on branches and versions')
+    args = parser.parse_args()
+    main(args)
+    print('\n')
