@@ -57,7 +57,7 @@ def get_branches():
 def get_current_branch():
     branch = subprocess.check_output(
         ['git', 'branch', '--points-at', 'HEAD']).decode().strip().strip('* ')
-
+    print("Current branch: {}".format(branch))
     return branch
 
 
@@ -72,12 +72,16 @@ def pull(branch):
     subprocess.call(['git', 'pull', 'origin', branch])
 
 
+def fetch():
+    subprocess.call(['git', 'fetch', '--all'])
+
+
 def iblrig_params_path():
     return str(Path(os.getcwd()).parent / 'iblrig_params')
 
 
 def import_tasks():
-    if VER > '3.3.0' or get_current_branch() == 'develop':
+    if VERSION > '3.3.0' or get_current_branch() == 'develop':
         update_pybpod_config(iblrig_params_path())
     copy_code_files_to_iblrig_params(iblrig_params_path(),
                                      exclude_filename=None)
@@ -134,8 +138,8 @@ def branch_info():
 def info():
     update_remotes()
     # branch_info()
-    ver = VER
-    versions = VERSIONS
+    ver = VERSION
+    versions = ALL_VERSIONS
     if not ver:
         print("WARNING: You appear to be on an untagged release.",
               "\n         Try updating to a specific version")
@@ -149,8 +153,8 @@ def info():
 
 
 def update_to_latest():
-    ver = VER
-    versions = VERSIONS
+    ver = VERSION
+    versions = ALL_VERSIONS
     idx = sorted(versions).index(ver) if ver in versions else 0
     if idx + 1 == len(versions):
         return
@@ -168,7 +172,7 @@ def main(args):
 
     if nargs_passed == 2:
         if args.update and args.b:
-            if args.b not in BRANCHES:
+            if args.b not in ALL_BRANCHES:
                 print('Not found:', args.b)
                 return
             checkout_single_file(file='update.py', branch=args.b)
@@ -176,21 +180,21 @@ def main(args):
             print(NotImplemented)
         return
     elif nargs_passed == 1:
-        if args.b and args.b in BRANCHES:
+        if args.b and args.b in ALL_BRANCHES:
             checkout_branch(args.b)
             import_tasks()
             update_ibllib()
-        elif args.b and args.b not in BRANCHES:
+        elif args.b and args.b not in ALL_BRANCHES:
             print('Branch', args.b, 'not found')
 
         if args.update:
             checkout_single_file(file='update.py', branch='master')
 
-        if args.v and args.v in VERSIONS:
+        if args.v and args.v in ALL_VERSIONS:
             checkout_version(args.v)
             import_tasks()
             update_ibllib()
-        elif args.v and args.v not in VERSIONS:
+        elif args.v and args.v not in ALL_VERSIONS:
             print('Version', args.v, 'not found')
 
         if args.reinstall:
@@ -206,14 +210,16 @@ def main(args):
 
 if __name__ == '__main__':
     IBLRIG_ROOT_PATH = Path.cwd()
-    VERSIONS = get_versions()
-    BRANCHES = get_branches()
-    VER = get_current_version()
+    fetch()
+    ALL_VERSIONS = get_versions()
+    ALL_BRANCHES = get_branches()
+    VERSION = get_current_version()
+    BRANCH = get_current_branch()
     parser = argparse.ArgumentParser(description='Install iblrig')
     parser.add_argument('-v', required=False, default=False,
-                        help='Available versions: ' + str(VERSIONS))
+                        help='Available versions: ' + str(ALL_VERSIONS))
     parser.add_argument('-b', required=False, default=False,
-                        help='Available branches: ' + str(BRANCHES))
+                        help='Available branches: ' + str(ALL_BRANCHES))
     parser.add_argument('--reinstall', required=False, default=False,
                         action='store_true', help='Reinstall iblrig')
     parser.add_argument('--ibllib', required=False, default=False,
