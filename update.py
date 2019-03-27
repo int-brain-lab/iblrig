@@ -141,7 +141,7 @@ def info():
     ver = VERSION
     versions = ALL_VERSIONS
     if not ver:
-        print("WARNING: You appear to be on an untagged release.",
+        print("WARNING: You appear to be on an untagged commit.",
               "\n         Try updating to a specific version")
     else:
         idx = sorted(versions).index(ver) if ver in versions else 0
@@ -211,10 +211,10 @@ def main(args):
 if __name__ == '__main__':
     IBLRIG_ROOT_PATH = Path.cwd()
     fetch()
-    ALL_VERSIONS = get_versions()
     ALL_BRANCHES = get_branches()
-    VERSION = get_current_version()
+    ALL_VERSIONS = get_versions()
     BRANCH = get_current_branch()
+    VERSION = get_current_version()
     parser = argparse.ArgumentParser(description='Install iblrig')
     parser.add_argument('-v', required=False, default=False,
                         help='Available versions: ' + str(ALL_VERSIONS))
