@@ -94,7 +94,7 @@
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="q2:FlyCapture">
           <q2:Index>0</q2:Index>
-          <q2:ColorProcessing>Default</q2:ColorProcessing>
+          <q2:ToggleTrigger>true</q2:ToggleTrigger>
         </Combinator>
       </Expression>
       <Expression xsi:type="MemberSelector">
@@ -227,7 +227,7 @@
     <Type>Bonsai.Vision.LoadImage, Bonsai.Vision, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Vision.ImageHistogram, Bonsai.Vision, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Expressions.SubtractBuilder, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.PointGrey.FlyCapture, Bonsai.PointGrey, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.PointGrey.FlyCapture, Bonsai.PointGrey, Version=2.0.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Expressions.AddBuilder, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
   </ExtensionTypes>
 </WorkflowBuilder>
