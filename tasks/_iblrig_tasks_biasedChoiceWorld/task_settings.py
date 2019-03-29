@@ -35,7 +35,7 @@ STIM_GAIN = 4.  # (azimuth_degree/mm) Gain of the RE to stimulus movement
 SYNC_SQUARE_X = 0.95
 SYNC_SQUARE_Y = 0.17
 # BLOCKS
-BLOCK_INIT_5050 = False
+BLOCK_INIT_5050 = True
 BLOCK_PROBABILITY_SET = [0.2, 0.8]
 BLOCK_LEN_FACTOR = 60
 BLOCK_LEN_MIN = 20
