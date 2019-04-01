@@ -91,6 +91,7 @@ def checkout_version(ver):
     print("\nChecking out {}".format(ver))
     subprocess.call(["git", "reset", "--hard"])
     subprocess.call(['git', 'checkout', 'tags/' + ver])
+    pull(f'tags/{ver}')
 
 
 def checkout_branch(branch):
