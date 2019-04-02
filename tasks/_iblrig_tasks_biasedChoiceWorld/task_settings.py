@@ -19,7 +19,7 @@ NTRIALS = 2000  # Number of trials for the current session
 USE_AUTOMATIC_STOPPING_CRITERIONS = True  # Weather to check for the Automatic stopping criterions or not  # noqa
 USE_VISUAL_STIMULUS = True  # Run the visual stim in bonsai
 BONSAI_EDITOR = False  # Whether to open the visual stim Bonsai editor or not
-REPEAT_ON_ERROR = True
+REPEAT_ON_ERROR = False
 # STATE TIMERS
 QUIESCENCE_THRESHOLDS = [-2, 2]  # degree
 QUIESCENT_PERIOD = 0.2  # + x, where x~exp(0.35), t ∈ 0.2 <= R <= 0.5
