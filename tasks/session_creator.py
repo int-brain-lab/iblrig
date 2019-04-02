@@ -5,9 +5,11 @@ import random
 import math
 
 import numpy as np
+import matplotlib.pyplot as plt
 
 import blocks
 import misc
+from ibllib.dsp.smooth import smooth
 
 
 def make_pc():
@@ -43,19 +45,59 @@ def make_pcqs(pc):
     return pcqs
 
 
+def plot_pcqs(session_num):
+    num = session_num
+    task = 'tasks/_iblrig_tasks_ephysChoiceWorld/'
+    pcqs = np.load(task + f'sessions/pcqs_session_{num}.npy')
+    len_block = np.load(task + f'sessions/pcqs_session_{num}_len_blocks.npy')
+
+    with plt.xkcd(scale=1, length=100, randomness=2):
+        f = plt.figure(figsize=(16, 12), dpi=80)
+        f.suptitle(f'Session number: {num}')
+        ax_position = plt.subplot2grid(
+            [2, 2], [0, 0], rowspan=1, colspan=1, fig=f)
+        ax_contrast = plt.subplot2grid(
+            [2, 2], [0, 1], rowspan=1, colspan=1, fig=f)
+        ax_qperiod = plt.subplot2grid(
+            [2, 2], [1, 0], rowspan=1, colspan=1, fig=f)
+        ax_sphase = plt.subplot2grid(
+            [2, 2], [1, 1], rowspan=1, colspan=1, fig=f)
+
+    ax_position.plot(pcqs[:, 0], '.', label='Position', color='b')
+    ax_position.plot(
+        smooth(pcqs[:, 0], window_len=20, window='blackman'),
+        alpha=0.5, color='k')
+
+    ax_contrast.plot(pcqs[:, 1] * 100, '.', label='Contrasts')
+
+    ax_qperiod.plot(pcqs[:, 2], '.', label='Quiescent period')
+
+    ax_sphase.plot(pcqs[:, 3], '.', label='Stimulus phase')
+
+    [ax.set_ylabel(l) for ax, l in zip(f.axes, ['Position (º)',
+                                                'Contrasts (%)',
+                                                'Quiescent period (s)',
+                                                'Stimulus phase (rad)'])]
+    [ax.axvline(x, alpha=0.5) for x in np.cumsum(len_block) for ax in f.axes]
+    f.show()
+    return pcqs, len_block
+
 if __name__ == "__main__":
-    import matplotlib.pyplot as plt
-    from ibllib.dsp.smooth import smooth
-    pc, len_block = make_pc()
-    pcqs = make_pcqs(pc)
-    pos = pcqs[:, 0]
-    plt.plot(pcqs[:, 0], '.', label='Position')
-    plt.plot(smooth(pcqs[:, 0], window_len=20, window='blackman'), alpha=0.5, color='k')
-    plt.plot(pcqs[:, 1], '.', label='Contrast')
-    plt.plot(pcqs[:, 2], '.', label='Quiescent period')
-    plt.plot(pcqs[:, 3], '.', label='Stimulus phase')
-    plt.legend(loc='best')
-    [plt.axvline(x) for x in np.cumsum(len_block)]
-    plt.show()
+    import seaborn as sns
+    # for i in range(12):
+    #     pc, len_block = make_pc()
+    #     pcqs = make_pcqs(pc)
+    #     np.save(
+    #         f'tasks/_iblrig_tasks_ephysChoiceWorld/sessions/pcqs_session_{i}.npy', pcqs)
+    #     np.save(
+    #         f'tasks/_iblrig_tasks_ephysChoiceWorld/sessions/pcqs_session_{i}_len_blocks.npy', len_block)
+    plt.ion()
+    # pcqs3, len_block3 = plot_pcqs(3)
+    pcqs9, len_block9 = plot_pcqs(9)
+    # sns.distplot(pcqs3[:, 2], vertical=True)
+    # sns.jointplot(x=range(len(pcqs9)), y=pcqs9[:, 1])
+    qp = sns.jointplot(x=range(len(pcqs9)),
+                       y=pcqs9[:, 2], kind='kde', figsize=(16, 12), dpi=80)
+    qp.set_axis_labels(xlabel='Trials', ylabel='Quiescent period (s)')
 
     print('.')
