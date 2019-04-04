@@ -108,9 +108,9 @@ def make_sound(rate=44100, frequency=5000, duration=0.1, amplitude=1,
     return sound
 
 
-def save_bin(sound, file_path):
+def format_sound(sound, file_path=None):
     """
-    Save binary file for CFSoundcard upload.
+    Format sound to send to sound card.
 
     Binary files to be sent to the sound card need to be a single contiguous
     vector of int32 s. 4 Bytes left speaker, 4 Bytes right speaker, ..., etc.
@@ -118,7 +118,7 @@ def save_bin(sound, file_path):
 
     :param sound: Stereo sound
     :type sound: 2d numpy.array os shape (n_samples, 2)
-    :param file_path: full path (w/ name) of location where to save the file
+    :param file_path: full path of file. [default: None]
     :type file_path: str
     """
     bin_sound = (sound * ((2**31) - 1)).astype(np.int32)
@@ -129,8 +129,10 @@ def save_bin(sound, file_path):
     bin_save = bin_sound.reshape(1, np.multiply(*bin_sound.shape))
     bin_save = np.ascontiguousarray(bin_save)
 
-    with open(file_path, 'wb') as bf:
-        bf.writelines(bin_save)
+    if file_path:
+        with open(file_path, 'wb') as bf:
+            bf.writelines(bin_save)
+    return bin_sound
 
 
 def upload(uploader_tool, file_path, index, type_=0, sample_rate=96):
