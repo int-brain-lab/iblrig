@@ -134,7 +134,7 @@ class SessionParamHandler(object):
             rate=self.SOUND_SAMPLE_FREQ, frequency=-1,
             duration=self.WHITE_NOISE_DURATION,
             amplitude=self.WHITE_NOISE_AMPLITUDE, fade=0.01, chans='stereo')
-        self = sound.init_sounds(self)  # sets GO_TONE and WHITE_NOISE
+        # convert and upload sounds to the sound card here! ################
         self.OUT_TONE = ('SoftCode', 1) if self.SOFT_SOUND else (
             self.SOUND_BOARD_BPOD_PORT, 2)
         self.OUT_NOISE = ('SoftCode', 2) if self.SOFT_SOUND else(
