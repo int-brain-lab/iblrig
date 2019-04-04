@@ -51,6 +51,8 @@ class SessionParamHandler(object):
         # =====================================================================
         # SETTINGS
         # =====================================================================
+        self.IBLRIG_FOLDER = 'C:\\iblrig'
+        self.IBLRIG_DATA_FOLDER = None  # ..\\iblrig_data if None
         self.RECORD_SOUND = True
         self.RECORD_AMBIENT_SENSOR_DATA = True
         self.RECORD_VIDEO = True
@@ -65,11 +67,6 @@ class SessionParamHandler(object):
         self.ITI_ERROR = 2
         self.CONTRAST_SET = [1., 0.25, 0.125, 0.0625, 0.]  # Full contrast set
         self.CONTRAST_SET_PROBABILITY_TYPE = 'biased'
-        # Load from file
-        self.QUIESCENT_PERIOD = None
-        self.STIM_PHASE = None
-        self.POSITIONS = None
-        self.CONTRASTS = None
         # =====================================================================
         # SUBJECT
         # =====================================================================
@@ -87,6 +84,11 @@ class SessionParamHandler(object):
         self.LAST_TRIAL_DATA = iotasks.load_data(self.PREVIOUS_SESSION_PATH)
         self.LAST_SETTINGS_DATA = iotasks.load_settings(
             self.PREVIOUS_SESSION_PATH)
+        # Load from file
+        self.QUIESCENT_PERIOD = None
+        self.STIM_PHASE = None
+        self.POSITIONS = None
+        self.CONTRASTS = None
         # =====================================================================
         # ADAPTIVE STUFF
         # =====================================================================
@@ -112,7 +114,7 @@ class SessionParamHandler(object):
         # =====================================================================
         # SOUNDS
         # =====================================================================
-        self.SOFT_SOUND = False
+        self.SOFT_SOUND = None
         self.SOUND_SAMPLE_FREQ = sound.sound_sample_freq(self.SOFT_SOUND)
         self.SOUND_BOARD_BPOD_PORT = 'Serial3'
         self.WHITE_NOISE_DURATION = float(0.5)
@@ -128,18 +130,20 @@ class SessionParamHandler(object):
         self.WHITE_NOISE = None
         self = sound.init_sounds(self)  # sets GO_TONE and WHITE_NOISE
         self.OUT_TONE = ('SoftCode', 1) if self.SOFT_SOUND else (
-            self.SOUND_BOARD_BPOD_PORT, 1)
-        self.OUT_NOISE = ('SoftCode', 2) if self.SOFT_SOUND else(
             self.SOUND_BOARD_BPOD_PORT, 2)
+        self.OUT_NOISE = ('SoftCode', 2) if self.SOFT_SOUND else(
+            self.SOUND_BOARD_BPOD_PORT, 3)
         # =====================================================================
-        # RUN VISUAL STIM
+        # VISUAL STIM
         # =====================================================================
+        self.SYNC_SQUARE_X = 0.95
+        self.SYNC_SQUARE_Y = 0.17
         self.USE_VISUAL_STIMULUS = True  # Run the visual stim in bonsai
         self.BONSAI_EDITOR = False  # Open the Bonsai editor of visual stim
         self.STIM_FREQ = 0.10  # Probably constant - NOT IN USE
-        self.STIM_ANGLE = 0.  # Vertical orientation of Gabor patch - NOT IN USE
+        self.STIM_ANGLE = 0.  # Vertical orientation of Gabor patch
         self.STIM_SIGMA = 7.  # (azimuth_degree) Size of Gabor patch
-        self.STIM_GAIN = 4.  # (azimuth_degree/mm) Gain of the RE to stimulus movement
+        self.STIM_GAIN = 4.  # (azimuth_degree/mm) Gain of the RE
         bonsai.start_visual_stim(self)
         # =====================================================================
         # SAVE SETTINGS FILE AND TASK CODE
@@ -155,6 +159,9 @@ class SessionParamHandler(object):
     # =========================================================================
     # METHODS
     # =========================================================================
+    def get_qp(self):
+        if '' in self.LAST_SETTINGS_DATA.keys():
+
     def save_ambient_sensor_reading(self, bpod_instance):
         return ambient_sensor.get_reading(bpod_instance,
                                           save_to=self.SESSION_RAW_DATA_FOLDER)

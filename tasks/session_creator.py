@@ -39,7 +39,8 @@ def make_pcqs(pc):
     qperiod = []
     for i in pc:
         sphase.append(random.uniform(0, math.pi))
-        qperiod.append(qperiod_base + misc.texp(factor=0.35, min_=0.2, max_=0.5))
+        qperiod.append(
+            qperiod_base + misc.texp(factor=0.35, min_=0.2, max_=0.5))
     qs = np.array([qperiod, sphase]).T
     pcqs = np.append(pc, qs, axis=1)
     return pcqs
@@ -82,15 +83,16 @@ def plot_pcqs(session_num):
     f.show()
     return pcqs, len_block
 
+
 if __name__ == "__main__":
     import seaborn as sns
     # for i in range(12):
     #     pc, len_block = make_pc()
     #     pcqs = make_pcqs(pc)
     #     np.save(
-    #         f'tasks/_iblrig_tasks_ephysChoiceWorld/sessions/pcqs_session_{i}.npy', pcqs)
+    #         f'tasks/_iblrig_tasks_ephysChoiceWorld/sessions/pcqs_session_{i}.npy', pcqs)  # noqa
     #     np.save(
-    #         f'tasks/_iblrig_tasks_ephysChoiceWorld/sessions/pcqs_session_{i}_len_blocks.npy', len_block)
+    #         f'tasks/_iblrig_tasks_ephysChoiceWorld/sessions/pcqs_session_{i}_len_blocks.npy', len_block)  # noqa
     plt.ion()
     # pcqs3, len_block3 = plot_pcqs(3)
     pcqs9, len_block9 = plot_pcqs(9)

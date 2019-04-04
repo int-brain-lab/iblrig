@@ -56,6 +56,7 @@ bpod.loop_handler = bpod_loop_handler
 bpod.softcode_handler_function = softcode_handler
 # Rotary Encoder State Machine handler
 rotary_encoder = [x for x in bpod.modules if x.name == 'RotaryEncoder1'][0]
+sound_card = [x for x in bpod.modules if x.name == 'SoundCard1'][0]
 # ROTARY ENCODER SEVENTS
 # Set RE position to zero 'Z' + eneable all RE thresholds 'E'
 # re_reset = rotary_encoder.create_resetpositions_trigger()
@@ -72,6 +73,12 @@ bpod.load_serial_message(rotary_encoder, re_show_stim, [ord('#'), 2])
 # Close loop
 re_close_loop = re_reset + 3
 bpod.load_serial_message(rotary_encoder, re_close_loop, [ord('#'), 3])
+# Close loop
+sc_play_tone = re_reset + 4
+bpod.load_serial_message(sound_card, sc_play_tone, [ord('P'), 2])
+# Close loop
+sc_play_noise = re_reset + 5
+bpod.load_serial_message(sound_card, sc_play_noise, [ord('P'), 3])
 
 # =============================================================================
 # TRIAL PARAMETERS AND STATE MACHINE
@@ -137,19 +144,20 @@ for i in range(sph.NTRIALS):  # Main loop
         state_change_conditions={'Tup': 'no_go',
                                  tph.event_error: 'error',
                                  tph.event_reward: 'reward'},
-        output_actions=[('Serial1', re_close_loop), tph.out_tone])
+        output_actions=[('Serial1', re_close_loop),
+                        ('Serial3', sc_play_tone)])
 
     sma.add_state(
         state_name='no_go',
         state_timer=tph.iti_error,
         state_change_conditions={'Tup': 'exit'},
-        output_actions=[tph.out_noise])
+        output_actions=[('Serial3', sc_play_noise)])
 
     sma.add_state(
         state_name='error',
         state_timer=tph.iti_error,
         state_change_conditions={'Tup': 'exit'},
-        output_actions=[tph.out_noise])
+        output_actions=[('Serial3', sc_play_noise)])
 
     sma.add_state(
         state_name='reward',
