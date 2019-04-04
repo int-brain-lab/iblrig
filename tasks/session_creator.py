@@ -46,6 +46,16 @@ def make_pcqs(pc):
     return pcqs
 
 
+def generate_sessions(nsessions, path=None):
+    for i in range(nsessions):
+        pc, len_block = make_pc()
+        pcqs = make_pcqs(pc)
+        if path is None:
+            path = 'tasks/_iblrig_tasks_ephysChoiceWorld/sessions/'
+        np.save(path + f'pcqs_session_{i}.npy', pcqs)
+        np.save(path + f'pcqs_session_{i}_len_blocks.npy', len_block)
+
+
 def plot_pcqs(session_num):
     num = session_num
     task = 'tasks/_iblrig_tasks_ephysChoiceWorld/'
@@ -58,11 +68,11 @@ def plot_pcqs(session_num):
         ax_position = plt.subplot2grid(
             [2, 2], [0, 0], rowspan=1, colspan=1, fig=f)
         ax_contrast = plt.subplot2grid(
-            [2, 2], [0, 1], rowspan=1, colspan=1, fig=f)
+            [2, 2], [0, 1], rowspan=1, colspan=1, fig=f, sharex=ax_position)
         ax_qperiod = plt.subplot2grid(
-            [2, 2], [1, 0], rowspan=1, colspan=1, fig=f)
+            [2, 2], [1, 0], rowspan=1, colspan=1, fig=f, sharex=ax_position)
         ax_sphase = plt.subplot2grid(
-            [2, 2], [1, 1], rowspan=1, colspan=1, fig=f)
+            [2, 2], [1, 1], rowspan=1, colspan=1, fig=f, sharex=ax_position)
 
     ax_position.plot(pcqs[:, 0], '.', label='Position', color='b')
     ax_position.plot(
@@ -86,13 +96,6 @@ def plot_pcqs(session_num):
 
 if __name__ == "__main__":
     import seaborn as sns
-    # for i in range(12):
-    #     pc, len_block = make_pc()
-    #     pcqs = make_pcqs(pc)
-    #     np.save(
-    #         f'tasks/_iblrig_tasks_ephysChoiceWorld/sessions/pcqs_session_{i}.npy', pcqs)  # noqa
-    #     np.save(
-    #         f'tasks/_iblrig_tasks_ephysChoiceWorld/sessions/pcqs_session_{i}_len_blocks.npy', len_block)  # noqa
     plt.ion()
     # pcqs3, len_block3 = plot_pcqs(3)
     pcqs9, len_block9 = plot_pcqs(9)
