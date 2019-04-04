@@ -126,8 +126,14 @@ class SessionParamHandler(object):
         self.SD = sound.configure_sounddevice(
             output=self.SOFT_SOUND, samplerate=self.SOUND_SAMPLE_FREQ)
         # Create sounds and output actions of state machine
-        self.GO_TONE = None
-        self.WHITE_NOISE = None
+        self.GO_TONE = sound.make_sound(
+            rate=self.SOUND_SAMPLE_FREQ, frequency=self.GO_TONE_FREQUENCY,
+            duration=self.GO_TONE_DURATION, amplitude=self.GO_TONE_AMPLITUDE,
+            fade=0.01, chans='stereo')
+        self.WHITE_NOISE = sound.make_sound(
+            rate=self.SOUND_SAMPLE_FREQ, frequency=-1,
+            duration=self.WHITE_NOISE_DURATION,
+            amplitude=self.WHITE_NOISE_AMPLITUDE, fade=0.01, chans='stereo')
         self = sound.init_sounds(self)  # sets GO_TONE and WHITE_NOISE
         self.OUT_TONE = ('SoftCode', 1) if self.SOFT_SOUND else (
             self.SOUND_BOARD_BPOD_PORT, 2)
