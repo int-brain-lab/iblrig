@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <WorkflowBuilder Version="2.3.0">
-  <Workflow xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:q1="clr-namespace:Bonsai.Osc;assembly=Bonsai.Osc" xmlns:q2="clr-namespace:Bonsai.Shaders;assembly=Bonsai.Shaders" xmlns:q3="clr-namespace:Bonsai.IO;assembly=Bonsai.System" xmlns:q4="clr-namespace:Bonsai.Audio;assembly=Bonsai.Audio" xmlns:q5="clr-namespace:Bonsai.Scripting;assembly=Bonsai.Scripting" xmlns:q6="clr-namespace:Bonsai.Bpod;assembly=Bonsai.Bpod" xmlns:q7="clr-namespace:Bonsai.Dsp;assembly=Bonsai.Dsp" xmlns="https://horizongir.org/bonsai">
+  <Workflow xmlns:q2="clr-namespace:Bonsai.Shaders;assembly=Bonsai.Shaders" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:q3="clr-namespace:Bonsai.IO;assembly=Bonsai.System" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:q5="clr-namespace:Bonsai.Bpod;assembly=Bonsai.Bpod" xmlns:q4="clr-namespace:Bonsai.Scripting;assembly=Bonsai.Scripting" xmlns:q6="clr-namespace:Bonsai.Dsp;assembly=Bonsai.Dsp" xmlns:q1="clr-namespace:Bonsai.Osc;assembly=Bonsai.Osc" xmlns="https://horizongir.org/bonsai">
     <Nodes>
       <Expression xsi:type="ExternalizedPropertyOfStringReceiveMessage">
         <MemberName>Connection</MemberName>
@@ -220,68 +220,6 @@ _iblrig_micData.raw.wav
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="Zip" />
             </Expression>
-            <Expression xsi:type="Combinator">
-              <Combinator xsi:type="q4:AudioWriter">
-                <q4:FileName>C:\iblrig_data\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_iblrig_micData.raw.wav</q4:FileName>
-                <q4:Suffix>None</q4:Suffix>
-                <q4:Buffered>true</q4:Buffered>
-                <q4:Overwrite>false</q4:Overwrite>
-                <q4:SamplingFrequency>200000</q4:SamplingFrequency>
-              </Combinator>
-            </Expression>
-            <Expression xsi:type="Combinator">
-              <Combinator xsi:type="q4:AudioCapture">
-                <q4:DeviceName>Microphone (UltraMic 200K 16 bi</q4:DeviceName>
-                <q4:Frequency>200000</q4:Frequency>
-                <q4:SampleFormat>Mono16</q4:SampleFormat>
-                <q4:BufferLength>10</q4:BufferLength>
-              </Combinator>
-            </Expression>
-            <Expression xsi:type="ExternalizedPropertyOfStringAudioWriter">
-              <MemberName>FileName</MemberName>
-              <Name>FileNameMic</Name>
-              <Value>C:\iblrig_data\Subjects\_iblrig_test_mouse\2018-10-09\32\raw_behavior_data\_iblrig_micData.raw.wav</Value>
-            </Expression>
-            <Expression xsi:type="Combinator">
-              <Combinator xsi:type="SubscribeWhen" />
-            </Expression>
-            <Expression xsi:type="ExternalizedPropertyOfBooleanBooleanProperty">
-              <MemberName>Value</MemberName>
-              <Name>RecordSound</Name>
-              <Value>true</Value>
-            </Expression>
-            <Expression xsi:type="Condition">
-              <Workflow>
-                <Nodes>
-                  <Expression xsi:type="WorkflowInput">
-                    <Name>Source1</Name>
-                  </Expression>
-                  <Expression xsi:type="WorkflowOutput" />
-                  <Expression xsi:type="Equal">
-                    <Operand xsi:type="BooleanProperty">
-                      <Value>true</Value>
-                    </Operand>
-                  </Expression>
-                </Nodes>
-                <Edges>
-                  <Edge>
-                    <From>0</From>
-                    <To>2</To>
-                    <Label>Source1</Label>
-                  </Edge>
-                  <Edge>
-                    <From>2</From>
-                    <To>1</To>
-                    <Label>Source1</Label>
-                  </Edge>
-                </Edges>
-              </Workflow>
-            </Expression>
-            <Expression xsi:type="Combinator">
-              <Combinator xsi:type="BooleanProperty">
-                <Value>true</Value>
-              </Combinator>
-            </Expression>
           </Nodes>
           <Edges>
             <Edge>
@@ -359,36 +297,6 @@ _iblrig_micData.raw.wav
               <To>13</To>
               <Label>Source1</Label>
             </Edge>
-            <Edge>
-              <From>18</From>
-              <To>20</To>
-              <Label>Source1</Label>
-            </Edge>
-            <Edge>
-              <From>19</From>
-              <To>17</To>
-              <Label>Source2</Label>
-            </Edge>
-            <Edge>
-              <From>20</From>
-              <To>17</To>
-              <Label>Source1</Label>
-            </Edge>
-            <Edge>
-              <From>21</From>
-              <To>23</To>
-              <Label>Source1</Label>
-            </Edge>
-            <Edge>
-              <From>22</From>
-              <To>20</To>
-              <Label>Source2</Label>
-            </Edge>
-            <Edge>
-              <From>23</From>
-              <To>22</To>
-              <Label>Source1</Label>
-            </Edge>
           </Edges>
         </Workflow>
       </Expression>
@@ -456,8 +364,8 @@ _iblrig_micData.raw.wav
                 <q2:ShaderName>Gabor</q2:ShaderName>
               </Combinator>
             </Expression>
-            <Expression xsi:type="q5:ExpressionTransform">
-              <q5:Expression>it%2</q5:Expression>
+            <Expression xsi:type="q4:ExpressionTransform">
+              <q4:Expression>it%2</q4:Expression>
             </Expression>
             <Expression xsi:type="Accumulate" />
             <Expression xsi:type="Condition">
@@ -678,15 +586,15 @@ _iblrig_micData.raw.wav
         <Selector>Source.Data</Selector>
       </Expression>
       <Expression xsi:type="Combinator">
-        <Combinator xsi:type="q6:EncoderEvent" />
+        <Combinator xsi:type="q5:EncoderEvent" />
       </Expression>
       <Expression xsi:type="Combinator">
-        <Combinator xsi:type="q6:Encoder">
-          <q6:PortName>COM3</q6:PortName>
+        <Combinator xsi:type="q5:Encoder">
+          <q5:PortName>COM3</q5:PortName>
         </Combinator>
       </Expression>
-      <Expression xsi:type="q5:ExpressionTransform">
-        <q5:Expression>single(it)</q5:Expression>
+      <Expression xsi:type="q4:ExpressionTransform">
+        <q4:Expression>single(it)</q4:Expression>
       </Expression>
       <Expression xsi:type="BehaviorSubject">
         <Name>TrialNum</Name>
@@ -723,11 +631,6 @@ _iblrig_micData.raw.wav
         <MemberName>PortName</MemberName>
         <Name>REPortName</Name>
         <Value>COM3</Value>
-      </Expression>
-      <Expression xsi:type="ExternalizedPropertyOfStringAudioWriter">
-        <MemberName>FileNameMic</MemberName>
-        <Name>FileNameMic</Name>
-        <Value>C:\iblrig_data\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_iblrig_micData.raw.wav</Value>
       </Expression>
       <Expression xsi:type="SelectMany">
         <Name>UpdateContrast</Name>
@@ -801,16 +704,16 @@ probably there is no need to reset the position also
               <Name>InitPosition</Name>
             </Expression>
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="q7:Rescale">
-                <q7:Min>-180</q7:Min>
-                <q7:Max>180</q7:Max>
-                <q7:RangeMin>-1.333</q7:RangeMin>
-                <q7:RangeMax>1.333</q7:RangeMax>
-                <q7:RescaleType>Linear</q7:RescaleType>
+              <Combinator xsi:type="q6:Rescale">
+                <q6:Min>-180</q6:Min>
+                <q6:Max>180</q6:Max>
+                <q6:RangeMin>-1.333</q6:RangeMin>
+                <q6:RangeMax>1.333</q6:RangeMax>
+                <q6:RescaleType>Linear</q6:RescaleType>
               </Combinator>
             </Expression>
-            <Expression xsi:type="q5:ExpressionTransform">
-              <q5:Expression>single(it)</q5:Expression>
+            <Expression xsi:type="q4:ExpressionTransform">
+              <q4:Expression>single(it)</q4:Expression>
             </Expression>
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="Sample" />
@@ -907,11 +810,6 @@ probably there is no need to reset the position also
       <Expression xsi:type="MulticastSubject">
         <Name>GaborAngle</Name>
       </Expression>
-      <Expression xsi:type="ExternalizedPropertyOfBooleanBooleanProperty">
-        <MemberName>RecordSound</MemberName>
-        <Name>RecordSound</Name>
-        <Value>true</Value>
-      </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="FloatProperty">
           <Value>0</Value>
@@ -940,16 +838,16 @@ probably there is no need to reset the position also
             </Expression>
             <Expression xsi:type="WorkflowOutput" />
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="q7:Rescale">
-                <q7:Min>-180</q7:Min>
-                <q7:Max>180</q7:Max>
-                <q7:RangeMin>-1.333</q7:RangeMin>
-                <q7:RangeMax>1.333</q7:RangeMax>
-                <q7:RescaleType>Linear</q7:RescaleType>
+              <Combinator xsi:type="q6:Rescale">
+                <q6:Min>-180</q6:Min>
+                <q6:Max>180</q6:Max>
+                <q6:RangeMin>-1.333</q6:RangeMin>
+                <q6:RangeMax>1.333</q6:RangeMax>
+                <q6:RescaleType>Linear</q6:RescaleType>
               </Combinator>
             </Expression>
-            <Expression xsi:type="q5:ExpressionTransform">
-              <q5:Expression>single(it)</q5:Expression>
+            <Expression xsi:type="q4:ExpressionTransform">
+              <q4:Expression>single(it)</q4:Expression>
             </Expression>
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="Sample" />
@@ -1092,7 +990,7 @@ probably there is no need to reset the position also
       </Edge>
       <Edge>
         <From>0</From>
-        <To>58</To>
+        <To>56</To>
         <Label>Source1</Label>
       </Edge>
       <Edge>
@@ -1107,7 +1005,7 @@ probably there is no need to reset the position also
       </Edge>
       <Edge>
         <From>4</From>
-        <To>60</To>
+        <To>58</To>
         <Label>Source1</Label>
       </Edge>
       <Edge>
@@ -1157,7 +1055,7 @@ probably there is no need to reset the position also
       </Edge>
       <Edge>
         <From>14</From>
-        <To>40</To>
+        <To>39</To>
         <Label>Source1</Label>
       </Edge>
       <Edge>
@@ -1202,12 +1100,12 @@ probably there is no need to reset the position also
       </Edge>
       <Edge>
         <From>29</From>
-        <To>53</To>
+        <To>52</To>
         <Label>Source1</Label>
       </Edge>
       <Edge>
         <From>30</From>
-        <To>54</To>
+        <To>53</To>
         <Label>Source1</Label>
       </Edge>
       <Edge>
@@ -1241,13 +1139,13 @@ probably there is no need to reset the position also
         <Label>Source1</Label>
       </Edge>
       <Edge>
-        <From>38</From>
-        <To>16</To>
-        <Label>Source3</Label>
+        <From>39</From>
+        <To>38</To>
+        <Label>Source1</Label>
       </Edge>
       <Edge>
-        <From>40</From>
-        <To>39</To>
+        <From>46</From>
+        <To>40</To>
         <Label>Source1</Label>
       </Edge>
       <Edge>
@@ -1276,14 +1174,9 @@ probably there is no need to reset the position also
         <Label>Source1</Label>
       </Edge>
       <Edge>
-        <From>52</From>
-        <To>46</To>
+        <From>54</From>
+        <To>55</To>
         <Label>Source1</Label>
-      </Edge>
-      <Edge>
-        <From>55</From>
-        <To>16</To>
-        <Label>Source4</Label>
       </Edge>
       <Edge>
         <From>56</From>
@@ -1291,8 +1184,13 @@ probably there is no need to reset the position also
         <Label>Source1</Label>
       </Edge>
       <Edge>
-        <From>58</From>
+        <From>61</From>
         <To>59</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>62</From>
+        <To>60</To>
         <Label>Source1</Label>
       </Edge>
       <Edge>
@@ -1315,16 +1213,6 @@ probably there is no need to reset the position also
         <To>64</To>
         <Label>Source1</Label>
       </Edge>
-      <Edge>
-        <From>67</From>
-        <To>65</To>
-        <Label>Source1</Label>
-      </Edge>
-      <Edge>
-        <From>68</From>
-        <To>66</To>
-        <Label>Source1</Label>
-      </Edge>
     </Edges>
   </Workflow>
   <ExtensionTypes>
@@ -1340,12 +1228,6 @@ probably there is no need to reset the position also
     <Type>Bonsai.Reactive.Zip, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Reactive.Timestamp, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Expressions.ExternalizedProperty`2[[System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089],[Bonsai.IO.CsvWriter, Bonsai.System, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null]], Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Audio.AudioWriter, Bonsai.Audio, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Audio.AudioCapture, Bonsai.Audio, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Expressions.ExternalizedProperty`2[[System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089],[Bonsai.Audio.AudioWriter, Bonsai.Audio, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null]], Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Reactive.SubscribeWhen, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Expressions.ExternalizedProperty`2[[System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089],[Bonsai.Expressions.BooleanProperty, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null]], Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Expressions.BooleanProperty, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Expressions.MulticastSubjectBuilder, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Scripting.ExpressionTransform, Bonsai.Scripting, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Reactive.AccumulateBuilder, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
