@@ -6,6 +6,8 @@
 import numpy as np
 import datetime
 from pathlib import Path
+from ibllib.io import raw_data_loaders as raw
+import json
 
 
 def get_port_events(events: dict, name: str = '') -> list:
@@ -120,6 +122,45 @@ def create_flags(data_file_path: str, poop_count: bool) -> None:
     flag3 = Path(data_file_path).parent.parent / 'poop_count.flag'
     if poop_count:
         open(flag3, 'a').close()
+
+
+def load_session(num):
+    pcqs = np.load(f'sessions/pcqs_session_{num}.npy')
+    len_block = np.load('sessions/pcqs_session_{num}_len_blocks.npy')
+    return pcqs, len_block
+
+
+def draw_session_order():
+    first = list(range(0, 4))
+    second = list(range(4, 8))
+    third = list(range(8, 12))
+    for x in [first, second, third]:
+        np.random.shuffle(x)
+    first.extend(second)
+    first.extend(third)
+
+    return first
+
+
+def patch_settings_file(sess_or_file: str, patch: dict) -> None:
+    sess_or_file = Path(sess_or_file)
+    if sess_or_file.is_file() and sess_or_file.name.endswith('_iblrig_taskSettings.raw.json'):  # noqa
+        session = sess_or_file.parent.parent
+        file = sess_or_file
+    elif sess_or_file.is_dir() and sess_or_file.name.isdecimal():
+        file = sess_or_file / 'raw_behavior_data' / '_iblrig_taskSettings.raw.json'  # noqa
+        session = sess_or_file
+    else:
+        print('not a settings file or a session folder')
+        return
+
+    settings = raw.load_settings(session)
+    settings.update(patch)
+    with open(file, 'w') as f:
+        f.write(json.dumps(settings, indent=1))
+        f.write('\n')
+
+    return
 
 
 if __name__ == "__main__":
