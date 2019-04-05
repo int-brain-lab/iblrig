@@ -12,7 +12,8 @@ import platform
 import logging
 
 from pybpod_soundcard_module.module import SoundCard, SoundCommandType
-from pybpod_soundcard_module.module_api import DataType, SampleRate
+from pybpod_soundcard_module.module_api import (SoundCardModule, DataType,
+    SampleRate)
 log = logging.getLogger('iblrig')
 
 
@@ -148,12 +149,12 @@ def upload(wave_int, sound_index):
     :param sound_index: E[2-31] memory bank to upload to
     :type sound_index: int
     """
-    card = SoundCard()
+    card = SoundCardModule()
     if sys.platform == 'linux':
         return
     card.open()
     # send sound
-    card.send_sound(wave_int, sound_index, SampleRate._96000Hz, DataType.Int32)
+    card.send_sound(wave_int, sound_index, SampleRate._96000HZ, DataType.INT32)
 
     return
 
@@ -205,10 +206,30 @@ def init_sounds(sph_obj, tone=True, noise=True):
 
 
 if __name__ == '__main__':
-    sd = configure_sounddevice(output='xonar')
-    sd.stop()
-    L_TTL = make_sound(chans='L+TTL', amplitude=0.2)
-    N_TTL = make_sound(chans='L+TTL', amplitude=-1)
-    sd.play(L_TTL, 44100, mapping=[1, 2])
+    # sd = configure_sounddevice(output='xonar')
+    # sd.stop()
+    # L_TTL = make_sound(chans='L+TTL', amplitude=0.2)
+    # N_TTL = make_sound(chans='L+TTL', amplitude=-1)
+    # sd.play(L_TTL, 44100, mapping=[1, 2])
+    SOFT_SOUND = None
+    SOUND_SAMPLE_FREQ = sound_sample_freq(SOFT_SOUND)
+    SOUND_BOARD_BPOD_PORT = 'Serial3'
+    WHITE_NOISE_DURATION = float(0.5)
+    WHITE_NOISE_AMPLITUDE = float(0.05)
+    GO_TONE_DURATION = float(0.1)
+    GO_TONE_FREQUENCY = int(5000)
+    GO_TONE_AMPLITUDE = float(0.1)
+    GO_TONE = make_sound(
+        rate=SOUND_SAMPLE_FREQ, frequency=GO_TONE_FREQUENCY,
+        duration=GO_TONE_DURATION, amplitude=GO_TONE_AMPLITUDE,
+        fade=0.01, chans='stereo')
+    WHITE_NOISE = make_sound(
+        rate=SOUND_SAMPLE_FREQ, frequency=-1,
+        duration=WHITE_NOISE_DURATION,
+        amplitude=WHITE_NOISE_AMPLITUDE, fade=0.01, chans='stereo')
+    GO_TONE_IDX = 2
+    WHITE_NOISE_IDX = 3
+    upload(format_sound(GO_TONE), GO_TONE_IDX)
+    upload(format_sound(WHITE_NOISE), WHITE_NOISE_IDX)
 
     print('i')
