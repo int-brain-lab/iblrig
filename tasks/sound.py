@@ -11,8 +11,8 @@ import sys
 import platform
 import logging
 
-from pybpod_soundcard_module.module import (
-    SoundCard, SoundCommandType, DataType, SampleRate)
+from pybpod_soundcard_module.module import SoundCard, SoundCommandType
+from pybpod_soundcard_module.module_api import DataType, SampleRate
 log = logging.getLogger('iblrig')
 
 
@@ -138,31 +138,22 @@ def format_sound(sound, file_path=None):
     return bin_sound
 
 
-def upload(wave_int, sound_index, index, type_=0, sample_rate=96):
+def upload(wave_int, sound_index):
     """
-    Upload a bin file to an index of the non volatile memory of the sound card.
+    Upload a wave_int to an sound_index of the non volatile memory of the
+    sound card.
 
-    :param uploader_tool: path of executable for transferring sounds
-    :type uploader_tool: str
-    :param file_path: path of file to be uploaded
-    :type file_path: str
-    :param index: E[2-31] memory bank to upload to
-    :type index: int
-    :param type_: {0: int32, 1: float32} datatype of binary file, defaults to 0
-    :param type_: int, optional
-    :param sample_rate: [96, 192] (KHz) playback sample rate, defaults to 96
-    :param sample_rate: int, optional
+    :param wave_int: path of executable for transferring sounds
+    :type wave_int: numpy.ndarray
+    :param sound_index: E[2-31] memory bank to upload to
+    :type sound_index: int
     """
     card = SoundCard()
+    if sys.platform == 'linux':
+        return
     card.open()
     # send sound
-    card.send_sound(wave_int,
-                    sound_index,
-                    SampleRate._96000Hz,
-                    DataType.Int32,
-                    'sound_bin',
-                    'metadata_filename',    # optional
-                    'description_filename')  # optional
+    card.send_sound(wave_int, sound_index, SampleRate._96000Hz, DataType.Int32)
 
     return
 

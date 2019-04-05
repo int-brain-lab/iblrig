@@ -67,6 +67,10 @@ class SessionParamHandler(object):
         self.ITI_ERROR = 2
         self.CONTRAST_SET = [1., 0.25, 0.125, 0.0625, 0.]  # Full contrast set
         self.CONTRAST_SET_PROBABILITY_TYPE = 'biased'
+        self.STIM_FREQ = 0.10  # Probably constant - NOT IN USE
+        self.STIM_ANGLE = 0.  # Vertical orientation of Gabor patch
+        self.STIM_SIGMA = 7.  # (azimuth_degree) Size of Gabor patch
+        self.STIM_GAIN = 4.  # (azimuth_degree/mm) Gain of the RE
         # =====================================================================
         # SUBJECT
         # =====================================================================
@@ -134,7 +138,11 @@ class SessionParamHandler(object):
             rate=self.SOUND_SAMPLE_FREQ, frequency=-1,
             duration=self.WHITE_NOISE_DURATION,
             amplitude=self.WHITE_NOISE_AMPLITUDE, fade=0.01, chans='stereo')
-        # convert and upload sounds to the sound card here! ################
+        self.GO_TONE_IDX = 2
+        self.WHITE_NOISE_IDX = 3
+        sound.upload(sound.format_sound(self.GO_TONE), self.GO_TONE_IDX)
+        sound.upload(
+            sound.format_sound(self.WHITE_NOISE), self.WHITE_NOISE_IDX)
         self.OUT_TONE = ('SoftCode', 1) if self.SOFT_SOUND else (
             self.SOUND_BOARD_BPOD_PORT, 2)
         self.OUT_NOISE = ('SoftCode', 2) if self.SOFT_SOUND else(
@@ -146,10 +154,6 @@ class SessionParamHandler(object):
         self.SYNC_SQUARE_Y = 0.17
         self.USE_VISUAL_STIMULUS = True  # Run the visual stim in bonsai
         self.BONSAI_EDITOR = False  # Open the Bonsai editor of visual stim
-        self.STIM_FREQ = 0.10  # Probably constant - NOT IN USE
-        self.STIM_ANGLE = 0.  # Vertical orientation of Gabor patch
-        self.STIM_SIGMA = 7.  # (azimuth_degree) Size of Gabor patch
-        self.STIM_GAIN = 4.  # (azimuth_degree/mm) Gain of the RE
         bonsai.start_visual_stim(self)
         # =====================================================================
         # SAVE SETTINGS FILE AND TASK CODE
@@ -167,6 +171,7 @@ class SessionParamHandler(object):
     # =========================================================================
     def get_qp(self):
         if '' in self.LAST_SETTINGS_DATA.keys():
+            pass
 
     def save_ambient_sensor_reading(self, bpod_instance):
         return ambient_sensor.get_reading(bpod_instance,

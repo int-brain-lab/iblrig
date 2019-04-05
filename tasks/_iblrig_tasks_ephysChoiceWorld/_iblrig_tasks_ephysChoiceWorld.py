@@ -73,10 +73,10 @@ bpod.load_serial_message(rotary_encoder, re_show_stim, [ord('#'), 2])
 # Close loop
 re_close_loop = re_reset + 3
 bpod.load_serial_message(rotary_encoder, re_close_loop, [ord('#'), 3])
-# Close loop
+# Play tone
 sc_play_tone = re_reset + 4
 bpod.load_serial_message(sound_card, sc_play_tone, [ord('P'), 2])
-# Close loop
+# Play noise
 sc_play_noise = re_reset + 5
 bpod.load_serial_message(sound_card, sc_play_noise, [ord('P'), 3])
 
