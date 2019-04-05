@@ -136,7 +136,7 @@ def format_sound(sound, file_path=None):
     if file_path:
         with open(file_path, 'wb') as bf:
             bf.writelines(bin_save)
-    return bin_sound
+    return bin_save
 
 
 def upload(wave_int, sound_index):
