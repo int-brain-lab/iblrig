@@ -124,12 +124,6 @@ def create_flags(data_file_path: str, poop_count: bool) -> None:
         open(flag3, 'a').close()
 
 
-def load_session(num):
-    pcqs = np.load(f'sessions/pcqs_session_{num}.npy')
-    len_block = np.load('sessions/pcqs_session_{num}_len_blocks.npy')
-    return pcqs, len_block
-
-
 def draw_session_order():
     first = list(range(0, 4))
     second = list(range(4, 8))
