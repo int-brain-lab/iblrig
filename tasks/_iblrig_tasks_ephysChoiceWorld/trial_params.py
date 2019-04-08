@@ -71,7 +71,7 @@ class TrialParamHandler(object):
         self.stim_phase_buffer = sph.STIM_PHASE
         self.len_blocks_buffer = sph.LEN_BLOCKS
 
-        self.position = self.position_buffer[0]
+        self.position = int(self.position_buffer[0])
         self.contrast = self.contrast_buffer[0]
         self.quiescent_period = self.quiescent_period_buffer[0]
         self.stim_phase = self.stim_phase_buffer[0]
@@ -173,7 +173,7 @@ RELATIVE HUMIDITY:    {self.as_data['RelativeHumidity']} %
         self.stim_probability_left = blocks.calc_probability_left(self)
         self.stim_probability_left_buffer.append(self.stim_probability_left)
         # Update position + buffer
-        self.position = self.position_buffer[self.trial_num - 1]
+        self.position = int(self.position_buffer[self.trial_num - 1])
         # Update contrast + buffer
         self.contrast = self.contrast_buffer[self.trial_num - 1]
         # Update signed_contrast + buffer (AFTER position update)
