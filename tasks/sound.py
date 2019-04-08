@@ -112,7 +112,7 @@ def make_sound(rate=44100, frequency=5000, duration=0.1, amplitude=1,
     return sound
 
 
-def format_sound(sound, file_path=None):
+def format_sound(sound, file_path=None, flat=False):
     """
     Format sound to send to sound card.
 
@@ -136,31 +136,31 @@ def format_sound(sound, file_path=None):
     if file_path:
         with open(file_path, 'wb') as bf:
             bf.writelines(bin_save)
-    return bin_save
+
+    return bin_sound.flatten() if flat else bin_sound
 
 
-def upload(wave_int, sound_index):
-    """
-    Upload a wave_int to an sound_index of the non volatile memory of the
-    sound card.
-
-    :param wave_int: path of executable for transferring sounds
-    :type wave_int: numpy.ndarray
-    :param sound_index: E[2-31] memory bank to upload to
-    :type sound_index: int
-    """
+def configure_sound_card(sounds=[], indexes=[], sample_rate=192):
     card = SoundCardModule()
-    if sys.platform == 'linux':
-        return
-    card.open()
-    # send sound
-    card.send_sound(wave_int, sound_index, SampleRate._96000HZ, DataType.INT32)
+    if sample_rate == 192 or sample_rate == 192000:
+        sample_rate = SampleRate._192000HZ
+    elif sample_rate == 96 or sample_rate == 96000:
+        sample_rate = SampleRate._96000HZ
+    else:
+        log.error("Sound sample frequency should be either 96 or 192 (KHz)")
+        raise(ValueError)
 
+    if len(sounds) != len(indexes):
+        log.error("wrong number of sounds and indexes")
+        rasie(ValueError)
+
+    sounds = [format_sound(s, flat=True) for s in sounds]
+    for sound, index in zip(sounds, indexes):
+        card.send_sound(sound, index, sample_rate, DataType.INT32)
+
+    card.close()
     return
 
-
-def get_uploaded_sounds():
-    pass
 
 
 def sound_sample_freq(soft_sound):
@@ -211,6 +211,7 @@ if __name__ == '__main__':
     # L_TTL = make_sound(chans='L+TTL', amplitude=0.2)
     # N_TTL = make_sound(chans='L+TTL', amplitude=-1)
     # sd.play(L_TTL, 44100, mapping=[1, 2])
+    card = SoundCardModule()
     SOFT_SOUND = None
     SOUND_SAMPLE_FREQ = sound_sample_freq(SOFT_SOUND)
     SOUND_BOARD_BPOD_PORT = 'Serial3'
@@ -228,8 +229,13 @@ if __name__ == '__main__':
         duration=WHITE_NOISE_DURATION,
         amplitude=WHITE_NOISE_AMPLITUDE, fade=0.01, chans='stereo')
     GO_TONE_IDX = 2
-    WHITE_NOISE_IDX = 3
-    upload(format_sound(GO_TONE), GO_TONE_IDX)
-    upload(format_sound(WHITE_NOISE), WHITE_NOISE_IDX)
+    WHITE_NOISE_IDX = 4
 
+    wave_int = format_sound(GO_TONE, flat=True)
+    noise_int = format_sound(WHITE_NOISE, flat=True)
+
+    card = SoundCardModule()
+    card.send_sound(wave_int, GO_TONE_IDX, SampleRate._96000HZ, DataType.INT32)
+    card.send_sound(noise_int, WHITE_NOISE_IDX, SampleRate._96000HZ,
+        DataType.INT32)
     print('i')
