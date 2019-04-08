@@ -28,7 +28,7 @@ def copy_code_files_to_iblrig_params(iblrig_params_path,
         src_folder = Path(src_folder)
         dst_folder = Path(dst_folder)
         src_list = [x for x in src_folder.glob(glob)
-                    if exclude_filename not in str(x)]
+                    if x.is_file() and exclude_filename not in str(x)]
         for f in src_list:
             shutil.copy(f, dst_folder)
             print(f"Copied {f} to {dst_folder}")
