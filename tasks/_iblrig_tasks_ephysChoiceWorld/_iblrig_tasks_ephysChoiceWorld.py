@@ -186,7 +186,7 @@ for i in range(sph.NTRIALS):  # Main loop
     # Update online plots
     op.update_fig(f, axes, tph)
 
-    tph.check_sync_pulses()
+    # tph.check_sync_pulses()
     stop_crit = tph.check_stop_criterions()
     if stop_crit and sph.USE_AUTOMATIC_STOPPING_CRITERIONS:
         if stop_crit == 1:
