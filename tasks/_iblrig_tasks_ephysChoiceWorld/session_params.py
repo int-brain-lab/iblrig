@@ -75,6 +75,7 @@ class SessionParamHandler(object):
         # SUBJECT
         # =====================================================================
         self.SUBJECT_WEIGHT = self.get_subject_weight()
+        self.POOP_COUNT = True
         # =====================================================================
         # OSC CLIENT
         # =====================================================================
@@ -88,11 +89,16 @@ class SessionParamHandler(object):
         self.LAST_TRIAL_DATA = iotasks.load_data(self.PREVIOUS_SESSION_PATH)
         self.LAST_SETTINGS_DATA = iotasks.load_settings(
             self.PREVIOUS_SESSION_PATH)
+        self.SESSION_ORDER = []
+        self.SESSION_IDX = []
+        self = iotasks.load_session_order_and_idx(self)
         # Load from file
-        self.QUIESCENT_PERIOD = None
-        self.STIM_PHASE = None
         self.POSITIONS = None
         self.CONTRASTS = None
+        self.QUIESCENT_PERIOD = None
+        self.STIM_PHASE = None
+        self.LEN_BLOCKS = None
+        self = iotasks.load_session_pcqs(self)
         # =====================================================================
         # ADAPTIVE STUFF
         # =====================================================================
@@ -140,13 +146,14 @@ class SessionParamHandler(object):
             amplitude=self.WHITE_NOISE_AMPLITUDE, fade=0.01, chans='stereo')
         self.GO_TONE_IDX = 2
         self.WHITE_NOISE_IDX = 3
-        sound.upload(sound.format_sound(self.GO_TONE), self.GO_TONE_IDX)
-        sound.upload(
-            sound.format_sound(self.WHITE_NOISE), self.WHITE_NOISE_IDX)
+        sound.configure_sound_card(
+            sounds=[self.GO_TONE, self.WHITE_NOISE],
+            indexes=[self.GO_TONE_IDX, self.WHITE_NOISE_IDX],
+            sample_rate=self.SOUND_SAMPLE_FREQ)
         self.OUT_TONE = ('SoftCode', 1) if self.SOFT_SOUND else (
-            self.SOUND_BOARD_BPOD_PORT, 2)
+            self.SOUND_BOARD_BPOD_PORT, self.GO_TONE_IDX)
         self.OUT_NOISE = ('SoftCode', 2) if self.SOFT_SOUND else(
-            self.SOUND_BOARD_BPOD_PORT, 3)
+            self.SOUND_BOARD_BPOD_PORT, self.WHITE_NOISE_IDX)
         # =====================================================================
         # VISUAL STIM
         # =====================================================================
@@ -217,16 +224,16 @@ class SessionParamHandler(object):
             return sx
 
         d = self.__dict__.copy()
-        if self.SOFT_SOUND:
-            d['GO_TONE'] = 'go_tone(freq={}, dur={}, amp={})'.format(
-                self.GO_TONE_FREQUENCY, self.GO_TONE_DURATION,
-                self.GO_TONE_AMPLITUDE)
-            d['WHITE_NOISE'] = 'white_noise(freq=-1, dur={}, amp={})'.format(
-                self.WHITE_NOISE_DURATION, self.WHITE_NOISE_AMPLITUDE)
+        d['GO_TONE'] = 'go_tone(freq={}, dur={}, amp={})'.format(
+            self.GO_TONE_FREQUENCY, self.GO_TONE_DURATION,
+            self.GO_TONE_AMPLITUDE)
+        d['WHITE_NOISE'] = 'white_noise(freq=-1, dur={}, amp={})'.format(
+            self.WHITE_NOISE_DURATION, self.WHITE_NOISE_AMPLITUDE)
         d['SD'] = str(d['SD'])
         d['OSC_CLIENT'] = str(d['OSC_CLIENT'])
         d['SESSION_DATETIME'] = self.SESSION_DATETIME.isoformat()
         d['CALIB_FUNC'] = str(d['CALIB_FUNC'])
+        d['CALIB_FUNC_RANGE'] = str(d['CALIB_FUNC_RANGE'])
         if isinstance(d['PYBPOD_SUBJECT_EXTRA'], list):
             sub = []
             for sx in d['PYBPOD_SUBJECT_EXTRA']:
