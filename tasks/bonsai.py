@@ -51,7 +51,7 @@ def start_visual_stim(sph):
         else:
             subprocess.Popen(
                 [bns, wkfl, editor, pos, evt, itr, com, sync_x, sync_y])
-        time.sleep(5)
+        time.sleep(3)
         os.chdir(here)
     else:
         sph.USE_VISUAL_STIMULUS = False

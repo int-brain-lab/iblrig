@@ -103,14 +103,16 @@ for i in range(sph.NTRIALS):  # Main loop
             state_timer=0,  # ~100µs hardware irreducible delay
             state_change_conditions={'Tup': 'reset_rotary_encoder'},
             output_actions=[('Serial1', re_stop_stim),
-                            ('SoftCode', 3)])  # sart camera
+                            ('SoftCode', 3),
+                            ('BNC1', 255)])  # sart camera
     else:
         sma.add_state(
             state_name='trial_start',
             state_timer=0,  # ~100µs hardware irreducible delay
             state_change_conditions={'Tup': 'reset_rotary_encoder'},
             output_actions=[('Serial1', re_stop_stim),
-                            ('SoftCode', 0)])  # stop stim
+                            ('SoftCode', 0),
+                            ('BNC1', 255)])  # stop stim
 
     sma.add_state(
         state_name='reset_rotary_encoder',
@@ -163,7 +165,8 @@ for i in range(sph.NTRIALS):  # Main loop
         state_name='reward',
         state_timer=tph.reward_valve_time,
         state_change_conditions={'Tup': 'correct'},
-        output_actions=[('Valve1', 255)])
+        output_actions=[('Valve1', 255),
+                        ('BNC1', 255)])
 
     sma.add_state(
         state_name='correct',
