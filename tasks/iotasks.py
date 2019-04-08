@@ -127,7 +127,7 @@ def load_session_order_and_idx(sph):
         sph['SESSION_IDX'] = 0
     elif 'SESSION_ORDER' in sph['LAST_SETTINGS_DATA'].keys():
         sph['SESSION_ORDER'] = sph['LAST_SETTINGS_DATA']['SESSION_ORDER']
-        sph['SESSION_IDX'] = sph['LAST_SETTINGS_DATA']['SESSION_IDX']
+        sph['SESSION_IDX'] = sph['LAST_SETTINGS_DATA']['SESSION_IDX'] + 1
     return sph
 
 
