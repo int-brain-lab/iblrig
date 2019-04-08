@@ -10,7 +10,7 @@ from pathlib import Path
 from pybpodgui_api.models.project import Project
 
 
-def copy_code_files_to_iblrig_params(iblrig_params_path, task=None,
+def copy_code_files_to_iblrig_params(iblrig_params_path,
                                      exclude_filename=None):
     """Copy all files in root tasks folder to iblrig_params_path
     Copy all *.py files in iblrig_path to iblrig_params/IBL/tasks/<task_name>/*
@@ -28,20 +28,16 @@ def copy_code_files_to_iblrig_params(iblrig_params_path, task=None,
         src_folder = Path(src_folder)
         dst_folder = Path(dst_folder)
         src_list = [x for x in src_folder.glob(glob)
-                    if x.is_file() and exclude_filename not in str(x)]
+                    if exclude_filename not in str(x)]
         for f in src_list:
             shutil.copy(f, dst_folder)
             print(f"Copied {f} to {dst_folder}")
 
+    # Copy cleanup, user_settings, path_helper and bonsai_stop
+    print('\nS:', str(iblrig_tasks_path), '\nD:', str(iblrig_params_path))
+    copy_files(iblrig_tasks_path, iblrig_params_path)
     # Copy all tasks
     tasks = [x for x in iblrig_tasks_path.glob('*') if x.is_dir()]
-    if task:
-        tasks = [t for t in tasks if task in str(t)]
-    else:
-        # Copy cleanup, user_settings, path_helper and bonsai_stop
-        print('\nS:', str(iblrig_tasks_path), '\nD:', str(iblrig_params_path))
-        copy_files(iblrig_tasks_path, iblrig_params_path)
-
     for sf in tasks:
         df = iblrig_params_tasks_path / sf.name
         df.mkdir(parents=True, exist_ok=True)
