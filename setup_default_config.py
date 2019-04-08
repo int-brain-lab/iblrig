@@ -42,6 +42,10 @@ def copy_code_files_to_iblrig_params(iblrig_params_path,
         df = iblrig_params_tasks_path / sf.name
         df.mkdir(parents=True, exist_ok=True)
         copy_files(sf, df)
+        if 'ephys' in sf.name:
+            df_sess = iblrig_params_tasks_path / sf.name / 'sessions'
+            df_sess.mkdir(parents=True, exist_ok=True)
+            copy_files(sf / 'sessions', df_sess)
 
 
 def delete_untracked_files(iblrig_params_path):
