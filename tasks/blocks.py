@@ -58,3 +58,8 @@ def init_probability_left(tph):
         return 0.5
     else:
         return np.random.choice(tph.block_probability_set)
+
+
+def calc_probability_left(tph):
+    out = 0.5
+    return out
