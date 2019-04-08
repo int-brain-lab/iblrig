@@ -9,7 +9,7 @@ import shutil
 from pathlib import Path
 import zipfile
 import ibllib.io.raw_data_loaders as raw
-
+import misc
 
 import os
 
@@ -119,3 +119,29 @@ def load_data(previous_session_path, i=-1):
 
 def load_settings(previous_session_path):
     return raw.load_settings(previous_session_path)
+
+
+def load_session_order_and_idx(sph):
+    if 'SESSION_ORDER' not in sph['LAST_SETTINGS_DATA'].keys():
+        sph['SESSION_ORDER'] = misc.draw_session_order()
+        sph['SESSION_IDX'] = 0
+    elif 'SESSION_ORDER' in sph['LAST_SETTINGS_DATA'].keys():
+        sph['SESSION_ORDER'] = sph['LAST_SETTINGS_DATA']['SESSION_ORDER']
+        sph['SESSION_IDX'] = sph['LAST_SETTINGS_DATA']['SESSION_IDX']
+    return sph
+
+
+def load_session_pcqs(sph):
+    num = sph['SESSION_ORDER'][sph['SESSION_IDX']]
+    pcqs = np.load(f'sessions/pcqs_session_{num}.npy')
+    len_block = np.load('sessions/pcqs_session_{num}_len_blocks.npy')
+
+    sph['POSITIONS'] = pcqs[:, 0].tolist()
+    sph['CONTRASTS'] = pcqs[:, 1].tolist()
+    sph['QUIESCENT_PERIOD'] = pcqs[:, 2].tolist()
+    sph['STIM_PHASE'] = pcqs[:, 3].tolist()
+    sph['LEN_BLOCKS'] = len_block.tolist()
+
+    return sph
+
+
