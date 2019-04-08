@@ -80,7 +80,7 @@ class TrialParamHandler(object):
         self.block_num = 0
         self.block_trial_num = 0
 
-        self.stim_probability_left = blocks.calc_probability_left(self)
+        self.stim_probability_left = 0.5
         self.stim_probability_left_buffer = [self.stim_probability_left]
         self.signed_contrast = self.contrast * np.sign(self.position)
         self.signed_contrast_buffer = [self.signed_contrast]
@@ -170,16 +170,12 @@ RELATIVE HUMIDITY:    {self.as_data['RelativeHumidity']} %
             self.block_trial_num = 1
             self.block_len = self.len_blocks_buffer[self.block_num - 1]
         # Update stim probability left + buffer
-        self.stim_probability_left = blocks.update_probability_left(self)
+        self.stim_probability_left = blocks.calc_probability_left(self)
         self.stim_probability_left_buffer.append(self.stim_probability_left)
         # Update position + buffer
-        self.position = blocks.draw_position(
-            self.position_set, self.stim_probability_left)
-        self.position_buffer.append(self.position)
+        self.position = self.position_buffer[self.trial_num - 1]
         # Update contrast + buffer
-        self.contrast = misc.draw_contrast(
-            self.contrast_set, prob_type=self.contrast_set_probability_type)
-        self.contrast_buffer.append(self.contrast)
+        self.contrast = self.contrast_buffer[self.trial_num - 1]
         # Update signed_contrast + buffer (AFTER position update)
         self.signed_contrast = self.contrast * np.sign(self.position)
         self.signed_contrast_buffer.append(self.signed_contrast)
