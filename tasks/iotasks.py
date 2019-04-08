@@ -122,12 +122,12 @@ def load_settings(previous_session_path):
 
 
 def load_session_order_and_idx(sph):
-    if 'SESSION_ORDER' not in sph['LAST_SETTINGS_DATA'].keys():
-        sph['SESSION_ORDER'] = misc.draw_session_order()
-        sph['SESSION_IDX'] = 0
-    elif 'SESSION_ORDER' in sph['LAST_SETTINGS_DATA'].keys():
-        sph['SESSION_ORDER'] = sph['LAST_SETTINGS_DATA']['SESSION_ORDER']
-        sph['SESSION_IDX'] = sph['LAST_SETTINGS_DATA']['SESSION_IDX'] + 1
+    if 'SESSION_ORDER' not in sph.LAST_SETTINGS_DATA.keys():
+        sph.SESSION_ORDER = misc.draw_session_order()
+        sph.SESSION_IDX = 0
+    elif 'SESSION_ORDER' in sph.LAST_SETTINGS_DATA.keys():
+        sph.SESSION_ORDER = sph.LAST_SETTINGS_DATA['SESSION_ORDER']
+        sph.SESSION_IDX = sph.LAST_SETTINGS_DATA['SESSION_IDX'] + 1
     return sph
 
 
