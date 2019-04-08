@@ -24,6 +24,9 @@ class SessionPathCreator(object):
     def __init__(self, iblrig_folder, iblrig_data_folder, subject_name,
                  protocol=False, board=False, make=False):
         self.IBLRIG_FOLDER = str(Path(iblrig_folder))
+        self.IBLRIG_EPHYS_SESSION_FOLDER = str(
+            Path(self.IBLRIG_FOLDER) / 'tasks' /
+            '_iblrig_tasks_ephysChoiceWorld' / 'sessions')
         self._BOARD = board
         self._PROTOCOL = protocol
         self.IBLRIG_COMMIT_HASH = self._get_commit_hash(self.IBLRIG_FOLDER)
