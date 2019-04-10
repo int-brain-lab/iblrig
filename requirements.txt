@@ -31,6 +31,7 @@ pybpod-gui-plugin-stmdiagram==1.0.0
 pybpod-gui-plugin-timeline==1.0.1
 pybpod-gui-plugin-trial-timeline==1.0.0
 pybpod-gui-plugin-waveplayer==0
+pybpod-gui-plugin-soundcard==0.1.3
 pycparser==2.19
 pydot==1.4.1
 pyforms-generic-editor==1.5.1
