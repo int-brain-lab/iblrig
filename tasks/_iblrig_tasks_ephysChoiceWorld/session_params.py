@@ -193,10 +193,6 @@ class SessionParamHandler(object):
         fpath = Path(self.IBLRIG_PARAMS_FOLDER) / 'bpod_lights.py'
         os.system(f"python {fpath} {command}")
 
-    # Bonsai start camera called from main task file
-    def start_camera_recording(self):
-        return bonsai.start_camera_recording(self)
-
     def get_port_events(self, events, name=''):
         return misc.get_port_events(events, name=name)
 

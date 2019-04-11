@@ -40,8 +40,6 @@ def softcode_handler(data):
         sph.play_tone()
     elif data == 2:
         sph.play_noise()
-    elif data == 3:
-        sph.start_camera_recording()
     # sph.OSC_CLIENT.send_message("/e", data)
 
 
@@ -97,22 +95,13 @@ for i in range(sph.NTRIALS):  # Main loop
 # =============================================================================
     sma = StateMachine(bpod)
 
-    if i == 0:  # First trial exception start camera
-        sma.add_state(
-            state_name='trial_start',
-            state_timer=0,  # ~100µs hardware irreducible delay
-            state_change_conditions={'Tup': 'reset_rotary_encoder'},
-            output_actions=[('Serial1', re_stop_stim),
-                            ('SoftCode', 3),
-                            ('BNC1', 255)])  # sart camera
-    else:
-        sma.add_state(
-            state_name='trial_start',
-            state_timer=0,  # ~100µs hardware irreducible delay
-            state_change_conditions={'Tup': 'reset_rotary_encoder'},
-            output_actions=[('Serial1', re_stop_stim),
-                            ('SoftCode', 0),
-                            ('BNC1', 255)])  # stop stim
+    sma.add_state(
+        state_name='trial_start',
+        state_timer=0,  # ~100µs hardware irreducible delay
+        state_change_conditions={'Tup': 'reset_rotary_encoder'},
+        output_actions=[('Serial1', re_stop_stim),
+                        ('SoftCode', 0),
+                        ('BNC1', 255)])
 
     sma.add_state(
         state_name='reset_rotary_encoder',
