@@ -206,36 +206,46 @@ def init_sounds(sph_obj, tone=True, noise=True):
 
 
 if __name__ == '__main__':
-    # sd = configure_sounddevice(output='xonar')
-    # sd.stop()
-    # L_TTL = make_sound(chans='L+TTL', amplitude=0.2)
-    # N_TTL = make_sound(chans='L+TTL', amplitude=-1)
-    # sd.play(L_TTL, 44100, mapping=[1, 2])
-    card = SoundCardModule()
-    SOFT_SOUND = None
-    SOUND_SAMPLE_FREQ = sound_sample_freq(SOFT_SOUND)
-    SOUND_BOARD_BPOD_PORT = 'Serial3'
-    WHITE_NOISE_DURATION = float(0.5)
-    WHITE_NOISE_AMPLITUDE = float(0.05)
-    GO_TONE_DURATION = float(0.1)
-    GO_TONE_FREQUENCY = int(5000)
-    GO_TONE_AMPLITUDE = float(0.1)
-    GO_TONE = make_sound(
-        rate=SOUND_SAMPLE_FREQ, frequency=GO_TONE_FREQUENCY,
-        duration=GO_TONE_DURATION, amplitude=GO_TONE_AMPLITUDE,
-        fade=0.01, chans='stereo')
-    WHITE_NOISE = make_sound(
-        rate=SOUND_SAMPLE_FREQ, frequency=-1,
-        duration=WHITE_NOISE_DURATION,
-        amplitude=WHITE_NOISE_AMPLITUDE, fade=0.01, chans='stereo')
-    GO_TONE_IDX = 2
-    WHITE_NOISE_IDX = 4
+    # # Generate sounds
+    device = 'xonar'
+    samplerate = sound_sample_freq(device)
+    sd = configure_sounddevice(output=device, samplerate=samplerate)
+    sd.stop()
+    rig_tone = make_sound(rate=samplerate, frequency=5000,
+                          duration=10, amplitude=0.1)
+    rig_noise = make_sound(rate=samplerate, frequency=-
+                           1, duration=10, amplitude=0.1)
+    N_TTL = make_sound(chans='L+TTL', amplitude=-1)
 
-    wave_int = format_sound(GO_TONE, flat=True)
-    noise_int = format_sound(WHITE_NOISE, flat=True)
+    sd.play(rig_tone, samplerate, mapping=[1, 2])
 
-    card = SoundCardModule()
-    card.send_sound(wave_int, GO_TONE_IDX, SampleRate._96000HZ, DataType.INT32)
-    card.send_sound(noise_int, WHITE_NOISE_IDX, SampleRate._96000HZ,
-        DataType.INT32)
+    # # TEST SOUNDCARD MODULE
+    # card = SoundCardModule()
+    # SOFT_SOUND = None
+    # SOUND_SAMPLE_FREQ = sound_sample_freq(SOFT_SOUND)
+    # SOUND_BOARD_BPOD_PORT = 'Serial3'
+    # WHITE_NOISE_DURATION = float(0.5)
+    # WHITE_NOISE_AMPLITUDE = float(0.05)
+    # GO_TONE_DURATION = float(0.1)
+    # GO_TONE_FREQUENCY = int(5000)
+    # GO_TONE_AMPLITUDE = float(0.1)
+    # GO_TONE = make_sound(
+    #     rate=SOUND_SAMPLE_FREQ, frequency=GO_TONE_FREQUENCY,
+    #     duration=GO_TONE_DURATION, amplitude=GO_TONE_AMPLITUDE,
+    #     fade=0.01, chans='stereo')
+    # WHITE_NOISE = make_sound(
+    #     rate=SOUND_SAMPLE_FREQ, frequency=-1,
+    #     duration=WHITE_NOISE_DURATION,
+    #     amplitude=WHITE_NOISE_AMPLITUDE, fade=0.01, chans='stereo')
+    # GO_TONE_IDX = 2
+    # WHITE_NOISE_IDX = 4
+
+    # wave_int = format_sound(GO_TONE, flat=True)
+    # noise_int = format_sound(WHITE_NOISE, flat=True)
+
+    # card = SoundCardModule()
+    # card.send_sound(wave_int, GO_TONE_IDX, SampleRate._96000HZ, DataType.INT32)
+    # card.send_sound(noise_int, WHITE_NOISE_IDX, SampleRate._96000HZ,
+    #     DataType.INT32)
+
     print('i')
