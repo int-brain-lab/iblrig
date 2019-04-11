@@ -162,30 +162,30 @@ def configure_sound_card(sounds=[], indexes=[], sample_rate=192):
     return
 
 
-
 def sound_sample_freq(soft_sound):
-    if soft_sound == 'xonar':
-        ssf = 192000
-    elif soft_sound == 'sysdefault':
-        ssf = 44100
-    elif soft_sound is None:
-        ssf = 96000
-
-    return ssf
+    if soft_sound == 'sysdefault':
+        return 44100
+    elif soft_sound == 'xonar' or soft_sound is None:
+        return 192000
+    else:
+        log.error("SOFT_SOUND in not: 'sysdefault', 'xonar' or 'None'")
+        raise(NotImplementedError)
 
 
 def init_sounds(sph_obj, tone=True, noise=True):
     if not sph_obj.SOFT_SOUND:
         msg = f"""
     ##########################################
-    SOUND BOARD NOT IMPLEMTNED YET!!",
+    SOUND BOARD NOT FOUND ON SYSTEM!!",
     PLEASE GO TO:
     iblrig_params/IBL/tasks/{sph_obj.PYBPOD_PROTOCOL}/task_settings.py
     and set
         SOFT_SOUND = 'sysdefault' or 'xonar'
     ##########################################"""
-        log.error(msg)
-        raise(NotImplementedError)
+        card = SoundCardModule()
+        if card._port is None and card._serial_port is None:
+            log.error(msg)
+            raise(NameError)
     if tone:
         sph_obj.GO_TONE = make_sound(
             rate=sph_obj.SOUND_SAMPLE_FREQ,
