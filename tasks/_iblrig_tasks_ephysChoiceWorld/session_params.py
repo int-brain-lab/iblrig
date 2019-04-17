@@ -32,7 +32,7 @@ class SessionParamHandler(object):
 
     def __init__(self, task_settings, user_settings, debug=False, fmake=True):
         self.DEBUG = debug
-        make = False if not fmake else ['video']
+        make = True
         self.IBLRIG_FOLDER = 'C:\\iblrig'
         self.IBLRIG_DATA_FOLDER = None  # ..\\iblrig_data if None
         # =====================================================================
