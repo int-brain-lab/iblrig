@@ -1,3 +1,4 @@
+aenum==2.1.2
 AnyQt==0.0.10
 asn1crypto==0.24.0
 certifi==2019.3.9
@@ -11,9 +12,11 @@ cycler==0.10.0
 Cython==0.29.6
 dataclasses==0.6
 globus-sdk==1.7.1
--e git+https://github.com/int-brain-lab/ibllib.git#egg=ibllib&subdirectory=python
+ibllib==0.5.0
 idna==2.8
 kiwisolver==1.0.1
+libusb==1.0.22b4
+libusb1==1.7
 logging-bootstrap==1.0.0
 matplotlib==3.0.3
 numpy==1.16.2
@@ -27,11 +30,11 @@ pybpod-gui-plugin==1.6.0
 pybpod-gui-plugin-alyx==0.2
 pybpod-gui-plugin-rotaryencoder==0.1
 pybpod-gui-plugin-session-history==1.4.0
+pybpod-gui-plugin-soundcard==0.1.4
 pybpod-gui-plugin-stmdiagram==1.0.0
 pybpod-gui-plugin-timeline==1.0.1
 pybpod-gui-plugin-trial-timeline==1.0.0
 pybpod-gui-plugin-waveplayer==0
-pybpod-gui-plugin-soundcard==0.1.3
 pycparser==2.19
 pydot==1.4.1
 pyforms-generic-editor==1.5.1
@@ -48,6 +51,7 @@ PySocks==1.6.8
 python-dateutil==2.8.0
 python-osc==1.7.0
 pytz==2018.9
+pyusb==1.0.2
 QScintilla==2.11.1
 requests==2.21.0
 safe-and-collaborative-architecture==0.2
