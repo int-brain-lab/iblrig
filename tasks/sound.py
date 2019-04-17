@@ -5,15 +5,13 @@
 # @Last Modified time: 2018-09-28 15:26:50
 
 import numpy as np
-import subprocess
-import os
 import sys
 import platform
 import logging
 
-from pybpod_soundcard_module.module import SoundCard, SoundCommandType
+# from pybpod_soundcard_module.module import SoundCard, SoundCommandType
 from pybpod_soundcard_module.module_api import (SoundCardModule, DataType,
-    SampleRate)
+                                                SampleRate)
 log = logging.getLogger('iblrig')
 
 
@@ -147,12 +145,12 @@ def configure_sound_card(sounds=[], indexes=[], sample_rate=192):
     elif sample_rate == 96 or sample_rate == 96000:
         sample_rate = SampleRate._96000HZ
     else:
-        log.error("Sound sample frequency should be either 96 or 192 (KHz)")
+        log.error(f"Sound sample rate {sample_rate} should be 96 or 192 (KHz)")
         raise(ValueError)
 
     if len(sounds) != len(indexes):
-        log.error("wrong number of sounds and indexes")
-        rasie(ValueError)
+        log.error("Wrong number of sounds and indexes")
+        raise(ValueError)
 
     sounds = [format_sound(s, flat=True) for s in sounds]
     for sound, index in zip(sounds, indexes):
@@ -244,7 +242,7 @@ if __name__ == '__main__':
     # noise_int = format_sound(WHITE_NOISE, flat=True)
 
     # card = SoundCardModule()
-    # card.send_sound(wave_int, GO_TONE_IDX, SampleRate._96000HZ, DataType.INT32)
+    # card.send_sound(wave_int, GO_TONE_IDX, SampleRate._96000HZ, DataType.INT32)  # noqa
     # card.send_sound(noise_int, WHITE_NOISE_IDX, SampleRate._96000HZ,
     #     DataType.INT32)
 
