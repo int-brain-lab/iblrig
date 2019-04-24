@@ -90,7 +90,7 @@ class SessionParamHandler(object):
         self.LAST_SETTINGS_DATA = iotasks.load_settings(
             self.PREVIOUS_SESSION_PATH)
         self.SESSION_ORDER = []
-        self.SESSION_IDX = []
+        self.SESSION_IDX = None
         self = iotasks.load_session_order_and_idx(self)
         # Load from file
         self.POSITIONS = None
@@ -240,6 +240,11 @@ class SessionParamHandler(object):
                 d['PYBPOD_SUBJECT_EXTRA'])
         d['LAST_TRIAL_DATA'] = None
         d['LAST_SETTINGS_DATA'] = None
+        d['POSITIONS'] = None
+        d['CONTRASTS'] = None
+        d['QUIESCENT_PERIOD'] = None
+        d['STIM_PHASE'] = None
+        d['LEN_BLOCKS'] = None
 
         return d
 
@@ -250,11 +255,10 @@ class SessionParamHandler(object):
 PREVIOUS SESSION FOUND
 LOADING PARAMETERS FROM: {self.PREVIOUS_DATA_FILE}
 
-PREVIOUS NTRIALS:              {self.LAST_TRIAL_DATA["trial_num"]}
-PREVIOUS WATER DRANK: {self.LAST_TRIAL_DATA['water_delivered']}
-LAST REWARD:                   {self.LAST_TRIAL_DATA["reward_amount"]}
-LAST GAIN:                     {self.LAST_TRIAL_DATA["stim_gain"]}
-PREVIOUS WEIGHT:               {self.LAST_SETTINGS_DATA['SUBJECT_WEIGHT']}
+PREVIOUS SESSION NUMBER: {self.LAST_SETTINGS_DATA['SESSION_IDX'] + 1}
+PREVIOUS NTRIALS:        {self.LAST_TRIAL_DATA["trial_num"]}
+PREVIOUS WATER DRANK:    {self.LAST_TRIAL_DATA['water_delivered']}
+PREVIOUS WEIGHT:         {self.LAST_SETTINGS_DATA['SUBJECT_WEIGHT']}
 ##########################################"""
             log.info(msg)
 
