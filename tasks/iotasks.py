@@ -65,6 +65,9 @@ def copy_task_code(sph: object) -> None:
     dst = str(Path(
         sph.SESSION_RAW_DATA_FOLDER) / sph.VISUAL_STIMULUS_TYPE)
     shutil.copytree(src, dst)
+
+
+def copy_video_code(sph: object) -> None:
     # Copy video recording folder with bonsai workflow
     src = sph.VIDEO_RECORDING_FOLDER
     dst = os.path.join(
@@ -84,6 +87,12 @@ def save_task_code(sph: object) -> None:
         '_iblrig_taskCodeFiles.raw.zip')
     )
 
+    [shutil.rmtree(x) for x in behavior_code_files]
+
+
+def save_video_code(sph: object) -> None:
+    # zip all existing folders
+    # Should be the task code folder and if available stimulus code folder
     video_code_files = [
         os.path.join(sph.SESSION_RAW_VIDEO_DATA_FOLDER, x)
         for x in os.listdir(sph.SESSION_RAW_VIDEO_DATA_FOLDER)
@@ -95,7 +104,7 @@ def save_task_code(sph: object) -> None:
             '_iblrig_videoCodeFiles.raw.zip')
     )
 
-    [shutil.rmtree(x) for x in behavior_code_files + video_code_files]
+    [shutil.rmtree(x) for x in video_code_files]
 
 
 def zipdir(path: str, ziph: zipfile.ZipFile) -> None:
