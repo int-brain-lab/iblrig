@@ -140,6 +140,8 @@ def load_session_order_and_idx(sph: object) -> object:
     elif 'SESSION_ORDER' in sph.LAST_SETTINGS_DATA.keys():
         sph.SESSION_ORDER = sph.LAST_SETTINGS_DATA['SESSION_ORDER']
         sph.SESSION_IDX = sph.LAST_SETTINGS_DATA['SESSION_IDX'] + 1
+    # Confirm this is the session to load. If not override SESSION_IDX
+    from ibllib.graphic import numinput
     return sph
 
 
