@@ -1,8 +1,7 @@
+#!/usr/bin/env python
 # -*- coding:utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date: Wednesday, November 14th 2018, 10:40:43 am
-# @Last Modified by: Niccolò Bonacchi
-# @Last Modified time: 14-11-2018 10:41:08.088
 import datetime
 import logging
 import os

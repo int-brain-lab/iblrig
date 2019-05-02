@@ -1,8 +1,7 @@
+#!/usr/bin/env python
 # -*- coding:utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date: Tuesday, November 20th 2018, 9:21:15 am
-# @Last Modified by: Niccolò Bonacchi
-# @Last Modified time: 9-01-2019 10:46:01.011
 import shutil
 import sys
 from pathlib import Path

@@ -1,8 +1,7 @@
+#!/usr/bin/env python
 # -*- coding:utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date: Thursday, January 31st 2019, 4:12:19 pm
-# @Last Modified by: Niccolò Bonacchi
-# @Last Modified time: 31-01-2019 04:12:21.2121
 from pathlib import Path
 from ibllib.graphic import numinput
 import ciso8601

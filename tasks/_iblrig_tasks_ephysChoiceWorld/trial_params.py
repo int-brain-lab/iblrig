@@ -1,8 +1,7 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date:   2018-02-02 14:06:34
-# @Last Modified by:   Niccolò Bonacchi
-# @Last Modified time: 2018-06-26 17:36:59
 import time
 import json
 import logging

@@ -1,9 +1,7 @@
+#!/usr/bin/env python
 # -*- coding:utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date: Thursday, September 27th 2018, 6:32:28 pm
-# @Last Modified by:   Niccolò Bonacchi
-# @Last Modified time: 2018-09-28 15:26:50
-
 import numpy as np
 import sys
 import platform

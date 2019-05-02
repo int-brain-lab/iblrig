@@ -1,8 +1,7 @@
+#!/usr/bin/env python
 # -*- coding:utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date: Friday, February 8th 2019, 12:51:51 pm
-# @Last Modified by: Niccolò Bonacchi
-# @Last Modified time: 8-02-2019 12:51:53.5353
 import numpy as np
 import datetime
 from pathlib import Path

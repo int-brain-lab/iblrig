@@ -1,9 +1,7 @@
+#!/usr/bin/env python
 # -*- coding:utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date: Thursday, February 21st 2019, 7:13:37 pm
-# @Last Modified by: Niccolò Bonacchi
-# @Last Modified time: 21-02-2019 07:35:12.1212
-
 from pathlib import Path
 import ibllib.io.raw_data_loaders as raw
 import matplotlib.pyplot as plt

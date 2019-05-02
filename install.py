@@ -1,9 +1,8 @@
-#!/usr/bin/python3
+#!/usr/bin/env python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date:   2018-06-08 11:04:05
-# @Last Modified by:   Niccolò Bonacchi
-# @Last Modified time: 2018-07-12 13:08:10
 import json
 import os
 import re

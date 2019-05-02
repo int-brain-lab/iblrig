@@ -1,9 +1,7 @@
+#!/usr/bin/env python
 # -*- coding:utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date: Friday, January 4th 2019, 11:52:41 am
-# @Last Modified by: Niccolò Bonacchi
-# @Last Modified time: 4-01-2019 11:52:45.4545
-
 from pybpodapi.bpod import Bpod
 from pybpodapi.state_machine import StateMachine
 
