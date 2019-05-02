@@ -24,25 +24,6 @@ sph = SessionParamHandler(task_settings, user_settings)
 def bpod_loop_handler():
     f.canvas.flush_events()  # 100µs
 
-
-def softcode_handler(data):
-    """
-    Soft codes should work with resasonable latency considering our limiting
-    factor is the refresh rate of the screen which should be 16.667ms @ a frame
-    rate of 60Hz
-    1 : go_tone
-    2 : white_noise
-    """
-    global sph
-    if data == 0:
-        sph.stop_sound()
-    elif data == 1:
-        sph.play_tone()
-    elif data == 2:
-        sph.play_noise()
-    # sph.OSC_CLIENT.send_message("/e", data)
-
-
 # =============================================================================
 # CONNECT TO BPOD
 # =============================================================================
@@ -50,8 +31,6 @@ bpod = Bpod()
 
 # Loop handler function is used to flush events for the online plotting
 bpod.loop_handler = bpod_loop_handler
-# Soft code handler function can run arbitrary code from within state machine
-bpod.softcode_handler_function = softcode_handler
 # Rotary Encoder State Machine handler
 rotary_encoder = [x for x in bpod.modules if x.name == 'RotaryEncoder1'][0]
 sound_card = [x for x in bpod.modules if x.name == 'SoundCard1'][0]
