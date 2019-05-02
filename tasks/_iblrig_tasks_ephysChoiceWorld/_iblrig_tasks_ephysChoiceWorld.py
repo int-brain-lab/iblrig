@@ -52,10 +52,11 @@ re_close_loop = re_reset + 3
 bpod.load_serial_message(rotary_encoder, re_close_loop, [ord('#'), 3])
 # Play tone
 sc_play_tone = re_reset + 4
-bpod.load_serial_message(sound_card, sc_play_tone, [ord('P'), 2])
+bpod.load_serial_message(sound_card, sc_play_tone, [ord('P'), sph.GO_TONE_IDX])
 # Play noise
 sc_play_noise = re_reset + 5
-bpod.load_serial_message(sound_card, sc_play_noise, [ord('P'), 3])
+bpod.load_serial_message(sound_card, sc_play_noise, [
+                         ord('P'), sph.WHITE_NOISE_IDX])
 
 # =============================================================================
 # TRIAL PARAMETERS AND STATE MACHINE
@@ -73,14 +74,22 @@ for i in range(sph.NTRIALS):  # Main loop
 #     Start state machine definition
 # =============================================================================
     sma = StateMachine(bpod)
-
-    sma.add_state(
-        state_name='trial_start',
-        state_timer=0,  # ~100µs hardware irreducible delay
-        state_change_conditions={'Tup': 'reset_rotary_encoder'},
-        output_actions=[('Serial1', re_stop_stim),
-                        ('SoftCode', 0),
-                        ('BNC1', 255)])
+    if i == 0:
+        sma.add_state(
+            state_name='trial_start',
+            state_timer=3600,  # ~100µs hardware irreducible delay
+            state_change_conditions={'Port1In': 'reset_rotary_encoder'},
+            output_actions=[('Serial1', re_stop_stim),
+                            ('SoftCode', 0),
+                            ('BNC1', 255)])
+    else:
+        sma.add_state(
+            state_name='trial_start',
+            state_timer=0,  # ~100µs hardware irreducible delay
+            state_change_conditions={'Tup': 'reset_rotary_encoder'},
+            output_actions=[('Serial1', re_stop_stim),
+                            ('SoftCode', 0),
+                            ('BNC1', 255)])
 
     sma.add_state(
         state_name='reset_rotary_encoder',
