@@ -13,6 +13,7 @@ from pathlib import Path
 import numpy as np
 
 import ibllib.io.raw_data_loaders as raw
+from ibllib.graphic import numinput
 import misc
 
 log = logging.getLogger('iblrig')
@@ -141,7 +142,12 @@ def load_session_order_and_idx(sph: object) -> object:
         sph.SESSION_ORDER = sph.LAST_SETTINGS_DATA['SESSION_ORDER']
         sph.SESSION_IDX = sph.LAST_SETTINGS_DATA['SESSION_IDX'] + 1
     # Confirm this is the session to load. If not override SESSION_IDX
-    from ibllib.graphic import numinput
+    ses_num = int(sph.SESSION_IDX + 1)
+    ses_num = numinput(
+        "Confirm session to load", "Load session number", default=ses_num,
+        askint=True, minval=1, maxval=12)
+    if ses_num != sph.SESSION_IDX + 1:
+        sph.SESSION_IDX = ses_num - 1
     return sph
 
 
