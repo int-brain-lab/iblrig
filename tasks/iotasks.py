@@ -144,8 +144,8 @@ def load_session_order_and_idx(sph: object) -> object:
     # Confirm this is the session to load. If not override SESSION_IDX
     ses_num = int(sph.SESSION_IDX + 1)
     ses_num = numinput(
-        "Confirm session to load", "Load session number", default=ses_num,
-        askint=True, minval=1, maxval=12)
+        "Confirm session to load", "Load recording session number",
+        default=ses_num, askint=True, minval=1, maxval=12)
     if ses_num != sph.SESSION_IDX + 1:
         sph.SESSION_IDX = ses_num - 1
     return sph

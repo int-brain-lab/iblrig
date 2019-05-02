@@ -11,7 +11,7 @@ import logging
 
 from pythonosc import udp_client
 
-from ibllib.graphic import numinput
+from ibllib.graphic import numinput, multi_input
 sys.path.append(str(Path(__file__).parent.parent))  # noqa
 sys.path.append(str(Path(__file__).parent.parent.parent.parent))  # noqa
 import adaptive
@@ -150,10 +150,6 @@ class SessionParamHandler(object):
             sounds=[self.GO_TONE, self.WHITE_NOISE],
             indexes=[self.GO_TONE_IDX, self.WHITE_NOISE_IDX],
             sample_rate=self.SOUND_SAMPLE_FREQ)
-        self.OUT_TONE = ('SoftCode', 1) if self.SOFT_SOUND else (
-            self.SOUND_BOARD_BPOD_PORT, self.GO_TONE_IDX)
-        self.OUT_NOISE = ('SoftCode', 2) if self.SOFT_SOUND else(
-            self.SOUND_BOARD_BPOD_PORT, self.WHITE_NOISE_IDX)
         # =====================================================================
         # VISUAL STIM
         # =====================================================================
@@ -162,6 +158,7 @@ class SessionParamHandler(object):
         self.USE_VISUAL_STIMULUS = True  # Run the visual stim in bonsai
         self.BONSAI_EDITOR = False  # Open the Bonsai editor of visual stim
         bonsai.start_visual_stim(self)
+        self.get_recording_site_data()
         # =====================================================================
         # SAVE SETTINGS FILE AND TASK CODE
         # =====================================================================
@@ -176,9 +173,22 @@ class SessionParamHandler(object):
     # =========================================================================
     # METHODS
     # =========================================================================
-    def get_qp(self):
-        if '' in self.LAST_SETTINGS_DATA.keys():
-            pass
+    def get_recording_site_data(self):
+        title = 'Recording site'
+        fields = ['X (float):', 'Y (float):', 'Z (flaot):', 'D (float):',
+                'Angle (10 or 20):', 'Origin (bregma or lambda):']
+        defaults = [None, None, None, None, '10', 'bregma']
+        types = [float, float, float, float, int, str]
+        userdata = multi_input(
+            title=title, add_fields=fields, defaults=defaults)
+        try:
+            out = [t(x) for x, t in zip(userdata, types)]
+            self.REC_SITE = {'xyzd':out[:4], 'angle': out[4], 'origin': out[5]}
+            return out
+        except Exception:
+            log.warning(
+                f"One or more inputs are of the wrong type. Expected {types}")
+            return self.get_recording_site_data()
 
     def save_ambient_sensor_reading(self, bpod_instance):
         return ambient_sensor.get_reading(bpod_instance,
