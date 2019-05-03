@@ -164,10 +164,8 @@ def info():
 
 
 def ask_user_input(msg="Do you want to update?", responses=['y', 'n']):
-    msg = msg + f' {responses}: '
-    userinput = subprocess.check_output(
-        f'read -p "{msg}" userinput && echo $userinput', shell=True)
-    response = userinput.decode().strip()
+    use_msg = msg + f' {responses}: '
+    response = input(use_msg)
     if response not in responses:
         print(f"Acceptable answers: {responses}")
         return ask_user_input(msg=msg, responses=responses)
