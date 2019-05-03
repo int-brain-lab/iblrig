@@ -119,6 +119,7 @@ def update_env():
 def update_conda():
     os.system("conda update -n base conda")
 
+
 def update_pip():
     os.system("pip install --upgrade pip")
 
@@ -181,15 +182,18 @@ def update_to_latest():
     if idx + 1 == len(versions):
         return
     else:
-        resp = ask_user_input()
-        if resp == 'y':
-            checkout_version(sorted(versions)[-1])
-            update_env()
-            import_tasks()
-            update_ibllib()
-        else:
-            return
+        _update()
 
+
+def _update():
+    resp = ask_user_input()
+    if resp == 'y':
+        checkout_version(sorted(versions)[-1])
+        update_env()
+        import_tasks()
+        update_ibllib()
+    else:
+        return
 
 def main(args):
     nargs_passed = sum([True for x in args.__dict__.values() if x])
@@ -208,10 +212,7 @@ def main(args):
         return
     elif nargs_passed == 1:
         if args.b and args.b in ALL_BRANCHES:
-            checkout_branch(args.b)
-            update_env()
-            import_tasks()
-            update_ibllib()
+            _update()
         elif args.b and args.b not in ALL_BRANCHES:
             print('Branch', args.b, 'not found')
 
@@ -219,10 +220,7 @@ def main(args):
             checkout_single_file(file='update.py', branch='master')
 
         if args.v and args.v in ALL_VERSIONS:
-            checkout_version(args.v)
-            update_env()
-            import_tasks()
-            update_ibllib()
+            _update()
         elif args.v and args.v not in ALL_VERSIONS:
             print('Version', args.v, 'not found')
 
