@@ -1,8 +1,7 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date:   2018-02-20 14:46:10
-# @Last Modified by:   Niccolò Bonacchi
-# @Last Modified time: 2018-05-30 17:31:48
 # matplotlib.use('Qt5Agg')
 import matplotlib.pyplot as plt
 import numpy as np

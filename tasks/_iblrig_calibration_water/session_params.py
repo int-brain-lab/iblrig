@@ -1,8 +1,7 @@
+#!/usr/bin/env python
 # -*- coding:utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date: Wednesday, November 21st 2018, 4:27:34 pm
-# @Last Modified by: Niccolò Bonacchi
-# @Last Modified time: 21-11-2018 04:29:49.4949
 import json
 import os
 import shutil

@@ -1,8 +1,7 @@
+#!/usr/bin/env python
 # -*- coding:utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date: Tuesday, February 5th 2019, 1:40:37 pm
-# @Last Modified by: Niccolò Bonacchi
-# @Last Modified time: 5-02-2019 01:40:39.3939
 from pybpod_rotaryencoder_module.module_api import RotaryEncoderModule
 import numpy as np
 

@@ -1,8 +1,7 @@
+#!/usr/bin/env python
 # -*- coding:utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date: Wednesday, November 14th 2018, 10:40:43 am
-# @Last Modified by: Niccolò Bonacchi
-# @Last Modified time: 14-11-2018 10:41:08.088
 import datetime
 import logging
 import os
@@ -24,6 +23,9 @@ class SessionPathCreator(object):
     def __init__(self, iblrig_folder, iblrig_data_folder, subject_name,
                  protocol=False, board=False, make=False):
         self.IBLRIG_FOLDER = str(Path(iblrig_folder))
+        self.IBLRIG_EPHYS_SESSION_FOLDER = str(
+            Path(self.IBLRIG_FOLDER) / 'tasks' /
+            '_iblrig_tasks_ephysChoiceWorld' / 'sessions')
         self._BOARD = board
         self._PROTOCOL = protocol
         self.IBLRIG_COMMIT_HASH = self._get_commit_hash(self.IBLRIG_FOLDER)
@@ -133,6 +135,8 @@ class SessionPathCreator(object):
             return 'TrainingGabor2D'
         elif 'biased' in self._PROTOCOL:
             return 'BiasedGabor2D'
+        elif 'ephys' in self._PROTOCOL:
+            return 'EphysGabor2D'
         else:
             return ''
 

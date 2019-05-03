@@ -1,8 +1,8 @@
+#!/usr/bin/env python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date:   2018-02-02 12:31:13
-# @Last Modified by:   Niccolò Bonacchi
-# @Last Modified time: 2018-10-09 13:32:28
 from pybpodapi.protocol import Bpod, StateMachine
 from pybpod_rotaryencoder_module.module import RotaryEncoder
 import matplotlib.pyplot as plt

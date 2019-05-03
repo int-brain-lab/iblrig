@@ -1,8 +1,7 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date:   2018-02-02 17:19:09
-# @Last Modified by:   Niccolò Bonacchi
-# @Last Modified time: 2018-07-12 16:18:59
 import os
 import sys
 from sys import platform
@@ -102,6 +101,8 @@ class SessionParamHandler(object):
             iotasks.save_session_settings(self)
             iotasks.copy_task_code(self)
             iotasks.save_task_code(self)
+            iotasks.copy_video_code(self)
+            iotasks.save_video_code(self)
             self.bpod_lights(0)
 
     # =========================================================================

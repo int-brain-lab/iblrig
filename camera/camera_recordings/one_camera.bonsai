@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <WorkflowBuilder Version="2.3.0">
-  <Workflow xmlns:q2="clr-namespace:Bonsai.Vision;assembly=Bonsai.Vision" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:q3="clr-namespace:Bonsai.IO;assembly=Bonsai.System" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:q4="clr-namespace:Bonsai.Osc;assembly=Bonsai.Osc" xmlns:q1="clr-namespace:Bonsai.PointGrey;assembly=Bonsai.PointGrey" xmlns="https://horizongir.org/bonsai">
+  <Workflow xmlns:q2="clr-namespace:Bonsai.Vision;assembly=Bonsai.Vision" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:q3="clr-namespace:Bonsai.IO;assembly=Bonsai.System" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:q5="clr-namespace:Bonsai.Audio;assembly=Bonsai.Audio" xmlns:q4="clr-namespace:Bonsai.Osc;assembly=Bonsai.Osc" xmlns:q1="clr-namespace:Bonsai.PointGrey;assembly=Bonsai.PointGrey" xmlns="https://horizongir.org/bonsai">
     <Nodes>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="q1:FlyCapture">
@@ -25,7 +25,7 @@
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="q2:VideoWriter">
-          <q2:FileName>C:\iblrig_data\Subjects\_iblrig_test_mouse\2018-11-28\3\raw_video_data\_iblrig_leftCamera.raw.avi</q2:FileName>
+          <q2:FileName>C:\iblrig_data\Subjects\_iblrig_test_mouse\2019-04-08\005\raw_video_data\_iblrig_leftCamera.raw.avi</q2:FileName>
           <q2:Suffix>None</q2:Suffix>
           <q2:Buffered>true</q2:Buffered>
           <q2:Overwrite>false</q2:Overwrite>
@@ -39,7 +39,7 @@
         </Combinator>
       </Expression>
       <Expression xsi:type="q3:CsvWriter">
-        <q3:FileName>C:\iblrig_data\Subjects\_iblrig_test_mouse\2018-11-28\3\raw_video_data\_iblrig_leftCamera.timestamps.ssv</q3:FileName>
+        <q3:FileName>C:\iblrig_data\Subjects\_iblrig_test_mouse\2019-04-08\005\raw_video_data\_iblrig_leftCamera.timestamps.ssv</q3:FileName>
         <q3:Append>false</q3:Append>
         <q3:Overwrite>false</q3:Overwrite>
         <q3:Suffix>None</q3:Suffix>
@@ -121,12 +121,12 @@
       <Expression xsi:type="ExternalizedPropertyOfStringCsvWriter">
         <MemberName>FileName</MemberName>
         <Name>TimestampsFileName</Name>
-        <Value>C:\iblrig_data\Subjects\_iblrig_test_mouse\2018-11-28\3\raw_video_data\_iblrig_leftCamera.timestamps.ssv</Value>
+        <Value>C:\iblrig_data\Subjects\_iblrig_test_mouse\2019-04-08\005\raw_video_data\_iblrig_leftCamera.timestamps.ssv</Value>
       </Expression>
       <Expression xsi:type="ExternalizedPropertyOfStringVideoWriter">
         <MemberName>FileName</MemberName>
         <Name>VideoFileName</Name>
-        <Value>C:\iblrig_data\Subjects\_iblrig_test_mouse\2018-11-28\3\raw_video_data\_iblrig_leftCamera.raw.avi</Value>
+        <Value>C:\iblrig_data\Subjects\_iblrig_test_mouse\2019-04-08\005\raw_video_data\_iblrig_leftCamera.raw.avi</Value>
       </Expression>
       <Expression xsi:type="WorkflowOutput" />
       <Expression xsi:type="Combinator">
@@ -142,6 +142,71 @@
           <Value>0</Value>
         </Combinator>
       </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="BooleanProperty">
+          <Value>true</Value>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Condition">
+        <Workflow>
+          <Nodes>
+            <Expression xsi:type="WorkflowInput">
+              <Name>Source1</Name>
+            </Expression>
+            <Expression xsi:type="WorkflowOutput" />
+            <Expression xsi:type="Equal">
+              <Operand xsi:type="BooleanProperty">
+                <Value>true</Value>
+              </Operand>
+            </Expression>
+          </Nodes>
+          <Edges>
+            <Edge>
+              <From>0</From>
+              <To>2</To>
+              <Label>Source1</Label>
+            </Edge>
+            <Edge>
+              <From>2</From>
+              <To>1</To>
+              <Label>Source1</Label>
+            </Edge>
+          </Edges>
+        </Workflow>
+      </Expression>
+      <Expression xsi:type="ExternalizedPropertyOfBooleanBooleanProperty">
+        <MemberName>Value</MemberName>
+        <Name>RecordSound</Name>
+        <Value>true</Value>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q5:AudioWriter">
+          <q5:FileName>C:\iblrig_data\Subjects\_iblrig_test_mouse\2019-04-08\005\raw_behavior_data\_iblrig_micData.raw.wav</q5:FileName>
+          <q5:Suffix>None</q5:Suffix>
+          <q5:Buffered>true</q5:Buffered>
+          <q5:Overwrite>false</q5:Overwrite>
+          <q5:SamplingFrequency>200000</q5:SamplingFrequency>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="ExternalizedPropertyOfStringAudioWriter">
+        <MemberName>FileName</MemberName>
+        <Name>FileNameMic</Name>
+        <Value>C:\iblrig_data\Subjects\_iblrig_test_mouse\2019-04-08\005\raw_behavior_data\_iblrig_micData.raw.wav</Value>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="SubscribeWhen" />
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q5:AudioCapture">
+          <q5:DeviceName>Microphone (UltraMic 200K 16 bi</q5:DeviceName>
+          <q5:Frequency>200000</q5:Frequency>
+          <q5:SampleFormat>Mono16</q5:SampleFormat>
+          <q5:BufferLength>10</q5:BufferLength>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q2:Grayscale" />
+      </Expression>
     </Nodes>
     <Edges>
       <Edge>
@@ -156,7 +221,7 @@
       </Edge>
       <Edge>
         <From>1</From>
-        <To>3</To>
+        <To>28</To>
         <Label>Source1</Label>
       </Edge>
       <Edge>
@@ -249,6 +314,41 @@
         <To>18</To>
         <Label>Source1</Label>
       </Edge>
+      <Edge>
+        <From>21</From>
+        <To>22</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>22</From>
+        <To>26</To>
+        <Label>Source2</Label>
+      </Edge>
+      <Edge>
+        <From>23</From>
+        <To>21</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>25</From>
+        <To>24</To>
+        <Label>Source2</Label>
+      </Edge>
+      <Edge>
+        <From>26</From>
+        <To>24</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>27</From>
+        <To>26</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>28</From>
+        <To>3</To>
+        <Label>Source1</Label>
+      </Edge>
     </Edges>
   </Workflow>
   <ExtensionTypes>
@@ -266,5 +366,9 @@
     <Type>Bonsai.Reactive.TakeUntil, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Osc.ReceiveMessage, Bonsai.Osc, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Expressions.FloatProperty, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Audio.AudioWriter, Bonsai.Audio, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Expressions.ExternalizedProperty`2[[System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089],[Bonsai.Audio.AudioWriter, Bonsai.Audio, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null]], Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Audio.AudioCapture, Bonsai.Audio, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Vision.Grayscale, Bonsai.Vision, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
   </ExtensionTypes>
 </WorkflowBuilder>

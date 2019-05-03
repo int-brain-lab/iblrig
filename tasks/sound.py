@@ -1,15 +1,15 @@
+#!/usr/bin/env python
 # -*- coding:utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date: Thursday, September 27th 2018, 6:32:28 pm
-# @Last Modified by:   Niccolò Bonacchi
-# @Last Modified time: 2018-09-28 15:26:50
-
 import numpy as np
-import subprocess
-import os
 import sys
 import platform
 import logging
+
+# from pybpod_soundcard_module.module import SoundCard, SoundCommandType
+from pybpod_soundcard_module.module_api import (SoundCardModule, DataType,
+                                                SampleRate)
 log = logging.getLogger('iblrig')
 
 
@@ -108,9 +108,9 @@ def make_sound(rate=44100, frequency=5000, duration=0.1, amplitude=1,
     return sound
 
 
-def save_bin(sound, file_path):
+def format_sound(sound, file_path=None, flat=False):
     """
-    Save binary file for CFSoundcard upload.
+    Format sound to send to sound card.
 
     Binary files to be sent to the sound card need to be a single contiguous
     vector of int32 s. 4 Bytes left speaker, 4 Bytes right speaker, ..., etc.
@@ -118,7 +118,7 @@ def save_bin(sound, file_path):
 
     :param sound: Stereo sound
     :type sound: 2d numpy.array os shape (n_samples, 2)
-    :param file_path: full path (w/ name) of location where to save the file
+    :param file_path: full path of file. [default: None]
     :type file_path: str
     """
     bin_sound = (sound * ((2**31) - 1)).astype(np.int32)
@@ -129,62 +129,59 @@ def save_bin(sound, file_path):
     bin_save = bin_sound.reshape(1, np.multiply(*bin_sound.shape))
     bin_save = np.ascontiguousarray(bin_save)
 
-    with open(file_path, 'wb') as bf:
-        bf.writelines(bin_save)
+    if file_path:
+        with open(file_path, 'wb') as bf:
+            bf.writelines(bin_save)
+
+    return bin_sound.flatten() if flat else bin_sound
 
 
-def upload(uploader_tool, file_path, index, type_=0, sample_rate=96):
-    """
-    Upload a bin file to an index of the non volatile memory of the sound card.
+def configure_sound_card(sounds=[], indexes=[], sample_rate=192):
+    card = SoundCardModule()
+    if sample_rate == 192 or sample_rate == 192000:
+        sample_rate = SampleRate._192000HZ
+    elif sample_rate == 96 or sample_rate == 96000:
+        sample_rate = SampleRate._96000HZ
+    else:
+        log.error(f"Sound sample rate {sample_rate} should be 96 or 192 (KHz)")
+        raise(ValueError)
 
-    :param uploader_tool: path of executable for transferring sounds
-    :type uploader_tool: str
-    :param file_path: path of file to be uploaded
-    :type file_path: str
-    :param index: E[2-31] memory bank to upload to
-    :type index: int
-    :param type_: {0: int32, 1: float32} datatype of binary file, defaults to 0
-    :param type_: int, optional
-    :param sample_rate: [96, 192] (KHz) playback sample rate, defaults to 96
-    :param sample_rate: int, optional
-    """
-    file_name = file_path.split(os.sep)[-1]  # noqa
-    file_folder = file_path.split(os.sep)[:-1]
-    subprocess.call([uploader_tool, file_path, index, type_, sample_rate])
+    if len(sounds) != len(indexes):
+        log.error("Wrong number of sounds and indexes")
+        raise(ValueError)
 
-    log_file = os.path.join(file_folder, 'log')
-    with open(log_file, 'a') as f:  # noqa
-        pass
+    sounds = [format_sound(s, flat=True) for s in sounds]
+    for sound, index in zip(sounds, indexes):
+        card.send_sound(sound, index, sample_rate, DataType.INT32)
+
+    card.close()
     return
 
 
-def get_uploaded_sounds():
-    pass
-
-
 def sound_sample_freq(soft_sound):
-    if soft_sound == 'xonar':
-        ssf = 192000
-    elif soft_sound == 'sysdefault':
-        ssf = 44100
-    elif soft_sound is None:
-        ssf = 96000
-
-    return ssf
+    if soft_sound == 'sysdefault':
+        return 44100
+    elif soft_sound == 'xonar' or soft_sound is None:
+        return 192000
+    else:
+        log.error("SOFT_SOUND in not: 'sysdefault', 'xonar' or 'None'")
+        raise(NotImplementedError)
 
 
 def init_sounds(sph_obj, tone=True, noise=True):
     if not sph_obj.SOFT_SOUND:
         msg = f"""
     ##########################################
-    SOUND BOARD NOT IMPLEMTNED YET!!",
+    SOUND BOARD NOT FOUND ON SYSTEM!!",
     PLEASE GO TO:
     iblrig_params/IBL/tasks/{sph_obj.PYBPOD_PROTOCOL}/task_settings.py
     and set
         SOFT_SOUND = 'sysdefault' or 'xonar'
     ##########################################"""
-        log.error(msg)
-        raise(NotImplementedError)
+        card = SoundCardModule()
+        if card._port is None and card._serial_port is None:
+            log.error(msg)
+            raise(NameError)
     if tone:
         sph_obj.GO_TONE = make_sound(
             rate=sph_obj.SOUND_SAMPLE_FREQ,
@@ -205,10 +202,46 @@ def init_sounds(sph_obj, tone=True, noise=True):
 
 
 if __name__ == '__main__':
-    sd = configure_sounddevice(output='xonar')
+    # # Generate sounds
+    device = 'xonar'
+    samplerate = sound_sample_freq(device)
+    sd = configure_sounddevice(output=device, samplerate=samplerate)
     sd.stop()
-    L_TTL = make_sound(chans='L+TTL', amplitude=0.2)
+    rig_tone = make_sound(rate=samplerate, frequency=5000,
+                          duration=10, amplitude=0.1)
+    rig_noise = make_sound(rate=samplerate, frequency=-
+                           1, duration=10, amplitude=0.1)
     N_TTL = make_sound(chans='L+TTL', amplitude=-1)
-    sd.play(L_TTL, 44100, mapping=[1, 2])
+
+    sd.play(rig_tone, samplerate, mapping=[1, 2])
+
+    # # TEST SOUNDCARD MODULE
+    # card = SoundCardModule()
+    # SOFT_SOUND = None
+    # SOUND_SAMPLE_FREQ = sound_sample_freq(SOFT_SOUND)
+    # SOUND_BOARD_BPOD_PORT = 'Serial3'
+    # WHITE_NOISE_DURATION = float(0.5)
+    # WHITE_NOISE_AMPLITUDE = float(0.05)
+    # GO_TONE_DURATION = float(0.1)
+    # GO_TONE_FREQUENCY = int(5000)
+    # GO_TONE_AMPLITUDE = float(0.1)
+    # GO_TONE = make_sound(
+    #     rate=SOUND_SAMPLE_FREQ, frequency=GO_TONE_FREQUENCY,
+    #     duration=GO_TONE_DURATION, amplitude=GO_TONE_AMPLITUDE,
+    #     fade=0.01, chans='stereo')
+    # WHITE_NOISE = make_sound(
+    #     rate=SOUND_SAMPLE_FREQ, frequency=-1,
+    #     duration=WHITE_NOISE_DURATION,
+    #     amplitude=WHITE_NOISE_AMPLITUDE, fade=0.01, chans='stereo')
+    # GO_TONE_IDX = 2
+    # WHITE_NOISE_IDX = 4
+
+    # wave_int = format_sound(GO_TONE, flat=True)
+    # noise_int = format_sound(WHITE_NOISE, flat=True)
+
+    # card = SoundCardModule()
+    # card.send_sound(wave_int, GO_TONE_IDX, SampleRate._96000HZ, DataType.INT32)  # noqa
+    # card.send_sound(noise_int, WHITE_NOISE_IDX, SampleRate._96000HZ,
+    #     DataType.INT32)
 
     print('i')

@@ -1,8 +1,7 @@
+#!/usr/bin/env python
 # -*- coding:utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date: Tuesday, November 20th 2018, 9:21:15 am
-# @Last Modified by: Niccolò Bonacchi
-# @Last Modified time: 9-01-2019 10:46:01.011
 import shutil
 import sys
 from pathlib import Path
@@ -10,7 +9,7 @@ from pathlib import Path
 from pybpodgui_api.models.project import Project
 
 
-def copy_code_files_to_iblrig_params(iblrig_params_path, task=None,
+def copy_code_files_to_iblrig_params(iblrig_params_path,
                                      exclude_filename=None):
     """Copy all files in root tasks folder to iblrig_params_path
     Copy all *.py files in iblrig_path to iblrig_params/IBL/tasks/<task_name>/*
@@ -33,15 +32,11 @@ def copy_code_files_to_iblrig_params(iblrig_params_path, task=None,
             shutil.copy(f, dst_folder)
             print(f"Copied {f} to {dst_folder}")
 
+    # Copy cleanup, user_settings, path_helper and bonsai_stop
+    print('\nS:', str(iblrig_tasks_path), '\nD:', str(iblrig_params_path))
+    copy_files(iblrig_tasks_path, iblrig_params_path)
     # Copy all tasks
     tasks = [x for x in iblrig_tasks_path.glob('*') if x.is_dir()]
-    if task:
-        tasks = [t for t in tasks if task in str(t)]
-    else:
-        # Copy cleanup, user_settings, path_helper and bonsai_stop
-        print('\nS:', str(iblrig_tasks_path), '\nD:', str(iblrig_params_path))
-        copy_files(iblrig_tasks_path, iblrig_params_path)
-
     for sf in tasks:
         df = iblrig_params_tasks_path / sf.name
         df.mkdir(parents=True, exist_ok=True)
@@ -174,6 +169,8 @@ def config_task(iblproject_path, task_name: str):
         task = create_task_create_command(task, patch=True)
     if task.name == '_iblrig_tasks_biasedChoiceWorld':
         task = create_task_create_command(task, patch=False)
+    if task.name == '_iblrig_tasks_ephysChoiceWorld':
+        task = create_task_create_command(task, patch=False)
 
     p.save(iblproject_path)
     print("    Task configured")
@@ -237,6 +234,8 @@ def create_experiment_setups(iblproject_path, exp_name: str):
             exp, 'habituationChoiceWorld', p.boards[0].name, None)
         trainingChoiceWorld = create_setup(  # noqa
             exp, 'trainingChoiceWorld', p.boards[0].name, None)
+        ephysChoiceWorld = create_setup(  # noqa
+            exp, 'ephysChoiceWorld', p.boards[0].name, None)
 
     p.save(iblproject_path)
 
@@ -291,6 +290,7 @@ def create_ibl_tasks(iblproject_path):
         '_iblrig_tasks_biasedChoiceWorld',
         '_iblrig_tasks_habituationChoiceWorld',
         '_iblrig_tasks_trainingChoiceWorld',
+        '_iblrig_tasks_ephysChoiceWorld',
     ]
     for task_name in task_names:
         create_task(iblproject_path, task_name=task_name)

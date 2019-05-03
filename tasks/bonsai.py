@@ -1,8 +1,7 @@
+#!/usr/bin/env python
 # -*- coding:utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date: Tuesday, February 5th 2019, 5:56:17 pm
-# @Last Modified by: Niccolò Bonacchi
-# @Last Modified time: 5-02-2019 05:56:19.1919
 import os
 import subprocess
 from pathlib import Path
@@ -32,12 +31,8 @@ def start_visual_stim(sph):
         itr = "-p:FileNameTrialInfo=" + os.path.join(
             sph.SESSION_RAW_DATA_FOLDER,
             "_iblrig_encoderTrialInfo.raw.ssv")
-        mic = "-p:FileNameMic=" + os.path.join(
-            sph.SESSION_RAW_DATA_FOLDER,
-            "_iblrig_micData.raw.wav")
 
         com = "-p:REPortName=" + sph.COM['ROTARY_ENCODER']
-        rec = "-p:RecordSound=" + str(sph.RECORD_SOUND)
 
         sync_x = "-p:sync_x=" + str(sph.SYNC_SQUARE_X)
         sync_y = "-p:sync_y=" + str(sph.SYNC_SQUARE_Y)
@@ -51,12 +46,11 @@ def start_visual_stim(sph):
 
         if 'habituation' in sph.PYBPOD_PROTOCOL:
             subprocess.Popen(
-                [bns, wkfl, editor, evt, itr, com, mic, rec, sync_x, sync_y])
+                [bns, wkfl, editor, evt, itr, com, sync_x, sync_y])
         else:
             subprocess.Popen(
-                [bns, wkfl, editor, pos,
-                 evt, itr, com, mic, rec, sync_x, sync_y])
-        time.sleep(5)
+                [bns, wkfl, editor, pos, evt, itr, com, sync_x, sync_y])
+        time.sleep(3)
         os.chdir(here)
     else:
         sph.USE_VISUAL_STIMULUS = False
@@ -81,9 +75,14 @@ def start_camera_recording(sph):
         '_iblrig_leftCamera.raw.avi')
     rec = '-p:SaveVideo=' + str(sph.RECORD_VIDEO)
 
+    mic = "-p:FileNameMic=" + os.path.join(
+            sph.SESSION_RAW_DATA_FOLDER,
+            "_iblrig_micData.raw.wav")
+    srec = "-p:RecordSound=" + str(sph.RECORD_SOUND)
+
     start = '--start'
 
-    subprocess.Popen([bns, wkfl, start, ts, vid, rec])
+    subprocess.Popen([bns, wkfl, start, ts, vid, rec, mic, srec])
     time.sleep(1)
     os.chdir(here)
 

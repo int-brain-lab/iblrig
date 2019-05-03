@@ -1,8 +1,7 @@
+#!/usr/bin/env python
 # -*- coding:utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date: Tuesday, February 5th 2019, 4:11:13 pm
-# @Last Modified by: Niccolò Bonacchi
-# @Last Modified time: 5-02-2019 04:11:16.1616
 import logging
 import numpy as np
 import pandas as pd

@@ -1,8 +1,7 @@
+#!/usr/bin/env python
 # -*- coding:utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date: Wednesday, September 12th 2018, 3:25:44 pm
-# @Last Modified by: Niccolò Bonacchi
-# @Last Modified time: 12-09-2018 03:26:03.033
 from pybpodapi.protocol import Bpod
 import numpy as np
 import os
