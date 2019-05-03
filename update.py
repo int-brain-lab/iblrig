@@ -121,7 +121,7 @@ def update_conda():
 
 
 def update_pip():
-    os.system("pip install --user --upgrade pip")
+    os.system("pip install --user --upgrade pip setuptools wheel")
 
 
 def update_ibllib():
@@ -244,8 +244,8 @@ def main(args):
             update_env()
 
         if args.conda_pip:
-            update_conda()
             update_pip()
+            update_conda()
 
         return
 
@@ -253,6 +253,7 @@ def main(args):
 if __name__ == '__main__':
     IBLRIG_ROOT_PATH = Path.cwd()
     fetch()
+    update_pip()
     ALL_BRANCHES = get_branches()
     ALL_VERSIONS = get_versions()
     BRANCH = get_current_branch()
