@@ -116,6 +116,13 @@ def update_env():
     os.system("pip install -r requirements.txt --upgrade")  # noqa
 
 
+def update_conda():
+    os.system("conda update -n base conda")
+
+def update_pip():
+    os system("pip install --upgrade pip")
+
+
 def update_ibllib():
     new_install_location = IBLRIG_ROOT_PATH / 'src' / 'ibllib'
     old_install_location = IBLRIG_ROOT_PATH.parent / 'ibllib'
