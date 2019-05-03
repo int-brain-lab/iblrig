@@ -111,9 +111,13 @@ def update_remotes():
     subprocess.call(['git', 'remote', 'update'])
 
 
+def update_env():
+    print("\nUpdating iblenv")
+    os.system(
+        "conda deactivate && conda activate iblenv && pip install -r requirements.txt --upgrade --ignore-installed")  # noqa
+
+
 def update_ibllib():
-    if 'ciso8601' not in os.popen("conda list").read().split():
-        os.system("conda install -n iblenv -c conda-forge -y ciso8601")
     new_install_location = IBLRIG_ROOT_PATH / 'src' / 'ibllib'
     old_install_location = IBLRIG_ROOT_PATH.parent / 'ibllib'
 
@@ -160,6 +164,7 @@ def update_to_latest():
         return
     else:
         checkout_version(sorted(versions)[-1])
+        update_env()
         import_tasks()
         update_ibllib()
 
@@ -182,6 +187,7 @@ def main(args):
     elif nargs_passed == 1:
         if args.b and args.b in ALL_BRANCHES:
             checkout_branch(args.b)
+            update_env()
             import_tasks()
             update_ibllib()
         elif args.b and args.b not in ALL_BRANCHES:
@@ -192,6 +198,7 @@ def main(args):
 
         if args.v and args.v in ALL_VERSIONS:
             checkout_version(args.v)
+            update_env()
             import_tasks()
             update_ibllib()
         elif args.v and args.v not in ALL_VERSIONS:
@@ -205,6 +212,12 @@ def main(args):
 
         if args.info:
             info()
+
+        if args.import_tasks:
+            import_tasks()
+
+        if args.iblenv:
+            update_env()
         return
 
 
@@ -229,6 +242,10 @@ if __name__ == '__main__':
     parser.add_argument('--info', required=False, default=False,
                         action='store_true',
                         help='Disply information on branches and versions')
+    parser.add_argument('--iblenv', required=False, default=False,
+                        action='store_true', help='Update iblenv only')
+    parser.add_argument('--import-tasks', required=False, default=False,
+                        action='store_true', help='Reimport tasks only')
     args = parser.parse_args()
     main(args)
     print('\n')
