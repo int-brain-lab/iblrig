@@ -117,11 +117,11 @@ def update_env():
 
 
 def update_conda():
-    os.system("conda update -n base conda")
+    os.system("conda update -y -n base conda")
 
 
 def update_pip():
-    os.system("pip install --upgrade pip")
+    os.system("pip install --user --upgrade pip")
 
 
 def update_ibllib():
@@ -242,6 +242,11 @@ def main(args):
 
         if args.iblenv:
             update_env()
+
+        if args.conda_pip:
+            update_conda()
+            update_pip()
+
         return
 
 
@@ -270,6 +275,8 @@ if __name__ == '__main__':
                         action='store_true', help='Update iblenv only')
     parser.add_argument('--import-tasks', required=False, default=False,
                         action='store_true', help='Reimport tasks only')
+    parser.add_argument('--conda-pip', required=False, default=False,
+                        action='store_true', help='Update conda and pip')
     args = parser.parse_args()
     main(args)
     print('\n')
