@@ -162,6 +162,18 @@ def info():
                 sorted(versions)[-1], sorted(versions)[-1]))
 
 
+def ask_user_input(msg="Do you want to update?", responses=['y', 'n']):
+    msg = msg + f' {responses}: '
+    userinput = subprocess.check_output(
+        f'read -p "{msg}" userinput && echo $userinput', shell=True)
+    response = userinput.decode().strip()
+    if response not in responses:
+        print(f"Acceptable answers: {responses}")
+        return ask_user_input(msg=msg, responses=responses)
+
+    return response
+
+
 def update_to_latest():
     ver = VERSION
     versions = ALL_VERSIONS
@@ -169,10 +181,14 @@ def update_to_latest():
     if idx + 1 == len(versions):
         return
     else:
-        checkout_version(sorted(versions)[-1])
-        update_env()
-        import_tasks()
-        update_ibllib()
+        resp = ask_user_input()
+        if resp == 'y':
+            checkout_version(sorted(versions)[-1])
+            update_env()
+            import_tasks()
+            update_ibllib()
+        else:
+            return
 
 
 def main(args):
