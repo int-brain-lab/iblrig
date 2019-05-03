@@ -120,7 +120,7 @@ def update_conda():
     os.system("conda update -n base conda")
 
 def update_pip():
-    os system("pip install --upgrade pip")
+    os.system("pip install --upgrade pip")
 
 
 def update_ibllib():
