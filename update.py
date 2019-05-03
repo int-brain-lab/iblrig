@@ -183,15 +183,21 @@ def update_to_latest():
         _update()
 
 
-def _update():
+def _update(branch=None, version=None):
     resp = ask_user_input()
     if resp == 'y':
-        checkout_version(sorted(ALL_VERSIONS)[-1])
+        if branch:
+            checkout_branch(branch)
+        elif version:
+            checkout_version(version)
+        elif branch is None and version is None:
+            checkout_version(sorted(ALL_VERSIONS)[-1])
         update_env()
         import_tasks()
         update_ibllib()
     else:
         return
+
 
 def main(args):
     nargs_passed = sum([True for x in args.__dict__.values() if x])
@@ -210,7 +216,7 @@ def main(args):
         return
     elif nargs_passed == 1:
         if args.b and args.b in ALL_BRANCHES:
-            _update()
+            _update(branch=args.b)
         elif args.b and args.b not in ALL_BRANCHES:
             print('Branch', args.b, 'not found')
 
@@ -218,7 +224,7 @@ def main(args):
             checkout_single_file(file='update.py', branch='master')
 
         if args.v and args.v in ALL_VERSIONS:
-            _update()
+            _update(vesrion=args.v)
         elif args.v and args.v not in ALL_VERSIONS:
             print('Version', args.v, 'not found')
 
