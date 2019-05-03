@@ -224,7 +224,7 @@ def main(args):
             checkout_single_file(file='update.py', branch='master')
 
         if args.v and args.v in ALL_VERSIONS:
-            _update(vesrion=args.v)
+            _update(version=args.v)
         elif args.v and args.v not in ALL_VERSIONS:
             print('Version', args.v, 'not found')
 
