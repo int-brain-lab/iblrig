@@ -186,7 +186,7 @@ def update_to_latest():
 def _update():
     resp = ask_user_input()
     if resp == 'y':
-        checkout_version(sorted(versions)[-1])
+        checkout_version(sorted(ALL_VERSIONS)[-1])
         update_env()
         import_tasks()
         update_ibllib()
