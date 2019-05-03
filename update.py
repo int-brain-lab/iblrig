@@ -113,7 +113,7 @@ def update_remotes():
 
 def update_env():
     print("\nUpdating iblenv")
-    os.system("pip install -r requirements.txt --upgrade")  # noqa
+    os.system("pip install -r requirements.txt --upgrade --ignore-installed")  # noqa
 
 
 def update_conda():
