@@ -4,7 +4,7 @@
 # @Date: Thursday, January 31st 2019, 4:12:19 pm
 from pathlib import Path
 from ibllib.graphic import numinput
-import ciso8601
+from dateutil import parser
 from misc import patch_settings_file
 
 IBLRIG_DATA = Path().cwd().parent.parent.parent.parent / 'iblrig_data' / 'Subjects'  # noqa
@@ -13,7 +13,7 @@ IBLRIG_DATA = Path().cwd().parent.parent.parent.parent / 'iblrig_data' / 'Subjec
 def main() -> None:
     poop_flags = list(IBLRIG_DATA.rglob('poop_count.flag'))
     poop_flags = sorted(poop_flags, key=lambda x: (
-        ciso8601.parse_datetime(x.parent.parent.name), int(x.parent.name)))
+        parser.parse(x.parent.parent.name), int(x.parent.name)))
     if not poop_flags:
         return
     flag = poop_flags[-1]

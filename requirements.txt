@@ -12,7 +12,6 @@ cycler==0.10.0
 Cython==0.29.6
 dataclasses==0.6
 globus-sdk==1.7.1
-ibllib==0.5.0
 idna==2.8
 kiwisolver==1.0.1
 libusb==1.0.22b4

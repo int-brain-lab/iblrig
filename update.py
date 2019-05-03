@@ -111,9 +111,20 @@ def update_remotes():
     subprocess.call(['git', 'remote', 'update'])
 
 
+def update_env():
+    print("\nUpdating iblenv")
+    os.system("pip install -r requirements.txt --upgrade --user")  # noqa
+
+
+def update_conda():
+    os.system("conda update -y -n base conda")
+
+
+def update_pip():
+    os.system("pip install --user --upgrade pip")
+
+
 def update_ibllib():
-    if 'ciso8601' not in os.popen("conda list").read().split():
-        os.system("conda install -n iblenv -c conda-forge -y ciso8601")
     new_install_location = IBLRIG_ROOT_PATH / 'src' / 'ibllib'
     old_install_location = IBLRIG_ROOT_PATH.parent / 'ibllib'
 
@@ -152,6 +163,16 @@ def info():
                 sorted(versions)[-1], sorted(versions)[-1]))
 
 
+def ask_user_input(msg="Do you want to update?", responses=['y', 'n']):
+    use_msg = msg + f' {responses}: '
+    response = input(use_msg)
+    if response not in responses:
+        print(f"Acceptable answers: {responses}")
+        return ask_user_input(msg=msg, responses=responses)
+
+    return response
+
+
 def update_to_latest():
     ver = VERSION
     versions = ALL_VERSIONS
@@ -159,9 +180,23 @@ def update_to_latest():
     if idx + 1 == len(versions):
         return
     else:
-        checkout_version(sorted(versions)[-1])
+        _update()
+
+
+def _update(branch=None, version=None):
+    resp = ask_user_input()
+    if resp == 'y':
+        if branch:
+            checkout_branch(branch)
+        elif version:
+            checkout_version(version)
+        elif branch is None and version is None:
+            checkout_version(sorted(ALL_VERSIONS)[-1])
+        update_env()
         import_tasks()
         update_ibllib()
+    else:
+        return
 
 
 def main(args):
@@ -181,9 +216,7 @@ def main(args):
         return
     elif nargs_passed == 1:
         if args.b and args.b in ALL_BRANCHES:
-            checkout_branch(args.b)
-            import_tasks()
-            update_ibllib()
+            _update(branch=args.b)
         elif args.b and args.b not in ALL_BRANCHES:
             print('Branch', args.b, 'not found')
 
@@ -191,9 +224,7 @@ def main(args):
             checkout_single_file(file='update.py', branch='master')
 
         if args.v and args.v in ALL_VERSIONS:
-            checkout_version(args.v)
-            import_tasks()
-            update_ibllib()
+            _update(vesrion=args.v)
         elif args.v and args.v not in ALL_VERSIONS:
             print('Version', args.v, 'not found')
 
@@ -205,6 +236,17 @@ def main(args):
 
         if args.info:
             info()
+
+        if args.import_tasks:
+            import_tasks()
+
+        if args.iblenv:
+            update_env()
+
+        if args.conda_pip:
+            update_conda()
+            update_pip()
+
         return
 
 
@@ -229,6 +271,12 @@ if __name__ == '__main__':
     parser.add_argument('--info', required=False, default=False,
                         action='store_true',
                         help='Disply information on branches and versions')
+    parser.add_argument('--iblenv', required=False, default=False,
+                        action='store_true', help='Update iblenv only')
+    parser.add_argument('--import-tasks', required=False, default=False,
+                        action='store_true', help='Reimport tasks only')
+    parser.add_argument('--conda-pip', required=False, default=False,
+                        action='store_true', help='Update conda and pip')
     args = parser.parse_args()
     main(args)
     print('\n')
