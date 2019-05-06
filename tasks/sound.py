@@ -6,6 +6,7 @@ import numpy as np
 import sys
 import platform
 import logging
+from scipy.signal import chirp
 
 # from pybpod_soundcard_module.module import SoundCard, SoundCommandType
 from pybpod_soundcard_module.module_api import (SoundCardModule, DataType,
@@ -106,6 +107,26 @@ def make_sound(rate=44100, frequency=5000, duration=0.1, amplitude=1,
         sound = np.array([ttl, tone]).T
 
     return sound
+
+
+def make_chirp(f0=80, f1=160, length=0.1, amp=0.1, fade=0.01, sf=192000):
+    t0 = 0
+    t1 = length
+    t = np.linspace(t0, t1, sf)
+
+    c = amp * chirp(t, f0=f0, f1=f1, t1=t1, method='linear')
+
+    len_fade = int(fade * sf)
+    fade_io = np.hanning(len_fade * 2)
+    fadein = fade_io[:len_fade]
+    fadeout = fade_io[len_fade:]
+    win = np.ones(len(t))
+    win[:len_fade] = fadein
+    win[-len_fade:] = fadeout
+
+    c = c * win
+    out = np.array([c, c]).T
+    return out
 
 
 def format_sound(sound, file_path=None, flat=False):
@@ -212,8 +233,13 @@ if __name__ == '__main__':
     rig_noise = make_sound(rate=samplerate, frequency=-
                            1, duration=10, amplitude=0.1)
     N_TTL = make_sound(chans='L+TTL', amplitude=-1)
+    import matplotlib.pyplot as plt
+    # sd.play(rig_tone, samplerate, mapping=[1, 2])
+    l = 0.5
+    c = make_chirp(f0=80, f1=160, length=l, amp=0.1, fade=0.05, sf=192000)
+    plt.plot(np.linspace(0, l, 192000), c[:, 0])
+    plt.show()
 
-    sd.play(rig_tone, samplerate, mapping=[1, 2])
 
     # # TEST SOUNDCARD MODULE
     # card = SoundCardModule()
