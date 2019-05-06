@@ -56,6 +56,9 @@ bpod.load_serial_message(sound_card, sc_play_tone, [ord('P'), sph.GO_TONE_IDX])
 sc_play_noise = re_reset + 5
 bpod.load_serial_message(sound_card, sc_play_noise, [
                          ord('P'), sph.WHITE_NOISE_IDX])
+sc_play_chirp = re_reset + 6
+bpod.load_serial_message(sound_card, sc_play_noise, [
+                         ord('P'), sph.CHIRP_IDX])
 
 # =============================================================================
 # TRIAL PARAMETERS AND STATE MACHINE
@@ -79,7 +82,7 @@ for i in range(sph.NTRIALS):  # Main loop
             state_timer=3600,  # ~100µs hardware irreducible delay
             state_change_conditions={'Port1In': 'reset_rotary_encoder'},
             output_actions=[('Serial1', re_stop_stim),
-                            ('SoftCode', 0),
+                            ('Serial3', sc_play_chirp)])
                             ('BNC1', 255)])
     else:
         sma.add_state(
