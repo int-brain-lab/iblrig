@@ -22,14 +22,14 @@ numpy==1.16.3
 opencv-python==3.4.5.20
 pandas==0.24.2
 pge-plugin-terminal==0.1
-pybpod==1.7.2
+pybpod==1.7.3
 pybpod-api==1.6.3
 pybpod-gui-api==1.2.2
 pybpod-gui-plugin==1.6.1
 pybpod-gui-plugin-alyx==1.1
 pybpod-gui-plugin-emulator==0.1.0
 pybpod-gui-plugin-rotaryencoder==0.1
-pybpod-gui-plugin-session-history==1.4.0
+pybpod-gui-plugin-session-history==1.4.1
 pybpod-gui-plugin-soundcard==0.1.4
 pybpod-gui-plugin-stmdiagram==1.0.0
 pybpod-gui-plugin-timeline==1.0.1
