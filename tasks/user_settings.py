@@ -40,7 +40,11 @@ GENERIC_EDITOR_PLUGINS_LIST = [
     'pybpodgui_plugin_session_history',
     'pybpod_rotaryencoder_module',
     'pybpod_alyx_module',
+    'pybpod_gui_plugin_emulator',
+    'pybpod_soundcard_module',
 ]
+
+PYBPODGUI_API_AUTO_SAVE_PROJECT_ON_RUN = True
 
 TARGET_BPOD_FIRMWARE_VERSION = '22'
 

@@ -219,8 +219,8 @@ if __name__ == '__main__':
             install_deps()
         elif not args.new:
             install_iblrig_requirements()
-            yn = clone_ibllib()
-            install_ibllib(user_input=yn)
+        yn = clone_ibllib()
+        install_ibllib(user_input=yn)
 
         configure_iblrig_params()
         print("\nIts time to install Bonsai:")
