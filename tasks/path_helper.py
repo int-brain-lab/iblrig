@@ -285,7 +285,7 @@ class SessionPathCreator(object):
             logger.debug(f"Setting data folder to location: {out}")
             return out
 
-    def _session_number(self):
+    def _session_number(self) -> str:
         logger.debug("Initializing session number")
         if not Path(self.SESSION_DATE_FOLDER).exists():
             return '001'
