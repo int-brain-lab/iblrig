@@ -1,7 +1,6 @@
 aenum==2.1.2
 AnyQt==0.0.10
 asn1crypto==0.24.0
-certifi==2019.3.9
 cffi==1.12.2
 chardet==3.0.4
 colorama==0.4.1
@@ -62,4 +61,3 @@ sounddevice==0.3.13
 urllib3==1.24.2
 visvis==1.11.1
 win-inet-pton==1.1.0
-wincertstore==0.2
