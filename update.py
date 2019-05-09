@@ -193,6 +193,8 @@ def _update(branch=None, version=None):
             checkout_version(version)
         elif branch is None and version is None:
             checkout_version(sorted(ALL_VERSIONS)[-1])
+        update_pip()
+        update_conda()
         update_env()
         import_tasks()
         update_ibllib()
@@ -254,7 +256,6 @@ def main(args):
 if __name__ == '__main__':
     IBLRIG_ROOT_PATH = Path.cwd()
     fetch()
-    update_pip()
     ALL_BRANCHES = get_branches()
     ALL_VERSIONS = get_versions()
     BRANCH = get_current_branch()
