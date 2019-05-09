@@ -88,7 +88,7 @@ def install_environment():
 
 
 def install_deps():
-    os.system("conda activate iblenv && pip install -r requirements.txt")
+    os.system("conda activate iblenv && pip install -r requirements.txt -U")
 
 
 def install_iblrig_requirements():
