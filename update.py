@@ -38,7 +38,7 @@ def get_versions():
                                     "--tags", "origin"]).decode().split()
     vers = [x for x in vers[1::2] if '{' not in x]
     vers = [x.split('/')[-1] for x in vers]
-    available = [x for x in vers if x >= '3.6.0']
+    available = [x for x in vers if x >= '4.0.0']
     print("Available versions: {}".format(available))
     return vers
 
