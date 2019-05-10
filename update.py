@@ -186,6 +186,7 @@ def update_to_latest():
 
 
 def _update(branch=None, version=None):
+    global no_conda
     resp = ask_user_input()
     if resp == 'y':
         if branch:
@@ -195,7 +196,8 @@ def _update(branch=None, version=None):
         elif branch is None and version is None:
             checkout_version(sorted(ALL_VERSIONS)[-1])
         update_pip()
-        update_conda()
+        if not no_conda:
+            update_conda()
         update_env()
         import_tasks()
         update_ibllib()
@@ -286,6 +288,10 @@ if __name__ == '__main__':
     parser.add_argument('--pip', required=False, default=False,
                         action='store_true',
                         help='Update pip setuptools and wheel')
+    parser.add_argument('--no-conda', required=False, default=False,
+                        action='store_true', help='Dont update conda')
     args = parser.parse_args()
+    global no_conda
+    no_conda = args.no-conda
     main(args)
     print('\n')
