@@ -206,56 +206,55 @@ def _update(branch=None, version=None):
 
 
 def main(args):
+    global no_conda
     nargs_passed = sum([True for x in args.__dict__.values() if x])
 
     if not any(args.__dict__.values()):
         update_to_latest()
 
-    if nargs_passed == 2:
-        if args.update and args.b:
-            if args.b not in ALL_BRANCHES:
-                print('Not found:', args.b)
-                return
-            checkout_single_file(file='update.py', branch=args.b)
-        else:
-            print(NotImplemented)
-        return
-    elif nargs_passed == 1:
-        if args.b and args.b in ALL_BRANCHES:
-            _update(branch=args.b)
-        elif args.b and args.b not in ALL_BRANCHES:
-            print('Branch', args.b, 'not found')
+# if nargs_passed == 2:
+    if args.update and args.b:
+        if args.b not in ALL_BRANCHES:
+            print('Not found:', args.b)
+            return
+        checkout_single_file(file='update.py', branch=args.b)
 
-        if args.update:
-            checkout_single_file(file='update.py', branch='master')
+# elif nargs_passed == 1:
+    if args.b and args.b in ALL_BRANCHES:
+        _update(branch=args.b)
+    elif args.b and args.b not in ALL_BRANCHES:
+        print('Branch', args.b, 'not found')
 
-        if args.v and args.v in ALL_VERSIONS:
-            _update(version=args.v)
-        elif args.v and args.v not in ALL_VERSIONS:
-            print('Version', args.v, 'not found')
+    if args.update:
+        checkout_single_file(file='update.py', branch='master')
 
-        if args.reinstall:
-            os.system("conda deactivate && python install.py")
+    if args.v and args.v in ALL_VERSIONS:
+        _update(version=args.v)
+    elif args.v and args.v not in ALL_VERSIONS:
+        print('Version', args.v, 'not found')
 
-        if args.ibllib:
-            update_ibllib()
+    if args.reinstall:
+        os.system("conda deactivate && python install.py")
 
-        if args.info:
-            info()
+    if args.ibllib:
+        update_ibllib()
 
-        if args.import_tasks:
-            import_tasks()
+    if args.info:
+        info()
 
-        if args.iblenv:
-            update_env()
+    if args.import_tasks:
+        import_tasks()
 
-        if args.pip:
-            update_pip()
+    if args.iblenv:
+        update_env()
 
-        if args.conda:
-            update_conda()
+    if args.pip:
+        update_pip()
 
-        return
+    if args.conda:
+        update_conda()
+
+    return
 
 
 if __name__ == '__main__':
