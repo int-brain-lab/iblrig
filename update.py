@@ -292,6 +292,6 @@ if __name__ == '__main__':
                         action='store_true', help='Dont update conda')
     args = parser.parse_args()
     global no_conda
-    no_conda = args.no-conda
+    no_conda = args.no_conda
     main(args)
     print('\n')
