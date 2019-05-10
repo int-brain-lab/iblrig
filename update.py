@@ -117,11 +117,13 @@ def update_env():
 
 
 def update_conda():
+    print("\nUpdating conda")
     os.system("conda update -y -n base conda")
 
 
 def update_pip():
-    os.system("pip install --upgrade pip setuptools wheel")
+    print("\nUpdating pip et al.")
+    os.system("pip install -U pip setuptools wheel")
 
 
 def update_ibllib():
@@ -243,8 +245,10 @@ def main(args):
         if args.iblenv:
             update_env()
 
-        if args.conda_pip:
+        if args.pip:
             update_pip()
+
+        if args.conda:
             update_conda()
 
         return
@@ -276,8 +280,11 @@ if __name__ == '__main__':
                         action='store_true', help='Update iblenv only')
     parser.add_argument('--import-tasks', required=False, default=False,
                         action='store_true', help='Reimport tasks only')
-    parser.add_argument('--conda-pip', required=False, default=False,
-                        action='store_true', help='Update conda and pip')
+    parser.add_argument('--conda', required=False, default=False,
+                        action='store_true', help='Update conda')
+    parser.add_argument('--pip', required=False, default=False,
+                        action='store_true',
+                        help='Update pip setuptools and wheel')
     args = parser.parse_args()
     main(args)
     print('\n')
