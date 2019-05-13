@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 
 import blocks
 import misc
-from ibllib.dsp.smooth import smooth
+from ibllib.dsp.smooth import rolling_window as smooth
 
 
 def make_pc():
@@ -52,14 +52,14 @@ def generate_sessions(nsessions, path=None):
         pc, len_block = make_pc()
         pcqs = make_pcqs(pc)
         if path is None:
-            path = 'tasks/_iblrig_tasks_ephysChoiceWorld/sessions/'
+            path = '_iblrig_tasks_ephysChoiceWorld/sessions/'
         np.save(path + f'pcqs_session_{i}.npy', pcqs)
         np.save(path + f'pcqs_session_{i}_len_blocks.npy', len_block)
 
 
 def plot_pcqs(session_num):
     num = session_num
-    task = 'tasks/_iblrig_tasks_ephysChoiceWorld/'
+    task = '_iblrig_tasks_ephysChoiceWorld/'
     pcqs = np.load(task + f'sessions/pcqs_session_{num}.npy')
     len_block = np.load(task + f'sessions/pcqs_session_{num}_len_blocks.npy')
 
@@ -102,8 +102,7 @@ if __name__ == "__main__":
     pcqs9, len_block9 = plot_pcqs(9)
     # sns.distplot(pcqs3[:, 2], vertical=True)
     # sns.jointplot(x=range(len(pcqs9)), y=pcqs9[:, 1])
-    qp = sns.jointplot(x=range(len(pcqs9)),
-                       y=pcqs9[:, 2], kind='kde', figsize=(16, 12), dpi=80)
-    qp.set_axis_labels(xlabel='Trials', ylabel='Quiescent period (s)')
-
+    # qp = sns.jointplot(x=range(len(pcqs9)),
+    #                    y=pcqs9[:, 2], kind='kde', figsize=(16, 12), dpi=80)
+    # qp.set_axis_labels(xlabel='Trials', ylabel='Quiescent period (s)')
     print('.')
