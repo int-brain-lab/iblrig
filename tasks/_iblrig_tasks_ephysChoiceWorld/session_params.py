@@ -143,15 +143,11 @@ class SessionParamHandler(object):
             rate=self.SOUND_SAMPLE_FREQ, frequency=-1,
             duration=self.WHITE_NOISE_DURATION,
             amplitude=self.WHITE_NOISE_AMPLITUDE, fade=0.01, chans='stereo')
-        self.CHIRP = sound.make_chirp(
-            f0=80, f1=160, length=0.1, amp=0.1, fade=0.01,
-            sf=self.SOUND_SAMPLE_FREQ)
         self.GO_TONE_IDX = 2
         self.WHITE_NOISE_IDX = 3
-        self.CHIRP_IDX = 4
         sound.configure_sound_card(
-            sounds=[self.GO_TONE, self.WHITE_NOISE, self.CHIRP],
-            indexes=[self.GO_TONE_IDX, self.WHITE_NOISE_IDX, self.CHIRP_IDX],
+            sounds=[self.GO_TONE, self.WHITE_NOISE],
+            indexes=[self.GO_TONE_IDX, self.WHITE_NOISE_IDX],
             sample_rate=self.SOUND_SAMPLE_FREQ)
         # =====================================================================
         # VISUAL STIM
