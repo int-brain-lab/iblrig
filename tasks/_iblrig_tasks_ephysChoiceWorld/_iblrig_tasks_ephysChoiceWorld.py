@@ -170,6 +170,8 @@ for i in range(sph.NTRIALS):  # Main loop
 
     # Send state machine description to Bpod device
     bpod.send_state_machine(sma)
+    if i == 0:
+        sph.warn_ephys()
     # Run state machine
     bpod.run_state_machine(sma)  # Locks until state machine 'exit' is reached
     tph = tph.trial_completed(bpod.session.current_trial.export())
