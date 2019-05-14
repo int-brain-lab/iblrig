@@ -4,13 +4,14 @@
 # @Date: Thursday, March 28th 2019, 7:19:15 pm
 import random
 import math
+from pathlib import Path
 
 import numpy as np
 import matplotlib.pyplot as plt
 
 import blocks
 import misc
-from ibllib.dsp.smooth import smooth
+from ibllib.dsp.smooth import rolling_window as smooth
 
 
 def make_pc():
@@ -47,21 +48,20 @@ def make_pcqs(pc):
     return pcqs
 
 
-def generate_sessions(nsessions, path=None):
+def generate_sessions(nsessions, path='./_iblrig_tasks_ephysChoiceWorld/sessions'):
+    path = Path(path)
+    path.mkdir(parents=True, exist_ok=True)
     for i in range(nsessions):
         pc, len_block = make_pc()
         pcqs = make_pcqs(pc)
-        if path is None:
-            path = 'tasks/_iblrig_tasks_ephysChoiceWorld/sessions/'
-        np.save(path + f'pcqs_session_{i}.npy', pcqs)
-        np.save(path + f'pcqs_session_{i}_len_blocks.npy', len_block)
+        np.save(path / f'pcqs_session_{i}.npy', pcqs)
+        np.save(path / f'pcqs_session_{i}_len_blocks.npy', len_block)
 
 
-def plot_pcqs(session_num):
+def plot_pcqs(session_num, folder='./_iblrig_tasks_ephysChoiceWorld/sessions'):
     num = session_num
-    task = 'tasks/_iblrig_tasks_ephysChoiceWorld/'
-    pcqs = np.load(task + f'sessions/pcqs_session_{num}.npy')
-    len_block = np.load(task + f'sessions/pcqs_session_{num}_len_blocks.npy')
+    pcqs = np.load(folder + f'/pcqs_session_{num}.npy')
+    len_block = np.load(folder + f'/pcqs_session_{num}_len_blocks.npy')
 
     with plt.xkcd(scale=1, length=100, randomness=2):
         f = plt.figure(figsize=(16, 12), dpi=80)
@@ -102,8 +102,9 @@ if __name__ == "__main__":
     pcqs9, len_block9 = plot_pcqs(9)
     # sns.distplot(pcqs3[:, 2], vertical=True)
     # sns.jointplot(x=range(len(pcqs9)), y=pcqs9[:, 1])
-    qp = sns.jointplot(x=range(len(pcqs9)),
-                       y=pcqs9[:, 2], kind='kde', figsize=(16, 12), dpi=80)
-    qp.set_axis_labels(xlabel='Trials', ylabel='Quiescent period (s)')
-
+    # qp = sns.jointplot(x=range(len(pcqs9)),
+    #                    y=pcqs9[:, 2], kind='kde', figsize=(16, 12), dpi=80)
+    # qp.set_axis_labels(xlabel='Trials', ylabel='Quiescent period (s)')
+    # generate_sessions(1, path='sess')
+    # plot_pcqs(0, folder='sess')
     print('.')

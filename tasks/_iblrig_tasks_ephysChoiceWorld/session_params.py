@@ -143,15 +143,11 @@ class SessionParamHandler(object):
             rate=self.SOUND_SAMPLE_FREQ, frequency=-1,
             duration=self.WHITE_NOISE_DURATION,
             amplitude=self.WHITE_NOISE_AMPLITUDE, fade=0.01, chans='stereo')
-        self.CHIRP = sound.make_chirp(
-            f0=80, f1=160, length=0.1, amp=0.1, fade=0.01,
-            sf=self.SOUND_SAMPLE_FREQ)
         self.GO_TONE_IDX = 2
         self.WHITE_NOISE_IDX = 3
-        self.CHIRP_IDX = 4
         sound.configure_sound_card(
-            sounds=[self.GO_TONE, self.WHITE_NOISE, self.CHIRP],
-            indexes=[self.GO_TONE_IDX, self.WHITE_NOISE_IDX, self.CHIRP_IDX],
+            sounds=[self.GO_TONE, self.WHITE_NOISE],
+            indexes=[self.GO_TONE_IDX, self.WHITE_NOISE_IDX],
             sample_rate=self.SOUND_SAMPLE_FREQ)
         # =====================================================================
         # VISUAL STIM
@@ -161,7 +157,14 @@ class SessionParamHandler(object):
         self.USE_VISUAL_STIMULUS = True  # Run the visual stim in bonsai
         self.BONSAI_EDITOR = False  # Open the Bonsai editor of visual stim
         bonsai.start_visual_stim(self)
-        self.get_recording_site_data()
+        # =====================================================================
+        # PROBES
+        # =====================================================================
+        self.REC_SITE = {}
+        left_recsite = self.get_recording_site_data(probe='LEFT')
+        right_recsite = self.get_recording_site_data(probe='RIGHT')
+        self.REC_SITE.update(left_recsite)
+        self.REC_SITE.update(right_recsite)
         # =====================================================================
         # SAVE SETTINGS FILE AND TASK CODE
         # =====================================================================
@@ -176,18 +179,30 @@ class SessionParamHandler(object):
     # =========================================================================
     # METHODS
     # =========================================================================
-    def get_recording_site_data(self):
-        title = 'Recording site'
-        fields = ['X (float):', 'Y (float):', 'Z (flaot):', 'D (float):',
-                'Angle (10 or 20):', 'Origin (bregma or lambda):']
-        defaults = [None, None, None, None, '10', 'bregma']
+    def warn_ephys(self):
+        from tkinter import messagebox
+        title = 'START EPHYS RECODING'
+        msg = ("Please start recording in spikeglx then press OK\n" +
+            "Behavior task will run after you start the bonsai workflow")
+        # from ibllib.graphic import popup
+        # popup(title, msg)
+        root = tk.Tk()
+        root.withdraw()
+        messagebox.showinfo(title, msg)
+        root.quit()
+
+    def get_recording_site_data(self, probe='LEFT'):
+        title = f'PROBE {probe} - recording site'
+        fields = ['X (float)', 'Y (float)', 'Z (float)', 'D (float)',
+                'Angle (10 or 20)', 'Origin (bregma or lambda)']
+        defaults = [0.0, 0.0, 0.0, 0.0, '10', 'bregma']
         types = [float, float, float, float, int, str]
         userdata = multi_input(
             title=title, add_fields=fields, defaults=defaults)
         try:
-            out = [t(x) for x, t in zip(userdata, types)]
-            self.REC_SITE = {'xyzd':out[:4], 'angle': out[4], 'origin': out[5]}
-            return out
+            data = [t(x) for x, t in zip(userdata, types)]
+            data_dict = {'xyzd': data[:4], 'angle': data[4], 'origin': data[5]}
+            return data_dict
         except Exception:
             log.warning(
                 f"One or more inputs are of the wrong type. Expected {types}")

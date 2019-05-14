@@ -117,6 +117,8 @@ def update_env():
 
 
 def update_conda():
+    print('\nCleaning cache')
+    os.system("conda clean -a -y")
     print("\nUpdating conda")
     os.system("conda update -y -n base conda")
 

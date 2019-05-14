@@ -56,9 +56,6 @@ bpod.load_serial_message(sound_card, sc_play_tone, [ord('P'), sph.GO_TONE_IDX])
 sc_play_noise = re_reset + 5
 bpod.load_serial_message(sound_card, sc_play_noise, [
                          ord('P'), sph.WHITE_NOISE_IDX])
-sc_play_chirp = re_reset + 6
-bpod.load_serial_message(sound_card, sc_play_noise, [
-                         ord('P'), sph.CHIRP_IDX])
 
 # =============================================================================
 # TRIAL PARAMETERS AND STATE MACHINE
@@ -81,15 +78,13 @@ for i in range(sph.NTRIALS):  # Main loop
             state_name='trial_start',
             state_timer=3600,  # ~100µs hardware irreducible delay
             state_change_conditions={'Port1In': 'reset_rotary_encoder'},
-            output_actions=[('BNC1', 255),
-                            ('Serial3', sc_play_chirp)])
+            output_actions=[('BNC1', 255)])
     else:
         sma.add_state(
             state_name='trial_start',
             state_timer=0,  # ~100µs hardware irreducible delay
             state_change_conditions={'Tup': 'reset_rotary_encoder'},
-            output_actions=[('BNC1', 255),
-                            ('Serial3', sc_play_chirp)])
+            output_actions=[('BNC1', 255)])
 
     sma.add_state(
         state_name='reset_rotary_encoder',
@@ -170,6 +165,8 @@ for i in range(sph.NTRIALS):  # Main loop
 
     # Send state machine description to Bpod device
     bpod.send_state_machine(sma)
+    if i == 0:
+        sph.warn_ephys()
     # Run state machine
     bpod.run_state_machine(sma)  # Locks until state machine 'exit' is reached
     tph = tph.trial_completed(bpod.session.current_trial.export())
