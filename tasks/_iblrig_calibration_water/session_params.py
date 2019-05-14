@@ -1,15 +1,20 @@
+#!/usr/bin/env python
 # -*- coding:utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date: Wednesday, November 21st 2018, 4:27:34 pm
-# @Last Modified by: Niccolò Bonacchi
-# @Last Modified time: 21-11-2018 04:29:49.4949
 import json
 import os
 import shutil
 import zipfile
 import types
+import sys
+from pathlib import Path
+import logging
 
+sys.path.append(str(Path(__file__).parent.parent))  # noqa
+sys.path.append(str(Path(__file__).parent.parent.parent.parent))  # noqa
 from path_helper import SessionPathCreator
+logger = logging.getLogger('iblrig')
 
 
 class ComplexEncoder(json.JSONEncoder):
@@ -42,9 +47,12 @@ class SessionParamHandler(object):
         self.__dict__.update(us)
         self.deserialize_session_user_settings()
 
-        spc = SessionPathCreator(self.IBLRIG_FOLDER, self.MAIN_DATA_FOLDER,
-                                 self.PYBPOD_SUBJECTS[0], self.PYBPOD_PROTOCOL)
+        spc = SessionPathCreator(self.IBLRIG_FOLDER, self.IBLRIG_DATA_FOLDER,
+                                 self.PYBPOD_SUBJECTS[0],
+                                 protocol=self.PYBPOD_PROTOCOL,
+                                 board=self.PYBPOD_BOARD, make=True)
         self.__dict__.update(spc.__dict__)
+
         self.CALIBRATION_FUNCTION_FILE_PATH = os.path.join(
             self.SESSION_RAW_DATA_FOLDER,
             '_iblrig_calibration_water_function.csv')
@@ -56,15 +64,13 @@ class SessionParamHandler(object):
             '_iblrig_calibration_water_curve.pdf')
 
         # =====================================================================
-        # FOLDER STRUCTURE AND DATA FILES
+        # SAVE SETTINGS AND CODE FILES
         # =====================================================================
         self._save_session_settings()
 
         self._copy_task_code()
         self._save_task_code()
 
-    # =========================================================================
-    # METHODS
     # =========================================================================
     # SERIALIZER
     # =========================================================================
@@ -99,7 +105,7 @@ class SessionParamHandler(object):
     # =========================================================================
     def _save_session_settings(self):
         with open(self.SETTINGS_FILE_PATH, 'a') as f:
-            f.write(json.dumps(self, cls=ComplexEncoder))
+            f.write(json.dumps(self, cls=ComplexEncoder, indent=1))
             f.write('\n')
         return
 
@@ -138,3 +144,33 @@ class SessionParamHandler(object):
         for dir in dir_list:
             SessionParamHandler.zipdir(dir, zipf)
         zipf.close()
+
+
+if __name__ == "__main__":
+    import task_settings as _task_settings
+    import scratch.calibration._user_settings as _user_settings
+    import datetime
+    from sys import platform
+    dt = datetime.datetime.now()
+    dt = [str(dt.year), str(dt.month), str(dt.day),
+          str(dt.hour), str(dt.minute), str(dt.second)]
+    dt = [x if int(x) >= 10 else '0' + x for x in dt]
+    dt.insert(3, '-')
+    _user_settings.PYBPOD_SESSION = ''.join(dt)
+    _user_settings.PYBPOD_SETUP = 'water'
+    _user_settings.PYBPOD_PROTOCOL = '_iblrig_calibration_water'
+    if platform == 'linux':
+        r = "/home/nico/Projects/IBL/github/iblrig"
+        _task_settings.IBLRIG_FOLDER = r
+        d = ("/home/nico/Projects/IBL/github/iblrig/scratch/" +
+             "test_iblrig_data")
+        _task_settings.IBLRIG_DATA_FOLDER = d
+        _task_settings.AUTOMATIC_CALIBRATION = False
+        _task_settings.USE_VISUAL_STIMULUS = False
+
+    sph = SessionParamHandler(_task_settings, _user_settings)
+    for k in sph.__dict__:
+        if sph.__dict__[k] is None:
+            print(f"{k}: {sph.__dict__[k]}")
+    self = sph
+    print("Done!")

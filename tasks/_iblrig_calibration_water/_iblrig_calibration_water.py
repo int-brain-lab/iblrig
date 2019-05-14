@@ -1,4 +1,5 @@
 # !/usr/bin/python3
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 # automatic water calibration for pyBpod
@@ -9,7 +10,9 @@ import datetime
 import re
 import time
 import tkinter as tk
-from tkinter import simpledialog  # for dialog box
+from tkinter import messagebox
+from pathlib import Path
+import os
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -19,13 +22,11 @@ import seaborn as sns  # for easier plotting at the end
 import serial
 from pybpodapi.bpod import Bpod
 from pybpodapi.state_machine import StateMachine
+from ibllib.graphic import numinput
 
 import task_settings
 import user_settings  # PyBpod creates this file on run.
 from session_params import SessionParamHandler
-
-root = tk.Tk()
-root.withdraw()
 
 sph = SessionParamHandler(task_settings, user_settings)
 
@@ -96,7 +97,7 @@ def scale_read(COMport_string):
     # grab the software version and initialize
     ser.write(b'V\r\n')
     time.sleep(0.5)
-    version = ser.readline()
+    version = ser.readline()  # noqa
 
     # READ THE CURRENT WEIGHT
     ser.write(b'IP\r\n')  # ping the scale to print
@@ -112,32 +113,11 @@ def scale_read(COMport_string):
 
     return grams
 
-
-def numinput(title, prompt, default=None, minval=None, maxval=None):
-    """Pop up a dialog window for input of a number.
-    Arguments:
-    title: is the title of the dialog window,
-    prompt: is a text mostly describing what numerical information to input.
-    default: default value
-    minval: minimum value for imput
-    maxval: maximum value for input
-
-    The number input must be in the range minval .. maxval if these are
-    given. If not, a hint is issued and the dialog remains open for
-    correction. Return the number input.
-    If the dialog is canceled,  return None.
-
-    Example:
-    >>> numinput("Poker", "Your stakes:", 1000, minval=10, maxval=10000)
-    """
-    return simpledialog.askfloat(title, prompt, initialvalue=default,
-                                 minvalue=minval, maxvalue=maxval)
-
 # =============================================================================
 # FIRST, GENERATE A CALIBRATION CURVE - OPEN TIMES VS DROP SIZE
-# see https://github.com/cortex-lab/Rigbox/blob/5d926cdafdfcb54cd74c77e152d158d3d837a90c/%2Bhw/calibrate.m
-# and https://github.com/sanworks/Bpod_Gen2/blob/14b78143e071c1cfda391b1754dba928ccc27792/Functions/Calibration/Liquid%20Reward/BpodLiquidCalibration.m
-# bpod wiki https://sites.google.com/site/bpoddocumentation/bpod-user-guide/liquid-calibration
+# see https://github.com/cortex-lab/Rigbox/blob/5d926cdafdfcb54cd74c77e152d158d3d837a90c/%2Bhw/calibrate.m  # noqa
+# and https://github.com/sanworks/Bpod_Gen2/blob/14b78143e071c1cfda391b1754dba928ccc27792/Functions/Calibration/Liquid%20Reward/BpodLiquidCalibration.m  # noqa
+# bpod wiki https://sites.google.com/site/bpoddocumentation/bpod-user-guide/liquid-calibration  # noqa
 # =============================================================================
 
 
@@ -149,9 +129,15 @@ ntrials = sph.NTRIALS
 open_times = range(sph.MIN_OPEN_TIME, sph.MAX_OPEN_TIME, sph.STEP)
 open_times = [i for i in range(
     sph.MIN_OPEN_TIME, sph.MAX_OPEN_TIME, sph.STEP) for _ in range(sph.PASSES)]
-stopweight = 0  # can ask user if scale not tared
+
+if sph.OAHUS_SCALE_PORT:
+    stopweight = scale_read(sph.OAHUS_SCALE_PORT)
+else:
+    stopweight = numinput(f"Initialize weight",
+                          "Enter the weight diplayed on the scale (gr):")
 
 pass_ = 1
+progress = 0
 mw = []
 for open_time in open_times:
     # Set the startweight to be the last recorded stopweight
@@ -190,13 +176,20 @@ for open_time in open_times:
     else:
         pass_ += 1
 
+    max_prog = len(open_times) * sph.PASSES
+    progress += 1
+
+    print(f'{progress / max_prog * 100}%',
+          f'- Pass {pass_}/{sph.PASSES} @ {open_time}ms done.')
+
 # SAVE
 df1['open_time'] = df1['open_time'].astype("float")
 df1['mean_measured_weight'] = df1['mean_measured_weight'].astype("float")
 df1['ndrops'] = df1['ndrops'].astype("float")
 df1["weight_perdrop"] = df1["mean_measured_weight"] / df1["ndrops"]
 df1["weight_perdrop"] = df1["weight_perdrop"] * 1000  # in µl
-df1.to_csv(sph.CALIBRATION_FUNCTION_FILE_PATH)
+if not df1.empty:
+    df1.to_csv(sph.CALIBRATION_FUNCTION_FILE_PATH)
 
 # FIT EXTRAPOLATION FUNCTION
 time2vol = sp.interpolate.pchip(df1["open_time"], df1["weight_perdrop"])
@@ -210,14 +203,63 @@ ax[0].set(xlabel="Open time (ms)",
           ylabel="Measured volume (ul per drop)", title="Calibration curve")
 title = f.suptitle(f"Water calibration {now}")
 f.savefig(sph.CALIBRATION_CURVE_FILE_PATH)
+os.system(sph.CALIBRATION_CURVE_FILE_PATH)
+# =============================================================================
+# ASK THE USER FOR A LINEAR RANGE
+# =============================================================================
+root = tk.Tk()
+root.withdraw()
+messagebox.showinfo(
+    "Information",
+    "Calibration curve completed! We're not done yet. \n \
+    Please look at the figure and indicate a min - max range \n \
+    over which the curve is monotonic. \n \
+    The range of drop volumes should ideally be 1.5-3uL."
+)
+root.quit()
+min_open_time = numinput(
+    "Input",
+    "What's the LOWEST opening time (in ms) of the linear (monotonic) range?")
 
+max_open_time = numinput(
+    "Input",
+    "What's the HIGHEST opening time (in ms) of the linear (monotonic) range?")
+
+ax[0].axvline(min_open_time, color='black')
+ax[0].axvline(max_open_time, color='black')
+
+f.savefig(sph.CALIBRATION_CURVE_FILE_PATH[:-4] + '_range.pdf')
+
+# SAVE THE RANGE TOGETHER WITH THE CALIBRATION CURVE - SEPARATE FILE
+df2 = pd.DataFrame.from_dict(
+    {'min_open_time': min_open_time,
+     'max_open_time': max_open_time,
+     'index': [0]
+     }
+)
+df2.to_csv(sph.CALIBRATION_RANGE_FILE_PATH)
+os.system(sph.CALIBRATION_CURVE_FILE_PATH[:-4] + '_range.pdf')
 bpod.close()
 print(f'Completed water calibration {now}')
 
+# Create flag
+flag = Path(sph.SESSION_FOLDER) / 'transfer_me.flag'
+open(flag, 'a').close()
+flag2 = Path(sph.SESSION_FOLDER) / 'create_me.flag'
+open(flag2, 'a').close()
+
+root = tk.Tk()
+root.withdraw()
+messagebox.showinfo(
+    "Information",
+    "Calibration completed!\n\
+    You can close the plots now."
+)
+root.quit()
 
 if __name__ == '__main__':
     pass
-    # root_data_folder = '/home/nico/Projects/IBL/IBL-github/iblrig_data/'
+    # root_data_folder = '/home/nico/Projects/IBL/github/iblrig_data/'
     # root_data_folder += 'Subjects'
     # session = '_iblrig_calibration/2018-11-28/4'
     # data_file = '/raw_behavior_data/_iblrig_calibration_water_function.csv'
