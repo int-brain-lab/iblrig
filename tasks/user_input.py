@@ -75,6 +75,9 @@ class SessionForm(BaseWidget):
 
 
 def valid_form_data(form_data: dict, ret_typed_data: bool = False) -> bool or dict:
+    data_dict = {'xyzd': data[:4], 'angle': data[4], 'origin': data[5]}
+
+    form_data['']
     return False
 
 
