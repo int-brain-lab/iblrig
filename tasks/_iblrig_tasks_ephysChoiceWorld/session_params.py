@@ -19,6 +19,7 @@ import bonsai
 import iotasks
 import misc
 import sound
+import user_input
 from path_helper import SessionPathCreator
 from rotary_encoder import MyRotaryEncoder
 log = logging.getLogger('iblrig')
@@ -73,7 +74,7 @@ class SessionParamHandler(object):
         # =====================================================================
         # SUBJECT
         # =====================================================================
-        self.SUBJECT_WEIGHT = self.get_subject_weight()
+        # self.SUBJECT_WEIGHT = self.get_subject_weight()
         self.POOP_COUNT = True
         # =====================================================================
         # OSC CLIENT
@@ -160,11 +161,8 @@ class SessionParamHandler(object):
         # =====================================================================
         # PROBES
         # =====================================================================
-        self.REC_SITE = {}
-        left_recsite = self.get_recording_site_data(probe='LEFT')
-        right_recsite = self.get_recording_site_data(probe='RIGHT')
-        self.REC_SITE.update(left_recsite)
-        self.REC_SITE.update(right_recsite)
+        self.REC_SITE = user_input.session_form(mouse_name=self.SUBJECT_NAME)
+
         # =====================================================================
         # SAVE SETTINGS FILE AND TASK CODE
         # =====================================================================
