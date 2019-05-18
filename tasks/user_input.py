@@ -38,6 +38,7 @@ class SessionForm(BaseWidget):
         self._probeRightOrigin.add_item('Lambda',   'lambda')
 
         self._button = ControlButton('Submit')
+
         # Define the organization of the forms
         self.formset = [(' ', ' ', ' ', ' ', ' '),
                         (' ', '_mouseWeight', ' ', ' ', ' '),
@@ -55,7 +56,23 @@ class SessionForm(BaseWidget):
 
         # Define the button action
         self._button.value = self.__buttonAction
+
         self.form_data = None
+        self.valid_form_data = False
+
+    def validate_form_data_types(self):
+        try:
+            for k, v in self.form_data.items():
+                if any([x in k for x in 'XYZD']):
+                    self.form_data.update({k: float(v)})
+                elif 'Angle' in k:
+                    self.form_data.update({k: int(v)})
+                elif 'Origin' in k:
+                    self.form_data.update({k: str(v)})
+            self.valid_form_data = True
+        except Exception:
+            self.valid_form_data = False
+
 
     def __buttonAction(self):
         """Button action event"""
@@ -63,22 +80,11 @@ class SessionForm(BaseWidget):
             k.strip('_'): v.value for k, v in self.__dict__.items()
             if 'probe' in k or 'session' in k
         }
-
+        self.validate_form_data_types()
         self.close()
         print(self.form_data)
-        self.__CloseAction()
-        return
-
-    def __CloseAction(self):
         self.app_main_window.close()
         return
-
-
-def valid_form_data(form_data: dict, ret_typed_data: bool = False) -> bool or dict:
-    data_dict = {'xyzd': data[:4], 'angle': data[4], 'origin': data[5]}
-
-    form_data['']
-    return False
 
 
 def session_form(mouse_name: str = '') -> dict:
@@ -88,8 +94,8 @@ def session_form(mouse_name: str = '') -> dict:
     sForm._mouseWeight.label = f'Insert weight of mouse {mouse_name}:'
     root.exec()
 
-    if valid_form_data(sForm.form_data):
-        return valid_form_data(sForm.form_data, ret_typed_data=True)
+    if sForm.valid_form_data(sForm.form_data):
+        return sForm.form_data
     else:
         return session_form(mouse_name)
 
