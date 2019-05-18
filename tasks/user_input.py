@@ -57,8 +57,8 @@ class SessionForm(BaseWidget):
         # Define the button action
         self._button.value = self.__buttonAction
 
-        self.form_data = None
-        self.valid_form_data = False
+        self.form_data: dict = {}
+        self.valid_form_data: bool = False
 
     def validate_form_data_types(self):
         try:
@@ -69,10 +69,11 @@ class SessionForm(BaseWidget):
                     self.form_data.update({k: int(v)})
                 elif 'Origin' in k:
                     self.form_data.update({k: str(v)})
+                elif 'Weight' in k:
+                    self.form_data.update({k: float(v)})
             self.valid_form_data = True
         except Exception:
             self.valid_form_data = False
-
 
     def __buttonAction(self):
         """Button action event"""
