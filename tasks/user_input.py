@@ -95,7 +95,7 @@ def session_form(mouse_name: str = '') -> dict:
     sForm._mouseWeight.label = f'Insert weight of mouse {mouse_name}:'
     root.exec()
 
-    if sForm.valid_form_data(sForm.form_data):
+    if sForm.valid_form_data:
         return sForm.form_data
     else:
         return session_form(mouse_name)
