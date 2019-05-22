@@ -94,12 +94,20 @@ class SessionParamHandler(object):
         self.SD = sound.configure_sounddevice(
             output=self.SOFT_SOUND, samplerate=self.SOUND_SAMPLE_FREQ)
         # Create sounds and output actions of state machine
-        self.UPLOADER_TOOL = None
         self.GO_TONE = None
         self.WHITE_NOISE = None
         self = sound.init_sounds(self)  # sets GO_TONE and WHITE_NOISE
-        self.OUT_TONE = ('SoftCode', 1) if self.SOFT_SOUND else None
-        self.OUT_NOISE = ('SoftCode', 2) if self.SOFT_SOUND else None
+        # SoundCard config params
+        self.SOUND_BOARD_BPOD_PORT = 'Serial3'
+        self.GO_TONE_IDX = 2
+        self.WHITE_NOISE_IDX = 3
+        sound.configure_sound_card(
+            sounds=[self.GO_TONE, self.WHITE_NOISE],
+            indexes=[self.GO_TONE_IDX, self.WHITE_NOISE_IDX],
+            sample_rate=self.SOUND_SAMPLE_FREQ)
+
+        self.OUT_TONE = ('SoftCode', 1) if self.SOFT_SOUND else ('Serial3', 5)
+        self.OUT_NOISE = ('SoftCode', 2) if self.SOFT_SOUND else ('Serial3', 6)
         # =====================================================================
         # RUN VISUAL STIM
         # =====================================================================
@@ -164,12 +172,11 @@ class SessionParamHandler(object):
             return sx
 
         d = self.__dict__.copy()
-        if self.SOFT_SOUND:
-            d['GO_TONE'] = 'go_tone(freq={}, dur={}, amp={})'.format(
-                self.GO_TONE_FREQUENCY, self.GO_TONE_DURATION,
-                self.GO_TONE_AMPLITUDE)
-            d['WHITE_NOISE'] = 'white_noise(freq=-1, dur={}, amp={})'.format(
-                self.WHITE_NOISE_DURATION, self.WHITE_NOISE_AMPLITUDE)
+        d['GO_TONE'] = 'go_tone(freq={}, dur={}, amp={})'.format(
+            self.GO_TONE_FREQUENCY, self.GO_TONE_DURATION,
+            self.GO_TONE_AMPLITUDE)
+        d['WHITE_NOISE'] = 'white_noise(freq=-1, dur={}, amp={})'.format(
+            self.WHITE_NOISE_DURATION, self.WHITE_NOISE_AMPLITUDE)
         d['SD'] = str(d['SD'])
         d['OSC_CLIENT'] = str(d['OSC_CLIENT'])
         d['SESSION_DATETIME'] = self.SESSION_DATETIME.isoformat()
@@ -213,7 +220,8 @@ if __name__ == '__main__':
         turning off lights of bpod board
     """
     import task_settings as _task_settings
-    import scratch._user_settings as _user_settings
+    # import scratch._user_settings as _user_settings
+    import _user_settings
     import datetime
     dt = datetime.datetime.now()
     dt = [str(dt.year), str(dt.month), str(dt.day),
@@ -229,8 +237,8 @@ if __name__ == '__main__':
         d = ("/home/nico/Projects/IBL/github/iblrig/scratch/" +
              "test_iblrig_data")
         _task_settings.IBLRIG_DATA_FOLDER = d
-        _task_settings.AUTOMATIC_CALIBRATION = False
-        _task_settings.USE_VISUAL_STIMULUS = False
+    _task_settings.USE_VISUAL_STIMULUS = False
+    _task_settings.AUTOMATIC_CALIBRATION = False
 
     sph = SessionParamHandler(_task_settings, _user_settings,
                               debug=False, fmake=True)
