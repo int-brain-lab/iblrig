@@ -200,7 +200,7 @@ def init_sounds(sph_obj, tone=True, noise=True):
         SOFT_SOUND = 'sysdefault' or 'xonar'
     ##########################################"""
         card = SoundCardModule()
-        if card._port is None and card._serial_port is None:
+        if not card.connected:
             log.error(msg)
             raise(NameError)
 
@@ -229,50 +229,50 @@ def init_sounds(sph_obj, tone=True, noise=True):
 
 if __name__ == '__main__':
     # # Generate sounds
-    device = 'xonar'
-    samplerate = sound_sample_freq(device)
-    sd = configure_sounddevice(output=device, samplerate=samplerate)
-    sd.stop()
-    rig_tone = make_sound(rate=samplerate, frequency=5000,
-                          duration=10, amplitude=0.1)
-    rig_noise = make_sound(rate=samplerate, frequency=-
-                           1, duration=10, amplitude=0.1)
-    N_TTL = make_sound(chans='L+TTL', amplitude=-1)
-    import matplotlib.pyplot as plt
-    # sd.play(rig_tone, samplerate, mapping=[1, 2])
-    l = 0.5
-    c = make_chirp(f0=80, f1=160, length=l, amp=0.1, fade=0.05, sf=192000)
-    plt.plot(np.linspace(0, l, 192000), c[:, 0])
-    plt.show()
+    # device = 'xonar'
+    # samplerate = sound_sample_freq(device)
+    # sd = configure_sounddevice(output=device, samplerate=samplerate)
+    # sd.stop()
+    # rig_tone = make_sound(rate=samplerate, frequency=5000,
+    #                       duration=10, amplitude=0.1)
+    # rig_noise = make_sound(rate=samplerate, frequency=-
+    #                        1, duration=10, amplitude=0.1)
+    # N_TTL = make_sound(chans='L+TTL', amplitude=-1)
+    # import matplotlib.pyplot as plt
+    # # sd.play(rig_tone, samplerate, mapping=[1, 2])
+    # l = 0.5
+    # c = make_chirp(f0=80, f1=160, length=l, amp=0.1, fade=0.05, sf=192000)
+    # plt.plot(np.linspace(0, l, 192000), c[:, 0])
+    # plt.show()
 
 
-    # # TEST SOUNDCARD MODULE
-    # card = SoundCardModule()
-    # SOFT_SOUND = None
-    # SOUND_SAMPLE_FREQ = sound_sample_freq(SOFT_SOUND)
-    # SOUND_BOARD_BPOD_PORT = 'Serial3'
-    # WHITE_NOISE_DURATION = float(0.5)
-    # WHITE_NOISE_AMPLITUDE = float(0.05)
-    # GO_TONE_DURATION = float(0.1)
-    # GO_TONE_FREQUENCY = int(5000)
-    # GO_TONE_AMPLITUDE = float(0.1)
-    # GO_TONE = make_sound(
-    #     rate=SOUND_SAMPLE_FREQ, frequency=GO_TONE_FREQUENCY,
-    #     duration=GO_TONE_DURATION, amplitude=GO_TONE_AMPLITUDE,
-    #     fade=0.01, chans='stereo')
-    # WHITE_NOISE = make_sound(
-    #     rate=SOUND_SAMPLE_FREQ, frequency=-1,
-    #     duration=WHITE_NOISE_DURATION,
-    #     amplitude=WHITE_NOISE_AMPLITUDE, fade=0.01, chans='stereo')
-    # GO_TONE_IDX = 2
-    # WHITE_NOISE_IDX = 4
+    # TEST SOUNDCARD MODULE
+    card = SoundCardModule()
+    SOFT_SOUND = None
+    SOUND_SAMPLE_FREQ = sound_sample_freq(SOFT_SOUND)
+    SOUND_BOARD_BPOD_PORT = 'Serial3'
+    WHITE_NOISE_DURATION = float(0.5)
+    WHITE_NOISE_AMPLITUDE = float(0.05)
+    GO_TONE_DURATION = float(0.1)
+    GO_TONE_FREQUENCY = int(5000)
+    GO_TONE_AMPLITUDE = float(0.1)
+    GO_TONE = make_sound(
+        rate=SOUND_SAMPLE_FREQ, frequency=GO_TONE_FREQUENCY,
+        duration=GO_TONE_DURATION, amplitude=GO_TONE_AMPLITUDE,
+        fade=0.01, chans='stereo')
+    WHITE_NOISE = make_sound(
+        rate=SOUND_SAMPLE_FREQ, frequency=-1,
+        duration=WHITE_NOISE_DURATION,
+        amplitude=WHITE_NOISE_AMPLITUDE, fade=0.01, chans='stereo')
+    GO_TONE_IDX = 2
+    WHITE_NOISE_IDX = 4
 
-    # wave_int = format_sound(GO_TONE, flat=True)
-    # noise_int = format_sound(WHITE_NOISE, flat=True)
+    wave_int = format_sound(GO_TONE, flat=True)
+    noise_int = format_sound(WHITE_NOISE, flat=True)
 
-    # card = SoundCardModule()
-    # card.send_sound(wave_int, GO_TONE_IDX, SampleRate._96000HZ, DataType.INT32)  # noqa
-    # card.send_sound(noise_int, WHITE_NOISE_IDX, SampleRate._96000HZ,
-    #     DataType.INT32)
+    card = SoundCardModule()
+    card.send_sound(wave_int, GO_TONE_IDX, SampleRate._96000HZ, DataType.INT32)  # noqa
+    card.send_sound(noise_int, WHITE_NOISE_IDX, SampleRate._96000HZ,
+        DataType.INT32)
 
     print('i')
