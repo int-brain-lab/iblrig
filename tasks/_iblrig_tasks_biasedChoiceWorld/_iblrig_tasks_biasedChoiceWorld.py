@@ -56,6 +56,7 @@ bpod.loop_handler = bpod_loop_handler
 bpod.softcode_handler_function = softcode_handler
 # Rotary Encoder State Machine handler
 rotary_encoder = [x for x in bpod.modules if x.name == 'RotaryEncoder1'][0]
+sound_card = [x for x in bpod.modules if x.name == 'SoundCard1'][0]
 # ROTARY ENCODER SEVENTS
 # Set RE position to zero 'Z' + eneable all RE thresholds 'E'
 # re_reset = rotary_encoder.create_resetpositions_trigger()
@@ -72,7 +73,13 @@ bpod.load_serial_message(rotary_encoder, re_show_stim, [ord('#'), 2])
 # Close loop
 re_close_loop = re_reset + 3
 bpod.load_serial_message(rotary_encoder, re_close_loop, [ord('#'), 3])
-
+# Play tone
+sc_play_tone = re_reset + 4
+bpod.load_serial_message(sound_card, sc_play_tone, [ord('P'), sph.GO_TONE_IDX])
+# Play noise
+sc_play_noise = re_reset + 5
+bpod.load_serial_message(sound_card, sc_play_noise, [
+                         ord('P'), sph.WHITE_NOISE_IDX])
 # =============================================================================
 # TRIAL PARAMETERS AND STATE MACHINE
 # =============================================================================
