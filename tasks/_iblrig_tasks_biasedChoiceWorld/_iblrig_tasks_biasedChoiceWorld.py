@@ -102,15 +102,13 @@ for i in range(sph.NTRIALS):  # Main loop
             state_name='trial_start',
             state_timer=0,  # ~100µs hardware irreducible delay
             state_change_conditions={'Tup': 'reset_rotary_encoder'},
-            output_actions=[('Serial1', re_stop_stim),
-                            ('SoftCode', 3)])  # sart camera
+            output_actions=[('SoftCode', 3)])  # sart camera
     else:
         sma.add_state(
             state_name='trial_start',
             state_timer=0,  # ~100µs hardware irreducible delay
             state_change_conditions={'Tup': 'reset_rotary_encoder'},
-            output_actions=[('Serial1', re_stop_stim),
-                            ('SoftCode', 0)])  # stop stim
+            output_actions=[('SoftCode', 0)])  # stop stim
 
     sma.add_state(
         state_name='reset_rotary_encoder',
@@ -140,8 +138,7 @@ for i in range(sph.NTRIALS):  # Main loop
 
     sma.add_state(
         state_name='play_tone',
-        state_timer=0,
-        state_change_conditions={'Tup': 'reset2_rotary_encoder'},
+        state_change_conditions={'BNC2High': 'reset2_rotary_encoder'},
         output_actions=[tph.out_tone])
 
     sma.add_state(
@@ -161,13 +158,13 @@ for i in range(sph.NTRIALS):  # Main loop
     sma.add_state(
         state_name='no_go',
         state_timer=tph.iti_error,
-        state_change_conditions={'Tup': 'exit'},
+        state_change_conditions={'Tup': 'exit_state'},
         output_actions=[tph.out_noise])
 
     sma.add_state(
         state_name='error',
         state_timer=tph.iti_error,
-        state_change_conditions={'Tup': 'exit'},
+        state_change_conditions={'Tup': 'exit_state'},
         output_actions=[tph.out_noise])
 
     sma.add_state(
@@ -179,8 +176,14 @@ for i in range(sph.NTRIALS):  # Main loop
     sma.add_state(
         state_name='correct',
         state_timer=tph.iti_correct,
-        state_change_conditions={'Tup': 'exit'},
+        state_change_conditions={'Tup': 'exit_state'},
         output_actions=[])
+    
+    sma.add_state(
+        state_name='exit_state',
+        state_timer=0.5,
+        state_change_conditions={'Tup': 'exit'},
+        output_actions=[('Serial1', re_stop_stim)])
 
     # Send state machine description to Bpod device
     bpod.send_state_machine(sma)
