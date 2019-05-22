@@ -149,7 +149,7 @@ for i in range(sph.NTRIALS):  # Main loop
         state_change_conditions={'Tup': 'no_go',
                                  tph.event_error: 'error',
                                  tph.event_reward: 'reward'},
-        output_actions=[('Serial1', re_close_loop), tph.out_tone])
+        output_actions=[('Serial1', re_close_loop)])
 
     sma.add_state(
         state_name='no_go',
