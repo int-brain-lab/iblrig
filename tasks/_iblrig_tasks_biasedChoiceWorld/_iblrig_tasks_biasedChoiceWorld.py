@@ -127,10 +127,22 @@ for i in range(sph.NTRIALS):  # Main loop
         output_actions=[])
 
     sma.add_state(
-        state_name='stim_on',
+       state_name='stim_on',
+       state_change_conditions={'BNC1High': 'interactive_delay',
+                                'BNC1Low': 'interactive_delay'},
+       output_actions=[('Serial1', re_show_stim)])
+
+    sma.add_state(
+        state_name='interactive_delay',
         state_timer=tph.interactive_delay,
+        state_change_conditions={'Tup': 'play_tone'},
+        output_actions=[])
+
+    sma.add_state(
+        state_name='play_tone',
+        state_timer=0,
         state_change_conditions={'Tup': 'reset2_rotary_encoder'},
-        output_actions=[('Serial1', re_show_stim)])
+        output_actions=[tph.out_tone])
 
     sma.add_state(
         state_name='reset2_rotary_encoder',
@@ -144,7 +156,7 @@ for i in range(sph.NTRIALS):  # Main loop
         state_change_conditions={'Tup': 'no_go',
                                  tph.event_error: 'error',
                                  tph.event_reward: 'reward'},
-        output_actions=[('Serial1', re_close_loop), tph.out_tone])
+        output_actions=[('Serial1', re_close_loop)])
 
     sma.add_state(
         state_name='no_go',
