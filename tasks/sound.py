@@ -203,6 +203,11 @@ def init_sounds(sph_obj, tone=True, noise=True):
         if card._port is None and card._serial_port is None:
             log.error(msg)
             raise(NameError)
+
+        chans = 'stereo'
+    else:
+        chans = 'L+TTL'
+
     if tone:
         sph_obj.GO_TONE = make_sound(
             rate=sph_obj.SOUND_SAMPLE_FREQ,
@@ -210,7 +215,7 @@ def init_sounds(sph_obj, tone=True, noise=True):
             duration=sph_obj.GO_TONE_DURATION,
             amplitude=sph_obj.GO_TONE_AMPLITUDE,
             fade=0.01,
-            chans='L+TTL')
+            chans=chans)
     if noise:
         sph_obj.WHITE_NOISE = make_sound(
             rate=sph_obj.SOUND_SAMPLE_FREQ,
@@ -218,7 +223,7 @@ def init_sounds(sph_obj, tone=True, noise=True):
             duration=sph_obj.WHITE_NOISE_DURATION,
             amplitude=sph_obj.WHITE_NOISE_AMPLITUDE,
             fade=0.01,
-            chans='L+TTL')
+            chans=chans)
     return sph_obj
 
 
