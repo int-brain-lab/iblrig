@@ -56,7 +56,6 @@ bpod.loop_handler = bpod_loop_handler
 bpod.softcode_handler_function = softcode_handler
 # Rotary Encoder State Machine handler
 rotary_encoder = [x for x in bpod.modules if x.name == 'RotaryEncoder1'][0]
-sound_card = [x for x in bpod.modules if x.name == 'SoundCard1'][0]
 # ROTARY ENCODER SEVENTS
 # Set RE position to zero 'Z' + eneable all RE thresholds 'E'
 # re_reset = rotary_encoder.create_resetpositions_trigger()
@@ -73,13 +72,17 @@ bpod.load_serial_message(rotary_encoder, re_show_stim, [ord('#'), 2])
 # Close loop
 re_close_loop = re_reset + 3
 bpod.load_serial_message(rotary_encoder, re_close_loop, [ord('#'), 3])
-# Play tone
-sc_play_tone = re_reset + 4
-bpod.load_serial_message(sound_card, sc_play_tone, [ord('P'), sph.GO_TONE_IDX])
-# Play noise
-sc_play_noise = re_reset + 5
-bpod.load_serial_message(sound_card, sc_play_noise, [
-                         ord('P'), sph.WHITE_NOISE_IDX])
+
+if sph.SOFT_SOUND is None:
+    # SOUND CARD
+    sound_card = [x for x in bpod.modules if x.name == 'SoundCard1'][0]
+    # Play tone
+    sc_play_tone = re_reset + 4
+    bpod.load_serial_message(sound_card, sc_play_tone, [ord('P'), sph.GO_TONE_IDX])
+    # Play noise
+    sc_play_noise = re_reset + 5
+    bpod.load_serial_message(sound_card, sc_play_noise, [
+                            ord('P'), sph.WHITE_NOISE_IDX])
 # =============================================================================
 # TRIAL PARAMETERS AND STATE MACHINE
 # =============================================================================
@@ -100,7 +103,7 @@ for i in range(sph.NTRIALS):  # Main loop
     if i == 0:  # First trial exception start camera
         sma.add_state(
             state_name='trial_start',
-            state_timer=0,  # ~100µs hardware irreducible delay
+            state_timer=1,
             state_change_conditions={'Tup': 'reset_rotary_encoder'},
             output_actions=[('SoftCode', 3)])  # sart camera
     else:
@@ -108,7 +111,7 @@ for i in range(sph.NTRIALS):  # Main loop
             state_name='trial_start',
             state_timer=0,  # ~100µs hardware irreducible delay
             state_change_conditions={'Tup': 'reset_rotary_encoder'},
-            output_actions=[('SoftCode', 0)])  # stop stim
+            output_actions=[tph.out_stop_sound])  # stop all sounds
 
     sma.add_state(
         state_name='reset_rotary_encoder',
@@ -128,10 +131,10 @@ for i in range(sph.NTRIALS):  # Main loop
        state_name='stim_on',
        state_timer=0.1,
        state_change_conditions={
-                                'Tup': 'interactive_delay',
-                                'BNC1High': 'interactive_delay',
-                                'BNC1Low': 'interactive_delay'
-                                },
+           'Tup': 'interactive_delay',
+           'BNC1High': 'interactive_delay',
+           'BNC1Low': 'interactive_delay'
+       },
        output_actions=[('Serial1', re_show_stim)])
 
     sma.add_state(
@@ -144,9 +147,9 @@ for i in range(sph.NTRIALS):  # Main loop
         state_name='play_tone',
         state_timer=0.001,
         state_change_conditions={
-                                 'Tup': 'reset2_rotary_encoder',
-                                 'BNC2High': 'reset2_rotary_encoder'
-                                 },
+            'Tup': 'reset2_rotary_encoder',
+            'BNC2High': 'reset2_rotary_encoder'
+        },
         output_actions=[tph.out_tone])
 
     sma.add_state(

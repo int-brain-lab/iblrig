@@ -43,6 +43,7 @@ class TrialParamHandler(object):
         self.stim_gain = sph.STIM_GAIN
         self.stim_sigma = sph.STIM_SIGMA
         self.out_tone = sph.OUT_TONE
+        self.out_stop_sound = sph.OUT_STOP_SOUND
         self.poop_count = sph.POOP_COUNT
         # Reward amount
         self.reward_amount = sph.REWARD_AMOUNT

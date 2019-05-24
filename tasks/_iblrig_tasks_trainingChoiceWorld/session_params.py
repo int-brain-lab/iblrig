@@ -100,8 +100,10 @@ class SessionParamHandler(object):
         self.GO_TONE = None
         self.WHITE_NOISE = None
         self = sound.init_sounds(self)  # sets GO_TONE and WHITE_NOISE
-        self.OUT_TONE = ('SoftCode', 1) if self.SOFT_SOUND else None
-        self.OUT_NOISE = ('SoftCode', 2) if self.SOFT_SOUND else None
+        self.OUT_STOP_SOUND = (
+            'SoftCode', 0) if self.SOFT_SOUND else ('Serial3', ord('X'))
+        self.OUT_TONE = ('SoftCode', 1) if self.SOFT_SOUND else ('Serial3', 5)
+        self.OUT_NOISE = ('SoftCode', 2) if self.SOFT_SOUND else ('Serial3', 6)
         # =====================================================================
         # RUN VISUAL STIM
         # =====================================================================
@@ -163,12 +165,11 @@ class SessionParamHandler(object):
             return sx
 
         d = self.__dict__.copy()
-        if self.SOFT_SOUND:
-            d['GO_TONE'] = 'go_tone(freq={}, dur={}, amp={})'.format(
-                self.GO_TONE_FREQUENCY, self.GO_TONE_DURATION,
-                self.GO_TONE_AMPLITUDE)
-            d['WHITE_NOISE'] = 'white_noise(freq=-1, dur={}, amp={})'.format(
-                self.WHITE_NOISE_DURATION, self.WHITE_NOISE_AMPLITUDE)
+        d['GO_TONE'] = 'go_tone(freq={}, dur={}, amp={})'.format(
+            self.GO_TONE_FREQUENCY, self.GO_TONE_DURATION,
+            self.GO_TONE_AMPLITUDE)
+        d['WHITE_NOISE'] = 'white_noise(freq=-1, dur={}, amp={})'.format(
+            self.WHITE_NOISE_DURATION, self.WHITE_NOISE_AMPLITUDE)
         d['SD'] = str(d['SD'])
         d['OSC_CLIENT'] = str(d['OSC_CLIENT'])
         d['SESSION_DATETIME'] = self.SESSION_DATETIME.isoformat()

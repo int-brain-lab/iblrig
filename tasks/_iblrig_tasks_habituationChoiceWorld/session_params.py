@@ -84,12 +84,13 @@ class SessionParamHandler(object):
         self.SD = sound.configure_sounddevice(
             output=self.SOFT_SOUND, samplerate=self.SOUND_SAMPLE_FREQ)
 
-        self.UPLOADER_TOOL = None
         self.GO_TONE = None
         self.WHITE_NOISE = None
         self = sound.init_sounds(self, noise=False)
-        self.OUT_TONE = ('SoftCode', 1) if self.SOFT_SOUND else None
-        self.OUT_NOISE = ('SoftCode', 2) if self.SOFT_SOUND else None
+        self.OUT_STOP_SOUND = (
+            'SoftCode', 0) if self.SOFT_SOUND else ('Serial3', ord('X'))
+        self.OUT_TONE = ('SoftCode', 1) if self.SOFT_SOUND else ('Serial3', 5)
+        self.OUT_NOISE = ('SoftCode', 2) if self.SOFT_SOUND else ('Serial3', 6)
         # =====================================================================
         # RUN VISUAL STIM
         # =====================================================================

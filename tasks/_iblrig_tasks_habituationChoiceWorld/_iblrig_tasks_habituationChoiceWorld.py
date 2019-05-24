@@ -57,7 +57,17 @@ bpod.load_serial_message(rotary_encoder, re_show_stim, [ord('#'), 2])
 # Shwo stim at center of screen
 re_show_center = rotary_encoder_reset + 3
 bpod.load_serial_message(rotary_encoder, re_show_center, [ord('#'), 3])
-
+if sph.SOFT_SOUND is None:
+    # SOUND CARD
+    sound_card = [x for x in bpod.modules if x.name == 'SoundCard1'][0]
+    # Play tone
+    sc_play_tone = rotary_encoder_reset + 4
+    bpod.load_serial_message(sound_card, sc_play_tone, [
+                             ord('P'), sph.GO_TONE_IDX])
+    # Play noise
+    sc_play_noise = rotary_encoder_reset + 5
+    bpod.load_serial_message(sound_card, sc_play_noise, [
+        ord('P'), sph.WHITE_NOISE_IDX])
 # =============================================================================
 # TRIAL PARAMETERS AND STATE MACHINE
 # =============================================================================
@@ -75,7 +85,7 @@ for i in range(sph.NTRIALS):  # Main loop
     if i == 0:  # First trial exception start camera
         sma.add_state(
             state_name='trial_start',
-            state_timer=0,  # ~100µs hardware irreducible delay
+            state_timer=1,
             state_change_conditions={'Tup': 'stim_on'},
             output_actions=[('Serial1', re_stop_stim),
                             ('SoftCode', 3)])  # sart camera
