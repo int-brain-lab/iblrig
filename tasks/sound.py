@@ -189,13 +189,13 @@ def sound_sample_freq(soft_sound):
         raise(NotImplementedError)
 
 
-def init_sounds(sph_obj, tone=True, noise=True):
-    if not sph_obj.SOFT_SOUND:
+def init_sounds(sph, tone=True, noise=True):
+    if not sph.SOFT_SOUND:
         msg = f"""
     ##########################################
     SOUND BOARD NOT FOUND ON SYSTEM!!",
     PLEASE GO TO:
-    iblrig_params/IBL/tasks/{sph_obj.PYBPOD_PROTOCOL}/task_settings.py
+    iblrig_params/IBL/tasks/{sph.PYBPOD_PROTOCOL}/task_settings.py
     and set
         SOFT_SOUND = 'sysdefault' or 'xonar'
     ##########################################"""
@@ -209,22 +209,22 @@ def init_sounds(sph_obj, tone=True, noise=True):
         chans = 'L+TTL'
 
     if tone:
-        sph_obj.GO_TONE = make_sound(
-            rate=sph_obj.SOUND_SAMPLE_FREQ,
-            frequency=sph_obj.GO_TONE_FREQUENCY,
-            duration=sph_obj.GO_TONE_DURATION,
-            amplitude=sph_obj.GO_TONE_AMPLITUDE,
+        sph.GO_TONE = make_sound(
+            rate=sph.SOUND_SAMPLE_FREQ,
+            frequency=sph.GO_TONE_FREQUENCY,
+            duration=sph.GO_TONE_DURATION,
+            amplitude=sph.GO_TONE_AMPLITUDE,
             fade=0.01,
             chans=chans)
     if noise:
-        sph_obj.WHITE_NOISE = make_sound(
-            rate=sph_obj.SOUND_SAMPLE_FREQ,
+        sph.WHITE_NOISE = make_sound(
+            rate=sph.SOUND_SAMPLE_FREQ,
             frequency=-1,
-            duration=sph_obj.WHITE_NOISE_DURATION,
-            amplitude=sph_obj.WHITE_NOISE_AMPLITUDE,
+            duration=sph.WHITE_NOISE_DURATION,
+            amplitude=sph.WHITE_NOISE_AMPLITUDE,
             fade=0.01,
             chans=chans)
-    return sph_obj
+    return sph
 
 
 if __name__ == '__main__':
