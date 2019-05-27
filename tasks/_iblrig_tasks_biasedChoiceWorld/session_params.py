@@ -101,10 +101,11 @@ class SessionParamHandler(object):
         self.SOUND_BOARD_BPOD_PORT = 'Serial3'
         self.GO_TONE_IDX = 2
         self.WHITE_NOISE_IDX = 3
-        sound.configure_sound_card(
-            sounds=[self.GO_TONE, self.WHITE_NOISE],
-            indexes=[self.GO_TONE_IDX, self.WHITE_NOISE_IDX],
-            sample_rate=self.SOUND_SAMPLE_FREQ)
+        if self.SOFT_SOUND is None:
+            sound.configure_sound_card(
+                sounds=[self.GO_TONE, self.WHITE_NOISE],
+                indexes=[self.GO_TONE_IDX, self.WHITE_NOISE_IDX],
+                sample_rate=self.SOUND_SAMPLE_FREQ)
 
         self.OUT_TONE = ('SoftCode', 1) if self.SOFT_SOUND else ('Serial3', 5)
         self.OUT_NOISE = ('SoftCode', 2) if self.SOFT_SOUND else ('Serial3', 6)

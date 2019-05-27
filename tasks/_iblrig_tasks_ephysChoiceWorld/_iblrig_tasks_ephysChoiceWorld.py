@@ -23,6 +23,7 @@ sph = SessionParamHandler(task_settings, user_settings)
 def bpod_loop_handler():
     f.canvas.flush_events()  # 100µs
 
+
 # =============================================================================
 # CONNECT TO BPOD
 # =============================================================================
@@ -163,10 +164,10 @@ for i in range(sph.NTRIALS):  # Main loop
         state_change_conditions={'Tup': 'exit'},
         output_actions=[('Serial1', re_stop_stim)])
 
+    # if i == 0:
+    #     sph.warn_ephys()
     # Send state machine description to Bpod device
     bpod.send_state_machine(sma)
-    if i == 0:
-        sph.warn_ephys()
     # Run state machine
     bpod.run_state_machine(sma)  # Locks until state machine 'exit' is reached
     tph = tph.trial_completed(bpod.session.current_trial.export())

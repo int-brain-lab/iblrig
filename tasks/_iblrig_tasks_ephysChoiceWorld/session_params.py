@@ -22,6 +22,9 @@ import sound
 import user_input
 from path_helper import SessionPathCreator
 from rotary_encoder import MyRotaryEncoder
+import tkinter as tk
+from tkinter import messagebox
+
 log = logging.getLogger('iblrig')
 
 
@@ -159,10 +162,10 @@ class SessionParamHandler(object):
         self.BONSAI_EDITOR = False  # Open the Bonsai editor of visual stim
         bonsai.start_visual_stim(self)
         # =====================================================================
-        # PROBES
+        # PROBES + WEIGHT
         # =====================================================================
-        self.REC_SITE = user_input.session_form(mouse_name=self.SUBJECT_NAME)
-
+        self.FORM_DATA = user_input.session_form(mouse_name=self.SUBJECT_NAME)
+        self = user_input.parse_form_data(self)
         # =====================================================================
         # SAVE SETTINGS FILE AND TASK CODE
         # =====================================================================
@@ -178,10 +181,9 @@ class SessionParamHandler(object):
     # METHODS
     # =========================================================================
     def warn_ephys(self):
-        from tkinter import messagebox
         title = 'START EPHYS RECODING'
         msg = ("Please start recording in spikeglx then press OK\n" +
-            "Behavior task will run after you start the bonsai workflow")
+               "Behavior task will run after you start the bonsai workflow")
         # from ibllib.graphic import popup
         # popup(title, msg)
         root = tk.Tk()
@@ -192,7 +194,7 @@ class SessionParamHandler(object):
     def get_recording_site_data(self, probe='LEFT'):
         title = f'PROBE {probe} - recording site'
         fields = ['X (float)', 'Y (float)', 'Z (float)', 'D (float)',
-                'Angle (10 or 20)', 'Origin (bregma or lambda)']
+                  'Angle (10 or 20)', 'Origin (bregma or lambda)']
         defaults = [0.0, 0.0, 0.0, 0.0, '10', 'bregma']
         types = [float, float, float, float, int, str]
         userdata = multi_input(
