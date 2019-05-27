@@ -72,14 +72,16 @@ class SessionForm(BaseWidget):
                 elif 'Weight' in k:
                     self.form_data.update({k: float(v)})
             self.valid_form_data = True
+            return
         except Exception:
             self.valid_form_data = False
+            return
 
     def __buttonAction(self):
         """Button action event"""
         self.form_data = {
             k.strip('_'): v.value for k, v in self.__dict__.items()
-            if 'probe' in k or 'session' in k
+            if 'probe' in k or 'session' in k or 'Weight' in k
         }
         self.validate_form_data_types()
         self.close()
@@ -91,8 +93,8 @@ class SessionForm(BaseWidget):
 def session_form(mouse_name: str = '') -> dict:
     root = QApplication(sys.argv)
     sForm = pyforms.start_app(SessionForm, parent_win=root,
-                              geometry=(400, 400, 200, 200))
-    sForm._mouseWeight.label = f'Insert weight of mouse {mouse_name}:'
+                              geometry=(400, 400, 400, 200))
+    sForm._mouseWeight.label = f'Current weight for {mouse_name}:'
     root.exec()
 
     if sForm.valid_form_data:
@@ -101,7 +103,15 @@ def session_form(mouse_name: str = '') -> dict:
         return session_form(mouse_name)
 
 
+def parse_form_data(sph):
+    fdata = sph.FORM_DATA
+    sph.SUBJECT_WEIGHT = fdata['mouseWeight']
+    sph.LEFT_PROBE = {k: v for k, v in fdata.items() if 'Left' in k}
+    sph.RIGHT_PROBE = {k: v for k, v in fdata.items() if 'Right' in k}
+    return sph
+
+
 #Execute the application
 if __name__ == "__main__":
-    bla = session_form(mouse_name='SOME_mouse')
+    bla = session_form(mouse_name='myMouse')
     print('.')

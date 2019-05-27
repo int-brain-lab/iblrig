@@ -64,10 +64,7 @@ if sph.SOFT_SOUND is None:
     sc_play_tone = rotary_encoder_reset + 4
     bpod.load_serial_message(sound_card, sc_play_tone, [
                              ord('P'), sph.GO_TONE_IDX])
-    # Play noise
-    sc_play_noise = rotary_encoder_reset + 5
-    bpod.load_serial_message(sound_card, sc_play_noise, [
-        ord('P'), sph.WHITE_NOISE_IDX])
+
 # =============================================================================
 # TRIAL PARAMETERS AND STATE MACHINE
 # =============================================================================
