@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # @Author: Niccolò Bonacchi
@@ -188,7 +187,7 @@ def update_to_latest():
 
 
 def _update(branch=None, version=None):
-    global no_conda
+    global upgrade_conda
     resp = ask_user_input()
     if resp == 'y':
         if branch:
@@ -198,7 +197,7 @@ def _update(branch=None, version=None):
         elif branch is None and version is None:
             checkout_version(sorted(ALL_VERSIONS)[-1])
         update_pip()
-        if not no_conda:
+        if upgrade_conda:
             update_conda()
         update_env()
         import_tasks()
@@ -209,19 +208,16 @@ def _update(branch=None, version=None):
 
 def main(args):
     global no_conda
-    nargs_passed = sum([True for x in args.__dict__.values() if x])
 
     if not any(args.__dict__.values()):
         update_to_latest()
 
-# if nargs_passed == 2:
     if args.update and args.b:
         if args.b not in ALL_BRANCHES:
             print('Not found:', args.b)
             return
         checkout_single_file(file='update.py', branch=args.b)
 
-# elif nargs_passed == 1:
     if args.b and args.b in ALL_BRANCHES:
         _update(branch=args.b)
     elif args.b and args.b not in ALL_BRANCHES:
@@ -289,10 +285,10 @@ if __name__ == '__main__':
     parser.add_argument('--pip', required=False, default=False,
                         action='store_true',
                         help='Update pip setuptools and wheel')
-    parser.add_argument('--no-conda', required=False, default=False,
+    parser.add_argument('--upgrade-conda', required=False, default=False,
                         action='store_true', help='Dont update conda')
     args = parser.parse_args()
-    global no_conda
-    no_conda = args.no_conda
+    global upgrade_conda
+    upgrade_conda = args.upgrade_conda
     main(args)
     print('\n')
