@@ -60,7 +60,7 @@ Your iblrig folder should now have the following folders:
 
 ::
 
- Bonsai-2.3
+ Bonsai
  docs
  pybpod
  pybpod_projects
@@ -94,7 +94,7 @@ Bonsai
 ______
 
 The correct Bonsai vesrion that runs the visual stimulus has been packaged with
-the rig code and 'lives' in a folder called iblrig\Bonsai-2.3 the installation
+the rig code and 'lives' in a folder called iblrig\Bonsai the installation
 process is going to ask you to configure Bonsai at some point.
 The Bonsai bootstrapper will install all the required dependencies and drop you
 in the package manager.
