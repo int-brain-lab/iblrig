@@ -197,7 +197,7 @@ def install_bonsai():
     user_input = input()
     if user_input == 'y':
         subprocess.call(os.path.join(IBLRIG_ROOT_PATH,
-                                     'Bonsai-2.3', 'Bonsai64.exe'))
+                                     'Bonsai', 'Bonsai64.exe'))
     elif user_input != 'n' and user_input != 'y':
         print("Please answer 'y' or 'n'")
         return install_bonsai()
