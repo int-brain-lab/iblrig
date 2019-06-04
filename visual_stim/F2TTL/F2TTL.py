@@ -13,20 +13,34 @@ class frame2TTL(object):
         self.streaming = False
 
     def connect(self, serial_port):
+        """Create connection to serial_port"""
         ser = serial.Serial(port=serial_port, baudrate=115200, timeout=1)
         self.connected = True
         return ser
 
-    def measure_light(self, num_samples=250):
-        sample_sum = 0
+    def close(self):
+        """Close connection to serial port"""
+        self.ser.close()
+        return
+
+    def measure_light(self, num_samples: int = 250) -> dict:
+        """Measure <num_samples> values from the sensor and return basic stats.
+        Mean, Std, SEM, Nsamples
+        """
+        sample_sum = []
         for i in range(num_samples):
-            sample_sum += self.read_value()
+            sample_sum.append(self.read_value())
 
-        mean_value = sample_sum / num_samples
-
-        return mean_value
+        out = {
+            'mean_value': np.array(sample_sum).mean(),
+            'std_value': np.array(sample_sum).std(),
+            'sem_value':  np.array(sample_sum).std() / np.sqrt(num_samples),
+            'nsamples': num_samples
+        }
+        return out
 
     def set_threshold(self, light=None, dark=None):
+        """Set light, dark, or both thresholds for the device"""
         if light is None:
             light = self.light_threshold
         if dark is None:
@@ -49,6 +63,7 @@ class frame2TTL(object):
         return
 
     def read_value(self):
+        """Read one value from sensor (current)"""
         self.ser.write(b'V')
         response = self.ser.read(4)
         # print(np.frombuffer(response, dtype=np.uint32))
@@ -56,7 +71,7 @@ class frame2TTL(object):
         return response
 
     def stream(self):
-        self.ser.write(b'S')  # Start the stream, stream rate 100Hz
+        """Enable streaming to USB"""
         self.ser.write(b'S')  # Start the stream, stream rate 100Hz
         self.streaming = not self.streaming
 
