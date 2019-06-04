@@ -1,4 +1,5 @@
 # !/usr/bin/python3
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 # automatic water calibration for pyBpod
@@ -258,7 +259,7 @@ root.quit()
 
 if __name__ == '__main__':
     pass
-    # root_data_folder = '/home/nico/Projects/IBL/IBL-github/iblrig_data/'
+    # root_data_folder = '/home/nico/Projects/IBL/github/iblrig_data/'
     # root_data_folder += 'Subjects'
     # session = '_iblrig_calibration/2018-11-28/4'
     # data_file = '/raw_behavior_data/_iblrig_calibration_water_function.csv'

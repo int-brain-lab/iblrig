@@ -19,7 +19,7 @@ NTRIALS = 2000  # Number of trials for the current session
 USE_AUTOMATIC_STOPPING_CRITERIONS = True  # Weather to check for the Automatic stopping criterions or not  # noqa
 USE_VISUAL_STIMULUS = True  # Run the visual stim in bonsai
 BONSAI_EDITOR = False  # Whether to open the visual stim Bonsai editor or not
-REPEAT_ON_ERROR = True
+REPEAT_ON_ERROR = False
 # STATE TIMERS
 QUIESCENCE_THRESHOLDS = [-2, 2]  # degree
 QUIESCENT_PERIOD = 0.2  # + x, where x~exp(0.35), t ∈ 0.2 <= R <= 0.5
@@ -35,7 +35,7 @@ STIM_GAIN = 4.  # (azimuth_degree/mm) Gain of the RE to stimulus movement
 SYNC_SQUARE_X = 0.95
 SYNC_SQUARE_Y = 0.17
 # BLOCKS
-BLOCK_INIT_5050 = False
+BLOCK_INIT_5050 = True
 BLOCK_PROBABILITY_SET = [0.2, 0.8]
 BLOCK_LEN_FACTOR = 60
 BLOCK_LEN_MIN = 20
@@ -46,7 +46,7 @@ STIM_POSITIONS = [-35, 35]  # All possible positions for this session (deg)
 CONTRAST_SET = [1., 0.25, 0.125, 0.0625, 0.]  # Full contrast set
 CONTRAST_SET_PROBABILITY_TYPE = 'biased'  # or 'uniform'. 'biased' will half the probability of drawing a 0.  # noqa
 # SOUNDS
-SOFT_SOUND = 'xonar'  # Use software sound 'xonar', 'sysdefault' or False for BpodSoundCard  # noqa
+SOFT_SOUND = 'xonar'  # Use software sound 'xonar', 'sysdefault' or None for BpodSoundCard  # noqa
 SOUND_BOARD_BPOD_PORT = 'Serial3'  # (on Bpod) - Ignored if using SOFT_SOUND
 WHITE_NOISE_DURATION = 0.5  # Length of noise burst
 WHITE_NOISE_AMPLITUDE = 0.05

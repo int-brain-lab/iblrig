@@ -1,8 +1,7 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date:   2018-02-02 17:19:09
-# @Last Modified by:   Niccolò Bonacchi
-# @Last Modified time: 2018-07-12 16:18:59
 import os
 import sys
 from sys import platform
@@ -18,7 +17,6 @@ import adaptive
 import ambient_sensor
 import bonsai
 import iotasks
-import misc
 import sound
 from path_helper import SessionPathCreator
 from rotary_encoder import MyRotaryEncoder
@@ -74,7 +72,7 @@ class SessionParamHandler(object):
         self.CALIB_FUNC_RANGE = adaptive.init_calib_func_range(self)
         self.REWARD_VALVE_TIME = adaptive.init_reward_valve_time(self)
         self.STIM_GAIN = adaptive.init_stim_gain(self)
-        self.IMPULIVE_CONTROL = 'OFF'
+        self.IMPULSIVE_CONTROL = 'OFF'
         self = adaptive.impulsive_control(self)
         # =====================================================================
         # ROTARY ENCODER
@@ -98,12 +96,21 @@ class SessionParamHandler(object):
         self.SD = sound.configure_sounddevice(
             output=self.SOFT_SOUND, samplerate=self.SOUND_SAMPLE_FREQ)
         # Create sounds and output actions of state machine
-        self.UPLOADER_TOOL = None
+        self.SOUND_BOARD_BPOD_PORT = 'Serial3'
         self.GO_TONE = None
         self.WHITE_NOISE = None
+        self.GO_TONE_IDX = 2
+        self.WHITE_NOISE_IDX = 3
         self = sound.init_sounds(self)  # sets GO_TONE and WHITE_NOISE
-        self.OUT_TONE = ('SoftCode', 1) if self.SOFT_SOUND else None
-        self.OUT_NOISE = ('SoftCode', 2) if self.SOFT_SOUND else None
+        if self.SOFT_SOUND is None:
+            sound.configure_sound_card(
+                sounds=[self.GO_TONE, self.WHITE_NOISE],
+                indexes=[self.GO_TONE_IDX, self.WHITE_NOISE_IDX],
+                sample_rate=self.SOUND_SAMPLE_FREQ)
+        self.OUT_STOP_SOUND = (
+            'SoftCode', 0) if self.SOFT_SOUND else ('Serial3', ord('X'))
+        self.OUT_TONE = ('SoftCode', 1) if self.SOFT_SOUND else ('Serial3', 5)
+        self.OUT_NOISE = ('SoftCode', 2) if self.SOFT_SOUND else ('Serial3', 6)
         # =====================================================================
         # RUN VISUAL STIM
         # =====================================================================
@@ -115,6 +122,8 @@ class SessionParamHandler(object):
             iotasks.save_session_settings(self)
             iotasks.copy_task_code(self)
             iotasks.save_task_code(self)
+            iotasks.copy_video_code(self)
+            iotasks.save_video_code(self)
             self.bpod_lights(0)
 
         self.display_logs()
@@ -138,9 +147,6 @@ class SessionParamHandler(object):
     # Bonsai start camera called from main task file
     def start_camera_recording(self):
         return bonsai.start_camera_recording(self)
-
-    def get_port_events(self, events, name=''):
-        return misc.get_port_events(events, name=name)
 
     # =========================================================================
     # SOUND INTERFACE FOR STATE MACHINE
@@ -166,12 +172,11 @@ class SessionParamHandler(object):
             return sx
 
         d = self.__dict__.copy()
-        if self.SOFT_SOUND:
-            d['GO_TONE'] = 'go_tone(freq={}, dur={}, amp={})'.format(
-                self.GO_TONE_FREQUENCY, self.GO_TONE_DURATION,
-                self.GO_TONE_AMPLITUDE)
-            d['WHITE_NOISE'] = 'white_noise(freq=-1, dur={}, amp={})'.format(
-                self.WHITE_NOISE_DURATION, self.WHITE_NOISE_AMPLITUDE)
+        d['GO_TONE'] = 'go_tone(freq={}, dur={}, amp={})'.format(
+            self.GO_TONE_FREQUENCY, self.GO_TONE_DURATION,
+            self.GO_TONE_AMPLITUDE)
+        d['WHITE_NOISE'] = 'white_noise(freq=-1, dur={}, amp={})'.format(
+            self.WHITE_NOISE_DURATION, self.WHITE_NOISE_AMPLITUDE)
         d['SD'] = str(d['SD'])
         d['OSC_CLIENT'] = str(d['OSC_CLIENT'])
         d['SESSION_DATETIME'] = self.SESSION_DATETIME.isoformat()
@@ -525,7 +530,7 @@ ADAPTIVE VALUES FOR CURRENT SESSION
 REWARD AMOUNT:      {self.REWARD_AMOUNT} µl
 VALVE OPEN TIME:    {self.REWARD_VALVE_TIME} sec
 GAIN:               {self.STIM_GAIN} azimuth_degree/mm
-IMPULSIVE CONTROL   {self.IMPULIVE_CONTROL}
+IMPULSIVE CONTROL   {self.IMPULSIVE_CONTROL}
 ##########################################"""
         log.info(msg)
 
@@ -542,9 +547,9 @@ if __name__ == '__main__':
     import task_settings as _task_settings
     import scratch._user_settings as _user_settings
     if platform == 'linux':
-        r = "/home/nico/Projects/IBL/IBL-github/iblrig"
+        r = "/home/nico/Projects/IBL/github/iblrig"
         _task_settings.IBLRIG_FOLDER = r
-        d = ("/home/nico/Projects/IBL/IBL-github/iblrig/scratch/" +
+        d = ("/home/nico/Projects/IBL/github/iblrig/scratch/" +
              "test_iblrig_data")
         _task_settings.IBLRIG_DATA_FOLDER = d
         _task_settings.AUTOMATIC_CALIBRATION = False

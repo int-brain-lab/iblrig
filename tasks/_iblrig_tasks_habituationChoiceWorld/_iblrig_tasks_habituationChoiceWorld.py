@@ -1,8 +1,7 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date:   2018-02-02 12:31:13
-# @Last Modified by:   Niccolò Bonacchi
-# @Last Modified time: 2018-10-09 13:32:28
 from pybpodapi.protocol import Bpod, StateMachine
 from pybpod_rotaryencoder_module.module import RotaryEncoder
 import logging
@@ -30,8 +29,10 @@ def softcode_handler(data):
     global sph
     if data == 0:
         sph.stop_sound()
-    if data == 1:
+    elif data == 1:
         sph.play_tone()
+    elif data == 3:
+        sph.start_camera_recording()
 
 
 # =============================================================================
@@ -56,13 +57,19 @@ bpod.load_serial_message(rotary_encoder, re_show_stim, [ord('#'), 2])
 # Shwo stim at center of screen
 re_show_center = rotary_encoder_reset + 3
 bpod.load_serial_message(rotary_encoder, re_show_center, [ord('#'), 3])
+if sph.SOFT_SOUND is None:
+    # SOUND CARD
+    sound_card = [x for x in bpod.modules if x.name == 'SoundCard1'][0]
+    # Play tone
+    sc_play_tone = rotary_encoder_reset + 4
+    bpod.load_serial_message(sound_card, sc_play_tone, [
+                             ord('P'), sph.GO_TONE_IDX])
 
 # =============================================================================
 # TRIAL PARAMETERS AND STATE MACHINE
 # =============================================================================
 global tph
 tph = TrialParamHandler(sph)
-sph.start_camera_recording()
 
 for i in range(sph.NTRIALS):  # Main loop
     tph.next_trial()
@@ -72,18 +79,25 @@ for i in range(sph.NTRIALS):  # Main loop
 # =============================================================================
     sma = StateMachine(bpod)
 
-    sma.add_state(
-        state_name='trial_start',
-        state_timer=1,  # Stim off for 1 sec
-        state_change_conditions={'Tup': 'stim_on'},
-        output_actions=[('Serial1', re_stop_stim)])
+    if i == 0:  # First trial exception start camera
+        sma.add_state(
+            state_name='trial_start',
+            state_timer=1,
+            state_change_conditions={'Tup': 'stim_on'},
+            output_actions=[('Serial1', re_stop_stim),
+                            ('SoftCode', 3)])  # sart camera
+    else:
+        sma.add_state(
+            state_name='trial_start',
+            state_timer=1,  # Stim off for 1 sec
+            state_change_conditions={'Tup': 'stim_on'},
+            output_actions=[('Serial1', re_stop_stim)])
 
     sma.add_state(
         state_name='stim_on',
         state_timer=tph.delay_to_stim_center,
         state_change_conditions={'Tup': 'stim_center'},
-        output_actions=[('Serial1', re_show_stim),
-                        tph.out_tone])
+        output_actions=[('Serial1', re_show_stim), tph.out_tone])
 
     sma.add_state(
         state_name='stim_center',

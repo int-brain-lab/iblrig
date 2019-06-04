@@ -1,8 +1,7 @@
+#!/usr/bin/env python
 # -*- coding:utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date: Wednesday, November 21st 2018, 4:27:34 pm
-# @Last Modified by: Niccolò Bonacchi
-# @Last Modified time: 21-11-2018 04:29:49.4949
 import json
 import os
 import shutil
@@ -161,9 +160,9 @@ if __name__ == "__main__":
     _user_settings.PYBPOD_SETUP = 'water'
     _user_settings.PYBPOD_PROTOCOL = '_iblrig_calibration_water'
     if platform == 'linux':
-        r = "/home/nico/Projects/IBL/IBL-github/iblrig"
+        r = "/home/nico/Projects/IBL/github/iblrig"
         _task_settings.IBLRIG_FOLDER = r
-        d = ("/home/nico/Projects/IBL/IBL-github/iblrig/scratch/" +
+        d = ("/home/nico/Projects/IBL/github/iblrig/scratch/" +
              "test_iblrig_data")
         _task_settings.IBLRIG_DATA_FOLDER = d
         _task_settings.AUTOMATIC_CALIBRATION = False

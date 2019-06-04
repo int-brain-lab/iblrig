@@ -1,8 +1,7 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date:   2018-02-02 14:06:34
-# @Last Modified by:   Niccolò Bonacchi
-# @Last Modified time: 2018-06-26 17:36:59
 import time
 import datetime
 import json
@@ -20,6 +19,9 @@ sys.path.append(str(Path(__file__).parent.parent.parent.parent))  # noqa
 from iotasks import ComplexEncoder
 import bonsai
 import misc
+import ambient_sensor
+from check_sync_pulses import sync_check
+
 
 log = logging.getLogger('iblrig')
 
@@ -59,7 +61,6 @@ class AdaptiveContrast(object):
         self.value = self._init_contrast()
 
         self.trial_correct = None
-        self.signed_contrast = None
 
         self.last_trial_data = None
 
@@ -101,9 +102,9 @@ class AdaptiveContrast(object):
         self.buffer = np.zeros((2, self.buffer_size,
                                 len(self.all_contrasts))).tolist()
 
-    def _update_buffer(self):
+    def _update_buffer(self, prev_position):
         _buffer = np.asarray(self.buffer)
-        side_idx = 0 if self.signed_contrast < 0 else 1
+        side_idx = 0 if prev_position < 0 else 1
         contrast_idx = self.contrast_set.index(self.value)
         col = _buffer[side_idx, :, contrast_idx]
         col = np.roll(col, -1)
@@ -160,15 +161,14 @@ class AdaptiveContrast(object):
         return int(sum(1 - st.binom.cdf(range(self.buffer_size),
                    self.buffer_size, prob) >= alpha))
 
-    def trial_completed(self, trial_correct, signed_contrast):
+    def trial_completed(self, trial_correct):
         self.ntrials += 1
         self.trial_correct = trial_correct
-        self.signed_contrast = signed_contrast
 
-    def next_trial(self):
+    def next_trial(self, prev_position):
         """Updates obj with behavioral outcome from trial.trial_completed
         and calculates next contrast"""
-        self._update_buffer()
+        self._update_buffer(prev_position)
         self._update_contrast_set()
         self._update_contrast()
         self.trial_correct = None
@@ -198,11 +198,11 @@ class RepeatContrast(object):
     def value(self, previous_contrast):
         self._contrast = previous_contrast
 
-    def trial_completed(self, trial_correct, signed_contrast):
+    def trial_completed(self, trial_correct):
         self.ntrials += 1
         self.trial_correct = trial_correct
 
-    def next_trial(self):
+    def next_trial(self, prev_position):
         """Updates obj with behavioral outcome from trial.trial_completed
         and keeps contrast in case of mistake and sets contrast to None in
         case of correct trial -> exits from repeat trials"""
@@ -224,7 +224,6 @@ class TrialParamHandler(object):
         # Constants from settings
         self.init_datetime = parser.parse(sph.PYBPOD_SESSION)
         self.task_protocol = sph.PYBPOD_PROTOCOL
-        self.elapsed_time = 0
         self.data_file_path = sph.DATA_FILE_PATH
         self.data_file = open(self.data_file_path, 'a')
         self.position_set = sph.STIM_POSITIONS
@@ -245,6 +244,9 @@ class TrialParamHandler(object):
         self.out_tone = sph.OUT_TONE
         self.out_noise = sph.OUT_NOISE
         self.poop_count = sph.POOP_COUNT
+        self.save_ambient_data = sph.RECORD_AMBIENT_SENSOR_DATA
+        self.as_data = {'Temperature_C': 0, 'AirPressure_mb': 0,
+                        'RelativeHumidity': 0}
         # Reward amount
         self.reward_amount = sph.REWARD_AMOUNT
         self.reward_valve_time = sph.REWARD_VALVE_TIME
@@ -255,7 +257,6 @@ class TrialParamHandler(object):
         # Initialize parameters that may change every trial
         self.contrast_set = sph.CONTRAST_SET
         self.trial_num = 0
-        self.non_rc_ntrials = self.trial_num - self.rc.ntrials
         self.position = random.choice(sph.STIM_POSITIONS)
         self.stim_probability_left = sph.STIM_PROBABILITY_LEFT
         self.stim_phase = 0.
@@ -265,15 +266,22 @@ class TrialParamHandler(object):
             self.threshold_events_dict[sph.QUIESCENCE_THRESHOLDS[0]])
         self.movement_right = (
             self.threshold_events_dict[sph.QUIESCENCE_THRESHOLDS[1]])
-        self.response_buffer = [0] * sph.RESPONSE_BUFFER_LENGTH
-        self.response_time_buffer = []
         # Outcome related parmeters
         self.contrast = self.ac
         self.current_contrast = self.contrast.value
         self.signed_contrast = self.contrast.value * np.sign(self.position)
+        self.signed_contrast_buffer = [self.signed_contrast]
+        # Trial Completed params
+        self.elapsed_time = 0
+        self.behavior_data = []
+        self.response_time = None
+        self.response_time_buffer = []
+        self.response_buffer = [0] * sph.RESPONSE_BUFFER_LENGTH
+        self.response_side_buffer = []
         self.trial_correct = None
         self.ntrials_correct = 0
         self.water_delivered = 0
+        self.non_rc_ntrials = self.trial_num - self.rc.ntrials
 
     def reprJSON(self):
         return self.__dict__
@@ -283,22 +291,27 @@ class TrialParamHandler(object):
         Check trial for state entries, first value of first tuple """
         # Update elapsed_time
         self.elapsed_time = datetime.datetime.now() - self.init_datetime
+        self.behavior_data = behavior_data
         correct = ~np.isnan(
-            behavior_data['States timestamps']['correct'][0][0])
+            self.behavior_data['States timestamps']['correct'][0][0])
         error = ~np.isnan(
-            behavior_data['States timestamps']['error'][0][0])
+            self.behavior_data['States timestamps']['error'][0][0])
         no_go = ~np.isnan(
-            behavior_data['States timestamps']['no_go'][0][0])
+            self.behavior_data['States timestamps']['no_go'][0][0])
         assert correct or error or no_go
         # Add trial's response time to the buffer
-        self.response_time_buffer.append(misc.get_trial_rt(behavior_data))
+        self.response_time = misc.get_trial_rt(self.behavior_data)
+        self.response_time_buffer.append(self.response_time)
         # Update response buffer -1 for left, 0 for nogo, and 1 for rightward
         if (correct and self.position < 0) or (error and self.position > 0):
             self.response_buffer = misc.update_buffer(self.response_buffer, 1)
+            self.response_side_buffer.append(1)
         elif (correct and self.position > 0) or (error and self.position < 0):
             self.response_buffer = misc.update_buffer(self.response_buffer, -1)
+            self.response_side_buffer.append(-1)
         elif no_go:
             self.response_buffer = misc.update_buffer(self.response_buffer, 0)
+            self.response_side_buffer.append(0)
         # Update the trial_correct variable
         self.trial_correct = bool(correct)
         # Increment the trial correct counter
@@ -306,16 +319,27 @@ class TrialParamHandler(object):
         # Update the water delivered
         if self.trial_correct:
             self.water_delivered += self.reward_amount
+
         # Propagate outcome to contrast object
-        self.contrast.trial_completed(self.trial_correct, self.signed_contrast)
+        self.contrast.trial_completed(self.trial_correct)
+        # Update non repeated trials
+        self.non_rc_ntrials = self.trial_num - self.rc.ntrials
+
         # SAVE TRIAL DATA
         params = self.__dict__.copy()
-        params.update({'behavior_data': behavior_data})
         # open data_file is not serializable, convert to str
         params['data_file'] = str(params['data_file'])
         params['osc_client'] = 'osc_client_pointer'
         params['init_datetime'] = params['init_datetime'].isoformat()
         params['elapsed_time'] = str(params['elapsed_time'])
+        # Delete buffered data
+        # params['stim_probability_left_buffer'] = ''
+        # params['position_buffer'] = ''
+        # params['contrast_buffer'] = ''
+        params['signed_contrast_buffer'] = ''
+        params['response_time_buffer'] = ''
+        params['response_side_buffer'] = ''
+        # params['trial_correct_buffer'] = ''
 
         out = json.dumps(params, cls=ComplexEncoder)
         self.data_file.write(out)
@@ -325,11 +349,48 @@ class TrialParamHandler(object):
         if self.trial_num == 42:
             misc.create_flags(self.data_file_path, self.poop_count)
 
-        return json.loads(out)
+        return self
 
     def check_stop_criterions(self):
         return misc.check_stop_criterions(
             self.init_datetime, self.response_time_buffer, self.trial_num)
+
+    def check_sync_pulses(self):
+        return sync_check(self)
+
+    def save_ambient_sensor_data(self, bpod_instance, destination):
+        if self.save_ambient_data:
+            self.as_data = ambient_sensor.get_reading(
+                bpod_instance, save_to=destination)
+            return self.as_data
+        else:
+            msg = 'Disabled in task settings'
+            null_measures = {'Temperature_C': msg, 'AirPressure_mb': msg,
+                             'RelativeHumidity': msg}
+            self.as_data = null_measures
+            return self.as_data
+
+    def show_trial_log(self):
+        msg = f"""
+##########################################
+TRIAL NUM:            {self.trial_num}
+STIM POSITION:        {self.position}
+STIM CONTRAST:        {self.contrast.value}
+STIM PHASE:           {self.stim_phase}
+STIM PROB LEFT:       {self.stim_probability_left}
+RESPONSE TIME:        {self.response_time}
+
+TRIAL CORRECT:        {self.trial_correct}
+
+NTRIALS CORRECT:      {self.ntrials_correct}
+NTRIALS ERROR:        {self.trial_num - self.ntrials_correct}
+WATER DELIVERED:      {np.round(self.water_delivered, 3)} µl
+TIME FROM START:      {self.elapsed_time}
+TEMPERATURE:          {self.as_data['Temperature_C']} ºC
+AIR PRESSURE:         {self.as_data['AirPressure_mb']} mb
+RELATIVE HUMIDITY:    {self.as_data['RelativeHumidity']} %
+##########################################"""
+        log.info(msg)
 
     def next_trial(self):
         # First trial exception
@@ -341,11 +402,10 @@ class TrialParamHandler(object):
         self.data_file = str(self.data_file)
         # update + next contrast: update buffers/counters + get next contrast
         # This has to happen before self.contrast is pointing to next trials
-        self.contrast.next_trial()
+        self.contrast.next_trial(self.position)  # still prev_position
+
         # Increment trial number
         self.trial_num += 1
-        # Update non repeated trials
-        self.non_rc_ntrials = self.trial_num - self.rc.ntrials
         # Update quiescent period
         self.quiescent_period = self.quiescent_period_base + misc.texp()
         # Update stimulus phase
@@ -354,6 +414,9 @@ class TrialParamHandler(object):
         self._next_contrast()
         # Update position
         self.position, self.stim_probability_left = self._next_position()
+        # Update signed_contrast and buffer (AFTER position update)
+        self.signed_contrast = self.contrast.value * np.sign(self.position)
+        self.signed_contrast_buffer.append(self.signed_contrast)
         # Update state machine events
         self.event_error = self.threshold_events_dict[self.position]
         self.event_reward = self.threshold_events_dict[-self.position]
@@ -388,7 +451,6 @@ class TrialParamHandler(object):
             self.contrast = self.ac
 
         self.current_contrast = self.contrast.value
-        self.signed_contrast = self.contrast.value * np.sign(self.position)
         return
 
     def _next_position(self):
@@ -414,6 +476,8 @@ class TrialParamHandler(object):
 if __name__ == '__main__':
     from session_params import SessionParamHandler
     from sys import platform
+    import matplotlib.pyplot as plt
+    import online_plots as op
     import task_settings as _task_settings
     import scratch._user_settings as _user_settings
     dt = datetime.datetime.now()
@@ -425,9 +489,9 @@ if __name__ == '__main__':
     _user_settings.PYBPOD_SETUP = 'trainingChoiceWorld'
     _user_settings.PYBPOD_PROTOCOL = '_iblrig_tasks_trainingChoiceWorld'
     if platform == 'linux':
-        r = "/home/nico/Projects/IBL/IBL-github/iblrig"
+        r = "/home/nico/Projects/IBL/github/iblrig"
         _task_settings.IBLRIG_FOLDER = r
-        d = "/home/nico/Projects/IBL/IBL-github/iblrig/scratch/test_iblrig_data"  # noqa
+        d = "/home/nico/Projects/IBL/github/iblrig/scratch/test_iblrig_data"  # noqa
         _task_settings.IBLRIG_DATA_FOLDER = d
         _task_settings.AUTOMATIC_CALIBRATION = False
         _task_settings.USE_VISUAL_STIMULUS = False
@@ -443,14 +507,22 @@ if __name__ == '__main__':
     # f = open(sph.DATA_FILE_PATH, 'a')
     next_trial_times = []
     trial_completed_times = []
+
+    f, axes = op.make_fig(sph)
+    plt.pause(1)
+
     for x in range(100):
         t = time.time()
         tph.next_trial()
         next_trial_times.append(time.time() - t)
         # print('next_trial took: ', next_trial_times[-1], '(s)')
         t = time.time()
-        data = tph.trial_completed(np.random.choice(
-            [correct_trial, error_trial, no_go_trial], p=[0.9, 0.05, 0.05]))
+        tph = tph.trial_completed(np.random.choice(
+            [correct_trial, error_trial, no_go_trial], p=[0.8, 0.1, 0.1]))
+        # tph = tph.trial_completed(correct_trial)
+        op.update_fig(f, axes, tph)
+
+        tph.show_trial_log()
         trial_completed_times.append(time.time() - t)
         print('\n', x)
         print(tph.contrast.type)

@@ -1,8 +1,7 @@
+#!/usr/bin/env python
 # -*- coding:utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date: Friday, February 8th 2019, 11:39:30 am
-# @Last Modified by: Niccolò Bonacchi
-# @Last Modified time: 8-02-2019 11:39:33.3333
 import misc
 import numpy as np
 
@@ -58,3 +57,19 @@ def init_probability_left(tph):
         return 0.5
     else:
         return np.random.choice(tph.block_probability_set)
+
+
+def calc_probability_left(tph):
+    if tph.block_num == 1:
+        out = 0.5
+    elif tph.block_num == 2:
+        spos = np.sign(tph.position_buffer)
+        low = tph.len_blocks_buffer[0]
+        high = tph.len_blocks_buffer[0] + tph.len_blocks_buffer[1]
+        if np.sum(spos[low:high]) / tph.len_blocks_buffer[1] > 0:
+            out = 0.2
+        else:
+            out = 0.8
+    else:
+        out = np.round(np.abs(1 - tph.stim_probability_left), 1)
+    return out

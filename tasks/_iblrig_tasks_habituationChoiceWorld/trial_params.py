@@ -1,8 +1,7 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date:   2018-02-02 14:06:34
-# @Last Modified by:   Niccolò Bonacchi
-# @Last Modified time: 2018-06-26 17:36:59
 import random
 import numpy as np
 import json
@@ -44,6 +43,7 @@ class TrialParamHandler(object):
         self.stim_gain = sph.STIM_GAIN
         self.stim_sigma = sph.STIM_SIGMA
         self.out_tone = sph.OUT_TONE
+        self.out_stop_sound = sph.OUT_STOP_SOUND
         self.poop_count = sph.POOP_COUNT
         # Reward amount
         self.reward_amount = sph.REWARD_AMOUNT
@@ -130,9 +130,9 @@ if __name__ == '__main__':
     _user_settings.PYBPOD_SETUP = 'habituationChoiceWorld'
     _user_settings.PYBPOD_PROTOCOL = '_iblrig_tasks_habituationChoiceWorld'
     if platform == 'linux':
-        r = "/home/nico/Projects/IBL/IBL-github/iblrig"
+        r = "/home/nico/Projects/IBL/github/iblrig"
         _task_settings.IBLRIG_FOLDER = r
-        d = "/home/nico/Projects/IBL/IBL-github/iblrig/scratch/test_iblrig_data"  # noqa
+        d = "/home/nico/Projects/IBL/github/iblrig/scratch/test_iblrig_data"  # noqa
         _task_settings.IBLRIG_DATA_FOLDER = d
         _task_settings.AUTOMATIC_CALIBRATION = False
         _task_settings.USE_VISUAL_STIMULUS = False

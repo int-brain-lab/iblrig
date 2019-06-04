@@ -1,8 +1,7 @@
+#!/usr/bin/env python
 # -*- coding:utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date: Wednesday, November 14th 2018, 10:40:43 am
-# @Last Modified by: Niccolò Bonacchi
-# @Last Modified time: 14-11-2018 10:41:08.088
 import datetime
 import logging
 import os
@@ -24,13 +23,17 @@ class SessionPathCreator(object):
     def __init__(self, iblrig_folder, iblrig_data_folder, subject_name,
                  protocol=False, board=False, make=False):
         self.IBLRIG_FOLDER = str(Path(iblrig_folder))
+        self.IBLRIG_EPHYS_SESSION_FOLDER = str(
+            Path(self.IBLRIG_FOLDER) / 'tasks' /
+            '_iblrig_tasks_ephysChoiceWorld' / 'sessions')
         self._BOARD = board
         self._PROTOCOL = protocol
-        self.IBLRIG_COMMIT_HASH = self._get_iblrig_commit_hash()
+        self.IBLRIG_COMMIT_HASH = self._get_commit_hash(self.IBLRIG_FOLDER)
         self.IBLRIG_VERSION_TAG = self._get_version_tag(self.IBLRIG_FOLDER)
 
-        self.IBLLIB_FOLDER = str(Path(self.IBLRIG_FOLDER).parent / 'ibllib')
+        self.IBLLIB_FOLDER = self._get_ibllib_folder()
         self.IBLLIB_VERSION_TAG = self._get_version_tag(self.IBLLIB_FOLDER)
+        self.IBLLIB_COMMIT_HASH = self._get_commit_hash(self.IBLLIB_FOLDER)
         self.IBLRIG_PARAMS_FOLDER = str(
             Path(self.IBLRIG_FOLDER).parent / 'iblrig_params')
         self.IBLRIG_DATA_FOLDER = self._iblrig_data_folder_init(
@@ -133,6 +136,8 @@ class SessionPathCreator(object):
             return 'TrainingGabor2D'
         elif 'biased' in self._PROTOCOL:
             return 'BiasedGabor2D'
+        elif 'ephys' in self._PROTOCOL:
+            return 'EphysGabor2D'
         else:
             return ''
 
@@ -184,9 +189,14 @@ class SessionPathCreator(object):
             self.create_bpod_comport_file(self.BPOD_COMPORTS_FILE, comports)
             self.COM = comports
 
-    def _get_iblrig_commit_hash(self):
+    def _get_ibllib_folder(self):
+        import ibllib
+        fpath = Path(ibllib.__file__).parent.parent.parent
+        return str(fpath)
+
+    def _get_commit_hash(self, repo_path):
         here = os.getcwd()
-        os.chdir(self.IBLRIG_FOLDER)
+        os.chdir(repo_path)
         out = subprocess.check_output(["git", "rev-parse", "HEAD"]).decode()
         os.chdir(here)
         if not out:
@@ -276,7 +286,7 @@ class SessionPathCreator(object):
             logger.debug(f"Setting data folder to location: {out}")
             return out
 
-    def _session_number(self):
+    def _session_number(self) -> str:
         logger.debug("Initializing session number")
         if not Path(self.SESSION_DATE_FOLDER).exists():
             return '001'
@@ -520,8 +530,8 @@ if __name__ == "__main__":
     # 'trainingChoiceWorld')
     # '/coder/mnt/nbonacchi/iblrig', None,
     spc = SessionPathCreator(
-        '/home/nico/Projects/IBL/IBL-github/iblrig',
-        '/home/nico/Projects/IBL/IBL-github/iblrig/scratch/test_iblrig_data',
+        '/home/nico/Projects/IBL/github/iblrig',
+        '/home/nico/Projects/IBL/github/iblrig/scratch/test_iblrig_data',
         '_iblrig_test_mouse', protocol='trainingChoiceWorld',
         board='_iblrig_mainenlab_behavior_0', make=['video', 'ephys', 'imag'])
 

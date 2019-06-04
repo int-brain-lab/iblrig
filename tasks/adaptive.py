@@ -1,8 +1,7 @@
+#!/usr/bin/env python
 # -*- coding:utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date: Tuesday, February 5th 2019, 4:11:13 pm
-# @Last Modified by: Niccolò Bonacchi
-# @Last Modified time: 5-02-2019 04:11:16.1616
 import logging
 import numpy as np
 import pandas as pd
@@ -19,9 +18,9 @@ def init_reward_amount(sph) -> float:
 
     if sph.LAST_TRIAL_DATA is None:
         return sph.AR_INIT_VALUE
-    elif sph.LAST_TRIAL_DATA and sph.LAST_TRIAL_DATA['trial_num'] < 200:  # noqa
+    elif sph.LAST_TRIAL_DATA and sph.LAST_TRIAL_DATA['trial_num'] < 200:
         out = sph.LAST_TRIAL_DATA['reward_amount']
-    elif sph.LAST_TRIAL_DATA and sph.LAST_TRIAL_DATA['trial_num'] >= 200:  # noqa
+    elif sph.LAST_TRIAL_DATA and sph.LAST_TRIAL_DATA['trial_num'] >= 200:
         out = sph.LAST_TRIAL_DATA['reward_amount'] - sph.AR_STEP
         out = sph.AR_MIN_VALUE if out <= sph.AR_MIN_VALUE else out
 
@@ -48,7 +47,7 @@ def init_calib_func(sph):
         if df1.empty:
             msg = f"""
         ##########################################
-                Water calibration file is emtpy!
+             Water calibration file is emtpy!
         ##########################################"""
             log.error(msg)
             raise(ValueError)
@@ -65,18 +64,18 @@ def init_calib_func_range(sph) -> tuple:
     max_open_time = 1000
     msg = f"""
         ##########################################
-            NOT FOUND: WATER RANGE CALIBRATION
+            NOT FOUND: WATER CALIBRATION RANGE
         ##########################################
                         File empty
-                 range set to (0, 1000)ms
+                     using full range
         ##########################################"""
 
     if sph.LATEST_WATER_CALIB_RANGE_FILE:
         # Load last calibration r ange df1
         df1 = pd.read_csv(sph.LATEST_WATER_CALIB_RANGE_FILE)
         if not df1.empty:
-            min_open_time = df1['min_open_time']
-            max_open_time = df1['max_open_time']
+            min_open_time = df1.min_open_time.iloc[0]
+            max_open_time = df1.max_open_time.iloc[0]
         else:
             log.warning(msg)
 
@@ -189,6 +188,14 @@ def impulsive_control(sph):
 
 
 if __name__ == "__main__":
-    sess_path = ('/home/nico/Projects/IBL/IBL-github/iblrig' +
+    sess_path = ('/home/nico/Projects/IBL/github/iblrig' +
                  '/scratch/test_iblrig_data/Subjects/ZM_335/2018-12-13/001')
     data = raw.load_data(sess_path)
+    sess_path = '/mnt/s0/IntegrationTests/Subjects_init/_iblrig_calibration/2019-02-21/003/raw_behavior_data' # noqa
+
+    class SPH(object):
+        def __init__(self):
+            self.LATEST_WATER_CALIB_RANGE_FILE = sess_path + '/_iblrig_calibration_water_range.csv'  # noqa
+
+    sph = SPH()
+    init_calib_func_range(sph)

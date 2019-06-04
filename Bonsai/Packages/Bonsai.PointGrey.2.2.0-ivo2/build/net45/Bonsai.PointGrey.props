@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Condition="'$(Platform.ToLower())' == 'x86' Or '$(Platform.ToLower())' == 'anycpu'">
+    <Reference Include="FlyCapture2Managed_v100">
+      <HintPath>$(MSBuildThisFileDirectory)..\..\build\net45\bin\x86\FlyCapture2Managed_v100.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup Condition="'$(Platform.ToLower())' == 'x64'">
+    <Reference Include="FlyCapture2Managed_v100">
+      <HintPath>$(MSBuildThisFileDirectory)..\..\build\net45\bin\x64\FlyCapture2Managed_v100.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+</Project>
