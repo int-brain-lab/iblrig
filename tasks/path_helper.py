@@ -92,6 +92,7 @@ class SessionPathCreator(object):
 
         self.LATEST_WATER_CALIBRATION_FILE = self._latest_water_calib_file()
         self.LATEST_WATER_CALIB_RANGE_FILE = self._latest_water_range_file()
+        self.LATEST_SCREEN_CALIBRATION_FILE = self._latest_screen_calib_file()
 
         self.PREVIOUS_DATA_FILE = self._previous_data_file()
         self.PREVIOUS_SETTINGS_FILE = self._previous_settings_file()
@@ -396,6 +397,17 @@ class SessionPathCreator(object):
             logger.debug("NOT FOUND: Previous session path")
 
         return out
+
+    def _latest_screen_calib_file(self):
+        logger.debug(f"Looking for screen calibration files: {self._BOARD}")
+        dsf = Path(self.IBLRIG_DATA_SUBJECTS_FOLDER)
+        cal = dsf / '_iblrig_calibration'
+        if not cal.exists():
+            logger.debug(f'NOT FOUND: Calibration subject {str(cal)}')
+            return None
+
+        return None
+
 
     def _latest_water_calib_file(self):
         logger.debug(f"Looking for calibration file of board: {self._BOARD}")
