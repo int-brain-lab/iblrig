@@ -4,12 +4,10 @@
 # @Date: Tuesday, October 16th 2018, 12:13:00 pm
 import serial
 from pythonosc import udp_client
-import time
 import sys
-import threading
 
 
-class Frame2TTLReader(object):
+class Frame2TTLServer(object):
     def __init__(self, comport='COM6'):
         self.osc_client = udp_client.SimpleUDPClient('127.0.0.1', 6667)
         self.frame2ttl = comport  # /dev/ttyACM1'
@@ -44,6 +42,6 @@ def main(comport):
 if __name__ == '__main__':
     # main(sys.argv[1])
     comport = 'COM6'
-    obj = Frame2TTLReader(comport)
+    obj = Frame2TTLServer(comport)
     obj.read_and_send_data()
     print('.')
