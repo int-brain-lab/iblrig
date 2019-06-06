@@ -4,7 +4,7 @@
 # @Date: Tuesday, October 16th 2018, 12:13:00 pm
 import serial
 from pythonosc import udp_client
-import sys
+import argparse
 
 
 class Frame2TTLServer(object):
@@ -29,19 +29,21 @@ class Frame2TTLServer(object):
                 i = 0
             print(i, d)
 
-
     def stop(self):
         self.read = False
         print('Done!')
 
 
 def main(comport):
-    obj = Frame2TTLReader(comport)
+    obj = Frame2TTLServer(comport)
+    obj = Frame2TTLServer(args.port)
+    obj.read_and_send_data()
     return obj
 
 if __name__ == '__main__':
-    # main(sys.argv[1])
-    comport = 'COM6'
-    obj = Frame2TTLServer(comport)
-    obj.read_and_send_data()
+    parser = argparse.ArgumentParser(description='Delete files from rig')
+    parser.add_argument('port', help='COM port fro frame2TTL device')
+    args = parser.parse_args()
+
+    main(args.port)
     print('.')
