@@ -36,7 +36,6 @@ class Frame2TTLServer(object):
 
 def main(comport):
     obj = Frame2TTLServer(comport)
-    obj = Frame2TTLServer(args.port)
     obj.read_and_send_data()
     return obj
 

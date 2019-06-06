@@ -350,64 +350,66 @@ def process(value):
       <Expression xsi:type="ExternalizedMapping">
         <Property Name="Save" />
       </Expression>
-      <Expression xsi:type="NestedWorkflow">
-        <Name>SaveData</Name>
-        <Workflow>
-          <Nodes>
-            <Expression xsi:type="SubscribeSubject">
-              <Name>Data</Name>
-            </Expression>
-            <Expression xsi:type="ExternalizedMapping">
-              <Property Name="FileName" />
-            </Expression>
-            <Expression xsi:type="q4:CsvWriter">
-              <q4:FileName>_iblrig_calibration_screen_brightness.raw.ssv</q4:FileName>
-              <q4:Append>false</q4:Append>
-              <q4:Overwrite>true</q4:Overwrite>
-              <q4:Suffix>None</q4:Suffix>
-              <q4:IncludeHeader>false</q4:IncludeHeader>
-              <q4:CompatibilityMode>true</q4:CompatibilityMode>
-            </Expression>
-            <Expression xsi:type="ExternalizedMapping">
-              <Property Name="Value" DisplayName="Save" />
-            </Expression>
-            <Expression xsi:type="Combinator">
-              <Combinator xsi:type="BooleanProperty">
-                <Value>true</Value>
-              </Combinator>
-            </Expression>
-            <Expression xsi:type="Condition">
-              <Workflow>
-                <Nodes>
-                  <Expression xsi:type="WorkflowInput">
-                    <Name>Source1</Name>
-                  </Expression>
-                  <Expression xsi:type="Equal">
-                    <Operand xsi:type="BooleanProperty">
-                      <Value>true</Value>
-                    </Operand>
-                  </Expression>
-                  <Expression xsi:type="WorkflowOutput" />
-                </Nodes>
-                <Edges>
-                  <Edge From="0" To="1" Label="Source1" />
-                  <Edge From="1" To="2" Label="Source1" />
-                </Edges>
-              </Workflow>
-            </Expression>
-            <Expression xsi:type="Combinator">
-              <Combinator xsi:type="SubscribeWhen" />
-            </Expression>
-          </Nodes>
-          <Edges>
-            <Edge From="0" To="2" Label="Source2" />
-            <Edge From="1" To="2" Label="Source1" />
-            <Edge From="2" To="6" Label="Source1" />
-            <Edge From="3" To="4" Label="Source1" />
-            <Edge From="4" To="5" Label="Source1" />
-            <Edge From="5" To="6" Label="Source2" />
-          </Edges>
-        </Workflow>
+      <Expression xsi:type="Disable">
+        <Builder xsi:type="NestedWorkflow">
+          <Name>SaveData</Name>
+          <Workflow>
+            <Nodes>
+              <Expression xsi:type="SubscribeSubject">
+                <Name>Data</Name>
+              </Expression>
+              <Expression xsi:type="ExternalizedMapping">
+                <Property Name="FileName" />
+              </Expression>
+              <Expression xsi:type="q4:CsvWriter">
+                <q4:FileName>_iblrig_calibration_screen_brightness.raw.ssv</q4:FileName>
+                <q4:Append>false</q4:Append>
+                <q4:Overwrite>true</q4:Overwrite>
+                <q4:Suffix>None</q4:Suffix>
+                <q4:IncludeHeader>false</q4:IncludeHeader>
+                <q4:CompatibilityMode>true</q4:CompatibilityMode>
+              </Expression>
+              <Expression xsi:type="ExternalizedMapping">
+                <Property Name="Value" DisplayName="Save" />
+              </Expression>
+              <Expression xsi:type="Combinator">
+                <Combinator xsi:type="BooleanProperty">
+                  <Value>true</Value>
+                </Combinator>
+              </Expression>
+              <Expression xsi:type="Condition">
+                <Workflow>
+                  <Nodes>
+                    <Expression xsi:type="WorkflowInput">
+                      <Name>Source1</Name>
+                    </Expression>
+                    <Expression xsi:type="Equal">
+                      <Operand xsi:type="BooleanProperty">
+                        <Value>true</Value>
+                      </Operand>
+                    </Expression>
+                    <Expression xsi:type="WorkflowOutput" />
+                  </Nodes>
+                  <Edges>
+                    <Edge From="0" To="1" Label="Source1" />
+                    <Edge From="1" To="2" Label="Source1" />
+                  </Edges>
+                </Workflow>
+              </Expression>
+              <Expression xsi:type="Combinator">
+                <Combinator xsi:type="SubscribeWhen" />
+              </Expression>
+            </Nodes>
+            <Edges>
+              <Edge From="0" To="2" Label="Source2" />
+              <Edge From="1" To="2" Label="Source1" />
+              <Edge From="2" To="6" Label="Source1" />
+              <Edge From="3" To="4" Label="Source1" />
+              <Edge From="4" To="5" Label="Source1" />
+              <Edge From="5" To="6" Label="Source2" />
+            </Edges>
+          </Workflow>
+        </Builder>
       </Expression>
       <Expression xsi:type="ExternalizedMapping">
         <Property Name="Value" DisplayName="RGB" />
