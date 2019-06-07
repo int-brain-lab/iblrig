@@ -64,7 +64,7 @@ def fit_n_plot(df, fname=None):
 
 # if __name__ == "__main__":
 folder_path = '/home/nico/Projects/IBL/github/iblrig/scratch/calibration'
-
+folder_path = r'C:\iblrig\visual_stim\screen_calibration'
 files = find_calibration_files(folder_path)
 
 file_path = files[-1]
