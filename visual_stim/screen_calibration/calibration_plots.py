@@ -64,7 +64,7 @@ def fit_n_plot(df, fname=None):
 
 # if __name__ == "__main__":
 folder_path = '/home/nico/Projects/IBL/github/iblrig/scratch/calibration'
-
+folder_path = r'C:\iblrig\visual_stim\screen_calibration'
 files = find_calibration_files(folder_path)
 
 file_path = files[0]
@@ -76,3 +76,4 @@ plt.title('Screen calibration')
 plt.legend()
 plt.xlabel('Intensity requested')
 plt.ylabel('frame2TTL raw output (lower is brighter)')
+print('.')
