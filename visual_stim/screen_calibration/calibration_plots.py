@@ -27,18 +27,18 @@ def raw_to_df(file_path):
         df = df.drop(columns=['r', 'g'])
     df.columns = ['val', 'int']  # df.r
 
-    # Find first peak at start to remove the gray screen inputs
-    peaks, _ = find_peaks(df.val, height=df.val.mean()-df.val.sem())
-    init = peaks[0]
-    # # Cut the df to what's relevant reset index!
-    df = df[init:].reset_index()
-    df = df.drop(columns='index')
+    # # Find first peak at start to remove the gray screen inputs
+    # peaks, _ = find_peaks(df.val, height=df.val.mean()-df.val.sem())
+    # init = peaks[0]
+    # # # Cut the df to what's relevant reset index!
+    # df = df[init:].reset_index()
+    # df = df.drop(columns='index')
     return df
 
 
 def fit_n_plot(df, fname=None):
     # Fit a polynomial
-    x_new = np.round(np.linspace(0, 1, 100), 2)
+    x_new = np.round(np.linspace(0.01, 1, 100), 2)
 
     coefs = poly.polyfit(df.int, df.val, 6)
     ffit_vals = poly.polyval(x_new, coefs)
@@ -67,7 +67,7 @@ folder_path = '/home/nico/Projects/IBL/github/iblrig/scratch/calibration'
 
 files = find_calibration_files(folder_path)
 
-file_path = files[0]
+file_path = files[-1]
 plt.ion()
 for file_path in files:
     df = raw_to_df(file_path)
@@ -76,3 +76,37 @@ plt.title('Screen calibration')
 plt.legend()
 plt.xlabel('Intensity requested')
 plt.ylabel('frame2TTL raw output (lower is brighter)')
+plt.axhline(40, ls='--', alpha=0.5)
+plt.axhline(80, ls='--', alpha=0.5)
+
+folder_path = '/home/nico/Projects/IBL/github/iblrig/scratch/calibration/harp'
+
+files = find_calibration_files(folder_path)
+
+file_path = files[-1]
+plt.figure()
+for file_path in files:
+    df = raw_to_df(file_path)
+    fit_n_plot(df, fname=file_path)
+plt.title('Screen calibration')
+plt.legend()
+plt.xlabel('Intensity requested')
+plt.ylabel('Harp photodiode raw output (higher is brighter)')
+# plt.axhline(40, ls='--', alpha=0.5)
+# plt.axhline(80, ls='--', alpha=0.5)
+
+
+
+# # df = raw_to_df(file_path)
+# file_path = Path(file_path)
+# df = pd.read_csv(file_path, sep=' ', header=None)
+# df = df.drop(columns=4)
+# df.columns = ['val', 'r', 'g', 'b']
+# # # select which channel to use
+# if 'screen_red' in file_path.name or 'screen_bright' in file_path.name:
+#     df = df.drop(columns=['b', 'g'])
+# df.columns = ['val', 'int']  # df.r
+
+# fit_n_plot(df, fname=files[-1])
+
+# df.val
