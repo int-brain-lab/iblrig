@@ -37,7 +37,8 @@ def start_visual_stim(sph):
         sync_x = "-p:sync_x=" + str(sph.SYNC_SQUARE_X)
         sync_y = "-p:sync_y=" + str(sph.SYNC_SQUARE_Y)
         start = '--start'
-        noeditor = '--noeditor'
+        noeditor = '--no-editor'
+        noboot = '--no-boot'
 
         if sph.BONSAI_EDITOR:
             editor = start
@@ -49,7 +50,7 @@ def start_visual_stim(sph):
                 [bns, wkfl, editor, evt, itr, com, sync_x, sync_y])
         else:
             subprocess.Popen(
-                [bns, wkfl, editor, pos, evt, itr, com, sync_x, sync_y])
+                [bns, wkfl, editor, pos, evt, itr, com, sync_x, sync_y, noboot])
         time.sleep(3)
         os.chdir(here)
     else:
@@ -81,8 +82,9 @@ def start_camera_recording(sph):
     srec = "-p:RecordSound=" + str(sph.RECORD_SOUND)
 
     start = '--start'
+    noboot = '--no-boot'
 
-    subprocess.Popen([bns, wkfl, start, ts, vid, rec, mic, srec])
+    subprocess.Popen([bns, wkfl, start, ts, vid, rec, mic, srec, noboot])
     os.chdir(here)
     return
 
