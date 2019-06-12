@@ -1,0 +1,363 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<WorkflowBuilder Version="2.4.0-preview">
+  <Workflow xmlns:q2="clr-namespace:Bonsai.Dsp;assembly=Bonsai.Dsp" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:q3="clr-namespace:Bonsai.Vision;assembly=Bonsai.Vision" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:q4="clr-namespace:Bonsai.Numerics;assembly=Bonsai.Numerics" xmlns:q1="clr-namespace:Bonsai.Shaders;assembly=Bonsai.Shaders" xmlns="https://bonsai-rx.org/2018/workflow">
+    <Nodes>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q1:CreateWindow">
+          <q1:Width>640</q1:Width>
+          <q1:Height>480</q1:Height>
+          <q1:VSync>On</q1:VSync>
+          <q1:SwapSync>false</q1:SwapSync>
+          <q1:ClearColor>Gray</q1:ClearColor>
+          <q1:ClearMask>DepthBufferBit ColorBufferBit</q1:ClearMask>
+          <q1:CursorVisible>true</q1:CursorVisible>
+          <q1:Location xsi:nil="true" />
+          <q1:WindowBorder>Resizable</q1:WindowBorder>
+          <q1:WindowState>Normal</q1:WindowState>
+          <q1:DisplayDevice>Primary</q1:DisplayDevice>
+          <q1:TargetRenderFrequency>0</q1:TargetRenderFrequency>
+          <q1:RenderState />
+          <q1:GraphicsMode>
+            <q1:ColorFormat>
+              <q1:Red>8</q1:Red>
+              <q1:Green>8</q1:Green>
+              <q1:Blue>8</q1:Blue>
+              <q1:Alpha>8</q1:Alpha>
+            </q1:ColorFormat>
+            <q1:Depth>16</q1:Depth>
+            <q1:Stencil>0</q1:Stencil>
+            <q1:Samples>0</q1:Samples>
+            <q1:AccumulatorFormat>
+              <q1:Red>0</q1:Red>
+              <q1:Green>0</q1:Green>
+              <q1:Blue>0</q1:Blue>
+              <q1:Alpha>0</q1:Alpha>
+            </q1:AccumulatorFormat>
+            <q1:Buffers>2</q1:Buffers>
+            <q1:Stereo>false</q1:Stereo>
+          </q1:GraphicsMode>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="IncludeWorkflow" Path="BonVision:Primitives.BonVisionResources.bonsai" />
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q1:LoadResources" />
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q1:RenderFrame" />
+      </Expression>
+      <Expression xsi:type="IncludeWorkflow" Path="BonVision:Environment.OrthographicViewport.bonsai">
+        <Left>-180</Left>
+        <Right>180</Right>
+        <Bottom>-90</Bottom>
+        <Top>90</Top>
+      </Expression>
+      <Expression xsi:type="PublishSubject">
+        <Name>Draw</Name>
+      </Expression>
+      <Expression xsi:type="IncludeWorkflow" Path="BonVision:Environment.SphereMapping.bonsai">
+        <FaceSize xsi:nil="true" />
+        <ClearColor>Gray</ClearColor>
+        <Width xsi:nil="true" />
+        <Height xsi:nil="true" />
+      </Expression>
+      <Expression xsi:type="SubscribeSubject">
+        <Name>TranslationY</Name>
+      </Expression>
+      <Expression xsi:type="SubscribeSubject">
+        <Name>TranslationX</Name>
+      </Expression>
+      <Expression xsi:type="SubscribeSubject">
+        <Name>TranslationZ</Name>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="Zip" />
+      </Expression>
+      <Expression xsi:type="PropertyMapping">
+        <PropertyMappings>
+          <Property Name="X" Selector="Item1" />
+          <Property Name="Y" Selector="Item2" />
+          <Property Name="Z" Selector="Item3" />
+        </PropertyMappings>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q3:CreatePoint3d">
+          <q3:X>0</q3:X>
+          <q3:Y>0</q3:Y>
+          <q3:Z>-8</q3:Z>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="PropertyMapping">
+        <PropertyMappings>
+          <Property Name="Translation" />
+        </PropertyMappings>
+      </Expression>
+      <Expression xsi:type="SubscribeSubject">
+        <Name>ScreenWidth</Name>
+      </Expression>
+      <Expression xsi:type="SubscribeSubject">
+        <Name>ScreenHight</Name>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="Zip" />
+      </Expression>
+      <Expression xsi:type="PropertyMapping">
+        <PropertyMappings>
+          <Property Name="Width" Selector="Item1" />
+          <Property Name="Height" Selector="Item2" />
+        </PropertyMappings>
+      </Expression>
+      <Expression xsi:type="IncludeWorkflow" Path="BonVision:Environment.ViewingWindow.bonsai">
+        <Width>20</Width>
+        <Height>15</Height>
+        <Rotation>
+          <X>0</X>
+          <Y>0</Y>
+          <Z>0</Z>
+        </Rotation>
+        <Translation>
+          <X>0</X>
+          <Y>0</Y>
+          <Z>-8</Z>
+        </Translation>
+      </Expression>
+      <Expression xsi:type="SubscribeSubject">
+        <Name>Draw</Name>
+      </Expression>
+      <Expression xsi:type="SubscribeSubject">
+        <Name>StimSize</Name>
+      </Expression>
+      <Expression xsi:type="SubscribeSubject">
+        <Name>VisualSpan</Name>
+      </Expression>
+      <Expression xsi:type="PropertyMapping">
+        <PropertyMappings>
+          <Property Name="Max" />
+        </PropertyMappings>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q2:Rescale">
+          <q2:Min>0</q2:Min>
+          <q2:Max>102.68038349181981</q2:Max>
+          <q2:RangeMin>0</q2:RangeMin>
+          <q2:RangeMax>1</q2:RangeMax>
+          <q2:RescaleType>Linear</q2:RescaleType>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="PropertyMapping">
+        <PropertyMappings>
+          <Property Name="Radius" />
+        </PropertyMappings>
+      </Expression>
+      <Expression xsi:type="SubscribeSubject">
+        <Name>StimFreq</Name>
+      </Expression>
+      <Expression xsi:type="SubscribeSubject">
+        <Name>VisualSpan</Name>
+      </Expression>
+      <Expression xsi:type="PropertyMapping">
+        <PropertyMappings>
+          <Property Name="Value" />
+        </PropertyMappings>
+      </Expression>
+      <Expression xsi:type="Multiply">
+        <Operand xsi:type="FloatProperty">
+          <Value>102.680382</Value>
+        </Operand>
+      </Expression>
+      <Expression xsi:type="PropertyMapping">
+        <PropertyMappings>
+          <Property Name="SpatialFrequency" />
+        </PropertyMappings>
+      </Expression>
+      <Expression xsi:type="SubscribeSubject">
+        <Name>VisualSpan</Name>
+      </Expression>
+      <Expression xsi:type="PropertyMapping">
+        <PropertyMappings>
+          <Property Name="ExtentX" />
+          <Property Name="ExtentY" />
+        </PropertyMappings>
+      </Expression>
+      <Expression xsi:type="IncludeWorkflow" Path="BonVision:Primitives.DrawGratings.bonsai">
+        <ExtentX>102.680382</ExtentX>
+        <ExtentY>102.680382</ExtentY>
+        <LocationX>-10</LocationX>
+        <LocationY>0</LocationY>
+        <Angle>0</Angle>
+        <SpatialFrequency>10.2680387</SpatialFrequency>
+        <TemporalFrequency>0</TemporalFrequency>
+        <SquareWave>true</SquareWave>
+        <Contrast>1</Contrast>
+        <Radius>0.06817271</Radius>
+        <Aperture>1</Aperture>
+        <Opacity>1</Opacity>
+      </Expression>
+      <Expression xsi:type="GroupWorkflow">
+        <Name>InitializeInputs</Name>
+        <Workflow>
+          <Nodes>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="FloatProperty">
+                <Value>0</Value>
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="BehaviorSubject">
+              <Name>TranslationX</Name>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="FloatProperty">
+                <Value>0</Value>
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="BehaviorSubject">
+              <Name>TranslationY</Name>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="FloatProperty">
+                <Value>-8</Value>
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="BehaviorSubject">
+              <Name>TranslationZ</Name>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="FloatProperty">
+                <Value>20</Value>
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="BehaviorSubject">
+              <Name>ScreenWidth</Name>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="FloatProperty">
+                <Value>15</Value>
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="BehaviorSubject">
+              <Name>ScreenHight</Name>
+            </Expression>
+            <Expression xsi:type="SubscribeSubject">
+              <Name>TranslationZ</Name>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="q4:Abs" />
+            </Expression>
+            <Expression xsi:type="PropertyMapping">
+              <PropertyMappings>
+                <Property Name="Value" />
+              </PropertyMappings>
+            </Expression>
+            <Expression xsi:type="SubscribeSubject">
+              <Name>ScreenWidth</Name>
+            </Expression>
+            <Expression xsi:type="Divide">
+              <Operand xsi:type="FloatProperty">
+                <Value>2</Value>
+              </Operand>
+            </Expression>
+            <Expression xsi:type="Divide">
+              <Operand xsi:type="FloatProperty">
+                <Value>8</Value>
+              </Operand>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="q4:Atan" />
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="q4:RadianToDegree" />
+            </Expression>
+            <Expression xsi:type="Multiply">
+              <Operand xsi:type="DoubleProperty">
+                <Value>2</Value>
+              </Operand>
+            </Expression>
+            <Expression xsi:type="BehaviorSubject">
+              <Name>VisualSpan</Name>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="FloatProperty">
+                <Value>0.1</Value>
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="BehaviorSubject">
+              <Name>StimFreq</Name>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="FloatProperty">
+                <Value>7</Value>
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="BehaviorSubject">
+              <Name>StimSize</Name>
+            </Expression>
+          </Nodes>
+          <Edges>
+            <Edge From="0" To="1" Label="Source1" />
+            <Edge From="2" To="3" Label="Source1" />
+            <Edge From="4" To="5" Label="Source1" />
+            <Edge From="6" To="7" Label="Source1" />
+            <Edge From="8" To="9" Label="Source1" />
+            <Edge From="10" To="11" Label="Source1" />
+            <Edge From="11" To="12" Label="Source1" />
+            <Edge From="12" To="15" Label="Source2" />
+            <Edge From="13" To="14" Label="Source1" />
+            <Edge From="14" To="15" Label="Source1" />
+            <Edge From="15" To="16" Label="Source1" />
+            <Edge From="16" To="17" Label="Source1" />
+            <Edge From="17" To="18" Label="Source1" />
+            <Edge From="18" To="19" Label="Source1" />
+            <Edge From="20" To="21" Label="Source1" />
+            <Edge From="22" To="23" Label="Source1" />
+          </Edges>
+        </Workflow>
+      </Expression>
+    </Nodes>
+    <Edges>
+      <Edge From="0" To="1" Label="Source1" />
+      <Edge From="1" To="2" Label="Source1" />
+      <Edge From="3" To="4" Label="Source1" />
+      <Edge From="4" To="5" Label="Source1" />
+      <Edge From="5" To="6" Label="Source1" />
+      <Edge From="6" To="18" Label="Source1" />
+      <Edge From="7" To="10" Label="Source2" />
+      <Edge From="8" To="10" Label="Source1" />
+      <Edge From="9" To="10" Label="Source3" />
+      <Edge From="10" To="11" Label="Source1" />
+      <Edge From="11" To="12" Label="Source1" />
+      <Edge From="12" To="13" Label="Source1" />
+      <Edge From="13" To="18" Label="Source2" />
+      <Edge From="14" To="16" Label="Source1" />
+      <Edge From="15" To="16" Label="Source2" />
+      <Edge From="16" To="17" Label="Source1" />
+      <Edge From="17" To="18" Label="Source3" />
+      <Edge From="19" To="32" Label="Source1" />
+      <Edge From="20" To="23" Label="Source1" />
+      <Edge From="21" To="22" Label="Source1" />
+      <Edge From="22" To="23" Label="Source2" />
+      <Edge From="23" To="24" Label="Source1" />
+      <Edge From="24" To="32" Label="Source2" />
+      <Edge From="25" To="28" Label="Source1" />
+      <Edge From="26" To="27" Label="Source1" />
+      <Edge From="27" To="28" Label="Source2" />
+      <Edge From="28" To="29" Label="Source1" />
+      <Edge From="29" To="32" Label="Source3" />
+      <Edge From="30" To="31" Label="Source1" />
+      <Edge From="31" To="32" Label="Source4" />
+    </Edges>
+  </Workflow>
+  <ExtensionTypes>
+    <Type>Bonsai.Dsp.Rescale, Bonsai.Dsp, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Expressions.DivideBuilder, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Expressions.DoubleProperty, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Expressions.FloatProperty, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Expressions.MultiplyBuilder, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Numerics.Abs, Bonsai.Numerics, Version=0.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Numerics.Atan, Bonsai.Numerics, Version=0.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Numerics.RadianToDegree, Bonsai.Numerics, Version=0.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Reactive.Zip, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Shaders.CreateWindow, Bonsai.Shaders, Version=0.19.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Shaders.LoadResources, Bonsai.Shaders, Version=0.19.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Shaders.RenderFrame, Bonsai.Shaders, Version=0.19.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Vision.CreatePoint3d, Bonsai.Vision, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
+  </ExtensionTypes>
+</WorkflowBuilder>
