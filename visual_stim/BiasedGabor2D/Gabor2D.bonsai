@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <WorkflowBuilder Version="2.4.0-preview">
-  <Workflow xmlns:q2="clr-namespace:Bonsai.Shaders;assembly=Bonsai.Shaders" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:q3="clr-namespace:Bonsai.IO;assembly=Bonsai.System" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:q5="clr-namespace:Bonsai.Bpod;assembly=Bonsai.Bpod" xmlns:q4="clr-namespace:Bonsai.Scripting;assembly=Bonsai.Scripting" xmlns:q6="clr-namespace:Bonsai.Dsp;assembly=Bonsai.Dsp" xmlns:q1="clr-namespace:Bonsai.Osc;assembly=Bonsai.Osc" xmlns="https://bonsai-rx.org/2018/workflow">
+  <Workflow xmlns:q2="clr-namespace:Bonsai.Shaders;assembly=Bonsai.Shaders" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:q3="clr-namespace:Bonsai.Bpod;assembly=Bonsai.Bpod" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:q5="clr-namespace:Bonsai.Dsp;assembly=Bonsai.Dsp" xmlns:q4="clr-namespace:Bonsai.Scripting;assembly=Bonsai.Scripting" xmlns:q6="clr-namespace:Bonsai.IO;assembly=Bonsai.System" xmlns:q1="clr-namespace:Bonsai.Osc;assembly=Bonsai.Osc" xmlns="https://bonsai-rx.org/2018/workflow">
     <Nodes>
       <Expression xsi:type="ExternalizedMapping">
         <Property Name="Connection" />
@@ -100,12 +100,12 @@
         <Property Name="PortName" DisplayName="REPortName" />
       </Expression>
       <Expression xsi:type="Combinator">
-        <Combinator xsi:type="q5:Encoder">
-          <q5:PortName>COM3</q5:PortName>
+        <Combinator xsi:type="q3:Encoder">
+          <q3:PortName>COM7</q3:PortName>
         </Combinator>
       </Expression>
       <Expression xsi:type="Combinator">
-        <Combinator xsi:type="q5:EncoderEvent" />
+        <Combinator xsi:type="q3:EncoderEvent" />
       </Expression>
       <Expression xsi:type="BehaviorSubject">
         <Name>RawEncoderEvents</Name>
@@ -213,12 +213,12 @@ probably there is no need to reset the position also
               <Combinator xsi:type="Sample" />
             </Expression>
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="q6:Rescale">
-                <q6:Min>-180</q6:Min>
-                <q6:Max>180</q6:Max>
-                <q6:RangeMin>-1.333</q6:RangeMin>
-                <q6:RangeMax>1.333</q6:RangeMax>
-                <q6:RescaleType>Linear</q6:RescaleType>
+              <Combinator xsi:type="q5:Rescale">
+                <q5:Min>-180</q5:Min>
+                <q5:Max>180</q5:Max>
+                <q5:RangeMin>-1.333</q5:RangeMin>
+                <q5:RangeMax>1.333</q5:RangeMax>
+                <q5:RescaleType>Linear</q5:RescaleType>
               </Combinator>
             </Expression>
             <Expression xsi:type="q4:ExpressionTransform">
@@ -528,12 +528,12 @@ Value = whhel_radius for wheel_perim</Description>
               <q4:Expression>((Item1+Item2) + 180) % 360 - 180</q4:Expression>
             </Expression>
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="q6:Rescale">
-                <q6:Min>-180</q6:Min>
-                <q6:Max>180</q6:Max>
-                <q6:RangeMin>-1.333</q6:RangeMin>
-                <q6:RangeMax>1.333</q6:RangeMax>
-                <q6:RescaleType>Clamp</q6:RescaleType>
+              <Combinator xsi:type="q5:Rescale">
+                <q5:Min>-180</q5:Min>
+                <q5:Max>180</q5:Max>
+                <q5:RangeMin>-1.333</q5:RangeMin>
+                <q5:RangeMax>1.333</q5:RangeMax>
+                <q5:RescaleType>Clamp</q5:RescaleType>
               </Combinator>
             </Expression>
             <Expression xsi:type="q4:ExpressionTransform">
@@ -584,7 +584,7 @@ Value = whhel_radius for wheel_perim</Description>
         <Combinator xsi:type="Switch" />
       </Expression>
       <Expression xsi:type="Combinator">
-        <Combinator xsi:type="q5:EncoderPosition" />
+        <Combinator xsi:type="q3:EncoderPosition" />
       </Expression>
       <Expression xsi:type="BehaviorSubject">
         <Name>RawEncoderPositions</Name>
@@ -593,12 +593,12 @@ Value = whhel_radius for wheel_perim</Description>
         <Selector>Position</Selector>
       </Expression>
       <Expression xsi:type="Combinator">
-        <Combinator xsi:type="q6:Rescale">
-          <q6:Min>-512</q6:Min>
-          <q6:Max>512</q6:Max>
-          <q6:RangeMin>-180</q6:RangeMin>
-          <q6:RangeMax>180</q6:RangeMax>
-          <q6:RescaleType>Linear</q6:RescaleType>
+        <Combinator xsi:type="q5:Rescale">
+          <q5:Min>-512</q5:Min>
+          <q5:Max>512</q5:Max>
+          <q5:RangeMin>-180</q5:RangeMin>
+          <q5:RangeMax>180</q5:RangeMax>
+          <q5:RescaleType>Linear</q5:RescaleType>
         </Combinator>
       </Expression>
       <Expression xsi:type="BehaviorSubject">
@@ -676,13 +676,13 @@ _iblrig_micData.raw.wav
             <Expression xsi:type="ExternalizedMapping">
               <Property Name="FileName" DisplayName="FileNameTrialInfo" />
             </Expression>
-            <Expression xsi:type="q3:CsvWriter">
-              <q3:FileName>C:\iblrig_data\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_iblrig_encoderTrialInfo.raw.ssv</q3:FileName>
-              <q3:Append>false</q3:Append>
-              <q3:Overwrite>false</q3:Overwrite>
-              <q3:Suffix>None</q3:Suffix>
-              <q3:IncludeHeader>false</q3:IncludeHeader>
-              <q3:CompatibilityMode>true</q3:CompatibilityMode>
+            <Expression xsi:type="q6:CsvWriter">
+              <q6:FileName>C:\iblrig_data\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_iblrig_encoderTrialInfo.raw.ssv</q6:FileName>
+              <q6:Append>false</q6:Append>
+              <q6:Overwrite>false</q6:Overwrite>
+              <q6:Suffix>None</q6:Suffix>
+              <q6:IncludeHeader>false</q6:IncludeHeader>
+              <q6:CompatibilityMode>true</q6:CompatibilityMode>
             </Expression>
             <Expression xsi:type="SubscribeSubject">
               <Name>RawEncoderEvents</Name>
@@ -693,13 +693,13 @@ _iblrig_micData.raw.wav
             <Expression xsi:type="ExternalizedMapping">
               <Property Name="FileName" DisplayName="FileNameEvents" />
             </Expression>
-            <Expression xsi:type="q3:CsvWriter">
-              <q3:FileName>C:\iblrig_data\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_iblrig_encoderEvents.raw.ssv</q3:FileName>
-              <q3:Append>false</q3:Append>
-              <q3:Overwrite>false</q3:Overwrite>
-              <q3:Suffix>None</q3:Suffix>
-              <q3:IncludeHeader>false</q3:IncludeHeader>
-              <q3:CompatibilityMode>true</q3:CompatibilityMode>
+            <Expression xsi:type="q6:CsvWriter">
+              <q6:FileName>C:\iblrig_data\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_iblrig_encoderEvents.raw.ssv</q6:FileName>
+              <q6:Append>false</q6:Append>
+              <q6:Overwrite>false</q6:Overwrite>
+              <q6:Suffix>None</q6:Suffix>
+              <q6:IncludeHeader>false</q6:IncludeHeader>
+              <q6:CompatibilityMode>true</q6:CompatibilityMode>
             </Expression>
             <Expression xsi:type="SubscribeSubject">
               <Name>RawEncoderPositions</Name>
@@ -710,13 +710,13 @@ _iblrig_micData.raw.wav
             <Expression xsi:type="ExternalizedMapping">
               <Property Name="FileName" DisplayName="FileNamePositions" />
             </Expression>
-            <Expression xsi:type="q3:CsvWriter">
-              <q3:FileName>C:\iblrig_data\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_iblrig_encoderPositions.raw.ssv</q3:FileName>
-              <q3:Append>false</q3:Append>
-              <q3:Overwrite>false</q3:Overwrite>
-              <q3:Suffix>None</q3:Suffix>
-              <q3:IncludeHeader>false</q3:IncludeHeader>
-              <q3:CompatibilityMode>true</q3:CompatibilityMode>
+            <Expression xsi:type="q6:CsvWriter">
+              <q6:FileName>C:\iblrig_data\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_iblrig_encoderPositions.raw.ssv</q6:FileName>
+              <q6:Append>false</q6:Append>
+              <q6:Overwrite>false</q6:Overwrite>
+              <q6:Suffix>None</q6:Suffix>
+              <q6:IncludeHeader>false</q6:IncludeHeader>
+              <q6:CompatibilityMode>true</q6:CompatibilityMode>
             </Expression>
           </Nodes>
           <Edges>
