@@ -210,6 +210,7 @@ for i in range(sph.NTRIALS):  # Main loop
 
     tph.check_sync_pulses()
     stop_crit = tph.check_stop_criterions()
+
     if stop_crit and sph.USE_AUTOMATIC_STOPPING_CRITERIONS:
         if stop_crit == 1:
             msg = "STOPPING CRITERIA Nº1: PLEASE STOP TASK AND REMOVE MOUSE\
@@ -223,6 +224,11 @@ for i in range(sph.NTRIALS):  # Main loop
             msg = "STOPPING CRITERIA Nº3: PLEASE STOP TASK AND REMOVE MOUSE\
             \n> 90 minutes have passed since session start"
             f.patch.set_facecolor('xkcd:red')
+
+        if not sph.SUBJECT_DISENGAGED_TRIGGERED:
+            patch = {'SUBJECT_DISENGAGED_TRIGGERED': stop_crit,
+                     'SUBJECT_DISENGAGED_TRIALNUM': i + 1}
+            sph.patch_settings_file(patch)
         [log.warning(msg) for x in range(5)]
 
 bpod.close()

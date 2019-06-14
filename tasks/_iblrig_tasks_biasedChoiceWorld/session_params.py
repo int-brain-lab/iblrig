@@ -52,6 +52,8 @@ class SessionParamHandler(object):
         # SUBJECT
         # =====================================================================
         self.SUBJECT_WEIGHT = self.get_subject_weight()
+        self.SUBJECT_DISENGAGED_TRIGGERED = False
+        self.SUBJECT_DISENGAGED_TRIALNUM = None
         # =====================================================================
         # OSC CLIENT
         # =====================================================================
@@ -131,6 +133,10 @@ class SessionParamHandler(object):
     # =========================================================================
     # METHODS
     # =========================================================================
+    def patch_settings_file(self, patch):
+        self.__dict__.update(patch)
+        misc.patch_settings_file(self.SETTINGS_FILE_PATH, patch)
+
     def save_ambient_sensor_reading(self, bpod_instance):
         return ambient_sensor.get_reading(bpod_instance,
                                           save_to=self.SESSION_RAW_DATA_FOLDER)
