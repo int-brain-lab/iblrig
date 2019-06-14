@@ -64,6 +64,7 @@ class TrialParamHandler(object):
         params['osc_client'] = 'osc_client_pointer'
         params['init_datetime'] = params['init_datetime'].isoformat()
         params['elapsed_time'] = str(params['elapsed_time'])
+        params['signed_contrast'] = str(params['signed_contrast'])
 
         out = json.dumps(params, cls=ComplexEncoder)
         self.data_file.write(out)

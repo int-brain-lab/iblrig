@@ -89,13 +89,9 @@ class SessionParamHandler(object):
         # =====================================================================
         # SAVE SETTINGS FILE AND TASK CODE
         # =====================================================================
-        if not self.DEBUG:
-            iotasks.save_session_settings(self)
-            iotasks.copy_task_code(self)
-            iotasks.save_task_code(self)
-            iotasks.copy_video_code(self)
-            iotasks.save_video_code(self)
-            self.bpod_lights(0)
+        iotasks.save_session_settings(self)
+        iotasks.copy_task_code(self)
+        iotasks.save_task_code(self)
 
     # =========================================================================
     # SOUND INTERFACE FOR STATE MACHINE
@@ -124,7 +120,6 @@ class SessionParamHandler(object):
         d['SD'] = str(d['SD'])
         d['OSC_CLIENT'] = str(d['OSC_CLIENT'])
         d['SESSION_DATETIME'] = self.SESSION_DATETIME.isoformat()
-        d['CALIB_FUNC'] = str(d['CALIB_FUNC'])
         if isinstance(d['PYBPOD_SUBJECT_EXTRA'], list):
             sub = []
             for sx in d['PYBPOD_SUBJECT_EXTRA']:
