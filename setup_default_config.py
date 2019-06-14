@@ -153,6 +153,9 @@ def config_task(iblproject_path, task_name: str):
     if task.name == '_iblrig_calibration_screen':
         task = create_task_bonsai_stop_command(task, port=7110)
         task = create_task_cleanup_command(task)
+    if task.name == '_iblrig_calibration_sync_test':
+        task = create_task_bonsai_stop_command(task, port=7110)
+        task = create_task_cleanup_command(task)
     if task.name == '_iblrig_calibration_water':
         task = create_task_cleanup_command(task)
     if task.name == '_iblrig_misc_flush_water':
@@ -221,6 +224,7 @@ def create_experiment_setups(iblproject_path, exp_name: str):
 
     if exp.name == '_iblrig_calibration':
         screen = create_setup(exp, 'screen', p.boards[0].name, exp.name)  # noqa
+        sync_test = create_setup(exp, 'sync_test', p.boards[0].name, exp.name)  # noqa
         water = create_setup(exp, 'water', p.boards[0].name, exp.name)  # noqa
 
     if exp.name == '_iblrig_misc':
@@ -285,6 +289,7 @@ def create_ibl_users(iblproject_path):
 def create_ibl_tasks(iblproject_path):
     task_names = [
         '_iblrig_calibration_screen',
+        '_iblrig_calibration_sync_test',
         '_iblrig_calibration_water',
         '_iblrig_misc_flush_water',
         '_iblrig_tasks_biasedChoiceWorld',

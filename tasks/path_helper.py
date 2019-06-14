@@ -408,7 +408,6 @@ class SessionPathCreator(object):
 
         return None
 
-
     def _latest_water_calib_file(self):
         logger.debug(f"Looking for calibration file of board: {self._BOARD}")
         dsf = Path(self.IBLRIG_DATA_SUBJECTS_FOLDER)
