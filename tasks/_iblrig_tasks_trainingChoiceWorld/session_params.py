@@ -18,6 +18,7 @@ import ambient_sensor
 import bonsai
 import iotasks
 import sound
+import misc
 from path_helper import SessionPathCreator
 from rotary_encoder import MyRotaryEncoder
 log = logging.getLogger('iblrig')

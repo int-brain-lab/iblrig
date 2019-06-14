@@ -225,7 +225,7 @@ for i in range(sph.NTRIALS):  # Main loop
             \n> 90 minutes have passed since session start"
             f.patch.set_facecolor('xkcd:red')
 
-        if not sph.SUBJECT_DISENGAGED_TRIGGERED:
+        if not sph.SUBJECT_DISENGAGED_TRIGGERED and stop_crit:
             patch = {'SUBJECT_DISENGAGED_TRIGGERED': stop_crit,
                      'SUBJECT_DISENGAGED_TRIALNUM': i + 1}
             sph.patch_settings_file(patch)

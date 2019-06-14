@@ -79,6 +79,8 @@ class SessionParamHandler(object):
         # =====================================================================
         # self.SUBJECT_WEIGHT = self.get_subject_weight()
         self.POOP_COUNT = True
+        self.SUBJECT_DISENGAGED_TRIGGERED = False
+        self.SUBJECT_DISENGAGED_TRIALNUM = None
         # =====================================================================
         # OSC CLIENT
         # =====================================================================
@@ -180,6 +182,10 @@ class SessionParamHandler(object):
     # =========================================================================
     # METHODS
     # =========================================================================
+    def patch_settings_file(self, patch):
+        self.__dict__.update(patch)
+        misc.patch_settings_file(self.SETTINGS_FILE_PATH, patch)
+
     def warn_ephys(self):
         title = 'START EPHYS RECODING'
         msg = ("Please start recording in spikeglx then press OK\n" +

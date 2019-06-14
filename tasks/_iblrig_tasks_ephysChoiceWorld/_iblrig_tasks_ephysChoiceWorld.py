@@ -202,6 +202,10 @@ for i in range(sph.NTRIALS):  # Main loop
             msg = "STOPPING CRITERIA Nº3: PLEASE STOP TASK AND REMOVE MOUSE\
             \n> 90 minutes have passed since session start"
             f.patch.set_facecolor('xkcd:red')
+        if not sph.SUBJECT_DISENGAGED_TRIGGERED and stop_crit:
+            patch = {'SUBJECT_DISENGAGED_TRIGGERED': stop_crit,
+                     'SUBJECT_DISENGAGED_TRIALNUM': i + 1}
+            sph.patch_settings_file(patch)
         [log.warning(msg) for x in range(5)]
 
 bpod.close()
