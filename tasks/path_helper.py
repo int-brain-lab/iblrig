@@ -138,6 +138,8 @@ class SessionPathCreator(object):
             return 'BiasedGabor2D'
         elif 'ephys' in self._PROTOCOL:
             return 'EphysGabor2D'
+        elif 'sync_test' in self._PROTOCOL:
+            return 'HabituationGabor2D'
         else:
             return ''
 
