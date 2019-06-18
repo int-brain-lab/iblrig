@@ -508,7 +508,7 @@ class SessionPathCreator(object):
         ##########################################
          NOT FOUND: LATEST_WATER_CALIB_RANGE_FILE
         ##########################################
-                  Using ms range(0, 1000)
+                    Using full range
         ##########################################
         """
                     logger.warning(msg)
