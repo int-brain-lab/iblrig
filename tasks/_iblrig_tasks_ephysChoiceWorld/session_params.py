@@ -158,8 +158,8 @@ class SessionParamHandler(object):
         # =====================================================================
         # VISUAL STIM
         # =====================================================================
-        self.SYNC_SQUARE_X = 0.95
-        self.SYNC_SQUARE_Y = 0.17
+        self.SYNC_SQUARE_X = 1.23333335
+        self.SYNC_SQUARE_Y = -1.
         self.USE_VISUAL_STIMULUS = True  # Run the visual stim in bonsai
         self.BONSAI_EDITOR = False  # Open the Bonsai editor of visual stim
         bonsai.start_visual_stim(self)
