@@ -80,13 +80,13 @@
       <Expression xsi:type="IncludeWorkflow" Path="BonVision:Primitives.DrawGratings.bonsai">
         <ExtentX>102.680382</ExtentX>
         <ExtentY>102.680382</ExtentY>
-        <LocationX>0</LocationX>
+        <LocationX>-35</LocationX>
         <LocationY>0</LocationY>
         <Angle>0</Angle>
         <SpatialFrequency>10.2680387</SpatialFrequency>
         <TemporalFrequency>0</TemporalFrequency>
         <SquareWave>false</SquareWave>
-        <Contrast>0</Contrast>
+        <Contrast>1</Contrast>
         <Radius>0.477208972</Radius>
         <Aperture>0.477208972</Aperture>
         <Opacity>1</Opacity>
@@ -218,7 +218,7 @@
                   </Expression>
                   <Expression xsi:type="Combinator">
                     <Combinator xsi:type="IntProperty">
-                      <Value>0</Value>
+                      <Value>-35</Value>
                     </Combinator>
                   </Expression>
                   <Expression xsi:type="MulticastSubject">
@@ -807,25 +807,18 @@
           </Edges>
         </Workflow>
       </Expression>
-      <Expression xsi:type="Disable">
-        <Builder xsi:type="ExternalizedMapping">
-          <Property Name="FileNameTrialInfo" />
-        </Builder>
+      <Expression xsi:type="ExternalizedMapping">
+        <Property Name="FileNameTrialInfo" />
       </Expression>
-      <Expression xsi:type="Disable">
-        <Builder xsi:type="ExternalizedMapping">
-          <Property Name="FileNameEvents" />
-        </Builder>
+      <Expression xsi:type="ExternalizedMapping">
+        <Property Name="FileNameEvents" />
       </Expression>
-      <Expression xsi:type="Disable">
-        <Builder xsi:type="ExternalizedMapping">
-          <Property Name="FileNamePositions" />
-        </Builder>
+      <Expression xsi:type="ExternalizedMapping">
+        <Property Name="FileNamePositions" />
       </Expression>
-      <Expression xsi:type="Disable">
-        <Builder xsi:type="NestedWorkflow">
-          <Name>SaveData</Name>
-          <Description>Needs a Published Subject with the RE data stream
+      <Expression xsi:type="NestedWorkflow">
+        <Name>SaveData</Name>
+        <Description>Needs a Published Subject with the RE data stream
 Saves Rotary Encoder events, positions and trial info from pybpod
 Optionally saves ultrasonic microphone data.
 
@@ -836,101 +829,100 @@ _iblrig_encoderTrialInfo.raw.ssv
 Optional:
 _iblrig_micData.raw.wav
 </Description>
-          <Workflow>
-            <Nodes>
-              <Expression xsi:type="SubscribeSubject">
-                <Name>StimAngle</Name>
-              </Expression>
-              <Expression xsi:type="SubscribeSubject">
-                <Name>Gain</Name>
-              </Expression>
-              <Expression xsi:type="SubscribeSubject">
-                <Name>TrialNum</Name>
-              </Expression>
-              <Expression xsi:type="SubscribeSubject">
-                <Name>InitPosition</Name>
-              </Expression>
-              <Expression xsi:type="SubscribeSubject">
-                <Name>Contrast</Name>
-              </Expression>
-              <Expression xsi:type="SubscribeSubject">
-                <Name>StimFreq</Name>
-              </Expression>
-              <Expression xsi:type="SubscribeSubject">
-                <Name>StimSize</Name>
-              </Expression>
-              <Expression xsi:type="Combinator">
-                <Combinator xsi:type="Zip" />
-              </Expression>
-              <Expression xsi:type="SubscribeSubject">
-                <Name>StimPhase</Name>
-              </Expression>
-              <Expression xsi:type="Combinator">
-                <Combinator xsi:type="Zip" />
-              </Expression>
-              <Expression xsi:type="Combinator">
-                <Combinator xsi:type="Timestamp" />
-              </Expression>
-              <Expression xsi:type="ExternalizedMapping">
-                <Property Name="FileName" DisplayName="FileNameTrialInfo" />
-              </Expression>
-              <Expression xsi:type="q9:CsvWriter">
-                <q9:FileName>C:\iblrig_data\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_iblrig_encoderTrialInfo.raw.ssv</q9:FileName>
-                <q9:Append>false</q9:Append>
-                <q9:Overwrite>false</q9:Overwrite>
-                <q9:Suffix>None</q9:Suffix>
-                <q9:IncludeHeader>false</q9:IncludeHeader>
-                <q9:CompatibilityMode>true</q9:CompatibilityMode>
-              </Expression>
-              <Expression xsi:type="SubscribeSubject">
-                <Name>RawEncoderEvents</Name>
-              </Expression>
-              <Expression xsi:type="ExternalizedMapping">
-                <Property Name="FileName" DisplayName="FileNameEvents" />
-              </Expression>
-              <Expression xsi:type="q9:CsvWriter">
-                <q9:FileName>C:\iblrig_data\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_iblrig_encoderEvents.raw.ssv</q9:FileName>
-                <q9:Append>false</q9:Append>
-                <q9:Overwrite>false</q9:Overwrite>
-                <q9:Suffix>None</q9:Suffix>
-                <q9:IncludeHeader>false</q9:IncludeHeader>
-                <q9:CompatibilityMode>true</q9:CompatibilityMode>
-              </Expression>
-              <Expression xsi:type="SubscribeSubject">
-                <Name>RawEncoderPositions</Name>
-              </Expression>
-              <Expression xsi:type="ExternalizedMapping">
-                <Property Name="FileName" DisplayName="FileNamePositions" />
-              </Expression>
-              <Expression xsi:type="q9:CsvWriter">
-                <q9:FileName>C:\iblrig_data\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_iblrig_encoderPositions.raw.ssv</q9:FileName>
-                <q9:Append>false</q9:Append>
-                <q9:Overwrite>false</q9:Overwrite>
-                <q9:Suffix>None</q9:Suffix>
-                <q9:IncludeHeader>false</q9:IncludeHeader>
-                <q9:CompatibilityMode>true</q9:CompatibilityMode>
-              </Expression>
-            </Nodes>
-            <Edges>
-              <Edge From="0" To="7" Label="Source5" />
-              <Edge From="1" To="7" Label="Source6" />
-              <Edge From="2" To="7" Label="Source1" />
-              <Edge From="3" To="7" Label="Source2" />
-              <Edge From="4" To="7" Label="Source3" />
-              <Edge From="5" To="7" Label="Source4" />
-              <Edge From="6" To="7" Label="Source7" />
-              <Edge From="7" To="9" Label="Source1" />
-              <Edge From="8" To="9" Label="Source2" />
-              <Edge From="9" To="10" Label="Source1" />
-              <Edge From="10" To="12" Label="Source1" />
-              <Edge From="11" To="12" Label="Source2" />
-              <Edge From="13" To="15" Label="Source1" />
-              <Edge From="14" To="15" Label="Source2" />
-              <Edge From="16" To="18" Label="Source1" />
-              <Edge From="17" To="18" Label="Source2" />
-            </Edges>
-          </Workflow>
-        </Builder>
+        <Workflow>
+          <Nodes>
+            <Expression xsi:type="SubscribeSubject">
+              <Name>StimAngle</Name>
+            </Expression>
+            <Expression xsi:type="SubscribeSubject">
+              <Name>Gain</Name>
+            </Expression>
+            <Expression xsi:type="SubscribeSubject">
+              <Name>TrialNum</Name>
+            </Expression>
+            <Expression xsi:type="SubscribeSubject">
+              <Name>InitPosition</Name>
+            </Expression>
+            <Expression xsi:type="SubscribeSubject">
+              <Name>Contrast</Name>
+            </Expression>
+            <Expression xsi:type="SubscribeSubject">
+              <Name>StimFreq</Name>
+            </Expression>
+            <Expression xsi:type="SubscribeSubject">
+              <Name>StimSize</Name>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="Zip" />
+            </Expression>
+            <Expression xsi:type="SubscribeSubject">
+              <Name>StimPhase</Name>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="Zip" />
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="Timestamp" />
+            </Expression>
+            <Expression xsi:type="ExternalizedMapping">
+              <Property Name="FileName" DisplayName="FileNameTrialInfo" />
+            </Expression>
+            <Expression xsi:type="q9:CsvWriter">
+              <q9:FileName>C:\iblrig_data\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_iblrig_encoderTrialInfo.raw.ssv</q9:FileName>
+              <q9:Append>false</q9:Append>
+              <q9:Overwrite>false</q9:Overwrite>
+              <q9:Suffix>None</q9:Suffix>
+              <q9:IncludeHeader>false</q9:IncludeHeader>
+              <q9:CompatibilityMode>true</q9:CompatibilityMode>
+            </Expression>
+            <Expression xsi:type="SubscribeSubject">
+              <Name>RawEncoderEvents</Name>
+            </Expression>
+            <Expression xsi:type="ExternalizedMapping">
+              <Property Name="FileName" DisplayName="FileNameEvents" />
+            </Expression>
+            <Expression xsi:type="q9:CsvWriter">
+              <q9:FileName>C:\iblrig_data\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_iblrig_encoderEvents.raw.ssv</q9:FileName>
+              <q9:Append>false</q9:Append>
+              <q9:Overwrite>false</q9:Overwrite>
+              <q9:Suffix>None</q9:Suffix>
+              <q9:IncludeHeader>false</q9:IncludeHeader>
+              <q9:CompatibilityMode>true</q9:CompatibilityMode>
+            </Expression>
+            <Expression xsi:type="SubscribeSubject">
+              <Name>RawEncoderPositions</Name>
+            </Expression>
+            <Expression xsi:type="ExternalizedMapping">
+              <Property Name="FileName" DisplayName="FileNamePositions" />
+            </Expression>
+            <Expression xsi:type="q9:CsvWriter">
+              <q9:FileName>C:\iblrig_data\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_iblrig_encoderPositions.raw.ssv</q9:FileName>
+              <q9:Append>false</q9:Append>
+              <q9:Overwrite>false</q9:Overwrite>
+              <q9:Suffix>None</q9:Suffix>
+              <q9:IncludeHeader>false</q9:IncludeHeader>
+              <q9:CompatibilityMode>true</q9:CompatibilityMode>
+            </Expression>
+          </Nodes>
+          <Edges>
+            <Edge From="0" To="7" Label="Source5" />
+            <Edge From="1" To="7" Label="Source6" />
+            <Edge From="2" To="7" Label="Source1" />
+            <Edge From="3" To="7" Label="Source2" />
+            <Edge From="4" To="7" Label="Source3" />
+            <Edge From="5" To="7" Label="Source4" />
+            <Edge From="6" To="7" Label="Source7" />
+            <Edge From="7" To="9" Label="Source1" />
+            <Edge From="8" To="9" Label="Source2" />
+            <Edge From="9" To="10" Label="Source1" />
+            <Edge From="10" To="12" Label="Source1" />
+            <Edge From="11" To="12" Label="Source2" />
+            <Edge From="13" To="15" Label="Source1" />
+            <Edge From="14" To="15" Label="Source2" />
+            <Edge From="16" To="18" Label="Source1" />
+            <Edge From="17" To="18" Label="Source2" />
+          </Edges>
+        </Workflow>
       </Expression>
       <Expression xsi:type="SubscribeSubject">
         <Name>BpodEvent</Name>
@@ -1025,23 +1017,6 @@ probably there is no need to reset the position also
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="Sample" />
             </Expression>
-            <Expression xsi:type="SubscribeSubject">
-              <Name>VisualSpan</Name>
-            </Expression>
-            <Expression xsi:type="PropertyMapping">
-              <PropertyMappings>
-                <Property Name="RangeMax" />
-              </PropertyMappings>
-            </Expression>
-            <Expression xsi:type="Combinator">
-              <Combinator xsi:type="q1:Rescale">
-                <q1:Min>-180</q1:Min>
-                <q1:Max>180</q1:Max>
-                <q1:RangeMin>0</q1:RangeMin>
-                <q1:RangeMax>102.68038349181981</q1:RangeMax>
-                <q1:RescaleType>Linear</q1:RescaleType>
-              </Combinator>
-            </Expression>
             <Expression xsi:type="q5:ExpressionTransform">
               <q5:Expression>single(it)</q5:Expression>
             </Expression>
@@ -1049,16 +1024,16 @@ probably there is no need to reset the position also
               <Name>StimLocationX</Name>
             </Expression>
             <Expression xsi:type="WorkflowOutput" />
+            <Expression xsi:type="SubscribeSubject">
+              <Name>VisualSpan</Name>
+            </Expression>
           </Nodes>
           <Edges>
             <Edge From="0" To="2" Label="Source2" />
             <Edge From="1" To="2" Label="Source1" />
-            <Edge From="2" To="5" Label="Source1" />
+            <Edge From="2" To="3" Label="Source1" />
             <Edge From="3" To="4" Label="Source1" />
-            <Edge From="4" To="5" Label="Source2" />
-            <Edge From="5" To="6" Label="Source1" />
-            <Edge From="6" To="7" Label="Source1" />
-            <Edge From="7" To="8" Label="Source1" />
+            <Edge From="4" To="5" Label="Source1" />
           </Edges>
         </Workflow>
       </Expression>
@@ -1129,16 +1104,7 @@ This will work in both directions!! its what we want</Description>
             <Expression xsi:type="SubscribeSubject">
               <Name>Encoder</Name>
             </Expression>
-            <Expression xsi:type="SubscribeSubject">
-              <Name>InitPosition</Name>
-            </Expression>
-            <Expression xsi:type="q5:ExpressionTransform">
-              <q5:Expression>Math.Abs(it)</q5:Expression>
-            </Expression>
-            <Expression xsi:type="SubscribeSubject">
-              <Name>Gain</Name>
-            </Expression>
-            <Expression xsi:type="NestedWorkflow">
+            <Expression xsi:type="GroupWorkflow">
               <Name>GainConverter</Name>
               <Description>Inputs: RotaryEncoder, Gain
 Multiplies deg from encoder to GainFactor given Gain for a particular Value of wheel radius
@@ -1148,10 +1114,7 @@ Multiplies deg from encoder to GainFactor given Gain for a particular Value of w
                   <Expression xsi:type="WorkflowInput">
                     <Name>Source1</Name>
                   </Expression>
-                  <Expression xsi:type="WorkflowInput">
-                    <Name>Source2</Name>
-                  </Expression>
-                  <Expression xsi:type="NestedWorkflow">
+                  <Expression xsi:type="GroupWorkflow">
                     <Name>GainFactor</Name>
                     <Description>Input: Gain
 Computes the factor to be multiplied by the position output of the RE node.
@@ -1160,10 +1123,12 @@ mm_wheel_deg = wheel_perim / 360
 wheel_perim = whell_radius * 2 * pi</Description>
                     <Workflow>
                       <Nodes>
-                        <Expression xsi:type="WorkflowInput">
-                          <Name>Source1</Name>
+                        <Expression xsi:type="Combinator">
+                          <Combinator xsi:type="FloatProperty">
+                            <Value>1</Value>
+                          </Combinator>
                         </Expression>
-                        <Expression xsi:type="NestedWorkflow">
+                        <Expression xsi:type="GroupWorkflow">
                           <Name>mm/deg</Name>
                           <Description>out: wheel_perim / 360
 Value = whhel_radius for wheel_perim</Description>
@@ -1215,15 +1180,13 @@ Value = whhel_radius for wheel_perim</Description>
                             </Edges>
                           </Workflow>
                         </Expression>
+                        <Expression xsi:type="SubscribeSubject">
+                          <Name>Gain</Name>
+                        </Expression>
                         <Expression xsi:type="Combinator">
                           <Combinator xsi:type="CombineLatest" />
                         </Expression>
                         <Expression xsi:type="Multiply" />
-                        <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="FloatProperty">
-                            <Value>1</Value>
-                          </Combinator>
-                        </Expression>
                         <Expression xsi:type="Combinator">
                           <Combinator xsi:type="Zip" />
                         </Expression>
@@ -1283,11 +1246,11 @@ Value = whhel_radius for wheel_perim</Description>
                         </Expression>
                       </Nodes>
                       <Edges>
-                        <Edge From="0" To="2" Label="Source1" />
-                        <Edge From="1" To="2" Label="Source2" />
+                        <Edge From="0" To="5" Label="Source1" />
+                        <Edge From="1" To="3" Label="Source2" />
                         <Edge From="2" To="3" Label="Source1" />
-                        <Edge From="3" To="5" Label="Source2" />
-                        <Edge From="4" To="5" Label="Source1" />
+                        <Edge From="3" To="4" Label="Source1" />
+                        <Edge From="4" To="5" Label="Source2" />
                         <Edge From="5" To="6" Label="Source1" />
                         <Edge From="6" To="7" Label="Source1" />
                       </Edges>
@@ -1300,16 +1263,21 @@ Value = whhel_radius for wheel_perim</Description>
                   <Expression xsi:type="WorkflowOutput" />
                 </Nodes>
                 <Edges>
-                  <Edge From="0" To="3" Label="Source1" />
-                  <Edge From="1" To="2" Label="Source1" />
-                  <Edge From="2" To="3" Label="Source2" />
+                  <Edge From="0" To="2" Label="Source1" />
+                  <Edge From="1" To="2" Label="Source2" />
+                  <Edge From="2" To="3" Label="Source1" />
                   <Edge From="3" To="4" Label="Source1" />
-                  <Edge From="4" To="5" Label="Source1" />
                 </Edges>
               </Workflow>
             </Expression>
+            <Expression xsi:type="SubscribeSubject">
+              <Name>InitPosition</Name>
+            </Expression>
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="CombineLatest" />
+            </Expression>
+            <Expression xsi:type="q5:ExpressionTransform">
+              <q5:Expression>Math.Abs(it)</q5:Expression>
             </Expression>
             <Expression xsi:type="q5:ExpressionTransform">
               <q5:Expression>Math.Abs(it)</q5:Expression>
@@ -1318,6 +1286,10 @@ Value = whhel_radius for wheel_perim</Description>
               <Combinator xsi:type="CombineLatest" />
             </Expression>
             <Expression xsi:type="Subtract" />
+            <Expression xsi:type="q5:ExpressionTransform">
+              <q5:Name>CastToFloat</q5:Name>
+              <q5:Expression>single(it)</q5:Expression>
+            </Expression>
             <Expression xsi:type="Condition">
               <Name>StopCondition</Name>
               <Workflow>
@@ -1326,7 +1298,7 @@ Value = whhel_radius for wheel_perim</Description>
                     <Name>Source1</Name>
                   </Expression>
                   <Expression xsi:type="LessThan">
-                    <Operand xsi:type="DoubleProperty">
+                    <Operand xsi:type="FloatProperty">
                       <Value>0</Value>
                     </Operand>
                   </Expression>
@@ -1344,23 +1316,6 @@ Value = whhel_radius for wheel_perim</Description>
             <Expression xsi:type="q5:ExpressionTransform">
               <q5:Expression>((Item1+Item2) + 180) % 360 - 180</q5:Expression>
             </Expression>
-            <Expression xsi:type="SubscribeSubject">
-              <Name>VisualSpan</Name>
-            </Expression>
-            <Expression xsi:type="PropertyMapping">
-              <PropertyMappings>
-                <Property Name="RangeMax" />
-              </PropertyMappings>
-            </Expression>
-            <Expression xsi:type="Combinator">
-              <Combinator xsi:type="q1:Rescale">
-                <q1:Min>-180</q1:Min>
-                <q1:Max>180</q1:Max>
-                <q1:RangeMin>0</q1:RangeMin>
-                <q1:RangeMax>102.68038349181981</q1:RangeMax>
-                <q1:RescaleType>Clamp</q1:RescaleType>
-              </Combinator>
-            </Expression>
             <Expression xsi:type="q5:ExpressionTransform">
               <q5:Name>CastToFloat</q5:Name>
               <q5:Expression>single(it)</q5:Expression>
@@ -1377,28 +1332,25 @@ Value = whhel_radius for wheel_perim</Description>
             </Expression>
           </Nodes>
           <Edges>
-            <Edge From="1" To="5" Label="Source1" />
-            <Edge From="2" To="6" Label="Source2" />
-            <Edge From="2" To="3" Label="Source1" />
-            <Edge From="3" To="8" Label="Source1" />
-            <Edge From="4" To="5" Label="Source2" />
-            <Edge From="5" To="6" Label="Source1" />
-            <Edge From="5" To="7" Label="Source1" />
-            <Edge From="5" To="11" Label="Source2" />
-            <Edge From="6" To="11" Label="Source1" />
-            <Edge From="7" To="8" Label="Source2" />
+            <Edge From="1" To="2" Label="Source1" />
+            <Edge From="2" To="4" Label="Source1" />
+            <Edge From="2" To="5" Label="Source1" />
+            <Edge From="2" To="11" Label="Source2" />
+            <Edge From="3" To="4" Label="Source2" />
+            <Edge From="3" To="6" Label="Source1" />
+            <Edge From="4" To="11" Label="Source1" />
+            <Edge From="5" To="7" Label="Source2" />
+            <Edge From="6" To="7" Label="Source1" />
+            <Edge From="7" To="8" Label="Source1" />
             <Edge From="8" To="9" Label="Source1" />
             <Edge From="9" To="10" Label="Source1" />
-            <Edge From="10" To="18" Label="Source2" />
+            <Edge From="10" To="15" Label="Source2" />
             <Edge From="11" To="12" Label="Source1" />
-            <Edge From="12" To="15" Label="Source1" />
+            <Edge From="12" To="13" Label="Source1" />
             <Edge From="13" To="14" Label="Source1" />
-            <Edge From="14" To="15" Label="Source2" />
+            <Edge From="13" To="17" Label="Source1" />
+            <Edge From="14" To="15" Label="Source1" />
             <Edge From="15" To="16" Label="Source1" />
-            <Edge From="16" To="17" Label="Source1" />
-            <Edge From="16" To="20" Label="Source1" />
-            <Edge From="17" To="18" Label="Source1" />
-            <Edge From="18" To="19" Label="Source1" />
           </Edges>
         </Workflow>
       </Expression>
