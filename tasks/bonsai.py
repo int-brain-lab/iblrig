@@ -36,6 +36,8 @@ def start_visual_stim(sph):
 
         sync_x = "-p:sync_x=" + str(sph.SYNC_SQUARE_X)
         sync_y = "-p:sync_y=" + str(sph.SYNC_SQUARE_Y)
+        dist = 7 if 'ephys' in sph.PYBPOD_BOARD else 8
+        translationz = "-p:TranslationZ=-" + str(dist)
         start = '--start'
         noeditor = '--no-editor'
         noboot = '--no-boot'
@@ -50,7 +52,8 @@ def start_visual_stim(sph):
                 [bns, wkfl, editor, noboot, evt, itr, com, sync_x, sync_y])
         else:
             subprocess.Popen(
-                [bns, wkfl, editor, pos, evt, itr, com, sync_x, sync_y, noboot])
+                [bns, wkfl, editor, noboot, pos, evt, itr, com, sync_x, sync_y,
+                 translationz])
         time.sleep(3)
         os.chdir(here)
     else:
