@@ -33,6 +33,7 @@ def init_reward_amount(sph) -> float:
     if previous_water < previous_weight_factor:
         out = sph.LAST_TRIAL_DATA['reward_amount'] + sph.AR_STEP
 
+    out = sph.AR_MAX_VALUE if out > sph.AR_MAX_VALUE else out
     return out
 
 

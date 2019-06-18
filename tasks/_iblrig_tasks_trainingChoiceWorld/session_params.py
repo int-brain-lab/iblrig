@@ -71,6 +71,7 @@ class SessionParamHandler(object):
         # =====================================================================
         # ADAPTIVE STUFF
         # =====================================================================
+        self.AR_MIN_VALUE = 1.5 if 'Sucrose' in self.REWARD_TYPE else 2.0
         self.REWARD_AMOUNT = adaptive.init_reward_amount(self)
         self.CALIB_FUNC = adaptive.init_calib_func(self)
         self.CALIB_FUNC_RANGE = adaptive.init_calib_func_range(self)
