@@ -7,6 +7,8 @@ import sys
 from sys import platform
 from pathlib import Path
 import logging
+import subprocess
+import time
 
 from pythonosc import udp_client
 
@@ -18,7 +20,6 @@ import ambient_sensor
 import bonsai
 import iotasks
 import sound
-import misc
 from path_helper import SessionPathCreator
 from rotary_encoder import MyRotaryEncoder
 log = logging.getLogger('iblrig')
@@ -52,8 +53,6 @@ class SessionParamHandler(object):
         # SUBJECT
         # =====================================================================
         self.SUBJECT_WEIGHT = self.get_subject_weight()
-        self.SUBJECT_DISENGAGED_TRIGGERED = False
-        self.SUBJECT_DISENGAGED_TRIALNUM = None
         # =====================================================================
         # OSC CLIENT
         # =====================================================================
@@ -134,10 +133,6 @@ class SessionParamHandler(object):
     # =========================================================================
     # METHODS
     # =========================================================================
-    def patch_settings_file(self, patch):
-        self.__dict__.update(patch)
-        misc.patch_settings_file(self.SETTINGS_FILE_PATH, patch)
-
     def save_ambient_sensor_reading(self, bpod_instance):
         return ambient_sensor.get_reading(bpod_instance,
                                           save_to=self.SESSION_RAW_DATA_FOLDER)
@@ -201,327 +196,16 @@ class SessionParamHandler(object):
 
         return d
 
-    # =========================================================================
-    # SOUND
-    # =========================================================================
-    def _init_sounds(self):
-        if self.SOFT_SOUND:
-            self.UPLOADER_TOOL = None
-            self.GO_TONE = sound.make_sound(
-                rate=self.SOUND_SAMPLE_FREQ,
-                frequency=self.GO_TONE_FREQUENCY,
-                duration=self.GO_TONE_DURATION,
-                amplitude=self.GO_TONE_AMPLITUDE,
-                fade=0.01,
-                chans='L+TTL')
-            self.WHITE_NOISE = sound.make_sound(
-                rate=self.SOUND_SAMPLE_FREQ,
-                frequency=-1,
-                duration=self.WHITE_NOISE_DURATION,
-                amplitude=self.WHITE_NOISE_AMPLITUDE,
-                fade=0.01,
-                chans='L+TTL')
-
-            self.OUT_TONE = ('SoftCode', 1)
-            self.OUT_NOISE = ('SoftCode', 2)
-        else:
-            msg = f"""
-        ##########################################
-        SOUND BOARD NOT IMPLEMTNED YET!!",
-        PLEASE GO TO:
-        iblrig_params/IBL/tasks/{self.PYBPOD_PROTOCOL}/task_settings.py
-        and set
-          SOFT_SOUND = 'sysdefault' or 'xonar'
-        ##########################################"""
-            log.error(msg)
-            raise(NotImplementedError)
-
-    def play_tone(self):
-        self.SD.play(self.GO_TONE, self.SOUND_SAMPLE_FREQ)  # , mapping=[1, 2])
-
-    def play_noise(self):
-        self.SD.play(self.WHITE_NOISE, self.SOUND_SAMPLE_FREQ)
-
-    def stop_sound(self):
-        self.SD.stop()
-
-    # =========================================================================
-    # BONSAI WORKFLOWS
-    # =========================================================================
-    def start_visual_stim(self):
-        if self.USE_VISUAL_STIMULUS and self.BONSAI:
-            # Run Bonsai workflow
-            here = os.getcwd()
-            os.chdir(str(
-                Path(self.VISUAL_STIM_FOLDER) / self.VISUAL_STIMULUS_TYPE))
-            bns = self.BONSAI
-            wkfl = self.VISUAL_STIMULUS_FILE
-
-            evt = "-p:FileNameEvents=" + os.path.join(
-                self.SESSION_RAW_DATA_FOLDER,
-                "_iblrig_encoderEvents.raw.ssv")
-            pos = "-p:FileNamePositions=" + os.path.join(
-                self.SESSION_RAW_DATA_FOLDER,
-                "_iblrig_encoderPositions.raw.ssv")
-            itr = "-p:FileNameTrialInfo=" + os.path.join(
-                self.SESSION_RAW_DATA_FOLDER,
-                "_iblrig_encoderTrialInfo.raw.ssv")
-            mic = "-p:FileNameMic=" + os.path.join(
-                self.SESSION_RAW_DATA_FOLDER,
-                "_iblrig_micData.raw.wav")
-
-            com = "-p:REPortName=" + self.COM['ROTARY_ENCODER']
-            rec = "-p:RecordSound=" + str(self.RECORD_SOUND)
-
-            sync_x = "-p:sync_x=" + str(self.SYNC_SQUARE_X)
-            sync_y = "-p:sync_y=" + str(self.SYNC_SQUARE_Y)
-            start = '--start'
-            noeditor = '--noeditor'
-
-            if self.BONSAI_EDITOR:
-                subprocess.Popen(
-                    [bns, wkfl, start, pos, evt, itr, com, mic, rec, sync_x, sync_y])
-            elif not self.BONSAI_EDITOR:
-                subprocess.Popen(
-                    [bns, wkfl, noeditor, pos, evt, itr, com, mic, rec, sync_x, sync_y])
-            time.sleep(5)
-            os.chdir(here)
-        else:
-            self.USE_VISUAL_STIMULUS = False
-
-    def start_camera_recording(self):
-        if (self.RECORD_VIDEO is False
-                and self.OPEN_CAMERA_VIEW is False):
-            return
-        # Run Workflow
-        here = os.getcwd()
-        os.chdir(self.VIDEO_RECORDING_FOLDER)
-
-        bns = self.BONSAI
-        wkfl = self.VIDEO_RECORDING_FILE
-
-        ts = '-p:TimestampsFileName=' + os.path.join(
-            self.SESSION_RAW_VIDEO_DATA_FOLDER,
-            '_iblrig_leftCamera.timestamps.ssv')
-        vid = '-p:VideoFileName=' + os.path.join(
-            self.SESSION_RAW_VIDEO_DATA_FOLDER,
-            '_iblrig_leftCamera.raw.avi')
-        rec = '-p:SaveVideo=' + str(self.RECORD_VIDEO)
-
-        start = '--start'
-
-        subprocess.Popen([bns, wkfl, start, ts, vid, rec])
-        time.sleep(1)
-        os.chdir(here)
-
-    # =========================================================================
-    # LAST TRIAL DATA
-    # =========================================================================
-    def _load_last_trial(self, i=-1):
-        if self.PREVIOUS_DATA_FILE is None:
-            return
-        trial_data = raw.load_data(self.PREVIOUS_SESSION_PATH)
-
-        return trial_data[i] if trial_data else None
-
-    def _load_last_settings_file(self):
-        if not self.PREVIOUS_SETTINGS_FILE:
-            return
-
-        return raw.load_settings(self.PREVIOUS_SESSION_PATH)
-
-    # =========================================================================
-    # ADAPTIVE REWARD AND GAIN RULES
-    # =========================================================================
-    def _init_reward_amount(self):
-        if not self.ADAPTIVE_REWARD:
-            return self.REWARD_AMOUNT
-
-        if self.LAST_TRIAL_DATA is None:
-            return self.AR_INIT_VALUE
-        elif self.LAST_TRIAL_DATA and self.LAST_TRIAL_DATA['trial_num'] < 200:
-            out = self.LAST_TRIAL_DATA['reward_amount']
-        elif self.LAST_TRIAL_DATA and self.LAST_TRIAL_DATA['trial_num'] >= 200:
-            out = self.LAST_TRIAL_DATA['reward_amount'] - self.AR_STEP
-            out = self.AR_MIN_VALUE if out <= self.AR_MIN_VALUE else out
-
-        if 'SUBJECT_WEIGHT' not in self.LAST_SETTINGS_DATA.keys():
-            return out
-
-        previous_weight_factor = self.LAST_SETTINGS_DATA['SUBJECT_WEIGHT'] / 25
-        previous_water = self.LAST_TRIAL_DATA['water_delivered'] / 1000
-
-        if previous_water < previous_weight_factor:
-            out = self.LAST_TRIAL_DATA['reward_amount'] + self.AR_STEP
-
-        return out
-
-    def _init_calib_func(self):
-        if not self.AUTOMATIC_CALIBRATION:
-            return
-
-        if self.LATEST_WATER_CALIBRATION_FILE:
-            # Load last calibration df1
-            df1 = pd.read_csv(self.LATEST_WATER_CALIBRATION_FILE)
-            # make interp func
-            if df1.empty:
-                msg = f"""
-            ##########################################
-                 Water calibration file is emtpy!
-            ##########################################"""
-                log.error(msg)
-                raise(ValueError)
-            time2vol = sp.interpolate.pchip(df1["open_time"],
-                                            df1["weight_perdrop"])
-            return time2vol
-        else:
-            return
-
-    def _init_reward_valve_time(self):
-        # Calc reward valve time
-        if not self.AUTOMATIC_CALIBRATION:
-            out = self.CALIBRATION_VALUE / 3 * self.REWARD_AMOUNT
-        elif self.AUTOMATIC_CALIBRATION and self.CALIB_FUNC is not None:
-            out = 0
-            while np.round(self.CALIB_FUNC(out), 3) < self.REWARD_AMOUNT:
-                out += 1
-            out /= 1000
-        elif self.AUTOMATIC_CALIBRATION and self.CALIB_FUNC is None:
-            msg = """
-            ##########################################
-                  NO CALIBRATION FILE WAS FOUND:
-            Calibrate the rig or use a manual calibration
-            PLEASE GO TO:
-            iblrig_params/IBL/tasks/{self.PYBPOD_PROTOCOL}/task_settings.py
-            and set:
-              AUTOMATIC_CALIBRATION = False
-              CALIBRATION_VALUE = <MANUAL_CALIBRATION>
-            ##########################################"""
-            log.error(msg)
-            raise(ValueError)
-
-        if out >= 1:
-            msg = """
-            ##########################################
-                REWARD VALVE TIME IS TOO HIGH!
-            Probably because of a BAD calibration file
-            Calibrate the rig or use a manual calibration
-            PLEASE GO TO:
-            iblrig_params/IBL/tasks/{self.PYBPOD_PROTOCOL}/task_settings.py
-            and set:
-              AUTOMATIC_CALIBRATION = False
-              CALIBRATION_VALUE = <MANUAL_CALIBRATION>
-            ##########################################"""
-            log.error(msg)
-            raise(ValueError)
-
-        return float(out)
-
-    def _init_stim_gain(self):
-        if not self.ADAPTIVE_GAIN:
-            return self.STIM_GAIN
-
-        if self.LAST_TRIAL_DATA and self.LAST_TRIAL_DATA['trial_num'] >= 200:
-            stim_gain = self.AG_MIN_VALUE
-        else:
-            stim_gain = self.AG_INIT_VALUE
-
-        return stim_gain
-
-    # =========================================================================
-    # OSC CLIENT
-    # =========================================================================
-    def _init_osc_client(self):
-        osc_client = udp_client.SimpleUDPClient(self.OSC_CLIENT_IP,
-                                                self.OSC_CLIENT_PORT)
-        return osc_client
-
-    # =========================================================================
-    # PYBPOD USER SETTINGS DESERIALIZATION
-    # =========================================================================
-    def deserialize_session_user_settings(self):
-        self.PYBPOD_CREATOR = json.loads(self.PYBPOD_CREATOR)
-        self.PYBPOD_USER_EXTRA = json.loads(self.PYBPOD_USER_EXTRA)
-
-        self.PYBPOD_SUBJECTS = [json.loads(x.replace("'", '"'))
-                                for x in self.PYBPOD_SUBJECTS]
-        if len(self.PYBPOD_SUBJECTS) == 1:
-            self.PYBPOD_SUBJECTS = self.PYBPOD_SUBJECTS[0]
-        else:
-            log.error("Multiple subjects found in PYBPOD_SUBJECTS")
-            raise(IOError)
-
-        self.PYBPOD_SUBJECT_EXTRA = [
-          json.loads(x) for x in self.PYBPOD_SUBJECT_EXTRA[1:-1].split('","')]
-        if len(self.PYBPOD_SUBJECT_EXTRA) == 1:
-            self.PYBPOD_SUBJECT_EXTRA = self.PYBPOD_SUBJECT_EXTRA[0]
-
-    # =========================================================================
-    # SERIALIZE, COPY AND SAVE
-    # =========================================================================
-    def _save_session_settings(self):
-        with open(self.SETTINGS_FILE_PATH, 'a') as f:
-            f.write(json.dumps(self, cls=ComplexEncoder, indent=1))
-            f.write('\n')
-        return
-
-    def _copy_task_code(self):
-        # Copy behavioral task python code
-        src = os.path.join(self.IBLRIG_PARAMS_FOLDER, 'IBL', 'tasks',
-                           self.PYBPOD_PROTOCOL)
-        dst = os.path.join(self.SESSION_RAW_DATA_FOLDER, self.PYBPOD_PROTOCOL)
-        shutil.copytree(src, dst)
-        # Copy stimulus folder with bonsai workflow
-        src = str(Path(self.VISUAL_STIM_FOLDER) / self.VISUAL_STIMULUS_TYPE)
-        dst = str(Path(self.SESSION_RAW_DATA_FOLDER) /
-                  self.VISUAL_STIMULUS_TYPE)
-        shutil.copytree(src, dst)
-        # Copy video recording folder with bonsai workflow
-        src = self.VIDEO_RECORDING_FOLDER
-        dst = os.path.join(self.SESSION_RAW_VIDEO_DATA_FOLDER,
-                           'camera_recordings')
-        shutil.copytree(src, dst)
-
-    def _save_task_code(self):
-        # zip all existing folders
-        # Should be the task code folder and if available stimulus code folder
-        behavior_code_files = [
-            os.path.join(self.SESSION_RAW_DATA_FOLDER, x)
-            for x in os.listdir(self.SESSION_RAW_DATA_FOLDER)
-            if os.path.isdir(os.path.join(self.SESSION_RAW_DATA_FOLDER, x))
-        ]
-        SessionParamHandler.zipit(
-            behavior_code_files, os.path.join(self.SESSION_RAW_DATA_FOLDER,
-                                              '_iblrig_taskCodeFiles.raw.zip'))
-
-        video_code_files = [
-            os.path.join(self.SESSION_RAW_VIDEO_DATA_FOLDER, x)
-            for x in os.listdir(self.SESSION_RAW_VIDEO_DATA_FOLDER)
-            if os.path.isdir(os.path.join(
-                self.SESSION_RAW_VIDEO_DATA_FOLDER, x))]
-        SessionParamHandler.zipit(
-            video_code_files, os.path.join(self.SESSION_RAW_VIDEO_DATA_FOLDER,
-                                           '_iblrig_videoCodeFiles.raw.zip'))
-
-        [shutil.rmtree(x) for x in behavior_code_files + video_code_files]
-
-    def _configure_rotary_encoder(self, RotaryEncoderModule):
-        m = RotaryEncoderModule(self.COM['ROTARY_ENCODER'])
-        m.set_zero_position()  # Not necessarily needed
-        m.set_thresholds(self.ROTARY_ENCODER.SET_THRESHOLDS)
-        m.enable_thresholds(self.ROTARY_ENCODER.ENABLE_THRESHOLDS)
-        m.close()
-
     def display_logs(self):
         if self.PREVIOUS_DATA_FILE:
             msg = f"""
 ##########################################
 PREVIOUS SESSION FOUND
-LOADING PARAMETERS FROM: {self.PREVIOUS_DATA_FILE}
+LOADING PARAMETERS FROM:       {self.PREVIOUS_DATA_FILE}
 
 PREVIOUS NTRIALS:              {self.LAST_TRIAL_DATA["trial_num"]}
 PREVIOUS NTRIALS (no repeats): {self.LAST_TRIAL_DATA["non_rc_ntrials"]}
-PREVIOUS WATER DRANK: {self.LAST_TRIAL_DATA['water_delivered']}
+PREVIOUS WATER DRANK:          {self.LAST_TRIAL_DATA['water_delivered']}
 LAST REWARD:                   {self.LAST_TRIAL_DATA["reward_amount"]}
 LAST GAIN:                     {self.LAST_TRIAL_DATA["stim_gain"]}
 LAST CONTRAST SET:             {self.LAST_TRIAL_DATA["ac"]["contrast_set"]}

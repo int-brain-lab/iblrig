@@ -52,8 +52,6 @@ class SessionParamHandler(object):
         # SUBJECT
         # =====================================================================
         self.SUBJECT_WEIGHT = self.get_subject_weight()
-        self.SUBJECT_DISENGAGED_TRIGGERED = False
-        self.SUBJECT_DISENGAGED_TRIALNUM = None
         # =====================================================================
         # OSC CLIENT
         # =====================================================================
@@ -133,10 +131,6 @@ class SessionParamHandler(object):
     # =========================================================================
     # METHODS
     # =========================================================================
-    def patch_settings_file(self, patch):
-        self.__dict__.update(patch)
-        misc.patch_settings_file(self.SETTINGS_FILE_PATH, patch)
-
     def save_ambient_sensor_reading(self, bpod_instance):
         return ambient_sensor.get_reading(bpod_instance,
                                           save_to=self.SESSION_RAW_DATA_FOLDER)
@@ -208,10 +202,10 @@ class SessionParamHandler(object):
             msg = f"""
 ##########################################
 PREVIOUS SESSION FOUND
-LOADING PARAMETERS FROM: {self.PREVIOUS_DATA_FILE}
+LOADING PARAMETERS FROM:       {self.PREVIOUS_DATA_FILE}
 
 PREVIOUS NTRIALS:              {self.LAST_TRIAL_DATA["trial_num"]}
-PREVIOUS WATER DRANK: {self.LAST_TRIAL_DATA['water_delivered']}
+PREVIOUS WATER DRANK:          {self.LAST_TRIAL_DATA['water_delivered']}
 LAST REWARD:                   {self.LAST_TRIAL_DATA["reward_amount"]}
 LAST GAIN:                     {self.LAST_TRIAL_DATA["stim_gain"]}
 PREVIOUS WEIGHT:               {self.LAST_SETTINGS_DATA['SUBJECT_WEIGHT']}
