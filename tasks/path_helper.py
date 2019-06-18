@@ -41,9 +41,6 @@ class SessionPathCreator(object):
         self.IBLRIG_DATA_SUBJECTS_FOLDER = str(
             Path(self.IBLRIG_DATA_FOLDER) / 'Subjects')
 
-        self.SOUND_STIM_FOLDER = str(
-            Path(self.IBLRIG_FOLDER) / 'sound_stim')
-
         self.VISUAL_STIM_FOLDER = str(Path(self.IBLRIG_FOLDER) / 'visual_stim')
         self.BONSAI = self.get_bonsai_path(use_iblrig_bonsai=True)
         self.VISUAL_STIMULUS_TYPE = self._visual_stim_type()
@@ -52,10 +49,9 @@ class SessionPathCreator(object):
             self.VISUAL_STIMULUS_TYPE / 'Gabor2D.bonsai')
 
         self.VIDEO_RECORDING_FOLDER = os.path.join(
-            self.IBLRIG_FOLDER, 'camera', 'camera_recordings')
+            self.IBLRIG_FOLDER, 'devices', 'camera_recordings')
         self.VIDEO_RECORDING_FILE = os.path.join(
-            self.IBLRIG_FOLDER, 'camera', 'camera_recordings',
-            'one_camera.bonsai')
+            self.VIDEO_RECORDING_FOLDER, 'one_camera.bonsai')
 
         self.SUBJECT_NAME = subject_name
         self.SUBJECT_FOLDER = os.path.join(
@@ -130,18 +126,10 @@ class SessionPathCreator(object):
         return
 
     def _visual_stim_type(self):
-        if 'habituation' in self._PROTOCOL:
-            return 'HabituationGabor2D'
-        elif 'training' in self._PROTOCOL:
-            return 'TrainingGabor2D'
-        elif 'biased' in self._PROTOCOL:
-            return 'BiasedGabor2D'
-        elif 'ephys' in self._PROTOCOL:
-            return 'EphysGabor2D'
-        elif 'sync_test' in self._PROTOCOL:
-            return 'HabituationGabor2D'
+        if 'habituation' in self._PROTOCOL or 'sync_test' in self._PROTOCOL:
+            return 'GaborHabituationTask'
         else:
-            return ''
+            return 'GaborIBLTask'
 
     def _init_com(self) -> dict:
         logger.debug("Initializing COM ports")
