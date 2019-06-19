@@ -12,7 +12,7 @@ from dateutil import parser
 import ibllib.io.flags as flags
 import ibllib.io.params as params
 import oneibl.params
-from alf.one_iblrig import create
+from ibllib.pipes.experimental_data import create
 from oneibl.one import ONE
 
 one = ONE()
