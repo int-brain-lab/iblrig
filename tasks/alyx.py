@@ -32,44 +32,81 @@ def open_session_narrative(session_url: str) -> None:
 
 
 def load_previous_data(subject_nickname):
-    eid = get_latest_session_eid(subject_nickname, has_data=True)
+    eid = get_latest_session_eid(subject_nickname)
+    return one.load(eid, dataset_types=['_iblrig_taskData.raw'])[0]
 
-    return one.load(eid, dataset_types=['_iblrig_taskData.raw'])
+
+def load_previous_trial_data(subject_nickname):
+    return load_previous_data(subject_nickname)[-1]
 
 
 def load_previous_settings(subject_nickname):
-    eid = get_latest_session_eid(subject_nickname, has_data=True)
-    det = one.alyx.rest('sessions', 'read', eid)
+    eid = get_latest_session_eid(subject_nickname)
+    # det = one.alyx.rest('sessions', 'read', eid)
+    # return json.loads(det['json'])
+    return one.load(eid, dataset_types=['_iblrig_taskSettings.raw'])[0]
 
-    return json.loads(det['json'])
 
-
-def get_latest_session_eid(subject_nickname, has_data=True, details=False):
-    date = datetime.datetime.now().date().isoformat()
-
-    if has_data:
-        eid = one.search(
-            subject=subject_nickname,
-            dataset_types=['_iblrig_taskData.raw', '_iblrig_taskSettings.raw'],
-            date_range=['1970-1-1', date]
-        )[-1]
+def get_latest_session_eid(subject_nickname):
+    """Return the eID of the latest session for Subject that has data on Flatiron"""
+    last_session = one.search(
+        subject=subject_nickname,
+        dataset_types=['_iblrig_taskData.raw', '_iblrig_taskSettings.raw'],
+        limit=1)
+    if last_session:
+        return last_session[0]
     else:
-        eid = one.search(subject=subject, date_range=['1970-1-1', date])[-1]
+        return None
 
-    det = one.alyx.rest('sessions', 'read', eid)
-    return (eid, det) if details else eid
+
+def init_board_params(board, reset=True):
+    p = load_board_params(board)
+    empty_params = {
+        'WATER_CALIBRATION_RANGE': None,  # [min, max]
+        'WATER_CALIBRATION_OPEN_TIMES': None,  # [float, float, ...]
+        'WATER_CALIBRATION_WEIGHT_PERDROP': None,  # [float, float, ...]
+        'SCREEN_CALIBRATION_FUNC': None,  # unknown
+        'BPOD_COM': None,  # str
+        'F2TTL_COM': None,  # str
+        'ROTARY_ENCODER_COM': None,  # str
+        'F2TTL_DARK_THRESH': None,  # float
+        'F2TTL_LIGHT_THRESH': None  # float
+    }
+    if not reset:
+        empty_params.update(p)
+    patch_board_params(board, empty_params)
+    return empty_params
+
+
+def patch_board_params(board, param_dict):
+    params = load_board_params(board)
+    params.update(param_dict)
+    patch_dict = {
+        "json": json.dumps(params)
+    }
+    one.alyx.rest('locations', 'partial_update', id=board, data=patch_dict)
+    return params
+
+
+def load_board_params(board):
+    return json.loads(one.alyx.rest('locations', 'read', id=board)['json'])
 
 
 if __name__ == "__main__":
-    subject = 'ZM_1085'
+    subject = 'ZM_1737'
     session_folder = '/home/nico/Projects/IBL/scratch/test_iblrig_data/Subjects/_iblrig_test_mouse/2019-05-08/001'
 
 
-    eid, det = get_latest_session_eid(subject, has_data=True, details=True)
+    # eid = get_latest_session_eid(subject, has_data=True)
     data = load_previous_data(subject)
+    last_trial_data = load_previous_trial_data(subject)
     settings = load_previous_settings(subject)
 
     create_session(session_folder)
 
+    board = '_iblrig_mainenlab_behavior_0'
+    init_board_params(board)
+    patch_board_params(board, {'some_var': 123, 'BPOD_COM': 'COM#'})
+    load_board_params(board)
 
     print('.')
