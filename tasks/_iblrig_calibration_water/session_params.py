@@ -14,15 +14,8 @@ import logging
 sys.path.append(str(Path(__file__).parent.parent))  # noqa
 sys.path.append(str(Path(__file__).parent.parent.parent.parent))  # noqa
 from path_helper import SessionPathCreator
+from iotasks import ComplexEncoder
 logger = logging.getLogger('iblrig')
-
-
-class ComplexEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if hasattr(obj, 'reprJSON'):
-            return obj.reprJSON()
-        else:
-            return json.JSONEncoder.default(self, obj)
 
 
 class SessionParamHandler(object):
