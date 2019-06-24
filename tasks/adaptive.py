@@ -37,7 +37,7 @@ def init_reward_amount(sph) -> float:
     return out
 
 
-def init_calib_func(sph):
+def init_calib_func(sph) -> scipy.interpolate.pchip:
     if not sph.AUTOMATIC_CALIBRATION:
         return
 

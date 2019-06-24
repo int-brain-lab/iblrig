@@ -11,6 +11,7 @@ from dateutil import parser
 
 import ibllib.io.flags as flags
 import ibllib.io.params as params
+import ibllib.io.raw_data_loaders as raw
 import oneibl.params
 from ibllib.pipes.experimental_data import create
 from oneibl.one import ONE
@@ -92,21 +93,45 @@ def load_board_params(board):
     return json.loads(one.alyx.rest('locations', 'read', id=board)['json'])
 
 
+def create_current_running_session(session_folder):
+    settings = raw.load_settings(session_folder)
+    subject = one.alyx.rest(
+        'subjects?nickname=' + settings['PYBPOD_SUBJECTS'][0], 'list')[0]
+    ses_ = {'subject': subject['nickname'],
+            'users': [settings['PYBPOD_CREATOR'][0]],
+            'location': settings['PYBPOD_BOARD'],
+            'procedures': ['Behavior training/tasks'],
+            'lab': subject['lab'],
+            'type': 'Experiment',
+            'task_protocol': settings['PYBPOD_PROTOCOL'] + settings['IBLRIG_VERSION_TAG'],
+            'number': settings['SESSION_NUMBER'],
+            'start_time': settings['SESSION_DATETIME'],
+            'end_time': None,
+            'n_correct_trials': None,
+            'n_trials': None,
+            'json': None,
+            }
+    session = one.alyx.rest('sessions', 'create', data=ses_)
+
+
 if __name__ == "__main__":
     subject = 'ZM_1737'
     session_folder = '/home/nico/Projects/IBL/scratch/test_iblrig_data/Subjects/_iblrig_test_mouse/2019-05-08/001'
-
+    session_folder = '/home/nico/Projects/IBL/scratch/test_iblrig_data/Subjects/_iblrig_test_mouse/2019-06-24/003'
 
     # eid = get_latest_session_eid(subject, has_data=True)
     data = load_previous_data(subject)
     last_trial_data = load_previous_trial_data(subject)
     settings = load_previous_settings(subject)
 
-    create_session(session_folder)
+    # create_session(session_folder)
 
-    board = '_iblrig_mainenlab_behavior_0'
-    init_board_params(board)
-    patch_board_params(board, {'some_var': 123, 'BPOD_COM': 'COM#'})
-    load_board_params(board)
+    # board = '_iblrig_mainenlab_behavior_0'
+    # init_board_params(board)
+    # patch_board_params(board, {'some_var': 123, 'BPOD_COM': 'COM#'})
+    # load_board_params(board)
+
+    create_current_running_session(session_folder)
+    create_session(session_folder)
 
     print('.')
