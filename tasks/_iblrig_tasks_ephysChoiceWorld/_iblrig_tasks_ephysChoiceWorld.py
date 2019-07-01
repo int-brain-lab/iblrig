@@ -14,7 +14,7 @@ import user_settings
 import online_plots as op
 
 log = logging.getLogger('iblrig')
-log.setLevel(logging.INFO)
+log.setLevel(logging.DEBUG)
 
 global sph
 sph = SessionParamHandler(task_settings, user_settings)
@@ -62,11 +62,16 @@ bpod.load_serial_message(sound_card, sc_play_noise, [
 # TRIAL PARAMETERS AND STATE MACHINE
 # =============================================================================
 global tph
+log.debug('Call tph creation')
 tph = TrialParamHandler(sph)
+log.debug('TPH CREATED!')
 
+log.debug('make fig')
 f, axes = op.make_fig(sph)
+log.debug('pause')
 plt.pause(1)
 
+log.debug('start SM definition')
 for i in range(sph.NTRIALS):  # Main loop
     tph.next_trial()
     log.info(f'Starting trial: {i + 1}')
