@@ -181,7 +181,7 @@ class SessionPathCreator(object):
 
     def _get_ibllib_folder(self):
         import ibllib
-        fpath = Path(ibllib.__file__).parent.parent.parent
+        fpath = Path(ibllib.__file__).parent.parent
         return str(fpath)
 
     def _get_commit_hash(self, repo_path):
