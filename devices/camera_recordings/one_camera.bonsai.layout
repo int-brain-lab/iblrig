@@ -17,10 +17,10 @@
     </VisualizerSettings>
   </DialogSettings>
   <DialogSettings>
-    <Visible>false</Visible>
+    <Visible>true</Visible>
     <Location>
-      <X>634</X>
-      <Y>362</Y>
+      <X>1007</X>
+      <Y>212</Y>
     </Location>
     <Size>
       <Width>445</Width>

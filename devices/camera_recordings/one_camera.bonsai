@@ -74,7 +74,7 @@
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="q2:VideoWriter">
-          <q2:FileName>C:\iblrig_data\Subjects\_iblrig_test_mouse\2019-04-08\005\raw_video_data\_iblrig_leftCamera.raw.avi</q2:FileName>
+          <q2:FileName>C:\iblrig_data\Subjects\_iblrig_test_mouse\2019-07-01\005\raw_video_data\_iblrig_leftCamera.raw.avi</q2:FileName>
           <q2:Suffix>None</q2:Suffix>
           <q2:Buffered>true</q2:Buffered>
           <q2:Overwrite>false</q2:Overwrite>
@@ -100,7 +100,7 @@
         <Combinator xsi:type="Zip" />
       </Expression>
       <Expression xsi:type="q3:CsvWriter">
-        <q3:FileName>C:\iblrig_data\Subjects\_iblrig_test_mouse\2019-04-08\005\raw_video_data\_iblrig_leftCamera.timestamps.ssv</q3:FileName>
+        <q3:FileName>C:\iblrig_data\Subjects\_iblrig_test_mouse\2019-07-01\005\raw_video_data\_iblrig_leftCamera.timestamps.ssv</q3:FileName>
         <q3:Append>false</q3:Append>
         <q3:Overwrite>false</q3:Overwrite>
         <q3:Suffix>None</q3:Suffix>
@@ -167,7 +167,7 @@
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="q5:AudioWriter">
-          <q5:FileName>C:\iblrig_data\Subjects\_iblrig_test_mouse\2019-04-08\005\raw_behavior_data\_iblrig_micData.raw.wav</q5:FileName>
+          <q5:FileName>C:\iblrig_data\Subjects\_iblrig_test_mouse\2019-07-01\005\raw_behavior_data\_iblrig_micData.raw.wav</q5:FileName>
           <q5:Suffix>None</q5:Suffix>
           <q5:Buffered>true</q5:Buffered>
           <q5:Overwrite>false</q5:Overwrite>
