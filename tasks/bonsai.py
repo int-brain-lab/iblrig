@@ -22,22 +22,22 @@ def start_visual_stim(sph):
         bns = sph.BONSAI
         wkfl = sph.VISUAL_STIMULUS_FILE
 
-        evt = "-p:FileNameEvents=" + os.path.join(
+        evt = "-p:Stim.FileNameEvents=" + os.path.join(
             sph.SESSION_RAW_DATA_FOLDER,
             "_iblrig_encoderEvents.raw.ssv")
-        pos = "-p:FileNamePositions=" + os.path.join(
+        pos = "-p:Stim.FileNamePositions=" + os.path.join(
             sph.SESSION_RAW_DATA_FOLDER,
             "_iblrig_encoderPositions.raw.ssv")
-        itr = "-p:FileNameTrialInfo=" + os.path.join(
+        itr = "-p:Stim.FileNameTrialInfo=" + os.path.join(
             sph.SESSION_RAW_DATA_FOLDER,
             "_iblrig_encoderTrialInfo.raw.ssv")
 
-        com = "-p:REPortName=" + sph.COM['ROTARY_ENCODER']
+        com = "-p:Stim.REPortName=" + sph.COM['ROTARY_ENCODER']
 
-        sync_x = "-p:sync_x=" + str(sph.SYNC_SQUARE_X)
-        sync_y = "-p:sync_y=" + str(sph.SYNC_SQUARE_Y)
+        sync_x = "-p:Stim.sync_x=" + str(sph.SYNC_SQUARE_X)
+        sync_y = "-p:Stim.sync_y=" + str(sph.SYNC_SQUARE_Y)
         dist = 7 if 'ephys' in sph.PYBPOD_BOARD else 8
-        translationz = "-p:TranslationZ=-" + str(dist)
+        translationz = "-p:Stim.TranslationZ=-" + str(dist)
         start = '--start'
         noeditor = '--no-editor'
         noboot = '--no-boot'
