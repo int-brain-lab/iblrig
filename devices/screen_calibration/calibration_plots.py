@@ -64,22 +64,22 @@ def fit_n_plot(df, fname=None):
 
 # if __name__ == "__main__":
 folder_path = '/home/nico/Projects/IBL/github/iblrig/scratch/calibration'
-folder_path = r'C:\iblrig\visual_stim\screen_calibration'
+folder_path = r'C:\iblrig\devices\screen_calibration'
 files = find_calibration_files(folder_path)
 
-file_path = files[-1]
-plt.ion()
-for file_path in files:
-    df = raw_to_df(file_path)
-    fit_n_plot(df, fname=file_path)
-plt.title('Screen calibration')
-plt.legend()
-plt.xlabel('Intensity requested')
-plt.ylabel('frame2TTL raw output (lower is brighter)')
-plt.axhline(40, ls='--', alpha=0.5)
-plt.axhline(80, ls='--', alpha=0.5)
+# file_path = files[-1]
+# plt.ion()
+# for file_path in files:
+#     df = raw_to_df(file_path)
+#     fit_n_plot(df, fname=file_path)
+# plt.title('Screen calibration')
+# plt.legend()
+# plt.xlabel('Intensity requested')
+# plt.ylabel('frame2TTL raw output (lower is brighter)')
+# plt.axhline(40, ls='--', alpha=0.5)
+# plt.axhline(80, ls='--', alpha=0.5)
 
-folder_path = '/home/nico/Projects/IBL/github/iblrig/scratch/calibration/harp'
+# folder_path = '/home/nico/Projects/IBL/github/iblrig/scratch/calibration/harp'
 
 files = find_calibration_files(folder_path)
 
@@ -92,6 +92,7 @@ plt.title('Screen calibration')
 plt.legend()
 plt.xlabel('Intensity requested')
 plt.ylabel('Harp photodiode raw output (higher is brighter)')
+print('.')
 # plt.axhline(40, ls='--', alpha=0.5)
 # plt.axhline(80, ls='--', alpha=0.5)
 

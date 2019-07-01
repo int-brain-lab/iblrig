@@ -2,24 +2,20 @@
 <WorkflowBuilder Version="2.4.0-preview">
   <Workflow xmlns:q2="clr-namespace:Bonsai.Harp.CF;assembly=Bonsai.Harp.CF" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:q3="clr-namespace:Bonsai.Scripting;assembly=Bonsai.Scripting" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:q5="clr-namespace:Bonsai.Shaders;assembly=Bonsai.Shaders" xmlns:q4="clr-namespace:Bonsai.Osc;assembly=Bonsai.Osc" xmlns:q6="clr-namespace:Bonsai.IO;assembly=Bonsai.System" xmlns:q1="clr-namespace:Bonsai.Harp;assembly=Bonsai.Harp" xmlns="https://bonsai-rx.org/2018/workflow">
     <Nodes>
-      <Expression xsi:type="Disable">
-        <Builder xsi:type="Combinator">
-          <Combinator xsi:type="q1:Device">
-            <q1:PortName>COM8</q1:PortName>
-            <q1:DeviceState>Active</q1:DeviceState>
-            <q1:DumpRegisters>true</q1:DumpRegisters>
-            <q1:LedState>On</q1:LedState>
-            <q1:VisualIndicators>On</q1:VisualIndicators>
-            <q1:Heartbeat>Disable</q1:Heartbeat>
-            <q1:IgnoreErrors>false</q1:IgnoreErrors>
-          </Combinator>
-        </Builder>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q1:Device">
+          <q1:PortName>COM8</q1:PortName>
+          <q1:DeviceState>Active</q1:DeviceState>
+          <q1:DumpRegisters>true</q1:DumpRegisters>
+          <q1:LedState>On</q1:LedState>
+          <q1:VisualIndicators>On</q1:VisualIndicators>
+          <q1:Heartbeat>Disable</q1:Heartbeat>
+          <q1:IgnoreErrors>false</q1:IgnoreErrors>
+        </Combinator>
       </Expression>
-      <Expression xsi:type="Disable">
-        <Builder xsi:type="q2:BehaviorEvent">
-          <q2:Type>AnalogInput</q2:Type>
-          <q2:Mask>Port0</q2:Mask>
-        </Builder>
+      <Expression xsi:type="q2:BehaviorEvent">
+        <q2:Type>AnalogInput</q2:Type>
+        <q2:Mask>Port0</q2:Mask>
       </Expression>
       <Expression xsi:type="SubscribeSubject">
         <Name>Red</Name>
@@ -160,20 +156,14 @@ def process(value):
           <q4:TypeTag>i</q4:TypeTag>
         </Builder>
       </Expression>
-      <Expression xsi:type="Disable">
-        <Builder xsi:type="Combinator">
-          <Combinator xsi:type="CombineLatest" />
-        </Builder>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="CombineLatest" />
       </Expression>
-      <Expression xsi:type="Disable">
-        <Builder xsi:type="BehaviorSubject">
-          <Name>Data</Name>
-        </Builder>
+      <Expression xsi:type="BehaviorSubject">
+        <Name>Data</Name>
       </Expression>
-      <Expression xsi:type="Disable">
-        <Builder xsi:type="Combinator">
-          <Combinator xsi:type="TakeUntil" />
-        </Builder>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="TakeUntil" />
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="q5:RenderFrame" />
@@ -232,76 +222,70 @@ def process(value):
           </Edges>
         </Workflow>
       </Expression>
-      <Expression xsi:type="Disable">
-        <Builder xsi:type="ExternalizedMapping">
-          <Property Name="FileName" />
-        </Builder>
+      <Expression xsi:type="ExternalizedMapping">
+        <Property Name="FileName" />
       </Expression>
-      <Expression xsi:type="Disable">
-        <Builder xsi:type="ExternalizedMapping">
-          <Property Name="Save" />
-        </Builder>
+      <Expression xsi:type="ExternalizedMapping">
+        <Property Name="Save" />
       </Expression>
-      <Expression xsi:type="Disable">
-        <Builder xsi:type="NestedWorkflow">
-          <Name>SaveData</Name>
-          <Workflow>
-            <Nodes>
-              <Expression xsi:type="SubscribeSubject">
-                <Name>Data</Name>
-              </Expression>
-              <Expression xsi:type="ExternalizedMapping">
-                <Property Name="FileName" />
-              </Expression>
-              <Expression xsi:type="q6:CsvWriter">
-                <q6:FileName>_iblrig_calibration_screen_blue.raw.ssv</q6:FileName>
-                <q6:Append>false</q6:Append>
-                <q6:Overwrite>true</q6:Overwrite>
-                <q6:Suffix>None</q6:Suffix>
-                <q6:IncludeHeader>false</q6:IncludeHeader>
-                <q6:CompatibilityMode>true</q6:CompatibilityMode>
-              </Expression>
-              <Expression xsi:type="ExternalizedMapping">
-                <Property Name="Value" DisplayName="Save" />
-              </Expression>
-              <Expression xsi:type="Combinator">
-                <Combinator xsi:type="BooleanProperty">
-                  <Value>true</Value>
-                </Combinator>
-              </Expression>
-              <Expression xsi:type="Condition">
-                <Workflow>
-                  <Nodes>
-                    <Expression xsi:type="WorkflowInput">
-                      <Name>Source1</Name>
-                    </Expression>
-                    <Expression xsi:type="Equal">
-                      <Operand xsi:type="BooleanProperty">
-                        <Value>true</Value>
-                      </Operand>
-                    </Expression>
-                    <Expression xsi:type="WorkflowOutput" />
-                  </Nodes>
-                  <Edges>
-                    <Edge From="0" To="1" Label="Source1" />
-                    <Edge From="1" To="2" Label="Source1" />
-                  </Edges>
-                </Workflow>
-              </Expression>
-              <Expression xsi:type="Combinator">
-                <Combinator xsi:type="SubscribeWhen" />
-              </Expression>
-            </Nodes>
-            <Edges>
-              <Edge From="0" To="2" Label="Source2" />
-              <Edge From="1" To="2" Label="Source1" />
-              <Edge From="2" To="6" Label="Source1" />
-              <Edge From="3" To="4" Label="Source1" />
-              <Edge From="4" To="5" Label="Source1" />
-              <Edge From="5" To="6" Label="Source2" />
-            </Edges>
-          </Workflow>
-        </Builder>
+      <Expression xsi:type="NestedWorkflow">
+        <Name>SaveData</Name>
+        <Workflow>
+          <Nodes>
+            <Expression xsi:type="SubscribeSubject">
+              <Name>Data</Name>
+            </Expression>
+            <Expression xsi:type="ExternalizedMapping">
+              <Property Name="FileName" />
+            </Expression>
+            <Expression xsi:type="q6:CsvWriter">
+              <q6:FileName>_iblrig_calibration_screen_brightness.raw.ssv</q6:FileName>
+              <q6:Append>false</q6:Append>
+              <q6:Overwrite>true</q6:Overwrite>
+              <q6:Suffix>None</q6:Suffix>
+              <q6:IncludeHeader>false</q6:IncludeHeader>
+              <q6:CompatibilityMode>true</q6:CompatibilityMode>
+            </Expression>
+            <Expression xsi:type="ExternalizedMapping">
+              <Property Name="Value" DisplayName="Save" />
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="BooleanProperty">
+                <Value>true</Value>
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="Condition">
+              <Workflow>
+                <Nodes>
+                  <Expression xsi:type="WorkflowInput">
+                    <Name>Source1</Name>
+                  </Expression>
+                  <Expression xsi:type="Equal">
+                    <Operand xsi:type="BooleanProperty">
+                      <Value>true</Value>
+                    </Operand>
+                  </Expression>
+                  <Expression xsi:type="WorkflowOutput" />
+                </Nodes>
+                <Edges>
+                  <Edge From="0" To="1" Label="Source1" />
+                  <Edge From="1" To="2" Label="Source1" />
+                </Edges>
+              </Workflow>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="SubscribeWhen" />
+            </Expression>
+          </Nodes>
+          <Edges>
+            <Edge From="0" To="2" Label="Source2" />
+            <Edge From="1" To="2" Label="Source1" />
+            <Edge From="2" To="6" Label="Source1" />
+            <Edge From="3" To="4" Label="Source1" />
+            <Edge From="4" To="5" Label="Source1" />
+            <Edge From="5" To="6" Label="Source2" />
+          </Edges>
+        </Workflow>
       </Expression>
       <Expression xsi:type="ExternalizedMapping">
         <Property Name="Value" />
