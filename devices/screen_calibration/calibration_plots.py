@@ -58,7 +58,8 @@ def fit_n_plot(df, fname=None):
         label = 'All channels'
 
     plt.plot(df.int, df.val, '.', c=c, label=label)
-    plt.plot(x_new, ffit(x_new), c=c)
+    # plt.plot(x_new, ffit(x_new), c=c)
+    plt.plot(x_new, x_new, c='k')
     plt.show()
 
 
