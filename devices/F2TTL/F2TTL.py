@@ -95,7 +95,9 @@ class frame2TTL(object):
         else:
             print(
                 f"Recommended thresholds: Light = {recommendedLightThreshold}, Dark = {recommendedDarkThreshold}.")
-
+            self.set_threshold(light=recommendedLightThreshold,
+                               dark=recommendedDarkThreshold)
+            # alyx.upload
     def read_value(self):
         """Read one value from sensor (current)"""
         self.ser.write(b'V')
@@ -129,4 +131,5 @@ if __name__ == "__main__":
     f.set_threshold(light=41, dark=81)
     f.set_threshold(light=41)
     f.set_threshold(dark=81)
+    f.suggest_thresholds()
     print('.')
