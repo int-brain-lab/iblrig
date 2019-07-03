@@ -2,12 +2,9 @@
 # -*- coding:utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date: Tuesday, May 7th 2019, 12:07:26 pm
-import datetime
 import json
 import webbrowser as wb
 from pathlib import Path
-
-from dateutil import parser
 
 import ibllib.io.flags as flags
 import ibllib.io.params as params
@@ -17,6 +14,16 @@ from ibllib.pipes.experimental_data import create
 from oneibl.one import ONE
 
 one = ONE()
+EMPTY_BOARD_PARAMS = {
+    'WATER_CALIBRATION_RANGE': None,  # [min, max]
+    'WATER_CALIBRATION_OPEN_TIMES': None,  # [float, float, ...]
+    'WATER_CALIBRATION_WEIGHT_PERDROP': None,  # [float, float, ...]
+    'BPOD_COM': None,  # str
+    'F2TTL_COM': None,  # str
+    'ROTARY_ENCODER_COM': None,  # str
+    'F2TTL_DARK_THRESH': None,  # float
+    'F2TTL_LIGHT_THRESH': None  # float
+}
 
 
 def create_session(session_folder):
@@ -49,7 +56,8 @@ def load_previous_settings(subject_nickname):
 
 
 def get_latest_session_eid(subject_nickname):
-    """Return the eID of the latest session for Subject that has data on Flatiron"""
+    """Return the eID of the latest session for Subject that has data on
+    Flatiron"""
     last_session = one.search(
         subject=subject_nickname,
         dataset_types=['_iblrig_taskData.raw', '_iblrig_taskSettings.raw'],
@@ -62,24 +70,23 @@ def get_latest_session_eid(subject_nickname):
 
 def init_board_params(board, reset=True):
     p = load_board_params(board)
-    empty_params = {
-        'WATER_CALIBRATION_RANGE': None,  # [min, max]
-        'WATER_CALIBRATION_OPEN_TIMES': None,  # [float, float, ...]
-        'WATER_CALIBRATION_WEIGHT_PERDROP': None,  # [float, float, ...]
-        'SCREEN_CALIBRATION_FUNC': None,  # unknown
-        'BPOD_COM': None,  # str
-        'F2TTL_COM': None,  # str
-        'ROTARY_ENCODER_COM': None,  # str
-        'F2TTL_DARK_THRESH': None,  # float
-        'F2TTL_LIGHT_THRESH': None  # float
-    }
+    empty_params = EMPTY_BOARD_PARAMS
     if not reset:
         empty_params.update(p)
-    patch_board_params(board, empty_params)
+    update_board_params(board, empty_params)
     return empty_params
 
 
-def patch_board_params(board, param_dict):
+def change_board_params(board, **kwargs):
+    if not all(kwargs.keys() in EMPTY_BOARD_PARAMS):
+        print('Not all keys exist in board params')
+        return
+    else:
+        update_board_params(board, kwargs)
+        print(f'Changed board params: {kwargs}')
+
+
+def update_board_params(board, param_dict):
     params = load_board_params(board)
     params.update(param_dict)
     patch_dict = {
@@ -103,7 +110,8 @@ def create_current_running_session(session_folder):
             'procedures': ['Behavior training/tasks'],
             'lab': subject['lab'],
             'type': 'Experiment',
-            'task_protocol': settings['PYBPOD_PROTOCOL'] + settings['IBLRIG_VERSION_TAG'],
+            'task_protocol':
+                settings['PYBPOD_PROTOCOL'] + settings['IBLRIG_VERSION_TAG'],
             'number': settings['SESSION_NUMBER'],
             'start_time': settings['SESSION_DATETIME'],
             'end_time': None,
@@ -112,12 +120,19 @@ def create_current_running_session(session_folder):
             'json': None,
             }
     session = one.alyx.rest('sessions', 'create', data=ses_)
+    return session
+
+
+def update_completed_session(session_folder):
+    pass
 
 
 if __name__ == "__main__":
     subject = 'ZM_1737'
-    session_folder = '/home/nico/Projects/IBL/scratch/test_iblrig_data/Subjects/_iblrig_test_mouse/2019-05-08/001'
-    session_folder = '/home/nico/Projects/IBL/scratch/test_iblrig_data/Subjects/_iblrig_test_mouse/2019-06-24/003'
+    session_folder = '/home/nico/Projects/IBL/scratch/test_iblrig_data/\
+        Subjects/_iblrig_test_mouse/2019-05-08/001'.replace(' ', '')
+    session_folder = '/home/nico/Projects/IBL/scratch/test_iblrig_data/\
+        Subjects/_iblrig_test_mouse/2019-06-24/003'.replace(' ', '')
 
     # eid = get_latest_session_eid(subject, has_data=True)
     data = load_previous_data(subject)
@@ -128,7 +143,7 @@ if __name__ == "__main__":
 
     # board = '_iblrig_mainenlab_behavior_0'
     # init_board_params(board)
-    # patch_board_params(board, {'some_var': 123, 'BPOD_COM': 'COM#'})
+    # update_board_params(board, {'some_var': 123, 'BPOD_COM': 'COM#'})
     # load_board_params(board)
 
     create_current_running_session(session_folder)
