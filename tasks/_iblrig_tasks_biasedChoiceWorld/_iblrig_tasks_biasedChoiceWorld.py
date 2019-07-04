@@ -170,7 +170,8 @@ for i in range(sph.NTRIALS):  # Main loop
         state_name='no_go',
         state_timer=tph.iti_error,
         state_change_conditions={'Tup': 'exit_state'},
-        output_actions=[tph.out_noise])
+        output_actions=[('Serial1', re_stop_stim),
+                        tph.out_noise])
 
     sma.add_state(
         state_name='error',

@@ -84,13 +84,13 @@ for i in range(sph.NTRIALS):  # Main loop
             state_name='trial_start',
             state_timer=3600,  # ~100µs hardware irreducible delay
             state_change_conditions={'Port1In': 'reset_rotary_encoder'},
-            output_actions=[('BNC1', 255)])
+            output_actions=[('BNC1', 255)])  # To FPGA
     else:
         sma.add_state(
             state_name='trial_start',
             state_timer=0,  # ~100µs hardware irreducible delay
             state_change_conditions={'Tup': 'reset_rotary_encoder'},
-            output_actions=[('BNC1', 255)])
+            output_actions=[('BNC1', 255)])  # To FPGA
 
     sma.add_state(
         state_name='reset_rotary_encoder',
@@ -149,7 +149,8 @@ for i in range(sph.NTRIALS):  # Main loop
         state_name='no_go',
         state_timer=tph.iti_error,
         state_change_conditions={'Tup': 'exit_state'},
-        output_actions=[('Serial3', sc_play_noise)])
+        output_actions=[('Serial1', re_stop_stim),
+                        ('Serial3', sc_play_noise)])
 
     sma.add_state(
         state_name='error',
@@ -162,7 +163,7 @@ for i in range(sph.NTRIALS):  # Main loop
         state_timer=tph.reward_valve_time,
         state_change_conditions={'Tup': 'correct'},
         output_actions=[('Valve1', 255),
-                        ('BNC1', 255)])
+                        ('BNC1', 255)])  # To FPGA
 
     sma.add_state(
         state_name='correct',
