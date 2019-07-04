@@ -183,7 +183,7 @@ def update_to_latest():
     if idx + 1 == len(versions):
         return
     else:
-        _update()
+        _update(version=versions[-1])
 
 
 def _update(branch=None, version=None):
