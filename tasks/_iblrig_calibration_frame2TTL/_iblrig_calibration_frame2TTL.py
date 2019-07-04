@@ -4,6 +4,8 @@ from session_params import SessionParamHandler
 import subprocess
 from pathlib import Path
 
+task_settings.IBLRIG_FOLDER = Path(__file__).parent.parent.parent
+
 sph = SessionParamHandler(task_settings, user_settings)
 
 
