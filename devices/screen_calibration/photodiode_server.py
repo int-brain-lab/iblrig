@@ -39,6 +39,7 @@ def main(comport):
     obj.read_and_send_data()
     return obj
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Delete files from rig')
     parser.add_argument('port', help='COM port fro frame2TTL device')

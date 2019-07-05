@@ -1,3 +1,5 @@
+
+# flake8: noqa
 SETTINGS_PRIORITY = 0
 
 PYBPOD_SERIAL_PORT       = 'COM3'
@@ -28,8 +30,8 @@ PYBPOD_USER_EXTRA = '{"__UUID4__": "f092c2d5-c98a-45a1-be7c-df05f129a93c", "__DE
 
 TARGET_BPOD_FIRMWARE_VERSION = '21'
 
-#import logging
-#PYBPOD_API_LOG_LEVEL = logging.DEBUG
-#PYBPOD_API_LOG_FILE  = 'pybpod-api.log'
+# import logging
+# PYBPOD_API_LOG_LEVEL = logging.DEBUG
+# PYBPOD_API_LOG_FILE  = 'pybpod-api.log'
 
 PYBPOD_VARSNAMES = []

@@ -201,7 +201,6 @@ def _update(branch=None, version=None):
             update_conda()
         update_env()
         import_tasks()
-        update_ibllib()
     else:
         return
 
@@ -211,6 +210,9 @@ def main(args):
 
     if not any(args.__dict__.values()):
         update_to_latest()
+
+    if args.update:
+        checkout_single_file(file='update.py', branch='master')
 
     if args.update and args.b:
         if args.b not in ALL_BRANCHES:
@@ -222,9 +224,6 @@ def main(args):
         _update(branch=args.b)
     elif args.b and args.b not in ALL_BRANCHES:
         print('Branch', args.b, 'not found')
-
-    if args.update:
-        checkout_single_file(file='update.py', branch='master')
 
     if args.v and args.v in ALL_VERSIONS:
         _update(version=args.v)

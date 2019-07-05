@@ -5,8 +5,7 @@ import sys
 import pyforms
 from AnyQt.QtWidgets import QApplication
 from pyforms.basewidget import BaseWidget
-from pyforms.controls import (
-    ControlText, ControlButton, ControlLabel, ControlSlider, ControlCombo)
+from pyforms.controls import (ControlText, ControlButton, ControlLabel, ControlCombo)
 
 
 class SessionForm(BaseWidget):
@@ -24,8 +23,8 @@ class SessionForm(BaseWidget):
         self._probeLeftAngle = ControlText('Angle:', default='0')
         self._probeLeftOrigin = ControlCombo('Origin:')
         self._probeLeftOrigin.add_item('', None)
-        self._probeLeftOrigin.add_item('Bregma',   'bregma')
-        self._probeLeftOrigin.add_item('Lambda',   'lambda')
+        self._probeLeftOrigin.add_item('Bregma', 'bregma')
+        self._probeLeftOrigin.add_item('Lambda', 'lambda')
 
         self._probeRightX = ControlText('X:', default='0')
         self._probeRightY = ControlText('Y:', default='0')
@@ -35,23 +34,23 @@ class SessionForm(BaseWidget):
         self._probeRightOrigin = ControlCombo('Origin:')
         self._probeRightOrigin.add_item('', None)
         self._probeRightOrigin.add_item('Bregma', 'bregma')
-        self._probeRightOrigin.add_item('Lambda',   'lambda')
+        self._probeRightOrigin.add_item('Lambda', 'lambda')
 
         self._button = ControlButton('Submit')
 
         # Define the organization of the forms
         self.formset = [(' ', ' ', ' ', ' ', ' '),
                         (' ', '_mouseWeight', ' ', ' ', ' '),
-                        (' ', '_probeLeftLabel', ' ',  '_probeRightLabel', ' '),
-                        (' ', '_probeLeftX', ' ',  '_probeRightX', ' '),
-                        (' ', '_probeLeftY', ' ',  '_probeRightY', ' '),
-                        (' ', '_probeLeftZ', ' ',  '_probeRightZ', ' '),
-                        (' ', '_probeLeftD', ' ',  '_probeRightD', ' '),
-                        (' ', '_probeLeftAngle', ' ',  '_probeRightAngle', ' '),
-                        (' ', '_probeLeftOrigin', ' ',  '_probeRightOrigin', ' '),
+                        (' ', '_probeLeftLabel', ' ', '_probeRightLabel', ' '),
+                        (' ', '_probeLeftX', ' ', '_probeRightX', ' '),
+                        (' ', '_probeLeftY', ' ', '_probeRightY', ' '),
+                        (' ', '_probeLeftZ', ' ', '_probeRightZ', ' '),
+                        (' ', '_probeLeftD', ' ', '_probeRightD', ' '),
+                        (' ', '_probeLeftAngle', ' ', '_probeRightAngle', ' '),
+                        (' ', '_probeLeftOrigin', ' ', '_probeRightOrigin', ' '),
                         (' ', '_button', ' '),
                         (' ', ' ', ' ', ' ', ' ')]
-        # The ' ' is used to indicate that a empty space should be placed at the bottom of the window
+        # The ' ' is used to indicate that a empty space should be placed at the bottom of the win
         # If you remove the ' ' the forms will occupy the entire window
 
         # Define the button action
@@ -111,7 +110,7 @@ def parse_form_data(sph):
     return sph
 
 
-#Execute the application
+# Execute the application
 if __name__ == "__main__":
     bla = session_form(mouse_name='myMouse')
     print('.')

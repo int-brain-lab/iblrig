@@ -31,7 +31,7 @@ class SessionParamHandler(object):
             ts = {
                 i: task_settings.__dict__[i]
                 for i in [x for x in dir(task_settings) if '__' not in x]
-                }
+            }
         elif type(task_settings) == dict:
             ts = task_settings
         self.__dict__.update(ts)
@@ -69,7 +69,6 @@ class SessionParamHandler(object):
     # =========================================================================
     def reprJSON(self):
         d = self.__dict__.copy()
-        d['SESSION_DATETIME'] = str(self.SESSION_DATETIME)
         return d
 
     # =========================================================================

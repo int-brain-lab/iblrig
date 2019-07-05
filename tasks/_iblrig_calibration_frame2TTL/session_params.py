@@ -2,27 +2,18 @@
 # -*- coding:utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date: Thursday, June 6th 2019, 11:42:40 am
-import os
 import sys
-from sys import platform
 from pathlib import Path
 import logging
 
 from pythonosc import udp_client
 
-from ibllib.graphic import numinput
 sys.path.append(str(Path(__file__).parent.parent))  # noqa
 sys.path.append(str(Path(__file__).parent.parent.parent.parent))  # noqa
-import adaptive
-import ambient_sensor
-import bonsai
 import iotasks
-import misc
-import sound
 import alyx
 from devices.F2TTL.F2TTL import frame2TTL
 from path_helper import SessionPathCreator
-from rotary_encoder import MyRotaryEncoder
 log = logging.getLogger('iblrig')
 
 
@@ -92,7 +83,6 @@ class SessionParamHandler(object):
     def reprJSON(self):
         d = self.__dict__.copy()
         d['OSC_CLIENT'] = str(d['OSC_CLIENT'])
-        d['SESSION_DATETIME'] = self.SESSION_DATETIME.isoformat()
         return d
 
     def display_logs(self):

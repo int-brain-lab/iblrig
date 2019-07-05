@@ -86,7 +86,7 @@ def make_sound(rate=44100, frequency=5000, duration=0.1, amplitude=1,
 
     tone = tone * win
     ttl = np.ones(len(tone)) * 0.99
-    one_ms = round(sample_rate/1000) * 10
+    one_ms = round(sample_rate / 1000) * 10
     ttl[one_ms:] = 0
     null = np.zeros(len(tone))
 
@@ -245,7 +245,6 @@ if __name__ == '__main__':
     # plt.plot(np.linspace(0, l, 192000), c[:, 0])
     # plt.show()
 
-
     # TEST SOUNDCARD MODULE
     card = SoundCardModule()
     SOFT_SOUND = None
@@ -271,8 +270,7 @@ if __name__ == '__main__':
     noise_int = format_sound(WHITE_NOISE, flat=True)
 
     card = SoundCardModule()
-    card.send_sound(wave_int, GO_TONE_IDX, SampleRate._96000HZ, DataType.INT32)  # noqa
-    card.send_sound(noise_int, WHITE_NOISE_IDX, SampleRate._96000HZ,
-        DataType.INT32)
+    card.send_sound(wave_int, GO_TONE_IDX, SampleRate._96000HZ, DataType.INT32)
+    card.send_sound(noise_int, WHITE_NOISE_IDX, SampleRate._96000HZ, DataType.INT32)
 
     print('i')

@@ -38,7 +38,7 @@ class frame2TTL(object):
             'max_value': np.array(sample_sum).max(),
             'min_value': np.array(sample_sum).min(),
             'std_value': np.array(sample_sum).std(),
-            'sem_value':  np.array(sample_sum).std() / np.sqrt(num_samples),
+            'sem_value': np.array(sample_sum).std() / np.sqrt(num_samples),
             'nsamples': num_samples
         }
         return out
@@ -67,37 +67,37 @@ class frame2TTL(object):
         return
 
     def suggest_thresholds(self):
-        reply = input(
-            "Set pixels under Frame2TTL to white (rgb 255,255,255) and press enter >")
+        input("Set pixels under Frame2TTL to white (rgb 255,255,255) and press enter >")
         print(" ")
         print("Measuring white...")
         lightData = self.measure_light(10000)
 
-        reply = input(
-            "Set pixels under Frame2TTL to black (rgb 0,0,0) and press enter >")
+        input("Set pixels under Frame2TTL to black (rgb 0,0,0) and press enter >")
         print(" ")
         print("Measuring black...")
-        darkData = self.measure_light(10000)
+        dark_data = self.measure_light(10000)
         print(" ")
-        lightMax = lightData.get('max_value')
-        darkMin = darkData.get('min_value')
-        print(
-            f"Max sensor reading for white (lower is brighter) = {lightMax}.")
-        print(f"Min sensor reading for black = {darkMin}.")
-        recommendedLightThreshold = lightMax
-        if darkMin - recommendedLightThreshold > 40:
-            recommendedDarkThreshold = recommendedLightThreshold + 40
+        light_max = lightData.get('max_value')
+        dark_min = dark_data.get('min_value')
+        print(f"Max sensor reading for white (lower is brighter) = {light_max}.")
+        print(f"Min sensor reading for black = {dark_min}.")
+        recomend_light = light_max
+        if dark_min - recomend_light > 40:
+            recomend_dark = recomend_light + 40
         else:
-            recommendedDarkThreshold = round(
-                recommendedLightThreshold + ((darkMin - recommendedLightThreshold)/3))
-        if recommendedDarkThreshold - recommendedLightThreshold < 5:
-            print("Error: Cannot recommend thresholds; light and dark measurements may be too close for accurate frame detection")
+            recomend_dark = round(
+                recomend_light + ((dark_min - recomend_light) / 3))
+        if recomend_dark - recomend_light < 5:
+            print('Error: Cannot recommend thresholds:',
+                  'light and dark measurements may be too close for accurate frame detection')
         else:
-            print(
-                f"Recommended thresholds: Light = {recommendedLightThreshold}, Dark = {recommendedDarkThreshold}.")
-            self.set_threshold(light=recommendedLightThreshold,
-                               dark=recommendedDarkThreshold)
+            print(f"Recommended thresholds: Light = {recomend_light}, Dark = {recomend_dark}.")
+            print(f"Sending thresholds to device...")
+            self.set_threshold(light=recomend_light, dark=recomend_dark)
+            print('Done')
+            print('Trying to upload thresholds to Alyx...')
             # alyx.upload
+
     def read_value(self):
         """Read one value from sensor (current)"""
         self.ser.write(b'V')

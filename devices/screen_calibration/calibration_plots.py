@@ -1,5 +1,5 @@
-import numpy.polynomial.polynomial as poly
-from scipy.signal import find_peaks
+# import numpy.polynomial.polynomial as poly
+# from scipy.signal import find_peaks
 from pathlib import Path
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -40,9 +40,9 @@ def fit_n_plot(df, fname=None):
     # Fit a polynomial
     x_new = np.round(np.linspace(0.01, 1, 100), 2)
 
-    coefs = poly.polyfit(df.int, df.val, 6)
-    ffit_vals = poly.polyval(x_new, coefs)
-    ffit = poly.Polynomial(coefs)
+    # coefs = poly.polyfit(df.int, df.val, 6)
+    # ffit_vals = poly.polyval(x_new, coefs)
+    # ffit = poly.Polynomial(coefs)
 
     if 'screen_red' in fname:
         c = 'red'
@@ -96,8 +96,6 @@ plt.ylabel('Harp photodiode raw output (higher is brighter)')
 print('.')
 # plt.axhline(40, ls='--', alpha=0.5)
 # plt.axhline(80, ls='--', alpha=0.5)
-
-
 
 # # df = raw_to_df(file_path)
 # file_path = Path(file_path)

@@ -130,14 +130,14 @@ for i in range(sph.NTRIALS):  # Main loop
         output_actions=[])
 
     sma.add_state(
-       state_name='stim_on',
-       state_timer=0.1,
-       state_change_conditions={
-           'Tup': 'interactive_delay',
-           'BNC1High': 'interactive_delay',
-           'BNC1Low': 'interactive_delay'
-       },
-       output_actions=[('Serial1', re_show_stim)])
+        state_name='stim_on',
+        state_timer=0.1,
+        state_change_conditions={
+            'Tup': 'interactive_delay',
+            'BNC1High': 'interactive_delay',
+            'BNC1Low': 'interactive_delay'
+        },
+        output_actions=[('Serial1', re_show_stim)])
 
     sma.add_state(
         state_name='interactive_delay',

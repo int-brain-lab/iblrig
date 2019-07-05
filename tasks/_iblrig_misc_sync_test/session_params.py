@@ -2,21 +2,17 @@
 # -*- coding: utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date:   2018-02-02 17:19:09
-import os
 import sys
 from sys import platform
 import logging
 
 from pythonosc import udp_client
 from pathlib import Path
-from ibllib.graphic import numinput
 
 sys.path.append(str(Path(__file__).parent.parent))  # noqa
 sys.path.append(str(Path(__file__).parent.parent.parent.parent))  # noqa
-import ambient_sensor
 import bonsai
 import iotasks
-import misc
 import sound
 from path_helper import SessionPathCreator
 from rotary_encoder import MyRotaryEncoder
@@ -119,7 +115,6 @@ class SessionParamHandler(object):
             self.GO_TONE_AMPLITUDE)
         d['SD'] = str(d['SD'])
         d['OSC_CLIENT'] = str(d['OSC_CLIENT'])
-        d['SESSION_DATETIME'] = self.SESSION_DATETIME.isoformat()
         if isinstance(d['PYBPOD_SUBJECT_EXTRA'], list):
             sub = []
             for sx in d['PYBPOD_SUBJECT_EXTRA']:

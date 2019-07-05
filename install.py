@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date:   2018-06-08 11:04:05
@@ -122,50 +121,6 @@ def install_iblrig_requirements():
     print("IBLrig requirements installed.")
 
 
-def clone_ibllib():
-    print('\n\nINFO: Cloning ibllib:')
-    print("N" * 79)
-    os.chdir(IBLRIG_ROOT_PATH.parent)
-    ibllib_path = IBLRIG_ROOT_PATH.parent / 'ibllib'
-    if ibllib_path.exists():
-        print("ibllib folder is already present.",
-              "\nDo you want to reinstall? (y/n)")
-        user_input = input()
-        if user_input == 'n':
-            return user_input
-        elif user_input == 'y':
-            try:
-                os.system(f"rd /s /q {ibllib_path}")
-                return clone_ibllib()
-            except:  # noqa
-                print("\nCould not delete ibllib folder",
-                      "\nPlease delete it manually and retry.")
-                return clone_ibllib()
-        elif user_input != 'n' and user_input != 'y':
-            print("\n Please select either y of n")
-            return clone_ibllib()
-    else:
-        subprocess.call(["git", "clone",
-                         'https://github.com/int-brain-lab/ibllib.git'])
-
-    os.chdir(IBLRIG_ROOT_PATH)
-    print("N" * 79)
-    print("ibllib cloned.")
-
-
-def install_ibllib(user_input=False):
-    if user_input == 'n':
-        return
-
-    print('\n\nINFO: Installing ibllib:')
-    print("N" * 79)
-    os.chdir(IBLRIG_ROOT_PATH.parent / 'ibllib/python')
-    os.system("conda activate iblenv && pip install -e .")
-    os.chdir(IBLRIG_ROOT_PATH)
-    print("N" * 79)
-    print("INFO: ibllib installed.")
-
-
 def configure_iblrig_params():
     print('\n\nINFO: Setting up default project config in ../iblrig_params:')
     print("N" * 79)
@@ -219,8 +174,6 @@ if __name__ == '__main__':
             install_deps()
         elif not args.new:
             install_iblrig_requirements()
-        yn = clone_ibllib()
-        install_ibllib(user_input=yn)
 
         configure_iblrig_params()
         print("\nIts time to install Bonsai:")

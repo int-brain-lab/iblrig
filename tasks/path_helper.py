@@ -56,6 +56,8 @@ class SessionPathCreator(object):
 
         self.SESSION_DATETIME = datetime.datetime.now()
         self.SESSION_DATE = self.SESSION_DATETIME.date().isoformat()
+        self.SESSION_DATETIME = self.SESSION_DATETIME.isoformat()
+
         self.SESSION_DATE_FOLDER = os.path.join(
             self.SUBJECT_FOLDER, self.SESSION_DATE)
 
@@ -349,7 +351,7 @@ class SessionPathCreator(object):
                 f'NOT FOUND: Previous data files for task {self._PROTOCOL}')
         if not settings_out:
             logger.debug(
-              f'NOT FOUND: Previous settings files for task {self._PROTOCOL}')
+                f'NOT FOUND: Previous settings files for task {self._PROTOCOL}')
         logger.debug(f"Reurning {typ} files")
 
         return data_out if typ == 'data' else settings_out
@@ -455,8 +457,7 @@ class SessionPathCreator(object):
                 f"Latest water calibration file: {same_board_cal_files[-1]}")
             return str(same_board_cal_files[-1])
         else:
-            logger.debug(
-             f'No valid calibration files were found for board {self._BOARD}')
+            logger.debug(f'No valid calibration files were found for board {self._BOARD}')
             return
 
     def _latest_water_range_file(self):

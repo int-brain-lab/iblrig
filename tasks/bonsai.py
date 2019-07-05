@@ -61,8 +61,7 @@ def start_visual_stim(sph):
 
 
 def start_camera_recording(sph):
-    if (sph.RECORD_VIDEO is False
-            and sph.OPEN_CAMERA_VIEW is False):
+    if (sph.RECORD_VIDEO is False and sph.OPEN_CAMERA_VIEW is False):
         return
     # Run Workflow
     here = os.getcwd()
@@ -80,8 +79,7 @@ def start_camera_recording(sph):
     rec = '-p:SaveVideo=' + str(sph.RECORD_VIDEO)
 
     mic = "-p:FileNameMic=" + os.path.join(
-            sph.SESSION_RAW_DATA_FOLDER,
-            "_iblrig_micData.raw.wav")
+        sph.SESSION_RAW_DATA_FOLDER, "_iblrig_micData.raw.wav")
     srec = "-p:RecordSound=" + str(sph.RECORD_SOUND)
 
     start = '--start'
@@ -90,6 +88,7 @@ def start_camera_recording(sph):
     subprocess.Popen([bns, wkfl, start, ts, vid, rec, mic, srec, noboot])
     os.chdir(here)
     return
+
 
 # =====================================================================
 # TRIAL PARAM HANDLER OBJECT METHODS

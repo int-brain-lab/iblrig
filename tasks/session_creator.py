@@ -19,7 +19,7 @@ def make_pc():
     len_block = [90]
     pos = [-35] * int(len_block[0] / 2) + [35] * int(len_block[0] / 2)
     cont = np.sort(contrasts * 10)[::-1][:-5].tolist()
-    pc = np.array([pos, cont+cont]).T
+    pc = np.array([pos, cont + cont]).T
     np.random.shuffle(pc)  # only shuffles on the first dimension
 
     prob_left = 0.8 if blocks.draw_position([-35, 35], 0.5) < 0 else 0.2
@@ -96,7 +96,7 @@ def plot_pcqs(session_num, folder='./_iblrig_tasks_ephysChoiceWorld/sessions'):
 
 
 if __name__ == "__main__":
-    import seaborn as sns
+    # import seaborn as sns
     plt.ion()
     # pcqs3, len_block3 = plot_pcqs(3)
     pcqs9, len_block9 = plot_pcqs(9)

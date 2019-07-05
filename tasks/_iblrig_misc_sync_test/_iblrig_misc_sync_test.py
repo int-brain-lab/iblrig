@@ -101,7 +101,6 @@ for i in range(sph.NTRIALS):  # Main loop
         state_change_conditions={'Tup': 'play_tone'},
         output_actions=[])
 
-
     sma.add_state(
         state_name='play_tone',
         state_timer=1,
@@ -109,7 +108,6 @@ for i in range(sph.NTRIALS):  # Main loop
                                  'BNC1High': 'exit',
                                  'BNC1Low': 'exit'},
         output_actions=[tph.out_tone])
-
 
     sma.add_state(
         state_name='bad_tone',

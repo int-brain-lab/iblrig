@@ -229,8 +229,8 @@ def create_experiment_setups(iblproject_path, exp_name: str):
     if exp.name == '_iblrig_misc':
         flush_water = create_setup(  # noqa
             exp, 'flush_water', p.boards[0].name, '_iblrig_test_mouse')
-        sync_test = create_setup(
-            exp, 'sync_test', p.boards[0].name, '_iblrig_test_mouse')  # noqa
+        sync_test = create_setup(  # noqa
+            exp, 'sync_test', p.boards[0].name, '_iblrig_test_mouse')
 
     if exp.name == '_iblrig_tasks':
         biasedChoiceWorld = create_setup(  # noqa

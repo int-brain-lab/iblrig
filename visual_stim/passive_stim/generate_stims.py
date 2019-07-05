@@ -23,4 +23,3 @@ data = np.array([[int(p), c] for p, c in zip(pos, cont)])
 np.random.shuffle(data)
 data = np.array([[str(int(p)), str(c)] for p, c in data])
 np.savetxt('stims.csv', data, delimiter=' ', fmt='%s')
-

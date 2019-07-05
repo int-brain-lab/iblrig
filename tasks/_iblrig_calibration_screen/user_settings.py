@@ -1,3 +1,4 @@
+# flake8: noqa
 SETTINGS_PRIORITY = 0
 
 PYBPOD_SERIAL_PORT       = 'COM3'

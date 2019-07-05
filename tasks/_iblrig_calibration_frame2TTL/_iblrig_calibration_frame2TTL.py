@@ -31,7 +31,7 @@ rgb = '-p:RGB=RGB'
 cmd = [bns, wrkfl, editor, save, fname, rgb]
 s = subprocess.call(cmd, stdout=subprocess.PIPE)
 print('bla')
-t = subprocess.run(['ls','s'], stdout=subprocess.PIPE)
+t = subprocess.run(['ls', 's'], stdout=subprocess.PIPE)
 print(s)
 print(t)
 print('.')

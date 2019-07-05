@@ -117,7 +117,7 @@ class AdaptiveContrast(object):
             # p = [1/(n-1 + 0.5)] * (n - 1)
             n_1 = len(self.contrast_set) - 1
             z = n_1 + 0.5
-            p = [1/z] * (n_1 + 1)
+            p = [1 / z] * (n_1 + 1)
             p[-1] *= 0.5
             self.value = np.random.choice(self.contrast_set, p=p)
         elif self.use_me:
@@ -142,16 +142,16 @@ class AdaptiveContrast(object):
             self.contrast_set.append(0.125)
 
         # Add 6% contrast if ntrials after introducing 0.125 have elapsed
-        if (self.ntrials_125 >= self.ntrials_to_six
-                and 0.0625 not in self.contrast_set):
+        if (self.ntrials_125 >= self.ntrials_to_six and
+                0.0625 not in self.contrast_set):
             self.contrast_set.append(0.0625)
         # Add 0% contrast if ntrials after introducing 0.125 have elapsed
-        if (self.ntrials_125 >= self.ntrials_to_zero
-                and 0.0 not in self.contrast_set):
+        if (self.ntrials_125 >= self.ntrials_to_zero and
+                0.0 not in self.contrast_set):
             self.contrast_set.append(0.0)
         # Remove 50% contrast if ntrials after introducing 0.125 have elapsed
-        if (self.ntrials_125 >= self.ntrials_to_remove_50
-                and 0.5 in self.contrast_set):
+        if (self.ntrials_125 >= self.ntrials_to_remove_50 and
+                0.5 in self.contrast_set):
             self.contrast_set.pop(1)
 
         self.contrast_set = sorted(self.contrast_set)

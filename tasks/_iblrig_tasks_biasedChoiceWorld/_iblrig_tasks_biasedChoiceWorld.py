@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date:   2018-02-02 12:31:13
@@ -82,7 +81,7 @@ if sph.SOFT_SOUND is None:
     # Play noise
     sc_play_noise = re_reset + 5
     bpod.load_serial_message(sound_card, sc_play_noise, [
-                            ord('P'), sph.WHITE_NOISE_IDX])
+                             ord('P'), sph.WHITE_NOISE_IDX])
 # =============================================================================
 # TRIAL PARAMETERS AND STATE MACHINE
 # =============================================================================
@@ -128,14 +127,14 @@ for i in range(sph.NTRIALS):  # Main loop
         output_actions=[])
 
     sma.add_state(
-       state_name='stim_on',
-       state_timer=0.1,
-       state_change_conditions={
-           'Tup': 'interactive_delay',
-           'BNC1High': 'interactive_delay',
-           'BNC1Low': 'interactive_delay'
-       },
-       output_actions=[('Serial1', re_show_stim)])
+        state_name='stim_on',
+        state_timer=0.1,
+        state_change_conditions={
+            'Tup': 'interactive_delay',
+            'BNC1High': 'interactive_delay',
+            'BNC1Low': 'interactive_delay'
+        },
+        output_actions=[('Serial1', re_show_stim)])
 
     sma.add_state(
         state_name='interactive_delay',

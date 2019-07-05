@@ -160,7 +160,6 @@ class SessionParamHandler(object):
             self.GO_TONE_AMPLITUDE)
         d['SD'] = str(d['SD'])
         d['OSC_CLIENT'] = str(d['OSC_CLIENT'])
-        d['SESSION_DATETIME'] = self.SESSION_DATETIME.isoformat()
         d['CALIB_FUNC'] = str(d['CALIB_FUNC'])
         if isinstance(d['PYBPOD_SUBJECT_EXTRA'], list):
             sub = []

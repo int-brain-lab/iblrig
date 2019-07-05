@@ -20,22 +20,22 @@ def get_port_events(events: dict, name: str = '') -> list:
 
 
 def update_buffer(buffer: list, val) -> list:
-        buffer = np.roll(buffer, -1, axis=0)
-        buffer[-1] = val
-        return buffer.tolist()
+    buffer = np.roll(buffer, -1, axis=0)
+    buffer[-1] = val
+    return buffer.tolist()
 
 
 def texp(factor: float = 0.35, min_: float = 0.2, max_: float = 0.5) -> float:
-        """Truncated exponential
-        mean = 0.35
-        min = 0.2
-        max = 0.5
-        """
-        x = np.random.exponential(factor)
-        if min_ <= x <= max_:
-            return x
-        else:
-            return texp(factor=factor, min_=min_, max_=max_)
+    """Truncated exponential
+    mean = 0.35
+    min = 0.2
+    max = 0.5
+    """
+    x = np.random.exponential(factor)
+    if min_ <= x <= max_:
+        return x
+    else:
+        return texp(factor=factor, min_=min_, max_=max_)
 
 
 def get_biased_probs(n: int, idx: int = -1, prob: float = 0.5) -> list:
@@ -69,7 +69,7 @@ def get_biased_probs(n: int, idx: int = -1, prob: float = 0.5) -> list:
     """
     n_1 = n - 1
     z = n_1 + prob
-    p = [1/z] * (n_1 + 1)
+    p = [1 / z] * (n_1 + 1)
     p[idx] *= prob
     return p
 
@@ -85,27 +85,27 @@ def draw_contrast(contrast_set: list,
 
 
 def check_stop_criterions(init_datetime, rt_buffer, trial_num) -> int:
-        # STOPPING CRITERIONS
-        # < than 400 trials in 45 minutes
-        time_up = init_datetime + datetime.timedelta(minutes=45)
-        if time_up <= datetime.datetime.now() and trial_num <= 400:
-            return 1
+    # STOPPING CRITERIONS
+    # < than 400 trials in 45 minutes
+    time_up = init_datetime + datetime.timedelta(minutes=45)
+    if time_up <= datetime.datetime.now() and trial_num <= 400:
+        return 1
 
-        # Median response time of latest N = 20 trials > than 5 times
-        # the median response time and more than 400 trials performed
-        N, T = 20, 400
-        if len(rt_buffer) >= N and trial_num > T:
-            latest_median = np.median(rt_buffer[-N:])
-            all_median = np.median(rt_buffer)
+    # Median response time of latest N = 20 trials > than 5 times
+    # the median response time and more than 400 trials performed
+    N, T = 20, 400
+    if len(rt_buffer) >= N and trial_num > T:
+        latest_median = np.median(rt_buffer[-N:])
+        all_median = np.median(rt_buffer)
 
-            if latest_median > all_median * 5:
-                return 2
+        if latest_median > all_median * 5:
+            return 2
 
-        end_time = init_datetime + datetime.timedelta(minutes=90)
-        if end_time <= datetime.datetime.now():
-            return 3
+    end_time = init_datetime + datetime.timedelta(minutes=90)
+    if end_time <= datetime.datetime.now():
+        return 3
 
-        return False
+    return False
 
 
 def get_trial_rt(behavior_data: dict) -> float:
