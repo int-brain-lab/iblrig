@@ -18,9 +18,9 @@ def init_reward_amount(sph) -> float:
 
     if sph.LAST_TRIAL_DATA is None:
         return sph.AR_INIT_VALUE
-    elif sph.LAST_TRIAL_DATA and sph.LAST_TRIAL_DATA['trial_num'] < 200:  # noqa
+    elif sph.LAST_TRIAL_DATA and sph.LAST_TRIAL_DATA['trial_num'] < 200:
         out = sph.LAST_TRIAL_DATA['reward_amount']
-    elif sph.LAST_TRIAL_DATA and sph.LAST_TRIAL_DATA['trial_num'] >= 200:  # noqa
+    elif sph.LAST_TRIAL_DATA and sph.LAST_TRIAL_DATA['trial_num'] >= 200:
         out = sph.LAST_TRIAL_DATA['reward_amount'] - sph.AR_STEP
         out = sph.AR_MIN_VALUE if out <= sph.AR_MIN_VALUE else out
 
@@ -33,10 +33,11 @@ def init_reward_amount(sph) -> float:
     if previous_water < previous_weight_factor:
         out = sph.LAST_TRIAL_DATA['reward_amount'] + sph.AR_STEP
 
+    out = sph.AR_MAX_VALUE if out > sph.AR_MAX_VALUE else out
     return out
 
 
-def init_calib_func(sph):
+def init_calib_func(sph) -> scipy.interpolate.pchip:
     if not sph.AUTOMATIC_CALIBRATION:
         return
 

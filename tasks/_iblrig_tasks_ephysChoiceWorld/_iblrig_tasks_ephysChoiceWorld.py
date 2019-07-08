@@ -14,7 +14,7 @@ import user_settings
 import online_plots as op
 
 log = logging.getLogger('iblrig')
-log.setLevel(logging.INFO)
+log.setLevel(logging.DEBUG)
 
 global sph
 sph = SessionParamHandler(task_settings, user_settings)
@@ -22,6 +22,7 @@ sph = SessionParamHandler(task_settings, user_settings)
 
 def bpod_loop_handler():
     f.canvas.flush_events()  # 100µs
+
 
 # =============================================================================
 # CONNECT TO BPOD
@@ -61,11 +62,16 @@ bpod.load_serial_message(sound_card, sc_play_noise, [
 # TRIAL PARAMETERS AND STATE MACHINE
 # =============================================================================
 global tph
+log.debug('Call tph creation')
 tph = TrialParamHandler(sph)
+log.debug('TPH CREATED!')
 
+log.debug('make fig')
 f, axes = op.make_fig(sph)
+log.debug('pause')
 plt.pause(1)
 
+log.debug('start SM definition')
 for i in range(sph.NTRIALS):  # Main loop
     tph.next_trial()
     log.info(f'Starting trial: {i + 1}')
@@ -78,17 +84,13 @@ for i in range(sph.NTRIALS):  # Main loop
             state_name='trial_start',
             state_timer=3600,  # ~100µs hardware irreducible delay
             state_change_conditions={'Port1In': 'reset_rotary_encoder'},
-            output_actions=[('Serial1', re_stop_stim),
-                            ('SoftCode', 0),
-                            ('BNC1', 255)])
+            output_actions=[('BNC1', 255)])  # To FPGA
     else:
         sma.add_state(
             state_name='trial_start',
             state_timer=0,  # ~100µs hardware irreducible delay
             state_change_conditions={'Tup': 'reset_rotary_encoder'},
-            output_actions=[('Serial1', re_stop_stim),
-                            ('SoftCode', 0),
-                            ('BNC1', 255)])
+            output_actions=[('BNC1', 255)])  # To FPGA
 
     sma.add_state(
         state_name='reset_rotary_encoder',
@@ -106,9 +108,28 @@ for i in range(sph.NTRIALS):  # Main loop
 
     sma.add_state(
         state_name='stim_on',
-        state_timer=tph.interactive_delay,
-        state_change_conditions={'Tup': 'reset2_rotary_encoder'},
+        state_timer=0.1,
+        state_change_conditions={
+            'Tup': 'interactive_delay',
+            'BNC1High': 'interactive_delay',
+            'BNC1Low': 'interactive_delay'
+        },
         output_actions=[('Serial1', re_show_stim)])
+
+    sma.add_state(
+        state_name='interactive_delay',
+        state_timer=tph.interactive_delay,
+        state_change_conditions={'Tup': 'play_tone'},
+        output_actions=[])
+
+    sma.add_state(
+        state_name='play_tone',
+        state_timer=0.001,
+        state_change_conditions={
+            'Tup': 'reset2_rotary_encoder',
+            'BNC2High': 'reset2_rotary_encoder'
+        },
+        output_actions=[tph.out_tone])
 
     sma.add_state(
         state_name='reset2_rotary_encoder',
@@ -122,19 +143,19 @@ for i in range(sph.NTRIALS):  # Main loop
         state_change_conditions={'Tup': 'no_go',
                                  tph.event_error: 'error',
                                  tph.event_reward: 'reward'},
-        output_actions=[('Serial1', re_close_loop),
-                        ('Serial3', sc_play_tone)])
+        output_actions=[('Serial1', re_close_loop)])
 
     sma.add_state(
         state_name='no_go',
         state_timer=tph.iti_error,
-        state_change_conditions={'Tup': 'exit'},
-        output_actions=[('Serial3', sc_play_noise)])
+        state_change_conditions={'Tup': 'exit_state'},
+        output_actions=[('Serial1', re_stop_stim),
+                        ('Serial3', sc_play_noise)])
 
     sma.add_state(
         state_name='error',
         state_timer=tph.iti_error,
-        state_change_conditions={'Tup': 'exit'},
+        state_change_conditions={'Tup': 'exit_state'},
         output_actions=[('Serial3', sc_play_noise)])
 
     sma.add_state(
@@ -142,14 +163,24 @@ for i in range(sph.NTRIALS):  # Main loop
         state_timer=tph.reward_valve_time,
         state_change_conditions={'Tup': 'correct'},
         output_actions=[('Valve1', 255),
-                        ('BNC1', 255)])
+                        ('BNC1', 255)])  # To FPGA
 
     sma.add_state(
         state_name='correct',
         state_timer=tph.iti_correct,
-        state_change_conditions={'Tup': 'exit'},
+        state_change_conditions={'Tup': 'exit_state'},
         output_actions=[])
 
+    sma.add_state(
+        state_name='exit_state',
+        state_timer=0.5,
+        state_change_conditions={'Tup': 'exit'},
+        output_actions=[('BNC1', 255),
+                        ('Serial1', re_stop_stim),
+                        ])
+
+    # if i == 0:
+    #     sph.warn_ephys()
     # Send state machine description to Bpod device
     bpod.send_state_machine(sma)
     # Run state machine
@@ -177,6 +208,11 @@ for i in range(sph.NTRIALS):  # Main loop
             msg = "STOPPING CRITERIA Nº3: PLEASE STOP TASK AND REMOVE MOUSE\
             \n> 90 minutes have passed since session start"
             f.patch.set_facecolor('xkcd:red')
+
+        if not sph.SUBJECT_DISENGAGED_TRIGGERED and stop_crit:
+            patch = {'SUBJECT_DISENGAGED_TRIGGERED': stop_crit,
+                     'SUBJECT_DISENGAGED_TRIALNUM': i + 1}
+            sph.patch_settings_file(patch)
         [log.warning(msg) for x in range(5)]
 
 bpod.close()

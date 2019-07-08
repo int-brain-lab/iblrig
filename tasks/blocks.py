@@ -32,10 +32,8 @@ def update_probability_left(tph):
         return np.random.choice(tph.block_probability_set)
     elif tph.block_num == 2 and tph.block_init_5050:
         return np.random.choice(tph.block_probability_set)
-    elif tph.stim_probability_left == 0.2:
-        return 0.8
-    elif tph.stim_probability_left == 0.8:
-        return 0.2
+    else:
+        return round(abs(1 - tph.stim_probability_left), 1)
 
 
 def draw_position(position_set, stim_probability_left):

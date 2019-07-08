@@ -19,8 +19,12 @@ import bonsai
 import iotasks
 import misc
 import sound
+import user_input
 from path_helper import SessionPathCreator
 from rotary_encoder import MyRotaryEncoder
+import tkinter as tk
+from tkinter import messagebox
+
 log = logging.getLogger('iblrig')
 
 
@@ -73,8 +77,10 @@ class SessionParamHandler(object):
         # =====================================================================
         # SUBJECT
         # =====================================================================
-        self.SUBJECT_WEIGHT = self.get_subject_weight()
+        # self.SUBJECT_WEIGHT = self.get_subject_weight()
         self.POOP_COUNT = True
+        self.SUBJECT_DISENGAGED_TRIGGERED = False
+        self.SUBJECT_DISENGAGED_TRIALNUM = None
         # =====================================================================
         # OSC CLIENT
         # =====================================================================
@@ -149,15 +155,23 @@ class SessionParamHandler(object):
             sounds=[self.GO_TONE, self.WHITE_NOISE],
             indexes=[self.GO_TONE_IDX, self.WHITE_NOISE_IDX],
             sample_rate=self.SOUND_SAMPLE_FREQ)
+        self.OUT_TONE = ('SoftCode', 1) if self.SOFT_SOUND else ('Serial3', 5)
+        self.OUT_NOISE = ('SoftCode', 2) if self.SOFT_SOUND else ('Serial3', 6)
+        self.OUT_STOP_SOUND = (
+            'SoftCode', 0) if self.SOFT_SOUND else ('Serial3', ord('X'))
         # =====================================================================
         # VISUAL STIM
         # =====================================================================
-        self.SYNC_SQUARE_X = 0.95
-        self.SYNC_SQUARE_Y = 0.17
+        self.SYNC_SQUARE_X = 1.23333335
+        self.SYNC_SQUARE_Y = -1.
         self.USE_VISUAL_STIMULUS = True  # Run the visual stim in bonsai
         self.BONSAI_EDITOR = False  # Open the Bonsai editor of visual stim
         bonsai.start_visual_stim(self)
-        self.get_recording_site_data()
+        # =====================================================================
+        # PROBES + WEIGHT
+        # =====================================================================
+        self.FORM_DATA = user_input.session_form(mouse_name=self.SUBJECT_NAME)
+        self = user_input.parse_form_data(self)
         # =====================================================================
         # SAVE SETTINGS FILE AND TASK CODE
         # =====================================================================
@@ -172,18 +186,33 @@ class SessionParamHandler(object):
     # =========================================================================
     # METHODS
     # =========================================================================
-    def get_recording_site_data(self):
-        title = 'Recording site'
-        fields = ['X (float):', 'Y (float):', 'Z (flaot):', 'D (float):',
-                'Angle (10 or 20):', 'Origin (bregma or lambda):']
-        defaults = [None, None, None, None, '10', 'bregma']
+    def patch_settings_file(self, patch):
+        self.__dict__.update(patch)
+        misc.patch_settings_file(self.SETTINGS_FILE_PATH, patch)
+
+    def warn_ephys(self):
+        title = 'START EPHYS RECODING'
+        msg = ("Please start recording in spikeglx then press OK\n" +
+               "Behavior task will run after you start the bonsai workflow")
+        # from ibllib.graphic import popup
+        # popup(title, msg)
+        root = tk.Tk()
+        root.withdraw()
+        messagebox.showinfo(title, msg)
+        root.quit()
+
+    def get_recording_site_data(self, probe='LEFT'):
+        title = f'PROBE {probe} - recording site'
+        fields = ['X (float)', 'Y (float)', 'Z (float)', 'D (float)',
+                  'Angle (10 or 20)', 'Origin (bregma or lambda)']
+        defaults = [0.0, 0.0, 0.0, 0.0, '10', 'bregma']
         types = [float, float, float, float, int, str]
         userdata = multi_input(
             title=title, add_fields=fields, defaults=defaults)
         try:
-            out = [t(x) for x, t in zip(userdata, types)]
-            self.REC_SITE = {'xyzd':out[:4], 'angle': out[4], 'origin': out[5]}
-            return out
+            data = [t(x) for x, t in zip(userdata, types)]
+            data_dict = {'xyzd': data[:4], 'angle': data[4], 'origin': data[5]}
+            return data_dict
         except Exception:
             log.warning(
                 f"One or more inputs are of the wrong type. Expected {types}")
@@ -236,7 +265,6 @@ class SessionParamHandler(object):
             self.WHITE_NOISE_DURATION, self.WHITE_NOISE_AMPLITUDE)
         d['SD'] = str(d['SD'])
         d['OSC_CLIENT'] = str(d['OSC_CLIENT'])
-        d['SESSION_DATETIME'] = self.SESSION_DATETIME.isoformat()
         d['CALIB_FUNC'] = str(d['CALIB_FUNC'])
         d['CALIB_FUNC_RANGE'] = str(d['CALIB_FUNC_RANGE'])
         if isinstance(d['PYBPOD_SUBJECT_EXTRA'], list):

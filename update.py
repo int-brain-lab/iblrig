@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # @Author: Niccolò Bonacchi
@@ -38,7 +37,7 @@ def get_versions():
                                     "--tags", "origin"]).decode().split()
     vers = [x for x in vers[1::2] if '{' not in x]
     vers = [x.split('/')[-1] for x in vers]
-    available = [x for x in vers if x >= '3.6.0']
+    available = [x for x in vers if x >= '4.0.0']
     print("Available versions: {}".format(available))
     return vers
 
@@ -113,15 +112,19 @@ def update_remotes():
 
 def update_env():
     print("\nUpdating iblenv")
-    os.system("pip install -r requirements.txt --upgrade --user")  # noqa
+    os.system("pip install -r requirements.txt -U")
 
 
 def update_conda():
+    print('\nCleaning cache')
+    os.system("conda clean -a -y")
+    print("\nUpdating conda")
     os.system("conda update -y -n base conda")
 
 
 def update_pip():
-    os.system("pip install --user --upgrade pip setuptools wheel")
+    print("\nUpdating pip et al.")
+    os.system("pip install -U pip setuptools wheel")
 
 
 def update_ibllib():
@@ -180,10 +183,11 @@ def update_to_latest():
     if idx + 1 == len(versions):
         return
     else:
-        _update()
+        _update(version=versions[-1])
 
 
 def _update(branch=None, version=None):
+    global upgrade_conda
     resp = ask_user_input()
     if resp == 'y':
         if branch:
@@ -192,68 +196,67 @@ def _update(branch=None, version=None):
             checkout_version(version)
         elif branch is None and version is None:
             checkout_version(sorted(ALL_VERSIONS)[-1])
+        update_pip()
+        if upgrade_conda:
+            update_conda()
         update_env()
         import_tasks()
-        update_ibllib()
     else:
         return
 
 
 def main(args):
-    nargs_passed = sum([True for x in args.__dict__.values() if x])
+    global no_conda
 
     if not any(args.__dict__.values()):
         update_to_latest()
 
-    if nargs_passed == 2:
-        if args.update and args.b:
-            if args.b not in ALL_BRANCHES:
-                print('Not found:', args.b)
-                return
-            checkout_single_file(file='update.py', branch=args.b)
-        else:
-            print(NotImplemented)
-        return
-    elif nargs_passed == 1:
-        if args.b and args.b in ALL_BRANCHES:
-            _update(branch=args.b)
-        elif args.b and args.b not in ALL_BRANCHES:
-            print('Branch', args.b, 'not found')
+    if args.update:
+        checkout_single_file(file='update.py', branch='master')
 
-        if args.update:
-            checkout_single_file(file='update.py', branch='master')
+    if args.update and args.b:
+        if args.b not in ALL_BRANCHES:
+            print('Not found:', args.b)
+            return
+        checkout_single_file(file='update.py', branch=args.b)
 
-        if args.v and args.v in ALL_VERSIONS:
-            _update(version=args.v)
-        elif args.v and args.v not in ALL_VERSIONS:
-            print('Version', args.v, 'not found')
+    if args.b and args.b in ALL_BRANCHES:
+        _update(branch=args.b)
+    elif args.b and args.b not in ALL_BRANCHES:
+        print('Branch', args.b, 'not found')
 
-        if args.reinstall:
-            os.system("conda deactivate && python install.py")
+    if args.v and args.v in ALL_VERSIONS:
+        _update(version=args.v)
+    elif args.v and args.v not in ALL_VERSIONS:
+        print('Version', args.v, 'not found')
 
-        if args.ibllib:
-            update_ibllib()
+    if args.reinstall:
+        os.system("conda deactivate && python install.py")
 
-        if args.info:
-            info()
+    if args.ibllib:
+        update_ibllib()
 
-        if args.import_tasks:
-            import_tasks()
+    if args.info:
+        info()
 
-        if args.iblenv:
-            update_env()
+    if args.import_tasks:
+        import_tasks()
 
-        if args.conda_pip:
-            update_pip()
-            update_conda()
+    if args.iblenv:
+        update_env()
 
-        return
+    if args.pip:
+        update_pip()
+
+    if args.conda:
+        update_conda()
+
+    return
 
 
 if __name__ == '__main__':
     IBLRIG_ROOT_PATH = Path.cwd()
     fetch()
-    update_pip()
     ALL_BRANCHES = get_branches()
     ALL_VERSIONS = get_versions()
     BRANCH = get_current_branch()
@@ -276,8 +279,15 @@ if __name__ == '__main__':
                         action='store_true', help='Update iblenv only')
     parser.add_argument('--import-tasks', required=False, default=False,
                         action='store_true', help='Reimport tasks only')
-    parser.add_argument('--conda-pip', required=False, default=False,
-                        action='store_true', help='Update conda and pip')
+    parser.add_argument('--conda', required=False, default=False,
+                        action='store_true', help='Update conda')
+    parser.add_argument('--pip', required=False, default=False,
+                        action='store_true',
+                        help='Update pip setuptools and wheel')
+    parser.add_argument('--upgrade-conda', required=False, default=False,
+                        action='store_true', help='Dont update conda')
     args = parser.parse_args()
+    global upgrade_conda
+    upgrade_conda = args.upgrade_conda
     main(args)
     print('\n')

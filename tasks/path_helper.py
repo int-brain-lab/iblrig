@@ -31,18 +31,12 @@ class SessionPathCreator(object):
         self.IBLRIG_COMMIT_HASH = self._get_commit_hash(self.IBLRIG_FOLDER)
         self.IBLRIG_VERSION_TAG = self._get_version_tag(self.IBLRIG_FOLDER)
 
-        self.IBLLIB_FOLDER = self._get_ibllib_folder()
-        self.IBLLIB_VERSION_TAG = self._get_version_tag(self.IBLLIB_FOLDER)
-        self.IBLLIB_COMMIT_HASH = self._get_commit_hash(self.IBLLIB_FOLDER)
         self.IBLRIG_PARAMS_FOLDER = str(
             Path(self.IBLRIG_FOLDER).parent / 'iblrig_params')
         self.IBLRIG_DATA_FOLDER = self._iblrig_data_folder_init(
             self.IBLRIG_FOLDER, iblrig_data_folder)
         self.IBLRIG_DATA_SUBJECTS_FOLDER = str(
             Path(self.IBLRIG_DATA_FOLDER) / 'Subjects')
-
-        self.SOUND_STIM_FOLDER = str(
-            Path(self.IBLRIG_FOLDER) / 'sound_stim')
 
         self.VISUAL_STIM_FOLDER = str(Path(self.IBLRIG_FOLDER) / 'visual_stim')
         self.BONSAI = self.get_bonsai_path(use_iblrig_bonsai=True)
@@ -52,10 +46,9 @@ class SessionPathCreator(object):
             self.VISUAL_STIMULUS_TYPE / 'Gabor2D.bonsai')
 
         self.VIDEO_RECORDING_FOLDER = os.path.join(
-            self.IBLRIG_FOLDER, 'camera', 'camera_recordings')
+            self.IBLRIG_FOLDER, 'devices', 'camera_recordings')
         self.VIDEO_RECORDING_FILE = os.path.join(
-            self.IBLRIG_FOLDER, 'camera', 'camera_recordings',
-            'one_camera.bonsai')
+            self.VIDEO_RECORDING_FOLDER, 'one_camera.bonsai')
 
         self.SUBJECT_NAME = subject_name
         self.SUBJECT_FOLDER = os.path.join(
@@ -63,6 +56,8 @@ class SessionPathCreator(object):
 
         self.SESSION_DATETIME = datetime.datetime.now()
         self.SESSION_DATE = self.SESSION_DATETIME.date().isoformat()
+        self.SESSION_DATETIME = self.SESSION_DATETIME.isoformat()
+
         self.SESSION_DATE_FOLDER = os.path.join(
             self.SUBJECT_FOLDER, self.SESSION_DATE)
 
@@ -92,6 +87,7 @@ class SessionPathCreator(object):
 
         self.LATEST_WATER_CALIBRATION_FILE = self._latest_water_calib_file()
         self.LATEST_WATER_CALIB_RANGE_FILE = self._latest_water_range_file()
+        self.LATEST_SCREEN_CALIBRATION_FILE = self._latest_screen_calib_file()
 
         self.PREVIOUS_DATA_FILE = self._previous_data_file()
         self.PREVIOUS_SETTINGS_FILE = self._previous_settings_file()
@@ -129,16 +125,10 @@ class SessionPathCreator(object):
         return
 
     def _visual_stim_type(self):
-        if 'habituation' in self._PROTOCOL:
-            return 'HabituationGabor2D'
-        elif 'training' in self._PROTOCOL:
-            return 'TrainingGabor2D'
-        elif 'biased' in self._PROTOCOL:
-            return 'BiasedGabor2D'
-        elif 'ephys' in self._PROTOCOL:
-            return 'EphysGabor2D'
+        if 'habituation' in self._PROTOCOL or 'sync_test' in self._PROTOCOL:
+            return 'GaborHabituationTask'
         else:
-            return ''
+            return 'GaborIBLTask'
 
     def _init_com(self) -> dict:
         logger.debug("Initializing COM ports")
@@ -190,7 +180,7 @@ class SessionPathCreator(object):
 
     def _get_ibllib_folder(self):
         import ibllib
-        fpath = Path(ibllib.__file__).parent.parent.parent
+        fpath = Path(ibllib.__file__).parent.parent
         return str(fpath)
 
     def _get_commit_hash(self, repo_path):
@@ -285,7 +275,7 @@ class SessionPathCreator(object):
             logger.debug(f"Setting data folder to location: {out}")
             return out
 
-    def _session_number(self):
+    def _session_number(self) -> str:
         logger.debug("Initializing session number")
         if not Path(self.SESSION_DATE_FOLDER).exists():
             return '001'
@@ -361,7 +351,7 @@ class SessionPathCreator(object):
                 f'NOT FOUND: Previous data files for task {self._PROTOCOL}')
         if not settings_out:
             logger.debug(
-              f'NOT FOUND: Previous settings files for task {self._PROTOCOL}')
+                f'NOT FOUND: Previous settings files for task {self._PROTOCOL}')
         logger.debug(f"Reurning {typ} files")
 
         return data_out if typ == 'data' else settings_out
@@ -396,6 +386,16 @@ class SessionPathCreator(object):
             logger.debug("NOT FOUND: Previous session path")
 
         return out
+
+    def _latest_screen_calib_file(self):
+        logger.debug(f"Looking for screen calibration files: {self._BOARD}")
+        dsf = Path(self.IBLRIG_DATA_SUBJECTS_FOLDER)
+        cal = dsf / '_iblrig_calibration'
+        if not cal.exists():
+            logger.debug(f'NOT FOUND: Calibration subject {str(cal)}')
+            return None
+
+        return None
 
     def _latest_water_calib_file(self):
         logger.debug(f"Looking for calibration file of board: {self._BOARD}")
@@ -457,8 +457,7 @@ class SessionPathCreator(object):
                 f"Latest water calibration file: {same_board_cal_files[-1]}")
             return str(same_board_cal_files[-1])
         else:
-            logger.debug(
-             f'No valid calibration files were found for board {self._BOARD}')
+            logger.debug(f'No valid calibration files were found for board {self._BOARD}')
             return
 
     def _latest_water_range_file(self):
@@ -507,7 +506,7 @@ class SessionPathCreator(object):
         ##########################################
          NOT FOUND: LATEST_WATER_CALIB_RANGE_FILE
         ##########################################
-                  Using ms range(0, 1000)
+                    Using full range
         ##########################################
         """
                     logger.warning(msg)
@@ -519,7 +518,7 @@ if __name__ == "__main__":
     # '/coder/mnt/nbonacchi/iblrig', None,
     spc = SessionPathCreator(
         '/home/nico/Projects/IBL/github/iblrig',
-        '/home/nico/Projects/IBL/github/iblrig/scratch/test_iblrig_data',
+        '/home/nico/Projects/IBL/github/iblrig_data',
         '_iblrig_test_mouse', protocol='trainingChoiceWorld',
         board='_iblrig_mainenlab_behavior_0', make=['video', 'ephys', 'imag'])
 

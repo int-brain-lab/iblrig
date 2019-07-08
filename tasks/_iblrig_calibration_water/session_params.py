@@ -14,15 +14,8 @@ import logging
 sys.path.append(str(Path(__file__).parent.parent))  # noqa
 sys.path.append(str(Path(__file__).parent.parent.parent.parent))  # noqa
 from path_helper import SessionPathCreator
+from iotasks import ComplexEncoder
 logger = logging.getLogger('iblrig')
-
-
-class ComplexEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if hasattr(obj, 'reprJSON'):
-            return obj.reprJSON()
-        else:
-            return json.JSONEncoder.default(self, obj)
 
 
 class SessionParamHandler(object):
@@ -38,7 +31,7 @@ class SessionParamHandler(object):
             ts = {
                 i: task_settings.__dict__[i]
                 for i in [x for x in dir(task_settings) if '__' not in x]
-                }
+            }
         elif type(task_settings) == dict:
             ts = task_settings
         self.__dict__.update(ts)
@@ -76,7 +69,6 @@ class SessionParamHandler(object):
     # =========================================================================
     def reprJSON(self):
         d = self.__dict__.copy()
-        d['SESSION_DATETIME'] = str(self.SESSION_DATETIME)
         return d
 
     # =========================================================================

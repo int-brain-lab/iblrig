@@ -22,34 +22,38 @@ def start_visual_stim(sph):
         bns = sph.BONSAI
         wkfl = sph.VISUAL_STIMULUS_FILE
 
-        evt = "-p:FileNameEvents=" + os.path.join(
+        evt = "-p:Stim.FileNameEvents=" + os.path.join(
             sph.SESSION_RAW_DATA_FOLDER,
             "_iblrig_encoderEvents.raw.ssv")
-        pos = "-p:FileNamePositions=" + os.path.join(
+        pos = "-p:Stim.FileNamePositions=" + os.path.join(
             sph.SESSION_RAW_DATA_FOLDER,
             "_iblrig_encoderPositions.raw.ssv")
-        itr = "-p:FileNameTrialInfo=" + os.path.join(
+        itr = "-p:Stim.FileNameTrialInfo=" + os.path.join(
             sph.SESSION_RAW_DATA_FOLDER,
             "_iblrig_encoderTrialInfo.raw.ssv")
 
-        com = "-p:REPortName=" + sph.COM['ROTARY_ENCODER']
+        com = "-p:Stim.REPortName=" + sph.COM['ROTARY_ENCODER']
 
-        sync_x = "-p:sync_x=" + str(sph.SYNC_SQUARE_X)
-        sync_y = "-p:sync_y=" + str(sph.SYNC_SQUARE_Y)
+        sync_x = "-p:Stim.sync_x=" + str(sph.SYNC_SQUARE_X)
+        sync_y = "-p:Stim.sync_y=" + str(sph.SYNC_SQUARE_Y)
+        dist = 7 if 'ephys' in sph.PYBPOD_BOARD else 8
+        translationz = "-p:Stim.TranslationZ=-" + str(dist)
         start = '--start'
-        noeditor = '--noeditor'
+        noeditor = '--no-editor'
+        noboot = '--no-boot'
 
         if sph.BONSAI_EDITOR:
             editor = start
         elif not sph.BONSAI_EDITOR:
             editor = noeditor
 
-        if 'habituation' in sph.PYBPOD_PROTOCOL:
+        if 'habituation' in sph.PYBPOD_PROTOCOL or 'sync_test' in sph.PYBPOD_PROTOCOL:
             subprocess.Popen(
-                [bns, wkfl, editor, evt, itr, com, sync_x, sync_y])
+                [bns, wkfl, editor, noboot, evt, itr, com, sync_x, sync_y])
         else:
             subprocess.Popen(
-                [bns, wkfl, editor, pos, evt, itr, com, sync_x, sync_y])
+                [bns, wkfl, editor, noboot, pos, evt, itr, com, sync_x, sync_y,
+                 translationz])
         time.sleep(3)
         os.chdir(here)
     else:
@@ -57,8 +61,7 @@ def start_visual_stim(sph):
 
 
 def start_camera_recording(sph):
-    if (sph.RECORD_VIDEO is False
-            and sph.OPEN_CAMERA_VIEW is False):
+    if (sph.RECORD_VIDEO is False and sph.OPEN_CAMERA_VIEW is False):
         return
     # Run Workflow
     here = os.getcwd()
@@ -76,15 +79,15 @@ def start_camera_recording(sph):
     rec = '-p:SaveVideo=' + str(sph.RECORD_VIDEO)
 
     mic = "-p:FileNameMic=" + os.path.join(
-            sph.SESSION_RAW_DATA_FOLDER,
-            "_iblrig_micData.raw.wav")
+        sph.SESSION_RAW_DATA_FOLDER, "_iblrig_micData.raw.wav")
     srec = "-p:RecordSound=" + str(sph.RECORD_SOUND)
 
     start = '--start'
+    noboot = '--no-boot'
 
-    subprocess.Popen([bns, wkfl, start, ts, vid, rec, mic, srec])
-    time.sleep(1)
+    subprocess.Popen([bns, wkfl, start, ts, vid, rec, mic, srec, noboot])
     os.chdir(here)
+    return
 
 
 # =====================================================================

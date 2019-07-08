@@ -6,6 +6,7 @@ import numpy as np
 import sys
 import platform
 import logging
+from scipy.signal import chirp
 
 # from pybpod_soundcard_module.module import SoundCard, SoundCommandType
 from pybpod_soundcard_module.module_api import (SoundCardModule, DataType,
@@ -85,7 +86,7 @@ def make_sound(rate=44100, frequency=5000, duration=0.1, amplitude=1,
 
     tone = tone * win
     ttl = np.ones(len(tone)) * 0.99
-    one_ms = round(sample_rate/1000) * 10
+    one_ms = round(sample_rate / 1000) * 10
     ttl[one_ms:] = 0
     null = np.zeros(len(tone))
 
@@ -106,6 +107,26 @@ def make_sound(rate=44100, frequency=5000, duration=0.1, amplitude=1,
         sound = np.array([ttl, tone]).T
 
     return sound
+
+
+def make_chirp(f0=80, f1=160, length=0.1, amp=0.1, fade=0.01, sf=192000):
+    t0 = 0
+    t1 = length
+    t = np.linspace(t0, t1, sf)
+
+    c = amp * chirp(t, f0=f0, f1=f1, t1=t1, method='linear')
+
+    len_fade = int(fade * sf)
+    fade_io = np.hanning(len_fade * 2)
+    fadein = fade_io[:len_fade]
+    fadeout = fade_io[len_fade:]
+    win = np.ones(len(t))
+    win[:len_fade] = fadein
+    win[-len_fade:] = fadeout
+
+    c = c * win
+    out = np.array([c, c]).T
+    return out
 
 
 def format_sound(sound, file_path=None, flat=False):
@@ -168,80 +189,88 @@ def sound_sample_freq(soft_sound):
         raise(NotImplementedError)
 
 
-def init_sounds(sph_obj, tone=True, noise=True):
-    if not sph_obj.SOFT_SOUND:
+def init_sounds(sph, tone=True, noise=True):
+    if not sph.SOFT_SOUND:
         msg = f"""
     ##########################################
     SOUND BOARD NOT FOUND ON SYSTEM!!",
     PLEASE GO TO:
-    iblrig_params/IBL/tasks/{sph_obj.PYBPOD_PROTOCOL}/task_settings.py
+    iblrig_params/IBL/tasks/{sph.PYBPOD_PROTOCOL}/task_settings.py
     and set
         SOFT_SOUND = 'sysdefault' or 'xonar'
     ##########################################"""
         card = SoundCardModule()
-        if card._port is None and card._serial_port is None:
+        if not card.connected:
             log.error(msg)
             raise(NameError)
+
+        chans = 'stereo'
+    else:
+        chans = 'L+TTL'
+
     if tone:
-        sph_obj.GO_TONE = make_sound(
-            rate=sph_obj.SOUND_SAMPLE_FREQ,
-            frequency=sph_obj.GO_TONE_FREQUENCY,
-            duration=sph_obj.GO_TONE_DURATION,
-            amplitude=sph_obj.GO_TONE_AMPLITUDE,
+        sph.GO_TONE = make_sound(
+            rate=sph.SOUND_SAMPLE_FREQ,
+            frequency=sph.GO_TONE_FREQUENCY,
+            duration=sph.GO_TONE_DURATION,
+            amplitude=sph.GO_TONE_AMPLITUDE,
             fade=0.01,
-            chans='L+TTL')
+            chans=chans)
     if noise:
-        sph_obj.WHITE_NOISE = make_sound(
-            rate=sph_obj.SOUND_SAMPLE_FREQ,
+        sph.WHITE_NOISE = make_sound(
+            rate=sph.SOUND_SAMPLE_FREQ,
             frequency=-1,
-            duration=sph_obj.WHITE_NOISE_DURATION,
-            amplitude=sph_obj.WHITE_NOISE_AMPLITUDE,
+            duration=sph.WHITE_NOISE_DURATION,
+            amplitude=sph.WHITE_NOISE_AMPLITUDE,
             fade=0.01,
-            chans='L+TTL')
-    return sph_obj
+            chans=chans)
+    return sph
 
 
 if __name__ == '__main__':
     # # Generate sounds
-    device = 'xonar'
-    samplerate = sound_sample_freq(device)
-    sd = configure_sounddevice(output=device, samplerate=samplerate)
-    sd.stop()
-    rig_tone = make_sound(rate=samplerate, frequency=5000,
-                          duration=10, amplitude=0.1)
-    rig_noise = make_sound(rate=samplerate, frequency=-
-                           1, duration=10, amplitude=0.1)
-    N_TTL = make_sound(chans='L+TTL', amplitude=-1)
+    # device = 'xonar'
+    # samplerate = sound_sample_freq(device)
+    # sd = configure_sounddevice(output=device, samplerate=samplerate)
+    # sd.stop()
+    # rig_tone = make_sound(rate=samplerate, frequency=5000,
+    #                       duration=10, amplitude=0.1)
+    # rig_noise = make_sound(rate=samplerate, frequency=-
+    #                        1, duration=10, amplitude=0.1)
+    # N_TTL = make_sound(chans='L+TTL', amplitude=-1)
+    # import matplotlib.pyplot as plt
+    # # sd.play(rig_tone, samplerate, mapping=[1, 2])
+    # l = 0.5
+    # c = make_chirp(f0=80, f1=160, length=l, amp=0.1, fade=0.05, sf=192000)
+    # plt.plot(np.linspace(0, l, 192000), c[:, 0])
+    # plt.show()
 
-    sd.play(rig_tone, samplerate, mapping=[1, 2])
+    # TEST SOUNDCARD MODULE
+    card = SoundCardModule()
+    SOFT_SOUND = None
+    SOUND_SAMPLE_FREQ = sound_sample_freq(SOFT_SOUND)
+    SOUND_BOARD_BPOD_PORT = 'Serial3'
+    WHITE_NOISE_DURATION = float(0.5)
+    WHITE_NOISE_AMPLITUDE = float(0.05)
+    GO_TONE_DURATION = float(0.1)
+    GO_TONE_FREQUENCY = int(5000)
+    GO_TONE_AMPLITUDE = float(0.1)
+    GO_TONE = make_sound(
+        rate=SOUND_SAMPLE_FREQ, frequency=GO_TONE_FREQUENCY,
+        duration=GO_TONE_DURATION, amplitude=GO_TONE_AMPLITUDE,
+        fade=0.01, chans='stereo')
+    WHITE_NOISE = make_sound(
+        rate=SOUND_SAMPLE_FREQ, frequency=-1,
+        duration=WHITE_NOISE_DURATION,
+        amplitude=WHITE_NOISE_AMPLITUDE, fade=0.01, chans='stereo')
+    GO_TONE_IDX = 2
+    WHITE_NOISE_IDX = 4
 
-    # # TEST SOUNDCARD MODULE
-    # card = SoundCardModule()
-    # SOFT_SOUND = None
-    # SOUND_SAMPLE_FREQ = sound_sample_freq(SOFT_SOUND)
-    # SOUND_BOARD_BPOD_PORT = 'Serial3'
-    # WHITE_NOISE_DURATION = float(0.5)
-    # WHITE_NOISE_AMPLITUDE = float(0.05)
-    # GO_TONE_DURATION = float(0.1)
-    # GO_TONE_FREQUENCY = int(5000)
-    # GO_TONE_AMPLITUDE = float(0.1)
-    # GO_TONE = make_sound(
-    #     rate=SOUND_SAMPLE_FREQ, frequency=GO_TONE_FREQUENCY,
-    #     duration=GO_TONE_DURATION, amplitude=GO_TONE_AMPLITUDE,
-    #     fade=0.01, chans='stereo')
-    # WHITE_NOISE = make_sound(
-    #     rate=SOUND_SAMPLE_FREQ, frequency=-1,
-    #     duration=WHITE_NOISE_DURATION,
-    #     amplitude=WHITE_NOISE_AMPLITUDE, fade=0.01, chans='stereo')
-    # GO_TONE_IDX = 2
-    # WHITE_NOISE_IDX = 4
+    wave_int = format_sound(GO_TONE, flat=True)
+    noise_int = format_sound(WHITE_NOISE, flat=True)
 
-    # wave_int = format_sound(GO_TONE, flat=True)
-    # noise_int = format_sound(WHITE_NOISE, flat=True)
-
-    # card = SoundCardModule()
-    # card.send_sound(wave_int, GO_TONE_IDX, SampleRate._96000HZ, DataType.INT32)  # noqa
-    # card.send_sound(noise_int, WHITE_NOISE_IDX, SampleRate._96000HZ,
-    #     DataType.INT32)
+    card = SoundCardModule()
+    card.send_sound(wave_int, GO_TONE_IDX, SampleRate._96000HZ, DataType.INT32)
+    card.send_sound(noise_int, WHITE_NOISE_IDX, SampleRate._96000HZ, DataType.INT32)
 
     print('i')

@@ -12,7 +12,7 @@ OPEN_CAMERA_VIEW = True  # if RECORD_VIDEO == True OPEN_CAMERA_VIEW is ignored
 # REWARDS
 AUTOMATIC_CALIBRATION = True  # Wether to look for a calibration session and func to define the valve opening time  # noqa
 CALIBRATION_VALUE = 0.067  # calibration value for 3ul of target reward amount (ignored if automatic ON)  # noqa
-REWARD_AMOUNT = 3.  # (µl) Amount of reward to be delivered upon correct choice each trial (overwitten if adaptive ON)  # noqa
+REWARD_AMOUNT = 1.5  # (µl) Amount of reward to be delivered upon correct choice each trial (overwitten if adaptive ON)  # noqa
 REWARD_TYPE = 'Water 10% Sucrose'  # Water, Water 10% Sucrose, Water 15% Sucrose, Water 2% Citric Acid (Guo et al.. PLoS One 2014)  # noqa
 # TASK
 NTRIALS = 2000  # Number of trials for the current session
@@ -32,8 +32,8 @@ STIM_FREQ = 0.10  # Probably constant - NOT IN USE
 STIM_ANGLE = 0.  # Vertical orientation of Gabor patch - NOT IN USE
 STIM_SIGMA = 7.  # (azimuth_degree) Size of Gabor patch
 STIM_GAIN = 4.  # (azimuth_degree/mm) Gain of the RE to stimulus movement
-SYNC_SQUARE_X = 0.95
-SYNC_SQUARE_Y = 0.17
+SYNC_SQUARE_X = 1.23333335
+SYNC_SQUARE_Y = -1.
 # BLOCKS
 BLOCK_INIT_5050 = True
 BLOCK_PROBABILITY_SET = [0.2, 0.8]
@@ -46,7 +46,7 @@ STIM_POSITIONS = [-35, 35]  # All possible positions for this session (deg)
 CONTRAST_SET = [1., 0.25, 0.125, 0.0625, 0.]  # Full contrast set
 CONTRAST_SET_PROBABILITY_TYPE = 'biased'  # or 'uniform'. 'biased' will half the probability of drawing a 0.  # noqa
 # SOUNDS
-SOFT_SOUND = 'xonar'  # Use software sound 'xonar', 'sysdefault' or False for BpodSoundCard  # noqa
+SOFT_SOUND = 'xonar'  # Use software sound 'xonar', 'sysdefault' or None for BpodSoundCard  # noqa
 SOUND_BOARD_BPOD_PORT = 'Serial3'  # (on Bpod) - Ignored if using SOFT_SOUND
 WHITE_NOISE_DURATION = 0.5  # Length of noise burst
 WHITE_NOISE_AMPLITUDE = 0.05

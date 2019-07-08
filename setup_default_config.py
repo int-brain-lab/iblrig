@@ -157,7 +157,10 @@ def config_task(iblproject_path, task_name: str):
         task = create_task_cleanup_command(task)
     if task.name == '_iblrig_misc_flush_water':
         task = create_task_cleanup_command(task)
-    # For all of tasks stop the stim 7110, stop the recording 7111 and cleanup
+    if task.name == '_iblrig_misc_sync_test':
+        task = create_task_bonsai_stop_command(task, port=7110)
+        task = create_task_cleanup_command(task)
+    # For all of tasks stop the stim 7110, stop the camera 7111 and cleanup
     if '_iblrig_tasks' in task.name:
         task = create_task_bonsai_stop_command(task, port=7110)
         task = create_task_bonsai_stop_command(task, port=7111)
@@ -226,6 +229,8 @@ def create_experiment_setups(iblproject_path, exp_name: str):
     if exp.name == '_iblrig_misc':
         flush_water = create_setup(  # noqa
             exp, 'flush_water', p.boards[0].name, '_iblrig_test_mouse')
+        sync_test = create_setup(  # noqa
+            exp, 'sync_test', p.boards[0].name, '_iblrig_test_mouse')
 
     if exp.name == '_iblrig_tasks':
         biasedChoiceWorld = create_setup(  # noqa
@@ -287,6 +292,7 @@ def create_ibl_tasks(iblproject_path):
         '_iblrig_calibration_screen',
         '_iblrig_calibration_water',
         '_iblrig_misc_flush_water',
+        '_iblrig_misc_sync_test',
         '_iblrig_tasks_biasedChoiceWorld',
         '_iblrig_tasks_habituationChoiceWorld',
         '_iblrig_tasks_trainingChoiceWorld',

@@ -34,8 +34,8 @@ STIM_FREQ = 0.10  # Probably constant - NOT IN USE
 STIM_ANGLE = 0.  # Vertical orientation of Gabor patch - NOT IN USE
 STIM_SIGMA = 7.  # (azimuth_degree) Size of Gabor patch
 STIM_GAIN = 8.  # (azimuth_degree/mm) Gain of the RE to stimulus movement (used if ADAPTIVE_GAIN = FALSE)  # noqa
-SYNC_SQUARE_X = 0.95
-SYNC_SQUARE_Y = 0.17
+SYNC_SQUARE_X = 1.23333335
+SYNC_SQUARE_Y = -1.
 
 # SOUNDS
 SOFT_SOUND = 'xonar'  # Use software sound 'xonar', 'sysdefault' or False for BpodSoundCard  # noqa
@@ -49,6 +49,7 @@ GO_TONE_AMPLITUDE = 0.1  # [0->1]
 # ADAPTIVE REWARD PARAMETERS (IGNORED IF ADAPTIVE_REWARD = False)
 ADAPTIVE_REWARD = True  # wether to increase reware at session start usin AR_* criteria  # noqa
 AR_INIT_VALUE = 3  # µl
+AR_MAX_VALUE = 3
 AR_MIN_VALUE = 1.5  # (µl) 1.5 µl for sugar water, 2 µl for normal water
 AR_STEP = 0.1  # µl
 AR_CRIT = 200  # number of trials performed
