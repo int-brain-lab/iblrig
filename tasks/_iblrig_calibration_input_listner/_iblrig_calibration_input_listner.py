@@ -43,7 +43,7 @@ bpod.send_state_machine(sma)
 bpod.run_state_machine(sma)  # Locks until state machine 'exit' is reached
 
 data = bpod.session.current_trial.export()
-X
+print(data)
 bpod.close()
 
 if __name__ == '__main__':
