@@ -68,12 +68,16 @@ def get_latest_session_eid(subject_nickname):
         return None
 
 
-def init_board_params(board, reset=True):
+def init_board_params(board, force=False):
     p = load_board_params(board)
+    if p and not force:
+        print('Board params already present, exiting...')
+        return p
     empty_params = EMPTY_BOARD_PARAMS
-    if not reset:
-        empty_params.update(p)
-    update_board_params(board, empty_params)
+    patch_dict = {
+        "json": json.dumps(empty_params)
+    }
+    one.alyx.rest('locations', 'partial_update', id=board, data=patch_dict)
     return empty_params
 
 
@@ -97,7 +101,12 @@ def update_board_params(board, param_dict):
 
 
 def load_board_params(board):
-    return json.loads(one.alyx.rest('locations', 'read', id=board)['json'])
+    json_field = one.alyx.rest('locations', 'read', id=board)['json']
+    if json_field is not None:
+        json_field = json.loads(json_field)
+    else:
+        json_field = {}
+    return json_field
 
 
 def create_current_running_session(session_folder):
@@ -129,10 +138,9 @@ def update_completed_session(session_folder):
 
 if __name__ == "__main__":
     subject = 'ZM_1737'
-    session_folder = '/home/nico/Projects/IBL/scratch/test_iblrig_data/\
-        Subjects/_iblrig_test_mouse/2019-05-08/001'.replace(' ', '')
-    session_folder = '/home/nico/Projects/IBL/scratch/test_iblrig_data/\
-        Subjects/_iblrig_test_mouse/2019-06-24/003'.replace(' ', '')
+
+    session_folder = '/home/nico/Projects/IBL/github/iblrig_data/\
+        Subjects/_iblrig_test_mouse/2019-06-24/001'.replace(' ', '')
 
     # eid = get_latest_session_eid(subject, has_data=True)
     data = load_previous_data(subject)
@@ -141,7 +149,7 @@ if __name__ == "__main__":
 
     # create_session(session_folder)
 
-    # board = '_iblrig_mainenlab_behavior_0'
+    board = '_iblrig_mainenlab_behavior_0'
     # init_board_params(board)
     # update_board_params(board, {'some_var': 123, 'BPOD_COM': 'COM#'})
     # load_board_params(board)

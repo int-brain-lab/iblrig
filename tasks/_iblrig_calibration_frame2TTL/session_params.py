@@ -76,7 +76,11 @@ class SessionParamHandler(object):
     # =========================================================================
     # METHODS
     # =========================================================================
-
+    def update_board_params(self):
+        patch = {'F2TTL_COM': self.COM['FRAME2TTL'],
+                 'F2TTL_DARK_THRESH': self.f2ttl.dark_threshold,
+                 'F2TTL_LIGHT_THRESH': self.f2ttl.light_threshold}
+        update_board_params(self.PYBPOD_BOARD, patch)
     # =========================================================================
     # JSON ENCODER PATCHES
     # =========================================================================

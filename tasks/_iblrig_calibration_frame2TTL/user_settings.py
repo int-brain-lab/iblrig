@@ -15,12 +15,12 @@ PYBPOD_API_LOG_FILE  = None
 PYBPOD_API_STREAM2STDOUT = False
 PYBPOD_API_ACCEPT_STDIN  = True
 
-PYBPOD_PROTOCOL 	= '_iblrig_calibration_screen'
+PYBPOD_PROTOCOL 	= '_iblrig_calibration_frame2TTL'
 PYBPOD_CREATOR 		= '["_iblrig_test_user", "f092c2d5-c98a-45a1-be7c-df05f129a93c", "local"]'
 PYBPOD_PROJECT 		= 'IBL'
 PYBPOD_EXPERIMENT 	= '_iblrig_calibration'
-PYBPOD_BOARD 		= 'SELECT_BOARD_NAME_(e.g.[_iblrig_mainenlab_behavior_0])'
-PYBPOD_SETUP 		= 'screen'
+PYBPOD_BOARD 		= '_iblrig_mainenlab_behavior_0'
+PYBPOD_SETUP 		= 'frame2TTL'
 PYBPOD_SESSION 		= '20181218-181948'
 PYBPOD_SESSION_PATH = 'C:\\iblrig_params\\IBL\\experiments\\_iblrig_tasks\\setups\\trainingChoiceWorld\\sessions\\20181218-181948'
 PYBPOD_SUBJECTS 	= ["['_iblrig_calibration', '57b50a6a-29e0-433f-ab82-53b776bfa1be']"]
