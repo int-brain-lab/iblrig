@@ -155,6 +155,8 @@ def config_task(iblproject_path, task_name: str):
         task = create_task_cleanup_command(task)
     if task.name == '_iblrig_calibration_water':
         task = create_task_cleanup_command(task)
+    if task.name == '_iblrig_calibration_input_listner':
+        task = create_task_cleanup_command(task)
     if task.name == '_iblrig_misc_flush_water':
         task = create_task_cleanup_command(task)
     if task.name == '_iblrig_misc_sync_test':
@@ -225,6 +227,7 @@ def create_experiment_setups(iblproject_path, exp_name: str):
     if exp.name == '_iblrig_calibration':
         screen = create_setup(exp, 'screen', p.boards[0].name, exp.name)  # noqa
         water = create_setup(exp, 'water', p.boards[0].name, exp.name)  # noqa
+        input_listner = create_setup(exp, 'input_listner', p.boards[0].name, exp.name)  # noqa
 
     if exp.name == '_iblrig_misc':
         flush_water = create_setup(  # noqa
@@ -291,6 +294,7 @@ def create_ibl_tasks(iblproject_path):
     task_names = [
         '_iblrig_calibration_screen',
         '_iblrig_calibration_water',
+        '_iblrig_calibration_input_listner',
         '_iblrig_misc_flush_water',
         '_iblrig_misc_sync_test',
         '_iblrig_tasks_biasedChoiceWorld',
