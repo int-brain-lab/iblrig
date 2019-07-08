@@ -4,6 +4,7 @@
 # @Date:   2018-02-02 12:31:13
 from pybpodapi.protocol import Bpod, StateMachine
 import logging
+import json
 
 from session_params import SessionParamHandler
 import task_settings
@@ -43,8 +44,12 @@ bpod.send_state_machine(sma)
 bpod.run_state_machine(sma)  # Locks until state machine 'exit' is reached
 
 data = bpod.session.current_trial.export()
-print(data)
+print(f'Saving data...\n{data}')
+with open(sph.DATA_FILE_PATH, 'a') as f:
+    f.write(json.dumps(data, indent=1))
+    f.write('\n')
+print('Done')
 bpod.close()
 
 if __name__ == '__main__':
-    print('main')
+    print('.')
