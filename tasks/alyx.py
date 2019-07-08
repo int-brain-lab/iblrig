@@ -81,22 +81,18 @@ def init_board_params(board, force=False):
     return empty_params
 
 
-def change_board_params(board, **kwargs):
-    if not all(kwargs.keys() in EMPTY_BOARD_PARAMS):
-        print('Not all keys exist in board params')
-        return
-    else:
-        update_board_params(board, kwargs)
-        print(f'Changed board params: {kwargs}')
-
-
 def update_board_params(board, param_dict):
     params = load_board_params(board)
-    params.update(param_dict)
-    patch_dict = {
-        "json": json.dumps(params)
-    }
-    one.alyx.rest('locations', 'partial_update', id=board, data=patch_dict)
+    if all([k in EMPTY_BOARD_PARAMS for k in param_dict]):
+        params.update(param_dict)
+        patch_dict = {
+            "json": json.dumps(params)
+        }
+        one.alyx.rest('locations', 'partial_update', id=board, data=patch_dict)
+        print(f'Changed board params: {param_dict}')
+    else:
+        print('Not all keys exist in board params')
+
     return params
 
 
