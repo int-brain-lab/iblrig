@@ -1,9 +1,8 @@
 import task_settings
 import user_settings  # PyBpod creates this file on run.
 from session_params import SessionParamHandler
-import subprocess
+# import subprocess
 from pathlib import Path
-from devices.F2TTL.F2TTL import frame2TTL
 
 task_settings.IBLRIG_FOLDER = Path(__file__).parent.parent.parent
 
