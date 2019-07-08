@@ -104,7 +104,7 @@ for file_path in files:
     plt.plot(df.int, df.val, '.', c=c, label=label)
     plt.yscale('log')
     plt.xscale('log')
-    # plt.plot(x_new, x_new, c='k')
+    plt.plot(x_new, x_new, c='k')
 plt.title('Screen calibration')
 plt.legend()
 plt.xlabel('Intensity requested')
