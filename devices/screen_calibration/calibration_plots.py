@@ -92,7 +92,7 @@ for file_path in files:
 plt.title('Screen calibration')
 plt.legend()
 plt.xlabel('Intensity requested')
-plt.ylabel('Harp photodiode raw output (higher is brighter)')
+plt.ylabel('Photodiode raw output (higher is brighter)')
 print('.')
 # plt.axhline(40, ls='--', alpha=0.5)
 # plt.axhline(80, ls='--', alpha=0.5)
