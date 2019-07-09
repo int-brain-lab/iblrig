@@ -1,0 +1,10 @@
+https://bitbucket.org/fchampalimaud/downloads/downloads/
+
+- Runtime (last version available) -- Reboot computer
+- Harp Convert To CSV (last version available)
+- Harp Sound Card (last version available)
+
+- if the board is not recognized by the computer:
+- UsbDriver (last version available) -- Reboot computer
+
+How to update https://drive.google.com/open?id=13erFIzJUhMnk_JqCfHsQhFtAh1RHFg9M&authuser=filipe.carvalho@neuro.fchampalimaud.org&usp=drive_fs.
