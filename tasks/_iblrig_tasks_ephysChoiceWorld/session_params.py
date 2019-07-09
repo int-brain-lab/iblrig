@@ -160,6 +160,11 @@ class SessionParamHandler(object):
         self.OUT_STOP_SOUND = (
             'SoftCode', 0) if self.SOFT_SOUND else ('Serial3', ord('X'))
         # =====================================================================
+        # PROBES + WEIGHT
+        # =====================================================================
+        self.FORM_DATA = user_input.session_form(mouse_name=self.SUBJECT_NAME)
+        self = user_input.parse_form_data(self)
+        # =====================================================================
         # VISUAL STIM
         # =====================================================================
         self.SYNC_SQUARE_X = 1.23333335
@@ -167,11 +172,6 @@ class SessionParamHandler(object):
         self.USE_VISUAL_STIMULUS = True  # Run the visual stim in bonsai
         self.BONSAI_EDITOR = False  # Open the Bonsai editor of visual stim
         bonsai.start_visual_stim(self)
-        # =====================================================================
-        # PROBES + WEIGHT
-        # =====================================================================
-        self.FORM_DATA = user_input.session_form(mouse_name=self.SUBJECT_NAME)
-        self = user_input.parse_form_data(self)
         # =====================================================================
         # SAVE SETTINGS FILE AND TASK CODE
         # =====================================================================
