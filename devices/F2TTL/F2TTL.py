@@ -24,7 +24,7 @@ class frame2TTL(object):
         """Close connection to serial port"""
         self.ser.close()
 
-    def measure_light(self, num_samples: int = 250) -> dict:
+    def measure_photons(self, num_samples: int = 250) -> dict:
         """Measure <num_samples> values from the sensor and return basic stats.
         Mean, Std, SEM, Nsamples
         """
@@ -71,12 +71,12 @@ class frame2TTL(object):
         input("Set pixels under Frame2TTL to white (rgb 255,255,255) and press enter >")
         print(" ")
         print("Measuring white...")
-        lightData = self.measure_light(10000)
+        lightData = self.measure_photons(10000)
 
         input("Set pixels under Frame2TTL to black (rgb 0,0,0) and press enter >")
         print(" ")
         print("Measuring black...")
-        dark_data = self.measure_light(10000)
+        dark_data = self.measure_photons(10000)
         print(" ")
         light_max = lightData.get('max_value')
         dark_min = dark_data.get('min_value')
@@ -123,7 +123,7 @@ if __name__ == "__main__":
     com_port = '/dev/ttyACM0'
     f = frame2TTL(com_port)
     print(f.read_value())
-    print(f.measure_light())
+    print(f.measure_photons())
     f.set_threshold()
     f.set_threshold(light=41, dark=81)
     f.set_threshold(light=41)

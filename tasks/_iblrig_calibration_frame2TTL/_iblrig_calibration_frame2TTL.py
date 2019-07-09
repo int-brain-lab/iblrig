@@ -10,6 +10,7 @@ sph = SessionParamHandler(task_settings, user_settings)
 
 sph.f2ttl.suggest_thresholds()
 sph.update_board_params()
+print('Done')
 
 # bns = Path(sph.IBLRIG_FOLDER) / 'Bonsai' / 'Bonsai64.exe'
 # wrkfl = Path(sph.IBLRIG_FOLDER) / 'visual_stim' / \
