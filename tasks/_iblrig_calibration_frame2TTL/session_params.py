@@ -78,8 +78,8 @@ class SessionParamHandler(object):
     # =========================================================================
     def update_board_params(self):
         patch = {'F2TTL_COM': self.COM['FRAME2TTL'],
-                 'F2TTL_DARK_THRESH': self.f2ttl.dark_threshold,
-                 'F2TTL_LIGHT_THRESH': self.f2ttl.light_threshold}
+                 'F2TTL_DARK_THRESH': self.f2ttl.recomend_dark,
+                 'F2TTL_LIGHT_THRESH': self.f2ttl.recomend_light}
         self.alyx.update_board_params(self.PYBPOD_BOARD, patch)
 
     # =========================================================================
@@ -89,15 +89,6 @@ class SessionParamHandler(object):
         d = self.__dict__.copy()
         d['OSC_CLIENT'] = str(d['OSC_CLIENT'])
         return d
-
-    def display_logs(self):
-        if self.PREVIOUS_DATA_FILE:
-            msg = f"""
-##########################################
-PREVIOUS SESSION FOUND
-LOADING PARAMETERS FROM: {self.PREVIOUS_DATA_FILE}
-##########################################"""
-            log.info(msg)
 
 
 if __name__ == '__main__':

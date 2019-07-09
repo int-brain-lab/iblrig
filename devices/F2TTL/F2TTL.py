@@ -6,22 +6,23 @@ import struct
 class frame2TTL(object):
     def __init__(self, serial_port):
         self.serial_port = serial_port
-        self.light_threshold = 40
-        self.dark_threshold = 80
         self.connected = False
         self.ser = self.connect(serial_port)
+        self.recomend_dark = None
+        self.recomend_light = None
+        self.dark_threshold = 80
+        self.light_threshold = 40
         self.streaming = False
 
-    def connect(self, serial_port):
+    def connect(self, serial_port) -> serial.Serial:
         """Create connection to serial_port"""
         ser = serial.Serial(port=serial_port, baudrate=115200, timeout=1)
         self.connected = True
         return ser
 
-    def close(self):
+    def close(self) -> None:
         """Close connection to serial port"""
         self.ser.close()
-        return
 
     def measure_light(self, num_samples: int = 250) -> dict:
         """Measure <num_samples> values from the sensor and return basic stats.
@@ -43,18 +44,19 @@ class frame2TTL(object):
         }
         return out
 
-    def set_threshold(self, light=None, dark=None):
+    def set_threshold(self, dark=None, light=None) -> None:
         """Set light, dark, or both thresholds for the device"""
-        if light is None:
-            light = self.light_threshold
         if dark is None:
             dark = self.dark_threshold
+        if light is None:
+            light = self.light_threshold
 
         self.ser.write(b'C')
         response = self.ser.read(1)
         if response[0] != 218:
             raise(ConnectionError)
 
+        # Device wants light threshold before dark
         self.ser.write(struct.pack('<BHH', ord('T'), light, dark))
         if light != self.light_threshold:
             print(f"Light threshold set to {light}")
@@ -62,11 +64,10 @@ class frame2TTL(object):
             print(f"Dark threshold set to {dark}")
         if light == 40 and dark == 80:
             print(f"Resetted to default values: light={light} - dark={dark}")
-        self.light_threshold = light
         self.dark_threshold = dark
-        return
+        self.light_threshold = light
 
-    def suggest_thresholds(self):
+    def suggest_thresholds(self) -> None:
         input("Set pixels under Frame2TTL to white (rgb 255,255,255) and press enter >")
         print(" ")
         print("Measuring white...")
@@ -93,12 +94,12 @@ class frame2TTL(object):
         else:
             print(f"Recommended thresholds: Light = {recomend_light}, Dark = {recomend_dark}.")
             print(f"Sending thresholds to device...")
+            self.recomend_dark = recomend_dark
+            self.recomend_light = recomend_light
             self.set_threshold(light=recomend_light, dark=recomend_dark)
             print('Done')
-            print('Trying to upload thresholds to Alyx...')
-            # alyx.upload
 
-    def read_value(self):
+    def read_value(self) -> int:
         """Read one value from sensor (current)"""
         self.ser.write(b'V')
         response = self.ser.read(4)
@@ -106,20 +107,16 @@ class frame2TTL(object):
         response = int.from_bytes(response, byteorder='little')
         return response
 
-    def start_stream(self):
-        """Enable streaming to USB"""
+    def start_stream(self) -> None:
+        """Enable streaming to USB (stream rate 100Hz)
+        response = int.from_bytes(self.ser.read(4), byteorder='little')"""
         self.ser.write(struct.pack('cB', b'S', 1))
         self.streaming = True
 
-    def stop_stream(self):
+    def stop_stream(self) -> None:
         """Disable streaming to USB"""
         self.ser.write(struct.pack('cB', b'S', 0))
         self.streaming = False
-
-        # while self.streaming:
-        #     response = int.from_bytes(self.ser.read(4), byteorder='little')
-        #     print(response)
-        # self.ser.write(b'S')  # Start the stream, stream rate 100Hz
 
 
 if __name__ == "__main__":
