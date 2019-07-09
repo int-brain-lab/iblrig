@@ -236,6 +236,7 @@ RELATIVE HUMIDITY:    {self.as_data['RelativeHumidity']} %
         params['response_time_buffer'] = ''
         params['response_side_buffer'] = ''
         params['trial_correct_buffer'] = ''
+        params['quiescent_period_buffer'] = ''
         # Dump and save
         out = json.dumps(params, cls=ComplexEncoder)
         self.data_file.write(out)
