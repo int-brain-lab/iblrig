@@ -5,6 +5,7 @@
 import sys
 from pathlib import Path
 import logging
+import subprocess
 
 from pythonosc import udp_client
 
@@ -47,31 +48,12 @@ class SessionParamHandler(object):
         self.OSC_CLIENT_IP = '127.0.0.1'
         self.OSC_CLIENT = udp_client.SimpleUDPClient(self.OSC_CLIENT_IP,
                                                      self.OSC_CLIENT_PORT)
-        # # =====================================================================
-        # # PREVIOUS DATA FILES
-        # # =====================================================================
-        # self.LAST_TRIAL_DATA = iotasks.load_data(self.PREVIOUS_SESSION_PATH)
-        # self.LAST_SETTINGS_DATA = iotasks.load_settings(
-        #     self.PREVIOUS_SESSION_PATH)
-        # # =====================================================================
-        # # ADAPTIVE STUFF
-        # # =====================================================================
-        # self.CALIB_FUNC = adaptive.init_calib_func(self)
-        # self.CALIB_FUNC_RANGE = adaptive.init_calib_func_range(self)
-        # self.REWARD_VALVE_TIME = adaptive.init_reward_valve_time(self)
-
-        # # =====================================================================
-        # # RUN VISUAL STIM
-        # # =====================================================================
-        self.VISUAL_STIMULUS_TYPE = 'screen_calibration'
-        # bonsai.start_visual_stim(self)
         # =====================================================================
         # SAVE SETTINGS FILE AND TASK CODE
         # =====================================================================
         iotasks.save_session_settings(self)
         iotasks.copy_task_code(self)
         iotasks.save_task_code(self)
-        self.display_logs()
 
     # =========================================================================
     # METHODS
@@ -81,6 +63,19 @@ class SessionParamHandler(object):
                  'F2TTL_DARK_THRESH': self.f2ttl.recomend_dark,
                  'F2TTL_LIGHT_THRESH': self.f2ttl.recomend_light}
         self.alyx.update_board_params(self.PYBPOD_BOARD, patch)
+
+    def start_screen_color(self):
+        bns = Path(self.IBLRIG_FOLDER) / 'Bonsai' / 'Bonsai64.exe'
+        wrkfl = Path(self.IBLRIG_FOLDER) / 'visual_stim' / \
+            'f2ttl_calibration' / 'screen_color.bonsai'
+        noedit = '--no-editor'  # implies start
+        # nodebug = '--start-no-debug'
+        # start = '--start'
+        editor = noedit
+
+        cmd = [bns, wrkfl, editor]
+        s = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+        return s
 
     # =========================================================================
     # JSON ENCODER PATCHES
