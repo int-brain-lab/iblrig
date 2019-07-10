@@ -10,3 +10,5 @@ pybpod-api.log
 tests/
 iblrig.egg-info/
 Bonsai/
+
+XDG_CACHE_HOME/
