@@ -13,7 +13,7 @@ import numpy as np
 
 import ibllib.io.raw_data_loaders as raw
 from ibllib.graphic import numinput
-import misc
+import iblrig.misc as misc
 
 log = logging.getLogger('iblrig')
 

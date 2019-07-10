@@ -7,7 +7,7 @@ import argparse
 import ibllib.io.params as params
 import oneibl.params
 from ibllib.pipes.experimental_data import create
-from poop_count import main as poop
+from iblrig.poop_count import poop
 
 IBLRIG_DATA = Path().cwd().parent.parent.parent.parent / 'iblrig_data' / 'Subjects'  # noqa
 

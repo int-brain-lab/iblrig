@@ -13,15 +13,16 @@ from pythonosc import udp_client
 from ibllib.graphic import numinput, multi_input
 sys.path.append(str(Path(__file__).parent.parent))  # noqa
 sys.path.append(str(Path(__file__).parent.parent.parent.parent))  # noqa
-import adaptive
-import ambient_sensor
-import bonsai
-import iotasks
-import misc
-import sound
-import user_input
-from path_helper import SessionPathCreator
-from rotary_encoder import MyRotaryEncoder
+import iblrig.adaptive as adaptive
+import iblrig.ambient_sensor as ambient_sensor
+import iblrig.bonsai as bonsai
+import iblrig.iotasks as iotasks
+import iblrig.misc as misc
+import iblrig.sound as sound
+import iblrig.user_input as user_input
+
+from iblrig.path_helper import SessionPathCreator
+from iblrig.rotary_encoder import MyRotaryEncoder
 import tkinter as tk
 from tkinter import messagebox
 

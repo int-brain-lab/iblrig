@@ -14,11 +14,11 @@ import sys
 sys.path.append(str(Path(__file__).parent.parent))  # noqa
 sys.path.append(str(Path(__file__).parent.parent.parent.parent))  # noqa
 from iotasks import ComplexEncoder
-import bonsai
-import misc
-import ambient_sensor
-from check_sync_pulses import sync_check
-import blocks
+import iblrig.bonsai as bonsai
+import iblrig.misc as misc
+import iblrig.ambient_sensor as ambient_sensor
+from iblrig.check_sync_pulses import sync_check
+import iblrig.blocks as blocks
 
 log = logging.getLogger('iblrig')
 

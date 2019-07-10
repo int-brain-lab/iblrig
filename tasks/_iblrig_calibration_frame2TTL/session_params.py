@@ -11,10 +11,10 @@ from pythonosc import udp_client
 
 sys.path.append(str(Path(__file__).parent.parent))  # noqa
 sys.path.append(str(Path(__file__).parent.parent.parent.parent))  # noqa
-import iotasks
-import alyx
-from devices.F2TTL.F2TTL import frame2TTL
-from path_helper import SessionPathCreator
+import iblrig.iotasks as iotasks
+import iblrig.alyx as alyx
+from iblrig.frame2TTL import frame2TTL
+from iblrig.path_helper import SessionPathCreator
 log = logging.getLogger('iblrig')
 
 

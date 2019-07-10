@@ -10,8 +10,8 @@ from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent.parent))  # noqa
 sys.path.append(str(Path(__file__).parent.parent.parent.parent))  # noqa
-import iotasks
-from path_helper import SessionPathCreator
+import iblrig.iotasks as iotasks
+from iblrig.path_helper import SessionPathCreator
 log = logging.getLogger('iblrig')
 
 
