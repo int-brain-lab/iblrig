@@ -144,7 +144,7 @@ for i in range(sph.NTRIALS):  # Main loop
 
     sma.add_state(
         state_name='play_tone',
-        state_timer=0.001,  # XXX: CHANGE THE VALUE FOE NON EPHYS RIGS!!
+        state_timer=0.001,  # XXX: CHANGE THE VALUE FOE NON EPHYS RIGS!! 500 ms should be enough let's go for 100 just like stim_on
         state_change_conditions={
             'Tup': 'reset2_rotary_encoder',
             'BNC2High': 'reset2_rotary_encoder'
