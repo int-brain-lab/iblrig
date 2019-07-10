@@ -88,6 +88,7 @@ def install_environment():
 
 def install_deps():
     os.system("conda activate iblenv && pip install -r requirements.txt -U")
+    os.system("conda activate iblenv && pip install -e .")
 
 
 def install_iblrig_requirements():
@@ -117,6 +118,8 @@ def install_iblrig_requirements():
     print("N" * 39, '(pip) Installing PyBpod Soundcard plugin')
     os.system(
         "conda activate iblenv && pip install --upgrade pybpod-gui-plugin-soundcard")  # noqa
+    print("N" * 39, '(pip) Installing iblrig')
+    os.system("conda activate iblenv && pip install -e .")
     print("N" * 79)
     print("IBLrig requirements installed.")
 

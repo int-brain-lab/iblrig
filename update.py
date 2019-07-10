@@ -113,6 +113,7 @@ def update_remotes():
 def update_env():
     print("\nUpdating iblenv")
     os.system("pip install -r requirements.txt -U")
+    os.system("pip install -e .")
 
 
 def update_conda():
