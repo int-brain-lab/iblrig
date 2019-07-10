@@ -1,5 +1,5 @@
 import task_settings
-import user_settings  # PyBpod creates this file on run.
+import iblrig.fake_user_settings as user_settings  # PyBpod creates this file on run.
 from session_params import SessionParamHandler
 from pathlib import Path
 
