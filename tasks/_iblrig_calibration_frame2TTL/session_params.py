@@ -2,18 +2,15 @@
 # -*- coding:utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date: Thursday, June 6th 2019, 11:42:40 am
-import sys
+import os
+import time
 from pathlib import Path
 import logging
 import subprocess
 
 from pythonosc import udp_client
 
-sys.path.append(str(Path(__file__).parent.parent))  # noqa
-sys.path.append(str(Path(__file__).parent.parent.parent.parent))  # noqa
 import iblrig.iotasks as iotasks
-import iblrig.alyx as alyx
-from iblrig.frame2TTL import frame2TTL
 from iblrig.path_helper import SessionPathCreator
 log = logging.getLogger('iblrig')
 
@@ -39,8 +36,6 @@ class SessionParamHandler(object):
                                  protocol=self.PYBPOD_PROTOCOL,
                                  board=self.PYBPOD_BOARD, make=True)
         self.__dict__.update(spc.__dict__)
-        self.alyx = alyx
-        self.f2ttl = frame2TTL(self.COM['FRAME2TTL'])
         # =====================================================================
         # OSC CLIENT
         # =====================================================================
@@ -58,24 +53,29 @@ class SessionParamHandler(object):
     # =========================================================================
     # METHODS
     # =========================================================================
-    def update_board_params(self):
-        patch = {'F2TTL_COM': self.COM['FRAME2TTL'],
-                 'F2TTL_DARK_THRESH': self.f2ttl.recomend_dark,
-                 'F2TTL_LIGHT_THRESH': self.f2ttl.recomend_light}
-        self.alyx.update_board_params(self.PYBPOD_BOARD, patch)
-
     def start_screen_color(self):
-        bns = Path(self.IBLRIG_FOLDER) / 'Bonsai' / 'Bonsai64.exe'
-        wrkfl = Path(self.IBLRIG_FOLDER) / 'visual_stim' / \
-            'f2ttl_calibration' / 'screen_color.bonsai'
+        here = os.getcwd()
+        os.chdir(str(Path(self.IBLRIG_FOLDER) / 'visual_stim' /
+                 'f2ttl_calibration'))
+        bns = str(Path(self.IBLRIG_FOLDER) / 'Bonsai' / 'Bonsai64.exe')
+        wrkfl = str(Path(self.IBLRIG_FOLDER) / 'visual_stim' /
+                    'f2ttl_calibration' / 'screen_color.bonsai')
         noedit = '--no-editor'  # implies start
         # nodebug = '--start-no-debug'
         # start = '--start'
+        noboot = '--no-boot'
         editor = noedit
+        subprocess.Popen([bns, wrkfl, editor, noboot])
+        time.sleep(3)
+        os.chdir(here)
 
-        cmd = [bns, wrkfl, editor]
-        s = subprocess.Popen(cmd, stdout=subprocess.PIPE)
-        return s
+    def stop_screen_color(self):
+        self.OSC_CLIENT.send_message('/x', 1)
+
+    def set_screen(self, rgb=[128, 128, 128]):
+        ch = ['/r', '/g', '/b']
+        for color, i in zip(rgb, ch):
+            self.OSC_CLIENT.send_message(i, color)
 
     # =========================================================================
     # JSON ENCODER PATCHES
