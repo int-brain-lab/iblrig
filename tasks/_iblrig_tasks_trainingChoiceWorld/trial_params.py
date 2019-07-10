@@ -16,7 +16,7 @@ from dateutil import parser
 import sys
 sys.path.append(str(Path(__file__).parent.parent))  # noqa
 sys.path.append(str(Path(__file__).parent.parent.parent.parent))  # noqa
-from iotasks import ComplexEncoder
+from iblrig.iotasks import ComplexEncoder
 import iblrig.bonsai as bonsai
 import iblrig.misc as misc
 import iblrig.ambient_sensor as ambient_sensor

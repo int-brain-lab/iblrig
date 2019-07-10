@@ -11,7 +11,7 @@ import sys
 import logging
 sys.path.append(str(Path(__file__).parent.parent))  # noqa
 sys.path.append(str(Path(__file__).parent.parent.parent.parent))  # noqa
-from iotasks import ComplexEncoder
+from iblrig.iotasks import ComplexEncoder
 import iblrig.bonsai as bonsai
 
 log = logging.getLogger('iblrig')
