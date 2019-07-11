@@ -2,8 +2,8 @@
 # -*- coding:utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date: Tuesday, February 5th 2019, 1:40:37 pm
-from pybpod_rotaryencoder_module.module_api import RotaryEncoderModule
 import numpy as np
+from pybpod_rotaryencoder_module.module_api import RotaryEncoderModule
 
 
 class MyRotaryEncoder(object):

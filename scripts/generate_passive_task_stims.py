@@ -8,8 +8,13 @@ presented (ON) for 2 s,  with a fixed time interval between gratings (OFF) of
 1 s during which the gray background is presented. Each grating is presented 20
 times, at each left-right location, in a randomised order.
 """
+from pathlib import Path
+
 import numpy as np
 
+IBLRIG_FOLDER = Path(__file__).absolute().parent.parent
+IBLRIG_DATA = IBLRIG_FOLDER.parent / 'iblrig_data' / 'Subjects'  # noqa
+IBLRIG_PARAMS_FOLDER = IBLRIG_FOLDER.parent / 'iblrig_params'
 
 CONTRASTS = [1.0, 0.5, 0.25, 0.125, 0.0625]
 POSITIONS = [-35, 35]
@@ -22,4 +27,5 @@ data = np.array([[int(p), c] for p, c in zip(pos, cont)])
 
 np.random.shuffle(data)
 data = np.array([[str(int(p)), str(c)] for p, c in data])
-np.savetxt('stims.csv', data, delimiter=' ', fmt='%s')
+fpath = IBLRIG_FOLDER / 'visual_stim' / 'passive_stim' / 'stims.csv'
+np.savetxt(fpath, data, delimiter=' ', fmt='%s')

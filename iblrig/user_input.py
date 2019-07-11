@@ -2,10 +2,12 @@
 # @Author: Niccolò Bonacchi
 # @Date: Friday, May 17th 2019, 9:21:19 am
 import sys
+
 import pyforms
 from AnyQt.QtWidgets import QApplication
 from pyforms.basewidget import BaseWidget
-from pyforms.controls import (ControlText, ControlButton, ControlLabel, ControlCombo)
+from pyforms.controls import (ControlButton, ControlCombo, ControlLabel,
+                              ControlText)
 
 
 class SessionForm(BaseWidget):

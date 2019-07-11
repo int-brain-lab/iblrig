@@ -2,15 +2,15 @@
 # -*- coding:utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date: Thursday, September 27th 2018, 6:32:28 pm
-import numpy as np
-import sys
-import platform
 import logging
+import platform
+import sys
+
+import numpy as np
+from pybpod_soundcard_module.module_api import (DataType, SampleRate,
+                                                SoundCardModule)
 from scipy.signal import chirp
 
-# from pybpod_soundcard_module.module import SoundCard, SoundCommandType
-from pybpod_soundcard_module.module_api import (SoundCardModule, DataType,
-                                                SampleRate)
 log = logging.getLogger('iblrig')
 
 

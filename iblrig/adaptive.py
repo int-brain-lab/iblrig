@@ -3,11 +3,12 @@
 # @Author: Niccolò Bonacchi
 # @Date: Tuesday, February 5th 2019, 4:11:13 pm
 import logging
+
+import ibllib.io.raw_data_loaders as raw
 import numpy as np
 import pandas as pd
 import scipy as sp
 import scipy.interpolate
-import ibllib.io.raw_data_loaders as raw
 
 log = logging.getLogger('iblrig')
 

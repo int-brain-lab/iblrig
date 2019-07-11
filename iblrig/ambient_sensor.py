@@ -2,10 +2,11 @@
 # -*- coding:utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date: Wednesday, September 12th 2018, 3:25:44 pm
-from pybpodapi.protocol import Bpod
-import numpy as np
-import os
 import json
+import os
+
+import numpy as np
+from pybpodapi.protocol import Bpod
 
 
 def get_reading(bpod_instance, save_to=None):

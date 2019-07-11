@@ -1,9 +1,10 @@
 # import numpy.polynomial.polynomial as poly
 # from scipy.signal import find_peaks
 from pathlib import Path
-import pandas as pd
+
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 
 
 def find_calibration_files(folder_path: str) -> list:

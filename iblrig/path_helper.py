@@ -3,17 +3,17 @@
 # @Author: Niccolò Bonacchi
 # @Date: Wednesday, November 14th 2018, 10:40:43 am
 import datetime
+import json
 import logging
 import os
 import subprocess
 from pathlib import Path
-import json
+
+from ibllib.graphic import strinput
+from ibllib.io import raw_data_loaders as raw
+from pybpodgui_api.models.project import Project
 
 import iblrig.logging  # noqa
-from ibllib.io import raw_data_loaders as raw
-from ibllib.graphic import strinput
-
-from pybpodgui_api.models.project import Project
 
 logger = logging.getLogger('iblrig')
 

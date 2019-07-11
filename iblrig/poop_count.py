@@ -3,8 +3,10 @@
 # @Author: Niccolò Bonacchi
 # @Date: Thursday, January 31st 2019, 4:12:19 pm
 from pathlib import Path
-from ibllib.graphic import numinput
+
 from dateutil import parser
+from ibllib.graphic import numinput
+
 from iblrig.misc import patch_settings_file
 
 IBLRIG_DATA = Path().cwd().parent.parent.parent.parent / 'iblrig_data' / 'Subjects'  # noqa

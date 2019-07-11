@@ -2,8 +2,9 @@
 # -*- coding:utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date: Friday, February 8th 2019, 11:39:30 am
-import iblrig.misc as misc
 import numpy as np
+
+import iblrig.misc as misc
 
 
 def get_block_len(factor, min_, max_):

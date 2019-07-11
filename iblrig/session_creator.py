@@ -2,16 +2,16 @@
 # -*- coding:utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date: Thursday, March 28th 2019, 7:19:15 pm
-import random
 import math
+import random
 from pathlib import Path
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+from ibllib.dsp.smooth import rolling_window as smooth
 
 import iblrig.blocks as blocks
 import iblrig.misc as misc
-from ibllib.dsp.smooth import rolling_window as smooth
 
 
 def make_pc():

@@ -2,11 +2,12 @@
 # -*- coding:utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date: Tuesday, February 5th 2019, 5:56:17 pm
+import logging
 import os
 import subprocess
-from pathlib import Path
 import time
-import logging
+from pathlib import Path
+
 log = logging.getLogger('iblrig')
 
 

@@ -5,8 +5,6 @@
 import datetime
 import json
 import logging
-import sys
-from pathlib import Path
 
 import numpy as np
 from dateutil import parser

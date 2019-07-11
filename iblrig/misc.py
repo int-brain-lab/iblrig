@@ -2,11 +2,12 @@
 # -*- coding:utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date: Friday, February 8th 2019, 12:51:51 pm
-import numpy as np
 import datetime
-from pathlib import Path
-from ibllib.io import raw_data_loaders as raw
 import json
+from pathlib import Path
+
+import numpy as np
+from ibllib.io import raw_data_loaders as raw
 
 
 def get_port_events(events: dict, name: str = '') -> list:
