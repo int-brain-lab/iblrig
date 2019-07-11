@@ -243,6 +243,7 @@ class TrialParamHandler(object):
         self.stim_sigma = sph.STIM_SIGMA
         self.out_tone = sph.OUT_TONE
         self.out_noise = sph.OUT_NOISE
+        self.out_stop_sound = sph.OUT_STOP_SOUND
         self.poop_count = sph.POOP_COUNT
         self.save_ambient_data = sph.RECORD_AMBIENT_SENSOR_DATA
         self.as_data = {'Temperature_C': 0, 'AirPressure_mb': 0,
