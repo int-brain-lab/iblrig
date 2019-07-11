@@ -3,25 +3,33 @@
 # @Author: Niccolò Bonacchi
 # @Date:   2018-06-08 11:04:05
 """
-Usage:
-    update.py
-        Will fetch changes from origin. Nothing is updated yet!
-        Calling update.py will display information on the available versions
-    update.py -h | --help | ?
-        Displays this docstring.
-    update.py <version>
-        Will checkout the <version> release and import task files to pybpod.
-    update.py <branch>
-        Will checkout the latest commit of <branch> and import task files to
-        pybpod.
-    update.py reinstall
-        Will reinstall the rig to the latest revision on master.
-    update.py ibllib
-        Will reset ibllib to latest revision on master and install to iblenv.
-    update.py update
-        Will update itself to the latest revision on master.
-    update.py update <branch>
-        Will update itself to the latest revision on <branch>.
+usage: update.py [-h] [-v V] [-b B] [--reinstall] [--ibllib] [--update]
+                 [--info] [--iblenv] [--import-tasks] [--conda] [--pip]
+                 [--upgrade-conda]
+
+Update iblrig
+
+optional arguments:
+  -h, --help       show this help message and exit
+  -v V             Available versions: ['1.0.0', '1.1.0', '1.1.1', '1.1.2',
+                   '1.1.3', '1.1.4', '1.1.5', '1.1.6', '1.1.7', '1.1.8',
+                   '2.0.0', '2.0.1', '3.0.0', '3.1.0', '3.1.1', '3.2.0',
+                   '3.2.1', '3.2.2', '3.2.3', '3.2.4', '3.3.0', '3.4.0',
+                   '3.4.1', '3.5.0', '3.5.1', '3.5.2', '3.5.3', '3.5.4',
+                   '3.6.0', '3.7.0', '3.7.1', '3.7.2', '3.7.3', '3.7.4',
+                   '3.7.5', '3.7.6', '3.8.0', '3.8.1', '4.0.0', '4.0.1',
+                   '4.1.0', '4.1.1', '4.1.2', '4.1.3', '5.0.0']
+  -b B             Available branches: ['develop',
+                   'feature/screen_calibration', 'install_test', 'master']
+  --reinstall      Reinstall iblrig
+  --ibllib         Update ibllib only
+  --update         Update self: update.py
+  --info           Disply information on branches and versions
+  --iblenv         Update iblenv only
+  --import-tasks   Reimport tasks only
+  --conda          Update conda
+  --pip            Update pip setuptools and wheel
+  --upgrade-conda  Dont update conda
 """
 import os
 import subprocess
@@ -79,8 +87,7 @@ def iblrig_params_path():
 
 
 def import_tasks():
-    if VERSION > '3.3.0' or get_current_branch() == 'develop':
-        update_pybpod_config(iblrig_params_path())
+    update_pybpod_config(iblrig_params_path())
     copy_code_files_to_iblrig_params(iblrig_params_path(),
                                      exclude_filename=None)
 
@@ -168,8 +175,8 @@ def info():
 
 
 def ask_user_input(msg="Do you want to update?", responses=['y', 'n']):
-    use_msg = msg + f' {responses}: '
-    response = input(use_msg)
+    use_msg = msg + f' ([{responses[0]}], {responses[1]}): '
+    response = input(use_msg) or 'y'
     if response not in responses:
         print(f"Acceptable answers: {responses}")
         return ask_user_input(msg=msg, responses=responses)
@@ -262,7 +269,7 @@ if __name__ == '__main__':
     ALL_VERSIONS = get_versions()
     BRANCH = get_current_branch()
     VERSION = get_current_version()
-    parser = argparse.ArgumentParser(description='Install iblrig')
+    parser = argparse.ArgumentParser(description='Update iblrig')
     parser.add_argument('-v', required=False, default=False,
                         help='Available versions: ' + str(ALL_VERSIONS))
     parser.add_argument('-b', required=False, default=False,
