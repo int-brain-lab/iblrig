@@ -11,6 +11,8 @@ from pybpodgui_api.models.project import Project
 IBLRIG_FOLDER = Path(__file__).parent
 IBLRIG_PARAMS_FOLDER = IBLRIG_FOLDER.parent / 'iblrig_params'
 
+print(IBLRIG_FOLDER, IBLRIG_PARAMS_FOLDER)
+
 
 def copy_code_files_to_iblrig_params(iblrig_params_path,
                                      exclude_filename=None):
@@ -35,9 +37,6 @@ def copy_code_files_to_iblrig_params(iblrig_params_path,
             shutil.copy(f, dst_folder)
             print(f"Copied {f} to {dst_folder}")
 
-    # Copy cleanup, user_settings, path_helper and bonsai_stop
-    print('\nS:', str(iblrig_tasks_path), '\nD:', str(iblrig_params_path))
-    copy_files(iblrig_tasks_path, iblrig_params_path)
     # Copy all tasks
     tasks = [x for x in iblrig_tasks_path.glob('*') if x.is_dir()]
     for sf in tasks:
@@ -63,6 +62,8 @@ def delete_untracked_files(iblrig_params_path):
     # Remove python files that are in iblrig/scripts from root of params folder
     for f in IBLRIG_PARAMS_FOLDER.glob('*.py'):
         f.unlink()
+        print(f"Removed {f}")
+
 
 def create_subject(iblproject_path, subject_name: str):
     p = Project()
