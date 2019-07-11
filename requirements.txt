@@ -18,7 +18,7 @@ libusb==1.0.22b4
 libusb1==1.7
 logging-bootstrap==1.0.0
 matplotlib==3.0.3
-numpy==1.16.3
+numpy>=1.16.3
 opencv-python==3.4.5.20
 pandas==0.24.2
 pge-plugin-terminal==0.1
