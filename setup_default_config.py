@@ -11,7 +11,7 @@ from pybpodgui_api.models.project import Project
 IBLRIG_FOLDER = Path(__file__).parent
 IBLRIG_PARAMS_FOLDER = IBLRIG_FOLDER.parent / 'iblrig_params'
 
-print(IBLRIG_FOLDER, IBLRIG_PARAMS_FOLDER)
+print(IBLRIG_FOLDER, '\n', IBLRIG_PARAMS_FOLDER)
 
 
 def copy_code_files_to_iblrig_params(iblrig_params_path,
