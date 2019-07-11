@@ -62,12 +62,12 @@ class Frame2TTL(object):
             time.sleep(0.001)
 
         out = {
-            'mean_value': np.array(sample_sum).mean(),
-            'max_value': np.array(sample_sum).max(),
-            'min_value': np.array(sample_sum).min(),
-            'std_value': np.array(sample_sum).std(),
-            'sem_value': np.array(sample_sum).std() / np.sqrt(num_samples),
-            'nsamples': num_samples
+            'mean_value': float(np.array(sample_sum).mean()),
+            'max_value': float(np.array(sample_sum).max()),
+            'min_value': float(np.array(sample_sum).min()),
+            'std_value': float(np.array(sample_sum).std()),
+            'sem_value': float(np.array(sample_sum).std() / np.sqrt(num_samples)),
+            'nsamples': float(num_samples)
         }
         return out
 
@@ -162,11 +162,11 @@ class Frame2TTL(object):
             print('Done')
 
 
-def send_thresholds(sph):
+def get_and_set_thresholds(sph):
     try:
         params = alyx.load_board_params(sph.PYBPOD_BOARD)  # --> dict
     except:  # noqa
-        params = None
+        params = {}
         log.error(f"{sph.PYBPOD_BOARD} Board not found")
     if not params:
         log.warning(
