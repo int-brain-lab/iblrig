@@ -8,8 +8,6 @@ from iblrig.frame2TTL import Frame2TTL
 from session_params import SessionParamHandler
 
 log = logging.getLogger('iblrig')
-# import iblrig.fake_user_settings as user_settings  # PyBpod creates this file on run.
-# task_settings.IBLRIG_FOLDER = Path(__file__).parent.parent.parent
 
 sph = SessionParamHandler(task_settings, user_settings)
 f2ttl = Frame2TTL(sph.COM['FRAME2TTL'])
