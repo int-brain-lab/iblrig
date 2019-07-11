@@ -53,9 +53,9 @@ python-osc==1.7.0
 pytz==2018.9
 pyusb==1.0.2
 QScintilla==2.10.8
-requests==2.21.0
+requests>=2.21.0
 safe-and-collaborative-architecture==0.2
-scipy==1.2.1
+scipy>=1.2.1
 seaborn==0.9.0
 Send2Trash==1.5.0
 six==1.12.0
