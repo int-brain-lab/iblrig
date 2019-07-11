@@ -2,13 +2,14 @@
 # -*- coding: utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date:   2018-02-02 12:31:13
-from pybpodapi.protocol import Bpod, StateMachine
-import logging
 import json
+import logging
 
-from session_params import SessionParamHandler
+from pybpodapi.protocol import Bpod, StateMachine
+
 import task_settings
 import user_settings
+from session_params import SessionParamHandler
 
 log = logging.getLogger('iblrig')
 log.setLevel(logging.INFO)

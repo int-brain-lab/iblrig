@@ -9,7 +9,7 @@ import subprocess
 from pathlib import Path
 import json
 
-import init_logging  # noqa
+import iblrig.logging  # noqa
 from ibllib.io import raw_data_loaders as raw
 from ibllib.graphic import strinput
 

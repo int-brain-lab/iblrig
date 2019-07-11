@@ -9,8 +9,8 @@ from pathlib import Path
 import numpy as np
 import matplotlib.pyplot as plt
 
-import blocks
-import misc
+import iblrig.blocks as blocks
+import iblrig.misc as misc
 from ibllib.dsp.smooth import rolling_window as smooth
 
 

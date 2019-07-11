@@ -2,20 +2,17 @@
 # -*- coding: utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date:   2018-02-02 17:19:09
-import sys
-from sys import platform
 import logging
+from sys import platform
 
 from pythonosc import udp_client
-from pathlib import Path
 
-sys.path.append(str(Path(__file__).parent.parent))  # noqa
-sys.path.append(str(Path(__file__).parent.parent.parent.parent))  # noqa
-import bonsai
-import iotasks
-import sound
-from path_helper import SessionPathCreator
-from rotary_encoder import MyRotaryEncoder
+import iblrig.bonsai as bonsai
+import iblrig.iotasks as iotasks
+import iblrig.sound as sound
+from iblrig.path_helper import SessionPathCreator
+from iblrig.rotary_encoder import MyRotaryEncoder
+
 log = logging.getLogger('iblrig')
 
 

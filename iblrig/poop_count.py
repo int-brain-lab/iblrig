@@ -5,12 +5,12 @@
 from pathlib import Path
 from ibllib.graphic import numinput
 from dateutil import parser
-from misc import patch_settings_file
+from iblrig.misc import patch_settings_file
 
 IBLRIG_DATA = Path().cwd().parent.parent.parent.parent / 'iblrig_data' / 'Subjects'  # noqa
 
 
-def main() -> None:
+def poop() -> None:
     poop_flags = list(IBLRIG_DATA.rglob('poop_count.flag'))
     poop_flags = sorted(poop_flags, key=lambda x: (
         parser.parse(x.parent.parent.name), int(x.parent.name)))
@@ -27,7 +27,7 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    poop()
     # IBLRIG_DATA = '/home/nico/Projects/IBL/github/iblrig/scratch/test_iblrig_data/Subjects'  # noqa
     # IBLRIG_DATA = Path(IBLRIG_DATA)
     # print('.')

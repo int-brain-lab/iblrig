@@ -1,25 +1,42 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
 # @Author: Niccolò Bonacchi
-# @Date: Thursday, February 21st 2019, 7:13:37 pm
+# @Date: Monday, February 25th 2019, 2:10:38 pm
+import logging
+import sys
 from pathlib import Path
-import ibllib.io.raw_data_loaders as raw
+
 import matplotlib.pyplot as plt
 import numpy as np
-import sys
+
+import ibllib.io.raw_data_loaders as raw
+from iblrig.misc import get_port_events
+
+log = logging.getLogger('iblrig')
 
 
-def get_port_events(events: dict, name: str = '') -> list:
-    out: list = []
-    for k in events:
-        if name in k:
-            out.extend(events[k])
-    out = sorted(out)
+def sync_check(tph):
+    events = tph.behavior_data['Events timestamps']
+    ev_bnc1 = get_port_events(events, name='BNC1')
+    ev_bnc2 = get_port_events(events, name='BNC2')
+    ev_port1 = get_port_events(events, name='Port1')
+    NOT_FOUND = 'COULD NOT FIND DATA ON {}'
+    bnc1_msg = NOT_FOUND.format('BNC1') if not ev_bnc1 else 'OK'
+    bnc2_msg = NOT_FOUND.format('BNC2') if not ev_bnc2 else 'OK'
+    port1_msg = NOT_FOUND.format('Port1') if not ev_port1 else 'OK'
+    warn_msg = f"""
+        ##########################################
+                NOT FOUND: SYNC PULSES
+        ##########################################
+        VISUAL STIMULUS SYNC: {bnc1_msg}
+        SOUND SYNC: {bnc2_msg}
+        CAMERA SYNC: {port1_msg}
+        ##########################################"""
+    if not ev_bnc1 or not ev_bnc2 or not ev_port1:
+        log.warning(warn_msg)
 
-    return out
 
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     if len(sys.argv) == 1:
         print("I need a file name...")
     session_data_file = Path(sys.argv[1])

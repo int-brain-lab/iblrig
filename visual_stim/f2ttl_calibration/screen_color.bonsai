@@ -10,7 +10,7 @@
           <q1:SwapSync>false</q1:SwapSync>
           <q1:ClearColor>Black</q1:ClearColor>
           <q1:ClearMask>DepthBufferBit ColorBufferBit</q1:ClearMask>
-          <q1:CursorVisible>false</q1:CursorVisible>
+          <q1:CursorVisible>true</q1:CursorVisible>
           <q1:Location xsi:nil="true" />
           <q1:WindowBorder>Resizable</q1:WindowBorder>
           <q1:WindowState>Fullscreen</q1:WindowState>
@@ -113,7 +113,7 @@
         <ExtentY>90</ExtentY>
         <LocationX>0</LocationX>
         <LocationY>0</LocationY>
-        <ColorR>0.5</ColorR>
+        <ColorR>1</ColorR>
         <ColorG>0.5</ColorG>
         <ColorB>0.5</ColorB>
         <ColorA>1</ColorA>

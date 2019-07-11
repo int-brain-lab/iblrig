@@ -12,9 +12,12 @@ import serial
 
 log = logging.getLogger('iblrig')
 
+IBLRIG_FOLDER = Path(__file__).absolute().parent.parent
+IBLRIG_PARAMS_FOLDER = IBLRIG_FOLDER.parent / 'iblrig_params'
+
 
 def get_com(key='BPOD'):
-    fpath = Path(__file__).parent / '.bpod_comports.json'
+    fpath = IBLRIG_PARAMS_FOLDER / '.bpod_comports.json'
     with open(fpath, 'r') as f:
         comports = json.load(f)
     log.debug(f"Found {key} on port {comports[key]}")

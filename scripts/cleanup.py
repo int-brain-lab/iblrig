@@ -6,9 +6,13 @@ Assumes it's called as a post command from task folder
 from pathlib import Path
 import os
 
-p = Path.cwd()
 
-sess_folders = p.parent.parent.parent.rglob('sessions')
+IBLRIG_FOLDER = Path(__file__).absolute().parent.parent
+IBLRIG_PARAMS_FOLDER = IBLRIG_FOLDER.parent / 'iblrig_params'
+
+experiments_folder = IBLRIG_PARAMS_FOLDER / 'IBL' / 'experiments'
+
+sess_folders = experiments_folder.rglob('sessions')
 
 for s in sess_folders:
     if 'setups' in str(s):

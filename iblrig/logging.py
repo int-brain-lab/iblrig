@@ -3,8 +3,8 @@
 # @Author: Niccolò Bonacchi
 # @Date: Friday, January 11th 2019, 2:04:42 pm
 # 4 ibllib misc
-from ibllib.misc import logger_config
 import logging
+from ibllib.misc import logger_config
 USE_LOGGING = True
 LOGLEVEL = logging.INFO
 if USE_LOGGING:
