@@ -2,17 +2,17 @@
 # -*- coding: utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date:   2018-02-02 14:06:34
-import numpy as np
-import json
-from pathlib import Path
-from dateutil import parser
 import datetime
-import sys
+import json
 import logging
-sys.path.append(str(Path(__file__).parent.parent))  # noqa
-sys.path.append(str(Path(__file__).parent.parent.parent.parent))  # noqa
-from iblrig.iotasks import ComplexEncoder
+import sys
+from pathlib import Path
+
+import numpy as np
+from dateutil import parser
+
 import iblrig.bonsai as bonsai
+from iblrig.iotasks import ComplexEncoder
 
 log = logging.getLogger('iblrig')
 

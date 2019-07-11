@@ -3,9 +3,10 @@
 # @Author: Niccolò Bonacchi
 # @Date:   2018-02-20 14:46:10
 # matplotlib.use('Qt5Agg')
+from pathlib import Path
+
 import matplotlib.pyplot as plt
 import numpy as np
-from pathlib import Path
 
 
 def make_fig(sph):

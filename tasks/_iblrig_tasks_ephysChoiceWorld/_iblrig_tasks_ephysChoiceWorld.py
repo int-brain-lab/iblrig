@@ -2,16 +2,17 @@
 # -*- coding: utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date:   2018-02-02 12:31:13
-from pybpodapi.protocol import Bpod, StateMachine
-from pybpod_rotaryencoder_module.module import RotaryEncoder
-import matplotlib.pyplot as plt
 import logging
 
-from session_params import SessionParamHandler
-from trial_params import TrialParamHandler
+import matplotlib.pyplot as plt
+from pybpod_rotaryencoder_module.module import RotaryEncoder
+from pybpodapi.protocol import Bpod, StateMachine
+
+import online_plots as op
 import task_settings
 import user_settings
-import online_plots as op
+from session_params import SessionParamHandler
+from trial_params import TrialParamHandler
 
 log = logging.getLogger('iblrig')
 log.setLevel(logging.INFO)

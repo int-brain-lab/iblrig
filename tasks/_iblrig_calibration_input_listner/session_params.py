@@ -2,16 +2,12 @@
 # -*- coding: utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date:   2018-02-02 17:19:09
-import sys
-from sys import platform
 import logging
+from sys import platform
 
-from pathlib import Path
-
-sys.path.append(str(Path(__file__).parent.parent))  # noqa
-sys.path.append(str(Path(__file__).parent.parent.parent.parent))  # noqa
 import iblrig.iotasks as iotasks
 from iblrig.path_helper import SessionPathCreator
+
 log = logging.getLogger('iblrig')
 
 

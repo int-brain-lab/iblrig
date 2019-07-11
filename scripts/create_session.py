@@ -9,7 +9,9 @@ import oneibl.params
 from ibllib.pipes.experimental_data import create
 from iblrig.poop_count import poop
 
-IBLRIG_DATA = Path(__file__).parent.parent.parent / 'iblrig_data' / 'Subjects'  # noqa
+IBLRIG_FOLDER = Path(__file__).absolute().parent.parent
+IBLRIG_DATA = IBLRIG_FOLDER.parent / 'iblrig_data' / 'Subjects'  # noqa
+IBLRIG_PARAMS_FOLDER = IBLRIG_FOLDER.parent / 'iblrig_params'
 
 
 def main():

@@ -2,23 +2,20 @@
 # -*- coding: utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date:   2018-02-02 14:06:34
-import time
+import datetime
 import json
 import logging
-from pathlib import Path
-from dateutil import parser
-import datetime
+import time
 
 import numpy as np
-import sys
-sys.path.append(str(Path(__file__).parent.parent))  # noqa
-sys.path.append(str(Path(__file__).parent.parent.parent.parent))  # noqa
-from iblrig.iotasks import ComplexEncoder
+from dateutil import parser
+
+import iblrig.ambient_sensor as ambient_sensor
+import iblrig.blocks as blocks
 import iblrig.bonsai as bonsai
 import iblrig.misc as misc
-import iblrig.ambient_sensor as ambient_sensor
 from iblrig.check_sync_pulses import sync_check
-import iblrig.blocks as blocks
+from iblrig.iotasks import ComplexEncoder
 
 log = logging.getLogger('iblrig')
 

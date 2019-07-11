@@ -2,16 +2,17 @@
 # -*- coding:utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date: Thursday, June 6th 2019, 11:42:40 am
+import logging
 import os
+import subprocess
 import time
 from pathlib import Path
-import logging
-import subprocess
 
 from pythonosc import udp_client
 
 import iblrig.iotasks as iotasks
 from iblrig.path_helper import SessionPathCreator
+
 log = logging.getLogger('iblrig')
 
 
