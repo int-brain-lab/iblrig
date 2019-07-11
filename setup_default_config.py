@@ -145,10 +145,10 @@ def create_task_poop_command(task, when: str = 'POST'):
     return task
 
 
-def create_task_create_command(task, when: str = 'POST', patch: bool = True):
+def create_task_create_command(task, when: str = 'POST', poop: bool = True):
     command = task.create_execcmd()
     fil = str(IBLRIG_FOLDER / 'scripts' / 'create_session.py')
-    command.cmd = f"python {fil} --patch={patch}"
+    command.cmd = f"python {fil} --poop={poop}"
     if when == 'POST':
         command.when = command.WHEN_POST
     elif when == 'PRE':
@@ -185,13 +185,13 @@ def config_task(iblproject_path, task_name: str):
         task = create_task_cleanup_command(task)
         task = create_task_bpod_lights_command(task, onoff=1, when='POST')
     if task.name == '_iblrig_tasks_habituationChoiceWorld':
-        task = create_task_create_command(task, patch=True)
+        task = create_task_create_command(task, poop=True)
     if task.name == '_iblrig_tasks_trainingChoiceWorld':
-        task = create_task_create_command(task, patch=True)
+        task = create_task_create_command(task, poop=True)
     if task.name == '_iblrig_tasks_biasedChoiceWorld':
-        task = create_task_create_command(task, patch=False)
+        task = create_task_create_command(task, poop=False)
     if task.name == '_iblrig_tasks_ephysChoiceWorld':
-        task = create_task_create_command(task, patch=False)
+        task = create_task_create_command(task, poop=False)
 
     p.save(iblproject_path)
     print("    Task configured")
