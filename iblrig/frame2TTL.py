@@ -1,7 +1,10 @@
-import serial
-import numpy as np
-import struct
 import logging
+import struct
+
+import numpy as np
+import serial
+
+import iblrig.alyx as alyx
 
 log = logging.getLogger('iblrig')
 
@@ -157,6 +160,25 @@ class Frame2TTL(object):
             self.recomend_light = recomend_light
             self.set_thresholds(light=recomend_light, dark=recomend_dark)
             print('Done')
+
+
+def send_thresholds(sph):
+    try:
+        params = alyx.load_board_params(sph.PYBPOD_BOARD)  # --> dict
+    except:  # noqa
+        params = None
+        log.error(f"{sph.PYBPOD_BOARD} Board not found")
+    if not params:
+        log.warning(
+            f"No parameters found for board {sph.PYBPOD_BOARD}, please calibrate the device.")
+    if sum(['F2TTL' in x for x in params.keys()]) != 3:
+        log.warning(f"Incomplete parameters for F2TTL, please calibrate the device.")
+    else:
+        dev = Frame2TTL(params['F2TTL_COM'])
+        dev.set_thresholds(dark=params['F2TTL_DARK_THRESH'], light=params['F2TTL_LIGHT_THRESH'])
+        log.info(f"Frame2TTL: Thresholds set.")
+        return 0
+    return -1
 
 
 if __name__ == "__main__":

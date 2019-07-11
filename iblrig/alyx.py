@@ -15,14 +15,14 @@ from oneibl.one import ONE
 
 one = ONE()
 EMPTY_BOARD_PARAMS = {
+    'BPOD_COM': None,  # str
+    'ROTARY_ENCODER_COM': None,  # str
+    'F2TTL_COM': None,  # str
+    'F2TTL_DARK_THRESH': None,  # float
+    'F2TTL_LIGHT_THRESH': None,  # float
     'WATER_CALIBRATION_RANGE': None,  # [min, max]
     'WATER_CALIBRATION_OPEN_TIMES': None,  # [float, float, ...]
-    'WATER_CALIBRATION_WEIGHT_PERDROP': None,  # [float, float, ...]
-    'BPOD_COM': None,  # str
-    'F2TTL_COM': None,  # str
-    'ROTARY_ENCODER_COM': None,  # str
-    'F2TTL_DARK_THRESH': None,  # float
-    'F2TTL_LIGHT_THRESH': None  # float
+    'WATER_CALIBRATION_WEIGHT_PERDROP': None  # [float, float, ...]
 }
 
 
@@ -96,7 +96,7 @@ def update_board_params(board, param_dict):
     return params
 
 
-def load_board_params(board):
+def load_board_params(board: str) -> dict:
     json_field = one.alyx.rest('locations', 'read', id=board)['json']
     if json_field is not None:
         json_field = json.loads(json_field)

@@ -19,9 +19,9 @@ import iblrig.iotasks as iotasks
 import iblrig.misc as misc
 import iblrig.sound as sound
 import iblrig.user_input as user_input
+import iblrig.frame2TTL as frame2TTL
 from iblrig.path_helper import SessionPathCreator
 from iblrig.rotary_encoder import MyRotaryEncoder
-
 log = logging.getLogger('iblrig')
 
 
@@ -123,6 +123,10 @@ class SessionParamHandler(object):
         self.ROTARY_ENCODER = MyRotaryEncoder(self.ALL_THRESHOLDS,
                                               self.STIM_GAIN,
                                               self.COM['ROTARY_ENCODER'])
+        # =====================================================================
+        # frame2TTL
+        # =====================================================================
+        self.F2TTL_SEND_THRESHOLDS = frame2TTL.send_thresholds(self)
         # =====================================================================
         # SOUNDS
         # =====================================================================
