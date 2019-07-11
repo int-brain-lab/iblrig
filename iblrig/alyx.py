@@ -3,6 +3,7 @@
 # @Author: Niccolò Bonacchi
 # @Date: Tuesday, May 7th 2019, 12:07:26 pm
 import json
+import logging
 import webbrowser as wb
 from pathlib import Path
 
@@ -12,6 +13,8 @@ import ibllib.io.raw_data_loaders as raw
 import oneibl.params
 from ibllib.pipes.experimental_data import create
 from oneibl.one import ONE
+
+log = logging.getLogger('iblrig')
 
 one = ONE()
 EMPTY_BOARD_PARAMS = {
@@ -71,7 +74,7 @@ def get_latest_session_eid(subject_nickname):
 def init_board_params(board, force=False):
     p = load_board_params(board)
     if p and not force:
-        print('Board params already present, exiting...')
+        log.info('Board params already present, exiting...')
         return p
     empty_params = EMPTY_BOARD_PARAMS
     patch_dict = {
@@ -89,15 +92,19 @@ def update_board_params(board, param_dict):
             "json": json.dumps(params)
         }
         one.alyx.rest('locations', 'partial_update', id=board, data=patch_dict)
-        print(f'Changed board params: {param_dict}')
+        log.info(f'Changed board params: {param_dict}')
     else:
-        print('Not all keys exist in board params')
+        log.error('Not all keys exist in board params')
 
     return params
 
 
 def load_board_params(board: str) -> dict:
-    json_field = one.alyx.rest('locations', 'read', id=board)['json']
+    try:
+        json_field = one.alyx.rest('locations', 'read', id=board)['json']
+    except Exception as e:
+        log.error(e)
+        json_field = None
     if json_field is not None:
         json_field = json.loads(json_field)
     else:
