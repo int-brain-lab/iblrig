@@ -164,19 +164,21 @@ def create_task_create_command(task, when: str = 'POST', poop: bool = True):
     return task
 
 
-def config_task(iblproject_path, task_name: str):
+def config_task(iblproject_path, task_name: str):  # XXX: THIS!
     p = Project()
     p.load(iblproject_path)
     task = p.find_task(task_name)
     print(f"  Configuring task <{task.name}>")
     task._commands = []
 
-    if task.name == '_iblrig_calibration_screen':
+    if task.name == '_iblrig_calibcalibration_screen':
         task = create_task_bonsai_stop_command(task, port=7110)
         task = create_task_cleanup_command(task)
     if task.name == '_iblrig_calibration_water':
         task = create_task_cleanup_command(task)
     if task.name == '_iblrig_calibration_input_listner':
+        task = create_task_cleanup_command(task)
+    if task.name == '_iblrig_calibration_frame2TTL':
         task = create_task_cleanup_command(task)
     if task.name == '_iblrig_misc_flush_water':
         task = create_task_cleanup_command(task)
@@ -236,7 +238,7 @@ def create_setup(exp, setup_name: str, board: str, subj: str):
     return setup
 
 
-def create_experiment_setups(iblproject_path, exp_name: str):
+def create_experiment_setups(iblproject_path, exp_name: str):  # XXX:THIS!
     p = Project()
     p.load(iblproject_path)
     exp = [e for e in p.experiments if e.name == exp_name]
@@ -250,6 +252,7 @@ def create_experiment_setups(iblproject_path, exp_name: str):
         screen = create_setup(exp, 'screen', p.boards[0].name, exp.name)  # noqa
         water = create_setup(exp, 'water', p.boards[0].name, exp.name)  # noqa
         input_listner = create_setup(exp, 'input_listner', p.boards[0].name, exp.name)  # noqa
+        frame2TTL = create_setup(exp, 'frame2TTL', p.boards[0].name, exp.name)  # noqa
 
     if exp.name == '_iblrig_misc':
         flush_water = create_setup(  # noqa
@@ -316,11 +319,12 @@ def create_ibl_users(iblproject_path):
         print(f"  Skipping creation: User <{user.name}> already exists")
 
 
-def create_ibl_tasks(iblproject_path):
+def create_ibl_tasks(iblproject_path):  # XXX: THIS!
     task_names = [
         '_iblrig_calibration_screen',
         '_iblrig_calibration_water',
         '_iblrig_calibration_input_listner',
+        '_iblrig_calibration_frame2TTL',
         '_iblrig_misc_flush_water',
         '_iblrig_misc_sync_test',
         '_iblrig_tasks_biasedChoiceWorld',
