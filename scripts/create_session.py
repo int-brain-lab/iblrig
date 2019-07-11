@@ -9,7 +9,7 @@ import oneibl.params
 from ibllib.pipes.experimental_data import create
 from iblrig.poop_count import poop
 
-IBLRIG_DATA = Path().cwd().parent.parent.parent.parent / 'iblrig_data' / 'Subjects'  # noqa
+IBLRIG_DATA = Path(__file__).parent.parent.parent / 'iblrig_data' / 'Subjects'  # noqa
 
 
 def main():
@@ -23,11 +23,11 @@ def main():
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Create session in Alyx')
     parser.add_argument(
-        '--patch', help='Ask for a poop count before registering',
+        '--poop', help='Ask for a poop count before registering',
         required=False, default=True, type=bool)
     args = parser.parse_args()
 
-    if args.patch:
+    if args.poop:
         poop()
         main()
     else:

@@ -8,6 +8,9 @@ from pathlib import Path
 
 from pybpodgui_api.models.project import Project
 
+IBLRIG_FOLDER = Path(__file__).parent
+IBLRIG_PARAMS_FOLDER = IBLRIG_FOLDER.parent / 'iblrig_params'
+
 
 def copy_code_files_to_iblrig_params(iblrig_params_path,
                                      exclude_filename=None):
@@ -45,8 +48,7 @@ def copy_code_files_to_iblrig_params(iblrig_params_path,
 
 def delete_untracked_files(iblrig_params_path):
     iblrig_params_tasks_path = iblrig_params_path / 'IBL' / 'tasks'
-    iblrig_path = iblrig_params_path.parent / 'iblrig'
-    iblrig_tasks_path = iblrig_path / 'tasks'
+    iblrig_tasks_path = iblrig_params_path.parent / 'iblrig' / 'tasks'
     task_names = [x.name for x in iblrig_tasks_path.glob('*') if x.is_dir()]
     task_paths = [iblrig_params_tasks_path / x for x in task_names]
     for x in task_paths:
@@ -58,7 +60,9 @@ def delete_untracked_files(iblrig_params_path):
             (x / 'sound.py').unlink()
         if (x / 'ambient_sensor.py').exists():
             (x / 'ambient_sensor.py').unlink()
-
+    # Remove python files that are in iblrig/scripts from root of params folder
+    for f in IBLRIG_PARAMS_FOLDER.glob('*.py'):
+        f.unlink()
 
 def create_subject(iblproject_path, subject_name: str):
     p = Project()
@@ -88,7 +92,8 @@ def create_task(iblproject_path, task_name: str):
 
 def create_task_cleanup_command(task):
     command = task.create_execcmd()
-    command.cmd = "python ..\\..\\..\\cleanup.py"
+    fil = str(IBLRIG_FOLDER / 'scripts' / 'cleanup.py')
+    command.cmd = f"python {fil}"
     command.when = command.WHEN_POST
     when = 'POST' if command.when == 1 else 'PRE'
     print(f"    Added <{when}> command <{command.cmd}> to <{task.name}>")
@@ -98,7 +103,8 @@ def create_task_cleanup_command(task):
 
 def create_task_bonsai_stop_command(task, port: int = 7110):
     command = task.create_execcmd()
-    command.cmd = f"python ..\\..\\..\\bonsai_stop.py {port}"
+    fil = str(IBLRIG_FOLDER / 'scripts' / 'bonsai_stop.py')
+    command.cmd = f"python {fil} {port}"
     command.when = command.WHEN_POST
     when = 'POST' if command.when == 1 else 'PRE'
     print(f"    Added <{when}> command <{command.cmd}> to <{task.name}>")
@@ -108,7 +114,8 @@ def create_task_bonsai_stop_command(task, port: int = 7110):
 
 def create_task_bpod_lights_command(task, onoff: int, when: str = 'POST'):
     command = task.create_execcmd()
-    command.cmd = f"python ..\\..\\..\\bpod_lights.py {onoff}"
+    fil = str(IBLRIG_FOLDER / 'scripts' / 'bpod_lights.py')
+    command.cmd = f"python {fil} {onoff}"
     if when == 'POST':
         command.when = command.WHEN_POST
     elif when == 'PRE':
@@ -121,7 +128,8 @@ def create_task_bpod_lights_command(task, onoff: int, when: str = 'POST'):
 
 def create_task_poop_command(task, when: str = 'POST'):
     command = task.create_execcmd()
-    command.cmd = f"python ..\\..\\..\\poop_count.py"
+    fil = str(IBLRIG_FOLDER / 'scripts' / 'poop_count.py')
+    command.cmd = f"python {fil}"
     command.when = command.WHEN_POST
     when = 'POST' if command.when == 1 else 'PRE'
 
@@ -132,7 +140,8 @@ def create_task_poop_command(task, when: str = 'POST'):
 
 def create_task_create_command(task, when: str = 'POST', patch: bool = True):
     command = task.create_execcmd()
-    command.cmd = f"python ..\\..\\..\\create_session.py --patch={patch}"
+    fil = str(IBLRIG_FOLDER / 'scripts' / 'create_session.py')
+    command.cmd = f"python {fil} --patch={patch}"
     if when == 'POST':
         command.when = command.WHEN_POST
     elif when == 'PRE':
