@@ -15,13 +15,14 @@ from pythonosc import udp_client
 import iblrig.adaptive as adaptive
 import iblrig.ambient_sensor as ambient_sensor
 import iblrig.bonsai as bonsai
+import iblrig.frame2TTL as frame2TTL
 import iblrig.iotasks as iotasks
 import iblrig.misc as misc
 import iblrig.sound as sound
 import iblrig.user_input as user_input
-import iblrig.frame2TTL as frame2TTL
 from iblrig.path_helper import SessionPathCreator
 from iblrig.rotary_encoder import MyRotaryEncoder
+
 log = logging.getLogger('iblrig')
 
 
@@ -126,7 +127,7 @@ class SessionParamHandler(object):
         # =====================================================================
         # frame2TTL
         # =====================================================================
-        self.F2TTL_SEND_THRESHOLDS = frame2TTL.send_thresholds(self)
+        self.F2TTL_GET_AND_SET_THRESHOLDS = frame2TTL.get_and_set_thresholds(self)
         # =====================================================================
         # SOUNDS
         # =====================================================================
@@ -229,7 +230,7 @@ class SessionParamHandler(object):
             nullable=False)
 
     def bpod_lights(self, command: int):
-        fpath = Path(self.IBLRIG_PARAMS_FOLDER) / 'bpod_lights.py'
+        fpath = Path(self.IBLRIG_FOLDER) / 'scripts' / 'bpod_lights.py'
         os.system(f"python {fpath} {command}")
 
     def get_port_events(self, events, name=''):
