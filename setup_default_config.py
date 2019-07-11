@@ -45,6 +45,12 @@ def copy_code_files_to_iblrig_params(iblrig_params_path,
         copy_files(sf, df)
 
 
+def copy_pybpod_user_settings():
+    src_file = IBLRIG_FOLDER / 'scripts' / 'user_settings.py'
+    dst_file = IBLRIG_PARAMS_FOLDER
+    shutil.copy(str(src_file), str(dst_file))
+
+
 def delete_untracked_files(iblrig_params_path):
     iblrig_params_tasks_path = iblrig_params_path / 'IBL' / 'tasks'
     iblrig_tasks_path = iblrig_params_path.parent / 'iblrig' / 'tasks'
@@ -350,6 +356,7 @@ def update_pybpod_config(iblrig_params_path):
 
     create_ibl_project(iblproject_path)
     delete_untracked_files(iblrig_params_path)
+    copy_pybpod_user_settings()
 
     create_ibl_board(iblproject_path)
     create_ibl_subjects(iblproject_path)
