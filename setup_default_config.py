@@ -14,47 +14,7 @@ IBLRIG_PARAMS_FOLDER = IBLRIG_FOLDER.parent / 'iblrig_params'
 print(IBLRIG_FOLDER, '\n', IBLRIG_PARAMS_FOLDER)
 
 
-def copy_task_files(iblrig_params_path, exclude_filename=None):
-    """Copy all files in root tasks folder to iblrig_params_path
-    Copy all *.py files in iblrig_path to iblrig_params/IBL/tasks/<task_name>/*
-    """
-
-    iblrig_params_path = Path(iblrig_params_path)
-    iblrig_params_tasks_path = iblrig_params_path / 'IBL' / 'tasks'
-    iblrig_path = iblrig_params_path.parent / 'iblrig'
-    iblrig_tasks_path = iblrig_path / 'tasks'
-    print(f"\nCopying task files to {iblrig_params_tasks_path}")
-
-    if exclude_filename is None:
-        exclude_filename = 'random_stuff'
-
-    def copy_files(src_folder, dst_folder, glob='*',
-                   exclude_filename=exclude_filename):
-        src_folder = Path(src_folder)
-        dst_folder = Path(dst_folder)
-        src_list = [x for x in src_folder.glob(glob)
-                    if x.is_file() and exclude_filename not in str(x)]
-        for f in src_list:
-            shutil.copy(f, dst_folder)
-            print(f"  Copied {f} to {dst_folder}")
-
-    # Copy all tasks
-    tasks = [x for x in iblrig_tasks_path.glob('*') if x.is_dir() and x.name != '__pycache__']
-    for sf in tasks:
-        df = iblrig_params_tasks_path / sf.name
-        df.mkdir(parents=True, exist_ok=True)
-        copy_files(sf, df)
-    print('Done')
-
-
-def copy_pybpod_user_settings():
-    print('Copying general PyBpod IBL project settings')
-    src_file = IBLRIG_FOLDER / 'scripts' / 'user_settings.py'
-    dst_file = IBLRIG_PARAMS_FOLDER / 'user_settings.py'
-    shutil.copy(str(src_file), str(dst_file))
-    print('  Copied: {src_file} to {dst_file}')
-
-
+################################################################################
 def delete_untracked_files(iblrig_params_path):
     print('Deleting untracked files')
     iblrig_params_tasks_path = iblrig_params_path / 'IBL' / 'tasks'
@@ -76,6 +36,44 @@ def delete_untracked_files(iblrig_params_path):
         print(f"  Removed: {f}")
 
 
+################################################################################
+def copy_pybpod_user_settings():
+    print('Copying general PyBpod IBL project settings')
+    src_file = IBLRIG_FOLDER / 'scripts' / 'user_settings.py'
+    dst_file = IBLRIG_PARAMS_FOLDER / 'user_settings.py'
+    shutil.copy(str(src_file), str(dst_file))
+    print('  Copied: {src_file} to {dst_file}')
+
+
+################################################################################
+def create_ibl_project(iblproject_path):
+    p = Project()
+    print('Creating IBL project')
+    try:
+        p.load(iblproject_path)
+        print(f"  Skipping creation: IBL project found in: {iblproject_path}")
+    except:  # noqa
+        p.name = 'IBL'
+        p.save(iblproject_path)
+        print("  Created: IBL project")
+
+
+################################################################################
+def create_ibl_board(iblproject_path):
+    print("Creating: Bpod board")
+    p = Project()
+    p.load(iblproject_path)
+    if not p.boards:
+        BOARD_NAME = 'SELECT_BOARD_NAME_(e.g.[_iblrig_mainenlab_behavior_0])'
+        b = p.create_board()
+        b.name = BOARD_NAME
+        p.save(iblproject_path)
+        print("  Created: IBL default board (please remember to rename it)")
+    else:
+        print(f"  Skipping creation: Board found with name <{p.boards[0].name}>")
+
+
+################################################################################
 def create_subject(iblproject_path, subject_name: str):
     p = Project()
     p.load(iblproject_path)
@@ -89,6 +87,28 @@ def create_subject(iblproject_path, subject_name: str):
     #     print(f"Skipping creation: Subject <{subject.name}> already exists")
 
 
+def create_ibl_subjects(iblproject_path):
+    print("Creating default subjects")
+    create_subject(iblproject_path, subject_name='_iblrig_calibration')
+    create_subject(iblproject_path, subject_name='_iblrig_test_mouse')
+
+
+################################################################################
+def create_ibl_users(iblproject_path):
+    print("Creating default user")
+    p = Project()
+    p.load(iblproject_path)
+    if p.find_user('_iblrig_test_user') is None:
+        user = p.  create_user()
+        user.name = '_iblrig_test_user'
+        p.save(iblproject_path)
+        print(f"  Created: IBL default user <{user.name}>")
+    else:
+        user = p.find_user('_iblrig_test_user')
+        print(f"  Skipping creation: User <{user.name}> already exists")
+
+
+################################################################################
 def create_task(iblproject_path, task_name: str):
     p = Project()
     p.load(iblproject_path)
@@ -204,6 +224,25 @@ def config_task(iblproject_path, task_name: str):  # XXX: THIS!
     print("    Task configured")
 
 
+def create_ibl_tasks(iblproject_path):  # XXX: THIS!
+    task_names = [
+        '_iblrig_calibration_screen',
+        '_iblrig_calibration_water',
+        '_iblrig_calibration_input_listner',
+        '_iblrig_calibration_frame2TTL',
+        '_iblrig_misc_flush_water',
+        '_iblrig_misc_sync_test',
+        '_iblrig_tasks_biasedChoiceWorld',
+        '_iblrig_tasks_habituationChoiceWorld',
+        '_iblrig_tasks_trainingChoiceWorld',
+        '_iblrig_tasks_ephysChoiceWorld',
+    ]
+    for task_name in task_names:
+        create_task(iblproject_path, task_name=task_name)
+        config_task(iblproject_path, task_name=task_name)
+
+
+################################################################################
 def create_experiment(iblproject_path, exp_name: str):
     p = Project()
     p.load(iblproject_path)
@@ -218,6 +257,17 @@ def create_experiment(iblproject_path, exp_name: str):
     #     print(f"Skipping creation: Experiment {exp.name} already exists")
 
 
+def create_ibl_experiments(iblproject_path):
+    experiment_names = [
+        '_iblrig_calibration',
+        '_iblrig_misc',
+        '_iblrig_tasks',
+    ]
+    for exp_name in experiment_names:
+        create_experiment(iblproject_path, exp_name=exp_name)
+
+
+################################################################################
 def create_setup(exp, setup_name: str, board: str, subj: str):
     # task name is defined as the experiment_name + '_' + setup_name
     # Create or get preexisting setup
@@ -273,80 +323,6 @@ def create_experiment_setups(iblproject_path, exp_name: str):  # XXX:THIS!
     p.save(iblproject_path)
 
 
-def create_ibl_project(iblproject_path):
-    p = Project()
-    print('Creating IBL project')
-    try:
-        p.load(iblproject_path)
-        print(f"  Skipping creation: IBL project found in: {iblproject_path}")
-    except:  # noqa
-        p.name = 'IBL'
-        p.save(iblproject_path)
-        print("  Created: IBL project")
-
-
-def create_ibl_board(iblproject_path):
-    print("Creating: Bpod board")
-    p = Project()
-    p.load(iblproject_path)
-    if not p.boards:
-        BOARD_NAME = 'SELECT_BOARD_NAME_(e.g.[_iblrig_mainenlab_behavior_0])'
-        b = p.create_board()
-        b.name = BOARD_NAME
-        p.save(iblproject_path)
-        print("  Created: IBL default board (please remember to rename it)")
-    else:
-        print(f"  Skipping creation: Board found with name <{p.boards[0].name}>")
-
-
-def create_ibl_subjects(iblproject_path):
-    print("Creating default subjects")
-    create_subject(iblproject_path, subject_name='_iblrig_calibration')
-    create_subject(iblproject_path, subject_name='_iblrig_test_mouse')
-
-
-def create_ibl_users(iblproject_path):
-    print("Creating default user")
-    p = Project()
-    p.load(iblproject_path)
-    if p.find_user('_iblrig_test_user') is None:
-        user = p.  create_user()
-        user.name = '_iblrig_test_user'
-        p.save(iblproject_path)
-        print(f"  Created: IBL default user <{user.name}>")
-    else:
-        user = p.find_user('_iblrig_test_user')
-        print(f"  Skipping creation: User <{user.name}> already exists")
-
-
-def create_ibl_tasks(iblproject_path):  # XXX: THIS!
-    task_names = [
-        '_iblrig_calibration_screen',
-        '_iblrig_calibration_water',
-        '_iblrig_calibration_input_listner',
-        '_iblrig_calibration_frame2TTL',
-        '_iblrig_misc_flush_water',
-        '_iblrig_misc_sync_test',
-        '_iblrig_tasks_biasedChoiceWorld',
-        '_iblrig_tasks_habituationChoiceWorld',
-        '_iblrig_tasks_trainingChoiceWorld',
-        '_iblrig_tasks_ephysChoiceWorld',
-    ]
-    for task_name in task_names:
-        create_task(iblproject_path, task_name=task_name)
-        config_task(iblproject_path, task_name=task_name)
-
-
-def create_ibl_experiments(iblproject_path):
-    experiment_names = [
-        '_iblrig_calibration',
-        '_iblrig_misc',
-        '_iblrig_tasks',
-    ]
-    for exp_name in experiment_names:
-        create_experiment(iblproject_path, exp_name=exp_name)
-
-
 def create_ibl_setups(iblproject_path):
     experiment_names = [
         '_iblrig_calibration',
@@ -359,30 +335,60 @@ def create_ibl_setups(iblproject_path):
     print("Done")
 
 
-def update_pybpod_config(iblrig_params_path):
-    """for update to 3.3.1+
-    Change location of post script bonsai_stop.py to ..\\..\\..\\bonsai_stop.py
-    and remove path_helper.py and _user_settings.py from task code.
-    Add habituationChoiceWorld task and setup
+################################################################################
+def copy_task_files(iblrig_params_path, exclude_filename=None):
+    """Copy all files in root tasks folder to iblrig_params_path
+    Copy all *.py files in iblrig_path to iblrig_params/IBL/tasks/<task_name>/*
+    """
+
+    iblrig_params_path = Path(iblrig_params_path)
+    iblrig_params_tasks_path = iblrig_params_path / 'IBL' / 'tasks'
+    iblrig_path = iblrig_params_path.parent / 'iblrig'
+    iblrig_tasks_path = iblrig_path / 'tasks'
+    print(f"\nCopying task files to {iblrig_params_tasks_path}")
+
+    if exclude_filename is None:
+        exclude_filename = 'random_stuff'
+
+    def copy_files(src_folder, dst_folder, glob='*',
+                   exclude_filename=exclude_filename):
+        src_folder = Path(src_folder)
+        dst_folder = Path(dst_folder)
+        src_list = [x for x in src_folder.glob(glob)
+                    if x.is_file() and exclude_filename not in str(x)]
+        for f in src_list:
+            shutil.copy(f, dst_folder)
+            print(f"  Copied {f} to {dst_folder}")
+
+    # Copy all tasks
+    tasks = [x for x in iblrig_tasks_path.glob('*') if x.is_dir() and x.name != '__pycache__']
+    for sf in tasks:
+        df = iblrig_params_tasks_path / sf.name
+        df.mkdir(parents=True, exist_ok=True)
+        copy_files(sf, df)
+    print('Done')
+
+
+################################################################################
+def main(iblrig_params_path):
+    """for update to 5.1.0+
+    Change location of all post scripts to iblrig/scripts
+    and removeall files in iblrig_params except user_settings.
     """
     iblrig_params_path = Path(iblrig_params_path)
     iblproject_path = iblrig_params_path / 'IBL'
 
-    create_ibl_project(iblproject_path)
     delete_untracked_files(iblrig_params_path)
     copy_pybpod_user_settings()
 
+    create_ibl_project(iblproject_path)
     create_ibl_board(iblproject_path)
     create_ibl_subjects(iblproject_path)
     create_ibl_users(iblproject_path)
     create_ibl_tasks(iblproject_path)
-
     create_ibl_experiments(iblproject_path)
     create_ibl_setups(iblproject_path)
 
-
-def main(iblrig_params_path):
-    update_pybpod_config(iblrig_params_path)
     copy_task_files(iblrig_params_path)
     return
 
@@ -393,19 +399,3 @@ if __name__ == "__main__":
     elif len(sys.argv) == 2:
         print(f"\nSetting up PyBpod IBL project to folder: {sys.argv[1]}")
         main(sys.argv[1])
-    # iblrig_params_path = \
-    # '/home/nico/Projects/IBL/IBL-github/scratch/IBL_params'
-    # iblrig_params_path = Path(iblrig_params_path)
-    # iblproject_path = iblrig_params_path / 'IBL'
-
-    # create_ibl_project(iblproject_path)
-    # delete_untracked_files(iblrig_params_path)
-
-    # create_ibl_board(iblproject_path)
-    # create_ibl_subjects(iblproject_path)
-    # create_ibl_users(iblproject_path)
-    # create_ibl_tasks(iblproject_path)
-
-    # create_ibl_experiments(iblproject_path)
-    # create_ibl_setups(iblproject_path)
-    # print('.')
