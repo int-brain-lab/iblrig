@@ -36,7 +36,7 @@ import subprocess
 from pathlib import Path
 import argparse
 
-from setup_default_config import (copy_task_files, update_pybpod_config)
+from setup_default_config import main
 
 
 def get_versions():
