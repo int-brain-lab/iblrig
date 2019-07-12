@@ -370,6 +370,22 @@ def copy_task_files(iblrig_params_path, exclude_filename=None):
 
 
 ################################################################################
+def setups_to_remove():
+    p = Project()
+    p.load(iblproject_path)
+    exp = [e for e in p.experiments if e.name == '_iblrig_calibration']
+    if not exp:
+        print(f'Experiment {exp} not found')
+        raise KeyError
+    else:
+        setup = [s for s in exp.setups if s.name == 'screen']
+        if not setup:
+            print(f'Setup {setup} not found')
+        else:
+            exp -= setup
+
+
+################################################################################
 def main(iblrig_params_path):
     """for update to 5.1.0+
     Change location of all post scripts to iblrig/scripts
@@ -390,6 +406,8 @@ def main(iblrig_params_path):
     create_ibl_setups(iblproject_path)
 
     copy_task_files(iblrig_params_path)
+
+    setups_to_remove()
     return
 
 
