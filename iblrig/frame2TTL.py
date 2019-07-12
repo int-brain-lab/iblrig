@@ -31,6 +31,7 @@ class Frame2TTL(object):
     def close(self) -> None:
         """Close connection to serial port"""
         self.ser.close()
+        self.connected = False
 
     def start_stream(self) -> None:
         """Enable streaming to USB (stream rate 100Hz)
@@ -96,12 +97,12 @@ class Frame2TTL(object):
 
     def measure_white(self):
         log.info("Measuring white...")
-        self.measured_white = self.measure_photons(10000)
+        self.measured_white = self.measure_photons(1000)
         return self.measured_white
 
     def measure_black(self):
         log.info("Measuring black...")
-        self.measured_black = self.measure_photons(10000)
+        self.measured_black = self.measure_photons(1000)
         return self.measured_black
 
     def calc_recomend_thresholds(self):
@@ -122,11 +123,11 @@ class Frame2TTL(object):
         else:
             log.info('Recommended thresholds:')
             log.info(f'Light ={self.recomend_light}, Dark = {self.recomend_dark}.')
-            log.info(f'Sending thresholds to device...')
             print('Done')
             return self.recomend_dark, self.recomend_light
 
     def set_recommendations(self):
+        log.info(f'Sending thresholds to device...')
         self.set_thresholds(dark=self.recomend_dark, light=self.recomend_light)
 
     def suggest_thresholds(self) -> None:
@@ -182,7 +183,7 @@ def get_and_set_thresholds(sph):
 
 
 if __name__ == "__main__":
-    com_port = 'COM6'
+    com_port = 'COM12'
     f = Frame2TTL(com_port)
     print(f.read_value())
     print(f.measure_photons())
