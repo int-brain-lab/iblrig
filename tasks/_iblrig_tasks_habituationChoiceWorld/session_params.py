@@ -122,7 +122,7 @@ class SessionParamHandler(object):
             nullable=False)
 
     def bpod_lights(self, command: int):
-        fpath = Path(self.IBLRIG_PARAMS_FOLDER) / 'bpod_lights.py'
+        fpath = Path(self.IBLRIG_FOLDER) / 'scripts' / 'bpod_lights.py'
         os.system(f"python {fpath} {command}")
 
     # Bonsai start camera called from main task file
