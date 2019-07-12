@@ -370,7 +370,7 @@ def copy_task_files(iblrig_params_path, exclude_filename=None):
 
 
 ################################################################################
-def setups_to_remove():
+def setups_to_remove(iblproject_path):
     p = Project()
     p.load(iblproject_path)
     exp = [e for e in p.experiments if e.name == '_iblrig_calibration']
@@ -383,6 +383,7 @@ def setups_to_remove():
             print(f'Setup {setup} not found')
         else:
             exp -= setup
+            p.save(iblproject_path)
 
 
 ################################################################################
@@ -407,7 +408,7 @@ def main(iblrig_params_path):
 
     copy_task_files(iblrig_params_path)
 
-    setups_to_remove()
+    setups_to_remove(iblproject_path)
     return
 
 
