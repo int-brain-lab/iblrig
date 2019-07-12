@@ -378,7 +378,7 @@ def setups_to_remove(iblproject_path):
         print(f'Experiment {exp} not found')
         raise KeyError
     else:
-        setup = [s for s in exp.setups if s.name == 'screen']
+        setup = [s for s in exp[0].setups if s.name == 'screen']
         if not setup:
             print(f'Setup {setup} not found')
         else:
