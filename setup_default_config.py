@@ -384,6 +384,7 @@ def setups_to_remove(iblproject_path):
             print(f'Setup {setup} not found')
         else:
             setup = setup[0]
+            print()
             exp -= setup
             p.save(iblproject_path)
 
@@ -415,7 +416,7 @@ def main(iblrig_params_path):
 
 
 if __name__ == "__main__":
-    setups_to_remove(IBLRIG_PARAMS_FOLDER / 'IBL')
+    # setups_to_remove(IBLRIG_PARAMS_FOLDER / 'IBL')
     if len(sys.argv) == 1:
         print("Please select a path for iblrig_params folder")
     elif len(sys.argv) == 2:
