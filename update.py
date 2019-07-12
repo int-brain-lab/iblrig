@@ -36,7 +36,7 @@ import subprocess
 from pathlib import Path
 import argparse
 
-from setup_default_config import main
+from setup_default_config import main as setup_pybpod
 
 
 def get_versions():
@@ -86,8 +86,7 @@ def iblrig_params_path():
 
 
 def import_tasks():
-    update_pybpod_config(iblrig_params_path())
-    copy_task_files(iblrig_params_path(), exclude_filename=None)
+    setup_pybpod(iblrig_params_path())
 
 
 def checkout_version(ver):
