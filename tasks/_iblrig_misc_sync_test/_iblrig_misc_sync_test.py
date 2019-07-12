@@ -123,11 +123,9 @@ for i in range(sph.NTRIALS):  # Main loop
 
     trial_data = tph.trial_completed(bpod.session.current_trial.export())
 
+sph.check_data()
 bpod.close()
 
-# XXX: here load raw.load_data()
-# check if all bads ar empty
-# if not return error with number of bad sounds and number of bad_stims
 
 if __name__ == '__main__':
     print('main')

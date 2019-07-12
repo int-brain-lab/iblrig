@@ -47,7 +47,7 @@ bpod.run_state_machine(sma)  # Locks until state machine 'exit' is reached
 data = bpod.session.current_trial.export()
 print(f'Saving data...\n{data}')
 with open(sph.DATA_FILE_PATH, 'a') as f:
-    f.write(json.dumps(data, indent=1))
+    f.write(json.dumps(data))
     f.write('\n')
 print('Done')
 bpod.close()
