@@ -138,7 +138,7 @@ class SessionParamHandler(object):
         self.WHITE_NOISE_AMPLITUDE = float(0.05)
         self.GO_TONE_DURATION = float(0.1)
         self.GO_TONE_FREQUENCY = int(5000)
-        self.GO_TONE_AMPLITUDE = float(0.1)
+        self.GO_TONE_AMPLITUDE = float(0.0151)  # 0.0151 for 70.0 dB SPL CCU
 
         self.SD = sound.configure_sounddevice(
             output=self.SOFT_SOUND, samplerate=self.SOUND_SAMPLE_FREQ)

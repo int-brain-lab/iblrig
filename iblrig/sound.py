@@ -254,7 +254,7 @@ if __name__ == '__main__':
     WHITE_NOISE_AMPLITUDE = float(0.05)
     GO_TONE_DURATION = float(0.1)
     GO_TONE_FREQUENCY = int(5000)
-    GO_TONE_AMPLITUDE = float(0.1)
+    GO_TONE_AMPLITUDE = float(0.0151)  # 0.0151 for 70.0 dB SPL CCU | 0.0272 for 70.0 dB SPL Xonar
     GO_TONE = make_sound(
         rate=SOUND_SAMPLE_FREQ, frequency=GO_TONE_FREQUENCY,
         duration=GO_TONE_DURATION, amplitude=GO_TONE_AMPLITUDE,

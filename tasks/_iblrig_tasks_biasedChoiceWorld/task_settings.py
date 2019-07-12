@@ -52,6 +52,6 @@ WHITE_NOISE_DURATION = 0.5  # Length of noise burst
 WHITE_NOISE_AMPLITUDE = 0.05
 GO_TONE_DURATION = 0.1  # Length of tone
 GO_TONE_FREQUENCY = 5000  # 5KHz
-GO_TONE_AMPLITUDE = 0.1  # [0->1]
+GO_TONE_AMPLITUDE = 0.0272  # [0->1] 0.0272 for 70dB SPL Xonar
 # POOP COUNT LOGGING
 POOP_COUNT = True  # Wether to ask for a poop count at the end of the session
