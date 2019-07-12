@@ -2,9 +2,10 @@
 # -*- coding:utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date: Tuesday, October 16th 2018, 12:13:00 pm
+import argparse
+
 import serial
 from pythonosc import udp_client
-import argparse
 
 
 class Frame2TTLServer(object):

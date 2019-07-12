@@ -44,7 +44,7 @@ BLOCK_LEN_MAX = 100
 STIM_POSITIONS = [-35, 35]  # All possible positions for this session (deg)
 # CONTRASTS
 CONTRAST_SET = [1., 0.25, 0.125, 0.0625, 0.]  # Full contrast set
-CONTRAST_SET_PROBABILITY_TYPE = 'biased'  # or 'uniform'. 'biased' will half the probability of drawing a 0.  # noqa
+CONTRAST_SET_PROBABILITY_TYPE = 'uniform'  # 'biased' or 'uniform'. Will half the probability of drawing a 0.  # noqa
 # SOUNDS
 SOFT_SOUND = 'xonar'  # Use software sound 'xonar', 'sysdefault' or None for BpodSoundCard  # noqa
 SOUND_BOARD_BPOD_PORT = 'Serial3'  # (on Bpod) - Ignored if using SOFT_SOUND

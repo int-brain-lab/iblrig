@@ -19,4 +19,6 @@ chdir /D %projects_dir%
 
 echo Launching pybpod...
 call start-pybpod
+
+chdir /D %iblrig_dir%
 echo done

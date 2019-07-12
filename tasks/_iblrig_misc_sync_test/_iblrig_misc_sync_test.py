@@ -2,14 +2,15 @@
 # -*- coding: utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date:   2018-02-02 12:31:13
-from pybpodapi.protocol import Bpod, StateMachine
-from pybpod_rotaryencoder_module.module import RotaryEncoder
 import logging
 
-from session_params import SessionParamHandler
-from trial_params import TrialParamHandler
+from pybpod_rotaryencoder_module.module import RotaryEncoder
+from pybpodapi.protocol import Bpod, StateMachine
+
 import task_settings
 import user_settings
+from session_params import SessionParamHandler
+from trial_params import TrialParamHandler
 
 log = logging.getLogger('iblrig')
 log.setLevel(logging.INFO)
@@ -122,6 +123,7 @@ for i in range(sph.NTRIALS):  # Main loop
 
     trial_data = tph.trial_completed(bpod.session.current_trial.export())
 
+sph.check_data()
 bpod.close()
 
 

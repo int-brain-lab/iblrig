@@ -2,28 +2,26 @@
 # -*- coding: utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date:   2018-02-02 17:19:09
-import os
-import sys
-from sys import platform
-from pathlib import Path
 import logging
+import os
+import tkinter as tk
+from pathlib import Path
+from sys import platform
+from tkinter import messagebox
 
+from ibllib.graphic import multi_input, numinput
 from pythonosc import udp_client
 
-from ibllib.graphic import numinput, multi_input
-sys.path.append(str(Path(__file__).parent.parent))  # noqa
-sys.path.append(str(Path(__file__).parent.parent.parent.parent))  # noqa
-import adaptive
-import ambient_sensor
-import bonsai
-import iotasks
-import misc
-import sound
-import user_input
-from path_helper import SessionPathCreator
-from rotary_encoder import MyRotaryEncoder
-import tkinter as tk
-from tkinter import messagebox
+import iblrig.adaptive as adaptive
+import iblrig.ambient_sensor as ambient_sensor
+import iblrig.bonsai as bonsai
+import iblrig.frame2TTL as frame2TTL
+import iblrig.iotasks as iotasks
+import iblrig.misc as misc
+import iblrig.sound as sound
+import iblrig.user_input as user_input
+from iblrig.path_helper import SessionPathCreator
+from iblrig.rotary_encoder import MyRotaryEncoder
 
 log = logging.getLogger('iblrig')
 
@@ -127,6 +125,10 @@ class SessionParamHandler(object):
                                               self.STIM_GAIN,
                                               self.COM['ROTARY_ENCODER'])
         # =====================================================================
+        # frame2TTL
+        # =====================================================================
+        self.F2TTL_GET_AND_SET_THRESHOLDS = frame2TTL.get_and_set_thresholds(self)
+        # =====================================================================
         # SOUNDS
         # =====================================================================
         self.SOFT_SOUND = None
@@ -160,18 +162,18 @@ class SessionParamHandler(object):
         self.OUT_STOP_SOUND = (
             'SoftCode', 0) if self.SOFT_SOUND else ('Serial3', ord('X'))
         # =====================================================================
-        # VISUAL STIM
-        # =====================================================================
-        self.SYNC_SQUARE_X = 1.23333335
-        self.SYNC_SQUARE_Y = -1.
-        self.USE_VISUAL_STIMULUS = True  # Run the visual stim in bonsai
-        self.BONSAI_EDITOR = False  # Open the Bonsai editor of visual stim
-        bonsai.start_visual_stim(self)
-        # =====================================================================
         # PROBES + WEIGHT
         # =====================================================================
         self.FORM_DATA = user_input.session_form(mouse_name=self.SUBJECT_NAME)
         self = user_input.parse_form_data(self)
+        # =====================================================================
+        # VISUAL STIM
+        # =====================================================================
+        self.SYNC_SQUARE_X = 1.3
+        self.SYNC_SQUARE_Y = -1.
+        self.USE_VISUAL_STIMULUS = True  # Run the visual stim in bonsai
+        self.BONSAI_EDITOR = False  # Open the Bonsai editor of visual stim
+        bonsai.start_visual_stim(self)
         # =====================================================================
         # SAVE SETTINGS FILE AND TASK CODE
         # =====================================================================
@@ -228,7 +230,7 @@ class SessionParamHandler(object):
             nullable=False)
 
     def bpod_lights(self, command: int):
-        fpath = Path(self.IBLRIG_PARAMS_FOLDER) / 'bpod_lights.py'
+        fpath = Path(self.IBLRIG_FOLDER) / 'scripts' / 'bpod_lights.py'
         os.system(f"python {fpath} {command}")
 
     def get_port_events(self, events, name=''):

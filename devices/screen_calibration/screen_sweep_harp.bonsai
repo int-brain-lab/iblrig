@@ -28,7 +28,7 @@
       </Expression>
       <Expression xsi:type="PropertySourceOfFloatPropertySingle">
         <MemberName>MaxValue</MemberName>
-        <Value>1.3</Value>
+        <Value>1.1</Value>
       </Expression>
       <Expression xsi:type="PropertyMapping">
         <PropertyMappings>
