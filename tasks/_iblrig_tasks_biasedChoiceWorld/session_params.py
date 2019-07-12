@@ -13,6 +13,7 @@ from pythonosc import udp_client
 import iblrig.adaptive as adaptive
 import iblrig.ambient_sensor as ambient_sensor
 import iblrig.bonsai as bonsai
+import iblrig.frame2TTL as frame2TTL
 import iblrig.iotasks as iotasks
 import iblrig.misc as misc
 import iblrig.sound as sound
@@ -46,6 +47,10 @@ class SessionParamHandler(object):
                                  board=self.PYBPOD_BOARD, make=make)
         self.__dict__.update(spc.__dict__)
 
+        # =====================================================================
+        # frame2TTL
+        # =====================================================================
+        self.F2TTL_GET_AND_SET_THRESHOLDS = frame2TTL.get_and_set_thresholds(self)
         # =====================================================================
         # SUBJECT
         # =====================================================================
@@ -145,7 +150,7 @@ class SessionParamHandler(object):
             nullable=False)
 
     def bpod_lights(self, command: int):
-        fpath = Path(self.IBLRIG_PARAMS_FOLDER) / 'bpod_lights.py'
+        fpath = Path(self.IBLRIG_FOLDER) / 'scripts' / 'bpod_lights.py'
         os.system(f"python {fpath} {command}")
 
     # Bonsai start camera called from main task file
