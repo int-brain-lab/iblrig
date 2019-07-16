@@ -146,6 +146,7 @@ def configure_iblrig_params():
             print("\n Please select either y of n")
             return configure_iblrig_params()
     else:
+        iblrig_params_path.mkdir(parents=True, exist_ok=True)
         subprocess.call([python, "setup_default_config.py",
                          str(iblrig_params_path)])
 
