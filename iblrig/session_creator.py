@@ -27,7 +27,7 @@ def make_pc():
         len_block.append(blocks.get_block_len(60, min_=20, max_=100))
         for x in range(len_block[-1]):
             p = blocks.draw_position([-35, 35], prob_left)
-            c = misc.draw_contrast(contrasts)
+            c = misc.draw_contrast(contrasts, prob_type='uniform')
             pc = np.append(pc, np.array([[p, c]]), axis=0)
             # do this in PC space
         prob_left = np.round(np.abs(1 - prob_left), 1)
