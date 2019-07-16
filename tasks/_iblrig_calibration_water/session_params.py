@@ -3,18 +3,15 @@
 # @Author: Niccolò Bonacchi
 # @Date: Wednesday, November 21st 2018, 4:27:34 pm
 import json
+import logging
 import os
 import shutil
-import zipfile
 import types
-import sys
-from pathlib import Path
-import logging
+import zipfile
 
-sys.path.append(str(Path(__file__).parent.parent))  # noqa
-sys.path.append(str(Path(__file__).parent.parent.parent.parent))  # noqa
-from path_helper import SessionPathCreator
-from iotasks import ComplexEncoder
+from iblrig.iotasks import ComplexEncoder
+from iblrig.path_helper import SessionPathCreator
+
 logger = logging.getLogger('iblrig')
 
 

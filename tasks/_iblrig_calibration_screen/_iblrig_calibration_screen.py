@@ -1,8 +1,9 @@
+import subprocess
+from pathlib import Path
+
 import task_settings
 import user_settings  # PyBpod creates this file on run.
 from session_params import SessionParamHandler
-import subprocess
-from pathlib import Path
 
 # r = "/home/nico/Projects/IBL/github/iblrig"
 # task_settings.IBLRIG_FOLDER = r

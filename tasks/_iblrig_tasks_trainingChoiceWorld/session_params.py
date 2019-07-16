@@ -2,25 +2,24 @@
 # -*- coding: utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date:   2018-02-02 17:19:09
-import os
-import sys
-from sys import platform
-from pathlib import Path
 import logging
-
-from pythonosc import udp_client
+import os
+from pathlib import Path
+from sys import platform
 
 from ibllib.graphic import numinput
-sys.path.append(str(Path(__file__).parent.parent))  # noqa
-sys.path.append(str(Path(__file__).parent.parent.parent.parent))  # noqa
-import adaptive
-import ambient_sensor
-import bonsai
-import iotasks
-import sound
-import misc
-from path_helper import SessionPathCreator
-from rotary_encoder import MyRotaryEncoder
+from pythonosc import udp_client
+
+import iblrig.adaptive as adaptive
+import iblrig.ambient_sensor as ambient_sensor
+import iblrig.bonsai as bonsai
+import iblrig.iotasks as iotasks
+import iblrig.misc as misc
+import iblrig.sound as sound
+import iblrig.frame2TTL as frame2TTL
+from iblrig.path_helper import SessionPathCreator
+from iblrig.rotary_encoder import MyRotaryEncoder
+
 log = logging.getLogger('iblrig')
 
 
@@ -78,6 +77,10 @@ class SessionParamHandler(object):
         self.STIM_GAIN = adaptive.init_stim_gain(self)
         self.IMPULSIVE_CONTROL = 'OFF'
         self = adaptive.impulsive_control(self)
+        # =====================================================================
+        # frame2TTL
+        # =====================================================================
+        self.F2TTL_GET_AND_SET_THRESHOLDS = frame2TTL.get_and_set_thresholds(self)
         # =====================================================================
         # ROTARY ENCODER
         # =====================================================================
@@ -149,7 +152,7 @@ class SessionParamHandler(object):
             nullable=False)
 
     def bpod_lights(self, command: int):
-        fpath = Path(self.IBLRIG_PARAMS_FOLDER) / 'bpod_lights.py'
+        fpath = Path(self.IBLRIG_FOLDER) / 'scripts' / 'bpod_lights.py'
         os.system(f"python {fpath} {command}")
 
     # Bonsai start camera called from main task file

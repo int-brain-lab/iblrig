@@ -1,9 +1,10 @@
 # import numpy.polynomial.polynomial as poly
 # from scipy.signal import find_peaks
 from pathlib import Path
-import pandas as pd
+
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 
 
 def find_calibration_files(folder_path: str) -> list:
@@ -64,8 +65,8 @@ def fit_n_plot(df, fname=None):
 
 
 # if __name__ == "__main__":
-folder_path = '/home/nico/Projects/IBL/github/iblrig/scratch/calibration'
 folder_path = r'C:\iblrig\devices\screen_calibration'
+folder_path = '/home/nico/Projects/IBL/github/iblrig/devices/screen_calibration'
 files = find_calibration_files(folder_path)
 
 # file_path = files[-1]
@@ -86,13 +87,30 @@ files = find_calibration_files(folder_path)
 
 file_path = files[-1]
 plt.figure()
+x_new = np.round(np.linspace(0.01, 1, 100), 2)
 for file_path in files:
+    if 'screen_red' in file_path:
+        c = 'red'
+        label = 'Red channel'
+    elif 'screen_green' in file_path:
+        c = 'green'
+        label = 'Green channel'
+    elif 'screen_blue' in file_path:
+        c = 'blue'
+        label = 'Blue channel'
+    elif 'screen_bright' in file_path:
+        c = 'gray'
+        label = 'All channels'
     df = raw_to_df(file_path)
-    fit_n_plot(df, fname=file_path)
+    plt.plot(df.int, df.val, '.', c=c, label=label)
+    plt.yscale('log')
+    plt.xscale('log')
+    plt.plot(x_new, x_new, c='k')
 plt.title('Screen calibration')
 plt.legend()
 plt.xlabel('Intensity requested')
-plt.ylabel('Harp photodiode raw output (higher is brighter)')
+plt.ylabel('Photodiode raw output (lower is brighter)')
+plt.show()
 print('.')
 # plt.axhline(40, ls='--', alpha=0.5)
 # plt.axhline(80, ls='--', alpha=0.5)

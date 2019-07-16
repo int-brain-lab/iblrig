@@ -3,9 +3,10 @@
 # @Author: Niccolò Bonacchi
 # @Date:   2018-02-20 14:46:10
 # matplotlib.use('Qt5Agg')
+from pathlib import Path
+
 import matplotlib.pyplot as plt
 import numpy as np
-from pathlib import Path
 
 
 def make_fig(sph):
@@ -17,13 +18,13 @@ def make_fig(sph):
     ax_vars = plt.subplot2grid((2, 2), (1, 1), rowspan=1, colspan=1)
     ax_vars2 = ax_vars.twinx()
     f.canvas.draw_idle()
-    plt.show()
+#     plt.show()
 
     f.suptitle(
         f'{sph.SUBJECT_NAME} - {sph.SUBJECT_WEIGHT}gr - {sph.SESSION_DATETIME}')  # noqa
 
     axes = (ax_bars, ax_psych, ax_chron, ax_vars, ax_vars2)
-    # plt.pause(0.001)
+    plt.pause(0.001)
     return (f, axes)
 
 

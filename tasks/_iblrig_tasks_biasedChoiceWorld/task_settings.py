@@ -44,7 +44,7 @@ BLOCK_LEN_MAX = 100
 STIM_POSITIONS = [-35, 35]  # All possible positions for this session (deg)
 # CONTRASTS
 CONTRAST_SET = [1., 0.25, 0.125, 0.0625, 0.]  # Full contrast set
-CONTRAST_SET_PROBABILITY_TYPE = 'biased'  # or 'uniform'. 'biased' will half the probability of drawing a 0.  # noqa
+CONTRAST_SET_PROBABILITY_TYPE = 'uniform'  # 'biased' or 'uniform'. Will half the probability of drawing a 0.  # noqa
 # SOUNDS
 SOFT_SOUND = 'xonar'  # Use software sound 'xonar', 'sysdefault' or None for BpodSoundCard  # noqa
 SOUND_BOARD_BPOD_PORT = 'Serial3'  # (on Bpod) - Ignored if using SOFT_SOUND
@@ -52,6 +52,6 @@ WHITE_NOISE_DURATION = 0.5  # Length of noise burst
 WHITE_NOISE_AMPLITUDE = 0.05
 GO_TONE_DURATION = 0.1  # Length of tone
 GO_TONE_FREQUENCY = 5000  # 5KHz
-GO_TONE_AMPLITUDE = 0.1  # [0->1]
+GO_TONE_AMPLITUDE = 0.0272  # [0->1] 0.0272 for 70dB SPL Xonar
 # POOP COUNT LOGGING
 POOP_COUNT = True  # Wether to ask for a poop count at the end of the session

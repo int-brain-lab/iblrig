@@ -2,23 +2,20 @@
 # -*- coding: utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date:   2018-02-02 14:06:34
-import time
+import datetime
 import json
 import logging
-from pathlib import Path
-from dateutil import parser
-import datetime
+import time
 
 import numpy as np
-import sys
-sys.path.append(str(Path(__file__).parent.parent))  # noqa
-sys.path.append(str(Path(__file__).parent.parent.parent.parent))  # noqa
-from iotasks import ComplexEncoder
-import bonsai
-import misc
-import ambient_sensor
-from check_sync_pulses import sync_check
-import blocks
+from dateutil import parser
+
+import iblrig.ambient_sensor as ambient_sensor
+import iblrig.blocks as blocks
+import iblrig.bonsai as bonsai
+import iblrig.misc as misc
+from iblrig.check_sync_pulses import sync_check
+from iblrig.iotasks import ComplexEncoder
 
 log = logging.getLogger('iblrig')
 
@@ -236,6 +233,9 @@ RELATIVE HUMIDITY:    {self.as_data['RelativeHumidity']} %
         params['response_time_buffer'] = ''
         params['response_side_buffer'] = ''
         params['trial_correct_buffer'] = ''
+        params['quiescent_period_buffer'] = ''
+        params['stim_phase_buffer'] = ''
+        params['len_blocks_buffer'] = ''
         # Dump and save
         out = json.dumps(params, cls=ComplexEncoder)
         self.data_file.write(out)

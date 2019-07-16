@@ -2,20 +2,19 @@
 # -*- coding: utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date:   2018-02-02 17:19:09
-import sys
-from sys import platform
 import logging
+from sys import platform
 
+import ibllib.io.raw_data_loaders as raw
+import numpy as np
 from pythonosc import udp_client
-from pathlib import Path
 
-sys.path.append(str(Path(__file__).parent.parent))  # noqa
-sys.path.append(str(Path(__file__).parent.parent.parent.parent))  # noqa
-import bonsai
-import iotasks
-import sound
-from path_helper import SessionPathCreator
-from rotary_encoder import MyRotaryEncoder
+import iblrig.bonsai as bonsai
+import iblrig.iotasks as iotasks
+import iblrig.sound as sound
+from iblrig.path_helper import SessionPathCreator
+from iblrig.rotary_encoder import MyRotaryEncoder
+
 log = logging.getLogger('iblrig')
 
 
@@ -89,6 +88,9 @@ class SessionParamHandler(object):
         iotasks.copy_task_code(self)
         iotasks.save_task_code(self)
 
+        self.bad_stim_count = 0
+        self.bad_tone_count = 0
+
     # =========================================================================
     # SOUND INTERFACE FOR STATE MACHINE
     # =========================================================================
@@ -97,6 +99,33 @@ class SessionParamHandler(object):
 
     def stop_sound(self):
         self.SD.stop()
+
+    def check_data(self):
+        log.info("Checking...")
+        data = raw.load_data(self.SESSION_FOLDER)
+        for t in data:
+            bad_tone_state = t['behavior_data']['States timestamps']['bad_tone']
+            bad_stim_state = t['behavior_data']['States timestamps']['bad_stim']
+            if not np.all(np.isnan(bad_stim_state)):
+                self.bad_stim_count += 1
+            if not np.all(np.isnan(bad_tone_state)):
+                self.bad_tone_count += 1
+
+        if (self.bad_stim_count != 0) or (self.bad_tone_count != 0):
+            log.error(f"""
+        ##########################################
+                     FAILED TEST !!!!!
+        ##########################################
+          Found missing stimulus sync pulses: {self.bad_stim_count}
+          Found missing tone sync pulses:     {self.bad_tone_count}
+        ##########################################""")
+        else:
+            log.info(f"""
+        ##########################################
+                        PASS:
+        ##########################################
+         Stimulus and tone detected in all trials
+        ##########################################""")
 
     # =========================================================================
     # JSON ENCODER PATCHES

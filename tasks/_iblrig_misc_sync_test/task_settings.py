@@ -35,6 +35,6 @@ CONTRAST_SET = [1.]  # Full contrast set, used if adaptive contrast = False
 SOFT_SOUND = 'xonar'  # Use software sound 'xonar', 'sysdefault' or None for BpodSoundCard  # noqa
 GO_TONE_DURATION = 0.1  # Length of tone
 GO_TONE_FREQUENCY = 5000  # 5KHz
-GO_TONE_AMPLITUDE = 0.1  # [0->1]
+GO_TONE_AMPLITUDE = 0.0272  # [0->1] 0.0272 for 70dB
 # POOP COUNT LOGGING
 POOP_COUNT = True  # Wether to ask for a poop count at the end of the session

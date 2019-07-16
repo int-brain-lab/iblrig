@@ -2,16 +2,17 @@
 # -*- coding: utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date:   2018-02-02 12:31:13
-from pybpodapi.protocol import Bpod, StateMachine
-from pybpod_rotaryencoder_module.module import RotaryEncoder
-import matplotlib.pyplot as plt
 import logging
 
-from session_params import SessionParamHandler
-from trial_params import TrialParamHandler
+import matplotlib.pyplot as plt
+from pybpod_rotaryencoder_module.module import RotaryEncoder
+from pybpodapi.protocol import Bpod, StateMachine
+
+import online_plots as op
 import task_settings
 import user_settings
-import online_plots as op
+from session_params import SessionParamHandler
+from trial_params import TrialParamHandler
 
 log = logging.getLogger('iblrig')
 log.setLevel(logging.INFO)
@@ -144,7 +145,7 @@ for i in range(sph.NTRIALS):  # Main loop
 
     sma.add_state(
         state_name='play_tone',
-        state_timer=0.001,  # XXX: CHANGE THE VALUE FOE NON EPHYS RIGS!!
+        state_timer=0.1,
         state_change_conditions={
             'Tup': 'reset2_rotary_encoder',
             'BNC2High': 'reset2_rotary_encoder'

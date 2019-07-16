@@ -6,12 +6,12 @@
 # Edited by Niccolo Bonacchi, CCU, 2018
 
 import datetime
+import os
 import re
 import time
 import tkinter as tk
-from tkinter import messagebox
 from pathlib import Path
-import os
+from tkinter import messagebox
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -19,9 +19,9 @@ import pandas as pd
 import scipy as sp
 import seaborn as sns  # for easier plotting at the end
 import serial
+from ibllib.graphic import numinput
 from pybpodapi.bpod import Bpod
 from pybpodapi.state_machine import StateMachine
-from ibllib.graphic import numinput
 
 import task_settings
 import user_settings  # PyBpod creates this file on run.
