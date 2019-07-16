@@ -137,10 +137,11 @@ def update_ibllib():
 
 
 def update_bonsai():
+    print("\nUpdating Bonsai")
     broot = IBLRIG_ROOT_PATH / 'Bonsai'
     subprocess.call([str(
         broot / 'Bonsai64.exe'), '--no-editor', str(broot / 'empty.bonsai')])
-
+    print('Bonsai updated')
 
 def branch_info():
     print("Current availiable branches:")
