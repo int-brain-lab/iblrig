@@ -34,6 +34,12 @@ def delete_untracked_files(iblrig_params_path):
     for f in IBLRIG_PARAMS_FOLDER.glob('*.py'):
         f.unlink()
         print(f"  Removed: {f}")
+    # Remove Bonsai.Video preview folders from packages
+    packages = IBLRIG_FOLDER / 'Bonsai' / 'Packages'
+    vid = packages / 'Bonsai.Video.2.4.0-preview'
+    viddes = packages / 'Bonsai.Video.Design.2.4.0-preview'
+    shutil.rmtree(vid)
+    shutil.rmtree(viddes)
 
 
 ################################################################################

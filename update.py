@@ -133,20 +133,12 @@ def update_pip():
 
 
 def update_ibllib():
-    new_install_location = IBLRIG_ROOT_PATH / 'src' / 'ibllib'
-    old_install_location = IBLRIG_ROOT_PATH.parent / 'ibllib'
+    os.system("pip install ibllib -U")
 
-    if new_install_location.exists():
-        os.chdir(new_install_location)
-        subprocess.call(["git", "reset", "--hard"])
-        subprocess.call(["git", "pull"])
 
-    if old_install_location.exists():
-        os.chdir(old_install_location)
-        subprocess.call(["git", "reset", "--hard"])
-        subprocess.call(["git", "pull"])
-
-    os.chdir(IBLRIG_ROOT_PATH)
+def update_bonsai():
+    subprocess.call([str(IBLRIG_ROOT_PATH / 'Bonsai' / 'Bonsai64.exe'),
+                     '--no-editor', 'empty.bonsai'])
 
 
 def branch_info():
@@ -206,6 +198,7 @@ def _update(branch=None, version=None):
             update_conda()
         update_env()
         import_tasks()
+        update_bonsai()
     else:
         return
 
