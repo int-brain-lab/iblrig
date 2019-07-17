@@ -375,7 +375,7 @@
         </Workflow>
       </Expression>
       <Expression xsi:type="ExternalizedMapping">
-        <Property Name="DueTime" DisplayName="Mapping Time" />
+        <Property Name="DueTime" DisplayName="MappingTime" />
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="Timer">

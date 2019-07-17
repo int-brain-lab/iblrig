@@ -470,16 +470,13 @@
           </Edges>
         </Workflow>
       </Expression>
+      <Expression xsi:type="ExternalizedMapping">
+        <Property Name="StimFileName" DisplayName="StimFileName" />
+      </Expression>
       <Expression xsi:type="GroupWorkflow">
         <Name>UpdateStimulus</Name>
         <Workflow>
           <Nodes>
-            <Expression xsi:type="q6:CsvReader">
-              <q6:FileName>stims.csv</q6:FileName>
-              <q6:ListSeparator />
-              <q6:ScanPattern>%i %f</q6:ScanPattern>
-              <q6:SkipRows>0</q6:SkipRows>
-            </Expression>
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="Timer">
                 <DueTime>PT0S</DueTime>
@@ -535,6 +532,15 @@
                 </Edges>
               </Workflow>
             </Expression>
+            <Expression xsi:type="ExternalizedMapping">
+              <Property Name="FileName" DisplayName="StimFileName" />
+            </Expression>
+            <Expression xsi:type="q6:CsvReader">
+              <q6:FileName>stims.csv</q6:FileName>
+              <q6:ListSeparator />
+              <q6:ScanPattern>%i %f</q6:ScanPattern>
+              <q6:SkipRows>0</q6:SkipRows>
+            </Expression>
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="Zip" />
             </Expression>
@@ -561,20 +567,21 @@
             </Expression>
           </Nodes>
           <Edges>
-            <Edge From="0" To="7" Label="Source1" />
+            <Edge From="0" To="1" Label="Source1" />
             <Edge From="1" To="2" Label="Source1" />
+            <Edge From="1" To="5" Label="Source1" />
             <Edge From="2" To="3" Label="Source1" />
-            <Edge From="2" To="6" Label="Source1" />
-            <Edge From="3" To="4" Label="Source1" />
-            <Edge From="3" To="5" Label="Source1" />
-            <Edge From="6" To="7" Label="Source2" />
+            <Edge From="2" To="4" Label="Source1" />
+            <Edge From="5" To="8" Label="Source2" />
+            <Edge From="6" To="7" Label="Source1" />
             <Edge From="7" To="8" Label="Source1" />
-            <Edge From="7" To="10" Label="Source1" />
-            <Edge From="7" To="13" Label="Source1" />
             <Edge From="8" To="9" Label="Source1" />
-            <Edge From="10" To="11" Label="Source1" />
-            <Edge From="10" To="12" Label="Source1" />
-            <Edge From="13" To="14" Label="Source1" />
+            <Edge From="8" To="11" Label="Source1" />
+            <Edge From="8" To="14" Label="Source1" />
+            <Edge From="9" To="10" Label="Source1" />
+            <Edge From="11" To="12" Label="Source1" />
+            <Edge From="11" To="13" Label="Source1" />
+            <Edge From="14" To="15" Label="Source1" />
           </Edges>
         </Workflow>
       </Expression>
@@ -621,6 +628,7 @@
       <Edge From="40" To="41" Label="Source1" />
       <Edge From="41" To="42" Label="Source6" />
       <Edge From="43" To="44" Label="Source1" />
+      <Edge From="46" To="47" Label="Source1" />
     </Edges>
   </Workflow>
   <ExtensionTypes>
