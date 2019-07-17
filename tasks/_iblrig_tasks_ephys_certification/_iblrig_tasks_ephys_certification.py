@@ -7,7 +7,7 @@ from session_params import SessionParamHandler
 
 sph = SessionParamHandler(task_settings, user_settings)
 
-bns = Path(sph.IBLRIG_FOLDER) / 'Bonsai' / 'Bonsai64.exe'
+bns = str(Path(sph.IBLRIG_FOLDER) / 'Bonsai' / 'Bonsai64.exe')
 # wrkfl = Path(sph.IBLRIG_FOLDER) / 'visual_stim' / \
 #     sph.VISUAL_STIMULUS_TYPE / 'certification.bonsai'
 misc_folder = Path(sph.IBLRIG_FOLDER) / 'visual_stim' / 'misc'
@@ -24,11 +24,12 @@ wrkfl_04 = str(stim_04_folder / 'ContrastSelectivityTaskStim.bonsai')
 noedit = '--no-editor'  # implies start and no-debug?
 noboot = '--no-boot'
 # Properties
-fname = '-p:FileNameRFMapStim=' + str(Path(sph.RAW_DATA_FOLDER / '_iblrig_RFMapStim.raw.bin'))
-cmd_01 = [bns, wrkfl_01, noedit, noboot, fname]
+fname = '-p:FileNameRFMapStim=' + str(
+    Path(sph.SESSION_RAW_DATA_FOLDER) / '_iblrig_RFMapStim.raw.bin')
+cmd_01 = [bns, wrkfl_01, noedit, noboot, fname, '-p:MappingTime=00:00:05']
 cmd_02 = [bns, wrkfl_02, noedit, noboot]
-cmd_03 = [bns, wrkfl_03, noedit, noboot]
-cmd_04 = [bns, wrkfl_04, noedit, noboot]
+cmd_03 = [bns, wrkfl_03, noedit, noboot, '-p:CheckerboardTime=00:00:05']
+cmd_04 = [bns, wrkfl_04, noedit, noboot, '-p:StimFileName=stims_test.csv']
 
 s = subprocess.call(cmd_01, stdout=subprocess.PIPE)  # call locks!
 s = subprocess.call(cmd_02, stdout=subprocess.PIPE)  # call locks!
