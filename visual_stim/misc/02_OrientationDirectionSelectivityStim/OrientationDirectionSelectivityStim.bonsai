@@ -326,7 +326,7 @@
               <ExtentX>0.2</ExtentX>
               <ExtentY>0.2</ExtentY>
               <LocationX>1.23333335</LocationX>
-              <LocationY>-0.9</LocationY>
+              <LocationY>-1</LocationY>
               <ColorR>1</ColorR>
               <ColorG>1</ColorG>
               <ColorB>1</ColorB>
@@ -493,7 +493,7 @@
                     <ExtentY>308.041138</ExtentY>
                     <LocationX>0</LocationX>
                     <LocationY>0</LocationY>
-                    <Angle>225</Angle>
+                    <Angle>-45</Angle>
                     <SpatialFrequency>15.4020576</SpatialFrequency>
                     <TemporalFrequency>2</TemporalFrequency>
                     <SquareWave>false</SquareWave>
@@ -549,15 +549,9 @@
               </Workflow>
             </Expression>
             <Expression xsi:type="WorkflowOutput" />
-            <Expression xsi:type="Disable">
-              <Builder xsi:type="MulticastSubject">
-                <Name>UpdateSyncSquare</Name>
-              </Builder>
-            </Expression>
           </Nodes>
           <Edges>
             <Edge From="0" To="1" Label="Source1" />
-            <Edge From="0" To="4" Label="Source1" />
             <Edge From="1" To="2" Label="Source1" />
             <Edge From="2" To="3" Label="Source1" />
           </Edges>
@@ -566,6 +560,16 @@
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="Concat" />
       </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="Last" />
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="TakeUntil" />
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q1:SampleOnUpdateFrame" />
+      </Expression>
+      <Expression xsi:type="WorkflowOutput" />
     </Nodes>
     <Edges>
       <Edge From="0" To="1" Label="Source1" />
@@ -592,6 +596,11 @@
       <Edge From="25" To="26" Label="Source1" />
       <Edge From="26" To="27" Label="Source1" />
       <Edge From="27" To="28" Label="Source1" />
+      <Edge From="28" To="30" Label="Source1" />
+      <Edge From="28" To="29" Label="Source1" />
+      <Edge From="29" To="30" Label="Source2" />
+      <Edge From="30" To="31" Label="Source1" />
+      <Edge From="31" To="32" Label="Source1" />
     </Edges>
   </Workflow>
   <ExtensionTypes>
@@ -610,6 +619,7 @@
     <Type>Bonsai.Numerics.RadianToDegree, Bonsai.Numerics, Version=0.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Reactive.AccumulateBuilder, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Reactive.Concat, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Reactive.Last, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Reactive.RepeatCount, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Reactive.TakeUntil, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Reactive.Timer, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
@@ -618,6 +628,7 @@
     <Type>Bonsai.Shaders.CreateWindow, Bonsai.Shaders, Version=0.19.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Shaders.LoadResources, Bonsai.Shaders, Version=0.19.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Shaders.RenderFrame, Bonsai.Shaders, Version=0.19.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Shaders.SampleOnUpdateFrame, Bonsai.Shaders, Version=0.19.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Vision.CreatePoint3d, Bonsai.Vision, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
   </ExtensionTypes>
 </WorkflowBuilder>
