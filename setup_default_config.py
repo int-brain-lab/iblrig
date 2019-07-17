@@ -26,6 +26,8 @@ def delete_untracked_files(iblrig_params_path):
             (x / 'path_helper.py').unlink()
         if (x / '_user_settings.py').exists():
             (x / '_user_settings.py').unlink()
+        if (x / 'user_settings.py').exists():
+            (x / 'user_settings.py').unlink()
         if (x / 'sound.py').exists():
             (x / 'sound.py').unlink()
         if (x / 'ambient_sensor.py').exists():
