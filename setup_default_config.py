@@ -107,7 +107,7 @@ def create_ibl_users(iblproject_path):
     p = Project()
     p.load(iblproject_path)
     if p.find_user('_iblrig_test_user') is None:
-        user = p.  create_user()
+        user = p.create_user()
         user.name = '_iblrig_test_user'
         p.save(iblproject_path)
         print(f"  Created: IBL default user <{user.name}>")
@@ -276,7 +276,7 @@ def create_ibl_experiments(iblproject_path):
 
 
 ################################################################################
-def create_setup(exp, setup_name: str, board: str, subj: str):
+def create_setup(exp, setup_name: str, board: str, subj: object):
     # task name is defined as the experiment_name + '_' + setup_name
     # Create or get preexisting setup
     setup = [s for s in exp.setups if s.name == setup_name]
@@ -288,8 +288,7 @@ def create_setup(exp, setup_name: str, board: str, subj: str):
     setup.name = setup_name
     setup.task = exp.name + '_' + setup_name
     setup.board = board
-    setup._subjects = []
-    setup._subjects + [subj]
+    setup += subj
     setup.detached = True
     print(f"    Created setup: {setup.name} for experiment {exp.name}")
 
@@ -300,6 +299,8 @@ def create_experiment_setups(iblproject_path, exp_name: str):  # XXX:THIS!
     p = Project()
     p.load(iblproject_path)
     exp = [e for e in p.experiments if e.name == exp_name]
+    calib_subj = [s for s in p.subjects if s.name == '_iblrig_calibration'][0]
+    test_subj = [s for s in p.subjects if s.name == '_iblrig_test_mouse'][0]
     if not exp:
         print(f'Experiment {exp} not found')
         raise KeyError
@@ -307,16 +308,16 @@ def create_experiment_setups(iblproject_path, exp_name: str):  # XXX:THIS!
         exp = exp[0]
 
     if exp.name == '_iblrig_calibration':
-        screen = create_setup(exp, 'screen', p.boards[0].name, exp.name)  # noqa
-        water = create_setup(exp, 'water', p.boards[0].name, exp.name)  # noqa
-        input_listner = create_setup(exp, 'input_listner', p.boards[0].name, exp.name)  # noqa
-        frame2TTL = create_setup(exp, 'frame2TTL', p.boards[0].name, exp.name)  # noqa
+        screen = create_setup(exp, 'screen', p.boards[0].name, calib_subj)  # noqa
+        water = create_setup(exp, 'water', p.boards[0].name, calib_subj)  # noqa
+        input_listner = create_setup(exp, 'input_listner', p.boards[0].name, calib_subj)  # noqa
+        frame2TTL = create_setup(exp, 'frame2TTL', p.boards[0].name, calib_subj)  # noqa
 
     if exp.name == '_iblrig_misc':
         flush_water = create_setup(  # noqa
-            exp, 'flush_water', p.boards[0].name, '_iblrig_test_mouse')
+            exp, 'flush_water', p.boards[0].name, test_subj)
         sync_test = create_setup(  # noqa
-            exp, 'sync_test', p.boards[0].name, '_iblrig_test_mouse')
+            exp, 'sync_test', p.boards[0].name, test_subj)
 
     if exp.name == '_iblrig_tasks':
         biasedChoiceWorld = create_setup(  # noqa
