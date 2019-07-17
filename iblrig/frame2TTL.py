@@ -166,6 +166,9 @@ class Frame2TTL(object):
 def get_and_set_thresholds(sph):
     try:
         params = alyx.load_board_params(sph.PYBPOD_BOARD)  # --> dict
+        if params['F2TTL_COM'] != sph.COM['FRAME2TTL']:
+            alyx.update_board_params(sph.PYBPOD_BOARD, {'F2TTL_COM': sph.COM['FRAME2TTL']})
+            params['F2TTL_COM'] = sph.COM['FRAME2TTL']
     except:  # noqa
         params = {}
         log.error(f"{sph.PYBPOD_BOARD} Board not found")
