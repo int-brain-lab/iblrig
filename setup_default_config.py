@@ -215,8 +215,14 @@ def config_task(iblproject_path, task_name: str):  # XXX: THIS!
     if task.name == '_iblrig_misc_sync_test':
         task = create_task_bonsai_stop_command(task, port=7110)
         task = create_task_cleanup_command(task)
-    # For all of tasks stop the stim 7110, stop the camera 7111 and cleanup
-    if '_iblrig_tasks' in task.name:
+    # For all bpod tasks turn off bpod lights, stop the stim 7110, stop the camera 7111 and cleanup
+    btasks = [
+        '_iblrig_tasks_habituationChoiceWorld',
+        '_iblrig_tasks_trainingChoiceWorld',
+        '_iblrig_tasks_biasedChoiceWorld',
+        '_iblrig_tasks_ephysChoiceWorld',
+    ]
+    if task.name in btasks:
         task = create_task_bonsai_stop_command(task, port=7110)
         task = create_task_bonsai_stop_command(task, port=7111)
         task = create_task_cleanup_command(task)
@@ -230,7 +236,8 @@ def config_task(iblproject_path, task_name: str):  # XXX: THIS!
     if task.name == '_iblrig_tasks_ephysChoiceWorld':
         task = create_task_create_command(task, poop=False)
     if task.name == '_iblrig_tasks_ephys_certification':
-        pass
+        task = create_task_cleanup_command(task)
+
     p.save(iblproject_path)
     print("    Task configured")
 
