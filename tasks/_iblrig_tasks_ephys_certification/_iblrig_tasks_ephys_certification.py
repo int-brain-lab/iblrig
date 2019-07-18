@@ -3,6 +3,7 @@ from pathlib import Path
 
 import task_settings
 import user_settings  # PyBpod creates this file on run.
+# import iblrig.fake_user_settings as user_settings
 from session_params import SessionParamHandler
 
 sph = SessionParamHandler(task_settings, user_settings)
@@ -24,14 +25,21 @@ wrkfl_04 = str(stim_04_folder / 'ContrastSelectivityTaskStim.bonsai')
 noedit = '--no-editor'  # implies start and no-debug?
 noboot = '--no-boot'
 # Properties
-fname = '-p:FileNameRFMapStim=' + str(
-    Path(sph.SESSION_RAW_DATA_FOLDER) / '_iblrig_RFMapStim.raw.bin')
-cmd_01 = [bns, wrkfl_01, noedit, noboot, fname, '-p:MappingTime=00:00:05']
+cmd_01_save_to = '-p:FileNameRFMapStim=' + str(Path(sph.SESSION_RAW_DATA_FOLDER) / '_iblrig_RFMapStim.raw.bin')
+cmd_01_runtime = '-p:MappingTime=00:00:05'
+cmd_03_runtime = '-p:CheckerboardTime=00:00:05'
+cmd_04_stims_test = '-p:StimFileName=' + str(stim_04_folder / 'stims_test.csv')
+# Commands
+cmd_01 = [bns, wrkfl_01, noedit, noboot, cmd_01_save_to, cmd_01_runtime]
 cmd_02 = [bns, wrkfl_02, noedit, noboot]
-cmd_03 = [bns, wrkfl_03, noedit, noboot, '-p:CheckerboardTime=00:00:05']
-cmd_04 = [bns, wrkfl_04, noedit, noboot, '-p:StimFileName=stims_test.csv']
+cmd_03 = [bns, wrkfl_03, noedit, noboot, cmd_03_runtime]
+cmd_04 = [bns, wrkfl_04, noedit, noboot, cmd_04_stims_test]
 
-s = subprocess.call(cmd_01, stdout=subprocess.PIPE)  # call locks!
-s = subprocess.call(cmd_02, stdout=subprocess.PIPE)  # call locks!
-s = subprocess.call(cmd_03, stdout=subprocess.PIPE)  # call locks!
-s = subprocess.call(cmd_04, stdout=subprocess.PIPE)  # call locks!
+print(' '.join(cmd_01))
+s = subprocess.run(cmd_01, stdout=subprocess.PIPE)  # call locks!
+print(' '.join(cmd_02))
+s = subprocess.run(cmd_02, stdout=subprocess.PIPE)  # call locks!
+print(' '.join(cmd_03))
+s = subprocess.run(cmd_03, stdout=subprocess.PIPE)  # call locks!
+print(' '.join(cmd_04))
+s = subprocess.run(cmd_04, stdout=subprocess.PIPE)  # call locks!
