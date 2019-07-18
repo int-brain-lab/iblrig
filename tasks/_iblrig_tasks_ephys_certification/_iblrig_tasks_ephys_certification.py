@@ -6,9 +6,11 @@ import task_settings
 import user_settings  # PyBpod creates this file on run.
 # import iblrig.fake_user_settings as user_settings
 from session_params import SessionParamHandler
+
+sph = SessionParamHandler(task_settings, user_settings)
+
 CWD = os.getcwd()
 BONSAI_FOLDER = Path(sph.IBLRIG_FOLDER) / 'Bonsai'
-sph = SessionParamHandler(task_settings, user_settings)
 
 bns = str(BONSAI_FOLDER / 'Bonsai64.exe')
 # wrkfl = Path(sph.IBLRIG_FOLDER) / 'visual_stim' / \
@@ -32,15 +34,15 @@ cmd_01_runtime = '-p:MappingTime=00:00:05'
 cmd_03_runtime = '-p:CheckerboardTime=00:00:05'
 cmd_04_stims_test = '-p:StimFileName=' + str(stim_04_folder / 'stims_test.csv')
 # Commands
-os.chdir(BONSAI)
 cmd_01 = [bns, wrkfl_01, noedit, noboot, cmd_01_save_to, cmd_01_runtime]
-os.chdir(CWD)
 cmd_02 = [bns, wrkfl_02, noedit, noboot]
 cmd_03 = [bns, wrkfl_03, noedit, noboot, cmd_03_runtime]
 cmd_04 = [bns, wrkfl_04, noedit, noboot, cmd_04_stims_test]
 
 print(' '.join(cmd_01))
+os.chdir(stim_01_folder)
 s = subprocess.run(cmd_01, stdout=subprocess.PIPE)  # call locks!
+os.chdir(CWD)
 print(' '.join(cmd_02))
 s = subprocess.run(cmd_02, stdout=subprocess.PIPE)  # call locks!
 print(' '.join(cmd_03))
