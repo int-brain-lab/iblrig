@@ -9,6 +9,7 @@ from pythonosc import udp_client
 import iblrig.iotasks as iotasks
 import iblrig.user_input as user_input
 from iblrig.path_helper import SessionPathCreator
+import iblrig.frame2TTL as frame2TTL
 
 log = logging.getLogger('iblrig')
 
@@ -42,6 +43,10 @@ class SessionParamHandler(object):
         self.OSC_CLIENT_IP = '127.0.0.1'
         self.OSC_CLIENT = udp_client.SimpleUDPClient(self.OSC_CLIENT_IP,
                                                      self.OSC_CLIENT_PORT)
+        # =====================================================================
+        # frame2TTL
+        # =====================================================================
+        self.F2TTL_GET_AND_SET_THRESHOLDS = frame2TTL.get_and_set_thresholds(self)
         # =====================================================================
         # PROBES + WEIGHT
         # =====================================================================
