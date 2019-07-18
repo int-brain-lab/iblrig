@@ -229,7 +229,8 @@ def config_task(iblproject_path, task_name: str):  # XXX: THIS!
         task = create_task_create_command(task, poop=False)
     if task.name == '_iblrig_tasks_ephysChoiceWorld':
         task = create_task_create_command(task, poop=False)
-
+    if task.name == '_iblrig_tasks_ephys_certification':
+        pass
     p.save(iblproject_path)
     print("    Task configured")
 
@@ -246,6 +247,7 @@ def create_ibl_tasks(iblproject_path):  # XXX: THIS!
         '_iblrig_tasks_habituationChoiceWorld',
         '_iblrig_tasks_trainingChoiceWorld',
         '_iblrig_tasks_ephysChoiceWorld',
+        '_iblrig_tasks_ephys_certification'
     ]
     for task_name in task_names:
         create_task(iblproject_path, task_name=task_name)
@@ -330,6 +332,8 @@ def create_experiment_setups(iblproject_path, exp_name: str):  # XXX:THIS!
             exp, 'trainingChoiceWorld', p.boards[0].name, None)
         ephysChoiceWorld = create_setup(  # noqa
             exp, 'ephysChoiceWorld', p.boards[0].name, None)
+        ephys_certification = create_setup(  # noqa
+            exp, 'ephys_certification', p.boards[0].name, None)
 
     p.save(iblproject_path)
 
