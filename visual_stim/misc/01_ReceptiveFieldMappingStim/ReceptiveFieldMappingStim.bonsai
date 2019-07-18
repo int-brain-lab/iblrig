@@ -15,7 +15,7 @@
           <q1:WindowBorder>Resizable</q1:WindowBorder>
           <q1:WindowState>Fullscreen</q1:WindowState>
           <q1:DisplayDevice>Second</q1:DisplayDevice>
-          <q1:TargetRenderFrequency>120</q1:TargetRenderFrequency>
+          <q1:TargetRenderFrequency>60</q1:TargetRenderFrequency>
           <q1:RenderState />
           <q1:GraphicsMode>
             <q1:ColorFormat>
