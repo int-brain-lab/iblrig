@@ -554,9 +554,9 @@
             </Expression>
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="q5:MatrixWriter">
-                <q5:Path>C:\Users\User\Desktop\passive_eric\SparseNoiseCustom\NoiseLocations.bin</q5:Path>
-                <q5:Suffix>Timestamp</q5:Suffix>
-                <q5:Overwrite>false</q5:Overwrite>
+                <q5:Path>NoiseLocations.bin</q5:Path>
+                <q5:Suffix>None</q5:Suffix>
+                <q5:Overwrite>true</q5:Overwrite>
                 <q5:Layout>RowMajor</q5:Layout>
               </Combinator>
             </Expression>
