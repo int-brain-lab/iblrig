@@ -389,7 +389,7 @@
             </Expression>
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="FloatProperty">
-                <Value>8</Value>
+                <Value>4</Value>
               </Combinator>
             </Expression>
             <Expression xsi:type="PropertyMapping">
@@ -417,7 +417,7 @@
             </Expression>
             <Expression xsi:type="Multiply">
               <Operand xsi:type="IntProperty">
-                <Value>8</Value>
+                <Value>4</Value>
               </Operand>
             </Expression>
             <Expression xsi:type="PropertyMapping">
@@ -429,8 +429,8 @@
             <Expression xsi:type="IncludeWorkflow" Path="BonVision:Primitives.DrawImage.bonsai">
               <Angle>0</Angle>
               <TextureName>DynamicTexture</TextureName>
-              <ExtentX>120</ExtentX>
-              <ExtentY>120</ExtentY>
+              <ExtentX>60</ExtentX>
+              <ExtentY>60</ExtentY>
               <LocationX>0</LocationX>
               <LocationY>0</LocationY>
               <ShiftX>0</ShiftX>
