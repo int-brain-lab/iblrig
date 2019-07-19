@@ -10,6 +10,7 @@ import numpy as np
 from pythonosc import udp_client
 
 import iblrig.bonsai as bonsai
+import iblrig.frame2TTL as frame2TTL
 import iblrig.iotasks as iotasks
 import iblrig.sound as sound
 from iblrig.path_helper import SessionPathCreator
@@ -46,6 +47,10 @@ class SessionParamHandler(object):
         self.OSC_CLIENT_IP = '127.0.0.1'
         self.OSC_CLIENT = udp_client.SimpleUDPClient(self.OSC_CLIENT_IP,
                                                      self.OSC_CLIENT_PORT)
+        # =====================================================================
+        # frame2TTL
+        # =====================================================================
+        self.F2TTL_GET_AND_SET_THRESHOLDS = frame2TTL.get_and_set_thresholds(self)
         # =====================================================================
         # ROTARY ENCODER
         # =====================================================================

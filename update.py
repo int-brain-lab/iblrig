@@ -44,7 +44,7 @@ def get_versions():
                                     "--tags", "origin"]).decode().split()
     vers = [x for x in vers[1::2] if '{' not in x]
     vers = [x.split('/')[-1] for x in vers]
-    available = [x for x in vers if x >= '4.0.0']
+    available = [x for x in vers if x >= '5.0.0']
     print("Available versions: {}".format(available))
     return vers
 
@@ -166,12 +166,13 @@ def info():
                 sorted(versions)[-1], sorted(versions)[-1]))
 
 
-def ask_user_input(msg="Do you want to update?", responses=['y', 'n']):
-    use_msg = msg + f' ([{responses[0]}], {responses[1]}): '
+def ask_user_input(ver='#.#.#', responses=['y', 'n']):
+    msg = f"Do you want to update to {ver}?"
+    use_msg = msg.format(ver) + f' ([{responses[0]}], {responses[1]}): '
     response = input(use_msg) or 'y'
     if response not in responses:
         print(f"Acceptable answers: {responses}")
-        return ask_user_input(msg=msg, responses=responses)
+        return ask_user_input(ver=ver, responses=responses)
 
     return response
 
@@ -188,7 +189,10 @@ def update_to_latest():
 
 def _update(branch=None, version=None):
     global upgrade_conda
-    resp = ask_user_input()
+    if branch:
+        resp = ask_user_input(ver=branch)
+    elif version:
+        resp = ask_user_input(ver=version)
     if resp == 'y':
         if branch:
             checkout_branch(branch)
