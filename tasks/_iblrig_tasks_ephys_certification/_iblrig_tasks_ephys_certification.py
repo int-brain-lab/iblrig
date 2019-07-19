@@ -2,11 +2,14 @@ import os
 import subprocess
 import time
 from pathlib import Path
+import logging
 
 # import user_settings  # PyBpod creates this file on run.
 import iblrig.fake_user_settings as user_settings
 import task_settings
 from session_params import SessionParamHandler
+
+log = logging.getLogger('iblrig')
 
 sph = SessionParamHandler(task_settings, user_settings)
 
@@ -44,31 +47,31 @@ cmd_02 = [bns, wrkfl_02, noedit, noboot]
 cmd_03 = [bns, wrkfl_03, noedit, noboot, cmd_03_runtime]
 cmd_04 = [bns, wrkfl_04, noedit, noboot, cmd_04_stims_test]
 
-print('\nStarting Receptive Field Mapping Simulus:')
-print(' '.join(cmd_01))
+log.info('\nStarting Receptive Field Mapping Simulus:')
+log.info(' '.join(cmd_01))
 os.chdir(stim_00_folder)
 s = subprocess.run(cmd_00, stdout=subprocess.PIPE)  # call locks!
 os.chdir(stim_01_folder)
 s = subprocess.run(cmd_01, stdout=subprocess.PIPE)  # call locks!
-print('\nStarting Orientation Direction Selectivity Simulus:')
-print(' '.join(cmd_02))
+log.info('\nStarting Orientation Direction Selectivity Simulus:')
+log.info(' '.join(cmd_02))
 os.chdir(stim_00_folder)
 s = subprocess.run(cmd_00, stdout=subprocess.PIPE)  # call locks!
 os.chdir(stim_02_folder)
 s = subprocess.run(cmd_02, stdout=subprocess.PIPE)  # call locks!
-print('\nStarting Orientation Direction Selectivity Simulus:')
-print(' '.join(cmd_03))
+log.info('\nStarting Orientation Direction Selectivity Simulus:')
+log.info(' '.join(cmd_03))
 os.chdir(stim_00_folder)
 s = subprocess.run(cmd_00, stdout=subprocess.PIPE)  # call locks!
 os.chdir(stim_03_folder)
 s = subprocess.run(cmd_03, stdout=subprocess.PIPE)  # call locks!
-print('\nStarting Contrast Reversing Checkerboard Simulus:')
-print(' '.join(cmd_04))
+log.info('\nStarting Contrast Reversing Checkerboard Simulus:')
+log.info(' '.join(cmd_04))
 os.chdir(stim_00_folder)
 s = subprocess.run(cmd_00, stdout=subprocess.PIPE)  # call locks!
 os.chdir(stim_04_folder)
 s = subprocess.run(cmd_04, stdout=subprocess.PIPE)  # call locks!
 os.chdir(CWD)
-print('\nStarting 900 seconds of nothingness... [yes, it''s 15 minutes] :)')
+log.info('\nStarting 900 seconds of nothingness... [yes, it''s 15 minutes] :)')
 time.sleep(900)
-print("You're done, please remove the mouse.\n" * 42)
+log.info("You're done, please remove the mouse.\n" * 42)
