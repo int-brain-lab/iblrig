@@ -109,7 +109,7 @@ def make_sound(rate=44100, frequency=5000, duration=0.1, amplitude=1,
     return sound
 
 
-def make_chirp(f0=80, f1=160, length=0.1, amp=0.1, fade=0.01, sf=192000):
+def make_chirp(f0=80, f1=160, length=0.1, amp=0.1, fade=0.01, sf=96000):
     t0 = 0
     t1 = length
     t = np.linspace(t0, t1, sf)
@@ -157,7 +157,7 @@ def format_sound(sound, file_path=None, flat=False):
     return bin_sound.flatten() if flat else bin_sound
 
 
-def configure_sound_card(sounds=[], indexes=[], sample_rate=192):
+def configure_sound_card(sounds=[], indexes=[], sample_rate=96):
     card = SoundCardModule()
     if sample_rate == 192 or sample_rate == 192000:
         sample_rate = SampleRate._192000HZ
@@ -182,8 +182,10 @@ def configure_sound_card(sounds=[], indexes=[], sample_rate=192):
 def sound_sample_freq(soft_sound):
     if soft_sound == 'sysdefault':
         return 44100
-    elif soft_sound == 'xonar' or soft_sound is None:
+    elif soft_sound == 'xonar':
         return 192000
+    elif soft_sound is None:
+        return 96000
     else:
         log.error("SOFT_SOUND in not: 'sysdefault', 'xonar' or 'None'")
         raise(NotImplementedError)

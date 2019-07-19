@@ -1,0 +1,22 @@
+On your taskbar, select the Nvidia control panel
+
+Click on "Adjust desktop color settings" link on the left panel
+
+In the main panel:
+Under "1. Select the display you would like to change."
+Select the iPad screen (probably called Apple Color LCD)
+
+Under "2. Choose how color is set."
+Click on "Use NVIDIA settings"
+Color channel -> All channels
+Brightnes -> 50%
+Contrast  -> 50%
+Gamma     -> 2.4
+
+Under "3. Apply the following enhancements:"
+Digital vibrance -> 50%
+Hue              -> 0
+
+Click on Apply (bottom right of the window)
+Close the Nvidia control panel.
+
