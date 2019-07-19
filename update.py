@@ -166,13 +166,13 @@ def info():
                 sorted(versions)[-1], sorted(versions)[-1]))
 
 
-def ask_user_input(ver=ALL_VERSIONS[-1], responses=['y', 'n']):
+def ask_user_input(ver='#.#.#', responses=['y', 'n']):
     msg = f"Do you want to update to version {ver}?"
     use_msg = msg.format(ver) + f' ([{responses[0]}], {responses[1]}): '
     response = input(use_msg) or 'y'
     if response not in responses:
         print(f"Acceptable answers: {responses}")
-        return ask_user_input(msg=msg, responses=responses)
+        return ask_user_input(ver=ver, responses=responses)
 
     return response
 
@@ -189,7 +189,10 @@ def update_to_latest():
 
 def _update(branch=None, version=None):
     global upgrade_conda
-    resp = ask_user_input()
+    if branch:
+        resp = ask_user_input(ver=branch)
+    elif version:
+        resp = ask_user_input(ver=version)
     if resp == 'y':
         if branch:
             checkout_branch(branch)
