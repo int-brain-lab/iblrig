@@ -237,6 +237,7 @@ def config_task(iblproject_path, task_name: str):  # XXX: THIS!
         task = create_task_create_command(task, poop=False)
     if task.name == '_iblrig_tasks_ephys_certification':
         task = create_task_cleanup_command(task)
+        task = create_task_bpod_lights_command(task, onoff=1, when='POST')
 
     p.save(iblproject_path)
     print("    Task configured")
