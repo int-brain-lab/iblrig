@@ -167,7 +167,7 @@ def info():
 
 
 def ask_user_input(ver='#.#.#', responses=['y', 'n']):
-    msg = f"Do you want to update to version {ver}?"
+    msg = f"Do you want to update to {ver}?"
     use_msg = msg.format(ver) + f' ([{responses[0]}], {responses[1]}): '
     response = input(use_msg) or 'y'
     if response not in responses:
