@@ -47,31 +47,31 @@ cmd_02 = [bns, wrkfl_02, noedit, noboot]
 cmd_03 = [bns, wrkfl_03, noedit, noboot, cmd_03_runtime]
 cmd_04 = [bns, wrkfl_04, noedit, noboot, cmd_04_stims_test]
 
-log.info('\nStarting Receptive Field Mapping Simulus:')
+log.info('Starting Receptive Field Mapping Simulus:')
 log.info(' '.join(cmd_01))
 os.chdir(stim_00_folder)
 s = subprocess.run(cmd_00, stdout=subprocess.PIPE)  # call locks!
 os.chdir(stim_01_folder)
 s = subprocess.run(cmd_01, stdout=subprocess.PIPE)  # call locks!
-log.info('\nStarting Orientation Direction Selectivity Simulus:')
+log.info('Starting Orientation Direction Selectivity Simulus:')
 log.info(' '.join(cmd_02))
 os.chdir(stim_00_folder)
 s = subprocess.run(cmd_00, stdout=subprocess.PIPE)  # call locks!
 os.chdir(stim_02_folder)
 s = subprocess.run(cmd_02, stdout=subprocess.PIPE)  # call locks!
-log.info('\nStarting Orientation Direction Selectivity Simulus:')
+log.info('Starting Orientation Direction Selectivity Simulus:')
 log.info(' '.join(cmd_03))
 os.chdir(stim_00_folder)
 s = subprocess.run(cmd_00, stdout=subprocess.PIPE)  # call locks!
 os.chdir(stim_03_folder)
 s = subprocess.run(cmd_03, stdout=subprocess.PIPE)  # call locks!
-log.info('\nStarting Contrast Reversing Checkerboard Simulus:')
+log.info('Starting Contrast Reversing Checkerboard Simulus:')
 log.info(' '.join(cmd_04))
 os.chdir(stim_00_folder)
 s = subprocess.run(cmd_00, stdout=subprocess.PIPE)  # call locks!
 os.chdir(stim_04_folder)
 s = subprocess.run(cmd_04, stdout=subprocess.PIPE)  # call locks!
 os.chdir(CWD)
-log.info('\nStarting 900 seconds of nothingness... [yes, it''s 15 minutes] :)')
+log.info('Starting 900 seconds of nothingness... [yes, it''s 15 minutes] :)')
 time.sleep(900)
 log.info("You're done, please remove the mouse.\n" * 42)
