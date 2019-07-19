@@ -166,8 +166,9 @@ def info():
                 sorted(versions)[-1], sorted(versions)[-1]))
 
 
-def ask_user_input(msg="Do you want to update to version {}?", responses=['y', 'n']):
-    use_msg = msg.format(ALL_VERSIONS[-1]) + f' ([{responses[0]}], {responses[1]}): '
+def ask_user_input(ver=ALL_VERSIONS[-1], responses=['y', 'n']):
+    msg = f"Do you want to update to version {ver}?"
+    use_msg = msg.format(ver) + f' ([{responses[0]}], {responses[1]}): '
     response = input(use_msg) or 'y'
     if response not in responses:
         print(f"Acceptable answers: {responses}")
