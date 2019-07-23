@@ -4,8 +4,8 @@ import time
 from pathlib import Path
 import logging
 
-# import user_settings  # PyBpod creates this file on run.
-import iblrig.fake_user_settings as user_settings
+import user_settings  # PyBpod creates this file on run.
+# import iblrig.fake_user_settings as user_settings
 import task_settings
 from session_params import SessionParamHandler
 
