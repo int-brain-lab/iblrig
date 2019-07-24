@@ -356,7 +356,7 @@
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="RepeatCount">
-          <Count>2</Count>
+          <Count>20</Count>
         </Combinator>
       </Expression>
       <Expression xsi:type="Combinator">
