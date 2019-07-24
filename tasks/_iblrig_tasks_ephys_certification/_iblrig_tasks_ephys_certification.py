@@ -38,7 +38,7 @@ noboot = '--no-boot'
 cmd_01_save_to = '-p:FileNameRFMapStim=' + str(
     Path(sph.SESSION_RAW_DATA_FOLDER) / '_iblrig_RFMapStim.raw.bin')
 cmd_01_runtime = '-p:MappingTime=00:10:00'  # '-p:MappingTime=00:00:03'
-cmd_03_runtime = '-p:CheckerboardTime=00:10:00'  # '-p:CheckerboardTime=00:00:03'
+cmd_03_runtime = '-p:CheckerboardTime=00:03:00'
 cmd_04_stims_test = '-p:StimFileName=' + str(stim_04_folder / 'stims.csv')  # 'stims_test.csv')
 # Commands
 cmd_00 = [bns, wrkfl_00, noedit, noboot]
