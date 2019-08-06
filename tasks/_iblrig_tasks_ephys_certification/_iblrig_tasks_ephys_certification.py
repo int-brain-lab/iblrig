@@ -47,47 +47,62 @@ cmd_02 = [bns, wrkfl_02, noedit, noboot]
 cmd_03 = [bns, wrkfl_03, noedit, noboot, cmd_03_runtime]
 cmd_04 = [bns, wrkfl_04, noedit, noboot, cmd_04_stims_test]
 
-#1. Spontaneous
-log.info('Starting 900 seconds of nothingness... [yes, it''s 15 minutes] :)')
-time.sleep(900)
-#2. Gratings
-log.info('Starting Orientation Direction Selectivity Simulus:')
-log.info(' '.join(cmd_02))
+# 0. Spacer
 os.chdir(stim_00_folder)
 s = subprocess.run(cmd_00, stdout=subprocess.PIPE)  # call locks!
+# 5. Spontaneous
+log.info('Starting 900 seconds of nothingness... [yes, it''s 15 minutes] :)')
+time.sleep(900)
+# 0. Spacer
+os.chdir(stim_00_folder)
+s = subprocess.run(cmd_00, stdout=subprocess.PIPE)  # call locks!
+# 2. Gratings
+log.info('Starting Orientation Direction Selectivity Simulus:')
+log.info(' '.join(cmd_02))
 os.chdir(stim_02_folder)
 s = subprocess.run(cmd_02, stdout=subprocess.PIPE)  # call locks!
-#3. Receptive Field mapping
+# 0. Spacer
+os.chdir(stim_00_folder)
+s = subprocess.run(cmd_00, stdout=subprocess.PIPE)  # call locks!
+# 1. Receptive Field mapping
 log.info('Starting Receptive Field Mapping Simulus:')
 log.info(' '.join(cmd_01))
-os.chdir(stim_00_folder)
-s = subprocess.run(cmd_00, stdout=subprocess.PIPE)  # call locks!
 os.chdir(stim_01_folder)
 s = subprocess.run(cmd_01, stdout=subprocess.PIPE)  # call locks!
-#4. Contrast reversal stimuli
+# 0. Spacer
+os.chdir(stim_00_folder)
+s = subprocess.run(cmd_00, stdout=subprocess.PIPE)  # call locks!
+# 3. Contrast reversal stimuli
 log.info('Starting ContrastReversingCheckerboardStim:')
 log.info(' '.join(cmd_03))
-os.chdir(stim_00_folder)
-s = subprocess.run(cmd_00, stdout=subprocess.PIPE)  # call locks!
 os.chdir(stim_03_folder)
 s = subprocess.run(cmd_03, stdout=subprocess.PIPE)  # call locks!
-#5. Different contrast task stimuli
+# 0. Spacer
+os.chdir(stim_00_folder)
+s = subprocess.run(cmd_00, stdout=subprocess.PIPE)  # call locks!
+# 4. Different contrast task stimuli
 log.info('Starting ContrastSelectivityTaskStim:')
 log.info(' '.join(cmd_04))
-os.chdir(stim_00_folder)
-s = subprocess.run(cmd_00, stdout=subprocess.PIPE)  # call locks!
 os.chdir(stim_04_folder)
 s = subprocess.run(cmd_04, stdout=subprocess.PIPE)  # call locks!
-os.chdir(CWD)
-#6. Spontaneous 2
-log.info('Starting 900 seconds of nothingness... [yes, it''s 15 minutes] :)')
-time.sleep(900)
-#7. Gratings 2
-log.info('Starting Orientation Direction Selectivity Simulus:')
-log.info(' '.join(cmd_02))
+# 0. Spacer
 os.chdir(stim_00_folder)
 s = subprocess.run(cmd_00, stdout=subprocess.PIPE)  # call locks!
+# 5. Spontaneous 2
+log.info('Starting 900 seconds of nothingness... [yes, it''s 15 minutes] :)')
+time.sleep(900)
+# 0. Spacer
+os.chdir(stim_00_folder)
+s = subprocess.run(cmd_00, stdout=subprocess.PIPE)  # call locks!
+# 2. Gratings 2
+log.info('Starting Orientation Direction Selectivity Simulus:')
+log.info(' '.join(cmd_02))
 os.chdir(stim_02_folder)
 s = subprocess.run(cmd_02, stdout=subprocess.PIPE)  # call locks!
-#The end
+# 0. Spacer
+os.chdir(stim_00_folder)
+s = subprocess.run(cmd_00, stdout=subprocess.PIPE)  # call locks!
+# The end
+os.chdir(CWD)
 log.info("You're done, please remove the mouse.\n" * 42)
+
