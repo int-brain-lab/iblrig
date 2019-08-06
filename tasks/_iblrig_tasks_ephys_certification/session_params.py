@@ -56,10 +56,20 @@ class SessionParamHandler(object):
         # RUN VISUAL STIM
         # =====================================================================
         self.VISUAL_STIMULUS_TYPE = 'ephys_certification'
-        # bonsai.start_visual_stim(self)
+        self.VISUAL_STIMULI = {
+            0: 'SPACER',
+            1: 'receptive_field_mapping',
+            2: 'orientation-direction_selectivity',
+            3: 'contrast_reversal',
+            4: 'task_stimuli',
+            5: 'spontaneous_activity',
+        }
+        self.STIM_ORDER = [0, 5, 0, 2, 0, 1, 0, 3, 0, 4, 0, 5, 0, 2, 0]
         # =====================================================================
         # SAVE SETTINGS FILE AND TASK CODE
         # =====================================================================
+        iotasks.copy_task_code(self)
+        iotasks.save_task_code(self)
         iotasks.save_session_settings(self)
 
     # =========================================================================
