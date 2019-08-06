@@ -105,4 +105,3 @@ s = subprocess.run(cmd_00, stdout=subprocess.PIPE)  # call locks!
 # The end
 os.chdir(CWD)
 log.info("You're done, please remove the mouse.\n" * 42)
-
