@@ -127,6 +127,8 @@ class SessionPathCreator(object):
     def _visual_stim_type(self):
         if 'habituation' in self._PROTOCOL or 'sync_test' in self._PROTOCOL:
             return 'GaborHabituationTask'
+        elif 'ephys_certification' in self._PROTOCOL:
+            return 'ephys_certification'
         else:
             return 'GaborIBLTask'
 
