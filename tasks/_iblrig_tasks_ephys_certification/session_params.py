@@ -53,9 +53,9 @@ class SessionParamHandler(object):
         self.FORM_DATA = user_input.session_form(mouse_name=self.SUBJECT_NAME)
         self = user_input.parse_form_data(self)
         # =====================================================================
-        # RUN VISUAL STIM
+        # VISUAL STIM
         # =====================================================================
-        self.VISUAL_STIMULUS_TYPE = 'ephys_certification'
+        self.VISUAL_STIMULUS_FILE = None
         self.VISUAL_STIMULI = {
             0: 'SPACER',
             1: 'receptive_field_mapping',
@@ -86,4 +86,11 @@ class SessionParamHandler(object):
 
 
 if __name__ == '__main__':
+    import task_settings
+    import iblrig.fake_user_settings as user_settings
+    from pathlib import Path
+    iblrig_folder = Path(__file__).parent.parent.parent
+    task_settings.IBLRIG_FOLDER = iblrig_folder
+    user_settings.PYBPOD_PROTOCOL = '_iblrig_tasks_ephys_certification'
+    sph = SessionParamHandler(task_settings, user_settings)
     print("Done!")
