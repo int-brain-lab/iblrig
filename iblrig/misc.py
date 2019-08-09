@@ -9,15 +9,9 @@ from pathlib import Path
 
 import numpy as np
 from ibllib.io import raw_data_loaders as raw
+from ibllib.pipes import FLAG_FILE_NAMES
 
 log = logging.getLogger('iblrig')
-
-
-FLAGS = [
-    'transfer_me.flag', 'extract_me.flag', 'register_me.flag', 'flatiron.flag',
-    'extract_me.error', 'register_me.error', 'create_me.flag', 'compress_video.flag',
-    'compress_audio.flag', 'extract_ephys.flag',
-]
 
 
 def make_square_dvamat(size, dva):
@@ -137,8 +131,8 @@ def get_trial_rt(behavior_data: dict) -> float:
 def create_flag(session_folder_path: str, flag: str) -> None:
     if not flag.endswith('.flag'):
         flag = flag + '.flag'
-    if flag not in FLAGS:
-        log.info(f'Creating unknown flag file {flag}.flag in {session_folder_path}')
+    if flag not in FLAG_FILE_NAMES:
+        log.warning(f'Creating unknown flag file {flag}.flag in {session_folder_path}')
 
     path = Path(session_folder_path) / flag
     open(path, 'a').close()
