@@ -1,12 +1,13 @@
+import logging
 import os
 import subprocess
 import time
 from pathlib import Path
-import logging
 
-import user_settings  # PyBpod creates this file on run.
+import ibllib.io.flags as flags
 # import iblrig.fake_user_settings as user_settings
 import task_settings
+import user_settings  # PyBpod creates this file on run.
 from session_params import SessionParamHandler
 
 log = logging.getLogger('iblrig')
@@ -105,3 +106,5 @@ s = subprocess.run(cmd_00, stdout=subprocess.PIPE)  # call locks!
 # The end
 os.chdir(CWD)
 log.info("You're done, please remove the mouse.\n" * 42)
+# Create a transfer_me.flag file
+flags.create_transfer_flags(sph.SESSION_FOLDER)
