@@ -8,8 +8,9 @@ from pythonosc import udp_client
 
 import iblrig.iotasks as iotasks
 import iblrig.user_input as user_input
-from iblrig.path_helper import SessionPathCreator
 import iblrig.frame2TTL as frame2TTL
+from iblrig.path_helper import SessionPathCreator
+from iblrig.misc import make_square_dvamat
 
 log = logging.getLogger('iblrig')
 
@@ -64,7 +65,20 @@ class SessionParamHandler(object):
             4: 'task_stimuli',
             5: 'spontaneous_activity',
         }
+
         self.STIM_ORDER = [0, 5, 0, 2, 0, 1, 0, 3, 0, 4, 0, 5, 0, 2, 0]
+        self.VISUAL_STIM_0 = {
+
+        }
+        self.VISUAL_STIM_1 = {
+            'patch_shape': 'square',
+            'patch_dva': 8,
+            'stim_file_name': '_iblrig_RFMapStim.raw.bin',
+            'stim_file_shape': [15, 15, 'nframes'],
+            'stim_npatches': 225,
+            'dva_mat': make_square_dvamat(size=15, dva=8),
+
+        }
         # =====================================================================
         # SAVE SETTINGS FILE AND TASK CODE
         # =====================================================================
