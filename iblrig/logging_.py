@@ -3,7 +3,6 @@
 # @Author: Niccolò Bonacchi
 # @Date: Friday, January 11th 2019, 2:04:42 pm
 # 4 ibllib misc
-# FIXME: HOW IS THIS WORKING???? Refactor this module to not conflict with the std lib logging module
 import logging
 
 from ibllib.misc import logger_config
