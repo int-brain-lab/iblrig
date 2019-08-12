@@ -13,7 +13,7 @@ from ibllib.graphic import strinput
 from ibllib.io import raw_data_loaders as raw
 from pybpodgui_api.models.project import Project
 
-import iblrig.logging  # noqa
+import iblrig.logging_  # noqa
 
 logger = logging.getLogger('iblrig')
 
