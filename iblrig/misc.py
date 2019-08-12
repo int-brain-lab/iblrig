@@ -14,6 +14,10 @@ from ibllib.pipes import FLAG_FILE_NAMES
 log = logging.getLogger('iblrig')
 
 
+def checkerboard(shape):
+    return np.indices(shape).sum(axis=0) % 2
+
+
 def make_square_dvamat(size, dva):
     import numpy as np
     c = np.arange(size) - int(size / 2)
