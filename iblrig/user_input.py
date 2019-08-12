@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date: Friday, May 17th 2019, 9:21:19 am
+import logging
 import sys
 
 import pyforms
@@ -8,6 +9,8 @@ from AnyQt.QtWidgets import QApplication
 from pyforms.basewidget import BaseWidget
 from pyforms.controls import (ControlButton, ControlCombo, ControlLabel,
                               ControlText)
+
+log = logging.getLogger('iblrig')
 
 
 class SessionForm(BaseWidget):
@@ -86,7 +89,7 @@ class SessionForm(BaseWidget):
         }
         self.validate_form_data_types()
         self.close()
-        print(self.form_data)
+        log.info(self.form_data)
         self.app_main_window.close()
         return
 
