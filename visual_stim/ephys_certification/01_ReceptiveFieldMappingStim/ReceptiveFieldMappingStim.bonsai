@@ -143,7 +143,7 @@
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="q3:CreateRandom">
-          <q3:Seed xsi:nil="true" />
+          <q3:Seed>42</q3:Seed>
         </Combinator>
       </Expression>
       <Expression xsi:type="AsyncSubject">
