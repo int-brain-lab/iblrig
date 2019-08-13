@@ -9,7 +9,12 @@ from pathlib import Path
 
 import numpy as np
 from ibllib.io import raw_data_loaders as raw
-from ibllib.pipes import FLAG_FILE_NAMES
+# from ibllib.pipes import FLAG_FILE_NAMES
+FLAG_FILE_NAMES = [
+    'transfer_me.flag', 'extract_me.flag', 'register_me.flag', 'flatiron.flag',
+    'extract_me.error', 'register_me.error', 'create_me.flag', 'compress_video.flag',
+    'compress_audio.flag', 'extract_ephys.flag',
+]
 
 log = logging.getLogger('iblrig')
 
