@@ -331,8 +331,8 @@
     <VisualizerSettings>
       <TimeSeriesVisualizer>
         <Capacity>640</Capacity>
-        <Min>80</Min>
-        <Max>87</Max>
+        <Min>0</Min>
+        <Max>1.1</Max>
         <AutoScale>true</AutoScale>
       </TimeSeriesVisualizer>
     </VisualizerSettings>
@@ -343,8 +343,8 @@
         <Y>3</Y>
       </Location>
       <Size>
-        <Width>735</Width>
-        <Height>611</Height>
+        <Width>1506</Width>
+        <Height>903</Height>
       </Size>
       <WindowState>Normal</WindowState>
     </EditorDialogSettings>

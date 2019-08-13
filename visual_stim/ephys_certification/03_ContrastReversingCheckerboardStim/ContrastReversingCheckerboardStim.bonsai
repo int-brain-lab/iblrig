@@ -362,9 +362,9 @@
               <Property Name="Period" DisplayName="StimulusPeriod" />
             </Expression>
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="Timer">
-                <DueTime>PT0S</DueTime>
-                <Period>PT1S</Period>
+              <Combinator xsi:type="q1:Timer">
+                <q1:DueTime>PT0S</q1:DueTime>
+                <q1:Period>PT1S</q1:Period>
               </Combinator>
             </Expression>
             <Expression xsi:type="Mod">
@@ -380,7 +380,7 @@
             <Expression xsi:type="IncludeWorkflow" Path="BonVision:Primitives.DrawCheckerboard.bonsai">
               <NumberColumns>15</NumberColumns>
               <NumberRows>15</NumberRows>
-              <Phase>0</Phase>
+              <Phase>1</Phase>
               <ExtentX>375</ExtentX>
               <ExtentY>375</ExtentY>
               <LocationX>0</LocationX>
@@ -414,9 +414,8 @@
         <Property Name="DueTime" DisplayName="CheckerboardTime" />
       </Expression>
       <Expression xsi:type="Combinator">
-        <Combinator xsi:type="Timer">
-          <DueTime>PT3M</DueTime>
-          <Period>PT0S</Period>
+        <Combinator xsi:type="q1:Timer">
+          <q1:DueTime>PT3M</q1:DueTime>
         </Combinator>
       </Expression>
       <Expression xsi:type="Combinator">
@@ -470,13 +469,13 @@
     <Type>Bonsai.Numerics.Atan, Bonsai.Numerics, Version=0.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Numerics.RadianToDegree, Bonsai.Numerics, Version=0.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Reactive.TakeUntil, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Reactive.Timer, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Reactive.Zip, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Shaders.CreateWindow, Bonsai.Shaders, Version=0.19.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Shaders.LoadResources, Bonsai.Shaders, Version=0.19.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Shaders.RenderFrame, Bonsai.Shaders, Version=0.19.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Shaders.SampleOnUpdateFrame, Bonsai.Shaders, Version=0.19.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Shaders.TextureResources, Bonsai.Shaders, Version=0.19.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Shaders.Timer, Bonsai.Shaders, Version=0.19.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Vision.CreatePoint3d, Bonsai.Vision, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
   </ExtensionTypes>
 </WorkflowBuilder>

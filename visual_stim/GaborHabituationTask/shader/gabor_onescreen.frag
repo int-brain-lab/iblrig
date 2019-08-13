@@ -34,7 +34,7 @@ void main(){
 //    float locationX = xc[0];
 //    float gabor_contrast = xc[1];
     float positionX = ((locationX + 1.) / 2.); // transforms [-1, 1] -> [0, 1]
-    // TODO: ticks/normalized ticks to deg/tick using gain
+    // ticks/normalized ticks to deg/tick using gain in workflow
     float patch_size_rad = patch_size / 180.* M_PI; //in radian view angle
     float gabor_angle_rad = gabor_angle / 180. * M_PI; //in radian view angle
     float gabor_freq_ncycles = gabor_freq * 360.; // cycle per entire view rotation (360 deg)

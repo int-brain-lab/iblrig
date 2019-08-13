@@ -4,10 +4,33 @@
 # @Date: Friday, February 8th 2019, 12:51:51 pm
 import datetime
 import json
+import logging
 from pathlib import Path
 
 import numpy as np
 from ibllib.io import raw_data_loaders as raw
+# from ibllib.pipes import FLAG_FILE_NAMES
+FLAG_FILE_NAMES = [
+    'transfer_me.flag', 'extract_me.flag', 'register_me.flag', 'flatiron.flag',
+    'extract_me.error', 'register_me.error', 'create_me.flag', 'compress_video.flag',
+    'compress_audio.flag', 'extract_ephys.flag',
+]
+
+log = logging.getLogger('iblrig')
+
+
+def checkerboard(shape):
+    return np.indices(shape).sum(axis=0) % 2
+
+
+def make_square_dvamat(size, dva):
+    import numpy as np
+    c = np.arange(size) - int(size / 2)
+    x = np.array([c] * 15)
+    y = np.rot90(x)
+    dvamat = np.array(list(zip(y.ravel() * dva, x.ravel() * dva)), dtype=(
+        'int, int')).reshape(x.shape)
+    return dvamat
 
 
 def get_port_events(events: dict, name: str = '') -> list:
@@ -114,14 +137,22 @@ def get_trial_rt(behavior_data: dict) -> float:
             behavior_data['States timestamps']['stim_on'][0][0])
 
 
+def create_flag(session_folder_path: str, flag: str) -> None:
+    if not flag.endswith('.flag'):
+        flag = flag + '.flag'
+    if flag not in FLAG_FILE_NAMES:
+        log.warning(f'Creating unknown flag file {flag}.flag in {session_folder_path}')
+
+    path = Path(session_folder_path) / flag
+    open(path, 'a').close()
+
+
 def create_flags(data_file_path: str, poop_count: bool) -> None:
-    flag = Path(data_file_path).parent.parent / 'transfer_me.flag'
-    open(flag, 'a').close()
-    flag2 = Path(data_file_path).parent.parent / 'create_me.flag'
-    open(flag2, 'a').close()
-    flag3 = Path(data_file_path).parent.parent / 'poop_count.flag'
+    session_folder_path = Path(data_file_path).parent.parent
+    create_flag(session_folder_path, 'transfer_me')
+    create_flag(session_folder_path, 'create_me')
     if poop_count:
-        open(flag3, 'a').close()
+        create_flag(session_folder_path, 'poop_count')
 
 
 def draw_session_order():
