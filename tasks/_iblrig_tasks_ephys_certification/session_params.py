@@ -123,6 +123,7 @@ class SessionParamHandler(object):
             'stim_off_time': 0,  # seconds
         }
         self.VISUAL_STIM_4 = {
+            'ttl_num': 400,
             'stim_spatial_freq': 0.1,  # cyc/º
             'sigma': 7**2,  # dva
             'elevation': 0,
