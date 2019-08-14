@@ -56,8 +56,8 @@ class TrialParamHandler(object):
         self.out_stop_sound = sph.OUT_STOP_SOUND
         self.poop_count = sph.POOP_COUNT
         self.save_ambient_data = sph.RECORD_AMBIENT_SENSOR_DATA
-        self.as_data = {'Temperature_C': 0, 'AirPressure_mb': 0,
-                        'RelativeHumidity': 0}
+        self.as_data = {'Temperature_C': -1, 'AirPressure_mb': -1,
+                        'RelativeHumidity': -1}
         # Reward amount
         self.reward_amount = sph.REWARD_AMOUNT
         self.reward_valve_time = sph.REWARD_VALVE_TIME
@@ -116,9 +116,9 @@ class TrialParamHandler(object):
                 bpod_instance, save_to=destination)
             return self.as_data
         else:
-            msg = 'Disabled in task settings'
-            null_measures = {'Temperature_C': msg, 'AirPressure_mb': msg,
-                             'RelativeHumidity': msg}
+            log.info('Ambient Sensor data disabled in task settings')
+            null_measures = {'Temperature_C': -1, 'AirPressure_mb': -1,
+                             'RelativeHumidity': -1}
             self.as_data = null_measures
             return self.as_data
 

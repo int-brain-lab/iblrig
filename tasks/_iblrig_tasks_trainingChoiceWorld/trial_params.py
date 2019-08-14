@@ -242,8 +242,8 @@ class TrialParamHandler(object):
         self.out_stop_sound = sph.OUT_STOP_SOUND
         self.poop_count = sph.POOP_COUNT
         self.save_ambient_data = sph.RECORD_AMBIENT_SENSOR_DATA
-        self.as_data = {'Temperature_C': 0, 'AirPressure_mb': 0,
-                        'RelativeHumidity': 0}
+        self.as_data = {'Temperature_C': -1, 'AirPressure_mb': -1,
+                        'RelativeHumidity': -1}
         # Reward amount
         self.reward_amount = sph.REWARD_AMOUNT
         self.reward_valve_time = sph.REWARD_VALVE_TIME
@@ -361,9 +361,9 @@ class TrialParamHandler(object):
                 bpod_instance, save_to=destination)
             return self.as_data
         else:
-            msg = 'Disabled in task settings'
-            null_measures = {'Temperature_C': msg, 'AirPressure_mb': msg,
-                             'RelativeHumidity': msg}
+            log.info('Ambient Sensor data disabled in task settings')
+            null_measures = {'Temperature_C': -1, 'AirPressure_mb': -1,
+                             'RelativeHumidity': -1}
             self.as_data = null_measures
             return self.as_data
 
@@ -476,19 +476,11 @@ if __name__ == '__main__':
     import matplotlib.pyplot as plt
     import online_plots as op
     import task_settings as _task_settings
-    import scratch._user_settings as _user_settings
-    dt = datetime.datetime.now()
-    dt = [str(dt.year), str(dt.month), str(dt.day),
-          str(dt.hour), str(dt.minute), str(dt.second)]
-    dt = [x if int(x) >= 10 else '0' + x for x in dt]
-    dt.insert(3, '-')
-    _user_settings.PYBPOD_SESSION = ''.join(dt)
-    _user_settings.PYBPOD_SETUP = 'trainingChoiceWorld'
-    _user_settings.PYBPOD_PROTOCOL = '_iblrig_tasks_trainingChoiceWorld'
+    import iblrig.fake_user_settings as _user_settings
     if platform == 'linux':
         r = "/home/nico/Projects/IBL/github/iblrig"
         _task_settings.IBLRIG_FOLDER = r
-        d = "/home/nico/Projects/IBL/github/iblrig/scratch/test_iblrig_data"  # noqa
+        d = "/home/nico/Projects/IBL/github/iblrig_data"
         _task_settings.IBLRIG_DATA_FOLDER = d
         _task_settings.AUTOMATIC_CALIBRATION = False
         _task_settings.USE_VISUAL_STIMULUS = False
