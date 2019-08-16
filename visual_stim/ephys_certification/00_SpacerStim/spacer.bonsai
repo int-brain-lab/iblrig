@@ -6,8 +6,8 @@
         <Combinator xsi:type="q1:CreateWindow">
           <q1:Width>640</q1:Width>
           <q1:Height>480</q1:Height>
-          <q1:VSync>On</q1:VSync>
-          <q1:SwapSync>false</q1:SwapSync>
+          <q1:VSync>Off</q1:VSync>
+          <q1:SwapSync>true</q1:SwapSync>
           <q1:ClearColor>Gray</q1:ClearColor>
           <q1:ClearMask>DepthBufferBit ColorBufferBit</q1:ClearMask>
           <q1:CursorVisible>true</q1:CursorVisible>
@@ -15,7 +15,7 @@
           <q1:WindowBorder>Resizable</q1:WindowBorder>
           <q1:WindowState>Fullscreen</q1:WindowState>
           <q1:DisplayDevice>Second</q1:DisplayDevice>
-          <q1:TargetRenderFrequency>0</q1:TargetRenderFrequency>
+          <q1:TargetRenderFrequency>120</q1:TargetRenderFrequency>
           <q1:RenderState />
           <q1:GraphicsMode>
             <q1:ColorFormat>
@@ -51,7 +51,7 @@
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="FloatProperty">
-          <Value>0</Value>
+          <Value>1</Value>
         </Combinator>
       </Expression>
       <Expression xsi:type="BehaviorSubject">
@@ -60,21 +60,8 @@
       <Expression xsi:type="SubscribeSubject">
         <Name>DrawSyncSquare</Name>
       </Expression>
-      <Expression xsi:type="Combinator">
-        <Combinator xsi:type="IntProperty">
-          <Value>1</Value>
-        </Combinator>
-      </Expression>
       <Expression xsi:type="SubscribeSubject">
         <Name>UpdateSyncSquare</Name>
-      </Expression>
-      <Expression xsi:type="Combinator">
-        <Combinator xsi:type="q1:SampleOnRenderFrame" />
-      </Expression>
-      <Expression xsi:type="Combinator">
-        <Combinator xsi:type="IntProperty">
-          <Value>1</Value>
-        </Combinator>
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="Zip" />
@@ -110,9 +97,6 @@
           <Value>1</Value>
         </Combinator>
       </Expression>
-      <Expression xsi:type="Combinator">
-        <Combinator xsi:type="q1:SampleOnUpdateFrame" />
-      </Expression>
       <Expression xsi:type="Accumulate" />
       <Expression xsi:type="q3:CsvReader">
         <q3:FileName>times.txt</q3:FileName>
@@ -125,9 +109,6 @@
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="Zip" />
-      </Expression>
-      <Expression xsi:type="Combinator">
-        <Combinator xsi:type="q1:SampleOnUpdateFrame" />
       </Expression>
       <Expression xsi:type="MemberSelector">
         <Selector>Item1</Selector>
@@ -182,6 +163,12 @@
       <Expression xsi:type="MulticastSubject">
         <Name>UpdateSyncSquare</Name>
       </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="IntProperty">
+          <Value>1</Value>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Accumulate" />
       <Expression xsi:type="Condition">
         <Workflow>
           <Nodes>
@@ -190,7 +177,7 @@
             </Expression>
             <Expression xsi:type="Equal">
               <Operand xsi:type="IntProperty">
-                <Value>290</Value>
+                <Value>16</Value>
               </Operand>
             </Expression>
             <Expression xsi:type="WorkflowOutput" />
@@ -201,10 +188,13 @@
           </Edges>
         </Workflow>
       </Expression>
+      <Expression xsi:type="Unit" />
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="TakeUntil" />
       </Expression>
-      <Expression xsi:type="WorkflowOutput" />
+      <Expression xsi:type="Disable">
+        <Builder xsi:type="WorkflowOutput" />
+      </Expression>
     </Nodes>
     <Edges>
       <Edge From="0" To="1" Label="Source1" />
@@ -212,34 +202,32 @@
       <Edge From="3" To="4" Label="Source1" />
       <Edge From="4" To="5" Label="Source1" />
       <Edge From="6" To="7" Label="Source1" />
-      <Edge From="8" To="18" Label="Source1" />
-      <Edge From="8" To="9" Label="Source1" />
-      <Edge From="8" To="19" Label="Source1" />
-      <Edge From="9" To="13" Label="Source1" />
+      <Edge From="8" To="15" Label="Source1" />
+      <Edge From="8" To="10" Label="Source1" />
+      <Edge From="8" To="16" Label="Source1" />
+      <Edge From="9" To="10" Label="Source2" />
       <Edge From="10" To="11" Label="Source1" />
       <Edge From="11" To="12" Label="Source1" />
-      <Edge From="12" To="13" Label="Source2" />
+      <Edge From="12" To="13" Label="Source1" />
       <Edge From="13" To="14" Label="Source1" />
-      <Edge From="14" To="15" Label="Source1" />
-      <Edge From="15" To="16" Label="Source1" />
+      <Edge From="14" To="15" Label="Source3" />
+      <Edge From="15" To="31" Label="Source1" />
       <Edge From="16" To="17" Label="Source1" />
-      <Edge From="17" To="18" Label="Source3" />
-      <Edge From="18" To="33" Label="Source1" />
-      <Edge From="19" To="20" Label="Source1" />
+      <Edge From="17" To="23" Label="Source1" />
+      <Edge From="18" To="20" Label="Source1" />
+      <Edge From="19" To="20" Label="Source2" />
       <Edge From="20" To="21" Label="Source1" />
-      <Edge From="21" To="28" Label="Source1" />
-      <Edge From="21" To="32" Label="Source1" />
-      <Edge From="22" To="24" Label="Source1" />
-      <Edge From="23" To="24" Label="Source2" />
+      <Edge From="21" To="22" Label="Source1" />
+      <Edge From="22" To="23" Label="Source2" />
+      <Edge From="23" To="24" Label="Source1" />
       <Edge From="24" To="25" Label="Source1" />
       <Edge From="25" To="26" Label="Source1" />
-      <Edge From="26" To="27" Label="Source1" />
-      <Edge From="27" To="28" Label="Source2" />
+      <Edge From="25" To="27" Label="Source1" />
+      <Edge From="27" To="28" Label="Source1" />
       <Edge From="28" To="29" Label="Source1" />
       <Edge From="29" To="30" Label="Source1" />
-      <Edge From="30" To="31" Label="Source1" />
-      <Edge From="32" To="33" Label="Source2" />
-      <Edge From="33" To="34" Label="Source1" />
+      <Edge From="30" To="31" Label="Source2" />
+      <Edge From="31" To="32" Label="Source1" />
     </Edges>
   </Workflow>
   <ExtensionTypes>
@@ -258,7 +246,5 @@
     <Type>Bonsai.Shaders.CreateWindow, Bonsai.Shaders, Version=0.19.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Shaders.LoadResources, Bonsai.Shaders, Version=0.19.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Shaders.RenderFrame, Bonsai.Shaders, Version=0.19.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Shaders.SampleOnRenderFrame, Bonsai.Shaders, Version=0.19.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Shaders.SampleOnUpdateFrame, Bonsai.Shaders, Version=0.19.0.0, Culture=neutral, PublicKeyToken=null</Type>
   </ExtensionTypes>
 </WorkflowBuilder>

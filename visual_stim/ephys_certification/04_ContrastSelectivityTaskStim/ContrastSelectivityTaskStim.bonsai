@@ -218,7 +218,7 @@
         <SpatialFrequency>10.2680387</SpatialFrequency>
         <TemporalFrequency>0</TemporalFrequency>
         <SquareWave>false</SquareWave>
-        <Contrast>0.125</Contrast>
+        <Contrast>0</Contrast>
         <Radius>0.477208972</Radius>
         <Aperture>0.477208972</Aperture>
         <Opacity>1</Opacity>
@@ -350,7 +350,7 @@
             </Expression>
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="FloatProperty">
-                <Value>0</Value>
+                <Value>1</Value>
               </Combinator>
             </Expression>
             <Expression xsi:type="BehaviorSubject">
@@ -446,9 +446,9 @@
               <ExtentY>0.2</ExtentY>
               <LocationX>1.3</LocationX>
               <LocationY>-1</LocationY>
-              <ColorR>1</ColorR>
-              <ColorG>1</ColorG>
-              <ColorB>1</ColorB>
+              <ColorR>0</ColorR>
+              <ColorG>0</ColorG>
+              <ColorB>0</ColorB>
               <ColorA>1</ColorA>
             </Expression>
             <Expression xsi:type="WorkflowOutput" />
@@ -477,11 +477,23 @@
         <Name>UpdateStimulus</Name>
         <Workflow>
           <Nodes>
+            <Expression xsi:type="ExternalizedMapping">
+              <Property Name="FileName" DisplayName="StimFileName" />
+            </Expression>
+            <Expression xsi:type="q6:CsvReader">
+              <q6:FileName>stims.csv</q6:FileName>
+              <q6:ListSeparator />
+              <q6:ScanPattern>%i %f</q6:ScanPattern>
+              <q6:SkipRows>0</q6:SkipRows>
+            </Expression>
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="Timer">
                 <DueTime>PT0S</DueTime>
                 <Period>PT1S</Period>
               </Combinator>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="q1:SampleOnRenderFrame" />
             </Expression>
             <Expression xsi:type="q5:ExpressionTransform">
               <q5:Expression>it % 3</q5:Expression>
@@ -532,15 +544,6 @@
                 </Edges>
               </Workflow>
             </Expression>
-            <Expression xsi:type="ExternalizedMapping">
-              <Property Name="FileName" DisplayName="StimFileName" />
-            </Expression>
-            <Expression xsi:type="q6:CsvReader">
-              <q6:FileName>stims.csv</q6:FileName>
-              <q6:ListSeparator />
-              <q6:ScanPattern>%i %f</q6:ScanPattern>
-              <q6:SkipRows>0</q6:SkipRows>
-            </Expression>
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="Zip" />
             </Expression>
@@ -568,20 +571,21 @@
           </Nodes>
           <Edges>
             <Edge From="0" To="1" Label="Source1" />
-            <Edge From="1" To="2" Label="Source1" />
-            <Edge From="1" To="5" Label="Source1" />
+            <Edge From="1" To="9" Label="Source1" />
             <Edge From="2" To="3" Label="Source1" />
-            <Edge From="2" To="4" Label="Source1" />
-            <Edge From="5" To="8" Label="Source2" />
-            <Edge From="6" To="7" Label="Source1" />
-            <Edge From="7" To="8" Label="Source1" />
-            <Edge From="8" To="9" Label="Source1" />
-            <Edge From="8" To="11" Label="Source1" />
-            <Edge From="8" To="14" Label="Source1" />
+            <Edge From="3" To="4" Label="Source1" />
+            <Edge From="4" To="5" Label="Source1" />
+            <Edge From="4" To="8" Label="Source1" />
+            <Edge From="5" To="6" Label="Source1" />
+            <Edge From="5" To="7" Label="Source1" />
+            <Edge From="8" To="9" Label="Source2" />
             <Edge From="9" To="10" Label="Source1" />
-            <Edge From="11" To="12" Label="Source1" />
-            <Edge From="11" To="13" Label="Source1" />
-            <Edge From="14" To="15" Label="Source1" />
+            <Edge From="9" To="12" Label="Source1" />
+            <Edge From="9" To="15" Label="Source1" />
+            <Edge From="10" To="11" Label="Source1" />
+            <Edge From="12" To="13" Label="Source1" />
+            <Edge From="12" To="14" Label="Source1" />
+            <Edge From="15" To="16" Label="Source1" />
           </Edges>
         </Workflow>
       </Expression>
@@ -656,6 +660,7 @@
     <Type>Bonsai.Shaders.CreateWindow, Bonsai.Shaders, Version=0.19.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Shaders.LoadResources, Bonsai.Shaders, Version=0.19.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Shaders.RenderFrame, Bonsai.Shaders, Version=0.19.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Shaders.SampleOnRenderFrame, Bonsai.Shaders, Version=0.19.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Shaders.SampleOnUpdateFrame, Bonsai.Shaders, Version=0.19.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Vision.CreatePoint3d, Bonsai.Vision, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
   </ExtensionTypes>
