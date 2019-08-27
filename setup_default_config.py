@@ -21,6 +21,7 @@ def delete_untracked_files(iblrig_params_path):
     iblrig_tasks_path = iblrig_params_path.parent / 'iblrig' / 'tasks'
     task_names = [x.name for x in iblrig_tasks_path.glob('*') if x.is_dir()]
     task_paths = [iblrig_params_tasks_path / x for x in task_names]
+    # Delete old files from all task folders
     for x in task_paths:
         if (x / 'path_helper.py').exists():
             (x / 'path_helper.py').unlink()
