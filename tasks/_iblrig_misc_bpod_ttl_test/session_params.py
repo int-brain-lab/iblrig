@@ -119,15 +119,15 @@ class SessionParamHandler(object):
         if (self.bad_stim_count != 0) or (self.bad_tone_count != 0):
             log.error(f"""
         ##########################################
-                     FAILED TEST !!!!!
+                      TEST FAILED !!!!!
         ##########################################
-          Found missing stimulus sync pulses: {self.bad_stim_count}
-          Found missing tone sync pulses:     {self.bad_tone_count}
+          Missing stimulus sync pulses: {self.bad_stim_count}
+          Missing tone sync pulses:     {self.bad_tone_count}
         ##########################################""")
         else:
             log.info(f"""
         ##########################################
-                        PASS:
+                        TEST PASSED:
         ##########################################
          Stimulus and tone detected in all trials
         ##########################################""")
