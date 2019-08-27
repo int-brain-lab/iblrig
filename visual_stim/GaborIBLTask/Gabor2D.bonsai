@@ -90,7 +90,7 @@
               <SpatialFrequency>11.0015965</SpatialFrequency>
               <TemporalFrequency>0</TemporalFrequency>
               <SquareWave>false</SquareWave>
-              <Contrast>0.0625</Contrast>
+              <Contrast>0</Contrast>
               <Radius>0.445389926</Radius>
               <Aperture>0.445389926</Aperture>
               <Opacity>1</Opacity>
@@ -499,7 +499,7 @@
                       <q3:WindowBorder>Resizable</q3:WindowBorder>
                       <q3:WindowState>Fullscreen</q3:WindowState>
                       <q3:DisplayDevice>Second</q3:DisplayDevice>
-                      <q3:TargetRenderFrequency>0</q3:TargetRenderFrequency>
+                      <q3:TargetRenderFrequency>60</q3:TargetRenderFrequency>
                       <q3:RenderState />
                       <q3:GraphicsMode>
                         <q3:ColorFormat>
