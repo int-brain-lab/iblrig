@@ -347,7 +347,7 @@ def create_experiment_setups(iblproject_path, exp_name: str):  # XXX:THIS!
         trainingChoiceWorld = create_setup(  # noqa
             exp, 'trainingChoiceWorld', p.boards[0].name, None)
         ephysChoiceWorld = create_setup(  # noqa
-            exp, 'ephysChoiceWorld_testing', p.boards[0].name, None)
+            exp, 'ephysChoiceWorld_testing', p.boards[0].name, test_subj)
         ephys_certification = create_setup(  # noqa
             exp, 'ephys_certification', p.boards[0].name, None)
 
