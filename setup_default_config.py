@@ -45,8 +45,9 @@ def delete_untracked_files(iblrig_params_path):
     if viddes.exists():
         shutil.rmtree(viddes)
     # Remove whole tasks from iblrig_params
-    task = [x for x in task_paths if '_iblrig_misc_sync_test' in x]
+    task = [x for x in task_paths if '_iblrig_misc_sync_test' in x.name]
     if task:
+        print('Removing:', task)
         task = task[0]
         shutil.rmtree(task)
 
@@ -445,6 +446,7 @@ def main(iblrig_params_path):
 
 if __name__ == "__main__":
     # setups_to_remove(IBLRIG_PARAMS_FOLDER / 'IBL')
+    # delete_untracked_files(IBLRIG_PARAMS_FOLDER)
     if len(sys.argv) == 1:
         print("Please select a path for iblrig_params folder")
     elif len(sys.argv) == 2:
