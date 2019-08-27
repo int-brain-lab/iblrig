@@ -44,7 +44,11 @@ def delete_untracked_files(iblrig_params_path):
         shutil.rmtree(vid)
     if viddes.exists():
         shutil.rmtree(viddes)
-
+    # Remove whole tasks from iblrig_params
+    task = [x for x in task_paths if '_iblrig_misc_sync_test' in x]
+    if task:
+        task = task[0]
+        shutil.rmtree(task)
 
 ################################################################################
 def copy_pybpod_user_settings():
