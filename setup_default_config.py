@@ -52,6 +52,7 @@ def delete_untracked_files(iblrig_params_path):
         task = task[0]
         shutil.rmtree(task)
 
+
 ################################################################################
 def copy_pybpod_user_settings():
     print('Copying general PyBpod IBL project settings')
