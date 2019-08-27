@@ -21,6 +21,7 @@ def delete_untracked_files(iblrig_params_path):
     iblrig_tasks_path = iblrig_params_path.parent / 'iblrig' / 'tasks'
     task_names = [x.name for x in iblrig_tasks_path.glob('*') if x.is_dir()]
     task_paths = [iblrig_params_tasks_path / x for x in task_names]
+    # Delete old files from all task folders
     for x in task_paths:
         if (x / 'path_helper.py').exists():
             (x / 'path_helper.py').unlink()
@@ -44,6 +45,12 @@ def delete_untracked_files(iblrig_params_path):
         shutil.rmtree(vid)
     if viddes.exists():
         shutil.rmtree(viddes)
+    # Remove whole task from iblrig_params
+    task = [x for x in task_paths if '_iblrig_misc_sync_test' in x.name]
+    if task:
+        print('Removing:', task)
+        task = task[0]
+        shutil.rmtree(task)
 
 
 ################################################################################
@@ -212,7 +219,7 @@ def config_task(iblproject_path, task_name: str):  # XXX: THIS!
         task = create_task_cleanup_command(task)
     if task.name == '_iblrig_misc_flush_water':
         task = create_task_cleanup_command(task)
-    if task.name == '_iblrig_misc_sync_test':
+    if task.name == '_iblrig_misc_bpod_ttl_test':
         task = create_task_bonsai_stop_command(task, port=7110)
         task = create_task_cleanup_command(task)
     # For all bpod tasks turn off bpod lights, stop the stim 7110, stop the camera 7111 and cleanup
@@ -251,7 +258,7 @@ def create_ibl_tasks(iblproject_path):  # XXX: THIS!
         '_iblrig_calibration_input_listner',
         '_iblrig_calibration_frame2TTL',
         '_iblrig_misc_flush_water',
-        '_iblrig_misc_sync_test',
+        '_iblrig_misc_bpod_ttl_test',
         '_iblrig_tasks_biasedChoiceWorld',
         '_iblrig_tasks_habituationChoiceWorld',
         '_iblrig_tasks_trainingChoiceWorld',
@@ -329,8 +336,8 @@ def create_experiment_setups(iblproject_path, exp_name: str):  # XXX:THIS!
     if exp.name == '_iblrig_misc':
         flush_water = create_setup(  # noqa
             exp, 'flush_water', p.boards[0].name, test_subj)
-        sync_test = create_setup(  # noqa
-            exp, 'sync_test', p.boards[0].name, test_subj)
+        bpod_ttl_test = create_setup(  # noqa
+            exp, 'bpod_ttl_test', p.boards[0].name, test_subj)
 
     if exp.name == '_iblrig_tasks':
         biasedChoiceWorld = create_setup(  # noqa
@@ -340,7 +347,7 @@ def create_experiment_setups(iblproject_path, exp_name: str):  # XXX:THIS!
         trainingChoiceWorld = create_setup(  # noqa
             exp, 'trainingChoiceWorld', p.boards[0].name, None)
         ephysChoiceWorld = create_setup(  # noqa
-            exp, 'ephysChoiceWorld', p.boards[0].name, None)
+            exp, 'ephysChoiceWorld_testing', p.boards[0].name, test_subj)
         ephys_certification = create_setup(  # noqa
             exp, 'ephys_certification', p.boards[0].name, None)
 
@@ -441,6 +448,7 @@ def main(iblrig_params_path):
 
 if __name__ == "__main__":
     # setups_to_remove(IBLRIG_PARAMS_FOLDER / 'IBL')
+    # delete_untracked_files(IBLRIG_PARAMS_FOLDER)
     if len(sys.argv) == 1:
         print("Please select a path for iblrig_params folder")
     elif len(sys.argv) == 2:

@@ -4,6 +4,7 @@
 # @Date:   2018-02-02 12:31:13
 import logging
 
+import numpy as np
 from pybpod_rotaryencoder_module.module import RotaryEncoder
 from pybpodapi.protocol import Bpod, StateMachine
 
@@ -122,6 +123,17 @@ for i in range(sph.NTRIALS):  # Main loop
     bpod.run_state_machine(sma)  # Locks until state machine 'exit' is reached
 
     trial_data = tph.trial_completed(bpod.session.current_trial.export())
+
+    bad_stim_count = 0
+    bad_tone_count = 0
+    bad_tone_state = trial_data['behavior_data']['States timestamps']['bad_tone']
+    bad_stim_state = trial_data['behavior_data']['States timestamps']['bad_stim']
+    if not np.all(np.isnan(bad_stim_state)):
+        bad_stim_count += 1
+        log.info(f'Missing stims: {bad_stim_count}')
+    if not np.all(np.isnan(bad_tone_state)):
+        bad_tone_count += 1
+        log.info(f'Missing tones: {bad_tone_count}')
 
 sph.check_data()
 bpod.close()
