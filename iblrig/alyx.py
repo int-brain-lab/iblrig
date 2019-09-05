@@ -16,7 +16,6 @@ from oneibl.one import ONE
 
 log = logging.getLogger('iblrig')
 
-one = ONE()
 EMPTY_BOARD_PARAMS = {
     'BPOD_COM': None,  # str
     'ROTARY_ENCODER_COM': None,  # str
@@ -27,6 +26,15 @@ EMPTY_BOARD_PARAMS = {
     'WATER_CALIBRATION_OPEN_TIMES': None,  # [float, float, ...]
     'WATER_CALIBRATION_WEIGHT_PERDROP': None  # [float, float, ...]
 }
+
+
+def get_one() -> type(ONE):
+    try:
+        one = get_one()
+    except ConnectionError as e:
+        log.error("Cannot create ONE object", e)
+        one = None
+    return one
 
 
 def create_session(session_folder):
@@ -43,6 +51,7 @@ def open_session_narrative(session_url: str) -> None:
 
 
 def load_previous_data(subject_nickname):
+    one = get_one()
     eid = get_latest_session_eid(subject_nickname)
     return one.load(eid, dataset_types=['_iblrig_taskData.raw'])[0]
 
@@ -52,6 +61,7 @@ def load_previous_trial_data(subject_nickname):
 
 
 def load_previous_settings(subject_nickname):
+    one = get_one()
     eid = get_latest_session_eid(subject_nickname)
     # det = one.alyx.rest('sessions', 'read', eid)
     # return json.loads(det['json'])
@@ -61,6 +71,7 @@ def load_previous_settings(subject_nickname):
 def get_latest_session_eid(subject_nickname):
     """Return the eID of the latest session for Subject that has data on
     Flatiron"""
+    one = get_one()
     last_session = one.search(
         subject=subject_nickname,
         dataset_types=['_iblrig_taskData.raw', '_iblrig_taskSettings.raw'],
@@ -72,6 +83,7 @@ def get_latest_session_eid(subject_nickname):
 
 
 def init_board_params(board, force=False):
+    one = get_one()
     p = load_board_params(board)
     if p and not force:
         log.info('Board params already present, exiting...')
@@ -85,6 +97,7 @@ def init_board_params(board, force=False):
 
 
 def update_board_params(board, param_dict):
+    one = get_one()
     params = load_board_params(board)
     if all([k in EMPTY_BOARD_PARAMS for k in param_dict]):
         params.update(param_dict)
@@ -100,6 +113,7 @@ def update_board_params(board, param_dict):
 
 
 def load_board_params(board: str) -> dict:
+    one = get_one()
     try:
         json_field = one.alyx.rest('locations', 'read', id=board)['json']
     except Exception as e:
@@ -113,6 +127,7 @@ def load_board_params(board: str) -> dict:
 
 
 def create_current_running_session(session_folder):
+    one = get_one()
     settings = raw.load_settings(session_folder)
     subject = one.alyx.rest(
         'subjects?nickname=' + settings['PYBPOD_SUBJECTS'][0], 'list')[0]
