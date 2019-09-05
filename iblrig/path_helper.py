@@ -15,7 +15,62 @@ from pybpodgui_api.models.project import Project
 
 import iblrig.logging_  # noqa
 
-logger = logging.getLogger('iblrig')
+log = logging.getLogger('iblrig')
+
+
+def get_iblrig_folder():
+    import iblrig
+    return str(Path(iblrig.__file__).parent.parent)
+
+
+def get_commit_hash(folder):
+    here = os.getcwd()
+    os.chdir(folder)
+    out = subprocess.check_output(["git", "rev-parse", "HEAD"]).decode()
+    os.chdir(here)
+    if not out:
+        log.debug("Commit hash is empty string")
+    log.debug(f"Found commit hash {out}")
+    return out.strip()
+
+
+def get_version_tag(folder: str) -> str:
+    here = os.getcwd()
+    os.chdir(folder)
+    tag = subprocess.check_output(["git", "tag", "--points-at", "HEAD"]).decode().strip()
+    os.chdir(here)
+    if not tag:
+        log.debug(f"NOT FOUND: Version TAG for {folder}")
+    log.debug(f"Found version tag {tag}")
+    return tag
+
+
+def get_session_next_number(session_date_folder: str) -> str:
+    log.debug("Initializing session number")
+    if not Path(session_date_folder).exists():
+        return '001'
+    session_nums = [int(x) for x in os.listdir(session_date_folder)
+                    if os.path.isdir(os.path.join(session_date_folder, x))]
+    if not session_nums:
+        out = '00' + str(1)
+    elif max(session_nums) < 9:
+        out = '00' + str(int(max(session_nums)) + 1)
+    elif 99 > max(session_nums) >= 9:
+        out = '0' + str(int(max(session_nums)) + 1)
+    elif max(session_nums) > 99:
+        out = str(int(max(session_nums)) + 1)
+    log.debug(f"Setting session number to: {out}")
+
+    return out
+
+
+def get_visual_stim_folder(protocol: str) -> str:
+    if 'habituation' in protocol or 'sync_test' in protocol:
+        return 'GaborHabituationTask'
+    elif 'ephys_certification' in protocol:
+        return 'ephys_certification'
+    else:
+        return 'GaborIBLTask'
 
 
 class SessionPathCreator(object):
@@ -105,7 +160,7 @@ class SessionPathCreator(object):
 
     def make_missing_folders(self, makelist):
         if isinstance(makelist, bool):
-            logger.debug(f"Making default folders")
+            log.debug(f"Making default folders")
             self.make_folder(self.IBLRIG_DATA_FOLDER)
             self.make_folder(self.IBLRIG_DATA_SUBJECTS_FOLDER)
             self.make_folder(self.SUBJECT_FOLDER)
@@ -113,7 +168,7 @@ class SessionPathCreator(object):
             self.make_folder(self.SESSION_FOLDER)
             self.make_folder(self.SESSION_RAW_DATA_FOLDER)
         elif isinstance(makelist, list):
-            logger.debug(f"Making extra folders for {makelist}")
+            log.debug(f"Making extra folders for {makelist}")
             self.make_missing_folders(True)
             if 'video' in makelist:
                 self.make_folder(self.SESSION_RAW_VIDEO_DATA_FOLDER)
@@ -133,41 +188,41 @@ class SessionPathCreator(object):
             return 'GaborIBLTask'
 
     def _init_com(self) -> dict:
-        logger.debug("Initializing COM ports")
+        log.debug("Initializing COM ports")
         p = Project()
         p.load(str(Path(self.IBLRIG_PARAMS_FOLDER) / 'IBL'))
         out = None
         if Path(self.BPOD_COMPORTS_FILE).exists():
-            logger.debug(
+            log.debug(
                 f"Found COM port definition file: {self.BPOD_COMPORTS_FILE}")
             # If file exists open file
             with open(self.BPOD_COMPORTS_FILE, 'r') as f:
                 out = json.load(f)
             # Use the GUI defined COM port for BPOD
             out['BPOD'] = p.boards[0].serial_port
-            logger.debug(f".bpod_comports.json exists with content: {out}")
+            log.debug(f".bpod_comports.json exists with content: {out}")
         else:
-            logger.debug(f"NOT FOUND: COM ports definition file")
+            log.debug(f"NOT FOUND: COM ports definition file")
             # If no file exists create empty file
             comports = {
                 'BPOD': None, 'ROTARY_ENCODER': None, 'FRAME2TTL': None}
             comports['BPOD'] = p.boards[0].serial_port
             out = comports
-            logger.debug(f"Calling create with comports: {comports}")
+            log.debug(f"Calling create with comports: {comports}")
             self.create_bpod_comport_file(self.BPOD_COMPORTS_FILE, comports)
         return out
 
     def _check_com_config(self):
         comports = {'BPOD': self.COM['BPOD'], 'ROTARY_ENCODER': None,
                     'FRAME2TTL': None}
-        logger.debug(f"COMPORTS: {str(self.COM)}")
+        log.debug(f"COMPORTS: {str(self.COM)}")
         if not self.COM['ROTARY_ENCODER']:
             comports['ROTARY_ENCODER'] = strinput(
                 "RIG CONFIG",
                 "Please insert ROTARY ENCODER COM port (e.g. COM9): ",
                 default='COM')
-            logger.debug("Updating comport file with ROTARY_ENCODER port " +
-                         f"{comports['ROTARY_ENCODER']}")
+            log.debug("Updating comport file with ROTARY_ENCODER port " +
+                      f"{comports['ROTARY_ENCODER']}")
             self.create_bpod_comport_file(self.BPOD_COMPORTS_FILE, comports)
             self.COM = comports
         if not self.COM['FRAME2TTL']:
@@ -175,8 +230,8 @@ class SessionPathCreator(object):
                 "RIG CONFIG",
                 "Please insert FRAME2TTL COM port (e.g. COM9): ", default='COM'
             )
-            logger.debug("Updating comport file with FRAME2TTL port " +
-                         f"{comports['FRAME2TTL']}")
+            log.debug("Updating comport file with FRAME2TTL port " +
+                      f"{comports['FRAME2TTL']}")
             self.create_bpod_comport_file(self.BPOD_COMPORTS_FILE, comports)
             self.COM = comports
 
@@ -191,8 +246,8 @@ class SessionPathCreator(object):
         out = subprocess.check_output(["git", "rev-parse", "HEAD"]).decode()
         os.chdir(here)
         if not out:
-            logger.debug("Commit hash is empty string")
-        logger.debug(f"Found commit hash {out}")
+            log.debug("Commit hash is empty string")
+        log.debug(f"Found commit hash {out}")
         return out.strip()
 
     def _get_version_tag(self, repo_path):
@@ -202,8 +257,8 @@ class SessionPathCreator(object):
                                        "--points-at", "HEAD"]).decode().strip()
         os.chdir(here)
         if not tag:
-            logger.debug(f"NOT FOUND: Version TAG for {repo_path}")
-        logger.debug(f"Found version tag {tag}")
+            log.debug(f"NOT FOUND: Version TAG for {repo_path}")
+        log.debug(f"Found version tag {tag}")
         return tag
 
     def get_bonsai_path(self, use_iblrig_bonsai=True):
@@ -219,10 +274,10 @@ class SessionPathCreator(object):
         elif use_iblrig_bonsai is False and preexisting_bonsai.exists():
             BONSAI = str(preexisting_bonsai)
         elif use_iblrig_bonsai is False and not preexisting_bonsai.exists():
-            logger.debug(
+            log.debug(
                 f"NOT FOUND: {preexisting_bonsai}. Using packaged Bonsai")
             BONSAI = ibl_bonsai
-        logger.debug(f"Found Bonsai executable: {BONSAI}")
+        log.debug(f"Found Bonsai executable: {BONSAI}")
 
         return BONSAI
 
@@ -230,7 +285,7 @@ class SessionPathCreator(object):
     def create_bpod_comport_file(fpath: str or Path, comports: dict):
         with open(fpath, 'w') as f:
             json.dump(comports, f, indent=1)
-        logger.debug(f"COM port definition file created {comports} in {fpath}")
+        log.debug(f"COM port definition file created {comports} in {fpath}")
         return
 
     @staticmethod
@@ -238,18 +293,18 @@ class SessionPathCreator(object):
         """Check if folder path exists and if not create it + parents."""
         path = Path(str1)
         path.mkdir(parents=True, exist_ok=True)
-        logger.debug(f"Created folder {path}")
+        log.debug(f"Created folder {path}")
 
     @staticmethod
     def get_subfolder_paths(folder):
         out = [os.path.join(folder, x) for x in os.listdir(folder)
                if os.path.isdir(os.path.join(folder, x))]
-        logger.debug(f"Found {len(out)} subfolders for folder {folder}")
+        log.debug(f"Found {len(out)} subfolders for folder {folder}")
 
         return out
 
     def _iblrig_folder_init(self):
-        logger.debug(
+        log.debug(
             f"Ensuring <{os.sep}> separator for folder {self.IBLRIG_FOLDER}")
         if '/' in self.IBLRIG_FOLDER:
             p = '{}'.format(os.path.sep).join(self.IBLRIG_FOLDER.split('/'))
@@ -258,15 +313,15 @@ class SessionPathCreator(object):
         return p
 
     def _iblrig_data_folder_init(self, iblrig_folder, iblrig_data_folder):
-        logger.debug("Initializing data folder")
+        log.debug("Initializing data folder")
         iblrig_folder = Path(iblrig_folder)
         if not iblrig_folder.exists():
-            logger.error("Couldn't find IBLRIG_FOLDER on filesystem")
+            log.error("Couldn't find IBLRIG_FOLDER on filesystem")
             raise IOError
 
         if iblrig_data_folder is None:
             out = iblrig_folder.parent / 'iblrig_data'
-            logger.debug(f"Setting data folder to default location: {out}")
+            log.debug(f"Setting data folder to default location: {out}")
             return str(out)
         else:
             mdf = Path(iblrig_data_folder)
@@ -274,11 +329,11 @@ class SessionPathCreator(object):
                 out = str(mdf.parent)
             elif mdf.name != 'Subjects':
                 out = str(mdf)
-            logger.debug(f"Setting data folder to location: {out}")
+            log.debug(f"Setting data folder to location: {out}")
             return out
 
     def _session_number(self) -> str:
-        logger.debug("Initializing session number")
+        log.debug("Initializing session number")
         if not Path(self.SESSION_DATE_FOLDER).exists():
             return '001'
         session_nums = [int(x) for x in os.listdir(self.SESSION_DATE_FOLDER)
@@ -292,19 +347,19 @@ class SessionPathCreator(object):
             out = '0' + str(int(max(session_nums)) + 1)
         elif max(session_nums) > 99:
             out = str(int(max(session_nums)) + 1)
-        logger.debug(f"Setting session number to: {out}")
+        log.debug(f"Setting session number to: {out}")
 
         return out
 
     def _previous_session_folders(self):
         """
         """
-        logger.debug("Looking for previous session folders")
+        log.debug("Looking for previous session folders")
         sess_folders = []
         subj_folder = Path(self.SUBJECT_FOLDER)
         subj_name = subj_folder.name
         if not subj_folder.exists():
-            logger.debug(
+            log.debug(
                 f'NOT FOUND: No previous sessions for subject {subj_name}')
             return sess_folders
 
@@ -314,21 +369,21 @@ class SessionPathCreator(object):
         sess_folders = [x for x in sorted(sess_folders)
                         if self.SESSION_FOLDER not in x]
         if not sess_folders:
-            logger.debug(
+            log.debug(
                 f'NOT FOUND: No previous sessions for subject {subj_name}')
 
-        logger.debug(
+        log.debug(
             f"Found {len(sess_folders)} session folders for mouse {subj_name}")
 
         return sess_folders
 
     def _previous_data_files(self, typ='data'):
-        logger.debug(f"Looking for previous files of type: {typ}")
+        log.debug(f"Looking for previous files of type: {typ}")
         prev_data_files = []
         prev_session_files = []
         data_fname = self.BASE_FILENAME + 'Data.raw.jsonable'
         settings_fname = self.BASE_FILENAME + 'Settings.raw.json'
-        logger.debug(f"Looking for files:{data_fname} AND {settings_fname}")
+        log.debug(f"Looking for files:{data_fname} AND {settings_fname}")
         for prev_sess_path in self._previous_session_folders():
             prev_sess_path = Path(prev_sess_path) / 'raw_behavior_data'
             # Get all data and settings file if they both exist
@@ -336,85 +391,85 @@ class SessionPathCreator(object):
                     (prev_sess_path / settings_fname).exists()):
                 prev_data_files.append(prev_sess_path / data_fname)
                 prev_session_files.append(prev_sess_path / settings_fname)
-        logger.debug(f"Found {len(prev_data_files)} file pairs")
+        log.debug(f"Found {len(prev_data_files)} file pairs")
         # Remove empty files
         ds_out = [(d, s) for d, s in zip(prev_data_files, prev_session_files)
                   if d.stat().st_size != 0 and s.stat().st_size != 0]
-        logger.debug(f"Found {len(ds_out)} non empty file pairs")
+        log.debug(f"Found {len(ds_out)} non empty file pairs")
         # Remove sessions of different task protocols
         ds_out = [(d, s) for d, s in ds_out if self._PROTOCOL in
                   raw.load_settings(str(s.parent.parent))['PYBPOD_PROTOCOL']]
-        logger.debug(
+        log.debug(
             f"Found {len(ds_out)} file pairs for protocol {self._PROTOCOL}")
         data_out = [str(d) for d, s in ds_out]
         settings_out = [str(s) for d, s in ds_out]
         if not data_out:
-            logger.debug(
+            log.debug(
                 f'NOT FOUND: Previous data files for task {self._PROTOCOL}')
         if not settings_out:
-            logger.debug(
+            log.debug(
                 f'NOT FOUND: Previous settings files for task {self._PROTOCOL}')
-        logger.debug(f"Reurning {typ} files")
+        log.debug(f"Reurning {typ} files")
 
         return data_out if typ == 'data' else settings_out
 
     def _previous_data_file(self):
-        logger.debug("Getting previous data file")
+        log.debug("Getting previous data file")
         out = sorted(self._previous_data_files())
         if out:
-            logger.debug(f"Previous data file: {out[-1]}")
+            log.debug(f"Previous data file: {out[-1]}")
             return out[-1]
         else:
-            logger.debug("NOT FOUND: Previous data file")
+            log.debug("NOT FOUND: Previous data file")
             return None
 
     def _previous_settings_file(self):
-        logger.debug("Getting previous settings file")
+        log.debug("Getting previous settings file")
         out = sorted(self._previous_data_files(typ='settings'))
         if out:
-            logger.debug(f"Previous settings file: {out[-1]}")
+            log.debug(f"Previous settings file: {out[-1]}")
             return out[-1]
         else:
-            logger.debug("NOT FOUND: Previous settings file")
+            log.debug("NOT FOUND: Previous settings file")
             return None
 
     def _previous_session_path(self):
-        logger.debug("Getting previous session path")
+        log.debug("Getting previous session path")
         if self.PREVIOUS_DATA_FILE is not None:
             out = str(Path(self.PREVIOUS_DATA_FILE).parent.parent)
-            logger.debug(f"Previous session path: {out}")
+            log.debug(f"Previous session path: {out}")
         else:
             out = None
-            logger.debug("NOT FOUND: Previous session path")
+            log.debug("NOT FOUND: Previous session path")
 
         return out
 
     def _latest_screen_calib_file(self):
-        logger.debug(f"Looking for screen calibration files: {self._BOARD}")
+        log.debug(f"Looking for screen calibration files: {self._BOARD}")
         dsf = Path(self.IBLRIG_DATA_SUBJECTS_FOLDER)
         cal = dsf / '_iblrig_calibration'
         if not cal.exists():
-            logger.debug(f'NOT FOUND: Calibration subject {str(cal)}')
+            log.debug(f'NOT FOUND: Calibration subject {str(cal)}')
             return None
 
         return None
 
     def _latest_water_calib_file(self):
-        logger.debug(f"Looking for calibration file of board: {self._BOARD}")
+        log.debug(f"Looking for calibration file of board: {self._BOARD}")
         dsf = Path(self.IBLRIG_DATA_SUBJECTS_FOLDER)
         cal = dsf / '_iblrig_calibration'
         if not cal.exists():
-            logger.debug(f'NOT FOUND: Calibration subject {str(cal)}')
+            log.debug(f'NOT FOUND: Calibration subject {str(cal)}')
             return None
 
         if not self._BOARD:
-            logger.debug(f'NOT FOUND: Board {str(self._BOARD)}')
+            log.debug(f'NOT FOUND: Board {str(self._BOARD)}')
             return None
 
         cal_session_folders = []
         for date in self.get_subfolder_paths(str(cal)):
             cal_session_folders.extend(self.get_subfolder_paths(date))
-        logger.debug(f"Found {len(cal_session_folders)} calibration sessions")
+        log.debug(f"Found {len(cal_session_folders)} calibration sessions")
 
         water_cal_files = []
         for session in cal_session_folders:
@@ -424,18 +479,18 @@ class SessionPathCreator(object):
 
         water_cal_files = sorted(water_cal_files,
                                  key=lambda x: int(x.parent.parent.name))
-        logger.debug(
+        log.debug(
             f"Found {len(water_cal_files)} calibration sessions for water")
 
         # Should add check for file.stat().st_size != 0
         if not water_cal_files:
-            logger.debug(
+            log.debug(
                 f'NOT FOUND: Water calibration files for board {self._BOARD}')
             return
 
         water_cal_settings = [x.parent / "_iblrig_taskSettings.raw.json"
                               for x in water_cal_files]
-        logger.debug(f"Found {len(water_cal_settings)} settings files")
+        log.debug(f"Found {len(water_cal_settings)} settings files")
         same_board_cal_files = []
         for fcal, s in zip(water_cal_files, water_cal_settings):
             if s.exists():
@@ -443,23 +498,23 @@ class SessionPathCreator(object):
                 if settings['PYBPOD_BOARD'] == self._BOARD:
                     same_board_cal_files.append(fcal)
                 else:
-                    logger.debug(
+                    log.debug(
                         f'NOT FOUND: PYBPOD_BOARD in settings file {str(s)}')
 
             else:
-                logger.debug(
+                log.debug(
                     f'NOT FOUND: Settings file for data file {str(fcal)}.')
 
         same_board_cal_files = sorted(same_board_cal_files,
                                       key=lambda x: int(x.parent.parent.name))
-        logger.debug(
+        log.debug(
             f"Found {len(same_board_cal_files)} files for board {self._BOARD}")
         if same_board_cal_files:
-            logger.debug(
+            log.debug(
                 f"Latest water calibration file: {same_board_cal_files[-1]}")
             return str(same_board_cal_files[-1])
         else:
-            logger.debug(f'No valid calibration files were found for board {self._BOARD}')
+            log.debug(f'No valid calibration files were found for board {self._BOARD}')
             return
 
     def _latest_water_range_file(self):
@@ -477,7 +532,7 @@ class SessionPathCreator(object):
         # User info and warnings
         for k in self.__dict__:
             if not self.__dict__[k]:
-                logger.info(f"NOT FOUND: {k}")
+                log.info(f"NOT FOUND: {k}")
                 if k == 'IBLRIG_VERSION_TAG':
                     msg = """
         ##########################################
@@ -487,7 +542,7 @@ class SessionPathCreator(object):
         of iblrig. Please run iblrig/update.py to
         check which is the latest version.
         ##########################################"""
-                    logger.warning(msg)
+                    log.warning(msg)
 
                 if k == 'PREVIOUS_DATA_FILE':
                     msg = """
@@ -496,13 +551,13 @@ class SessionPathCreator(object):
         ##########################################
                     USING INIT VALUES
         ##########################################"""
-                    logger.warning(msg)
+                    log.warning(msg)
                 if k == 'LATEST_WATER_CALIBRATION_FILE':
                     msg = """
         ##########################################
          NOT FOUND: LATEST_WATER_CALIBRATION_FILE
         ##########################################"""
-                    logger.warning(msg)
+                    log.warning(msg)
                 if k == 'LATEST_WATER_CALIB_RANGE_FILE':
                     msg = """
         ##########################################
@@ -511,7 +566,7 @@ class SessionPathCreator(object):
                     Using full range
         ##########################################
         """
-                    logger.warning(msg)
+                    log.warning(msg)
 
 
 if __name__ == "__main__":
