@@ -16,3 +16,8 @@ Check Alyx connection
     Load COM ports
 end with user input
 """
+import iblrig.alyx as alyx
+# Check if Alyx is accessible
+alyx.get_one()
+# Load COM ports
+print('.')
