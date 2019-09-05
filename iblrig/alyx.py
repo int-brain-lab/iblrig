@@ -30,7 +30,7 @@ EMPTY_BOARD_PARAMS = {
 
 def get_one() -> type(ONE):
     try:
-        one = get_one()
+        one = ONE()
     except ConnectionError as e:
         log.error("Cannot create ONE object", e)
         one = None
