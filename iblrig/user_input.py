@@ -18,7 +18,7 @@ class SessionForm(BaseWidget):
         super(SessionForm, self).__init__('Session info')
         # Definition of the forms fields
         self._mouseWeight = ControlText(
-            label='Please insert the name of the mouse:')
+            label='Current weight for {}:')
         self._probeLeftLabel = ControlLabel('Probe LEFT')
         self._probeRightLabel = ControlLabel('Probe RIGHT')
         self._probeLeftX = ControlText('X:', default='0')
@@ -98,13 +98,17 @@ def session_form(mouse_name: str = '') -> dict:
     root = QApplication(sys.argv)
     sForm = pyforms.start_app(SessionForm, parent_win=root,
                               geometry=(400, 400, 400, 200))
-    sForm._mouseWeight.label = f'Current weight for {mouse_name}:'
+    sForm._mouseWeight.label = sForm._mouseWeight.label.format(mouse_name)
     root.exec()
 
     if sForm.valid_form_data:
         return sForm.form_data
     else:
-        return session_form(mouse_name)
+        return -1
+        # sForm.close()
+        # sForm.destroy()
+        # root.quit()
+        # return session_form(mouse_name)
 
 
 def parse_form_data(sph):
@@ -115,7 +119,9 @@ def parse_form_data(sph):
     return sph
 
 
-# Execute the application
+# TODO: Fix calls to session_form from SPH objects
 if __name__ == "__main__":
-    bla = session_form(mouse_name='myMouse')
+    res = -1
+    while res == -1:
+        res = session_form(mouse_name='myMouse')
     print('.')
