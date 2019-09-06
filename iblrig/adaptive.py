@@ -96,7 +96,7 @@ def init_reward_valve_time(sph) -> float:
                 break
         out /= 1000
     elif sph.AUTOMATIC_CALIBRATION and sph.CALIB_FUNC is None:
-        msg = """
+        msg = f"""
         ##########################################
                 NO CALIBRATION FILE WAS FOUND:
         Calibrate the rig or use a manual calibration
@@ -110,7 +110,7 @@ def init_reward_valve_time(sph) -> float:
         raise(ValueError)
 
     if out >= 1:
-        msg = """
+        msg = f"""
         ##########################################
             REWARD VALVE TIME IS TOO HIGH!
         Probably because of a BAD calibration file
