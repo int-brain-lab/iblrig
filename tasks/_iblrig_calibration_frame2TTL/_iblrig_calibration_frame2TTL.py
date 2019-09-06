@@ -27,7 +27,7 @@ if resp != -1:
              'F2TTL_DARK_THRESH': f2ttl.recomend_dark,
              'F2TTL_LIGHT_THRESH': f2ttl.recomend_light}
 
-    alyx.update_board_params(sph.PYBPOD_BOARD, patch)
+    alyx.update_board_params(sph.PYBPOD_BOARD, patch)  # XXX: Save local copy
 
 sph.stop_screen_color()
 
