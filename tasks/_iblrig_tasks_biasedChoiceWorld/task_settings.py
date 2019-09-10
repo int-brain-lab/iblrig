@@ -32,8 +32,8 @@ STIM_FREQ = 0.10  # Probably constant - NOT IN USE
 STIM_ANGLE = 0.  # Vertical orientation of Gabor patch - NOT IN USE
 STIM_SIGMA = 7.  # (azimuth_degree) Size of Gabor patch
 STIM_GAIN = 4.  # (azimuth_degree/mm) Gain of the RE to stimulus movement
-SYNC_SQUARE_X = 1.23333335
-SYNC_SQUARE_Y = -1.
+SYNC_SQUARE_X = 1.33
+SYNC_SQUARE_Y = -1.03
 # BLOCKS
 BLOCK_INIT_5050 = True
 BLOCK_PROBABILITY_SET = [0.2, 0.8]
