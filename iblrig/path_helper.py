@@ -18,7 +18,7 @@ import iblrig.logging_  # noqa
 log = logging.getLogger('iblrig')
 
 
-def get_iblrig_folder():
+def get_iblrig_folder() -> str:
     import iblrig
     return str(Path(iblrig.__file__).parent.parent)
 
@@ -62,6 +62,20 @@ def get_session_next_number(session_date_folder: str) -> str:
     log.debug(f"Setting session number to: {out}")
 
     return out
+
+
+def create_bpod_comport_file(fpath: str or Path, comports: dict) -> None:
+    with open(fpath, 'w') as f:
+        json.dump(comports, f, indent=1)
+    log.debug(f"COM port definition file created in {fpath}:\n{comports}")
+    return
+
+
+def load_bpod_comport_file(fpath: str or Path) -> dict:
+    with open(fpath, 'r') as f:
+        comports = json.load(f)
+    log.debug(f"COM port definition file loaded from {fpath}:\n{comports}")
+    return comports
 
 
 def get_visual_stim_folder(protocol: str) -> str:
@@ -282,7 +296,7 @@ class SessionPathCreator(object):
         return BONSAI
 
     @staticmethod
-    def create_bpod_comport_file(fpath: str or Path, comports: dict):
+    def create_bpod_comport_file(fpath: str or Path, comports: dict) -> None:
         with open(fpath, 'w') as f:
             json.dump(comports, f, indent=1)
         log.debug(f"COM port definition file created {comports} in {fpath}")
