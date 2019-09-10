@@ -84,7 +84,7 @@
             <Expression xsi:type="IncludeWorkflow" Path="BonVision:Primitives.DrawGratings.bonsai">
               <ExtentX>110.015961</ExtentX>
               <ExtentY>110.015961</ExtentY>
-              <LocationX>0</LocationX>
+              <LocationX>-35</LocationX>
               <LocationY>0</LocationY>
               <Angle>0</Angle>
               <SpatialFrequency>11.0015965</SpatialFrequency>
@@ -399,7 +399,7 @@
                   </Expression>
                   <Expression xsi:type="Combinator">
                     <Combinator xsi:type="q5:Encoder">
-                      <q5:PortName>COM6</q5:PortName>
+                      <q5:PortName>COM7</q5:PortName>
                     </Combinator>
                   </Expression>
                   <Expression xsi:type="Combinator">
@@ -416,6 +416,9 @@
                   </Expression>
                   <Expression xsi:type="q6:ExpressionTransform">
                     <q6:Expression>single(it)</q6:Expression>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="q3:SampleOnUpdateFrame" />
                   </Expression>
                   <Expression xsi:type="BehaviorSubject">
                     <Name>BpodEvent</Name>
@@ -441,24 +444,53 @@
                       <q1:RescaleType>Linear</q1:RescaleType>
                     </Combinator>
                   </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="q3:SampleOnUpdateFrame" />
+                  </Expression>
                   <Expression xsi:type="BehaviorSubject">
                     <Name>Encoder</Name>
+                  </Expression>
+                  <Expression xsi:type="Disable">
+                    <Builder xsi:type="Combinator">
+                      <Combinator xsi:type="IntProperty">
+                        <Value>1</Value>
+                      </Combinator>
+                    </Builder>
+                  </Expression>
+                  <Expression xsi:type="Disable">
+                    <Builder xsi:type="Accumulate" />
+                  </Expression>
+                  <Expression xsi:type="Disable">
+                    <Builder xsi:type="Combinator">
+                      <Combinator xsi:type="IntProperty">
+                        <Value>1</Value>
+                      </Combinator>
+                    </Builder>
+                  </Expression>
+                  <Expression xsi:type="Disable">
+                    <Builder xsi:type="Accumulate" />
                   </Expression>
                 </Nodes>
                 <Edges>
                   <Edge From="0" To="1" Label="Source1" />
                   <Edge From="1" To="2" Label="Source1" />
-                  <Edge From="1" To="8" Label="Source1" />
+                  <Edge From="1" To="9" Label="Source1" />
                   <Edge From="2" To="3" Label="Source1" />
                   <Edge From="3" To="4" Label="Source1" />
                   <Edge From="4" To="5" Label="Source1" />
                   <Edge From="5" To="6" Label="Source1" />
                   <Edge From="6" To="7" Label="Source1" />
-                  <Edge From="8" To="9" Label="Source1" />
+                  <Edge From="7" To="8" Label="Source1" />
                   <Edge From="9" To="10" Label="Source1" />
                   <Edge From="10" To="11" Label="Source1" />
                   <Edge From="11" To="12" Label="Source1" />
+                  <Edge From="11" To="18" Label="Source1" />
                   <Edge From="12" To="13" Label="Source1" />
+                  <Edge From="13" To="14" Label="Source1" />
+                  <Edge From="14" To="15" Label="Source1" />
+                  <Edge From="15" To="16" Label="Source1" />
+                  <Edge From="16" To="17" Label="Source1" />
+                  <Edge From="18" To="19" Label="Source1" />
                 </Edges>
               </Workflow>
             </Expression>
@@ -664,9 +696,9 @@
                     <ExtentY>0.2</ExtentY>
                     <LocationX>1.23333335</LocationX>
                     <LocationY>-1</LocationY>
-                    <ColorR>1</ColorR>
-                    <ColorG>1</ColorG>
-                    <ColorB>1</ColorB>
+                    <ColorR>0</ColorR>
+                    <ColorG>0</ColorG>
+                    <ColorB>0</ColorB>
                     <ColorA>1</ColorA>
                   </Expression>
                   <Expression xsi:type="ExternalizedMapping">
