@@ -211,8 +211,6 @@ def _update(branch=None, version=None):
 
 
 def main(args):
-    global no_conda
-
     if not any(args.__dict__.values()):
         update_to_latest()
 
