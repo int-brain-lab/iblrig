@@ -70,7 +70,8 @@ ser.write(struct.pack('cB', b':', 1))
 log.debug("Bpod Close")
 ser.close()
 ## Check Frame2TTL (by setting the thresholds)
-
+from iblrig.frame2TTL import Frame2TTL
+f = Frame2TTL(COM['FRAME2TTL'])
 ## Create missing session folders
 
 ## Run fast task to check IO
