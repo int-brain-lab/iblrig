@@ -23,6 +23,16 @@ def get_iblrig_folder() -> str:
     return str(Path(iblrig.__file__).parent.parent)
 
 
+def get_iblrig_params_folder() -> str:
+    iblrig_ = Path(get_iblrig_folder())
+    return str(iblrig_.parent / 'iblrig_params')
+
+
+def get_iblrig_data_folder() -> str:
+    iblrig_ = Path(get_iblrig_folder())
+    return str(iblrig_.parent / 'iblrig_data')
+
+
 def get_commit_hash(folder):
     here = os.getcwd()
     os.chdir(folder)
