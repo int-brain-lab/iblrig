@@ -1,10 +1,13 @@
 import logging
 import struct
+import json
 
 import numpy as np
 import serial
+from pathlib import Path
 
 import iblrig.alyx as alyx
+import iblrig.path_helper as path_helper
 
 log = logging.getLogger('iblrig')
 
@@ -169,9 +172,11 @@ def get_and_set_thresholds(sph):
         if params['F2TTL_COM'] != sph.COM['FRAME2TTL']:
             alyx.update_board_params(sph.PYBPOD_BOARD, {'F2TTL_COM': sph.COM['FRAME2TTL']})
             params['F2TTL_COM'] = sph.COM['FRAME2TTL']
-    except:  # noqa
+    except Exception as e:  # noqa
         params = {}
-        log.error(f"{sph.PYBPOD_BOARD} Board not found")
+        log.warning(f"{sph.PYBPOD_BOARD}: Board not found or Alyx unavailable")
+        log.warning(f"Looking locally for .frame2ttl_params file")
+        params = load_frame2ttl_params_file()
     if not params:
         log.warning(
             f"No parameters found for board {sph.PYBPOD_BOARD}, please calibrate the device.")
@@ -183,6 +188,18 @@ def get_and_set_thresholds(sph):
         log.info(f"Frame2TTL: Thresholds set.")
         return 0
     return -1
+
+
+def update_frame2ttl_params_file(data: dict) -> None:
+    pass  # TODO: IMPLEMENT THIS!!
+
+
+def load_frame2ttl_params_file() -> dict:
+    pass  # TODO: IMPLEMENT THIS!!
+
+
+def write_frame2ttl_params_file(data: dict = None, force: bool = False) -> None:
+    pass  # TODO: IMPLEMENT THIS!!
 
 
 if __name__ == "__main__":
