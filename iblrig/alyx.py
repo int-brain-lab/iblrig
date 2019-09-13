@@ -13,19 +13,11 @@ import ibllib.io.raw_data_loaders as raw
 import oneibl.params
 from ibllib.pipes.experimental_data import create
 from oneibl.one import ONE
+from iblrig.params import (
+    EMPTY_BOARD_PARAMS, write_params_file, load_params_file, update_params_file,
+    get_board_name)
 
 log = logging.getLogger('iblrig')
-
-EMPTY_BOARD_PARAMS = {
-    'BPOD_COM': None,  # str
-    'ROTARY_ENCODER_COM': None,  # str
-    'F2TTL_COM': None,  # str
-    'F2TTL_DARK_THRESH': None,  # float
-    'F2TTL_LIGHT_THRESH': None,  # float
-    'WATER_CALIBRATION_RANGE': None,  # [min, max]
-    'WATER_CALIBRATION_OPEN_TIMES': None,  # [float, float, ...]
-    'WATER_CALIBRATION_WEIGHT_PERDROP': None  # [float, float, ...]
-}
 
 
 def get_one() -> type(ONE):
@@ -82,48 +74,60 @@ def get_latest_session_eid(subject_nickname):
         return None
 
 
-def init_board_params(board, force=False):
+def write_board_params(data: dict = None, force: bool = False) -> None:
+    if data is None:
+        data = EMPTY_BOARD_PARAMS
+        data['NAME'] = get_board_name()
+    board = data['NAME']
     one = get_one()
-    p = load_board_params(board)
+    p = load_board_params()
     if p and not force:
         log.info('Board params already present, exiting...')
         return p
-    empty_params = EMPTY_BOARD_PARAMS
     patch_dict = {
-        "json": json.dumps(empty_params)
+        "json": json.dumps(data)
     }
     one.alyx.rest('locations', 'partial_update', id=board, data=patch_dict)
-    return empty_params
+    return data
 
 
-def update_board_params(board, param_dict):
-    one = get_one()
-    params = load_board_params(board)
-    if all([k in EMPTY_BOARD_PARAMS for k in param_dict]):
-        params.update(param_dict)
-        patch_dict = {
-            "json": json.dumps(params)
-        }
-        one.alyx.rest('locations', 'partial_update', id=board, data=patch_dict)
-        log.info(f'Changed board params: {param_dict}')
-    else:
-        log.error('Not all keys exist in board params')
-
-    return params
-
-
-def load_board_params(board: str) -> dict:
+def load_board_params() -> dict:
+    board = get_board_name()
     one = get_one()
     try:
-        json_field = one.alyx.rest('locations', 'read', id=board)['json']
+        out = one.alyx.rest('locations', 'read', id=board)['json']
+        out = json.loads(out)
     except Exception as e:
-        log.error(e)
-        json_field = None
-    if json_field is not None:
-        json_field = json.loads(json_field)
-    else:
-        json_field = {}
-    return json_field
+        log.warining(e)
+        out = None
+    return out
+
+
+def update_board_params(data: dict, force: bool = False) -> dict:
+    old = load_board_params()
+    if old is None:
+        log.info("board params not found, creating...")
+        write_board_params()
+        old = load_board_params()
+
+    board = get_board_name()
+    if data['NAME'] != board:
+        log.error(f"Board {board} not equal to data['NAME'] {data['NAME']}")
+        raise(AttributeError)
+    for k in data:
+        if k in old.keys():
+            old[k] = data[k]
+        else:
+            if not force:
+                log.info(f"Unknown key {k}: skipping key...")
+                continue
+            elif force:
+                log.info(f"Adding new key {k} with value {data[k]} to {board} json field")
+                old[k] = data[k]
+    write_board_params(data=old, force=True)
+    log.info(f'Changed board params: {data}')
+
+    return old
 
 
 def create_current_running_session(session_folder):
