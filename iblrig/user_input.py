@@ -126,17 +126,18 @@ def session_form(mouse_name: str = '') -> dict:
         # return session_form(mouse_name)
 
 
-def parse_form_data(sph):
-    fdata = sph.FORM_DATA
-    sph.SUBJECT_WEIGHT = fdata['mouseWeight']
-    sph.LEFT_PROBE = {k: v for k, v in fdata.items() if 'Left' in k}
-    sph.RIGHT_PROBE = {k: v for k, v in fdata.items() if 'Right' in k}
-    return sph
+def get_subject_weight(form_data):
+    return form_data['mouseWeight']
 
 
-# TODO: Fix calls to session_form from SPH objects
+def get_probe_data(form_data):
+    return {k: v for k, v in form_data.items() if 'probe' in k and 'Label' not in k}
+
+
 if __name__ == "__main__":
     res = -1
     while res == -1:
         res = session_form(mouse_name='myMouse')
+    w = get_subject_weight(res)
+    p = get_probe_data(res)
     print('.')

@@ -164,8 +164,11 @@ class SessionParamHandler(object):
         # =====================================================================
         # PROBES + WEIGHT
         # =====================================================================
-        self.FORM_DATA = user_input.session_form(mouse_name=self.SUBJECT_NAME)
-        self = user_input.parse_form_data(self)
+        form_data = -1
+        while form_data == -1:
+            form_data = user_input.session_form(mouse_name=self.SUBJECT_NAME)
+        self.SUBJECT_WEIGHT = user_input.get_subject_weight(form_data)
+        self.PROBE_DATA = user_input.get_probe_data(form_data)
         # =====================================================================
         # VISUAL STIM
         # =====================================================================
