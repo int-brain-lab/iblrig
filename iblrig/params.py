@@ -152,3 +152,4 @@ def try_migrate_to_params(force=False):
         # Find latest F2TTL calib and set F2TTL values
         # upload to Alyx board
     # if force do it anyway
+    pass
