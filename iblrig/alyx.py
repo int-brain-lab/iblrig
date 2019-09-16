@@ -98,7 +98,7 @@ def load_board_params() -> dict:
         out = one.alyx.rest('locations', 'read', id=board)['json']
         out = json.loads(out)
     except Exception as e:
-        log.warining(e)
+        log.error(e)
         out = None
     return out
 
