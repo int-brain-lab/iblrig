@@ -111,3 +111,40 @@ def update_params_file(data: dict, force: bool = False) -> None:
     log.info(f'Changed params file: {data}')
 
     return old
+
+
+def update_params(data: dict) -> None:
+    update_params_file(data=data)
+    try:
+        iblrig.alyx.update_board_params(data=data)
+    except Exception as e:
+        log.warning(f"Could not update board params on Alyx. Saved locally:\n{e}")
+
+
+def load_params() -> dict:
+    out_alyx = iblrig.alyx.load_board_params()
+    out = load_params_file()
+    if out_alyx is None:
+        log.warning(f"Could not load board params from Alyx. Loading from local file...")
+        return out
+    if out_alyx != out:
+        log.warning(f"Local data and Alyx data are not the same. Using local.")
+        update_params_file(data=out)
+    return out
+
+
+def write_params(data: dict = None, force: bool = False) -> None:
+    iblrig.params.write_params_file(data=data, force=force)
+    try:
+        iblrig.alyx.write_board_params(data=data, force=force)
+    except Exception as e:
+        log.warning(f"Could not write board params to Alyx. Written to local file:\n{e}")
+
+
+def try_migrate_to_params(force=False):
+    # See if file exists:
+        # Get .bpod_comports file and set the COM values
+        # Find latest H2O calib and set WATER values
+        # Find latest F2TTL calib and set F2TTL values
+        # upload to Alyx board
+    # if force do it anyway
