@@ -31,7 +31,11 @@ def get_board_name():
     iblproject_path = Path(path_helper.get_iblrig_params_folder()) / 'IBL'
     p = Project()
     p.load(str(iblproject_path))
-    return p.boards[0].name
+    pars = load_params_file()
+    if p.boards[0].name != pars['NAME']:
+        pars['NAME'] = p.boards[0].name
+        update_params_file(data=pars)
+    return pars['NAME']
 
 
 def write_params_file(data: dict = None, force: bool = False) -> dict:
