@@ -31,7 +31,6 @@ if resp != -1:
              'F2TTL_LIGHT_THRESH': f2ttl.recomend_light,
              'F2TTL_CALIBRATION_DATE': datetime.datetime.now().isoformat()}
 
-    iblrig_params_folder = get_iblrig_params_folder()
     update_frame2ttl_params_file(data=patch)
     try:
         alyx.update_board_params(data=patch)
