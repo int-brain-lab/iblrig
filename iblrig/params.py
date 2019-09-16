@@ -79,7 +79,7 @@ def load_params_file() -> dict:
     if not fpath.exists():
         return None
     with open(fpath, 'r') as f:
-        out = json.read(f)
+        out = json.load(f)
     return out
 
 
@@ -112,7 +112,7 @@ def update_params_file(data: dict, force: bool = False) -> None:
                 log.info(f"Adding new key {k} with value {data[k]} to .iblrig_params.json")
                 old[k] = data[k]
     write_params_file(data=old, force=True)
-    log.info(f'Changed params file: {data}')
+    log.info('Updated params file')
 
     return old
 
