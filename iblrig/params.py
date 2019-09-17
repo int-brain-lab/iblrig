@@ -152,7 +152,7 @@ def try_migrate_to_params():
     comports_file = Path(path_helper.get_iblrig_params_folder()) / '.bpod_comports.json'
     # See if file exists:
     if params_file.exists():
-        log.info(f"File exists: {params_file} not migrating...")
+        log.info(f"No steps taken - File exists: {params_file}")
         return
     # Get .bpod_comports file and set the COM values
     if comports_file.exists():
