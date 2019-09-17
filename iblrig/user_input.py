@@ -39,7 +39,7 @@ class SessionForm(BaseWidget):
             'θ [elev] (deg):', default='0',
             helptext='Up = +90º, Down = -90º, Range(-90, +90)')
         self._probe00T = ControlText(
-            'ψ [tilt] (deg):', default='0',
+            'ϕ [tilt] (deg):', default='0',
             helptext='0º flat facing vertical axis [Z], Range(-180º, 180º)')
         self._probe00D = ControlText(
             'D [depth] (µm):', default='0',
@@ -65,7 +65,7 @@ class SessionForm(BaseWidget):
             'θ [elev] (deg):', default='0',
             helptext='Up = +90º, Down = -90º, Range(-90, +90)')
         self._probe01T = ControlText(
-            'ψ [tilt] (deg):', default='0',
+            'ϕ [tilt] (deg):', default='0',
             helptext='0º flat facing vertical axis [Z], Range(-180º, 180º)')
         self._probe01D = ControlText(
             'D [depth] (µm):', default='0',
