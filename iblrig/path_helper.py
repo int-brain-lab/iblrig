@@ -28,9 +28,11 @@ def get_iblrig_params_folder() -> str:
     return str(iblrig_.parent / 'iblrig_params')
 
 
-def get_iblrig_data_folder() -> str:
+def get_iblrig_data_folder(subjects=True) -> str:
     iblrig_ = Path(get_iblrig_folder())
-    return str(iblrig_.parent / 'iblrig_data')
+    out = str(iblrig_.parent / 'iblrig_data')
+    sout = str(iblrig_.parent / 'iblrig_data' / 'Subjects')
+    return sout if subjects else out
 
 
 def get_commit_hash(folder):
@@ -74,6 +76,7 @@ def get_session_next_number(session_date_folder: str) -> str:
     return out
 
 
+# XXX: To be removed
 def create_bpod_comport_file(fpath: str or Path, comports: dict) -> None:
     with open(fpath, 'w') as f:
         json.dump(comports, f, indent=1)
@@ -81,6 +84,7 @@ def create_bpod_comport_file(fpath: str or Path, comports: dict) -> None:
     return
 
 
+# XXX: To be removed
 def load_bpod_comport_file(fpath: str or Path) -> dict:
     with open(fpath, 'r') as f:
         comports = json.load(f)
@@ -88,13 +92,58 @@ def load_bpod_comport_file(fpath: str or Path) -> dict:
     return comports
 
 
-def get_visual_stim_folder(protocol: str) -> str:
+def get_visual_stim_folder_name(protocol: str) -> str:
     if 'habituation' in protocol or 'sync_test' in protocol:
         return 'GaborHabituationTask'
     elif 'ephys_certification' in protocol:
         return 'ephys_certification'
     else:
         return 'GaborIBLTask'
+
+
+def get_water_calibration_func_file(latest=True) -> Path or list:
+    data_folder = Path(get_iblrig_data_folder())
+    func_files = sorted(data_folder.rglob('_iblrig_calibration_water_function.csv'))
+    if not func_files:
+        return
+    return func_files[-1] if latest else func_files
+
+
+def get_water_calibration_range_file(latest=True) -> Path or list:
+    data_folder = Path(get_iblrig_data_folder())
+    range_files = sorted(data_folder.rglob('_iblrig_calibration_water_range.csv'))
+    if not range_files:
+        return
+    return range_files[-1] if latest else range_files
+
+
+def load_water_calibraition_func_file(fpath) -> dict:
+    if not Path(fpath).exists:
+        return
+
+    import pandas as pd
+    # Load TODO: remove pandas dependency
+    df1 = pd.read_csv(fpath)
+    if df1.empty:
+        return {'WATER_CALIBRATION_OPEN_TIMES': None,
+                'WATER_CALIBRATION_WEIGHT_PERDROP': None}
+
+    return {'WATER_CALIBRATION_OPEN_TIMES': df1["open_time"].to_list(),
+            'WATER_CALIBRATION_WEIGHT_PERDROP': df1["weight_perdrop"].to_list()}
+
+
+def load_water_calibraition_range_file(fpath) -> dict:
+    if not Path(fpath).exists:
+        return
+
+    import pandas as pd
+    # Load TODO: remove pandas dependency
+    df1 = pd.read_csv(fpath)
+    if df1.empty:
+        return {'WATER_CALIBRATION_RANGE': [None, None]}
+
+    return {'WATER_CALIBRATION_RANGE': [df1.min_open_time.iloc[0],
+                                        df1.max_open_time.iloc[0]]}
 
 
 class SessionPathCreator(object):
