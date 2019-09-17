@@ -19,38 +19,57 @@ class SessionForm(BaseWidget):
         # Definition of the forms fields
         self._mouseWeight = ControlText(
             label='Current weight for {}:')
+
         self._probe00Label = ControlLabel('Probe 00')
         self._probe01Label = ControlLabel('Probe 01')
-        self._probe00X = ControlText('[X] M/L (µm):', default='0',
-                                     helptext='Right = Positive, Left = Negative')
-        self._probe00Y = ControlText('[Y] A/P (µm):', default='0',
-                                     helptext='Anterior = Positive, Posterior = Negative')
-        self._probe00Z = ControlText('[Z] D/V (µm):', default='0',
-                                     helptext='Dorsal = Positive, Ventral = Negative')
+
+        self._probe00X = ControlText(
+            'X [M/L] (µm):', default='0',
+            helptext='Right = Positive, Left = Negative')
+        self._probe00Y = ControlText(
+            'Y [A/P] (µm):', default='0',
+            helptext='Anterior = Positive, Posterior = Negative')
+        self._probe00Z = ControlText(
+            'Z [D/V] (µm):', default='0',
+            helptext='Dorsal = Positive, Ventral = Negative')
         self._probe00A = ControlText(
-            'Azimuth (deg):', default='0',
+            'β [azim] (deg):', default='0',
             helptext='Right = 0º, Front = 90º, Left = 180º/-180º, Back = -90, Range(-180º, +180º)')
-        self._probe00E = ControlText('Elevation (deg):', default='0',
-                                     helptext='Up = +90º, Down = -90º, Range(-90, +90)')
-        self._probe00D = ControlText('[D]epth (µm):', default='0',
-                                     helptext='D value of the tip.')
+        self._probe00E = ControlText(
+            'θ [elev] (deg):', default='0',
+            helptext='Up = +90º, Down = -90º, Range(-90, +90)')
+        self._probe00T = ControlText(
+            'ψ [tilt] (deg):', default='0',
+            helptext='0º flat facing vertical axis [Z], Range(-180º, 180º)')
+        self._probe00D = ControlText(
+            'D [depth] (µm):', default='0',
+            helptext='D value of the tip.')
         self._probe00Origin = ControlCombo('Origin:')
         self._probe00Origin.add_item('', None)
         self._probe00Origin.add_item('Bregma', 'bregma')
         self._probe00Origin.add_item('Lambda', 'lambda')
 
-        self._probe01X = ControlText('[X] M/L (µm):', default='0',
-                                     helptext='Right = Positive, Left = Negative')
-        self._probe01Y = ControlText('[Y] A/P (µm):', default='0',
-                                     helptext='Anterior = Positive, Posterior = Negative')
-        self._probe01Z = ControlText('[Z] D/V (µm):', default='0',
-                                     helptext='Dorsal = Positive, Ventral = Negative')
+        self._probe01X = ControlText(
+            'X [M/L] (µm):', default='0',
+            helptext='Right = Positive, Left = Negative')
+        self._probe01Y = ControlText(
+            'Y [A/P] (µm):', default='0',
+            helptext='Anterior = Positive, Posterior = Negative')
+        self._probe01Z = ControlText(
+            'Z [D/V] (µm):', default='0',
+            helptext='Dorsal = Positive, Ventral = Negative')
         self._probe01A = ControlText(
-            'Azimuth (deg):', default='0',
+            'β [azim] (deg):', default='0',
             helptext='Right = 0º, Front = 90º, Left = 180º/-180º, Back = -90, Range(-180º, +180º)')
-        self._probe01E = ControlText('Elevation (deg):', default='0',
-                                     helptext='Up = +90º, Down = -90º, Range(-90, +90)')
-        self._probe01D = ControlText('[D]epth (µm):', default='0', helptext='D value of the tip.')
+        self._probe01E = ControlText(
+            'θ [elev] (deg):', default='0',
+            helptext='Up = +90º, Down = -90º, Range(-90, +90)')
+        self._probe01T = ControlText(
+            'ψ [tilt] (deg):', default='0',
+            helptext='0º flat facing vertical axis [Z], Range(-180º, 180º)')
+        self._probe01D = ControlText(
+            'D [depth] (µm):', default='0',
+            helptext='D value of the tip.')
         self._probe01Origin = ControlCombo('Origin:')
         self._probe01Origin.add_item('', None)
         self._probe01Origin.add_item('Bregma', 'bregma')
@@ -68,6 +87,7 @@ class SessionForm(BaseWidget):
                         (' ', '_probe00Z', ' ', '_probe01Z', ' '),
                         (' ', '_probe00A', ' ', '_probe01A', ' '),
                         (' ', '_probe00E', ' ', '_probe01E', ' '),
+                        (' ', '_probe00T', ' ', '_probe01T', ' '),
                         (' ', '_probe00D', ' ', '_probe01D', ' '),
                         (' ', ' ', ' ', ' ', ' '),
                         (' ', '_button', ' '),
@@ -84,7 +104,7 @@ class SessionForm(BaseWidget):
     def validate_form_data_types(self):
         try:
             for k, v in self.form_data.items():
-                if any([x in k for x in 'XYZAED']):
+                if any([x in k for x in 'XYZAETD']):
                     self.form_data.update({k: float(v)})
                 elif 'Origin' in k:
                     self.form_data.update({k: str(v)})
@@ -131,7 +151,17 @@ def get_subject_weight(form_data):
 
 
 def get_probe_data(form_data):
-    return {k: v for k, v in form_data.items() if 'probe' in k and 'Label' not in k}
+    flat = {k: v for k, v in form_data.items() if 'probe' in k and 'Label' not in k}
+    nested = {'probe00': {}, 'probe01': {}}
+    for k in flat:
+        if 'probe00' in k:
+            nk = k.strip('probe00')
+            nested['probe00'][nk] = flat[k]
+        elif 'probe01' in k:
+            nk = k.strip('probe01')
+            nested['probe01'][nk] = flat[k]
+
+    return nested
 
 
 if __name__ == "__main__":
