@@ -7,6 +7,7 @@ import iblrig.logging_  # noqa
 from pathlib import Path
 import iblrig.path_helper as path_helper
 import json
+import iblrig.alyx as alyx
 from pybpodgui_api.models.project import Project
 
 log = logging.getLogger('iblrig')
@@ -146,10 +147,39 @@ def write_params(data: dict = None, force: bool = False) -> None:
 
 
 def try_migrate_to_params(force=False):
+    params_file = Path(path_helper.get_iblrig_params_folder()) / '.iblrig_params.json'
+    comports_file = Path(path_helper.get_iblrig_params_folder()) / '.bpod_comports.json'
     # See if file exists:
-        # Get .bpod_comports file and set the COM values
-        # Find latest H2O calib and set WATER values
-        # Find latest F2TTL calib and set F2TTL values
-        # upload to Alyx board
+    if params_file.exists() and not force:
+        log.debug("File exists not migrating...")
+        return
+    # Get .bpod_comports file and set the COM values
+    if comports_file.exists():
+        with open(comports_file, 'r') as f:
+            com_data = json.load(f)
+        com_dict = {'COM_BPOD': com_data['BPOD'],  # str
+                    'COM_ROTARY_ENCODER': com_data['ROTARY_ENCODER'],  # str
+                    'COM_F2TTL': com_data['FRAME2TTL']}  # str
+    else:
+        com_dict = {}
+    # Find latest H2O calib and set WATER values
+    range_file = path_helper.get_water_calibration_range_file()
+    func_file = path_helper.get_water_calibration_func_file()
+    water_dict = {}
+    if (func_file and range_file) and (func_file.parent == range_file.parent):
+        water_dict.update(path_helper.load_water_calibraition_range_file(range_file))
+        water_dict.update(path_helper.load_water_calibraition_func_file(func_file))
+        water_dict.update({'WATER_CALIBRATION_DATE': func_file.parent.parent.parent.name})
+    if func_file:
+        water_dict.update(path_helper.load_water_calibraition_func_file(func_file))
+        water_dict.update({'WATER_CALIBRATION_DATE': func_file.parent.parent.parent.name})
+    # Find latest F2TTL calib and set F2TTL values
+    board = get_board_name()
+    # alyx.
+    # upload to Alyx board
     # if force do it anyway
     pass
+
+
+if __name__ == "__main__":
+    print('.')
