@@ -45,7 +45,6 @@ class SessionForm(BaseWidget):
             'D [depth] (µm):', default='0',
             helptext='D value of the tip.')
         self._probe00Origin = ControlCombo('Origin:')
-        self._probe00Origin.add_item('', None)
         self._probe00Origin.add_item('Bregma', 'bregma')
         self._probe00Origin.add_item('Lambda', 'lambda')
 
@@ -71,7 +70,6 @@ class SessionForm(BaseWidget):
             'D [depth] (µm):', default='0',
             helptext='D value of the tip.')
         self._probe01Origin = ControlCombo('Origin:')
-        self._probe01Origin.add_item('', None)
         self._probe01Origin.add_item('Bregma', 'bregma')
         self._probe01Origin.add_item('Lambda', 'lambda')
 
@@ -120,7 +118,7 @@ class SessionForm(BaseWidget):
         """Button action event"""
         self.form_data = {
             k.strip('_'): v.value for k, v in self.__dict__.items()
-            if 'probe' in k or 'session' in k or 'Weight' in k
+            if 'probe' in k or 'Weight' in k
         }
         self.validate_form_data_types()
         self.close()
