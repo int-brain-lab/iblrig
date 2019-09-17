@@ -3,6 +3,7 @@
 # @Author: Niccolò Bonacchi
 # @Date: Friday, September 13th 2019, 2:57:40 pm
 import logging
+import datetime
 import iblrig.logging_  # noqa
 from pathlib import Path
 import iblrig.path_helper as path_helper
@@ -146,12 +147,12 @@ def write_params(data: dict = None, force: bool = False) -> None:
         log.warning(f"Could not write board params to Alyx. Written to local file:\n{e}")
 
 
-def try_migrate_to_params(force=False):
+def try_migrate_to_params():
     params_file = Path(path_helper.get_iblrig_params_folder()) / '.iblrig_params.json'
     comports_file = Path(path_helper.get_iblrig_params_folder()) / '.bpod_comports.json'
     # See if file exists:
-    if params_file.exists() and not force:
-        log.debug("File exists not migrating...")
+    if params_file.exists():
+        log.info(f"File exists: {params_file} not migrating...")
         return
     # Get .bpod_comports file and set the COM values
     if comports_file.exists():
@@ -174,12 +175,30 @@ def try_migrate_to_params(force=False):
         water_dict.update(path_helper.load_water_calibraition_func_file(func_file))
         water_dict.update({'WATER_CALIBRATION_DATE': func_file.parent.parent.parent.name})
     # Find latest F2TTL calib and set F2TTL values
-    board = get_board_name()
-    # alyx.
+    f2ttl_params = alyx.load_board_params()
+    f2ttl_dict = {
+        'F2TTL_DARK_THRESH': f2ttl_params['F2TTL_DARK_THRESH'],
+        'F2TTL_LIGHT_THRESH': f2ttl_params['F2TTL_LIGHT_THRESH'],
+        'F2TTL_CALIBRATION_DATE': datetime.datetime.now().date().isoformat(),
+    }
+    if 'COM_F2TTL' in f2ttl_params:
+        f2ttl_dict.update({'COM_F2TTL': f2ttl_params['COM_F2TTL']})
+    elif 'F2TTL_COM' in f2ttl_params:
+        f2ttl_dict.update({'COM_F2TTL': f2ttl_params['F2TTL_COM']})
+
+    # Save locally
+    final_dict = {}
+    final_dict.update({'NAME': get_board_name()})
+    final_dict.update(com_dict)
+    final_dict.update(f2ttl_dict)
+    final_dict.update(water_dict)
+    write_params_file(data=final_dict, force=True)
     # upload to Alyx board
-    # if force do it anyway
-    pass
+    alyx.write_board_params(data=final_dict, force=True)
+    # Delete old comports file
+    comports_file.unlink()
 
 
 if __name__ == "__main__":
+    try_migrate_to_params()
     print('.')
