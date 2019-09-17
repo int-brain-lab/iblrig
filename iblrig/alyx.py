@@ -8,14 +8,12 @@ import webbrowser as wb
 from pathlib import Path
 
 import ibllib.io.flags as flags
-import ibllib.io.params as params
+import ibllib.io.params as lib_params
 import ibllib.io.raw_data_loaders as raw
 import oneibl.params
 from ibllib.pipes.experimental_data import create
 from oneibl.one import ONE
-from iblrig.params import (
-    EMPTY_BOARD_PARAMS, write_params_file, load_params_file, update_params_file,
-    get_board_name)
+import iblrig.params as rig_params
 
 log = logging.getLogger('iblrig')
 
@@ -30,7 +28,7 @@ def get_one() -> type(ONE):
 
 
 def create_session(session_folder):
-    pfile = Path(params.getfile('one_params'))
+    pfile = Path(lib_params.getfile('lib_params'))
     if not pfile.exists():
         oneibl.params.setup_alyx_params()
 
@@ -76,8 +74,8 @@ def get_latest_session_eid(subject_nickname):
 
 def write_board_params(data: dict = None, force: bool = False) -> None:
     if data is None:
-        data = EMPTY_BOARD_PARAMS
-        data['NAME'] = get_board_name()
+        data = rig_params.EMPTY_BOARD_PARAMS
+        data['NAME'] = rig_params.get_board_name()
     board = data['NAME']
     one = get_one()
     p = load_board_params()
@@ -92,7 +90,7 @@ def write_board_params(data: dict = None, force: bool = False) -> None:
 
 
 def load_board_params() -> dict:
-    board = get_board_name()
+    board = rig_params.get_board_name()
     one = get_one()
     try:
         out = one.alyx.rest('locations', 'read', id=board)['json']
@@ -110,7 +108,7 @@ def update_board_params(data: dict, force: bool = False) -> dict:
         write_board_params()
         old = load_board_params()
 
-    board = get_board_name()
+    board = rig_params.get_board_name()
     if data['NAME'] != board:
         log.error(f"Board {board} not equal to data['NAME'] {data['NAME']}")
         raise(AttributeError)
