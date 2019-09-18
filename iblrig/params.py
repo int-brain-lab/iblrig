@@ -40,6 +40,17 @@ def get_board_name():
     return pars['NAME']
 
 
+def get_board_comport():
+    iblproject_path = Path(path_helper.get_iblrig_params_folder()) / 'IBL'
+    p = Project()
+    p.load(str(iblproject_path))
+    pars = load_params_file()
+    if p.boards[0].serial_port != pars['COM_BPOD']:
+        pars['COM_BPOD'] = p.boards[0].serial_port
+        update_params_file(data=pars)
+    return pars['COM_BPOD']
+
+
 def write_params_file(data: dict = None, force: bool = False) -> dict:
     """write_params_file wirtes .iblrig_params.json file to default location
     (iblrig/../iblrig_params/.iblrig_params.json)
@@ -147,11 +158,11 @@ def write_params(data: dict = None, force: bool = False) -> None:
         log.warning(f"Could not write board params to Alyx. Written to local file:\n{e}")
 
 
-def try_migrate_to_params():
+def try_migrate_to_params(force=False):
     params_file = Path(path_helper.get_iblrig_params_folder()) / '.iblrig_params.json'
     comports_file = Path(path_helper.get_iblrig_params_folder()) / '.bpod_comports.json'
     # See if file exists:
-    if params_file.exists():
+    if params_file.exists() and not force:
         log.info(f"No steps taken - File exists: {params_file}")
         return
     # Get .bpod_comports file and set the COM values
@@ -162,7 +173,9 @@ def try_migrate_to_params():
                     'COM_ROTARY_ENCODER': com_data['ROTARY_ENCODER'],  # str
                     'COM_F2TTL': com_data['FRAME2TTL']}  # str
     else:
-        com_dict = {}
+        com_dict = {'COM_BPOD': "",
+                    'COM_F2TTL': "",
+                    'COM_ROTARY_ENCODER': ""}
     # Find latest H2O calib and set WATER values
     range_file = path_helper.get_water_calibration_range_file()
     func_file = path_helper.get_water_calibration_func_file()
@@ -185,10 +198,13 @@ def try_migrate_to_params():
         f2ttl_dict.update({'COM_F2TTL': f2ttl_params['COM_F2TTL']})
     elif 'F2TTL_COM' in f2ttl_params:
         f2ttl_dict.update({'COM_F2TTL': f2ttl_params['F2TTL_COM']})
+    if 'F2TTL_CALIBRATION_DATE' in f2ttl_params:
+        f2ttl_dict.update({'F2TTL_CALIBRATION_DATE': f2ttl_params['F2TTL_CALIBRATION_DATE']})
 
     # Save locally
     final_dict = {}
-    final_dict.update({'NAME': get_board_name()})
+    final_dict.update({'NAME': get_board_name()})  # from GUI
+    final_dict.update({'COM_BPOD': get_board_comport()})  # From GUI
     final_dict.update(com_dict)
     final_dict.update(f2ttl_dict)
     final_dict.update(water_dict)
@@ -196,9 +212,11 @@ def try_migrate_to_params():
     # upload to Alyx board
     alyx.write_board_params(data=final_dict, force=True)
     # Delete old comports file
-    comports_file.unlink()
+    if comports_file.exists():
+        comports_file.unlink()
 
 
 if __name__ == "__main__":
-    try_migrate_to_params()
+    try_migrate_to_params(force=True)
+    try_migrate_to_params(force=False)
     print('.')
