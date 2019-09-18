@@ -1,19 +1,17 @@
-import json
+import datetime
 import logging
 import time
-import datetime
 
-import iblrig.alyx as alyx
+import iblrig.params as params
 import task_settings
 import user_settings
-from iblrig.frame2TTL import Frame2TTL, update_frame2ttl_params_file
-from iblrig.path_helper import get_iblrig_params_folder
+from iblrig.frame2TTL import Frame2TTL
 from session_params import SessionParamHandler
 
 log = logging.getLogger('iblrig')
 
 sph = SessionParamHandler(task_settings, user_settings)
-f2ttl = Frame2TTL(sph.COM['FRAME2TTL'])
+f2ttl = Frame2TTL(sph.COM['FRAME2TTL'])  #TODO: update use params file
 
 sph.start_screen_color()
 sph.set_screen(rgb=[255, 255, 255])
@@ -29,14 +27,9 @@ if resp != -1:
     patch = {'COM_F2TTL': f2ttl.serial_port,
              'F2TTL_DARK_THRESH': f2ttl.recomend_dark,
              'F2TTL_LIGHT_THRESH': f2ttl.recomend_light,
-             'F2TTL_CALIBRATION_DATE': datetime.datetime.now().isoformat()}
+             'F2TTL_CALIBRATION_DATE': datetime.datetime.now().date().isoformat()}
 
-    update_frame2ttl_params_file(data=patch)
-    try:
-        alyx.update_board_params(data=patch)
-    except Exception as e:
-        log.error(e)
-        log.error("Unable to sync to Alyx, data was saved locally.")
+    params.update_params(data=patch)
 
 sph.stop_screen_color()
 
