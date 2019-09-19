@@ -5,12 +5,9 @@
 import datetime
 import json
 import logging
-import datetime
-import iblrig.logging_  # noqa
 from pathlib import Path
 
 from ibllib.graphic import strinput
-import iblrig.alyx as alyx
 from pybpodgui_api.models.project import Project
 
 import iblrig.alyx as alyx
@@ -89,17 +86,20 @@ def write_params_file(data: dict = None, force: bool = False) -> dict:
 
 def load_params_file() -> dict:
     """load_params_file loads the .iblrig_params.json file from default location
-     (iblrig/../iblrig_params/.iblrig_params.json), will return None if file not found
+     (iblrig/../iblrig_params/.iblrig_params.json), will create default params
+     file if file is not found
 
     :return: .iblrig_params.json contents
-    :rtype: dict or None
+    :rtype: dict
     """
     iblrig_params = Path(path_helper.get_iblrig_params_folder())
     fpath = iblrig_params / '.iblrig_params.json'
     if not fpath.exists():
-        return None
-    with open(fpath, 'r') as f:
-        out = json.load(f)
+        log.warning(f"Could not load params file does not exist. Creating...")
+        out = check_params_comports(write_params_file())
+    else:
+        with open(fpath, 'r') as f:
+            out = json.load(f)
     return out
 
 
@@ -137,6 +137,25 @@ def update_params_file(data: dict, force: bool = False) -> None:
     return old
 
 
+def check_params_comports(data: dict) -> dict:
+    patch = {}
+    for k in data:
+        if 'COM' in k and not data[k]:
+            newcom = strinput(
+                "RIG CONFIG",
+                f"Please insert {k.strip('COM_')} COM port (e.g. COM9): ",
+                default='COM')
+            patch.update({k: newcom})
+
+    if patch:
+        data.update(patch)
+        update_params_file(data=patch)
+        log.debug("Updating params file with: {patch}")
+
+    return data
+
+
+# Methods for tasks from alyx w/ fallback
 def update_params(data: dict) -> None:
     update_params_file(data=data)
     try:
@@ -147,18 +166,17 @@ def update_params(data: dict) -> None:
 
 def load_params() -> dict:
     out_alyx = iblrig.alyx.load_board_params()
-    out = load_params_file()
     if out_alyx is None:
         log.warning(f"Could not load board params from Alyx. Loading from local file...")
-        return out
+    out = load_params_file()
     if out_alyx != out:
         log.warning(f"Local data and Alyx data are not the same. Using local.")
-        update_params_file(data=out)
+        iblrig.alyx.update_board_params(data=out)
     return out
 
 
 def write_params(data: dict = None, force: bool = False) -> None:
-    iblrig.params.write_params_file(data=data, force=force)
+    write_params_file(data=data, force=force)
     try:
         iblrig.alyx.write_board_params(data=data, force=force)
     except Exception as e:
