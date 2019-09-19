@@ -94,13 +94,19 @@ def load_params_file() -> dict:
     """
     iblrig_params = Path(path_helper.get_iblrig_params_folder())
     fpath = iblrig_params / '.iblrig_params.json'
-    if not fpath.exists():
-        log.warning(f"Could not load params file does not exist. Creating...")
-        out = check_params_comports(write_params_file())
-    else:
+    bpod_comports = iblrig_params / '.bpod_comports.json'
+    if fpath.exists():
         with open(fpath, 'r') as f:
             out = json.load(f)
-    return out
+        return out
+    elif not fpath.exists() and bpod_comports.exisits():
+        log.warning(f"Params file does not exist, found old bpod_comports file. Trying to migrate...")
+        try_migrate_to_params()
+        return load_params_file()
+    elif not fpath.exists() and not bpod_comports.exists():
+        log.warning(f"Could not load params file does not exist. Creating...")
+        out = check_params_comports(write_params_file())
+        return out
 
 
 def update_params_file(data: dict, force: bool = False) -> None:
