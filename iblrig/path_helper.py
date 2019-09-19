@@ -19,6 +19,7 @@ import iblrig.logging_  # noqa
 log = logging.getLogger('iblrig')
 
 
+# TODO: CHANGE ALL PROTOCOLS TO REFLECT SPC DIFFERENT CONSTRUCTOR CALL
 def get_iblrig_folder() -> str:
     import iblrig
     return str(Path(iblrig.__file__).parent.parent)
@@ -31,8 +32,12 @@ def get_iblrig_params_folder() -> str:
 
 def get_iblrig_data_folder(subjects=True) -> str:
     iblrig_ = Path(get_iblrig_folder())
-    out = str(iblrig_.parent / 'iblrig_data')
-    sout = str(iblrig_.parent / 'iblrig_data' / 'Subjects')
+    out = iblrig_.parent / 'iblrig_data'
+    sout = iblrig_.parent / 'iblrig_data' / 'Subjects'
+    if not out.exists():
+        make_folder(out)
+    if not sout.exists():
+        make_folder(sout)
     return sout if subjects else out
 
 
@@ -75,22 +80,6 @@ def get_session_next_number(session_date_folder: str) -> str:
     log.debug(f"Setting session number to: {out}")
 
     return out
-
-
-# XXX: To be removed
-def create_bpod_comport_file(fpath: str or Path, comports: dict) -> None:
-    with open(fpath, 'w') as f:
-        json.dump(comports, f, indent=1)
-    log.debug(f"COM port definition file created in {fpath}:\n{comports}")
-    return
-
-
-# XXX: To be removed
-def load_bpod_comport_file(fpath: str or Path) -> dict:
-    with open(fpath, 'r') as f:
-        comports = json.load(f)
-    log.debug(f"COM port definition file loaded from {fpath}:\n{comports}")
-    return comports
 
 
 def get_visual_stim_folder_name(protocol: str) -> str:
@@ -147,29 +136,95 @@ def load_water_calibraition_range_file(fpath) -> dict:
                                         df1.max_open_time.iloc[0]]}
 
 
+def make_folder(str1: str or Path) -> None:
+    """Check if folder path exists and if not create it + parents."""
+    path = Path(str1)
+    path.mkdir(parents=True, exist_ok=True)
+    log.debug(f"Created folder {path}")
+
+
+def get_subfolder_paths(folder: str) -> str:
+    out = [os.path.join(folder, x) for x in os.listdir(folder)
+           if os.path.isdir(os.path.join(folder, x))]
+    log.debug(f"Found {len(out)} subfolders for folder {folder}")
+
+    return out
+
+
+def get_bonsai_path(use_iblrig_bonsai=True) -> str:
+    """Checks for Bonsai folder in iblrig.
+    Returns string with bonsai executable path."""
+    iblrig_folder = get_iblrig_folder()
+    folders = get_subfolder_paths(iblrig_folder)
+    bonsai_folder = [x for x in folders if 'Bonsai' in x][0]
+    ibl_bonsai = os.path.join(bonsai_folder, 'Bonsai64.exe')
+
+    preexisting_bonsai = Path.home() / "AppData/Local/Bonsai/Bonsai64.exe"
+    if use_iblrig_bonsai is True:
+        BONSAI = ibl_bonsai
+    elif use_iblrig_bonsai is False and preexisting_bonsai.exists():
+        BONSAI = str(preexisting_bonsai)
+    elif use_iblrig_bonsai is False and not preexisting_bonsai.exists():
+        log.debug(
+            f"NOT FOUND: {preexisting_bonsai}. Using packaged Bonsai")
+        BONSAI = ibl_bonsai
+    log.debug(f"Found Bonsai executable: {BONSAI}")
+
+    return BONSAI
+
+
+def get_visual_stim_type(protocol):
+    if 'habituation' in protocol or 'sync_test' in protocol:
+        return 'GaborHabituationTask'
+    elif 'ephys_certification' in protocol:
+        return 'ephys_certification'
+    else:
+        return 'GaborIBLTask'
+
+
+def get_session_number(session_date_folder) -> str:
+    log.debug("Initializing session number")
+    if not Path(session_date_folder).exists():
+        return '001'
+    session_nums = [int(x) for x in os.listdir(session_date_folder)
+                    if os.path.isdir(os.path.join(session_date_folder, x))]
+    if not session_nums:
+        out = '00' + str(1)
+    elif max(session_nums) < 9:
+        out = '00' + str(int(max(session_nums)) + 1)
+    elif 99 > max(session_nums) >= 9:
+        out = '0' + str(int(max(session_nums)) + 1)
+    elif max(session_nums) > 99:
+        out = str(int(max(session_nums)) + 1)
+    log.debug(f"Setting session number to: {out}")
+
+    return out
+
+
 class SessionPathCreator(object):
     # add subject name and protocol (maybe have a metadata struct)
-    def __init__(self, iblrig_folder, iblrig_data_folder, subject_name,
-                 protocol=False, board=False, make=False):
-        self.IBLRIG_FOLDER = str(Path(iblrig_folder))
+    def __init__(self, subject_name, protocol=False, make=False):
+        self.IBLRIG_FOLDER = get_iblrig_folder()
         self.IBLRIG_EPHYS_SESSION_FOLDER = str(
             Path(self.IBLRIG_FOLDER) / 'tasks' /
             '_iblrig_tasks_ephysChoiceWorld' / 'sessions')
-        self._BOARD = board
+        self._BOARD = params.get_board_name()
+
         self._PROTOCOL = protocol
-        self.IBLRIG_COMMIT_HASH = self._get_commit_hash(self.IBLRIG_FOLDER)
-        self.IBLRIG_VERSION_TAG = self._get_version_tag(self.IBLRIG_FOLDER)
 
-        self.IBLRIG_PARAMS_FOLDER = str(
-            Path(self.IBLRIG_FOLDER).parent / 'iblrig_params')
-        self.IBLRIG_DATA_FOLDER = self._iblrig_data_folder_init(
-            self.IBLRIG_FOLDER, iblrig_data_folder)
-        self.IBLRIG_DATA_SUBJECTS_FOLDER = str(
-            Path(self.IBLRIG_DATA_FOLDER) / 'Subjects')
+        self.IBLRIG_COMMIT_HASH = get_commit_hash(self.IBLRIG_FOLDER)
+        self.IBLRIG_VERSION_TAG = get_version_tag(self.IBLRIG_FOLDER)
+        self.IBLRIG_PARAMS_FOLDER = get_iblrig_params_folder()
+        self.IBLRIG_DATA_FOLDER = get_iblrig_data_folder(subjects=False)
+        self.IBLRIG_DATA_SUBJECTS_FOLDER = get_iblrig_data_folder(subjects=True)
 
+        self.SUBJECT_NAME = subject_name
+        self.SUBJECT_FOLDER = os.path.join(
+            self.IBLRIG_DATA_SUBJECTS_FOLDER, self.SUBJECT_NAME)
+
+        self.BONSAI = get_bonsai_path(use_iblrig_bonsai=True)
         self.VISUAL_STIM_FOLDER = str(Path(self.IBLRIG_FOLDER) / 'visual_stim')
-        self.BONSAI = self.get_bonsai_path(use_iblrig_bonsai=True)
-        self.VISUAL_STIMULUS_TYPE = self._visual_stim_type()
+        self.VISUAL_STIMULUS_TYPE = get_visual_stim_type(self._PROTOCOL)
         self.VISUAL_STIMULUS_FILE = str(
             Path(self.VISUAL_STIM_FOLDER) /
             self.VISUAL_STIMULUS_TYPE / 'Gabor2D.bonsai')
@@ -179,10 +234,6 @@ class SessionPathCreator(object):
         self.VIDEO_RECORDING_FILE = os.path.join(
             self.VIDEO_RECORDING_FOLDER, 'one_camera.bonsai')
 
-        self.SUBJECT_NAME = subject_name
-        self.SUBJECT_FOLDER = os.path.join(
-            self.IBLRIG_DATA_SUBJECTS_FOLDER, self.SUBJECT_NAME)
-
         self.SESSION_DATETIME = datetime.datetime.now()
         self.SESSION_DATE = self.SESSION_DATETIME.date().isoformat()
         self.SESSION_DATETIME = self.SESSION_DATETIME.isoformat()
@@ -190,7 +241,7 @@ class SessionPathCreator(object):
         self.SESSION_DATE_FOLDER = os.path.join(
             self.SUBJECT_FOLDER, self.SESSION_DATE)
 
-        self.SESSION_NUMBER = self._session_number()
+        self.SESSION_NUMBER = get_session_number(self.SESSION_DATE_FOLDER)
 
         self.SESSION_FOLDER = str(
             Path(self.SESSION_DATE_FOLDER) / self.SESSION_NUMBER)
@@ -214,8 +265,15 @@ class SessionPathCreator(object):
                                            self.BASE_FILENAME +
                                            'Data.raw.jsonable')
 
-        self.LATEST_WATER_CALIBRATION_FILE = self._latest_water_calib_file()
-        self.LATEST_WATER_CALIB_RANGE_FILE = self._latest_water_range_file()
+        self.LATEST_WATER_CALIBRATION_FILE = get_water_calibration_func_file(latest=True)
+        self.LATEST_WATER_CALIB_RANGE_FILE = get_water_calibration_range_file(latest=True)
+        if self.LATEST_WATER_CALIBRATION_FILE.parent != self.LATEST_WATER_CALIB_RANGE_FILE.parent:
+            self.LATEST_WATER_CALIBRATION_FILE = str(self.LATEST_WATER_CALIBRATION_FILE)
+            self.LATEST_WATER_CALIB_RANGE_FILE = None
+        else:
+            self.LATEST_WATER_CALIBRATION_FILE = str(self.LATEST_WATER_CALIBRATION_FILE)
+            self.LATEST_WATER_CALIB_RANGE_FILE = str(self.LATEST_WATER_CALIB_RANGE_FILE)
+
         self.LATEST_SCREEN_CALIBRATION_FILE = self._latest_screen_calib_file()
 
         self.PREVIOUS_DATA_FILE = self._previous_data_file()
@@ -234,147 +292,23 @@ class SessionPathCreator(object):
     def make_missing_folders(self, makelist):
         if isinstance(makelist, bool):
             log.debug(f"Making default folders")
-            self.make_folder(self.IBLRIG_DATA_FOLDER)
-            self.make_folder(self.IBLRIG_DATA_SUBJECTS_FOLDER)
-            self.make_folder(self.SUBJECT_FOLDER)
-            self.make_folder(self.SESSION_DATE_FOLDER)
-            self.make_folder(self.SESSION_FOLDER)
-            self.make_folder(self.SESSION_RAW_DATA_FOLDER)
+            make_folder(self.IBLRIG_DATA_FOLDER)
+            make_folder(self.IBLRIG_DATA_SUBJECTS_FOLDER)
+            make_folder(self.SUBJECT_FOLDER)
+            make_folder(self.SESSION_DATE_FOLDER)
+            make_folder(self.SESSION_FOLDER)
+            make_folder(self.SESSION_RAW_DATA_FOLDER)
         elif isinstance(makelist, list):
             log.debug(f"Making extra folders for {makelist}")
             self.make_missing_folders(True)
             if 'video' in makelist:
-                self.make_folder(self.SESSION_RAW_VIDEO_DATA_FOLDER)
+                make_folder(self.SESSION_RAW_VIDEO_DATA_FOLDER)
             if 'ephys' in makelist:
-                self.make_folder(self.SESSION_RAW_EPHYS_DATA_FOLDER)
+                make_folder(self.SESSION_RAW_EPHYS_DATA_FOLDER)
             if 'imag' in makelist:
-                self.make_folder(self.SESSION_RAW_IMAGING_DATA_FOLDER)
+                make_folder(self.SESSION_RAW_IMAGING_DATA_FOLDER)
 
         return
-
-    def _visual_stim_type(self):
-        if 'habituation' in self._PROTOCOL or 'sync_test' in self._PROTOCOL:
-            return 'GaborHabituationTask'
-        elif 'ephys_certification' in self._PROTOCOL:
-            return 'ephys_certification'
-        else:
-            return 'GaborIBLTask'
-
-    def _get_ibllib_folder(self):
-        import ibllib
-        fpath = Path(ibllib.__file__).parent.parent
-        return str(fpath)
-
-    def _get_commit_hash(self, repo_path):
-        here = os.getcwd()
-        os.chdir(repo_path)
-        out = subprocess.check_output(["git", "rev-parse", "HEAD"]).decode()
-        os.chdir(here)
-        if not out:
-            log.debug("Commit hash is empty string")
-        log.debug(f"Found commit hash {out}")
-        return out.strip()
-
-    def _get_version_tag(self, repo_path):
-        here = os.getcwd()
-        os.chdir(repo_path)
-        tag = subprocess.check_output(["git", "tag",
-                                       "--points-at", "HEAD"]).decode().strip()
-        os.chdir(here)
-        if not tag:
-            log.debug(f"NOT FOUND: Version TAG for {repo_path}")
-        log.debug(f"Found version tag {tag}")
-        return tag
-
-    def get_bonsai_path(self, use_iblrig_bonsai=True):
-        """Checks for Bonsai folder in iblrig.
-        Returns string with bonsai executable path."""
-        folders = self.get_subfolder_paths(self.IBLRIG_FOLDER)
-        bonsai_folder = [x for x in folders if 'Bonsai' in x][0]
-        ibl_bonsai = os.path.join(bonsai_folder, 'Bonsai64.exe')
-
-        preexisting_bonsai = Path.home() / "AppData/Local/Bonsai/Bonsai64.exe"
-        if use_iblrig_bonsai is True:
-            BONSAI = ibl_bonsai
-        elif use_iblrig_bonsai is False and preexisting_bonsai.exists():
-            BONSAI = str(preexisting_bonsai)
-        elif use_iblrig_bonsai is False and not preexisting_bonsai.exists():
-            log.debug(
-                f"NOT FOUND: {preexisting_bonsai}. Using packaged Bonsai")
-            BONSAI = ibl_bonsai
-        log.debug(f"Found Bonsai executable: {BONSAI}")
-
-        return BONSAI
-
-    @staticmethod
-    def create_bpod_comport_file(fpath: str or Path, comports: dict) -> None:
-        with open(fpath, 'w') as f:
-            json.dump(comports, f, indent=1)
-        log.debug(f"COM port definition file created {comports} in {fpath}")
-        return
-
-    @staticmethod
-    def make_folder(str1):
-        """Check if folder path exists and if not create it + parents."""
-        path = Path(str1)
-        path.mkdir(parents=True, exist_ok=True)
-        log.debug(f"Created folder {path}")
-
-    @staticmethod
-    def get_subfolder_paths(folder):
-        out = [os.path.join(folder, x) for x in os.listdir(folder)
-               if os.path.isdir(os.path.join(folder, x))]
-        log.debug(f"Found {len(out)} subfolders for folder {folder}")
-
-        return out
-
-    def _iblrig_folder_init(self):
-        log.debug(
-            f"Ensuring <{os.sep}> separator for folder {self.IBLRIG_FOLDER}")
-        if '/' in self.IBLRIG_FOLDER:
-            p = '{}'.format(os.path.sep).join(self.IBLRIG_FOLDER.split('/'))
-        elif '\\' in self.IBLRIG_FOLDER:
-            p = '{}'.format(os.path.sep).join(self.IBLRIG_FOLDER.split('\\'))
-        return p
-
-    def _iblrig_data_folder_init(self, iblrig_folder, iblrig_data_folder):
-        log.debug("Initializing data folder")
-        iblrig_folder = Path(iblrig_folder)
-        if not iblrig_folder.exists():
-            log.error("Couldn't find IBLRIG_FOLDER on filesystem")
-            raise IOError
-
-        if iblrig_data_folder is None:
-            out = iblrig_folder.parent / 'iblrig_data'
-            log.debug(f"Setting data folder to default location: {out}")
-            return str(out)
-        else:
-            mdf = Path(iblrig_data_folder)
-            if mdf.name == 'Subjects':
-                out = str(mdf.parent)
-            elif mdf.name != 'Subjects':
-                out = str(mdf)
-            log.debug(f"Setting data folder to location: {out}")
-            return out
-
-    def _session_number(self) -> str:
-        log.debug("Initializing session number")
-        if not Path(self.SESSION_DATE_FOLDER).exists():
-            return '001'
-        session_nums = [int(x) for x in os.listdir(self.SESSION_DATE_FOLDER)
-                        if os.path.isdir(os.path.join(self.SESSION_DATE_FOLDER,
-                                                      x))]
-        if not session_nums:
-            out = '00' + str(1)
-        elif max(session_nums) < 9:
-            out = '00' + str(int(max(session_nums)) + 1)
-        elif 99 > max(session_nums) >= 9:
-            out = '0' + str(int(max(session_nums)) + 1)
-        elif max(session_nums) > 99:
-            out = str(int(max(session_nums)) + 1)
-        log.debug(f"Setting session number to: {out}")
-
-        return out
 
     def _previous_session_folders(self):
         """
@@ -388,8 +322,8 @@ class SessionPathCreator(object):
                 f'NOT FOUND: No previous sessions for subject {subj_name}')
             return sess_folders
 
-        for date in self.get_subfolder_paths(self.SUBJECT_FOLDER):
-            sess_folders.extend(self.get_subfolder_paths(date))
+        for date in get_subfolder_paths(self.SUBJECT_FOLDER):
+            sess_folders.extend(get_subfolder_paths(date))
 
         sess_folders = [x for x in sorted(sess_folders)
                         if self.SESSION_FOLDER not in x]
@@ -469,7 +403,7 @@ class SessionPathCreator(object):
 
         return out
 
-    def _latest_screen_calib_file(self):
+    def _latest_screen_calib_file(self):  # XXX: check if in use!
         log.debug(f"Looking for screen calibration files: {self._BOARD}")
         dsf = Path(self.IBLRIG_DATA_SUBJECTS_FOLDER)
         cal = dsf / '_iblrig_calibration'
@@ -478,80 +412,6 @@ class SessionPathCreator(object):
             return None
 
         return None
-
-    def _latest_water_calib_file(self):
-        log.debug(f"Looking for calibration file of board: {self._BOARD}")
-        dsf = Path(self.IBLRIG_DATA_SUBJECTS_FOLDER)
-        cal = dsf / '_iblrig_calibration'
-        if not cal.exists():
-            log.debug(f'NOT FOUND: Calibration subject {str(cal)}')
-            return None
-
-        if not self._BOARD:
-            log.debug(f'NOT FOUND: Board {str(self._BOARD)}')
-            return None
-
-        cal_session_folders = []
-        for date in self.get_subfolder_paths(str(cal)):
-            cal_session_folders.extend(self.get_subfolder_paths(date))
-        log.debug(f"Found {len(cal_session_folders)} calibration sessions")
-
-        water_cal_files = []
-        for session in cal_session_folders:
-            session = Path(session) / 'raw_behavior_data'
-            water_cal_files.extend(list(session.glob(
-                '_iblrig_calibration_water_function.csv')))
-
-        water_cal_files = sorted(water_cal_files,
-                                 key=lambda x: int(x.parent.parent.name))
-        log.debug(
-            f"Found {len(water_cal_files)} calibration sessions for water")
-
-        # Should add check for file.stat().st_size != 0
-        if not water_cal_files:
-            log.debug(
-                f'NOT FOUND: Water calibration files for board {self._BOARD}')
-            return
-
-        water_cal_settings = [x.parent / "_iblrig_taskSettings.raw.json"
-                              for x in water_cal_files]
-        log.debug(f"Found {len(water_cal_settings)} settings files")
-        same_board_cal_files = []
-        for fcal, s in zip(water_cal_files, water_cal_settings):
-            if s.exists():
-                settings = raw.load_settings(str(s.parent.parent))
-                if settings['PYBPOD_BOARD'] == self._BOARD:
-                    same_board_cal_files.append(fcal)
-                else:
-                    log.debug(
-                        f'NOT FOUND: PYBPOD_BOARD in settings file {str(s)}')
-
-            else:
-                log.debug(
-                    f'NOT FOUND: Settings file for data file {str(fcal)}.')
-
-        same_board_cal_files = sorted(same_board_cal_files,
-                                      key=lambda x: int(x.parent.parent.name))
-        log.debug(
-            f"Found {len(same_board_cal_files)} files for board {self._BOARD}")
-        if same_board_cal_files:
-            log.debug(
-                f"Latest water calibration file: {same_board_cal_files[-1]}")
-            return str(same_board_cal_files[-1])
-        else:
-            log.debug(f'No valid calibration files were found for board {self._BOARD}')
-            return
-
-    def _latest_water_range_file(self):
-        if self.LATEST_WATER_CALIBRATION_FILE is None:
-            return
-
-        wcfile = Path(self.LATEST_WATER_CALIBRATION_FILE)
-        wcrange = wcfile.parent / '_iblrig_calibration_water_range.csv'
-        if wcrange.exists():
-            return str(wcrange)
-        else:
-            return
 
     def display_logs(self):
         # User info and warnings
@@ -599,10 +459,8 @@ if __name__ == "__main__":
     # 'trainingChoiceWorld')
     # '/coder/mnt/nbonacchi/iblrig', None,
     spc = SessionPathCreator(
-        '/home/nico/Projects/IBL/github/iblrig',
-        '/home/nico/Projects/IBL/github/iblrig_data',
         '_iblrig_test_mouse', protocol='trainingChoiceWorld',
-        board='_iblrig_mainenlab_behavior_0', make=['video', 'ephys', 'imag'])
+        make=['video', 'ephys', 'imag'])
 
     print("")
     for k in spc.__dict__:
