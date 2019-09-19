@@ -32,17 +32,17 @@ class SessionForm(BaseWidget):
         self._probe00Z = ControlText(
             'Z [D/V] (µm):', default='0',
             helptext='Dorsal = Positive, Ventral = Negative')
-        self._probe00A = ControlText(
-            'β [azim] (deg):', default='0',
-            helptext='Right = 0º, Front = 90º, Left = 180º/-180º, Back = -90, Range(-180º, +180º)')
-        self._probe00E = ControlText(
-            'θ [elev] (deg):', default='0',
-            helptext='Up = +90º, Down = -90º, Range(-90, +90)')
         self._probe00T = ControlText(
-            'ϕ [tilt] (deg):', default='0',
+            'β [tilt] (deg):', default='0',
             helptext='0º flat facing vertical axis [Z], Range(-180º, 180º)')
+        self._probe00P = ControlText(
+            'θ [polar angle] (deg):', default='0',
+            helptext='0º vertical 90º horizontal, Range(0º, 180º)')
+        self._probe00A = ControlText(
+            'ϕ [azimuth] (deg):', default='0',
+            helptext='Right = 0º, Front = 90º, Left = 180º/-180º, Back = -90, Range(-180º, +180º)')
         self._probe00D = ControlText(
-            'D [depth] (µm):', default='0',
+            'D [deρth] (µm):', default='0',
             helptext='D value of the tip.')
         self._probe00Origin = ControlCombo('Origin:')
         self._probe00Origin.add_item('Bregma', 'bregma')
@@ -57,17 +57,17 @@ class SessionForm(BaseWidget):
         self._probe01Z = ControlText(
             'Z [D/V] (µm):', default='0',
             helptext='Dorsal = Positive, Ventral = Negative')
-        self._probe01A = ControlText(
-            'β [azim] (deg):', default='0',
-            helptext='Right = 0º, Front = 90º, Left = 180º/-180º, Back = -90, Range(-180º, +180º)')
-        self._probe01E = ControlText(
-            'θ [elev] (deg):', default='0',
-            helptext='Up = +90º, Down = -90º, Range(-90, +90)')
         self._probe01T = ControlText(
-            'ϕ [tilt] (deg):', default='0',
+            'β [tilt] (deg):', default='0',
             helptext='0º flat facing vertical axis [Z], Range(-180º, 180º)')
+        self._probe01P = ControlText(
+            'θ [polar angle] (deg):', default='0',
+            helptext='0º vertical 90º horizontal, Range(0º, 180º)')
+        self._probe01A = ControlText(
+            'ϕ [azimuth] (deg):', default='0',
+            helptext='Right = 0º, Front = 90º, Left = 180º/-180º, Back = -90, Range(-180º, +180º)')
         self._probe01D = ControlText(
-            'D [depth] (µm):', default='0',
+            'D [deρth] (µm):', default='0',
             helptext='D value of the tip.')
         self._probe01Origin = ControlCombo('Origin:')
         self._probe01Origin.add_item('Bregma', 'bregma')
@@ -83,9 +83,9 @@ class SessionForm(BaseWidget):
                         (' ', '_probe00X', ' ', '_probe01X', ' '),
                         (' ', '_probe00Y', ' ', '_probe01Y', ' '),
                         (' ', '_probe00Z', ' ', '_probe01Z', ' '),
-                        (' ', '_probe00A', ' ', '_probe01A', ' '),
-                        (' ', '_probe00E', ' ', '_probe01E', ' '),
                         (' ', '_probe00T', ' ', '_probe01T', ' '),
+                        (' ', '_probe00P', ' ', '_probe01P', ' '),
+                        (' ', '_probe00A', ' ', '_probe01A', ' '),
                         (' ', '_probe00D', ' ', '_probe01D', ' '),
                         (' ', ' ', ' ', ' ', ' '),
                         (' ', '_button', ' '),
@@ -130,7 +130,7 @@ class SessionForm(BaseWidget):
 def session_form(mouse_name: str = '') -> dict:
     root = QApplication(sys.argv)
     sForm = pyforms.start_app(SessionForm, parent_win=root,
-                              geometry=(200, 200, 500, 400))
+                              geometry=(200, 200, 600, 400))
     sForm._mouseWeight.label = sForm._mouseWeight.label.format(mouse_name)
     root.exec()
 
