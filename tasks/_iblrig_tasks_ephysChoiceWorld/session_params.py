@@ -123,7 +123,7 @@ class SessionParamHandler(object):
                                self.QUIESCENCE_THRESHOLDS)
         self.ROTARY_ENCODER = MyRotaryEncoder(self.ALL_THRESHOLDS,
                                               self.STIM_GAIN,
-                                              self.COM['ROTARY_ENCODER'])
+                                              self.PARAMS['COM_ROTARY_ENCODER'])
         # =====================================================================
         # frame2TTL
         # =====================================================================

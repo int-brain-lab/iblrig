@@ -33,7 +33,7 @@ def start_visual_stim(sph):
             sph.SESSION_RAW_DATA_FOLDER,
             "_iblrig_encoderTrialInfo.raw.ssv")
 
-        com = "-p:Stim.REPortName=" + sph.COM['ROTARY_ENCODER']
+        com = "-p:Stim.REPortName=" + sph.PARAMS['COM_ROTARY_ENCODER']
 
         sync_x = "-p:Stim.sync_x=" + str(sph.SYNC_SQUARE_X)
         sync_y = "-p:Stim.sync_y=" + str(sph.SYNC_SQUARE_Y)

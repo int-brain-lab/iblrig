@@ -11,7 +11,7 @@ from session_params import SessionParamHandler
 log = logging.getLogger('iblrig')
 
 sph = SessionParamHandler(task_settings, user_settings)
-f2ttl = Frame2TTL(sph.COM['FRAME2TTL'])  #TODO: update use params file
+f2ttl = Frame2TTL(sph.PARAMS['COM_F2TTL'])
 
 sph.start_screen_color()
 sph.set_screen(rgb=[255, 255, 255])
