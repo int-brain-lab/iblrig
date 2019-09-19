@@ -32,15 +32,15 @@ class SessionForm(BaseWidget):
         self._probe00Z = ControlText(
             'Z [D/V] (µm):', default='0',
             helptext='Dorsal = Positive, Ventral = Negative')
-        self._probe00T = ControlText(
-            'β [tilt] (deg):', default='0',
-            helptext='0º flat facing vertical axis [Z], Range(-180º, 180º)')
         self._probe00P = ControlText(
             'θ [polar angle] (deg):', default='0',
             helptext='0º vertical 90º horizontal, Range(0º, 180º)')
         self._probe00A = ControlText(
-            'ϕ [azimuth] (deg):', default='0',
+            'φ [azimuth] (deg):', default='0',
             helptext='Right = 0º, Front = 90º, Left = 180º/-180º, Back = -90, Range(-180º, +180º)')
+        self._probe00T = ControlText(
+            'β [tilt] (deg):', default='0',
+            helptext='0º flat facing vertical axis [Z], Range(-180º, 180º)')
         self._probe00D = ControlText(
             'D [deρth] (µm):', default='0',
             helptext='D value of the tip.')
@@ -57,15 +57,15 @@ class SessionForm(BaseWidget):
         self._probe01Z = ControlText(
             'Z [D/V] (µm):', default='0',
             helptext='Dorsal = Positive, Ventral = Negative')
-        self._probe01T = ControlText(
-            'β [tilt] (deg):', default='0',
-            helptext='0º flat facing vertical axis [Z], Range(-180º, 180º)')
         self._probe01P = ControlText(
             'θ [polar angle] (deg):', default='0',
             helptext='0º vertical 90º horizontal, Range(0º, 180º)')
         self._probe01A = ControlText(
-            'ϕ [azimuth] (deg):', default='0',
+            'φ [azimuth] (deg):', default='0',
             helptext='Right = 0º, Front = 90º, Left = 180º/-180º, Back = -90, Range(-180º, +180º)')
+        self._probe01T = ControlText(
+            'β [tilt] (deg):', default='0',
+            helptext='0º flat facing vertical axis [Z], Range(-180º, 180º)')
         self._probe01D = ControlText(
             'D [deρth] (µm):', default='0',
             helptext='D value of the tip.')
@@ -83,9 +83,9 @@ class SessionForm(BaseWidget):
                         (' ', '_probe00X', ' ', '_probe01X', ' '),
                         (' ', '_probe00Y', ' ', '_probe01Y', ' '),
                         (' ', '_probe00Z', ' ', '_probe01Z', ' '),
-                        (' ', '_probe00T', ' ', '_probe01T', ' '),
                         (' ', '_probe00P', ' ', '_probe01P', ' '),
                         (' ', '_probe00A', ' ', '_probe01A', ' '),
+                        (' ', '_probe00T', ' ', '_probe01T', ' '),
                         (' ', '_probe00D', ' ', '_probe01D', ' '),
                         (' ', ' ', ' ', ' ', ' '),
                         (' ', '_button', ' '),
