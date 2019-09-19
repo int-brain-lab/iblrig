@@ -12,6 +12,7 @@ from pathlib import Path
 from ibllib.graphic import strinput
 from ibllib.io import raw_data_loaders as raw
 from pybpodgui_api.models.project import Project
+import iblrig.params as params
 
 import iblrig.logging_  # noqa
 
@@ -226,8 +227,7 @@ class SessionPathCreator(object):
         if make:
             self.make_missing_folders(make)
 
-        self.COM = self._init_com()
-        self._check_com_config()
+        self.PARAMS = params.load_params()
 
         self.display_logs()
 
@@ -259,54 +259,6 @@ class SessionPathCreator(object):
             return 'ephys_certification'
         else:
             return 'GaborIBLTask'
-
-    def _init_com(self) -> dict:
-        log.debug("Initializing COM ports")
-        p = Project()
-        p.load(str(Path(self.IBLRIG_PARAMS_FOLDER) / 'IBL'))
-        out = None
-        if Path(self.BPOD_COMPORTS_FILE).exists():
-            log.debug(
-                f"Found COM port definition file: {self.BPOD_COMPORTS_FILE}")
-            # If file exists open file
-            with open(self.BPOD_COMPORTS_FILE, 'r') as f:
-                out = json.load(f)
-            # Use the GUI defined COM port for BPOD
-            out['BPOD'] = p.boards[0].serial_port
-            log.debug(f".bpod_comports.json exists with content: {out}")
-        else:
-            log.debug(f"NOT FOUND: COM ports definition file")
-            # If no file exists create empty file
-            comports = {
-                'BPOD': None, 'ROTARY_ENCODER': None, 'FRAME2TTL': None}
-            comports['BPOD'] = p.boards[0].serial_port
-            out = comports
-            log.debug(f"Calling create with comports: {comports}")
-            self.create_bpod_comport_file(self.BPOD_COMPORTS_FILE, comports)
-        return out
-
-    def _check_com_config(self):
-        comports = {'BPOD': self.COM['BPOD'], 'ROTARY_ENCODER': None,
-                    'FRAME2TTL': None}
-        log.debug(f"COMPORTS: {str(self.COM)}")
-        if not self.COM['ROTARY_ENCODER']:
-            comports['ROTARY_ENCODER'] = strinput(
-                "RIG CONFIG",
-                "Please insert ROTARY ENCODER COM port (e.g. COM9): ",
-                default='COM')
-            log.debug("Updating comport file with ROTARY_ENCODER port " +
-                      f"{comports['ROTARY_ENCODER']}")
-            self.create_bpod_comport_file(self.BPOD_COMPORTS_FILE, comports)
-            self.COM = comports
-        if not self.COM['FRAME2TTL']:
-            comports['FRAME2TTL'] = strinput(
-                "RIG CONFIG",
-                "Please insert FRAME2TTL COM port (e.g. COM9): ", default='COM'
-            )
-            log.debug("Updating comport file with FRAME2TTL port " +
-                      f"{comports['FRAME2TTL']}")
-            self.create_bpod_comport_file(self.BPOD_COMPORTS_FILE, comports)
-            self.COM = comports
 
     def _get_ibllib_folder(self):
         import ibllib
