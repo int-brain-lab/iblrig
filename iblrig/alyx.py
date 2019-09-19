@@ -76,6 +76,7 @@ def write_board_params(data: dict = None, force: bool = False) -> None:
     if data is None:
         data = rig_params.EMPTY_BOARD_PARAMS
         data['NAME'] = rig_params.get_board_name()
+        data['COM_BPOD'] = rig_params.get_board_comport()
     board = data['NAME']
     one = get_one()
     p = load_board_params()
