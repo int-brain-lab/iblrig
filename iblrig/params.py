@@ -2,14 +2,20 @@
 # -*- coding:utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date: Friday, September 13th 2019, 2:57:40 pm
+import datetime
+import json
 import logging
 import datetime
 import iblrig.logging_  # noqa
 from pathlib import Path
-import iblrig.path_helper as path_helper
-import json
+
+from ibllib.graphic import strinput
 import iblrig.alyx as alyx
 from pybpodgui_api.models.project import Project
+
+import iblrig.alyx as alyx
+import iblrig.logging_  # noqa
+import iblrig.path_helper as path_helper
 
 log = logging.getLogger('iblrig')
 
@@ -69,6 +75,7 @@ def write_params_file(data: dict = None, force: bool = False) -> dict:
     if data is None:
         data = EMPTY_BOARD_PARAMS
         data['NAME'] = get_board_name()
+        data['COM_BPOD'] = get_board_comport()
     iblrig_params = Path(path_helper.get_iblrig_params_folder())
     fpath = iblrig_params / '.iblrig_params.json'
     if fpath.exists() and not force:
