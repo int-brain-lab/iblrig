@@ -99,7 +99,7 @@ def load_params_file() -> dict:
         with open(fpath, 'r') as f:
             out = json.load(f)
         return out
-    elif not fpath.exists() and bpod_comports.exisits():
+    elif not fpath.exists() and bpod_comports.exists():
         log.warning(f"Params file does not exist, found old bpod_comports file. Trying to migrate...")
         try_migrate_to_params()
         return load_params_file()
@@ -177,7 +177,7 @@ def load_params() -> dict:
     out = load_params_file()
     if out_alyx != out:
         log.warning(f"Local data and Alyx data are not the same. Using local.")
-        iblrig.alyx.update_board_params(data=out)
+        iblrig.alyx.update_board_params(data=out, force=True)
     return out
 
 
