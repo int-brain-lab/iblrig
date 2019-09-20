@@ -168,7 +168,7 @@ class Frame2TTL(object):
 
 
 def get_and_set_thresholds():
-    params = iblrig.params.load_params()
+    params = iblrig.params.load_params_file()
 
     for k in params:
         if 'F2TTL' in k and params[k] is None:
