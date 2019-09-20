@@ -143,6 +143,113 @@ def make_folder(str1: str or Path) -> None:
     log.debug(f"Created folder {path}")
 
 
+def get_previous_session_folders(subject_name: str, session_folder: str) -> list:
+    """
+    """
+    log.debug("Looking for previous session folders")
+    subject_folder = Path(get_iblrig_data_folder(subjects=True)) / subject_name
+    sess_folders = []
+    if not subject_folder.exists():
+        log.debug(
+            f'NOT FOUND: No previous sessions for subject {subject_folder.name}')
+        return sess_folders
+
+    for date in get_subfolder_paths(subject_folder):
+        sess_folders.extend(get_subfolder_paths(date))
+
+    sess_folders = [x for x in sorted(sess_folders) if session_folder not in x]
+    if not sess_folders:
+        log.debug(
+            f'NOT FOUND: No previous sessions for subject {subject_folder.name}')
+
+    log.debug(
+        f"Found {len(sess_folders)} session folders for mouse {subject_folder.name}")
+
+    return sess_folders
+
+
+def get_previous_data_files(protocol: str,
+                            subject_name: str,
+                            session_folder: str,
+                            typ: str = 'data') -> list:
+    log.debug(f"Looking for previous files of type: {typ}")
+    prev_data_files = []
+    prev_session_files = []
+    data_fname = '_iblrig_taskData.raw.jsonable'
+    settings_fname = '_iblrig_taskSettings.raw.json'
+    log.debug(f"Looking for files:{data_fname} AND {settings_fname}")
+    for prev_sess_path in get_previous_session_folders(subject_name, session_folder):
+        prev_sess_path = Path(prev_sess_path) / 'raw_behavior_data'
+        # Get all data and settings file if they both exist
+        if ((prev_sess_path / data_fname).exists() and
+                (prev_sess_path / settings_fname).exists()):
+            prev_data_files.append(prev_sess_path / data_fname)
+            prev_session_files.append(prev_sess_path / settings_fname)
+    log.debug(f"Found {len(prev_data_files)} file pairs")
+    # Remove empty files
+    ds_out = [(d, s) for d, s in zip(prev_data_files, prev_session_files)
+                if d.stat().st_size != 0 and s.stat().st_size != 0]
+    log.debug(f"Found {len(ds_out)} non empty file pairs")
+    # Remove sessions of different task protocols
+    ds_out = [(d, s) for d, s in ds_out if protocol in
+                raw.load_settings(str(s.parent.parent))['PYBPOD_PROTOCOL']]
+    log.debug(
+        f"Found {len(ds_out)} file pairs for protocol {protocol}")
+    data_out = [str(d) for d, s in ds_out]
+    settings_out = [str(s) for d, s in ds_out]
+    if not data_out:
+        log.debug(
+            f'NOT FOUND: Previous data files for task {protocol}')
+    if not settings_out:
+        log.debug(
+            f'NOT FOUND: Previous settings files for task {protocol}')
+    log.debug(f"Reurning {typ} files")
+
+    return data_out if typ == 'data' else settings_out
+
+
+def get_previous_data_file(protocol: str,
+                           subject_name: str,
+                           session_folder: str):
+    log.debug("Getting previous data file")
+    out = sorted(get_previous_data_files(protocol, subject_name, session_folder))
+    if out:
+        log.debug(f"Previous data file: {out[-1]}")
+        return out[-1]
+    else:
+        log.debug("NOT FOUND: Previous data file")
+        return None
+
+
+def get_previous_settings_file(protocol: str,
+                               subject_name: str,
+                               session_folder: str):
+    log.debug("Getting previous settings file")
+    out = sorted(get_previous_data_files(protocol, subject_name, session_folder,
+                                         typ='settings'))
+    if out:
+        log.debug(f"Previous settings file: {out[-1]}")
+        return out[-1]
+    else:
+        log.debug("NOT FOUND: Previous settings file")
+        return None
+
+
+def get_previous_session_path(protocol: str,
+                              subject_name: str,
+                              session_folder: str):
+    log.debug("Getting previous session path")
+    previous_data_file = get_previous_data_file(protocol, subject_name, session_folder)
+    if previous_data_file is not None:
+        out = str(Path(previous_data_file).parent.parent)
+        log.debug(f"Previous session path: {out}")
+    else:
+        out = None
+        log.debug("NOT FOUND: Previous session path")
+
+    return out
+
+
 def get_subfolder_paths(folder: str) -> str:
     out = [os.path.join(folder, x) for x in os.listdir(folder)
            if os.path.isdir(os.path.join(folder, x))]
@@ -201,9 +308,21 @@ def get_session_number(session_date_folder) -> str:
     return out
 
 
+# XXX: THIS IS NOT BEING USED!!
+def get_latest_screen_calib_file():  # XXX: check if in use!
+    log.debug(f"Looking for screen calibration files: {params.get_board_name()}")
+    dsf = Path(get_iblrig_data_folder(subjects=True))
+    cal = dsf / '_iblrig_calibration'
+    if not cal.exists():
+        log.debug(f'NOT FOUND: Calibration subject {str(cal)}')
+        return None
+    return None
+
+
 class SessionPathCreator(object):
     # add subject name and protocol (maybe have a metadata struct)
     def __init__(self, subject_name, protocol=False, make=False):
+
         self.IBLRIG_FOLDER = get_iblrig_folder()
         self.IBLRIG_EPHYS_SESSION_FOLDER = str(
             Path(self.IBLRIG_FOLDER) / 'tasks' /
@@ -218,6 +337,9 @@ class SessionPathCreator(object):
         self.IBLRIG_DATA_FOLDER = get_iblrig_data_folder(subjects=False)
         self.IBLRIG_DATA_SUBJECTS_FOLDER = get_iblrig_data_folder(subjects=True)
 
+        self.PARAMS = params.load_params_file()
+        self.IBLRIG_PARAMS_FILE = str(
+            Path(self.IBLRIG_PARAMS_FOLDER) / '.bpod_comports.json')
         self.SUBJECT_NAME = subject_name
         self.SUBJECT_FOLDER = os.path.join(
             self.IBLRIG_DATA_SUBJECTS_FOLDER, self.SUBJECT_NAME)
@@ -274,19 +396,20 @@ class SessionPathCreator(object):
             self.LATEST_WATER_CALIBRATION_FILE = str(self.LATEST_WATER_CALIBRATION_FILE)
             self.LATEST_WATER_CALIB_RANGE_FILE = str(self.LATEST_WATER_CALIB_RANGE_FILE)
 
-        self.LATEST_SCREEN_CALIBRATION_FILE = self._latest_screen_calib_file()
+        self.LATEST_SCREEN_CALIBRATION_FILE = get_latest_screen_calib_file()
 
-        self.PREVIOUS_DATA_FILE = self._previous_data_file()
-        self.PREVIOUS_SETTINGS_FILE = self._previous_settings_file()
-        self.PREVIOUS_SESSION_PATH = self._previous_session_path()
+        self.PREVIOUS_DATA_FILE = get_previous_data_file(self._PROTOCOL,
+                                                         self.SUBJECT_NAME,
+                                                         self.SESSION_FOLDER)
+        self.PREVIOUS_SETTINGS_FILE = get_previous_settings_file(self._PROTOCOL,
+                                                                 self.SUBJECT_NAME,
+                                                                 self.SESSION_FOLDER)
+        self.PREVIOUS_SESSION_PATH = get_previous_session_path(self._PROTOCOL,
+                                                               self.SUBJECT_NAME,
+                                                               self.SESSION_FOLDER)
 
-        self.BPOD_COMPORTS_FILE = str(
-            Path(self.IBLRIG_PARAMS_FOLDER) / '.bpod_comports.json')
         if make:
             self.make_missing_folders(make)
-
-        self.PARAMS = params.load_params()
-
         self.display_logs()
 
     def make_missing_folders(self, makelist):
@@ -309,109 +432,6 @@ class SessionPathCreator(object):
                 make_folder(self.SESSION_RAW_IMAGING_DATA_FOLDER)
 
         return
-
-    def _previous_session_folders(self):
-        """
-        """
-        log.debug("Looking for previous session folders")
-        sess_folders = []
-        subj_folder = Path(self.SUBJECT_FOLDER)
-        subj_name = subj_folder.name
-        if not subj_folder.exists():
-            log.debug(
-                f'NOT FOUND: No previous sessions for subject {subj_name}')
-            return sess_folders
-
-        for date in get_subfolder_paths(self.SUBJECT_FOLDER):
-            sess_folders.extend(get_subfolder_paths(date))
-
-        sess_folders = [x for x in sorted(sess_folders)
-                        if self.SESSION_FOLDER not in x]
-        if not sess_folders:
-            log.debug(
-                f'NOT FOUND: No previous sessions for subject {subj_name}')
-
-        log.debug(
-            f"Found {len(sess_folders)} session folders for mouse {subj_name}")
-
-        return sess_folders
-
-    def _previous_data_files(self, typ='data'):
-        log.debug(f"Looking for previous files of type: {typ}")
-        prev_data_files = []
-        prev_session_files = []
-        data_fname = self.BASE_FILENAME + 'Data.raw.jsonable'
-        settings_fname = self.BASE_FILENAME + 'Settings.raw.json'
-        log.debug(f"Looking for files:{data_fname} AND {settings_fname}")
-        for prev_sess_path in self._previous_session_folders():
-            prev_sess_path = Path(prev_sess_path) / 'raw_behavior_data'
-            # Get all data and settings file if they both exist
-            if ((prev_sess_path / data_fname).exists() and
-                    (prev_sess_path / settings_fname).exists()):
-                prev_data_files.append(prev_sess_path / data_fname)
-                prev_session_files.append(prev_sess_path / settings_fname)
-        log.debug(f"Found {len(prev_data_files)} file pairs")
-        # Remove empty files
-        ds_out = [(d, s) for d, s in zip(prev_data_files, prev_session_files)
-                  if d.stat().st_size != 0 and s.stat().st_size != 0]
-        log.debug(f"Found {len(ds_out)} non empty file pairs")
-        # Remove sessions of different task protocols
-        ds_out = [(d, s) for d, s in ds_out if self._PROTOCOL in
-                  raw.load_settings(str(s.parent.parent))['PYBPOD_PROTOCOL']]
-        log.debug(
-            f"Found {len(ds_out)} file pairs for protocol {self._PROTOCOL}")
-        data_out = [str(d) for d, s in ds_out]
-        settings_out = [str(s) for d, s in ds_out]
-        if not data_out:
-            log.debug(
-                f'NOT FOUND: Previous data files for task {self._PROTOCOL}')
-        if not settings_out:
-            log.debug(
-                f'NOT FOUND: Previous settings files for task {self._PROTOCOL}')
-        log.debug(f"Reurning {typ} files")
-
-        return data_out if typ == 'data' else settings_out
-
-    def _previous_data_file(self):
-        log.debug("Getting previous data file")
-        out = sorted(self._previous_data_files())
-        if out:
-            log.debug(f"Previous data file: {out[-1]}")
-            return out[-1]
-        else:
-            log.debug("NOT FOUND: Previous data file")
-            return None
-
-    def _previous_settings_file(self):
-        log.debug("Getting previous settings file")
-        out = sorted(self._previous_data_files(typ='settings'))
-        if out:
-            log.debug(f"Previous settings file: {out[-1]}")
-            return out[-1]
-        else:
-            log.debug("NOT FOUND: Previous settings file")
-            return None
-
-    def _previous_session_path(self):
-        log.debug("Getting previous session path")
-        if self.PREVIOUS_DATA_FILE is not None:
-            out = str(Path(self.PREVIOUS_DATA_FILE).parent.parent)
-            log.debug(f"Previous session path: {out}")
-        else:
-            out = None
-            log.debug("NOT FOUND: Previous session path")
-
-        return out
-
-    def _latest_screen_calib_file(self):  # XXX: check if in use!
-        log.debug(f"Looking for screen calibration files: {self._BOARD}")
-        dsf = Path(self.IBLRIG_DATA_SUBJECTS_FOLDER)
-        cal = dsf / '_iblrig_calibration'
-        if not cal.exists():
-            log.debug(f'NOT FOUND: Calibration subject {str(cal)}')
-            return None
-
-        return None
 
     def display_logs(self):
         # User info and warnings
