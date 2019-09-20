@@ -41,10 +41,9 @@ class SessionParamHandler(object):
               for i in [x for x in dir(user_settings) if '__' not in x]}
         self.__dict__.update(us)
         self = iotasks.deserialize_pybpod_user_settings(self)
-        spc = SessionPathCreator(self.IBLRIG_FOLDER, self.IBLRIG_DATA_FOLDER,
-                                 self.PYBPOD_SUBJECTS[0],
+        spc = SessionPathCreator(self.PYBPOD_SUBJECTS[0],
                                  protocol=self.PYBPOD_PROTOCOL,
-                                 board=self.PYBPOD_BOARD, make=make)
+                                 make=make)
         self.__dict__.update(spc.__dict__)
 
         # =====================================================================
@@ -80,7 +79,7 @@ class SessionParamHandler(object):
         # =====================================================================
         # frame2TTL
         # =====================================================================
-        self.F2TTL_GET_AND_SET_THRESHOLDS = frame2TTL.get_and_set_thresholds(self)
+        self.F2TTL_GET_AND_SET_THRESHOLDS = frame2TTL.get_and_set_thresholds()
         # =====================================================================
         # ROTARY ENCODER
         # =====================================================================
@@ -244,18 +243,13 @@ if __name__ == '__main__':
         turning off lights of bpod board
     """
     import task_settings as _task_settings
-    import scratch._user_settings as _user_settings
+    import iblrig.fake_user_settings as _user_settings
     if platform == 'linux':
-        r = "/home/nico/Projects/IBL/github/iblrig"
-        _task_settings.IBLRIG_FOLDER = r
-        d = ("/home/nico/Projects/IBL/github/iblrig/scratch/" +
-             "test_iblrig_data")
-        _task_settings.IBLRIG_DATA_FOLDER = d
         _task_settings.AUTOMATIC_CALIBRATION = False
         _task_settings.USE_VISUAL_STIMULUS = False
 
     sph = SessionParamHandler(_task_settings, _user_settings,
-                              debug=False, fmake=True)
+                              debug=False, fmake=False)
     for k in sph.__dict__:
         if sph.__dict__[k] is None:
             print(f"{k}: {sph.__dict__[k]}")
