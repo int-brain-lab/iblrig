@@ -17,6 +17,7 @@ import iblrig.frame2TTL as frame2TTL
 import iblrig.iotasks as iotasks
 import iblrig.misc as misc
 import iblrig.sound as sound
+import iblrig.user_input as user
 from iblrig.path_helper import SessionPathCreator
 from iblrig.rotary_encoder import MyRotaryEncoder
 
@@ -49,7 +50,7 @@ class SessionParamHandler(object):
         # =====================================================================
         # SUBJECT
         # =====================================================================
-        self.SUBJECT_WEIGHT = self.get_subject_weight()
+        self.SUBJECT_WEIGHT = user.get_subject_weight(self.PYBPOD_SUBJECTS[0])
         self.SUBJECT_DISENGAGED_TRIGGERED = False
         self.SUBJECT_DISENGAGED_TRIALNUM = None
         # =====================================================================

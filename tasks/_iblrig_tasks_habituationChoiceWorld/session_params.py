@@ -17,6 +17,7 @@ import iblrig.frame2TTL as frame2TTL
 import iblrig.iotasks as iotasks
 import iblrig.misc as misc
 import iblrig.sound as sound
+import iblrig.user_input as user
 from iblrig.path_helper import SessionPathCreator
 from iblrig.rotary_encoder import MyRotaryEncoder
 
@@ -48,7 +49,7 @@ class SessionParamHandler(object):
         # =====================================================================
         # SUBJECT
         # =====================================================================
-        self.SUBJECT_WEIGHT = self.get_subject_weight()
+        self.SUBJECT_WEIGHT = user.get_subject_weight(self.PYBPOD_SUBJECTS[0])
         # =====================================================================
         # OSC CLIENT
         # =====================================================================
@@ -119,11 +120,6 @@ class SessionParamHandler(object):
     def save_ambient_sensor_reading(self, bpod_instance):
         return ambient_sensor.get_reading(bpod_instance,
                                           save_to=self.SESSION_RAW_DATA_FOLDER)
-
-    def get_subject_weight(self):
-        return numinput(
-            "Subject weighing (gr)", f"{self.PYBPOD_SUBJECTS[0]} weight (gr):",
-            nullable=False)
 
     def bpod_lights(self, command: int):
         fpath = Path(self.IBLRIG_FOLDER) / 'scripts' / 'bpod_lights.py'
