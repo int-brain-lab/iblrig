@@ -5,5 +5,3 @@
 """
 Main settings file for screen calibration protocol
 """
-IBLRIG_FOLDER = "C:\\iblrig"
-IBLRIG_DATA_FOLDER = None  # If None will be ..\\iblrig_data from IBLRIG_FOLDER
