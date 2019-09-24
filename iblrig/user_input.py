@@ -4,11 +4,14 @@
 import logging
 import sys
 
+import ibllib.graphic as graph
 import pyforms
 from AnyQt.QtWidgets import QApplication
 from pyforms.basewidget import BaseWidget
 from pyforms.controls import (ControlButton, ControlCombo, ControlLabel,
                               ControlText)
+
+from iblrig.misc import patch_settings_file
 
 log = logging.getLogger('iblrig')
 
@@ -144,7 +147,7 @@ def session_form(mouse_name: str = '') -> dict:
         # return session_form(mouse_name)
 
 
-def get_subject_weight(form_data):
+def get_form_subject_weight(form_data):
     return form_data['mouseWeight']
 
 
@@ -162,10 +165,24 @@ def get_probe_data(form_data):
     return nested
 
 
+def get_subject_weight(subject):
+    return graph.numinput("Subject weighing (gr)", f"{subject} weight (gr):", nullable=False)
+
+
+def get_session_delay(settings_file_path: str) -> int:
+    out = graph.numinput(
+        "Session delay", "Delay session initiation by (min):",
+        default=0, minval=0, maxval=60, nullable=False, askint=True)
+    out = out * 60
+    patch = {'SESSION_START_DELAY_SEC': out}
+    patch_settings_file(settings_file_path, patch)
+    return out
+
+
 if __name__ == "__main__":
     res = -1
     while res == -1:
         res = session_form(mouse_name='myMouse')
-    w = get_subject_weight(res)
+    w = get_form_subject_weight(res)
     p = get_probe_data(res)
     print('.')
