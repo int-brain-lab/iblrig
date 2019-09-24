@@ -47,9 +47,15 @@ def deserialize_pybpod_user_settings(sph: object) -> object:
 
 
 def save_session_settings(sph: object) -> None:
+    save_this = json.dumps(sph, cls=ComplexEncoder, indent=1)
     with open(sph.SETTINGS_FILE_PATH, 'a') as f:
-        f.write(json.dumps(sph, cls=ComplexEncoder, indent=1))
+        f.write(save_this)
         f.write('\n')
+
+    settings = raw.load_settings(sph.SESSION_FOLDER)
+    if 'IBLRIG_VERSION_TAG' not in save_this.keys():
+        save_this['IBLRIG_VERSION_TAG'] = ''
+    assert(save_this == settings)
 
 
 def copy_task_code(sph: object) -> None:
