@@ -166,7 +166,7 @@ class SessionParamHandler(object):
         form_data = -1
         while form_data == -1:
             form_data = user_input.session_form(mouse_name=self.SUBJECT_NAME)
-        self.SUBJECT_WEIGHT = user_input.get_subject_weight(form_data)
+        self.SUBJECT_WEIGHT = user_input.get_form_subject_weight(form_data)
         self.PROBE_DATA = user_input.get_probe_data(form_data)
         # =====================================================================
         # VISUAL STIM
@@ -225,11 +225,6 @@ class SessionParamHandler(object):
     def save_ambient_sensor_reading(self, bpod_instance):
         return ambient_sensor.get_reading(bpod_instance,
                                           save_to=self.SESSION_RAW_DATA_FOLDER)
-
-    def get_subject_weight(self):
-        return numinput(
-            "Subject weighing (gr)", f"{self.PYBPOD_SUBJECTS[0]} weight (gr):",
-            nullable=False)
 
     def bpod_lights(self, command: int):
         fpath = Path(self.IBLRIG_FOLDER) / 'scripts' / 'bpod_lights.py'
