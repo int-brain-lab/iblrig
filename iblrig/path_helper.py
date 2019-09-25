@@ -38,7 +38,7 @@ def get_iblrig_data_folder(subjects=True) -> str:
         make_folder(out)
     if not sout.exists():
         make_folder(sout)
-    return sout if subjects else out
+    return str(sout) if subjects else str(out)
 
 
 def get_commit_hash(folder):
