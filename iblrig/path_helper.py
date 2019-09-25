@@ -384,7 +384,7 @@ class SessionPathCreator(object):
             self.LATEST_WATER_CALIBRATION_FILE = str(self.LATEST_WATER_CALIBRATION_FILE)
             self.LATEST_WATER_CALIB_RANGE_FILE = str(self.LATEST_WATER_CALIB_RANGE_FILE)
 
-        self.LATEST_SCREEN_CALIBRATION_FILE = get_latest_screen_calib_file()
+        self.LATEST_SCREEN_CALIBRATION_FILE = None
 
         self.PREVIOUS_DATA_FILE = get_previous_data_file(self._PROTOCOL,
                                                          self.SUBJECT_NAME,
