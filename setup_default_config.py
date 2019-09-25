@@ -7,11 +7,13 @@ import sys
 from pathlib import Path
 
 from pybpodgui_api.models.project import Project
+from iblrig.params import try_migrate_to_params
 
 IBLRIG_FOLDER = Path(__file__).absolute().parent
 IBLRIG_PARAMS_FOLDER = IBLRIG_FOLDER.parent / 'iblrig_params'
 
 print(IBLRIG_FOLDER, '\n', IBLRIG_PARAMS_FOLDER)
+try_migrate_to_params()
 
 
 ################################################################################
