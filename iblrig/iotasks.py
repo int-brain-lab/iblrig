@@ -52,9 +52,8 @@ def save_session_settings(sph: object) -> None:
         f.write(save_this)
         f.write('\n')
 
+    save_this = json.loads(save_this)
     settings = raw.load_settings(sph.SESSION_FOLDER)
-    if 'IBLRIG_VERSION_TAG' not in save_this.keys():
-        save_this['IBLRIG_VERSION_TAG'] = ''
     assert(save_this == settings)
 
 
