@@ -146,11 +146,6 @@ class SessionParamHandler(object):
         return ambient_sensor.get_reading(bpod_instance,
                                           save_to=self.SESSION_RAW_DATA_FOLDER)
 
-    def get_subject_weight(self):
-        return numinput(
-            "Subject weighing (gr)", f"{self.PYBPOD_SUBJECTS[0]} weight (gr):",
-            nullable=False)
-
     def bpod_lights(self, command: int):
         fpath = Path(self.IBLRIG_FOLDER) / 'scripts' / 'bpod_lights.py'
         os.system(f"python {fpath} {command}")
