@@ -10,23 +10,14 @@ from pathlib import Path
 
 import serial
 
+import iblrig.params as params
+
 log = logging.getLogger('iblrig')
-
-IBLRIG_FOLDER = Path(__file__).absolute().parent.parent
-IBLRIG_PARAMS_FOLDER = IBLRIG_FOLDER.parent / 'iblrig_params'
-
-
-def get_com(key='BPOD'):
-    fpath = IBLRIG_PARAMS_FOLDER / '.bpod_comports.json'
-    with open(fpath, 'r') as f:
-        comports = json.load(f)
-    log.debug(f"Found {key} on port {comports[key]}")
-    return comports[key]
 
 
 def main(comport: str, command: int):
     if not comport:
-        comport = get_com()
+        comport = params.get_board_comport()
     ser = serial.Serial(port=comport, baudrate=115200, timeout=1)
     ser.write(struct.pack('cB', b':', command))
     ser.close()
@@ -36,7 +27,7 @@ def main(comport: str, command: int):
 
 if __name__ == "__main__":
     if len(sys.argv) == 2:
-        comport = get_com()
+        comport = params.get_board_comport()
         command = sys.argv[1]
     else:
         comport = sys.argv[1]
