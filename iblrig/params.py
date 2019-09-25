@@ -100,9 +100,10 @@ def load_params_file() -> dict:
             out = json.load(f)
         return out
     elif not fpath.exists() and bpod_comports.exists():
-        log.warning(f"Params file does not exist, found old bpod_comports file. Trying to migrate...")
-        try_migrate_to_params()
-        return load_params_file()
+        log.warning(f"Params file does not exist, found old bpod_comports file.")
+        log.error("Please migrate to new params file")
+        raise(EnvironmentError)
+        return
     elif not fpath.exists() and not bpod_comports.exists():
         log.warning(f"Could not load params file does not exist. Creating...")
         out = check_params_comports(write_params_file())
@@ -245,6 +246,7 @@ def try_migrate_to_params(force=False):
     # Delete old comports file
     if comports_file.exists():
         comports_file.unlink()
+    return
 
 
 if __name__ == "__main__":
