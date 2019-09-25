@@ -36,6 +36,9 @@ def get_board_name():
     iblproject_path = Path(path_helper.get_iblrig_params_folder()) / 'IBL'
     p = Project()
     p.load(str(iblproject_path))
+    params_file = Path(path_helper.get_iblrig_params_folder()) / '.iblrig_params.json'
+    if not params_file.exists():
+        return p.boards[0].name
     pars = load_params_file()
     if p.boards[0].name != pars['NAME']:
         pars['NAME'] = p.boards[0].name
@@ -47,6 +50,9 @@ def get_board_comport():
     iblproject_path = Path(path_helper.get_iblrig_params_folder()) / 'IBL'
     p = Project()
     p.load(str(iblproject_path))
+    params_file = Path(path_helper.get_iblrig_params_folder()) / '.iblrig_params.json'
+    if not params_file.exists():
+        return p.boards[0].serial_port
     pars = load_params_file()
     if p.boards[0].serial_port != pars['COM_BPOD']:
         pars['COM_BPOD'] = p.boards[0].serial_port
