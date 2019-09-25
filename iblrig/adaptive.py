@@ -38,13 +38,10 @@ def init_reward_amount(sph) -> float:
     return out
 
 
-def init_calib_func(sph) -> scipy.interpolate.pchip:
-    if not sph.AUTOMATIC_CALIBRATION:
-        return
-
-    if sph.LATEST_WATER_CALIBRATION_FILE:
+def init_calib_func(latest_water_calibration_file) -> scipy.interpolate.pchip:
+    if latest_water_calibration_file:
         # Load last calibration df1
-        df1 = pd.read_csv(sph.LATEST_WATER_CALIBRATION_FILE)
+        df1 = pd.read_csv(latest_water_calibration_file)
         # make interp func
         if df1.empty:
             msg = f"""
