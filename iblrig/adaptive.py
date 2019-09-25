@@ -60,7 +60,7 @@ def init_calib_func(sph) -> scipy.interpolate.pchip:
         return
 
 
-def init_calib_func_range(sph) -> tuple:
+def init_calib_func_range(latest_water_calib_range_file: str) -> tuple:
 
     min_open_time = 0
     max_open_time = 1000
@@ -72,9 +72,9 @@ def init_calib_func_range(sph) -> tuple:
                      using full range
         ##########################################"""
 
-    if sph.LATEST_WATER_CALIB_RANGE_FILE:
+    if latest_water_calib_range_file:
         # Load last calibration r ange df1
-        df1 = pd.read_csv(sph.LATEST_WATER_CALIB_RANGE_FILE)
+        df1 = pd.read_csv(latest_water_calib_range_file)
         if not df1.empty:
             min_open_time = df1.min_open_time.iloc[0]
             max_open_time = df1.max_open_time.iloc[0]
@@ -195,9 +195,4 @@ if __name__ == "__main__":
     data = raw.load_data(sess_path)
     sess_path = '/mnt/s0/IntegrationTests/Subjects_init/_iblrig_calibration/2019-02-21/003/raw_behavior_data' # noqa
 
-    class SPH(object):
-        def __init__(self):
-            self.LATEST_WATER_CALIB_RANGE_FILE = sess_path + '/_iblrig_calibration_water_range.csv'  # noqa
-
-    sph = SPH()
-    init_calib_func_range(sph)
+    init_calib_func_range(sess_path + '/_iblrig_calibration_water_range.csv')

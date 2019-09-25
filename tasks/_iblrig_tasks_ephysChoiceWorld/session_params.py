@@ -110,7 +110,7 @@ class SessionParamHandler(object):
         self.REWARD_TYPE = 'Water 10% Sucrose'
 
         self.CALIB_FUNC = adaptive.init_calib_func(self)
-        self.CALIB_FUNC_RANGE = adaptive.init_calib_func_range(self)
+        self.CALIB_FUNC_RANGE = adaptive.init_calib_func_range(self.LATEST_WATER_CALIB_RANGE_FILE)
         self.REWARD_VALVE_TIME = adaptive.init_reward_valve_time(self)
 
         # =====================================================================

@@ -68,7 +68,7 @@ class SessionParamHandler(object):
         self.AR_MIN_VALUE = 1.5 if 'Sucrose' in self.REWARD_TYPE else 2.0
         self.REWARD_AMOUNT = adaptive.init_reward_amount(self)
         self.CALIB_FUNC = adaptive.init_calib_func(self)
-        self.CALIB_FUNC_RANGE = adaptive.init_calib_func_range(self)
+        self.CALIB_FUNC_RANGE = adaptive.init_calib_func_range(self.LATEST_WATER_CALIB_RANGE_FILE)
         self.REWARD_VALVE_TIME = adaptive.init_reward_valve_time(self)
         self.STIM_GAIN = adaptive.init_stim_gain(self)
         self.IMPULSIVE_CONTROL = 'OFF'
