@@ -19,7 +19,6 @@ import iblrig.logging_  # noqa
 log = logging.getLogger('iblrig')
 
 
-# TODO: CHANGE ALL PROTOCOLS TO REFLECT SPC DIFFERENT CONSTRUCTOR CALL
 def get_iblrig_folder() -> str:
     import iblrig
     return str(Path(iblrig.__file__).parent.parent)
@@ -306,17 +305,6 @@ def get_session_number(session_date_folder) -> str:
     log.debug(f"Setting session number to: {out}")
 
     return out
-
-
-# XXX: THIS IS NOT BEING USED!!
-def get_latest_screen_calib_file():  # XXX: check if in use!
-    log.debug(f"Looking for screen calibration files: {params.get_board_name()}")
-    dsf = Path(get_iblrig_data_folder(subjects=True))
-    cal = dsf / '_iblrig_calibration'
-    if not cal.exists():
-        log.debug(f'NOT FOUND: Calibration subject {str(cal)}')
-        return None
-    return None
 
 
 class SessionPathCreator(object):
