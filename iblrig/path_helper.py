@@ -280,7 +280,7 @@ def get_bonsai_path(use_iblrig_bonsai=True) -> str:
 
 
 def get_visual_stim_type(protocol):
-    if 'habituation' in protocol or 'sync_test' in protocol:
+    if 'habituation' in protocol or 'bpod_ttl_test' in protocol:
         return 'GaborHabituationTask'
     elif 'ephys_certification' in protocol:
         return 'ephys_certification'
