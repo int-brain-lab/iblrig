@@ -171,26 +171,26 @@ def check_params_comports(data: dict) -> dict:
 def update_params(data: dict) -> None:
     update_params_file(data=data)
     try:
-        iblrig.alyx.update_board_params(data=data)
+        alyx.update_board_params(data=data)
     except Exception as e:
-        log.warning(f"Could not update board params on Alyx. Saved locally:\n{e}")
+        log.warning(f"Could not update board params on Alyx. Saved locally:\n{data}")
 
 
 def load_params() -> dict:
-    out_alyx = iblrig.alyx.load_board_params()
+    out_alyx = alyx.load_board_params()
     if out_alyx is None:
         log.warning(f"Could not load board params from Alyx. Loading from local file...")
     out = load_params_file()
     if out_alyx != out:
         log.warning(f"Local data and Alyx data are not the same. Using local.")
-        iblrig.alyx.update_board_params(data=out, force=True)
+        alyx.update_board_params(data=out, force=True)
     return out
 
 
 def write_params(data: dict = None, force: bool = False) -> None:
     write_params_file(data=data, force=force)
     try:
-        iblrig.alyx.write_board_params(data=data, force=force)
+        alyx.write_board_params(data=data, force=force)
     except Exception as e:
         log.warning(f"Could not write board params to Alyx. Written to local file:\n{e}")
 
