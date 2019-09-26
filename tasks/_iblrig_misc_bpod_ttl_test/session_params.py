@@ -49,7 +49,7 @@ class SessionParamHandler(object):
         # =====================================================================
         # frame2TTL
         # =====================================================================
-        self.F2TTL_GET_AND_SET_THRESHOLDS = frame2TTL.get_and_set_thresholds(self)
+        self.F2TTL_GET_AND_SET_THRESHOLDS = frame2TTL.get_and_set_thresholds()
         # =====================================================================
         # ROTARY ENCODER
         # =====================================================================
