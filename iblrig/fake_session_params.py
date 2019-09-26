@@ -90,6 +90,7 @@ class SessionParamHandler(object):
         # =====================================================================
         # SOUNDS
         # =====================================================================
+        self.SOFT_SOUND = None if 'ephys' in self._BOARD else self.SOFT_SOUND
         self.SOUND_SAMPLE_FREQ = sound.sound_sample_freq(self.SOFT_SOUND)
 
         self.WHITE_NOISE_DURATION = float(self.WHITE_NOISE_DURATION)
