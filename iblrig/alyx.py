@@ -110,7 +110,7 @@ def update_board_params(data: dict, force: bool = False) -> dict:
         old = load_board_params()
 
     board = rig_params.get_board_name()
-    if data['NAME'] != board:
+    if 'NAME' in data and data['NAME'] != board:
         log.error(f"Board {board} not equal to data['NAME'] {data['NAME']}")
         raise(AttributeError)
     for k in data:
@@ -158,24 +158,24 @@ def update_completed_session(session_folder):
 
 
 if __name__ == "__main__":
-    subject = 'ZM_1737'
+    # subject = 'ZM_1737'
 
-    session_folder = '/home/nico/Projects/IBL/github/iblrig_data/\
-        Subjects/_iblrig_test_mouse/2019-06-24/001'.replace(' ', '')
+    # session_folder = '/home/nico/Projects/IBL/github/iblrig_data/\
+    #     Subjects/_iblrig_test_mouse/2019-06-24/001'.replace(' ', '')
 
     # eid = get_latest_session_eid(subject, has_data=True)
-    data = load_previous_data(subject)
-    last_trial_data = load_previous_trial_data(subject)
-    settings = load_previous_settings(subject)
+    # data = load_previous_data(subject)
+    # last_trial_data = load_previous_trial_data(subject)
+    # settings = load_previous_settings(subject)
 
     # create_session(session_folder)
 
-    board = '_iblrig_mainenlab_behavior_0'
+    data = {'COM_F2TTL': 'COM6', 'F2TTL_DARK_THRESH': 86.0, 'F2TTL_LIGHT_THRESH': 46.0, 'F2TTL_CALIBRATION_DATE': '2019-09-26'}
     # init_board_params(board)
-    # update_board_params(board, {'some_var': 123, 'BPOD_COM': 'COM#'})
+    update_board_params(data)
     # load_board_params(board)
 
-    create_current_running_session(session_folder)
-    create_session(session_folder)
+    # create_current_running_session(session_folder)
+    # create_session(session_folder)
 
     print('.')
