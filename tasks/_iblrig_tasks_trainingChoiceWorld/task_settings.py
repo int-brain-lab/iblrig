@@ -35,7 +35,7 @@ SYNC_SQUARE_X = 1.33
 SYNC_SQUARE_Y = -1.03
 
 # SOUNDS
-SOFT_SOUND = 'xonar'  # Use software sound 'xonar', 'sysdefault' or False for BpodSoundCard  # noqa
+SOFT_SOUND = 'xonar'  # Use software sound 'xonar', 'sysdefault' or None for BpodSoundCard  # noqa
 SOUND_BOARD_BPOD_PORT = 'Serial3'  # (on Bpod) - Ignored if using SOFT_SOUND
 WHITE_NOISE_DURATION = 0.5  # Length of noise burst
 WHITE_NOISE_AMPLITUDE = 0.05
