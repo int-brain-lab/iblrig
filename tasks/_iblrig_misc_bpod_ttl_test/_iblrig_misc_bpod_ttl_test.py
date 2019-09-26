@@ -130,10 +130,10 @@ for i in range(sph.NTRIALS):  # Main loop
     bad_stim_state = trial_data['behavior_data']['States timestamps']['bad_stim']
     if not np.all(np.isnan(bad_stim_state)):
         bad_stim_count += 1
-        log.info(f'Missing stims: {bad_stim_count}')
+        log.warning(f'Missing stims: {bad_stim_count}')
     if not np.all(np.isnan(bad_tone_state)):
         bad_tone_count += 1
-        log.info(f'Missing tones: {bad_tone_count}')
+        log.warning(f'Missing tones: {bad_tone_count}')
 
 sph.check_data()
 bpod.close()
