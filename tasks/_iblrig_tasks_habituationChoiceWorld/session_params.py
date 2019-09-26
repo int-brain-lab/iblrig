@@ -60,7 +60,7 @@ class SessionParamHandler(object):
         # =====================================================================
         # frame2TTL
         # =====================================================================
-        self.F2TTL_GET_AND_SET_THRESHOLDS = frame2TTL.get_and_set_thresholds(self)
+        self.F2TTL_GET_AND_SET_THRESHOLDS = frame2TTL.get_and_set_thresholds()
         # =====================================================================
         # ADAPTIVE STUFF
         # =====================================================================
@@ -76,7 +76,7 @@ class SessionParamHandler(object):
         self.ALL_THRESHOLDS = self.STIM_POSITIONS
         self.ROTARY_ENCODER = MyRotaryEncoder(self.ALL_THRESHOLDS,
                                               self.STIM_GAIN,
-                                              self.COM['ROTARY_ENCODER'])
+                                              self.PARAMS['COM_ROTARY_ENCODER'])
         # =====================================================================
         # SOUNDS
         # =====================================================================
