@@ -63,6 +63,8 @@ def start_visual_stim(sph):
 
 def start_camera_recording(sph):
     if (sph.RECORD_VIDEO is False and sph.OPEN_CAMERA_VIEW is False):
+        log.error("Task will hang waiting for camera frame sync pulse")
+        raise(UnboundLocalError)
         return
     # Run Workflow
     here = os.getcwd()

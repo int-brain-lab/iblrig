@@ -83,8 +83,8 @@ for i in range(sph.NTRIALS):  # Main loop
     if i == 0:  # First trial exception start camera
         sma.add_state(
             state_name='trial_start',
-            state_timer=1,
-            state_change_conditions={'Tup': 'stim_on'},
+            state_timer=3600,
+            state_change_conditions={'Port1In': 'reset_rotary_encoder'},
             output_actions=[('Serial1', re_stop_stim),
                             ('SoftCode', 3)])  # sart camera
     else:
