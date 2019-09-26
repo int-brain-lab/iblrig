@@ -435,7 +435,7 @@ class SessionPathCreator(object):
         ##########################################"""
                     log.warning(msg)
 
-                if k == 'PREVIOUS_DATA_FILE':
+                if k == 'PREVIOUS_DATA_FILE' and 'training' in self._PROTOCOL:
                     msg = """
         ##########################################
             NOT FOUND: PREVIOUS_DATA_FILE
