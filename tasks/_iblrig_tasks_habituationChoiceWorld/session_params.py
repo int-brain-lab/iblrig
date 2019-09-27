@@ -49,7 +49,7 @@ class SessionParamHandler(object):
         # =====================================================================
         # SUBJECT
         # =====================================================================
-        self.SUBJECT_WEIGHT = user.get_subject_weight(self.PYBPOD_SUBJECTS[0])
+        self.SUBJECT_WEIGHT = user.ask_subject_weight(self.PYBPOD_SUBJECTS[0])
         # =====================================================================
         # OSC CLIENT
         # =====================================================================

@@ -165,7 +165,7 @@ def get_probe_data(form_data):
     return nested
 
 
-def get_subject_weight(subject):
+def ask_subject_weight(subject):
     return graph.numinput("Subject weighing (gr)", f"{subject} weight (gr):", nullable=False)
 
 
