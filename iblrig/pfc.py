@@ -24,11 +24,11 @@ import logging
 import iblrig.logging_
 log = logging.getLogger('iblrig')
 
-## Check if Alyx is accessible
+# Check if Alyx is accessible
 import iblrig.alyx as alyx
 log.debug("Alyx: Connecting")
 one = alyx.get_one()
-## Load COM ports
+# Load COM ports
 import json
 from iblrig.path_helper import get_iblrig_folder
 from pathlib import Path
@@ -42,15 +42,13 @@ if BPOD_COMPORTS_FILE_PATH.exists():
         COM = json.load(f)
 else:
     # If file does not exist initialize:
+    pass
 
-## Load water calibration (date?)
+# Load water calibration (date?)
 
+# Load frame2TTL calibrated thresholds (date?)
 
-## Load frame2TTL calibrated thresholds (date?)
-
-
-
-## Check RE
+# Check RE
 from pybpod_rotaryencoder_module.module_api import RotaryEncoderModule
 log.debug("RE: Connect")
 m = RotaryEncoderModule(COM['ROTARY_ENCODER'])
@@ -58,7 +56,7 @@ log.debug("RE: set 0 position")
 m.set_zero_position()  # Not necessarily needed
 log.debug("RE: Close")
 m.close()
-## Check Bpod
+# Check Bpod
 import serial
 import struct
 log.debug("Bpod Connect")
@@ -69,14 +67,14 @@ log.debug("Bpod lights ON")
 ser.write(struct.pack('cB', b':', 1))
 log.debug("Bpod Close")
 ser.close()
-## Check Frame2TTL (by setting the thresholds)
+# Check Frame2TTL (by setting the thresholds)
 from iblrig.frame2TTL import Frame2TTL
 f = Frame2TTL(COM['FRAME2TTL'])
-## Create missing session folders
+# Create missing session folders
 
-## Run fast task to check IO
+# Run fast task to check IO
 
-## Create Alyx session reference
+# Create Alyx session reference
 
-## Open Alyx session notes in browser
+# Open Alyx session notes in browser
 print('.')

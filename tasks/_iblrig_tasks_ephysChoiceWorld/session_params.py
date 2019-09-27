@@ -9,7 +9,6 @@ from pathlib import Path
 from sys import platform
 from tkinter import messagebox
 
-from ibllib.graphic import multi_input, numinput
 from pythonosc import udp_client
 
 import iblrig.adaptive as adaptive
@@ -206,23 +205,6 @@ class SessionParamHandler(object):
         root.withdraw()
         messagebox.showinfo(title, msg)
         root.quit()
-
-    def get_recording_site_data(self, probe='LEFT'):
-        title = f'PROBE {probe} - recording site'
-        fields = ['X (float)', 'Y (float)', 'Z (float)', 'D (float)',
-                  'Angle (10 or 20)', 'Origin (bregma or lambda)']
-        defaults = [0.0, 0.0, 0.0, 0.0, '10', 'bregma']
-        types = [float, float, float, float, int, str]
-        userdata = multi_input(
-            title=title, add_fields=fields, defaults=defaults)
-        try:
-            data = [t(x) for x, t in zip(userdata, types)]
-            data_dict = {'xyzd': data[:4], 'angle': data[4], 'origin': data[5]}
-            return data_dict
-        except Exception:
-            log.warning(
-                f"One or more inputs are of the wrong type. Expected {types}")
-            return self.get_recording_site_data()
 
     def save_ambient_sensor_reading(self, bpod_instance):
         return ambient_sensor.get_reading(bpod_instance,

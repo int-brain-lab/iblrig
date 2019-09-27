@@ -7,7 +7,6 @@ import os
 from pathlib import Path
 from sys import platform
 
-from ibllib.graphic import numinput
 from pythonosc import udp_client
 
 import iblrig.adaptive as adaptive

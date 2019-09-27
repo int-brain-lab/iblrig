@@ -89,16 +89,16 @@ for i in range(sph.NTRIALS):  # Main loop
             state_name='stim_on',
             state_timer=10,
             state_change_conditions={'Tup': 'bad_stim',
-                                    'BNC1High': 'stim_off',
-                                    'BNC1Low': 'stim_off'},
+                                     'BNC1High': 'stim_off',
+                                     'BNC1Low': 'stim_off'},
             output_actions=[('Serial1', re_show_stim)])
     else:
         sma.add_state(
             state_name='stim_on',
             state_timer=1,
             state_change_conditions={'Tup': 'bad_stim',
-                                    'BNC1High': 'stim_off',
-                                    'BNC1Low': 'stim_off'},
+                                     'BNC1High': 'stim_off',
+                                     'BNC1Low': 'stim_off'},
             output_actions=[('Serial1', re_show_stim)])
 
     sma.add_state(

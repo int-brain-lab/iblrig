@@ -170,7 +170,12 @@ if __name__ == "__main__":
 
     # create_session(session_folder)
 
-    data = {'COM_F2TTL': 'COM6', 'F2TTL_DARK_THRESH': 86.0, 'F2TTL_LIGHT_THRESH': 46.0, 'F2TTL_CALIBRATION_DATE': '2019-09-26'}
+    data = {
+        'COM_F2TTL': 'COM6',
+        'F2TTL_DARK_THRESH': 86.0,
+        'F2TTL_LIGHT_THRESH': 46.0,
+        'F2TTL_CALIBRATION_DATE': '2019-09-26'
+    }
     # init_board_params(board)
     update_board_params(data)
     # load_board_params(board)

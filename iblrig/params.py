@@ -106,7 +106,8 @@ def load_params_file() -> dict:
             out = json.load(f)
         return out
     elif not fpath.exists() and bpod_comports.exists():
-        log.warning(f"Params file does not exist, found old bpod_comports file. Trying to migrate...")
+        log.warning(
+            f"Params file does not exist, found old bpod_comports file. Trying to migrate...")
         try_migrate_to_params()
         return load_params_file()
     elif not fpath.exists() and not bpod_comports.exists():
@@ -173,7 +174,7 @@ def update_params(data: dict) -> None:
     try:
         alyx.update_board_params(data=data)
     except Exception as e:
-        log.warning(f"Could not update board params on Alyx. Saved locally:\n{data}")
+        log.warning(f"Could not update board params on Alyx. Saved locally:\n{data}\n{e}")
 
 
 def load_params() -> dict:
