@@ -169,7 +169,7 @@ def get_subject_weight(subject):
     return graph.numinput("Subject weighing (gr)", f"{subject} weight (gr):", nullable=False)
 
 
-def get_session_delay(settings_file_path: str) -> int:
+def ask_session_delay(settings_file_path: str) -> int:
     out = graph.numinput(
         "Session delay", "Delay session initiation by (min):",
         default=0, minval=0, maxval=60, nullable=False, askint=True)
@@ -181,7 +181,7 @@ def get_session_delay(settings_file_path: str) -> int:
 
 if __name__ == "__main__":
     settings_file_path = '/home/nico/Projects/IBL/github/iblrig_data/Subjects/_iblrig_fake_subject/2019-09-25/002/raw_behavior_data/_iblrig_taskSettings.raw.json'  # noqa
-    delay = get_session_delay(settings_file_path)
+    delay = ask_session_delay(settings_file_path)
     res = -1
     while res == -1:  # TODO: check if calls in session params follow this pattern
         res = session_form(mouse_name='myMouse')

@@ -12,7 +12,7 @@ from pybpodapi.protocol import Bpod, StateMachine
 import online_plots as op
 import task_settings
 import user_settings
-from iblrig.user_input import get_session_delay
+from iblrig.user_input import ask_session_delay
 from session_params import SessionParamHandler
 from trial_params import TrialParamHandler
 
@@ -86,7 +86,7 @@ if sph.SOFT_SOUND is None:
     bpod.load_serial_message(sound_card, sc_play_noise, [
                              ord('P'), sph.WHITE_NOISE_IDX])
 # Delay initiation
-delay = get_session_delay(sph.SETTINGS_FILE_PATH)
+delay = ask_session_delay(sph.SETTINGS_FILE_PATH)
 log.info(f"Starting {delay} seconds of delay (i.e. {delay/60} minutes)")
 time.sleep(delay)
 log.info(f"Resuming task after {delay} seconds of delay (i.e. {delay/60} minutes)")
