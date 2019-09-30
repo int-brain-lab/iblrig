@@ -3,15 +3,12 @@
 # @Author: Niccolò Bonacchi
 # @Date: Wednesday, November 14th 2018, 10:40:43 am
 import datetime
-import json
 import logging
 import os
 import subprocess
 from pathlib import Path
 
-from ibllib.graphic import strinput
 from ibllib.io import raw_data_loaders as raw
-from pybpodgui_api.models.project import Project
 import iblrig.params as params
 
 import iblrig.logging_  # noqa
@@ -187,11 +184,11 @@ def get_previous_data_files(protocol: str,
     log.debug(f"Found {len(prev_data_files)} file pairs")
     # Remove empty files
     ds_out = [(d, s) for d, s in zip(prev_data_files, prev_session_files)
-                if d.stat().st_size != 0 and s.stat().st_size != 0]
+              if d.stat().st_size != 0 and s.stat().st_size != 0]
     log.debug(f"Found {len(ds_out)} non empty file pairs")
     # Remove sessions of different task protocols
     ds_out = [(d, s) for d, s in ds_out if protocol in
-                raw.load_settings(str(s.parent.parent))['PYBPOD_PROTOCOL']]
+              raw.load_settings(str(s.parent.parent))['PYBPOD_PROTOCOL']]
     log.debug(
         f"Found {len(ds_out)} file pairs for protocol {protocol}")
     data_out = [str(d) for d, s in ds_out]

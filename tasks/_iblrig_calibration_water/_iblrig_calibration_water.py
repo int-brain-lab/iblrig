@@ -245,7 +245,7 @@ date_patch = {'WATER_CALIBRATION_DATE': datetime.datetime.now().date().isoformat
 patch = {}
 patch.update(func_patch)
 patch.update(range_patch)
-patch.update(date)
+patch.update(date_patch)
 params.update_params(data=patch)
 
 os.system(sph.CALIBRATION_CURVE_FILE_PATH[:-4] + '_range.pdf')

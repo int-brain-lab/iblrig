@@ -3,7 +3,6 @@
 # @Author: Niccolò Bonacchi
 # @Date: Thursday, September 27th 2018, 6:32:28 pm
 import logging
-import platform
 import sys
 
 import numpy as np

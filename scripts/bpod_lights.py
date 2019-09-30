@@ -2,11 +2,9 @@
 # -*- coding:utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date: Monday, February 18th 2019, 1:46:37 pm
-import json
 import logging
 import struct
 import sys
-from pathlib import Path
 
 import serial
 

@@ -1,13 +1,10 @@
 import logging
 import struct
-import json
 
 import numpy as np
 import serial
-from pathlib import Path
 
 import iblrig.alyx
-import iblrig.path_helper as path_helper
 import iblrig.params
 
 log = logging.getLogger('iblrig')

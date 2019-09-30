@@ -105,7 +105,7 @@ class SessionForm(BaseWidget):
     def validate_form_data_types(self):
         try:
             for k, v in self.form_data.items():
-                if any([x in k for x in 'XYZAETD']):
+                if any([x in k for x in 'XYZPATD']):
                     self.form_data.update({k: float(v)})
                 elif 'Origin' in k:
                     self.form_data.update({k: str(v)})
