@@ -5,6 +5,7 @@
 import datetime
 import json
 import logging
+import shutil
 from pathlib import Path
 
 from ibllib.graphic import strinput
@@ -251,6 +252,8 @@ def try_migrate_to_params(force=False):
     alyx.write_board_params(data=final_dict, force=True)
     # Delete old comports file
     if comports_file.exists():
+        bk = Path(path_helper.get_iblrig_params_folder()) / '.bpod_comports.json_bk'
+        shutil.copy(str(comports_file), str(bk))
         comports_file.unlink()
     return
 
