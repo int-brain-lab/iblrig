@@ -17,7 +17,7 @@ sph = SessionParamHandler(task_settings, user_settings)
 server = Path(sph.IBLRIG_FOLDER) / 'visual_stim' / \
     'screen_calibration' / 'photodiode_server.py'
 # Start the frame2TTL server
-# server_cmd = ['python', server, sph.COM['FRAME2TTL']]
+# server_cmd = ['python', server, sph.PARAMS['COM_F2TTL']]
 # server = subprocess.Popen(server_cmd, stdout=subprocess.PIPE)
 # print(server)
 

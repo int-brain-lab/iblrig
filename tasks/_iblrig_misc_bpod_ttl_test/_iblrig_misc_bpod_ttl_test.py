@@ -73,6 +73,9 @@ if sph.SOFT_SOUND is None:
 global tph
 tph = TrialParamHandler(sph)
 
+bad_stim_count = 0
+bad_tone_count = 0
+
 for i in range(sph.NTRIALS):  # Main loop
     tph.next_trial()
     log.info(f'Starting trial: {i + 1}')
@@ -81,13 +84,22 @@ for i in range(sph.NTRIALS):  # Main loop
 # =============================================================================
     sma = StateMachine(bpod)
 
-    sma.add_state(
-        state_name='stim_on',
-        state_timer=1,
-        state_change_conditions={'Tup': 'bad_stim',
-                                 'BNC1High': 'stim_off',
-                                 'BNC1Low': 'stim_off'},
-        output_actions=[('Serial1', re_show_stim)])
+    if i == 0:
+        sma.add_state(
+            state_name='stim_on',
+            state_timer=10,
+            state_change_conditions={'Tup': 'bad_stim',
+                                     'BNC1High': 'stim_off',
+                                     'BNC1Low': 'stim_off'},
+            output_actions=[('Serial1', re_show_stim)])
+    else:
+        sma.add_state(
+            state_name='stim_on',
+            state_timer=1,
+            state_change_conditions={'Tup': 'bad_stim',
+                                     'BNC1High': 'stim_off',
+                                     'BNC1Low': 'stim_off'},
+            output_actions=[('Serial1', re_show_stim)])
 
     sma.add_state(
         state_name='stim_off',
@@ -124,16 +136,14 @@ for i in range(sph.NTRIALS):  # Main loop
 
     trial_data = tph.trial_completed(bpod.session.current_trial.export())
 
-    bad_stim_count = 0
-    bad_tone_count = 0
     bad_tone_state = trial_data['behavior_data']['States timestamps']['bad_tone']
     bad_stim_state = trial_data['behavior_data']['States timestamps']['bad_stim']
     if not np.all(np.isnan(bad_stim_state)):
         bad_stim_count += 1
-        log.info(f'Missing stims: {bad_stim_count}')
+        log.warning(f'Missing stims: {bad_stim_count}')
     if not np.all(np.isnan(bad_tone_state)):
         bad_tone_count += 1
-        log.info(f'Missing tones: {bad_tone_count}')
+        log.warning(f'Missing tones: {bad_tone_count}')
 
 sph.check_data()
 bpod.close()

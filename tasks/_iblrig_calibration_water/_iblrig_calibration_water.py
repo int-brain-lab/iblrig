@@ -10,7 +10,6 @@ import os
 import re
 import time
 import tkinter as tk
-from pathlib import Path
 from tkinter import messagebox
 
 import matplotlib.pyplot as plt
@@ -23,6 +22,8 @@ from ibllib.graphic import numinput
 from pybpodapi.bpod import Bpod
 from pybpodapi.state_machine import StateMachine
 
+import iblrig.params as params
+import iblrig.path_helper as path_helper
 import task_settings
 import user_settings  # PyBpod creates this file on run.
 from session_params import SessionParamHandler
@@ -237,15 +238,25 @@ df2 = pd.DataFrame.from_dict(
      }
 )
 df2.to_csv(sph.CALIBRATION_RANGE_FILE_PATH)
+# SAVE TO PARAMS FILE
+func_patch = path_helper.load_water_calibraition_func_file(sph.CALIBRATION_FUNCTION_FILE_PATH)
+range_patch = path_helper.load_water_calibraition_range_file(sph.CALIBRATION_RANGE_FILE_PATH)
+date_patch = {'WATER_CALIBRATION_DATE': datetime.datetime.now().date().isoformat()}
+patch = {}
+patch.update(func_patch)
+patch.update(range_patch)
+patch.update(date_patch)
+params.update_params(data=patch)
+
 os.system(sph.CALIBRATION_CURVE_FILE_PATH[:-4] + '_range.pdf')
 bpod.close()
 print(f'Completed water calibration {now}')
 
 # Create flag
-flag = Path(sph.SESSION_FOLDER) / 'transfer_me.flag'
-open(flag, 'a').close()
-flag2 = Path(sph.SESSION_FOLDER) / 'create_me.flag'
-open(flag2, 'a').close()
+# flag = Path(sph.SESSION_FOLDER) / 'transfer_me.flag'
+# open(flag, 'a').close()
+# flag2 = Path(sph.SESSION_FOLDER) / 'create_me.flag'
+# open(flag2, 'a').close()
 
 root = tk.Tk()
 root.withdraw()

@@ -8,29 +8,27 @@ import webbrowser as wb
 from pathlib import Path
 
 import ibllib.io.flags as flags
-import ibllib.io.params as params
+import ibllib.io.params as lib_params
 import ibllib.io.raw_data_loaders as raw
 import oneibl.params
 from ibllib.pipes.experimental_data import create
 from oneibl.one import ONE
+import iblrig.params as rig_params
 
 log = logging.getLogger('iblrig')
 
-one = ONE()
-EMPTY_BOARD_PARAMS = {
-    'BPOD_COM': None,  # str
-    'ROTARY_ENCODER_COM': None,  # str
-    'F2TTL_COM': None,  # str
-    'F2TTL_DARK_THRESH': None,  # float
-    'F2TTL_LIGHT_THRESH': None,  # float
-    'WATER_CALIBRATION_RANGE': None,  # [min, max]
-    'WATER_CALIBRATION_OPEN_TIMES': None,  # [float, float, ...]
-    'WATER_CALIBRATION_WEIGHT_PERDROP': None  # [float, float, ...]
-}
+
+def get_one() -> type(ONE):
+    try:
+        one = ONE()
+    except ConnectionError as e:
+        log.error("Cannot create ONE object", e)
+        one = None
+    return one
 
 
 def create_session(session_folder):
-    pfile = Path(params.getfile('one_params'))
+    pfile = Path(lib_params.getfile('lib_params'))
     if not pfile.exists():
         oneibl.params.setup_alyx_params()
 
@@ -43,6 +41,7 @@ def open_session_narrative(session_url: str) -> None:
 
 
 def load_previous_data(subject_nickname):
+    one = get_one()
     eid = get_latest_session_eid(subject_nickname)
     return one.load(eid, dataset_types=['_iblrig_taskData.raw'])[0]
 
@@ -52,6 +51,7 @@ def load_previous_trial_data(subject_nickname):
 
 
 def load_previous_settings(subject_nickname):
+    one = get_one()
     eid = get_latest_session_eid(subject_nickname)
     # det = one.alyx.rest('sessions', 'read', eid)
     # return json.loads(det['json'])
@@ -61,6 +61,7 @@ def load_previous_settings(subject_nickname):
 def get_latest_session_eid(subject_nickname):
     """Return the eID of the latest session for Subject that has data on
     Flatiron"""
+    one = get_one()
     last_session = one.search(
         subject=subject_nickname,
         dataset_types=['_iblrig_taskData.raw', '_iblrig_taskSettings.raw'],
@@ -71,48 +72,65 @@ def get_latest_session_eid(subject_nickname):
         return None
 
 
-def init_board_params(board, force=False):
-    p = load_board_params(board)
+def write_board_params(data: dict = None, force: bool = False) -> None:
+    if data is None:
+        data = rig_params.EMPTY_BOARD_PARAMS
+        data['NAME'] = rig_params.get_board_name()
+        data['COM_BPOD'] = rig_params.get_board_comport()
+    board = data['NAME']
+    one = get_one()
+    p = load_board_params()
     if p and not force:
         log.info('Board params already present, exiting...')
         return p
-    empty_params = EMPTY_BOARD_PARAMS
     patch_dict = {
-        "json": json.dumps(empty_params)
+        "json": json.dumps(data)
     }
     one.alyx.rest('locations', 'partial_update', id=board, data=patch_dict)
-    return empty_params
+    return data
 
 
-def update_board_params(board, param_dict):
-    params = load_board_params(board)
-    if all([k in EMPTY_BOARD_PARAMS for k in param_dict]):
-        params.update(param_dict)
-        patch_dict = {
-            "json": json.dumps(params)
-        }
-        one.alyx.rest('locations', 'partial_update', id=board, data=patch_dict)
-        log.info(f'Changed board params: {param_dict}')
-    else:
-        log.error('Not all keys exist in board params')
-
-    return params
-
-
-def load_board_params(board: str) -> dict:
+def load_board_params() -> dict:
+    board = rig_params.get_board_name()
+    one = get_one()
     try:
-        json_field = one.alyx.rest('locations', 'read', id=board)['json']
+        out = one.alyx.rest('locations', 'read', id=board)['json']
+        out = json.loads(out)
     except Exception as e:
         log.error(e)
-        json_field = None
-    if json_field is not None:
-        json_field = json.loads(json_field)
-    else:
-        json_field = {}
-    return json_field
+        out = None
+    return out
+
+
+def update_board_params(data: dict, force: bool = False) -> dict:
+    old = load_board_params()
+    if old is None:
+        log.info("board params not found, creating...")
+        write_board_params()
+        old = load_board_params()
+
+    board = rig_params.get_board_name()
+    if 'NAME' in data and data['NAME'] != board:
+        log.error(f"Board {board} not equal to data['NAME'] {data['NAME']}")
+        raise(AttributeError)
+    for k in data:
+        if k in old.keys():
+            old[k] = data[k]
+        else:
+            if not force:
+                log.info(f"Unknown key {k}: skipping key...")
+                continue
+            elif force:
+                log.info(f"Adding new key {k} with value {data[k]} to {board} json field")
+                old[k] = data[k]
+    write_board_params(data=old, force=True)
+    log.info(f'Changed board params: {data}')
+
+    return old
 
 
 def create_current_running_session(session_folder):
+    one = get_one()
     settings = raw.load_settings(session_folder)
     subject = one.alyx.rest(
         'subjects?nickname=' + settings['PYBPOD_SUBJECTS'][0], 'list')[0]
@@ -140,24 +158,29 @@ def update_completed_session(session_folder):
 
 
 if __name__ == "__main__":
-    subject = 'ZM_1737'
+    # subject = 'ZM_1737'
 
-    session_folder = '/home/nico/Projects/IBL/github/iblrig_data/\
-        Subjects/_iblrig_test_mouse/2019-06-24/001'.replace(' ', '')
+    # session_folder = '/home/nico/Projects/IBL/github/iblrig_data/\
+    #     Subjects/_iblrig_test_mouse/2019-06-24/001'.replace(' ', '')
 
     # eid = get_latest_session_eid(subject, has_data=True)
-    data = load_previous_data(subject)
-    last_trial_data = load_previous_trial_data(subject)
-    settings = load_previous_settings(subject)
+    # data = load_previous_data(subject)
+    # last_trial_data = load_previous_trial_data(subject)
+    # settings = load_previous_settings(subject)
 
     # create_session(session_folder)
 
-    board = '_iblrig_mainenlab_behavior_0'
+    data = {
+        'COM_F2TTL': 'COM6',
+        'F2TTL_DARK_THRESH': 86.0,
+        'F2TTL_LIGHT_THRESH': 46.0,
+        'F2TTL_CALIBRATION_DATE': '2019-09-26'
+    }
     # init_board_params(board)
-    # update_board_params(board, {'some_var': 123, 'BPOD_COM': 'COM#'})
+    update_board_params(data)
     # load_board_params(board)
 
-    create_current_running_session(session_folder)
-    create_session(session_folder)
+    # create_current_running_session(session_folder)
+    # create_session(session_folder)
 
     print('.')

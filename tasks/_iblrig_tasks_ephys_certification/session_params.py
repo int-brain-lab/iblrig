@@ -33,10 +33,9 @@ class SessionParamHandler(object):
               for i in [x for x in dir(user_settings) if '__' not in x]}
         self.__dict__.update(us)
         self = iotasks.deserialize_pybpod_user_settings(self)
-        spc = SessionPathCreator(self.IBLRIG_FOLDER, self.IBLRIG_DATA_FOLDER,
-                                 self.PYBPOD_SUBJECTS[0],
+        spc = SessionPathCreator(self.PYBPOD_SUBJECTS[0],
                                  protocol=self.PYBPOD_PROTOCOL,
-                                 board=self.PYBPOD_BOARD, make=True)
+                                 make=True)
         self.__dict__.update(spc.__dict__)
 
         # =====================================================================
@@ -49,12 +48,13 @@ class SessionParamHandler(object):
         # =====================================================================
         # frame2TTL
         # =====================================================================
-        self.F2TTL_GET_AND_SET_THRESHOLDS = frame2TTL.get_and_set_thresholds(self)
+        self.F2TTL_GET_AND_SET_THRESHOLDS = frame2TTL.get_and_set_thresholds()
         # =====================================================================
         # PROBES + WEIGHT
         # =====================================================================
         self.FORM_DATA = user_input.session_form(mouse_name=self.SUBJECT_NAME)
-        self = user_input.parse_form_data(self)
+        self.PROBE_DATA = user_input.get_probe_data(self.FORM_DATA)
+        self.SUBJECT_WEIGHT = user_input.get_form_subject_weight(self.FORM_DATA)
         # =====================================================================
         # VISUAL STIM
         # =====================================================================

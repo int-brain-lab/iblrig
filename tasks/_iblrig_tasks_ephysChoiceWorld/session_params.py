@@ -9,7 +9,6 @@ from pathlib import Path
 from sys import platform
 from tkinter import messagebox
 
-from ibllib.graphic import multi_input, numinput
 from pythonosc import udp_client
 
 import iblrig.adaptive as adaptive
@@ -46,10 +45,9 @@ class SessionParamHandler(object):
               for i in [x for x in dir(user_settings) if '__' not in x]}
         self.__dict__.update(us)
         self = iotasks.deserialize_pybpod_user_settings(self)
-        spc = SessionPathCreator(self.IBLRIG_FOLDER, self.IBLRIG_DATA_FOLDER,
-                                 self.PYBPOD_SUBJECTS[0],
+        spc = SessionPathCreator(self.PYBPOD_SUBJECTS[0],
                                  protocol=self.PYBPOD_PROTOCOL,
-                                 board=self.PYBPOD_BOARD, make=make)
+                                 make=make)
         self.__dict__.update(spc.__dict__)
         # =====================================================================
         # SETTINGS
@@ -75,7 +73,7 @@ class SessionParamHandler(object):
         # =====================================================================
         # SUBJECT
         # =====================================================================
-        # self.SUBJECT_WEIGHT = self.get_subject_weight()
+        # self.SUBJECT_WEIGHT = self.ask_subject_weight()
         self.POOP_COUNT = True
         self.SUBJECT_DISENGAGED_TRIGGERED = False
         self.SUBJECT_DISENGAGED_TRIALNUM = None
@@ -110,8 +108,10 @@ class SessionParamHandler(object):
         self.REWARD_AMOUNT = 3.
         self.REWARD_TYPE = 'Water 10% Sucrose'
 
-        self.CALIB_FUNC = adaptive.init_calib_func(self)
-        self.CALIB_FUNC_RANGE = adaptive.init_calib_func_range(self)
+        self.CALIB_FUNC = None
+        if self.AUTOMATIC_CALIBRATION:
+            self.CALIB_FUNC = adaptive.init_calib_func(self.LATEST_WATER_CALIBRATION_FILE)
+        self.CALIB_FUNC_RANGE = adaptive.init_calib_func_range(self.LATEST_WATER_CALIB_RANGE_FILE)
         self.REWARD_VALVE_TIME = adaptive.init_reward_valve_time(self)
 
         # =====================================================================
@@ -123,11 +123,11 @@ class SessionParamHandler(object):
                                self.QUIESCENCE_THRESHOLDS)
         self.ROTARY_ENCODER = MyRotaryEncoder(self.ALL_THRESHOLDS,
                                               self.STIM_GAIN,
-                                              self.COM['ROTARY_ENCODER'])
+                                              self.PARAMS['COM_ROTARY_ENCODER'])
         # =====================================================================
         # frame2TTL
         # =====================================================================
-        self.F2TTL_GET_AND_SET_THRESHOLDS = frame2TTL.get_and_set_thresholds(self)
+        self.F2TTL_GET_AND_SET_THRESHOLDS = frame2TTL.get_and_set_thresholds()
         # =====================================================================
         # SOUNDS
         # =====================================================================
@@ -164,13 +164,16 @@ class SessionParamHandler(object):
         # =====================================================================
         # PROBES + WEIGHT
         # =====================================================================
-        self.FORM_DATA = user_input.session_form(mouse_name=self.SUBJECT_NAME)
-        self = user_input.parse_form_data(self)
+        form_data = -1
+        while form_data == -1:
+            form_data = user_input.session_form(mouse_name=self.SUBJECT_NAME)
+        self.SUBJECT_WEIGHT = user_input.get_form_subject_weight(form_data)
+        self.PROBE_DATA = user_input.get_probe_data(form_data)
         # =====================================================================
         # VISUAL STIM
         # =====================================================================
-        self.SYNC_SQUARE_X = 1.3
-        self.SYNC_SQUARE_Y = -1.
+        self.SYNC_SQUARE_X = 1.33
+        self.SYNC_SQUARE_Y = -1.03
         self.USE_VISUAL_STIMULUS = True  # Run the visual stim in bonsai
         self.BONSAI_EDITOR = False  # Open the Bonsai editor of visual stim
         bonsai.start_visual_stim(self)
@@ -203,31 +206,9 @@ class SessionParamHandler(object):
         messagebox.showinfo(title, msg)
         root.quit()
 
-    def get_recording_site_data(self, probe='LEFT'):
-        title = f'PROBE {probe} - recording site'
-        fields = ['X (float)', 'Y (float)', 'Z (float)', 'D (float)',
-                  'Angle (10 or 20)', 'Origin (bregma or lambda)']
-        defaults = [0.0, 0.0, 0.0, 0.0, '10', 'bregma']
-        types = [float, float, float, float, int, str]
-        userdata = multi_input(
-            title=title, add_fields=fields, defaults=defaults)
-        try:
-            data = [t(x) for x, t in zip(userdata, types)]
-            data_dict = {'xyzd': data[:4], 'angle': data[4], 'origin': data[5]}
-            return data_dict
-        except Exception:
-            log.warning(
-                f"One or more inputs are of the wrong type. Expected {types}")
-            return self.get_recording_site_data()
-
     def save_ambient_sensor_reading(self, bpod_instance):
         return ambient_sensor.get_reading(bpod_instance,
                                           save_to=self.SESSION_RAW_DATA_FOLDER)
-
-    def get_subject_weight(self):
-        return numinput(
-            "Subject weighing (gr)", f"{self.PYBPOD_SUBJECTS[0]} weight (gr):",
-            nullable=False)
 
     def bpod_lights(self, command: int):
         fpath = Path(self.IBLRIG_FOLDER) / 'scripts' / 'bpod_lights.py'

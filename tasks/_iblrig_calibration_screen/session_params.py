@@ -28,10 +28,9 @@ class SessionParamHandler(object):
               for i in [x for x in dir(user_settings) if '__' not in x]}
         self.__dict__.update(us)
         self = iotasks.deserialize_pybpod_user_settings(self)
-        spc = SessionPathCreator(self.IBLRIG_FOLDER, self.IBLRIG_DATA_FOLDER,
-                                 self.PYBPOD_SUBJECTS[0],
+        spc = SessionPathCreator(self.PYBPOD_SUBJECTS[0],
                                  protocol=self.PYBPOD_PROTOCOL,
-                                 board=self.PYBPOD_BOARD, make=True)
+                                 make=True)
         self.__dict__.update(spc.__dict__)
 
         # =====================================================================
@@ -50,8 +49,10 @@ class SessionParamHandler(object):
         # # =====================================================================
         # # ADAPTIVE STUFF
         # # =====================================================================
-        # self.CALIB_FUNC = adaptive.init_calib_func(self)
-        # self.CALIB_FUNC_RANGE = adaptive.init_calib_func_range(self)
+        # self.CALIB_FUNC = None
+        # if self.AUTOMATIC_CALIBRATION:
+        #     self.CALIB_FUNC = adaptive.init_calib_func(self.LATEST_WATER_CALIBRATION_FILE)
+        # self.CALIB_FUNC_RANGE = adaptive.init_calib_func_range(self.LATEST_WATER_CALIB_RANGE_FILE)  # noqa
         # self.REWARD_VALVE_TIME = adaptive.init_reward_valve_time(self)
 
         # # =====================================================================

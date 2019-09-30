@@ -4,7 +4,8 @@ import struct
 import numpy as np
 import serial
 
-import iblrig.alyx as alyx
+import iblrig.alyx
+import iblrig.params
 
 log = logging.getLogger('iblrig')
 
@@ -163,26 +164,19 @@ class Frame2TTL(object):
             print('Done')
 
 
-def get_and_set_thresholds(sph):
-    try:
-        params = alyx.load_board_params(sph.PYBPOD_BOARD)  # --> dict
-        if params['F2TTL_COM'] != sph.COM['FRAME2TTL']:
-            alyx.update_board_params(sph.PYBPOD_BOARD, {'F2TTL_COM': sph.COM['FRAME2TTL']})
-            params['F2TTL_COM'] = sph.COM['FRAME2TTL']
-    except:  # noqa
-        params = {}
-        log.error(f"{sph.PYBPOD_BOARD} Board not found")
-    if not params:
-        log.warning(
-            f"No parameters found for board {sph.PYBPOD_BOARD}, please calibrate the device.")
-    if sum(['F2TTL' in x for x in params.keys()]) != 3:
-        log.warning(f"Incomplete parameters for F2TTL, please calibrate the device.")
-    else:
-        dev = Frame2TTL(params['F2TTL_COM'])
-        dev.set_thresholds(dark=params['F2TTL_DARK_THRESH'], light=params['F2TTL_LIGHT_THRESH'])
-        log.info(f"Frame2TTL: Thresholds set.")
-        return 0
-    return -1
+def get_and_set_thresholds():
+    params = iblrig.params.load_params_file()
+
+    for k in params:
+        if 'F2TTL' in k and params[k] is None:
+            log.error(f"Missing parameter {k}, please calibrate the device.")
+            raise(KeyError)
+            return -1
+
+    dev = Frame2TTL(params['COM_F2TTL'])
+    dev.set_thresholds(dark=params['F2TTL_DARK_THRESH'], light=params['F2TTL_LIGHT_THRESH'])
+    log.info(f"Frame2TTL: Thresholds set.")
+    return 0
 
 
 if __name__ == "__main__":

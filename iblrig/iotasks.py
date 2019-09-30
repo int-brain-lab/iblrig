@@ -47,9 +47,14 @@ def deserialize_pybpod_user_settings(sph: object) -> object:
 
 
 def save_session_settings(sph: object) -> None:
+    save_this = json.dumps(sph, cls=ComplexEncoder, indent=1)
     with open(sph.SETTINGS_FILE_PATH, 'a') as f:
-        f.write(json.dumps(sph, cls=ComplexEncoder, indent=1))
+        f.write(save_this)
         f.write('\n')
+
+    save_this = json.loads(save_this)
+    settings = raw.load_settings(sph.SESSION_FOLDER)
+    assert(save_this == settings)
 
 
 def copy_task_code(sph: object) -> None:
@@ -142,7 +147,7 @@ def load_session_order_and_idx(sph: object) -> object:
         sph.SESSION_IDX = sph.LAST_SETTINGS_DATA['SESSION_IDX'] + 1
     # Confirm this is the session to load. If not override SESSION_IDX
     ses_num = int(sph.SESSION_IDX + 1)
-    ses_num = numinput(
+    ses_num = numinput(  # TODO: move this to user_input
         "Confirm session to load", "Load recording session number",
         default=ses_num, askint=True, minval=1, maxval=12)
     if ses_num != sph.SESSION_IDX + 1:

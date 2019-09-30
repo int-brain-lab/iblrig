@@ -7,16 +7,16 @@ import os
 from pathlib import Path
 from sys import platform
 
-from ibllib.graphic import numinput
 from pythonosc import udp_client
 
 import iblrig.adaptive as adaptive
 import iblrig.ambient_sensor as ambient_sensor
 import iblrig.bonsai as bonsai
+import iblrig.frame2TTL as frame2TTL
 import iblrig.iotasks as iotasks
 import iblrig.misc as misc
 import iblrig.sound as sound
-import iblrig.frame2TTL as frame2TTL
+import iblrig.user_input as user
 from iblrig.path_helper import SessionPathCreator
 from iblrig.rotary_encoder import MyRotaryEncoder
 
@@ -41,16 +41,15 @@ class SessionParamHandler(object):
               for i in [x for x in dir(user_settings) if '__' not in x]}
         self.__dict__.update(us)
         self = iotasks.deserialize_pybpod_user_settings(self)
-        spc = SessionPathCreator(self.IBLRIG_FOLDER, self.IBLRIG_DATA_FOLDER,
-                                 self.PYBPOD_SUBJECTS[0],
+        spc = SessionPathCreator(self.PYBPOD_SUBJECTS[0],
                                  protocol=self.PYBPOD_PROTOCOL,
-                                 board=self.PYBPOD_BOARD, make=make)
+                                 make=make)
         self.__dict__.update(spc.__dict__)
 
         # =====================================================================
         # SUBJECT
         # =====================================================================
-        self.SUBJECT_WEIGHT = self.get_subject_weight()
+        self.SUBJECT_WEIGHT = user.ask_subject_weight(self.PYBPOD_SUBJECTS[0])
         self.SUBJECT_DISENGAGED_TRIGGERED = False
         self.SUBJECT_DISENGAGED_TRIALNUM = None
         # =====================================================================
@@ -71,8 +70,10 @@ class SessionParamHandler(object):
         # =====================================================================
         self.AR_MIN_VALUE = 1.5 if 'Sucrose' in self.REWARD_TYPE else 2.0
         self.REWARD_AMOUNT = adaptive.init_reward_amount(self)
-        self.CALIB_FUNC = adaptive.init_calib_func(self)
-        self.CALIB_FUNC_RANGE = adaptive.init_calib_func_range(self)
+        self.CALIB_FUNC = None
+        if self.AUTOMATIC_CALIBRATION:
+            self.CALIB_FUNC = adaptive.init_calib_func(self.LATEST_WATER_CALIBRATION_FILE)
+        self.CALIB_FUNC_RANGE = adaptive.init_calib_func_range(self.LATEST_WATER_CALIB_RANGE_FILE)
         self.REWARD_VALVE_TIME = adaptive.init_reward_valve_time(self)
         self.STIM_GAIN = adaptive.init_stim_gain(self)
         self.IMPULSIVE_CONTROL = 'OFF'
@@ -80,7 +81,7 @@ class SessionParamHandler(object):
         # =====================================================================
         # frame2TTL
         # =====================================================================
-        self.F2TTL_GET_AND_SET_THRESHOLDS = frame2TTL.get_and_set_thresholds(self)
+        self.F2TTL_GET_AND_SET_THRESHOLDS = frame2TTL.get_and_set_thresholds()
         # =====================================================================
         # ROTARY ENCODER
         # =====================================================================
@@ -88,10 +89,11 @@ class SessionParamHandler(object):
                                self.QUIESCENCE_THRESHOLDS)
         self.ROTARY_ENCODER = MyRotaryEncoder(self.ALL_THRESHOLDS,
                                               self.STIM_GAIN,
-                                              self.COM['ROTARY_ENCODER'])
+                                              self.PARAMS['COM_ROTARY_ENCODER'])
         # =====================================================================
         # SOUNDS
         # =====================================================================
+        self.SOFT_SOUND = None if 'ephys' in self._BOARD else self.SOFT_SOUND
         self.SOUND_SAMPLE_FREQ = sound.sound_sample_freq(self.SOFT_SOUND)
 
         self.WHITE_NOISE_DURATION = float(self.WHITE_NOISE_DURATION)
@@ -145,11 +147,6 @@ class SessionParamHandler(object):
     def save_ambient_sensor_reading(self, bpod_instance):
         return ambient_sensor.get_reading(bpod_instance,
                                           save_to=self.SESSION_RAW_DATA_FOLDER)
-
-    def get_subject_weight(self):
-        return numinput(
-            "Subject weighing (gr)", f"{self.PYBPOD_SUBJECTS[0]} weight (gr):",
-            nullable=False)
 
     def bpod_lights(self, command: int):
         fpath = Path(self.IBLRIG_FOLDER) / 'scripts' / 'bpod_lights.py'
@@ -244,18 +241,13 @@ if __name__ == '__main__':
         turning off lights of bpod board
     """
     import task_settings as _task_settings
-    import scratch._user_settings as _user_settings
+    import iblrig.fake_user_settings as _user_settings
     if platform == 'linux':
-        r = "/home/nico/Projects/IBL/github/iblrig"
-        _task_settings.IBLRIG_FOLDER = r
-        d = ("/home/nico/Projects/IBL/github/iblrig/scratch/" +
-             "test_iblrig_data")
-        _task_settings.IBLRIG_DATA_FOLDER = d
         _task_settings.AUTOMATIC_CALIBRATION = False
         _task_settings.USE_VISUAL_STIMULUS = False
 
     sph = SessionParamHandler(_task_settings, _user_settings,
-                              debug=False, fmake=True)
+                              debug=False, fmake=False)
     for k in sph.__dict__:
         if sph.__dict__[k] is None:
             print(f"{k}: {sph.__dict__[k]}")

@@ -37,10 +37,9 @@ class SessionParamHandler(object):
         self.__dict__.update(us)
         self.deserialize_session_user_settings()
 
-        spc = SessionPathCreator(self.IBLRIG_FOLDER, self.IBLRIG_DATA_FOLDER,
-                                 self.PYBPOD_SUBJECTS[0],
+        spc = SessionPathCreator(self.PYBPOD_SUBJECTS[0],
                                  protocol=self.PYBPOD_PROTOCOL,
-                                 board=self.PYBPOD_BOARD, make=True)
+                                 make=True)
         self.__dict__.update(spc.__dict__)
 
         self.CALIBRATION_FUNCTION_FILE_PATH = os.path.join(
