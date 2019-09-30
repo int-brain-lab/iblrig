@@ -105,7 +105,7 @@ class SessionForm(BaseWidget):
     def validate_form_data_types(self):
         try:
             for k, v in self.form_data.items():
-                if any([x in k for x in 'XYZAETD']):
+                if any([x in k for x in 'XYZPATD']):
                     self.form_data.update({k: float(v)})
                 elif 'Origin' in k:
                     self.form_data.update({k: str(v)})
@@ -180,8 +180,8 @@ def ask_session_delay(settings_file_path: str) -> int:
 
 
 if __name__ == "__main__":
-    settings_file_path = '/home/nico/Projects/IBL/github/iblrig_data/Subjects/_iblrig_fake_subject/2019-09-25/002/raw_behavior_data/_iblrig_taskSettings.raw.json'  # noqa
-    delay = ask_session_delay(settings_file_path)
+    # settings_file_path = '/home/nico/Projects/IBL/github/iblrig_data/Subjects/_iblrig_fake_subject/2019-09-25/002/raw_behavior_data/_iblrig_taskSettings.raw.json'  # noqa
+    # delay = ask_session_delay(settings_file_path)
     res = -1
     while res == -1:  # TODO: check if calls in session params follow this pattern
         res = session_form(mouse_name='myMouse')
