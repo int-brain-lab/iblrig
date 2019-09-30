@@ -259,6 +259,6 @@ def try_migrate_to_params(force=False):
 
 
 if __name__ == "__main__":
-    try_migrate_to_params(force=True)
-    try_migrate_to_params(force=False)
+    # try_migrate_to_params(force=True)
+    # try_migrate_to_params(force=False)
     print('.')
