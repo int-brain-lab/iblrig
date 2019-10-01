@@ -147,11 +147,11 @@ def session_form(mouse_name: str = '') -> dict:
         # return session_form(mouse_name)
 
 
-def get_form_subject_weight(form_data):
+def get_form_subject_weight(form_data: dict) -> float:
     return form_data['mouseWeight']
 
 
-def get_probe_data(form_data):
+def get_form_probe_data(form_data: dict) -> dict:
     flat = {k: v for k, v in form_data.items() if 'probe' in k and 'Label' not in k}
     nested = {'probe00': {}, 'probe01': {}}
     for k in flat:
@@ -165,10 +165,12 @@ def get_probe_data(form_data):
     return nested
 
 
-def ask_subject_weight(subject):
+# TODO: make patch version (use settings_file_path=None)
+def ask_subject_weight(subject: str) -> float:
     return graph.numinput("Subject weighing (gr)", f"{subject} weight (gr):", nullable=False)
 
 
+# TODO: adapt patch version (use settings_file_path: str = None & if None return out)
 def ask_session_delay(settings_file_path: str) -> int:
     out = graph.numinput(
         "Session delay", "Delay session initiation by (min):",
@@ -183,8 +185,8 @@ if __name__ == "__main__":
     settings_file_path = '/home/nico/Projects/IBL/github/iblrig_data/Subjects/_iblrig_fake_subject/2019-09-25/002/raw_behavior_data/_iblrig_taskSettings.raw.json'  # noqa
     delay = ask_session_delay(settings_file_path)
     res = -1
-    while res == -1:  # TODO: check if calls in session params follow this pattern
+    while res == -1:
         res = session_form(mouse_name='myMouse')
     w = get_form_subject_weight(res)
-    p = get_probe_data(res)
+    p = get_form_probe_data(res)
     print('.')
