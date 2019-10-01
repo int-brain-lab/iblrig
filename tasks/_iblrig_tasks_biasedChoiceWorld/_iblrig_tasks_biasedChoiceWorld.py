@@ -3,6 +3,7 @@
 # @Author: Niccolò Bonacchi
 # @Date:   2018-02-02 12:31:13
 import logging
+import time
 
 import matplotlib.pyplot as plt
 from pybpod_rotaryencoder_module.module import RotaryEncoder
@@ -11,6 +12,7 @@ from pybpodapi.protocol import Bpod, StateMachine
 import online_plots as op
 import task_settings
 import user_settings
+from iblrig.user_input import ask_session_delay
 from session_params import SessionParamHandler
 from trial_params import TrialParamHandler
 
@@ -83,6 +85,11 @@ if sph.SOFT_SOUND is None:
     sc_play_noise = re_reset + 5
     bpod.load_serial_message(sound_card, sc_play_noise, [
                              ord('P'), sph.WHITE_NOISE_IDX])
+# Delay initiation
+delay = ask_session_delay(sph.SETTINGS_FILE_PATH)
+log.info(f"Starting {delay} seconds of delay (i.e. {delay/60} minutes)")
+time.sleep(delay)
+log.info(f"Resuming task after {delay} seconds of delay (i.e. {delay/60} minutes)")
 # =============================================================================
 # TRIAL PARAMETERS AND STATE MACHINE
 # =============================================================================
@@ -101,10 +108,11 @@ for i in range(sph.NTRIALS):  # Main loop
     sma = StateMachine(bpod)
 
     if i == 0:  # First trial exception start camera
+        log.info(f'Waiting for camera pulses...')
         sma.add_state(
             state_name='trial_start',
-            state_timer=1,
-            state_change_conditions={'Tup': 'reset_rotary_encoder'},
+            state_timer=3600,
+            state_change_conditions={'Port1In': 'reset_rotary_encoder'},
             output_actions=[('SoftCode', 3)])  # sart camera
     else:
         sma.add_state(

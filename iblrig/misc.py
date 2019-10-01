@@ -184,7 +184,9 @@ def patch_settings_file(sess_or_file: str, patch: dict) -> None:
     with open(file, 'w') as f:
         f.write(json.dumps(settings, indent=1))
         f.write('\n')
-
+    # Check if properly saved
+    saved_settings = raw.load_settings(session)
+    assert(settings == saved_settings)
     return
 
 

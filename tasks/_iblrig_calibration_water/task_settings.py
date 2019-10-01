@@ -5,8 +5,6 @@
 """
 Main settings file for water calibration protocol
 """
-IBLRIG_FOLDER = "C:\\iblrig"
-IBLRIG_DATA_FOLDER = None  # If None will be ..\\iblrig_data from IBLRIG_FOLDER
 OAHUS_SCALE_PORT = None  # 'COM2'  # Set to None for manual weight logging
 
 MIN_OPEN_TIME = 50  # (ms)

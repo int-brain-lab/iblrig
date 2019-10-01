@@ -33,7 +33,7 @@ def start_visual_stim(sph):
             sph.SESSION_RAW_DATA_FOLDER,
             "_iblrig_encoderTrialInfo.raw.ssv")
 
-        com = "-p:Stim.REPortName=" + sph.COM['ROTARY_ENCODER']
+        com = "-p:Stim.REPortName=" + sph.PARAMS['COM_ROTARY_ENCODER']
 
         sync_x = "-p:Stim.sync_x=" + str(sph.SYNC_SQUARE_X)
         sync_y = "-p:Stim.sync_y=" + str(sph.SYNC_SQUARE_Y)
@@ -48,7 +48,7 @@ def start_visual_stim(sph):
         elif not sph.BONSAI_EDITOR:
             editor = noeditor
 
-        if 'habituation' in sph.PYBPOD_PROTOCOL or 'sync_test' in sph.PYBPOD_PROTOCOL:
+        if 'habituation' in sph.PYBPOD_PROTOCOL or 'bpod_ttl_test' in sph.PYBPOD_PROTOCOL:
             subprocess.Popen(
                 [bns, wkfl, editor, noboot, evt, itr, com, sync_x, sync_y])
         else:
@@ -63,6 +63,8 @@ def start_visual_stim(sph):
 
 def start_camera_recording(sph):
     if (sph.RECORD_VIDEO is False and sph.OPEN_CAMERA_VIEW is False):
+        log.error("Task will hang waiting for camera frame sync pulse")
+        raise(UnboundLocalError)
         return
     # Run Workflow
     here = os.getcwd()

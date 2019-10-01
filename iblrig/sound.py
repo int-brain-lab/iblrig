@@ -3,7 +3,6 @@
 # @Author: Niccolò Bonacchi
 # @Date: Thursday, September 27th 2018, 6:32:28 pm
 import logging
-import platform
 import sys
 
 import numpy as np
@@ -25,9 +24,9 @@ def configure_sounddevice(sd=None, output='sysdefault', samplerate=44100):
     :return: configured sounddevice module
     :rtype: sounddevice module
     """
-    if not output:
+    if output is None:
         return
-    if sys.platform == 'linux' or platform.node() == 'IBLRIG000':
+    if sys.platform == 'linux':  # or platform.node() == 'IBLRIG000':
         output = 'sysdefault'
     if sd is None:
         import sounddevice as sd
@@ -192,7 +191,7 @@ def sound_sample_freq(soft_sound):
 
 
 def init_sounds(sph, tone=True, noise=True):
-    if not sph.SOFT_SOUND:
+    if sph.SOFT_SOUND is None:
         msg = f"""
     ##########################################
     SOUND BOARD NOT FOUND ON SYSTEM!!",

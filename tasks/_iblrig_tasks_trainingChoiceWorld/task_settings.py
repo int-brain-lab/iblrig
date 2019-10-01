@@ -1,9 +1,6 @@
 # =============================================================================
 # TASK PARAMETER DEFINITION (should appear on GUI) init trial objects values
 # =============================================================================
-# IBL rig root folder
-IBLRIG_FOLDER = 'C:\\iblrig'
-IBLRIG_DATA_FOLDER = None  # If None data folder will be ..\\iblrig_data from IBLRIG_FOLDER  # noqa
 # SOUND, AMBIENT SENSOR, AND VIDEO RECORDINGS
 RECORD_SOUND = True
 RECORD_AMBIENT_SENSOR_DATA = True
@@ -34,11 +31,11 @@ STIM_FREQ = 0.10  # Probably constant - NOT IN USE
 STIM_ANGLE = 0.  # Vertical orientation of Gabor patch - NOT IN USE
 STIM_SIGMA = 7.  # (azimuth_degree) Size of Gabor patch
 STIM_GAIN = 8.  # (azimuth_degree/mm) Gain of the RE to stimulus movement (used if ADAPTIVE_GAIN = FALSE)  # noqa
-SYNC_SQUARE_X = 1.23333335
-SYNC_SQUARE_Y = -1.
+SYNC_SQUARE_X = 1.33
+SYNC_SQUARE_Y = -1.03
 
 # SOUNDS
-SOFT_SOUND = 'xonar'  # Use software sound 'xonar', 'sysdefault' or False for BpodSoundCard  # noqa
+SOFT_SOUND = 'xonar'  # Use software sound 'xonar', 'sysdefault' or None for BpodSoundCard  # noqa
 SOUND_BOARD_BPOD_PORT = 'Serial3'  # (on Bpod) - Ignored if using SOFT_SOUND
 WHITE_NOISE_DURATION = 0.5  # Length of noise burst
 WHITE_NOISE_AMPLITUDE = 0.05

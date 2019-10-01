@@ -35,10 +35,9 @@ class SessionParamHandler(object):
               for i in [x for x in dir(user_settings) if '__' not in x]}
         self.__dict__.update(us)
         self = iotasks.deserialize_pybpod_user_settings(self)
-        spc = SessionPathCreator(self.IBLRIG_FOLDER, self.IBLRIG_DATA_FOLDER,
-                                 self.PYBPOD_SUBJECTS[0],
+        spc = SessionPathCreator(self.PYBPOD_SUBJECTS[0],
                                  protocol=self.PYBPOD_PROTOCOL,
-                                 board=self.PYBPOD_BOARD, make=True)
+                                 make=True)
         self.__dict__.update(spc.__dict__)
         # =====================================================================
         # OSC CLIENT
@@ -50,17 +49,18 @@ class SessionParamHandler(object):
         # =====================================================================
         # frame2TTL
         # =====================================================================
-        self.F2TTL_GET_AND_SET_THRESHOLDS = frame2TTL.get_and_set_thresholds(self)
+        self.F2TTL_GET_AND_SET_THRESHOLDS = frame2TTL.get_and_set_thresholds()
         # =====================================================================
         # ROTARY ENCODER
         # =====================================================================
         self.ALL_THRESHOLDS = self.STIM_POSITIONS
         self.ROTARY_ENCODER = MyRotaryEncoder(self.ALL_THRESHOLDS,
                                               self.STIM_GAIN,
-                                              self.COM['ROTARY_ENCODER'])
+                                              self.PARAMS['COM_ROTARY_ENCODER'])
         # =====================================================================
         # SOUNDS
         # =====================================================================
+        self.SOFT_SOUND = None if 'ephys' in self._BOARD else self.SOFT_SOUND
         self.SOUND_SAMPLE_FREQ = sound.sound_sample_freq(self.SOFT_SOUND)
 
         self.GO_TONE_DURATION = float(self.GO_TONE_DURATION)
@@ -119,15 +119,15 @@ class SessionParamHandler(object):
         if (self.bad_stim_count != 0) or (self.bad_tone_count != 0):
             log.error(f"""
         ##########################################
-                     FAILED TEST !!!!!
+                      TEST FAILED !!!!!
         ##########################################
-          Found missing stimulus sync pulses: {self.bad_stim_count}
-          Found missing tone sync pulses:     {self.bad_tone_count}
+          Missing stimulus sync pulses: {self.bad_stim_count}
+          Missing tone sync pulses:     {self.bad_tone_count}
         ##########################################""")
         else:
             log.info(f"""
         ##########################################
-                        PASS:
+                        TEST PASSED:
         ##########################################
          Stimulus and tone detected in all trials
         ##########################################""")
