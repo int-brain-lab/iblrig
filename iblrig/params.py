@@ -228,17 +228,24 @@ def try_migrate_to_params(force=False):
         water_dict.update({'WATER_CALIBRATION_DATE': func_file.parent.parent.parent.name})
     # Find latest F2TTL calib and set F2TTL values
     f2ttl_params = alyx.load_board_params()
-    f2ttl_dict = {
-        'F2TTL_DARK_THRESH': f2ttl_params['F2TTL_DARK_THRESH'],
-        'F2TTL_LIGHT_THRESH': f2ttl_params['F2TTL_LIGHT_THRESH'],
-        'F2TTL_CALIBRATION_DATE': datetime.datetime.now().date().isoformat(),
-    }
-    if 'COM_F2TTL' in f2ttl_params:
-        f2ttl_dict.update({'COM_F2TTL': f2ttl_params['COM_F2TTL']})
-    elif 'F2TTL_COM' in f2ttl_params:
-        f2ttl_dict.update({'COM_F2TTL': f2ttl_params['F2TTL_COM']})
-    if 'F2TTL_CALIBRATION_DATE' in f2ttl_params:
-        f2ttl_dict.update({'F2TTL_CALIBRATION_DATE': f2ttl_params['F2TTL_CALIBRATION_DATE']})
+    if f2ttl_params is None:
+        f2ttl_dict = {
+            'F2TTL_DARK_THRESH': "",
+            'F2TTL_LIGHT_THRESH': "",
+            'F2TTL_CALIBRATION_DATE': "",
+        }
+    else:
+        f2ttl_dict = {
+            'F2TTL_DARK_THRESH': f2ttl_params['F2TTL_DARK_THRESH'],
+            'F2TTL_LIGHT_THRESH': f2ttl_params['F2TTL_LIGHT_THRESH'],
+            'F2TTL_CALIBRATION_DATE': datetime.datetime.now().date().isoformat(),
+        }
+        if 'COM_F2TTL' in f2ttl_params:
+            f2ttl_dict.update({'COM_F2TTL': f2ttl_params['COM_F2TTL']})
+        elif 'F2TTL_COM' in f2ttl_params:
+            f2ttl_dict.update({'COM_F2TTL': f2ttl_params['F2TTL_COM']})
+        if 'F2TTL_CALIBRATION_DATE' in f2ttl_params:
+            f2ttl_dict.update({'F2TTL_CALIBRATION_DATE': f2ttl_params['F2TTL_CALIBRATION_DATE']})
 
     # Save locally
     final_dict = {}
