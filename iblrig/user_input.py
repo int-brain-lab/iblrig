@@ -50,7 +50,7 @@ class SessionForm(BaseWidget):
         self._probe00BregmaLabel = ControlLabel('Origin:')
         self._probe00Bregma = ControlCheckBox('bregma', True)
         self._probe00Bregma.value = True
-        self._probe00AlternateOrigin = ControlText('Alternate origin:', default='',
+        self._probe00alternateOrigin = ControlText('Alternate origin:', default='',
             helptext='To be filled only if origin is not bregma, e.g. "lambda"')
 
         self._probe01X = ControlText(
@@ -77,7 +77,8 @@ class SessionForm(BaseWidget):
         self._probe01BregmaLabel = ControlLabel('Origin:')
         self._probe01Bregma = ControlCheckBox('bregma', True)
         self._probe01Bregma.value = True
-        self._probe01AlternateOrigin = ControlText('Alternate origin:', default='',
+        self._probe01alternateOrigin = ControlText(
+            'Alternate origin:', default='',
             helptext='To be filled only if origin is not bregma, e.g. "lambda"')
 
         self._button = ControlButton('Submit')
@@ -95,7 +96,7 @@ class SessionForm(BaseWidget):
                         (' ', '_probe00D', ' ', '_probe01D', ' '),
                         (' ', ' ', ' ', ' ', ' '),
                         (' ', '_probe00BregmaLabel', '_probe00Bregma', ' ', '_probe01BregmaLabel', '_probe01Bregma', ' '),
-                        (' ', '_probe00Notes', ' ', '_probe01Notes', ' '),
+                        (' ', '_probe00alternateOrigin', ' ', '_probe01alternateOrigin', ' '),
                         (' ', ' ', ' ', ' ', ' '),
                         (' ', '_button', ' '),
                         (' ', ' ', ' ', ' ', ' ')]
@@ -161,9 +162,11 @@ def get_form_probe_data(form_data: dict) -> dict:
     for k in flat:
         if 'probe00' in k:
             nk = k.strip('probe00')
+            nk = nk[0].capitalize() + nk[1:]
             nested['probe00'][nk] = flat[k]
         elif 'probe01' in k:
             nk = k.strip('probe01')
+            nk = nk[0].capitalize() + nk[1:]
             nested['probe01'][nk] = flat[k]
 
     return nested
