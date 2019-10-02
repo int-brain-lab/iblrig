@@ -8,8 +8,7 @@ import ibllib.graphic as graph
 import pyforms
 from AnyQt.QtWidgets import QApplication
 from pyforms.basewidget import BaseWidget
-from pyforms.controls import (ControlButton, ControlCombo, ControlLabel,
-                              ControlText, ControlCheckBox, ControlTextArea)
+from pyforms.controls import (ControlButton, ControlLabel, ControlText, ControlCheckBox)
 
 from iblrig.misc import patch_settings_file
 
@@ -50,7 +49,8 @@ class SessionForm(BaseWidget):
         self._probe00BregmaLabel = ControlLabel('Origin:')
         self._probe00Bregma = ControlCheckBox('bregma', True)
         self._probe00Bregma.value = True
-        self._probe00alternateOrigin = ControlText('Alternate origin:', default='',
+        self._probe00alternateOrigin = ControlText(
+            'Alternate origin:', default='',
             helptext='To be filled only if origin is not bregma, e.g. "lambda"')
 
         self._probe01X = ControlText(
@@ -95,7 +95,8 @@ class SessionForm(BaseWidget):
                         (' ', '_probe00T', ' ', '_probe01T', ' '),
                         (' ', '_probe00D', ' ', '_probe01D', ' '),
                         (' ', ' ', ' ', ' ', ' '),
-                        (' ', '_probe00BregmaLabel', '_probe00Bregma', ' ', '_probe01BregmaLabel', '_probe01Bregma', ' '),
+                        (' ', '_probe00BregmaLabel', '_probe00Bregma', ' ',
+                         '_probe01BregmaLabel', '_probe01Bregma', ' '),
                         (' ', '_probe00alternateOrigin', ' ', '_probe01alternateOrigin', ' '),
                         (' ', ' ', ' ', ' ', ' '),
                         (' ', '_button', ' '),
