@@ -9,7 +9,7 @@ import pyforms
 from AnyQt.QtWidgets import QApplication
 from pyforms.basewidget import BaseWidget
 from pyforms.controls import (ControlButton, ControlCombo, ControlLabel,
-                              ControlText)
+                              ControlText, ControlCheckBox, ControlTextArea)
 
 from iblrig.misc import patch_settings_file
 
@@ -47,9 +47,11 @@ class SessionForm(BaseWidget):
         self._probe00D = ControlText(
             'D [deρth] (µm):', default='0',
             helptext='D value of the tip.')
-        self._probe00Origin = ControlCombo('Origin:')
-        self._probe00Origin.add_item('Bregma', 'bregma')
-        self._probe00Origin.add_item('Lambda', 'lambda')
+        self._probe00BregmaLabel = ControlLabel('Origin:')
+        self._probe00Bregma = ControlCheckBox('bregma', True)
+        self._probe00Bregma.value = True
+        self._probe00AlternateOrigin = ControlText('Alternate origin:', default='',
+            helptext='To be filled only if origin is not bregma, e.g. "lambda"')
 
         self._probe01X = ControlText(
             'X [M/L] (µm):', default='0',
@@ -72,9 +74,11 @@ class SessionForm(BaseWidget):
         self._probe01D = ControlText(
             'D [deρth] (µm):', default='0',
             helptext='D value of the tip.')
-        self._probe01Origin = ControlCombo('Origin:')
-        self._probe01Origin.add_item('Bregma', 'bregma')
-        self._probe01Origin.add_item('Lambda', 'lambda')
+        self._probe01BregmaLabel = ControlLabel('Origin:')
+        self._probe01Bregma = ControlCheckBox('bregma', True)
+        self._probe01Bregma.value = True
+        self._probe01AlternateOrigin = ControlText('Alternate origin:', default='',
+            helptext='To be filled only if origin is not bregma, e.g. "lambda"')
 
         self._button = ControlButton('Submit')
 
@@ -82,7 +86,6 @@ class SessionForm(BaseWidget):
         self.formset = [(' ', ' ', ' ', ' ', ' '),
                         (' ', '_mouseWeight', ' ', ' ', ' '),
                         (' ', '_probe00Label', ' ', '_probe01Label', ' '),
-                        (' ', '_probe00Origin', ' ', '_probe01Origin', ' '),
                         (' ', '_probe00X', ' ', '_probe01X', ' '),
                         (' ', '_probe00Y', ' ', '_probe01Y', ' '),
                         (' ', '_probe00Z', ' ', '_probe01Z', ' '),
@@ -90,6 +93,9 @@ class SessionForm(BaseWidget):
                         (' ', '_probe00A', ' ', '_probe01A', ' '),
                         (' ', '_probe00T', ' ', '_probe01T', ' '),
                         (' ', '_probe00D', ' ', '_probe01D', ' '),
+                        (' ', ' ', ' ', ' ', ' '),
+                        (' ', '_probe00BregmaLabel', '_probe00Bregma', ' ', '_probe01BregmaLabel', '_probe01Bregma', ' '),
+                        (' ', '_probe00Notes', ' ', '_probe01Notes', ' '),
                         (' ', ' ', ' ', ' ', ' '),
                         (' ', '_button', ' '),
                         (' ', ' ', ' ', ' ', ' ')]
@@ -107,8 +113,6 @@ class SessionForm(BaseWidget):
             for k, v in self.form_data.items():
                 if any([x in k for x in 'XYZPATD']):
                     self.form_data.update({k: float(v)})
-                elif 'Origin' in k:
-                    self.form_data.update({k: str(v)})
                 elif 'Weight' in k:
                     self.form_data.update({k: float(v)})
             self.valid_form_data = True
