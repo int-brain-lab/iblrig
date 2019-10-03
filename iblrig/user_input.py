@@ -8,8 +8,7 @@ import ibllib.graphic as graph
 import pyforms
 from AnyQt.QtWidgets import QApplication
 from pyforms.basewidget import BaseWidget
-from pyforms.controls import (ControlButton, ControlCombo, ControlLabel,
-                              ControlText)
+from pyforms.controls import (ControlButton, ControlLabel, ControlText, ControlCheckBox)
 
 from iblrig.misc import patch_settings_file
 
@@ -47,9 +46,12 @@ class SessionForm(BaseWidget):
         self._probe00D = ControlText(
             'D [deρth] (µm):', default='0',
             helptext='D value of the tip.')
-        self._probe00Origin = ControlCombo('Origin:')
-        self._probe00Origin.add_item('Bregma', 'bregma')
-        self._probe00Origin.add_item('Lambda', 'lambda')
+        self._probe00BregmaLabel = ControlLabel('Origin:')
+        self._probe00Bregma = ControlCheckBox('bregma', True)
+        self._probe00Bregma.value = True
+        self._probe00alternateOrigin = ControlText(
+            'Alternate origin:', default='',
+            helptext='To be filled only if origin is not bregma, e.g. "lambda"')
 
         self._probe01X = ControlText(
             'X [M/L] (µm):', default='0',
@@ -72,9 +74,12 @@ class SessionForm(BaseWidget):
         self._probe01D = ControlText(
             'D [deρth] (µm):', default='0',
             helptext='D value of the tip.')
-        self._probe01Origin = ControlCombo('Origin:')
-        self._probe01Origin.add_item('Bregma', 'bregma')
-        self._probe01Origin.add_item('Lambda', 'lambda')
+        self._probe01BregmaLabel = ControlLabel('Origin:')
+        self._probe01Bregma = ControlCheckBox('bregma', True)
+        self._probe01Bregma.value = True
+        self._probe01alternateOrigin = ControlText(
+            'Alternate origin:', default='',
+            helptext='To be filled only if origin is not bregma, e.g. "lambda"')
 
         self._button = ControlButton('Submit')
 
@@ -82,7 +87,6 @@ class SessionForm(BaseWidget):
         self.formset = [(' ', ' ', ' ', ' ', ' '),
                         (' ', '_mouseWeight', ' ', ' ', ' '),
                         (' ', '_probe00Label', ' ', '_probe01Label', ' '),
-                        (' ', '_probe00Origin', ' ', '_probe01Origin', ' '),
                         (' ', '_probe00X', ' ', '_probe01X', ' '),
                         (' ', '_probe00Y', ' ', '_probe01Y', ' '),
                         (' ', '_probe00Z', ' ', '_probe01Z', ' '),
@@ -90,6 +94,10 @@ class SessionForm(BaseWidget):
                         (' ', '_probe00A', ' ', '_probe01A', ' '),
                         (' ', '_probe00T', ' ', '_probe01T', ' '),
                         (' ', '_probe00D', ' ', '_probe01D', ' '),
+                        (' ', ' ', ' ', ' ', ' '),
+                        (' ', '_probe00BregmaLabel', '_probe00Bregma', ' ',
+                         '_probe01BregmaLabel', '_probe01Bregma', ' '),
+                        (' ', '_probe00alternateOrigin', ' ', '_probe01alternateOrigin', ' '),
                         (' ', ' ', ' ', ' ', ' '),
                         (' ', '_button', ' '),
                         (' ', ' ', ' ', ' ', ' ')]
@@ -107,8 +115,6 @@ class SessionForm(BaseWidget):
             for k, v in self.form_data.items():
                 if any([x in k for x in 'XYZPATD']):
                     self.form_data.update({k: float(v)})
-                elif 'Origin' in k:
-                    self.form_data.update({k: str(v)})
                 elif 'Weight' in k:
                     self.form_data.update({k: float(v)})
             self.valid_form_data = True
@@ -157,9 +163,11 @@ def get_form_probe_data(form_data: dict) -> dict:
     for k in flat:
         if 'probe00' in k:
             nk = k.strip('probe00')
+            nk = nk[0].capitalize() + nk[1:]
             nested['probe00'][nk] = flat[k]
         elif 'probe01' in k:
             nk = k.strip('probe01')
+            nk = nk[0].capitalize() + nk[1:]
             nested['probe01'][nk] = flat[k]
 
     return nested
@@ -182,11 +190,12 @@ def ask_session_delay(settings_file_path: str) -> int:
 
 
 if __name__ == "__main__":
-    settings_file_path = '/home/nico/Projects/IBL/github/iblrig_data/Subjects/_iblrig_fake_subject/2019-09-25/002/raw_behavior_data/_iblrig_taskSettings.raw.json'  # noqa
-    delay = ask_session_delay(settings_file_path)
+    # settings_file_path = '/home/nico/Projects/IBL/github/iblrig_data/Subjects/_iblrig_fake_subject/2019-09-25/002/raw_behavior_data/_iblrig_taskSettings.raw.json'  # noqa
+    # delay = ask_session_delay(settings_file_path)
     res = -1
     while res == -1:
         res = session_form(mouse_name='myMouse')
     w = get_form_subject_weight(res)
     p = get_form_probe_data(res)
+    print(f"Weight: {w}", f"\nProbe data: {p}")
     print('.')
