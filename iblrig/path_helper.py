@@ -91,7 +91,7 @@ def get_water_calibration_func_file(latest=True) -> Path or list:
     data_folder = Path(get_iblrig_data_folder())
     func_files = sorted(data_folder.rglob('_iblrig_calibration_water_function.csv'))
     if not func_files:
-        return
+        return Path()
     return func_files[-1] if latest else func_files
 
 
@@ -99,7 +99,7 @@ def get_water_calibration_range_file(latest=True) -> Path or list:
     data_folder = Path(get_iblrig_data_folder())
     range_files = sorted(data_folder.rglob('_iblrig_calibration_water_range.csv'))
     if not range_files:
-        return
+        return Path()
     return range_files[-1] if latest else range_files
 
 
@@ -371,7 +371,7 @@ class SessionPathCreator(object):
         self.DATA_FILE_PATH = os.path.join(self.SESSION_RAW_DATA_FOLDER,
                                            self.BASE_FILENAME +
                                            'Data.raw.jsonable')
-
+        # Water calinbration files
         self.LATEST_WATER_CALIBRATION_FILE = get_water_calibration_func_file(latest=True)
         self.LATEST_WATER_CALIB_RANGE_FILE = get_water_calibration_range_file(latest=True)
         if self.LATEST_WATER_CALIBRATION_FILE.parent != self.LATEST_WATER_CALIB_RANGE_FILE.parent:
@@ -380,7 +380,10 @@ class SessionPathCreator(object):
         else:
             self.LATEST_WATER_CALIBRATION_FILE = str(self.LATEST_WATER_CALIBRATION_FILE)
             self.LATEST_WATER_CALIB_RANGE_FILE = str(self.LATEST_WATER_CALIB_RANGE_FILE)
-
+        if str(self.LATEST_WATER_CALIBRATION_FILE) == '.':
+            self.LATEST_WATER_CALIBRATION_FILE = None
+            self.LATEST_WATER_CALIB_RANGE_FILE = None
+        # Previous session files
         self.PREVIOUS_DATA_FILE = get_previous_data_file(self._PROTOCOL,
                                                          self.SUBJECT_NAME,
                                                          self.SESSION_FOLDER)
