@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg width="30" height="30" version="1.1" xmlns="http://www.w3.org/2000/svg">
- <g fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="1.8">
-  <ellipse transform="rotate(30)" cx="20.443" cy="5.4613" rx="10.378" ry="3.3921"/>
-  <ellipse transform="rotate(-30)" cx="5.4919" cy="20.435" rx="10.378" ry="3.3921"/>
-  <ellipse transform="rotate(-90)" cx="-14.951" cy="14.974" rx="10.378" ry="3.3921"/>
- </g>
- <circle cx="14.916" cy="14.912" r="1.123"/>
-</svg>
