@@ -72,6 +72,17 @@
           <Property Name="Contrast" />
         </PropertyMappings>
       </Expression>
+      <Expression xsi:type="SubscribeSubject">
+        <Name>LastStim</Name>
+      </Expression>
+      <Expression xsi:type="SubscribeSubject">
+        <Name>StimPhase</Name>
+      </Expression>
+      <Expression xsi:type="PropertyMapping">
+        <PropertyMappings>
+          <Property Name="Phase" />
+        </PropertyMappings>
+      </Expression>
       <Expression xsi:type="IncludeWorkflow" Path="BonVision:Primitives.DrawGratings.bonsai">
         <LocationX>35</LocationX>
         <LocationY>0</LocationY>
@@ -86,9 +97,6 @@
         <Opacity>1</Opacity>
         <ExtentX>102.680382</ExtentX>
         <ExtentY>102.680382</ExtentY>
-      </Expression>
-      <Expression xsi:type="SubscribeSubject">
-        <Name>LastStim</Name>
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="rx:TakeUntil" />
@@ -106,7 +114,7 @@
             <Expression xsi:type="io:CsvReader">
               <io:FileName>Extensions\stims.csv</io:FileName>
               <io:ListSeparator />
-              <io:ScanPattern>%i %f</io:ScanPattern>
+              <io:ScanPattern>%i %f %f</io:ScanPattern>
               <io:SkipRows>0</io:SkipRows>
             </Expression>
             <Expression xsi:type="Combinator">
@@ -182,6 +190,12 @@
             <Expression xsi:type="MulticastSubject">
               <Name>UpdateSyncSquare</Name>
             </Expression>
+            <Expression xsi:type="MemberSelector">
+              <Selector>Item1.Item3</Selector>
+            </Expression>
+            <Expression xsi:type="MulticastSubject">
+              <Name>StimPhase</Name>
+            </Expression>
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="rx:Last" />
             </Expression>
@@ -196,37 +210,41 @@
             <Edge From="3" To="4" Label="Source1" />
             <Edge From="3" To="7" Label="Source1" />
             <Edge From="4" To="5" Label="Source1" />
-            <Edge From="4" To="6" Label="Source1" />
+            <Edge From="5" To="6" Label="Source1" />
             <Edge From="7" To="8" Label="Source2" />
             <Edge From="8" To="9" Label="Source1" />
             <Edge From="8" To="11" Label="Source1" />
             <Edge From="8" To="14" Label="Source1" />
+            <Edge From="8" To="16" Label="Source1" />
             <Edge From="9" To="10" Label="Source1" />
             <Edge From="11" To="12" Label="Source1" />
-            <Edge From="11" To="13" Label="Source1" />
+            <Edge From="12" To="13" Label="Source1" />
             <Edge From="14" To="15" Label="Source1" />
+            <Edge From="16" To="17" Label="Source1" />
           </Edges>
         </Workflow>
       </Expression>
     </Nodes>
     <Edges>
-      <Edge From="0" To="14" Label="Source1" />
+      <Edge From="0" To="17" Label="Source1" />
       <Edge From="1" To="4" Label="Source1" />
       <Edge From="2" To="3" Label="Source1" />
       <Edge From="3" To="4" Label="Source2" />
       <Edge From="4" To="5" Label="Source1" />
-      <Edge From="5" To="14" Label="Source4" />
+      <Edge From="5" To="17" Label="Source4" />
       <Edge From="6" To="7" Label="Source1" />
-      <Edge From="7" To="14" Label="Source2" />
+      <Edge From="7" To="17" Label="Source2" />
       <Edge From="8" To="9" Label="Source1" />
-      <Edge From="9" To="14" Label="Source3" />
+      <Edge From="9" To="17" Label="Source3" />
       <Edge From="10" To="11" Label="Source1" />
-      <Edge From="11" To="14" Label="Source5" />
+      <Edge From="11" To="17" Label="Source5" />
       <Edge From="12" To="13" Label="Source1" />
-      <Edge From="13" To="14" Label="Source6" />
-      <Edge From="14" To="16" Label="Source1" />
-      <Edge From="15" To="16" Label="Source2" />
+      <Edge From="13" To="17" Label="Source6" />
+      <Edge From="14" To="18" Label="Source2" />
+      <Edge From="15" To="16" Label="Source1" />
+      <Edge From="16" To="17" Label="Source7" />
       <Edge From="17" To="18" Label="Source1" />
+      <Edge From="19" To="20" Label="Source1" />
     </Edges>
   </Workflow>
 </WorkflowBuilder>
