@@ -30,7 +30,7 @@ SA1_DueTime = '-p:SpontaneousActivity1.DueTime=00:15:00'
 RFM_FileName = '-p:ReceptiveFieldMappingStim.FileNameRFMapStim=' + str(
     Path(sph.SESSION_RAW_DATA_FOLDER) / '_iblrig_RFMapStim.raw.bin')
 RFM_MappingTime = '-p:ReceptiveFieldMappingStim.MappingTime=00:10:00'
-CRCS_CheckerboardTime = '-p:ContrastReversingCheckerboard.CheckerboardTime=00:03:00'
+CRCS_CheckerboardTime = '-p:ContrastReversingCheckerboardStim.CheckerboardTime=00:03:00'
 CSTS_StimFileName = '-p:ContrastSelectivityTaskStim.StimFileName=' + str(
     certification_folder/ 'Extensions' / 'stims.csv')
 
