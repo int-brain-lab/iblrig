@@ -200,44 +200,42 @@
           </Edges>
         </Workflow>
       </Expression>
-      <Expression xsi:type="Disable">
-        <Builder xsi:type="SelectMany">
-          <Name>SpontaneousActivity0</Name>
-          <Workflow>
-            <Nodes>
-              <Expression xsi:type="ExternalizedMapping">
-                <Property Name="DueTime" DisplayName="DueTime" />
-              </Expression>
-              <Expression xsi:type="Combinator">
-                <Combinator xsi:type="gl:Timer">
-                  <gl:DueTime>PT2S</gl:DueTime>
-                </Combinator>
-              </Expression>
-              <Expression xsi:type="SelectMany">
-                <Name>Spacer</Name>
-                <Workflow>
-                  <Nodes>
-                    <Expression xsi:type="IncludeWorkflow" Path="Extensions\Spacer.bonsai" />
-                    <Expression xsi:type="Combinator">
-                      <Combinator xsi:type="rx:LastOrDefault" />
-                    </Expression>
-                    <Expression xsi:type="WorkflowOutput" />
-                  </Nodes>
-                  <Edges>
-                    <Edge From="0" To="1" Label="Source1" />
-                    <Edge From="1" To="2" Label="Source1" />
-                  </Edges>
-                </Workflow>
-              </Expression>
-              <Expression xsi:type="WorkflowOutput" />
-            </Nodes>
-            <Edges>
-              <Edge From="0" To="1" Label="Source1" />
-              <Edge From="1" To="2" Label="Source1" />
-              <Edge From="2" To="3" Label="Source1" />
-            </Edges>
-          </Workflow>
-        </Builder>
+      <Expression xsi:type="SelectMany">
+        <Name>SpontaneousActivity0</Name>
+        <Workflow>
+          <Nodes>
+            <Expression xsi:type="ExternalizedMapping">
+              <Property Name="DueTime" DisplayName="DueTime" />
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="gl:Timer">
+                <gl:DueTime>PT2S</gl:DueTime>
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="SelectMany">
+              <Name>Spacer</Name>
+              <Workflow>
+                <Nodes>
+                  <Expression xsi:type="IncludeWorkflow" Path="Extensions\Spacer.bonsai" />
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="rx:LastOrDefault" />
+                  </Expression>
+                  <Expression xsi:type="WorkflowOutput" />
+                </Nodes>
+                <Edges>
+                  <Edge From="0" To="1" Label="Source1" />
+                  <Edge From="1" To="2" Label="Source1" />
+                </Edges>
+              </Workflow>
+            </Expression>
+            <Expression xsi:type="WorkflowOutput" />
+          </Nodes>
+          <Edges>
+            <Edge From="0" To="1" Label="Source1" />
+            <Edge From="1" To="2" Label="Source1" />
+            <Edge From="2" To="3" Label="Source1" />
+          </Edges>
+        </Workflow>
       </Expression>
       <Expression xsi:type="SelectMany">
         <Name>OrientationDirectionSelectivityStim0</Name>
