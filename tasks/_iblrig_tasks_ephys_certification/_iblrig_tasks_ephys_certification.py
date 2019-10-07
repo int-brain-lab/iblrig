@@ -7,7 +7,7 @@ from pathlib import Path
 import ibllib.io.flags as flags
 # import iblrig.fake_user_settings as user_settings
 import task_settings
-import iblrig.fake_user_settings as user_settings  # PyBpod creates this file on run.
+import user_settings  # PyBpod creates this file on run.
 from session_params import SessionParamHandler
 
 log = logging.getLogger('iblrig')
