@@ -30,12 +30,10 @@ CRCS_CheckerboardTime = '-p:ContrastReversingCheckerboardStim.CheckerboardTime=0
 CSTS_StimFileName = '-p:ContrastSelectivityTaskStim.StimFileName=' + str(
     certification_folder/ 'Extensions' / 'stims.csv')
 
-cmd = [bns, wrkfl, noboot, start, SA0_DueTime, SA1_DueTime,
-        RFM_FileName, RFM_MappingTime, CRCS_CheckerboardTime, CSTS_StimFileName]
+cmd = [bns, wrkfl, noboot, noedit, SA0_DueTime, SA1_DueTime, RFM_FileName,
+       RFM_MappingTime, CRCS_CheckerboardTime, CSTS_StimFileName, ]
 
 os.chdir(certification_folder)
 s = subprocess.run(cmd, stdout=subprocess.PIPE)  # locking call
 os.chdir(CWD)
 log.info("You're done, please remove the mouse.\n" * 42)
-# Create a transfer_me.flag file
-flags.create_transfer_flags(SESSION_FOLDER)
