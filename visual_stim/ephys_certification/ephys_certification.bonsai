@@ -209,11 +209,11 @@
         </Workflow>
       </Expression>
       <Expression xsi:type="SelectMany">
-        <Name>SpontaneousActivity</Name>
+        <Name>SpontaneousActivity0</Name>
         <Workflow>
           <Nodes>
             <Expression xsi:type="ExternalizedMapping">
-              <Property Name="DueTime" />
+              <Property Name="DueTime" DisplayName="DueTime" />
             </Expression>
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="gl:Timer">
@@ -398,7 +398,7 @@
         </Workflow>
       </Expression>
       <Expression xsi:type="SelectMany">
-        <Name>SpontaneousActivity</Name>
+        <Name>SpontaneousActivity1</Name>
         <Workflow>
           <Nodes>
             <Expression xsi:type="ExternalizedMapping">
