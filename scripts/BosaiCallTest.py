@@ -22,15 +22,17 @@ noboot = '--no-boot'
 start = '--start'
 # Properties
 SA0_DueTime = '-p:SpontaneousActivity0.DueTime=00:15:00'
-SA1_DueTime = '-p:SpontaneousActivity1.DueTime=00:15:00'
+ODS0_Count = '-p:OrientationDirectionSelectivityStim0.Count=20'
 RFM_FileName = '-p:ReceptiveFieldMappingStim.FileNameRFMapStim=' + str(
     Path(SESSION_RAW_DATA_FOLDER) / '_iblrig_RFMapStim.raw.bin')
 RFM_MappingTime = '-p:ReceptiveFieldMappingStim.MappingTime=00:10:00'
 CRCS_CheckerboardTime = '-p:ContrastReversingCheckerboardStim.CheckerboardTime=00:03:00'
 CSTS_StimFileName = '-p:ContrastSelectivityTaskStim.StimFileName=' + str(
     certification_folder/ 'Extensions' / 'stims.csv')
+SA1_DueTime = '-p:SpontaneousActivity1.DueTime=00:15:00'
+ODS1_Count = '-p:OrientationDirectionSelectivityStim1.Count=20'
 
-cmd = [bns, wrkfl, noboot, noedit, SA0_DueTime, SA1_DueTime, RFM_FileName,
+cmd = [bns, wrkfl, noboot, noedit, SA0_DueTime, SA1_DueTime, RFM_FileName, ODS0_Count, ODS1_Count
        RFM_MappingTime, CRCS_CheckerboardTime, CSTS_StimFileName, ]
 
 os.chdir(certification_folder)
