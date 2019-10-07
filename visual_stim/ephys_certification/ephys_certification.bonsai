@@ -477,14 +477,6 @@
         </Workflow>
       </Expression>
       <Expression xsi:type="WorkflowOutput" />
-      <Expression xsi:type="Combinator">
-        <Combinator xsi:type="FloatProperty">
-          <Value>0</Value>
-        </Combinator>
-      </Expression>
-      <Expression xsi:type="BehaviorSubject">
-        <Name>SyncState</Name>
-      </Expression>
       <Expression xsi:type="ExternalizedMapping">
         <Property Name="TranslationZ" />
       </Expression>
@@ -634,6 +626,14 @@
             <Expression xsi:type="AsyncSubject">
               <Name>Random</Name>
             </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="FloatProperty">
+                <Value>0</Value>
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="BehaviorSubject">
+              <Name>SyncState</Name>
+            </Expression>
           </Nodes>
           <Edges>
             <Edge From="0" To="1" Label="Source1" />
@@ -659,6 +659,7 @@
             <Edge From="30" To="31" Label="Source1" />
             <Edge From="32" To="33" Label="Source1" />
             <Edge From="34" To="35" Label="Source1" />
+            <Edge From="36" To="37" Label="Source1" />
           </Edges>
         </Workflow>
       </Expression>
@@ -692,7 +693,6 @@
       <Edge From="27" To="28" Label="Source1" />
       <Edge From="28" To="29" Label="Source1" />
       <Edge From="30" To="31" Label="Source1" />
-      <Edge From="32" To="33" Label="Source1" />
     </Edges>
   </Workflow>
 </WorkflowBuilder>
