@@ -16,7 +16,7 @@
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="IntProperty">
-          <Value>1</Value>
+          <Value>0</Value>
         </Combinator>
       </Expression>
       <Expression xsi:type="rx:Accumulate" />
