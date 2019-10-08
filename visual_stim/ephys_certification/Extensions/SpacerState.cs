@@ -11,7 +11,7 @@ using Bonsai.Shaders;
 [WorkflowElementCategory(ElementCategory.Transform)]
 public class SpacerState
 {
-    static readonly int[] spacerFrames = new[] { 1, 2, 4, 8, 16, 32, 64, 128, 192, 224, 240, 248, 252, 254, 255 };
+    static readonly int[] spacerFrames = new[] { 1, 2, 4, 8, 16, 32, 64, 128, 192, 224, 240, 248, 252, 254, 255, 256 };
 
     public IObservable<float> Process(IObservable<FrameEvent> source)
     {

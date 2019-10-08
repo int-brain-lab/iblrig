@@ -49,8 +49,7 @@ print(f'Saving data...\n{data}')
 with open(sph.DATA_FILE_PATH, 'a') as f:
     f.write(json.dumps(data))
     f.write('\n')
-print(f'{sph.SESSION_FOLDER} says:'
-print(f'Saved data to {sph.DATA_FILE_PATH}')
+print('Done')
 bpod.close()
 
 if __name__ == '__main__':
