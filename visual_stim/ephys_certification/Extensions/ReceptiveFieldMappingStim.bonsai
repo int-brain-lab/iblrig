@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<WorkflowBuilder Version="2.4.0"
+<WorkflowBuilder Version="2.4.1-patch"
                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                  xmlns:rx="clr-namespace:Bonsai.Reactive;assembly=Bonsai.Core"
                  xmlns:scr="clr-namespace:Bonsai.Scripting;assembly=Bonsai.Scripting"
@@ -25,6 +25,14 @@
       </Expression>
       <Expression xsi:type="MulticastSubject">
         <Name>SyncState</Name>
+      </Expression>
+      <Expression xsi:type="ExternalizedMapping">
+        <Property Name="DueTime" DisplayName="MappingTime" />
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="gl:Timer">
+          <gl:DueTime>PT2S</gl:DueTime>
+        </Combinator>
       </Expression>
       <Expression xsi:type="ExternalizedMapping">
         <Property Name="FileNameRFMapStim" />
@@ -265,14 +273,6 @@
           </Edges>
         </Workflow>
       </Expression>
-      <Expression xsi:type="ExternalizedMapping">
-        <Property Name="DueTime" DisplayName="MappingTime" />
-      </Expression>
-      <Expression xsi:type="Combinator">
-        <Combinator xsi:type="gl:Timer">
-          <gl:DueTime>PT10M</gl:DueTime>
-        </Combinator>
-      </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="rx:TakeUntil" />
       </Expression>
@@ -284,9 +284,9 @@
       <Edge From="2" To="3" Label="Source1" />
       <Edge From="3" To="4" Label="Source1" />
       <Edge From="5" To="6" Label="Source1" />
-      <Edge From="6" To="9" Label="Source1" />
+      <Edge From="6" To="9" Label="Source2" />
       <Edge From="7" To="8" Label="Source1" />
-      <Edge From="8" To="9" Label="Source2" />
+      <Edge From="8" To="9" Label="Source1" />
       <Edge From="9" To="10" Label="Source1" />
     </Edges>
   </Workflow>
