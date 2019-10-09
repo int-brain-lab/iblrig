@@ -37,7 +37,7 @@ CSTS_StimFileName = '-p:ContrastSelectivityTaskStim.StimFileName=' + str(
 SA1_DueTime = '-p:SpontaneousActivity1.DueTime=00:15:00'
 ODS1_Count = '-p:OrientationDirectionSelectivityStim1.Count=20'
 # Build command
-cmd = [bns, wrkfl, noboot, noedit, SA0_DueTime, SA1_DueTime, RFM_FileName, ODS0_Count, ODS1_Count
+cmd = [bns, wrkfl, noboot, noedit, SA0_DueTime, SA1_DueTime, RFM_FileName, ODS0_Count, ODS1_Count,
        RFM_MappingTime, CRCS_CheckerboardTime, CSTS_StimFileName, ]
 # Run visual stims
 os.chdir(certification_folder)
