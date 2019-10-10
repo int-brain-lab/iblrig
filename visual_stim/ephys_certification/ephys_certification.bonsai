@@ -389,6 +389,12 @@
         <Name>SpontaneousActivity0</Name>
         <Workflow>
           <Nodes>
+            <Expression xsi:type="ExternalizedMapping">
+              <Property Name="DueTime" />
+            </Expression>
+            <Expression xsi:type="WorkflowInput">
+              <Name>Source1</Name>
+            </Expression>
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="IntProperty">
                 <Value>0</Value>
@@ -396,9 +402,6 @@
             </Expression>
             <Expression xsi:type="MulticastSubject">
               <Name>SyncState</Name>
-            </Expression>
-            <Expression xsi:type="ExternalizedMapping">
-              <Property Name="DueTime" />
             </Expression>
             <Expression xsi:type="SelectMany">
               <Name>Timer</Name>
@@ -432,13 +435,14 @@
             <Expression xsi:type="WorkflowOutput" />
           </Nodes>
           <Edges>
-            <Edge From="0" To="1" Label="Source1" />
-            <Edge From="1" To="3" Label="Source1" />
-            <Edge From="2" To="3" Label="Source2" />
+            <Edge From="0" To="4" Label="Source2" />
+            <Edge From="1" To="2" Label="Source1" />
+            <Edge From="2" To="3" Label="Source1" />
             <Edge From="3" To="4" Label="Source1" />
             <Edge From="4" To="5" Label="Source1" />
             <Edge From="5" To="6" Label="Source1" />
             <Edge From="6" To="7" Label="Source1" />
+            <Edge From="7" To="8" Label="Source1" />
           </Edges>
         </Workflow>
       </Expression>
@@ -621,6 +625,12 @@
         <Name>SpontaneousActivity1</Name>
         <Workflow>
           <Nodes>
+            <Expression xsi:type="ExternalizedMapping">
+              <Property Name="DueTime" />
+            </Expression>
+            <Expression xsi:type="WorkflowInput">
+              <Name>Source1</Name>
+            </Expression>
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="IntProperty">
                 <Value>0</Value>
@@ -628,9 +638,6 @@
             </Expression>
             <Expression xsi:type="MulticastSubject">
               <Name>SyncState</Name>
-            </Expression>
-            <Expression xsi:type="ExternalizedMapping">
-              <Property Name="DueTime" />
             </Expression>
             <Expression xsi:type="SelectMany">
               <Name>Timer</Name>
@@ -663,12 +670,13 @@
             <Expression xsi:type="WorkflowOutput" />
           </Nodes>
           <Edges>
-            <Edge From="0" To="1" Label="Source1" />
-            <Edge From="1" To="3" Label="Source1" />
-            <Edge From="2" To="3" Label="Source2" />
+            <Edge From="0" To="4" Label="Source2" />
+            <Edge From="1" To="2" Label="Source1" />
+            <Edge From="2" To="3" Label="Source1" />
             <Edge From="3" To="4" Label="Source1" />
             <Edge From="4" To="5" Label="Source1" />
             <Edge From="5" To="6" Label="Source1" />
+            <Edge From="6" To="7" Label="Source1" />
           </Edges>
         </Workflow>
       </Expression>
