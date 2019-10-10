@@ -8,7 +8,8 @@ import ibllib.graphic as graph
 import pyforms
 from AnyQt.QtWidgets import QApplication
 from pyforms.basewidget import BaseWidget
-from pyforms.controls import (ControlButton, ControlLabel, ControlText, ControlCheckBox)
+from pyforms.controls import (ControlButton, ControlCheckBox, ControlLabel,
+                              ControlText)
 
 from iblrig.misc import patch_settings_file
 

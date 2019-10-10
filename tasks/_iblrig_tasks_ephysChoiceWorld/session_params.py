@@ -105,7 +105,7 @@ class SessionParamHandler(object):
         # =====================================================================
         self.AUTOMATIC_CALIBRATION = True
         self.CALIBRATION_VALUE = 0.067
-        self.REWARD_AMOUNT = 3.
+        self.REWARD_AMOUNT = 1.5
         self.REWARD_TYPE = 'Water 10% Sucrose'
 
         self.CALIB_FUNC = None
