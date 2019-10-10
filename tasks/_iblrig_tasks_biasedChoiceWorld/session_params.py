@@ -122,10 +122,7 @@ class SessionParamHandler(object):
         self.OUT_NOISE = ('SoftCode', 2) if self.SOFT_SOUND else ('Serial3', 6)
         self.OUT_STOP_SOUND = (
             'SoftCode', 0) if self.SOFT_SOUND else ('Serial3', ord('X'))
-        # =====================================================================
-        # RUN VISUAL STIM
-        # =====================================================================
-        bonsai.start_visual_stim(self)
+
         # =====================================================================
         # SAVE SETTINGS FILE AND TASK CODE
         # =====================================================================

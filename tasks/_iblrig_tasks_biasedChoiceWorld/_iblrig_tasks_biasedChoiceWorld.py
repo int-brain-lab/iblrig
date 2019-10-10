@@ -12,6 +12,7 @@ from pybpodapi.protocol import Bpod, StateMachine
 import online_plots as op
 import task_settings
 import user_settings
+import iblrig.bonsai as bonsai
 from iblrig.user_input import ask_session_delay
 from session_params import SessionParamHandler
 from trial_params import TrialParamHandler
@@ -44,6 +45,9 @@ def softcode_handler(data):
         sph.play_noise()
     elif data == 3:
         sph.start_camera_recording()
+    elif data == 4:
+        bonsai.start_visual_stim(sph)
+
     # sph.OSC_CLIENT.send_message("/e", data)
 
 
@@ -90,6 +94,7 @@ delay = ask_session_delay(sph.SETTINGS_FILE_PATH)
 log.info(f"Starting {delay} seconds of delay (i.e. {delay/60} minutes)")
 time.sleep(delay)
 log.info(f"Resuming task after {delay} seconds of delay (i.e. {delay/60} minutes)")
+
 # =============================================================================
 # TRIAL PARAMETERS AND STATE MACHINE
 # =============================================================================
@@ -112,14 +117,27 @@ for i in range(sph.NTRIALS):  # Main loop
         sma.add_state(
             state_name='trial_start',
             state_timer=3600,
-            state_change_conditions={'Port1In': 'reset_rotary_encoder'},
-            output_actions=[('SoftCode', 3)])  # sart camera
+            state_change_conditions={'Port1In': 'delay_initiation'},
+            output_actions=[('SoftCode', 3)])  # start camera
     else:
         sma.add_state(
             state_name='trial_start',
             state_timer=0,  # ~100µs hardware irreducible delay
             state_change_conditions={'Tup': 'reset_rotary_encoder'},
             output_actions=[tph.out_stop_sound])  # stop all sounds
+
+    sma.add_state(
+        state_name='delay_initiation',
+        state_timer=sph.SESSION_START_DELAY_SEC,
+        state_change_conditions={'Tup': 'start_visual_stim'},
+        output_actions=[('SoftCode', 4)])
+
+    sma.add_state(
+        state_name='start_visual_stim',
+        state_timer=0,
+        state_change_conditions={'BNC1High': 'reset_rotary_encoder',
+                                 'BNC1Low': 'reset_rotary_encoder'},
+        output_actions=[('SoftCode', 4)])
 
     sma.add_state(
         state_name='reset_rotary_encoder',
