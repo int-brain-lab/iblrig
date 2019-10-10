@@ -90,10 +90,7 @@ if sph.SOFT_SOUND is None:
     bpod.load_serial_message(sound_card, sc_play_noise, [
                              ord('P'), sph.WHITE_NOISE_IDX])
 # Delay initiation
-delay = ask_session_delay(sph.SETTINGS_FILE_PATH)
-log.info(f"Starting {delay} seconds of delay (i.e. {delay/60} minutes)")
-time.sleep(delay)
-log.info(f"Resuming task after {delay} seconds of delay (i.e. {delay/60} minutes)")
+sph.SESSION_START_DELAY_SEC = ask_session_delay(sph.SETTINGS_FILE_PATH)
 
 # =============================================================================
 # TRIAL PARAMETERS AND STATE MACHINE
@@ -113,10 +110,12 @@ for i in range(sph.NTRIALS):  # Main loop
     sma = StateMachine(bpod)
 
     if i == 0:  # First trial exception start camera
-        log.info(f'Waiting for camera pulses...')
+        log.info(f'First trial initializing, will move to next trial only if:')
+        log.info(f'1. camera is detected')
+        log.info(f'2. {sph.SESSION_START_DELAY_SEC} sec have elapsed')
+        log.info(f'3. visual stimulus is detected')
         sma.add_state(
             state_name='trial_start',
-            state_timer=3600,
             state_change_conditions={'Port1In': 'delay_initiation'},
             output_actions=[('SoftCode', 3)])  # start camera
     else:
@@ -134,7 +133,6 @@ for i in range(sph.NTRIALS):  # Main loop
 
     sma.add_state(
         state_name='start_visual_stim',
-        state_timer=0,
         state_change_conditions={'BNC1High': 'reset_rotary_encoder',
                                  'BNC1Low': 'reset_rotary_encoder'},
         output_actions=[('SoftCode', 4)])
