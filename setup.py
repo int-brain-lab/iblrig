@@ -24,7 +24,7 @@ with open('requirements.txt') as f:
 
 setup(
     name='iblrig',
-    version='6.0.4',
+    version='6.0.5',
     python_requires='>={}.{}'.format(*REQUIRED_PYTHON),
     description='IBL libraries',
     license="MIT",
