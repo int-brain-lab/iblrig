@@ -20,47 +20,54 @@ Check Alyx connection
     Load COM ports
 end with user input
 """
+import json
 import logging
-import iblrig.logging_
+import struct
+from pathlib import Path
+
+import serial
+from pybpod_rotaryencoder_module.module_api import RotaryEncoderModule
+
+import iblrig.alyx as alyx
+import iblrig.logging_  # noqa
+from iblrig.frame2TTL import Frame2TTL
+from iblrig.path_helper import get_iblrig_folder
+
 log = logging.getLogger('iblrig')
+log.setLevel(logging.DEBUG)
+
 
 # Check if Alyx is accessible
-import iblrig.alyx as alyx
 log.debug("Alyx: Connecting")
 one = alyx.get_one()
 # Load COM ports
-import json
-from iblrig.path_helper import get_iblrig_folder
-from pathlib import Path
 IBLRIG_PATH = Path(get_iblrig_folder())
 IBLRIG_PARAMS_PATH = IBLRIG_PATH.parent / 'iblrig_params'
 assert(IBLRIG_PARAMS_PATH.exists())
-BPOD_COMPORTS_FILE_PATH = IBLRIG_PARAMS_PATH / '.bpod_comports.json'
-if BPOD_COMPORTS_FILE_PATH.exists():
+PARAMS_FILE_PATH = IBLRIG_PARAMS_PATH / '.iblrig_params.json'
+# TODO: use params module
+if PARAMS_FILE_PATH.exists():
     # If file exists open file
-    with open(BPOD_COMPORTS_FILE_PATH, 'r') as f:
-        COM = json.load(f)
+    with open(PARAMS_FILE_PATH, 'r') as f:
+        PARAMS = json.load(f)
 else:
     # If file does not exist initialize:
     pass
 
-# Load water calibration (date?)
+# WATER CALIBRATION: check water calibration values from params, warn if old calibration
 
-# Load frame2TTL calibrated thresholds (date?)
+# F2TTL CALIBRATION: check f2ttl values from params, warn if old calibration
 
 # Check RE
-from pybpod_rotaryencoder_module.module_api import RotaryEncoderModule
 log.debug("RE: Connect")
-m = RotaryEncoderModule(COM['ROTARY_ENCODER'])
+m = RotaryEncoderModule(PARAMS['COM_ROTARY_ENCODER'])
 log.debug("RE: set 0 position")
 m.set_zero_position()  # Not necessarily needed
 log.debug("RE: Close")
 m.close()
 # Check Bpod
-import serial
-import struct
 log.debug("Bpod Connect")
-ser = serial.Serial(port=COM['BPOD'], baudrate=115200, timeout=1)
+ser = serial.Serial(port=PARAMS['COM_BPOD'], baudrate=115200, timeout=1)
 log.debug("Bpod lights OFF")
 ser.write(struct.pack('cB', b':', 0))
 log.debug("Bpod lights ON")
@@ -68,13 +75,12 @@ ser.write(struct.pack('cB', b':', 1))
 log.debug("Bpod Close")
 ser.close()
 # Check Frame2TTL (by setting the thresholds)
-from iblrig.frame2TTL import Frame2TTL
-f = Frame2TTL(COM['FRAME2TTL'])
+f = Frame2TTL(PARAMS['COM_FRAME2TTL'])
 # Create missing session folders
 
 # Run fast task to check IO
 
-# Create Alyx session reference
+# Create Alyx session reference?
 
-# Open Alyx session notes in browser
+# Open Alyx session notes in browser?
 print('.')
