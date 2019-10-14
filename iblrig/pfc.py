@@ -30,6 +30,7 @@ from pybpod_rotaryencoder_module.module_api import RotaryEncoderModule
 
 import iblrig.alyx as alyx
 import iblrig.logging_  # noqa
+import iblrig.params as params
 from iblrig.frame2TTL import Frame2TTL
 from iblrig.path_helper import get_iblrig_folder
 
@@ -38,25 +39,40 @@ log.setLevel(logging.DEBUG)
 
 
 # Check if Alyx is accessible
-log.debug("Alyx: Connecting")
+log.debug("Alyx: Connecting...")
 one = alyx.get_one()
-# Load COM ports
-IBLRIG_PATH = Path(get_iblrig_folder())
-IBLRIG_PARAMS_PATH = IBLRIG_PATH.parent / 'iblrig_params'
-assert(IBLRIG_PARAMS_PATH.exists())
-PARAMS_FILE_PATH = IBLRIG_PARAMS_PATH / '.iblrig_params.json'
-# TODO: use params module
-if PARAMS_FILE_PATH.exists():
-    # If file exists open file
-    with open(PARAMS_FILE_PATH, 'r') as f:
-        PARAMS = json.load(f)
-else:
-    # If file does not exist initialize:
-    pass
+# Load PARAMS file ports
+# If file exists open file if not initialize
+log.debug("Loading params file...")
+PARAMS = params.load_params()
+# Check PARAMS values
+checks = []
+for k in PARAMS:
+    if PARAMS[k] is None or PARAMS[k] == '':
+        checks.append(1)
+        log.warning(f'{k}: Value not found')
+if sum(checks) != 0:
+    log.error('Missing values in params file')
+    raise(ValueError)
 
-# WATER CALIBRATION: check water calibration values from params, warn if old calibration
-
+# Check board name
+assert(PARAMS['NAME'] == params.get_board_name())
+# COM ports check
+PARAMS['COM_BPOD']
+PARAMS['COM_ROTARY_ENCODER']
+PARAMS['COM_F2TTL']
 # F2TTL CALIBRATION: check f2ttl values from params, warn if old calibration
+PARAMS['F2TTL_DARK_THRESH']
+PARAMS['F2TTL_LIGHT_THRESH']
+PARAMS['F2TTL_CALIBRATION_DATE']
+# WATER CALIBRATION: check water calibration values from params, warn if old calibration
+log.debug("Checking water calibration...")
+PARAMS['WATER_CALIBRATION_RANGE']
+PARAMS['WATER_CALIBRATION_OPEN_TIMES']
+PARAMS['WATER_CALIBRATION_WEIGHT_PERDROP']
+PARAMS['WATER_CALIBRATION_DATE']
+# F2TTL CALIBRATION: check f2ttl values from params, warn if old calibration
+# WATER CALIBRATION: check water calibration values from params, warn if old calibration
 
 # Check RE
 log.debug("RE: Connect")
