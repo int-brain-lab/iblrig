@@ -1,7 +1,6 @@
 import logging
 import os
 import subprocess
-import time
 from pathlib import Path
 
 import ibllib.io.flags as flags
@@ -29,11 +28,11 @@ start = '--start'
 SA0_DueTime = '-p:SpontaneousActivity0.DueTime=00:15:00'
 ODS0_Count = '-p:OrientationDirectionSelectivityStim0.Count=20'
 RFM_FileName = '-p:ReceptiveFieldMappingStim.FileNameRFMapStim=' + str(
-    Path(SESSION_RAW_DATA_FOLDER) / '_iblrig_RFMapStim.raw.bin')
+    Path(sph.SESSION_RAW_DATA_FOLDER) / '_iblrig_RFMapStim.raw.bin')
 RFM_MappingTime = '-p:ReceptiveFieldMappingStim.MappingTime=00:10:00'
 CRCS_CheckerboardTime = '-p:ContrastReversingCheckerboardStim.CheckerboardTime=00:03:00'
 CSTS_StimFileName = '-p:ContrastSelectivityTaskStim.StimFileName=' + str(
-    certification_folder/ 'Extensions' / 'stims.csv')
+    certification_folder / 'Extensions' / 'stims.csv')
 SA1_DueTime = '-p:SpontaneousActivity1.DueTime=00:15:00'
 ODS1_Count = '-p:OrientationDirectionSelectivityStim1.Count=20'
 # Build command
