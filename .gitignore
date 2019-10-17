@@ -1,6 +1,7 @@
 __pycache__/
 \.vscode/
 \.sonarlint/
+\.pytest*
 *.pyc
 Bonsai-2\.3/
 docs/_build
