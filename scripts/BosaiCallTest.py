@@ -1,7 +1,6 @@
 import logging
 import os
 import subprocess
-import time
 from pathlib import Path
 
 
@@ -28,11 +27,11 @@ RFM_FileName = '-p:ReceptiveFieldMappingStim.FileNameRFMapStim=' + str(
 RFM_MappingTime = '-p:ReceptiveFieldMappingStim.MappingTime=00:10:00'
 CRCS_CheckerboardTime = '-p:ContrastReversingCheckerboardStim.CheckerboardTime=00:03:00'
 CSTS_StimFileName = '-p:ContrastSelectivityTaskStim.StimFileName=' + str(
-    certification_folder/ 'Extensions' / 'stims.csv')
+    certification_folder / 'Extensions' / 'stims.csv')
 SA1_DueTime = '-p:SpontaneousActivity1.DueTime=00:15:00'
 ODS1_Count = '-p:OrientationDirectionSelectivityStim1.Count=20'
 
-cmd = [bns, wrkfl, noboot, noedit, SA0_DueTime, SA1_DueTime, RFM_FileName, ODS0_Count, ODS1_Count
+cmd = [bns, wrkfl, noboot, noedit, SA0_DueTime, SA1_DueTime, RFM_FileName, ODS0_Count, ODS1_Count,
        RFM_MappingTime, CRCS_CheckerboardTime, CSTS_StimFileName, ]
 
 os.chdir(certification_folder)
