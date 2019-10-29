@@ -40,4 +40,5 @@ class MyRotaryEncoder(object):
         m.set_zero_position()  # Not necessarily needed
         m.set_thresholds(self.SET_THRESHOLDS)
         m.enable_thresholds(self.ENABLE_THRESHOLDS)
+        m.enable_evt_transmission()
         m.close()
