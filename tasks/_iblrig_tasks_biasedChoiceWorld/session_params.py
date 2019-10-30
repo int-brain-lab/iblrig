@@ -153,7 +153,12 @@ class SessionParamHandler(object):
 
     # Bonsai start camera called from main task file
     def start_camera_recording(self):
+        self.camera_recordings_started = True
         return bonsai.start_camera_recording(self)
+
+    def start_visual_stim(self):
+        self.visual_stim_started = True
+        return bonsai.start_visual_stim(self)
 
     def get_port_events(self, events, name=''):
         return misc.get_port_events(events, name=name)
@@ -230,7 +235,7 @@ if __name__ == '__main__':
     """
     import task_settings as _task_settings
     # import scratch._user_settings as _user_settings
-    import _user_settings
+    import iblrig.fake_user_settings as _user_settings
     import datetime
     dt = datetime.datetime.now()
     dt = [str(dt.year), str(dt.month), str(dt.day),

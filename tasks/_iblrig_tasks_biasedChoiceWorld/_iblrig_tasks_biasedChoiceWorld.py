@@ -46,7 +46,7 @@ def softcode_handler(data):
     elif data == 3:
         sph.start_camera_recording()
     elif data == 4:
-        bonsai.start_visual_stim(sph)
+        sph.start_visual_stim()
 
     # sph.OSC_CLIENT.send_message("/e", data)
 
@@ -116,8 +116,9 @@ for i in range(sph.NTRIALS):  # Main loop
         log.info(f'3. visual stimulus is detected')
         sma.add_state(
             state_name='trial_start',
-            state_change_conditions={'Port1In': 'delay_initiation'},
-            output_actions=[('SoftCode', 3)])  # start camera
+            state_timer=0,
+            state_change_conditions={'Tup': 'delay_initiation', 'Port1In': 'delay_initiation'},
+            output_actions=[])#('SoftCode', 3)])  # start camera
     else:
         sma.add_state(
             state_name='trial_start',
@@ -127,16 +128,16 @@ for i in range(sph.NTRIALS):  # Main loop
 
     sma.add_state(
         state_name='delay_initiation',
-        state_timer=sph.SESSION_START_DELAY_SEC,
+        state_timer=tph.session_start_delay_sec,
         state_change_conditions={'Tup': 'start_visual_stim'},
-        output_actions=[('SoftCode', 4)])
+        output_actions=[])
 
     sma.add_state(
         state_name='start_visual_stim',
+        state_timer=0,
         state_change_conditions={'BNC1High': 'reset_rotary_encoder',
                                  'BNC1Low': 'reset_rotary_encoder'},
         output_actions=[('SoftCode', 4)])
-
     sma.add_state(
         state_name='reset_rotary_encoder',
         state_timer=0,
