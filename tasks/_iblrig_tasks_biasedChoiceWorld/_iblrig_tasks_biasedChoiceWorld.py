@@ -129,13 +129,13 @@ for i in range(sph.NTRIALS):  # Main loop
         state_name='delay_initiation',
         state_timer=sph.SESSION_START_DELAY_SEC,
         state_change_conditions={'Tup': 'start_visual_stim'},
-        output_actions=[('SoftCode', 4)])
+        output_actions=[])
 
     sma.add_state(
         state_name='start_visual_stim',
         state_change_conditions={'BNC1High': 'reset_rotary_encoder',
                                  'BNC1Low': 'reset_rotary_encoder'},
-        output_actions=[('SoftCode', 4)])
+        output_actions=[('SoftCode', 4)])  # start visual stim
 
     sma.add_state(
         state_name='reset_rotary_encoder',
