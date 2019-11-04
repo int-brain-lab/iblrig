@@ -137,7 +137,8 @@ for i in range(sph.NTRIALS):  # Main loop
         state_timer=0,
         state_change_conditions={'BNC1High': 'reset_rotary_encoder',
                                  'BNC1Low': 'reset_rotary_encoder'},
-        output_actions=[('SoftCode', 4)])
+        output_actions=[('SoftCode', 4)])  # start visual stim
+
     sma.add_state(
         state_name='reset_rotary_encoder',
         state_timer=0,

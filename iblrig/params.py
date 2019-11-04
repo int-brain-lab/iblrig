@@ -113,7 +113,7 @@ def load_params_file() -> dict:
         return load_params_file()
     elif not fpath.exists() and not bpod_comports.exists():
         log.warning(f"Could not load params file does not exist. Creating...")
-        out = check_params_comports(write_params_file())
+        out = ask_params_comports(write_params_file())
         return out
 
 
@@ -151,7 +151,7 @@ def update_params_file(data: dict, force: bool = False) -> None:
     return old
 
 
-def check_params_comports(data: dict) -> dict:
+def ask_params_comports(data: dict) -> dict:
     patch = {}
     for k in data:
         if 'COM' in k and not data[k]:
@@ -179,14 +179,15 @@ def update_params(data: dict) -> None:
 
 
 def load_params() -> dict:
-    out_alyx = alyx.load_board_params()
-    if out_alyx is None:
+    params_alyx = alyx.load_board_params()
+    if params_alyx is None:
         log.warning(f"Could not load board params from Alyx. Loading from local file...")
-    out = load_params_file()
-    if out_alyx != out:
-        log.warning(f"Local data and Alyx data are not the same. Using local.")
-        alyx.update_board_params(data=out, force=True)
-    return out
+    params_local = load_params_file()
+    if params_alyx != params_local:
+        log.warning(f"Local data and Alyx data are not the same. Trying to update Alyx.")
+        alyx.update_board_params(data=params_local, force=True)
+        log.info("Using local params.")
+    return params_local
 
 
 def write_params(data: dict = None, force: bool = False) -> None:
