@@ -3,7 +3,6 @@
 # @Author: Niccolò Bonacchi
 # @Date:   2018-02-02 12:31:13
 import logging
-import time
 
 import matplotlib.pyplot as plt
 from pybpod_rotaryencoder_module.module import RotaryEncoder
@@ -12,7 +11,6 @@ from pybpodapi.protocol import Bpod, StateMachine
 import online_plots as op
 import task_settings
 import user_settings
-import iblrig.bonsai as bonsai
 from iblrig.user_input import ask_session_delay
 from session_params import SessionParamHandler
 from trial_params import TrialParamHandler
