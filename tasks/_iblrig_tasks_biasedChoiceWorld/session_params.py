@@ -153,11 +153,9 @@ class SessionParamHandler(object):
 
     # Bonsai start camera called from main task file
     def start_camera_recording(self):
-        self.camera_recordings_started = True
         return bonsai.start_camera_recording(self)
 
     def start_visual_stim(self):
-        self.visual_stim_started = True
         return bonsai.start_visual_stim(self)
 
     def get_port_events(self, events, name=''):
