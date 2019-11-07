@@ -58,6 +58,7 @@ def start_visual_stim(sph):
         os.chdir(here)
     else:
         sph.USE_VISUAL_STIMULUS = False
+    time.sleep(2)
     return
 
 
