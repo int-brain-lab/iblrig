@@ -3,7 +3,7 @@ import os
 import subprocess
 from pathlib import Path
 
-import ibllib.io.flags as flags
+import iblrig.misc as misc
 # import iblrig.fake_user_settings as user_settings
 import task_settings
 import user_settings  # PyBpod creates this file on run.
@@ -44,4 +44,5 @@ s = subprocess.run(cmd, stdout=subprocess.PIPE)  # locking call
 os.chdir(CWD)
 log.info("You're done, please remove the mouse.\n" * 42)
 # Create a transfer_me.flag file
-flags.create_transfer_flags(sph.SESSION_FOLDER)
+misc.create_flag(sph.SESSION_FOLDER, 'transfer_me')
+misc.create_flag(sph.SESSION_FOLDER, 'create_me')
