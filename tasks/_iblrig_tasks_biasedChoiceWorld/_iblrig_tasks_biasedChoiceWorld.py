@@ -45,8 +45,8 @@ def softcode_handler(data):
         sph.play_noise()
     elif data == 3:
         sph.start_camera_recording()
-    elif data == 4:
-        sph.start_visual_stim()
+    # elif data == 4:
+    #     sph.start_visual_stim()
 
     # sph.OSC_CLIENT.send_message("/e", data)
 
@@ -92,6 +92,7 @@ if sph.SOFT_SOUND is None:
 # Delay initiation
 sph.SESSION_START_DELAY_SEC = ask_session_delay(sph.SETTINGS_FILE_PATH)
 
+sph.start_visual_stim()
 # =============================================================================
 # TRIAL PARAMETERS AND STATE MACHINE
 # =============================================================================
@@ -117,8 +118,8 @@ for i in range(sph.NTRIALS):  # Main loop
         sma.add_state(
             state_name='trial_start',
             state_timer=0,
-            state_change_conditions={'Tup': 'delay_initiation', 'Port1In': 'delay_initiation'},
-            output_actions=[])#('SoftCode', 3)])  # start camera
+            state_change_conditions={'Port1In': 'delay_initiation'},
+            output_actions=[('SoftCode', 3)])  # start camera
     else:
         sma.add_state(
             state_name='trial_start',
@@ -129,15 +130,8 @@ for i in range(sph.NTRIALS):  # Main loop
     sma.add_state(
         state_name='delay_initiation',
         state_timer=tph.session_start_delay_sec,
-        state_change_conditions={'Tup': 'start_visual_stim'},
+        state_change_conditions={'Tup': 'reset_rotary_encoder'},
         output_actions=[])
-
-    sma.add_state(
-        state_name='start_visual_stim',
-        state_timer=0,
-        state_change_conditions={'BNC1High': 'reset_rotary_encoder',
-                                 'BNC1Low': 'reset_rotary_encoder'},
-        output_actions=[('SoftCode', 4)])  # start visual stim
 
     sma.add_state(
         state_name='reset_rotary_encoder',
