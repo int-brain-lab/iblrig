@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Bonsai.Core" Version="2.4.0" />
+    <PackageReference Include="MathNet.Numerics" Version="4.5.1" />
+    <PackageReference Include="Bonsai.Shaders" Version="0.19.0" />
+  </ItemGroup>
+
+</Project>

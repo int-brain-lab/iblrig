@@ -31,7 +31,9 @@ class TrialParamHandler(object):
     """
     def __init__(self, sph):
         # Constants from settings
-        self.init_datetime = parser.parse(sph.PYBPOD_SESSION)
+        self.session_start_delay_sec = sph.SESSION_START_DELAY_SEC
+        self.init_datetime = parser.parse(sph.PYBPOD_SESSION) + \
+            datetime.timedelta(0, self.session_start_delay_sec)
         self.task_protocol = sph.PYBPOD_PROTOCOL
         self.data_file_path = sph.DATA_FILE_PATH
         self.data_file = open(self.data_file_path, 'a')

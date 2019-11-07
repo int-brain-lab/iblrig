@@ -1,6 +1,7 @@
 __pycache__/
 \.vscode/
 \.sonarlint/
+\.pytest*
 *.pyc
 Bonsai-2\.3/
 docs/_build
@@ -10,5 +11,7 @@ pybpod-api.log
 tests/
 iblrig.egg-info/
 Bonsai/
+bin
+obj
 
 XDG_CACHE_HOME/

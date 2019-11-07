@@ -55,10 +55,11 @@ def start_visual_stim(sph):
             subprocess.Popen(
                 [bns, wkfl, editor, noboot, pos, evt, itr, com, sync_x, sync_y,
                  translationz])
-        time.sleep(3)
         os.chdir(here)
     else:
         sph.USE_VISUAL_STIMULUS = False
+    time.sleep(2)
+    return
 
 
 def start_camera_recording(sph):

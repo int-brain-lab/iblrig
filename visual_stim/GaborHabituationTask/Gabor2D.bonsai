@@ -1,6 +1,15 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<WorkflowBuilder Version="2.4.0-preview">
-  <Workflow xmlns:q2="clr-namespace:Bonsai.Shaders;assembly=Bonsai.Shaders" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:q3="clr-namespace:Bonsai.Bpod;assembly=Bonsai.Bpod" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:q5="clr-namespace:Bonsai.Dsp;assembly=Bonsai.Dsp" xmlns:q4="clr-namespace:Bonsai.Scripting;assembly=Bonsai.Scripting" xmlns:q6="clr-namespace:Bonsai.IO;assembly=Bonsai.System" xmlns:q1="clr-namespace:Bonsai.Osc;assembly=Bonsai.Osc" xmlns="https://bonsai-rx.org/2018/workflow">
+<WorkflowBuilder Version="2.4.1-patch"
+                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                 xmlns:osc="clr-namespace:Bonsai.Osc;assembly=Bonsai.Osc"
+                 xmlns:gl="clr-namespace:Bonsai.Shaders;assembly=Bonsai.Shaders"
+                 xmlns:q1="clr-namespace:Bonsai.Bpod;assembly=Bonsai.Bpod"
+                 xmlns:scr="clr-namespace:Bonsai.Scripting;assembly=Bonsai.Scripting"
+                 xmlns:rx="clr-namespace:Bonsai.Reactive;assembly=Bonsai.Core"
+                 xmlns:dsp="clr-namespace:Bonsai.Dsp;assembly=Bonsai.Dsp"
+                 xmlns:io="clr-namespace:Bonsai.IO;assembly=Bonsai.System"
+                 xmlns="https://bonsai-rx.org/2018/workflow">
+  <Workflow>
     <Nodes>
       <Expression xsi:type="NestedWorkflow">
         <Name>Stim</Name>
@@ -9,34 +18,34 @@
             <Expression xsi:type="ExternalizedMapping">
               <Property Name="Connection" />
             </Expression>
-            <Expression xsi:type="q1:ReceiveMessage">
-              <q1:Connection>bpod</q1:Connection>
-              <q1:Address>/p</q1:Address>
-              <q1:TypeTag>i</q1:TypeTag>
+            <Expression xsi:type="osc:ReceiveMessage">
+              <osc:Connection>bpod</osc:Connection>
+              <osc:Address>/p</osc:Address>
+              <osc:TypeTag>i</osc:TypeTag>
             </Expression>
             <Expression xsi:type="BehaviorSubject">
               <Name>InitPosition</Name>
             </Expression>
-            <Expression xsi:type="q1:ReceiveMessage">
-              <q1:Connection>bpod</q1:Connection>
-              <q1:Address>/c</q1:Address>
-              <q1:TypeTag>f</q1:TypeTag>
+            <Expression xsi:type="osc:ReceiveMessage">
+              <osc:Connection>bpod</osc:Connection>
+              <osc:Address>/c</osc:Address>
+              <osc:TypeTag>f</osc:TypeTag>
             </Expression>
             <Expression xsi:type="BehaviorSubject">
               <Name>Contrast</Name>
             </Expression>
-            <Expression xsi:type="q1:ReceiveMessage">
-              <q1:Connection>bpod</q1:Connection>
-              <q1:Address>/t</q1:Address>
-              <q1:TypeTag>i</q1:TypeTag>
+            <Expression xsi:type="osc:ReceiveMessage">
+              <osc:Connection>bpod</osc:Connection>
+              <osc:Address>/t</osc:Address>
+              <osc:TypeTag>i</osc:TypeTag>
             </Expression>
             <Expression xsi:type="BehaviorSubject">
               <Name>TrialNum</Name>
             </Expression>
-            <Expression xsi:type="q1:ReceiveMessage">
-              <q1:Connection>bpod</q1:Connection>
-              <q1:Address>/f</q1:Address>
-              <q1:TypeTag>f</q1:TypeTag>
+            <Expression xsi:type="osc:ReceiveMessage">
+              <osc:Connection>bpod</osc:Connection>
+              <osc:Address>/f</osc:Address>
+              <osc:TypeTag>f</osc:TypeTag>
             </Expression>
             <Expression xsi:type="BehaviorSubject">
               <Name>StimFreq</Name>
@@ -44,10 +53,10 @@
             <Expression xsi:type="MulticastSubject">
               <Name>GaborFreq</Name>
             </Expression>
-            <Expression xsi:type="q1:ReceiveMessage">
-              <q1:Connection>bpod</q1:Connection>
-              <q1:Address>/a</q1:Address>
-              <q1:TypeTag>f</q1:TypeTag>
+            <Expression xsi:type="osc:ReceiveMessage">
+              <osc:Connection>bpod</osc:Connection>
+              <osc:Address>/a</osc:Address>
+              <osc:TypeTag>f</osc:TypeTag>
             </Expression>
             <Expression xsi:type="BehaviorSubject">
               <Name>StimAngle</Name>
@@ -55,10 +64,10 @@
             <Expression xsi:type="MulticastSubject">
               <Name>GaborAngle</Name>
             </Expression>
-            <Expression xsi:type="q1:ReceiveMessage">
-              <q1:Connection>bpod</q1:Connection>
-              <q1:Address>/s</q1:Address>
-              <q1:TypeTag>f</q1:TypeTag>
+            <Expression xsi:type="osc:ReceiveMessage">
+              <osc:Connection>bpod</osc:Connection>
+              <osc:Address>/s</osc:Address>
+              <osc:TypeTag>f</osc:TypeTag>
             </Expression>
             <Expression xsi:type="BehaviorSubject">
               <Name>StimSize</Name>
@@ -66,50 +75,50 @@
             <Expression xsi:type="MulticastSubject">
               <Name>GaborSize</Name>
             </Expression>
-            <Expression xsi:type="q1:ReceiveMessage">
-              <q1:Connection>bpod</q1:Connection>
-              <q1:Address>/g</q1:Address>
-              <q1:TypeTag>f</q1:TypeTag>
+            <Expression xsi:type="osc:ReceiveMessage">
+              <osc:Connection>bpod</osc:Connection>
+              <osc:Address>/g</osc:Address>
+              <osc:TypeTag>f</osc:TypeTag>
             </Expression>
             <Expression xsi:type="BehaviorSubject">
               <Name>Gain</Name>
             </Expression>
-            <Expression xsi:type="q1:ReceiveMessage">
-              <q1:Connection>bpod</q1:Connection>
-              <q1:Address>/h</q1:Address>
-              <q1:TypeTag>f</q1:TypeTag>
+            <Expression xsi:type="osc:ReceiveMessage">
+              <osc:Connection>bpod</osc:Connection>
+              <osc:Address>/h</osc:Address>
+              <osc:TypeTag>f</osc:TypeTag>
             </Expression>
             <Expression xsi:type="MulticastSubject">
               <Name>GaborPhase</Name>
             </Expression>
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="q2:RenderFrame" />
+              <Combinator xsi:type="gl:RenderFrame" />
             </Expression>
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="q2:AspectRatio" />
+              <Combinator xsi:type="gl:AspectRatio" />
             </Expression>
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="q2:UpdateUniform">
-                <q2:UniformName>aspectRatio</q2:UniformName>
-                <q2:ShaderName>Gabor</q2:ShaderName>
+              <Combinator xsi:type="gl:UpdateUniform">
+                <gl:UniformName>aspectRatio</gl:UniformName>
+                <gl:ShaderName>Gabor</gl:ShaderName>
               </Combinator>
             </Expression>
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="q2:DrawMesh">
-                <q2:ShaderName>Gabor</q2:ShaderName>
-                <q2:MeshName>FullscreenQuad</q2:MeshName>
+              <Combinator xsi:type="gl:DrawMesh">
+                <gl:ShaderName>Gabor</gl:ShaderName>
+                <gl:MeshName>FullscreenQuad</gl:MeshName>
               </Combinator>
             </Expression>
             <Expression xsi:type="ExternalizedMapping">
               <Property Name="PortName" DisplayName="REPortName" />
             </Expression>
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="q3:Encoder">
-                <q3:PortName>COM3</q3:PortName>
+              <Combinator xsi:type="q1:Encoder">
+                <q1:PortName>COM7</q1:PortName>
               </Combinator>
             </Expression>
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="q3:EncoderEvent" />
+              <Combinator xsi:type="q1:EncoderEvent" />
             </Expression>
             <Expression xsi:type="MemberSelector">
               <Selector>Timestamp,Data</Selector>
@@ -120,8 +129,8 @@
             <Expression xsi:type="MemberSelector">
               <Selector>Item2</Selector>
             </Expression>
-            <Expression xsi:type="q4:ExpressionTransform">
-              <q4:Expression>single(it)</q4:Expression>
+            <Expression xsi:type="scr:ExpressionTransform">
+              <scr:Expression>single(it)</scr:Expression>
             </Expression>
             <Expression xsi:type="Condition">
               <Name>StopStim</Name>
@@ -151,8 +160,8 @@
                     <Name>Source1</Name>
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="Take">
-                      <Count>1</Count>
+                    <Combinator xsi:type="rx:Take">
+                      <rx:Count>1</rx:Count>
                     </Combinator>
                   </Expression>
                   <Expression xsi:type="Combinator">
@@ -217,19 +226,19 @@ probably there is no need to reset the position also
                     <Name>InitPosition</Name>
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="Sample" />
+                    <Combinator xsi:type="rx:Sample" />
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="q5:Rescale">
-                      <q5:Min>-180</q5:Min>
-                      <q5:Max>180</q5:Max>
-                      <q5:RangeMin>-1.333</q5:RangeMin>
-                      <q5:RangeMax>1.333</q5:RangeMax>
-                      <q5:RescaleType>Linear</q5:RescaleType>
+                    <Combinator xsi:type="dsp:Rescale">
+                      <dsp:Min>-180</dsp:Min>
+                      <dsp:Max>180</dsp:Max>
+                      <dsp:RangeMin>-1.333</dsp:RangeMin>
+                      <dsp:RangeMax>1.333</dsp:RangeMax>
+                      <dsp:RescaleType>Linear</dsp:RescaleType>
                     </Combinator>
                   </Expression>
-                  <Expression xsi:type="q4:ExpressionTransform">
-                    <q4:Expression>single(it)</q4:Expression>
+                  <Expression xsi:type="scr:ExpressionTransform">
+                    <scr:Expression>single(it)</scr:Expression>
                   </Expression>
                   <Expression xsi:type="MulticastSubject">
                     <Name>GaborPosition</Name>
@@ -254,8 +263,8 @@ probably there is no need to reset the position also
                     <Name>Contrast</Name>
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="Take">
-                      <Count>1</Count>
+                    <Combinator xsi:type="rx:Take">
+                      <rx:Count>1</rx:Count>
                     </Combinator>
                   </Expression>
                   <Expression xsi:type="MulticastSubject">
@@ -319,19 +328,19 @@ probably there is no need to reset the position also
                     </Combinator>
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="Sample" />
+                    <Combinator xsi:type="rx:Sample" />
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="q5:Rescale">
-                      <q5:Min>-180</q5:Min>
-                      <q5:Max>180</q5:Max>
-                      <q5:RangeMin>-1.333</q5:RangeMin>
-                      <q5:RangeMax>1.333</q5:RangeMax>
-                      <q5:RescaleType>Linear</q5:RescaleType>
+                    <Combinator xsi:type="dsp:Rescale">
+                      <dsp:Min>-180</dsp:Min>
+                      <dsp:Max>180</dsp:Max>
+                      <dsp:RangeMin>-1.333</dsp:RangeMin>
+                      <dsp:RangeMax>1.333</dsp:RangeMax>
+                      <dsp:RescaleType>Linear</dsp:RescaleType>
                     </Combinator>
                   </Expression>
-                  <Expression xsi:type="q4:ExpressionTransform">
-                    <q4:Expression>single(it)</q4:Expression>
+                  <Expression xsi:type="scr:ExpressionTransform">
+                    <scr:Expression>single(it)</scr:Expression>
                   </Expression>
                   <Expression xsi:type="MulticastSubject">
                     <Name>GaborPosition</Name>
@@ -359,15 +368,15 @@ probably there is no need to reset the position also
               </Workflow>
             </Expression>
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="q2:WindowClosed" />
+              <Combinator xsi:type="gl:WindowClosed" />
             </Expression>
-            <Expression xsi:type="q1:ReceiveMessage">
-              <q1:Connection>bpod</q1:Connection>
-              <q1:Address>/x</q1:Address>
-              <q1:TypeTag>i</q1:TypeTag>
+            <Expression xsi:type="osc:ReceiveMessage">
+              <osc:Connection>bpod</osc:Connection>
+              <osc:Address>/x</osc:Address>
+              <osc:TypeTag>i</osc:TypeTag>
             </Expression>
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="TakeUntil" />
+              <Combinator xsi:type="rx:TakeUntil" />
             </Expression>
             <Expression xsi:type="WorkflowOutput" />
             <Expression xsi:type="ExternalizedMapping">
@@ -413,27 +422,27 @@ _iblrig_micData.raw.wav
                     <Name>GaborSize</Name>
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="Zip" />
+                    <Combinator xsi:type="rx:Zip" />
                   </Expression>
                   <Expression xsi:type="SubscribeSubject">
                     <Name>GaborPhase</Name>
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="Zip" />
+                    <Combinator xsi:type="rx:Zip" />
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="Timestamp" />
+                    <Combinator xsi:type="rx:Timestamp" />
                   </Expression>
                   <Expression xsi:type="ExternalizedMapping">
                     <Property Name="FileName" DisplayName="FileNameTrialInfo" />
                   </Expression>
-                  <Expression xsi:type="q6:CsvWriter">
-                    <q6:FileName>C:\iblrig_data\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_iblrig_encoderTrialInfo.raw.ssv</q6:FileName>
-                    <q6:Append>false</q6:Append>
-                    <q6:Overwrite>false</q6:Overwrite>
-                    <q6:Suffix>None</q6:Suffix>
-                    <q6:IncludeHeader>false</q6:IncludeHeader>
-                    <q6:CompatibilityMode>true</q6:CompatibilityMode>
+                  <Expression xsi:type="io:CsvWriter">
+                    <io:FileName>C:\iblrig_data\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_iblrig_encoderTrialInfo.raw.ssv</io:FileName>
+                    <io:Append>false</io:Append>
+                    <io:Overwrite>true</io:Overwrite>
+                    <io:Suffix>None</io:Suffix>
+                    <io:IncludeHeader>false</io:IncludeHeader>
+                    <io:CompatibilityMode>true</io:CompatibilityMode>
                   </Expression>
                   <Expression xsi:type="SubscribeSubject">
                     <Name>RawEncoderEvents</Name>
@@ -441,13 +450,13 @@ _iblrig_micData.raw.wav
                   <Expression xsi:type="ExternalizedMapping">
                     <Property Name="FileName" DisplayName="FileNameEvents" />
                   </Expression>
-                  <Expression xsi:type="q6:CsvWriter">
-                    <q6:FileName>C:\iblrig_data\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_iblrig_encoderEvents.raw.ssv</q6:FileName>
-                    <q6:Append>false</q6:Append>
-                    <q6:Overwrite>false</q6:Overwrite>
-                    <q6:Suffix>None</q6:Suffix>
-                    <q6:IncludeHeader>false</q6:IncludeHeader>
-                    <q6:CompatibilityMode>true</q6:CompatibilityMode>
+                  <Expression xsi:type="io:CsvWriter">
+                    <io:FileName>C:\iblrig_data\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_iblrig_encoderEvents.raw.ssv</io:FileName>
+                    <io:Append>false</io:Append>
+                    <io:Overwrite>true</io:Overwrite>
+                    <io:Suffix>None</io:Suffix>
+                    <io:IncludeHeader>false</io:IncludeHeader>
+                    <io:CompatibilityMode>true</io:CompatibilityMode>
                   </Expression>
                 </Nodes>
                 <Edges>
@@ -476,36 +485,36 @@ _iblrig_micData.raw.wav
                     <Name>GaborAngle</Name>
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="q2:UpdateUniform">
-                      <q2:UniformName>gabor_angle</q2:UniformName>
-                      <q2:ShaderName>Gabor</q2:ShaderName>
+                    <Combinator xsi:type="gl:UpdateUniform">
+                      <gl:UniformName>gabor_angle</gl:UniformName>
+                      <gl:ShaderName>Gabor</gl:ShaderName>
                     </Combinator>
                   </Expression>
                   <Expression xsi:type="SubscribeSubject">
                     <Name>GaborFreq</Name>
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="q2:UpdateUniform">
-                      <q2:UniformName>gabor_freq</q2:UniformName>
-                      <q2:ShaderName>Gabor</q2:ShaderName>
+                    <Combinator xsi:type="gl:UpdateUniform">
+                      <gl:UniformName>gabor_freq</gl:UniformName>
+                      <gl:ShaderName>Gabor</gl:ShaderName>
                     </Combinator>
                   </Expression>
                   <Expression xsi:type="SubscribeSubject">
                     <Name>GaborSize</Name>
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="q2:UpdateUniform">
-                      <q2:UniformName>patch_size</q2:UniformName>
-                      <q2:ShaderName>Gabor</q2:ShaderName>
+                    <Combinator xsi:type="gl:UpdateUniform">
+                      <gl:UniformName>patch_size</gl:UniformName>
+                      <gl:ShaderName>Gabor</gl:ShaderName>
                     </Combinator>
                   </Expression>
                   <Expression xsi:type="SubscribeSubject">
                     <Name>GaborContrast</Name>
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="q2:UpdateUniform">
-                      <q2:UniformName>gabor_contrast</q2:UniformName>
-                      <q2:ShaderName>Gabor</q2:ShaderName>
+                    <Combinator xsi:type="gl:UpdateUniform">
+                      <gl:UniformName>gabor_contrast</gl:UniformName>
+                      <gl:ShaderName>Gabor</gl:ShaderName>
                     </Combinator>
                   </Expression>
                   <Expression xsi:type="SubscribeSubject">
@@ -530,47 +539,47 @@ _iblrig_micData.raw.wav
                       </Edges>
                     </Workflow>
                   </Expression>
-                  <Expression xsi:type="Accumulate" />
-                  <Expression xsi:type="q4:ExpressionTransform">
-                    <q4:Expression>it%2</q4:Expression>
+                  <Expression xsi:type="rx:Accumulate" />
+                  <Expression xsi:type="scr:ExpressionTransform">
+                    <scr:Expression>it%2</scr:Expression>
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="q2:RenderFrame" />
+                    <Combinator xsi:type="gl:RenderFrame" />
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="CombineLatest" />
+                    <Combinator xsi:type="rx:CombineLatest" />
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="Sample" />
+                    <Combinator xsi:type="rx:Sample" />
                   </Expression>
                   <Expression xsi:type="MemberSelector">
                     <Selector>Item2</Selector>
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="DistinctUntilChanged" />
+                    <Combinator xsi:type="rx:DistinctUntilChanged" />
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="q2:UpdateUniform">
-                      <q2:UniformName>color</q2:UniformName>
-                      <q2:ShaderName>Gabor</q2:ShaderName>
+                    <Combinator xsi:type="gl:UpdateUniform">
+                      <gl:UniformName>color</gl:UniformName>
+                      <gl:ShaderName>Gabor</gl:ShaderName>
                     </Combinator>
                   </Expression>
                   <Expression xsi:type="SubscribeSubject">
                     <Name>GaborPosition</Name>
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="q2:UpdateUniform">
-                      <q2:UniformName>locationX</q2:UniformName>
-                      <q2:ShaderName>Gabor</q2:ShaderName>
+                    <Combinator xsi:type="gl:UpdateUniform">
+                      <gl:UniformName>locationX</gl:UniformName>
+                      <gl:ShaderName>Gabor</gl:ShaderName>
                     </Combinator>
                   </Expression>
                   <Expression xsi:type="SubscribeSubject">
                     <Name>GaborPhase</Name>
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="q2:UpdateUniform">
-                      <q2:UniformName>gabor_phase</q2:UniformName>
-                      <q2:ShaderName>Gabor</q2:ShaderName>
+                    <Combinator xsi:type="gl:UpdateUniform">
+                      <gl:UniformName>gabor_phase</gl:UniformName>
+                      <gl:ShaderName>Gabor</gl:ShaderName>
                     </Combinator>
                   </Expression>
                 </Nodes>
@@ -662,9 +671,9 @@ _iblrig_micData.raw.wav
               <Name>SyncSquareX</Name>
             </Expression>
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="q2:UpdateUniform">
-                <q2:UniformName>sync_square_x</q2:UniformName>
-                <q2:ShaderName>Gabor</q2:ShaderName>
+              <Combinator xsi:type="gl:UpdateUniform">
+                <gl:UniformName>sync_square_x</gl:UniformName>
+                <gl:ShaderName>Gabor</gl:ShaderName>
               </Combinator>
             </Expression>
             <Expression xsi:type="ExternalizedMapping">
@@ -679,9 +688,9 @@ _iblrig_micData.raw.wav
               <Name>SyncSquareY</Name>
             </Expression>
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="q2:UpdateUniform">
-                <q2:UniformName>sync_square_y</q2:UniformName>
-                <q2:ShaderName>Gabor</q2:ShaderName>
+              <Combinator xsi:type="gl:UpdateUniform">
+                <gl:UniformName>sync_square_y</gl:UniformName>
+                <gl:ShaderName>Gabor</gl:ShaderName>
               </Combinator>
             </Expression>
           </Nodes>
@@ -743,11 +752,11 @@ _iblrig_micData.raw.wav
         </Workflow>
       </Expression>
       <Expression xsi:type="Combinator">
-        <Combinator xsi:type="Last" />
+        <Combinator xsi:type="rx:Last" />
       </Expression>
       <Expression xsi:type="Combinator">
-        <Combinator xsi:type="Delay">
-          <DueTime>PT1S</DueTime>
+        <Combinator xsi:type="rx:Delay">
+          <rx:DueTime>PT1S</rx:DueTime>
         </Combinator>
       </Expression>
     </Nodes>
@@ -756,31 +765,4 @@ _iblrig_micData.raw.wav
       <Edge From="1" To="2" Label="Source1" />
     </Edges>
   </Workflow>
-  <ExtensionTypes>
-    <Type>Bonsai.Bpod.Encoder, Bonsai.Bpod, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Bpod.EncoderEvent, Bonsai.Bpod, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Dsp.Rescale, Bonsai.Dsp, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Expressions.EqualBuilder, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Expressions.FloatProperty, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Expressions.IntProperty, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Expressions.MulticastSubjectBuilder, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.IO.CsvWriter, Bonsai.System, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Osc.ReceiveMessage, Bonsai.Osc, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Reactive.AccumulateBuilder, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Reactive.CombineLatest, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Reactive.Delay, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Reactive.DistinctUntilChanged, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Reactive.Last, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Reactive.Sample, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Reactive.Take, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Reactive.TakeUntil, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Reactive.Timestamp, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Reactive.Zip, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Scripting.ExpressionTransform, Bonsai.Scripting, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Shaders.AspectRatio, Bonsai.Shaders, Version=0.19.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Shaders.DrawMesh, Bonsai.Shaders, Version=0.19.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Shaders.RenderFrame, Bonsai.Shaders, Version=0.19.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Shaders.UpdateUniform, Bonsai.Shaders, Version=0.19.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Shaders.WindowClosed, Bonsai.Shaders, Version=0.19.0.0, Culture=neutral, PublicKeyToken=null</Type>
-  </ExtensionTypes>
 </WorkflowBuilder>

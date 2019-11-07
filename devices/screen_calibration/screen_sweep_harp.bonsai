@@ -1,6 +1,16 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<WorkflowBuilder Version="2.4.0-preview">
-  <Workflow xmlns:q2="clr-namespace:Bonsai.Harp.CF;assembly=Bonsai.Harp.CF" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:q3="clr-namespace:Bonsai.Scripting;assembly=Bonsai.Scripting" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:q5="clr-namespace:Bonsai.Shaders;assembly=Bonsai.Shaders" xmlns:q4="clr-namespace:Bonsai.Osc;assembly=Bonsai.Osc" xmlns:q6="clr-namespace:Bonsai.IO;assembly=Bonsai.System" xmlns:q1="clr-namespace:Bonsai.Harp;assembly=Bonsai.Harp" xmlns="https://bonsai-rx.org/2018/workflow">
+<WorkflowBuilder Version="2.4.1-patch"
+                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                 xmlns:q1="clr-namespace:Bonsai.Harp;assembly=Bonsai.Harp"
+                 xmlns:q2="clr-namespace:Bonsai.Harp.CF;assembly=Bonsai.Harp.CF"
+                 xmlns:sys="clr-namespace:System;assembly=mscorlib"
+                 xmlns:scr="clr-namespace:Bonsai.Scripting;assembly=Bonsai.Scripting"
+                 xmlns:osc="clr-namespace:Bonsai.Osc;assembly=Bonsai.Osc"
+                 xmlns:rx="clr-namespace:Bonsai.Reactive;assembly=Bonsai.Core"
+                 xmlns:gl="clr-namespace:Bonsai.Shaders;assembly=Bonsai.Shaders"
+                 xmlns:io="clr-namespace:Bonsai.IO;assembly=Bonsai.System"
+                 xmlns="https://bonsai-rx.org/2018/workflow">
+  <Workflow>
     <Nodes>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="q1:Device">
@@ -26,7 +36,7 @@
       <Expression xsi:type="SubscribeSubject">
         <Name>Blue</Name>
       </Expression>
-      <Expression xsi:type="PropertySourceOfFloatPropertySingle">
+      <Expression xsi:type="PropertySource" TypeArguments="FloatProperty,sys:Single">
         <MemberName>MaxValue</MemberName>
         <Value>1.1</Value>
       </Expression>
@@ -51,10 +61,10 @@
             <Expression xsi:type="SubscribeSubject">
               <Name>RGB</Name>
             </Expression>
-            <Expression xsi:type="q3:PythonTransform">
-              <q3:Script>@returns(bool)
+            <Expression xsi:type="scr:PythonTransform">
+              <scr:Script>@returns(bool)
 def process(value):
-  return 'R' in value</q3:Script>
+  return 'R' in value</scr:Script>
             </Expression>
             <Expression xsi:type="WorkflowOutput" />
           </Nodes>
@@ -77,10 +87,10 @@ def process(value):
             <Expression xsi:type="SubscribeSubject">
               <Name>RGB</Name>
             </Expression>
-            <Expression xsi:type="q3:PythonTransform">
-              <q3:Script>@returns(bool)
+            <Expression xsi:type="scr:PythonTransform">
+              <scr:Script>@returns(bool)
 def process(value):
-  return 'G' in value</q3:Script>
+  return 'G' in value</scr:Script>
             </Expression>
             <Expression xsi:type="WorkflowOutput" />
           </Nodes>
@@ -103,10 +113,10 @@ def process(value):
             <Expression xsi:type="SubscribeSubject">
               <Name>RGB</Name>
             </Expression>
-            <Expression xsi:type="q3:PythonTransform">
-              <q3:Script>@returns(bool)
+            <Expression xsi:type="scr:PythonTransform">
+              <scr:Script>@returns(bool)
 def process(value):
-  return 'B' in value</q3:Script>
+  return 'B' in value</scr:Script>
             </Expression>
             <Expression xsi:type="WorkflowOutput" />
           </Nodes>
@@ -150,37 +160,37 @@ def process(value):
       </Expression>
       <Expression xsi:type="WorkflowOutput" />
       <Expression xsi:type="Disable">
-        <Builder xsi:type="q4:ReceiveMessage">
-          <q4:Connection>from_python</q4:Connection>
-          <q4:Address>/d</q4:Address>
-          <q4:TypeTag>i</q4:TypeTag>
+        <Builder xsi:type="osc:ReceiveMessage">
+          <osc:Connection>from_python</osc:Connection>
+          <osc:Address>/d</osc:Address>
+          <osc:TypeTag>i</osc:TypeTag>
         </Builder>
       </Expression>
       <Expression xsi:type="Combinator">
-        <Combinator xsi:type="CombineLatest" />
+        <Combinator xsi:type="rx:CombineLatest" />
       </Expression>
       <Expression xsi:type="BehaviorSubject">
         <Name>Data</Name>
       </Expression>
       <Expression xsi:type="Combinator">
-        <Combinator xsi:type="TakeUntil" />
+        <Combinator xsi:type="rx:TakeUntil" />
       </Expression>
       <Expression xsi:type="Combinator">
-        <Combinator xsi:type="q5:RenderFrame" />
+        <Combinator xsi:type="gl:RenderFrame" />
       </Expression>
       <Expression xsi:type="Combinator">
-        <Combinator xsi:type="q5:AspectRatio" />
+        <Combinator xsi:type="gl:AspectRatio" />
       </Expression>
       <Expression xsi:type="Combinator">
-        <Combinator xsi:type="q5:UpdateUniform">
-          <q5:UniformName>aspectRatio</q5:UniformName>
-          <q5:ShaderName>sweep</q5:ShaderName>
+        <Combinator xsi:type="gl:UpdateUniform">
+          <gl:UniformName>aspectRatio</gl:UniformName>
+          <gl:ShaderName>sweep</gl:ShaderName>
         </Combinator>
       </Expression>
       <Expression xsi:type="Combinator">
-        <Combinator xsi:type="q5:DrawMesh">
-          <q5:ShaderName>sweep</q5:ShaderName>
-          <q5:MeshName>FullScreenQuad</q5:MeshName>
+        <Combinator xsi:type="gl:DrawMesh">
+          <gl:ShaderName>sweep</gl:ShaderName>
+          <gl:MeshName>FullScreenQuad</gl:MeshName>
         </Combinator>
       </Expression>
       <Expression xsi:type="NestedWorkflow">
@@ -191,27 +201,27 @@ def process(value):
               <Name>Red</Name>
             </Expression>
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="q5:UpdateUniform">
-                <q5:UniformName>Red</q5:UniformName>
-                <q5:ShaderName>sweep</q5:ShaderName>
+              <Combinator xsi:type="gl:UpdateUniform">
+                <gl:UniformName>Red</gl:UniformName>
+                <gl:ShaderName>sweep</gl:ShaderName>
               </Combinator>
             </Expression>
             <Expression xsi:type="SubscribeSubject">
               <Name>Green</Name>
             </Expression>
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="q5:UpdateUniform">
-                <q5:UniformName>Green</q5:UniformName>
-                <q5:ShaderName>sweep</q5:ShaderName>
+              <Combinator xsi:type="gl:UpdateUniform">
+                <gl:UniformName>Green</gl:UniformName>
+                <gl:ShaderName>sweep</gl:ShaderName>
               </Combinator>
             </Expression>
             <Expression xsi:type="SubscribeSubject">
               <Name>Blue</Name>
             </Expression>
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="q5:UpdateUniform">
-                <q5:UniformName>Blue</q5:UniformName>
-                <q5:ShaderName>sweep</q5:ShaderName>
+              <Combinator xsi:type="gl:UpdateUniform">
+                <gl:UniformName>Blue</gl:UniformName>
+                <gl:ShaderName>sweep</gl:ShaderName>
               </Combinator>
             </Expression>
           </Nodes>
@@ -238,13 +248,13 @@ def process(value):
             <Expression xsi:type="ExternalizedMapping">
               <Property Name="FileName" />
             </Expression>
-            <Expression xsi:type="q6:CsvWriter">
-              <q6:FileName>_iblrig_calibration_screen_brightness.raw.ssv</q6:FileName>
-              <q6:Append>false</q6:Append>
-              <q6:Overwrite>true</q6:Overwrite>
-              <q6:Suffix>None</q6:Suffix>
-              <q6:IncludeHeader>false</q6:IncludeHeader>
-              <q6:CompatibilityMode>true</q6:CompatibilityMode>
+            <Expression xsi:type="io:CsvWriter">
+              <io:FileName>_iblrig_calibration_screen_brightness.raw.ssv</io:FileName>
+              <io:Append>false</io:Append>
+              <io:Overwrite>true</io:Overwrite>
+              <io:Suffix>None</io:Suffix>
+              <io:IncludeHeader>false</io:IncludeHeader>
+              <io:CompatibilityMode>true</io:CompatibilityMode>
             </Expression>
             <Expression xsi:type="ExternalizedMapping">
               <Property Name="Value" DisplayName="Save" />
@@ -274,7 +284,7 @@ def process(value):
               </Workflow>
             </Expression>
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="SubscribeWhen" />
+              <Combinator xsi:type="rx:SubscribeWhen" />
             </Expression>
           </Nodes>
           <Edges>
@@ -366,25 +376,4 @@ def process(value):
       <Edge From="30" To="31" Label="Source1" />
     </Edges>
   </Workflow>
-  <ExtensionTypes>
-    <Type>Bonsai.Expressions.BooleanProperty, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Expressions.EqualBuilder, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Expressions.FloatProperty, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Expressions.GreaterThanOrEqualBuilder, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Expressions.MulticastSubjectBuilder, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Expressions.PropertySource`2[[Bonsai.Expressions.FloatProperty, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null],[System.Single, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089]], Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Expressions.StringProperty, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Harp.CF.BehaviorEvent, Bonsai.Harp.CF, Version=1.5.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Harp.Device, Bonsai.Harp, Version=3.1.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.IO.CsvWriter, Bonsai.System, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Osc.ReceiveMessage, Bonsai.Osc, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Reactive.CombineLatest, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Reactive.SubscribeWhen, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Reactive.TakeUntil, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Scripting.PythonTransform, Bonsai.Scripting, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Shaders.AspectRatio, Bonsai.Shaders, Version=0.19.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Shaders.DrawMesh, Bonsai.Shaders, Version=0.19.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Shaders.RenderFrame, Bonsai.Shaders, Version=0.19.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Shaders.UpdateUniform, Bonsai.Shaders, Version=0.19.0.0, Culture=neutral, PublicKeyToken=null</Type>
-  </ExtensionTypes>
 </WorkflowBuilder>
