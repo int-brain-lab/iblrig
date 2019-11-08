@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <EditorSettings>
-  <WindowState>Normal</WindowState>
+  <WindowState>Maximized</WindowState>
   <EditorTheme>Light</EditorTheme>
   <DesktopBounds>
     <X>490</X>
@@ -9,6 +9,18 @@
     <Height>450</Height>
   </DesktopBounds>
   <RecentlyUsedFiles>
+    <RecentlyUsedFile>
+      <Timestamp>2019-11-08T17:30:07.5754045+00:00</Timestamp>
+      <Name>C:\iblrig\visual_stim\ephys_certification\ephys_certification.bonsai</Name>
+    </RecentlyUsedFile>
+    <RecentlyUsedFile>
+      <Timestamp>2019-11-08T17:29:48.6163383+00:00</Timestamp>
+      <Name>C:\iblrig\visual_stim\GaborIBLTask\Gabor2D.bonsai</Name>
+    </RecentlyUsedFile>
+    <RecentlyUsedFile>
+      <Timestamp>2019-11-08T17:28:38.7252499+00:00</Timestamp>
+      <Name>C:\iblrig\visual_stim\f2ttl_calibration\screen_color.bonsai</Name>
+    </RecentlyUsedFile>
     <RecentlyUsedFile>
       <Timestamp>2019-11-07T17:15:00.0070648+00:00</Timestamp>
       <Name>C:\iblrig\devices\camera_recordings\one_camera.bonsai</Name>
