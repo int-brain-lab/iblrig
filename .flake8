@@ -3,3 +3,4 @@ max-line-length = 99
 ignore = W504
 exclude =
     scratch_*.py,
+    Bonsai/
