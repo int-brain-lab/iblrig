@@ -2,9 +2,9 @@
 <WorkflowBuilder Version="2.4.1-patch"
                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                  xmlns:gl="clr-namespace:Bonsai.Shaders;assembly=Bonsai.Shaders"
+                 xmlns:res="clr-namespace:Bonsai.Resources;assembly=Bonsai.System"
                  xmlns:osc="clr-namespace:Bonsai.Osc;assembly=Bonsai.Osc"
                  xmlns:rx="clr-namespace:Bonsai.Reactive;assembly=Bonsai.Core"
-                 xmlns:res="clr-namespace:Bonsai.Resources;assembly=Bonsai.System"
                  xmlns="https://bonsai-rx.org/2018/workflow">
   <Workflow>
     <Nodes>
@@ -115,8 +115,8 @@
         </PropertyMappings>
       </Expression>
       <Expression xsi:type="IncludeWorkflow" Path="BonVision:Primitives.DrawQuad.bonsai">
-        <ExtentX>180</ExtentX>
-        <ExtentY>90</ExtentY>
+        <ExtentX>360</ExtentX>
+        <ExtentY>180</ExtentY>
         <LocationX>0</LocationX>
         <LocationY>0</LocationY>
         <ColorR>1</ColorR>
