@@ -399,7 +399,7 @@ class SessionPathCreator(object):
         self.display_logs()
 
     def make_missing_folders(self, makelist):
-        if isinstance(makelist, bool):
+        if isinstance(makelist, bool) and makelist is True:
             log.debug(f"Making default folders")
             make_folder(self.IBLRIG_DATA_FOLDER)
             make_folder(self.IBLRIG_DATA_SUBJECTS_FOLDER)
