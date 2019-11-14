@@ -3,7 +3,6 @@
 # @Author: Niccolò Bonacchi
 # @Date:   2018-02-02 12:31:13
 import logging
-import time
 
 import matplotlib.pyplot as plt
 from pybpod_rotaryencoder_module.module import RotaryEncoder
@@ -44,6 +43,9 @@ def softcode_handler(data):
         sph.play_noise()
     elif data == 3:
         sph.start_camera_recording()
+    # elif data == 4:
+    #     sph.start_visual_stim()
+
     # sph.OSC_CLIENT.send_message("/e", data)
 
 
@@ -86,10 +88,9 @@ if sph.SOFT_SOUND is None:
     bpod.load_serial_message(sound_card, sc_play_noise, [
                              ord('P'), sph.WHITE_NOISE_IDX])
 # Delay initiation
-delay = ask_session_delay(sph.SETTINGS_FILE_PATH)
-log.info(f"Starting {delay} seconds of delay (i.e. {delay/60} minutes)")
-time.sleep(delay)
-log.info(f"Resuming task after {delay} seconds of delay (i.e. {delay/60} minutes)")
+sph.SESSION_START_DELAY_SEC = ask_session_delay(sph.SETTINGS_FILE_PATH)
+
+sph.start_visual_stim()
 # =============================================================================
 # TRIAL PARAMETERS AND STATE MACHINE
 # =============================================================================
@@ -108,18 +109,27 @@ for i in range(sph.NTRIALS):  # Main loop
     sma = StateMachine(bpod)
 
     if i == 0:  # First trial exception start camera
-        log.info(f'Waiting for camera pulses...')
+        log.info(f'First trial initializing, will move to next trial only if:')
+        log.info(f'1. camera is detected')
+        log.info(f'2. {sph.SESSION_START_DELAY_SEC} sec have elapsed')
+        log.info(f'3. visual stimulus is detected')
         sma.add_state(
             state_name='trial_start',
-            state_timer=3600,
-            state_change_conditions={'Port1In': 'reset_rotary_encoder'},
-            output_actions=[('SoftCode', 3)])  # sart camera
+            state_timer=0,
+            state_change_conditions={'Port1In': 'delay_initiation'},
+            output_actions=[('SoftCode', 3)])  # start camera
     else:
         sma.add_state(
             state_name='trial_start',
             state_timer=0,  # ~100µs hardware irreducible delay
             state_change_conditions={'Tup': 'reset_rotary_encoder'},
             output_actions=[tph.out_stop_sound])  # stop all sounds
+
+    sma.add_state(
+        state_name='delay_initiation',
+        state_timer=tph.session_start_delay_sec,
+        state_change_conditions={'Tup': 'reset_rotary_encoder'},
+        output_actions=[])
 
     sma.add_state(
         state_name='reset_rotary_encoder',

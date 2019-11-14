@@ -30,7 +30,6 @@ class SessionParamHandler(object):
 
     def __init__(self, task_settings, user_settings, debug=False, fmake=True):
         self.DEBUG = debug
-        make = False if not fmake else ['video']
         # =====================================================================
         # IMPORT task_settings, user_settings, and SessionPathCreator params
         # =====================================================================
@@ -41,15 +40,21 @@ class SessionParamHandler(object):
               for i in [x for x in dir(user_settings) if '__' not in x]}
         self.__dict__.update(us)
         self = iotasks.deserialize_pybpod_user_settings(self)
+        if not fmake:
+            make = False
+        elif fmake and 'ephys' in self.PYBPOD_BOARD:
+            make = True
+        else:
+            make = ['video']
         spc = SessionPathCreator(self.PYBPOD_SUBJECTS[0],
                                  protocol=self.PYBPOD_PROTOCOL,
                                  make=make)
         self.__dict__.update(spc.__dict__)
 
         # =====================================================================
-        # COMs and devices
+        # DELAY SESSION INITIATION BY
         # =====================================================================
-
+        self.SESSION_START_DELAY_SEC = 0
         # =====================================================================
         # frame2TTL
         # =====================================================================
@@ -122,10 +127,7 @@ class SessionParamHandler(object):
         self.OUT_NOISE = ('SoftCode', 2) if self.SOFT_SOUND else ('Serial3', 6)
         self.OUT_STOP_SOUND = (
             'SoftCode', 0) if self.SOFT_SOUND else ('Serial3', ord('X'))
-        # =====================================================================
-        # RUN VISUAL STIM
-        # =====================================================================
-        bonsai.start_visual_stim(self)
+
         # =====================================================================
         # SAVE SETTINGS FILE AND TASK CODE
         # =====================================================================
@@ -156,7 +158,12 @@ class SessionParamHandler(object):
 
     # Bonsai start camera called from main task file
     def start_camera_recording(self):
+        if 'ephys' in self.PYBPOD_BOARD:
+            return
         return bonsai.start_camera_recording(self)
+
+    def start_visual_stim(self):
+        return bonsai.start_visual_stim(self)
 
     def get_port_events(self, events, name=''):
         return misc.get_port_events(events, name=name)
@@ -233,7 +240,7 @@ if __name__ == '__main__':
     """
     import task_settings as _task_settings
     # import scratch._user_settings as _user_settings
-    import _user_settings
+    import iblrig.fake_user_settings as _user_settings
     import datetime
     dt = datetime.datetime.now()
     dt = [str(dt.year), str(dt.month), str(dt.day),

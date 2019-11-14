@@ -1,11 +1,18 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<WorkflowBuilder Version="2.4.0-preview">
-  <Workflow xmlns:q2="clr-namespace:Bonsai.Scripting;assembly=Bonsai.Scripting" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:q3="clr-namespace:Bonsai.Shaders;assembly=Bonsai.Shaders" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:q4="clr-namespace:Bonsai.IO;assembly=Bonsai.System" xmlns:q1="clr-namespace:Bonsai.Osc;assembly=Bonsai.Osc" xmlns="https://bonsai-rx.org/2018/workflow">
+<WorkflowBuilder Version="2.4.1-patch"
+                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                 xmlns:osc="clr-namespace:Bonsai.Osc;assembly=Bonsai.Osc"
+                 xmlns:rx="clr-namespace:Bonsai.Reactive;assembly=Bonsai.Core"
+                 xmlns:scr="clr-namespace:Bonsai.Scripting;assembly=Bonsai.Scripting"
+                 xmlns:gl="clr-namespace:Bonsai.Shaders;assembly=Bonsai.Shaders"
+                 xmlns:io="clr-namespace:Bonsai.IO;assembly=Bonsai.System"
+                 xmlns="https://bonsai-rx.org/2018/workflow">
+  <Workflow>
     <Nodes>
-      <Expression xsi:type="q1:ReceiveMessage">
-        <q1:Connection>from_python</q1:Connection>
-        <q1:Address>/d</q1:Address>
-        <q1:TypeTag>i</q1:TypeTag>
+      <Expression xsi:type="osc:ReceiveMessage">
+        <osc:Connection>from_python</osc:Connection>
+        <osc:Address>/d</osc:Address>
+        <osc:TypeTag>i</osc:TypeTag>
       </Expression>
       <Expression xsi:type="SubscribeSubject">
         <Name>Red</Name>
@@ -17,7 +24,7 @@
         <Name>Blue</Name>
       </Expression>
       <Expression xsi:type="Combinator">
-        <Combinator xsi:type="CombineLatest" />
+        <Combinator xsi:type="rx:CombineLatest" />
       </Expression>
       <Expression xsi:type="BehaviorSubject">
         <Name>Data</Name>
@@ -26,6 +33,7 @@
         <MaxValue>1.01</MaxValue>
         <MinValue>0</MinValue>
         <NumSteps>100</NumSteps>
+        <Period>PT0.2S</Period>
       </Expression>
       <Expression xsi:type="Condition">
         <Name>R in RGB?</Name>
@@ -37,10 +45,10 @@
             <Expression xsi:type="SubscribeSubject">
               <Name>RGB</Name>
             </Expression>
-            <Expression xsi:type="q2:PythonTransform">
-              <q2:Script>@returns(bool)
+            <Expression xsi:type="scr:PythonTransform">
+              <scr:Script>@returns(bool)
 def process(value):
-  return 'R' in value</q2:Script>
+  return 'R' in value</scr:Script>
             </Expression>
             <Expression xsi:type="WorkflowOutput" />
           </Nodes>
@@ -63,10 +71,10 @@ def process(value):
             <Expression xsi:type="SubscribeSubject">
               <Name>RGB</Name>
             </Expression>
-            <Expression xsi:type="q2:PythonTransform">
-              <q2:Script>@returns(bool)
+            <Expression xsi:type="scr:PythonTransform">
+              <scr:Script>@returns(bool)
 def process(value):
-  return 'G' in value</q2:Script>
+  return 'G' in value</scr:Script>
             </Expression>
             <Expression xsi:type="WorkflowOutput" />
           </Nodes>
@@ -89,10 +97,10 @@ def process(value):
             <Expression xsi:type="SubscribeSubject">
               <Name>RGB</Name>
             </Expression>
-            <Expression xsi:type="q2:PythonTransform">
-              <q2:Script>@returns(bool)
+            <Expression xsi:type="scr:PythonTransform">
+              <scr:Script>@returns(bool)
 def process(value):
-  return 'B' in value</q2:Script>
+  return 'B' in value</scr:Script>
             </Expression>
             <Expression xsi:type="WorkflowOutput" />
           </Nodes>
@@ -130,25 +138,25 @@ def process(value):
         </Workflow>
       </Expression>
       <Expression xsi:type="Combinator">
-        <Combinator xsi:type="TakeUntil" />
+        <Combinator xsi:type="rx:TakeUntil" />
       </Expression>
       <Expression xsi:type="WorkflowOutput" />
       <Expression xsi:type="Combinator">
-        <Combinator xsi:type="q3:RenderFrame" />
+        <Combinator xsi:type="gl:RenderFrame" />
       </Expression>
       <Expression xsi:type="Combinator">
-        <Combinator xsi:type="q3:AspectRatio" />
+        <Combinator xsi:type="gl:AspectRatio" />
       </Expression>
       <Expression xsi:type="Combinator">
-        <Combinator xsi:type="q3:UpdateUniform">
-          <q3:UniformName>aspectRatio</q3:UniformName>
-          <q3:ShaderName>sweep</q3:ShaderName>
+        <Combinator xsi:type="gl:UpdateUniform">
+          <gl:UniformName>aspectRatio</gl:UniformName>
+          <gl:ShaderName>sweep</gl:ShaderName>
         </Combinator>
       </Expression>
       <Expression xsi:type="Combinator">
-        <Combinator xsi:type="q3:DrawMesh">
-          <q3:ShaderName>sweep</q3:ShaderName>
-          <q3:MeshName>FullScreenQuad</q3:MeshName>
+        <Combinator xsi:type="gl:DrawMesh">
+          <gl:ShaderName>sweep</gl:ShaderName>
+          <gl:MeshName>FullScreenQuad</gl:MeshName>
         </Combinator>
       </Expression>
       <Expression xsi:type="NestedWorkflow">
@@ -168,10 +176,10 @@ def process(value):
                   <Expression xsi:type="SubscribeSubject">
                     <Name>RGB</Name>
                   </Expression>
-                  <Expression xsi:type="q2:PythonTransform">
-                    <q2:Script>@returns(bool)
+                  <Expression xsi:type="scr:PythonTransform">
+                    <scr:Script>@returns(bool)
 def process(value):
-  return 'R' in value</q2:Script>
+  return 'R' in value</scr:Script>
                   </Expression>
                   <Expression xsi:type="WorkflowOutput" />
                 </Nodes>
@@ -182,9 +190,9 @@ def process(value):
               </Workflow>
             </Expression>
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="q3:UpdateUniform">
-                <q3:UniformName>Red</q3:UniformName>
-                <q3:ShaderName>sweep</q3:ShaderName>
+              <Combinator xsi:type="gl:UpdateUniform">
+                <gl:UniformName>Red</gl:UniformName>
+                <gl:ShaderName>sweep</gl:ShaderName>
               </Combinator>
             </Expression>
             <Expression xsi:type="SubscribeSubject">
@@ -200,10 +208,10 @@ def process(value):
                   <Expression xsi:type="SubscribeSubject">
                     <Name>RGB</Name>
                   </Expression>
-                  <Expression xsi:type="q2:PythonTransform">
-                    <q2:Script>@returns(bool)
+                  <Expression xsi:type="scr:PythonTransform">
+                    <scr:Script>@returns(bool)
 def process(value):
-  return 'G' in value</q2:Script>
+  return 'G' in value</scr:Script>
                   </Expression>
                   <Expression xsi:type="WorkflowOutput" />
                 </Nodes>
@@ -214,9 +222,9 @@ def process(value):
               </Workflow>
             </Expression>
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="q3:UpdateUniform">
-                <q3:UniformName>Green</q3:UniformName>
-                <q3:ShaderName>sweep</q3:ShaderName>
+              <Combinator xsi:type="gl:UpdateUniform">
+                <gl:UniformName>Green</gl:UniformName>
+                <gl:ShaderName>sweep</gl:ShaderName>
               </Combinator>
             </Expression>
             <Expression xsi:type="SubscribeSubject">
@@ -232,10 +240,10 @@ def process(value):
                   <Expression xsi:type="SubscribeSubject">
                     <Name>RGB</Name>
                   </Expression>
-                  <Expression xsi:type="q2:PythonTransform">
-                    <q2:Script>@returns(bool)
+                  <Expression xsi:type="scr:PythonTransform">
+                    <scr:Script>@returns(bool)
 def process(value):
-  return 'B' in value</q2:Script>
+  return 'B' in value</scr:Script>
                   </Expression>
                   <Expression xsi:type="WorkflowOutput" />
                 </Nodes>
@@ -246,9 +254,9 @@ def process(value):
               </Workflow>
             </Expression>
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="q3:UpdateUniform">
-                <q3:UniformName>Blue</q3:UniformName>
-                <q3:ShaderName>sweep</q3:ShaderName>
+              <Combinator xsi:type="gl:UpdateUniform">
+                <gl:UniformName>Blue</gl:UniformName>
+                <gl:ShaderName>sweep</gl:ShaderName>
               </Combinator>
             </Expression>
           </Nodes>
@@ -278,13 +286,13 @@ def process(value):
             <Expression xsi:type="ExternalizedMapping">
               <Property Name="FileName" />
             </Expression>
-            <Expression xsi:type="q4:CsvWriter">
-              <q4:FileName>_iblrig_calibration_screen_brightness.raw.ssv</q4:FileName>
-              <q4:Append>false</q4:Append>
-              <q4:Overwrite>true</q4:Overwrite>
-              <q4:Suffix>None</q4:Suffix>
-              <q4:IncludeHeader>false</q4:IncludeHeader>
-              <q4:CompatibilityMode>true</q4:CompatibilityMode>
+            <Expression xsi:type="io:CsvWriter">
+              <io:FileName>_iblrig_calibration_screen_brightness.raw.ssv</io:FileName>
+              <io:Append>false</io:Append>
+              <io:Overwrite>true</io:Overwrite>
+              <io:Suffix>None</io:Suffix>
+              <io:IncludeHeader>false</io:IncludeHeader>
+              <io:CompatibilityMode>true</io:CompatibilityMode>
             </Expression>
             <Expression xsi:type="ExternalizedMapping">
               <Property Name="Value" DisplayName="Save" />
@@ -314,7 +322,7 @@ def process(value):
               </Workflow>
             </Expression>
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="SubscribeWhen" />
+              <Combinator xsi:type="rx:SubscribeWhen" />
             </Expression>
           </Nodes>
           <Edges>
@@ -400,22 +408,4 @@ def process(value):
       <Edge From="25" To="26" Label="Source1" />
     </Edges>
   </Workflow>
-  <ExtensionTypes>
-    <Type>Bonsai.Expressions.BooleanProperty, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Expressions.EqualBuilder, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Expressions.FloatProperty, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Expressions.GreaterThanOrEqualBuilder, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Expressions.MulticastSubjectBuilder, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Expressions.StringProperty, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.IO.CsvWriter, Bonsai.System, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Osc.ReceiveMessage, Bonsai.Osc, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Reactive.CombineLatest, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Reactive.SubscribeWhen, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Reactive.TakeUntil, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Scripting.PythonTransform, Bonsai.Scripting, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Shaders.AspectRatio, Bonsai.Shaders, Version=0.19.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Shaders.DrawMesh, Bonsai.Shaders, Version=0.19.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Shaders.RenderFrame, Bonsai.Shaders, Version=0.19.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Shaders.UpdateUniform, Bonsai.Shaders, Version=0.19.0.0, Culture=neutral, PublicKeyToken=null</Type>
-  </ExtensionTypes>
 </WorkflowBuilder>

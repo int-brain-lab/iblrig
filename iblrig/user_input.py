@@ -8,7 +8,8 @@ import ibllib.graphic as graph
 import pyforms
 from AnyQt.QtWidgets import QApplication
 from pyforms.basewidget import BaseWidget
-from pyforms.controls import (ControlButton, ControlLabel, ControlText, ControlCheckBox)
+from pyforms.controls import (ControlButton, ControlCheckBox, ControlLabel,
+                              ControlText)
 
 from iblrig.misc import patch_settings_file
 
@@ -175,7 +176,9 @@ def get_form_probe_data(form_data: dict) -> dict:
 
 # TODO: make patch version (use settings_file_path=None)
 def ask_subject_weight(subject: str) -> float:
-    return graph.numinput("Subject weighing (gr)", f"{subject} weight (gr):", nullable=False)
+    out = graph.numinput("Subject weighing (gr)", f"{subject} weight (gr):", nullable=False)
+    log.info(f'Subject weight {out}')
+    return out
 
 
 # TODO: adapt patch version (use settings_file_path: str = None & if None return out)

@@ -113,7 +113,7 @@ def load_params_file() -> dict:
         return load_params_file()
     elif not fpath.exists() and not bpod_comports.exists():
         log.warning(f"Could not load params file does not exist. Creating...")
-        out = check_params_comports(write_params_file())
+        out = ask_params_comports(write_params_file())
         return out
 
 
@@ -151,7 +151,7 @@ def update_params_file(data: dict, force: bool = False) -> None:
     return old
 
 
-def check_params_comports(data: dict) -> dict:
+def ask_params_comports(data: dict) -> dict:
     patch = {}
     for k in data:
         if 'COM' in k and not data[k]:
@@ -179,14 +179,15 @@ def update_params(data: dict) -> None:
 
 
 def load_params() -> dict:
-    out_alyx = alyx.load_board_params()
-    if out_alyx is None:
+    params_alyx = alyx.load_board_params()
+    if params_alyx is None:
         log.warning(f"Could not load board params from Alyx. Loading from local file...")
-    out = load_params_file()
-    if out_alyx != out:
-        log.warning(f"Local data and Alyx data are not the same. Using local.")
-        alyx.update_board_params(data=out, force=True)
-    return out
+    params_local = load_params_file()
+    if params_alyx != params_local:
+        log.warning(f"Local data and Alyx data are not the same. Trying to update Alyx.")
+        alyx.update_board_params(data=params_local, force=True)
+        log.info("Using local params.")
+    return params_local
 
 
 def write_params(data: dict = None, force: bool = False) -> None:
@@ -212,18 +213,22 @@ def try_migrate_to_params(force=False):
                     'COM_ROTARY_ENCODER': com_data['ROTARY_ENCODER'],  # str
                     'COM_F2TTL': com_data['FRAME2TTL']}  # str
     else:
-        com_dict = {'COM_BPOD': "",
+        com_dict = {'COM_BPOD': get_board_comport(),
                     'COM_F2TTL': "",
                     'COM_ROTARY_ENCODER': ""}
     # Find latest H2O calib and set WATER values
+    water_dict = {'WATER_CALIBRATION_RANGE': "",  # [min, max]
+                  'WATER_CALIBRATION_OPEN_TIMES': "",  # [float, float, ...]
+                  'WATER_CALIBRATION_WEIGHT_PERDROP': "",  # [float, float, ...]
+                  'WATER_CALIBRATION_DATE': ""}  # str
     range_file = path_helper.get_water_calibration_range_file()
     func_file = path_helper.get_water_calibration_func_file()
-    water_dict = {}
-    if (func_file and range_file) and (func_file.parent == range_file.parent):
+    if ((str(func_file) != '.' and str(range_file) != '.') and
+            (func_file.parent == range_file.parent)):
         water_dict.update(path_helper.load_water_calibraition_range_file(range_file))
         water_dict.update(path_helper.load_water_calibraition_func_file(func_file))
         water_dict.update({'WATER_CALIBRATION_DATE': func_file.parent.parent.parent.name})
-    if func_file:
+    if str(func_file) != '.':
         water_dict.update(path_helper.load_water_calibraition_func_file(func_file))
         water_dict.update({'WATER_CALIBRATION_DATE': func_file.parent.parent.parent.name})
     # Find latest F2TTL calib and set F2TTL values
@@ -250,7 +255,6 @@ def try_migrate_to_params(force=False):
     # Save locally
     final_dict = {}
     final_dict.update({'NAME': get_board_name()})  # from GUI
-    final_dict.update({'COM_BPOD': get_board_comport()})  # From GUI
     final_dict.update(com_dict)
     final_dict.update(f2ttl_dict)
     final_dict.update(water_dict)
