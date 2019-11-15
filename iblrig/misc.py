@@ -190,6 +190,20 @@ def patch_settings_file(sess_or_file: str, patch: dict) -> None:
     return
 
 
+def generate_position_contrasts(contrasts: list = [1.0, 0.25, 0.125, 0.0625],
+                                positions: list = [-35, 35],
+                                nrepeats: int = 20,
+                                shuffle: bool = True):
+    # Generate a set of positions and contrasts
+    pos = sorted(positions * len(contrasts) * nrepeats)
+    cont = contrasts * nrepeats * 2
+
+    data = np.array([[int(p), c] for p, c in zip(pos, cont)])
+    if shuffle:
+        np.random.shuffle(data)
+    data = np.array([[str(int(p)), str(c)] for p, c in data])
+    return data
+
 if __name__ == "__main__":
     get_biased_probs(4)
     print(draw_contrast([1, 2, 3]))
