@@ -131,7 +131,7 @@ for i in range(sph.NTRIALS):  # Main loop
             'Tup': 'reset2_rotary_encoder',
             'BNC2High': 'reset2_rotary_encoder'
         },
-        output_actions=[tph.out_tone])
+        output_actions=[('Serial3', sc_play_tone)])
 
     sma.add_state(
         state_name='reset2_rotary_encoder',
