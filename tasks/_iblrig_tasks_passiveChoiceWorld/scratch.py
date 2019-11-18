@@ -4,9 +4,11 @@
 # @Date: Friday, November 15th 2019, 12:05:29 pm
 import matplotlib.pyplot as plt
 import numpy as np
+from iblrig.path_helper import get_iblrig_folder
 
 np.random.seed(42)
 
+IBLRIG_FOLDER = get_iblrig_folder()
 # Generate the position and contrast for the replayed stims
 CONTRASTS = [1.0, 0.25, 0.125, 0.0625]
 POSITIONS = [-35, 35]
@@ -18,7 +20,10 @@ cont = CONTRASTS * NREPEAT * 2
 data = np.array([[int(p), c] for p, c in zip(pos, cont)])
 
 np.random.shuffle(data)
+# Make into strings for saving
 data = np.array([[str(int(p)), str(c)] for p, c in data])
+fpath = IBLRIG_FOLDER / 'visual_stim' / 'passive_stim' / 'stims.csv'
+np.savetxt(fpath, data, delimiter=' ', fmt='%s')
 
 
 

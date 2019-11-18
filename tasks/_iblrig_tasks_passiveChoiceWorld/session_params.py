@@ -32,7 +32,7 @@ class SessionParamHandler(object):
 
     def __init__(self, task_settings, user_settings, debug=False, fmake=True):
         self.DEBUG = debug
-        make = False
+        make = True
         # =====================================================================
         # IMPORT task_settings, user_settings, and SessionPathCreator params
         # =====================================================================

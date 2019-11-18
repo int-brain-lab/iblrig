@@ -71,7 +71,66 @@ log.debug('make fig')
 f, axes = op.make_fig(sph)
 log.debug('pause')
 plt.pause(1)
+"""
+Pre state machine?:
+Launch visual stim workflow
+OSC command to start 5 min of spontaneous activity (sync square every x min to FPGA and Bpod?)
+OSC command to start 5 min of RFMapping
+OSC command to start 5 min of replay task stim
+Trial structure:
+'state_name': 'stim0_delay',
+'state_timer': stim0.delay,
+'output_actions': [()],
+'state_change_conditions': {'Tup': 'stim0'},
 
+'state_name': 'stim0',
+'state_timer': None,
+'output_actions': [(),()]
+'state_change_conditions': {'Tup': 'stim1_delay'},
+
+... repeat 5 times
+
+Valve example:
+sma.add_state(
+    state_name='stim0',
+    state_timer=tph.reward_valve_time,
+    output_actions=[('Valve1, 255)],
+    state_change_conditions={'Tup': 'stim1_delay'}
+)
+
+Tone example:
+sma.add_state(
+    state_name='stim0',
+    state_timer=None,  # add length of tone (0.100s) + 1ms?
+    output_actions=[('Serial3', sc_play_tone)],
+    state_change_conditions = {
+            'Tup': 'stim1_delay',
+            'BNC2Low': 'stim1_delay'  # End of tone
+        }
+)
+
+Noise example:
+sma.add_state(
+    state_name='stim0',
+    state_timer=None,  # add length of noise (0.100s) + 1ms?
+    output_actions=[('Serial3', sc_play_noise)],
+    state_change_conditions = {
+            'Tup': 'stim1_delay',
+            'BNC2High': 'stim1_delay'
+        }
+)
+
+Stim example:
+sma.add_state(
+    state_name='stim0',
+    state_timer=None,  # add length of stim (0.300s) + 100ms?
+    output_actions=[('Serial1', re_show_stim)],
+    state_change_conditions = {
+            'Tup': 'stim1_delay',
+            'BNC1Low': 'stim1_delay'  # end of stim
+        }
+)
+"""
 log.debug('start SM definition')
 for i in range(sph.NTRIALS):  # Main loop
     tph.next_trial()
@@ -81,12 +140,18 @@ for i in range(sph.NTRIALS):  # Main loop
 # =============================================================================
     sma = StateMachine(bpod)
     if i == 0:
-        log.info(f'Waiting for camera pulses...')
         sma.add_state(
-            state_name='trial_start',
-            state_timer=3600,  # ~100µs hardware irreducible delay
-            state_change_conditions={'Port1In': 'reset_rotary_encoder'},
+            state_name='spontaneous_activity',
+            state_timer=350,  # 5 minutes
+            state_change_conditions={'Tup': 'rf_mapping'},
             output_actions=[('BNC1', 255)])  # To FPGA
+
+        sma.add_state(
+            state_name='rf_mapping',
+            state_timer=700,  # rf workflow should be 5 min
+            state_change_conditions={'Tup': 'quiescent_period'},
+            output_actions=[('Serial1', re_reset)])
+
     else:
         sma.add_state(
             state_name='trial_start',
@@ -131,7 +196,7 @@ for i in range(sph.NTRIALS):  # Main loop
             'Tup': 'reset2_rotary_encoder',
             'BNC2High': 'reset2_rotary_encoder'
         },
-        output_actions=[tph.out_tone])
+        output_actions=[('Serial3', sc_play_tone)])
 
     sma.add_state(
         state_name='reset2_rotary_encoder',
