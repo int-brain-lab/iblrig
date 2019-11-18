@@ -360,6 +360,8 @@ class SessionPathCreator(object):
             self.SESSION_FOLDER, 'raw_ephys_data')
         self.SESSION_RAW_IMAGING_DATA_FOLDER = os.path.join(
             self.SESSION_FOLDER, 'raw_imaging_data')
+        self.SESSION_RAW_PASSIVE_DATA_FOLDER = os.path.join(
+            self.SESSION_FOLDER, 'raw_passive_data')
 
         self.SESSION_NAME = '{}'.format(os.path.sep).join(
             [self.SUBJECT_NAME, self.SESSION_DATE, self.SESSION_NUMBER])
@@ -399,6 +401,12 @@ class SessionPathCreator(object):
         self.display_logs()
 
     def make_missing_folders(self, makelist):
+        """
+        makelist = True will make default folders with only raw_behavior_data
+        makelist = False will not make any folders
+        makelist = [list] will make the default folders and the raw_folders
+        that are specifiec in the list
+        """
         if isinstance(makelist, bool) and makelist is True:
             log.debug(f"Making default folders")
             make_folder(self.IBLRIG_DATA_FOLDER)
@@ -416,6 +424,8 @@ class SessionPathCreator(object):
                 make_folder(self.SESSION_RAW_EPHYS_DATA_FOLDER)
             if 'imag' in makelist:
                 make_folder(self.SESSION_RAW_IMAGING_DATA_FOLDER)
+            if 'passive' in makelist:
+                make_folder(self.SESSION_RAW_PASSIVE_DATA_FOLDER)
 
         return
 
