@@ -15,6 +15,7 @@ import iblrig.misc as misc
 import iblrig.path_helper as ph
 
 
+# TODO: Refactor for ephysCW and passiveCW, rename to ephys_session_file_creator?
 def make_pc():
     contrasts = [1., 0.25, 0.125, 0.0625, 0.0]
     len_block = [90]
