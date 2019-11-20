@@ -20,18 +20,11 @@ log.setLevel(logging.INFO)
 global sph
 sph = SessionParamHandler(task_settings, user_settings)
 
-
-def bpod_loop_handler():
-    f.canvas.flush_events()  # 100µs
-
-
 # =============================================================================
 # CONNECT TO BPOD
 # =============================================================================
 bpod = Bpod()
 
-# Loop handler function is used to flush events for the online plotting
-bpod.loop_handler = bpod_loop_handler
 # Rotary Encoder State Machine handler
 rotary_encoder = [x for x in bpod.modules if x.name == 'RotaryEncoder1'][0]
 sound_card = [x for x in bpod.modules if x.name == 'SoundCard1'][0]
@@ -75,10 +68,6 @@ log.debug('Call tph creation')
 tph = TrialParamHandler(sph)
 log.debug('TPH CREATED!')
 
-log.debug('make fig')
-f, axes = op.make_fig(sph)
-log.debug('pause')
-plt.pause(1)
 """
 Pre state machine?:
 Launch visual stim workflow
@@ -270,32 +259,6 @@ for i in range(sph.NTRIALS):  # Main loop
     tph = tph.trial_completed(bpod.session.current_trial.export())
 
     as_data = tph.save_ambient_sensor_data(bpod, sph.SESSION_RAW_DATA_FOLDER)
-    tph.show_trial_log()
-
-    # Update online plots
-    op.update_fig(f, axes, tph)
-
-    tph.check_sync_pulses()
-    stop_crit = tph.check_stop_criterions()
-    if stop_crit and sph.USE_AUTOMATIC_STOPPING_CRITERIONS:
-        if stop_crit == 1:
-            msg = "STOPPING CRITERIA Nº1: PLEASE STOP TASK AND REMOVE MOUSE\
-            \n < 400 trials in 45min"
-            f.patch.set_facecolor('xkcd:mint green')
-        elif stop_crit == 2:
-            msg = "STOPPING CRITERIA Nº2: PLEASE STOP TASK AND REMOVE MOUSE\
-            \nMouse seems to be inactive"
-            f.patch.set_facecolor('xkcd:yellow')
-        elif stop_crit == 3:
-            msg = "STOPPING CRITERIA Nº3: PLEASE STOP TASK AND REMOVE MOUSE\
-            \n> 90 minutes have passed since session start"
-            f.patch.set_facecolor('xkcd:red')
-
-        if not sph.SUBJECT_DISENGAGED_TRIGGERED and stop_crit:
-            patch = {'SUBJECT_DISENGAGED_TRIGGERED': stop_crit,
-                     'SUBJECT_DISENGAGED_TRIALNUM': i + 1}
-            sph.patch_settings_file(patch)
-        [log.warning(msg) for x in range(5)]
 
 bpod.close()
 
