@@ -190,19 +190,38 @@ def patch_settings_file(sess_or_file: str, patch: dict) -> None:
     return
 
 
+# TODO: Consider migrating this to ephys_session_file_creator
 def generate_position_contrasts(contrasts: list = [1.0, 0.25, 0.125, 0.0625],
                                 positions: list = [-35, 35],
-                                nrepeats: int = 20,
-                                shuffle: bool = True):
+                                cp_repeats: int = 20,
+                                shuffle: bool = True,
+                                to_string: bool = False):
+    """generate_position_contrasts generate contrasts and positions
+
+    :param contrasts: Set of contrasts in floats, defaults to [1.0, 0.25, 0.125, 0.0625]
+    :type contrasts: list, optional
+    :param positions: Set of positions in int, defaults to [-35, 35]
+    :type positions: list, optional
+    :param cp_repeats: Number of repetitions for each contrast position pair, defaults to 20
+    :type cp_repeats: int, optional
+    :param shuffle: Shuffle the result or return sorted, defaults to True
+    :type shuffle: bool, optional
+    :param to_string: Return strings instead of int/float pairs, defaults to False
+    :type to_string: bool, optional
+    :return: 2D array with positions and contrasts
+    :rtype: numpy.array()
+    """
     # Generate a set of positions and contrasts
-    pos = sorted(positions * len(contrasts) * nrepeats)
-    cont = contrasts * nrepeats * 2
+    pos = sorted(positions * len(contrasts) * cp_repeats)
+    cont = contrasts * cp_repeats * 2
 
     data = np.array([[int(p), c] for p, c in zip(pos, cont)])
     if shuffle:
         np.random.shuffle(data)
-    data = np.array([[str(int(p)), str(c)] for p, c in data])
+    if to_string:
+        data = np.array([[str(int(p)), str(c)] for p, c in data])
     return data
+
 
 if __name__ == "__main__":
     get_biased_probs(4)
