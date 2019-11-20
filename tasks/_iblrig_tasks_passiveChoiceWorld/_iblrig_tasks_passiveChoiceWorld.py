@@ -58,7 +58,15 @@ bpod.load_serial_message(sound_card, sc_play_tone, [ord('P'), sph.GO_TONE_IDX])
 sc_play_noise = re_reset + 5
 bpod.load_serial_message(sound_card, sc_play_noise, [
                          ord('P'), sph.WHITE_NOISE_IDX])
-
+# Start spontaneous activity
+re_spontaneous_start = re_reset + 6
+bpod.load_serial_message(sound_card, re_spontaneous_start, [ord('P'), 4])
+# Start spontaneous activity
+re_rfm_start = re_reset + 7
+bpod.load_serial_message(sound_card, re_rfm_start, [ord('P'), 5])
+# Start spontaneous activity
+re_replay_start = re_reset + 8
+bpod.load_serial_message(sound_card, re_replay_start, [ord('P'), 6])
 # =============================================================================
 # TRIAL PARAMETERS AND STATE MACHINE
 # =============================================================================
@@ -143,112 +151,119 @@ for i in range(sph.NTRIALS):  # Main loop
         sma.add_state(
             state_name='spontaneous_activity',
             state_timer=350,  # 5 minutes
-            state_change_conditions={'Tup': 'rf_mapping'},
-            output_actions=[('BNC1', 255)])  # To FPGA
+            output_actions=[('BNC1', 255),  # To FPGA
+                            ('Serial1', re_spontaneous_start)],
+            state_change_conditions={'Tup': 'rf_mapping',
+                                     'BNC1High': 'rf_mapping'}
+        )
 
         sma.add_state(
             state_name='rf_mapping',
-            state_timer=700,  # rf workflow should be 5 min
-            state_change_conditions={'Tup': 'quiescent_period'},
-            output_actions=[('Serial1', re_reset)])
+            state_timer=410,  # rf workflow should be 5 min
+            output_actions=[('Serial1', re_rfm_start)],
+            state_change_conditions={'Tup': 'replay_stims_start'}
+        )
 
+        sma.add_state(
+            state_name='replay_stims_start',
+            state_timer=0,
+            output_actions=[('Serial1', re_replay_start)],
+            state_change_conditions={'Tup': 'stim0_delay'}
+        )
     else:
         sma.add_state(
-            state_name='trial_start',
-            state_timer=0,  # ~100µs hardware irreducible delay
-            state_change_conditions={'Tup': 'reset_rotary_encoder'},
-            output_actions=[('BNC1', 255)])  # To FPGA
+            state_name='spontaneous_activity',
+            state_timer=0,
+            output_actions=[],
+            state_change_conditions={'Tup': 'rf_mapping'}
+        )
 
+        sma.add_state(
+            state_name='rf_mapping',
+            state_timer=0,
+            output_actions=[],
+            state_change_conditions={'Tup': 'replay_stims_start'}
+        )
+
+        sma.add_state(
+            state_name='replay_stims_start',
+            state_timer=0,
+            output_actions=[],
+            state_change_conditions={'Tup': 'stim0_delay'}
+        )
+    # =========================================================================
+    #     Start stims
+    # =========================================================================
     sma.add_state(
-        state_name='reset_rotary_encoder',
+        state_name='stim0_delay',
         state_timer=0,
-        state_change_conditions={'Tup': 'quiescent_period'},
-        output_actions=[('Serial1', re_reset)])
-
-    sma.add_state(  # '>back' | '>reset_timer'
-        state_name='quiescent_period',
-        state_timer=tph.quiescent_period,
-        state_change_conditions={'Tup': 'stim_on',
-                                 tph.movement_left: 'reset_rotary_encoder',
-                                 tph.movement_right: 'reset_rotary_encoder'},
-        output_actions=[])
+        output_actions=[],
+        state_change_conditions={'Tup': 'stim0'}
+    )
 
     sma.add_state(
-        state_name='stim_on',
-        state_timer=0.1,
-        state_change_conditions={
-            'Tup': 'interactive_delay',
-            'BNC1High': 'interactive_delay',
-            'BNC1Low': 'interactive_delay'
-        },
-        output_actions=[('Serial1', re_show_stim)])
-
-    sma.add_state(
-        state_name='interactive_delay',
-        state_timer=tph.interactive_delay,
-        state_change_conditions={'Tup': 'play_tone'},
-        output_actions=[])
-
-    sma.add_state(
-        state_name='play_tone',
-        state_timer=0.001,
-        state_change_conditions={
-            'Tup': 'reset2_rotary_encoder',
-            'BNC2High': 'reset2_rotary_encoder'
-        },
-        output_actions=[('Serial3', sc_play_tone)])
-
-    sma.add_state(
-        state_name='reset2_rotary_encoder',
+        state_name='stim0',
         state_timer=0,
-        state_change_conditions={'Tup': 'closed_loop'},
-        output_actions=[('Serial1', re_reset)])
+        output_actions=[],
+        state_change_conditions={'Tup': 'stim1_delay'}
+    )
 
     sma.add_state(
-        state_name='closed_loop',
-        state_timer=tph.response_window,
-        state_change_conditions={'Tup': 'no_go',
-                                 tph.event_error: 'error',
-                                 tph.event_reward: 'reward'},
-        output_actions=[('Serial1', re_close_loop)])
+        state_name='stim1_delay',
+        state_timer=0,
+        output_actions=[],
+        state_change_conditions={'Tup': 'stim1'}
+    )
 
     sma.add_state(
-        state_name='no_go',
-        state_timer=tph.iti_error,
-        state_change_conditions={'Tup': 'exit_state'},
-        output_actions=[('Serial1', re_stop_stim),
-                        ('Serial3', sc_play_noise)])
+        state_name='stim1',
+        state_timer=0,
+        output_actions=[],
+        state_change_conditions={'Tup': 'stim2_delay'}
+    )
 
     sma.add_state(
-        state_name='error',
-        state_timer=tph.iti_error,
-        state_change_conditions={'Tup': 'exit_state'},
-        output_actions=[('Serial3', sc_play_noise)])
+        state_name='stim2_delay',
+        state_timer=0,
+        output_actions=[],
+        state_change_conditions={'Tup': 'stim2'}
+    )
 
     sma.add_state(
-        state_name='reward',
-        state_timer=tph.reward_valve_time,
-        state_change_conditions={'Tup': 'correct'},
-        output_actions=[('Valve1', 255),
-                        ('BNC1', 255)])  # To FPGA
+        state_name='stim2',
+        state_timer=0,
+        output_actions=[],
+        state_change_conditions={'Tup': 'stim3_delay'}
+    )
 
     sma.add_state(
-        state_name='correct',
-        state_timer=tph.iti_correct,
-        state_change_conditions={'Tup': 'exit_state'},
-        output_actions=[])
+        state_name='stim3_delay',
+        state_timer=0,
+        output_actions=[],
+        state_change_conditions={'Tup': 'stim3'}
+    )
 
     sma.add_state(
-        state_name='exit_state',
-        state_timer=0.5,
-        state_change_conditions={'Tup': 'exit'},
-        output_actions=[('BNC1', 255),
-                        ('Serial1', re_stop_stim),
-                        ])
+        state_name='stim3',
+        state_timer=0,
+        output_actions=[],
+        state_change_conditions={'Tup': 'stim4_delay'}
+    )
 
-    # if i == 0:
-    #     sph.warn_ephys()
-    # Send state machine description to Bpod device
+    sma.add_state(
+        state_name='stim4_delay',
+        state_timer=0,
+        output_actions=[],
+        state_change_conditions={'Tup': 'stim4'}
+    )
+
+    sma.add_state(
+        state_name='stim4',
+        state_timer=0,
+        output_actions=[],
+        state_change_conditions={'Tup': 'exit'}
+    )
+
     bpod.send_state_machine(sma)
     # Run state machine
     bpod.run_state_machine(sma)  # Locks until state machine 'exit' is reached
