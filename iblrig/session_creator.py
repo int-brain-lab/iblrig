@@ -12,6 +12,7 @@ from ibllib.dsp.smooth import rolling_window as smooth
 
 import iblrig.blocks as blocks
 import iblrig.misc as misc
+import iblrig.path_helper as ph
 
 
 def make_pc():
@@ -48,8 +49,9 @@ def make_pcqs(pc):
     return pcqs
 
 
-def generate_sessions(nsessions, path='./_iblrig_tasks_ephysChoiceWorld/sessions'):
-    path = Path(path)
+def generate_sessions(nsessions, path='./tasks/_iblrig_tasks_ephysChoiceWorld/sessions'):
+    iblrig_path = Path(ph.get_iblrig_folder())
+    path = iblrig_path / Path(path)
     path.mkdir(parents=True, exist_ok=True)
     for i in range(nsessions):
         pc, len_block = make_pc()
@@ -58,7 +60,10 @@ def generate_sessions(nsessions, path='./_iblrig_tasks_ephysChoiceWorld/sessions
         np.save(path / f'pcqs_session_{i}_len_blocks.npy', len_block)
 
 
-def plot_pcqs(session_num, folder='./_iblrig_tasks_ephysChoiceWorld/sessions'):
+def plot_pcqs(session_num, folder='./tasks/_iblrig_tasks_ephysChoiceWorld/sessions'):
+    iblrig_path = Path(ph.get_iblrig_folder())
+    folder_path = Path(folder)
+    folder = str(iblrig_path / folder_path)
     num = session_num
     pcqs = np.load(folder + f'/pcqs_session_{num}.npy')
     len_block = np.load(folder + f'/pcqs_session_{num}_len_blocks.npy')
