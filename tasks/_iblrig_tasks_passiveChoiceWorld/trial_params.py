@@ -253,21 +253,17 @@ if __name__ == '__main__':
     from sys import platform
     import matplotlib.pyplot as plt
     import online_plots as op
-    import task_settings as _task_settings
-    import scratch._user_settings as _user_settings
+    import iblrig.fake_task_settings as _task_settings
+    import iblrig.fake_user_settings as _user_settings
     dt = datetime.datetime.now()
     dt = [str(dt.year), str(dt.month), str(dt.day),
           str(dt.hour), str(dt.minute), str(dt.second)]
     dt = [x if int(x) >= 10 else '0' + x for x in dt]
     dt.insert(3, '-')
     _user_settings.PYBPOD_SESSION = ''.join(dt)
-    _user_settings.PYBPOD_SETUP = 'biasedChoiceWorld'
-    _user_settings.PYBPOD_PROTOCOL = '_iblrig_tasks_biasedChoiceWorld'
+    _user_settings.PYBPOD_SETUP = 'pasiveChoiceWorld'
+    _user_settings.PYBPOD_PROTOCOL = '_iblrig_tasks_passiveChoiceWorld'
     if platform == 'linux':
-        r = "/home/nico/Projects/IBL/github/iblrig"
-        _task_settings.IBLRIG_FOLDER = r
-        d = "/home/nico/Projects/IBL/github/iblrig/scratch/test_iblrig_data"  # noqa
-        _task_settings.IBLRIG_DATA_FOLDER = d
         _task_settings.AUTOMATIC_CALIBRATION = False
         _task_settings.USE_VISUAL_STIMULUS = False
         _task_settings.BLOCK_INIT_5050 = True
