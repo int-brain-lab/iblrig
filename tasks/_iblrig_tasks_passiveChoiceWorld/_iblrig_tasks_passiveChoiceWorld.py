@@ -82,9 +82,9 @@ plt.pause(1)
 """
 Pre state machine?:
 Launch visual stim workflow
-OSC command to start 5 min of spontaneous activity (sync square every x min to FPGA and Bpod?)
-OSC command to start 5 min of RFMapping
-OSC command to start 5 min of replay task stim
+RE command to start 5 min of spontaneous activity (sync square every x min to FPGA and Bpod?)
+RE command to start 5 min of RFMapping
+RE command to start 5 min of replay task stim
 Trial structure:
 'state_name': 'stim0_delay',
 'state_timer': stim0.delay,
