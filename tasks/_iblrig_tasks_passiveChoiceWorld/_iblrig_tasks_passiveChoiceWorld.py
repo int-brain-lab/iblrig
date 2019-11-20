@@ -128,6 +128,8 @@ sma.add_state(
         }
 )
 """
+# TODO: make tph / sph loader of file
+# TODO: make files...
 log.debug('start SM definition')
 for i in range(sph.NTRIALS):  # Main loop
     tph.next_trial()
@@ -185,7 +187,7 @@ for i in range(sph.NTRIALS):  # Main loop
     # =========================================================================
     sma.add_state(
         state_name='stim0_delay',
-        state_timer=0,
+        state_timer=tph.stim_delay[i, 0],
         output_actions=[],
         state_change_conditions={'Tup': 'stim0'}
     )
@@ -199,7 +201,7 @@ for i in range(sph.NTRIALS):  # Main loop
 
     sma.add_state(
         state_name='stim1_delay',
-        state_timer=0,
+        state_timer=tph.stim_delay[i, 1],
         output_actions=[],
         state_change_conditions={'Tup': 'stim1'}
     )
@@ -213,7 +215,7 @@ for i in range(sph.NTRIALS):  # Main loop
 
     sma.add_state(
         state_name='stim2_delay',
-        state_timer=0,
+        state_timer=tph.stim_delay[i, 2],
         output_actions=[],
         state_change_conditions={'Tup': 'stim2'}
     )
@@ -227,7 +229,7 @@ for i in range(sph.NTRIALS):  # Main loop
 
     sma.add_state(
         state_name='stim3_delay',
-        state_timer=0,
+        state_timer=tph.stim_delay[i, 3],
         output_actions=[],
         state_change_conditions={'Tup': 'stim3'}
     )
@@ -241,7 +243,7 @@ for i in range(sph.NTRIALS):  # Main loop
 
     sma.add_state(
         state_name='stim4_delay',
-        state_timer=0,
+        state_timer=tph.stim_delay[i, 4],
         output_actions=[],
         state_change_conditions={'Tup': 'stim4'}
     )
