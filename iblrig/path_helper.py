@@ -281,6 +281,8 @@ def get_visual_stim_type(protocol):
         return 'GaborHabituationTask'
     elif 'ephys_certification' in protocol:
         return 'ephys_certification'
+    elif 'passive' in protocol:
+        return 'passiveChoiceWorld'
     else:
         return 'GaborIBLTask'
 
@@ -475,8 +477,8 @@ if __name__ == "__main__":
     # 'trainingChoiceWorld')
     # '/coder/mnt/nbonacchi/iblrig', None,
     spc = SessionPathCreator(
-        '_iblrig_test_mouse', protocol='trainingChoiceWorld',
-        make=['video', 'ephys', 'imag'])
+        '_iblrig_test_mouse', protocol='passiveChoiceWorld',
+        make=True)
 
     print("")
     for k in spc.__dict__:
