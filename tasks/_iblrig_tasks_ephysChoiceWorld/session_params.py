@@ -92,6 +92,7 @@ class SessionParamHandler(object):
             self.PREVIOUS_SESSION_PATH)
         self.SESSION_ORDER = []
         self.SESSION_IDX = None
+        self.IS_MOCK = user_input.ask_is_mock()
         self = iotasks.load_session_order_and_idx(self)
         # Load from file
         self.POSITIONS = None

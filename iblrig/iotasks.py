@@ -138,8 +138,12 @@ def load_settings(previous_session_path: str) -> dict:
 
 
 def load_session_order_and_idx(sph: object) -> object:
-    if ((not sph.LAST_SETTINGS_DATA) or
-            ('SESSION_ORDER' not in sph.LAST_SETTINGS_DATA.keys())):
+    if sph.IS_MOCK:
+        sph.SESSION_ORDER = None
+        sph.SESSION_IDX = None
+    elif ((not sph.LAST_SETTINGS_DATA) or
+            ('SESSION_ORDER' not in sph.LAST_SETTINGS_DATA.keys()) or
+            (sph.LAST_SETTINGS_DATA['SESSION_ORDER'] is None)):
         sph.SESSION_ORDER = misc.draw_session_order()
         sph.SESSION_IDX = 0
     elif 'SESSION_ORDER' in sph.LAST_SETTINGS_DATA.keys():
