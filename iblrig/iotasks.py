@@ -162,9 +162,9 @@ def load_session_order_and_idx(sph: object) -> object:
 def load_session_pcqs(sph: object) -> object:
     num = sph.SESSION_ORDER[sph.SESSION_IDX]
     base = sph.IBLRIG_EPHYS_SESSION_FOLDER
-    sph.SESSION_LOADED_FILE_PATH = str(Path(base) / f'pcqs_session_{num}.npy')
+    sph.SESSION_LOADED_FILE_PATH = str(Path(base) / f'session_{num}_ephys_pcqs.npy')
     pcqs = np.load(Path(sph.SESSION_LOADED_FILE_PATH))
-    len_block = np.load(Path(base) / f'pcqs_session_{num}_len_blocks.npy')
+    len_block = np.load(Path(base) / f'session_{num}_ephys_len_blocks.npy')
 
     sph.POSITIONS = pcqs[:, 0].tolist()
     sph.CONTRASTS = pcqs[:, 1].tolist()
