@@ -174,21 +174,23 @@ def get_form_probe_data(form_data: dict) -> dict:
     return nested
 
 
-# TODO: make patch version (use settings_file_path=None)
-def ask_subject_weight(subject: str) -> float:
+def ask_subject_weight(subject: str, settings_file_path: str = None) -> float:
     out = graph.numinput("Subject weighing (gr)", f"{subject} weight (gr):", nullable=False)
     log.info(f'Subject weight {out}')
+    if settings_file_path is not None:
+        patch = {'SUBJECT_WEIGHT': out}
+        patch_settings_file(settings_file_path, patch)
     return out
 
 
-# TODO: adapt patch version (use settings_file_path: str = None & if None return out)
-def ask_session_delay(settings_file_path: str) -> int:
+def ask_session_delay(settings_file_path: str = None) -> int:
     out = graph.numinput(
         "Session delay", "Delay session initiation by (min):",
         default=0, minval=0, maxval=60, nullable=False, askint=True)
     out = out * 60
-    patch = {'SESSION_START_DELAY_SEC': out}
-    patch_settings_file(settings_file_path, patch)
+    if settings_file_path is not None:
+        patch = {'SESSION_START_DELAY_SEC': out}
+        patch_settings_file(settings_file_path, patch)
     return out
 
 
