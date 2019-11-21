@@ -90,7 +90,8 @@ class SessionParamHandler(object):
             self.PREVIOUS_SESSION_PATH)
         self.SESSION_ORDER = []
         self.SESSION_IDX = None
-        self = iotasks.load_session_order_and_idx(self)
+        self.IS_MOCK = None
+        # self = iotasks.load_session_order_and_idx(self)
         # Load from file
         self.POSITIONS = None
         self.CONTRASTS = None
@@ -104,7 +105,7 @@ class SessionParamHandler(object):
         self.AUTOMATIC_CALIBRATION = True
         self.CALIBRATION_VALUE = 0.067
         self.REWARD_AMOUNT = 1.5
-        self.REWARD_TYPE = 'Water 10% Sucrose'
+        self.REWARD_TYPE = None
 
         self.CALIB_FUNC = None
         if self.AUTOMATIC_CALIBRATION:
@@ -162,11 +163,11 @@ class SessionParamHandler(object):
         # =====================================================================
         # PROBES + WEIGHT
         # =====================================================================
-        form_data = -1
-        while form_data == -1:
-            form_data = user_input.session_form(mouse_name=self.SUBJECT_NAME)
-        self.SUBJECT_WEIGHT = user_input.get_form_subject_weight(form_data)
-        self.PROBE_DATA = user_input.get_form_probe_data(form_data)
+        # form_data = -1
+        # while form_data == -1:
+        #     form_data = user_input.session_form(mouse_name=self.SUBJECT_NAME)
+        self.SUBJECT_WEIGHT = None
+        self.PROBE_DATA = None
         # =====================================================================
         # VISUAL STIM
         # =====================================================================

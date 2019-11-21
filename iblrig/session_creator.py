@@ -197,8 +197,8 @@ def make_passiveCW_session_delays_ids(seed_num=None):
     srtd_idx = np.argsort(sess_delays_cumsum)
     sess_delays_cumsum = sess_delays_cumsum[srtd_idx]
     sess_labels_out = sess_labels_out[srtd_idx]
-    # get the delays between the stims
-    sess_delays_out = np.diff(sess_delays_cumsum)
+    # get the delays between the stims (add the first delay)
+    sess_delays_out = np.insert(np.diff(sess_delays_cumsum), 0, sess_delays_cumsum[0])
     tot_dur = np.sum(np.sum(g_len) + np.sum(n_len) + np.sum(t_len) +
                      np.sum(v_len) + np.sum(sess_delays_out)) / 60
 
@@ -216,8 +216,10 @@ def pre_generate_passiveCW_session_files(
     path.mkdir(parents=True, exist_ok=True)
     for i in range(nsessions):
         delays, ids, = make_passiveCW_session_delays_ids()
-        np.save(path / f'session_{i}_passive_stimDelays.npy', delays)
         np.save(path / f'session_{i}_passive_stimIDs.npy', ids)
+        np.save(path / f'session_{i}_passive_stimDelays.npy', delays)
+        np.savetxt(path / f'session_{i}_passive_gaborStimDelays.csv',
+                   delays[ids == 'G'], delimiter=' ', fmt='%f')
 
 
 if __name__ == "__main__":
