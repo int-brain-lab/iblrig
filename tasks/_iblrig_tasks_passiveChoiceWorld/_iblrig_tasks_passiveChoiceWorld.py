@@ -54,10 +54,10 @@ bpod.load_serial_message(sound_card, sc_play_noise, [
 # Start spontaneous activity
 re_spontaneous_start = re_reset + 6
 bpod.load_serial_message(sound_card, re_spontaneous_start, [ord('P'), 4])
-# Start spontaneous activity
+# Start receptive field mapping
 re_rfm_start = re_reset + 7
 bpod.load_serial_message(sound_card, re_rfm_start, [ord('P'), 5])
-# Start spontaneous activity
+# Start stim replay
 re_replay_start = re_reset + 8
 bpod.load_serial_message(sound_card, re_replay_start, [ord('P'), 6])
 # =============================================================================
