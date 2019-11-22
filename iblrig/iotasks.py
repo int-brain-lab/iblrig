@@ -159,7 +159,7 @@ def load_session_order_and_idx(sph: object) -> object:
     return sph
 
 
-def load_session_pcqs(sph: object) -> object:
+def load_ephys_session_pcqs(sph: object) -> object:
     num = sph.SESSION_ORDER[sph.SESSION_IDX]
     base = sph.IBLRIG_EPHYS_SESSION_FOLDER
     sph.SESSION_LOADED_FILE_PATH = str(Path(base) / f'session_{num}_ephys_pcqs.npy')
@@ -173,3 +173,8 @@ def load_session_pcqs(sph: object) -> object:
     sph.LEN_BLOCKS = len_block.tolist()
 
     return sph
+
+
+def load_passive_session_delays_ids(sph: object) -> object:
+    # TODO: use previous ephys session to get the num that ran
+    num = sph.PREVIOUS_EPHYS_SESSION
