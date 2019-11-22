@@ -19,7 +19,7 @@ import iblrig.iotasks as iotasks
 import iblrig.misc as misc
 import iblrig.sound as sound
 import iblrig.user_input as user_input
-from iblrig.path_helper import SessionPathCreator
+import iblrig.path_helper as ph
 from iblrig.rotary_encoder import MyRotaryEncoder
 
 log = logging.getLogger('iblrig')
@@ -43,9 +43,16 @@ class SessionParamHandler(object):
               for i in [x for x in dir(user_settings) if '__' not in x]}
         self.__dict__.update(us)
         self = iotasks.deserialize_pybpod_user_settings(self)
-        spc = SessionPathCreator(self.PYBPOD_SUBJECTS[0],
-                                 protocol=self.PYBPOD_PROTOCOL,
-                                 make=make)
+
+        spc = ph.SessionPathCreator(self.PYBPOD_SUBJECTS[0],
+                                    protocol='_iblrig_tasks_ephysChoiceWorld',  # pretend to run a new ephys session
+                                    make=False)  # don't make any folders
+        # get previous session folder i.e. the ephys session that just ran
+        self.PREVIOUS_EPHYS_SESSION = spc.PREVIOUS_SESSION_PATH
+        # run spc normally
+        spc = ph.SessionPathCreator(self.PYBPOD_SUBJECTS[0],
+                                    protocol=self.PYBPOD_PROTOCOL,
+                                    make=make)
         self.__dict__.update(spc.__dict__)
         # =====================================================================
         # SETTINGS
@@ -72,16 +79,16 @@ class SessionParamHandler(object):
         # SUBJECT
         # =====================================================================
         # self.SUBJECT_WEIGHT = self.ask_subject_weight()
-        self.POOP_COUNT = True
+        self.POOP_COUNT = False
         self.SUBJECT_DISENGAGED_TRIGGERED = False
         self.SUBJECT_DISENGAGED_TRIALNUM = None
         # =====================================================================
         # OSC CLIENT
         # =====================================================================
-        self.OSC_CLIENT_PORT = 7110
-        self.OSC_CLIENT_IP = '127.0.0.1'
-        self.OSC_CLIENT = udp_client.SimpleUDPClient(self.OSC_CLIENT_IP,
-                                                     self.OSC_CLIENT_PORT)
+        # self.OSC_CLIENT_PORT = 7110
+        # self.OSC_CLIENT_IP = '127.0.0.1'
+        # self.OSC_CLIENT = udp_client.SimpleUDPClient(self.OSC_CLIENT_IP,
+        #                                              self.OSC_CLIENT_PORT)
         # =====================================================================
         # PREVIOUS DATA FILES
         # =====================================================================
@@ -98,7 +105,9 @@ class SessionParamHandler(object):
         self.QUIESCENT_PERIOD = None
         self.STIM_PHASE = None
         self.LEN_BLOCKS = None
-        self = iotasks.load_session_pcqs(self)
+        self.STIM_IDS = None
+        self.STIM_DELAYS = None
+        self = iotasks.load_ephys_session_pcqs(self)
         # =====================================================================
         # ADAPTIVE STUFF
         # =====================================================================

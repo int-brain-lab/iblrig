@@ -100,7 +100,7 @@ class SessionParamHandler(object):
         self.QUIESCENT_PERIOD = None
         self.STIM_PHASE = None
         self.LEN_BLOCKS = None
-        self = iotasks.load_session_pcqs(self)
+        self = iotasks.load_ephys_session_pcqs(self)
         # =====================================================================
         # ADAPTIVE STUFF
         # =====================================================================
