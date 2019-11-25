@@ -48,7 +48,9 @@ class SessionParamHandler(object):
                                     protocol='_iblrig_tasks_ephysChoiceWorld',  # pretend to run a new ephys session
                                     make=False)  # don't make any folders
         # get previous session folder i.e. the ephys session that just ran
-        self.PREVIOUS_EPHYS_SESSION = spc.PREVIOUS_SESSION_PATH
+        self.CORRESPONDING_EPHYS_SESSION = spc.PREVIOUS_SESSION_PATH
+        self.CORRESPONDING_EPHYS_SETTINGS_DATA = iotasks.load_settings(
+            self.CORRESPONDING_EPHYS_SESSION)
         # run spc normally
         spc = ph.SessionPathCreator(self.PYBPOD_SUBJECTS[0],
                                     protocol=self.PYBPOD_PROTOCOL,
@@ -85,29 +87,36 @@ class SessionParamHandler(object):
         # =====================================================================
         # OSC CLIENT
         # =====================================================================
-        # self.OSC_CLIENT_PORT = 7110
-        # self.OSC_CLIENT_IP = '127.0.0.1'
-        # self.OSC_CLIENT = udp_client.SimpleUDPClient(self.OSC_CLIENT_IP,
-        #                                              self.OSC_CLIENT_PORT)
+        self.OSC_CLIENT_PORT = 7110
+        self.OSC_CLIENT_IP = '127.0.0.1'
+        self.OSC_CLIENT = udp_client.SimpleUDPClient(self.OSC_CLIENT_IP,
+                                                     self.OSC_CLIENT_PORT)
         # =====================================================================
         # PREVIOUS DATA FILES
         # =====================================================================
         self.LAST_TRIAL_DATA = iotasks.load_data(self.PREVIOUS_SESSION_PATH)
         self.LAST_SETTINGS_DATA = iotasks.load_settings(
             self.PREVIOUS_SESSION_PATH)
-        self.SESSION_ORDER = []
-        self.SESSION_IDX = None
         self.IS_MOCK = None
-        # self = iotasks.load_session_order_and_idx(self)
+        (
+            self.SESSION_ORDER,
+            self.SESSION_IDX,
+            self.PRELOADED_SESSION_NUM,
+        ) = iotasks.load_session_order_idx_num(
+            self.CORRESPONDING_EPHYS_SETTINGS_DATA,
+            self.CORRESPONDING_EPHYS_SETTINGS_DATA['IS_MOCK'])
         # Load from file
-        self.POSITIONS = None
-        self.CONTRASTS = None
+        (
+            self.STIM_DELAYS,
+            self.STIM_IDS,
+        ) = iotasks.load_passive_session_delays_ids(self.PRELOADED_SESSION_NUM)
         self.QUIESCENT_PERIOD = None
-        self.STIM_PHASE = None
         self.LEN_BLOCKS = None
-        self.STIM_IDS = None
-        self.STIM_DELAYS = None
-        self = iotasks.load_ephys_session_pcqs(self)
+        (
+            self.POSITIONS,
+            self.CONTRASTS,
+            self.STIM_PHASE,
+        ) = iotasks.load_passive_sesseion_pcs(self.PRELOADED_SESSION_NUM)
         # =====================================================================
         # ADAPTIVE STUFF
         # =====================================================================
