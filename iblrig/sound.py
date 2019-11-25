@@ -228,6 +228,10 @@ def init_sounds(sph, tone=True, noise=True):
     return sph
 
 
+def trigger_sc_sound(sound_idx):
+    sc = SoundCardModule()
+
+
 if __name__ == '__main__':
     # # Generate sounds
     # device = 'xonar'
