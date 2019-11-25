@@ -127,3 +127,19 @@ def send_current_trial_info(tph):
     tph.osc_client.send_message("/a", tph.stim_angle)
     tph.osc_client.send_message("/g", tph.stim_gain)
     tph.osc_client.send_message("/s", tph.stim_sigma)
+
+
+def send_stim_info(osc_client, trial_num, position, contrast, phase,
+                   freq=0.10, angle=0., gain=4., sigma=7.):
+    if osc_client is None:
+        log.error("Can't send trial info to Bonsai osc_client = None")
+        raise(UnboundLocalError)
+    osc_client.send_message("/t", trial_num)
+    osc_client.send_message("/p", position)
+    osc_client.send_message("/h", phase)
+    osc_client.send_message("/c", contrast)
+    # Consatants
+    osc_client.send_message("/f", freq)
+    osc_client.send_message("/a", angle)
+    osc_client.send_message("/g", gain)
+    osc_client.send_message("/s", sigma)
