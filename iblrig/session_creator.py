@@ -62,8 +62,8 @@ def pre_generate_ephysCW_session_files(
     for i in range(nsessions):
         pc, len_block = make_ephysCW_pc()
         pcqs = make_ephysCW_pcqs(pc)
-        np.save(path / f'pcqs_session_{i}.npy', pcqs)
-        np.save(path / f'pcqs_session_{i}_len_blocks.npy', len_block)
+        np.save(path / f'session_{i}_ephys_pcqs.npy', pcqs)
+        np.save(path / f'session_{i}_ephys_len_blocks.npy', len_block)
 
 
 def plot_pcqs(session_num, folder='./tasks/_iblrig_tasks_ephysChoiceWorld/sessions'):
@@ -216,10 +216,16 @@ def pre_generate_passiveCW_session_files(
     path.mkdir(parents=True, exist_ok=True)
     for i in range(nsessions):
         delays, ids, = make_passiveCW_session_delays_ids()
+        pcs = make_stims_for_passiveCW_pcs()
         np.save(path / f'session_{i}_passive_stimIDs.npy', ids)
         np.save(path / f'session_{i}_passive_stimDelays.npy', delays)
-        np.savetxt(path / f'session_{i}_passive_gaborStimDelays.csv',
-                   delays[ids == 'G'], delimiter=' ', fmt='%f')
+        np.save(path / f'session_{i}_passive_pcs.npy', pcs)
+    else:
+        delays, ids, = make_passiveCW_session_delays_ids()
+        pcs = make_stims_for_passiveCW_pcs()
+        np.save(path / f'session_mock_passive_stimIDs.npy', ids)
+        np.save(path / f'session_mock_passive_stimDelays.npy', delays)
+        np.save(path / f'session_mock_passive_pcs.npy', pcs)
 
 
 if __name__ == "__main__":
@@ -235,5 +241,5 @@ if __name__ == "__main__":
     # pre_generate_ephysCW_session_filess(1, path='sess')
     # plot_pcqs(0, folder='sess')
     # gabors = make_stims_for_passiveCW_pcs(save=True)
-    pre_generate_passiveCW_session_files(12)
+    # pre_generate_passiveCW_session_files(12)
     print('.')
