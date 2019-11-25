@@ -90,17 +90,20 @@ class SessionParamHandler(object):
         self.LAST_TRIAL_DATA = iotasks.load_data(self.PREVIOUS_SESSION_PATH)
         self.LAST_SETTINGS_DATA = iotasks.load_settings(
             self.PREVIOUS_SESSION_PATH)
-        self.SESSION_ORDER = []
-        self.SESSION_IDX = None
-        self.IS_MOCK = user_input.ask_is_mock()
-        self = iotasks.load_session_order_and_idx(self)
+        self.IS_MOCK = user_input.ask_is_mock()  # Change to False if mock has its own task
+        (
+            self.SESSION_ORDER,
+            self.SESSION_IDX,
+            self.PRELOADED_SESSION_NUM,
+        ) = iotasks.load_session_order_idx_num(self.LAST_SETTINGS_DATA, self.IS_MOCK)
         # Load from file
-        self.POSITIONS = None
-        self.CONTRASTS = None
-        self.QUIESCENT_PERIOD = None
-        self.STIM_PHASE = None
-        self.LEN_BLOCKS = None
-        self = iotasks.load_ephys_session_pcqs(self)
+        (
+            self.POSITIONS,
+            self.CONTRASTS,
+            self.QUIESCENT_PERIOD,
+            self.STIM_PHASE,
+            self.LEN_BLOCKS,
+        ) = iotasks.load_ephys_session_pcqs(self)
         # =====================================================================
         # ADAPTIVE STUFF
         # =====================================================================
