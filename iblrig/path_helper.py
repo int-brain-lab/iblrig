@@ -306,14 +306,17 @@ def get_session_number(session_date_folder) -> str:
     return out
 
 
+def get_pregen_session_folder():
+    iblrig_path = Path(get_iblrig_folder())
+    return str(iblrig_path / 'tasks' / '_iblrig_tasks_ephysChoiceWorld' / 'sessions')
+
+
 class SessionPathCreator(object):
     # add subject name and protocol (maybe have a metadata struct)
     def __init__(self, subject_name, protocol=False, make=False):
 
         self.IBLRIG_FOLDER = get_iblrig_folder()
-        self.IBLRIG_EPHYS_SESSION_FOLDER = str(
-            Path(self.IBLRIG_FOLDER) / 'tasks' /
-            '_iblrig_tasks_ephysChoiceWorld' / 'sessions')
+        self.IBLRIG_EPHYS_SESSION_FOLDER = get_pregen_session_folder()
         self._BOARD = params.get_board_name()
 
         self._PROTOCOL = protocol
