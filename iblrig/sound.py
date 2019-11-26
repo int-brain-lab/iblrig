@@ -156,8 +156,11 @@ def format_sound(sound, file_path=None, flat=False):
     return bin_sound.flatten() if flat else bin_sound
 
 
-def configure_sound_card(sounds=[], indexes=[], sample_rate=96):
-    card = SoundCardModule()
+def configure_sound_card(card=None, sounds=[], indexes=[], sample_rate=96):
+    if card is None:
+        card = SoundCardModule()
+        close_card = True
+
     if sample_rate == 192 or sample_rate == 192000:
         sample_rate = SampleRate._192000HZ
     elif sample_rate == 96 or sample_rate == 96000:
@@ -174,7 +177,8 @@ def configure_sound_card(sounds=[], indexes=[], sample_rate=96):
     for sound, index in zip(sounds, indexes):
         card.send_sound(sound, index, sample_rate, DataType.INT32)
 
-    card.close()
+    if close_card:
+        card.close()
     return
 
 
@@ -191,6 +195,7 @@ def sound_sample_freq(soft_sound):
 
 
 def init_sounds(sph, tone=True, noise=True):
+    # TODO: remove creation of card objec when checks are implemented
     if sph.SOFT_SOUND is None:
         msg = f"""
     ##########################################
@@ -228,8 +233,13 @@ def init_sounds(sph, tone=True, noise=True):
     return sph
 
 
-def trigger_sc_sound(sound_idx):
-    sc = SoundCardModule()
+def trigger_sc_sound(sound_idx, card=None):
+    if card is None:
+        card = SoundCardModule()
+        close_card = True
+
+    if close_card:
+        card.close()
 
 
 if __name__ == '__main__':
