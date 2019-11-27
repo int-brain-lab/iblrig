@@ -87,8 +87,8 @@ class SessionParamHandler(object):
         # =====================================================================
         # OSC CLIENT
         # =====================================================================
-        self.OSC_CLIENT_PORT = 7110
         self.OSC_CLIENT_IP = '127.0.0.1'
+        self.OSC_CLIENT_PORT = 7110
         self.OSC_CLIENT = udp_client.SimpleUDPClient(self.OSC_CLIENT_IP,
                                                      self.OSC_CLIENT_PORT)
         # =====================================================================
@@ -138,13 +138,11 @@ class SessionParamHandler(object):
         self.QUIESCENCE_THRESHOLDS = [-2, 2]  # degree
         self.ALL_THRESHOLDS = (self.STIM_POSITIONS +
                                self.QUIESCENCE_THRESHOLDS)
-        self.ROTARY_ENCODER = MyRotaryEncoder(self.ALL_THRESHOLDS,
-                                              self.STIM_GAIN,
-                                              self.PARAMS['COM_ROTARY_ENCODER'])
+        self.ROTARY_ENCODER = None
         # =====================================================================
         # frame2TTL
         # =====================================================================
-        self.F2TTL_GET_AND_SET_THRESHOLDS = frame2TTL.get_and_set_thresholds()
+        self.F2TTL_GET_AND_SET_THRESHOLDS = None
         # =====================================================================
         # SOUNDS
         # =====================================================================
@@ -193,7 +191,6 @@ class SessionParamHandler(object):
         self.SYNC_SQUARE_Y = -1.03
         self.USE_VISUAL_STIMULUS = True  # Run the visual stim in bonsai
         self.BONSAI_EDITOR = False  # Open the Bonsai editor of visual stim
-        bonsai.start_visual_stim(self)
         # =====================================================================
         # SAVE SETTINGS FILE AND TASK CODE
         # =====================================================================

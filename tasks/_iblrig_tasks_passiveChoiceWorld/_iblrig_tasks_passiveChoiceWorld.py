@@ -3,33 +3,38 @@
 # @Author: Niccolò Bonacchi
 # @Date: Friday, November 15th 2019, 12:05:29 pm
 import logging
-import math
 import time
 
-import matplotlib.pyplot as plt
 import numpy as np
 import usb
-from pybpod_rotaryencoder_module.module import RotaryEncoder
 from pybpodapi.protocol import Bpod, StateMachine
 
-import iblrig.iotasks as iotasks
 import iblrig.bonsai as bonsai
-import iblrig.path_helper as ph
+import iblrig.frame2TTL as frame2TTL
+import iblrig.iotasks as iotasks
 import iblrig.params as params
-import iblrig.sound as sound
 import task_settings
 import user_settings
+from iblrig.rotary_encoder import MyRotaryEncoder
 from session_params import SessionParamHandler
 
 log = logging.getLogger('iblrig')
 log.setLevel(logging.INFO)
 
+PARAMS = params.load_params_file()
 # start sph
 sph = SessionParamHandler(task_settings, user_settings)
+# frame2TTL seg thresholds
+if frame2TTL.get_and_set_thresholds() == 0:
+    sph.F2TTL_GET_AND_SET_THRESHOLDS = True
+# Rotary encoder
+re = MyRotaryEncoder(sph.ALL_THRESHOLDS, sph.STIM_GAIN, sph.PARAMS['COM_ROTARY_ENCODER'])
+sph.ROTARY_ENCODER = re
 # start Bonsai stim workflow
+bonsai.start_visual_stim(sph)
+
 
 # get bpod
-PARAMS = params.load_params_file()
 bpod = Bpod(serial_port=PARAMS['COM_BPOD'])
 # get soundcard bpod style
 bpod_sound_card = [x for x in bpod.modules if x.name == 'SoundCard1'][0]
@@ -51,10 +56,9 @@ def do_gabor(pcs_idx, pos, cont, phase):
     bonsai.send_stim_info(sph.OSC_CLIENT, pcs_idx, pos, cont, phase,
                           freq=0.10, angle=0., gain=4., sigma=7.)
 
-    # TODO: make bpod osc override!!
-    sph.OSC_CLIENT.send_message("/stim", 2)  # show_stim 2
+    sph.OSC_CLIENT.send_message("/re", 2)  # show_stim 2
     time.sleep(0.3)
-    sph.OSC_CLIENT.send_message("/stim", 1)  # stop_stim 1
+    sph.OSC_CLIENT.send_message("/re", 1)  # stop_stim 1
 
 
 def do_valve_click(bpod, reward_valve_time):
