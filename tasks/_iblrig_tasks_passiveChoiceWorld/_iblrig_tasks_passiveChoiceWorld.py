@@ -8,6 +8,7 @@ import time
 
 import matplotlib.pyplot as plt
 import numpy as np
+import usb
 from pybpod_rotaryencoder_module.module import RotaryEncoder
 from pybpodapi.protocol import Bpod, StateMachine
 
@@ -40,10 +41,9 @@ sc_play_noise = 3
 bpod.load_serial_message(bpod_sound_card, sc_play_noise, [ord('P'), sph.WHITE_NOISE_IDX])
 
 # get soundcard
-import usb
 card = usb.core.find(idVendor=0x04d8, idProduct=0xee6a)
-card_play_tone = [2, 6, 32, 255, 2, 2, 0, 43]
-card_play_noise = [2, 6, 32, 255, 2, 3, 0, 44]
+card_play_tone = bytes(np.array([2, 6, 32, 255, 2, 2, 0, 43], dtype=np.int8))
+card_play_noise = bytes(np.array([2, 6, 32, 255, 2, 3, 0, 44], dtype=np.int8))
 
 
 def do_gabor(pcs_idx, pos, cont, phase):
@@ -85,8 +85,8 @@ def do_bpod_sound(bpod, sound_msg):
 
 
 def do_card_sound(card, sound_msg):
-    card.write(1, sound_msg, 100)
-    time.sleep(0.1)
+    if card is not None:
+        card.write(1, sound_msg, 100)
     return
 
 
@@ -99,10 +99,10 @@ for sdel, sid in zip(sph.STIM_DELAYS, sph.STIM_IDS):
         # time.sleep(sph.REWARD_VALVE_TIME)
     elif sid == 'T':
         do_card_sound(card, card_play_tone)
-        # time.sleep(0.1)
+        time.sleep(0.1)
     elif sid == 'N':
         do_card_sound(card, card_play_noise)
-        # time.sleep(0.5)
+        time.sleep(0.5)
     elif sid == 'G':
         do_gabor(pcs_idx,
                  sph.POSITIONS[pcs_idx],
