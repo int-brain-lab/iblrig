@@ -13,7 +13,7 @@ import scipy.interpolate
 log = logging.getLogger('iblrig')
 
 
-def init_reward_amount(sph) -> float:
+def init_reward_amount(sph: object) -> float:
     if not sph.ADAPTIVE_REWARD:
         return sph.REWARD_AMOUNT
 
@@ -38,7 +38,7 @@ def init_reward_amount(sph) -> float:
     return out
 
 
-def init_calib_func(latest_water_calibration_file) -> scipy.interpolate.pchip:
+def init_calib_func(latest_water_calibration_file: str) -> scipy.interpolate.pchip:
     if latest_water_calibration_file:
         # Load last calibration df1
         df1 = pd.read_csv(latest_water_calibration_file)
@@ -81,17 +81,28 @@ def init_calib_func_range(latest_water_calib_range_file: str) -> tuple:
     return min_open_time, max_open_time
 
 
-def init_reward_valve_time(sph) -> float:
+def calc_reward_valve_time(reward_amount: float,
+                           calib_func: scipy.interpolate.pchip,
+                           calib_func_range: tuple) -> float:
+    valve_time = calib_func_range[0]
+    while np.round(calib_func(valve_time), 3) < reward_amount:
+        valve_time += 1
+        if valve_time >= calib_func_range[1]:
+            break
+    valve_time /= 1000
+    return valve_time
+
+
+def manual_reward_valve_time(reward_amount: float, calibration_value: float) -> float:
+    return calibration_value / 3 * reward_amount
+
+
+def init_reward_valve_time(sph: object) -> float:
     # Calc reward valve time
     if not sph.AUTOMATIC_CALIBRATION:
-        out = sph.CALIBRATION_VALUE / 3 * sph.REWARD_AMOUNT
+        out = manual_reward_valve_time(sph.REWARD_AMOUNT, sph.CALIBRATION_VALUE)
     elif sph.AUTOMATIC_CALIBRATION and sph.CALIB_FUNC is not None:
-        out = sph.CALIB_FUNC_RANGE[0]
-        while np.round(sph.CALIB_FUNC(out), 3) < sph.REWARD_AMOUNT:
-            out += 1
-            if out >= sph.CALIB_FUNC_RANGE[1]:
-                break
-        out /= 1000
+        out = calc_reward_valve_time(sph.REWARD_AMOUNT, sph.CALIB_FUNC, sph.CALIB_FUNC_RANGE)
     elif sph.AUTOMATIC_CALIBRATION and sph.CALIB_FUNC is None:
         msg = f"""
         ##########################################
@@ -124,7 +135,7 @@ def init_reward_valve_time(sph) -> float:
     return float(out)
 
 
-def init_stim_gain(sph) -> float:
+def init_stim_gain(sph: object) -> float:
     if not sph.ADAPTIVE_GAIN:
         return sph.STIM_GAIN
 
@@ -136,7 +147,7 @@ def init_stim_gain(sph) -> float:
     return stim_gain
 
 
-def impulsive_control(sph):
+def impulsive_control(sph: object):
     crit_1 = False  # 50% perf on one side ~100% on other
     crit_2 = False  # Median RT on hard (<50%) contrasts < 300ms
     crit_3 = False  # Getting enough water
@@ -150,6 +161,7 @@ def impulsive_control(sph):
     # Check crit 1
     l_trial_correct = trial_correct[signed_contrast < 0]
     r_trial_correct = trial_correct[signed_contrast > 0]
+    # If no trials on either side crit1 would be false and last check not pass, safe to return
     if len(l_trial_correct) == 0 or len(r_trial_correct) == 0:
         return sph
 
