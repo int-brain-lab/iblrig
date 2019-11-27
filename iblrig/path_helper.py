@@ -26,7 +26,7 @@ def get_iblrig_params_folder() -> str:
     return str(iblrig_.parent / 'iblrig_params')
 
 
-def get_iblrig_data_folder(subjects=True) -> str:
+def get_iblrig_data_folder(subjects: bool = True) -> str:
     iblrig_ = Path(get_iblrig_folder())
     out = iblrig_.parent / 'iblrig_data'
     sout = iblrig_.parent / 'iblrig_data' / 'Subjects'
@@ -37,7 +37,7 @@ def get_iblrig_data_folder(subjects=True) -> str:
     return str(sout) if subjects else str(out)
 
 
-def get_commit_hash(folder):
+def get_commit_hash(folder: str):
     here = os.getcwd()
     os.chdir(folder)
     out = subprocess.check_output(["git", "rev-parse", "HEAD"]).decode()
@@ -87,7 +87,7 @@ def get_visual_stim_folder_name(protocol: str) -> str:
         return 'GaborIBLTask'
 
 
-def get_water_calibration_func_file(latest=True) -> Path or list:
+def get_water_calibration_func_file(latest: bool = True) -> Path or list:
     data_folder = Path(get_iblrig_data_folder())
     func_files = sorted(data_folder.rglob('_iblrig_calibration_water_function.csv'))
     if not func_files:
@@ -103,12 +103,12 @@ def get_water_calibration_range_file(latest=True) -> Path or list:
     return range_files[-1] if latest else range_files
 
 
-def load_water_calibraition_func_file(fpath) -> dict:
-    if not Path(fpath).exists:
+def load_water_calibraition_func_file(fpath: str or Path) -> dict:
+    if not Path(fpath).exists():
         return
 
     import pandas as pd
-    # Load TODO: remove pandas dependency
+    # TODO: remove pandas dependency
     df1 = pd.read_csv(fpath)
     if df1.empty:
         return {'WATER_CALIBRATION_OPEN_TIMES': None,
@@ -118,12 +118,12 @@ def load_water_calibraition_func_file(fpath) -> dict:
             'WATER_CALIBRATION_WEIGHT_PERDROP': df1["weight_perdrop"].to_list()}
 
 
-def load_water_calibraition_range_file(fpath) -> dict:
-    if not Path(fpath).exists:
+def load_water_calibraition_range_file(fpath: str or Path) -> dict:
+    if not Path(fpath).exists():
         return
 
     import pandas as pd
-    # Load TODO: remove pandas dependency
+    # TODO: remove pandas dependency
     df1 = pd.read_csv(fpath)
     if df1.empty:
         return {'WATER_CALIBRATION_RANGE': [None, None]}
@@ -254,7 +254,7 @@ def get_subfolder_paths(folder: str) -> str:
     return out
 
 
-def get_bonsai_path(use_iblrig_bonsai=True) -> str:
+def get_bonsai_path(use_iblrig_bonsai: bool = True) -> str:
     """Checks for Bonsai folder in iblrig.
     Returns string with bonsai executable path."""
     iblrig_folder = get_iblrig_folder()
@@ -276,18 +276,16 @@ def get_bonsai_path(use_iblrig_bonsai=True) -> str:
     return BONSAI
 
 
-def get_visual_stim_type(protocol):
+def get_visual_stim_type(protocol: str) -> str:
     if 'habituation' in protocol or 'bpod_ttl_test' in protocol:
         return 'GaborHabituationTask'
     elif 'ephys_certification' in protocol:
         return 'ephys_certification'
-    elif 'passive' in protocol:
-        return 'passiveChoiceWorld'
     else:
         return 'GaborIBLTask'
 
 
-def get_session_number(session_date_folder) -> str:
+def get_session_number(session_date_folder: str) -> str:
     log.debug("Initializing session number")
     if not Path(session_date_folder).exists():
         return '001'
@@ -306,7 +304,7 @@ def get_session_number(session_date_folder) -> str:
     return out
 
 
-def get_pregen_session_folder():
+def get_pregen_session_folder() -> str:
     iblrig_path = Path(get_iblrig_folder())
     return str(iblrig_path / 'tasks' / '_iblrig_tasks_ephysChoiceWorld' / 'sessions')
 
