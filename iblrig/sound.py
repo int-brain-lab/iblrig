@@ -237,6 +237,24 @@ def trigger_sc_sound(sound_idx, card=None):
     if card is None:
         card = SoundCardModule()
         close_card = True
+    # [MessageType] [Length] [Address] [Port] [PayloadType] [Payload] [Checksum]
+    # write=2 LEN=6 addr=32 port=255 payloadType=2 payload=[index 0]U16 checksum=43
+
+    # 2 6 32 255 2 [2 0] 43 --> play tone
+    # 2 6 32 255 2 [3 0] 44 --> play noise
+
+    # 2 LEN=5 33 255 1 [index]U8 checksum
+
+    def _calc_checksum(data):
+        return sum(data) & 0xFF
+
+    play_tone = [2, 6, 32, 255, 2, 2, 0, 43]
+    play_noise = [2, 6, 32, 255, 2, 3, 0, 44]
+    # Find SoundCard
+    # import usb
+    # usb.core.find(idVendor=0x04d8, idProduct=0xee6a)
+    with card._dev as sc:
+        sc.write(1, data, 100)
 
     if close_card:
         card.close()

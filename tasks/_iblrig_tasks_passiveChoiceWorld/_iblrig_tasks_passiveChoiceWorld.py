@@ -30,14 +30,20 @@ sph = SessionParamHandler(task_settings, user_settings)
 # get bpod
 PARAMS = params.load_params_file()
 bpod = Bpod(serial_port=PARAMS['COM_BPOD'])
-# get soundcard
-sound_card = [x for x in bpod.modules if x.name == 'SoundCard1'][0]
+# get soundcard bpod style
+bpod_sound_card = [x for x in bpod.modules if x.name == 'SoundCard1'][0]
 # Play tone
 sc_play_tone = 2
-bpod.load_serial_message(sound_card, sc_play_tone, [ord('P'), sph.GO_TONE_IDX])
+bpod.load_serial_message(bpod_sound_card, sc_play_tone, [ord('P'), sph.GO_TONE_IDX])
 # Play noise
 sc_play_noise = 3
-bpod.load_serial_message(sound_card, sc_play_noise, [ord('P'), sph.WHITE_NOISE_IDX])
+bpod.load_serial_message(bpod_sound_card, sc_play_noise, [ord('P'), sph.WHITE_NOISE_IDX])
+
+# get soundcard
+import usb
+card = usb.core.find(idVendor=0x04d8, idProduct=0xee6a)
+card_play_tone = [2, 6, 32, 255, 2, 2, 0, 43]
+card_play_noise = [2, 6, 32, 255, 2, 3, 0, 44]
 
 
 def do_gabor(pcs_idx, pos, cont, phase):
@@ -65,12 +71,12 @@ def do_valve_click(bpod, reward_valve_time):
     return
 
 
-def do_tone(bpod):
+def do_bpod_sound(bpod, sound_msg):
     sma = StateMachine(bpod)
     sma.add_state(
         state_name='play_tone',
         state_timer=0,
-        output_actions=[('Serial3', sc_play_tone)],
+        output_actions=[('Serial3', sound_msg)],
         state_change_conditions={'BNC2Low': 'exit'},
     )
     bpod.send_state_machine(sma)
@@ -78,16 +84,9 @@ def do_tone(bpod):
     return
 
 
-def do_noise(bpod):
-    sma = StateMachine(bpod)
-    sma.add_state(
-        state_name='play_noise',
-        state_timer=0,
-        output_actions=[('Serial3', sc_play_tone)],
-        state_change_conditions={'BNC2Low': 'exit'},
-    )
-    bpod.send_state_machine(sma)
-    bpod.run_state_machine(sma)  # Locks until state machine 'exit' is reached
+def do_card_sound(card, sound_msg):
+    card.write(1, sound_msg, 100)
+    time.sleep(0.1)
     return
 
 
@@ -99,10 +98,10 @@ for sdel, sid in zip(sph.STIM_DELAYS, sph.STIM_IDS):
         do_valve_click(sph.REWARD_VALVE_TIME)
         # time.sleep(sph.REWARD_VALVE_TIME)
     elif sid == 'T':
-        do_tone(bpod)  # Send serial message 2
+        do_card_sound(card, card_play_tone)
         # time.sleep(0.1)
     elif sid == 'N':
-        do_noise(bpod)  # Send serial message 3
+        do_card_sound(card, card_play_noise)
         # time.sleep(0.5)
     elif sid == 'G':
         do_gabor(pcs_idx,
