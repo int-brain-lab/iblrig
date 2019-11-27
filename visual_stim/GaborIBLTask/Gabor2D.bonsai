@@ -270,6 +270,14 @@
                   <Expression xsi:type="BehaviorSubject">
                     <Name>StimPhase</Name>
                   </Expression>
+                  <Expression xsi:type="osc:ReceiveMessage">
+                    <osc:Connection>bpod</osc:Connection>
+                    <osc:Address>/re</osc:Address>
+                    <osc:TypeTag>i</osc:TypeTag>
+                  </Expression>
+                  <Expression xsi:type="MulticastSubject">
+                    <Name>BpodEvent</Name>
+                  </Expression>
                   <Expression xsi:type="GroupWorkflow">
                     <Name>BpodOverrides</Name>
                     <Workflow>
@@ -426,6 +434,7 @@
                   <Edge From="4" To="20" Label="Source1" />
                   <Edge From="4" To="24" Label="Source1" />
                   <Edge From="4" To="27" Label="Source1" />
+                  <Edge From="4" To="30" Label="Source1" />
                   <Edge From="5" To="6" Label="Source1" />
                   <Edge From="6" To="7" Label="Source1" />
                   <Edge From="8" To="9" Label="Source1" />
@@ -443,6 +452,7 @@
                   <Edge From="25" To="26" Label="Source1" />
                   <Edge From="27" To="28" Label="Source1" />
                   <Edge From="28" To="29" Label="Source1" />
+                  <Edge From="30" To="31" Label="Source1" />
                 </Edges>
               </Workflow>
             </Expression>
