@@ -83,8 +83,8 @@ class SessionParamHandler(object):
         # =====================================================================
         self.CALIB_FUNC = None
         if self.AUTOMATIC_CALIBRATION:
-            self.CALIB_FUNC = adaptive.init_calib_func(self.LATEST_WATER_CALIBRATION_FILE)
-        self.CALIB_FUNC_RANGE = adaptive.init_calib_func_range(self.LATEST_WATER_CALIB_RANGE_FILE)
+            self.CALIB_FUNC = adaptive.init_calib_func()
+        self.CALIB_FUNC_RANGE = adaptive.init_calib_func_range()
         self.REWARD_VALVE_TIME = adaptive.init_reward_valve_time(self)
 
         # =====================================================================
