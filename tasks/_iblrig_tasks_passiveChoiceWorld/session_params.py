@@ -51,6 +51,9 @@ class SessionParamHandler(object):
         self.CORRESPONDING_EPHYS_SESSION = spc.PREVIOUS_SESSION_PATH
         self.CORRESPONDING_EPHYS_SETTINGS_DATA = iotasks.load_settings(
             self.CORRESPONDING_EPHYS_SESSION)
+        # Patch the dict if no IS_MOCK key is found
+        if 'IS_MOCK' not in self.CORRESPONDING_EPHYS_SETTINGS_DATA.keys():
+            self.CORRESPONDING_EPHYS_SETTINGS_DATA.update({'IS_MOCK': False})
         # run spc normally
         spc = ph.SessionPathCreator(self.PYBPOD_SUBJECTS[0],
                                     protocol=self.PYBPOD_PROTOCOL,
@@ -116,11 +119,11 @@ class SessionParamHandler(object):
             self.POSITIONS,
             self.CONTRASTS,
             self.STIM_PHASE,
-        ) = iotasks.load_passive_sesseion_pcs(self.PRELOADED_SESSION_NUM)
+        ) = iotasks.load_passive_session_pcs(self.PRELOADED_SESSION_NUM)
         # =====================================================================
         # ADAPTIVE STUFF
         # =====================================================================
-        self.AUTOMATIC_CALIBRATION = True
+        self.AUTOMATIC_CALIBRATION = False  # XXX: CHANGE THIS!!
         self.CALIBRATION_VALUE = 0.067
         self.REWARD_AMOUNT = 1.5
         self.REWARD_TYPE = None
@@ -168,10 +171,10 @@ class SessionParamHandler(object):
             amplitude=self.WHITE_NOISE_AMPLITUDE, fade=0.01, chans='stereo')
         self.GO_TONE_IDX = 2
         self.WHITE_NOISE_IDX = 3
-        sound.configure_sound_card(
-            sounds=[self.GO_TONE, self.WHITE_NOISE],
-            indexes=[self.GO_TONE_IDX, self.WHITE_NOISE_IDX],
-            sample_rate=self.SOUND_SAMPLE_FREQ)
+        # sound.configure_sound_card(  # XXX: CHANGE THIS!!
+        #     sounds=[self.GO_TONE, self.WHITE_NOISE],
+        #     indexes=[self.GO_TONE_IDX, self.WHITE_NOISE_IDX],
+        #     sample_rate=self.SOUND_SAMPLE_FREQ)
         self.OUT_TONE = ('SoftCode', 1) if self.SOFT_SOUND else ('Serial3', 5)
         self.OUT_NOISE = ('SoftCode', 2) if self.SOFT_SOUND else ('Serial3', 6)
         self.OUT_STOP_SOUND = (
@@ -279,6 +282,8 @@ class SessionParamHandler(object):
         d['QUIESCENT_PERIOD'] = None
         d['STIM_PHASE'] = None
         d['LEN_BLOCKS'] = None
+        d['STIM_DELAYS'] = d['STIM_DELAYS'].tolist()
+        d['STIM_IDS'] = d['STIM_IDS'].tolist()
 
         return d
 
