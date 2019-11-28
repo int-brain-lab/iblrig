@@ -322,8 +322,7 @@ def create_experiment_setups(iblproject_path, exp_name: str):  # XXX:THIS!
     calib_subj = [s for s in p.subjects if s.name == '_iblrig_calibration'][0]
     test_subj = [s for s in p.subjects if s.name == '_iblrig_test_mouse'][0]
     if not exp:
-        print(f'Experiment {exp} not found')
-        raise KeyError
+        raise KeyError(f'Experiment {exp} not found')
     else:
         exp = exp[0]
 
@@ -406,8 +405,7 @@ def setups_to_remove(iblproject_path):
     p.load(iblproject_path)
     exp = [e for e in p.experiments if e.name == '_iblrig_calibration']
     if not exp:
-        print(f'Experiment {exp} not found')
-        raise KeyError
+        raise KeyError(f'Experiment {exp} not found')
     else:
         exp = exp[0]
         setup = [s for s in exp.setups if s.name == 'screen']
