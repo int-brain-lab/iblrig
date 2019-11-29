@@ -32,6 +32,9 @@ def start_visual_stim(sph):
         itr = "-p:Stim.FileNameTrialInfo=" + os.path.join(
             sph.SESSION_RAW_DATA_FOLDER,
             "_iblrig_encoderTrialInfo.raw.ssv")
+        screen_pos = "-p:Stim.FileNameStimPositionScreen=" + os.path.join(
+            sph.SESSION_RAW_DATA_FOLDER,
+            "_iblrig_stimPositionScreen.raw.ssv")
 
         com = "-p:Stim.REPortName=" + sph.PARAMS['COM_ROTARY_ENCODER']
 
@@ -53,7 +56,7 @@ def start_visual_stim(sph):
                 [bns, wkfl, editor, noboot, evt, itr, com, sync_x, sync_y])
         else:
             subprocess.Popen(
-                [bns, wkfl, editor, noboot, pos, evt, itr, com, sync_x, sync_y,
+                [bns, wkfl, editor, noboot, screen_pos, pos, evt, itr, com, sync_x, sync_y,
                  translationz])
         os.chdir(here)
     else:

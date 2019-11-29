@@ -930,6 +930,9 @@
             <Expression xsi:type="ExternalizedMapping">
               <Property Name="FileNamePositions" />
             </Expression>
+            <Expression xsi:type="ExternalizedMapping">
+              <Property Name="FileNameStimPositionScreen" />
+            </Expression>
             <Expression xsi:type="NestedWorkflow">
               <Name>SaveData</Name>
               <Description>Needs a Published Subject with the RE data stream
@@ -1017,6 +1020,19 @@ _iblrig_micData.raw.wav
                     <io:IncludeHeader>false</io:IncludeHeader>
                     <io:CompatibilityMode>true</io:CompatibilityMode>
                   </Expression>
+                  <Expression xsi:type="SubscribeSubject">
+                    <Name>StimLocationX</Name>
+                  </Expression>
+                  <Expression xsi:type="ExternalizedMapping">
+                    <Property Name="FileName" DisplayName="FileNameStimPositionScreen" />
+                  </Expression>
+                  <Expression xsi:type="io:CsvWriter">
+                    <io:FileName>C:\iblrig_data\Subjects\_iblrig_test_mouse\2019-07-01\008\raw_behavior_data\_iblrig_stimPositionScreen.raw.ssv</io:FileName>
+                    <io:Append>false</io:Append>
+                    <io:Overwrite>true</io:Overwrite>
+                    <io:Suffix>None</io:Suffix>
+                    <io:IncludeHeader>false</io:IncludeHeader>
+                  </Expression>
                 </Nodes>
                 <Edges>
                   <Edge From="0" To="7" Label="Source5" />
@@ -1035,6 +1051,8 @@ _iblrig_micData.raw.wav
                   <Edge From="14" To="15" Label="Source2" />
                   <Edge From="16" To="18" Label="Source1" />
                   <Edge From="17" To="18" Label="Source2" />
+                  <Edge From="19" To="21" Label="Source1" />
+                  <Edge From="20" To="21" Label="Source2" />
                 </Edges>
               </Workflow>
             </Expression>
@@ -1501,17 +1519,18 @@ Value = whhel_radius for wheel_perim</Description>
             <Edge From="26" To="27" Label="Source2" />
             <Edge From="27" To="28" Label="Source1" />
             <Edge From="29" To="30" Label="Source1" />
-            <Edge From="31" To="34" Label="Source1" />
-            <Edge From="32" To="34" Label="Source2" />
-            <Edge From="33" To="34" Label="Source3" />
-            <Edge From="35" To="36" Label="Source1" />
-            <Edge From="35" To="38" Label="Source1" />
-            <Edge From="35" To="41" Label="Source1" />
+            <Edge From="31" To="35" Label="Source1" />
+            <Edge From="32" To="35" Label="Source2" />
+            <Edge From="33" To="35" Label="Source3" />
+            <Edge From="34" To="35" Label="Source4" />
             <Edge From="36" To="37" Label="Source1" />
-            <Edge From="38" To="39" Label="Source1" />
+            <Edge From="36" To="39" Label="Source1" />
+            <Edge From="36" To="42" Label="Source1" />
+            <Edge From="37" To="38" Label="Source1" />
             <Edge From="39" To="40" Label="Source1" />
-            <Edge From="41" To="42" Label="Source1" />
+            <Edge From="40" To="41" Label="Source1" />
             <Edge From="42" To="43" Label="Source1" />
+            <Edge From="43" To="44" Label="Source1" />
           </Edges>
         </Workflow>
       </Expression>
