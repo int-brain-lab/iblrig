@@ -281,8 +281,21 @@ def get_visual_stim_type(protocol: str) -> str:
         return 'GaborHabituationTask'
     elif 'ephys_certification' in protocol:
         return 'ephys_certification'
+    elif 'passive'in protocol:
+        return 'passiveChoiceWorld'
     else:
         return 'GaborIBLTask'
+
+
+def get_visual_stim_file_name(visual_stimulus_type: str) -> str:
+    if 'GaborHabituationTask' in visual_stimulus_type:
+        return 'Gabor2D.bonsai'
+    elif 'ephys_certification' in protocol:
+        return 'ephys_certification.bonsai'
+    elif 'passiveChoiceWorld'in visual_stimulus_type:
+        return 'passiveChoiceWorld_passive.bonsai'
+    elif 'GaborIBLTask' in visual_stimulus_type:
+        return 'Gabor2D.bonsai'
 
 
 def get_session_number(session_date_folder: str) -> str:
@@ -335,9 +348,10 @@ class SessionPathCreator(object):
         self.BONSAI = get_bonsai_path(use_iblrig_bonsai=True)
         self.VISUAL_STIM_FOLDER = str(Path(self.IBLRIG_FOLDER) / 'visual_stim')
         self.VISUAL_STIMULUS_TYPE = get_visual_stim_type(self._PROTOCOL)
+        self.VISUAL_STIMULUS_FILE_NAME = get_visual_stim_file_name(self.VISUAL_STIMULUS_TYPE)
         self.VISUAL_STIMULUS_FILE = str(
             Path(self.VISUAL_STIM_FOLDER) /
-            self.VISUAL_STIMULUS_TYPE / 'Gabor2D.bonsai')
+            self.VISUAL_STIMULUS_TYPE / self.VISUAL_STIMULUS_FILE_NAME)
 
         self.VIDEO_RECORDING_FOLDER = os.path.join(
             self.IBLRIG_FOLDER, 'devices', 'camera_recordings')
