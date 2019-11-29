@@ -69,8 +69,8 @@ def init_calib_func_range() -> tuple:
             ##########################################"""
         log.warning(msg)
     else:
-        min_open_time = params['WATER_CALIBRATION_RANGE'][0]
-        max_open_time = params['WATER_CALIBRATION_RANGE'][1]
+        min_open_time = PARAMS['WATER_CALIBRATION_RANGE'][0]
+        max_open_time = PARAMS['WATER_CALIBRATION_RANGE'][1]
 
     return min_open_time, max_open_time
 
