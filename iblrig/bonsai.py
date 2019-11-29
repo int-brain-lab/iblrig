@@ -54,6 +54,10 @@ def start_visual_stim(sph):
         if 'habituation' in sph.PYBPOD_PROTOCOL or 'bpod_ttl_test' in sph.PYBPOD_PROTOCOL:
             subprocess.Popen(
                 [bns, wkfl, editor, noboot, evt, itr, com, sync_x, sync_y])
+        elif 'passive' in sph.PYBPOD_PROTOCOL:
+            subprocess.Popoen(
+                [bns, wkfl, editor, noboot, translationz]
+            )
         else:
             subprocess.Popen(
                 [bns, wkfl, editor, noboot, screen_pos, pos, evt, itr, com, sync_x, sync_y,
@@ -117,7 +121,7 @@ def send_current_trial_info(tph):
     """
     if tph.osc_client is None:
         log.error("Can't send trial info to Bonsai osc_client = None")
-        raise(UnboundLocalError)
+        raise UnboundLocalError("Can't send trial info to Bonsai osc_client = None")
     # tph.position = tph.position  # (2/3)*t_position/180
     tph.osc_client.send_message("/t", tph.trial_num)
     tph.osc_client.send_message("/p", tph.position)
@@ -136,7 +140,7 @@ def send_stim_info(osc_client, trial_num, position, contrast, phase,
                    freq=0.10, angle=0., gain=4., sigma=7.):
     if osc_client is None:
         log.error("Can't send trial info to Bonsai osc_client = None")
-        raise(UnboundLocalError)
+        raise UnboundLocalError("Can't send trial info to Bonsai osc_client = None")
     osc_client.send_message("/t", trial_num)
     osc_client.send_message("/p", position)
     osc_client.send_message("/h", phase)
