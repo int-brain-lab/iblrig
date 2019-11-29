@@ -43,14 +43,17 @@ class SessionParamHandler(object):
               for i in [x for x in dir(user_settings) if '__' not in x]}
         self.__dict__.update(us)
         self = iotasks.deserialize_pybpod_user_settings(self)
-
+        # Pretend to run a new ephys session
         spc = ph.SessionPathCreator(self.PYBPOD_SUBJECTS[0],
-                                    protocol='_iblrig_tasks_ephysChoiceWorld',  # pretend to run a new ephys session
+                                    protocol='_iblrig_tasks_ephysChoiceWorld',
                                     make=False)  # don't make any folders
-        # get previous session folder i.e. the ephys session that just ran
+        # Get previous session folder i.e. the ephys session that just ran
         self.CORRESPONDING_EPHYS_SESSION = spc.PREVIOUS_SESSION_PATH
+        # Get its metadata
         self.CORRESPONDING_EPHYS_SETTINGS_DATA = iotasks.load_settings(
             self.CORRESPONDING_EPHYS_SESSION)
+        # Get the vis stim file for an ephys session for the replay later
+        self.VISUAL_STIMULUS_FILE_EPHYS = spc.VISUAL_STIMULUS_FILE
         # Patch the dict if no IS_MOCK key is found
         if 'IS_MOCK' not in self.CORRESPONDING_EPHYS_SETTINGS_DATA.keys():
             self.CORRESPONDING_EPHYS_SETTINGS_DATA.update({'IS_MOCK': False})
