@@ -12,6 +12,7 @@ from pybpodapi.protocol import Bpod, StateMachine
 import iblrig.bonsai as bonsai
 import iblrig.frame2TTL as frame2TTL
 import iblrig.iotasks as iotasks
+import iblrig.misc as misc
 import iblrig.params as params
 import task_settings
 import user_settings
@@ -30,8 +31,6 @@ if frame2TTL.get_and_set_thresholds() == 0:
 # Rotary encoder
 re = MyRotaryEncoder(sph.ALL_THRESHOLDS, sph.STIM_GAIN, sph.PARAMS['COM_ROTARY_ENCODER'])
 sph.ROTARY_ENCODER = re
-# start Bonsai stim workflow
-bonsai.start_visual_stim(sph)
 
 
 # get bpod
@@ -51,7 +50,7 @@ card_play_tone = bytes(np.array([2, 6, 32, 255, 2, 2, 0, 43], dtype=np.int8))
 card_play_noise = bytes(np.array([2, 6, 32, 255, 2, 3, 0, 44], dtype=np.int8))
 
 
-def do_gabor(pcs_idx, pos, cont, phase):
+def do_gabor(osc_client, pcs_idx, pos, cont, phase):
     # send pcs to Bonsai
     bonsai.send_stim_info(sph.OSC_CLIENT, pcs_idx, pos, cont, phase,
                           freq=0.10, angle=0., gain=4., sigma=7.)
@@ -94,6 +93,12 @@ def do_card_sound(card, sound_msg):
     return
 
 
+# Run the passive part i.e. spontaneous activity and RFMapping stim
+bonsai.start_passive_visual_stim(sph.SESSION_RAW_DATA_FOLDER)  # Loks
+
+# start Bonsai stim workflow
+bonsai.start_visual_stim(sph)
+log.info('Starting replay of task stims')
 pcs_idx = 0
 for sdel, sid in zip(sph.STIM_DELAYS, sph.STIM_IDS):
     time.sleep(sdel)
@@ -108,12 +113,16 @@ for sdel, sid in zip(sph.STIM_DELAYS, sph.STIM_IDS):
         do_card_sound(card, card_play_noise)
         time.sleep(0.5)
     elif sid == 'G':
-        do_gabor(pcs_idx,
+        do_gabor(sph.OSC_CLIENT,
+                 pcs_idx,
                  sph.POSITIONS[pcs_idx],
                  sph.CONTRASTS[pcs_idx],
                  sph.STIM_PHASE[pcs_idx])
         pcs_idx += 1
         # time.sleep(0.3)
+
+# Create a transfer_me.flag file
+misc.create_flag(sph.SESSION_FOLDER, 'move_me')
 
 
 if __name__ == "__main__":
