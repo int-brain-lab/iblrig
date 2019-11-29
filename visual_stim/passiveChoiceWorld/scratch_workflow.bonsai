@@ -1159,21 +1159,25 @@
                             <Value>0.3</Value>
                           </Combinator>
                         </Expression>
-                        <Expression xsi:type="CreateObservable">
+                        <Expression xsi:type="SelectMany">
                           <Workflow>
                             <Nodes>
                               <Expression xsi:type="Combinator">
                                 <Combinator xsi:type="gl:Timer">
-                                  <gl:DueTime>PT0.3S</gl:DueTime>
+                                  <gl:DueTime>PT0S</gl:DueTime>
+                                  <gl:Period>PT0.3S</gl:Period>
+                                </Combinator>
+                              </Expression>
+                              <Expression xsi:type="Combinator">
+                                <Combinator xsi:type="rx:Take">
+                                  <rx:Count>1</rx:Count>
                                 </Combinator>
                               </Expression>
                               <Expression xsi:type="WorkflowOutput" />
-                              <Expression xsi:type="WorkflowInput">
-                                <Name>Source1</Name>
-                              </Expression>
                             </Nodes>
                             <Edges>
                               <Edge From="0" To="1" Label="Source1" />
+                              <Edge From="1" To="2" Label="Source1" />
                             </Edges>
                           </Workflow>
                         </Expression>
