@@ -7,6 +7,7 @@ import os
 import subprocess
 import time
 from pathlib import Path
+import iblrig.path_helper as ph
 
 log = logging.getLogger('iblrig')
 
@@ -18,8 +19,7 @@ def start_visual_stim(sph):
     if sph.USE_VISUAL_STIMULUS and sph.BONSAI:
         # Run Bonsai workflow
         here = os.getcwd()
-        os.chdir(str(
-            Path(sph.VISUAL_STIM_FOLDER) / sph.VISUAL_STIMULUS_TYPE))
+        os.chdir(str(Path(sph.VISUAL_STIM_FOLDER) / sph.VISUAL_STIMULUS_TYPE))
         bns = sph.BONSAI
         wkfl = sph.VISUAL_STIMULUS_FILE
 
@@ -99,6 +99,31 @@ def start_camera_recording(sph):
     subprocess.Popen([bns, wkfl, start, ts, vid, rec, mic, srec, noboot])
     os.chdir(here)
     return
+
+
+def start_passive_visual_stim(save2folder):
+    here = os.getcwd()
+    bns = ph.get_bonsai_path()
+    stim_folder = str(Path(ph.get_iblrig_folder()) / 'visual_stim' / 'passiveChoiceWorld')
+    wkfl = os.path.join(stim_folder, 'passiveChoiceWorld_passive.bonsai')
+    os.chdir(stim_folder)
+    # Flags
+    noedit = '--no-editor'  # implies start and no-debug?
+    noboot = '--no-boot'
+    # Properties
+    SA0_DueTime = '-p:Stim.SpontaneousActivity0.DueTime=00:05:00'
+    RFM_FileName = '-p:Stim.ReceptiveFieldMappingStim.FileNameRFMapStim=' + str(
+        Path(save2folder) / '_iblrig_RFMapStim.raw.bin')
+    RFM_MappingTime = '-p:Stim.ReceptiveFieldMappingStim.MappingTime=00:05:00'
+
+    cmd = [bns, wkfl, noboot, noedit, SA0_DueTime, RFM_FileName, RFM_MappingTime]
+
+    log.info('Starting spontaneous activity and RF mapping stims')
+    os.chdir(stim_folder)
+    s = subprocess.run(cmd, stdout=subprocess.PIPE)  # locking call
+    os.chdir(here)
+    log.info('Done')
+    return s
 
 
 # =====================================================================
