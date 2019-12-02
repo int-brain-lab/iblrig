@@ -15,7 +15,7 @@ import iblrig.iotasks as iotasks
 import iblrig.misc as misc
 import iblrig.params as params
 import task_settings
-import user_settings 
+import user_settings
 from iblrig.rotary_encoder import MyRotaryEncoder
 from session_params import SessionParamHandler
 
@@ -134,7 +134,7 @@ if sph.IS_MOCK:
     }
     misc.patch_settings_file(sph.SETTINGS_FILE_PATH, patch=patch)
 # Create a transfer_me.flag file
-misc.create_flag(sph.SESSION_FOLDER, 'move_me')
+misc.create_flag(sph.SESSION_FOLDER, 'passive_data_for_ephys.flag')
 
 
 if __name__ == "__main__":
