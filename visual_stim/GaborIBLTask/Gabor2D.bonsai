@@ -1023,6 +1023,9 @@ _iblrig_micData.raw.wav
                   <Expression xsi:type="SubscribeSubject">
                     <Name>StimLocationX</Name>
                   </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="rx:Timestamp" />
+                  </Expression>
                   <Expression xsi:type="ExternalizedMapping">
                     <Property Name="FileName" DisplayName="FileNameStimPositionScreen" />
                   </Expression>
@@ -1051,8 +1054,9 @@ _iblrig_micData.raw.wav
                   <Edge From="14" To="15" Label="Source2" />
                   <Edge From="16" To="18" Label="Source1" />
                   <Edge From="17" To="18" Label="Source2" />
-                  <Edge From="19" To="21" Label="Source1" />
-                  <Edge From="20" To="21" Label="Source2" />
+                  <Edge From="19" To="20" Label="Source1" />
+                  <Edge From="20" To="22" Label="Source1" />
+                  <Edge From="21" To="22" Label="Source2" />
                 </Edges>
               </Workflow>
             </Expression>
