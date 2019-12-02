@@ -15,7 +15,7 @@ import iblrig.iotasks as iotasks
 import iblrig.misc as misc
 import iblrig.params as params
 import task_settings
-import user_settings
+import user_settings 
 from iblrig.rotary_encoder import MyRotaryEncoder
 from session_params import SessionParamHandler
 
@@ -52,7 +52,7 @@ card_play_noise = bytes(np.array([2, 6, 32, 255, 2, 3, 0, 44], dtype=np.int8))
 
 def do_gabor(osc_client, pcs_idx, pos, cont, phase):
     # send pcs to Bonsai
-    bonsai.send_stim_info(sph.OSC_CLIENT, pcs_idx, pos, cont, phase,
+    bonsai.send_stim_info(sph.OSC_CLIENT, pcs_idx, int(pos), cont, phase,
                           freq=0.10, angle=0., gain=4., sigma=7.)
 
     sph.OSC_CLIENT.send_message("/re", 2)  # show_stim 2
@@ -101,18 +101,22 @@ bonsai.start_visual_stim(sph)
 time.sleep(3)
 log.info('Starting replay of task stims')
 pcs_idx = 0
+scount = 1
 for sdel, sid in zip(sph.STIM_DELAYS, sph.STIM_IDS):
+    log.info(f"Delay: {sdel}; ID: {sid}; Count: {scount}/300")
     time.sleep(sdel)
     if sid == 'V':
         # Make bpod task with 1 state = valve_open -> exit
-        do_valve_click(sph.REWARD_VALVE_TIME)
+        do_valve_click(bpod, sph.REWARD_VALVE_TIME)
         # time.sleep(sph.REWARD_VALVE_TIME)
     elif sid == 'T':
-        do_card_sound(card, card_play_tone)
-        time.sleep(0.1)
+        do_bpod_sound(bpod, sc_play_tone)
+        # do_card_sound(card, card_play_tone)
+        # time.sleep(0.1)
     elif sid == 'N':
-        do_card_sound(card, card_play_noise)
-        time.sleep(0.5)
+        do_bpod_sound(bpod, sc_play_noise)
+        # do_card_sound(card, card_play_noise)
+        # time.sleep(0.5)
     elif sid == 'G':
         do_gabor(sph.OSC_CLIENT,
                  pcs_idx,
@@ -121,12 +125,14 @@ for sdel, sid in zip(sph.STIM_DELAYS, sph.STIM_IDS):
                  sph.STIM_PHASE[pcs_idx])
         pcs_idx += 1
         # time.sleep(0.3)
+    scount += 1
 
-# Patch the PYBPOD_PROTOCOL to _iblrig_tasks_ephysMockChoiceWorld
-patch = {
-    'PYBPOD_PROTOCOL': '_iblrig_tasks_ephysMockChoiceWorld'
-}
-misc.patch_settings_file(sph.SETTINGS_FILE_PATH, patch=patch)
+# Patch the PYBPOD_PROTOCOL to _iblrig_tasks_ephysMockChoiceWorld if mock
+if sph.IS_MOCK:
+    patch = {
+        'PYBPOD_PROTOCOL': '_iblrig_tasks_ephysMockChoiceWorld'
+    }
+    misc.patch_settings_file(sph.SETTINGS_FILE_PATH, patch=patch)
 # Create a transfer_me.flag file
 misc.create_flag(sph.SESSION_FOLDER, 'move_me')
 

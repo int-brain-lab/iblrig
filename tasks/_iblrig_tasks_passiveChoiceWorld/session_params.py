@@ -52,6 +52,8 @@ class SessionParamHandler(object):
         # Get its metadata
         self.CORRESPONDING_EPHYS_SETTINGS_DATA = iotasks.load_settings(
             self.CORRESPONDING_EPHYS_SESSION)
+        if  self.CORRESPONDING_EPHYS_SETTINGS_DATA is None:
+             self.CORRESPONDING_EPHYS_SETTINGS_DATA = {}
         # Get the vis stim file for an ephys session for the replay later
         self.VISUAL_STIMULUS_FILE_EPHYS = spc.VISUAL_STIMULUS_FILE
         # Patch the dict if no IS_MOCK key is found
