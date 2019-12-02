@@ -13,7 +13,8 @@ from ibllib.io import raw_data_loaders as raw
 FLAG_FILE_NAMES = [
     'transfer_me.flag', 'extract_me.flag', 'register_me.flag', 'flatiron.flag',
     'extract_me.error', 'register_me.error', 'create_me.flag', 'compress_video.flag',
-    'compress_audio.flag', 'extract_ephys.flag',
+    'compress_audio.flag', 'extract_ephys.flag', 'raw_passive_data_missing.flag',
+    'passive_data_for_ephys.flag',
 ]
 
 log = logging.getLogger('iblrig')
