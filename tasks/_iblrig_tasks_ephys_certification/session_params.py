@@ -90,10 +90,10 @@ class SessionParamHandler(object):
             'dva_mat': make_square_dvamat(size=15, dva=8),
             'stim_data_file_name': '_iblrig_RFMapStim.raw.bin',
             'stim_file_shape': [15, 15, 'nframes'],
-            'stim_on_time': 0.15,  # seconds
+            'stim_on_time': 0.2,  # seconds
             'polarity_start': -1,
             'polarity_end': +1
-            
+
         }
         self.VISUAL_STIM_2 = {
             'ttl_num': 320,
@@ -112,6 +112,8 @@ class SessionParamHandler(object):
             'stim_cpd': 0.05,  # spatial freq, cycles per degree
             'stim_on_time': 2,  # seconds
             'stim_off_time': 1,  # seconds
+            'polarity_start': +1,
+            'polarity_end': -1,
         }
         self.VISUAL_STIM_3 = {
             'ttl_num': 180,
@@ -126,6 +128,8 @@ class SessionParamHandler(object):
             'stim_sequence': [1, 2] * 90,
             'stim_on_time': 1,  # seconds
             'stim_off_time': 0,  # seconds
+            'polarity_start': +1,
+            'polarity_end': -1,
         }
         self.VISUAL_STIM_4 = {
             'ttl_num': 400,
@@ -140,7 +144,9 @@ class SessionParamHandler(object):
             'stim_contrast_set': [1.0, 0.5, 0.25, 0.125, 0.0625],
             'stim_file':
                 'iblrig/visual_stim/ephys_certification/04_ContrastSelectivityTaskStim/stims.csv',
-            'stim_file_columns': ('azimuth', 'contrast')
+            'stim_file_columns': ('azimuth', 'contrast'),
+            'polarity_start': +1,
+            'polarity_end': -1,
         }
         # =====================================================================
         # SAVE SETTINGS FILE AND TASK CODE
