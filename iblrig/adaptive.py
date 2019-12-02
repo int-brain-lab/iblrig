@@ -6,7 +6,6 @@ import logging
 
 import ibllib.io.raw_data_loaders as raw
 import numpy as np
-import pandas as pd
 import scipy as sp
 import scipy.interpolate
 import iblrig.params as params
