@@ -122,6 +122,11 @@ for sdel, sid in zip(sph.STIM_DELAYS, sph.STIM_IDS):
         pcs_idx += 1
         # time.sleep(0.3)
 
+# Patch the PYBPOD_PROTOCOL to _iblrig_tasks_ephysMockChoiceWorld
+patch = {
+    'PYBPOD_PROTOCOL': '_iblrig_tasks_ephysMockChoiceWorld'
+}
+misc.patch_settings_file(sph.SETTINGS_FILE_PATH, patch=patch)
 # Create a transfer_me.flag file
 misc.create_flag(sph.SESSION_FOLDER, 'move_me')
 
