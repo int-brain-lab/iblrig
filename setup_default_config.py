@@ -208,7 +208,7 @@ def config_task(iblproject_path, task_name: str):  # XXX: THIS!
     print(f"  Configuring task <{task.name}>")
     task._commands = []
 
-    if task.name == '_iblrig_calibcalibration_screen':
+    if task.name == '_iblrig_calibration_screen':
         task = create_task_bonsai_stop_command(task, port=7110)
         task = create_task_cleanup_command(task)
     if task.name == '_iblrig_calibration_water':
@@ -246,6 +246,10 @@ def config_task(iblproject_path, task_name: str):  # XXX: THIS!
         task = create_task_cleanup_command(task)
         task = create_task_bpod_lights_command(task, onoff=0, when='PRE')
         task = create_task_bpod_lights_command(task, onoff=1, when='POST')
+    if task.name == '_iblrig_tasks_passiveChoiceWorld':
+        task = create_task_cleanup_command(task)
+        task = create_task_bpod_lights_command(task, onoff=0, when='PRE')
+        task = create_task_bpod_lights_command(task, onoff=1, when='POST')
 
     p.save(iblproject_path)
     print("    Task configured")
@@ -263,7 +267,8 @@ def create_ibl_tasks(iblproject_path):  # XXX: THIS!
         '_iblrig_tasks_habituationChoiceWorld',
         '_iblrig_tasks_trainingChoiceWorld',
         '_iblrig_tasks_ephysChoiceWorld',
-        '_iblrig_tasks_ephys_certification'
+        '_iblrig_tasks_ephys_certification',
+        '_iblrig_tasks_passiveChoiceWorld',
     ]
     for task_name in task_names:
         create_task(iblproject_path, task_name=task_name)
@@ -345,10 +350,12 @@ def create_experiment_setups(iblproject_path, exp_name: str):  # XXX:THIS!
             exp, 'habituationChoiceWorld', p.boards[0].name, None)
         trainingChoiceWorld = create_setup(  # noqa
             exp, 'trainingChoiceWorld', p.boards[0].name, None)
-        ephysChoiceWorld = create_setup(  # noqa
-            exp, 'ephysChoiceWorld_testing', p.boards[0].name, test_subj)
         ephys_certification = create_setup(  # noqa
             exp, 'ephys_certification', p.boards[0].name, None)
+        ephysChoiceWorld = create_setup(  # noqa
+            exp, 'ephysChoiceWorld_testing', p.boards[0].name, test_subj)
+        passiveChoiceWorld = create_setup(  # noqa
+            exp, 'passiveChoiceWorld_testing', p.boards[0].name, test_subj)
 
     p.save(iblproject_path)
 
