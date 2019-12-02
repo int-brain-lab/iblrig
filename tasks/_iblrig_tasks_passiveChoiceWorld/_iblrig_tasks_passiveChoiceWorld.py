@@ -98,6 +98,7 @@ bonsai.start_passive_visual_stim(sph.SESSION_RAW_DATA_FOLDER)  # Loks
 
 # start Bonsai stim workflow
 bonsai.start_visual_stim(sph)
+time.sleep(3)
 log.info('Starting replay of task stims')
 pcs_idx = 0
 for sdel, sid in zip(sph.STIM_DELAYS, sph.STIM_IDS):
