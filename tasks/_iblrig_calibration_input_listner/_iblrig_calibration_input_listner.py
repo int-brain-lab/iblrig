@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
+# -*- coding:utf-8 -*-
 # @Author: Niccolò Bonacchi
-# @Date:   2018-02-02 12:31:13
+# @Date: 2018-02-02 12:31:13
 import json
 import logging
 
@@ -49,9 +49,12 @@ print(f'Saving data...\n{data}')
 with open(sph.DATA_FILE_PATH, 'a') as f:
     f.write(json.dumps(data))
     f.write('\n')
-print(f'{sph.SESSION_FOLDER} says:'
+
+print(f'{sph.SESSION_FOLDER} says:')
 print(f'Saved data to {sph.DATA_FILE_PATH}')
+
 bpod.close()
+
 
 if __name__ == '__main__':
     print('.')

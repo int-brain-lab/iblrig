@@ -13,14 +13,10 @@ from pythonosc import udp_client
 
 import iblrig.adaptive as adaptive
 import iblrig.ambient_sensor as ambient_sensor
-import iblrig.bonsai as bonsai
-import iblrig.frame2TTL as frame2TTL
 import iblrig.iotasks as iotasks
 import iblrig.misc as misc
 import iblrig.sound as sound
-import iblrig.user_input as user_input
 import iblrig.path_helper as ph
-from iblrig.rotary_encoder import MyRotaryEncoder
 
 log = logging.getLogger('iblrig')
 
@@ -128,7 +124,7 @@ class SessionParamHandler(object):
         # =====================================================================
         # ADAPTIVE STUFF
         # =====================================================================
-        self.AUTOMATIC_CALIBRATION = False  # XXX: CHANGE THIS!!
+        self.AUTOMATIC_CALIBRATION = True
         self.CALIBRATION_VALUE = 0.067
         self.REWARD_AMOUNT = 1.5
         self.REWARD_TYPE = None
@@ -176,10 +172,10 @@ class SessionParamHandler(object):
             amplitude=self.WHITE_NOISE_AMPLITUDE, fade=0.01, chans='stereo')
         self.GO_TONE_IDX = 2
         self.WHITE_NOISE_IDX = 3
-        # sound.configure_sound_card(  # XXX: CHANGE THIS!!
-        #     sounds=[self.GO_TONE, self.WHITE_NOISE],
-        #     indexes=[self.GO_TONE_IDX, self.WHITE_NOISE_IDX],
-        #     sample_rate=self.SOUND_SAMPLE_FREQ)
+        sound.configure_sound_card(
+            sounds=[self.GO_TONE, self.WHITE_NOISE],
+            indexes=[self.GO_TONE_IDX, self.WHITE_NOISE_IDX],
+            sample_rate=self.SOUND_SAMPLE_FREQ)
         self.OUT_TONE = ('SoftCode', 1) if self.SOFT_SOUND else ('Serial3', 5)
         self.OUT_NOISE = ('SoftCode', 2) if self.SOFT_SOUND else ('Serial3', 6)
         self.OUT_STOP_SOUND = (

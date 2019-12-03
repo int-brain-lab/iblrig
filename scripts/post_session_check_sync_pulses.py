@@ -15,7 +15,7 @@ if __name__ == '__main__':
         print("I need a file name...")
     session_data_file = Path(sys.argv[1])
     if not session_data_file.exists():
-        raise  FileNotFoundError(f"{session_data_file}")
+        raise FileNotFoundError(f"{session_data_file}")
     if session_data_file.name.endswith('.jsonable'):
         data = raw.load_data(session_data_file.parent.parent)
     else:

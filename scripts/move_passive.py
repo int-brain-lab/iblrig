@@ -2,7 +2,6 @@
 # -*- coding:utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date: Monday, December 2nd 2019, 4:52:40 pm
-import shutil
 from pathlib import Path
 
 import ibllib.io.raw_data_loaders as raw
