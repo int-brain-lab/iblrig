@@ -373,7 +373,7 @@ def create_experiment_setups(iblproject_path, exp_name: str):  # XXX:THIS!
         )
         passiveChoiceWorld = create_setup(  # noqa
             exp, 'passiveChoiceWorld_testing', p.boards[0].name, test_subj,
-            task='_iblrig_tasks_ephysChoiceWorld'
+            task='_iblrig_tasks_passiveChoiceWorld'
         )
 
     p.save(iblproject_path)
