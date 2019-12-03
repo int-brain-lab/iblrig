@@ -13,7 +13,8 @@ from ibllib.io import raw_data_loaders as raw
 FLAG_FILE_NAMES = [
     'transfer_me.flag', 'extract_me.flag', 'register_me.flag', 'flatiron.flag',
     'extract_me.error', 'register_me.error', 'create_me.flag', 'compress_video.flag',
-    'compress_audio.flag', 'extract_ephys.flag',
+    'compress_audio.flag', 'extract_ephys.flag', 'raw_passive_data_missing.flag',
+    'passive_data_for_ephys.flag',
 ]
 
 log = logging.getLogger('iblrig')
@@ -141,7 +142,7 @@ def create_flag(session_folder_path: str, flag: str) -> None:
     if not flag.endswith('.flag'):
         flag = flag + '.flag'
     if flag not in FLAG_FILE_NAMES:
-        log.warning(f'Creating unknown flag file {flag}.flag in {session_folder_path}')
+        log.warning(f'Creating unknown flag file {flag} in {session_folder_path}')
 
     path = Path(session_folder_path) / flag
     open(path, 'a').close()
@@ -188,6 +189,39 @@ def patch_settings_file(sess_or_file: str, patch: dict) -> None:
     saved_settings = raw.load_settings(session)
     assert(settings == saved_settings)
     return
+
+
+# TODO: Consider migrating this to ephys_session_file_creator
+def generate_position_contrasts(contrasts: list = [1.0, 0.25, 0.125, 0.0625],
+                                positions: list = [-35, 35],
+                                cp_repeats: int = 20,
+                                shuffle: bool = True,
+                                to_string: bool = False):
+    """generate_position_contrasts generate contrasts and positions
+
+    :param contrasts: Set of contrasts in floats, defaults to [1.0, 0.25, 0.125, 0.0625]
+    :type contrasts: list, optional
+    :param positions: Set of positions in int, defaults to [-35, 35]
+    :type positions: list, optional
+    :param cp_repeats: Number of repetitions for each contrast position pair, defaults to 20
+    :type cp_repeats: int, optional
+    :param shuffle: Shuffle the result or return sorted, defaults to True
+    :type shuffle: bool, optional
+    :param to_string: Return strings instead of int/float pairs, defaults to False
+    :type to_string: bool, optional
+    :return: 2D array with positions and contrasts
+    :rtype: numpy.array()
+    """
+    # Generate a set of positions and contrasts
+    pos = sorted(positions * len(contrasts) * cp_repeats)
+    cont = contrasts * cp_repeats * 2
+
+    data = np.array([[int(p), c] for p, c in zip(pos, cont)])
+    if shuffle:
+        np.random.shuffle(data)
+    if to_string:
+        data = np.array([[str(int(p)), str(c)] for p, c in data])
+    return data
 
 
 if __name__ == "__main__":

@@ -10,6 +10,7 @@ import zipfile
 from pathlib import Path
 
 import ibllib.io.raw_data_loaders as raw
+import iblrig.path_helper as ph
 import numpy as np
 from ibllib.graphic import numinput
 
@@ -128,44 +129,66 @@ def zipit(dir_list: list, zip_name: str) -> None:
     zipf.close()
 
 
-def load_data(previous_session_path: str, i: int = -1) -> dict:
-    trial_data = raw.load_data(previous_session_path)
+def load_data(session_folder: str, i: int = -1) -> dict:
+    trial_data = raw.load_data(session_folder)
     return trial_data[i] if trial_data else None
 
 
-def load_settings(previous_session_path: str) -> dict:
-    return raw.load_settings(previous_session_path)
+def load_settings(session_folder: str) -> dict:
+    return raw.load_settings(session_folder)
 
 
-def load_session_order_and_idx(sph: object) -> object:
-    if ((not sph.LAST_SETTINGS_DATA) or
-            ('SESSION_ORDER' not in sph.LAST_SETTINGS_DATA.keys())):
-        sph.SESSION_ORDER = misc.draw_session_order()
-        sph.SESSION_IDX = 0
-    elif 'SESSION_ORDER' in sph.LAST_SETTINGS_DATA.keys():
-        sph.SESSION_ORDER = sph.LAST_SETTINGS_DATA['SESSION_ORDER']
-        sph.SESSION_IDX = sph.LAST_SETTINGS_DATA['SESSION_IDX'] + 1
+def load_session_order_idx_num(last_settings_data: dict, is_mock: bool) -> tuple:
+    if is_mock:
+        session_order = None
+        session_idx = None
+        preloaded_session_num = 'mock'
+        return session_order, session_idx, preloaded_session_num
+    if ((not last_settings_data) or
+            ('SESSION_ORDER' not in last_settings_data.keys()) or
+            (last_settings_data['SESSION_ORDER'] is None)):
+        session_order = misc.draw_session_order()
+        session_idx = 0
+        preloaded_session_num = session_order[session_idx]
+    elif 'SESSION_ORDER' in last_settings_data.keys():
+        session_order = last_settings_data['SESSION_ORDER']
+        session_idx = last_settings_data['SESSION_IDX'] + 1
+        preloaded_session_num = session_order[session_idx]
     # Confirm this is the session to load. If not override SESSION_IDX
-    ses_num = int(sph.SESSION_IDX + 1)
-    ses_num = numinput(  # TODO: move this to user_input
+    sess_num = int(session_idx + 1)
+    sess_num = numinput(  # TODO: move this to user_input
         "Confirm session to load", "Load recording session number",
-        default=ses_num, askint=True, minval=1, maxval=12)
-    if ses_num != sph.SESSION_IDX + 1:
-        sph.SESSION_IDX = ses_num - 1
-    return sph
+        default=sess_num, askint=True, minval=1, maxval=12)
+    if sess_num != session_idx + 1:
+        session_idx = sess_num - 1
+    return session_order, session_idx, preloaded_session_num
 
 
-def load_session_pcqs(sph: object) -> object:
-    num = sph.SESSION_ORDER[sph.SESSION_IDX]
-    base = sph.IBLRIG_EPHYS_SESSION_FOLDER
-    sph.SESSION_LOADED_FILE_PATH = str(Path(base) / f'pcqs_session_{num}.npy')
-    pcqs = np.load(Path(sph.SESSION_LOADED_FILE_PATH))
-    len_block = np.load(Path(base) / f'pcqs_session_{num}_len_blocks.npy')
+def load_ephys_session_pcqs(preloaded_session_num: str) -> tuple:
+    base = ph.get_pregen_session_folder()
+    pcqs = np.load(Path(base) / f'session_{preloaded_session_num}_ephys_pcqs.npy')
+    len_block = np.load(Path(base) / f'session_{preloaded_session_num}_ephys_len_blocks.npy')
 
-    sph.POSITIONS = pcqs[:, 0].tolist()
-    sph.CONTRASTS = pcqs[:, 1].tolist()
-    sph.QUIESCENT_PERIOD = pcqs[:, 2].tolist()
-    sph.STIM_PHASE = pcqs[:, 3].tolist()
-    sph.LEN_BLOCKS = len_block.tolist()
+    pos = pcqs[:, 0].tolist()
+    cont = pcqs[:, 1].tolist()
+    quies = pcqs[:, 2].tolist()
+    phase = pcqs[:, 3].tolist()
+    len_blocks = len_block.tolist()
 
-    return sph
+    return pos, cont, quies, phase, len_blocks
+
+
+def load_passive_session_delays_ids(preloaded_session_num: str) -> tuple:
+    base = ph.get_pregen_session_folder()
+    stimDelays = np.load(Path(base) / f'session_{preloaded_session_num}_passive_stimDelays.npy')
+    stimIDs = np.load(Path(base) / f'session_{preloaded_session_num}_passive_stimIDs.npy')
+    return stimDelays, stimIDs
+
+
+def load_passive_session_pcs(preloaded_session_num: str) -> tuple:
+    base = ph.get_pregen_session_folder()
+    pcs = np.load(Path(base) / f'session_{preloaded_session_num}_passive_pcs.npy')
+    pos = pcs[:, 0].tolist()
+    cont = pcs[:, 1].tolist()
+    phase = pcs[:, 2].tolist()
+    return pos, cont, phase

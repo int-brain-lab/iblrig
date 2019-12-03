@@ -23,7 +23,7 @@ from pybpodapi.bpod import Bpod
 from pybpodapi.state_machine import StateMachine
 
 import iblrig.params as params
-import iblrig.path_helper as path_helper
+# import iblrig.path_helper as path_helper
 import task_settings
 import user_settings  # PyBpod creates this file on run.
 from session_params import SessionParamHandler
@@ -239,12 +239,20 @@ df2 = pd.DataFrame.from_dict(
 )
 df2.to_csv(sph.CALIBRATION_RANGE_FILE_PATH)
 # SAVE TO PARAMS FILE
-func_patch = path_helper.load_water_calibraition_func_file(sph.CALIBRATION_FUNCTION_FILE_PATH)
-range_patch = path_helper.load_water_calibraition_range_file(sph.CALIBRATION_RANGE_FILE_PATH)
+func_patch = {
+    'WATER_CALIBRATION_OPEN_TIMES': df1["open_time"].to_list(),
+    'WATER_CALIBRATION_WEIGHT_PERDROP': df1["weight_perdrop"].to_list()
+}
+range_patch = {
+    'WATER_CALIBRATION_RANGE': [df2.min_open_time.iloc[0],
+                                df2.max_open_time.iloc[0]]
+}
+# func_patch = path_helper.load_water_calibraition_func_file(sph.CALIBRATION_FUNCTION_FILE_PATH)
+# range_patch = path_helper.load_water_calibraition_range_file(sph.CALIBRATION_RANGE_FILE_PATH)
 date_patch = {'WATER_CALIBRATION_DATE': datetime.datetime.now().date().isoformat()}
 patch = {}
-patch.update(func_patch)
 patch.update(range_patch)
+patch.update(func_patch)
 patch.update(date_patch)
 params.update_params(data=patch)
 

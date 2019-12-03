@@ -51,12 +51,7 @@
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="gl:RenderFrame" />
       </Expression>
-      <Expression xsi:type="IncludeWorkflow" Path="BonVision:Environment.OrthographicViewport.bonsai">
-        <Left>-180</Left>
-        <Right>180</Right>
-        <Bottom>-90</Bottom>
-        <Top>90</Top>
-      </Expression>
+      <Expression xsi:type="IncludeWorkflow" Path="BonVision:Environment.NormalizedViewport.bonsai" />
       <Expression xsi:type="osc:ReceiveMessage">
         <osc:Connection>bpod</osc:Connection>
         <osc:Address>/g</osc:Address>
@@ -115,10 +110,10 @@
         </PropertyMappings>
       </Expression>
       <Expression xsi:type="IncludeWorkflow" Path="BonVision:Primitives.DrawQuad.bonsai">
-        <ExtentX>360</ExtentX>
-        <ExtentY>180</ExtentY>
-        <LocationX>0</LocationX>
-        <LocationY>0</LocationY>
+        <ExtentX>0.2</ExtentX>
+        <ExtentY>0.2</ExtentY>
+        <LocationX>1.33</LocationX>
+        <LocationY>-1.03</LocationY>
         <ColorR>1</ColorR>
         <ColorG>0.5</ColorG>
         <ColorB>0.5</ColorB>

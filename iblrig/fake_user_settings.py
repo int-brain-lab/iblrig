@@ -15,7 +15,7 @@ PYBPOD_API_LOG_FILE  = None
 PYBPOD_API_STREAM2STDOUT = False
 PYBPOD_API_ACCEPT_STDIN  = True
 
-PYBPOD_PROTOCOL 	= '_iblrig_fake_protocol'
+PYBPOD_PROTOCOL 	= '_iblrig_tasks_passiveChoiceWorld'
 PYBPOD_CREATOR 		= '["_iblrig_fake_user", "f092c2d5-c98a-45a1-be7c-df05f129a93c", "local"]'
 PYBPOD_PROJECT 		= 'IBL'
 PYBPOD_EXPERIMENT 	= '_iblrig_fake_experiment'

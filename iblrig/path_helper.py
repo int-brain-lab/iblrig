@@ -26,7 +26,7 @@ def get_iblrig_params_folder() -> str:
     return str(iblrig_.parent / 'iblrig_params')
 
 
-def get_iblrig_data_folder(subjects=True) -> str:
+def get_iblrig_data_folder(subjects: bool = True) -> str:
     iblrig_ = Path(get_iblrig_folder())
     out = iblrig_.parent / 'iblrig_data'
     sout = iblrig_.parent / 'iblrig_data' / 'Subjects'
@@ -37,7 +37,7 @@ def get_iblrig_data_folder(subjects=True) -> str:
     return str(sout) if subjects else str(out)
 
 
-def get_commit_hash(folder):
+def get_commit_hash(folder: str):
     here = os.getcwd()
     os.chdir(folder)
     out = subprocess.check_output(["git", "rev-parse", "HEAD"]).decode()
@@ -87,7 +87,7 @@ def get_visual_stim_folder_name(protocol: str) -> str:
         return 'GaborIBLTask'
 
 
-def get_water_calibration_func_file(latest=True) -> Path or list:
+def get_water_calibration_func_file(latest: bool = True) -> Path or list:
     data_folder = Path(get_iblrig_data_folder())
     func_files = sorted(data_folder.rglob('_iblrig_calibration_water_function.csv'))
     if not func_files:
@@ -103,12 +103,12 @@ def get_water_calibration_range_file(latest=True) -> Path or list:
     return range_files[-1] if latest else range_files
 
 
-def load_water_calibraition_func_file(fpath) -> dict:
-    if not Path(fpath).exists:
+def load_water_calibraition_func_file(fpath: str or Path) -> dict:
+    if not Path(fpath).exists():
         return
 
     import pandas as pd
-    # Load TODO: remove pandas dependency
+    # TODO: remove pandas dependency
     df1 = pd.read_csv(fpath)
     if df1.empty:
         return {'WATER_CALIBRATION_OPEN_TIMES': None,
@@ -118,12 +118,12 @@ def load_water_calibraition_func_file(fpath) -> dict:
             'WATER_CALIBRATION_WEIGHT_PERDROP': df1["weight_perdrop"].to_list()}
 
 
-def load_water_calibraition_range_file(fpath) -> dict:
-    if not Path(fpath).exists:
+def load_water_calibraition_range_file(fpath: str or Path) -> dict:
+    if not Path(fpath).exists():
         return
 
     import pandas as pd
-    # Load TODO: remove pandas dependency
+    # TODO: remove pandas dependency
     df1 = pd.read_csv(fpath)
     if df1.empty:
         return {'WATER_CALIBRATION_RANGE': [None, None]}
@@ -254,7 +254,7 @@ def get_subfolder_paths(folder: str) -> str:
     return out
 
 
-def get_bonsai_path(use_iblrig_bonsai=True) -> str:
+def get_bonsai_path(use_iblrig_bonsai: bool = True) -> str:
     """Checks for Bonsai folder in iblrig.
     Returns string with bonsai executable path."""
     iblrig_folder = get_iblrig_folder()
@@ -276,16 +276,29 @@ def get_bonsai_path(use_iblrig_bonsai=True) -> str:
     return BONSAI
 
 
-def get_visual_stim_type(protocol):
+def get_visual_stim_type(protocol: str) -> str:
     if 'habituation' in protocol or 'bpod_ttl_test' in protocol:
         return 'GaborHabituationTask'
     elif 'ephys_certification' in protocol:
         return 'ephys_certification'
+    elif 'passive'in protocol:
+        return 'GaborIBLTask'
     else:
         return 'GaborIBLTask'
 
 
-def get_session_number(session_date_folder) -> str:
+def get_visual_stim_file_name(visual_stimulus_type: str) -> str:
+    if 'GaborHabituationTask' in visual_stimulus_type:
+        return 'Gabor2D.bonsai'
+    elif 'ephys_certification' in visual_stimulus_type:
+        return 'ephys_certification.bonsai'
+    elif 'GaborIBLTask' in visual_stimulus_type:
+        return 'Gabor2D.bonsai'
+    elif 'passiveChoiceWorld'in visual_stimulus_type:
+        return 'passiveChoiceWorld_passive.bonsai'
+
+
+def get_session_number(session_date_folder: str) -> str:
     log.debug("Initializing session number")
     if not Path(session_date_folder).exists():
         return '001'
@@ -304,14 +317,17 @@ def get_session_number(session_date_folder) -> str:
     return out
 
 
+def get_pregen_session_folder() -> str:
+    iblrig_path = Path(get_iblrig_folder())
+    return str(iblrig_path / 'tasks' / '_iblrig_tasks_ephysChoiceWorld' / 'sessions')
+
+
 class SessionPathCreator(object):
     # add subject name and protocol (maybe have a metadata struct)
     def __init__(self, subject_name, protocol=False, make=False):
 
         self.IBLRIG_FOLDER = get_iblrig_folder()
-        self.IBLRIG_EPHYS_SESSION_FOLDER = str(
-            Path(self.IBLRIG_FOLDER) / 'tasks' /
-            '_iblrig_tasks_ephysChoiceWorld' / 'sessions')
+        self.IBLRIG_EPHYS_SESSION_FOLDER = get_pregen_session_folder()
         self._BOARD = params.get_board_name()
 
         self._PROTOCOL = protocol
@@ -332,9 +348,10 @@ class SessionPathCreator(object):
         self.BONSAI = get_bonsai_path(use_iblrig_bonsai=True)
         self.VISUAL_STIM_FOLDER = str(Path(self.IBLRIG_FOLDER) / 'visual_stim')
         self.VISUAL_STIMULUS_TYPE = get_visual_stim_type(self._PROTOCOL)
+        self.VISUAL_STIMULUS_FILE_NAME = get_visual_stim_file_name(self.VISUAL_STIMULUS_TYPE)
         self.VISUAL_STIMULUS_FILE = str(
             Path(self.VISUAL_STIM_FOLDER) /
-            self.VISUAL_STIMULUS_TYPE / 'Gabor2D.bonsai')
+            self.VISUAL_STIMULUS_TYPE / self.VISUAL_STIMULUS_FILE_NAME)
 
         self.VIDEO_RECORDING_FOLDER = os.path.join(
             self.IBLRIG_FOLDER, 'devices', 'camera_recordings')
@@ -360,6 +377,8 @@ class SessionPathCreator(object):
             self.SESSION_FOLDER, 'raw_ephys_data')
         self.SESSION_RAW_IMAGING_DATA_FOLDER = os.path.join(
             self.SESSION_FOLDER, 'raw_imaging_data')
+        self.SESSION_RAW_PASSIVE_DATA_FOLDER = os.path.join(
+            self.SESSION_FOLDER, 'raw_passive_data')
 
         self.SESSION_NAME = '{}'.format(os.path.sep).join(
             [self.SUBJECT_NAME, self.SESSION_DATE, self.SESSION_NUMBER])
@@ -399,7 +418,13 @@ class SessionPathCreator(object):
         self.display_logs()
 
     def make_missing_folders(self, makelist):
-        if isinstance(makelist, bool):
+        """
+        makelist = True will make default folders with only raw_behavior_data
+        makelist = False will not make any folders
+        makelist = [list] will make the default folders and the raw_folders
+        that are specifiec in the list
+        """
+        if isinstance(makelist, bool) and makelist is True:
             log.debug(f"Making default folders")
             make_folder(self.IBLRIG_DATA_FOLDER)
             make_folder(self.IBLRIG_DATA_SUBJECTS_FOLDER)
@@ -416,6 +441,8 @@ class SessionPathCreator(object):
                 make_folder(self.SESSION_RAW_EPHYS_DATA_FOLDER)
             if 'imag' in makelist:
                 make_folder(self.SESSION_RAW_IMAGING_DATA_FOLDER)
+            if 'passive' in makelist:
+                make_folder(self.SESSION_RAW_PASSIVE_DATA_FOLDER)
 
         return
 
@@ -465,8 +492,8 @@ if __name__ == "__main__":
     # 'trainingChoiceWorld')
     # '/coder/mnt/nbonacchi/iblrig', None,
     spc = SessionPathCreator(
-        '_iblrig_test_mouse', protocol='trainingChoiceWorld',
-        make=['video', 'ephys', 'imag'])
+        '_iblrig_test_mouse', protocol='passiveChoiceWorld',
+        make=True)
 
     print("")
     for k in spc.__dict__:

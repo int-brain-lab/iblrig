@@ -79,8 +79,7 @@ class SessionParamHandler(object):
         if len(self.PYBPOD_SUBJECTS) == 1:
             self.PYBPOD_SUBJECTS = self.PYBPOD_SUBJECTS[0]
         else:
-            print("ERROR: Multiple subjects found in PYBPOD_SUBJECTS")
-            raise IOError
+            raise IOError("Multiple subjects found in PYBPOD_SUBJECTS")
 
         self.PYBPOD_SUBJECT_EXTRA = [json.loads(x) for x in
                                      self.PYBPOD_SUBJECT_EXTRA[1:-1
