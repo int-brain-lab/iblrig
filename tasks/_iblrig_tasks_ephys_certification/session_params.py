@@ -79,7 +79,9 @@ class SessionParamHandler(object):
 
         self.VISUAL_STIM_0 = {
             'ttl_num': 16,
-            'ttl_frame_nums': [1, 2, 4, 8, 16, 32, 64, 128, 192, 224, 240, 248, 252, 254, 255, 256],
+            'ttl_frame_nums': [
+                1, 2, 4, 8, 16, 32, 64, 128, 192, 224, 240, 248, 252, 254, 255, 256
+            ],
             'delay_around': 4  # seconds
         }
         self.VISUAL_STIM_1 = {

@@ -233,6 +233,7 @@ def init_sounds(sph, tone=True, noise=True):
     return sph
 
 
+# FIXME: in _passiveCW use SoundCardModule to give to this v instead of finding device yourself
 def trigger_sc_sound(sound_idx, card=None):
     if card is None:
         card = SoundCardModule()
@@ -248,13 +249,12 @@ def trigger_sc_sound(sound_idx, card=None):
     def _calc_checksum(data):
         return sum(data) & 0xFF
 
-    play_tone = [2, 6, 32, 255, 2, 2, 0, 43]
-    play_noise = [2, 6, 32, 255, 2, 3, 0, 44]
-    # Find SoundCard
-    # import usb
-    # usb.core.find(idVendor=0x04d8, idProduct=0xee6a)
-    with card._dev as sc:
-        sc.write(1, data, 100)
+    sound_idx = int(sound_idx)
+    message = [2, 6, 32, 255, 2, sound_idx, 0]
+    message.append(_calc_checksum(message))
+    message = bytes(np.array(message, dtype=np.int8))
+    # usb.write(port, message, timeout)
+    card._dev.write(1, message, 200)
 
     if close_card:
         card.close()
