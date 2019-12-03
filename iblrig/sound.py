@@ -156,8 +156,11 @@ def format_sound(sound, file_path=None, flat=False):
     return bin_sound.flatten() if flat else bin_sound
 
 
-def configure_sound_card(sounds=[], indexes=[], sample_rate=96):
-    card = SoundCardModule()
+def configure_sound_card(card=None, sounds=[], indexes=[], sample_rate=96):
+    if card is None:
+        card = SoundCardModule()
+        close_card = True
+
     if sample_rate == 192 or sample_rate == 192000:
         sample_rate = SampleRate._192000HZ
     elif sample_rate == 96 or sample_rate == 96000:
@@ -174,7 +177,8 @@ def configure_sound_card(sounds=[], indexes=[], sample_rate=96):
     for sound, index in zip(sounds, indexes):
         card.send_sound(sound, index, sample_rate, DataType.INT32)
 
-    card.close()
+    if close_card:
+        card.close()
     return
 
 
@@ -191,6 +195,7 @@ def sound_sample_freq(soft_sound):
 
 
 def init_sounds(sph, tone=True, noise=True):
+    # TODO: remove creation of card objec when checks are implemented
     if sph.SOFT_SOUND is None:
         msg = f"""
     ##########################################
@@ -226,6 +231,33 @@ def init_sounds(sph, tone=True, noise=True):
             fade=0.01,
             chans=chans)
     return sph
+
+
+# FIXME: in _passiveCW use SoundCardModule to give to this v instead of finding device yourself
+def trigger_sc_sound(sound_idx, card=None):
+    if card is None:
+        card = SoundCardModule()
+        close_card = True
+    # [MessageType] [Length] [Address] [Port] [PayloadType] [Payload] [Checksum]
+    # write=2 LEN=6 addr=32 port=255 payloadType=2 payload=[index 0]U16 checksum=43
+
+    # 2 6 32 255 2 [2 0] 43 --> play tone
+    # 2 6 32 255 2 [3 0] 44 --> play noise
+
+    # 2 LEN=5 33 255 1 [index]U8 checksum
+
+    def _calc_checksum(data):
+        return sum(data) & 0xFF
+
+    sound_idx = int(sound_idx)
+    message = [2, 6, 32, 255, 2, sound_idx, 0]
+    message.append(_calc_checksum(message))
+    message = bytes(np.array(message, dtype=np.int8))
+    # usb.write(port, message, timeout)
+    card._dev.write(1, message, 200)
+
+    if close_card:
+        card.close()
 
 
 if __name__ == '__main__':

@@ -7,6 +7,7 @@ import os
 import subprocess
 import time
 from pathlib import Path
+import iblrig.path_helper as ph
 
 log = logging.getLogger('iblrig')
 
@@ -18,8 +19,7 @@ def start_visual_stim(sph):
     if sph.USE_VISUAL_STIMULUS and sph.BONSAI:
         # Run Bonsai workflow
         here = os.getcwd()
-        os.chdir(str(
-            Path(sph.VISUAL_STIM_FOLDER) / sph.VISUAL_STIMULUS_TYPE))
+        os.chdir(str(Path(sph.VISUAL_STIM_FOLDER) / sph.VISUAL_STIMULUS_TYPE))
         bns = sph.BONSAI
         wkfl = sph.VISUAL_STIMULUS_FILE
 
@@ -32,6 +32,9 @@ def start_visual_stim(sph):
         itr = "-p:Stim.FileNameTrialInfo=" + os.path.join(
             sph.SESSION_RAW_DATA_FOLDER,
             "_iblrig_encoderTrialInfo.raw.ssv")
+        screen_pos = "-p:Stim.FileNameStimPositionScreen=" + os.path.join(
+            sph.SESSION_RAW_DATA_FOLDER,
+            "_iblrig_stimPositionScreen.raw.ssv")
 
         com = "-p:Stim.REPortName=" + sph.PARAMS['COM_ROTARY_ENCODER']
 
@@ -51,9 +54,13 @@ def start_visual_stim(sph):
         if 'habituation' in sph.PYBPOD_PROTOCOL or 'bpod_ttl_test' in sph.PYBPOD_PROTOCOL:
             subprocess.Popen(
                 [bns, wkfl, editor, noboot, evt, itr, com, sync_x, sync_y])
+        # elif 'passive' in sph.PYBPOD_PROTOCOL:
+        #     subprocess.Popen(
+        #         [bns, wkfl, editor, noboot, translationz]
+        #     )
         else:
             subprocess.Popen(
-                [bns, wkfl, editor, noboot, pos, evt, itr, com, sync_x, sync_y,
+                [bns, wkfl, editor, noboot, screen_pos, pos, evt, itr, com, sync_x, sync_y,
                  translationz])
         os.chdir(here)
     else:
@@ -94,6 +101,31 @@ def start_camera_recording(sph):
     return
 
 
+def start_passive_visual_stim(save2folder):
+    here = os.getcwd()
+    bns = ph.get_bonsai_path()
+    stim_folder = str(Path(ph.get_iblrig_folder()) / 'visual_stim' / 'passiveChoiceWorld')
+    wkfl = os.path.join(stim_folder, 'passiveChoiceWorld_passive.bonsai')
+    os.chdir(stim_folder)
+    # Flags
+    noedit = '--no-editor'  # implies start and no-debug?
+    noboot = '--no-boot'
+    # Properties
+    SA0_DueTime = '-p:Stim.SpontaneousActivity0.DueTime=00:05:00'
+    RFM_FileName = '-p:Stim.ReceptiveFieldMappingStim.FileNameRFMapStim=' + str(
+        Path(save2folder) / '_iblrig_RFMapStim.raw.bin')
+    RFM_MappingTime = '-p:Stim.ReceptiveFieldMappingStim.MappingTime=00:05:00'
+
+    cmd = [bns, wkfl, noboot, noedit, SA0_DueTime, RFM_FileName, RFM_MappingTime]
+
+    log.info('Starting spontaneous activity and RF mapping stims')
+    os.chdir(stim_folder)
+    s = subprocess.run(cmd, stdout=subprocess.PIPE)  # locking call
+    os.chdir(here)
+    log.info('Done')
+    return s
+
+
 # =====================================================================
 # TRIAL PARAM HANDLER OBJECT METHODS
 # =====================================================================
@@ -114,7 +146,7 @@ def send_current_trial_info(tph):
     """
     if tph.osc_client is None:
         log.error("Can't send trial info to Bonsai osc_client = None")
-        raise(UnboundLocalError)
+        raise UnboundLocalError("Can't send trial info to Bonsai osc_client = None")
     # tph.position = tph.position  # (2/3)*t_position/180
     tph.osc_client.send_message("/t", tph.trial_num)
     tph.osc_client.send_message("/p", tph.position)
@@ -127,3 +159,19 @@ def send_current_trial_info(tph):
     tph.osc_client.send_message("/a", tph.stim_angle)
     tph.osc_client.send_message("/g", tph.stim_gain)
     tph.osc_client.send_message("/s", tph.stim_sigma)
+
+
+def send_stim_info(osc_client, trial_num, position, contrast, phase,
+                   freq=0.10, angle=0., gain=4., sigma=7.):
+    if osc_client is None:
+        log.error("Can't send trial info to Bonsai osc_client = None")
+        raise UnboundLocalError("Can't send trial info to Bonsai osc_client = None")
+    osc_client.send_message("/t", trial_num)
+    osc_client.send_message("/p", position)
+    osc_client.send_message("/h", phase)
+    osc_client.send_message("/c", contrast)
+    # Consatants
+    osc_client.send_message("/f", freq)
+    osc_client.send_message("/a", angle)
+    osc_client.send_message("/g", gain)
+    osc_client.send_message("/s", sigma)

@@ -39,6 +39,7 @@ ODS1_Count = '-p:OrientationDirectionSelectivityStim1.Count=20'
 cmd = [bns, wrkfl, noboot, noedit, SA0_DueTime, SA1_DueTime, RFM_FileName, ODS0_Count, ODS1_Count,
        RFM_MappingTime, CRCS_CheckerboardTime, CSTS_StimFileName, ]
 # Run visual stims
+log.info("Starting visual stimulation...\n")
 os.chdir(certification_folder)
 s = subprocess.run(cmd, stdout=subprocess.PIPE)  # locking call
 os.chdir(CWD)
