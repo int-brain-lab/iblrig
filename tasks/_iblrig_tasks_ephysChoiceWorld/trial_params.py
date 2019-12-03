@@ -245,7 +245,7 @@ RELATIVE HUMIDITY:    {self.as_data['RelativeHumidity']} %
         # If more than 42 trials save transfer_me.flag
         if self.trial_num == 42:
             misc.create_flags(self.data_file_path, self.poop_count)
-            misc.create_flag(str(Path(self.data_file_path).parent.parent), "raw_passive_data_missing.flag")
+            # misc.create_flag(str(Path(self.data_file_path).parent.parent), "raw_passive_data_missing.flag")
         return self
 
 

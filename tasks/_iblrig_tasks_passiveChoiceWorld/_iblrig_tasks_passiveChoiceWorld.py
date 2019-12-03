@@ -133,6 +133,7 @@ if sph.IS_MOCK:
         'PYBPOD_PROTOCOL': '_iblrig_tasks_ephysMockChoiceWorld'
     }
     misc.patch_settings_file(sph.SETTINGS_FILE_PATH, patch=patch)
+
 # Create a transfer_me.flag file
 misc.create_flag(sph.SESSION_FOLDER, 'passive_data_for_ephys.flag')
 
