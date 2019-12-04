@@ -134,9 +134,9 @@ if sph.IS_MOCK:
     }
     misc.patch_settings_file(sph.SETTINGS_FILE_PATH, patch=patch)
 
-# Create a transfer_me.flag file
+# Create a flag files
 misc.create_flag(sph.SESSION_FOLDER, 'passive_data_for_ephys.flag')
-
+misc.create_flag(sph.SESSION_FOLDER, 'poop_count')
 
 if __name__ == "__main__":
     preloaded_session_num = 'mock'

@@ -43,9 +43,9 @@ class SessionParamHandler(object):
         if not fmake:
             make = False
         elif fmake and 'ephys' in self.PYBPOD_BOARD:
-            make = True
+            make = True  # True makes only raw_behavior_data folder
         else:
-            make = ['video']
+            make = ['video']  # besides behavior which folders to creae
         spc = SessionPathCreator(self.PYBPOD_SUBJECTS[0],
                                  protocol=self.PYBPOD_PROTOCOL,
                                  make=make)
@@ -135,8 +135,9 @@ class SessionParamHandler(object):
             iotasks.save_session_settings(self)
             iotasks.copy_task_code(self)
             iotasks.save_task_code(self)
-            iotasks.copy_video_code(self)
-            iotasks.save_video_code(self)
+            if 'ephys' not in self.PYBPOD_BOARD:
+                iotasks.copy_video_code(self)
+                iotasks.save_video_code(self)
             self.bpod_lights(0)
 
         self.display_logs()
