@@ -17,7 +17,6 @@ import iblrig.iotasks as iotasks
 import iblrig.misc as misc
 import iblrig.sound as sound
 import iblrig.path_helper as ph
-import iblrig.user_input as user_input
 
 log = logging.getLogger('iblrig')
 
@@ -107,7 +106,8 @@ class SessionParamHandler(object):
         # Get preloaded session num (the num in the filename! from corresponding ephys sesison)
         self.SESSION_ORDER = self.CORRESPONDING_EPHYS_SETTINGS_DATA['SESSION_ORDER']
         self.SESSION_IDX = self.CORRESPONDING_EPHYS_SETTINGS_DATA['SESSION_IDX']
-        self.PRELOADED_SESSION_NUM = self.CORRESPONDING_EPHYS_SETTINGS_DATA['PRELOADED_SESSION_NUM']
+        self.PRELOADED_SESSION_NUM = self.CORRESPONDING_EPHYS_SETTINGS_DATA[
+            'PRELOADED_SESSION_NUM']
         # Load session from file
         (
             self.STIM_DELAYS,
