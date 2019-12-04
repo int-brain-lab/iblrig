@@ -212,6 +212,18 @@ def ask_is_mock(settings_file_path: str = None) -> bool:
     return out
 
 
+def ask_confirm_session_idx(session_idx):
+    # Confirm this is the session to load with user. If not override SESSION_IDX
+    sess_num = int(session_idx + 1)
+    sess_num = graph.numinput(
+        "Confirm session to load", "Load recording session number",
+        default=sess_num, askint=True, minval=1, maxval=12
+    )
+    if sess_num != session_idx + 1:
+        session_idx = sess_num - 1
+    return session_idx
+
+
 if __name__ == "__main__":
     # settings_file_path = '/home/nico/Projects/IBL/github/iblrig_data/Subjects/_iblrig_fake_subject/2019-09-25/002/raw_behavior_data/_iblrig_taskSettings.raw.json'  # noqa
     # delay = ask_session_delay(settings_file_path)
