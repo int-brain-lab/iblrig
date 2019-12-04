@@ -46,7 +46,7 @@ class SessionParamHandler(object):
                                     make=False)  # don't make any folders
         # Get previous session folder i.e. the ephys session that just ran
         self.CORRESPONDING_EPHYS_SESSION = spc.PREVIOUS_SESSION_PATH
-        # Get its metadata
+        # Load its metadata
         self.CORRESPONDING_EPHYS_SETTINGS_DATA = iotasks.load_settings(
             self.CORRESPONDING_EPHYS_SESSION)
         if self.CORRESPONDING_EPHYS_SETTINGS_DATA is None:
@@ -69,8 +69,8 @@ class SessionParamHandler(object):
         self.RECORD_VIDEO = True
         self.OPEN_CAMERA_VIEW = True  # Always True if RECORD_VIDEO is True
 
-        self.NTRIALS = 2000  # Number of trials for the current session
-        self.USE_AUTOMATIC_STOPPING_CRITERIONS = True  # Weather to check for the Automatic stopping criterions or not  # noqa
+        self.NTRIALS = 300  # Number of trials for the current session
+        self.USE_AUTOMATIC_STOPPING_CRITERIONS = None  # Weather to check for the Automatic stopping criterions or not  # noqa
         self.REPEAT_ON_ERROR = False  # not used
         self.INTERACTIVE_DELAY = 0.0
         self.RESPONSE_WINDOW = 60
@@ -99,20 +99,15 @@ class SessionParamHandler(object):
         # =====================================================================
         # PREVIOUS DATA FILES
         # =====================================================================
-        self.LAST_TRIAL_DATA = iotasks.load_data(self.PREVIOUS_SESSION_PATH)
-        self.LAST_SETTINGS_DATA = iotasks.load_settings(
-            self.PREVIOUS_SESSION_PATH)
-        self.IS_MOCK = user_input.ask_is_mock()  # Change to False if mock has its own task
-        # Get preloaded session num (the num in the filename!)
-        if self.IS_MOCK:
-            self.SESSION_ORDER = None
-            self.SESSION_IDX = None
-            self.PRELOADED_SESSION_NUM = 'mock'
-        else:
-            self.SESSION_ORDER,
-            self.SESSION_IDX = iotasks.load_session_order_idx(self.LAST_SETTINGS_DATA)
-            self.SESSION_IDX = user_input.ask_confirm_session_idx(self.SESSION_IDX)
-            self.PRELOADED_SESSION_NUM = self.SESSION_ORDER[self.SESSION_IDX]
+        # Not used
+        self.LAST_TRIAL_DATA = None  # iotasks.load_data(self.PREVIOUS_SESSION_PATH)
+        self.LAST_SETTINGS_DATA = None  # iotasks.load_settings(self.PREVIOUS_SESSION_PATH)
+        # Change to False if mock has its own task
+        self.IS_MOCK = self.CORRESPONDING_EPHYS_SETTINGS_DATA['IS_MOCK']
+        # Get preloaded session num (the num in the filename! from corresponding ephys sesison)
+        self.SESSION_ORDER = self.CORRESPONDING_EPHYS_SETTINGS_DATA['SESSION_ORDER']
+        self.SESSION_IDX = self.CORRESPONDING_EPHYS_SETTINGS_DATA['SESSION_IDX']
+        self.PRELOADED_SESSION_NUM = self.CORRESPONDING_EPHYS_SETTINGS_DATA['PRELOADED_SESSION_NUM']
         # Load session from file
         (
             self.STIM_DELAYS,
