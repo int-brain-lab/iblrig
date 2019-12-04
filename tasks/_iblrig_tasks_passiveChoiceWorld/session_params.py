@@ -17,6 +17,7 @@ import iblrig.iotasks as iotasks
 import iblrig.misc as misc
 import iblrig.sound as sound
 import iblrig.path_helper as ph
+import iblrig.user_input as user_input
 
 log = logging.getLogger('iblrig')
 
@@ -85,7 +86,7 @@ class SessionParamHandler(object):
         # SUBJECT
         # =====================================================================
         # self.SUBJECT_WEIGHT = self.ask_subject_weight()
-        self.POOP_COUNT = False
+        self.POOP_COUNT = True
         self.SUBJECT_DISENGAGED_TRIGGERED = False
         self.SUBJECT_DISENGAGED_TRIALNUM = None
         # =====================================================================
@@ -101,15 +102,18 @@ class SessionParamHandler(object):
         self.LAST_TRIAL_DATA = iotasks.load_data(self.PREVIOUS_SESSION_PATH)
         self.LAST_SETTINGS_DATA = iotasks.load_settings(
             self.PREVIOUS_SESSION_PATH)
-        self.IS_MOCK = None
-        (
+        self.IS_MOCK = user_input.ask_is_mock()  # Change to False if mock has its own task
+        # Get preloaded session num (the num in the filename!)
+        if self.IS_MOCK:
+            self.SESSION_ORDER = None
+            self.SESSION_IDX = None
+            self.PRELOADED_SESSION_NUM = 'mock'
+        else:
             self.SESSION_ORDER,
-            self.SESSION_IDX,
-            self.PRELOADED_SESSION_NUM,
-        ) = iotasks.load_session_order_idx_num(
-            self.CORRESPONDING_EPHYS_SETTINGS_DATA,
-            self.CORRESPONDING_EPHYS_SETTINGS_DATA['IS_MOCK'])
-        # Load from file
+            self.SESSION_IDX = iotasks.load_session_order_idx(self.LAST_SETTINGS_DATA)
+            self.SESSION_IDX = user_input.ask_confirm_session_idx(self.SESSION_IDX)
+            self.PRELOADED_SESSION_NUM = self.SESSION_ORDER[self.SESSION_IDX]
+        # Load session from file
         (
             self.STIM_DELAYS,
             self.STIM_IDS,

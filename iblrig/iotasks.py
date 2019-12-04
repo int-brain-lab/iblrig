@@ -138,30 +138,18 @@ def load_settings(session_folder: str) -> dict:
     return raw.load_settings(session_folder)
 
 
-def load_session_order_idx_num(last_settings_data: dict, is_mock: bool) -> tuple:
-    if is_mock:
-        session_order = None
-        session_idx = None
-        preloaded_session_num = 'mock'
-        return session_order, session_idx, preloaded_session_num
+# FIXME: if MOCK session is ran in the middle of a run the next session will fail!
+def load_session_order_idx(last_settings_data: dict) -> tuple:
     if ((not last_settings_data) or
             ('SESSION_ORDER' not in last_settings_data.keys()) or
             (last_settings_data['SESSION_ORDER'] is None)):
         session_order = misc.draw_session_order()
         session_idx = 0
-        preloaded_session_num = session_order[session_idx]
     elif 'SESSION_ORDER' in last_settings_data.keys():
         session_order = last_settings_data['SESSION_ORDER']
         session_idx = last_settings_data['SESSION_IDX'] + 1
-        preloaded_session_num = session_order[session_idx]
-    # Confirm this is the session to load. If not override SESSION_IDX
-    sess_num = int(session_idx + 1)
-    sess_num = numinput(  # TODO: move this to user_input
-        "Confirm session to load", "Load recording session number",
-        default=sess_num, askint=True, minval=1, maxval=12)
-    if sess_num != session_idx + 1:
-        session_idx = sess_num - 1
-    return session_order, session_idx, preloaded_session_num
+
+    return session_order, session_idx
 
 
 def load_ephys_session_pcqs(preloaded_session_num: str) -> tuple:

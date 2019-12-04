@@ -91,12 +91,17 @@ class SessionParamHandler(object):
         self.LAST_SETTINGS_DATA = iotasks.load_settings(
             self.PREVIOUS_SESSION_PATH)
         self.IS_MOCK = user_input.ask_is_mock()  # Change to False if mock has its own task
-        (
+        # Get preloaded session num (the num in the filename!)
+        if self.IS_MOCK:
+            self.SESSION_ORDER = None
+            self.SESSION_IDX = None
+            self.PRELOADED_SESSION_NUM = 'mock'
+        else:
             self.SESSION_ORDER,
-            self.SESSION_IDX,
-            self.PRELOADED_SESSION_NUM,
-        ) = iotasks.load_session_order_idx_num(self.LAST_SETTINGS_DATA, self.IS_MOCK)
-        # Load from file
+            self.SESSION_IDX = iotasks.load_session_order_idx(self.LAST_SETTINGS_DATA)
+            self.SESSION_IDX = user_input.ask_confirm_session_idx(self.SESSION_IDX)
+            self.PRELOADED_SESSION_NUM = self.SESSION_ORDER[self.SESSION_IDX]
+        # Load session from file
         (
             self.POSITIONS,
             self.CONTRASTS,
