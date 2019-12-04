@@ -74,7 +74,7 @@ class SessionParamHandler(object):
         # SUBJECT
         # =====================================================================
         # self.SUBJECT_WEIGHT = self.ask_subject_weight()
-        self.POOP_COUNT = True
+        self.POOP_COUNT = False
         self.SUBJECT_DISENGAGED_TRIGGERED = False
         self.SUBJECT_DISENGAGED_TRIALNUM = None
         # =====================================================================
