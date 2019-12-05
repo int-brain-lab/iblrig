@@ -127,12 +127,12 @@ for sdel, sid in zip(sph.STIM_DELAYS, sph.STIM_IDS):
         # time.sleep(0.3)
     scount += 1
 
-# Patch the PYBPOD_PROTOCOL to _iblrig_tasks_ephysMockChoiceWorld if mock
+# Patch the PYBPOD_PROTOCOL of both ephys and passive sessions if session is mock
 if sph.IS_MOCK:
-    patch = {
-        'PYBPOD_PROTOCOL': '_iblrig_tasks_ephysMockChoiceWorld'
-    }
-    misc.patch_settings_file(sph.SETTINGS_FILE_PATH, patch=patch)
+    ephys_patch = {'PYBPOD_PROTOCOL': '_iblrig_tasks_ephysMockChoiceWorld'}
+    passive_patch = {'PYBPOD_PROTOCOL': '_iblrig_tasks_passiveMockChoiceWorld'}
+    misc.patch_settings_file(sph.CORRESPONDING_EPHYS_SESSION, patch=ephys_patch)
+    misc.patch_settings_file(sph.SETTINGS_FILE_PATH, patch=passive_patch)
 
 # Create a flag files
 misc.create_flag(sph.SESSION_FOLDER, 'passive_data_for_ephys.flag')
