@@ -1,14 +1,21 @@
 # **Release notes**
 
+## **Release Notes 6.2.3**
+
+Patch update (bugfixes)
+
+* Minor optimization to path_helper
+* Rename of session at end of passive now includes corresponding ephys session
+
 ## **Release Notes 6.2.2**
 
-Patch update (fixed some bugs)  
+Patch update (bugfixes)  
 
 * SESSION_ORDER bugfix
 
 ## **Release Notes 6.2.1**
 
-Patch update (fixed some bugs)  
+Patch update (bugfixes)  
 Mainly in **ephysCW** and **passiveCW**
 
 * Poop only at end o passive run
