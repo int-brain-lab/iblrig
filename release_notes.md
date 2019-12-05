@@ -1,8 +1,14 @@
 # **Release notes**
 
+## **Release Notes 6.2.2**
+
+Patch update (fixed some bugs)  
+
+* SESSION_ORDER bugfix
+
 ## **Release Notes 6.2.1**
 
-Patch update (fixed some bugs).  
+Patch update (fixed some bugs)  
 Mainly in **ephysCW** and **passiveCW**
 
 * Poop only at end o passive run
@@ -12,7 +18,7 @@ Mainly in **ephysCW** and **passiveCW**
 
 ## **Release Notes 6.2.0**
 
-Minor update (Added functionality)
+Minor update (added functionality)
 
 * Updated ibllib
 * **ephys_certification** protocol:
