@@ -97,8 +97,10 @@ class SessionParamHandler(object):
             self.SESSION_IDX = None
             self.PRELOADED_SESSION_NUM = 'mock'
         else:
-            self.SESSION_ORDER,
-            self.SESSION_IDX = iotasks.load_session_order_idx(self.LAST_SETTINGS_DATA)
+            (
+                self.SESSION_ORDER,
+                self.SESSION_IDX
+            ) = iotasks.load_session_order_idx(self.LAST_SETTINGS_DATA)
             self.SESSION_IDX = user_input.ask_confirm_session_idx(self.SESSION_IDX)
             self.PRELOADED_SESSION_NUM = self.SESSION_ORDER[self.SESSION_IDX]
         # Load session from file
