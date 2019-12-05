@@ -358,9 +358,8 @@ class SessionPathCreator(object):
         self.VIDEO_RECORDING_FILE = os.path.join(
             self.VIDEO_RECORDING_FOLDER, 'one_camera.bonsai')
 
-        self.SESSION_DATETIME = datetime.datetime.now()
-        self.SESSION_DATE = self.SESSION_DATETIME.date().isoformat()
-        self.SESSION_DATETIME = self.SESSION_DATETIME.isoformat()
+        self.SESSION_DATETIME = datetime.datetime.now().isoformat()
+        self.SESSION_DATE = datetime.datetime.now().date().isoformat()
 
         self.SESSION_DATE_FOLDER = os.path.join(
             self.SUBJECT_FOLDER, self.SESSION_DATE)
