@@ -33,7 +33,7 @@ def main():
             return
         # Fails if dst_folder exists!
         misc.transfer_folder(
-            str(ps.parent / 'raw_behavior data'),
+            str(ps.parent / 'raw_behavior_data'),
             str(Path(esess) / 'raw_passive_data'),
             force=False
         )
