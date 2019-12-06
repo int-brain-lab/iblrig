@@ -9,6 +9,7 @@ import numpy as np
 import usb
 from pybpodapi.protocol import Bpod, StateMachine
 
+from ibllib.graphic import popup
 import iblrig.bonsai as bonsai
 import iblrig.frame2TTL as frame2TTL
 import iblrig.iotasks as iotasks
@@ -92,6 +93,12 @@ def do_card_sound(card, sound_msg):
         card.write(1, sound_msg, 100)
     return
 
+
+# Add warning to close the water valve
+msg = (
+    "You're about to start the passive stimulation protocol." + "\nMake sure the VALVE is turned OFF!"
+)
+popup('WARNING!', msg)  # Locks
 
 # Run the passive part i.e. spontaneous activity and RFMapping stim
 bonsai.start_passive_visual_stim(sph.SESSION_RAW_DATA_FOLDER)  # Loks
