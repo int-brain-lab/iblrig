@@ -280,13 +280,18 @@ class SessionParamHandler(object):
         return d
 
     def display_logs(self):
+        if self.LAST_SETTINGS_DATA['SESSION_IDX'] is None:
+            sess_num = None
+        elif (isinstance(int, self.LAST_SETTINGS_DATA['SESSION_IDX']) or
+                isinstance(float, self.LAST_SETTINGS_DATA['SESSION_IDX'])):
+            sess_num = self.LAST_SETTINGS_DATA['SESSION_IDX'] + 1
         if self.PREVIOUS_DATA_FILE:
             msg = f"""
 ##########################################
 PREVIOUS SESSION FOUND
 LOADING PARAMETERS FROM: {self.PREVIOUS_DATA_FILE}
 
-PREVIOUS SESSION NUMBER: {self.LAST_SETTINGS_DATA['SESSION_IDX'] + 1}
+PREVIOUS SESSION NUMBER: {sess_num}
 PREVIOUS NTRIALS:        {self.LAST_TRIAL_DATA["trial_num"]}
 PREVIOUS WATER DRANK:    {self.LAST_TRIAL_DATA['water_delivered']}
 PREVIOUS WEIGHT:         {self.LAST_SETTINGS_DATA['SUBJECT_WEIGHT']}
