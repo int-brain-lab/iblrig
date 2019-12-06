@@ -1,5 +1,15 @@
 # **Release notes**
 
+## **Release Notes 6.2.4**
+
+Patch update (bugfixes)
+
+* Fixed missing underscore in move passive
+* Fixed missing poop_count.py file in scripts folder
+* Added popup window to warn to close valve on passiveCW launch
+* Bugfix in sph.display_logs() that made SPH crash if no previous session was found.
+* Updated ibllib to 1.3.10
+
 ## **Release Notes 6.2.3**
 
 Patch update (bugfixes)

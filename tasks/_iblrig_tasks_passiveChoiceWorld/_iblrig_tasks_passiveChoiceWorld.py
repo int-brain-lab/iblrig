@@ -96,7 +96,8 @@ def do_card_sound(card, sound_msg):
 
 # Add warning to close the water valve
 msg = (
-    "You're about to start the passive stimulation protocol." + "\nMake sure the VALVE is turned OFF!"
+    "You're about to start the passive stimulation protocol." +
+    "\nMake sure the VALVE is turned OFF!"
 )
 popup('WARNING!', msg)  # Locks
 
