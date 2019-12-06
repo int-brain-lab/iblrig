@@ -291,13 +291,8 @@ class SessionParamHandler(object):
         if self.PREVIOUS_DATA_FILE:
             msg = f"""
 ##########################################
-PREVIOUS SESSION FOUND
-LOADING PARAMETERS FROM: {self.PREVIOUS_DATA_FILE}
-
-PREVIOUS SESSION NUMBER: {self.LAST_SETTINGS_DATA['SESSION_IDX'] + 1}
-PREVIOUS NTRIALS:        {self.LAST_TRIAL_DATA["trial_num"]}
-PREVIOUS WATER DRANK:    {self.LAST_TRIAL_DATA['water_delivered']}
-PREVIOUS WEIGHT:         {self.LAST_SETTINGS_DATA['SUBJECT_WEIGHT']}
+    CORRESPONDING EPHYS SESSION FOUND
+LOADING PARAMETERS FROM: {self.CORRESPONDING_EPHYS_SESSION}
 ##########################################"""
             log.info(msg)
 
