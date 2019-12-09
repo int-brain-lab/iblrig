@@ -5,12 +5,12 @@
 import logging
 
 import matplotlib.pyplot as plt
-from pybpod_rotaryencoder_module.module import RotaryEncoder
 from pybpodapi.protocol import Bpod, StateMachine
 
 import online_plots as op
 import task_settings
 import user_settings
+from iblrig.bpod_helper import BpodMessageCreator
 from iblrig.user_input import ask_session_delay
 from session_params import SessionParamHandler
 from trial_params import TrialParamHandler
@@ -58,39 +58,21 @@ bpod = Bpod()
 bpod.loop_handler = bpod_loop_handler
 # Soft code handler function can run arbitrary code from within state machine
 bpod.softcode_handler_function = softcode_handler
-# Rotary Encoder State Machine handler
-rotary_encoder = [x for x in bpod.modules if x.name == 'RotaryEncoder1'][0]
-# ROTARY ENCODER SEVENTS
-# Set RE position to zero 'Z' + eneable all RE thresholds 'E'
-# re_reset = rotary_encoder.create_resetpositions_trigger()
-re_reset = 1
-bpod.load_serial_message(rotary_encoder, re_reset,
-                         [RotaryEncoder.COM_SETZEROPOS,  # ord('Z')
-                          RotaryEncoder.COM_ENABLE_ALLTHRESHOLDS])  # ord('E')
-# Stop the stim
-re_stop_stim = re_reset + 1
-bpod.load_serial_message(rotary_encoder, re_stop_stim, [ord('#'), 1])
-# Show the stim
-re_show_stim = re_reset + 2
-bpod.load_serial_message(rotary_encoder, re_show_stim, [ord('#'), 2])
-# Close loop
-re_close_loop = re_reset + 3
-bpod.load_serial_message(rotary_encoder, re_close_loop, [ord('#'), 3])
+# Bpod message creator
+msg = BpodMessageCreator(bpod)
+re_reset = msg.rotary_encoder_reset()
+bonsai_hide_stim = msg.bonsai_hide_stim()
+bonsai_show_stim = msg.bonsai_show_stim()
+bonsai_close_loop = msg.bonsai_close_loop()
+bonsai_freeze_stim = msg.bosnai_freeze_stim()
+sc_play_tone = msg.sound_card_play_idx(sph.GO_TONE_IDX)
+sc_play_noise = msg.sound_card_play_idx(sph.WHITE_NOISE_IDX)
+bpod = msg.return_bpod()
 
-if sph.SOFT_SOUND is None:
-    # SOUND CARD
-    sound_card = [x for x in bpod.modules if x.name == 'SoundCard1'][0]
-    # Play tone
-    sc_play_tone = re_reset + 4
-    bpod.load_serial_message(sound_card, sc_play_tone, [ord('P'), sph.GO_TONE_IDX])
-    # Play noise
-    sc_play_noise = re_reset + 5
-    bpod.load_serial_message(sound_card, sc_play_noise, [
-                             ord('P'), sph.WHITE_NOISE_IDX])
+
 # Delay initiation
 sph.SESSION_START_DELAY_SEC = ask_session_delay(sph.SETTINGS_FILE_PATH)
 
-sph.start_visual_stim()
 # =============================================================================
 # TRIAL PARAMETERS AND STATE MACHINE
 # =============================================================================
@@ -100,6 +82,7 @@ tph = TrialParamHandler(sph)
 f, axes = op.make_fig(sph)
 plt.pause(1)
 
+sph.start_visual_stim()
 for i in range(sph.NTRIALS):  # Main loop
     tph.next_trial()
     log.info(f'Starting trial: {i + 1}')
@@ -112,7 +95,7 @@ for i in range(sph.NTRIALS):  # Main loop
         log.info(f'First trial initializing, will move to next trial only if:')
         log.info(f'1. camera is detected')
         log.info(f'2. {sph.SESSION_START_DELAY_SEC} sec have elapsed')
-        log.info(f'3. visual stimulus is detected')
+        log.info(f'3. visual stimulus is detected')  # TODO: this in states for first trial
         sma.add_state(
             state_name='trial_start',
             state_timer=0,
@@ -124,7 +107,7 @@ for i in range(sph.NTRIALS):  # Main loop
             state_timer=0,  # ~100µs hardware irreducible delay
             state_change_conditions={'Tup': 'reset_rotary_encoder'},
             output_actions=[tph.out_stop_sound])  # stop all sounds
-
+        # TODO: remove out things from tph put in sph
     sma.add_state(
         state_name='delay_initiation',
         state_timer=tph.session_start_delay_sec,
@@ -153,7 +136,7 @@ for i in range(sph.NTRIALS):  # Main loop
             'BNC1High': 'interactive_delay',
             'BNC1Low': 'interactive_delay'
         },
-        output_actions=[('Serial1', re_show_stim)])
+        output_actions=[('Serial1', bonsai_show_stim)])
 
     sma.add_state(
         state_name='interactive_delay',
@@ -180,22 +163,34 @@ for i in range(sph.NTRIALS):  # Main loop
         state_name='closed_loop',
         state_timer=tph.response_window,
         state_change_conditions={'Tup': 'no_go',
-                                 tph.event_error: 'error',
-                                 tph.event_reward: 'reward'},
-        output_actions=[('Serial1', re_close_loop)])
+                                 tph.event_error: 'freeze_error',
+                                 tph.event_reward: 'freeze_reward'},
+        output_actions=[('Serial1', bonsai_close_loop)])
 
     sma.add_state(
         state_name='no_go',
         state_timer=tph.iti_error,
         state_change_conditions={'Tup': 'exit_state'},
-        output_actions=[('Serial1', re_stop_stim),
+        output_actions=[('Serial1', bonsai_hide_stim),
                         tph.out_noise])
+
+    sma.add_state(
+        state_name='freeze_error',
+        state_timer=0,
+        state_change_conditions={'Tup': 'error'},
+        output_actions=[('Serial1', bonsai_freeze_stim)])
 
     sma.add_state(
         state_name='error',
         state_timer=tph.iti_error,
-        state_change_conditions={'Tup': 'exit_state'},
+        state_change_conditions={'Tup': 'hide_stim'},
         output_actions=[tph.out_noise])
+
+    sma.add_state(
+        state_name='freeze_reward',
+        state_timer=0,
+        state_change_conditions={'Tup': 'reward'},
+        output_actions=[('Serial1', bonsai_freeze_stim)])
 
     sma.add_state(
         state_name='reward',
@@ -206,14 +201,22 @@ for i in range(sph.NTRIALS):  # Main loop
     sma.add_state(
         state_name='correct',
         state_timer=tph.iti_correct,
-        state_change_conditions={'Tup': 'exit_state'},
+        state_change_conditions={'Tup': 'hide_stim'},
         output_actions=[])
+
+    sma.add_state(
+        state_name='hide_stim',
+        state_timer=0.1,
+        state_change_conditions={'Tup': 'exit_state',
+                                 'BNC1High': 'exit_state',
+                                 'BNC1Low': 'exit_state'},
+        output_actions=[('Serial1', bonsai_hide_stim)])
 
     sma.add_state(
         state_name='exit_state',
         state_timer=0.5,
         state_change_conditions={'Tup': 'exit'},
-        output_actions=[('Serial1', re_stop_stim)])
+        output_actions=[])
 
     # Send state machine description to Bpod device
     bpod.send_state_machine(sma)

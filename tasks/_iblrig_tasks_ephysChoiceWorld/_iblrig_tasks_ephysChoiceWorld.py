@@ -5,13 +5,12 @@
 import logging
 
 import matplotlib.pyplot as plt
-from pybpod_rotaryencoder_module.module import RotaryEncoder
 from pybpodapi.protocol import Bpod, StateMachine
-from iblrig.bpod_helper import BpodMessageCreator
 
 import online_plots as op
 import task_settings
 import user_settings
+from iblrig.bpod_helper import BpodMessageCreator
 from session_params import SessionParamHandler
 from trial_params import TrialParamHandler
 
