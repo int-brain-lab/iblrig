@@ -59,6 +59,8 @@ class BpodMessageCreator(object):
         return bonsai_freeze_stim
 
     def sound_card_play_idx(self, tone_idx):
+        if self.sound_card is None:
+            return
         sc_play_idx = self.default_message_idx + 1
         self.bpod.load_serial_message(self.sound_card, sc_play_idx, [ord('P'), tone_idx])
         self.default_message_idx += 1
