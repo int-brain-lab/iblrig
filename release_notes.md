@@ -1,5 +1,13 @@
 # **Release notes**
 
+## **Release Notes 6.2.5**
+
+Patch update (bugfixes)
+
+* Fixed stimulus sometimes keeps moving after reward for all tasks
+* Fixed session_params bug in ephysCW
+* Under the hood refactorings
+  
 ## **Release Notes 6.2.4**
 
 Patch update (bugfixes)
