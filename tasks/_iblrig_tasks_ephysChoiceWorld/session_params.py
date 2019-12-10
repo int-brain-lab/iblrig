@@ -280,7 +280,7 @@ class SessionParamHandler(object):
         return d
 
     def display_logs(self):
-        if self.LAST_SETTINGS_DATA['SESSION_IDX'] is None:
+        if self.LAST_SETTINGS_DATA is None or self.LAST_SETTINGS_DATA['SESSION_IDX'] is None:
             sess_num = None
         elif (isinstance(int, self.LAST_SETTINGS_DATA['SESSION_IDX']) or
                 isinstance(float, self.LAST_SETTINGS_DATA['SESSION_IDX'])):
