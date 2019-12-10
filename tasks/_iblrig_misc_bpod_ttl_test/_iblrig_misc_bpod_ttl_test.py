@@ -5,7 +5,6 @@
 import logging
 
 import numpy as np
-from pybpod_rotaryencoder_module.module import RotaryEncoder
 from pybpodapi.protocol import Bpod, StateMachine
 
 import task_settings
