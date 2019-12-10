@@ -17,6 +17,7 @@ import iblrig.misc as misc
 import iblrig.params as params
 import task_settings
 import user_settings
+from iblrig.bpod_helper import BpodMessageCreator
 from iblrig.rotary_encoder import MyRotaryEncoder
 from session_params import SessionParamHandler
 
@@ -33,17 +34,13 @@ if frame2TTL.get_and_set_thresholds() == 0:
 re = MyRotaryEncoder(sph.ALL_THRESHOLDS, sph.STIM_GAIN, sph.PARAMS['COM_ROTARY_ENCODER'])
 sph.ROTARY_ENCODER = re
 
-
 # get bpod
 bpod = Bpod(serial_port=PARAMS['COM_BPOD'])
-# get soundcard bpod style
-bpod_sound_card = [x for x in bpod.modules if x.name == 'SoundCard1'][0]
-# Play tone
-sc_play_tone = 2
-bpod.load_serial_message(bpod_sound_card, sc_play_tone, [ord('P'), sph.GO_TONE_IDX])
-# Play noise
-sc_play_noise = 3
-bpod.load_serial_message(bpod_sound_card, sc_play_noise, [ord('P'), sph.WHITE_NOISE_IDX])
+# Build messages
+msg = BpodMessageCreator(bpod)
+sc_play_tone = msg.sound_card_play_idx(sph.GO_TONE_IDX)
+sc_play_noise = msg.sound_card_play_idx(sph.WHITE_NOISE_IDX)
+bpod = msg.return_bpod()
 
 # get soundcard
 card = usb.core.find(idVendor=0x04d8, idProduct=0xee6a)

@@ -114,8 +114,8 @@ class SessionParamHandler(object):
                 sample_rate=self.SOUND_SAMPLE_FREQ)
         self.OUT_STOP_SOUND = (
             'SoftCode', 0) if self.SOFT_SOUND else ('Serial3', ord('X'))
-        self.OUT_TONE = ('SoftCode', 1) if self.SOFT_SOUND else ('Serial3', 5)
-        self.OUT_NOISE = ('SoftCode', 2) if self.SOFT_SOUND else ('Serial3', 6)
+        self.OUT_TONE = ('SoftCode', 1) if self.SOFT_SOUND else ('Serial3', 6)
+        self.OUT_NOISE = ('SoftCode', 2) if self.SOFT_SOUND else ('Serial3', 7)
         # =====================================================================
         # RUN VISUAL STIM
         # =====================================================================
