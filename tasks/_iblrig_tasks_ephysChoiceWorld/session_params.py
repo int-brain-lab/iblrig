@@ -168,8 +168,8 @@ class SessionParamHandler(object):
             sounds=[self.GO_TONE, self.WHITE_NOISE],
             indexes=[self.GO_TONE_IDX, self.WHITE_NOISE_IDX],
             sample_rate=self.SOUND_SAMPLE_FREQ)
-        self.OUT_TONE = ('SoftCode', 1) if self.SOFT_SOUND else ('Serial3', 5)
-        self.OUT_NOISE = ('SoftCode', 2) if self.SOFT_SOUND else ('Serial3', 6)
+        self.OUT_TONE = ('SoftCode', 1) if self.SOFT_SOUND else ('Serial3', 6)
+        self.OUT_NOISE = ('SoftCode', 2) if self.SOFT_SOUND else ('Serial3', 7)
         self.OUT_STOP_SOUND = (
             'SoftCode', 0) if self.SOFT_SOUND else ('Serial3', ord('X'))
         # =====================================================================
@@ -280,10 +280,12 @@ class SessionParamHandler(object):
         return d
 
     def display_logs(self):
-        if self.LAST_SETTINGS_DATA['SESSION_IDX'] is None:
+        if self.LAST_SETTINGS_DATA is None:
             sess_num = None
-        elif (isinstance(int, self.LAST_SETTINGS_DATA['SESSION_IDX']) or
-                isinstance(float, self.LAST_SETTINGS_DATA['SESSION_IDX'])):
+        elif self.LAST_SETTINGS_DATA['SESSION_IDX'] is None:
+            sess_num = None
+        elif (isinstance(self.LAST_SETTINGS_DATA['SESSION_IDX'], int) or
+                isinstance(self.LAST_SETTINGS_DATA['SESSION_IDX'], float)):
             sess_num = self.LAST_SETTINGS_DATA['SESSION_IDX'] + 1
         if self.PREVIOUS_DATA_FILE:
             msg = f"""
@@ -309,7 +311,7 @@ if __name__ == '__main__':
         turning off lights of bpod board
     """
     import task_settings as _task_settings
-    import scratch._user_settings as _user_settings
+    import iblrig.fake_user_settings as _user_settings
     import datetime
     dt = datetime.datetime.now()
     dt = [str(dt.year), str(dt.month), str(dt.day),

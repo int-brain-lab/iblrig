@@ -34,7 +34,7 @@ def start_visual_stim(sph):
             "_iblrig_encoderTrialInfo.raw.ssv")
         screen_pos = "-p:Stim.FileNameStimPositionScreen=" + os.path.join(
             sph.SESSION_RAW_DATA_FOLDER,
-            "_iblrig_stimPositionScreen.raw.ssv")
+            "_iblrig_stimPositionScreen.raw.csv")
 
         com = "-p:Stim.REPortName=" + sph.PARAMS['COM_ROTARY_ENCODER']
 
@@ -54,10 +54,6 @@ def start_visual_stim(sph):
         if 'habituation' in sph.PYBPOD_PROTOCOL or 'bpod_ttl_test' in sph.PYBPOD_PROTOCOL:
             subprocess.Popen(
                 [bns, wkfl, editor, noboot, evt, itr, com, sync_x, sync_y])
-        # elif 'passive' in sph.PYBPOD_PROTOCOL:
-        #     subprocess.Popen(
-        #         [bns, wkfl, editor, noboot, translationz]
-        #     )
         else:
             subprocess.Popen(
                 [bns, wkfl, editor, noboot, screen_pos, pos, evt, itr, com, sync_x, sync_y,
