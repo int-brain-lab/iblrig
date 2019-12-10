@@ -5,11 +5,11 @@
 import logging
 
 import numpy as np
-from pybpod_rotaryencoder_module.module import RotaryEncoder
 from pybpodapi.protocol import Bpod, StateMachine
 
 import task_settings
 import user_settings
+from iblrig.bpod_helper import BpodMessageCreator
 from session_params import SessionParamHandler
 from trial_params import TrialParamHandler
 
@@ -43,29 +43,12 @@ def softcode_handler(data):
 bpod = Bpod()
 # Soft code handler function can run arbitrary code from within state machine
 bpod.softcode_handler_function = softcode_handler
-# Rotary Encoder State Machine handle
-rotary_encoder = [x for x in bpod.modules if x.name == 'RotaryEncoder1'][0]
-# ROTARY ENCODER EVENTS
-rotary_encoder_reset = 1
-bpod.load_serial_message(rotary_encoder, rotary_encoder_reset,
-                         [RotaryEncoder.COM_SETZEROPOS,  # ord('Z')
-                          RotaryEncoder.COM_ENABLE_ALLTHRESHOLDS])  # ord('E')
-# Stop the stim
-re_stop_stim = rotary_encoder_reset + 1
-bpod.load_serial_message(rotary_encoder, re_stop_stim, [ord('#'), 1])
-# Show the stim
-re_show_stim = rotary_encoder_reset + 2
-bpod.load_serial_message(rotary_encoder, re_show_stim, [ord('#'), 2])
-# Shwo stim at center of screen
-re_show_center = rotary_encoder_reset + 3
-bpod.load_serial_message(rotary_encoder, re_show_center, [ord('#'), 3])
-if sph.SOFT_SOUND is None:
-    # SOUND CARD
-    sound_card = [x for x in bpod.modules if x.name == 'SoundCard1'][0]
-    # Play tone
-    sc_play_tone = rotary_encoder_reset + 4
-    bpod.load_serial_message(sound_card, sc_play_tone, [
-                             ord('P'), sph.GO_TONE_IDX])
+# Bpod message creator
+msg = BpodMessageCreator(bpod)
+bonsai_hide_stim = msg.bonsai_hide_stim()
+bonsai_show_stim = msg.bonsai_show_stim()
+sc_play_tone = msg.sound_card_play_idx(sph.GO_TONE_IDX)
+bpod = msg.return_bpod()
 
 # =============================================================================
 # TRIAL PARAMETERS AND STATE MACHINE
@@ -91,7 +74,7 @@ for i in range(sph.NTRIALS):  # Main loop
             state_change_conditions={'Tup': 'bad_stim',
                                      'BNC1High': 'stim_off',
                                      'BNC1Low': 'stim_off'},
-            output_actions=[('Serial1', re_show_stim)])
+            output_actions=[('Serial1', bonsai_show_stim)])
     else:
         sma.add_state(
             state_name='stim_on',
@@ -99,7 +82,7 @@ for i in range(sph.NTRIALS):  # Main loop
             state_change_conditions={'Tup': 'bad_stim',
                                      'BNC1High': 'stim_off',
                                      'BNC1Low': 'stim_off'},
-            output_actions=[('Serial1', re_show_stim)])
+            output_actions=[('Serial1', bonsai_show_stim)])
 
     sma.add_state(
         state_name='stim_off',
@@ -107,7 +90,7 @@ for i in range(sph.NTRIALS):  # Main loop
         state_change_conditions={'Tup': 'bad_stim',
                                  'BNC1High': 'play_tone',
                                  'BNC1Low': 'play_tone'},
-        output_actions=[('Serial1', re_stop_stim)])
+        output_actions=[('Serial1', bonsai_hide_stim)])
 
     sma.add_state(
         state_name='bad_stim',
