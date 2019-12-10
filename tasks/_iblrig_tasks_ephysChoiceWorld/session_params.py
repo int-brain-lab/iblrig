@@ -280,10 +280,12 @@ class SessionParamHandler(object):
         return d
 
     def display_logs(self):
-        if self.LAST_SETTINGS_DATA is None or self.LAST_SETTINGS_DATA['SESSION_IDX'] is None:
+        if self.LAST_SETTINGS_DATA is None:
             sess_num = None
-        elif (isinstance(int, self.LAST_SETTINGS_DATA['SESSION_IDX']) or
-                isinstance(float, self.LAST_SETTINGS_DATA['SESSION_IDX'])):
+        elif self.LAST_SETTINGS_DATA['SESSION_IDX'] is None:
+            sess_num = None
+        elif (isinstance(self.LAST_SETTINGS_DATA['SESSION_IDX'], int) or
+                isinstance(self.LAST_SETTINGS_DATA['SESSION_IDX'], float)):
             sess_num = self.LAST_SETTINGS_DATA['SESSION_IDX'] + 1
         if self.PREVIOUS_DATA_FILE:
             msg = f"""
@@ -309,7 +311,7 @@ if __name__ == '__main__':
         turning off lights of bpod board
     """
     import task_settings as _task_settings
-    import scratch._user_settings as _user_settings
+    import iblrig.fake_user_settings as _user_settings
     import datetime
     dt = datetime.datetime.now()
     dt = [str(dt.year), str(dt.month), str(dt.day),
