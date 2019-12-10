@@ -34,7 +34,7 @@ def start_visual_stim(sph):
             "_iblrig_encoderTrialInfo.raw.ssv")
         screen_pos = "-p:Stim.FileNameStimPositionScreen=" + os.path.join(
             sph.SESSION_RAW_DATA_FOLDER,
-            "_iblrig_stimPositionScreen.raw.ssv")
+            "_iblrig_stimPositionScreen.raw.csv")
 
         com = "-p:Stim.REPortName=" + sph.PARAMS['COM_ROTARY_ENCODER']
 
