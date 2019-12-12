@@ -180,7 +180,7 @@ def get_and_set_thresholds():
 
 
 if __name__ == "__main__":
-    com_port = 'COM12'
+    com_port = 'COM3'
     f = Frame2TTL(com_port)
     print(f.read_value())
     print(f.measure_photons())

@@ -358,6 +358,11 @@ class SessionPathCreator(object):
         self.VIDEO_RECORDING_FILE = os.path.join(
             self.VIDEO_RECORDING_FOLDER, 'one_camera.bonsai')
 
+        self.MIC_RECORDING_FOLDER = os.path.join(
+            self.IBLRIG_FOLDER, 'devices', 'microphone')
+        self.MIC_RECORDING_FILE = os.path.join(
+            self.MIC_RECORDING_FOLDER, 'record_mic.bonsai')
+
         self.SESSION_DATETIME = datetime.datetime.now().isoformat()
         self.SESSION_DATE = datetime.datetime.now().date().isoformat()
 

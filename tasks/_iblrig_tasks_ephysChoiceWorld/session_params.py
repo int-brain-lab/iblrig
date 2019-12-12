@@ -90,6 +90,7 @@ class SessionParamHandler(object):
         self.LAST_TRIAL_DATA = iotasks.load_data(self.PREVIOUS_SESSION_PATH)
         self.LAST_SETTINGS_DATA = iotasks.load_settings(
             self.PREVIOUS_SESSION_PATH)
+        bonsai.start_mic_recording(self)
         self.IS_MOCK = user_input.ask_is_mock()  # Change to False if mock has its own task
         # Get preloaded session num (the num in the filename!)
         if self.IS_MOCK:

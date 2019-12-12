@@ -5,8 +5,12 @@
 import logging
 import os
 import subprocess
+import sys
 import time
 from pathlib import Path
+
+from pythonosc import udp_client
+
 import iblrig.path_helper as ph
 
 log = logging.getLogger('iblrig')
@@ -65,6 +69,23 @@ def start_visual_stim(sph):
     return
 
 
+def start_mic_recording(sph):
+    here = os.getcwd()
+    os.chdir(sph.MIC_RECORDING_FOLDER)
+    bns = sph.BONSAI
+    wkfl = sph.MIC_RECORDING_FILE
+    srec = "-p:RecordSound=" + str(sph.RECORD_SOUND)
+    mic = "-p:FileNameMic=" + os.path.join(
+        sph.SESSION_RAW_DATA_FOLDER, "_iblrig_micData.raw.wav")
+
+    start = '--start'
+    noboot = '--no-boot'
+
+    subprocess.Popen([bns, wkfl, start, mic, srec, noboot])
+    os.chdir(here)
+    return
+
+
 def start_camera_recording(sph):
     if (sph.RECORD_VIDEO is False and sph.OPEN_CAMERA_VIEW is False):
         log.error("Task will hang waiting for camera frame sync pulse")
@@ -119,6 +140,7 @@ def start_passive_visual_stim(save2folder):
     s = subprocess.run(cmd, stdout=subprocess.PIPE)  # locking call
     os.chdir(here)
     log.info('Done')
+    sys.stdout.flush()
     return s
 
 
@@ -171,3 +193,31 @@ def send_stim_info(osc_client, trial_num, position, contrast, phase,
     osc_client.send_message("/a", angle)
     osc_client.send_message("/g", gain)
     osc_client.send_message("/s", sigma)
+
+
+def osc_client(workflow):
+    ip = '127.0.0.1'
+    if 'stim' in workflow:
+        port = 7110
+    elif 'camera' in workflow:
+        port = 7111
+    elif 'mic' in workflow:
+        port = 7112
+    return udp_client.SimpleUDPClient(ip, port)
+
+
+def start_frame2ttl_test():
+    here = os.getcwd()
+    bns = ph.get_bonsai_path()
+    stim_folder = str(Path(ph.get_iblrig_folder()) / 'visual_stim' / 'f2ttl_calibration')
+    wkfl = os.path.join(stim_folder, 'screen_60Hz.bonsai')
+    # Flags
+    noedit = '--no-editor'  # implies start and no-debug?
+    noboot = '--no-boot'
+    # Properties
+    log.info('Starting pulses @ 60Hz')
+    sys.stdout.flush()
+    os.chdir(stim_folder)
+    s = subprocess.Popen([bns, wkfl, noboot, noedit])
+    os.chdir(here)
+    return s

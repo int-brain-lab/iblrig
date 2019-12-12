@@ -236,6 +236,8 @@ def config_task(iblproject_path, task_name: str):  # XXX: THIS!
     if task.name == '_iblrig_misc_bpod_ttl_test':
         task = create_task_bonsai_stop_command(task, port=7110)
         task = create_task_cleanup_command(task)
+    if task.name == '_iblrig_misc_frame2TTL_freq_test':
+        task = create_task_cleanup_command(task)
     # For all bpod tasks turn off bpod lights, stop the stim 7110, stop the camera 7111 and cleanup
     btasks = [
         '_iblrig_tasks_habituationChoiceWorld',
@@ -279,6 +281,7 @@ def create_ibl_tasks(iblproject_path):  # XXX: THIS!
         '_iblrig_calibration_frame2TTL',
         '_iblrig_misc_flush_water',
         '_iblrig_misc_bpod_ttl_test',
+        '_iblrig_misc_frame2TTL_freq_test',
         '_iblrig_tasks_biasedChoiceWorld',
         '_iblrig_tasks_habituationChoiceWorld',
         '_iblrig_tasks_trainingChoiceWorld',
@@ -358,6 +361,8 @@ def create_experiment_setups(iblproject_path, exp_name: str):  # XXX:THIS!
             exp, 'flush_water', p.boards[0].name, test_subj)
         bpod_ttl_test = create_setup(  # noqa
             exp, 'bpod_ttl_test', p.boards[0].name, test_subj)
+        frame2TTL_freq_test = create_setup(  # noqa
+            exp, 'frame2TTL_freq_test', p.boards[0].name, test_subj)
 
     if exp.name == '_iblrig_tasks':
         biasedChoiceWorld = create_setup(  # noqa

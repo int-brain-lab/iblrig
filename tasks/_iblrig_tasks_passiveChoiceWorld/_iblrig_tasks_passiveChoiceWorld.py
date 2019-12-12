@@ -3,13 +3,14 @@
 # @Author: Niccolò Bonacchi
 # @Date: Friday, November 15th 2019, 12:05:29 pm
 import logging
+import sys
 import time
 
 import numpy as np
 import usb
+from ibllib.graphic import popup
 from pybpodapi.protocol import Bpod, StateMachine
 
-from ibllib.graphic import popup
 import iblrig.bonsai as bonsai
 import iblrig.frame2TTL as frame2TTL
 import iblrig.iotasks as iotasks
@@ -109,6 +110,7 @@ pcs_idx = 0
 scount = 1
 for sdel, sid in zip(sph.STIM_DELAYS, sph.STIM_IDS):
     log.info(f"Delay: {sdel}; ID: {sid}; Count: {scount}/300")
+    sys.stdout.flush()
     time.sleep(sdel)
     if sid == 'V':
         # Make bpod task with 1 state = valve_open -> exit
