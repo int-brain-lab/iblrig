@@ -1,5 +1,12 @@
 # **Release notes**
 
+## **Release Notes 6.3.0**
+
+Minor update (added functionality)
+
+* Created _iblrig_misc_frame2TTL_freq_test / test task for screen/frame2TTL
+* Added sound recording in ephys rig for both biased and ephysCW tasks (was missing)
+
 ## **Release Notes 6.2.5**
 
 Patch update (bugfixes)
