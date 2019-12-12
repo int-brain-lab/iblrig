@@ -193,15 +193,14 @@ def start_frame2ttl_test():
     here = os.getcwd()
     bns = ph.get_bonsai_path()
     stim_folder = str(Path(ph.get_iblrig_folder()) / 'visual_stim' / 'f2ttl_calibration')
-    wkfl = os.path.join(stim_folder, 'screen60Hz.bonsai')
+    wkfl = os.path.join(stim_folder, 'screen_60Hz.bonsai')
     # Flags
     noedit = '--no-editor'  # implies start and no-debug?
     noboot = '--no-boot'
     # Properties
     log.info('Starting pulses @ 60Hz')
-    os.chdir(stim_folder)
-    s = subprocess.Popen(cmd=[bns, wkfl, noboot, noedit])
-    os.chdir(here)
-    log.info('Done')
     sys.stdout.flush()
+    os.chdir(stim_folder)
+    s = subprocess.Popen([bns, wkfl, noboot, noedit])
+    os.chdir(here)
     return s
