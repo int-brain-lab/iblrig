@@ -401,8 +401,8 @@
                           <gl:Blue>0</gl:Blue>
                           <gl:Alpha>0</gl:Alpha>
                         </gl:AccumulatorFormat>
-                        <gl:Buffers>2</gl:Buffers>
-                        <gl:Stereo>false</gl:Stereo>
+                        <gl:Buffers>4</gl:Buffers>
+                        <gl:Stereo>true</gl:Stereo>
                       </gl:GraphicsMode>
                     </Combinator>
                   </Expression>
@@ -582,11 +582,17 @@
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="rx:Last" />
       </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="rx:Delay">
+          <rx:DueTime>PT1S</rx:DueTime>
+        </Combinator>
+      </Expression>
       <Expression xsi:type="WorkflowOutput" />
     </Nodes>
     <Edges>
       <Edge From="0" To="1" Label="Source1" />
       <Edge From="1" To="2" Label="Source1" />
+      <Edge From="2" To="3" Label="Source1" />
     </Edges>
   </Workflow>
 </WorkflowBuilder>

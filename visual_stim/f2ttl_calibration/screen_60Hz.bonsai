@@ -3,7 +3,6 @@
                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                  xmlns:gl="clr-namespace:Bonsai.Shaders;assembly=Bonsai.Shaders"
                  xmlns:res="clr-namespace:Bonsai.Resources;assembly=Bonsai.System"
-                 xmlns:osc="clr-namespace:Bonsai.Osc;assembly=Bonsai.Osc"
                  xmlns:rx="clr-namespace:Bonsai.Reactive;assembly=Bonsai.Core"
                  xmlns="https://bonsai-rx.org/2018/workflow">
   <Workflow>
@@ -21,7 +20,7 @@
           <gl:WindowBorder>Resizable</gl:WindowBorder>
           <gl:WindowState>Fullscreen</gl:WindowState>
           <gl:DisplayDevice>Second</gl:DisplayDevice>
-          <gl:TargetRenderFrequency>60</gl:TargetRenderFrequency>
+          <gl:TargetRenderFrequency>0</gl:TargetRenderFrequency>
           <gl:RenderState />
           <gl:GraphicsMode>
             <gl:ColorFormat>
@@ -39,8 +38,8 @@
               <gl:Blue>0</gl:Blue>
               <gl:Alpha>0</gl:Alpha>
             </gl:AccumulatorFormat>
-            <gl:Buffers>2</gl:Buffers>
-            <gl:Stereo>false</gl:Stereo>
+            <gl:Buffers>4</gl:Buffers>
+            <gl:Stereo>true</gl:Stereo>
           </gl:GraphicsMode>
         </Combinator>
       </Expression>
@@ -81,16 +80,27 @@
         <ColorB>0</ColorB>
         <ColorA>0</ColorA>
       </Expression>
+      <Expression xsi:type="Condition">
+        <Workflow>
+          <Nodes>
+            <Expression xsi:type="WorkflowInput">
+              <Name>Source1</Name>
+            </Expression>
+            <Expression xsi:type="Equal">
+              <Operand xsi:type="IntProperty">
+                <Value>1000</Value>
+              </Operand>
+            </Expression>
+            <Expression xsi:type="WorkflowOutput" />
+          </Nodes>
+          <Edges>
+            <Edge From="0" To="1" Label="Source1" />
+            <Edge From="1" To="2" Label="Source1" />
+          </Edges>
+        </Workflow>
+      </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="gl:WindowClosed" />
-      </Expression>
-      <Expression xsi:type="osc:ReceiveMessage">
-        <osc:Connection>bpod</osc:Connection>
-        <osc:Address>/x</osc:Address>
-        <osc:TypeTag>i</osc:TypeTag>
-      </Expression>
-      <Expression xsi:type="Combinator">
-        <Combinator xsi:type="gl:SampleOnUpdateFrame" />
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="rx:TakeUntil" />
@@ -105,12 +115,12 @@
       <Edge From="4" To="9" Label="Source1" />
       <Edge From="5" To="6" Label="Source1" />
       <Edge From="6" To="7" Label="Source1" />
+      <Edge From="6" To="10" Label="Source1" />
       <Edge From="7" To="8" Label="Source1" />
       <Edge From="8" To="9" Label="Source2" />
-      <Edge From="10" To="13" Label="Source1" />
+      <Edge From="10" To="12" Label="Source2" />
       <Edge From="11" To="12" Label="Source1" />
-      <Edge From="12" To="13" Label="Source2" />
-      <Edge From="13" To="14" Label="Source1" />
+      <Edge From="12" To="13" Label="Source1" />
     </Edges>
   </Workflow>
 </WorkflowBuilder>

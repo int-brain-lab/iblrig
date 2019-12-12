@@ -636,8 +636,8 @@
                           <gl:Blue>0</gl:Blue>
                           <gl:Alpha>0</gl:Alpha>
                         </gl:AccumulatorFormat>
-                        <gl:Buffers>2</gl:Buffers>
-                        <gl:Stereo>false</gl:Stereo>
+                        <gl:Buffers>4</gl:Buffers>
+                        <gl:Stereo>true</gl:Stereo>
                       </gl:GraphicsMode>
                     </Combinator>
                   </Expression>
