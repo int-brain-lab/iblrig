@@ -69,6 +69,23 @@ def start_visual_stim(sph):
     return
 
 
+def start_mic_recording(sph):
+    here = os.getcwd()
+    os.chdir(sph.MIC_RECORDING_FOLDER)
+    bns = sph.BONSAI
+    wkfl = sph.MIC_RECORDING_FILE
+    srec = "-p:RecordSound=" + str(sph.RECORD_SOUND)
+    mic = "-p:FileNameMic=" + os.path.join(
+        sph.SESSION_RAW_DATA_FOLDER, "_iblrig_micData.raw.wav")
+
+    start = '--start'
+    noboot = '--no-boot'
+
+    subprocess.Popen([bns, wkfl, start, mic, srec, noboot])
+    os.chdir(here)
+    return
+
+
 def start_camera_recording(sph):
     if (sph.RECORD_VIDEO is False and sph.OPEN_CAMERA_VIEW is False):
         log.error("Task will hang waiting for camera frame sync pulse")
