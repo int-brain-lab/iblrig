@@ -1,5 +1,11 @@
 # **Release notes**
 
+## **Release Notes 6.3.1**
+
+Patch update (bugfixes)
+
+* Saving now data from Bonsai for frame2TL freq test
+
 ## **Release Notes 6.3.0**
 
 Minor update (added functionality)
