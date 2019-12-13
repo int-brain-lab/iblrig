@@ -27,14 +27,16 @@ subj = '_iblrig_test_mouse'
 datetime = parser.parse(user_settings.PYBPOD_SESSION).isoformat().replace(':', '_')
 folder = Path(ph.get_iblrig_data_folder()) / subj / datetime
 folder.mkdir()
-file = folder / 'freq_test_data.json'
-lengths_file = folder / 'freq_test_lengths.json'
+bpod_data_file = folder / 'bpod_ts_data.jsonable'
+bpod_data_lengths_file = folder / 'bpod_ts_data_lengths.jsonable'
+bonsai_data_file = folder / 'bonsai_ts_data.jsonable'
+bonsai_data_lengths_file = folder / 'bonsai_ts_data_lengths.jsonable'
 
 
 def softcode_handler(data):
     if data:
         # Launch the workflow
-        bonsai.start_frame2ttl_test()
+        bonsai.start_frame2ttl_test(bonsai_data_file, bonsai_data_lengths_file)
     return
 
 
@@ -48,11 +50,13 @@ bpod = Bpod()
 bpod.softcode_handler_function = softcode_handler
 log.info(f'Starting 1000 iterations of 1000 sync square pulses @60Hz')
 sys.stdout.flush()
+
+NITER = 500
 # =============================================================================
 #     Start state machine definition
 # =============================================================================
-for i in range(1000):
-    log.info(f"Starting iteration {i+1} of 1000")
+for i in range(NITER):
+    log.info(f"Starting iteration {i+1} of {NITER}")
     sma = StateMachine(bpod)
     sma.add_state(
         state_name='start',
@@ -83,10 +87,10 @@ for i in range(1000):
     else:
         log.error(f"FAILED to detect 1000 pulses: {len(BNC1)} != 1000")
         sys.stdout.flush()
-    with open(file, 'a') as f:
+    with open(bpod_data_file, 'a') as f:
         f.write(json.dumps(BNC1))
         f.write('\n')
-    with open(lengths_file, 'a') as f:
+    with open(bpod_data_lengths_file, 'a') as f:
         f.write(json.dumps(len(BNC1)))
         f.write('\n')
 
