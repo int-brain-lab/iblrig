@@ -116,6 +116,7 @@ class SessionParamHandler(object):
             if not np.all(np.isnan(bad_tone_state)):
                 self.bad_tone_count += 1
 
+        # TODO: Add params entry + date
         if (self.bad_stim_count != 0) or (self.bad_tone_count != 0):
             log.error(f"""
         ##########################################
