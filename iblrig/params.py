@@ -20,6 +20,7 @@ log = logging.getLogger('iblrig')
 
 EMPTY_BOARD_PARAMS = {
     'NAME': None,  # str
+    'IBLRIG_VERSION' : None,  # str
     'COM_BPOD': None,  # str
     'COM_ROTARY_ENCODER': None,  # str
     'COM_F2TTL': None,  # str
@@ -31,6 +32,10 @@ EMPTY_BOARD_PARAMS = {
     'WATER_CALIBRATION_WEIGHT_PERDROP': None,  # [float, float, ...]
     'WATER_CALIBRATION_DATE': None,  # str
 }
+
+
+def get_iblrig_version():
+    pass
 
 
 def get_board_name():
