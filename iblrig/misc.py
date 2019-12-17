@@ -9,15 +9,24 @@ from pathlib import Path
 
 import numpy as np
 from ibllib.io import raw_data_loaders as raw
+
 # from ibllib.pipes import FLAG_FILE_NAMES
 FLAG_FILE_NAMES = [
-    'transfer_me.flag', 'extract_me.flag', 'register_me.flag', 'flatiron.flag',
-    'extract_me.error', 'register_me.error', 'create_me.flag', 'compress_video.flag',
-    'compress_audio.flag', 'extract_ephys.flag', 'poop_count.flag',
-    'passive_data_for_ephys.flag',
+    "transfer_me.flag",
+    "extract_me.flag",
+    "register_me.flag",
+    "flatiron.flag",
+    "extract_me.error",
+    "register_me.error",
+    "create_me.flag",
+    "compress_video.flag",
+    "compress_audio.flag",
+    "extract_ephys.flag",
+    "poop_count.flag",
+    "passive_data_for_ephys.flag",
 ]
 
-log = logging.getLogger('iblrig')
+log = logging.getLogger("iblrig")
 
 
 def checkerboard(shape):
@@ -26,15 +35,17 @@ def checkerboard(shape):
 
 def make_square_dvamat(size, dva):
     import numpy as np
+
     c = np.arange(size) - int(size / 2)
     x = np.array([c] * 15)
     y = np.rot90(x)
-    dvamat = np.array(list(zip(y.ravel() * dva, x.ravel() * dva)), dtype=(
-        'int, int')).reshape(x.shape)
+    dvamat = np.array(
+        list(zip(y.ravel() * dva, x.ravel() * dva)), dtype=("int, int")
+    ).reshape(x.shape)
     return dvamat
 
 
-def get_port_events(events: dict, name: str = '') -> list:
+def get_port_events(events: dict, name: str = "") -> list:
     out: list = []
     for k in events:
         if name in k:
@@ -99,13 +110,13 @@ def get_biased_probs(n: int, idx: int = -1, prob: float = 0.5) -> list:
     return p
 
 
-def draw_contrast(contrast_set: list,
-                  prob_type: str = 'biased',
-                  idx: int = -1, idx_prob: float = 0.5) -> float:
-    if prob_type == 'biased':
+def draw_contrast(
+    contrast_set: list, prob_type: str = "biased", idx: int = -1, idx_prob: float = 0.5
+) -> float:
+    if prob_type == "biased":
         p = get_biased_probs(len(contrast_set), idx=idx, prob=idx_prob)
         return np.random.choice(contrast_set, p=p)
-    elif prob_type == 'uniform':
+    elif prob_type == "uniform":
         return np.random.choice(contrast_set)
 
 
@@ -134,26 +145,28 @@ def check_stop_criterions(init_datetime, rt_buffer, trial_num) -> int:
 
 
 def get_trial_rt(behavior_data: dict) -> float:
-    return (behavior_data['States timestamps']['closed_loop'][0][1] -
-            behavior_data['States timestamps']['stim_on'][0][0])
+    return (
+        behavior_data["States timestamps"]["closed_loop"][0][1]
+        - behavior_data["States timestamps"]["stim_on"][0][0]
+    )
 
 
 def create_flag(session_folder_path: str, flag: str) -> None:
-    if not flag.endswith('.flag'):
-        flag = flag + '.flag'
+    if not flag.endswith(".flag"):
+        flag = flag + ".flag"
     if flag not in FLAG_FILE_NAMES:
-        log.warning(f'Creating unknown flag file {flag} in {session_folder_path}')
+        log.warning(f"Creating unknown flag file {flag} in {session_folder_path}")
 
     path = Path(session_folder_path) / flag
-    open(path, 'a').close()
+    open(path, "a").close()
 
 
 def create_flags(data_file_path: str, poop_count: bool) -> None:
     session_folder_path = Path(data_file_path).parent.parent
-    create_flag(session_folder_path, 'transfer_me')
-    create_flag(session_folder_path, 'create_me')
+    create_flag(session_folder_path, "transfer_me")
+    create_flag(session_folder_path, "create_me")
     if poop_count:
-        create_flag(session_folder_path, 'poop_count')
+        create_flag(session_folder_path, "poop_count")
 
 
 def draw_session_order():
@@ -170,33 +183,39 @@ def draw_session_order():
 
 def patch_settings_file(sess_or_file: str, patch: dict) -> None:
     sess_or_file = Path(sess_or_file)
-    if sess_or_file.is_file() and sess_or_file.name.endswith('_iblrig_taskSettings.raw.json'):  # noqa
+    if sess_or_file.is_file() and sess_or_file.name.endswith(
+        "_iblrig_taskSettings.raw.json"
+    ):  # noqa
         session = sess_or_file.parent.parent
         file = sess_or_file
     elif sess_or_file.is_dir() and sess_or_file.name.isdecimal():
-        file = sess_or_file / 'raw_behavior_data' / '_iblrig_taskSettings.raw.json'  # noqa
+        file = (
+            sess_or_file / "raw_behavior_data" / "_iblrig_taskSettings.raw.json"
+        )  # noqa
         session = sess_or_file
     else:
-        print('not a settings file or a session folder')
+        print("not a settings file or a session folder")
         return
 
     settings = raw.load_settings(session)
     settings.update(patch)
-    with open(file, 'w') as f:
+    with open(file, "w") as f:
         f.write(json.dumps(settings, indent=1))
-        f.write('\n')
+        f.write("\n")
     # Check if properly saved
     saved_settings = raw.load_settings(session)
-    assert(settings == saved_settings)
+    assert settings == saved_settings
     return
 
 
 # TODO: Consider migrating this to ephys_session_file_creator
-def generate_position_contrasts(contrasts: list = [1.0, 0.25, 0.125, 0.0625],
-                                positions: list = [-35, 35],
-                                cp_repeats: int = 20,
-                                shuffle: bool = True,
-                                to_string: bool = False):
+def generate_position_contrasts(
+    contrasts: list = [1.0, 0.25, 0.125, 0.0625],
+    positions: list = [-35, 35],
+    cp_repeats: int = 20,
+    shuffle: bool = True,
+    to_string: bool = False,
+):
     """generate_position_contrasts generate contrasts and positions
 
     :param contrasts: Set of contrasts in floats, defaults to [1.0, 0.25, 0.125, 0.0625]

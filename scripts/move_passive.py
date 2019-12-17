@@ -9,7 +9,7 @@ import ibllib.pipes.misc as misc
 import iblrig.path_helper as ph
 import logging
 
-log = logging.getLogger('iblrig')
+log = logging.getLogger("iblrig")
 
 IBLRIG_DATA_PATH = Path(ph.get_iblrig_data_folder())
 
@@ -24,18 +24,22 @@ def main():
     # If folder exists throw an error
     for ps in passive_sessions:
         sett = raw.load_settings(str(ps.parent))
-        esess = sett['CORRESPONDING_EPHYS_SESSION']
+        esess = sett["CORRESPONDING_EPHYS_SESSION"]
         if not esess or esess is None:
-            log.warning("Corresponding ephys session NOT FOUND in settings - data not moved")
+            log.warning(
+                "Corresponding ephys session NOT FOUND in settings - data not moved"
+            )
             return
         if not Path(esess).exists():
-            log.warning(f"Ephys session {esess}: NOT FOUND on filesystem - data not moved")
+            log.warning(
+                f"Ephys session {esess}: NOT FOUND on filesystem - data not moved"
+            )
             return
         # Fails if dst_folder exists!
         misc.transfer_folder(
-            str(ps.parent / 'raw_behavior_data'),
-            str(Path(esess) / 'raw_passive_data'),
-            force=False
+            str(ps.parent / "raw_behavior_data"),
+            str(Path(esess) / "raw_passive_data"),
+            force=False,
         )
         ps.unlink()
 

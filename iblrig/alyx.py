@@ -15,7 +15,7 @@ from ibllib.pipes.experimental_data import create
 from oneibl.one import ONE
 import iblrig.params as rig_params
 
-log = logging.getLogger('iblrig')
+log = logging.getLogger("iblrig")
 
 
 def get_one() -> type(ONE):
@@ -28,7 +28,7 @@ def get_one() -> type(ONE):
 
 
 def create_session(session_folder):
-    pfile = Path(lib_params.getfile('lib_params'))
+    pfile = Path(lib_params.getfile("lib_params"))
     if not pfile.exists():
         oneibl.params.setup_alyx_params()
 
@@ -43,7 +43,7 @@ def open_session_narrative(session_url: str) -> None:
 def load_previous_data(subject_nickname):
     one = get_one()
     eid = get_latest_session_eid(subject_nickname)
-    return one.load(eid, dataset_types=['_iblrig_taskData.raw'])[0]
+    return one.load(eid, dataset_types=["_iblrig_taskData.raw"])[0]
 
 
 def load_previous_trial_data(subject_nickname):
@@ -55,7 +55,7 @@ def load_previous_settings(subject_nickname):
     eid = get_latest_session_eid(subject_nickname)
     # det = one.alyx.rest('sessions', 'read', eid)
     # return json.loads(det['json'])
-    return one.load(eid, dataset_types=['_iblrig_taskSettings.raw'])[0]
+    return one.load(eid, dataset_types=["_iblrig_taskSettings.raw"])[0]
 
 
 def get_latest_session_eid(subject_nickname):
@@ -64,8 +64,9 @@ def get_latest_session_eid(subject_nickname):
     one = get_one()
     last_session = one.search(
         subject=subject_nickname,
-        dataset_types=['_iblrig_taskData.raw', '_iblrig_taskSettings.raw'],
-        limit=1)
+        dataset_types=["_iblrig_taskData.raw", "_iblrig_taskSettings.raw"],
+        limit=1,
+    )
     if last_session:
         return last_session[0]
     else:
@@ -75,18 +76,16 @@ def get_latest_session_eid(subject_nickname):
 def write_board_params(data: dict = None, force: bool = False) -> None:
     if data is None:
         data = rig_params.EMPTY_BOARD_PARAMS
-        data['NAME'] = rig_params.get_board_name()
-        data['COM_BPOD'] = rig_params.get_board_comport()
-    board = data['NAME']
+        data["NAME"] = rig_params.get_board_name()
+        data["COM_BPOD"] = rig_params.get_board_comport()
+    board = data["NAME"]
     one = get_one()
     p = load_board_params()
     if p and not force:
-        log.info('Board params already present, exiting...')
+        log.info("Board params already present, exiting...")
         return p
-    patch_dict = {
-        "json": json.dumps(data)
-    }
-    one.alyx.rest('locations', 'partial_update', id=board, data=patch_dict)
+    patch_dict = {"json": json.dumps(data)}
+    one.alyx.rest("locations", "partial_update", id=board, data=patch_dict)
     return data
 
 
@@ -94,7 +93,7 @@ def load_board_params() -> dict:
     board = rig_params.get_board_name()
     one = get_one()
     try:
-        out = one.alyx.rest('locations', 'read', id=board)['json']
+        out = one.alyx.rest("locations", "read", id=board)["json"]
         out = json.loads(out)
     except Exception as e:
         log.error(e)
@@ -110,9 +109,9 @@ def update_board_params(data: dict, force: bool = False) -> dict:
         old = load_board_params()
 
     board = rig_params.get_board_name()
-    if 'NAME' in data and data['NAME'] != board:
+    if "NAME" in data and data["NAME"] != board:
         log.error(f"Board {board} not equal to data['NAME'] {data['NAME']}")
-        raise(AttributeError)
+        raise (AttributeError)
     for k in data:
         if k in old.keys():
             old[k] = data[k]
@@ -121,10 +120,12 @@ def update_board_params(data: dict, force: bool = False) -> dict:
                 log.info(f"Unknown key {k}: skipping key...")
                 continue
             elif force:
-                log.info(f"Adding new key {k} with value {data[k]} to {board} json field")
+                log.info(
+                    f"Adding new key {k} with value {data[k]} to {board} json field"
+                )
                 old[k] = data[k]
     write_board_params(data=old, force=True)
-    log.info(f'Changed board params: {data}')
+    log.info(f"Changed board params: {data}")
 
     return old
 
@@ -133,23 +134,24 @@ def create_current_running_session(session_folder):
     one = get_one()
     settings = raw.load_settings(session_folder)
     subject = one.alyx.rest(
-        'subjects?nickname=' + settings['PYBPOD_SUBJECTS'][0], 'list')[0]
-    ses_ = {'subject': subject['nickname'],
-            'users': [settings['PYBPOD_CREATOR'][0]],
-            'location': settings['PYBPOD_BOARD'],
-            'procedures': ['Behavior training/tasks'],
-            'lab': subject['lab'],
-            'type': 'Experiment',
-            'task_protocol':
-                settings['PYBPOD_PROTOCOL'] + settings['IBLRIG_VERSION_TAG'],
-            'number': settings['SESSION_NUMBER'],
-            'start_time': settings['SESSION_DATETIME'],
-            'end_time': None,
-            'n_correct_trials': None,
-            'n_trials': None,
-            'json': None,
-            }
-    session = one.alyx.rest('sessions', 'create', data=ses_)
+        "subjects?nickname=" + settings["PYBPOD_SUBJECTS"][0], "list"
+    )[0]
+    ses_ = {
+        "subject": subject["nickname"],
+        "users": [settings["PYBPOD_CREATOR"][0]],
+        "location": settings["PYBPOD_BOARD"],
+        "procedures": ["Behavior training/tasks"],
+        "lab": subject["lab"],
+        "type": "Experiment",
+        "task_protocol": settings["PYBPOD_PROTOCOL"] + settings["IBLRIG_VERSION_TAG"],
+        "number": settings["SESSION_NUMBER"],
+        "start_time": settings["SESSION_DATETIME"],
+        "end_time": None,
+        "n_correct_trials": None,
+        "n_trials": None,
+        "json": None,
+    }
+    session = one.alyx.rest("sessions", "create", data=ses_)
     return session
 
 
@@ -171,10 +173,10 @@ if __name__ == "__main__":
     # create_session(session_folder)
 
     data = {
-        'COM_F2TTL': 'COM6',
-        'F2TTL_DARK_THRESH': 86.0,
-        'F2TTL_LIGHT_THRESH': 46.0,
-        'F2TTL_CALIBRATION_DATE': '2019-09-26'
+        "COM_F2TTL": "COM6",
+        "F2TTL_DARK_THRESH": 86.0,
+        "F2TTL_LIGHT_THRESH": 46.0,
+        "F2TTL_CALIBRATION_DATE": "2019-09-26",
     }
     # init_board_params(board)
     update_board_params(data)
@@ -183,4 +185,4 @@ if __name__ == "__main__":
     # create_current_running_session(session_folder)
     # create_session(session_folder)
 
-    print('.')
+    print(".")

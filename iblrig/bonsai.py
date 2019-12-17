@@ -13,7 +13,7 @@ from pythonosc import udp_client
 
 import iblrig.path_helper as ph
 
-log = logging.getLogger('iblrig')
+log = logging.getLogger("iblrig")
 
 
 # =====================================================================
@@ -28,40 +28,55 @@ def start_visual_stim(sph):
         wkfl = sph.VISUAL_STIMULUS_FILE
 
         evt = "-p:Stim.FileNameEvents=" + os.path.join(
-            sph.SESSION_RAW_DATA_FOLDER,
-            "_iblrig_encoderEvents.raw.ssv")
+            sph.SESSION_RAW_DATA_FOLDER, "_iblrig_encoderEvents.raw.ssv"
+        )
         pos = "-p:Stim.FileNamePositions=" + os.path.join(
-            sph.SESSION_RAW_DATA_FOLDER,
-            "_iblrig_encoderPositions.raw.ssv")
+            sph.SESSION_RAW_DATA_FOLDER, "_iblrig_encoderPositions.raw.ssv"
+        )
         itr = "-p:Stim.FileNameTrialInfo=" + os.path.join(
-            sph.SESSION_RAW_DATA_FOLDER,
-            "_iblrig_encoderTrialInfo.raw.ssv")
+            sph.SESSION_RAW_DATA_FOLDER, "_iblrig_encoderTrialInfo.raw.ssv"
+        )
         screen_pos = "-p:Stim.FileNameStimPositionScreen=" + os.path.join(
-            sph.SESSION_RAW_DATA_FOLDER,
-            "_iblrig_stimPositionScreen.raw.csv")
+            sph.SESSION_RAW_DATA_FOLDER, "_iblrig_stimPositionScreen.raw.csv"
+        )
 
-        com = "-p:Stim.REPortName=" + sph.PARAMS['COM_ROTARY_ENCODER']
+        com = "-p:Stim.REPortName=" + sph.PARAMS["COM_ROTARY_ENCODER"]
 
         sync_x = "-p:Stim.sync_x=" + str(sph.SYNC_SQUARE_X)
         sync_y = "-p:Stim.sync_y=" + str(sph.SYNC_SQUARE_Y)
-        dist = 7 if 'ephys' in sph.PYBPOD_BOARD else 8
+        dist = 7 if "ephys" in sph.PYBPOD_BOARD else 8
         translationz = "-p:Stim.TranslationZ=-" + str(dist)
-        start = '--start'
-        noeditor = '--no-editor'
-        noboot = '--no-boot'
+        start = "--start"
+        noeditor = "--no-editor"
+        noboot = "--no-boot"
 
         if sph.BONSAI_EDITOR:
             editor = start
         elif not sph.BONSAI_EDITOR:
             editor = noeditor
 
-        if 'habituation' in sph.PYBPOD_PROTOCOL or 'bpod_ttl_test' in sph.PYBPOD_PROTOCOL:
-            subprocess.Popen(
-                [bns, wkfl, editor, noboot, evt, itr, com, sync_x, sync_y])
+        if (
+            "habituation" in sph.PYBPOD_PROTOCOL
+            or "bpod_ttl_test" in sph.PYBPOD_PROTOCOL
+        ):
+            subprocess.Popen([bns, wkfl, editor, noboot, evt, itr, com, sync_x, sync_y])
         else:
             subprocess.Popen(
-                [bns, wkfl, editor, noboot, screen_pos, pos, evt, itr, com, sync_x, sync_y,
-                 translationz])
+                [
+                    bns,
+                    wkfl,
+                    editor,
+                    noboot,
+                    screen_pos,
+                    pos,
+                    evt,
+                    itr,
+                    com,
+                    sync_x,
+                    sync_y,
+                    translationz,
+                ]
+            )
         os.chdir(here)
     else:
         sph.USE_VISUAL_STIMULUS = False
@@ -76,10 +91,11 @@ def start_mic_recording(sph):
     wkfl = sph.MIC_RECORDING_FILE
     srec = "-p:RecordSound=" + str(sph.RECORD_SOUND)
     mic = "-p:FileNameMic=" + os.path.join(
-        sph.SESSION_RAW_DATA_FOLDER, "_iblrig_micData.raw.wav")
+        sph.SESSION_RAW_DATA_FOLDER, "_iblrig_micData.raw.wav"
+    )
 
-    start = '--start'
-    noboot = '--no-boot'
+    start = "--start"
+    noboot = "--no-boot"
 
     subprocess.Popen([bns, wkfl, start, mic, srec, noboot])
     os.chdir(here)
@@ -87,9 +103,9 @@ def start_mic_recording(sph):
 
 
 def start_camera_recording(sph):
-    if (sph.RECORD_VIDEO is False and sph.OPEN_CAMERA_VIEW is False):
+    if sph.RECORD_VIDEO is False and sph.OPEN_CAMERA_VIEW is False:
         log.error("Task will hang waiting for camera frame sync pulse")
-        raise(UnboundLocalError)
+        raise (UnboundLocalError)
         return
     # Run Workflow
     here = os.getcwd()
@@ -98,20 +114,21 @@ def start_camera_recording(sph):
     bns = sph.BONSAI
     wkfl = sph.VIDEO_RECORDING_FILE
 
-    ts = '-p:TimestampsFileName=' + os.path.join(
-        sph.SESSION_RAW_VIDEO_DATA_FOLDER,
-        '_iblrig_leftCamera.timestamps.ssv')
-    vid = '-p:VideoFileName=' + os.path.join(
-        sph.SESSION_RAW_VIDEO_DATA_FOLDER,
-        '_iblrig_leftCamera.raw.avi')
-    rec = '-p:SaveVideo=' + str(sph.RECORD_VIDEO)
+    ts = "-p:TimestampsFileName=" + os.path.join(
+        sph.SESSION_RAW_VIDEO_DATA_FOLDER, "_iblrig_leftCamera.timestamps.ssv"
+    )
+    vid = "-p:VideoFileName=" + os.path.join(
+        sph.SESSION_RAW_VIDEO_DATA_FOLDER, "_iblrig_leftCamera.raw.avi"
+    )
+    rec = "-p:SaveVideo=" + str(sph.RECORD_VIDEO)
 
     mic = "-p:FileNameMic=" + os.path.join(
-        sph.SESSION_RAW_DATA_FOLDER, "_iblrig_micData.raw.wav")
+        sph.SESSION_RAW_DATA_FOLDER, "_iblrig_micData.raw.wav"
+    )
     srec = "-p:RecordSound=" + str(sph.RECORD_SOUND)
 
-    start = '--start'
-    noboot = '--no-boot'
+    start = "--start"
+    noboot = "--no-boot"
 
     subprocess.Popen([bns, wkfl, start, ts, vid, rec, mic, srec, noboot])
     os.chdir(here)
@@ -121,25 +138,28 @@ def start_camera_recording(sph):
 def start_passive_visual_stim(save2folder):
     here = os.getcwd()
     bns = ph.get_bonsai_path()
-    stim_folder = str(Path(ph.get_iblrig_folder()) / 'visual_stim' / 'passiveChoiceWorld')
-    wkfl = os.path.join(stim_folder, 'passiveChoiceWorld_passive.bonsai')
+    stim_folder = str(
+        Path(ph.get_iblrig_folder()) / "visual_stim" / "passiveChoiceWorld"
+    )
+    wkfl = os.path.join(stim_folder, "passiveChoiceWorld_passive.bonsai")
     os.chdir(stim_folder)
     # Flags
-    noedit = '--no-editor'  # implies start and no-debug?
-    noboot = '--no-boot'
+    noedit = "--no-editor"  # implies start and no-debug?
+    noboot = "--no-boot"
     # Properties
-    SA0_DueTime = '-p:Stim.SpontaneousActivity0.DueTime=00:05:00'
-    RFM_FileName = '-p:Stim.ReceptiveFieldMappingStim.FileNameRFMapStim=' + str(
-        Path(save2folder) / '_iblrig_RFMapStim.raw.bin')
-    RFM_MappingTime = '-p:Stim.ReceptiveFieldMappingStim.MappingTime=00:05:00'
+    SA0_DueTime = "-p:Stim.SpontaneousActivity0.DueTime=00:05:00"
+    RFM_FileName = "-p:Stim.ReceptiveFieldMappingStim.FileNameRFMapStim=" + str(
+        Path(save2folder) / "_iblrig_RFMapStim.raw.bin"
+    )
+    RFM_MappingTime = "-p:Stim.ReceptiveFieldMappingStim.MappingTime=00:05:00"
 
     cmd = [bns, wkfl, noboot, noedit, SA0_DueTime, RFM_FileName, RFM_MappingTime]
 
-    log.info('Starting spontaneous activity and RF mapping stims')
+    log.info("Starting spontaneous activity and RF mapping stims")
     os.chdir(stim_folder)
     s = subprocess.run(cmd, stdout=subprocess.PIPE)  # locking call
     os.chdir(here)
-    log.info('Done')
+    log.info("Done")
     sys.stdout.flush()
     return s
 
@@ -169,7 +189,7 @@ def send_current_trial_info(tph):
     tph.osc_client.send_message("/t", tph.trial_num)
     tph.osc_client.send_message("/p", tph.position)
     tph.osc_client.send_message("/h", tph.stim_phase)
-    if 'training' in tph.task_protocol:
+    if "training" in tph.task_protocol:
         tph.osc_client.send_message("/c", tph.contrast.value)
     else:
         tph.osc_client.send_message("/c", tph.contrast)
@@ -179,8 +199,17 @@ def send_current_trial_info(tph):
     tph.osc_client.send_message("/s", tph.stim_sigma)
 
 
-def send_stim_info(osc_client, trial_num, position, contrast, phase,
-                   freq=0.10, angle=0., gain=4., sigma=7.):
+def send_stim_info(
+    osc_client,
+    trial_num,
+    position,
+    contrast,
+    phase,
+    freq=0.10,
+    angle=0.0,
+    gain=4.0,
+    sigma=7.0,
+):
     if osc_client is None:
         log.error("Can't send trial info to Bonsai osc_client = None")
         raise UnboundLocalError("Can't send trial info to Bonsai osc_client = None")
@@ -196,12 +225,12 @@ def send_stim_info(osc_client, trial_num, position, contrast, phase,
 
 
 def osc_client(workflow):
-    ip = '127.0.0.1'
-    if 'stim' in workflow:
+    ip = "127.0.0.1"
+    if "stim" in workflow:
         port = 7110
-    elif 'camera' in workflow:
+    elif "camera" in workflow:
         port = 7111
-    elif 'mic' in workflow:
+    elif "mic" in workflow:
         port = 7112
     return udp_client.SimpleUDPClient(ip, port)
 
@@ -209,15 +238,17 @@ def osc_client(workflow):
 def start_frame2ttl_test(data_file, lengths_file):
     here = os.getcwd()
     bns = ph.get_bonsai_path()
-    stim_folder = str(Path(ph.get_iblrig_folder()) / 'visual_stim' / 'f2ttl_calibration')
-    wkfl = os.path.join(stim_folder, 'screen_60Hz.bonsai')
+    stim_folder = str(
+        Path(ph.get_iblrig_folder()) / "visual_stim" / "f2ttl_calibration"
+    )
+    wkfl = os.path.join(stim_folder, "screen_60Hz.bonsai")
     # Flags
-    noedit = '--no-editor'  # implies start and no-debug?
-    noboot = '--no-boot'
+    noedit = "--no-editor"  # implies start and no-debug?
+    noboot = "--no-boot"
     data_file_name = "-p:FileNameData=" + str(data_file)
     lengths_file_name = "-p:FileNameDataLengths=" + str(lengths_file)
     # Properties
-    log.info('Starting pulses @ 60Hz')
+    log.info("Starting pulses @ 60Hz")
     sys.stdout.flush()
     os.chdir(stim_folder)
     s = subprocess.Popen([bns, wkfl, noboot, noedit, data_file_name, lengths_file_name])

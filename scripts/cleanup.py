@@ -8,12 +8,12 @@ import os
 
 
 IBLRIG_FOLDER = Path(__file__).absolute().parent.parent
-IBLRIG_PARAMS_FOLDER = IBLRIG_FOLDER.parent / 'iblrig_params'
+IBLRIG_PARAMS_FOLDER = IBLRIG_FOLDER.parent / "iblrig_params"
 
-experiments_folder = IBLRIG_PARAMS_FOLDER / 'IBL' / 'experiments'
+experiments_folder = IBLRIG_PARAMS_FOLDER / "IBL" / "experiments"
 
-sess_folders = experiments_folder.rglob('sessions')
+sess_folders = experiments_folder.rglob("sessions")
 
 for s in sess_folders:
-    if 'setups' in str(s):
+    if "setups" in str(s):
         os.system(f"rd /s /q {str(s)}")

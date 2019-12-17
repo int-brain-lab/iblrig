@@ -10,14 +10,14 @@ import serial
 
 import iblrig.params as params
 
-log = logging.getLogger('iblrig')
+log = logging.getLogger("iblrig")
 
 
 def main(comport: str, command: int):
     if not comport:
         comport = params.get_board_comport()
     ser = serial.Serial(port=comport, baudrate=115200, timeout=1)
-    ser.write(struct.pack('cB', b':', command))
+    ser.write(struct.pack("cB", b":", command))
     ser.close()
     log.debug(f"Sent <:{command}> to {comport}")
     return

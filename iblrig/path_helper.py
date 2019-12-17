@@ -13,23 +13,24 @@ import iblrig.params as params
 
 import iblrig.logging_  # noqa
 
-log = logging.getLogger('iblrig')
+log = logging.getLogger("iblrig")
 
 
 def get_iblrig_folder() -> str:
     import iblrig
+
     return str(Path(iblrig.__file__).parent.parent)
 
 
 def get_iblrig_params_folder() -> str:
     iblrig_ = Path(get_iblrig_folder())
-    return str(iblrig_.parent / 'iblrig_params')
+    return str(iblrig_.parent / "iblrig_params")
 
 
 def get_iblrig_data_folder(subjects: bool = True) -> str:
     iblrig_ = Path(get_iblrig_folder())
-    out = iblrig_.parent / 'iblrig_data'
-    sout = iblrig_.parent / 'iblrig_data' / 'Subjects'
+    out = iblrig_.parent / "iblrig_data"
+    sout = iblrig_.parent / "iblrig_data" / "Subjects"
     if not out.exists():
         make_folder(out)
     if not sout.exists():
@@ -51,7 +52,9 @@ def get_commit_hash(folder: str):
 def get_version_tag(folder: str) -> str:
     here = os.getcwd()
     os.chdir(folder)
-    tag = subprocess.check_output(["git", "tag", "--points-at", "HEAD"]).decode().strip()
+    tag = (
+        subprocess.check_output(["git", "tag", "--points-at", "HEAD"]).decode().strip()
+    )
     os.chdir(here)
     if not tag:
         log.debug(f"NOT FOUND: Version TAG for {folder}")
@@ -62,15 +65,18 @@ def get_version_tag(folder: str) -> str:
 def get_session_next_number(session_date_folder: str) -> str:
     log.debug("Initializing session number")
     if not Path(session_date_folder).exists():
-        return '001'
-    session_nums = [int(x) for x in os.listdir(session_date_folder)
-                    if os.path.isdir(os.path.join(session_date_folder, x))]
+        return "001"
+    session_nums = [
+        int(x)
+        for x in os.listdir(session_date_folder)
+        if os.path.isdir(os.path.join(session_date_folder, x))
+    ]
     if not session_nums:
-        out = '00' + str(1)
+        out = "00" + str(1)
     elif max(session_nums) < 9:
-        out = '00' + str(int(max(session_nums)) + 1)
+        out = "00" + str(int(max(session_nums)) + 1)
     elif 99 > max(session_nums) >= 9:
-        out = '0' + str(int(max(session_nums)) + 1)
+        out = "0" + str(int(max(session_nums)) + 1)
     elif max(session_nums) > 99:
         out = str(int(max(session_nums)) + 1)
     log.debug(f"Setting session number to: {out}")
@@ -79,17 +85,17 @@ def get_session_next_number(session_date_folder: str) -> str:
 
 
 def get_visual_stim_folder_name(protocol: str) -> str:
-    if 'habituation' in protocol or 'sync_test' in protocol:
-        return 'GaborHabituationTask'
-    elif 'ephys_certification' in protocol:
-        return 'ephys_certification'
+    if "habituation" in protocol or "sync_test" in protocol:
+        return "GaborHabituationTask"
+    elif "ephys_certification" in protocol:
+        return "ephys_certification"
     else:
-        return 'GaborIBLTask'
+        return "GaborIBLTask"
 
 
 def get_water_calibration_func_file(latest: bool = True) -> Path or list:
     data_folder = Path(get_iblrig_data_folder())
-    func_files = sorted(data_folder.rglob('_iblrig_calibration_water_function.csv'))
+    func_files = sorted(data_folder.rglob("_iblrig_calibration_water_function.csv"))
     if not func_files:
         return Path()
     return func_files[-1] if latest else func_files
@@ -97,7 +103,7 @@ def get_water_calibration_func_file(latest: bool = True) -> Path or list:
 
 def get_water_calibration_range_file(latest=True) -> Path or list:
     data_folder = Path(get_iblrig_data_folder())
-    range_files = sorted(data_folder.rglob('_iblrig_calibration_water_range.csv'))
+    range_files = sorted(data_folder.rglob("_iblrig_calibration_water_range.csv"))
     if not range_files:
         return Path()
     return range_files[-1] if latest else range_files
@@ -108,14 +114,19 @@ def load_water_calibraition_func_file(fpath: str or Path) -> dict:
         return
 
     import pandas as pd
+
     # TODO: remove pandas dependency
     df1 = pd.read_csv(fpath)
     if df1.empty:
-        return {'WATER_CALIBRATION_OPEN_TIMES': None,
-                'WATER_CALIBRATION_WEIGHT_PERDROP': None}
+        return {
+            "WATER_CALIBRATION_OPEN_TIMES": None,
+            "WATER_CALIBRATION_WEIGHT_PERDROP": None,
+        }
 
-    return {'WATER_CALIBRATION_OPEN_TIMES': df1["open_time"].to_list(),
-            'WATER_CALIBRATION_WEIGHT_PERDROP': df1["weight_perdrop"].to_list()}
+    return {
+        "WATER_CALIBRATION_OPEN_TIMES": df1["open_time"].to_list(),
+        "WATER_CALIBRATION_WEIGHT_PERDROP": df1["weight_perdrop"].to_list(),
+    }
 
 
 def load_water_calibraition_range_file(fpath: str or Path) -> dict:
@@ -123,13 +134,18 @@ def load_water_calibraition_range_file(fpath: str or Path) -> dict:
         return
 
     import pandas as pd
+
     # TODO: remove pandas dependency
     df1 = pd.read_csv(fpath)
     if df1.empty:
-        return {'WATER_CALIBRATION_RANGE': [None, None]}
+        return {"WATER_CALIBRATION_RANGE": [None, None]}
 
-    return {'WATER_CALIBRATION_RANGE': [df1.min_open_time.iloc[0],
-                                        df1.max_open_time.iloc[0]]}
+    return {
+        "WATER_CALIBRATION_RANGE": [
+            df1.min_open_time.iloc[0],
+            df1.max_open_time.iloc[0],
+        ]
+    }
 
 
 def make_folder(str1: str or Path) -> None:
@@ -146,8 +162,7 @@ def get_previous_session_folders(subject_name: str, session_folder: str) -> list
     subject_folder = Path(get_iblrig_data_folder(subjects=True)) / subject_name
     sess_folders = []
     if not subject_folder.exists():
-        log.debug(
-            f'NOT FOUND: No previous sessions for subject {subject_folder.name}')
+        log.debug(f"NOT FOUND: No previous sessions for subject {subject_folder.name}")
         return sess_folders
 
     for date in get_subfolder_paths(subject_folder):
@@ -155,58 +170,59 @@ def get_previous_session_folders(subject_name: str, session_folder: str) -> list
 
     sess_folders = [x for x in sorted(sess_folders) if session_folder not in x]
     if not sess_folders:
-        log.debug(
-            f'NOT FOUND: No previous sessions for subject {subject_folder.name}')
+        log.debug(f"NOT FOUND: No previous sessions for subject {subject_folder.name}")
 
     log.debug(
-        f"Found {len(sess_folders)} session folders for mouse {subject_folder.name}")
+        f"Found {len(sess_folders)} session folders for mouse {subject_folder.name}"
+    )
 
     return sess_folders
 
 
-def get_previous_data_files(protocol: str,
-                            subject_name: str,
-                            session_folder: str,
-                            typ: str = 'data') -> list:
+def get_previous_data_files(
+    protocol: str, subject_name: str, session_folder: str, typ: str = "data"
+) -> list:
     log.debug(f"Looking for previous files of type: {typ}")
     prev_data_files = []
     prev_session_files = []
-    data_fname = '_iblrig_taskData.raw.jsonable'
-    settings_fname = '_iblrig_taskSettings.raw.json'
+    data_fname = "_iblrig_taskData.raw.jsonable"
+    settings_fname = "_iblrig_taskSettings.raw.json"
     log.debug(f"Looking for files:{data_fname} AND {settings_fname}")
     for prev_sess_path in get_previous_session_folders(subject_name, session_folder):
-        prev_sess_path = Path(prev_sess_path) / 'raw_behavior_data'
+        prev_sess_path = Path(prev_sess_path) / "raw_behavior_data"
         # Get all data and settings file if they both exist
-        if ((prev_sess_path / data_fname).exists() and
-                (prev_sess_path / settings_fname).exists()):
+        if (prev_sess_path / data_fname).exists() and (
+            prev_sess_path / settings_fname
+        ).exists():
             prev_data_files.append(prev_sess_path / data_fname)
             prev_session_files.append(prev_sess_path / settings_fname)
     log.debug(f"Found {len(prev_data_files)} file pairs")
     # Remove empty files
-    ds_out = [(d, s) for d, s in zip(prev_data_files, prev_session_files)
-              if d.stat().st_size != 0 and s.stat().st_size != 0]
+    ds_out = [
+        (d, s)
+        for d, s in zip(prev_data_files, prev_session_files)
+        if d.stat().st_size != 0 and s.stat().st_size != 0
+    ]
     log.debug(f"Found {len(ds_out)} non empty file pairs")
     # Remove sessions of different task protocols
-    ds_out = [(d, s) for d, s in ds_out if protocol in
-              raw.load_settings(str(s.parent.parent))['PYBPOD_PROTOCOL']]
-    log.debug(
-        f"Found {len(ds_out)} file pairs for protocol {protocol}")
+    ds_out = [
+        (d, s)
+        for d, s in ds_out
+        if protocol in raw.load_settings(str(s.parent.parent))["PYBPOD_PROTOCOL"]
+    ]
+    log.debug(f"Found {len(ds_out)} file pairs for protocol {protocol}")
     data_out = [str(d) for d, s in ds_out]
     settings_out = [str(s) for d, s in ds_out]
     if not data_out:
-        log.debug(
-            f'NOT FOUND: Previous data files for task {protocol}')
+        log.debug(f"NOT FOUND: Previous data files for task {protocol}")
     if not settings_out:
-        log.debug(
-            f'NOT FOUND: Previous settings files for task {protocol}')
+        log.debug(f"NOT FOUND: Previous settings files for task {protocol}")
     log.debug(f"Reurning {typ} files")
 
-    return data_out if typ == 'data' else settings_out
+    return data_out if typ == "data" else settings_out
 
 
-def get_previous_data_file(protocol: str,
-                           subject_name: str,
-                           session_folder: str):
+def get_previous_data_file(protocol: str, subject_name: str, session_folder: str):
     log.debug("Getting previous data file")
     out = sorted(get_previous_data_files(protocol, subject_name, session_folder))
     if out:
@@ -217,12 +233,11 @@ def get_previous_data_file(protocol: str,
         return None
 
 
-def get_previous_settings_file(protocol: str,
-                               subject_name: str,
-                               session_folder: str):
+def get_previous_settings_file(protocol: str, subject_name: str, session_folder: str):
     log.debug("Getting previous settings file")
-    out = sorted(get_previous_data_files(protocol, subject_name, session_folder,
-                                         typ='settings'))
+    out = sorted(
+        get_previous_data_files(protocol, subject_name, session_folder, typ="settings")
+    )
     if out:
         log.debug(f"Previous settings file: {out[-1]}")
         return out[-1]
@@ -231,9 +246,7 @@ def get_previous_settings_file(protocol: str,
         return None
 
 
-def get_previous_session_path(protocol: str,
-                              subject_name: str,
-                              session_folder: str):
+def get_previous_session_path(protocol: str, subject_name: str, session_folder: str):
     log.debug("Getting previous session path")
     previous_data_file = get_previous_data_file(protocol, subject_name, session_folder)
     if previous_data_file is not None:
@@ -247,8 +260,11 @@ def get_previous_session_path(protocol: str,
 
 
 def get_subfolder_paths(folder: str) -> str:
-    out = [os.path.join(folder, x) for x in os.listdir(folder)
-           if os.path.isdir(os.path.join(folder, x))]
+    out = [
+        os.path.join(folder, x)
+        for x in os.listdir(folder)
+        if os.path.isdir(os.path.join(folder, x))
+    ]
     log.debug(f"Found {len(out)} subfolders for folder {folder}")
 
     return out
@@ -259,8 +275,8 @@ def get_bonsai_path(use_iblrig_bonsai: bool = True) -> str:
     Returns string with bonsai executable path."""
     iblrig_folder = get_iblrig_folder()
     folders = get_subfolder_paths(iblrig_folder)
-    bonsai_folder = [x for x in folders if 'Bonsai' in x][0]
-    ibl_bonsai = os.path.join(bonsai_folder, 'Bonsai64.exe')
+    bonsai_folder = [x for x in folders if "Bonsai" in x][0]
+    ibl_bonsai = os.path.join(bonsai_folder, "Bonsai64.exe")
 
     preexisting_bonsai = Path.home() / "AppData/Local/Bonsai/Bonsai64.exe"
     if use_iblrig_bonsai is True:
@@ -268,8 +284,7 @@ def get_bonsai_path(use_iblrig_bonsai: bool = True) -> str:
     elif use_iblrig_bonsai is False and preexisting_bonsai.exists():
         BONSAI = str(preexisting_bonsai)
     elif use_iblrig_bonsai is False and not preexisting_bonsai.exists():
-        log.debug(
-            f"NOT FOUND: {preexisting_bonsai}. Using packaged Bonsai")
+        log.debug(f"NOT FOUND: {preexisting_bonsai}. Using packaged Bonsai")
         BONSAI = ibl_bonsai
     log.debug(f"Found Bonsai executable: {BONSAI}")
 
@@ -277,39 +292,42 @@ def get_bonsai_path(use_iblrig_bonsai: bool = True) -> str:
 
 
 def get_visual_stim_type(protocol: str) -> str:
-    if 'habituation' in protocol or 'bpod_ttl_test' in protocol:
-        return 'GaborHabituationTask'
-    elif 'ephys_certification' in protocol:
-        return 'ephys_certification'
-    elif 'passive'in protocol:
-        return 'GaborIBLTask'
+    if "habituation" in protocol or "bpod_ttl_test" in protocol:
+        return "GaborHabituationTask"
+    elif "ephys_certification" in protocol:
+        return "ephys_certification"
+    elif "passive" in protocol:
+        return "GaborIBLTask"
     else:
-        return 'GaborIBLTask'
+        return "GaborIBLTask"
 
 
 def get_visual_stim_file_name(visual_stimulus_type: str) -> str:
-    if 'GaborHabituationTask' in visual_stimulus_type:
-        return 'Gabor2D.bonsai'
-    elif 'ephys_certification' in visual_stimulus_type:
-        return 'ephys_certification.bonsai'
-    elif 'GaborIBLTask' in visual_stimulus_type:
-        return 'Gabor2D.bonsai'
-    elif 'passiveChoiceWorld'in visual_stimulus_type:
-        return 'passiveChoiceWorld_passive.bonsai'
+    if "GaborHabituationTask" in visual_stimulus_type:
+        return "Gabor2D.bonsai"
+    elif "ephys_certification" in visual_stimulus_type:
+        return "ephys_certification.bonsai"
+    elif "GaborIBLTask" in visual_stimulus_type:
+        return "Gabor2D.bonsai"
+    elif "passiveChoiceWorld" in visual_stimulus_type:
+        return "passiveChoiceWorld_passive.bonsai"
 
 
 def get_session_number(session_date_folder: str) -> str:
     log.debug("Initializing session number")
     if not Path(session_date_folder).exists():
-        return '001'
-    session_nums = [int(x) for x in os.listdir(session_date_folder)
-                    if os.path.isdir(os.path.join(session_date_folder, x))]
+        return "001"
+    session_nums = [
+        int(x)
+        for x in os.listdir(session_date_folder)
+        if os.path.isdir(os.path.join(session_date_folder, x))
+    ]
     if not session_nums:
-        out = '00' + str(1)
+        out = "00" + str(1)
     elif max(session_nums) < 9:
-        out = '00' + str(int(max(session_nums)) + 1)
+        out = "00" + str(int(max(session_nums)) + 1)
     elif 99 > max(session_nums) >= 9:
-        out = '0' + str(int(max(session_nums)) + 1)
+        out = "0" + str(int(max(session_nums)) + 1)
     elif max(session_nums) > 99:
         out = str(int(max(session_nums)) + 1)
     log.debug(f"Setting session number to: {out}")
@@ -319,7 +337,7 @@ def get_session_number(session_date_folder: str) -> str:
 
 def get_pregen_session_folder() -> str:
     iblrig_path = Path(get_iblrig_folder())
-    return str(iblrig_path / 'tasks' / '_iblrig_tasks_ephysChoiceWorld' / 'sessions')
+    return str(iblrig_path / "tasks" / "_iblrig_tasks_ephysChoiceWorld" / "sessions")
 
 
 class SessionPathCreator(object):
@@ -340,82 +358,103 @@ class SessionPathCreator(object):
 
         self.PARAMS = params.load_params_file()
         self.IBLRIG_PARAMS_FILE = str(
-            Path(self.IBLRIG_PARAMS_FOLDER) / '.bpod_comports.json')
+            Path(self.IBLRIG_PARAMS_FOLDER) / ".bpod_comports.json"
+        )
         self.SUBJECT_NAME = subject_name
         self.SUBJECT_FOLDER = os.path.join(
-            self.IBLRIG_DATA_SUBJECTS_FOLDER, self.SUBJECT_NAME)
+            self.IBLRIG_DATA_SUBJECTS_FOLDER, self.SUBJECT_NAME
+        )
 
         self.BONSAI = get_bonsai_path(use_iblrig_bonsai=True)
-        self.VISUAL_STIM_FOLDER = str(Path(self.IBLRIG_FOLDER) / 'visual_stim')
+        self.VISUAL_STIM_FOLDER = str(Path(self.IBLRIG_FOLDER) / "visual_stim")
         self.VISUAL_STIMULUS_TYPE = get_visual_stim_type(self._PROTOCOL)
-        self.VISUAL_STIMULUS_FILE_NAME = get_visual_stim_file_name(self.VISUAL_STIMULUS_TYPE)
+        self.VISUAL_STIMULUS_FILE_NAME = get_visual_stim_file_name(
+            self.VISUAL_STIMULUS_TYPE
+        )
         self.VISUAL_STIMULUS_FILE = str(
-            Path(self.VISUAL_STIM_FOLDER) /
-            self.VISUAL_STIMULUS_TYPE / self.VISUAL_STIMULUS_FILE_NAME)
+            Path(self.VISUAL_STIM_FOLDER)
+            / self.VISUAL_STIMULUS_TYPE
+            / self.VISUAL_STIMULUS_FILE_NAME
+        )
 
         self.VIDEO_RECORDING_FOLDER = os.path.join(
-            self.IBLRIG_FOLDER, 'devices', 'camera_recordings')
+            self.IBLRIG_FOLDER, "devices", "camera_recordings"
+        )
         self.VIDEO_RECORDING_FILE = os.path.join(
-            self.VIDEO_RECORDING_FOLDER, 'one_camera.bonsai')
+            self.VIDEO_RECORDING_FOLDER, "one_camera.bonsai"
+        )
 
         self.MIC_RECORDING_FOLDER = os.path.join(
-            self.IBLRIG_FOLDER, 'devices', 'microphone')
+            self.IBLRIG_FOLDER, "devices", "microphone"
+        )
         self.MIC_RECORDING_FILE = os.path.join(
-            self.MIC_RECORDING_FOLDER, 'record_mic.bonsai')
+            self.MIC_RECORDING_FOLDER, "record_mic.bonsai"
+        )
 
         self.SESSION_DATETIME = datetime.datetime.now().isoformat()
         self.SESSION_DATE = datetime.datetime.now().date().isoformat()
 
-        self.SESSION_DATE_FOLDER = os.path.join(
-            self.SUBJECT_FOLDER, self.SESSION_DATE)
+        self.SESSION_DATE_FOLDER = os.path.join(self.SUBJECT_FOLDER, self.SESSION_DATE)
 
         self.SESSION_NUMBER = get_session_number(self.SESSION_DATE_FOLDER)
 
-        self.SESSION_FOLDER = str(
-            Path(self.SESSION_DATE_FOLDER) / self.SESSION_NUMBER)
+        self.SESSION_FOLDER = str(Path(self.SESSION_DATE_FOLDER) / self.SESSION_NUMBER)
         self.SESSION_RAW_DATA_FOLDER = os.path.join(
-            self.SESSION_FOLDER, 'raw_behavior_data')
+            self.SESSION_FOLDER, "raw_behavior_data"
+        )
         self.SESSION_RAW_VIDEO_DATA_FOLDER = os.path.join(
-            self.SESSION_FOLDER, 'raw_video_data')
+            self.SESSION_FOLDER, "raw_video_data"
+        )
         self.SESSION_RAW_EPHYS_DATA_FOLDER = os.path.join(
-            self.SESSION_FOLDER, 'raw_ephys_data')
+            self.SESSION_FOLDER, "raw_ephys_data"
+        )
         self.SESSION_RAW_IMAGING_DATA_FOLDER = os.path.join(
-            self.SESSION_FOLDER, 'raw_imaging_data')
+            self.SESSION_FOLDER, "raw_imaging_data"
+        )
         self.SESSION_RAW_PASSIVE_DATA_FOLDER = os.path.join(
-            self.SESSION_FOLDER, 'raw_passive_data')
+            self.SESSION_FOLDER, "raw_passive_data"
+        )
 
-        self.SESSION_NAME = '{}'.format(os.path.sep).join(
-            [self.SUBJECT_NAME, self.SESSION_DATE, self.SESSION_NUMBER])
+        self.SESSION_NAME = "{}".format(os.path.sep).join(
+            [self.SUBJECT_NAME, self.SESSION_DATE, self.SESSION_NUMBER]
+        )
 
-        self.BASE_FILENAME = '_iblrig_task'
-        self.SETTINGS_FILE_PATH = os.path.join(self.SESSION_RAW_DATA_FOLDER,
-                                               self.BASE_FILENAME +
-                                               'Settings.raw.json')
-        self.DATA_FILE_PATH = os.path.join(self.SESSION_RAW_DATA_FOLDER,
-                                           self.BASE_FILENAME +
-                                           'Data.raw.jsonable')
+        self.BASE_FILENAME = "_iblrig_task"
+        self.SETTINGS_FILE_PATH = os.path.join(
+            self.SESSION_RAW_DATA_FOLDER, self.BASE_FILENAME + "Settings.raw.json"
+        )
+        self.DATA_FILE_PATH = os.path.join(
+            self.SESSION_RAW_DATA_FOLDER, self.BASE_FILENAME + "Data.raw.jsonable"
+        )
         # Water calinbration files
-        self.LATEST_WATER_CALIBRATION_FILE = get_water_calibration_func_file(latest=True)
-        self.LATEST_WATER_CALIB_RANGE_FILE = get_water_calibration_range_file(latest=True)
-        if self.LATEST_WATER_CALIBRATION_FILE.parent != self.LATEST_WATER_CALIB_RANGE_FILE.parent:
+        self.LATEST_WATER_CALIBRATION_FILE = get_water_calibration_func_file(
+            latest=True
+        )
+        self.LATEST_WATER_CALIB_RANGE_FILE = get_water_calibration_range_file(
+            latest=True
+        )
+        if (
+            self.LATEST_WATER_CALIBRATION_FILE.parent
+            != self.LATEST_WATER_CALIB_RANGE_FILE.parent
+        ):
             self.LATEST_WATER_CALIBRATION_FILE = str(self.LATEST_WATER_CALIBRATION_FILE)
             self.LATEST_WATER_CALIB_RANGE_FILE = None
         else:
             self.LATEST_WATER_CALIBRATION_FILE = str(self.LATEST_WATER_CALIBRATION_FILE)
             self.LATEST_WATER_CALIB_RANGE_FILE = str(self.LATEST_WATER_CALIB_RANGE_FILE)
-        if str(self.LATEST_WATER_CALIBRATION_FILE) == '.':
+        if str(self.LATEST_WATER_CALIBRATION_FILE) == ".":
             self.LATEST_WATER_CALIBRATION_FILE = None
             self.LATEST_WATER_CALIB_RANGE_FILE = None
         # Previous session files
-        self.PREVIOUS_DATA_FILE = get_previous_data_file(self._PROTOCOL,
-                                                         self.SUBJECT_NAME,
-                                                         self.SESSION_FOLDER)
-        self.PREVIOUS_SETTINGS_FILE = get_previous_settings_file(self._PROTOCOL,
-                                                                 self.SUBJECT_NAME,
-                                                                 self.SESSION_FOLDER)
-        self.PREVIOUS_SESSION_PATH = get_previous_session_path(self._PROTOCOL,
-                                                               self.SUBJECT_NAME,
-                                                               self.SESSION_FOLDER)
+        self.PREVIOUS_DATA_FILE = get_previous_data_file(
+            self._PROTOCOL, self.SUBJECT_NAME, self.SESSION_FOLDER
+        )
+        self.PREVIOUS_SETTINGS_FILE = get_previous_settings_file(
+            self._PROTOCOL, self.SUBJECT_NAME, self.SESSION_FOLDER
+        )
+        self.PREVIOUS_SESSION_PATH = get_previous_session_path(
+            self._PROTOCOL, self.SUBJECT_NAME, self.SESSION_FOLDER
+        )
 
         if make:
             self.make_missing_folders(make)
@@ -439,13 +478,13 @@ class SessionPathCreator(object):
         elif isinstance(makelist, list):
             log.debug(f"Making extra folders for {makelist}")
             self.make_missing_folders(True)
-            if 'video' in makelist:
+            if "video" in makelist:
                 make_folder(self.SESSION_RAW_VIDEO_DATA_FOLDER)
-            if 'ephys' in makelist:
+            if "ephys" in makelist:
                 make_folder(self.SESSION_RAW_EPHYS_DATA_FOLDER)
-            if 'imag' in makelist:
+            if "imag" in makelist:
                 make_folder(self.SESSION_RAW_IMAGING_DATA_FOLDER)
-            if 'passive' in makelist:
+            if "passive" in makelist:
                 make_folder(self.SESSION_RAW_PASSIVE_DATA_FOLDER)
 
         return
@@ -455,7 +494,7 @@ class SessionPathCreator(object):
         for k in self.__dict__:
             if not self.__dict__[k]:
                 log.info(f"NOT FOUND: {k}")
-                if k == 'IBLRIG_VERSION_TAG':
+                if k == "IBLRIG_VERSION_TAG":
                     msg = """
         ##########################################
             NOT FOUND: IBLRIG_VERSION_TAG
@@ -466,7 +505,7 @@ class SessionPathCreator(object):
         ##########################################"""
                     log.warning(msg)
 
-                if k == 'PREVIOUS_DATA_FILE' and 'training' in self._PROTOCOL:
+                if k == "PREVIOUS_DATA_FILE" and "training" in self._PROTOCOL:
                     msg = """
         ##########################################
             NOT FOUND: PREVIOUS_DATA_FILE
@@ -474,13 +513,13 @@ class SessionPathCreator(object):
                     USING INIT VALUES
         ##########################################"""
                     log.warning(msg)
-                if k == 'LATEST_WATER_CALIBRATION_FILE':
+                if k == "LATEST_WATER_CALIBRATION_FILE":
                     msg = """
         ##########################################
          NOT FOUND: LATEST_WATER_CALIBRATION_FILE
         ##########################################"""
                     log.warning(msg)
-                if k == 'LATEST_WATER_CALIB_RANGE_FILE':
+                if k == "LATEST_WATER_CALIB_RANGE_FILE":
                     msg = """
         ##########################################
          NOT FOUND: LATEST_WATER_CALIB_RANGE_FILE
@@ -496,11 +535,11 @@ if __name__ == "__main__":
     # 'trainingChoiceWorld')
     # '/coder/mnt/nbonacchi/iblrig', None,
     spc = SessionPathCreator(
-        '_iblrig_test_mouse', protocol='passiveChoiceWorld',
-        make=True)
+        "_iblrig_test_mouse", protocol="passiveChoiceWorld", make=True
+    )
 
     print("")
     for k in spc.__dict__:
         print(f"{k}: {spc.__dict__[k]}")
 
-    print('.')
+    print(".")
