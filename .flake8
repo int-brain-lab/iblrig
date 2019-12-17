@@ -1,6 +1,6 @@
 [flake8]
 max-line-length = 99
-ignore = W504
+ignore = W504, E203, E302
 exclude =
     scratch_*.py,
     Bonsai/
