@@ -31,10 +31,12 @@ optional arguments:
   --pip            Update pip setuptools and wheel
   --upgrade-conda  Dont update conda
 """
+import argparse
 import os
 import subprocess
 from pathlib import Path
-import argparse
+
+from pkg_resources import parse_version
 
 from setup_default_config import main as setup_pybpod
 
@@ -44,7 +46,7 @@ def get_versions():
                                     "--tags", "origin"]).decode().split()
     vers = [x for x in vers[1::2] if '{' not in x]
     vers = [x.split('/')[-1] for x in vers]
-    available = [x for x in vers if x >= '5.3.1']
+    available = [x for x in vers if parse_version(x) >= parse_version('6.0.0')]
     print("Available versions: {}".format(available))
     return vers
 
@@ -152,18 +154,17 @@ def branch_info():
 def info():
     update_remotes()
     # branch_info()
-    ver = VERSION
-    versions = ALL_VERSIONS
+    ver = parse_version(VERSION)
+    versions = [parse_version(x) for x in ALL_VERSIONS]
     if not ver:
         print("WARNING: You appear to be on an untagged commit.",
               "\n         Try updating to a specific version")
     else:
-        idx = sorted(versions).index(ver) if ver in versions else 0
-        if idx + 1 == len(versions):
+        if ver == max(versions):
             print("The version you have checked out is the latest version\n")
         else:
-            print("Newest version |{}| type:\n\npython update.py {}\n".format(
-                sorted(versions)[-1], sorted(versions)[-1]))
+            print("Latest version |{}| type:\n\npython update.py {}\n".format(
+                max(versions), max(versions)))
 
 
 def ask_user_input(ver='#.#.#', responses=['y', 'n']):
@@ -178,13 +179,12 @@ def ask_user_input(ver='#.#.#', responses=['y', 'n']):
 
 
 def update_to_latest():
-    ver = VERSION
-    versions = ALL_VERSIONS
-    idx = sorted(versions).index(ver) if ver in versions else 0
-    if idx + 1 == len(versions):
+    ver = parse_version(VERSION)
+    versions = [parse_version(x) for x in ALL_VERSIONS]
+    if ver == max(versions):
         return
     else:
-        _update(version=versions[-1])
+        _update(version=str(max(versions)))
 
 
 def _update(branch=None, version=None):
