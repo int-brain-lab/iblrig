@@ -95,9 +95,6 @@ for i in range(sph.NTRIALS):  # Main loop
         log.info(f"First trial initializing, will move to next trial only if:")
         log.info(f"1. camera is detected")
         log.info(f"2. {sph.SESSION_START_DELAY_SEC} sec have elapsed")
-        log.info(
-            f"3. visual stimulus is detected"
-        )  # TODO: this in states for first trial
         sma.add_state(
             state_name="trial_start",
             state_timer=0,
@@ -115,132 +112,132 @@ for i in range(sph.NTRIALS):  # Main loop
     sma.add_state(
         state_name="delay_initiation",
         state_timer=tph.session_start_delay_sec,
-        state_change_conditions={"Tup": "reset_rotary_encoder"},
         output_actions=[],
+        state_change_conditions={"Tup": "reset_rotary_encoder"},
     )
 
     sma.add_state(
         state_name="reset_rotary_encoder",
         state_timer=0,
-        state_change_conditions={"Tup": "quiescent_period"},
         output_actions=[("Serial1", re_reset)],
+        state_change_conditions={"Tup": "quiescent_period"},
     )
 
     sma.add_state(  # '>back' | '>reset_timer'
         state_name="quiescent_period",
         state_timer=tph.quiescent_period,
+        output_actions=[],
         state_change_conditions={
             "Tup": "stim_on",
             tph.movement_left: "reset_rotary_encoder",
             tph.movement_right: "reset_rotary_encoder",
         },
-        output_actions=[],
     )
 
     sma.add_state(
         state_name="stim_on",
         state_timer=0.1,
+        output_actions=[("Serial1", bonsai_show_stim)],
         state_change_conditions={
             "Tup": "interactive_delay",
             "BNC1High": "interactive_delay",
             "BNC1Low": "interactive_delay",
         },
-        output_actions=[("Serial1", bonsai_show_stim)],
     )
 
     sma.add_state(
         state_name="interactive_delay",
         state_timer=tph.interactive_delay,
-        state_change_conditions={"Tup": "play_tone"},
         output_actions=[],
+        state_change_conditions={"Tup": "play_tone"},
     )
 
     sma.add_state(
         state_name="play_tone",
         state_timer=0.1,
+        output_actions=[tph.out_tone],
         state_change_conditions={
             "Tup": "reset2_rotary_encoder",
             "BNC2High": "reset2_rotary_encoder",
         },
-        output_actions=[tph.out_tone],
     )
 
     sma.add_state(
         state_name="reset2_rotary_encoder",
         state_timer=0,
-        state_change_conditions={"Tup": "closed_loop"},
         output_actions=[("Serial1", re_reset)],
+        state_change_conditions={"Tup": "closed_loop"},
     )
 
     sma.add_state(
         state_name="closed_loop",
         state_timer=tph.response_window,
+        output_actions=[("Serial1", bonsai_close_loop)],
         state_change_conditions={
             "Tup": "no_go",
             tph.event_error: "freeze_error",
             tph.event_reward: "freeze_reward",
         },
-        output_actions=[("Serial1", bonsai_close_loop)],
     )
 
     sma.add_state(
         state_name="no_go",
         state_timer=tph.iti_error,
-        state_change_conditions={"Tup": "exit_state"},
         output_actions=[("Serial1", bonsai_hide_stim), tph.out_noise],
+        state_change_conditions={"Tup": "exit_state"},
     )
 
     sma.add_state(
         state_name="freeze_error",
         state_timer=0,
-        state_change_conditions={"Tup": "error"},
         output_actions=[("Serial1", bonsai_freeze_stim)],
+        state_change_conditions={"Tup": "error"},
     )
 
     sma.add_state(
         state_name="error",
         state_timer=tph.iti_error,
-        state_change_conditions={"Tup": "hide_stim"},
         output_actions=[tph.out_noise],
+        state_change_conditions={"Tup": "hide_stim"},
     )
 
     sma.add_state(
         state_name="freeze_reward",
         state_timer=0,
-        state_change_conditions={"Tup": "reward"},
         output_actions=[("Serial1", bonsai_freeze_stim)],
+        state_change_conditions={"Tup": "reward"},
     )
 
     sma.add_state(
         state_name="reward",
         state_timer=tph.reward_valve_time,
-        state_change_conditions={"Tup": "correct"},
         output_actions=[("Valve1", 255)],
+        state_change_conditions={"Tup": "correct"},
     )
 
     sma.add_state(
         state_name="correct",
         state_timer=tph.iti_correct,
-        state_change_conditions={"Tup": "hide_stim"},
         output_actions=[],
+        state_change_conditions={"Tup": "hide_stim"},
     )
 
     sma.add_state(
         state_name="hide_stim",
         state_timer=0.1,
+        output_actions=[("Serial1", bonsai_hide_stim)],
         state_change_conditions={
             "Tup": "exit_state",
             "BNC1High": "exit_state",
             "BNC1Low": "exit_state",
         },
-        output_actions=[("Serial1", bonsai_hide_stim)],
     )
 
     sma.add_state(
         state_name="exit_state",
         state_timer=0.5,
-        state_change_conditions={"Tup": "exit"},
         output_actions=[],
+        state_change_conditions={"Tup": "exit"},
     )
 
     # Send state machine description to Bpod device

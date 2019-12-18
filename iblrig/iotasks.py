@@ -135,7 +135,6 @@ def load_settings(session_folder: str) -> dict:
     return raw.load_settings(session_folder)
 
 
-# FIXME: if MOCK session is ran in the middle of a run the next session will fail!
 def load_session_order_idx(last_settings_data: dict) -> tuple:
     if (
         (not last_settings_data)
