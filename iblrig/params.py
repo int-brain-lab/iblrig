@@ -5,6 +5,7 @@
 import datetime
 import json
 import logging
+import re
 import shutil
 from pathlib import Path
 
@@ -13,7 +14,7 @@ from pybpodgui_api.models.project import Project
 
 import iblrig.alyx as alyx
 import iblrig.logging_  # noqa
-import iblrig.path_helper as path_helper
+import iblrig.path_helper as ph
 
 log = logging.getLogger("iblrig")
 
@@ -35,14 +36,19 @@ EMPTY_BOARD_PARAMS = {
 
 
 def get_iblrig_version():
-    pass
+    ph.get_iblrig_folder()
+    # Find version number from `__init__.py` without executing it.
+    file_path = Path(ph.get_iblrig_folder()) / "setup.py"
+    with open(file_path, "r") as f:
+        version = re.search(r"version=\"([^\"]+)\"", f.read()).group(1)
+    return version
 
 
 def get_board_name():
-    iblproject_path = Path(path_helper.get_iblrig_params_folder()) / "IBL"
+    iblproject_path = Path(ph.get_iblrig_params_folder()) / "IBL"
     p = Project()
     p.load(str(iblproject_path))
-    params_file = Path(path_helper.get_iblrig_params_folder()) / ".iblrig_params.json"
+    params_file = Path(ph.get_iblrig_params_folder()) / ".iblrig_params.json"
     if not params_file.exists():
         return p.boards[0].name
     pars = load_params_file()
@@ -53,10 +59,10 @@ def get_board_name():
 
 
 def get_board_comport():
-    iblproject_path = Path(path_helper.get_iblrig_params_folder()) / "IBL"
+    iblproject_path = Path(ph.get_iblrig_params_folder()) / "IBL"
     p = Project()
     p.load(str(iblproject_path))
-    params_file = Path(path_helper.get_iblrig_params_folder()) / ".iblrig_params.json"
+    params_file = Path(ph.get_iblrig_params_folder()) / ".iblrig_params.json"
     if not params_file.exists():
         return p.boards[0].serial_port
     pars = load_params_file()
@@ -85,7 +91,7 @@ def write_params_file(data: dict = None, force: bool = False) -> dict:
         data = EMPTY_BOARD_PARAMS
         data["NAME"] = get_board_name()
         data["COM_BPOD"] = get_board_comport()
-    iblrig_params = Path(path_helper.get_iblrig_params_folder())
+    iblrig_params = Path(ph.get_iblrig_params_folder())
     fpath = iblrig_params / ".iblrig_params.json"
     if fpath.exists() and not force:
         log.warning(f"iblrig params file already exists {fpath}. Not writing...")
@@ -104,7 +110,7 @@ def load_params_file() -> dict:
     :return: .iblrig_params.json contents
     :rtype: dict
     """
-    iblrig_params = Path(path_helper.get_iblrig_params_folder())
+    iblrig_params = Path(ph.get_iblrig_params_folder())
     fpath = iblrig_params / ".iblrig_params.json"
     bpod_comports = iblrig_params / ".bpod_comports.json"
     if fpath.exists():
@@ -149,9 +155,7 @@ def update_params_file(data: dict, force: bool = False) -> None:
                 log.info(f"Unknown key {k}: skipping key...")
                 continue
             elif force:
-                log.info(
-                    f"Adding new key {k} with value {data[k]} to .iblrig_params.json"
-                )
+                log.info(f"Adding new key {k} with value {data[k]} to .iblrig_params.json")
                 old[k] = data[k]
     write_params_file(data=old, force=True)
     log.info("Updated params file")
@@ -184,22 +188,16 @@ def update_params(data: dict) -> None:
     try:
         alyx.update_board_params(data=data)
     except Exception as e:
-        log.warning(
-            f"Could not update board params on Alyx. Saved locally:\n{data}\n{e}"
-        )
+        log.warning(f"Could not update board params on Alyx. Saved locally:\n{data}\n{e}")
 
 
 def load_params() -> dict:
     params_alyx = alyx.load_board_params()
     if params_alyx is None:
-        log.warning(
-            f"Could not load board params from Alyx. Loading from local file..."
-        )
+        log.warning(f"Could not load board params from Alyx. Loading from local file...")
     params_local = load_params_file()
     if params_alyx != params_local:
-        log.warning(
-            f"Local data and Alyx data are not the same. Trying to update Alyx."
-        )
+        log.warning(f"Local data and Alyx data are not the same. Trying to update Alyx.")
         alyx.update_board_params(data=params_local, force=True)
         log.info("Using local params.")
     return params_local
@@ -210,14 +208,12 @@ def write_params(data: dict = None, force: bool = False) -> None:
     try:
         alyx.write_board_params(data=data, force=force)
     except Exception as e:
-        log.warning(
-            f"Could not write board params to Alyx. Written to local file:\n{e}"
-        )
+        log.warning(f"Could not write board params to Alyx. Written to local file:\n{e}")
 
 
 def try_migrate_to_params(force=False):
-    params_file = Path(path_helper.get_iblrig_params_folder()) / ".iblrig_params.json"
-    comports_file = Path(path_helper.get_iblrig_params_folder()) / ".bpod_comports.json"
+    params_file = Path(ph.get_iblrig_params_folder()) / ".iblrig_params.json"
+    comports_file = Path(ph.get_iblrig_params_folder()) / ".bpod_comports.json"
     # See if file exists:
     if params_file.exists() and not force:
         log.info(f"No steps taken - File exists: {params_file}")
@@ -244,21 +240,17 @@ def try_migrate_to_params(force=False):
         "WATER_CALIBRATION_WEIGHT_PERDROP": "",  # [float, float, ...]
         "WATER_CALIBRATION_DATE": "",
     }  # str
-    range_file = path_helper.get_water_calibration_range_file()
-    func_file = path_helper.get_water_calibration_func_file()
+    range_file = ph.get_water_calibration_range_file()
+    func_file = ph.get_water_calibration_func_file()
     if (str(func_file) != "." and str(range_file) != ".") and (
         func_file.parent == range_file.parent
     ):
-        water_dict.update(path_helper.load_water_calibraition_range_file(range_file))
-        water_dict.update(path_helper.load_water_calibraition_func_file(func_file))
-        water_dict.update(
-            {"WATER_CALIBRATION_DATE": func_file.parent.parent.parent.name}
-        )
+        water_dict.update(ph.load_water_calibraition_range_file(range_file))
+        water_dict.update(ph.load_water_calibraition_func_file(func_file))
+        water_dict.update({"WATER_CALIBRATION_DATE": func_file.parent.parent.parent.name})
     if str(func_file) != ".":
-        water_dict.update(path_helper.load_water_calibraition_func_file(func_file))
-        water_dict.update(
-            {"WATER_CALIBRATION_DATE": func_file.parent.parent.parent.name}
-        )
+        water_dict.update(ph.load_water_calibraition_func_file(func_file))
+        water_dict.update({"WATER_CALIBRATION_DATE": func_file.parent.parent.parent.name})
     # Find latest F2TTL calib and set F2TTL values
     f2ttl_params = alyx.load_board_params()
     if f2ttl_params is None:
@@ -278,9 +270,7 @@ def try_migrate_to_params(force=False):
         elif "F2TTL_COM" in f2ttl_params:
             f2ttl_dict.update({"COM_F2TTL": f2ttl_params["F2TTL_COM"]})
         if "F2TTL_CALIBRATION_DATE" in f2ttl_params:
-            f2ttl_dict.update(
-                {"F2TTL_CALIBRATION_DATE": f2ttl_params["F2TTL_CALIBRATION_DATE"]}
-            )
+            f2ttl_dict.update({"F2TTL_CALIBRATION_DATE": f2ttl_params["F2TTL_CALIBRATION_DATE"]})
 
     # Save locally
     final_dict = {}
@@ -293,7 +283,7 @@ def try_migrate_to_params(force=False):
     alyx.write_board_params(data=final_dict, force=True)
     # Delete old comports file
     if comports_file.exists():
-        bk = Path(path_helper.get_iblrig_params_folder()) / ".bpod_comports.json_bk"
+        bk = Path(ph.get_iblrig_params_folder()) / ".bpod_comports.json_bk"
         shutil.copy(str(comports_file), str(bk))
         comports_file.unlink()
     return
