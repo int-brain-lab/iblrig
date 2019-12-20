@@ -18,7 +18,7 @@ import iblrig.path_helper as ph
 
 log = logging.getLogger("iblrig")
 
-
+# TODO: Add keys for logging all other tests
 # Add new keys to this, create optional asker/getter
 EMPTY_BOARD_PARAMS = {
     "NAME": None,  # str
