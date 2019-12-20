@@ -37,9 +37,7 @@ def deserialize_pybpod_user_settings(sph: object) -> object:
         log.error("Multiple subjects found in PYBPOD_SUBJECTS")
         raise (IOError)
 
-    sph.PYBPOD_SUBJECT_EXTRA = [
-        json.loads(x) for x in sph.PYBPOD_SUBJECT_EXTRA[1:-1].split('","')
-    ]
+    sph.PYBPOD_SUBJECT_EXTRA = [json.loads(x) for x in sph.PYBPOD_SUBJECT_EXTRA[1:-1].split('","')]
     if len(sph.PYBPOD_SUBJECT_EXTRA) == 1:
         sph.PYBPOD_SUBJECT_EXTRA = sph.PYBPOD_SUBJECT_EXTRA[0]
 
@@ -51,6 +49,7 @@ def save_session_settings(sph: object) -> None:
     with open(sph.SETTINGS_FILE_PATH, "a") as f:
         f.write(save_this)
         f.write("\n")
+        f.flush()
 
     save_this = json.loads(save_this)
     settings = raw.load_settings(sph.SESSION_FOLDER)
@@ -101,9 +100,7 @@ def save_video_code(sph: object) -> None:
     ]
     zipit(
         video_code_files,
-        Path(sph.SESSION_RAW_VIDEO_DATA_FOLDER).joinpath(
-            "_iblrig_videoCodeFiles.raw.zip"
-        ),
+        Path(sph.SESSION_RAW_VIDEO_DATA_FOLDER).joinpath("_iblrig_videoCodeFiles.raw.zip"),
     )
 
     [shutil.rmtree(x) for x in video_code_files]
@@ -153,9 +150,7 @@ def load_session_order_idx(last_settings_data: dict) -> tuple:
 def load_ephys_session_pcqs(preloaded_session_num: str) -> tuple:
     base = ph.get_pregen_session_folder()
     pcqs = np.load(Path(base) / f"session_{preloaded_session_num}_ephys_pcqs.npy")
-    len_block = np.load(
-        Path(base) / f"session_{preloaded_session_num}_ephys_len_blocks.npy"
-    )
+    len_block = np.load(Path(base) / f"session_{preloaded_session_num}_ephys_len_blocks.npy")
 
     pos = pcqs[:, 0].tolist()
     cont = pcqs[:, 1].tolist()
@@ -168,12 +163,8 @@ def load_ephys_session_pcqs(preloaded_session_num: str) -> tuple:
 
 def load_passive_session_delays_ids(preloaded_session_num: str) -> tuple:
     base = ph.get_pregen_session_folder()
-    stimDelays = np.load(
-        Path(base) / f"session_{preloaded_session_num}_passive_stimDelays.npy"
-    )
-    stimIDs = np.load(
-        Path(base) / f"session_{preloaded_session_num}_passive_stimIDs.npy"
-    )
+    stimDelays = np.load(Path(base) / f"session_{preloaded_session_num}_passive_stimDelays.npy")
+    stimIDs = np.load(Path(base) / f"session_{preloaded_session_num}_passive_stimIDs.npy")
     return stimDelays, stimIDs
 
 

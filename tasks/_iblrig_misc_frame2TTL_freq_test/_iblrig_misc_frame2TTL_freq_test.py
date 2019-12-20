@@ -90,9 +90,11 @@ for i in range(NITER):
     with open(bpod_data_file, "a") as f:
         f.write(json.dumps(BNC1))
         f.write("\n")
+        f.flush()
     with open(bpod_data_lengths_file, "a") as f:
         f.write(json.dumps(len(BNC1)))
         f.write("\n")
+        f.flush()
 
 bpod.close()
 

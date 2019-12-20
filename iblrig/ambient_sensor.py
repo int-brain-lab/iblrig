@@ -29,6 +29,7 @@ def get_reading(bpod_instance, save_to=None):
         ) as f:
             f.write(json.dumps(data))
             f.write("\n")
+            f.flush()
 
     return {k: v.tolist()[0] for k, v in Measures.items()}
 
