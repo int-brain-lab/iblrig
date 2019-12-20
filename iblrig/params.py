@@ -19,6 +19,7 @@ import iblrig.path_helper as ph
 log = logging.getLogger("iblrig")
 
 
+# Add new keys to this, create optional asker/getter
 EMPTY_BOARD_PARAMS = {
     "NAME": None,  # str
     "IBLRIG_VERSION": None,  # str
@@ -35,6 +36,25 @@ EMPTY_BOARD_PARAMS = {
 }
 
 
+def ensure_all_keys_present(loaded_params):
+    for k in EMPTY_BOARD_PARAMS:
+        if k in loaded_params:
+            pass
+        elif k not in loaded_params:
+            loaded_params.update({k: None})
+
+    write_params(loaded_params, force=True)
+    return loaded_params
+
+
+def create_new_params_dict():
+    params = EMPTY_BOARD_PARAMS
+    params["NAME"] = get_pybpod_board_name()
+    params["IBLRIG_VERSION"] = get_iblrig_version()
+    params["COM_BPOD"] = get_board_comport()
+    return params
+
+
 def get_iblrig_version():
     ph.get_iblrig_folder()
     # Find version number from `__init__.py` without executing it.
@@ -44,30 +64,42 @@ def get_iblrig_version():
     return version
 
 
-def get_board_name():
+def get_pybpod_board_name():
     iblproject_path = Path(ph.get_iblrig_params_folder()) / "IBL"
     p = Project()
     p.load(str(iblproject_path))
+    return p.boards[0].name
+
+
+def get_board_name():
     params_file = Path(ph.get_iblrig_params_folder()) / ".iblrig_params.json"
+    pybpod_board_name = get_pybpod_board_name()
     if not params_file.exists():
-        return p.boards[0].name
+        return pybpod_board_name
+
     pars = load_params_file()
-    if p.boards[0].name != pars["NAME"]:
-        pars["NAME"] = p.boards[0].name
+    if pybpod_board_name != pars["NAME"]:
+        pars["NAME"] = pybpod_board_name
         update_params_file(data=pars)
     return pars["NAME"]
 
 
-def get_board_comport():
+def get_pybpod_board_comport():
     iblproject_path = Path(ph.get_iblrig_params_folder()) / "IBL"
     p = Project()
     p.load(str(iblproject_path))
+    return p.boards[0].serial_port
+
+
+def get_board_comport():
     params_file = Path(ph.get_iblrig_params_folder()) / ".iblrig_params.json"
+    pybpod_board_comport = get_pybpod_board_comport()
     if not params_file.exists():
-        return p.boards[0].serial_port
+        return pybpod_board_comport
     pars = load_params_file()
-    if p.boards[0].serial_port != pars["COM_BPOD"]:
-        pars["COM_BPOD"] = p.boards[0].serial_port
+
+    if pybpod_board_comport != pars["COM_BPOD"]:
+        pars["COM_BPOD"] = pybpod_board_comport
         update_params_file(data=pars)
     return pars["COM_BPOD"]
 
@@ -87,15 +119,13 @@ def write_params_file(data: dict = None, force: bool = False) -> dict:
     :return: params written to file, creates file on disk
     :rtype: dict
     """
-    if data is None:
-        data = EMPTY_BOARD_PARAMS
-        data["NAME"] = get_board_name()
-        data["COM_BPOD"] = get_board_comport()
     iblrig_params = Path(ph.get_iblrig_params_folder())
     fpath = iblrig_params / ".iblrig_params.json"
     if fpath.exists() and not force:
         log.warning(f"iblrig params file already exists {fpath}. Not writing...")
         return
+    if data is None:
+        data = create_new_params_dict()
     with open(fpath, "w") as f:
         log.info(f"Writing {data} to {fpath}")
         json.dump(data, f, indent=1)
@@ -116,7 +146,7 @@ def load_params_file() -> dict:
     if fpath.exists():
         with open(fpath, "r") as f:
             out = json.load(f)
-        return out
+        return ensure_all_keys_present(out)
     elif not fpath.exists() and bpod_comports.exists():
         log.warning(
             f"Params file does not exist, found old bpod_comports file. Trying to migrate..."
@@ -177,7 +207,7 @@ def ask_params_comports(data: dict) -> dict:
     if patch:
         data.update(patch)
         update_params_file(data=patch)
-        log.debug("Updating params file with: {patch}")
+        log.debug(f"Updating params file with: {patch}")
 
     return data
 
@@ -186,30 +216,29 @@ def ask_params_comports(data: dict) -> dict:
 def update_params(data: dict) -> None:
     update_params_file(data=data)
     try:
-        alyx.update_board_params(data=data)
+        alyx.update_alyx_params(data=data)
     except Exception as e:
         log.warning(f"Could not update board params on Alyx. Saved locally:\n{data}\n{e}")
 
 
 def load_params() -> dict:
-    params_alyx = alyx.load_board_params()
-    if params_alyx is None:
-        log.warning(f"Could not load board params from Alyx. Loading from local file...")
     params_local = load_params_file()
+    params_alyx = alyx.load_alyx_params(params_local["NAME"])
+    if params_alyx is None:
+        log.warning(f"Could not load board params from Alyx.")
     if params_alyx != params_local:
-        log.warning(f"Local data and Alyx data are not the same. Trying to update Alyx.")
-        alyx.update_board_params(data=params_local, force=True)
-        log.info("Using local params.")
+        log.warning(f"Local data and Alyx data mismatch. Trying to update Alyx.")
+        alyx.update_alyx_params(data=params_local, force=True)
     return params_local
 
 
 def write_params(data: dict = None, force: bool = False) -> None:
     write_params_file(data=data, force=force)
     try:
-        alyx.write_board_params(data=data, force=force)
+        alyx.write_alyx_params(data=data, force=force)
     except Exception as e:
         log.warning(f"Could not write board params to Alyx. Written to local file:\n{e}")
-
+    return
 
 def try_migrate_to_params(force=False):
     params_file = Path(ph.get_iblrig_params_folder()) / ".iblrig_params.json"
@@ -252,7 +281,7 @@ def try_migrate_to_params(force=False):
         water_dict.update(ph.load_water_calibraition_func_file(func_file))
         water_dict.update({"WATER_CALIBRATION_DATE": func_file.parent.parent.parent.name})
     # Find latest F2TTL calib and set F2TTL values
-    f2ttl_params = alyx.load_board_params()
+    f2ttl_params = alyx.load_alyx_params(get_pybpod_board_name())
     if f2ttl_params is None:
         f2ttl_dict = {
             "F2TTL_DARK_THRESH": "",
@@ -280,7 +309,7 @@ def try_migrate_to_params(force=False):
     final_dict.update(water_dict)
     write_params_file(data=final_dict, force=True)
     # upload to Alyx board
-    alyx.write_board_params(data=final_dict, force=True)
+    alyx.write_alyx_params(data=final_dict, force=True)
     # Delete old comports file
     if comports_file.exists():
         bk = Path(ph.get_iblrig_params_folder()) / ".bpod_comports.json_bk"
@@ -292,4 +321,5 @@ def try_migrate_to_params(force=False):
 if __name__ == "__main__":
     # try_migrate_to_params(force=True)
     # try_migrate_to_params(force=False)
+    params = load_params_file()
     print(".")

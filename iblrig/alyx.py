@@ -73,24 +73,19 @@ def get_latest_session_eid(subject_nickname):
         return None
 
 
-def write_board_params(data: dict = None, force: bool = False) -> None:
-    if data is None:
-        data = rig_params.EMPTY_BOARD_PARAMS
-        data["NAME"] = rig_params.get_board_name()
-        data["COM_BPOD"] = rig_params.get_board_comport()
-    board = data["NAME"]
-    one = get_one()
-    p = load_board_params()
+def write_alyx_params(data: dict, force: bool = False) -> None:
+    p = load_alyx_params(data["NAME"])
     if p and not force:
         log.info("Board params already present, exiting...")
         return p
+    board = data["NAME"]
+    one = get_one()
     patch_dict = {"json": json.dumps(data)}
     one.alyx.rest("locations", "partial_update", id=board, data=patch_dict)
     return data
 
 
-def load_board_params() -> dict:
-    board = rig_params.get_board_name()
+def load_alyx_params(board: str) -> dict:
     one = get_one()
     try:
         out = one.alyx.rest("locations", "read", id=board)["json"]
@@ -101,12 +96,13 @@ def load_board_params() -> dict:
     return out
 
 
-def update_board_params(data: dict, force: bool = False) -> dict:
-    old = load_board_params()
+def update_alyx_params(data: dict, force: bool = False) -> dict:
+    old = load_alyx_params(data["NAME"])
     if old is None:
         log.info("board params not found, creating...")
-        write_board_params()
-        old = load_board_params()
+        new = rig_params.create_new_params_dict()
+        write_alyx_params(new)
+        old = load_alyx_params(new["NAME"])
 
     board = rig_params.get_board_name()
     if "NAME" in data and data["NAME"] != board:
@@ -124,7 +120,7 @@ def update_board_params(data: dict, force: bool = False) -> dict:
                     f"Adding new key {k} with value {data[k]} to {board} json field"
                 )
                 old[k] = data[k]
-    write_board_params(data=old, force=True)
+    write_alyx_params(data=old, force=True)
     log.info(f"Changed board params: {data}")
 
     return old
@@ -179,8 +175,8 @@ if __name__ == "__main__":
         "F2TTL_CALIBRATION_DATE": "2019-09-26",
     }
     # init_board_params(board)
-    update_board_params(data)
-    # load_board_params(board)
+    update_alyx_params(data)
+    # load_alyx_params(board)
 
     # create_current_running_session(session_folder)
     # create_session(session_folder)
