@@ -29,10 +29,14 @@ EMPTY_BOARD_PARAMS = {
     "F2TTL_DARK_THRESH": None,  # float
     "F2TTL_LIGHT_THRESH": None,  # float
     "F2TTL_CALIBRATION_DATE": None,  # str
+    "F2TTL_FREQ_TEST_STATUS": None,  # str
+    "F2TTL_FREQ_TEST_DATE": None,  # str
     "WATER_CALIBRATION_RANGE": None,  # [min, max]
     "WATER_CALIBRATION_OPEN_TIMES": None,  # [float, float, ...]
     "WATER_CALIBRATION_WEIGHT_PERDROP": None,  # [float, float, ...]
     "WATER_CALIBRATION_DATE": None,  # str
+    "BPOD_TTL_TEST_STATUS": None,
+    "BPOD_TTL_TEST_DATE": None,
 }
 
 
@@ -239,6 +243,7 @@ def write_params(data: dict = None, force: bool = False) -> None:
     except Exception as e:
         log.warning(f"Could not write board params to Alyx. Written to local file:\n{e}")
     return
+
 
 def try_migrate_to_params(force=False):
     params_file = Path(ph.get_iblrig_params_folder()) / ".iblrig_params.json"
