@@ -5,6 +5,7 @@
 import datetime
 import json
 import logging
+import shutil
 from pathlib import Path
 
 import numpy as np
@@ -185,13 +186,13 @@ def patch_settings_file(sess_or_file: str, patch: dict) -> None:
     sess_or_file = Path(sess_or_file)
     if sess_or_file.is_file() and sess_or_file.name.endswith(
         "_iblrig_taskSettings.raw.json"
-    ):  # noqa
+    ):
         session = sess_or_file.parent.parent
         file = sess_or_file
     elif sess_or_file.is_dir() and sess_or_file.name.isdecimal():
         file = (
             sess_or_file / "raw_behavior_data" / "_iblrig_taskSettings.raw.json"
-        )  # noqa
+        )
         session = sess_or_file
     else:
         print("not a settings file or a session folder")
@@ -199,12 +200,16 @@ def patch_settings_file(sess_or_file: str, patch: dict) -> None:
 
     settings = raw.load_settings(session)
     settings.update(patch)
+    # Rename file on disk keeps pathlib ref to "file" intact
+    file.rename(file.with_suffix('.json_bk'))
     with open(file, "w") as f:
         f.write(json.dumps(settings, indent=1))
         f.write("\n")
+        f.flush()
     # Check if properly saved
     saved_settings = raw.load_settings(session)
-    assert settings == saved_settings
+    if settings == saved_settings:
+        file.with_suffix('.json_bk').unlink()
     return
 
 
