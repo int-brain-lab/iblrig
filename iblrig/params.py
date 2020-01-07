@@ -189,7 +189,9 @@ def update_params_file(data: dict, force: bool = False) -> None:
                 log.info(f"Unknown key {k}: skipping key...")
                 continue
             elif force:
-                log.info(f"Adding new key {k} with value {data[k]} to .iblrig_params.json")
+                log.info(
+                    f"Adding new key {k} with value {data[k]} to .iblrig_params.json"
+                )
                 old[k] = data[k]
     write_params_file(data=old, force=True)
     log.info("Updated params file")
@@ -222,7 +224,9 @@ def update_params(data: dict) -> None:
     try:
         alyx.update_alyx_params(data=data)
     except Exception as e:
-        log.warning(f"Could not update board params on Alyx. Saved locally:\n{data}\n{e}")
+        log.warning(
+            f"Could not update board params on Alyx. Saved locally:\n{data}\n{e}"
+        )
 
 
 def load_params() -> dict:
@@ -241,7 +245,9 @@ def write_params(data: dict = None, force: bool = False) -> None:
     try:
         alyx.write_alyx_params(data=data, force=force)
     except Exception as e:
-        log.warning(f"Could not write board params to Alyx. Written to local file:\n{e}")
+        log.warning(
+            f"Could not write board params to Alyx. Written to local file:\n{e}"
+        )
     return
 
 
@@ -281,10 +287,14 @@ def try_migrate_to_params(force=False):
     ):
         water_dict.update(ph.load_water_calibraition_range_file(range_file))
         water_dict.update(ph.load_water_calibraition_func_file(func_file))
-        water_dict.update({"WATER_CALIBRATION_DATE": func_file.parent.parent.parent.name})
+        water_dict.update(
+            {"WATER_CALIBRATION_DATE": func_file.parent.parent.parent.name}
+        )
     if str(func_file) != ".":
         water_dict.update(ph.load_water_calibraition_func_file(func_file))
-        water_dict.update({"WATER_CALIBRATION_DATE": func_file.parent.parent.parent.name})
+        water_dict.update(
+            {"WATER_CALIBRATION_DATE": func_file.parent.parent.parent.name}
+        )
     # Find latest F2TTL calib and set F2TTL values
     f2ttl_params = alyx.load_alyx_params(get_pybpod_board_name())
     if f2ttl_params is None:
@@ -304,7 +314,9 @@ def try_migrate_to_params(force=False):
         elif "F2TTL_COM" in f2ttl_params:
             f2ttl_dict.update({"COM_F2TTL": f2ttl_params["F2TTL_COM"]})
         if "F2TTL_CALIBRATION_DATE" in f2ttl_params:
-            f2ttl_dict.update({"F2TTL_CALIBRATION_DATE": f2ttl_params["F2TTL_CALIBRATION_DATE"]})
+            f2ttl_dict.update(
+                {"F2TTL_CALIBRATION_DATE": f2ttl_params["F2TTL_CALIBRATION_DATE"]}
+            )
 
     # Save locally
     final_dict = {}
