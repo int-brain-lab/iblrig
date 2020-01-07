@@ -74,6 +74,11 @@ def copy_video_code(sph: object) -> None:
     shutil.copytree(src, dst)
 
 
+# TODO: Implement me!
+def save_pregenerated_session_data(session_file_num):
+    pass
+
+
 def save_task_code(sph: object) -> None:
     # zip all existing folders
     # Should be the task code folder and if available stimulus code folder

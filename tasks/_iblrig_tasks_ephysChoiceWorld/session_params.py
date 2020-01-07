@@ -211,6 +211,7 @@ class SessionParamHandler(object):
             iotasks.save_session_settings(self)
             iotasks.copy_task_code(self)
             iotasks.save_task_code(self)
+            iotasks.save_pregenerated_session(self["PRELOADED_SESSION_NUM"])
             self.bpod_lights(0)
 
         self.display_logs()
