@@ -158,9 +158,9 @@ misc.create_flag(sph.SESSION_FOLDER, "passive_data_for_ephys.flag")
 misc.create_flag(sph.SESSION_FOLDER, "poop_count")
 
 if __name__ == "__main__":
-    preloaded_session_num = "mock"
+    pregenerated_session_num = "mock"
     # Load session PCS
-    position, contrast, phase = iotasks.load_passive_session_pcs(preloaded_session_num)
+    position, contrast, phase = iotasks.load_passive_session_pcs(pregenerated_session_num)
     # Load session stimDelays, stimIDs
-    stimDelays, stimIDs = iotasks.load_passive_session_delays_ids(preloaded_session_num)
+    stimDelays, stimIDs = iotasks.load_passive_session_delays_ids(pregenerated_session_num)
     print(".")

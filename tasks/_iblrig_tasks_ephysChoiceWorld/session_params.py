@@ -98,17 +98,17 @@ class SessionParamHandler(object):
         self.IS_MOCK = (
             user_input.ask_is_mock()
         )  # Change to False if mock has its own task
-        # Get preloaded session num (the num in the filename!)
+        # Get pregenerated session num (the num in the filename!)
         if self.IS_MOCK:
             self.SESSION_ORDER = None
             self.SESSION_IDX = None
-            self.PRELOADED_SESSION_NUM = "mock"
+            self.PREGENERATED_SESSION_NUM = "mock"
         else:
             (self.SESSION_ORDER, self.SESSION_IDX) = iotasks.load_session_order_idx(
                 self.LAST_SETTINGS_DATA
             )
             self.SESSION_IDX = user_input.ask_confirm_session_idx(self.SESSION_IDX)
-            self.PRELOADED_SESSION_NUM = self.SESSION_ORDER[self.SESSION_IDX]
+            self.PREGENERATED_SESSION_NUM = self.SESSION_ORDER[self.SESSION_IDX]
         # Load session from file
         (
             self.POSITIONS,
@@ -116,7 +116,7 @@ class SessionParamHandler(object):
             self.QUIESCENT_PERIOD,
             self.STIM_PHASE,
             self.LEN_BLOCKS,
-        ) = iotasks.load_ephys_session_pcqs(self.PRELOADED_SESSION_NUM)
+        ) = iotasks.load_ephys_session_pcqs(self.PREGENERATED_SESSION_NUM)
         # =====================================================================
         # ADAPTIVE STUFF
         # =====================================================================
@@ -137,12 +137,14 @@ class SessionParamHandler(object):
         self.STIM_POSITIONS = [-35, 35]  # All possible positions (deg)
         self.QUIESCENCE_THRESHOLDS = [-2, 2]  # degree
         self.ALL_THRESHOLDS = self.STIM_POSITIONS + self.QUIESCENCE_THRESHOLDS
+        # XXX: device
         self.ROTARY_ENCODER = MyRotaryEncoder(
             self.ALL_THRESHOLDS, self.STIM_GAIN, self.PARAMS["COM_ROTARY_ENCODER"]
         )
         # =====================================================================
         # frame2TTL
         # =====================================================================
+        # XXX: device
         self.F2TTL_GET_AND_SET_THRESHOLDS = frame2TTL.get_and_set_thresholds()
         # =====================================================================
         # SOUNDS
@@ -155,7 +157,6 @@ class SessionParamHandler(object):
         self.GO_TONE_DURATION = float(0.1)
         self.GO_TONE_FREQUENCY = int(5000)
         self.GO_TONE_AMPLITUDE = float(0.0151)  # 0.0151 for 70.0 dB SPL CCU
-
         self.SD = sound.configure_sounddevice(
             output=self.SOFT_SOUND, samplerate=self.SOUND_SAMPLE_FREQ
         )
@@ -178,6 +179,7 @@ class SessionParamHandler(object):
         )
         self.GO_TONE_IDX = 2
         self.WHITE_NOISE_IDX = 3
+        # XXX: device
         sound.configure_sound_card(
             sounds=[self.GO_TONE, self.WHITE_NOISE],
             indexes=[self.GO_TONE_IDX, self.WHITE_NOISE_IDX],
@@ -203,7 +205,7 @@ class SessionParamHandler(object):
         self.SYNC_SQUARE_Y = -1.03
         self.USE_VISUAL_STIMULUS = True  # Run the visual stim in bonsai
         self.BONSAI_EDITOR = False  # Open the Bonsai editor of visual stim
-        bonsai.start_visual_stim(self)
+        # bonsai.start_visual_stim(self)
         # =====================================================================
         # SAVE SETTINGS FILE AND TASK CODE
         # =====================================================================
@@ -211,7 +213,6 @@ class SessionParamHandler(object):
             iotasks.save_session_settings(self)
             iotasks.copy_task_code(self)
             iotasks.save_task_code(self)
-            iotasks.save_pregenerated_session(self["PRELOADED_SESSION_NUM"])
             self.bpod_lights(0)
 
         self.display_logs()
@@ -291,11 +292,11 @@ class SessionParamHandler(object):
             d["PYBPOD_SUBJECT_EXTRA"] = remove_from_dict(d["PYBPOD_SUBJECT_EXTRA"])
         d["LAST_TRIAL_DATA"] = None
         d["LAST_SETTINGS_DATA"] = None
-        d["POSITIONS"] = None
-        d["CONTRASTS"] = None
-        d["QUIESCENT_PERIOD"] = None
-        d["STIM_PHASE"] = None
-        d["LEN_BLOCKS"] = None
+        # d["POSITIONS"] = None
+        # d["CONTRASTS"] = None
+        # d["QUIESCENT_PERIOD"] = None
+        # d["STIM_PHASE"] = None
+        # d["LEN_BLOCKS"] = None
 
         return d
 
@@ -347,13 +348,9 @@ if __name__ == "__main__":
     dt = [x if int(x) >= 10 else "0" + x for x in dt]
     dt.insert(3, "-")
     _user_settings.PYBPOD_SESSION = "".join(dt)
-    _user_settings.PYBPOD_SETUP = "biasedChoiceWorld"
-    _user_settings.PYBPOD_PROTOCOL = "_iblrig_tasks_biasedChoiceWorld"
+    _user_settings.PYBPOD_SETUP = "ephysChoiceWorld"
+    _user_settings.PYBPOD_PROTOCOL = "_iblrig_tasks_ephysChoiceWorld"
     if platform == "linux":
-        r = "/home/nico/Projects/IBL/github/iblrig"
-        _task_settings.IBLRIG_FOLDER = r
-        d = "/home/nico/Projects/IBL/github/iblrig/scratch/" + "test_iblrig_data"
-        _task_settings.IBLRIG_DATA_FOLDER = d
         _task_settings.AUTOMATIC_CALIBRATION = False
         _task_settings.USE_VISUAL_STIMULUS = False
 

@@ -113,15 +113,15 @@ class SessionParamHandler(object):
         )
         # Change to False if mock has its own task
         self.IS_MOCK = self.CORRESPONDING_EPHYS_SETTINGS_DATA["IS_MOCK"]
-        # Get preloaded session num (the num in the filename! from corresponding ephys sesison)
+        # Get pregenerated session num (the num in the filename! from corresponding ephys sesison)
         self.SESSION_ORDER = self.CORRESPONDING_EPHYS_SETTINGS_DATA["SESSION_ORDER"]
         self.SESSION_IDX = self.CORRESPONDING_EPHYS_SETTINGS_DATA["SESSION_IDX"]
-        self.PRELOADED_SESSION_NUM = self.CORRESPONDING_EPHYS_SETTINGS_DATA[
-            "PRELOADED_SESSION_NUM"
+        self.PREGENERATED_SESSION_NUM = self.CORRESPONDING_EPHYS_SETTINGS_DATA[
+            "PREGENERATED_SESSION_NUM"
         ]
         # Load session from file
         (self.STIM_DELAYS, self.STIM_IDS,) = iotasks.load_passive_session_delays_ids(
-            self.PRELOADED_SESSION_NUM
+            self.PREGENERATED_SESSION_NUM
         )
         self.QUIESCENT_PERIOD = None
         self.LEN_BLOCKS = None
@@ -129,7 +129,7 @@ class SessionParamHandler(object):
             self.POSITIONS,
             self.CONTRASTS,
             self.STIM_PHASE,
-        ) = iotasks.load_passive_session_pcs(self.PRELOADED_SESSION_NUM)
+        ) = iotasks.load_passive_session_pcs(self.PREGENERATED_SESSION_NUM)
         # =====================================================================
         # ADAPTIVE STUFF
         # =====================================================================

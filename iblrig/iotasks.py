@@ -151,11 +151,11 @@ def load_session_order_idx(last_settings_data: dict) -> tuple:
     return session_order, session_idx
 
 
-def load_ephys_session_pcqs(preloaded_session_num: str) -> tuple:
+def load_ephys_session_pcqs(pregenerated_session_num: str) -> tuple:
     base = ph.get_pregen_session_folder()
-    pcqs = np.load(Path(base) / f"session_{preloaded_session_num}_ephys_pcqs.npy")
+    pcqs = np.load(Path(base) / f"session_{pregenerated_session_num}_ephys_pcqs.npy")
     len_block = np.load(
-        Path(base) / f"session_{preloaded_session_num}_ephys_len_blocks.npy"
+        Path(base) / f"session_{pregenerated_session_num}_ephys_len_blocks.npy"
     )
 
     pos = pcqs[:, 0].tolist()
@@ -167,20 +167,20 @@ def load_ephys_session_pcqs(preloaded_session_num: str) -> tuple:
     return pos, cont, quies, phase, len_blocks
 
 
-def load_passive_session_delays_ids(preloaded_session_num: str) -> tuple:
+def load_passive_session_delays_ids(pregenerated_session_num: str) -> tuple:
     base = ph.get_pregen_session_folder()
     stimDelays = np.load(
-        Path(base) / f"session_{preloaded_session_num}_passive_stimDelays.npy"
+        Path(base) / f"session_{pregenerated_session_num}_passive_stimDelays.npy"
     )
     stimIDs = np.load(
-        Path(base) / f"session_{preloaded_session_num}_passive_stimIDs.npy"
+        Path(base) / f"session_{pregenerated_session_num}_passive_stimIDs.npy"
     )
     return stimDelays, stimIDs
 
 
-def load_passive_session_pcs(preloaded_session_num: str) -> tuple:
+def load_passive_session_pcs(pregenerated_session_num: str) -> tuple:
     base = ph.get_pregen_session_folder()
-    pcs = np.load(Path(base) / f"session_{preloaded_session_num}_passive_pcs.npy")
+    pcs = np.load(Path(base) / f"session_{pregenerated_session_num}_passive_pcs.npy")
     pos = pcs[:, 0].tolist()
     cont = pcs[:, 1].tolist()
     phase = pcs[:, 2].tolist()
