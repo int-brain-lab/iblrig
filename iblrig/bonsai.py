@@ -206,7 +206,7 @@ def osc_client(workflow):
     return udp_client.SimpleUDPClient(ip, port)
 
 
-def start_frame2ttl_test(data_file, lengths_file):
+def start_frame2ttl_test(data_file, lengths_file, harp=False):
     here = os.getcwd()
     bns = ph.get_bonsai_path()
     stim_folder = str(Path(ph.get_iblrig_folder()) / 'visual_stim' / 'f2ttl_calibration')
@@ -216,10 +216,15 @@ def start_frame2ttl_test(data_file, lengths_file):
     noboot = '--no-boot'
     data_file_name = "-p:FileNameData=" + str(data_file)
     lengths_file_name = "-p:FileNameDataLengths=" + str(lengths_file)
+    if harp:
+        harp_file_name = "-p:FileName=" + str(data_file.parent / 'harp_ts_data.csv')
     # Properties
     log.info('Starting pulses @ 60Hz')
     sys.stdout.flush()
     os.chdir(stim_folder)
-    s = subprocess.Popen([bns, wkfl, noboot, noedit, data_file_name, lengths_file_name])
+    if harp:
+        s = subprocess.Popen([bns, wkfl, noboot, noedit, data_file_name, lengths_file_name, harp_file_name])
+    else:
+        s = subprocess.Popen([bns, wkfl, noboot, noedit, data_file_name, lengths_file_name])
     os.chdir(here)
     return s
