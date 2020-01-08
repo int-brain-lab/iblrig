@@ -34,7 +34,7 @@ import iblrig.params as params
 from iblrig.frame2TTL import Frame2TTL
 from iblrig.path_helper import get_iblrig_folder
 
-log = logging.getLogger('iblrig')
+log = logging.getLogger("iblrig")
 log.setLevel(logging.DEBUG)
 
 
@@ -48,50 +48,50 @@ PARAMS = params.load_params()
 # Check PARAMS values
 checks = []
 for k in PARAMS:
-    if PARAMS[k] is None or PARAMS[k] == '':
+    if PARAMS[k] is None or PARAMS[k] == "":
         checks.append(1)
-        log.warning(f'{k}: Value not found')
+        log.warning(f"{k}: Value not found")
 if sum(checks) != 0:
-    log.error('Missing values in params file')
-    raise(ValueError)
+    log.error("Missing values in params file")
+    raise (ValueError)
 
 # Check board name
-assert(PARAMS['NAME'] == params.get_board_name())
+assert PARAMS["NAME"] == params.get_board_name()
 # COM ports check
-PARAMS['COM_BPOD']
-PARAMS['COM_ROTARY_ENCODER']
-PARAMS['COM_F2TTL']
+PARAMS["COM_BPOD"]
+PARAMS["COM_ROTARY_ENCODER"]
+PARAMS["COM_F2TTL"]
 # F2TTL CALIBRATION: check f2ttl values from params, warn if old calibration
-PARAMS['F2TTL_DARK_THRESH']
-PARAMS['F2TTL_LIGHT_THRESH']
-PARAMS['F2TTL_CALIBRATION_DATE']
+PARAMS["F2TTL_DARK_THRESH"]
+PARAMS["F2TTL_LIGHT_THRESH"]
+PARAMS["F2TTL_CALIBRATION_DATE"]
 # WATER CALIBRATION: check water calibration values from params, warn if old calibration
 log.debug("Checking water calibration...")
-PARAMS['WATER_CALIBRATION_RANGE']
-PARAMS['WATER_CALIBRATION_OPEN_TIMES']
-PARAMS['WATER_CALIBRATION_WEIGHT_PERDROP']
-PARAMS['WATER_CALIBRATION_DATE']
+PARAMS["WATER_CALIBRATION_RANGE"]
+PARAMS["WATER_CALIBRATION_OPEN_TIMES"]
+PARAMS["WATER_CALIBRATION_WEIGHT_PERDROP"]
+PARAMS["WATER_CALIBRATION_DATE"]
 # F2TTL CALIBRATION: check f2ttl values from params, warn if old calibration
 # WATER CALIBRATION: check water calibration values from params, warn if old calibration
 
 # Check RE
 log.debug("RE: Connect")
-m = RotaryEncoderModule(PARAMS['COM_ROTARY_ENCODER'])
+m = RotaryEncoderModule(PARAMS["COM_ROTARY_ENCODER"])
 log.debug("RE: set 0 position")
 m.set_zero_position()  # Not necessarily needed
 log.debug("RE: Close")
 m.close()
 # Check Bpod
 log.debug("Bpod Connect")
-ser = serial.Serial(port=PARAMS['COM_BPOD'], baudrate=115200, timeout=1)
+ser = serial.Serial(port=PARAMS["COM_BPOD"], baudrate=115200, timeout=1)
 log.debug("Bpod lights OFF")
-ser.write(struct.pack('cB', b':', 0))
+ser.write(struct.pack("cB", b":", 0))
 log.debug("Bpod lights ON")
-ser.write(struct.pack('cB', b':', 1))
+ser.write(struct.pack("cB", b":", 1))
 log.debug("Bpod Close")
 ser.close()
 # Check Frame2TTL (by setting the thresholds)
-f = Frame2TTL(PARAMS['COM_FRAME2TTL'])
+f = Frame2TTL(PARAMS["COM_FRAME2TTL"])
 # Create missing session folders
 
 # Run fast task to check IO
@@ -99,4 +99,4 @@ f = Frame2TTL(PARAMS['COM_FRAME2TTL'])
 # Create Alyx session reference?
 
 # Open Alyx session notes in browser?
-print('.')
+print(".")

@@ -9,7 +9,7 @@ from pythonosc import udp_client
 import iblrig.iotasks as iotasks
 from iblrig.path_helper import SessionPathCreator
 
-log = logging.getLogger('iblrig')
+log = logging.getLogger("iblrig")
 
 
 class SessionParamHandler(object):
@@ -21,25 +21,30 @@ class SessionParamHandler(object):
         # =====================================================================
         # IMPORT task_settings, user_settings, and SessionPathCreator params
         # =====================================================================
-        ts = {i: task_settings.__dict__[i]
-              for i in [x for x in dir(task_settings) if '__' not in x]}
+        ts = {
+            i: task_settings.__dict__[i]
+            for i in [x for x in dir(task_settings) if "__" not in x]
+        }
         self.__dict__.update(ts)
-        us = {i: user_settings.__dict__[i]
-              for i in [x for x in dir(user_settings) if '__' not in x]}
+        us = {
+            i: user_settings.__dict__[i]
+            for i in [x for x in dir(user_settings) if "__" not in x]
+        }
         self.__dict__.update(us)
         self = iotasks.deserialize_pybpod_user_settings(self)
-        spc = SessionPathCreator(self.PYBPOD_SUBJECTS[0],
-                                 protocol=self.PYBPOD_PROTOCOL,
-                                 make=True)
+        spc = SessionPathCreator(
+            self.PYBPOD_SUBJECTS[0], protocol=self.PYBPOD_PROTOCOL, make=True
+        )
         self.__dict__.update(spc.__dict__)
 
         # =====================================================================
         # OSC CLIENT
         # =====================================================================
         self.OSC_CLIENT_PORT = 7110
-        self.OSC_CLIENT_IP = '127.0.0.1'
-        self.OSC_CLIENT = udp_client.SimpleUDPClient(self.OSC_CLIENT_IP,
-                                                     self.OSC_CLIENT_PORT)
+        self.OSC_CLIENT_IP = "127.0.0.1"
+        self.OSC_CLIENT = udp_client.SimpleUDPClient(
+            self.OSC_CLIENT_IP, self.OSC_CLIENT_PORT
+        )
         # # =====================================================================
         # # PREVIOUS DATA FILES
         # # =====================================================================
@@ -58,7 +63,7 @@ class SessionParamHandler(object):
         # # =====================================================================
         # # RUN VISUAL STIM
         # # =====================================================================
-        self.VISUAL_STIMULUS_TYPE = 'screen_calibration'
+        self.VISUAL_STIMULUS_TYPE = "screen_calibration"
         # bonsai.start_visual_stim(self)
         # =====================================================================
         # SAVE SETTINGS FILE AND TASK CODE
@@ -77,7 +82,7 @@ class SessionParamHandler(object):
     # =========================================================================
     def reprJSON(self):
         d = self.__dict__.copy()
-        d['OSC_CLIENT'] = str(d['OSC_CLIENT'])
+        d["OSC_CLIENT"] = str(d["OSC_CLIENT"])
         return d
 
     def display_logs(self):
@@ -90,5 +95,5 @@ LOADING PARAMETERS FROM: {self.PREVIOUS_DATA_FILE}
             log.info(msg)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     print("Done!")

@@ -18,7 +18,7 @@ import iblrig.misc as misc
 import iblrig.sound as sound
 import iblrig.path_helper as ph
 
-log = logging.getLogger('iblrig')
+log = logging.getLogger("iblrig")
 
 
 class SessionParamHandler(object):
@@ -32,33 +32,40 @@ class SessionParamHandler(object):
         # =====================================================================
         # IMPORT task_settings, user_settings, and SessionPathCreator params
         # =====================================================================
-        ts = {i: task_settings.__dict__[i]
-              for i in [x for x in dir(task_settings) if '__' not in x]}
+        ts = {
+            i: task_settings.__dict__[i]
+            for i in [x for x in dir(task_settings) if "__" not in x]
+        }
         self.__dict__.update(ts)
-        us = {i: user_settings.__dict__[i]
-              for i in [x for x in dir(user_settings) if '__' not in x]}
+        us = {
+            i: user_settings.__dict__[i]
+            for i in [x for x in dir(user_settings) if "__" not in x]
+        }
         self.__dict__.update(us)
         self = iotasks.deserialize_pybpod_user_settings(self)
         # Pretend to run a new ephys session
-        spc = ph.SessionPathCreator(self.PYBPOD_SUBJECTS[0],
-                                    protocol='_iblrig_tasks_ephysChoiceWorld',
-                                    make=False)  # don't make any folders
+        spc = ph.SessionPathCreator(
+            self.PYBPOD_SUBJECTS[0],
+            protocol="_iblrig_tasks_ephysChoiceWorld",
+            make=False,
+        )  # don't make any folders
         # Get previous session folder i.e. the ephys session that just ran
         self.CORRESPONDING_EPHYS_SESSION = spc.PREVIOUS_SESSION_PATH
         # Load its metadata
         self.CORRESPONDING_EPHYS_SETTINGS_DATA = iotasks.load_settings(
-            self.CORRESPONDING_EPHYS_SESSION)
+            self.CORRESPONDING_EPHYS_SESSION
+        )
         if self.CORRESPONDING_EPHYS_SETTINGS_DATA is None:
             self.CORRESPONDING_EPHYS_SETTINGS_DATA = {}
         # Get the vis stim file for an ephys session for the replay later
         self.VISUAL_STIMULUS_FILE_EPHYS = spc.VISUAL_STIMULUS_FILE
         # Patch the dict if no IS_MOCK key is found
-        if 'IS_MOCK' not in self.CORRESPONDING_EPHYS_SETTINGS_DATA.keys():
-            self.CORRESPONDING_EPHYS_SETTINGS_DATA.update({'IS_MOCK': False})
+        if "IS_MOCK" not in self.CORRESPONDING_EPHYS_SETTINGS_DATA.keys():
+            self.CORRESPONDING_EPHYS_SETTINGS_DATA.update({"IS_MOCK": False})
         # run spc normally
-        spc = ph.SessionPathCreator(self.PYBPOD_SUBJECTS[0],
-                                    protocol=self.PYBPOD_PROTOCOL,
-                                    make=make)
+        spc = ph.SessionPathCreator(
+            self.PYBPOD_SUBJECTS[0], protocol=self.PYBPOD_PROTOCOL, make=make
+        )
         self.__dict__.update(spc.__dict__)
         # =====================================================================
         # SETTINGS
@@ -75,12 +82,12 @@ class SessionParamHandler(object):
         self.RESPONSE_WINDOW = 60
         self.ITI_CORRECT = 1
         self.ITI_ERROR = 2
-        self.CONTRAST_SET = [1., 0.25, 0.125, 0.0625, 0.]  # Full contrast set
-        self.CONTRAST_SET_PROBABILITY_TYPE = 'biased'
+        self.CONTRAST_SET = [1.0, 0.25, 0.125, 0.0625, 0.0]  # Full contrast set
+        self.CONTRAST_SET_PROBABILITY_TYPE = "biased"
         self.STIM_FREQ = 0.10  # Probably constant - NOT IN USE
-        self.STIM_ANGLE = 0.  # Vertical orientation of Gabor patch
-        self.STIM_SIGMA = 7.  # (azimuth_degree) Size of Gabor patch
-        self.STIM_GAIN = 4.  # (azimuth_degree/mm) Gain of the RE
+        self.STIM_ANGLE = 0.0  # Vertical orientation of Gabor patch
+        self.STIM_SIGMA = 7.0  # (azimuth_degree) Size of Gabor patch
+        self.STIM_GAIN = 4.0  # (azimuth_degree/mm) Gain of the RE
         # =====================================================================
         # SUBJECT
         # =====================================================================
@@ -91,35 +98,38 @@ class SessionParamHandler(object):
         # =====================================================================
         # OSC CLIENT
         # =====================================================================
-        self.OSC_CLIENT_IP = '127.0.0.1'
+        self.OSC_CLIENT_IP = "127.0.0.1"
         self.OSC_CLIENT_PORT = 7110
-        self.OSC_CLIENT = udp_client.SimpleUDPClient(self.OSC_CLIENT_IP,
-                                                     self.OSC_CLIENT_PORT)
+        self.OSC_CLIENT = udp_client.SimpleUDPClient(
+            self.OSC_CLIENT_IP, self.OSC_CLIENT_PORT
+        )
         # =====================================================================
         # PREVIOUS DATA FILES
         # =====================================================================
         # Not used
         self.LAST_TRIAL_DATA = None  # iotasks.load_data(self.PREVIOUS_SESSION_PATH)
-        self.LAST_SETTINGS_DATA = None  # iotasks.load_settings(self.PREVIOUS_SESSION_PATH)
+        self.LAST_SETTINGS_DATA = (
+            None  # iotasks.load_settings(self.PREVIOUS_SESSION_PATH)
+        )
         # Change to False if mock has its own task
-        self.IS_MOCK = self.CORRESPONDING_EPHYS_SETTINGS_DATA['IS_MOCK']
-        # Get preloaded session num (the num in the filename! from corresponding ephys sesison)
-        self.SESSION_ORDER = self.CORRESPONDING_EPHYS_SETTINGS_DATA['SESSION_ORDER']
-        self.SESSION_IDX = self.CORRESPONDING_EPHYS_SETTINGS_DATA['SESSION_IDX']
-        self.PRELOADED_SESSION_NUM = self.CORRESPONDING_EPHYS_SETTINGS_DATA[
-            'PRELOADED_SESSION_NUM']
+        self.IS_MOCK = self.CORRESPONDING_EPHYS_SETTINGS_DATA["IS_MOCK"]
+        # Get pregenerated session num (the num in the filename! from corresponding ephys sesison)
+        self.SESSION_ORDER = self.CORRESPONDING_EPHYS_SETTINGS_DATA["SESSION_ORDER"]
+        self.SESSION_IDX = self.CORRESPONDING_EPHYS_SETTINGS_DATA["SESSION_IDX"]
+        self.PREGENERATED_SESSION_NUM = self.CORRESPONDING_EPHYS_SETTINGS_DATA[
+            "PREGENERATED_SESSION_NUM"
+        ]
         # Load session from file
-        (
-            self.STIM_DELAYS,
-            self.STIM_IDS,
-        ) = iotasks.load_passive_session_delays_ids(self.PRELOADED_SESSION_NUM)
+        (self.STIM_DELAYS, self.STIM_IDS,) = iotasks.load_passive_session_delays_ids(
+            self.PREGENERATED_SESSION_NUM
+        )
         self.QUIESCENT_PERIOD = None
         self.LEN_BLOCKS = None
         (
             self.POSITIONS,
             self.CONTRASTS,
             self.STIM_PHASE,
-        ) = iotasks.load_passive_session_pcs(self.PRELOADED_SESSION_NUM)
+        ) = iotasks.load_passive_session_pcs(self.PREGENERATED_SESSION_NUM)
         # =====================================================================
         # ADAPTIVE STUFF
         # =====================================================================
@@ -139,8 +149,7 @@ class SessionParamHandler(object):
         # =====================================================================
         self.STIM_POSITIONS = [-35, 35]  # All possible positions (deg)
         self.QUIESCENCE_THRESHOLDS = [-2, 2]  # degree
-        self.ALL_THRESHOLDS = (self.STIM_POSITIONS +
-                               self.QUIESCENCE_THRESHOLDS)
+        self.ALL_THRESHOLDS = self.STIM_POSITIONS + self.QUIESCENCE_THRESHOLDS
         self.ROTARY_ENCODER = None
         # =====================================================================
         # frame2TTL
@@ -151,7 +160,7 @@ class SessionParamHandler(object):
         # =====================================================================
         self.SOFT_SOUND = None
         self.SOUND_SAMPLE_FREQ = sound.sound_sample_freq(self.SOFT_SOUND)
-        self.SOUND_BOARD_BPOD_PORT = 'Serial3'
+        self.SOUND_BOARD_BPOD_PORT = "Serial3"
         self.WHITE_NOISE_DURATION = float(0.5)
         self.WHITE_NOISE_AMPLITUDE = float(0.05)
         self.GO_TONE_DURATION = float(0.1)
@@ -159,26 +168,37 @@ class SessionParamHandler(object):
         self.GO_TONE_AMPLITUDE = float(0.0151)  # 0.0151 for 70.0 dB SPL CCU
 
         self.SD = sound.configure_sounddevice(
-            output=self.SOFT_SOUND, samplerate=self.SOUND_SAMPLE_FREQ)
+            output=self.SOFT_SOUND, samplerate=self.SOUND_SAMPLE_FREQ
+        )
         # Create sounds and output actions of state machine
         self.GO_TONE = sound.make_sound(
-            rate=self.SOUND_SAMPLE_FREQ, frequency=self.GO_TONE_FREQUENCY,
-            duration=self.GO_TONE_DURATION, amplitude=self.GO_TONE_AMPLITUDE,
-            fade=0.01, chans='stereo')
+            rate=self.SOUND_SAMPLE_FREQ,
+            frequency=self.GO_TONE_FREQUENCY,
+            duration=self.GO_TONE_DURATION,
+            amplitude=self.GO_TONE_AMPLITUDE,
+            fade=0.01,
+            chans="stereo",
+        )
         self.WHITE_NOISE = sound.make_sound(
-            rate=self.SOUND_SAMPLE_FREQ, frequency=-1,
+            rate=self.SOUND_SAMPLE_FREQ,
+            frequency=-1,
             duration=self.WHITE_NOISE_DURATION,
-            amplitude=self.WHITE_NOISE_AMPLITUDE, fade=0.01, chans='stereo')
+            amplitude=self.WHITE_NOISE_AMPLITUDE,
+            fade=0.01,
+            chans="stereo",
+        )
         self.GO_TONE_IDX = 2
         self.WHITE_NOISE_IDX = 3
         sound.configure_sound_card(
             sounds=[self.GO_TONE, self.WHITE_NOISE],
             indexes=[self.GO_TONE_IDX, self.WHITE_NOISE_IDX],
-            sample_rate=self.SOUND_SAMPLE_FREQ)
-        self.OUT_TONE = ('SoftCode', 1) if self.SOFT_SOUND else ('Serial3', 6)
-        self.OUT_NOISE = ('SoftCode', 2) if self.SOFT_SOUND else ('Serial3', 7)
+            sample_rate=self.SOUND_SAMPLE_FREQ,
+        )
+        self.OUT_TONE = ("SoftCode", 1) if self.SOFT_SOUND else ("Serial3", 6)
+        self.OUT_NOISE = ("SoftCode", 2) if self.SOFT_SOUND else ("Serial3", 7)
         self.OUT_STOP_SOUND = (
-            'SoftCode', 0) if self.SOFT_SOUND else ('Serial3', ord('X'))
+            ("SoftCode", 0) if self.SOFT_SOUND else ("Serial3", ord("X"))
+        )
         # =====================================================================
         # PROBES + WEIGHT
         # =====================================================================
@@ -213,9 +233,11 @@ class SessionParamHandler(object):
         misc.patch_settings_file(self.SETTINGS_FILE_PATH, patch)
 
     def warn_ephys(self):
-        title = 'START EPHYS RECODING'
-        msg = ("Please start recording in spikeglx then press OK\n" +
-               "Behavior task will run after you start the bonsai workflow")
+        title = "START EPHYS RECODING"
+        msg = (
+            "Please start recording in spikeglx then press OK\n"
+            + "Behavior task will run after you start the bonsai workflow"
+        )
         # from ibllib.graphic import popup
         # popup(title, msg)
         root = tk.Tk()
@@ -224,14 +246,15 @@ class SessionParamHandler(object):
         root.quit()
 
     def save_ambient_sensor_reading(self, bpod_instance):
-        return ambient_sensor.get_reading(bpod_instance,
-                                          save_to=self.SESSION_RAW_DATA_FOLDER)
+        return ambient_sensor.get_reading(
+            bpod_instance, save_to=self.SESSION_RAW_DATA_FOLDER
+        )
 
     def bpod_lights(self, command: int):
-        fpath = Path(self.IBLRIG_FOLDER) / 'scripts' / 'bpod_lights.py'
+        fpath = Path(self.IBLRIG_FOLDER) / "scripts" / "bpod_lights.py"
         os.system(f"python {fpath} {command}")
 
-    def get_port_events(self, events, name=''):
+    def get_port_events(self, events, name=""):
         return misc.get_port_events(events, name=name)
 
     # =========================================================================
@@ -258,32 +281,32 @@ class SessionParamHandler(object):
             return sx
 
         d = self.__dict__.copy()
-        d['GO_TONE'] = 'go_tone(freq={}, dur={}, amp={})'.format(
-            self.GO_TONE_FREQUENCY, self.GO_TONE_DURATION,
-            self.GO_TONE_AMPLITUDE)
-        d['WHITE_NOISE'] = 'white_noise(freq=-1, dur={}, amp={})'.format(
-            self.WHITE_NOISE_DURATION, self.WHITE_NOISE_AMPLITUDE)
-        d['SD'] = str(d['SD'])
-        d['OSC_CLIENT'] = str(d['OSC_CLIENT'])
-        d['CALIB_FUNC'] = str(d['CALIB_FUNC'])
-        d['CALIB_FUNC_RANGE'] = str(d['CALIB_FUNC_RANGE'])
-        if isinstance(d['PYBPOD_SUBJECT_EXTRA'], list):
+        d["GO_TONE"] = "go_tone(freq={}, dur={}, amp={})".format(
+            self.GO_TONE_FREQUENCY, self.GO_TONE_DURATION, self.GO_TONE_AMPLITUDE
+        )
+        d["WHITE_NOISE"] = "white_noise(freq=-1, dur={}, amp={})".format(
+            self.WHITE_NOISE_DURATION, self.WHITE_NOISE_AMPLITUDE
+        )
+        d["SD"] = str(d["SD"])
+        d["OSC_CLIENT"] = str(d["OSC_CLIENT"])
+        d["CALIB_FUNC"] = str(d["CALIB_FUNC"])
+        d["CALIB_FUNC_RANGE"] = str(d["CALIB_FUNC_RANGE"])
+        if isinstance(d["PYBPOD_SUBJECT_EXTRA"], list):
             sub = []
-            for sx in d['PYBPOD_SUBJECT_EXTRA']:
+            for sx in d["PYBPOD_SUBJECT_EXTRA"]:
                 sub.append(remove_from_dict(sx))
-            d['PYBPOD_SUBJECT_EXTRA'] = sub
-        elif isinstance(d['PYBPOD_SUBJECT_EXTRA'], dict):
-            d['PYBPOD_SUBJECT_EXTRA'] = remove_from_dict(
-                d['PYBPOD_SUBJECT_EXTRA'])
-        d['LAST_TRIAL_DATA'] = None
-        d['LAST_SETTINGS_DATA'] = None
-        d['POSITIONS'] = None
-        d['CONTRASTS'] = None
-        d['QUIESCENT_PERIOD'] = None
-        d['STIM_PHASE'] = None
-        d['LEN_BLOCKS'] = None
-        d['STIM_DELAYS'] = d['STIM_DELAYS'].tolist()
-        d['STIM_IDS'] = d['STIM_IDS'].tolist()
+            d["PYBPOD_SUBJECT_EXTRA"] = sub
+        elif isinstance(d["PYBPOD_SUBJECT_EXTRA"], dict):
+            d["PYBPOD_SUBJECT_EXTRA"] = remove_from_dict(d["PYBPOD_SUBJECT_EXTRA"])
+        d["LAST_TRIAL_DATA"] = None
+        d["LAST_SETTINGS_DATA"] = None
+        d["POSITIONS"] = None
+        d["CONTRASTS"] = None
+        d["QUIESCENT_PERIOD"] = None
+        d["STIM_PHASE"] = None
+        d["LEN_BLOCKS"] = None
+        d["STIM_DELAYS"] = d["STIM_DELAYS"].tolist()
+        d["STIM_IDS"] = d["STIM_IDS"].tolist()
 
         return d
 
@@ -297,7 +320,7 @@ LOADING PARAMETERS FROM: {self.CORRESPONDING_EPHYS_SESSION}
             log.info(msg)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     """
     SessionParamHandler fmake flag=False disables:
         making folders/files;
@@ -309,20 +332,26 @@ if __name__ == '__main__':
     import task_settings as _task_settings
     import iblrig.fake_user_settings as _user_settings
     import datetime
+
     dt = datetime.datetime.now()
-    dt = [str(dt.year), str(dt.month), str(dt.day),
-          str(dt.hour), str(dt.minute), str(dt.second)]
-    dt = [x if int(x) >= 10 else '0' + x for x in dt]
-    dt.insert(3, '-')
-    _user_settings.PYBPOD_SESSION = ''.join(dt)
-    _user_settings.PYBPOD_SETUP = 'passiveChoiceWorld'
-    _user_settings.PYBPOD_PROTOCOL = '_iblrig_tasks_passiveChoiceWorld'
-    if platform == 'linux':
+    dt = [
+        str(dt.year),
+        str(dt.month),
+        str(dt.day),
+        str(dt.hour),
+        str(dt.minute),
+        str(dt.second),
+    ]
+    dt = [x if int(x) >= 10 else "0" + x for x in dt]
+    dt.insert(3, "-")
+    _user_settings.PYBPOD_SESSION = "".join(dt)
+    _user_settings.PYBPOD_SETUP = "passiveChoiceWorld"
+    _user_settings.PYBPOD_PROTOCOL = "_iblrig_tasks_passiveChoiceWorld"
+    if platform == "linux":
         _task_settings.AUTOMATIC_CALIBRATION = False
         _task_settings.USE_VISUAL_STIMULUS = False
 
-    sph = SessionParamHandler(_task_settings, _user_settings,
-                              debug=False, fmake=True)
+    sph = SessionParamHandler(_task_settings, _user_settings, debug=False, fmake=True)
     for k in sph.__dict__:
         if sph.__dict__[k] is None:
             print(f"{k}: {sph.__dict__[k]}")

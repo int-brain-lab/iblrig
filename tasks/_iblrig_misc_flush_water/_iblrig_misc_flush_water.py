@@ -19,28 +19,31 @@ bpod = Bpod()
 # =============================================================================
 
 for i in range(ntrials):
-    print('Starting trial: ', i + 1)
-# =============================================================================
-#     Start state machine definition
-# =============================================================================
+    print("Starting trial: ", i + 1)
+    # =============================================================================
+    #     Start state machine definition
+    # =============================================================================
     sma = StateMachine(bpod)
     sma.add_state(
-        state_name='init',
+        state_name="init",
         state_timer=0,
-        state_change_conditions={'Tup': 'reward'},
-        output_actions=[])
+        state_change_conditions={"Tup": "reward"},
+        output_actions=[],
+    )
 
     sma.add_state(
-        state_name='reward',
+        state_name="reward",
         state_timer=valve_on_time,
-        state_change_conditions={'Tup': 'iti'},
-        output_actions=[('Valve1', 255)])
+        state_change_conditions={"Tup": "iti"},
+        output_actions=[("Valve1", 255)],
+    )
 
     sma.add_state(
-        state_name='iti',
+        state_name="iti",
         state_timer=iti,
-        state_change_conditions={'Tup': 'exit'},
-        output_actions=[])
+        state_change_conditions={"Tup": "exit"},
+        output_actions=[],
+    )
 
     # Send state machine description to Bpod device
     bpod.send_state_machine(sma)
@@ -52,5 +55,5 @@ for i in range(ntrials):
 
 bpod.close()
 
-if __name__ == '__main__':
-    print('main')
+if __name__ == "__main__":
+    print("main")

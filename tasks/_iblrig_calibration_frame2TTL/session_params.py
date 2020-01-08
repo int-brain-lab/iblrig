@@ -13,7 +13,7 @@ from pythonosc import udp_client
 import iblrig.iotasks as iotasks
 from iblrig.path_helper import SessionPathCreator
 
-log = logging.getLogger('iblrig')
+log = logging.getLogger("iblrig")
 
 
 class SessionParamHandler(object):
@@ -25,24 +25,29 @@ class SessionParamHandler(object):
         # =====================================================================
         # IMPORT task_settings, user_settings, and SessionPathCreator params
         # =====================================================================
-        ts = {i: task_settings.__dict__[i]
-              for i in [x for x in dir(task_settings) if '__' not in x]}
+        ts = {
+            i: task_settings.__dict__[i]
+            for i in [x for x in dir(task_settings) if "__" not in x]
+        }
         self.__dict__.update(ts)
-        us = {i: user_settings.__dict__[i]
-              for i in [x for x in dir(user_settings) if '__' not in x]}
+        us = {
+            i: user_settings.__dict__[i]
+            for i in [x for x in dir(user_settings) if "__" not in x]
+        }
         self.__dict__.update(us)
         self = iotasks.deserialize_pybpod_user_settings(self)
-        spc = SessionPathCreator(self.PYBPOD_SUBJECTS[0],
-                                 protocol=self.PYBPOD_PROTOCOL,
-                                 make=True)
+        spc = SessionPathCreator(
+            self.PYBPOD_SUBJECTS[0], protocol=self.PYBPOD_PROTOCOL, make=True
+        )
         self.__dict__.update(spc.__dict__)
         # =====================================================================
         # OSC CLIENT
         # =====================================================================
         self.OSC_CLIENT_PORT = 7110
-        self.OSC_CLIENT_IP = '127.0.0.1'
-        self.OSC_CLIENT = udp_client.SimpleUDPClient(self.OSC_CLIENT_IP,
-                                                     self.OSC_CLIENT_PORT)
+        self.OSC_CLIENT_IP = "127.0.0.1"
+        self.OSC_CLIENT = udp_client.SimpleUDPClient(
+            self.OSC_CLIENT_IP, self.OSC_CLIENT_PORT
+        )
         # =====================================================================
         # SAVE SETTINGS FILE AND TASK CODE
         # =====================================================================
@@ -55,25 +60,28 @@ class SessionParamHandler(object):
     # =========================================================================
     def start_screen_color(self):
         here = os.getcwd()
-        os.chdir(str(Path(self.IBLRIG_FOLDER) / 'visual_stim' /
-                 'f2ttl_calibration'))
-        bns = str(Path(self.IBLRIG_FOLDER) / 'Bonsai' / 'Bonsai64.exe')
-        wrkfl = str(Path(self.IBLRIG_FOLDER) / 'visual_stim' /
-                    'f2ttl_calibration' / 'screen_color.bonsai')
-        noedit = '--no-editor'  # implies start
+        os.chdir(str(Path(self.IBLRIG_FOLDER) / "visual_stim" / "f2ttl_calibration"))
+        bns = str(Path(self.IBLRIG_FOLDER) / "Bonsai" / "Bonsai64.exe")
+        wrkfl = str(
+            Path(self.IBLRIG_FOLDER)
+            / "visual_stim"
+            / "f2ttl_calibration"
+            / "screen_color.bonsai"
+        )
+        noedit = "--no-editor"  # implies start
         # nodebug = '--start-no-debug'
         # start = '--start'
-        noboot = '--no-boot'
+        noboot = "--no-boot"
         editor = noedit
         subprocess.Popen([bns, wrkfl, editor, noboot])
         time.sleep(3)
         os.chdir(here)
 
     def stop_screen_color(self):
-        self.OSC_CLIENT.send_message('/x', 1)
+        self.OSC_CLIENT.send_message("/x", 1)
 
     def set_screen(self, rgb=[128, 128, 128]):
-        ch = ['/r', '/g', '/b']
+        ch = ["/r", "/g", "/b"]
         for color, i in zip(rgb, ch):
             self.OSC_CLIENT.send_message(i, color)
 
@@ -82,9 +90,9 @@ class SessionParamHandler(object):
     # =========================================================================
     def reprJSON(self):
         d = self.__dict__.copy()
-        d['OSC_CLIENT'] = str(d['OSC_CLIENT'])
+        d["OSC_CLIENT"] = str(d["OSC_CLIENT"])
         return d
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     print("Done!")
