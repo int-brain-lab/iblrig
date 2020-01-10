@@ -31,36 +31,28 @@ optional arguments:
   --pip            Update pip setuptools and wheel
   --upgrade-conda  Dont update conda
 """
-import argparse
 import os
 import subprocess
 from pathlib import Path
-
-from pkg_resources import parse_version
+import argparse
 
 from setup_default_config import main as setup_pybpod
 
 
 def get_versions():
-    vers = (
-        subprocess.check_output(["git", "ls-remote", "--tags", "origin"])
-        .decode()
-        .split()
-    )
-    vers = [x for x in vers[1::2] if "{" not in x]
-    vers = [x.split("/")[-1] for x in vers]
-    available = [x for x in vers if parse_version(x) >= parse_version("6.0.0")]
+    vers = subprocess.check_output(["git", "ls-remote",
+                                    "--tags", "origin"]).decode().split()
+    vers = [x for x in vers[1::2] if '{' not in x]
+    vers = [x.split('/')[-1] for x in vers]
+    available = [x for x in vers if x >= '5.3.1']
     print("Available versions: {}".format(available))
     return vers
 
 
 def get_branches():
-    branches = (
-        subprocess.check_output(["git", "ls-remote", "--heads", "origin"])
-        .decode()
-        .split()
-    )
-    branches = [x.split("heads")[-1] for x in branches[1::2]]
+    branches = subprocess.check_output(["git", "ls-remote",
+                                        "--heads", "origin"]).decode().split()
+    branches = [x.split('heads')[-1] for x in branches[1::2]]
     branches = [x[1:] for x in branches]
     print("Available branches: {}".format(branches))
 
@@ -68,34 +60,29 @@ def get_branches():
 
 
 def get_current_branch():
-    branch = (
-        subprocess.check_output(["git", "branch", "--points-at", "HEAD"])
-        .decode()
-        .strip()
-        .strip("* ")
-    )
+    branch = subprocess.check_output(
+        ['git', 'branch', '--points-at', 'HEAD']).decode().strip().strip('* ')
     print("Current branch: {}".format(branch))
     return branch
 
 
 def get_current_version():
-    tag = (
-        subprocess.check_output(["git", "tag", "--points-at", "HEAD"]).decode().strip()
-    )
+    tag = subprocess.check_output(["git", "tag",
+                                   "--points-at", "HEAD"]).decode().strip()
     print("Current version: {}".format(tag))
     return tag
 
 
 def pull(branch):
-    subprocess.call(["git", "pull", "origin", branch])
+    subprocess.call(['git', 'pull', 'origin', branch])
 
 
 def fetch():
-    subprocess.call(["git", "fetch", "--all"])
+    subprocess.call(['git', 'fetch', '--all'])
 
 
 def iblrig_params_path():
-    return str(Path(os.getcwd()).parent / "iblrig_params")
+    return str(Path(os.getcwd()).parent / 'iblrig_params')
 
 
 def import_tasks():
@@ -105,25 +92,26 @@ def import_tasks():
 def checkout_version(ver):
     print("\nChecking out {}".format(ver))
     subprocess.call(["git", "reset", "--hard"])
-    subprocess.call(["git", "checkout", "tags/" + ver])
-    pull(f"tags/{ver}")
+    subprocess.call(['git', 'checkout', 'tags/' + ver])
+    pull(f'tags/{ver}')
 
 
 def checkout_branch(branch):
     print("\nChecking out {}".format(branch))
     subprocess.call(["git", "reset", "--hard"])
-    subprocess.call(["git", "checkout", branch])
+    subprocess.call(['git', 'checkout', branch])
     pull(branch)
 
 
-def checkout_single_file(file=None, branch="master"):
-    subprocess.call("git checkout origin/{} -- {}".format(branch, file).split())
+def checkout_single_file(file=None, branch='master'):
+    subprocess.call("git checkout origin/{} -- {}".format(branch,
+                                                          file).split())
 
     print("Checked out", file, "from branch", branch)
 
 
 def update_remotes():
-    subprocess.call(["git", "remote", "update"])
+    subprocess.call(['git', 'remote', 'update'])
 
 
 def update_env():
@@ -133,7 +121,7 @@ def update_env():
 
 
 def update_conda():
-    print("\nCleaning cache")
+    print('\nCleaning cache')
     os.system("conda clean -a -y")
     print("\nUpdating conda")
     os.system("conda update -y -n base conda")
@@ -150,11 +138,10 @@ def update_ibllib():
 
 def update_bonsai():
     print("\nUpdating Bonsai")
-    broot = IBLRIG_ROOT_PATH / "Bonsai"
-    subprocess.call(
-        [str(broot / "Bonsai64.exe"), "--no-editor", str(broot / "empty.bonsai")]
-    )
-    print("Done")
+    broot = IBLRIG_ROOT_PATH / 'Bonsai'
+    subprocess.call([str(
+        broot / 'Bonsai64.exe'), '--no-editor', str(broot / 'empty.bonsai')])
+    print('Done')
 
 
 def branch_info():
@@ -165,28 +152,24 @@ def branch_info():
 def info():
     update_remotes()
     # branch_info()
-    ver = parse_version(VERSION)
-    versions = [parse_version(x) for x in ALL_VERSIONS]
+    ver = VERSION
+    versions = ALL_VERSIONS
     if not ver:
-        print(
-            "WARNING: You appear to be on an untagged commit.",
-            "\n         Try updating to a specific version",
-        )
+        print("WARNING: You appear to be on an untagged commit.",
+              "\n         Try updating to a specific version")
     else:
-        if ver == max(versions):
+        idx = sorted(versions).index(ver) if ver in versions else 0
+        if idx + 1 == len(versions):
             print("The version you have checked out is the latest version\n")
         else:
-            print(
-                "Latest version |{}| type:\n\npython update.py {}\n".format(
-                    max(versions), max(versions)
-                )
-            )
+            print("Newest version |{}| type:\n\npython update.py {}\n".format(
+                sorted(versions)[-1], sorted(versions)[-1]))
 
 
-def ask_user_input(ver="#.#.#", responses=["y", "n"]):
+def ask_user_input(ver='#.#.#', responses=['y', 'n']):
     msg = f"Do you want to update to {ver}?"
-    use_msg = msg.format(ver) + f" ([{responses[0]}], {responses[1]}): "
-    response = input(use_msg) or "y"
+    use_msg = msg.format(ver) + f' ([{responses[0]}], {responses[1]}): '
+    response = input(use_msg) or 'y'
     if response not in responses:
         print(f"Acceptable answers: {responses}")
         return ask_user_input(ver=ver, responses=responses)
@@ -195,12 +178,13 @@ def ask_user_input(ver="#.#.#", responses=["y", "n"]):
 
 
 def update_to_latest():
-    ver = parse_version(VERSION)
-    versions = [parse_version(x) for x in ALL_VERSIONS]
-    if ver == max(versions):
+    ver = VERSION
+    versions = ALL_VERSIONS
+    idx = sorted(versions).index(ver) if ver in versions else 0
+    if idx + 1 == len(versions):
         return
     else:
-        _update(version=str(max(versions)))
+        _update(version=versions[-1])
 
 
 def _update(branch=None, version=None):
@@ -209,7 +193,7 @@ def _update(branch=None, version=None):
         resp = ask_user_input(ver=branch)
     elif version:
         resp = ask_user_input(ver=version)
-    if resp == "y":
+    if resp == 'y':
         if branch:
             checkout_branch(branch)
         elif version:
@@ -231,23 +215,23 @@ def main(args):
         update_to_latest()
 
     if args.update:
-        checkout_single_file(file="update.py", branch="master")
+        checkout_single_file(file='update.py', branch='master')
 
     if args.update and args.b:
         if args.b not in ALL_BRANCHES:
-            print("Not found:", args.b)
+            print('Not found:', args.b)
             return
-        checkout_single_file(file="update.py", branch=args.b)
+        checkout_single_file(file='update.py', branch=args.b)
 
     if args.b and args.b in ALL_BRANCHES:
         _update(branch=args.b)
     elif args.b and args.b not in ALL_BRANCHES:
-        print("Branch", args.b, "not found")
+        print('Branch', args.b, 'not found')
 
     if args.v and args.v in ALL_VERSIONS:
         _update(version=args.v)
     elif args.v and args.v not in ALL_VERSIONS:
-        print("Version", args.v, "not found")
+        print('Version', args.v, 'not found')
 
     if args.reinstall:
         os.system("conda deactivate && python install.py")
@@ -273,91 +257,40 @@ def main(args):
     return
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     IBLRIG_ROOT_PATH = Path.cwd()
     fetch()
     ALL_BRANCHES = get_branches()
     ALL_VERSIONS = get_versions()
     BRANCH = get_current_branch()
     VERSION = get_current_version()
-    parser = argparse.ArgumentParser(description="Update iblrig")
-    parser.add_argument(
-        "-v",
-        required=False,
-        default=False,
-        help="Available versions: " + str(ALL_VERSIONS),
-    )
-    parser.add_argument(
-        "-b",
-        required=False,
-        default=False,
-        help="Available branches: " + str(ALL_BRANCHES),
-    )
-    parser.add_argument(
-        "--reinstall",
-        required=False,
-        default=False,
-        action="store_true",
-        help="Reinstall iblrig",
-    )
-    parser.add_argument(
-        "--ibllib",
-        required=False,
-        default=False,
-        action="store_true",
-        help="Update ibllib only",
-    )
-    parser.add_argument(
-        "--update",
-        required=False,
-        default=False,
-        action="store_true",
-        help="Update self: update.py",
-    )
-    parser.add_argument(
-        "--info",
-        required=False,
-        default=False,
-        action="store_true",
-        help="Disply information on branches and versions",
-    )
-    parser.add_argument(
-        "--iblenv",
-        required=False,
-        default=False,
-        action="store_true",
-        help="Update iblenv only",
-    )
-    parser.add_argument(
-        "--import-tasks",
-        required=False,
-        default=False,
-        action="store_true",
-        help="Reimport tasks only",
-    )
-    parser.add_argument(
-        "--conda",
-        required=False,
-        default=False,
-        action="store_true",
-        help="Update conda",
-    )
-    parser.add_argument(
-        "--pip",
-        required=False,
-        default=False,
-        action="store_true",
-        help="Update pip setuptools and wheel",
-    )
-    parser.add_argument(
-        "--upgrade-conda",
-        required=False,
-        default=False,
-        action="store_true",
-        help="Dont update conda",
-    )
+    parser = argparse.ArgumentParser(description='Update iblrig')
+    parser.add_argument('-v', required=False, default=False,
+                        help='Available versions: ' + str(ALL_VERSIONS))
+    parser.add_argument('-b', required=False, default=False,
+                        help='Available branches: ' + str(ALL_BRANCHES))
+    parser.add_argument('--reinstall', required=False, default=False,
+                        action='store_true', help='Reinstall iblrig')
+    parser.add_argument('--ibllib', required=False, default=False,
+                        action='store_true', help='Update ibllib only')
+    parser.add_argument('--update', required=False, default=False,
+                        action='store_true', help='Update self: update.py')
+    parser.add_argument('--info', required=False, default=False,
+                        action='store_true',
+                        help='Disply information on branches and versions')
+    parser.add_argument('--iblenv', required=False, default=False,
+                        action='store_true', help='Update iblenv only')
+    parser.add_argument('--import-tasks', required=False, default=False,
+                        action='store_true', help='Reimport tasks only')
+    parser.add_argument('--conda', required=False, default=False,
+                        action='store_true', help='Update conda')
+    parser.add_argument('--pip', required=False, default=False,
+                        action='store_true',
+                        help='Update pip setuptools and wheel')
+    parser.add_argument('--upgrade-conda', required=False, default=False,
+                        action='store_true', help='Dont update conda')
     args = parser.parse_args()
     global upgrade_conda
     upgrade_conda = args.upgrade_conda
     main(args)
-    print("\n")
+    print('\n')
