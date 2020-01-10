@@ -29,8 +29,8 @@ EMPTY_BOARD_PARAMS = {
     "F2TTL_DARK_THRESH": None,  # float
     "F2TTL_LIGHT_THRESH": None,  # float
     "F2TTL_CALIBRATION_DATE": None,  # str
-    "F2TTL_FREQ_TEST_STATUS": None,  # str
-    "F2TTL_FREQ_TEST_DATE": None,  # str
+    "SCREEN_FREQ_TEST_STATUS": None,  # str
+    "SCREEN_FREQ_TEST_DATE": None,  # str
     "WATER_CALIBRATION_RANGE": None,  # [min, max]
     "WATER_CALIBRATION_OPEN_TIMES": None,  # [float, float, ...]
     "WATER_CALIBRATION_WEIGHT_PERDROP": None,  # [float, float, ...]
