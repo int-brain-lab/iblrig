@@ -66,7 +66,7 @@ class SessionParamHandler(object):
         # SOUNDS
         # =====================================================================
         # TODO: change usage of _BOARD to PYBPOD_BOARD in all session_params (GUI context superseeds PC config)
-        self.SOFT_SOUND = None if "ephys" in self._BOARD else self.SOFT_SOUND
+        self.SOFT_SOUND = None if "ephys" in self.PYBPOD_BOARD else self.SOFT_SOUND
         self.SOUND_SAMPLE_FREQ = sound.sound_sample_freq(self.SOFT_SOUND)
 
         self.GO_TONE_DURATION = float(self.GO_TONE_DURATION)
