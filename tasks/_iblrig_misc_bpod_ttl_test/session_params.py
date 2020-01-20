@@ -79,6 +79,7 @@ class SessionParamHandler(object):
 
         self.SOUND_BOARD_BPOD_PORT = "Serial3"
         self.GO_TONE_IDX = 2
+        self.GO_TONE_SM_TRIGGER = None
         self.GO_TONE = None
         self = sound.init_sounds(self, noise=False)
         if self.SOFT_SOUND is None:
@@ -90,7 +91,7 @@ class SessionParamHandler(object):
         self.OUT_STOP_SOUND = (
             ("SoftCode", 0) if self.SOFT_SOUND else ("Serial3", ord("X"))
         )
-        self.OUT_TONE = ("SoftCode", 1) if self.SOFT_SOUND else ("Serial3", 5)
+        # self.OUT_TONE = ("SoftCode", 1) if self.SOFT_SOUND else ("Serial3", self.GO_TONE_SM_TRIGGER)
         # =====================================================================
         # RUN VISUAL STIM
         # =====================================================================
@@ -104,6 +105,10 @@ class SessionParamHandler(object):
 
         self.bad_stim_count = 0
         self.bad_tone_count = 0
+
+    @property
+    def OUT_TONE(self):
+        return ("SoftCode", 1) if self.SOFT_SOUND else ("Serial3", self.GO_TONE_SM_TRIGGER)
 
     # =========================================================================
     # SOUND INTERFACE FOR STATE MACHINE
