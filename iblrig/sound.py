@@ -73,7 +73,7 @@ def make_sound(
     tone_duration = duration  # sec
     fade_duration = fade  # sec
 
-    tvec = np.linspace(0, tone_duration, tone_duration * sample_rate)
+    tvec = np.linspace(0, tone_duration, int(tone_duration * sample_rate))
     tone = amplitude * np.sin(2 * np.pi * frequency * tvec)  # tone vec
 
     len_fade = int(fade_duration * sample_rate)
