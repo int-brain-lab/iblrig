@@ -42,9 +42,6 @@ if platform == "linux":
 
     def start_visual_stim(*args, **kwargs):
         return
-
-    def start_frame2ttl_test(*args, **kwargs):
-        return
 else:
     # =====================================================================
     # SESSION PARAM HANDLER OBJECT METHODS
