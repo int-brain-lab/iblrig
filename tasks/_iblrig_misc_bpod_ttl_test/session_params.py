@@ -65,7 +65,8 @@ class SessionParamHandler(object):
         # =====================================================================
         # SOUNDS
         # =====================================================================
-        self.SOFT_SOUND = None if "ephys" in self._BOARD else self.SOFT_SOUND
+        # TODO: change usage of _BOARD to PYBPOD_BOARD in all session_params (GUI context superseeds PC config)
+        self.SOFT_SOUND = None if "ephys" in self.PYBPOD_BOARD else self.SOFT_SOUND
         self.SOUND_SAMPLE_FREQ = sound.sound_sample_freq(self.SOFT_SOUND)
 
         self.GO_TONE_DURATION = float(self.GO_TONE_DURATION)
@@ -78,6 +79,7 @@ class SessionParamHandler(object):
 
         self.SOUND_BOARD_BPOD_PORT = "Serial3"
         self.GO_TONE_IDX = 2
+        self.GO_TONE_SM_TRIGGER = None
         self.GO_TONE = None
         self = sound.init_sounds(self, noise=False)
         if self.SOFT_SOUND is None:
@@ -89,7 +91,7 @@ class SessionParamHandler(object):
         self.OUT_STOP_SOUND = (
             ("SoftCode", 0) if self.SOFT_SOUND else ("Serial3", ord("X"))
         )
-        self.OUT_TONE = ("SoftCode", 1) if self.SOFT_SOUND else ("Serial3", 5)
+        # self.OUT_TONE = ("SoftCode", 1) if self.SOFT_SOUND else ("Serial3", self.GO_TONE_SM_TRIGGER)
         # =====================================================================
         # RUN VISUAL STIM
         # =====================================================================
@@ -103,6 +105,10 @@ class SessionParamHandler(object):
 
         self.bad_stim_count = 0
         self.bad_tone_count = 0
+
+    @property
+    def OUT_TONE(self):
+        return ("SoftCode", 1) if self.SOFT_SOUND else ("Serial3", self.GO_TONE_SM_TRIGGER)
 
     # =========================================================================
     # SOUND INTERFACE FOR STATE MACHINE

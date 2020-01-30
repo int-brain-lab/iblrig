@@ -205,7 +205,7 @@ class SessionParamHandler(object):
         self.SYNC_SQUARE_Y = -1.03
         self.USE_VISUAL_STIMULUS = True  # Run the visual stim in bonsai
         self.BONSAI_EDITOR = False  # Open the Bonsai editor of visual stim
-        # bonsai.start_visual_stim(self)
+        bonsai.start_visual_stim(self)
         # =====================================================================
         # SAVE SETTINGS FILE AND TASK CODE
         # =====================================================================

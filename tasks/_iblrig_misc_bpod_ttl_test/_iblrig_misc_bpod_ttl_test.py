@@ -43,11 +43,13 @@ def softcode_handler(data):
 bpod = Bpod()
 # Soft code handler function can run arbitrary code from within state machine
 bpod.softcode_handler_function = softcode_handler
+# TODO: Put inside SPH remove @property or organize sequence of var definition
 # Bpod message creator
 msg = BpodMessageCreator(bpod)
 bonsai_hide_stim = msg.bonsai_hide_stim()
 bonsai_show_stim = msg.bonsai_show_stim()
 sc_play_tone = msg.sound_card_play_idx(sph.GO_TONE_IDX)
+sph.GO_TONE_SM_TRIGGER = sc_play_tone
 bpod = msg.return_bpod()
 
 # =============================================================================
