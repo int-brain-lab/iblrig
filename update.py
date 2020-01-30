@@ -129,7 +129,8 @@ def update_conda():
 
 def update_pip():
     print("\nUpdating pip et al.")
-    os.system("pip install -U pip setuptools wheel")
+    os.system("pip install -U setuptools wheel")
+    os.system("python -m pip install --upgrade pip")
 
 
 def update_ibllib():
