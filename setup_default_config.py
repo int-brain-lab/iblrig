@@ -9,68 +9,68 @@ from pathlib import Path
 from pybpodgui_api.models.project import Project
 
 IBLRIG_FOLDER = Path(__file__).absolute().parent
-IBLRIG_PARAMS_FOLDER = IBLRIG_FOLDER.parent / 'iblrig_params'
+IBLRIG_PARAMS_FOLDER = IBLRIG_FOLDER.parent / "iblrig_params"
 
-print(IBLRIG_FOLDER, '\n', IBLRIG_PARAMS_FOLDER)
+print(IBLRIG_FOLDER, "\n", IBLRIG_PARAMS_FOLDER)
 
 
 ################################################################################
 def delete_untracked_files(iblrig_params_path):
-    print('Deleting untracked files')
-    iblrig_params_tasks_path = iblrig_params_path / 'IBL' / 'tasks'
-    iblrig_tasks_path = iblrig_params_path.parent / 'iblrig' / 'tasks'
-    task_names = [x.name for x in iblrig_tasks_path.glob('*') if x.is_dir()]
+    print("Deleting untracked files")
+    iblrig_params_tasks_path = iblrig_params_path / "IBL" / "tasks"
+    iblrig_tasks_path = iblrig_params_path.parent / "iblrig" / "tasks"
+    task_names = [x.name for x in iblrig_tasks_path.glob("*") if x.is_dir()]
     task_paths = [iblrig_params_tasks_path / x for x in task_names]
     # Delete old files from all task folders
     for x in task_paths:
-        if (x / 'path_helper.py').exists():
-            (x / 'path_helper.py').unlink()
-        if (x / '_user_settings.py').exists():
-            (x / '_user_settings.py').unlink()
-        if (x / 'user_settings.py').exists():
-            (x / 'user_settings.py').unlink()
-        if (x / 'sound.py').exists():
-            (x / 'sound.py').unlink()
-        if (x / 'ambient_sensor.py').exists():
-            (x / 'ambient_sensor.py').unlink()
+        if (x / "path_helper.py").exists():
+            (x / "path_helper.py").unlink()
+        if (x / "_user_settings.py").exists():
+            (x / "_user_settings.py").unlink()
+        if (x / "user_settings.py").exists():
+            (x / "user_settings.py").unlink()
+        if (x / "sound.py").exists():
+            (x / "sound.py").unlink()
+        if (x / "ambient_sensor.py").exists():
+            (x / "ambient_sensor.py").unlink()
     # Remove python files that are in iblrig/scripts from root of params folder
-    for f in IBLRIG_PARAMS_FOLDER.glob('*.py'):
+    for f in IBLRIG_PARAMS_FOLDER.glob("*.py"):
         f.unlink()
         print(f"  Removed: {f}")
     # Remove Bonsai.Video preview folders from packages
-    packages = IBLRIG_FOLDER / 'Bonsai' / 'Packages'
-    vid = packages / 'Bonsai.Video.2.4.0-preview'
-    viddes = packages / 'Bonsai.Video.Design.2.4.0-preview'
+    packages = IBLRIG_FOLDER / "Bonsai" / "Packages"
+    vid = packages / "Bonsai.Video.2.4.0-preview"
+    viddes = packages / "Bonsai.Video.Design.2.4.0-preview"
     if vid.exists():
         shutil.rmtree(vid)
     if viddes.exists():
         shutil.rmtree(viddes)
     # Remove whole task from iblrig_params
-    task = [x for x in task_paths if '_iblrig_misc_sync_test' in x.name]
+    task = [x for x in task_paths if "_iblrig_misc_sync_test" in x.name]
     if task:
-        print('Removing:', task)
+        print("Removing:", task)
         task = task[0]
         shutil.rmtree(task)
 
 
 ################################################################################
 def copy_pybpod_user_settings():
-    print('Copying general PyBpod IBL project settings')
-    src_file = IBLRIG_FOLDER / 'scripts' / 'user_settings.py'
-    dst_file = IBLRIG_PARAMS_FOLDER / 'user_settings.py'
+    print("Copying general PyBpod IBL project settings")
+    src_file = IBLRIG_FOLDER / "scripts" / "user_settings.py"
+    dst_file = IBLRIG_PARAMS_FOLDER / "user_settings.py"
     shutil.copy(str(src_file), str(dst_file))
-    print('  Copied: {src_file} to {dst_file}')
+    print("  Copied: {src_file} to {dst_file}")
 
 
 ################################################################################
 def create_ibl_project(iblproject_path):
     p = Project()
-    print('Creating IBL project')
+    print("Creating IBL project")
     try:
         p.load(iblproject_path)
         print(f"  Skipping creation: IBL project found in: {iblproject_path}")
     except:  # noqa
-        p.name = 'IBL'
+        p.name = "IBL"
         p.save(iblproject_path)
         print("  Created: IBL project")
 
@@ -81,7 +81,7 @@ def create_ibl_board(iblproject_path):
     p = Project()
     p.load(iblproject_path)
     if not p.boards:
-        BOARD_NAME = 'SELECT_BOARD_NAME_(e.g.[_iblrig_mainenlab_behavior_0])'
+        BOARD_NAME = "SELECT_BOARD_NAME_(e.g.[_iblrig_mainenlab_behavior_0])"
         b = p.create_board()
         b.name = BOARD_NAME
         p.save(iblproject_path)
@@ -106,8 +106,8 @@ def create_subject(iblproject_path, subject_name: str):
 
 def create_ibl_subjects(iblproject_path):
     print("Creating default subjects")
-    create_subject(iblproject_path, subject_name='_iblrig_calibration')
-    create_subject(iblproject_path, subject_name='_iblrig_test_mouse')
+    create_subject(iblproject_path, subject_name="_iblrig_calibration")
+    create_subject(iblproject_path, subject_name="_iblrig_test_mouse")
 
 
 ################################################################################
@@ -115,13 +115,13 @@ def create_ibl_users(iblproject_path):
     print("Creating default user")
     p = Project()
     p.load(iblproject_path)
-    if p.find_user('_iblrig_test_user') is None:
+    if p.find_user("_iblrig_test_user") is None:
         user = p.create_user()
-        user.name = '_iblrig_test_user'
+        user.name = "_iblrig_test_user"
         p.save(iblproject_path)
         print(f"  Created: IBL default user <{user.name}>")
     else:
-        user = p.find_user('_iblrig_test_user')
+        user = p.find_user("_iblrig_test_user")
         print(f"  Skipping creation: User <{user.name}> already exists")
 
 
@@ -141,10 +141,10 @@ def create_task(iblproject_path, task_name: str):
 
 def create_task_cleanup_command(task):
     command = task.create_execcmd()
-    fil = str(IBLRIG_FOLDER / 'scripts' / 'cleanup.py')
+    fil = str(IBLRIG_FOLDER / "scripts" / "cleanup.py")
     command.cmd = f"python {fil}"
     command.when = command.WHEN_POST
-    when = 'POST' if command.when == 1 else 'PRE'
+    when = "POST" if command.when == 1 else "PRE"
     print(f"    Added <{when}> command <{command.cmd}> to <{task.name}>")
 
     return task
@@ -152,22 +152,22 @@ def create_task_cleanup_command(task):
 
 def create_task_bonsai_stop_command(task, port: int = 7110):
     command = task.create_execcmd()
-    fil = str(IBLRIG_FOLDER / 'scripts' / 'bonsai_stop.py')
+    fil = str(IBLRIG_FOLDER / "scripts" / "bonsai_stop.py")
     command.cmd = f"python {fil} {port}"
     command.when = command.WHEN_POST
-    when = 'POST' if command.when == 1 else 'PRE'
+    when = "POST" if command.when == 1 else "PRE"
     print(f"    Added <{when}> command <{command.cmd}> to <{task.name}>")
 
     return task
 
 
-def create_task_bpod_lights_command(task, onoff: int, when: str = 'POST'):
+def create_task_bpod_lights_command(task, onoff: int, when: str = "POST"):
     command = task.create_execcmd()
-    fil = str(IBLRIG_FOLDER / 'scripts' / 'bpod_lights.py')
+    fil = str(IBLRIG_FOLDER / "scripts" / "bpod_lights.py")
     command.cmd = f"python {fil} {onoff}"
-    if when == 'POST':
+    if when == "POST":
         command.when = command.WHEN_POST
-    elif when == 'PRE':
+    elif when == "PRE":
         command.when = command.WHEN_PRE
 
     print(f"    Added <{when}> command <{command.cmd}> to <{task.name}>")
@@ -175,25 +175,25 @@ def create_task_bpod_lights_command(task, onoff: int, when: str = 'POST'):
     return task
 
 
-def create_task_poop_command(task, when: str = 'POST'):
+def create_task_poop_command(task, when: str = "POST"):
     command = task.create_execcmd()
-    fil = str(IBLRIG_FOLDER / 'scripts' / 'poop_count.py')
+    fil = str(IBLRIG_FOLDER / "scripts" / "poop_count.py")
     command.cmd = f"python {fil}"
     command.when = command.WHEN_POST
-    when = 'POST' if command.when == 1 else 'PRE'
+    when = "POST" if command.when == 1 else "PRE"
 
     print(f"    Added <{when}> command <{command.cmd}> to <{task.name}>")
 
     return task
 
 
-def create_task_create_command(task, when: str = 'POST', poop: bool = True):
+def create_task_create_command(task, when: str = "POST", poop: bool = True):
     command = task.create_execcmd()
-    fil = str(IBLRIG_FOLDER / 'scripts' / 'create_session.py')
+    fil = str(IBLRIG_FOLDER / "scripts" / "create_session.py")
     command.cmd = f"python {fil} --poop={poop}"
-    if when == 'POST':
+    if when == "POST":
         command.when = command.WHEN_POST
-    elif when == 'PRE':
+    elif when == "PRE":
         command.when = command.WHEN_PRE
 
     print(f"    Added <{when}> command <{command.cmd}> to <{task.name}>")
@@ -201,13 +201,13 @@ def create_task_create_command(task, when: str = 'POST', poop: bool = True):
     return task
 
 
-def create_task_move_passive_command(task, when: str = 'POST'):
+def create_task_move_passive_command(task, when: str = "POST"):
     command = task.create_execcmd()
-    fil = str(IBLRIG_FOLDER / 'scripts' / 'move_passive.py')
+    fil = str(IBLRIG_FOLDER / "scripts" / "move_passive.py")
     command.cmd = f"python {fil}"
-    if when == 'POST':
+    if when == "POST":
         command.when = command.WHEN_POST
-    elif when == 'PRE':
+    elif when == "PRE":
         command.when = command.WHEN_PRE
 
     print(f"    Added <{when}> command <{command.cmd}> to <{task.name}>")
@@ -222,52 +222,52 @@ def config_task(iblproject_path, task_name: str):  # XXX: THIS!
     print(f"  Configuring task <{task.name}>")
     task._commands = []
 
-    if task.name == '_iblrig_calibration_screen':
+    if task.name == "_iblrig_calibration_screen":
         task = create_task_bonsai_stop_command(task, port=7110)
         task = create_task_cleanup_command(task)
-    if task.name == '_iblrig_calibration_water':
+    if task.name == "_iblrig_calibration_water":
         task = create_task_cleanup_command(task)
-    if task.name == '_iblrig_calibration_input_listner':
+    if task.name == "_iblrig_calibration_input_listner":
         task = create_task_cleanup_command(task)
-    if task.name == '_iblrig_calibration_frame2TTL':
+    if task.name == "_iblrig_calibration_frame2TTL":
         task = create_task_cleanup_command(task)
-    if task.name == '_iblrig_misc_flush_water':
+    if task.name == "_iblrig_misc_flush_water":
         task = create_task_cleanup_command(task)
-    if task.name == '_iblrig_misc_bpod_ttl_test':
+    if task.name == "_iblrig_misc_bpod_ttl_test":
         task = create_task_bonsai_stop_command(task, port=7110)
         task = create_task_cleanup_command(task)
-    if task.name == '_iblrig_misc_frame2TTL_freq_test':
+    if task.name == "_iblrig_misc_frame2TTL_freq_test":
         task = create_task_cleanup_command(task)
     # For all bpod tasks turn off bpod lights, stop the stim 7110, stop the camera 7111 and cleanup
     btasks = [
-        '_iblrig_tasks_habituationChoiceWorld',
-        '_iblrig_tasks_trainingChoiceWorld',
-        '_iblrig_tasks_biasedChoiceWorld',
-        '_iblrig_tasks_ephysChoiceWorld',
+        "_iblrig_tasks_habituationChoiceWorld",
+        "_iblrig_tasks_trainingChoiceWorld",
+        "_iblrig_tasks_biasedChoiceWorld",
+        "_iblrig_tasks_ephysChoiceWorld",
     ]
     if task.name in btasks:
         task = create_task_bonsai_stop_command(task, port=7110)
         task = create_task_bonsai_stop_command(task, port=7111)
         task = create_task_cleanup_command(task)
-        task = create_task_bpod_lights_command(task, onoff=1, when='POST')
-    if task.name == '_iblrig_tasks_habituationChoiceWorld':
+        task = create_task_bpod_lights_command(task, onoff=1, when="POST")
+    if task.name == "_iblrig_tasks_habituationChoiceWorld":
         task = create_task_create_command(task, poop=True)
-    if task.name == '_iblrig_tasks_trainingChoiceWorld':
+    if task.name == "_iblrig_tasks_trainingChoiceWorld":
         task = create_task_create_command(task, poop=True)
-    if task.name == '_iblrig_tasks_biasedChoiceWorld':
+    if task.name == "_iblrig_tasks_biasedChoiceWorld":
         task = create_task_create_command(task, poop=False)
-    if task.name == '_iblrig_tasks_ephysChoiceWorld':
+    if task.name == "_iblrig_tasks_ephysChoiceWorld":
         task = create_task_create_command(task, poop=False)
-    if task.name == '_iblrig_tasks_ephys_certification':
+    if task.name == "_iblrig_tasks_ephys_certification":
         task = create_task_cleanup_command(task)
-        task = create_task_bpod_lights_command(task, onoff=0, when='PRE')
-        task = create_task_bpod_lights_command(task, onoff=1, when='POST')
-    if task.name == '_iblrig_tasks_passiveChoiceWorld':
+        task = create_task_bpod_lights_command(task, onoff=0, when="PRE")
+        task = create_task_bpod_lights_command(task, onoff=1, when="POST")
+    if task.name == "_iblrig_tasks_passiveChoiceWorld":
         task = create_task_cleanup_command(task)
-        task = create_task_poop_command(task, when='POST')
-        task = create_task_bpod_lights_command(task, onoff=0, when='PRE')
-        task = create_task_bpod_lights_command(task, onoff=1, when='POST')
-        task = create_task_move_passive_command(task, when='POST')
+        task = create_task_poop_command(task, when="POST")
+        task = create_task_bpod_lights_command(task, onoff=0, when="PRE")
+        task = create_task_bpod_lights_command(task, onoff=1, when="POST")
+        task = create_task_move_passive_command(task, when="POST")
 
     p.save(iblproject_path)
     print("    Task configured")
@@ -275,19 +275,19 @@ def config_task(iblproject_path, task_name: str):  # XXX: THIS!
 
 def create_ibl_tasks(iblproject_path):  # XXX: THIS!
     task_names = [
-        '_iblrig_calibration_screen',
-        '_iblrig_calibration_water',
-        '_iblrig_calibration_input_listner',
-        '_iblrig_calibration_frame2TTL',
-        '_iblrig_misc_flush_water',
-        '_iblrig_misc_bpod_ttl_test',
-        '_iblrig_misc_frame2TTL_freq_test',
-        '_iblrig_tasks_biasedChoiceWorld',
-        '_iblrig_tasks_habituationChoiceWorld',
-        '_iblrig_tasks_trainingChoiceWorld',
-        '_iblrig_tasks_ephysChoiceWorld',
-        '_iblrig_tasks_ephys_certification',
-        '_iblrig_tasks_passiveChoiceWorld',
+        "_iblrig_calibration_screen",
+        "_iblrig_calibration_water",
+        "_iblrig_calibration_input_listner",
+        "_iblrig_calibration_frame2TTL",
+        "_iblrig_misc_flush_water",
+        "_iblrig_misc_bpod_ttl_test",
+        "_iblrig_misc_frame2TTL_freq_test",
+        "_iblrig_tasks_biasedChoiceWorld",
+        "_iblrig_tasks_habituationChoiceWorld",
+        "_iblrig_tasks_trainingChoiceWorld",
+        "_iblrig_tasks_ephysChoiceWorld",
+        "_iblrig_tasks_ephys_certification",
+        "_iblrig_tasks_passiveChoiceWorld",
     ]
     for task_name in task_names:
         create_task(iblproject_path, task_name=task_name)
@@ -311,9 +311,9 @@ def create_experiment(iblproject_path, exp_name: str):
 
 def create_ibl_experiments(iblproject_path):
     experiment_names = [
-        '_iblrig_calibration',
-        '_iblrig_misc',
-        '_iblrig_tasks',
+        "_iblrig_calibration",
+        "_iblrig_misc",
+        "_iblrig_tasks",
     ]
     for exp_name in experiment_names:
         create_experiment(iblproject_path, exp_name=exp_name)
@@ -330,7 +330,7 @@ def create_setup(exp, setup_name: str, board: str, subj: object, task: str = Non
     #     setup = setup[0]
 
     setup.name = setup_name
-    setup.task = task if isinstance(task, str) else exp.name + '_' + setup_name
+    setup.task = task if isinstance(task, str) else exp.name + "_" + setup_name
     setup.board = board
     setup += subj
     setup.detached = True
@@ -343,43 +343,58 @@ def create_experiment_setups(iblproject_path, exp_name: str):  # XXX:THIS!
     p = Project()
     p.load(iblproject_path)
     exp = [e for e in p.experiments if e.name == exp_name]
-    calib_subj = [s for s in p.subjects if s.name == '_iblrig_calibration'][0]
-    test_subj = [s for s in p.subjects if s.name == '_iblrig_test_mouse'][0]
+    calib_subj = [s for s in p.subjects if s.name == "_iblrig_calibration"][0]
+    test_subj = [s for s in p.subjects if s.name == "_iblrig_test_mouse"][0]
     if not exp:
-        raise KeyError(f'Experiment {exp} not found')
+        raise KeyError(f"Experiment {exp} not found")
     else:
         exp = exp[0]
 
-    if exp.name == '_iblrig_calibration':
-        screen = create_setup(exp, 'screen', p.boards[0].name, calib_subj)  # noqa
-        water = create_setup(exp, 'water', p.boards[0].name, calib_subj)  # noqa
-        input_listner = create_setup(exp, 'input_listner', p.boards[0].name, calib_subj)  # noqa
-        frame2TTL = create_setup(exp, 'frame2TTL', p.boards[0].name, calib_subj)  # noqa
+    if exp.name == "_iblrig_calibration":
+        screen = create_setup(exp, "screen", p.boards[0].name, calib_subj)  # noqa
+        water = create_setup(exp, "water", p.boards[0].name, calib_subj)  # noqa
+        input_listner = create_setup(
+            exp, "input_listner", p.boards[0].name, calib_subj
+        )  # noqa
+        frame2TTL = create_setup(exp, "frame2TTL", p.boards[0].name, calib_subj)  # noqa
 
-    if exp.name == '_iblrig_misc':
+    if exp.name == "_iblrig_misc":
         flush_water = create_setup(  # noqa
-            exp, 'flush_water', p.boards[0].name, test_subj)
+            exp, "flush_water", p.boards[0].name, test_subj
+        )
         bpod_ttl_test = create_setup(  # noqa
-            exp, 'bpod_ttl_test', p.boards[0].name, test_subj)
+            exp, "bpod_ttl_test", p.boards[0].name, test_subj
+        )
         frame2TTL_freq_test = create_setup(  # noqa
-            exp, 'frame2TTL_freq_test', p.boards[0].name, test_subj)
+            exp, "frame2TTL_freq_test", p.boards[0].name, test_subj
+        )
 
-    if exp.name == '_iblrig_tasks':
+    if exp.name == "_iblrig_tasks":
         biasedChoiceWorld = create_setup(  # noqa
-            exp, 'biasedChoiceWorld', p.boards[0].name, None)
+            exp, "biasedChoiceWorld", p.boards[0].name, None
+        )
         habituationChoiceWorld = create_setup(  # noqa
-            exp, 'habituationChoiceWorld', p.boards[0].name, None)
+            exp, "habituationChoiceWorld", p.boards[0].name, None
+        )
         trainingChoiceWorld = create_setup(  # noqa
-            exp, 'trainingChoiceWorld', p.boards[0].name, None)
+            exp, "trainingChoiceWorld", p.boards[0].name, None
+        )
         ephys_certification = create_setup(  # noqa
-            exp, 'ephys_certification', p.boards[0].name, None)
+            exp, "ephys_certification", p.boards[0].name, None
+        )
         ephysChoiceWorld = create_setup(  # noqa
-            exp, 'ephysChoiceWorld_testing', p.boards[0].name, test_subj,
-            task='_iblrig_tasks_ephysChoiceWorld'
+            exp,
+            "ephysChoiceWorld_testing",
+            p.boards[0].name,
+            test_subj,
+            task="_iblrig_tasks_ephysChoiceWorld",
         )
         passiveChoiceWorld = create_setup(  # noqa
-            exp, 'passiveChoiceWorld_testing', p.boards[0].name, test_subj,
-            task='_iblrig_tasks_passiveChoiceWorld'
+            exp,
+            "passiveChoiceWorld_testing",
+            p.boards[0].name,
+            test_subj,
+            task="_iblrig_tasks_passiveChoiceWorld",
         )
 
     p.save(iblproject_path)
@@ -387,9 +402,9 @@ def create_experiment_setups(iblproject_path, exp_name: str):  # XXX:THIS!
 
 def create_ibl_setups(iblproject_path):
     experiment_names = [
-        '_iblrig_calibration',
-        '_iblrig_misc',
-        '_iblrig_tasks',
+        "_iblrig_calibration",
+        "_iblrig_misc",
+        "_iblrig_tasks",
     ]
     for exp_name in experiment_names:
         print(f"  Creating setups for experiment <{exp_name}>")
@@ -404,45 +419,49 @@ def copy_task_files(iblrig_params_path, exclude_filename=None):
     """
 
     iblrig_params_path = Path(iblrig_params_path)
-    iblrig_params_tasks_path = iblrig_params_path / 'IBL' / 'tasks'
-    iblrig_path = iblrig_params_path.parent / 'iblrig'
-    iblrig_tasks_path = iblrig_path / 'tasks'
+    iblrig_params_tasks_path = iblrig_params_path / "IBL" / "tasks"
+    iblrig_path = iblrig_params_path.parent / "iblrig"
+    iblrig_tasks_path = iblrig_path / "tasks"
     print(f"\nCopying task files to {iblrig_params_tasks_path}")
 
     if exclude_filename is None:
-        exclude_filename = 'random_stuff'
+        exclude_filename = "random_stuff"
 
-    def copy_files(src_folder, dst_folder, glob='*',
-                   exclude_filename=exclude_filename):
+    def copy_files(src_folder, dst_folder, glob="*", exclude_filename=exclude_filename):
         src_folder = Path(src_folder)
         dst_folder = Path(dst_folder)
-        src_list = [x for x in src_folder.glob(glob)
-                    if x.is_file() and exclude_filename not in str(x)]
+        src_list = [
+            x
+            for x in src_folder.glob(glob)
+            if x.is_file() and exclude_filename not in str(x)
+        ]
         for f in src_list:
             shutil.copy(f, dst_folder)
             print(f"  Copied {f} to {dst_folder}")
 
     # Copy all tasks
-    tasks = [x for x in iblrig_tasks_path.glob('*') if x.is_dir() and x.name != '__pycache__']
+    tasks = [
+        x for x in iblrig_tasks_path.glob("*") if x.is_dir() and x.name != "__pycache__"
+    ]
     for sf in tasks:
         df = iblrig_params_tasks_path / sf.name
         df.mkdir(parents=True, exist_ok=True)
         copy_files(sf, df)
-    print('Done')
+    print("Done")
 
 
 ################################################################################
 def setups_to_remove(iblproject_path):
     p = Project()
     p.load(iblproject_path)
-    exp = [e for e in p.experiments if e.name == '_iblrig_calibration']
+    exp = [e for e in p.experiments if e.name == "_iblrig_calibration"]
     if not exp:
-        raise KeyError(f'Experiment {exp} not found')
+        raise KeyError(f"Experiment {exp} not found")
     else:
         exp = exp[0]
-        setup = [s for s in exp.setups if s.name == 'screen']
+        setup = [s for s in exp.setups if s.name == "screen"]
         if not setup:
-            print(f'Setup {setup} not found')
+            print(f"Setup {setup} not found")
         else:
             setup = setup[0]
             print()
@@ -457,7 +476,7 @@ def main(iblrig_params_path):
     and removeall files in iblrig_params except user_settings.
     """
     iblrig_params_path = Path(iblrig_params_path)
-    iblproject_path = iblrig_params_path / 'IBL'
+    iblproject_path = iblrig_params_path / "IBL"
 
     delete_untracked_files(iblrig_params_path)
     copy_pybpod_user_settings()

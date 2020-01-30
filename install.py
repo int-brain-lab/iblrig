@@ -14,24 +14,24 @@ import argparse
 # BEGIN CONSTANT DEFINITION
 IBLRIG_ROOT_PATH = Path.cwd()
 
-if sys.platform not in ['Windows', 'windows', 'win32']:
-    print('\nERROR: Unsupported OS\nInstallation might not work!')
+if sys.platform not in ["Windows", "windows", "win32"]:
+    print("\nERROR: Unsupported OS\nInstallation might not work!")
 # END CONSTANT DEFINITION
 
 
 def get_iblenv():
     # Find ibllib environment
     all_envs = subprocess.check_output(["conda", "env", "list", "--json"])
-    all_envs = json.loads(all_envs.decode('utf-8'))
+    all_envs = json.loads(all_envs.decode("utf-8"))
     pat = re.compile("^.+iblenv$")
-    iblenv = [x for x in all_envs['envs'] if pat.match(x)]
+    iblenv = [x for x in all_envs["envs"] if pat.match(x)]
     iblenv = iblenv[0] if iblenv else None
     return iblenv
 
 
 def get_iblenv_python(rpip=False):
     iblenv = get_iblenv()
-    pip = os.path.join(iblenv, 'Scripts', 'pip.exe')
+    pip = os.path.join(iblenv, "Scripts", "pip.exe")
     python = os.path.join(iblenv, "python.exe")
 
     return python if not rpip else pip
@@ -39,7 +39,7 @@ def get_iblenv_python(rpip=False):
 
 def check_dependencies():
     # Check if Git and conda are installed
-    print('\n\nINFO: Checking for dependencies:')
+    print("\n\nINFO: Checking for dependencies:")
     print("N" * 79)
     try:
         subprocess.check_output(["git", "--version"])
@@ -59,29 +59,33 @@ def check_dependencies():
 
 
 def install_environment():
-    print('\n\nINFO: Installing iblenv:')
+    print("\n\nINFO: Installing iblenv:")
     print("N" * 79)
     # Checks id env is already installed
     env = get_iblenv()
     # Creates commands
-    create_command = 'conda create -y -n iblenv python=3.7'
-    remove_command = 'conda env remove -y -n iblenv'
+    create_command = "conda create -y -n iblenv python=3.7"
+    remove_command = "conda env remove -y -n iblenv"
     # Installes the env
     if env:
-        print("Found pre-existing environment in {}".format(env),
-              "\nDo you want to reinstall the environment? (y/n):")
+        print(
+            "Found pre-existing environment in {}".format(env),
+            "\nDo you want to reinstall the environment? (y/n):",
+        )
         user_input = input()
-        if user_input == 'y':
+        if user_input == "y":
             os.system(remove_command)
             return install_environment()
-        elif user_input != 'n' and user_input != 'y':
+        elif user_input != "n" and user_input != "y":
             print("Please answer 'y' or 'n'")
             return install_environment()
-        elif user_input == 'n':
+        elif user_input == "n":
             return
     else:
         os.system(create_command)
-        os.system("conda activate iblenv && python -m pip install --upgrade pip")  # noqa
+        os.system(
+            "conda activate iblenv && python -m pip install --upgrade pip"
+        )  # noqa
     print("N" * 79)
     print("iblenv installed.")
 
@@ -92,83 +96,91 @@ def install_deps():
 
 
 def install_iblrig_requirements():
-    print('\n\nINFO: Installing IBLrig requirements:')
+    print("\n\nINFO: Installing IBLrig requirements:")
     print("N" * 79)
-    print("N" * 39, 'Installing git')
+    print("N" * 39, "Installing git")
     os.system("conda install -y -n iblenv git")
-    print("N" * 39, 'Installing scipy')
+    print("N" * 39, "Installing scipy")
     os.system("conda install -y -n iblenv scipy")
-    print("N" * 39, 'Installing requests')
+    print("N" * 39, "Installing requests")
     os.system("conda install -y -n iblenv requests")
 
-    print("N" * 39, '(pip) Installing python-osc')
+    print("N" * 39, "(pip) Installing python-osc")
     os.system("conda activate iblenv && pip install python-osc")
     os.system("conda activate iblenv && pip install cython")
-    print("N" * 39, '(pip) Installing sounddevice')
+    print("N" * 39, "(pip) Installing sounddevice")
     os.system("conda activate iblenv && pip install sounddevice")
-    print("N" * 39, '(pip) Installing PyBpod')
+    print("N" * 39, "(pip) Installing PyBpod")
     os.system("conda activate iblenv && pip install pybpod -U")
     # os.system("conda activate iblenv && pip install --upgrade --force-reinstall pybpod")  # noqa
     # os.system("activate iblenv && pip install -U pybpod")
-    print("N" * 39, '(pip) Installing PyQtWebEngine')
+    print("N" * 39, "(pip) Installing PyQtWebEngine")
     os.system("conda activate iblenv && pip install PyQtWebEngine")
-    print("N" * 39, '(pip) Installing PyBpod Alyx plugin')
+    print("N" * 39, "(pip) Installing PyBpod Alyx plugin")
     os.system(
-        "conda activate iblenv && pip install --upgrade pybpod-gui-plugin-alyx")  # noqa
-    print("N" * 39, '(pip) Installing PyBpod Soundcard plugin')
+        "conda activate iblenv && pip install --upgrade pybpod-gui-plugin-alyx"
+    )  # noqa
+    print("N" * 39, "(pip) Installing PyBpod Soundcard plugin")
     os.system(
-        "conda activate iblenv && pip install --upgrade pybpod-gui-plugin-soundcard")  # noqa
-    print("N" * 39, '(pip) Installing iblrig')
+        "conda activate iblenv && pip install --upgrade pybpod-gui-plugin-soundcard"
+    )  # noqa
+    print("N" * 39, "(pip) Installing iblrig")
     os.system("conda activate iblenv && pip install -e .")
     print("N" * 79)
     print("IBLrig requirements installed.")
 
 
 def configure_iblrig_params():
-    print('\n\nINFO: Setting up default project config in ../iblrig_params:')
+    print("\n\nINFO: Setting up default project config in ../iblrig_params:")
     print("N" * 79)
     iblenv = get_iblenv()
     if iblenv is None:
         msg = "Can't configure iblrig_params, iblenv not found"
         raise ValueError(msg)
     python = get_iblenv_python()
-    iblrig_params_path = IBLRIG_ROOT_PATH.parent / 'iblrig_params'
+    iblrig_params_path = IBLRIG_ROOT_PATH.parent / "iblrig_params"
     if iblrig_params_path.exists():
-        print(f"Found previous configuration in {str(iblrig_params_path)}",
-              "\nDo you want to reset to default config? (y/n)")
+        print(
+            f"Found previous configuration in {str(iblrig_params_path)}",
+            "\nDo you want to reset to default config? (y/n)",
+        )
         user_input = input()
-        if user_input == 'n':
+        if user_input == "n":
             return
-        elif user_input == 'y':
-            subprocess.call([python, "setup_default_config.py",
-                             str(iblrig_params_path)])
-        elif user_input != 'n' and user_input != 'y':
+        elif user_input == "y":
+            subprocess.call(
+                [python, "setup_default_config.py", str(iblrig_params_path)]
+            )
+        elif user_input != "n" and user_input != "y":
             print("\n Please select either y of n")
             return configure_iblrig_params()
     else:
         iblrig_params_path.mkdir(parents=True, exist_ok=True)
-        subprocess.call([python, "setup_default_config.py",
-                         str(iblrig_params_path)])
+        subprocess.call([python, "setup_default_config.py", str(iblrig_params_path)])
 
 
 def install_bonsai():
     print("\n\nDo you want to install Bonsai now? (y/n):")
     user_input = input()
-    if user_input == 'y':
-        subprocess.call(os.path.join(IBLRIG_ROOT_PATH,
-                                     'Bonsai', 'Bonsai64.exe'))
-    elif user_input != 'n' and user_input != 'y':
+    if user_input == "y":
+        subprocess.call(os.path.join(IBLRIG_ROOT_PATH, "Bonsai", "Bonsai64.exe"))
+    elif user_input != "n" and user_input != "y":
         print("Please answer 'y' or 'n'")
         return install_bonsai()
-    elif user_input == 'n':
+    elif user_input == "n":
         return
 
 
-if __name__ == '__main__':
-    ALLOWED_ACTIONS = ['new']
-    parser = argparse.ArgumentParser(description='Install iblrig')
-    parser.add_argument('--new', required=False, default=False,
-                        action='store_true', help='Use new install procedure')
+if __name__ == "__main__":
+    ALLOWED_ACTIONS = ["new"]
+    parser = argparse.ArgumentParser(description="Install iblrig")
+    parser.add_argument(
+        "--new",
+        required=False,
+        default=False,
+        action="store_true",
+        help="Use new install procedure",
+    )
     args = parser.parse_args()
 
     try:

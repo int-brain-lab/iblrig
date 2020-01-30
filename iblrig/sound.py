@@ -6,14 +6,13 @@ import logging
 import sys
 
 import numpy as np
-from pybpod_soundcard_module.module_api import (DataType, SampleRate,
-                                                SoundCardModule)
+from pybpod_soundcard_module.module_api import DataType, SampleRate, SoundCardModule
 from scipy.signal import chirp
 
-log = logging.getLogger('iblrig')
+log = logging.getLogger("iblrig")
 
 
-def configure_sounddevice(sd=None, output='sysdefault', samplerate=44100):
+def configure_sounddevice(sd=None, output="sysdefault", samplerate=44100):
     """
     Will import, configure, and return sounddevice module to
     play sounds using onboard sound card.
@@ -26,26 +25,28 @@ def configure_sounddevice(sd=None, output='sysdefault', samplerate=44100):
     """
     if output is None:
         return
-    if sys.platform == 'linux':  # or platform.node() == 'IBLRIG000':
-        output = 'sysdefault'
+    if sys.platform == "linux":  # or platform.node() == 'IBLRIG000':
+        output = "sysdefault"
     if sd is None:
         import sounddevice as sd
-    if output == 'xonar':
+    if output == "xonar":
         devices = sd.query_devices()
-        sd.default.device = [(i, d) for i, d in enumerate(
-            devices) if 'XONAR SOUND CARD(64)' in d['name']][0][0]
-        sd.default.latency = 'low'
+        sd.default.device = [
+            (i, d) for i, d in enumerate(devices) if "XONAR SOUND CARD(64)" in d["name"]
+        ][0][0]
+        sd.default.latency = "low"
         sd.default.channels = 2
         sd.default.samplerate = samplerate
-    elif output == 'sysdefault':
-        sd.default.latency = 'low'
+    elif output == "sysdefault":
+        sd.default.latency = "low"
         sd.default.channels = 2
         sd.default.samplerate = samplerate
     return sd
 
 
-def make_sound(rate=44100, frequency=5000, duration=0.1, amplitude=1,
-               fade=0.01, chans='L+TTL'):
+def make_sound(
+    rate=44100, frequency=5000, duration=0.1, amplitude=1, fade=0.01, chans="L+TTL"
+):
     """
     Build sounds and save bin file for upload to soundcard or play via
     sounddevice lib.
@@ -92,17 +93,17 @@ def make_sound(rate=44100, frequency=5000, duration=0.1, amplitude=1,
     if frequency == -1:
         tone = amplitude * np.random.rand(tone.size)
 
-    if chans == 'mono':
+    if chans == "mono":
         sound = np.array(tone)
-    elif chans == 'L':
+    elif chans == "L":
         sound = np.array([tone, null]).T
-    elif chans == 'R':
+    elif chans == "R":
         sound = np.array([null, tone]).T
-    elif chans == 'stereo':
+    elif chans == "stereo":
         sound = np.array([tone, tone]).T
-    elif chans == 'L+TTL':
+    elif chans == "L+TTL":
         sound = np.array([tone, ttl]).T
-    elif chans == 'TTL+R':
+    elif chans == "TTL+R":
         sound = np.array([ttl, tone]).T
 
     return sound
@@ -113,7 +114,7 @@ def make_chirp(f0=80, f1=160, length=0.1, amp=0.1, fade=0.01, sf=96000):
     t1 = length
     t = np.linspace(t0, t1, sf)
 
-    c = amp * chirp(t, f0=f0, f1=f1, t1=t1, method='linear')
+    c = amp * chirp(t, f0=f0, f1=f1, t1=t1, method="linear")
 
     len_fade = int(fade * sf)
     fade_io = np.hanning(len_fade * 2)
@@ -141,7 +142,7 @@ def format_sound(sound, file_path=None, flat=False):
     :param file_path: full path of file. [default: None]
     :type file_path: str
     """
-    bin_sound = (sound * ((2**31) - 1)).astype(np.int32)
+    bin_sound = (sound * ((2 ** 31) - 1)).astype(np.int32)
 
     if bin_sound.flags.f_contiguous:
         bin_sound = np.ascontiguousarray(bin_sound)
@@ -150,8 +151,9 @@ def format_sound(sound, file_path=None, flat=False):
     bin_save = np.ascontiguousarray(bin_save)
 
     if file_path:
-        with open(file_path, 'wb') as bf:
+        with open(file_path, "wb") as bf:
             bf.writelines(bin_save)
+            bf.flush()
 
     return bin_sound.flatten() if flat else bin_sound
 
@@ -167,11 +169,11 @@ def configure_sound_card(card=None, sounds=[], indexes=[], sample_rate=96):
         sample_rate = SampleRate._96000HZ
     else:
         log.error(f"Sound sample rate {sample_rate} should be 96 or 192 (KHz)")
-        raise(ValueError)
+        raise (ValueError)
 
     if len(sounds) != len(indexes):
         log.error("Wrong number of sounds and indexes")
-        raise(ValueError)
+        raise (ValueError)
 
     sounds = [format_sound(s, flat=True) for s in sounds]
     for sound, index in zip(sounds, indexes):
@@ -183,15 +185,15 @@ def configure_sound_card(card=None, sounds=[], indexes=[], sample_rate=96):
 
 
 def sound_sample_freq(soft_sound):
-    if soft_sound == 'sysdefault':
+    if soft_sound == "sysdefault":
         return 44100
-    elif soft_sound == 'xonar':
+    elif soft_sound == "xonar":
         return 192000
     elif soft_sound is None:
         return 96000
     else:
         log.error("SOFT_SOUND in not: 'sysdefault', 'xonar' or 'None'")
-        raise(NotImplementedError)
+        raise (NotImplementedError)
 
 
 def init_sounds(sph, tone=True, noise=True):
@@ -208,11 +210,11 @@ def init_sounds(sph, tone=True, noise=True):
         card = SoundCardModule()
         if not card.connected:
             log.error(msg)
-            raise(NameError)
+            raise (NameError)
 
-        chans = 'stereo'
+        chans = "stereo"
     else:
-        chans = 'L+TTL'
+        chans = "L+TTL"
 
     if tone:
         sph.GO_TONE = make_sound(
@@ -221,7 +223,8 @@ def init_sounds(sph, tone=True, noise=True):
             duration=sph.GO_TONE_DURATION,
             amplitude=sph.GO_TONE_AMPLITUDE,
             fade=0.01,
-            chans=chans)
+            chans=chans,
+        )
     if noise:
         sph.WHITE_NOISE = make_sound(
             rate=sph.SOUND_SAMPLE_FREQ,
@@ -229,7 +232,8 @@ def init_sounds(sph, tone=True, noise=True):
             duration=sph.WHITE_NOISE_DURATION,
             amplitude=sph.WHITE_NOISE_AMPLITUDE,
             fade=0.01,
-            chans=chans)
+            chans=chans,
+        )
     return sph
 
 
@@ -260,7 +264,7 @@ def trigger_sc_sound(sound_idx, card=None):
         card.close()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # # Generate sounds
     # device = 'xonar'
     # samplerate = sound_sample_freq(device)
@@ -282,20 +286,30 @@ if __name__ == '__main__':
     card = SoundCardModule()
     SOFT_SOUND = None
     SOUND_SAMPLE_FREQ = sound_sample_freq(SOFT_SOUND)
-    SOUND_BOARD_BPOD_PORT = 'Serial3'
+    SOUND_BOARD_BPOD_PORT = "Serial3"
     WHITE_NOISE_DURATION = float(0.5)
     WHITE_NOISE_AMPLITUDE = float(0.05)
     GO_TONE_DURATION = float(0.1)
     GO_TONE_FREQUENCY = int(5000)
-    GO_TONE_AMPLITUDE = float(0.0151)  # 0.0151 for 70.0 dB SPL CCU | 0.0272 for 70.0 dB SPL Xonar
+    GO_TONE_AMPLITUDE = float(
+        0.0151
+    )  # 0.0151 for 70.0 dB SPL CCU | 0.0272 for 70.0 dB SPL Xonar
     GO_TONE = make_sound(
-        rate=SOUND_SAMPLE_FREQ, frequency=GO_TONE_FREQUENCY,
-        duration=GO_TONE_DURATION, amplitude=GO_TONE_AMPLITUDE,
-        fade=0.01, chans='stereo')
+        rate=SOUND_SAMPLE_FREQ,
+        frequency=GO_TONE_FREQUENCY,
+        duration=GO_TONE_DURATION,
+        amplitude=GO_TONE_AMPLITUDE,
+        fade=0.01,
+        chans="stereo",
+    )
     WHITE_NOISE = make_sound(
-        rate=SOUND_SAMPLE_FREQ, frequency=-1,
+        rate=SOUND_SAMPLE_FREQ,
+        frequency=-1,
         duration=WHITE_NOISE_DURATION,
-        amplitude=WHITE_NOISE_AMPLITUDE, fade=0.01, chans='stereo')
+        amplitude=WHITE_NOISE_AMPLITUDE,
+        fade=0.01,
+        chans="stereo",
+    )
     GO_TONE_IDX = 2
     WHITE_NOISE_IDX = 4
 
@@ -306,4 +320,4 @@ if __name__ == '__main__':
     card.send_sound(wave_int, GO_TONE_IDX, SampleRate._96000HZ, DataType.INT32)
     card.send_sound(noise_int, WHITE_NOISE_IDX, SampleRate._96000HZ, DataType.INT32)
 
-    print('i')
+    print("i")

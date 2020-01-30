@@ -12,7 +12,7 @@ import user_settings
 from session_params import SessionParamHandler
 from trial_params import TrialParamHandler
 
-log = logging.getLogger('iblrig')
+log = logging.getLogger("iblrig")
 log.setLevel(logging.INFO)
 
 global sph
@@ -43,28 +43,29 @@ bpod = Bpod()
 # Soft code handler function can run arbitrary code from within state machine
 bpod.softcode_handler_function = softcode_handler
 # Rotary Encoder State Machine handle
-rotary_encoder = [x for x in bpod.modules if x.name == 'RotaryEncoder1'][0]
+rotary_encoder = [x for x in bpod.modules if x.name == "RotaryEncoder1"][0]
 # ROTARY ENCODER EVENTS
 rotary_encoder_reset = 1
-bpod.load_serial_message(rotary_encoder, rotary_encoder_reset,
-                         [RotaryEncoder.COM_SETZEROPOS,  # ord('Z')
-                          RotaryEncoder.COM_ENABLE_ALLTHRESHOLDS])  # ord('E')
+bpod.load_serial_message(
+    rotary_encoder,
+    rotary_encoder_reset,
+    [RotaryEncoder.COM_SETZEROPOS, RotaryEncoder.COM_ENABLE_ALLTHRESHOLDS],  # ord('Z')
+)  # ord('E')
 # Stop the stim
 re_stop_stim = rotary_encoder_reset + 1
-bpod.load_serial_message(rotary_encoder, re_stop_stim, [ord('#'), 1])
+bpod.load_serial_message(rotary_encoder, re_stop_stim, [ord("#"), 1])
 # Show the stim
 re_show_stim = rotary_encoder_reset + 2
-bpod.load_serial_message(rotary_encoder, re_show_stim, [ord('#'), 2])
+bpod.load_serial_message(rotary_encoder, re_show_stim, [ord("#"), 2])
 # Shwo stim at center of screen
 re_show_center = rotary_encoder_reset + 3
-bpod.load_serial_message(rotary_encoder, re_show_center, [ord('#'), 3])
+bpod.load_serial_message(rotary_encoder, re_show_center, [ord("#"), 3])
 if sph.SOFT_SOUND is None:
     # SOUND CARD
-    sound_card = [x for x in bpod.modules if x.name == 'SoundCard1'][0]
+    sound_card = [x for x in bpod.modules if x.name == "SoundCard1"][0]
     # Play tone
     sc_play_tone = rotary_encoder_reset + 4
-    bpod.load_serial_message(sound_card, sc_play_tone, [
-                             ord('P'), sph.GO_TONE_IDX])
+    bpod.load_serial_message(sound_card, sc_play_tone, [ord("P"), sph.GO_TONE_IDX])
 
 # =============================================================================
 # TRIAL PARAMETERS AND STATE MACHINE
@@ -74,50 +75,55 @@ tph = TrialParamHandler(sph)
 
 for i in range(sph.NTRIALS):  # Main loop
     tph.next_trial()
-    log.info(f'Starting trial: {i + 1}')
-# =============================================================================
-#     Start state machine definition
-# =============================================================================
+    log.info(f"Starting trial: {i + 1}")
+    # =============================================================================
+    #     Start state machine definition
+    # =============================================================================
     sma = StateMachine(bpod)
 
     if i == 0:  # First trial exception start camera
-        log.info(f'Waiting for camera pulses...')
+        log.info(f"Waiting for camera pulses...")
         sma.add_state(
-            state_name='trial_start',
+            state_name="trial_start",
             state_timer=3600,
-            state_change_conditions={'Port1In': 'stim_on'},
-            output_actions=[('Serial1', re_stop_stim),
-                            ('SoftCode', 3)])  # sart camera
+            state_change_conditions={"Port1In": "stim_on"},
+            output_actions=[("Serial1", re_stop_stim), ("SoftCode", 3)],
+        )  # sart camera
     else:
         sma.add_state(
-            state_name='trial_start',
+            state_name="trial_start",
             state_timer=1,  # Stim off for 1 sec
-            state_change_conditions={'Tup': 'stim_on'},
-            output_actions=[('Serial1', re_stop_stim)])
+            state_change_conditions={"Tup": "stim_on"},
+            output_actions=[("Serial1", re_stop_stim)],
+        )
 
     sma.add_state(
-        state_name='stim_on',
+        state_name="stim_on",
         state_timer=tph.delay_to_stim_center,
-        state_change_conditions={'Tup': 'stim_center'},
-        output_actions=[('Serial1', re_show_stim), tph.out_tone])
+        state_change_conditions={"Tup": "stim_center"},
+        output_actions=[("Serial1", re_show_stim), tph.out_tone],
+    )
 
     sma.add_state(
-        state_name='stim_center',
+        state_name="stim_center",
         state_timer=0.5,
-        state_change_conditions={'Tup': 'reward'},
-        output_actions=[('Serial1', re_show_center)])
+        state_change_conditions={"Tup": "reward"},
+        output_actions=[("Serial1", re_show_center)],
+    )
 
     sma.add_state(
-        state_name='reward',
+        state_name="reward",
         state_timer=tph.reward_valve_time,
-        state_change_conditions={'Tup': 'iti'},
-        output_actions=[('Valve1', 255)])
+        state_change_conditions={"Tup": "iti"},
+        output_actions=[("Valve1", 255)],
+    )
 
     sma.add_state(
-        state_name='iti',
+        state_name="iti",
         state_timer=tph.iti,
-        state_change_conditions={'Tup': 'exit'},
-        output_actions=[])
+        state_change_conditions={"Tup": "exit"},
+        output_actions=[],
+    )
 
     # Send state machine description to Bpod device
     bpod.send_state_machine(sma)
@@ -125,23 +131,23 @@ for i in range(sph.NTRIALS):  # Main loop
     bpod.run_state_machine(sma)  # Locks until state machine 'exit' is reached
 
     trial_data = tph.trial_completed(bpod.session.current_trial.export())
-    tevents = trial_data['behavior_data']['Events timestamps']
+    tevents = trial_data["behavior_data"]["Events timestamps"]
 
-    ev_bnc1 = sph.get_port_events(tevents, name='BNC1')
-    ev_bnc2 = sph.get_port_events(tevents, name='BNC2')
-    ev_port1 = sph.get_port_events(tevents, name='Port1')
+    ev_bnc1 = sph.get_port_events(tevents, name="BNC1")
+    ev_bnc2 = sph.get_port_events(tevents, name="BNC2")
+    ev_port1 = sph.get_port_events(tevents, name="Port1")
 
-    NOT_SAVED = 'not saved - deactivated in task settings'
-    NOT_FOUND = 'COULD NOT FIND DATA ON {}'
+    NOT_SAVED = "not saved - deactivated in task settings"
+    NOT_FOUND = "COULD NOT FIND DATA ON {}"
 
     as_msg = NOT_SAVED
-    bnc1_msg = NOT_FOUND.format('BNC1') if not ev_bnc1 else 'OK'
-    bnc2_msg = NOT_FOUND.format('BNC2') if not ev_bnc2 else 'OK'
-    port1_msg = NOT_FOUND.format('Port1') if not ev_port1 else 'OK'
+    bnc1_msg = NOT_FOUND.format("BNC1") if not ev_bnc1 else "OK"
+    bnc2_msg = NOT_FOUND.format("BNC2") if not ev_bnc2 else "OK"
+    port1_msg = NOT_FOUND.format("Port1") if not ev_port1 else "OK"
 
     if sph.RECORD_AMBIENT_SENSOR_DATA:
         data = sph.save_ambient_sensor_reading(bpod)
-        as_msg = 'saved'
+        as_msg = "saved"
 
     msg = f"""
 ##########################################
@@ -167,5 +173,5 @@ AMBIENT SENSOR DATA:    {as_msg}
 bpod.close()
 
 
-if __name__ == '__main__':
-    print('main')
+if __name__ == "__main__":
+    print("main")
