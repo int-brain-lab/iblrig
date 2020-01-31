@@ -19,8 +19,8 @@ libusb1>=1.7
 logging-bootstrap>=1.0.0
 matplotlib>=3.0.3
 numpy>=1.17.2
-opencv-python>=3.4.5.20
-pandas>=0.24.2
+opencv-python==3.4.5.20
+pandas==0.24.2
 pge-plugin-terminal>=0.1
 pybpod>=1.8.1
 pybpod-api>=1.8.1
