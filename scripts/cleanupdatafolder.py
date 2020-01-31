@@ -27,8 +27,10 @@ def check_delete_empty_files(path, rglob_pattern='*', dry=True):
     path = Path(path)
     excludes = ['.log', '.error', '.flatiron', '.flag']
     all_files = {p for p in path.rglob(f'{rglob_pattern}') if p.is_file() and not p.suffix in excludes}
+    empty_files = 0
     for f in all_files:
         if f.stat().st_size == 0:
+            empty_files += 1
             if dry:
                 print('Found empty file:', f)
             elif not dry:
@@ -37,9 +39,9 @@ def check_delete_empty_files(path, rglob_pattern='*', dry=True):
             continue
     else:
         if dry:
-            print(f'Empty files: {len(empty_dirs)}')
+            print(f'Empty files: {empty_files}')
         elif not dry:
-            print(f'Deleted files: {len(empty_dirs)}')
+            print(f'Deleted files: {empty_files}')
 
 
 # Find sessions
@@ -75,8 +77,9 @@ def load_session_settings(path_list):
 
 
 if __name__ == "__main__":
+    data_path = Path(ph.get_iblrig_data_folder())
     check_delete_empty_files(data_path, 'taskSettings')
-    check_delete_empty_folders(Path(ph.get_iblrig_data_folder()))
-    sessions_with_settings = find_sessions(ph.get_iblrig_data_folder(), rglob_pattern='*taskSettings*')
-    sessions_with_data = find_sessions(ph.get_iblrig_data_folder(), rglob_pattern='*taskData*')
+    check_delete_empty_folders(data_path)
+    sessions_with_settings = find_sessions(data_path, rglob_pattern='*taskSettings*')
+    sessions_with_data = find_sessions(data_path, rglob_pattern='*taskData*')
     settings = load_session_settings(sessions)
