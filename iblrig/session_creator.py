@@ -25,7 +25,8 @@ def make_ephysCW_pc():
     len_block = [90]
     pos = [-35] * int(len_block[0] / 2) + [35] * int(len_block[0] / 2)
     cont = np.sort(contrasts * 10)[::-1][:-5].tolist()
-    pc = np.array([pos, cont + cont]).T
+    prob = [0.5] * len_block[0]
+    pc = np.array([pos, cont + cont, prob]).T
     np.random.shuffle(pc)  # only shuffles on the first dimension
 
     prob_left = 0.8 if blocks.draw_position([-35, 35], 0.5) < 0 else 0.2
@@ -33,8 +34,8 @@ def make_ephysCW_pc():
         len_block.append(blocks.get_block_len(60, min_=20, max_=100))
         for x in range(len_block[-1]):
             p = blocks.draw_position([-35, 35], prob_left)
-            c = misc.draw_contrast(contrasts, prob_type="uniform")
-            pc = np.append(pc, np.array([[p, c]]), axis=0)
+            c = misc.draw_contrast(contrasts, prob_type='uniform')
+            pc = np.append(pc, np.array([[p, c, prob_left]]), axis=0)
             # do this in PC space
         prob_left = np.round(np.abs(1 - prob_left), 1)
 
@@ -50,6 +51,12 @@ def make_ephysCW_pcqs(pc):
         qperiod.append(qperiod_base + misc.texp(factor=0.35, min_=0.2, max_=0.5))
     qs = np.array([qperiod, sphase]).T
     pcqs = np.append(pc, qs, axis=1)
+    perm = [0, 1, 3, 4, 2]
+    idx = np.empty_like(perm)
+    idx[perm] = np.arange(len(perm))
+    pcqs[:, idx]
+    pcqs[:] = pcqs[:, idx]
+
     return pcqs
 
 
