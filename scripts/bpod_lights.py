@@ -4,8 +4,8 @@
 # @Date: Monday, February 18th 2019, 1:46:37 pm
 import sys
 
+import iblrig.params as params
 from iblrig.bpod_helper import bpod_lights
-
 
 if __name__ == "__main__":
     if len(sys.argv) == 2:

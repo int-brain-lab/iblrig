@@ -249,7 +249,7 @@ def config_task(iblproject_path, task_name: str):  # XXX: THIS!
         task = create_task_bonsai_stop_command(task, port=7110)
         task = create_task_bonsai_stop_command(task, port=7111)
         task = create_task_cleanup_command(task)
-        task = create_task_bpod_lights_command(task, onoff=1, when="POST")
+        task = create_task_bpod_lights_command(task, 1, when="POST")
     if task.name == "_iblrig_tasks_habituationChoiceWorld":
         task = create_task_create_command(task, poop=True)
     if task.name == "_iblrig_tasks_trainingChoiceWorld":
