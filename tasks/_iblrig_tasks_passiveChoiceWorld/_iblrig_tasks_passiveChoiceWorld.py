@@ -18,7 +18,7 @@ import iblrig.misc as misc
 import iblrig.params as params
 import task_settings
 import user_settings
-from iblrig.bpod_helper import BpodMessageCreator
+from iblrig.bpod_helper import BpodMessageCreator, bpod_lights
 from iblrig.rotary_encoder import MyRotaryEncoder
 from session_params import SessionParamHandler
 
@@ -39,6 +39,8 @@ sph.ROTARY_ENCODER = re
 
 # get bpod
 bpod = Bpod(serial_port=PARAMS["COM_BPOD"])
+# Turn bpod lights off
+bpod_lights(PARAMS["COM_BPOD"], 0)
 # Build messages
 msg = BpodMessageCreator(bpod)
 sc_play_tone = msg.sound_card_play_idx(sph.GO_TONE_IDX)
@@ -157,6 +159,9 @@ if sph.IS_MOCK:
 # Create a flag files
 misc.create_flag(sph.SESSION_FOLDER, "passive_data_for_ephys.flag")
 misc.create_flag(sph.SESSION_FOLDER, "poop_count")
+# Turn bpod light's back on
+bpod_lights(PARAMS["COM_BPOD"], 1)
+
 
 if __name__ == "__main__":
     pregenerated_session_num = "mock"

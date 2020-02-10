@@ -260,13 +260,13 @@ def config_task(iblproject_path, task_name: str):  # XXX: THIS!
         task = create_task_create_command(task, poop=False)
     if task.name == "_iblrig_tasks_ephys_certification":
         task = create_task_cleanup_command(task)
-        task = create_task_bpod_lights_command(task, onoff=0, when="PRE")
-        task = create_task_bpod_lights_command(task, onoff=1, when="POST")
+        task = create_task_bpod_lights_command(task, 0, when="PRE")
+        task = create_task_bpod_lights_command(task, 1, when="POST")
     if task.name == "_iblrig_tasks_passiveChoiceWorld":
         task = create_task_cleanup_command(task)
         task = create_task_poop_command(task, when="POST")
-        task = create_task_bpod_lights_command(task, onoff=0, when="PRE")
-        task = create_task_bpod_lights_command(task, onoff=1, when="POST")
+        task = create_task_bpod_lights_command(task, 0, when="PRE")
+        task = create_task_bpod_lights_command(task, 1, when="POST")
         task = create_task_move_passive_command(task, when="POST")
 
     p.save(iblproject_path)
