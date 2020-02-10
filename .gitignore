@@ -13,5 +13,6 @@ iblrig.egg-info/
 Bonsai/
 bin
 obj
+run.bat
 
 XDG_CACHE_HOME/
