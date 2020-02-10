@@ -40,14 +40,14 @@ EMPTY_BOARD_PARAMS = {
 }
 
 
-def ensure_all_keys_present(loaded_params):
+def ensure_all_keys_present(loaded_params, upload=True):
     for k in EMPTY_BOARD_PARAMS:
         if k in loaded_params:
             pass
         elif k not in loaded_params:
             loaded_params.update({k: None})
 
-    write_params(loaded_params, force=True)
+    write_params(loaded_params, force=True, upload=upload)
     return loaded_params
 
 
@@ -150,7 +150,7 @@ def load_params_file() -> dict:
     if fpath.exists():
         with open(fpath, "r") as f:
             out = json.load(f)
-        return ensure_all_keys_present(out)
+        return ensure_all_keys_present(out, upload=False)
     elif not fpath.exists() and bpod_comports.exists():
         log.warning(
             f"Params file does not exist, found old bpod_comports file. Trying to migrate..."
@@ -240,14 +240,15 @@ def load_params() -> dict:
     return params_local
 
 
-def write_params(data: dict = None, force: bool = False) -> None:
+def write_params(data: dict = None, force: bool = False, upload: bool = True) -> None:
     write_params_file(data=data, force=force)
-    try:
-        alyx.write_alyx_params(data=data, force=force)
-    except Exception as e:
-        log.warning(
-            f"Could not write board params to Alyx. Written to local file:\n{e}"
-        )
+    if upload:
+        try:
+            alyx.write_alyx_params(data=data, force=force)
+        except Exception as e:
+            log.warning(
+                f"Could not write board params to Alyx. Written to local file:\n{e}"
+            )
     return
 
 
