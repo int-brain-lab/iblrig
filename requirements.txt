@@ -26,7 +26,7 @@ pybpod==1.8.2
 pybpod-api==1.8.2
 pybpod-gui-api==1.8.2
 pybpod-gui-plugin==1.8.2
-pybpod-gui-plugin-alyx==1.1.1
+pybpod-gui-plugin-alyx==1.1.2
 pybpod-gui-plugin-emulator==0.1.5
 pybpod-gui-plugin-rotaryencoder==0.1.4
 pybpod-gui-plugin-session-history==1.4.2
