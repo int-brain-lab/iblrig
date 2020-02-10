@@ -11,7 +11,7 @@ cycler>=0.10.0
 Cython>=0.29.6
 dataclasses>=0.6
 globus-sdk>=1.7.1
-ibllib>=1.4.8
+ibllib>=1.4.9
 idna>=2.8
 kiwisolver>=1.1.0
 libusb>=1.0.22b4
@@ -22,10 +22,10 @@ numpy>=1.17.2
 opencv-python==3.4.5.20
 pandas==0.24.2
 pge-plugin-terminal>=0.1
-pybpod>=1.8.1
-pybpod-api>=1.8.1
-pybpod-gui-api>=1.8.1
-pybpod-gui-plugin>=1.8.1
+pybpod>=1.8.2
+pybpod-api>=1.8.2
+pybpod-gui-api>=1.8.2
+pybpod-gui-plugin>=1.8.2
 pybpod-gui-plugin-alyx>=1.1.1
 pybpod-gui-plugin-emulator>=0.1.4
 pybpod-gui-plugin-rotaryencoder>=0.1.4
