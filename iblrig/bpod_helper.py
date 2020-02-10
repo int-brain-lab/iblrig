@@ -3,7 +3,15 @@
 # @Author: Niccolò Bonacchi
 # @Date: Monday, December 9th 2019, 1:32:54 pm
 # Rotary Encoder State Machine handler
+import logging
+import struct
+
+import serial
 from pybpod_rotaryencoder_module.module import RotaryEncoder
+
+import iblrig.params as params
+
+log = logging.getLogger("iblrig")
 
 
 class BpodMessageCreator(object):
@@ -83,3 +91,13 @@ class BpodMessageCreator(object):
 
     def return_bpod(self):
         return self.bpod
+
+
+def bpod_lights(comport: str, command: int):
+    if not comport:
+        comport = params.get_board_comport()
+    ser = serial.Serial(port=comport, baudrate=115200, timeout=1)
+    ser.write(struct.pack("cB", b":", command))
+    ser.close()
+    log.debug(f"Sent <:{command}> to {comport}")
+    return
