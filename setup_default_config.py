@@ -246,8 +246,8 @@ def config_task(iblproject_path, task_name: str):  # XXX: THIS!
         "_iblrig_tasks_ephysChoiceWorld",
     ]
     if task.name in btasks:
-        task = create_task_bonsai_stop_command(task, port=7110)
-        task = create_task_bonsai_stop_command(task, port=7111)
+        task = create_task_bonsai_stop_command(task, port=7110)  # visual stimulus
+        task = create_task_bonsai_stop_command(task, port=7111)  # camera recording
         task = create_task_cleanup_command(task)
         task = create_task_bpod_lights_command(task, 1, when="POST")
     if task.name == "_iblrig_tasks_habituationChoiceWorld":
@@ -265,6 +265,7 @@ def config_task(iblproject_path, task_name: str):  # XXX: THIS!
     if task.name == "_iblrig_tasks_passiveChoiceWorld":
         task = create_task_cleanup_command(task)
         task = create_task_poop_command(task, when="POST")
+        task = create_task_bonsai_stop_command(task, port=7112)  # record_mic
         task = create_task_bpod_lights_command(task, 0, when="PRE")
         task = create_task_bpod_lights_command(task, 1, when="POST")
         task = create_task_move_passive_command(task, when="POST")
