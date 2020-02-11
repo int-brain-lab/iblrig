@@ -128,7 +128,8 @@ for i in range(sph.NTRIALS):  # Main loop
     # Send state machine description to Bpod device
     bpod.send_state_machine(sma)
     # Run state machine
-    bpod.run_state_machine(sma)  # Locks until state machine 'exit' is reached
+    if not bpod.run_state_machine(sma):  # Locks until state machine 'exit' is reached
+        break
 
     trial_data = tph.trial_completed(bpod.session.current_trial.export())
     tevents = trial_data["behavior_data"]["Events timestamps"]

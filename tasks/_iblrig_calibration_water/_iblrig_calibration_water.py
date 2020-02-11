@@ -81,7 +81,8 @@ def water_drop(open_time, ntrials=100, iti=1, bpod="bpod_instance"):
 
         # Send state machine description to Bpod device and run
         bpod.send_state_machine(sma)
-        bpod.run_state_machine(sma)
+        if not bpod.run_state_machine(sma):  # Locks until state machine 'exit' is reached
+            break
         # Get the timestamps of the implemented state machine ?
         # bpod.session.current_trial.export()
 

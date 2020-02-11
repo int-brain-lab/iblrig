@@ -210,9 +210,9 @@ for i in range(sph.NTRIALS):  # Main loop
     # Send state machine description to Bpod device
     bpod.send_state_machine(sma)
     # Run state machine
-    running = bpod.run_state_machine(sma)  # Locks until state machine 'exit' is reached
-    if not running:
+    if not bpod.run_state_machine(sma):  # Locks until state machine 'exit' is reached
         break
+
     tph = tph.trial_completed(bpod.session.current_trial.export())
 
     as_data = tph.save_ambient_sensor_data(bpod, sph.SESSION_RAW_DATA_FOLDER)

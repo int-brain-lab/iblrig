@@ -73,7 +73,8 @@ for i in range(NITER):
     # Send state machine description to Bpod device
     bpod.send_state_machine(sma)
     # Run state machine
-    bpod.run_state_machine(sma)  # Locks until state machine 'exit' is reached
+   if not bpod.run_state_machine(sma):  # Locks until state machine 'exit' is reached
+        break
 
     data = bpod.session.current_trial.export()
 

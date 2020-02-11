@@ -49,7 +49,8 @@ for i in range(ntrials):
     bpod.send_state_machine(sma)
 
     # Run state machine
-    bpod.run_state_machine(sma)
+    if not bpod.run_state_machine(sma):  # Locks until state machine 'exit' is reached
+        break
 
     print("Current trial info: {0}".format(bpod.session.current_trial))
 
