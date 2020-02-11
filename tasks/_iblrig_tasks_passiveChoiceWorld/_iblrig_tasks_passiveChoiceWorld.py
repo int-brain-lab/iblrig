@@ -159,6 +159,8 @@ if sph.IS_MOCK:
 # Create a flag files
 misc.create_flag(sph.SESSION_FOLDER, "passive_data_for_ephys.flag")
 misc.create_flag(sph.SESSION_FOLDER, "poop_count")
+
+bpod.close()
 # Turn bpod light's back on
 bpod_lights(PARAMS["COM_BPOD"], 1)
 
