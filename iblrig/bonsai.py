@@ -173,7 +173,7 @@ else:
         noedit = "--no-editor"  # implies start and no-debug?
         noboot = "--no-boot"
         # Properties
-        SA0_DueTime = "-p:Stim.SpontaneousActivity0.DueTime=00:05:00"
+        SA0_DueTime = "-p:Stim.SpontaneousActivity0.DueTime=00:10:00"
         RFM_FileName = "-p:Stim.ReceptiveFieldMappingStim.FileNameRFMapStim=" + str(
             Path(save2folder) / "_iblrig_RFMapStim.raw.bin"
         )
