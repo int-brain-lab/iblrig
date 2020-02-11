@@ -37,10 +37,10 @@ re = MyRotaryEncoder(
 )
 sph.ROTARY_ENCODER = re
 
-# get bpod
-bpod = Bpod(serial_port=PARAMS["COM_BPOD"])
 # Turn bpod lights off
 bpod_lights(PARAMS["COM_BPOD"], 0)
+# get bpod
+bpod = Bpod(serial_port=PARAMS["COM_BPOD"])
 # Build messages
 msg = BpodMessageCreator(bpod)
 sc_play_tone = msg.sound_card_play_idx(sph.GO_TONE_IDX)
