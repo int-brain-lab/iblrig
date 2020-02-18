@@ -66,6 +66,9 @@ else:
             screen_pos = "-p:Stim.FileNameStimPositionScreen=" + os.path.join(
                 sph.SESSION_RAW_DATA_FOLDER, "_iblrig_stimPositionScreen.raw.csv"
             )
+            sync_square = "-p:Stim.FileNameSyncSquareUpdate=" + os.path.join(
+                sph.SESSION_RAW_DATA_FOLDER, "_iblrig_syncSquareUpdate.raw.csv"
+            )
 
             com = "-p:Stim.REPortName=" + sph.PARAMS["COM_ROTARY_ENCODER"]
 
@@ -97,6 +100,7 @@ else:
                         editor,
                         noboot,
                         screen_pos,
+                        sync_square,
                         pos,
                         evt,
                         itr,

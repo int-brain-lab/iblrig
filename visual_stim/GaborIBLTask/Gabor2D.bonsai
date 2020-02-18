@@ -942,6 +942,7 @@
             </Expression>
             <Expression xsi:type="ExternalizedMapping">
               <Property Name="FileNameTrialInfo" />
+              <Property Name="FileNameSyncSquareUpdate" />
             </Expression>
             <Expression xsi:type="ExternalizedMapping">
               <Property Name="FileNameEvents" />
@@ -1061,6 +1062,22 @@ _iblrig_micData.raw.wav
                     <io:Suffix>None</io:Suffix>
                     <io:IncludeHeader>false</io:IncludeHeader>
                   </Expression>
+                  <Expression xsi:type="ExternalizedMapping">
+                    <Property Name="FileName" DisplayName="FileNameSyncSquareUpdate" />
+                  </Expression>
+                  <Expression xsi:type="SubscribeSubject">
+                    <Name>UpdateSyncSquare</Name>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="rx:Timestamp" />
+                  </Expression>
+                  <Expression xsi:type="io:CsvWriter">
+                    <io:FileName>C:\iblrig_data\Subjects\_iblrig_test_mouse\2019-07-01\008\raw_behavior_data\_iblrig_stimSquareUpdate.csv</io:FileName>
+                    <io:Append>false</io:Append>
+                    <io:Overwrite>true</io:Overwrite>
+                    <io:Suffix>None</io:Suffix>
+                    <io:IncludeHeader>false</io:IncludeHeader>
+                  </Expression>
                 </Nodes>
                 <Edges>
                   <Edge From="0" To="7" Label="Source5" />
@@ -1084,6 +1101,9 @@ _iblrig_micData.raw.wav
                   <Edge From="21" To="22" Label="Source1" />
                   <Edge From="22" To="23" Label="Source1" />
                   <Edge From="23" To="24" Label="Source1" />
+                  <Edge From="25" To="28" Label="Source2" />
+                  <Edge From="26" To="27" Label="Source1" />
+                  <Edge From="27" To="28" Label="Source1" />
                 </Edges>
               </Workflow>
             </Expression>
