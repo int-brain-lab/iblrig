@@ -288,3 +288,20 @@ else:
                 [bns, wkfl, noboot, noedit, data_file_name, lengths_file_name])
         os.chdir(here)
         return s
+
+
+def stop_wrkfl(name):
+    ports = {
+        'stim': 7110,
+        'camera': 7111,
+        'mic': 7112,
+    }
+    if name in ports:
+        osc_port = ports[name]
+    else:
+        log.warning(f"Unknown name: {name}")
+        osc_port = 0
+    OSC_CLIENT_IP = "127.0.0.1"
+    OSC_CLIENT_PORT = int(osc_port)
+    osc_client = udp_client.SimpleUDPClient(OSC_CLIENT_IP, OSC_CLIENT_PORT)
+    osc_client.send_message("/x", 1)
