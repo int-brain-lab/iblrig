@@ -1,5 +1,16 @@
 # **Release notes**
 
+## **Release Notes 6.4.0**
+
+Minor update (added features)
+
+* Added saving of _iblrig_syncSquareUpdate.raw.csv from bonsai visual stim
+* updaed ibllib to 1.4.11
+* updated pybpod
+* updated Bonsai
+* increased spontaneous activity period to 10 min in passiveChoiceWorld
+* Stop microphone recordings after passive protocol
+
 ## **Release Notes 6.3.1**
 
 Patch update (bugfixes)
@@ -14,8 +25,8 @@ Minor update (added functionality)
 * Added sound recording in ephys rig for both biased and ephysCW tasks (was missing)
 
 ## **Release Notes 6.2.5**
-
-Patch update (bugfixes)
+*THIS: State Machine changed*
+Patch update (bugfixes)  
 
 * Fixed stimulus sometimes keeps moving after reward for all tasks
 * Fixed session_params bug in ephysCW
