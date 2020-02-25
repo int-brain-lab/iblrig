@@ -17,8 +17,8 @@ def update_block_params(tph):
         tph.block_num += 1
         tph.block_trial_num = 1
         tph.block_len = get_block_len(
-            factor=tph.block_len_factor, min_=tph.block_len_min,
-            max_=tph.block_len_max)
+            factor=tph.block_len_factor, min_=tph.block_len_min, max_=tph.block_len_max
+        )
 
     return tph
 
@@ -38,8 +38,11 @@ def update_probability_left(tph):
 
 
 def draw_position(position_set, stim_probability_left):
-    return int(np.random.choice(
-        position_set, p=[stim_probability_left, 1 - stim_probability_left]))
+    return int(
+        np.random.choice(
+            position_set, p=[stim_probability_left, 1 - stim_probability_left]
+        )
+    )
 
 
 def init_block_len(tph):
@@ -47,8 +50,8 @@ def init_block_len(tph):
         return 90
     else:
         return get_block_len(
-            factor=tph.block_len_factor, min_=tph.block_len_min,
-            max_=tph.block_len_max)
+            factor=tph.block_len_factor, min_=tph.block_len_min, max_=tph.block_len_max
+        )
 
 
 def init_probability_left(tph):

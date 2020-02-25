@@ -44,7 +44,8 @@ def get_versions():
                                     "--tags", "origin"]).decode().split()
     vers = [x for x in vers[1::2] if '{' not in x]
     vers = [x.split('/')[-1] for x in vers]
-    available = [x for x in vers if x >= '5.3.1']
+    broken = ['6.3.0', '6.3.1']
+    available = [x for x in vers if x >= '6.2.5' and x not in broken]
     print("Available versions: {}".format(available))
     return vers
 
@@ -129,7 +130,8 @@ def update_conda():
 
 def update_pip():
     print("\nUpdating pip et al.")
-    os.system("pip install -U pip setuptools wheel")
+    os.system("pip install -U setuptools wheel")
+    os.system("python -m pip install --upgrade pip")
 
 
 def update_ibllib():
