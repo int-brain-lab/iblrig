@@ -261,32 +261,12 @@ else:
             port = 7112
         return udp_client.SimpleUDPClient(ip, port)
 
-    def start_frame2ttl_test(data_file, lengths_file):
-        here = os.getcwd()
-        bns = ph.get_bonsai_path()
-        stim_folder = str(
-            Path(ph.get_iblrig_folder()) / "visual_stim" / "f2ttl_calibration"
-        )
-        wkfl = os.path.join(stim_folder, "screen_60Hz.bonsai")
-        # Flags
-        noedit = "--no-editor"  # implies start and no-debug?
-        noboot = "--no-boot"
-        data_file_name = "-p:FileNameData=" + str(data_file)
-        lengths_file_name = "-p:FileNameDataLengths=" + str(lengths_file)
-        # Properties
-        log.info("Starting pulses @ 60Hz")
-        sys.stdout.flush()
-        os.chdir(stim_folder)
-        s = subprocess.Popen(
-            [bns, wkfl, noboot, noedit, data_file_name, lengths_file_name]
-        )
-        os.chdir(here)
-        return s
-
     def start_frame2ttl_test(data_file, lengths_file, harp=False):
         here = os.getcwd()
         bns = ph.get_bonsai_path()
-        stim_folder = str(Path(ph.get_iblrig_folder()) / 'visual_stim' / 'f2ttl_calibration')
+        stim_folder = str(
+            Path(ph.get_iblrig_folder()) / 'visual_stim' / 'f2ttl_calibration'
+        )
         wkfl = os.path.join(stim_folder, 'screen_60Hz.bonsai')
         # Flags
         noedit = '--no-editor'  # implies start and no-debug?
@@ -300,8 +280,28 @@ else:
         sys.stdout.flush()
         os.chdir(stim_folder)
         if harp:
-            s = subprocess.Popen([bns, wkfl, noboot, noedit, data_file_name, lengths_file_name, harp_file_name])
+            s = subprocess.Popen(
+                [bns, wkfl, noboot, noedit, data_file_name, lengths_file_name, harp_file_name]
+            )
         else:
-            s = subprocess.Popen([bns, wkfl, noboot, noedit, data_file_name, lengths_file_name])
+            s = subprocess.Popen(
+                [bns, wkfl, noboot, noedit, data_file_name, lengths_file_name])
         os.chdir(here)
         return s
+
+
+def stop_wrkfl(name):
+    ports = {
+        'stim': 7110,
+        'camera': 7111,
+        'mic': 7112,
+    }
+    if name in ports:
+        osc_port = ports[name]
+    else:
+        log.warning(f"Unknown name: {name}")
+        osc_port = 0
+    OSC_CLIENT_IP = "127.0.0.1"
+    OSC_CLIENT_PORT = int(osc_port)
+    osc_client = udp_client.SimpleUDPClient(OSC_CLIENT_IP, OSC_CLIENT_PORT)
+    osc_client.send_message("/x", 1)

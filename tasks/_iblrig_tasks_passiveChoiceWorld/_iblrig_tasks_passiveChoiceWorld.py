@@ -86,12 +86,16 @@ def do_valve_click(bpod, reward_valve_time):
 
 
 def do_bpod_sound(bpod, sound_msg):
+    if sound_msg == sc_play_tone:
+        t = 0.102
+    elif sound_msg == sc_play_noise:
+        t = 0.510
     sma = StateMachine(bpod)
     sma.add_state(
         state_name="play_tone",
-        state_timer=0,
+        state_timer=t,
         output_actions=[("Serial3", sound_msg)],
-        state_change_conditions={"BNC2Low": "exit"},
+        state_change_conditions={"BNC2Low": "exit", "Tup": "exit"},
     )
     bpod.send_state_machine(sma)
     bpod.run_state_machine(sma)  # Locks until state machine 'exit' is reached
@@ -112,7 +116,7 @@ msg = (
 popup("WARNING!", msg)  # Locks
 
 # Run the passive part i.e. spontaneous activity and RFMapping stim
-bonsai.start_passive_visual_stim(sph.SESSION_RAW_DATA_FOLDER)  # Loks
+bonsai.start_passive_visual_stim(sph.SESSION_RAW_DATA_FOLDER)  # Locks
 
 # start Bonsai stim workflow
 bonsai.start_visual_stim(sph)
@@ -163,7 +167,12 @@ misc.create_flag(sph.SESSION_FOLDER, "poop_count")
 bpod.close()
 # Turn bpod light's back on
 bpod_lights(PARAMS["COM_BPOD"], 1)
-
+# Close Bonsai stim
+bonsai.stop_wrkfl('stim')
+msg = "Passive protocol done, please remove subject.\n" * 42
+log.info(msg)
+msg = "Passive protocol is over.\nMake sure you turn the VALVE back ON!"
+popup("WARNING!", msg)  # Locks
 
 if __name__ == "__main__":
     pregenerated_session_num = "mock"

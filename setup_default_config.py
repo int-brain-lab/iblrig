@@ -265,6 +265,7 @@ def config_task(iblproject_path, task_name: str):  # XXX: THIS!
     if task.name == "_iblrig_tasks_passiveChoiceWorld":
         task = create_task_cleanup_command(task)
         task = create_task_poop_command(task, when="POST")
+        task = create_task_bonsai_stop_command(task, port=7110)  # stim
         task = create_task_bonsai_stop_command(task, port=7112)  # record_mic
         task = create_task_bpod_lights_command(task, 0, when="PRE")
         task = create_task_bpod_lights_command(task, 1, when="POST")
@@ -354,9 +355,9 @@ def create_experiment_setups(iblproject_path, exp_name: str):  # XXX:THIS!
     if exp.name == "_iblrig_calibration":
         screen = create_setup(exp, "screen", p.boards[0].name, calib_subj)  # noqa
         water = create_setup(exp, "water", p.boards[0].name, calib_subj)  # noqa
-        input_listner = create_setup(
+        input_listner = create_setup(  # noqa
             exp, "input_listner", p.boards[0].name, calib_subj
-        )  # noqa
+        )
         frame2TTL = create_setup(exp, "frame2TTL", p.boards[0].name, calib_subj)  # noqa
 
     if exp.name == "_iblrig_misc":

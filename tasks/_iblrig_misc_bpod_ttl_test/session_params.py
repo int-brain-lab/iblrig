@@ -65,7 +65,6 @@ class SessionParamHandler(object):
         # =====================================================================
         # SOUNDS
         # =====================================================================
-        # TODO: change usage of _BOARD to PYBPOD_BOARD in all session_params (GUI context superseeds PC config)
         self.SOFT_SOUND = None if "ephys" in self.PYBPOD_BOARD else self.SOFT_SOUND
         self.SOUND_SAMPLE_FREQ = sound.sound_sample_freq(self.SOFT_SOUND)
 
@@ -91,7 +90,8 @@ class SessionParamHandler(object):
         self.OUT_STOP_SOUND = (
             ("SoftCode", 0) if self.SOFT_SOUND else ("Serial3", ord("X"))
         )
-        # self.OUT_TONE = ("SoftCode", 1) if self.SOFT_SOUND else ("Serial3", self.GO_TONE_SM_TRIGGER)
+        # self.OUT_TONE = ("SoftCode", 1) if self.SOFT_SOUND else ("Serial3",
+        #                                                          self.GO_TONE_SM_TRIGGER)
         # =====================================================================
         # RUN VISUAL STIM
         # =====================================================================

@@ -177,7 +177,8 @@ class SessionParamHandler(object):
             "stim_off_time": 1,  # seconds
             "stim_azimuth_set": [-35, 35],
             "stim_contrast_set": [1.0, 0.5, 0.25, 0.125, 0.0625],
-            "stim_file": "iblrig/visual_stim/ephys_certification/04_ContrastSelectivityTaskStim/stims.csv",
+            "stim_file":
+                "iblrig/visual_stim/ephys_certification/04_ContrastSelectivityTaskStim/stims.csv",
             "stim_file_columns": ("azimuth", "contrast"),
             "polarity_start": +1,
             "polarity_end": -1,
