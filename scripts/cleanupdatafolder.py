@@ -1,7 +1,6 @@
 from pathlib import Path
 import iblrig.path_helper as ph
 import ibllib.io.raw_data_loaders as raw
-import json
 
 
 # Remove empty folders
@@ -26,7 +25,9 @@ def check_delete_empty_folders(path, rglob_pattern='*', dry=True):
 def check_delete_empty_files(path, rglob_pattern='*', dry=True):
     path = Path(path)
     excludes = ['.log', '.error', '.flatiron', '.flag']
-    all_files = {p for p in path.rglob(f'{rglob_pattern}') if p.is_file() and not p.suffix in excludes}
+    all_files = {
+        p for p in path.rglob(f'{rglob_pattern}') if p.is_file() and p.suffix not in excludes
+    }
     empty_files = 0
     for f in all_files:
         if f.stat().st_size == 0:
@@ -71,7 +72,7 @@ def get_dates(session_list):
 def load_session_settings(path_list):
     path_list = [Path(path) for path in path_list]
     settings = []
-    for s in sessions:
+    for s in path_list:
         settings.append(raw.load_settings(s))
     return settings
 
@@ -82,4 +83,4 @@ if __name__ == "__main__":
     check_delete_empty_folders(data_path)
     sessions_with_settings = find_sessions(data_path, rglob_pattern='*taskSettings*')
     sessions_with_data = find_sessions(data_path, rglob_pattern='*taskData*')
-    settings = load_session_settings(sessions)
+    settings = load_session_settings(sessions_with_settings)

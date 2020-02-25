@@ -20,10 +20,8 @@ Check Alyx connection
     Load COM ports
 end with user input
 """
-import json
 import logging
 import struct
-from pathlib import Path
 
 import serial
 from pybpod_rotaryencoder_module.module_api import RotaryEncoderModule
@@ -32,7 +30,6 @@ import iblrig.alyx as alyx
 import iblrig.logging_  # noqa
 import iblrig.params as params
 from iblrig.frame2TTL import Frame2TTL
-from iblrig.path_helper import get_iblrig_folder
 
 log = logging.getLogger("iblrig")
 log.setLevel(logging.DEBUG)

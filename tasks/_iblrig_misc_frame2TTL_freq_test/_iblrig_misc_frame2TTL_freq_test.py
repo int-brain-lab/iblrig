@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python  # noqa
 # -*- coding:utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date: Friday, January 4th 2019, 11:52:41 am
@@ -15,7 +15,7 @@ import iblrig.bonsai as bonsai
 import iblrig.frame2TTL
 import iblrig.params as params
 import iblrig.path_helper as ph
-import user_settings
+import user_settings  # noqa
 
 sys.stdout.flush()
 
@@ -48,7 +48,7 @@ iblrig.frame2TTL.get_and_set_thresholds()
 bpod = Bpod()
 # Soft code handler function can run arbitrary code from within state machine
 bpod.softcode_handler_function = softcode_handler
-log.info(f"Starting 1000 iterations of 1000 sync square pulses @60Hz")
+log.info(f"Starting 500 iterations of 1000 sync square pulses @60Hz")
 sys.stdout.flush()
 
 NITER = 500
@@ -73,7 +73,7 @@ for i in range(NITER):
     # Send state machine description to Bpod device
     bpod.send_state_machine(sma)
     # Run state machine
-   if not bpod.run_state_machine(sma):  # Locks until state machine 'exit' is reached
+    if not bpod.run_state_machine(sma):  # Locks until state machine 'exit' is reached
         break
 
     data = bpod.session.current_trial.export()

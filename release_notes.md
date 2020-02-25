@@ -25,6 +25,7 @@ Minor update (added functionality)
 * Added sound recording in ephys rig for both biased and ephysCW tasks (was missing)
 
 ## **Release Notes 6.2.5**
+
 *THIS: State Machine changed*
 Patch update (bugfixes)  
 

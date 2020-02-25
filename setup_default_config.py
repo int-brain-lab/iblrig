@@ -354,9 +354,9 @@ def create_experiment_setups(iblproject_path, exp_name: str):  # XXX:THIS!
     if exp.name == "_iblrig_calibration":
         screen = create_setup(exp, "screen", p.boards[0].name, calib_subj)  # noqa
         water = create_setup(exp, "water", p.boards[0].name, calib_subj)  # noqa
-        input_listner = create_setup(
+        input_listner = create_setup(  # noqa
             exp, "input_listner", p.boards[0].name, calib_subj
-        )  # noqa
+        )
         frame2TTL = create_setup(exp, "frame2TTL", p.boards[0].name, calib_subj)  # noqa
 
     if exp.name == "_iblrig_misc":
