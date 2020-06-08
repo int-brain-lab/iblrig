@@ -10,12 +10,20 @@
   </DesktopBounds>
   <RecentlyUsedFiles>
     <RecentlyUsedFile>
-      <Timestamp>2020-06-08T18:36:30.4335970+01:00</Timestamp>
-      <Name>C:\iblrig\visual_stim\ephys_certification\ephys_certification.bonsai</Name>
+      <Timestamp>2020-06-08T18:48:51.6066719+01:00</Timestamp>
+      <Name>C:\iblrig\visual_stim\f2ttl_calibration\screen_60Hz_w_harp_sensor.bonsai</Name>
+    </RecentlyUsedFile>
+    <RecentlyUsedFile>
+      <Timestamp>2020-06-08T18:38:16.1429234+01:00</Timestamp>
+      <Name>C:\iblrig\visual_stim\f2ttl_calibration\screen_color.bonsai</Name>
     </RecentlyUsedFile>
     <RecentlyUsedFile>
       <Timestamp>2020-06-08T18:33:47.8673120+01:00</Timestamp>
       <Name>C:\iblrig\visual_stim\GaborIBLTask\Gabor2D.bonsai</Name>
+    </RecentlyUsedFile>
+    <RecentlyUsedFile>
+      <Timestamp>2020-06-08T18:32:42.7394683+01:00</Timestamp>
+      <Name>C:\iblrig\visual_stim\ephys_certification\ephys_certification.bonsai</Name>
     </RecentlyUsedFile>
     <RecentlyUsedFile>
       <Timestamp>2020-06-08T18:25:41.2993325+01:00</Timestamp>
@@ -52,10 +60,6 @@
     <RecentlyUsedFile>
       <Timestamp>2019-10-04T16:49:07.8386687+01:00</Timestamp>
       <Name>C:\iblrig\devices\screen_calibration\screen_sweep.bonsai</Name>
-    </RecentlyUsedFile>
-    <RecentlyUsedFile>
-      <Timestamp>2019-10-04T14:00:43.7179830+01:00</Timestamp>
-      <Name>C:\iblrig\visual_stim\f2ttl_calibration\screen_color.bonsai</Name>
     </RecentlyUsedFile>
   </RecentlyUsedFiles>
 </EditorSettings>
