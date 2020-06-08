@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<WorkflowBuilder Version="2.4.1"
+<WorkflowBuilder Version="2.5.0"
                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                  xmlns:dsp="clr-namespace:Bonsai.Dsp;assembly=Bonsai.Dsp"
                  xmlns:rx="clr-namespace:Bonsai.Reactive;assembly=Bonsai.Core"
@@ -140,17 +140,17 @@
               </PropertyMappings>
             </Expression>
             <Expression xsi:type="IncludeWorkflow" Path="BonVision:Primitives.DrawGratings.bonsai">
-              <LocationX>-0.0006927132</LocationX>
+              <LocationX>0</LocationX>
               <LocationY>0</LocationY>
               <Angle>0</Angle>
               <SpatialFrequency>0.1</SpatialFrequency>
               <TemporalFrequency>0</TemporalFrequency>
               <Phase>0</Phase>
               <SquareWave>false</SquareWave>
-              <Contrast>1</Contrast>
+              <Contrast>0</Contrast>
               <Radius>0.445389926</Radius>
               <Aperture>0.445389926</Aperture>
-              <Opacity>1</Opacity>
+              <Opacity>0</Opacity>
               <ExtentX>110.015961</ExtentX>
               <ExtentY>110.015961</ExtentY>
             </Expression>
@@ -178,9 +178,9 @@
                     <Property Name="Connection" />
                   </Expression>
                   <Expression xsi:type="osc:ReceiveMessage">
-                    <osc:Connection>bpod</osc:Connection>
                     <osc:Address>/p</osc:Address>
                     <osc:TypeTag>i</osc:TypeTag>
+                    <osc:Connection>bpod</osc:Connection>
                   </Expression>
                   <Expression xsi:type="Combinator">
                     <Combinator xsi:type="gl:SampleOnUpdateFrame" />
@@ -189,9 +189,9 @@
                     <Name>InitPosition</Name>
                   </Expression>
                   <Expression xsi:type="osc:ReceiveMessage">
-                    <osc:Connection>bpod</osc:Connection>
                     <osc:Address>/c</osc:Address>
                     <osc:TypeTag>f</osc:TypeTag>
+                    <osc:Connection>bpod</osc:Connection>
                   </Expression>
                   <Expression xsi:type="Combinator">
                     <Combinator xsi:type="gl:SampleOnUpdateFrame" />
@@ -200,9 +200,9 @@
                     <Name>Contrast</Name>
                   </Expression>
                   <Expression xsi:type="osc:ReceiveMessage">
-                    <osc:Connection>bpod</osc:Connection>
                     <osc:Address>/t</osc:Address>
                     <osc:TypeTag>i</osc:TypeTag>
+                    <osc:Connection>bpod</osc:Connection>
                   </Expression>
                   <Expression xsi:type="Combinator">
                     <Combinator xsi:type="gl:SampleOnUpdateFrame" />
@@ -211,9 +211,9 @@
                     <Name>TrialNum</Name>
                   </Expression>
                   <Expression xsi:type="osc:ReceiveMessage">
-                    <osc:Connection>bpod</osc:Connection>
                     <osc:Address>/f</osc:Address>
                     <osc:TypeTag>f</osc:TypeTag>
+                    <osc:Connection>bpod</osc:Connection>
                   </Expression>
                   <Expression xsi:type="Combinator">
                     <Combinator xsi:type="gl:SampleOnUpdateFrame" />
@@ -222,9 +222,9 @@
                     <Name>StimFreq</Name>
                   </Expression>
                   <Expression xsi:type="osc:ReceiveMessage">
-                    <osc:Connection>bpod</osc:Connection>
                     <osc:Address>/a</osc:Address>
                     <osc:TypeTag>f</osc:TypeTag>
+                    <osc:Connection>bpod</osc:Connection>
                   </Expression>
                   <Expression xsi:type="Combinator">
                     <Combinator xsi:type="gl:SampleOnUpdateFrame" />
@@ -233,9 +233,9 @@
                     <Name>StimAngle</Name>
                   </Expression>
                   <Expression xsi:type="osc:ReceiveMessage">
-                    <osc:Connection>bpod</osc:Connection>
                     <osc:Address>/s</osc:Address>
                     <osc:TypeTag>f</osc:TypeTag>
+                    <osc:Connection>bpod</osc:Connection>
                   </Expression>
                   <Expression xsi:type="Combinator">
                     <Combinator xsi:type="gl:SampleOnUpdateFrame" />
@@ -249,9 +249,9 @@
                     <Name>StimSize</Name>
                   </Expression>
                   <Expression xsi:type="osc:ReceiveMessage">
-                    <osc:Connection>bpod</osc:Connection>
                     <osc:Address>/g</osc:Address>
                     <osc:TypeTag>f</osc:TypeTag>
+                    <osc:Connection>bpod</osc:Connection>
                   </Expression>
                   <Expression xsi:type="Combinator">
                     <Combinator xsi:type="gl:SampleOnUpdateFrame" />
@@ -260,9 +260,9 @@
                     <Name>Gain</Name>
                   </Expression>
                   <Expression xsi:type="osc:ReceiveMessage">
-                    <osc:Connection>bpod</osc:Connection>
                     <osc:Address>/h</osc:Address>
                     <osc:TypeTag>f</osc:TypeTag>
+                    <osc:Connection>bpod</osc:Connection>
                   </Expression>
                   <Expression xsi:type="Combinator">
                     <Combinator xsi:type="gl:SampleOnUpdateFrame" />
@@ -271,9 +271,9 @@
                     <Name>StimPhase</Name>
                   </Expression>
                   <Expression xsi:type="osc:ReceiveMessage">
-                    <osc:Connection>bpod</osc:Connection>
                     <osc:Address>/re</osc:Address>
                     <osc:TypeTag>i</osc:TypeTag>
+                    <osc:Connection>bpod</osc:Connection>
                   </Expression>
                   <Expression xsi:type="MulticastSubject">
                     <Name>BpodEvent</Name>
@@ -585,9 +585,9 @@
               <Combinator xsi:type="gl:WindowClosed" />
             </Expression>
             <Expression xsi:type="osc:ReceiveMessage">
-              <osc:Connection>bpod</osc:Connection>
               <osc:Address>/x</osc:Address>
               <osc:TypeTag>i</osc:TypeTag>
+              <osc:Connection>bpod</osc:Connection>
             </Expression>
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="gl:SampleOnUpdateFrame" />
@@ -649,7 +649,7 @@
                   <Expression xsi:type="Combinator">
                     <Combinator xsi:type="gl:RenderFrame" />
                   </Expression>
-                  <Expression xsi:type="IncludeWorkflow" Path="BonVision:Environment.OrthographicViewport.bonsai">
+                  <Expression xsi:type="IncludeWorkflow" Path="BonVision:Environment.OrthographicView.bonsai">
                     <Left>-180</Left>
                     <Right>180</Right>
                     <Bottom>-90</Bottom>
@@ -710,7 +710,7 @@
                       <Property Name="Height" Selector="Item2" />
                     </PropertyMappings>
                   </Expression>
-                  <Expression xsi:type="IncludeWorkflow" Path="BonVision:Environment.ViewingWindow.bonsai">
+                  <Expression xsi:type="IncludeWorkflow" Path="BonVision:Environment.ViewWindow.bonsai">
                     <Width>20</Width>
                     <Height>15</Height>
                     <Rotation>
@@ -724,7 +724,7 @@
                       <Z>-7</Z>
                     </Translation>
                   </Expression>
-                  <Expression xsi:type="IncludeWorkflow" Path="BonVision:Environment.NormalizedViewport.bonsai" />
+                  <Expression xsi:type="IncludeWorkflow" Path="BonVision:Environment.NormalizedView.bonsai" />
                   <Expression xsi:type="PublishSubject">
                     <Name>DrawSyncSquare</Name>
                   </Expression>
