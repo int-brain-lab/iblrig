@@ -1,0 +1,41 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<EditorSettings>
+  <WindowState>Normal</WindowState>
+  <EditorTheme>Light</EditorTheme>
+  <DesktopBounds>
+    <X>457</X>
+    <Y>76</Y>
+    <Width>1156</Width>
+    <Height>868</Height>
+  </DesktopBounds>
+  <RecentlyUsedFiles>
+    <RecentlyUsedFile>
+      <Timestamp>2020-06-08T15:27:43.4263384+01:00</Timestamp>
+      <Name>c:\iblrig\devices\camera_recordings\one_camera.bonsai</Name>
+    </RecentlyUsedFile>
+    <RecentlyUsedFile>
+      <Timestamp>2020-03-02T13:11:14.5416568+00:00</Timestamp>
+      <Name>C:\iblrig\visual_stim\GaborIBLTask\Gabor2D.bonsai</Name>
+    </RecentlyUsedFile>
+    <RecentlyUsedFile>
+      <Timestamp>2020-03-02T13:09:46.9944609+00:00</Timestamp>
+      <Name>C:\iblrig\visual_stim\GaborHabituationTask\Gabor2D.bonsai</Name>
+    </RecentlyUsedFile>
+    <RecentlyUsedFile>
+      <Timestamp>2020-03-02T11:42:32.2111416+00:00</Timestamp>
+      <Name>c:\iblrig\devices\microphone\record_mic.bonsai</Name>
+    </RecentlyUsedFile>
+    <RecentlyUsedFile>
+      <Timestamp>2020-02-28T14:20:19.1106801+00:00</Timestamp>
+      <Name>C:\iblscripts\deploy\videopc\bonsai\workflows\three_cameras_record.bonsai</Name>
+    </RecentlyUsedFile>
+    <RecentlyUsedFile>
+      <Timestamp>2020-02-28T14:19:36.7638950+00:00</Timestamp>
+      <Name>C:\iblrig\devices\camera_recordings\one_camera.bonsai</Name>
+    </RecentlyUsedFile>
+    <RecentlyUsedFile>
+      <Timestamp>2020-02-11T11:18:51.5763139+00:00</Timestamp>
+      <Name>C:\iblrig\visual_stim\passiveChoiceWorld\passiveChoiceWorld_passive.bonsai</Name>
+    </RecentlyUsedFile>
+  </RecentlyUsedFiles>
+</EditorSettings>
