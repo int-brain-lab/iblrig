@@ -1,41 +1,53 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <EditorSettings>
-  <WindowState>Normal</WindowState>
+  <WindowState>Maximized</WindowState>
   <EditorTheme>Light</EditorTheme>
   <DesktopBounds>
-    <X>457</X>
-    <Y>76</Y>
-    <Width>1156</Width>
-    <Height>868</Height>
+    <X>500</X>
+    <Y>185</Y>
+    <Width>997</Width>
+    <Height>747</Height>
   </DesktopBounds>
   <RecentlyUsedFiles>
     <RecentlyUsedFile>
-      <Timestamp>2020-06-08T17:38:22.5645698+01:00</Timestamp>
-      <Name>c:\iblrig\devices\camera_recordings\one_camera.bonsai</Name>
+      <Timestamp>2020-06-08T18:11:00.4572998+01:00</Timestamp>
+      <Name>C:\iblrig\visual_stim\GaborIBLTask\Gabor2D_clean2.5.bonsai</Name>
     </RecentlyUsedFile>
     <RecentlyUsedFile>
-      <Timestamp>2020-03-02T13:11:14.5416568+00:00</Timestamp>
-      <Name>C:\iblrig\visual_stim\GaborIBLTask\Gabor2D.bonsai</Name>
+      <Timestamp>2020-06-08T18:10:32.0888005+01:00</Timestamp>
+      <Name>C:\iblrig\devices\microphone\record_mic.bonsai</Name>
     </RecentlyUsedFile>
     <RecentlyUsedFile>
-      <Timestamp>2020-03-02T13:09:46.9944609+00:00</Timestamp>
-      <Name>C:\iblrig\visual_stim\GaborHabituationTask\Gabor2D.bonsai</Name>
+      <Timestamp>2020-06-08T18:10:10.0367691+01:00</Timestamp>
+      <Name>C:\iblrig\devices\camera_setup\setup_video.bonsai</Name>
     </RecentlyUsedFile>
     <RecentlyUsedFile>
-      <Timestamp>2020-03-02T11:42:32.2111416+00:00</Timestamp>
-      <Name>c:\iblrig\devices\microphone\record_mic.bonsai</Name>
-    </RecentlyUsedFile>
-    <RecentlyUsedFile>
-      <Timestamp>2020-02-28T14:20:19.1106801+00:00</Timestamp>
-      <Name>C:\iblscripts\deploy\videopc\bonsai\workflows\three_cameras_record.bonsai</Name>
-    </RecentlyUsedFile>
-    <RecentlyUsedFile>
-      <Timestamp>2020-02-28T14:19:36.7638950+00:00</Timestamp>
+      <Timestamp>2020-06-08T18:09:54.0864219+01:00</Timestamp>
       <Name>C:\iblrig\devices\camera_recordings\one_camera.bonsai</Name>
     </RecentlyUsedFile>
     <RecentlyUsedFile>
-      <Timestamp>2020-02-11T11:18:51.5763139+00:00</Timestamp>
-      <Name>C:\iblrig\visual_stim\passiveChoiceWorld\passiveChoiceWorld_passive.bonsai</Name>
+      <Timestamp>2020-06-08T16:08:52.8145728+01:00</Timestamp>
+      <Name>C:\iblrig\visual_stim\GaborIBLTask\Gabor2D_clean.bonsai</Name>
+    </RecentlyUsedFile>
+    <RecentlyUsedFile>
+      <Timestamp>2019-11-19T17:19:09.1625885+00:00</Timestamp>
+      <Name>C:\iblrig\visual_stim\GaborIBLTask\Gabor2D.bonsai</Name>
+    </RecentlyUsedFile>
+    <RecentlyUsedFile>
+      <Timestamp>2019-11-19T16:42:29.1331400+00:00</Timestamp>
+      <Name>C:\iblrig\visual_stim\passiveChoiceWorld\Extensions\Spacer.bonsai</Name>
+    </RecentlyUsedFile>
+    <RecentlyUsedFile>
+      <Timestamp>2019-10-07T12:42:05.0984697+01:00</Timestamp>
+      <Name>C:\iblrig\visual_stim\ephys_certification\Extensions\OrientationDirectionSelectivityStim.bonsai</Name>
+    </RecentlyUsedFile>
+    <RecentlyUsedFile>
+      <Timestamp>2019-10-04T16:49:07.8386687+01:00</Timestamp>
+      <Name>C:\iblrig\devices\screen_calibration\screen_sweep.bonsai</Name>
+    </RecentlyUsedFile>
+    <RecentlyUsedFile>
+      <Timestamp>2019-10-04T14:00:43.7179830+01:00</Timestamp>
+      <Name>C:\iblrig\visual_stim\f2ttl_calibration\screen_color.bonsai</Name>
     </RecentlyUsedFile>
   </RecentlyUsedFiles>
 </EditorSettings>
