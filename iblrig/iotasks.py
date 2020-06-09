@@ -10,10 +10,10 @@ import zipfile
 from pathlib import Path
 
 import ibllib.io.raw_data_loaders as raw
-import iblrig.path_helper as ph
 import numpy as np
 
 import iblrig.misc as misc
+import iblrig.path_helper as ph
 
 log = logging.getLogger("iblrig")
 

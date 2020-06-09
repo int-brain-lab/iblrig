@@ -2,11 +2,13 @@
 # -*- coding:utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date: Thursday, January 31st 2019, 1:15:46 pm
-from pathlib import Path
 import argparse
+from pathlib import Path
+
 import ibllib.io.params as params
 import oneibl.params
 from ibllib.pipes.experimental_data import create
+
 from iblrig.poop_count import poop
 
 IBLRIG_FOLDER = Path(__file__).absolute().parent.parent
