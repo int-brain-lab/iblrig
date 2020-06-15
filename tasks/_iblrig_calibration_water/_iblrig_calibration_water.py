@@ -23,7 +23,6 @@ from pybpodapi.bpod import Bpod
 from pybpodapi.state_machine import StateMachine
 
 import iblrig.params as params
-
 # import iblrig.path_helper as path_helper
 import task_settings
 import user_settings  # PyBpod creates this file on run.
