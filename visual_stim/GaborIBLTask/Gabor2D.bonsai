@@ -292,8 +292,8 @@
                             <Combinator xsi:type="dsp:Rescale">
                               <dsp:Min>0</dsp:Min>
                               <dsp:Max>1024</dsp:Max>
-                              <dsp:RangeMin>-70</dsp:RangeMin>
-                              <dsp:RangeMax>70</dsp:RangeMax>
+                              <dsp:RangeMin>-20</dsp:RangeMin>
+                              <dsp:RangeMax>3333331</dsp:RangeMax>
                               <dsp:RescaleType>Linear</dsp:RescaleType>
                             </Combinator>
                           </Expression>
@@ -791,17 +791,17 @@
                     </PropertyMappings>
                   </Expression>
                   <Expression xsi:type="IncludeWorkflow" Path="BonVision:Primitives.DrawGratings.bonsai">
-                    <LocationX>-35</LocationX>
+                    <LocationX>-2.36779571</LocationX>
                     <LocationY>0</LocationY>
                     <Angle>0</Angle>
                     <SpatialFrequency>0.1</SpatialFrequency>
                     <TemporalFrequency>0</TemporalFrequency>
                     <Phase>0</Phase>
                     <SquareWave>false</SquareWave>
-                    <Contrast>1</Contrast>
+                    <Contrast>0</Contrast>
                     <Radius>0.445389926</Radius>
                     <Aperture>0.445389926</Aperture>
-                    <Opacity>1</Opacity>
+                    <Opacity>0</Opacity>
                     <ExtentX>110.015961</ExtentX>
                     <ExtentY>110.015961</ExtentY>
                   </Expression>
