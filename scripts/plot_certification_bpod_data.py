@@ -1,6 +1,5 @@
 import json
 
-import ibllib.plots.pprint as pprint  # noqa
 import matplotlib.pyplot as plt
 import numpy as np
 
