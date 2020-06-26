@@ -10,7 +10,7 @@ scratch/
 src/
 pybpod-api.log
 iblrig.egg-info/
-Bonsai/
+Bonsai/Packages/
 bin
 obj
 run.bat
