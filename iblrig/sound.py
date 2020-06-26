@@ -277,9 +277,9 @@ if __name__ == "__main__":
     # N_TTL = make_sound(chans='L+TTL', amplitude=-1)
     # import matplotlib.pyplot as plt
     # # sd.play(rig_tone, samplerate, mapping=[1, 2])
-    # l = 0.5
-    # c = make_chirp(f0=80, f1=160, length=l, amp=0.1, fade=0.05, sf=192000)
-    # plt.plot(np.linspace(0, l, 192000), c[:, 0])
+    # bla = 0.5
+    # c = make_chirp(f0=80, f1=160, length=bla, amp=0.1, fade=0.05, sf=192000)
+    # plt.plot(np.linspace(0, bla, 192000), c[:, 0])
     # plt.show()
 
     # TEST SOUNDCARD MODULE

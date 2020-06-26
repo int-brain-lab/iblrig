@@ -16,7 +16,7 @@ class TestAlyx(unittest.TestCase):
         self.one = one
 
     def test_create_session(self):
-        pass
+        alyx.create_session(session_folder, one=self.one)
 
     def tearDown(self):
         pass
