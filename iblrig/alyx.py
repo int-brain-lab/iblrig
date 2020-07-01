@@ -150,6 +150,10 @@ def update_completed_session(session_folder):
     pass
 
 
+def sync_alyx_subjects(one=None):
+    one = one or ONE()
+
+
 if __name__ == "__main__":
     # subject = 'ZM_1737'
 
