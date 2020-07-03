@@ -77,8 +77,8 @@ def check_sync_status(table_name, one=None):
 
 
 ALF_PARAMS = {
-    default_root_data_dir = str(PurePath(Path.home(), "Downloads", "FlatIron")),
-    sync_frequency =
+    "default_root_data_dir": str(PurePath(Path.home(), "Downloads", "FlatIron")),
+    "sync_frequency": 1  # Days
 }
 
 
