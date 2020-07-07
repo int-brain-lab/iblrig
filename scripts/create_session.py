@@ -7,7 +7,8 @@ from pathlib import Path
 
 import ibllib.io.params as params
 import oneibl.params
-from ibllib.pipes.experimental_data import create
+# from ibllib.pipes.experimental_data import create
+from oneibl.registration import RegistrationClient
 
 from iblrig.poop_count import poop
 
@@ -21,7 +22,8 @@ def main():
     if not pfile.exists():
         oneibl.params.setup_alyx_params()
 
-    create(IBLRIG_DATA, dry=False)
+    RegistrationClient(one=one).create_sessions(IBLRIG_DATA, dry=False)
+    # create(IBLRIG_DATA, dry=False)
 
 
 if __name__ == "__main__":

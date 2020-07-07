@@ -11,7 +11,9 @@ import ibllib.io.flags as flags
 import ibllib.io.params as lib_params
 import ibllib.io.raw_data_loaders as raw
 import oneibl.params
-from ibllib.pipes.experimental_data import create
+# from ibllib.pipes.experimental_data import create
+from oneibl.registration import RegistrationClient
+
 from oneibl.one import ONE
 
 import iblrig.params as rig_params
@@ -25,8 +27,9 @@ def create_session(session_folder, one=None):
     if not pfile.exists():
         oneibl.params.setup_alyx_params()
 
-    flags.create_create_flags(session_folder)
-    create(session_folder, dry=False, one=one)
+    # flags.create_create_flags(session_folder)
+    # create(session_folder, dry=False, one=one)
+    RegistrationClient(one=one).register_session(session_folder, file_list=False)
 
 
 def open_session_narrative(session_url: str) -> None:
