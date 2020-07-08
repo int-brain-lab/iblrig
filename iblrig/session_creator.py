@@ -47,7 +47,7 @@ def make_ephysCW_pcqs(pc):
     sphase = []
     qperiod = []
     for i in pc:
-        sphase.append(np.random.uniform(0, math.pi))
+        sphase.append(np.random.uniform(0, 2 * math.pi))
         qperiod.append(qperiod_base + misc.texp(factor=0.35, min_=0.2, max_=0.5))
     qs = np.array([qperiod, sphase]).T
     pcqs = np.append(pc, qs, axis=1)
@@ -137,7 +137,7 @@ def make_stims_for_certification_pcs(seed_num=None, save=False):
     pos = sorted(positions * len(contrasts) * pc_repeats)
     cont = contrasts * pc_repeats * len(positions)
 
-    sphase = [np.random.uniform(0, math.pi) for x in cont]
+    sphase = [np.random.uniform(0, 2 * math.pi) for x in cont]
     gabors = np.array([[int(p), c, s] for p, c, s in zip(pos, cont, sphase)])
 
     np.random.shuffle(gabors)
@@ -169,7 +169,7 @@ def make_stims_for_passiveCW_pcs(seed_num=None, save=False):
 
     pos.extend(positions * int(zero_repeats / len(positions)))
     cont.extend(zero_contrasts * int(zero_repeats))
-    sphase = [np.random.uniform(0, math.pi) for x in cont]
+    sphase = [np.random.uniform(0, 2 * math.pi) for x in cont]
     gabors = np.array([[int(p), c, s] for p, c, s in zip(pos, cont, sphase)])
 
     np.random.shuffle(gabors)

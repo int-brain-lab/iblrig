@@ -22,7 +22,7 @@ def main():
     if not pfile.exists():
         oneibl.params.setup_alyx_params()
 
-    RegistrationClient(one=one).create_sessions(IBLRIG_DATA, dry=False)
+    RegistrationClient(one=None).create_sessions(IBLRIG_DATA, dry=False)
     # create(IBLRIG_DATA, dry=False)
 
 

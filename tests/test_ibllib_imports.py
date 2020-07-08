@@ -18,11 +18,10 @@ class TestIBLRigImports(unittest.TestCase):
         from ibllib.graphic import numinput, popup, strinput
         from ibllib.io import raw_data_loaders as raw
         from ibllib.misc import logger_config
-        from ibllib.pipes.experimental_data import (compress_video, create, extract,
-                                                    register)
         from ibllib.pipes.purge_rig_data import purge_local_data
         from ibllib.pipes.transfer_rig_data import main
         from oneibl.one import ONE
+        from oneibl.registration import RegistrationClient
 
     def tearDown(self):
         pass
