@@ -256,7 +256,25 @@ def pre_generate_passiveCW_session_files(
         np.save(path / f"session_mock_passive_pcs.npy", pcs)
 
 
+def pre_generate_stim_phase(
+    nsessions, path="./tasks/_iblrig_tasks_ephysChoiceWorld/sessions"
+):
+    iblrig_path = Path(ph.get_iblrig_folder())
+    path = iblrig_path / Path(path)
+    path.mkdir(parents=True, exist_ok=True)
+    for i in range(nsessions):
+        length = len(np.load(path.joinpath(f"session_{i}_ephys_pcqs.npy")))
+        sphase = np.array([np.random.uniform(0, 2 * math.pi) for x in range(length)])
+        np.save(path / f"session_{i}_stim_phase.npy", sphase)
+    else:
+        length = len(np.load(path.joinpath(f"session_mock_ephys_pcqs.npy")))
+        sphase = np.array([np.random.uniform(0, 2 * math.pi) for x in range(length)])
+        np.save(path / f"session_mock_stim_phase.npy", sphase)
+
+
 if __name__ == "__main__":
+    # np.random.seed(42)
+    # pre_generate_stim_phase(12)
     # import seaborn as sns
     # plt.ion()
     # pcqs3, len_block3 = plot_pcqs(3)
