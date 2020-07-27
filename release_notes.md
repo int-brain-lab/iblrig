@@ -2,7 +2,7 @@
 
 ## **Release Notes 6.4.1**
 
-Patch update (added features)
+Patch update (bugfixes)
 
 * Increased stim_on state timer to 150ms
 * Added write timeout to frame2TTL serial connecion
