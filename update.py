@@ -217,8 +217,6 @@ def _update(branch=None, version=None):
         elif branch is None and version is None:
             checkout_version(sorted(ALL_VERSIONS)[-1])
         update_pip()
-        if upgrade_conda:
-            update_conda()
         update_env()
         import_tasks()
         if UPGRADE_BONSAI:
@@ -314,7 +312,5 @@ if __name__ == '__main__':
     parser.add_argument('--upgrade-bonsai', required=False, default=False,
                         action='store_true', help='Upgrade Bonsai')
     args = parser.parse_args()
-    global upgrade_conda
-    upgrade_conda = args.upgrade_conda
     main(args)
     print('\n')
