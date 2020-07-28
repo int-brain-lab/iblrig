@@ -204,7 +204,7 @@ def update_to_latest():
 
 
 def _update(branch=None, version=None):
-    ver = version or branch
+    ver = branch or version
     resp = ask_user_input(ver=ver)
     if resp == 'y':
         if branch:
