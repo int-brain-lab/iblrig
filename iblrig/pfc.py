@@ -26,7 +26,7 @@ import struct
 import serial
 from pybpod_rotaryencoder_module.module_api import RotaryEncoderModule
 
-import iblrig.alyx as alyx
+from oneibl.one import ONE
 import iblrig.logging_  # noqa
 import iblrig.params as params
 from iblrig.frame2TTL import Frame2TTL
@@ -37,7 +37,7 @@ log.setLevel(logging.DEBUG)
 
 # Check if Alyx is accessible
 log.debug("Alyx: Connecting...")
-one = alyx.get_one()
+one = ONE()
 # Load PARAMS file ports
 # If file exists open file if not initialize
 log.debug("Loading params file...")

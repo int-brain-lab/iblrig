@@ -2,13 +2,14 @@
 # -*- coding:utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date: Thursday, February 21st 2019, 7:13:37 pm
+import sys
 from pathlib import Path
+
 import ibllib.io.raw_data_loaders as raw
-from iblrig.misc import get_port_events
 import matplotlib.pyplot as plt
 import numpy as np
-import sys
 
+from iblrig.misc import get_port_events
 
 if __name__ == "__main__":
     if len(sys.argv) == 1:

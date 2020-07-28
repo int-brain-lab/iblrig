@@ -1,11 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<WorkflowBuilder Version="2.4.1-patch"
+<WorkflowBuilder Version="2.5.0"
                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                  xmlns:gl="clr-namespace:Bonsai.Shaders;assembly=Bonsai.Shaders"
                  xmlns:res="clr-namespace:Bonsai.Resources;assembly=Bonsai.System"
                  xmlns:rx="clr-namespace:Bonsai.Reactive;assembly=Bonsai.Core"
                  xmlns:cv="clr-namespace:Bonsai.Vision;assembly=Bonsai.Vision"
-                 xmlns:q1="clr-namespace:Bonsai.Numerics;assembly=Bonsai.Numerics"
+                 xmlns:p1="clr-namespace:Bonsai.Numerics;assembly=Bonsai.Numerics"
                  xmlns:dsp="clr-namespace:Bonsai.Dsp;assembly=Bonsai.Dsp"
                  xmlns="https://bonsai-rx.org/2018/workflow">
   <Workflow>
@@ -24,6 +24,7 @@
           <gl:WindowState>Fullscreen</gl:WindowState>
           <gl:DisplayDevice>Second</gl:DisplayDevice>
           <gl:TargetRenderFrequency>60</gl:TargetRenderFrequency>
+          <gl:TargetUpdateFrequency xsi:nil="true" />
           <gl:RenderState />
           <gl:GraphicsMode>
             <gl:ColorFormat>
@@ -69,7 +70,7 @@
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="gl:RenderFrame" />
       </Expression>
-      <Expression xsi:type="IncludeWorkflow" Path="BonVision:Environment.OrthographicViewport.bonsai">
+      <Expression xsi:type="IncludeWorkflow" Path="BonVision:Environment.OrthographicView.bonsai">
         <Left>-180</Left>
         <Right>180</Right>
         <Bottom>-90</Bottom>
@@ -131,7 +132,7 @@
           <Property Name="Height" />
         </PropertyMappings>
       </Expression>
-      <Expression xsi:type="IncludeWorkflow" Path="BonVision:Environment.ViewingWindow.bonsai">
+      <Expression xsi:type="IncludeWorkflow" Path="BonVision:Environment.ViewWindow.bonsai">
         <Width>20</Width>
         <Height>15</Height>
         <Rotation>
@@ -162,7 +163,7 @@
             <Expression xsi:type="WorkflowInput">
               <Name>Source1</Name>
             </Expression>
-            <Expression xsi:type="IncludeWorkflow" Path="BonVision:Environment.NormalizedViewport.bonsai" />
+            <Expression xsi:type="IncludeWorkflow" Path="BonVision:Environment.NormalizedView.bonsai" />
             <Expression xsi:type="IncludeWorkflow" Path="BonVision:Primitives.DrawQuad.bonsai">
               <ExtentX>0.2</ExtentX>
               <ExtentY>0.2</ExtentY>
@@ -238,7 +239,7 @@
               <Name>TranslationZ</Name>
             </Expression>
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="q1:Abs" />
+              <Combinator xsi:type="p1:Abs" />
             </Expression>
             <Expression xsi:type="PropertyMapping">
               <PropertyMappings>
@@ -259,10 +260,10 @@
               </Operand>
             </Expression>
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="q1:Atan" />
+              <Combinator xsi:type="p1:Atan" />
             </Expression>
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="q1:RadianToDegree" />
+              <Combinator xsi:type="p1:RadianToDegree" />
             </Expression>
             <Expression xsi:type="Multiply">
               <Operand xsi:type="DoubleProperty">
@@ -326,8 +327,8 @@
               <Name>UpdateSyncSquare</Name>
             </Expression>
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="q1:CreateRandom">
-                <q1:Seed>42</q1:Seed>
+              <Combinator xsi:type="p1:CreateRandom">
+                <p1:Seed>42</p1:Seed>
               </Combinator>
             </Expression>
             <Expression xsi:type="AsyncSubject">

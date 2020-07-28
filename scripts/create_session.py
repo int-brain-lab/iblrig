@@ -2,11 +2,14 @@
 # -*- coding:utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date: Thursday, January 31st 2019, 1:15:46 pm
-from pathlib import Path
 import argparse
+from pathlib import Path
+
 import ibllib.io.params as params
 import oneibl.params
-from ibllib.pipes.experimental_data import create
+# from ibllib.pipes.experimental_data import create
+from oneibl.registration import RegistrationClient
+
 from iblrig.poop_count import poop
 
 IBLRIG_FOLDER = Path(__file__).absolute().parent.parent
@@ -19,7 +22,8 @@ def main():
     if not pfile.exists():
         oneibl.params.setup_alyx_params()
 
-    create(IBLRIG_DATA, dry=False)
+    RegistrationClient(one=None).create_sessions(IBLRIG_DATA, dry=False)
+    # create(IBLRIG_DATA, dry=False)
 
 
 if __name__ == "__main__":

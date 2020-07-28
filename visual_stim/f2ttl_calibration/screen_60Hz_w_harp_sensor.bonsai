@@ -1,12 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<WorkflowBuilder Version="2.4.1-patch"
+<WorkflowBuilder Version="2.5.0"
                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                  xmlns:gl="clr-namespace:Bonsai.Shaders;assembly=Bonsai.Shaders"
                  xmlns:res="clr-namespace:Bonsai.Resources;assembly=Bonsai.System"
                  xmlns:rx="clr-namespace:Bonsai.Reactive;assembly=Bonsai.Core"
                  xmlns:io="clr-namespace:Bonsai.IO;assembly=Bonsai.System"
-                 xmlns:q1="clr-namespace:Bonsai.Harp;assembly=Bonsai.Harp"
-                 xmlns:q2="clr-namespace:Bonsai.Harp.CF;assembly=Bonsai.Harp.CF"
+                 xmlns:p1="clr-namespace:Bonsai.Harp;assembly=Bonsai.Harp"
+                 xmlns:p2="clr-namespace:Bonsai.Harp.CF;assembly=Bonsai.Harp.CF"
                  xmlns="https://bonsai-rx.org/2018/workflow">
   <Workflow>
     <Nodes>
@@ -32,6 +32,7 @@
                 <gl:WindowState>Fullscreen</gl:WindowState>
                 <gl:DisplayDevice>Second</gl:DisplayDevice>
                 <gl:TargetRenderFrequency>0</gl:TargetRenderFrequency>
+                <gl:TargetUpdateFrequency xsi:nil="true" />
                 <gl:RenderState />
                 <gl:GraphicsMode>
                   <gl:ColorFormat>
@@ -73,7 +74,7 @@
                   <Expression xsi:type="Combinator">
                     <Combinator xsi:type="gl:RenderFrame" />
                   </Expression>
-                  <Expression xsi:type="IncludeWorkflow" Path="BonVision:Environment.NormalizedViewport.bonsai" />
+                  <Expression xsi:type="IncludeWorkflow" Path="BonVision:Environment.NormalizedView.bonsai" />
                   <Expression xsi:type="Combinator">
                     <Combinator xsi:type="IntProperty">
                       <Value>1</Value>
@@ -187,19 +188,19 @@
             </Expression>
             <Expression xsi:type="WorkflowOutput" />
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="q1:Device">
-                <q1:PortName>COM5</q1:PortName>
-                <q1:DeviceState>Active</q1:DeviceState>
-                <q1:DumpRegisters>true</q1:DumpRegisters>
-                <q1:LedState>On</q1:LedState>
-                <q1:VisualIndicators>On</q1:VisualIndicators>
-                <q1:Heartbeat>Disable</q1:Heartbeat>
-                <q1:IgnoreErrors>false</q1:IgnoreErrors>
+              <Combinator xsi:type="p1:Device">
+                <p1:PortName>COM5</p1:PortName>
+                <p1:DeviceState>Active</p1:DeviceState>
+                <p1:DumpRegisters>true</p1:DumpRegisters>
+                <p1:LedState>On</p1:LedState>
+                <p1:VisualIndicators>On</p1:VisualIndicators>
+                <p1:Heartbeat>Disable</p1:Heartbeat>
+                <p1:IgnoreErrors>false</p1:IgnoreErrors>
               </Combinator>
             </Expression>
-            <Expression xsi:type="q2:BehaviorEvent">
-              <q2:Type>RegisterAnalogInput</q2:Type>
-              <q2:Mask>Port0</q2:Mask>
+            <Expression xsi:type="p2:BehaviorEvent">
+              <p2:Type>RegisterAnalogInput</p2:Type>
+              <p2:Mask>Port0</p2:Mask>
             </Expression>
             <Expression xsi:type="ExternalizedMapping">
               <Property Name="FileName" />
@@ -211,9 +212,9 @@
               <io:Suffix>None</io:Suffix>
               <io:IncludeHeader>false</io:IncludeHeader>
             </Expression>
-            <Expression xsi:type="q2:BehaviorEvent">
-              <q2:Type>AnalogInput</q2:Type>
-              <q2:Mask>Port0</q2:Mask>
+            <Expression xsi:type="p2:BehaviorEvent">
+              <p2:Type>AnalogInput</p2:Type>
+              <p2:Mask>Port0</p2:Mask>
             </Expression>
           </Nodes>
           <Edges>

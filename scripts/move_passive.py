@@ -2,12 +2,13 @@
 # -*- coding:utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date: Monday, December 2nd 2019, 4:52:40 pm
+import logging
 from pathlib import Path
 
 import ibllib.io.raw_data_loaders as raw
 import ibllib.pipes.misc as misc
+
 import iblrig.path_helper as ph
-import logging
 
 log = logging.getLogger("iblrig")
 
