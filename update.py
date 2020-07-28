@@ -220,7 +220,7 @@ def _update(branch=None, version=None):
         update_env()
         import_tasks()
         if UPGRADE_BONSAI:
-            upgrade_bonsai()
+            upgrade_bonsai(VERSION, BRANCH)
         update_bonsai()
     else:
         return
