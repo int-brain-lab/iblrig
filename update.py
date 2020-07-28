@@ -204,11 +204,8 @@ def update_to_latest():
 
 
 def _update(branch=None, version=None):
-    global upgrade_conda
-    if branch:
-        resp = ask_user_input(ver=branch)
-    elif version:
-        resp = ask_user_input(ver=version)
+    ver = version or branch
+    resp = ask_user_input(ver=ver)
     if resp == 'y':
         if branch:
             checkout_branch(branch)
