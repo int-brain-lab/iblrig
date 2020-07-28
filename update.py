@@ -283,7 +283,7 @@ if __name__ == '__main__':
     ALL_VERSIONS = get_versions()
     BRANCH = get_current_branch()
     VERSION = get_current_version()
-    UPGRADE_BONSAI = True
+    UPGRADE_BONSAI = False
     parser = argparse.ArgumentParser(description='Update iblrig')
     parser.add_argument('-v', required=False, default=False,
                         help='Available versions: ' + str(ALL_VERSIONS))
