@@ -1,5 +1,14 @@
 # **Release notes**
 
+## **Release Notes 6.4.1**
+
+Patch update (bugfixes)
+
+* Increased stim_on state timer to 150ms
+* Added write timeout to frame2TTL serial connecion
+* Added screen frequency target to rig params
+* Fixed bug in passive ChoiceWorld
+
 ## **Release Notes 6.4.0**
 
 Minor update (added features)

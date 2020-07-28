@@ -29,6 +29,7 @@ EMPTY_BOARD_PARAMS = {
     "F2TTL_DARK_THRESH": None,  # float
     "F2TTL_LIGHT_THRESH": None,  # float
     "F2TTL_CALIBRATION_DATE": None,  # str
+    "SCREEN_FREQ_TARGET": 60,  # int (Hz)
     "SCREEN_FREQ_TEST_STATUS": None,  # str
     "SCREEN_FREQ_TEST_DATE": None,  # str
     "WATER_CALIBRATION_RANGE": None,  # [min, max]
