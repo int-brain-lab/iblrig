@@ -31,10 +31,11 @@ optional arguments:
   --pip            Update pip setuptools and wheel
   --upgrade-conda  Dont update conda
 """
+import argparse
 import os
+import shutil
 import subprocess
 from pathlib import Path
-import argparse
 
 from setup_default_config import main as setup_pybpod
 
@@ -146,6 +147,19 @@ def update_bonsai():
     print('Done')
 
 
+def remove_bonsai():
+    broot = IBLRIG_ROOT_PATH / 'Bonsai'
+    shutil.rmtree(broot)
+
+def upgrade_bonsai(version, branch):
+    print("\nUpgrading Bonsai")
+    remove_bonsai()
+    if not version:
+        checkout_branch(branch)
+    elif not branch:
+        checkout_version(version)
+
+
 def branch_info():
     print("Current availiable branches:")
     print(subprocess.check_output(["git", "branch", "-avv"]).decode())
@@ -207,6 +221,8 @@ def _update(branch=None, version=None):
             update_conda()
         update_env()
         import_tasks()
+        if UPGRADE_BONSAI:
+            upgrade_bonsai()
         update_bonsai()
     else:
         return
@@ -256,6 +272,9 @@ def main(args):
     if args.conda:
         update_conda()
 
+    if args.upgrade_bonsai:
+        upgrade_bonsai(VERSION, BRANCH)
+
     return
 
 
@@ -266,6 +285,7 @@ if __name__ == '__main__':
     ALL_VERSIONS = get_versions()
     BRANCH = get_current_branch()
     VERSION = get_current_version()
+    UPGRADE_BONSAI = True
     parser = argparse.ArgumentParser(description='Update iblrig')
     parser.add_argument('-v', required=False, default=False,
                         help='Available versions: ' + str(ALL_VERSIONS))
@@ -291,6 +311,8 @@ if __name__ == '__main__':
                         help='Update pip setuptools and wheel')
     parser.add_argument('--upgrade-conda', required=False, default=False,
                         action='store_true', help='Dont update conda')
+    parser.add_argument('--upgrade-bonsai', required=False, default=False,
+                        action='store_true', help='Upgrade Bonsai')
     args = parser.parse_args()
     global upgrade_conda
     upgrade_conda = args.upgrade_conda
