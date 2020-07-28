@@ -25,7 +25,7 @@ class Frame2TTL(object):
 
     def connect(self, serial_port) -> serial.Serial:
         """Create connection to serial_port"""
-        ser = serial.Serial(port=serial_port, baudrate=115200, timeout=1)
+        ser = serial.Serial(port=serial_port, baudrate=115200, timeout=1., write_timeout=1.)
         self.connected = True
         return ser
 
