@@ -88,17 +88,22 @@ ser.write(struct.pack("cB", b":", 1))
 log.debug("Bpod Close")
 ser.close()
 # Check Frame2TTL (by setting the thresholds)
-f = Frame2TTL(PARAMS["COM_FRAME2TTL"])
+f = Frame2TTL(PARAMS["COM_F2TTL"])
+assert f.connected == True
+f.read_value() > 5
+f.set_thresholds(dark=PARAMS["F2TTL_DARK_THRESH"], light=PARAMS["F2TTL_LIGHT_THRESH"])
+f.close()
+# Ask user info
+
 # Create missing session folders
 
 # Cameras check + setup
 # iblrig.camera_config
 
-# Run fast task to check IO
+# Run fast task to check IO?
 
-# Create Alyx session reference?
+# Create Alyx session reference? NO
 
-# Open Alyx session notes in browser?
+# Open Alyx session notes in browser? NO
 
-# Ask user info
 print(".")
