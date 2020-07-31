@@ -22,7 +22,9 @@ from ibllib.graphic import numinput
 from pybpodapi.bpod import Bpod
 from pybpodapi.state_machine import StateMachine
 
+import iblrig.alyx as alyx
 import iblrig.params as params
+
 # import iblrig.path_helper as path_helper
 import task_settings
 import user_settings  # PyBpod creates this file on run.
@@ -276,7 +278,8 @@ patch = {}
 patch.update(range_patch)
 patch.update(func_patch)
 patch.update(date_patch)
-params.update_params(data=patch)
+params.update_params_file(data=patch)
+alyx.update_alyx_params(data=patch)
 
 os.system(sph.CALIBRATION_CURVE_FILE_PATH[:-4] + "_range.pdf")
 bpod.close()

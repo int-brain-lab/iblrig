@@ -3,6 +3,7 @@ import logging
 import time
 
 import iblrig.params as params
+import iblrig.alyx as alyx
 import task_settings
 import user_settings
 from iblrig.frame2TTL import Frame2TTL
@@ -31,7 +32,8 @@ if resp != -1:
         "F2TTL_CALIBRATION_DATE": datetime.datetime.now().date().isoformat(),
     }
 
-    params.update_params(data=patch)
+    params.update_params_file(data=patch)
+    alyx.update_alyx_params(data=patch)
 
 sph.stop_screen_color()
 
