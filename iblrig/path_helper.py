@@ -6,14 +6,50 @@ import datetime
 import logging
 import os
 import subprocess
+from os import listdir
+from os.path import join
 from pathlib import Path
 
+import win32api
+import win32com.client
 from ibllib.io import raw_data_loaders as raw
-import iblrig.params as params
 
 import iblrig.logging_  # noqa
+import iblrig.params as params
 
 log = logging.getLogger("iblrig")
+
+
+def get_network_drives():
+    from win32com.shell import shell, shellcon
+    NETWORK_SHORTCUTS_FOLDER_PATH = shell.SHGetFolderPath(0, shellcon.CSIDL_NETHOOD, None, 0)
+    # Add Logical Drives
+    drives = win32api.GetLogicalDriveStrings()
+    drives = drives.split('\000')[:-1]
+    # Add Network Locations
+    network_shortcuts = [join(NETWORK_SHORTCUTS_FOLDER_PATH, f) +
+                         "\\target.lnk" for f in listdir(NETWORK_SHORTCUTS_FOLDER_PATH)]
+    shell = win32com.client.Dispatch("WScript.Shell")
+    for network_shortcut in network_shortcuts:
+        shortcut = shell.CreateShortCut(network_shortcut)
+        drives.append(shortcut.Targetpath)
+
+    return drives
+
+
+def get_iblserver_data_folder():
+    drives = get_network_drives()
+    log.info("Looking for Y:\\ drive")
+    drives = [x for x in drives if x == 'Y:\\']
+    if len(drives) == 0:
+        log.warning(
+            "Y:\\ drive not found please follow the instruictions to map the ")
+        return None
+    elif len(drives == 1):
+        return "Y:\\"
+    else:
+        log.warning("Something is not right... ignoring local server configuration.")
+        return None
 
 
 def get_iblrig_folder() -> str:
