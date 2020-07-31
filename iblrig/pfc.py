@@ -70,6 +70,7 @@ PARAMS["WATER_CALIBRATION_WEIGHT_PERDROP"]
 PARAMS["WATER_CALIBRATION_DATE"]
 # F2TTL CALIBRATION: check f2ttl values from params, warn if old calibration
 # WATER CALIBRATION: check water calibration values from params, warn if old calibration
+# raise BaseException
 
 # Check RE
 log.debug("RE: Connect")
@@ -91,9 +92,14 @@ ser.close()
 f = Frame2TTL(PARAMS["COM_FRAME2TTL"])
 # Create missing session folders
 
+# Cameras check + setup
+# iblrig.camera_config
+
 # Run fast task to check IO
 
 # Create Alyx session reference?
 
 # Open Alyx session notes in browser?
+
+# Ask user info
 print(".")
