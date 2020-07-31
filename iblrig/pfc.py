@@ -34,14 +34,13 @@ from iblrig.frame2TTL import Frame2TTL
 log = logging.getLogger("iblrig")
 log.setLevel(logging.DEBUG)
 
-
 # Check if Alyx is accessible
 log.debug("Alyx: Connecting...")
 one = ONE()
 # Load PARAMS file ports
 # If file exists open file if not initialize
 log.debug("Loading params file...")
-PARAMS = params.load_params()
+PARAMS = params.load_params_file()
 # Check PARAMS values
 checks = []
 for k in PARAMS:
