@@ -93,14 +93,16 @@ assert f.connected == True
 f.read_value() > 5
 f.set_thresholds(dark=PARAMS["F2TTL_DARK_THRESH"], light=PARAMS["F2TTL_LIGHT_THRESH"])
 f.close()
-# Ask user info
-
-# Create missing session folders
+# Check Mic connection?
 
 # Cameras check + setup
 # iblrig.camera_config
 
-# Run fast task to check IO?
+# Check Task IO Run fast habituation task with fast delays?
+
+# Ask user info
+
+# Create missing session folders
 
 # Create Alyx session reference? NO
 
