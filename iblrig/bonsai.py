@@ -151,6 +151,13 @@ else:
         vid = "-p:VideoFileName=" + os.path.join(
             sph.SESSION_RAW_VIDEO_DATA_FOLDER, "_iblrig_leftCamera.raw.avi"
         )
+        fc = "-p:FrameCounterFileName=" + os.path.join(
+            sph.SESSION_RAW_VIDEO_DATA_FOLDER, "_iblrig_leftCamera.frame_counter.bin"
+        )
+        gpio = "-p:GPIOFileName=" + os.path.join(
+            sph.SESSION_RAW_VIDEO_DATA_FOLDER, "_iblrig_leftCamera.GPIO.bin"
+        )
+
         rec = "-p:SaveVideo=" + str(sph.RECORD_VIDEO)
 
         mic = "-p:FileNameMic=" + os.path.join(
@@ -161,7 +168,7 @@ else:
         start = "--start"
         noboot = "--no-boot"
 
-        subprocess.Popen([bns, wkfl, start, ts, vid, rec, mic, srec, noboot])
+        subprocess.Popen([bns, wkfl, start, ts, vid, fc, gpio, rec, mic, srec, noboot])
         os.chdir(here)
         return
 
