@@ -95,6 +95,10 @@ f.set_thresholds(dark=PARAMS["F2TTL_DARK_THRESH"], light=PARAMS["F2TTL_LIGHT_THR
 f.close()
 # Check Mic connection?
 
+# Check Xonar sound card existence if on ephys rig
+
+# Check HarpSoundCard if on ephys rig
+
 # Cameras check + setup
 # iblrig.camera_config
 
