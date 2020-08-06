@@ -43,7 +43,7 @@ def get_iblserver_data_folder():
     drives = [x for x in drives if x == 'Y:\\']
     if len(drives) == 0:
         log.warning(
-            "Y:\\ drive not found please follow the instruictions to map the ")
+            "Y:\\ drive not found please map your local server folder to the Y:\\ drive.")
         return None
     elif len(drives == 1):
         return "Y:\\"

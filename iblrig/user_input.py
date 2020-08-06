@@ -5,16 +5,17 @@ import logging
 import sys
 
 import ibllib.graphic as graph
+import iblrig.logging_
 import pyforms
 from AnyQt.QtWidgets import QApplication
 from oneibl.one import ONE
 from pyforms.basewidget import BaseWidget
 from pyforms.controls import (ControlButton, ControlCheckBox, ControlLabel,
                               ControlText)
-
 from iblrig.misc import patch_settings_file
 
 log = logging.getLogger("iblrig")
+
 
 
 class SessionForm(BaseWidget):
@@ -171,11 +172,99 @@ class SessionForm(BaseWidget):
         return
 
 
+class SessionForm(BaseWidget):
+    def __init__(self):
+        super(SessionForm, self).__init__("Session info")
+        self.session_dict = {
+            'mouse_name' : '',
+            'mouse_projects': '',
+            'mouse_weight': '',
+            'is_mock': 'NO',
+            
+            'session_delay': '0',
+        }
+    
+    def __call__(self):
+        return self
+    
+    def build(self):
+        # Definition of the forms fields
+        # self._mouseWeight = ControlText(label="Current weight for {}:")
+        self._mouse_name = ControlLabel(f"Subject: {self.session_dict['mouse_name']}")
+        self._mouse_projects = ControlLabel(f"Projects: {self.session_dict['mouse_projects']}")
+        if len(self.session_dict['mouse_projects']) > 1:
+            self._mouse_project = ControlText(label="Selected project:", default=self.session_dict['mouse_projects'][0])
+        elif len(self.session_dict['mouse_projects']) == 1:
+            self._mouse_project = ControlLabel(f"Selected project: {self.session_dict['mouse_projects'][0]}")
+        elif len(self.session_dict['mouse_projects']) < 1:
+            self._mouse_project = ControlLabel(f"Selected project: {self.session_dict['mouse_projects']}")
+        self._mouse_weight = ControlText(label=f"Current weight for {self.session_dict['mouse_weight']}:")
+        self._is_mock = ControlText(label=f"Is this a MOCK session?", default=self.session_dict['is_mock'])
+        self._session_delay = ControlText(label="Delay session initiation by (min):", default=self.session_dict['session_delay'])
+
+        self._button = ControlButton("Submit")
+
+        # Define the organization of the forms
+        self.formset = [
+            (" ", " ", " ", " ", " "),
+            (" ", "_mouseName", " ", " ", " "),
+            (" ", "_mouseProjects", " ", " ", " "),
+            (" ", "_mouseProject", " ", " ", " "),
+            (" ", "_mouseWeight", " ", " ", " "),
+            (" ", "_isMock", " ", " ", " "),
+            (" ", "_sessionDelay", " ", " ", " "),
+            (" ", " ", " ", " ", " "),
+            (" ", "_button", " "),
+            (" ", " ", " ", " ", " "),
+        ]
+        # The ' ' is used to indicate that a empty space should be placed at the bottom of the win
+        # If you remove the ' ' the forms will occupy the entire window
+
+        # Define the button action
+        self._button.value = self.__buttonAction
+
+        self.form_data: dict = {}
+        
+    def __buttonAction(self):
+        """Button action event"""
+        self.form_data = {
+            k.strip("_"): v.value
+            for k, v in self.__dict__.items()
+            if "button" not in k
+        }
+        self.convert_form_data_types()
+        self.close()
+        log.info(self.form_data)
+        self.app_main_window.close()
+        return
+
+    def convert_form_data_types(self):
+        for k, v in self.form_data.items():
+            if 'weight' in k or 'delay' in k:
+                self.form_data.update({k: float(v)})
+            else:
+                self.form_data.update({k: v})
+        return
+        
+
 def session_form(mouse_name: str = "") -> dict:
     root = QApplication(sys.argv)
+    sForm0 = SessionForm()
+    session_dict = {
+            'mouse_name' : mouse_name,
+            'mouse_projects': '',
+            'mouse_weight': '',
+            'is_mock': 'NO',
+            'session_delay': '0',
+        }
+    sForm0.mouse_name = mouse_name
+    sForm0.define_form_fields()
+    
     sForm = pyforms.start_app(
-        SessionForm, parent_win=root, geometry=(200, 200, 600, 400)
+        sForm0, parent_win=root, geometry=(200, 200, 600, 400)
     )
+    sForm.mouse_name = mouse_name
+    sForm.define_form_fields()
     sForm._mouseWeight.label = sForm._mouseWeight.label.format(mouse_name)
     root.exec()
 
@@ -313,7 +402,8 @@ if __name__ == "__main__":
     # p = get_form_probe_data(res)
     # print(f"Weight: {w}", f"\nProbe data: {p}")
 
-    subject_name = 'CSHL046'
-    proj = ask_project(subject_name, one=None)
-    print(proj)
+    session_form(mouse_name="myMouse")    
+    # subject_name = 'CSHL046'
+    # proj = ask_project(subject_name, one=None)
+    # print(proj)
     print(".")
