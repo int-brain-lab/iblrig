@@ -34,6 +34,7 @@ from iblrig.frame2TTL import Frame2TTL
 log = logging.getLogger("iblrig")
 log.setLevel(logging.DEBUG)
 
+
 # Check if Alyx is accessible
 log.debug("Alyx: Connecting...")
 one = ONE()
@@ -52,9 +53,9 @@ if sum(checks) != 0:
     raise (ValueError)
 
 # Check board name
-assert PARAMS["NAME"] == params.get_board_name()
+assert PARAMS["NAME"] == params.get_pybpod_board_name()
 # COM ports check
-PARAMS["COM_BPOD"]
+assert PARAMS["COM_BPOD"] == params.get_pybpod_board_comport()
 PARAMS["COM_ROTARY_ENCODER"]
 PARAMS["COM_F2TTL"]
 # F2TTL CALIBRATION: check f2ttl values from params, warn if old calibration

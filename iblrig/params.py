@@ -44,10 +44,15 @@ EMPTY_BOARD_PARAMS = {
 
 
 def ensure_all_keys_present(loaded_params, upload=True):
+    """
+    Ensures allo keys are present and empty knowable values are filled
+    """
     anything_new = False
     for k in EMPTY_BOARD_PARAMS:
         if k in loaded_params:
-            pass
+            if loaded_params[k] is None:
+                loaded_params[k] = update_param_key_values(k)
+                anything_new = True
         elif k not in loaded_params:
             loaded_params.update({k: update_param_key_values(k)})
             anything_new = True
@@ -72,13 +77,13 @@ def update_param_key_values(param_key):
     elif param_key == "IBLRIG_VERSION":
         return get_iblrig_version()
     elif param_key == "COM_BPOD":
-        return get_board_comport()
+        return get_pybpod_board_comport()
     elif param_key == "SCREEN_FREQ_TARGET":
         return 60
     elif param_key == "DATA_FOLDER_LOCAL":
         return ph.get_iblrig_data_folder(subjects=False)
     elif param_key == "DATA_FOLDER_REMOTE":
-        return ph.get_iblserver_data_folder(subjects=False)
+        return ph.get_iblserver_data_folder()
     else:
         return None
 

@@ -45,7 +45,7 @@ def get_iblserver_data_folder():
         log.warning(
             "Y:\\ drive not found please map your local server folder to the Y:\\ drive.")
         return None
-    elif len(drives == 1):
+    elif len(drives) == 1:
         return "Y:\\"
     else:
         log.warning("Something is not right... ignoring local server configuration.")
@@ -55,7 +55,7 @@ def get_iblserver_data_folder():
 def get_iblrig_folder() -> str:
     import iblrig
 
-    return str(Path(iblrig.__file__).parent.parent)
+    return str(Path(iblrig.__file__).parent.parent).capitalize()
 
 
 def get_iblrig_params_folder() -> str:
