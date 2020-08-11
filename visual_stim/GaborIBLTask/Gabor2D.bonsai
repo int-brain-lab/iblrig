@@ -2,11 +2,11 @@
 <WorkflowBuilder Version="2.5.0"
                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                  xmlns:osc="clr-namespace:Bonsai.Osc;assembly=Bonsai.Osc"
+                 xmlns:gl="clr-namespace:Bonsai.Shaders;assembly=Bonsai.Shaders"
                  xmlns:dsp="clr-namespace:Bonsai.Dsp;assembly=Bonsai.Dsp"
+                 xmlns:p1="clr-namespace:Bonsai.Numerics;assembly=Bonsai.Numerics"
                  xmlns:wie="clr-namespace:Bonsai.Windows.Input;assembly=Bonsai.Windows.Input"
                  xmlns:gli="clr-namespace:Bonsai.Shaders.Input;assembly=Bonsai.Shaders"
-                 xmlns:gl="clr-namespace:Bonsai.Shaders;assembly=Bonsai.Shaders"
-                 xmlns:p1="clr-namespace:Bonsai.Numerics;assembly=Bonsai.Numerics"
                  xmlns:res="clr-namespace:Bonsai.Resources;assembly=Bonsai.System"
                  xmlns:rx="clr-namespace:Bonsai.Reactive;assembly=Bonsai.Core"
                  xmlns:cv="clr-namespace:Bonsai.Vision;assembly=Bonsai.Vision"
@@ -1487,7 +1487,7 @@ _iblrig_micData.raw.wav
                     <Property Name="FileName" DisplayName="FileNameTrialInfo" />
                   </Expression>
                   <Expression xsi:type="io:CsvWriter">
-                    <io:FileName>C:\iblrig_data\Subjects\_iblrig_test_mouse\2019-07-01\008\raw_behavior_data\_iblrig_encoderTrialInfo.raw.ssv</io:FileName>
+                    <io:FileName>C:\iblrig_data\Subjects\_iblrig_test_mouse\2000-01-01\001\raw_behavior_data\_iblrig_encoderTrialInfo.raw.ssv</io:FileName>
                     <io:Append>false</io:Append>
                     <io:Overwrite>true</io:Overwrite>
                     <io:Suffix>None</io:Suffix>
@@ -1501,7 +1501,7 @@ _iblrig_micData.raw.wav
                     <Property Name="FileName" DisplayName="FileNameEvents" />
                   </Expression>
                   <Expression xsi:type="io:CsvWriter">
-                    <io:FileName>C:\iblrig_data\Subjects\_iblrig_test_mouse\2019-07-01\008\raw_behavior_data\_iblrig_encoderEvents.raw.ssv</io:FileName>
+                    <io:FileName>C:\iblrig_data\Subjects\_iblrig_test_mouse\2000-01-01\001\raw_behavior_data\_iblrig_encoderEvents.raw.ssv</io:FileName>
                     <io:Append>false</io:Append>
                     <io:Overwrite>true</io:Overwrite>
                     <io:Suffix>None</io:Suffix>
@@ -1515,7 +1515,7 @@ _iblrig_micData.raw.wav
                     <Property Name="FileName" DisplayName="FileNamePositions" />
                   </Expression>
                   <Expression xsi:type="io:CsvWriter">
-                    <io:FileName>C:\iblrig_data\Subjects\_iblrig_test_mouse\2019-07-01\008\raw_behavior_data\_iblrig_encoderPositions.raw.ssv</io:FileName>
+                    <io:FileName>C:\iblrig_data\Subjects\_iblrig_test_mouse\2000-01-01\001\raw_behavior_data\_iblrig_encoderPositions.raw.ssv</io:FileName>
                     <io:Append>false</io:Append>
                     <io:Overwrite>true</io:Overwrite>
                     <io:Suffix>None</io:Suffix>
@@ -1538,7 +1538,7 @@ _iblrig_micData.raw.wav
                     <Combinator xsi:type="rx:Timestamp" />
                   </Expression>
                   <Expression xsi:type="io:CsvWriter">
-                    <io:FileName>C:\iblrig_data\Subjects\_iblrig_test_mouse\2019-07-01\008\raw_behavior_data\_iblrig_stimPositionScreen.raw.csv</io:FileName>
+                    <io:FileName>C:\iblrig_data\Subjects\_iblrig_test_mouse\2000-01-01\001\raw_behavior_data\_iblrig_stimPositionScreen.raw.csv</io:FileName>
                     <io:Append>false</io:Append>
                     <io:Overwrite>true</io:Overwrite>
                     <io:Suffix>None</io:Suffix>
@@ -1554,7 +1554,7 @@ _iblrig_micData.raw.wav
                     <Combinator xsi:type="rx:Timestamp" />
                   </Expression>
                   <Expression xsi:type="io:CsvWriter">
-                    <io:FileName>C:\iblrig_data\Subjects\_iblrig_test_mouse\2019-07-01\008\raw_behavior_data\_iblrig_stimSquareUpdate.csv</io:FileName>
+                    <io:FileName>C:\iblrig_data\Subjects\_iblrig_test_mouse\2000-01-01\001\raw_behavior_data\_iblrig_stimSquareUpdate.csv</io:FileName>
                     <io:Append>false</io:Append>
                     <io:Overwrite>true</io:Overwrite>
                     <io:Suffix>None</io:Suffix>

@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<WorkflowBuilder Version="2.4.1-patch"
+<WorkflowBuilder Version="2.5.0"
                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                  xmlns:osc="clr-namespace:Bonsai.Osc;assembly=Bonsai.Osc"
                  xmlns:gl="clr-namespace:Bonsai.Shaders;assembly=Bonsai.Shaders"
-                 xmlns:q1="clr-namespace:Bonsai.Bpod;assembly=Bonsai.Bpod"
+                 xmlns:p1="clr-namespace:Bonsai.Bpod;assembly=Bonsai.Bpod"
                  xmlns:scr="clr-namespace:Bonsai.Scripting;assembly=Bonsai.Scripting"
                  xmlns:rx="clr-namespace:Bonsai.Reactive;assembly=Bonsai.Core"
                  xmlns:dsp="clr-namespace:Bonsai.Dsp;assembly=Bonsai.Dsp"
@@ -19,33 +19,33 @@
               <Property Name="Connection" />
             </Expression>
             <Expression xsi:type="osc:ReceiveMessage">
-              <osc:Connection>bpod</osc:Connection>
               <osc:Address>/p</osc:Address>
               <osc:TypeTag>i</osc:TypeTag>
+              <osc:Connection>bpod</osc:Connection>
             </Expression>
             <Expression xsi:type="BehaviorSubject">
               <Name>InitPosition</Name>
             </Expression>
             <Expression xsi:type="osc:ReceiveMessage">
-              <osc:Connection>bpod</osc:Connection>
               <osc:Address>/c</osc:Address>
               <osc:TypeTag>f</osc:TypeTag>
+              <osc:Connection>bpod</osc:Connection>
             </Expression>
             <Expression xsi:type="BehaviorSubject">
               <Name>Contrast</Name>
             </Expression>
             <Expression xsi:type="osc:ReceiveMessage">
-              <osc:Connection>bpod</osc:Connection>
               <osc:Address>/t</osc:Address>
               <osc:TypeTag>i</osc:TypeTag>
+              <osc:Connection>bpod</osc:Connection>
             </Expression>
             <Expression xsi:type="BehaviorSubject">
               <Name>TrialNum</Name>
             </Expression>
             <Expression xsi:type="osc:ReceiveMessage">
-              <osc:Connection>bpod</osc:Connection>
               <osc:Address>/f</osc:Address>
               <osc:TypeTag>f</osc:TypeTag>
+              <osc:Connection>bpod</osc:Connection>
             </Expression>
             <Expression xsi:type="BehaviorSubject">
               <Name>StimFreq</Name>
@@ -54,9 +54,9 @@
               <Name>GaborFreq</Name>
             </Expression>
             <Expression xsi:type="osc:ReceiveMessage">
-              <osc:Connection>bpod</osc:Connection>
               <osc:Address>/a</osc:Address>
               <osc:TypeTag>f</osc:TypeTag>
+              <osc:Connection>bpod</osc:Connection>
             </Expression>
             <Expression xsi:type="BehaviorSubject">
               <Name>StimAngle</Name>
@@ -65,9 +65,9 @@
               <Name>GaborAngle</Name>
             </Expression>
             <Expression xsi:type="osc:ReceiveMessage">
-              <osc:Connection>bpod</osc:Connection>
               <osc:Address>/s</osc:Address>
               <osc:TypeTag>f</osc:TypeTag>
+              <osc:Connection>bpod</osc:Connection>
             </Expression>
             <Expression xsi:type="BehaviorSubject">
               <Name>StimSize</Name>
@@ -76,17 +76,17 @@
               <Name>GaborSize</Name>
             </Expression>
             <Expression xsi:type="osc:ReceiveMessage">
-              <osc:Connection>bpod</osc:Connection>
               <osc:Address>/g</osc:Address>
               <osc:TypeTag>f</osc:TypeTag>
+              <osc:Connection>bpod</osc:Connection>
             </Expression>
             <Expression xsi:type="BehaviorSubject">
               <Name>Gain</Name>
             </Expression>
             <Expression xsi:type="osc:ReceiveMessage">
-              <osc:Connection>bpod</osc:Connection>
               <osc:Address>/h</osc:Address>
               <osc:TypeTag>f</osc:TypeTag>
+              <osc:Connection>bpod</osc:Connection>
             </Expression>
             <Expression xsi:type="MulticastSubject">
               <Name>GaborPhase</Name>
@@ -113,12 +113,12 @@
               <Property Name="PortName" DisplayName="REPortName" />
             </Expression>
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="q1:Encoder">
-                <q1:PortName>COM7</q1:PortName>
+              <Combinator xsi:type="p1:Encoder">
+                <p1:PortName>COM7</p1:PortName>
               </Combinator>
             </Expression>
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="q1:EncoderEvent" />
+              <Combinator xsi:type="p1:EncoderEvent" />
             </Expression>
             <Expression xsi:type="MemberSelector">
               <Selector>Timestamp,Data</Selector>
@@ -371,9 +371,9 @@ probably there is no need to reset the position also
               <Combinator xsi:type="gl:WindowClosed" />
             </Expression>
             <Expression xsi:type="osc:ReceiveMessage">
-              <osc:Connection>bpod</osc:Connection>
               <osc:Address>/x</osc:Address>
               <osc:TypeTag>i</osc:TypeTag>
+              <osc:Connection>bpod</osc:Connection>
             </Expression>
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="rx:TakeUntil" />
@@ -437,7 +437,7 @@ _iblrig_micData.raw.wav
                     <Property Name="FileName" DisplayName="FileNameTrialInfo" />
                   </Expression>
                   <Expression xsi:type="io:CsvWriter">
-                    <io:FileName>C:\iblrig_data\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_iblrig_encoderTrialInfo.raw.ssv</io:FileName>
+                    <io:FileName>C:\iblrig_data\Subjects\_iblrig_test_mouse\2000-01-01\001\raw_behavior_data\_iblrig_encoderTrialInfo.raw.ssv</io:FileName>
                     <io:Append>false</io:Append>
                     <io:Overwrite>true</io:Overwrite>
                     <io:Suffix>None</io:Suffix>
@@ -451,7 +451,7 @@ _iblrig_micData.raw.wav
                     <Property Name="FileName" DisplayName="FileNameEvents" />
                   </Expression>
                   <Expression xsi:type="io:CsvWriter">
-                    <io:FileName>C:\iblrig_data\Subjects\test_mouse\2018-10-09\32\raw_behavior_data\_iblrig_encoderEvents.raw.ssv</io:FileName>
+                    <io:FileName>C:\iblrig_data\Subjects\_iblrig_test_mouse\2000-01-01\001\raw_behavior_data\_iblrig_encoderEvents.raw.ssv</io:FileName>
                     <io:Append>false</io:Append>
                     <io:Overwrite>true</io:Overwrite>
                     <io:Suffix>None</io:Suffix>
