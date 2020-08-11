@@ -42,7 +42,15 @@ EMPTY_BOARD_PARAMS = {
     "DATA_FOLDER_REMOTE": None,  # str
 }
 
-
+global AUTO_UPDATABLE_PARAMS
+AUTO_UPDATABLE_PARAMS = dict.fromkeys([
+    "NAME",
+    "IBLRIG_VERSION",
+    "COM_BPOD",
+    "SCREEN_FREQ_TARGET",
+    "DATA_FOLDER_LOCAL",
+    "DATA_FOLDER_REMOTE",
+])
 def ensure_all_keys_present(loaded_params, upload=True):
     """
     Ensures allo keys are present and empty knowable values are filled
@@ -50,14 +58,14 @@ def ensure_all_keys_present(loaded_params, upload=True):
     anything_new = False
     for k in EMPTY_BOARD_PARAMS:
         if k in loaded_params:
-            if loaded_params[k] is None:
+            if loaded_params[k] is None and k in AUTO_UPDATABLE_PARAMS:
                 loaded_params[k] = update_param_key_values(k)
                 anything_new = True
         elif k not in loaded_params:
             loaded_params.update({k: update_param_key_values(k)})
             anything_new = True
     if anything_new:
-        write_params_file(data=loaded_params)
+        write_params_file(data=loaded_params, force=True)
     if upload:
         alyx.write_alyx_params(data=loaded_params, force=True)
     return loaded_params
@@ -83,7 +91,7 @@ def update_param_key_values(param_key):
     elif param_key == "DATA_FOLDER_LOCAL":
         return ph.get_iblrig_data_folder(subjects=False)
     elif param_key == "DATA_FOLDER_REMOTE":
-        return ph.get_iblserver_data_folder()
+        return ph.get_iblserver_data_folder(subjects=False)
     else:
         return None
 
@@ -165,7 +173,7 @@ def write_params_file(data: dict = None, force: bool = False) -> dict:
     return data
 
 
-def load_params_file() -> dict:
+def load_params_file(upload=False) -> dict:
     """load_params_file loads the .iblrig_params.json file from default location
      (iblrig/../iblrig_params/.iblrig_params.json), will create default params
      file if file is not found
@@ -179,7 +187,9 @@ def load_params_file() -> dict:
     if fpath.exists():
         with open(fpath, "r") as f:
             out = json.load(f)
-        return ensure_all_keys_present(out, upload=False)
+        out = ensure_all_keys_present(out, upload=upload)
+        log.info(out)
+        return out
     elif not fpath.exists() and bpod_comports.exists():
         log.warning(
             f"Params file does not exist, found old bpod_comports file. Trying to migrate..."
@@ -189,6 +199,7 @@ def load_params_file() -> dict:
     elif not fpath.exists() and not bpod_comports.exists():
         log.warning(f"Could not load params file does not exist. Creating...")
         out = ask_params_comports(write_params_file())
+        log.info(out)
         return out
 
 
@@ -222,8 +233,8 @@ def update_params_file(data: dict, force: bool = False) -> None:
                     f"Adding new key {k} with value {data[k]} to .iblrig_params.json"
                 )
                 old[k] = data[k]
-    write_params_file(data=old, force=True)
     log.info("Updated params file")
+    write_params_file(data=old, force=True)
 
     return old
 

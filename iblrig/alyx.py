@@ -71,7 +71,7 @@ def get_latest_session_eid(subject_nickname, one=None):
 
 def write_alyx_params(data: dict, force: bool = False, one=None) -> None:
     one = one or ONE()
-    p = load_alyx_params(data["NAME"])
+    p = load_alyx_params(data["NAME"], one=one)
     if p and not force:
         log.info("Board params already present, exiting...")
         return p

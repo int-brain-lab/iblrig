@@ -29,6 +29,12 @@ class TestPathHelper(unittest.TestCase):
         self.assertTrue('iblrig_data' in dfs)
         self.assertTrue('Subjects' in dfs)
 
+    def test_get_iblserver_data_folder(self):
+        out = ph.get_iblserver_data_folder(subjects=False)
+        self.assertTrue(out in [None, 'Y:\\'])
+        out = ph.get_iblserver_data_folder(subjects=True)
+        self.assertTrue(out in [None, 'Y:\\Subjects'])
+
     def tearDown(self):
         pass
 

@@ -37,16 +37,17 @@ def get_network_drives():
     return drives
 
 
-def get_iblserver_data_folder():
+def get_iblserver_data_folder(subjects: bool = True):
     drives = get_network_drives()
-    log.info("Looking for Y:\\ drive")
+    log.debug("Looking for Y:\\ drive")
     drives = [x for x in drives if x == 'Y:\\']
     if len(drives) == 0:
         log.warning(
-            "Y:\\ drive not found please map your local server folder to the Y:\\ drive.")
+            "Y:\\ drive not found please map your local server data folder to the Y:\\ drive."
+        )
         return None
     elif len(drives) == 1:
-        return "Y:\\"
+        return drives[0] if not subjects else drives[0] + "Subjects"
     else:
         log.warning("Something is not right... ignoring local server configuration.")
         return None
