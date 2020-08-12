@@ -41,7 +41,7 @@ def init_reward_amount(sph: object) -> float:
 def init_calib_func() -> scipy.interpolate.pchip:
     PARAMS = params.load_params_file()
     if PARAMS["WATER_CALIBRATION_DATE"] == "":
-        msg = f"""
+        msg = """
     ##########################################
          Water calibration date is emtpy!
     ##########################################"""
@@ -61,7 +61,7 @@ def init_calib_func_range() -> tuple:
     if PARAMS["WATER_CALIBRATION_RANGE"] == "":
         min_open_time = 0
         max_open_time = 1000
-        msg = f"""
+        msg = """
             ##########################################
                 NO DATA: WATER CALIBRATION RANGE
             ##########################################

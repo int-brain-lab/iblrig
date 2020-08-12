@@ -133,7 +133,7 @@ class SessionParamHandler(object):
         # TODO: Add params entry + date
         if (self.bad_stim_count != 0) or (self.bad_tone_count != 0):
             log.error(
-                f"""
+                """
         ##########################################
                       TEST FAILED !!!!!
         ##########################################
@@ -143,7 +143,7 @@ class SessionParamHandler(object):
             )
         else:
             log.info(
-                f"""
+                """
         ##########################################
                         TEST PASSED:
         ##########################################

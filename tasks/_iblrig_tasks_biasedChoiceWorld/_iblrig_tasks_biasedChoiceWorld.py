@@ -92,8 +92,8 @@ for i in range(sph.NTRIALS):  # Main loop
     sma = StateMachine(bpod)
 
     if i == 0:  # First trial exception start camera
-        log.info(f"First trial initializing, will move to next trial only if:")
-        log.info(f"1. camera is detected")
+        log.info("First trial initializing, will move to next trial only if:")
+        log.info("1. camera is detected")
         log.info(f"2. {sph.SESSION_START_DELAY_SEC} sec have elapsed")
         sma.add_state(
             state_name="trial_start",

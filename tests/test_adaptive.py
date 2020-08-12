@@ -2,7 +2,7 @@ import unittest
 
 from brainbox.core import Bunch
 
-from iblrig.adaptive import *
+import iblrig.adaptive as adaptive
 
 
 class TestsAdaptive(unittest.TestCase):
@@ -31,17 +31,17 @@ class TestsAdaptive(unittest.TestCase):
         )
 
     def testInitRewardAmount(self):
-        out = init_reward_amount(self.sph)
+        out = adaptive.init_reward_amount(self.sph)
         self.assertTrue(out == 3.0)
         sph = self.sph.copy()
         # Test return previous reward amount
         sph["LAST_TRIAL_DATA"] = {"trial_num": 199, "reward_amount": 999}
         sph["LAST_SETTINGS_DATA"] = {}
-        out = init_reward_amount(sph)
+        out = adaptive.init_reward_amount(sph)
         self.assertTrue(out == 999)
         # Test return reduction of amount
         sph["LAST_TRIAL_DATA"] = {"trial_num": 200, "reward_amount": 999}
-        out = init_reward_amount(sph)
+        out = adaptive.init_reward_amount(sph)
         self.assertTrue(out == 999 - sph.AR_STEP)
 
     def testAppendFlagFile(self):

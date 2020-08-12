@@ -192,12 +192,12 @@ def load_params_file(upload=False) -> dict:
         return out
     elif not fpath.exists() and bpod_comports.exists():
         log.warning(
-            f"Params file does not exist, found old bpod_comports file. Trying to migrate..."
+            "Params file does not exist, found old bpod_comports file. Trying to migrate..."
         )
         try_migrate_to_params()
         return load_params_file()
     elif not fpath.exists() and not bpod_comports.exists():
-        log.warning(f"Could not load params file does not exist. Creating...")
+        log.warning("Could not load params file does not exist. Creating...")
         out = ask_params_comports(write_params_file())
         log.info(out)
         return out

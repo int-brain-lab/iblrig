@@ -506,7 +506,7 @@ class SessionPathCreator(object):
         that are specifiec in the list
         """
         if isinstance(makelist, bool) and makelist is True:
-            log.debug(f"Making default folders")
+            log.debug("Making default folders")
             make_folder(self.IBLRIG_DATA_FOLDER)
             make_folder(self.IBLRIG_DATA_SUBJECTS_FOLDER)
             make_folder(self.SUBJECT_FOLDER)
