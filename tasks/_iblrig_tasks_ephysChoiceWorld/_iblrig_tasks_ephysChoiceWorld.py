@@ -66,7 +66,7 @@ for i in range(sph.NTRIALS):  # Main loop
     # =============================================================================
     sma = StateMachine(bpod)
     if i == 0:
-        log.info(f"Waiting for camera pulses...")
+        log.info("Waiting for camera pulses...")
         sma.add_state(
             state_name="trial_start",
             state_timer=3600,  # ~100µs hardware irreducible delay

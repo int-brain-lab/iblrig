@@ -154,12 +154,12 @@ def load_params_file() -> dict:
         return ensure_all_keys_present(out, upload=False)
     elif not fpath.exists() and bpod_comports.exists():
         log.warning(
-            f"Params file does not exist, found old bpod_comports file. Trying to migrate..."
+            "Params file does not exist, found old bpod_comports file. Trying to migrate..."
         )
         try_migrate_to_params()
         return load_params_file()
     elif not fpath.exists() and not bpod_comports.exists():
-        log.warning(f"Could not load params file does not exist. Creating...")
+        log.warning("Could not load params file does not exist. Creating...")
         out = ask_params_comports(write_params_file())
         return out
 
@@ -234,9 +234,9 @@ def load_params() -> dict:
     params_local = load_params_file()
     params_alyx = alyx.load_alyx_params(params_local["NAME"])
     if params_alyx is None:
-        log.warning(f"Could not load board params from Alyx.")
+        log.warning("Could not load board params from Alyx.")
     if params_alyx != params_local:
-        log.warning(f"Local data and Alyx data mismatch. Trying to update Alyx.")
+        log.warning("Local data and Alyx data mismatch. Trying to update Alyx.")
         alyx.update_alyx_params(data=params_local, force=True)
     return params_local
 

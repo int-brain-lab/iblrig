@@ -7,7 +7,6 @@ import logging
 import webbrowser as wb
 from pathlib import Path
 
-import ibllib.io.flags as flags
 import ibllib.io.params as lib_params
 import ibllib.io.raw_data_loaders as raw
 import oneibl.params
@@ -27,8 +26,6 @@ def create_session(session_folder, one=None):
     if not pfile.exists():
         oneibl.params.setup_alyx_params()
 
-    # flags.create_create_flags(session_folder)
-    # create(session_folder, dry=False, one=one)
     RegistrationClient(one=one).register_session(session_folder, file_list=False)
 
 

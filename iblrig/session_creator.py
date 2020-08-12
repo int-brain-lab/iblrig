@@ -251,9 +251,9 @@ def pre_generate_passiveCW_session_files(
     else:
         delays, ids, = make_passiveCW_session_delays_ids()
         pcs = make_stims_for_passiveCW_pcs()
-        np.save(path / f"session_mock_passive_stimIDs.npy", ids)
-        np.save(path / f"session_mock_passive_stimDelays.npy", delays)
-        np.save(path / f"session_mock_passive_pcs.npy", pcs)
+        np.save(path / "session_mock_passive_stimIDs.npy", ids)
+        np.save(path / "session_mock_passive_stimDelays.npy", delays)
+        np.save(path / "session_mock_passive_pcs.npy", pcs)
 
 
 def pre_generate_stim_phase(
@@ -267,9 +267,9 @@ def pre_generate_stim_phase(
         sphase = np.array([np.random.uniform(0, 2 * math.pi) for x in range(length)])
         np.save(path / f"session_{i}_stim_phase.npy", sphase)
     else:
-        length = len(np.load(path.joinpath(f"session_mock_ephys_pcqs.npy")))
+        length = len(np.load(path.joinpath("session_mock_ephys_pcqs.npy")))
         sphase = np.array([np.random.uniform(0, 2 * math.pi) for x in range(length)])
-        np.save(path / f"session_mock_stim_phase.npy", sphase)
+        np.save(path / "session_mock_stim_phase.npy", sphase)
 
 
 if __name__ == "__main__":
