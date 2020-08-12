@@ -7,8 +7,10 @@ import sys
 import ibllib.graphic as graph
 import pyforms
 from AnyQt.QtWidgets import QApplication
+from oneibl.one import ONE
 from pyforms.basewidget import BaseWidget
-from pyforms.controls import ControlButton, ControlCheckBox, ControlLabel, ControlText
+from pyforms.controls import (ControlButton, ControlCheckBox, ControlLabel,
+                              ControlText)
 
 from iblrig.misc import patch_settings_file
 
@@ -273,14 +275,45 @@ def ask_confirm_session_idx(session_idx):
     return session_idx
 
 
+def ask_project(subject_name, one=None):
+    if subject_name == '_iblrig_test_mouse':
+        log.info(f"Test mouse detected Project for {subject_name}: _iblrig_test_project")
+        return '_iblrig_test_project'
+    one = one or ONE()
+    projects = one.alyx.rest('subjects', 'read', subject_name)['session_projects']
+    if not projects:
+        log.info(f"No Projects found for Subject {subject_name}: []")
+        return None
+    elif len(projects) == 1:
+        log.info(f"One project found for subject {subject_name}: [{projects[0]}]")
+        return projects[0]
+    else:
+        log.info(f"Multiple projects found for subject {subject_name}:{projects}")
+        last_sessions = one.search(subject=subject_name, limit=10)
+        last_project = one.alyx.rest("sessions", "read", last_sessions[0])['project']
+        title = 'Select Project'
+        prompt = str(projects)
+        default = last_project
+        out_proj = graph.strinput(
+            title, prompt, default=default, nullable=True
+        )
+        if out_proj not in projects:
+            return ask_project(subject_name, one=one)
+        return out_proj
+
+
 if __name__ == "__main__":
     # settings_file_path = '/home/nico/Projects/IBL/github/iblrig_data/Subjects/_iblrig_fake_subject/2019-09-25/002/raw_behavior_data/_iblrig_taskSettings.raw.json'  # noqa
     # delay = ask_session_delay(settings_file_path)
-    mock = ask_is_mock()
-    res = -1
-    while res == -1:
-        res = session_form(mouse_name="myMouse")
-    w = get_form_subject_weight(res)
-    p = get_form_probe_data(res)
-    print(f"Weight: {w}", f"\nProbe data: {p}")
+    # mock = ask_is_mock()
+    # res = -1
+    # while res == -1:
+    #     res = session_form(mouse_name="myMouse")
+    # w = get_form_subject_weight(res)
+    # p = get_form_probe_data(res)
+    # print(f"Weight: {w}", f"\nProbe data: {p}")
+
+    subject_name = 'CSHL046'
+    proj = ask_project(subject_name, one=None)
+    print(proj)
     print(".")

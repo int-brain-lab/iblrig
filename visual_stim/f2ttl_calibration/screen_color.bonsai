@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<WorkflowBuilder Version="2.4.1-patch"
+<WorkflowBuilder Version="2.5.0"
                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                  xmlns:gl="clr-namespace:Bonsai.Shaders;assembly=Bonsai.Shaders"
                  xmlns:res="clr-namespace:Bonsai.Resources;assembly=Bonsai.System"
@@ -22,6 +22,7 @@
           <gl:WindowState>Fullscreen</gl:WindowState>
           <gl:DisplayDevice>Second</gl:DisplayDevice>
           <gl:TargetRenderFrequency>0</gl:TargetRenderFrequency>
+          <gl:TargetUpdateFrequency xsi:nil="true" />
           <gl:RenderState />
           <gl:GraphicsMode>
             <gl:ColorFormat>
@@ -51,11 +52,11 @@
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="gl:RenderFrame" />
       </Expression>
-      <Expression xsi:type="IncludeWorkflow" Path="BonVision:Environment.NormalizedViewport.bonsai" />
+      <Expression xsi:type="IncludeWorkflow" Path="BonVision:Environment.NormalizedView.bonsai" />
       <Expression xsi:type="osc:ReceiveMessage">
-        <osc:Connection>bpod</osc:Connection>
         <osc:Address>/g</osc:Address>
         <osc:TypeTag>i</osc:TypeTag>
+        <osc:Connection>bpod</osc:Connection>
       </Expression>
       <Expression xsi:type="Divide">
         <Operand xsi:type="IntProperty">
@@ -63,9 +64,9 @@
         </Operand>
       </Expression>
       <Expression xsi:type="osc:ReceiveMessage">
-        <osc:Connection>bpod</osc:Connection>
         <osc:Address>/b</osc:Address>
         <osc:TypeTag>i</osc:TypeTag>
+        <osc:Connection>bpod</osc:Connection>
       </Expression>
       <Expression xsi:type="Divide">
         <Operand xsi:type="IntProperty">
@@ -73,9 +74,9 @@
         </Operand>
       </Expression>
       <Expression xsi:type="osc:ReceiveMessage">
-        <osc:Connection>bpod</osc:Connection>
         <osc:Address>/r</osc:Address>
         <osc:TypeTag>i</osc:TypeTag>
+        <osc:Connection>bpod</osc:Connection>
       </Expression>
       <Expression xsi:type="Divide">
         <Operand xsi:type="IntProperty">
@@ -123,9 +124,9 @@
         <Combinator xsi:type="gl:WindowClosed" />
       </Expression>
       <Expression xsi:type="osc:ReceiveMessage">
-        <osc:Connection>bpod</osc:Connection>
         <osc:Address>/x</osc:Address>
         <osc:TypeTag>i</osc:TypeTag>
+        <osc:Connection>bpod</osc:Connection>
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="gl:SampleOnUpdateFrame" />

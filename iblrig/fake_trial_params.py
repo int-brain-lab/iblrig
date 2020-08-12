@@ -409,7 +409,7 @@ RELATIVE HUMIDITY:    {self.as_data['RelativeHumidity']} %
         # Update quiescent period
         self.quiescent_period = self.quiescent_period_base + misc.texp()
         # Update stimulus phase
-        self.stim_phase = random.uniform(0, math.pi)
+        self.stim_phase = random.uniform(0, 2 * math.pi)
         # Update contrast
         self._next_contrast()
         # Update position

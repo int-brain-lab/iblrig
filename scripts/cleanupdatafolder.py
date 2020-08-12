@@ -1,6 +1,8 @@
 from pathlib import Path
-import iblrig.path_helper as ph
+
 import ibllib.io.raw_data_loaders as raw
+
+import iblrig.path_helper as ph
 
 
 # Remove empty folders

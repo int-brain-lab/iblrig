@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<WorkflowBuilder Version="2.4.1-patch"
+<WorkflowBuilder Version="2.5.0"
                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                  xmlns:osc="clr-namespace:Bonsai.Osc;assembly=Bonsai.Osc"
                  xmlns:rx="clr-namespace:Bonsai.Reactive;assembly=Bonsai.Core"
@@ -10,9 +10,9 @@
   <Workflow>
     <Nodes>
       <Expression xsi:type="osc:ReceiveMessage">
-        <osc:Connection>from_python</osc:Connection>
         <osc:Address>/d</osc:Address>
         <osc:TypeTag>i</osc:TypeTag>
+        <osc:Connection>from_python</osc:Connection>
       </Expression>
       <Expression xsi:type="SubscribeSubject">
         <Name>Red</Name>

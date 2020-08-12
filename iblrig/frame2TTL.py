@@ -133,7 +133,7 @@ class Frame2TTL(object):
             return self.recomend_dark, self.recomend_light
 
     def set_recommendations(self):
-        log.info(f"Sending thresholds to device...")
+        log.info("Sending thresholds to device...")
         self.set_thresholds(dark=self.recomend_dark, light=self.recomend_light)
 
     def suggest_thresholds(self) -> None:
@@ -165,7 +165,7 @@ class Frame2TTL(object):
             log.info(
                 f"Recommended thresholds: Light = {recomend_light}, Dark = {recomend_dark}."
             )
-            log.info(f"Sending thresholds to device...")
+            log.info("Sending thresholds to device...")
             self.recomend_dark = recomend_dark
             self.recomend_light = recomend_light
             self.set_thresholds(light=recomend_light, dark=recomend_dark)
@@ -185,7 +185,7 @@ def get_and_set_thresholds():
     dev.set_thresholds(
         dark=params["F2TTL_DARK_THRESH"], light=params["F2TTL_LIGHT_THRESH"]
     )
-    log.info(f"Frame2TTL: Thresholds set.")
+    log.info("Frame2TTL: Thresholds set.")
     return 0
 
 

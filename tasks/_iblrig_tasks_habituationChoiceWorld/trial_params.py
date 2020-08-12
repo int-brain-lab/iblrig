@@ -98,7 +98,7 @@ class TrialParamHandler(object):
         # Update contrast
         self.contrast = random.choice(self.contrast_set)
         # Update stimulus phase
-        self.stim_phase = random.uniform(0, math.pi)
+        self.stim_phase = random.uniform(0, 2 * math.pi)
         # Update position
         self.position = random.choice(self.position_set)
         # Update delay to stimulus center

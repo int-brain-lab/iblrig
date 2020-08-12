@@ -269,6 +269,7 @@ def main(args):
 
     if args.upgrade_bonsai:
         upgrade_bonsai(VERSION, BRANCH)
+        update_bonsai()
 
     return
 

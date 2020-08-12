@@ -2,13 +2,13 @@ __pycache__/
 \.vscode/
 \.sonarlint/
 \.pytest*
+.pytest*
 *.pyc
 Bonsai-2\.3/
 docs/_build
 scratch/
 src/
 pybpod-api.log
-tests/
 iblrig.egg-info/
 Bonsai/
 bin

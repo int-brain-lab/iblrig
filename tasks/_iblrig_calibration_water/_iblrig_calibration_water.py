@@ -23,7 +23,6 @@ from pybpodapi.bpod import Bpod
 from pybpodapi.state_machine import StateMachine
 
 import iblrig.params as params
-
 # import iblrig.path_helper as path_helper
 import task_settings
 import user_settings  # PyBpod creates this file on run.
@@ -148,7 +147,7 @@ if sph.OAHUS_SCALE_PORT:
     stopweight = scale_read(sph.OAHUS_SCALE_PORT)
 else:
     stopweight = numinput(
-        f"Initialize weight", "Enter the weight diplayed on the scale (gr):"
+        "Initialize weight", "Enter the weight diplayed on the scale (gr):"
     )
 
 pass_ = 1

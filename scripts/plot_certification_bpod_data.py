@@ -1,7 +1,7 @@
-import ibllib.plots.pprint as pprint  # noqa
-import numpy as np
-import matplotlib.pyplot as plt
 import json
+
+import matplotlib.pyplot as plt
+import numpy as np
 
 spath = r"C:\iblrig_data\Subjects\_iblrig_calibration\2019-10-09\005"
 fpath = spath + r"\raw_behavior_data\_iblrig_taskData.raw.jsonable"
