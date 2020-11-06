@@ -6,7 +6,7 @@ chardet==3.0.4
 colorama==0.4.1
 colorlog==4.0.2
 confapp==1.0.1
-cryptography==2.6.1
+cryptography==3.2
 cycler==0.10.0
 Cython==0.29.6
 dataclasses==0.6
