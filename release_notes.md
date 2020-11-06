@@ -1,5 +1,26 @@
 # **Release notes**
 
+## **Release Notes 6.4.2**
+
+Patch update (bugfixes)
+
+* Increased stim_off state timer to 150ms
+* Updated ibllib, Bonsai and Bonvision 
+* New update procedure for Bonsai that will simplify updates for users
+* New pipeline architecture (removed deprecated flag creations on transfer)
+* Mice that have more than one project now will require user to pick the project on run
+* Stimulus phase fix for ephys choice world pre generated sessions
+* Added tests for path_helper, adaptive module (for trainingCW) , and init alyx module tests
+
+## **Release Notes 6.4.1**
+
+Patch update (bugfixes)
+
+* Increased stim_on state timer to 150ms
+* Added write timeout to frame2TTL serial connecion
+* Added screen frequency target to rig params
+* Fixed bug in passive ChoiceWorld
+
 ## **Release Notes 6.4.0**
 
 Minor update (added features)

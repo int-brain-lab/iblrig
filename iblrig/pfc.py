@@ -41,7 +41,7 @@ one = ONE()
 # Load PARAMS file ports
 # If file exists open file if not initialize
 log.debug("Loading params file...")
-PARAMS = params.load_params()
+PARAMS = params.load_params_file()
 # Check PARAMS values
 checks = []
 for k in PARAMS:
@@ -53,9 +53,9 @@ if sum(checks) != 0:
     raise (ValueError)
 
 # Check board name
-assert PARAMS["NAME"] == params.get_board_name()
+assert PARAMS["NAME"] == params.get_pybpod_board_name()
 # COM ports check
-PARAMS["COM_BPOD"]
+assert PARAMS["COM_BPOD"] == params.get_pybpod_board_comport()
 PARAMS["COM_ROTARY_ENCODER"]
 PARAMS["COM_F2TTL"]
 # F2TTL CALIBRATION: check f2ttl values from params, warn if old calibration
@@ -70,6 +70,7 @@ PARAMS["WATER_CALIBRATION_WEIGHT_PERDROP"]
 PARAMS["WATER_CALIBRATION_DATE"]
 # F2TTL CALIBRATION: check f2ttl values from params, warn if old calibration
 # WATER CALIBRATION: check water calibration values from params, warn if old calibration
+# raise BaseException
 
 # Check RE
 log.debug("RE: Connect")
@@ -88,12 +89,28 @@ ser.write(struct.pack("cB", b":", 1))
 log.debug("Bpod Close")
 ser.close()
 # Check Frame2TTL (by setting the thresholds)
-f = Frame2TTL(PARAMS["COM_FRAME2TTL"])
+f = Frame2TTL(PARAMS["COM_F2TTL"])
+assert f.connected == True
+f.read_value() > 5
+f.set_thresholds(dark=PARAMS["F2TTL_DARK_THRESH"], light=PARAMS["F2TTL_LIGHT_THRESH"])
+f.close()
+# Check Mic connection?
+
+# Check Xonar sound card existence if on ephys rig
+
+# Check HarpSoundCard if on ephys rig
+
+# Cameras check + setup
+# iblrig.camera_config
+
+# Check Task IO Run fast habituation task with fast delays?
+
+# Ask user info
+
 # Create missing session folders
 
-# Run fast task to check IO
+# Create Alyx session reference? NO
 
-# Create Alyx session reference?
+# Open Alyx session notes in browser? NO
 
-# Open Alyx session notes in browser?
 print(".")
