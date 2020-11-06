@@ -165,7 +165,7 @@ def load_ephys_session_pcqs(pregenerated_session_num: str) -> tuple:
     len_blocks = len_block.tolist()
 
     # If phase patch file exists load that one
-    stim_phase_path = Path(base).joinpath( f"session_{pregenerated_session_num}_stim_phase.npy")
+    stim_phase_path = Path(base).joinpath(f"session_{pregenerated_session_num}_stim_phase.npy")
     if stim_phase_path.exists():
         phase = np.load(stim_phase_path).tolist()
     assert len(pos) == len(cont) == len(quies) == len(phase) == sum(len_blocks)

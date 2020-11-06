@@ -22,7 +22,7 @@ sys.stdout.flush()
 log = logging.getLogger("iblrig")
 log.setLevel(logging.INFO)
 
-PARAMS = params.load_params()
+PARAMS = params.load_params_file()
 subj = "_iblrig_test_mouse"
 datetime = parser.parse(user_settings.PYBPOD_SESSION).isoformat().replace(":", "_")
 folder = Path(ph.get_iblrig_data_folder()) / subj / datetime
@@ -48,10 +48,10 @@ iblrig.frame2TTL.get_and_set_thresholds()
 bpod = Bpod()
 # Soft code handler function can run arbitrary code from within state machine
 bpod.softcode_handler_function = softcode_handler
-log.info(f"Starting 500 iterations of 1000 sync square pulses @60Hz")
-sys.stdout.flush()
 
 NITER = 500
+log.info(f"Starting {NITER} iterations of 1000 sync square pulses @60Hz")
+sys.stdout.flush()
 # =============================================================================
 #     Start state machine definition
 # =============================================================================

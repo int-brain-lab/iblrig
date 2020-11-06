@@ -6,20 +6,57 @@ import datetime
 import logging
 import os
 import subprocess
+from os import listdir
+from os.path import join
 from pathlib import Path
 
+import win32api
+import win32com.client
 from ibllib.io import raw_data_loaders as raw
-import iblrig.params as params
 
 import iblrig.logging_  # noqa
+import iblrig.params as params
 
 log = logging.getLogger("iblrig")
+
+
+def get_network_drives():
+    from win32com.shell import shell, shellcon
+    NETWORK_SHORTCUTS_FOLDER_PATH = shell.SHGetFolderPath(0, shellcon.CSIDL_NETHOOD, None, 0)
+    # Add Logical Drives
+    drives = win32api.GetLogicalDriveStrings()
+    drives = drives.split('\000')[:-1]
+    # Add Network Locations
+    network_shortcuts = [join(NETWORK_SHORTCUTS_FOLDER_PATH, f) +
+                         "\\target.lnk" for f in listdir(NETWORK_SHORTCUTS_FOLDER_PATH)]
+    shell = win32com.client.Dispatch("WScript.Shell")
+    for network_shortcut in network_shortcuts:
+        shortcut = shell.CreateShortCut(network_shortcut)
+        drives.append(shortcut.Targetpath)
+
+    return drives
+
+
+def get_iblserver_data_folder(subjects: bool = True):
+    drives = get_network_drives()
+    log.debug("Looking for Y:\\ drive")
+    drives = [x for x in drives if x == 'Y:\\']
+    if len(drives) == 0:
+        log.warning(
+            "Y:\\ drive not found please map your local server data folder to the Y:\\ drive."
+        )
+        return None
+    elif len(drives) == 1:
+        return drives[0] if not subjects else drives[0] + "Subjects"
+    else:
+        log.warning("Something is not right... ignoring local server configuration.")
+        return None
 
 
 def get_iblrig_folder() -> str:
     import iblrig
 
-    return str(Path(iblrig.__file__).parent.parent)
+    return str(Path(iblrig.__file__).parent.parent).capitalize()
 
 
 def get_iblrig_params_folder() -> str:
@@ -469,7 +506,7 @@ class SessionPathCreator(object):
         that are specifiec in the list
         """
         if isinstance(makelist, bool) and makelist is True:
-            log.debug(f"Making default folders")
+            log.debug("Making default folders")
             make_folder(self.IBLRIG_DATA_FOLDER)
             make_folder(self.IBLRIG_DATA_SUBJECTS_FOLDER)
             make_folder(self.SUBJECT_FOLDER)

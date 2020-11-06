@@ -7,11 +7,9 @@ import logging
 import webbrowser as wb
 from pathlib import Path
 
-import ibllib.io.flags as flags
 import ibllib.io.params as lib_params
 import ibllib.io.raw_data_loaders as raw
 import oneibl.params
-# from ibllib.pipes.experimental_data import create
 from oneibl.registration import RegistrationClient
 
 from oneibl.one import ONE
@@ -27,8 +25,6 @@ def create_session(session_folder, one=None):
     if not pfile.exists():
         oneibl.params.setup_alyx_params()
 
-    # flags.create_create_flags(session_folder)
-    # create(session_folder, dry=False, one=one)
     RegistrationClient(one=one).register_session(session_folder, file_list=False)
 
 
@@ -72,7 +68,7 @@ def get_latest_session_eid(subject_nickname, one=None):
 
 def write_alyx_params(data: dict, force: bool = False, one=None) -> None:
     one = one or ONE()
-    p = load_alyx_params(data["NAME"])
+    p = load_alyx_params(data["NAME"], one=one)
     if p and not force:
         log.info("Board params already present, exiting...")
         return p
@@ -95,6 +91,9 @@ def load_alyx_params(board: str, one=None) -> dict:
 
 
 def update_alyx_params(data: dict, force: bool = False, one=None) -> dict:
+    """ Updates keys in data dict to json field in alyx
+    If keys don't exist already will skip them
+    """
     old = load_alyx_params(data["NAME"], one=one)
     if old is None:
         log.info("board params not found, creating...")
@@ -151,6 +150,40 @@ def create_current_running_session(session_folder, one=None):
 
 def update_completed_session(session_folder):
     pass
+
+
+# # Methods for tasks from alyx w/ fallback
+# def update_params(data: dict) -> None:
+#     rig_params.update_params_file(data=data)
+#     try:
+#         update_alyx_params(data=data)
+#     except Exception as e:
+#         log.warning(
+#             f"Could not update board params on Alyx. Saved locally:\n{data}\n{e}"
+#         )
+
+
+# def load_params() -> dict:
+#     params_local = rig_params.load_params_file()
+#     params_alyx = load_alyx_params(params_local["NAME"])
+#     if params_alyx is None:
+#         log.warning(f"Could not load board params from Alyx.")
+#     if params_alyx != params_local:
+#         log.warning(f"Local data and Alyx data mismatch. Trying to update Alyx.")
+#         update_alyx_params(data=params_local, force=True)
+#     return params_local
+
+
+# def write_params(data: dict = None, force: bool = False, upload: bool = True) -> None:
+#     rig_params.write_params_file(data=data, force=force)
+#     if upload:
+#         try:
+#             write_alyx_params(data=data, force=force)
+#         except Exception as e:
+#             log.warning(
+#                 f"Could not write board params to Alyx. Written to local file:\n{e}"
+#             )
+#     return
 
 
 if __name__ == "__main__":
