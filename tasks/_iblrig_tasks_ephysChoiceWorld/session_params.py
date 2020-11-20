@@ -333,7 +333,7 @@ if __name__ == "__main__":
         calling bonsai
         turning off lights of bpod board
     """
-    import task_settings as _task_settings
+    import iblrig.fake_task_settings as _task_settings
     import iblrig.fake_user_settings as _user_settings
     import datetime
 
