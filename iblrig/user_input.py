@@ -1,22 +1,22 @@
 # -*- coding:utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date: Friday, May 17th 2019, 9:21:19 am
+import ast
 import logging
 import sys
-import ast
 
 import ibllib.graphic as graph
-import iblrig.logging_
 import pyforms
 from AnyQt.QtWidgets import QApplication
 from oneibl.one import ONE
 from pyforms.basewidget import BaseWidget
 from pyforms.controls import (ControlButton, ControlCheckBox, ControlLabel,
                               ControlText)
+
+import iblrig.logging_
 from iblrig.misc import patch_settings_file
 
 log = logging.getLogger("iblrig")
-
 
 
 class SessionForm(BaseWidget):
@@ -177,34 +177,49 @@ class EphysSessionForm(BaseWidget):
     def __init__(self):
         super(EphysSessionForm, self).__init__("Session info")
         self.session_dict = {
-            'mouse_name' : '',
-            'mouse_projects': '',
-            'mouse_project': '',
-            'mouse_weight': '',
-            'session_is_mock': '',
-            'session_index': '',            
-            'session_delay': '',
+            "mouse_name": "",
+            "mouse_projects": "",
+            "mouse_project": "",
+            "mouse_weight": "",
+            "session_is_mock": "",
+            "session_index": "",
+            "session_delay": "",
         }
-    
+
     def __call__(self):
         return self
-    
+
     def build(self):
         # Definition of the forms fields
         # self._mouseWeight = ControlText(label="Current weight for {}:")
-        
+
         self._mouse_name = ControlLabel(f"Subject: {self.session_dict['mouse_name']}")
         self._mouse_projects = ControlLabel(f"Projects: {self.session_dict['mouse_projects']}")
-        if len(self.session_dict['mouse_projects']) > 1:
-            self._mouse_project = ControlText(label="Latest project:", default=ast.literal_eval(self.session_dict['mouse_projects'])[0])
-        elif len(self.session_dict['mouse_projects']) == 1:
-            self._mouse_project = ControlLabel(f"Selected project: {list(self.session_dict['mouse_projects'])[0]}")
-        elif len(self.session_dict['mouse_projects']) < 1:
-            self._mouse_project = ControlLabel(f"Selected project: {self.session_dict['mouse_projects']}")
-        self._mouse_weight = ControlText(label=f"Current weight for {self.session_dict['mouse_name']}:")
-        self._session_is_mock = ControlText(label=f"Is this a MOCK session?", default=self.session_dict['session_is_mock'])
-        self._session_index = ControlText(label=f"Session number:", default=str(int(self.session_dict['session_index']) + 1))
-        self._session_delay = ControlText(label="Delay session initiation by (min):", default=self.session_dict['session_delay'])
+        if len(self.session_dict["mouse_projects"]) > 1:
+            self._mouse_project = ControlText(
+                label="Latest project:",
+                default=ast.literal_eval(self.session_dict["mouse_projects"])[0],
+            )
+        elif len(self.session_dict["mouse_projects"]) == 1:
+            self._mouse_project = ControlLabel(
+                f"Selected project: {list(self.session_dict['mouse_projects'])[0]}"
+            )
+        elif len(self.session_dict["mouse_projects"]) < 1:
+            self._mouse_project = ControlLabel(
+                f"Selected project: {self.session_dict['mouse_projects']}"
+            )
+        self._mouse_weight = ControlText(
+            label=f"Current weight for {self.session_dict['mouse_name']}:"
+        )
+        self._session_is_mock = ControlText(
+            label=f"Is this a MOCK session?", default=self.session_dict["session_is_mock"]
+        )
+        self._session_index = ControlText(
+            label=f"Session number:", default=str(int(self.session_dict["session_index"]) + 1)
+        )
+        self._session_delay = ControlText(
+            label="Delay session initiation by (min):", default=self.session_dict["session_delay"]
+        )
 
         self._button = ControlButton("Submit")
 
@@ -229,7 +244,7 @@ class EphysSessionForm(BaseWidget):
         self._button.value = self.__buttonAction
 
         self.form_data: dict = {}
-        
+
     def __buttonAction(self):
         """Button action event"""
         self.form_data = {
@@ -237,25 +252,23 @@ class EphysSessionForm(BaseWidget):
             for k, v in self.__dict__.items()
             if k.strip("_") in self.session_dict
         }
-        self.form_data['mouse_projects'] = self.session_dict['mouse_projects']
+        self.form_data["mouse_projects"] = self.session_dict["mouse_projects"]
         self.close()
         self.app_main_window.close()
         return
 
     def convert_form_data_types(self):
         for k, v in self.form_data.items():
-            if ('weight' in k or 'delay' in k) and v:
+            if ("weight" in k or "delay" in k) and v:
                 self.form_data.update({k: float(v)})
             else:
                 self.form_data.update({k: v})
         return
-        
+
 
 def session_form(mouse_name: str = "") -> dict:
     root = QApplication(sys.argv)
-    sForm = pyforms.start_app(
-        SessionForm, parent_win=root, geometry=(200, 200, 600, 400)
-    )
+    sForm = pyforms.start_app(SessionForm, parent_win=root, geometry=(200, 200, 600, 400))
     sForm._mouseWeight.label = sForm._mouseWeight.label.format(mouse_name)
     root.exec()
 
@@ -267,44 +280,44 @@ def session_form(mouse_name: str = "") -> dict:
         # sForm.destroy()
         # root.quit()
         # return session_form(mouse_name)
-        
+
 
 def dict_to_dstr(d: dict) -> dict:
-    d.update({k: '' for k, v in d.items() if v is None})
+    d.update({k: "" for k, v in d.items() if v is None})
     return {k: str(v) for k, v in d.items()}
 
 
 def dstring_to_dict(dstr):
     import ast
+
     dtypes = {
-            'mouse_name' : str,
-            'mouse_projects': list,
-            'mouse_project': str,
-            'mouse_weight': float,
-            'session_is_mock': str,
-            'session_index': int,
-            'session_delay': int,
-        }
+        "mouse_name": str,
+        "mouse_projects": list,
+        "mouse_project": str,
+        "mouse_weight": float,
+        "session_is_mock": str,
+        "session_index": int,
+        "session_delay": int,
+    }
     out = dict.fromkeys(dtypes)
     out.update({k: dtypes[k](v) for k, v in dstr.items() if k in dtypes and v})
-    if out['mouse_projects'] is not None:
-        out['mouse_projects'] = ast.literal_eval(dstr['mouse_projects']) if 'mouse_projects' in dstr else None
+    if out["mouse_projects"] is not None:
+        out["mouse_projects"] = (
+            ast.literal_eval(dstr["mouse_projects"]) if "mouse_projects" in dstr else None
+        )
     return out
-    
-    
-        
+
+
 def ephys_session_form(session_dict: dict) -> dict:
     root = QApplication(sys.argv)
     sForm0 = EphysSessionForm()
     sForm0.session_dict = dict_to_dstr(session_dict)
     sForm0.build()
-    sForm = pyforms.start_app(
-        sForm0, parent_win=root, geometry=(200, 200, 600, 400)
-    )
+    sForm = pyforms.start_app(sForm0, parent_win=root, geometry=(200, 200, 600, 400))
     # sForm.build()
     root.exec()
     return dstring_to_dict(sForm.form_data)
-    
+
 
 def get_form_subject_weight(form_data: dict) -> float:
     return form_data["mouseWeight"]
@@ -327,9 +340,7 @@ def get_form_probe_data(form_data: dict) -> dict:
 
 
 def ask_subject_weight(subject: str, settings_file_path: str = None) -> float:
-    out = graph.numinput(
-        "Subject weighing (gr)", f"{subject} weight (gr):", nullable=False
-    )
+    out = graph.numinput("Subject weighing (gr)", f"{subject} weight (gr):", nullable=False)
     log.info(f"Subject weight {out}")
     if settings_file_path is not None:
         patch = {"SUBJECT_WEIGHT": out}
@@ -338,25 +349,27 @@ def ask_subject_weight(subject: str, settings_file_path: str = None) -> float:
 
 
 def ask_subject_project(subject: str, settings_file_path: str = None) -> float:
-    from oneibl.one import ONE
-    import json
     import datetime
+    import json
+
+    from oneibl.one import ONE
+
     one = ONE()
-    all_subjects = list(one.alyx.rest('subjects', 'list'))
-    all_subjects.append({'dump_date': datetime.datetime.utcnow().isoformat()})
+    all_subjects = list(one.alyx.rest("subjects", "list"))
+    all_subjects.append({"dump_date": datetime.datetime.utcnow().isoformat()})
 
     fpath = None  # Find Subjects folder
     # Save json in Subjects folder
 
-    with open(fpath, 'w+') as f:
+    with open(fpath, "w+") as f:
         f.write(json.dumps(all_subjects, indent=1))
-        f.write('\n')
+        f.write("\n")
     # Load subjects from disk
-    with open(fpath, 'r') as f:
+    with open(fpath, "r") as f:
         all_subjects = json.loads(f.readlines())
 
     # Given Subject load 'session_projects'
-    all_projects = {x['nickname']: x['session_projects'] for x in all_subjects}
+    all_projects = {x["nickname"]: x["session_projects"] for x in all_subjects}
     projects = all_projects[subject]
 
     if not projects:
@@ -372,9 +385,7 @@ def ask_subject_project(subject: str, settings_file_path: str = None) -> float:
         )
         return resp
 
-    out = graph.numinput(
-        "Subject project", f"{subject} project (gr):", nullable=False
-    )
+    out = graph.numinput("Subject project", f"{subject} project (gr):", nullable=False)
     log.info(f"Subject weight {out}")
     if settings_file_path is not None:
         patch = {"SUBJECT_WEIGHT": out}
@@ -425,8 +436,8 @@ def ask_confirm_session_idx(session_idx):
     # Confirm this is the session to load with user. If not override SESSION_IDX
     sess_num = int(session_idx + 1)
     sess_num = graph.numinput(
-        "Confirm session to load",
-        "Load recording session number",
+        "Confirm pregenerated session to load",
+        "Load pregenerated session #",
         default=sess_num,
         askint=True,
         minval=1,
@@ -438,11 +449,11 @@ def ask_confirm_session_idx(session_idx):
 
 
 def ask_project(subject_name, one=None):
-    if subject_name == '_iblrig_test_mouse':
+    if subject_name == "_iblrig_test_mouse":
         log.info(f"Test mouse detected Project for {subject_name}: _iblrig_test_project")
-        return '_iblrig_test_project'
+        return "_iblrig_test_project"
     one = one or ONE()
-    projects = one.alyx.rest('subjects', 'read', subject_name)['session_projects']
+    projects = one.alyx.rest("subjects", "read", subject_name)["session_projects"]
     if not projects:
         log.info(f"No Projects found for Subject {subject_name}: []")
         return None
@@ -452,13 +463,11 @@ def ask_project(subject_name, one=None):
     else:
         log.info(f"Multiple projects found for subject {subject_name}:{projects}")
         last_sessions = one.search(subject=subject_name, limit=10)
-        last_project = one.alyx.rest("sessions", "read", last_sessions[0])['project']
-        title = 'Select Project'
+        last_project = one.alyx.rest("sessions", "read", last_sessions[0])["project"]
+        title = "Select Project"
         prompt = str(projects)
         default = last_project
-        out_proj = graph.strinput(
-            title, prompt, default=default, nullable=True
-        )
+        out_proj = graph.strinput(title, prompt, default=default, nullable=True)
         if out_proj not in projects:
             return ask_project(subject_name, one=one)
         return out_proj
@@ -480,24 +489,23 @@ if __name__ == "__main__":
     #         'mouse_project': '',
     #         'mouse_weight': None,
     #         'session_is_mock': 'NO',
-    #         'session_index': 2,            
+    #         'session_index': 2,
     #         'session_delay': 0,
     #     }
-    
-    # bla = ephys_session_form(session_dict=session_dict)    
-    
-    
+
+    # bla = ephys_session_form(session_dict=session_dict)
+
     session_dict = {
-            'mouse_name' : None,
-            'mouse_projects': '',
-            'mouse_project': None,
-            'mouse_weight': None,
-            'session_is_mock': None,
-            'session_index': None,            
-            'session_delay': None,
-        }
-    bla = ephys_session_form(session_dict=session_dict)    
-    
+        "mouse_name": None,
+        "mouse_projects": "",
+        "mouse_project": None,
+        "mouse_weight": None,
+        "session_is_mock": None,
+        "session_index": None,
+        "session_delay": None,
+    }
+    bla = ephys_session_form(session_dict=session_dict)
+
     # subject_name = 'CSHL046'
     # proj = ask_project(subject_name, one=None)
     # print(proj)
