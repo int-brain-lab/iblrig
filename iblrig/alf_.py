@@ -62,7 +62,7 @@ one = ONE(base_url='https://alyx.internationalbrainlab.org')
 def sync_alyx_table(table_name, one=None, save=True):
     one = one or ONE()
     alf_dir = Path(get_alf_dir_from_one(one=one))
-    sync_status =
+    sync_status = None
     if table_name == 'subjects':
         table = one.alyx.rest(table_name, 'list')
         table.append({'dump_date': datetime.datetime.utcnow().isoformat()})
