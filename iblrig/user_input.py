@@ -437,7 +437,7 @@ def ask_confirm_session_idx(session_idx):
     sess_num = int(session_idx + 1)
     sess_num = graph.numinput(
         "Confirm pregenerated session to load",
-        "Load pregenerated session #",
+        "Load trial sequence for recording day number:",
         default=sess_num,
         askint=True,
         minval=1,
