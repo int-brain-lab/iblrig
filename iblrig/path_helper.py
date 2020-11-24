@@ -10,9 +10,8 @@ from os import listdir
 from os.path import join
 from pathlib import Path
 
-import win32api
-import win32com.client
 from ibllib.io import raw_data_loaders as raw
+import platform
 
 import iblrig.logging_  # noqa
 import iblrig.params as params
@@ -21,6 +20,10 @@ log = logging.getLogger("iblrig")
 
 
 def get_network_drives():
+    if platform.system() == "Linux":
+        return "~/Projects/IBL/github/iblserver"
+    import win32api
+    import win32com.client
     from win32com.shell import shell, shellcon
     NETWORK_SHORTCUTS_FOLDER_PATH = shell.SHGetFolderPath(0, shellcon.CSIDL_NETHOOD, None, 0)
     # Add Logical Drives
@@ -56,7 +59,7 @@ def get_iblserver_data_folder(subjects: bool = True):
 def get_iblrig_folder() -> str:
     import iblrig
 
-    return str(Path(iblrig.__file__).parent.parent).capitalize()
+    return str(Path(iblrig.__file__).parent.parent)
 
 
 def get_iblrig_params_folder() -> str:
