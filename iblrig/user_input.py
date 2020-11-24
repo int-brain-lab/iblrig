@@ -212,10 +212,10 @@ class EphysSessionForm(BaseWidget):
             label=f"Current weight for {self.session_dict['mouse_name']}:"
         )
         self._session_is_mock = ControlText(
-            label=f"Is this a MOCK session?", default=self.session_dict["session_is_mock"]
+            label="Is this a MOCK session?", default=self.session_dict["session_is_mock"]
         )
         self._session_index = ControlText(
-            label=f"Session number:", default=str(int(self.session_dict["session_index"]) + 1)
+            label="Session number:", default=str(int(self.session_dict["session_index"]) + 1)
         )
         self._session_delay = ControlText(
             label="Delay session initiation by (min):", default=self.session_dict["session_delay"]
