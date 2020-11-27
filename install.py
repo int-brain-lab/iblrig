@@ -2,14 +2,15 @@
 # -*- coding: utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date:   2018-06-08 11:04:05
+import argparse
 import json
 import os
 import re
 import subprocess
 import sys
 from pathlib import Path
-import argparse
 
+from packaging import version
 
 # BEGIN CONSTANT DEFINITION
 IBLRIG_ROOT_PATH = Path.cwd()
@@ -42,20 +43,72 @@ def check_dependencies():
     print("\n\nINFO: Checking for dependencies:")
     print("N" * 79)
     try:
+        os.system("conda -V")
+        conda_version = str(subprocess.check_output(["conda", "-V"])).split(" ")[1].split("\\n")[0]
+        if version.parse(conda_version) < version.parse("4.9"):
+            print("Trying to update conda")
+            # os.system("conda update -y -n base -c defaults conda")
+            subprocess.check_output(
+                ["conda", "update", "-y", "-n", "base", "-c", "defaults", "conda"]
+            )
+            return check_dependencies()
+        print("conda... OK")
+    except BaseException as e:
+        print(e)
+        print("Not found: conda, aborting install...")
+        return 1
+
+    try:
+        python_version = (
+            str(subprocess.check_output(["python", "-V"])).split(" ")[1].split("\\n")[0]
+        )
+        if version.parse(python_version) < version.parse("3.8"):
+            print("Trying to update python base version...")
+            os.systm("conda update python")
+            raise ValueError
+        print("python... OK")
+    except BaseException as e:
+        print(e)
+        print("Not found: python, aborting install...")
+        return 1
+
+    try:
+        os.system("pip -V")
+        pip_version = str(subprocess.check_output(["pip", "-V"])).split(" ")[1]
+        if not version.parse(pip_version) >= version.parse("20.0.0"):
+            print("Trying to upgrade pip...")
+            os.system("python -m pip install --upgrade pip")
+            return check_dependencies()
+        print("pip... OK")
+    except BaseException as e:
+        print(e)
+        print("Not found: pip, aborting install...")
+        return 1
+
+    try:
         subprocess.check_output(["git", "--version"])
         os.system("git --version")
+        git_version = (
+            str(subprocess.check_output(["git", "--version"])).split(" ")[2].strip("\\n'")
+        )
+        if version.parse(git_version) < version.parse("2.25"):
+            if sys.platform in ["Windows", "windows", "win32"]:
+                os.system("git update-git-for-windows -y")
+            elif sys.platform in ["linux", "unix"]:
+                print("Please update git using your package manager")
+                return 1
+            return check_dependencies()
         print("git... OK")
-        # os.system("conda update -y -n base -c defaults conda")
-        os.system("conda -V")
-        print("conda... OK")
-        # os.system("python -m pip install --upgrade pip")
-        os.system("pip -V")
-        print("pip... OK")
-    except Exception as err:
-        print(err, "\nEither git, conda, or pip were not found.\n")
-        return
+    except BaseException as e:
+        print(e)
+        print("Not found: git")
+        print("Trying to install git...")
+        os.system("conda -y install git")
+        return check_dependencies()
+
     print("N" * 79)
     print("All dependencies OK.")
+    return 0
 
 
 def install_environment():
@@ -83,11 +136,10 @@ def install_environment():
             return
     else:
         os.system(create_command)
-        os.system(
-            "conda activate iblenv && python -m pip install --upgrade pip"
-        )  # noqa
+
     print("N" * 79)
     print("iblenv installed.")
+    return 0
 
 
 def install_deps():
@@ -117,13 +169,9 @@ def install_iblrig_requirements():
     print("N" * 39, "(pip) Installing PyQtWebEngine")
     os.system("conda activate iblenv && pip install PyQtWebEngine")
     print("N" * 39, "(pip) Installing PyBpod Alyx plugin")
-    os.system(
-        "conda activate iblenv && pip install --upgrade pybpod-gui-plugin-alyx"
-    )  # noqa
+    os.system("conda activate iblenv && pip install --upgrade pybpod-gui-plugin-alyx")  # noqa
     print("N" * 39, "(pip) Installing PyBpod Soundcard plugin")
-    os.system(
-        "conda activate iblenv && pip install --upgrade pybpod-gui-plugin-soundcard"
-    )  # noqa
+    os.system("conda activate iblenv && pip install --upgrade pybpod-gui-plugin-soundcard")  # noqa
     print("N" * 39, "(pip) Installing iblrig")
     os.system("conda activate iblenv && pip install -e .")
     print("N" * 79)
@@ -148,9 +196,7 @@ def configure_iblrig_params():
         if user_input == "n":
             return
         elif user_input == "y":
-            subprocess.call(
-                [python, "setup_default_config.py", str(iblrig_params_path)]
-            )
+            subprocess.call([python, "setup_default_config.py", str(iblrig_params_path)])
         elif user_input != "n" and user_input != "y":
             print("\n Please select either y of n")
             return configure_iblrig_params()
