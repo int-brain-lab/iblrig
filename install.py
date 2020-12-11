@@ -44,14 +44,14 @@ def check_dependencies():
     print("N" * 79)
     try:
         os.system("conda -V")
-        conda_version = str(subprocess.check_output(["conda", "-V"])).split(" ")[1].split("\\n")[0]
-        if version.parse(conda_version) < version.parse("4.9"):
-            print("Trying to update conda")
-            # os.system("conda update -y -n base -c defaults conda")
-            subprocess.check_output(
-                ["conda", "update", "-y", "-n", "base", "-c", "defaults", "conda"]
-            )
-            return check_dependencies()
+        # conda_version = str(subprocess.check_output(["conda", "-V"])).split(" ")[1].split("\\n")[0]
+        # if version.parse(conda_version) < version.parse("4.9"):
+        #     print("Trying to update conda")
+        #     # os.system("conda update -y -n base -c defaults conda")
+        #     subprocess.check_output(
+        #         ["conda", "update", "-y", "-n", "base", "-c", "defaults", "conda"]
+        #     )
+        #     return check_dependencies()
         print("conda... OK")
     except BaseException as e:
         print(e)
@@ -64,7 +64,7 @@ def check_dependencies():
         )
         if version.parse(python_version) < version.parse("3.8"):
             print("Trying to update python base version...")
-            os.systm("conda update python")
+            os.system("conda update -y -n base python")
             raise ValueError
         print("python... OK")
     except BaseException as e:
@@ -91,7 +91,7 @@ def check_dependencies():
         git_version = (
             str(subprocess.check_output(["git", "--version"])).split(" ")[2].strip("\\n'")
         )
-        if version.parse(git_version) < version.parse("2.25"):
+        if version.parse(git_version) < version.parse("2.25.1.windows.2"):
             if sys.platform in ["Windows", "windows", "win32"]:
                 os.system("git update-git-for-windows -y")
             elif sys.platform in ["linux", "unix"]:
@@ -138,13 +138,14 @@ def install_environment():
         os.system(create_command)
 
     print("N" * 79)
-    print("iblenv installed.")
-    return 0
+    print("0 installed.")
+    install_iblrig()
+#     return 0
 
 
-def install_deps():
-    os.system("conda activate iblenv && pip install -r requirements.txt -U")
-    os.system("conda activate iblenv && pip install -e .")
+def install_iblrig():
+#     # os.system("conda activate iblenv && pip install -r requirements.txt -U")
+    os.system("conda activate iblenv && pip --use-feature=2020-resolver install -e .")
 
 
 def install_iblrig_requirements():
@@ -232,16 +233,17 @@ if __name__ == "__main__":
     try:
         check_dependencies()
         install_environment()
-        if args.new:
-            install_deps()
-        elif not args.new:
-            install_iblrig_requirements()
+        install_iblrig()
+        # if args.new:
+        #     install_iblrig()
+        # elif not args.new:
+        #     install_iblrig_requirements()
 
         configure_iblrig_params()
         print("\nIts time to install Bonsai:")
         install_bonsai()
         print("\n\nINFO: iblrig installed, you should be good to go!")
-    except IOError as msg:
+    except BaseException as msg:
         print(msg, "\n\nSOMETHING IS WRONG: Bad! Bad install file!")
 
     print(".")

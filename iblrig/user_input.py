@@ -447,7 +447,7 @@ def ask_confirm_session_idx(session_idx):
         session_idx = sess_num - 1
     return session_idx
 
-
+# XXX: THIS ONE CALL HAS TO CHANGE in favor of local param file
 def ask_project(subject_name, one=None):
     if subject_name == "_iblrig_test_mouse":
         log.info(f"Test mouse detected Project for {subject_name}: _iblrig_test_project")
