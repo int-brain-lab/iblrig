@@ -30,7 +30,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
           activate-environment: iblenv
           environment-file: environment.yaml
-      - shell: bash -l {0}
+      # - shell: bash -l {0}
         run: |
           conda activate base
           python -V
