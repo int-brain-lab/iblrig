@@ -35,4 +35,5 @@ jobs:
         run: |
           conda activate base
           python -V
+          pip install setuptools>=51.0.0 wheel>=0.36.1
           python install.py --reinstall-response y --config-response y --bonsai-response n
