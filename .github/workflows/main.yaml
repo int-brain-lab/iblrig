@@ -34,4 +34,4 @@ jobs:
         run: |
           conda activate base
           python -V
-        # run: python install.py --reinstall-response y --config-response y --bonsai-response n
+          python install.py --reinstall-response y --config-response y --bonsai-response n
