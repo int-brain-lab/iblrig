@@ -24,11 +24,11 @@ jobs:
     steps:
       - name: Clone iblenv repo
         uses: actions/checkout@v2
-      - uses: conda-incubator/setup-miniconda@v2.0.0
+      - uses: conda-incubator/setup-miniconda@v2
         with:
-          auto-update-conda: true
-          python-version: ${{ matrix.python-version }}
+          environment-file: environment.yaml
           activate-environment: iblenv
-          environment-file: ../environment.yaml
+          python-version: ${{ matrix.python-version }}
+          auto-update-conda: true
       - name: Some commands
-        run: pyhon iblrig/install.py --reinstall-response y --config-response y --bonsai-response n
+        run: pyhon install.py --reinstall-response y --config-response y --bonsai-response n
