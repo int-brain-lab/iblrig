@@ -4,6 +4,8 @@ channels:
 dependencies:
   - python=3.7.9
   - pip>=20.3.1
+  - setuptools>=51.0.0
+  - wheel>=0.36.1
   - pip:
     - asn1crypto==0.24.0
     - colorama==0.4.1
