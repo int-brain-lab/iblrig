@@ -31,5 +31,5 @@ jobs:
           python-version: ${{ matrix.python-version }}
           auto-update-conda: true
       - name: Some commands
-        run: python -V
+        run: python3 -V
         # run: python install.py --reinstall-response y --config-response y --bonsai-response n
