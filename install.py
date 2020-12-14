@@ -123,7 +123,10 @@ def check_dependencies():
     return 0
 
 
-def install_environment(env_name="iblenv"):
+def create_environment(env_name="iblenv", use_conda_yaml=False, resp=False):
+    if use_conda_yaml:
+        os.system("conda env create -f environment.yml")
+        return
     print(f"\n\nINFO: Installing {env_name}:")
     print("N" * 79)
     # Checks id env is already installed
@@ -137,13 +140,14 @@ def install_environment(env_name="iblenv"):
             "Found pre-existing environment in {}".format(env),
             "\nDo you want to reinstall the environment? (y/n):",
         )
-        user_input = input()
+        user_input = input() if not resp else resp
+        print(user_input)
         if user_input == "y":
             os.system(remove_command)
-            return install_environment(env_name=env_name)
+            return create_environment(env_name=env_name)
         elif user_input != "n" and user_input != "y":
             print("Please answer 'y' or 'n'")
-            return install_environment(env_name=env_name)
+            return create_environment(env_name=env_name)
         elif user_input == "n":
             return
     else:
@@ -158,7 +162,7 @@ def install_iblrig(env_name: str = "iblenv") -> None:
     os.system(f"{pip} install -e .")
 
 
-def configure_iblrig_params(env_name: str = "iblenv"):
+def configure_iblrig_params(env_name: str = "iblenv", resp=False):
     print("\n\nINFO: Setting up default project config in ../iblrig_params:")
     print("N" * 79)
     iblenv = get_env_folder(env_name=env_name)
@@ -172,7 +176,8 @@ def configure_iblrig_params(env_name: str = "iblenv"):
             f"Found previous configuration in {str(iblrig_params_path)}",
             "\nDo you want to reset to default config? (y/n)",
         )
-        user_input = input()
+        user_input = input() if not resp else resp
+        print(user_input)
         if user_input == "n":
             return
         elif user_input == "y":
@@ -185,9 +190,10 @@ def configure_iblrig_params(env_name: str = "iblenv"):
         subprocess.call([python, "setup_default_config.py", str(iblrig_params_path)])
 
 
-def install_bonsai():
+def install_bonsai(resp=False):
     print("\n\nDo you want to install Bonsai now? (y/n):")
-    user_input = input()
+    user_input = input() if not resp else resp
+    print(user_input)
     if user_input == "y":
         subprocess.call(os.path.join(IBLRIG_ROOT_PATH, "Bonsai", "Bonsai64.exe"))
     elif user_input != "n" and user_input != "y":
@@ -197,25 +203,72 @@ def install_bonsai():
         return
 
 
-if __name__ == "__main__":
-    ALLOWED_ACTIONS = ["new"]
-    parser = argparse.ArgumentParser(description="Install iblrig")
-    parser.add_argument(
-        "--env-name", "-n",
-        required=False,
-        default='iblenv',
-        help="Environment name for IBL rig installation",
-    )
-    args = parser.parse_args()
-    print(args)
+def main(args):
     try:
         check_dependencies()
-        install_environment(env_name=args.env_name)
+        create_environment(
+            env_name=args.env_name, use_conda_yaml=args.use_conda, resp=args.reinstall_response
+        )
         install_iblrig(env_name=args.env_name)
-        configure_iblrig_params(env_name=args.env_name)
-        install_bonsai()
-        print("\n\nINFO: iblrig installation EoF")
+        configure_iblrig_params(env_name=args.env_name, resp=args.config_response)
+        install_bonsai(resp=args.bonsai_response)
     except BaseException as msg:
         print(msg, "\n\nSOMETHING IS WRONG: Bad! Bad install file!")
+    return
 
-    print(".")
+
+if __name__ == "__main__":
+    RESPONSES = ["y", "n"]
+    parser = argparse.ArgumentParser(description="Install iblrig")
+    parser.add_argument(
+        "--env-name",
+        "-n",
+        required=False,
+        default="iblenv",
+        help="Environment name for IBL rig installation",
+    )
+    parser.add_argument(
+        "--use-conda",
+        required=False,
+        default=False,
+        action="store_true",
+        help="Use conda YAML file to creat environment and install deps.",
+    )
+    parser.add_argument(
+        "--config-response",
+        required=False,
+        default=False,
+        help="Use this response when if asked for resetting default config",
+    )
+    parser.add_argument(
+        "--bonsai-response",
+        required=False,
+        default=False,
+        help="Use this response when asked if you want to install Bonsai",
+    )
+    parser.add_argument(
+        "--reinstall-response",
+        required=False,
+        default=False,
+        help="Use this response when if asked to reinstall env",
+    )
+
+    args = parser.parse_args()
+
+    RUN = 1
+    if args.use_conda:
+        args.env_name = "iblenv"
+    if args.bonsai_response not in RESPONSES:
+        print(f"Invalid --bonsai-response argument please use {RESPONSES})")
+        RUN = 0
+    if args.config_response not in RESPONSES:
+        print(f"Invalid --config-response argument please use {RESPONSES})")
+        RUN = 0
+    if args.reinstall_response not in RESPONSES:
+        print(f"Invalid --config-response argument please use {RESPONSES})")
+        RUN = 0
+
+    if RUN:
+        main(args)
+
+    print("\n\nINFO: iblrig installation EoF")
