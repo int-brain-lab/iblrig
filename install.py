@@ -31,9 +31,9 @@ def get_env_folder(env_name: str = "iblenv") -> str:
     all_envs = subprocess.check_output(["conda", "env", "list", "--json"])
     all_envs = json.loads(all_envs.decode("utf-8"))
     pat = re.compile(f"^.+{env_name}$")
-    iblenv = [x for x in all_envs["envs"] if pat.match(x)]
-    iblenv = iblenv[0] if iblenv else None
-    return iblenv
+    env = [x for x in all_envs["envs"] if pat.match(x)]
+    env = env[0] if env else None
+    return env
 
 
 def get_env_python(env_name: str = "iblenv", rpip=False):
@@ -50,7 +50,7 @@ def get_env_python(env_name: str = "iblenv", rpip=False):
 
 def check_dependencies():
     # Check if Git and conda are installed
-    print("\n\nINFO: Checking for dependencies:")
+    print("\n\nINFO: Checking for OS dependencies:")
     print("N" * 79)
     try:
         os.system("conda -V")
@@ -71,8 +71,9 @@ def check_dependencies():
     try:
         python_version = (
             str(subprocess.check_output(["python", "-V"])).split(" ")[1].split("\\n")[0]
-        )
-        if version.parse(python_version) < version.parse("3.8"):
+        ).strip('\\r')
+        print(f'python {python_version}')
+        if version.parse(python_version) < version.parse("3.7"):
             print("Trying to update python base version...")
             os.system("conda update -y -n base python")
             return check_dependencies()
@@ -80,7 +81,7 @@ def check_dependencies():
     except BaseException as e:
         print(e)
         print("Not found: python, aborting install...")
-        return 1
+        raise FileNotFoundError
 
     try:
         os.system("pip -V")
@@ -93,7 +94,7 @@ def check_dependencies():
     except BaseException as e:
         print(e)
         print("Not found: pip, aborting install...")
-        return 1
+        raise FileNotFoundError
 
     try:
         subprocess.check_output(["git", "--version"])
@@ -108,15 +109,14 @@ def check_dependencies():
                 os.system("git update-git-for-windows -y")
             elif sys.platform in ["linux", "unix"]:
                 print("Please update git using your package manager")
-                return 1
+                raise FileNotFoundError
+            os.system("conda -y install git")
             return check_dependencies()
         print("git... OK")
     except BaseException as e:
         print(e)
-        print("Not found: git")
-        print("Trying to install git...")
-        os.system("conda -y install git")
-        return check_dependencies()
+        print("Not found: git, aborting install...")
+        raise FileNotFoundError
 
     print("N" * 79)
     print("All dependencies OK.")
@@ -129,8 +129,9 @@ def create_environment(env_name="iblenv", use_conda_yaml=False, resp=False):
         return
     print(f"\n\nINFO: Installing {env_name}:")
     print("N" * 79)
-    # Checks id env is already installed
+    # Checks if env is already installed
     env = get_env_folder(env_name=env_name)
+    print(env)
     # Creates commands
     create_command = f"conda create -y -n {env_name} python=3.7"
     remove_command = f"conda env remove -y -n {env_name}"
@@ -158,8 +159,12 @@ def create_environment(env_name="iblenv", use_conda_yaml=False, resp=False):
 
 
 def install_iblrig(env_name: str = "iblenv") -> None:
+    print(f"\n\nINFO: Checking iblrig dependencies in {env_name}:")
+    print("N" * 79)
     pip = get_env_python(env_name=env_name, rpip=True)
     os.system(f"{pip} install -e .")
+    print("N" * 79)
+    print(f"iblrig dependencies installed in {env_name}.")
 
 
 def configure_iblrig_params(env_name: str = "iblenv", resp=False):
@@ -218,7 +223,7 @@ def main(args):
 
 
 if __name__ == "__main__":
-    RESPONSES = ["y", "n"]
+    RESPONSES = ["y", "n", False]
     parser = argparse.ArgumentParser(description="Install iblrig")
     parser.add_argument(
         "--env-name",
@@ -254,18 +259,18 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-
+    print(type(args.use_conda))
     RUN = 1
     if args.use_conda:
         args.env_name = "iblenv"
     if args.bonsai_response not in RESPONSES:
-        print(f"Invalid --bonsai-response argument please use {RESPONSES})")
+        print(f"Invalid --bonsai-response argument {args.bonsai_response} please use {RESPONSES})")
         RUN = 0
     if args.config_response not in RESPONSES:
-        print(f"Invalid --config-response argument please use {RESPONSES})")
+        print(f"Invalid --config-response argument {args.config_response} please use {RESPONSES})")
         RUN = 0
     if args.reinstall_response not in RESPONSES:
-        print(f"Invalid --config-response argument please use {RESPONSES})")
+        print(f"Invalid --reinstall-response {args.reinstall_response} argument please use {RESPONSES})")
         RUN = 0
 
     if RUN:
