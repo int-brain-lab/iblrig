@@ -31,9 +31,10 @@ jobs:
           python-version: ${{ matrix.python-version }}
           auto-update-conda: true
       - name: Conda init
-        run: conda init --all
+        run: |
+          conda init --all
       - name: Activate base
-        run: conda activate base
-      - name: Check version
-        run: python -V
+        run: |
+          conda activate base
+          python -V
         # run: python install.py --reinstall-response y --config-response y --bonsai-response n
