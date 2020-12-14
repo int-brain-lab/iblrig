@@ -31,9 +31,9 @@ jobs:
           activate-environment: iblenv
           environment-file: environment.yaml
       - name: Commands
-        shell: bash -l {0}
         run: |
           conda activate base
           python -V
-          pip install setuptools>=51.0.0 wheel>=0.36.1
+          which pip
+          pip install setuptools wheel packaging
           python install.py --reinstall-response y --config-response y --bonsai-response n
