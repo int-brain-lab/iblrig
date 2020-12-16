@@ -98,6 +98,7 @@ def bpod_lights(comport: str, command: int):
         comport = params.get_board_comport()
     ser = serial.Serial(port=comport, baudrate=115200, timeout=1)
     ser.write(struct.pack("cB", b":", command))
+    # ser.read(1)
     ser.close()
     log.debug(f"Sent <:{command}> to {comport}")
     return
