@@ -22,7 +22,7 @@ import matplotlib.pyplot as plt
 WHEEL_RADIUS = 31
 USER_DEFINED_GAIN = 4.0
 MM_PER_DEG = (2 * math.pi * WHEEL_RADIUS) / 360
-GAIN_FACTOR = 1/ (MM_PER_DEG * USER_DEFINED_GAIN)
+GAIN_FACTOR = 1 / (MM_PER_DEG * USER_DEFINED_GAIN)
 
 
 def get_scale_shift(from_min, from_max, to_min, to_max):
@@ -53,21 +53,22 @@ def pos_on_screen(pos, init_pos):
         pos = [pos]
 
     for p in pos:
-        yield (((p / GAIN_FACTOR) + init_pos) + 180 ) % 360 - 180
+        yield (((p / GAIN_FACTOR) + init_pos) + 180) % 360 - 180
+
 
 relative_wheel_degrees = range(-20, 21)  # RE_TICK_DEG_VALUE
 absolute_screen_deg_form_left_stim = list(pos_on_screen(relative_wheel_degrees, -35))
 absolute_screen_deg_form_right_stim = list(pos_on_screen(relative_wheel_degrees, 35))
 
 ax = plt.subplot(111)
-ax.plot(relative_wheel_degrees, absolute_screen_deg_form_left_stim, c='b', ls='--', marker= '.')
-ax.plot(relative_wheel_degrees, absolute_screen_deg_form_right_stim[::-1], 'g.--')
+ax.plot(relative_wheel_degrees, absolute_screen_deg_form_left_stim, c="b", ls="--", marker=".")
+ax.plot(relative_wheel_degrees, absolute_screen_deg_form_right_stim[::-1], "g.--")
 ax.axhline()
 ax.axhline(-35)
 ax.axhline(35)
-ax.axhline(70, c='gray')
-ax.axhline(-70, c='gray')
-ax.set_xlabel(f'Wheel degrees - Gain = {USER_DEFINED_GAIN}')
-ax.set_ylabel(f'Screen degrees - Gain = {USER_DEFINED_GAIN}')
+ax.axhline(70, c="gray")
+ax.axhline(-70, c="gray")
+ax.set_xlabel(f"Wheel degrees - Gain = {USER_DEFINED_GAIN}")
+ax.set_ylabel(f"Screen degrees - Gain = {USER_DEFINED_GAIN}")
 # ax.clear()
 plt.show()
