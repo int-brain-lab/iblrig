@@ -43,14 +43,18 @@ EMPTY_BOARD_PARAMS = {
 }
 
 global AUTO_UPDATABLE_PARAMS
-AUTO_UPDATABLE_PARAMS = dict.fromkeys([
-    "NAME",
-    "IBLRIG_VERSION",
-    "COM_BPOD",
-    "SCREEN_FREQ_TARGET",
-    "DATA_FOLDER_LOCAL",
-    "DATA_FOLDER_REMOTE",
-])
+AUTO_UPDATABLE_PARAMS = dict.fromkeys(
+    [
+        "NAME",
+        "IBLRIG_VERSION",
+        "COM_BPOD",
+        "SCREEN_FREQ_TARGET",
+        "DATA_FOLDER_LOCAL",
+        "DATA_FOLDER_REMOTE",
+    ]
+)
+
+
 def ensure_all_keys_present(loaded_params, upload=True):
     """
     Ensures allo keys are present and empty knowable values are filled
@@ -229,9 +233,7 @@ def update_params_file(data: dict, force: bool = False) -> None:
                 log.info(f"Unknown key {k}: skipping key...")
                 continue
             elif force:
-                log.info(
-                    f"Adding new key {k} with value {data[k]} to .iblrig_params.json"
-                )
+                log.info(f"Adding new key {k} with value {data[k]} to .iblrig_params.json")
                 old[k] = data[k]
     log.info("Updated params file")
     write_params_file(data=old, force=True)
@@ -294,14 +296,10 @@ def try_migrate_to_params(force=False):
     ):
         water_dict.update(ph.load_water_calibraition_range_file(range_file))
         water_dict.update(ph.load_water_calibraition_func_file(func_file))
-        water_dict.update(
-            {"WATER_CALIBRATION_DATE": func_file.parent.parent.parent.name}
-        )
+        water_dict.update({"WATER_CALIBRATION_DATE": func_file.parent.parent.parent.name})
     if str(func_file) != ".":
         water_dict.update(ph.load_water_calibraition_func_file(func_file))
-        water_dict.update(
-            {"WATER_CALIBRATION_DATE": func_file.parent.parent.parent.name}
-        )
+        water_dict.update({"WATER_CALIBRATION_DATE": func_file.parent.parent.parent.name})
     # Find latest F2TTL calib and set F2TTL values
     f2ttl_params = alyx.load_alyx_params(get_pybpod_board_name())
     if f2ttl_params is None:
@@ -321,9 +319,7 @@ def try_migrate_to_params(force=False):
         elif "F2TTL_COM" in f2ttl_params:
             f2ttl_dict.update({"COM_F2TTL": f2ttl_params["F2TTL_COM"]})
         if "F2TTL_CALIBRATION_DATE" in f2ttl_params:
-            f2ttl_dict.update(
-                {"F2TTL_CALIBRATION_DATE": f2ttl_params["F2TTL_CALIBRATION_DATE"]}
-            )
+            f2ttl_dict.update({"F2TTL_CALIBRATION_DATE": f2ttl_params["F2TTL_CALIBRATION_DATE"]})
 
     # Save locally
     final_dict = {}

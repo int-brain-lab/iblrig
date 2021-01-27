@@ -10,30 +10,30 @@ class TestPathHelper(unittest.TestCase):
     def test_get_iblrig_folder(self):
         f = ph.get_iblrig_folder()
         self.assertTrue(isinstance(f, str))
-        self.assertTrue('iblrig' in f)
+        self.assertTrue("iblrig" in f)
 
     def test_get_iblrig_params_folder(self):
         f = ph.get_iblrig_params_folder()
         self.assertTrue(isinstance(f, str))
-        self.assertTrue('iblrig_params' in f)
+        self.assertTrue("iblrig_params" in f)
         fp = Path(f)
         self.assertTrue(str(fp.parent) == str(Path(ph.get_iblrig_folder()).parent))
 
     def test_get_iblrig_data_folder(self):
         df = ph.get_iblrig_data_folder(subjects=False)
         self.assertTrue(isinstance(df, str))
-        self.assertTrue('iblrig_data' in df)
-        self.assertTrue('Subjects' not in df)
+        self.assertTrue("iblrig_data" in df)
+        self.assertTrue("Subjects" not in df)
         dfs = ph.get_iblrig_data_folder(subjects=True)
         self.assertTrue(isinstance(dfs, str))
-        self.assertTrue('iblrig_data' in dfs)
-        self.assertTrue('Subjects' in dfs)
+        self.assertTrue("iblrig_data" in dfs)
+        self.assertTrue("Subjects" in dfs)
 
     def test_get_iblserver_data_folder(self):
         out = ph.get_iblserver_data_folder(subjects=False)
-        self.assertTrue(out in [None, 'Y:\\'])
+        self.assertTrue(out in [None, "Y:\\", "~/Projects/IBL/github/iblserver"])
         out = ph.get_iblserver_data_folder(subjects=True)
-        self.assertTrue(out in [None, 'Y:\\Subjects'])
+        self.assertTrue(out in [None, "Y:\\Subjects", "~/Projects/IBL/github/iblserver/Subjects"])
 
     def tearDown(self):
         pass
