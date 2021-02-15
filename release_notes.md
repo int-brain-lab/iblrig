@@ -3,6 +3,8 @@
 ## **Release Notes develop**
 
 * Added camaera config script == videopc
+* Added CI builds for windows/ubuntu install
+* Optimized and fixed broken install procedure
 
 ## **Release Notes 6.4.2**
 

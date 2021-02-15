@@ -2,23 +2,12 @@ asn1crypto==0.24.0
 colorama==0.4.1
 Cython==0.29.6
 globus-sdk==1.7.1
-ibllib==1.5.20
+ibllib==1.5.37
 libusb1==1.7
+numpy==1.19.3
+packaging==20.8
 pybpod==1.8.2
 pyOpenSSL==19.0.0
 PySocks==1.6.8
 python-osc==1.7.0
 sounddevice==0.3.13
-numpy==1.19.3
-# pybpod-api==1.8.2
-# pybpod-gui-api==1.8.2
-# pybpod-gui-plugin==1.8.2
-# pybpod-gui-plugin-alyx==1.1.2
-# pybpod-gui-plugin-emulator==0.1.5
-# pybpod-gui-plugin-rotaryencoder==0.1.4
-# pybpod-gui-plugin-session-history==1.4.2
-# pybpod-gui-plugin-soundcard==0.1.6
-# pybpod-gui-plugin-stmdiagram==1.0.0
-# pybpod-gui-plugin-timeline==1.0.1
-# pybpod-gui-plugin-trial-timeline==1.0.0
-# pybpod-gui-plugin-waveplayer==1.0
