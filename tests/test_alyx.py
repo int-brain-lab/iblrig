@@ -1,6 +1,6 @@
 import unittest
 
-from ibllib.one import ONE
+from oneibl.one import ONE
 
 import iblrig.alyx as alyx  # noqa
 
