@@ -38,3 +38,5 @@ jobs:
           which pip
           pip install setuptools wheel packaging
           python install.py --reinstall-response y --config-response y --bonsai-response n
+          conda activate iblenv
+          python -m unittest discover
