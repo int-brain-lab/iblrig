@@ -1,5 +1,9 @@
 # **Release notes**
 
+## **Release Notes develop**
+
+* Added camaera config script == videopc
+
 ## **Release Notes 6.4.2**
 
 Patch update (bugfixes)
