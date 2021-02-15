@@ -5,6 +5,13 @@
 * Added camaera config script == videopc
 * Added CI builds for windows/ubuntu install
 * Optimized and fixed broken install procedure
+* Added script for calculation of wheel to screen positions
+* Added script for getting screen positions from wheel input (postprocessing)
+* Separated local param methods from Alyx board methods usning alyx module
+* Added tests for param module and path helper object
+* Created method for finding mapped network drives on local rigs
+* Added local and remote data folder to params_alyx
+* 
 
 ## **Release Notes 6.4.2**
 
