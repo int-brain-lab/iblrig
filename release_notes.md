@@ -11,7 +11,7 @@
 * Added tests for param module and path helper object
 * Created method for finding mapped network drives on local rigs
 * Added local and remote data folder to params_alyx
-* 
+* Swapped training camera timestamps/bonsai timestamps
 
 ## **Release Notes 6.4.2**
 
