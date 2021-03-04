@@ -166,6 +166,8 @@ def write_params_file(data: dict = None, force: bool = False) -> dict:
     """
     iblrig_params = Path(ph.get_iblrig_params_folder())
     fpath = iblrig_params / ".iblrig_params.json"
+    fpath_bckp = iblrig_params / ".iblrig_params_bckp.json"
+    shutil.copy(fpath, fpath_bckp)
     if fpath.exists() and not force:
         log.warning(f"iblrig params file already exists {fpath}. Not writing...")
         return
