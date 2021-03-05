@@ -348,51 +348,6 @@ def ask_subject_weight(subject: str, settings_file_path: str = None) -> float:
     return out
 
 
-def ask_subject_project(subject: str, settings_file_path: str = None) -> float:
-    import datetime
-    import json
-
-    from oneibl.one import ONE
-
-    one = ONE()
-    all_subjects = list(one.alyx.rest("subjects", "list"))
-    all_subjects.append({"dump_date": datetime.datetime.utcnow().isoformat()})
-
-    fpath = None  # Find Subjects folder
-    # Save json in Subjects folder
-
-    with open(fpath, "w+") as f:
-        f.write(json.dumps(all_subjects, indent=1))
-        f.write("\n")
-    # Load subjects from disk
-    with open(fpath, "r") as f:
-        all_subjects = json.loads(f.readlines())
-
-    # Given Subject load 'session_projects'
-    all_projects = {x["nickname"]: x["session_projects"] for x in all_subjects}
-    projects = all_projects[subject]
-
-    if not projects:
-        return projects
-    elif len(projects) == 1:
-        return projects[0]
-    else:
-        resp = graph.strinput(
-            "Select project",
-            str(projects),
-            default=projects[0],
-            nullable=False,
-        )
-        return resp
-
-    out = graph.numinput("Subject project", f"{subject} project (gr):", nullable=False)
-    log.info(f"Subject weight {out}")
-    if settings_file_path is not None:
-        patch = {"SUBJECT_WEIGHT": out}
-        patch_settings_file(settings_file_path, patch)
-    return out
-
-
 def ask_session_delay(settings_file_path: str = None) -> int:
     out = graph.numinput(
         "Session delay",
@@ -471,6 +426,51 @@ def ask_project(subject_name, one=None):
         if out_proj not in projects:
             return ask_project(subject_name, one=one)
         return out_proj
+
+
+def ask_subject_project(subject: str, settings_file_path: str = None) -> float:
+    import datetime
+    import json
+
+    from oneibl.one import ONE
+
+    one = ONE()
+    all_subjects = list(one.alyx.rest("subjects", "list"))
+    all_subjects.append({"dump_date": datetime.datetime.utcnow().isoformat()})
+
+    fpath = None  # Find Subjects folder
+    # Save json in Subjects folder
+
+    with open(fpath, "w+") as f:
+        f.write(json.dumps(all_subjects, indent=1))
+        f.write("\n")
+    # Load subjects from disk
+    with open(fpath, "r") as f:
+        all_subjects = json.loads(f.readlines())
+
+    # Given Subject load 'session_projects'
+    all_projects = {x["nickname"]: x["session_projects"] for x in all_subjects}
+    projects = all_projects[subject]
+
+    if not projects:
+        return projects
+    elif len(projects) == 1:
+        return projects[0]
+    else:
+        resp = graph.strinput(
+            "Select project",
+            str(projects),
+            default=projects[0],
+            nullable=False,
+        )
+        return resp
+
+    out = graph.numinput("Subject project", f"{subject} project (gr):", nullable=False)
+    log.info(f"Subject weight {out}")
+    if settings_file_path is not None:
+        patch = {"SUBJECT_WEIGHT": out}
+        patch_settings_file(settings_file_path, patch)
+    return out
 
 
 if __name__ == "__main__":

@@ -19,6 +19,16 @@ import iblrig.params as rig_params
 log = logging.getLogger("iblrig")
 
 
+def check_alyx_ok():
+    try:
+        ONE()
+        return True
+    except Exception as e:
+        print(e)
+        log.warning("Cannot create one client: working offline")
+        return False
+
+
 def create_session(session_folder, one=None):
     one = one or ONE()
     pfile = Path(lib_params.getfile("one_params"))
