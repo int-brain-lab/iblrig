@@ -12,6 +12,8 @@
 * Created method for finding mapped network drives on local rigs
 * Added local and remote data folder to params_alyx
 * Swapped training camera timestamps/bonsai timestamps
+* Added backup params file on write
+* Added register_screen_lux script
 
 ## **Release Notes 6.4.2**
 

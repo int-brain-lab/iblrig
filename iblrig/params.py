@@ -32,6 +32,8 @@ EMPTY_BOARD_PARAMS = {
     "SCREEN_FREQ_TARGET": None,  # int (Hz)
     "SCREEN_FREQ_TEST_STATUS": None,  # str
     "SCREEN_FREQ_TEST_DATE": None,  # str
+    "SCREEN_LUX_VALUE": None,  # lux (float?)
+    "SCREEN_LUX_DATE": None,  # str
     "WATER_CALIBRATION_RANGE": None,  # [min, max]
     "WATER_CALIBRATION_OPEN_TIMES": None,  # [float, float, ...]
     "WATER_CALIBRATION_WEIGHT_PERDROP": None,  # [float, float, ...]
