@@ -39,12 +39,17 @@ print(ph.get_iblrig_folder(), "\n", IBLRIG_PARAMS_FOLDER)
 # UTILS
 def _load_pybpod_obj_json(obj):
     objpath = Path(obj.path).joinpath(obj.name + ".json")
-    return json.load(open(objpath, "r"))
+    with open(objpath, "r") as f:
+        out = json.load(f)
+
+    return out
 
 
 def _save_pybpod_obj_json(obj, data):
     objpath = Path(obj.path).joinpath(obj.name + ".json")
-    json.dump(data, open(objpath, "w"), indent=2)
+    with open(objpath, "w") as f:
+        json.dump(data, f, indent=2)
+
     return
 
 
@@ -231,32 +236,4 @@ def create_alyx_user(project_name, one=None, force=False):
 
 
 if __name__ == "__main__":
-    IBLRIG_FOLDER = Path(__name__).absolute().parent
-    IBLRIG_PARAMS_FOLDER = IBLRIG_FOLDER.parent / "iblrig_params"
-    project_name = "ibl_mainenlab"
-    project_path = IBLRIG_PARAMS_FOLDER / project_name
-
-    one = ONE(
-        base_url="https://test.alyx.internationalbrainlab.org",
-        username="test_user",
-        password="TapetesBloc18",
-    )
-    p = create_alyx_project(project_name, one=one, force=False)
-    self.assertTrue(project_path.exists())
-    u = create_alyx_user(project_name, one=one, force=False)
-    self.assertTrue(project_path.joinpath("users", one._par.ALYX_LOGIN).exists())
-    self.assertTrue(project_path.joinpath("users", "_iblrig_test_user").exists())
-    self.assertTrue(project_path.exists())
-    s = create_alyx_subjects(project_name, one=one, force=False)
-    self.assertTrue(project_path.joinpath("subjects", "clns0730").exists())
-    self.assertTrue(project_path.joinpath("subjects", "flowers").exists())
-    self.assertTrue(project_path.joinpath("subjects", "IBL_46").exists())
-    self.assertTrue(project_path.joinpath("subjects", "_iblrig_calibration").exists())
-    self.assertTrue(project_path.joinpath("subjects", "_iblrig_test_mouse").exists())
-
-    p = create_alyx_project(project_name, one=one, force=True)
-    u = create_alyx_user(project_name, one=one, force=True)
-    s = create_alyx_subjects(project_name, one=one, force=True)
-
-    project_path = Path(ph.get_iblrig_params_folder()) / project_name
-    shutil.rmtree(project_path)
+    pass
