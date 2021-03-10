@@ -6,7 +6,7 @@ Create default rig subjects and all subjects associated to the project_name
 Create default user and currently logged in user (uses ONE params ALYX_USER)
 
 Usage:
-    python pybpod_config.py <project_name>
+    python pybpod_config.py [project_name]
 
 
 Local pybpod functions (used in setup_default config):
@@ -23,11 +23,13 @@ Alyx dependent functions:
 Return: None or json dict
 """
 import json
+import shutil
 from pathlib import Path
 
-import iblrig.path_helper as ph
 from oneibl.one import ONE
 from pybpodgui_api.models.project import Project
+
+import iblrig.path_helper as ph
 
 IBLRIG_PARAMS_FOLDER = Path(ph.get_iblrig_params_folder())
 
@@ -37,7 +39,7 @@ print(ph.get_iblrig_folder(), "\n", IBLRIG_PARAMS_FOLDER)
 # UTILS
 def _load_pybpod_obj_json(obj):
     objpath = Path(obj.path).joinpath(obj.name + ".json")
-    return json.load(open(objpath, 'r'))
+    return json.load(open(objpath, "r"))
 
 
 def _save_pybpod_obj_json(obj, data):
@@ -48,7 +50,7 @@ def _save_pybpod_obj_json(obj, data):
 
 def _update_pybpod_obj_json(obj, patch: dict):
     objdict = _load_pybpod_obj_json(obj)
-    print(f"Updating local subject {objdict['nickname']}'s json record with alyx subject info")
+    print(f"Updating local subject [{obj.name}]'s json record with alyx subject info")
     objdict.update(patch)
     _save_pybpod_obj_json(obj, objdict)
 
@@ -58,26 +60,43 @@ def _update_pybpod_obj_json(obj, patch: dict):
 def alyx_project_exists(name, one=None):
     if one is None:
         one = ONE()
-    print(f"Checking existence of project {name} on Alyx")
+    print(f"Checking existence of project [{name}] on Alyx")
     all_projects_names = [x["name"] for x in one.alyx.rest("projects", "list")]
+    if name not in all_projects_names:
+        print(f"Project [{name}] not found on Alyx")
+        out = False
+    else:
+        out = True
 
-    return True if name in all_projects_names else False
+    return out
 
 
 def alyx_user_exists(name, one=None):
     if one is None:
         one = ONE()
-    print(f"Checking existence of user {name} on Alyx")
-    all_user_names = [x["username"] for x in one.alyx.rest('users', 'list')]
-    return True if name in all_user_names else False
+    print(f"Checking existence of user [{name}] on Alyx")
+    all_user_names = [x["username"] for x in one.alyx.rest("users", "list")]
+    if name not in all_user_names:
+        print(f"User [{name}] not found on Alyx")
+        out = False
+    else:
+        out = True
+
+    return out
 
 
 def alyx_subject_exists(name, one=None):
     if one is None:
         one = ONE()
-    print(f"Checking existence of subject {name} on Alyx")
-    resp = one.alyx.rest('subjects', 'list', nickname=name)
-    return True if resp else False
+    print(f"Checking existence of subject [{name}] on Alyx")
+    resp = one.alyx.rest("subjects", "list", nickname=name)
+    if not resp:
+        print(f"Subject [{name}] not found on Alyx")
+        out = False
+    else:
+        out = True
+
+    return out
 
 
 # PROJECT
@@ -86,10 +105,11 @@ def pybpod_project_exists(name):
     p = Project()
     project_exists = None
     try:
-        print(f"Checking existence of project {name} locally")
+        print(f"Checking existence of project [{name}] locally")
         p.load(project_path)
         project_exists = True
     except:  # noqa
+        print(f"Project not found: [{project_path}]")
         project_exists = False
 
     return project_exists
@@ -101,9 +121,9 @@ def create_project(name, force=False):
     if force or not pybpod_project_exists(name):
         p.name = name
         p.save(project_path)
-        print(f"  Project created: {name}")
+        print(f"  Project created: [{name}]")
     else:
-        print(f"  Skipping creation: project {name} found in: {project_path}")
+        print(f"  Skipping creation: project [{name}] found in: [{project_path}]")
 
     return p
 
@@ -124,28 +144,28 @@ def create_alyx_project(name, one=None, force=False):
 def create_subject(project_name, subject_name: str, force=False):
     project_path = IBLRIG_PARAMS_FOLDER / project_name
     p = Project()
+    print(f"Loading [{project_path}]")
     p.load(project_path)
     subject = p.find_subject(subject_name)
     if force or subject is None:
         subject = p.create_subject()
         subject.name = subject_name
         p.save(project_path)
-        print(f"  Created subject: {subject_name}")
+        print(f"  Created subject: [{subject_name}]")
     # Create default subjects for project {project_name} if they don't exist
-    if p.find_subject("_iblrig_test_user") is None:
-        create_subject(project_name, subject_name="_iblrig_test_user", force=True)
-    if p.find_subject("_iblrig_test_user") is None:
+    if p.find_subject("_iblrig_test_mouse") is None:
+        create_subject(project_name, subject_name="_iblrig_test_mouse", force=True)
+    if p.find_subject("_iblrig_calibration") is None:
         create_subject(project_name, subject_name="_iblrig_calibration", force=True)
 
     return subject
 
 
 def _get_alyx_subjects(project_name, one=None):
+    if not alyx_project_exists(project_name, one=one):
+        return []
     if one is None:
         one = ONE()
-    if not alyx_project_exists(project_name, one=one):
-        print(f"Project {project_name} not found on Alyx")
-        return
     all_proj_subs = list(one.alyx.rest("subjects", "list", project=project_name))
 
     return all_proj_subs
@@ -158,15 +178,15 @@ def _create_alyx_subject(project_name, asub, force=False):
     return sdict
 
 
-def create_alyx_subjects(project_name, one=None):
+def create_alyx_subjects(project_name, one=None, force=False):
     project_path = IBLRIG_PARAMS_FOLDER / project_name
     if one is None:
         one = ONE()
     alyx_subjects = _get_alyx_subjects(project_name, one=one)
-    print(f"Creating {len(alyx_subjects)} subjects for project {project_name}")
+    print(f"Creating [{len(alyx_subjects)}] subjects for project [{project_name}]")
     patched_subjects = []
     for asub in alyx_subjects:
-        patched_subjects.append(_create_alyx_subject(project_path, asub))
+        patched_subjects.append(_create_alyx_subject(project_path, asub, force=force))
 
     return patched_subjects
 
@@ -174,17 +194,20 @@ def create_alyx_subjects(project_name, one=None):
 # USERS
 def create_user(project_name, username="_iblrig_test_user", force=False):
     project_path = IBLRIG_PARAMS_FOLDER / project_name
-    print(f"Loading {project_path}")
     p = Project()
+    print(f"Loading [{project_path}]")
+    if not pybpod_project_exists(project_name):
+        return
+
     p.load(project_path)
     if force or p.find_user(username) is None:
         user = p.create_user()
         user.name = username
         p.save(project_path)
-        print(f"  Created user: <{user.name}>")
+        print(f"  Created user: [{user.name}]")
     else:
         user = p.find_user(username)
-        print(f"  Skipping creation: User <{user.name}> already exists")
+        print(f"  Skipping creation: User [{user.name}] already exists")
 
     if p.find_user("_iblrig_test_user") is None:
         create_user(project_name, username="_iblrig_test_user", force=True)
@@ -195,10 +218,14 @@ def create_user(project_name, username="_iblrig_test_user", force=False):
 def create_alyx_user(project_name, one=None, force=False):
     if one is None:
         one = ONE()
+    out = None
     uname = one._par.ALYX_LOGIN
-    assert alyx_user_exists(uname, one=one)
+    if not alyx_user_exists(uname, one=one):
+        return
+
     user = create_user(project_name, username=uname, force=force)
-    out = _load_pybpod_obj_json(user)
+    if user:
+        out = _load_pybpod_obj_json(user)
 
     return out
 
@@ -206,11 +233,30 @@ def create_alyx_user(project_name, one=None, force=False):
 if __name__ == "__main__":
     IBLRIG_FOLDER = Path(__name__).absolute().parent
     IBLRIG_PARAMS_FOLDER = IBLRIG_FOLDER.parent / "iblrig_params"
-    project_name = "bla"
+    project_name = "ibl_mainenlab"
     project_path = IBLRIG_PARAMS_FOLDER / project_name
 
-    one = ONE()
+    one = ONE(
+        base_url="https://test.alyx.internationalbrainlab.org",
+        username="test_user",
+        password="TapetesBloc18",
+    )
     p = create_alyx_project(project_name, one=one, force=False)
+    self.assertTrue(project_path.exists())
     u = create_alyx_user(project_name, one=one, force=False)
-    s = create_alyx_subjects(project_name, one=one,)
+    self.assertTrue(project_path.joinpath("users", one._par.ALYX_LOGIN).exists())
+    self.assertTrue(project_path.joinpath("users", "_iblrig_test_user").exists())
+    self.assertTrue(project_path.exists())
+    s = create_alyx_subjects(project_name, one=one, force=False)
+    self.assertTrue(project_path.joinpath("subjects", "clns0730").exists())
+    self.assertTrue(project_path.joinpath("subjects", "flowers").exists())
+    self.assertTrue(project_path.joinpath("subjects", "IBL_46").exists())
+    self.assertTrue(project_path.joinpath("subjects", "_iblrig_calibration").exists())
+    self.assertTrue(project_path.joinpath("subjects", "_iblrig_test_mouse").exists())
 
+    p = create_alyx_project(project_name, one=one, force=True)
+    u = create_alyx_user(project_name, one=one, force=True)
+    s = create_alyx_subjects(project_name, one=one, force=True)
+
+    project_path = Path(ph.get_iblrig_params_folder()) / project_name
+    shutil.rmtree(project_path)
