@@ -39,4 +39,6 @@ jobs:
           pip install setuptools wheel packaging
           python install.py --reinstall-response y --config-response y --bonsai-response n
           conda activate iblenv
+          python -c "from oneibl.one import ONE; ONE(silent=True)"
           python -m unittest discover
+
