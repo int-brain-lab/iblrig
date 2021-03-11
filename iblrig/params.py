@@ -169,16 +169,20 @@ def write_params_file(data: dict = None, force: bool = False) -> dict:
     iblrig_params = Path(ph.get_iblrig_params_folder())
     fpath = iblrig_params / ".iblrig_params.json"
     fpath_bckp = iblrig_params / ".iblrig_params_bckp.json"
-    shutil.copy(fpath, fpath_bckp)
+    if data is None:
+        data = create_new_params_dict()
     if fpath.exists() and not force:
         log.warning(f"iblrig params file already exists {fpath}. Not writing...")
         return
-    if data is None:
-        data = create_new_params_dict()
-    with open(fpath, "w") as f:
-        log.info(f"Writing {data} to {fpath}")
-        json.dump(data, f, indent=1)
+    elif fpath.exists() and force:
+        shutil.copy(fpath, fpath_bckp)
+    if not fpath.exists() or force:
+        with open(fpath, "w") as f:
+            log.info(f"Writing {data} to {fpath}")
+            json.dump(data, f, indent=1)
+
     return data
+
 
 
 def load_params_file(upload=False) -> dict:
