@@ -23,7 +23,6 @@ Alyx dependent functions:
 Return: None or json dict
 """
 import json
-import shutil
 from pathlib import Path
 
 from oneibl.one import ONE

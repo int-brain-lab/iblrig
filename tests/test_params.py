@@ -1,7 +1,6 @@
 import unittest
 
 import iblrig.params as params
-from iblrig.params import create_new_params_dict
 
 
 class TestParams(unittest.TestCase):
@@ -15,7 +14,7 @@ class TestParams(unittest.TestCase):
             self.assertTrue(k in out)
 
     def test_create_new_params_dict(self):
-        out  = params.create_new_params_dict()
+        out = params.create_new_params_dict()
         self.assertTrue(out == params.EMPTY_BOARD_PARAMS)
 
     def test_update_param_key_values(self):

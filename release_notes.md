@@ -20,7 +20,7 @@
 Patch update (bugfixes)
 
 * Increased stim_off state timer to 150ms
-* Updated ibllib, Bonsai and Bonvision 
+* Updated ibllib, Bonsai and Bonvision
 * New update procedure for Bonsai that will simplify updates for users
 * New pipeline architecture (removed deprecated flag creations on transfer)
 * Mice that have more than one project now will require user to pick the project on run
