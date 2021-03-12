@@ -84,6 +84,7 @@ def create_ibl_board(iblproject_path):
         BOARD_NAME = "SELECT_BOARD_NAME_(e.g.[_iblrig_mainenlab_behavior_0])"
         b = p.create_board()
         b.name = BOARD_NAME
+        b.serial_port = "COM#"
         p.save(iblproject_path)
         print("  Created: IBL default board (please remember to rename it)")
     else:
