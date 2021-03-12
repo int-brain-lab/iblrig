@@ -1,3 +1,4 @@
+import platform
 import unittest
 
 import iblrig.params as params
@@ -19,21 +20,25 @@ class TestParams(unittest.TestCase):
 
     def test_update_param_key_values(self):
         for k in params.AUTO_UPDATABLE_PARAMS:
-            self.assertTrue(params.update_param_key_values(k) is not None)
+            if k == "DATA_FOLDER_REMOTE" and platform.system() == "Windows":
+                continue
+            v = params.update_param_key_values(k)
+            self.assertTrue(v is not None)
 
     def test_get_iblrig_version(self):
         from pkg_resources import parse_version
+
         out = params.get_iblrig_version()
-        self.assertTrue(parse_version(out) >= parse_version('6.4.2'))
+        self.assertTrue(parse_version(out) >= parse_version("6.4.2"))
 
     def test_get_pybpod_board_name(self):
         out = params.get_pybpod_board_name()
-        self.assertTrue('_iblrig_' in out)
+        self.assertTrue("_iblrig_" in out)
         print(1)
 
     def test_get_pybpod_board_comport(self):
         out = params.get_pybpod_board_comport()
-        self.assertTrue('COM' in out)
+        self.assertTrue("COM" in out)
 
     def tearDown(self):
         pass
