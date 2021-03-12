@@ -2,7 +2,7 @@ asn1crypto==0.24.0
 colorama==0.4.1
 Cython==0.29.6
 globus-sdk==1.7.1
-ibllib==1.5.37
+ibllib==1.5.39
 libusb1==1.7
 numpy==1.19.3
 packaging==20.8
