@@ -14,6 +14,12 @@ one = ONE(
 class TestAlyx(unittest.TestCase):
     def setUp(self):
         self.one = one
+        # Create fake session
+        # needs:
+        #     valid settings file
+        #     valid mouse name
+        #     valid user
+        #     valid taskData for ntrials
 
     def test_create_session(self):
         # alyx.create_session(session_folder, one=self.one)
