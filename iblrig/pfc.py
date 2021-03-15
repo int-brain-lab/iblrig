@@ -20,13 +20,15 @@ Check Alyx connection
     Load COM ports
 end with user input
 """
+import datetime
 import logging
 import struct
 
 import serial
+from dateutil.relativedelta import relativedelta
+from oneibl.one import ONE
 from pybpod_rotaryencoder_module.module_api import RotaryEncoderModule
 
-from oneibl.one import ONE
 import iblrig.logging_  # noqa
 import iblrig.params as params
 from iblrig.frame2TTL import Frame2TTL
@@ -35,13 +37,52 @@ log = logging.getLogger("iblrig")
 log.setLevel(logging.DEBUG)
 
 
+def _grep_param_dict(pattern):
+    pardict = params.load_params_file()
+    return {k: pardict[k] for k in pardict if pattern in k}
+
+
+def params_comports_ok() -> bool:
+    # Load PARAMS file ports
+    # If file exists open file if not initialize
+    subdict = _grep_param_dict("COM")
+    out = True if all(subdict.values) else False
+    if not out:
+        log.warning(f"Not all comports are present: {subdict}")
+    log.debug("Loading params file...")
+    return out
+
+
+def _
+
+
+def calibration_dates_ok() -> bool:
+    """
+    {
+        "F2TTL_CALIBRATION_DATE": datetime.timedelta(days=7),
+        "SCREEN_FREQ_TEST_DATE": every 4 months,
+        "SCREEN_LUX_DATE": every 4 months,
+        "WATER_CALIBRATION_DATE": monthly,
+        "BPOD_TTL_TEST_DATE": every 4 months,
+    }
+    """
+    subdict = _grep_param_dict("DATE")
+    today = datetime.datetime.now().date()
+    out = True if all(subdict.values()) else False
+    if not out:
+        log.warning(f"Not all calibration dates are present: {subdict}")
+    else:
+        subdict = {k: datetime.datetime.strptime(v, "%Y-%m-%d") for k, v in subdict.items()}
+        if today - relativedelta(months=4)
+
+
+    datestr = str(datetime.datetime.now().date())
+    datetime.datetime.strptime(datestr, "%Y-%m-%d")
+    return out
+
 # Check if Alyx is accessible
 log.debug("Alyx: Connecting...")
 one = ONE()
-# Load PARAMS file ports
-# If file exists open file if not initialize
-log.debug("Loading params file...")
-PARAMS = params.load_params_file()
 # Check PARAMS values
 checks = []
 for k in PARAMS:
