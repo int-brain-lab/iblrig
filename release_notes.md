@@ -14,6 +14,7 @@
 * Swapped training camera timestamps/bonsai timestamps
 * Added backup params file on write
 * Added register_screen_lux script
+* Transfer data will attempt to move all passive session that it finds before starting
 
 ## **Release Notes 6.4.2**
 
