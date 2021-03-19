@@ -7,7 +7,6 @@ from pathlib import Path
 
 import ibllib.io.raw_data_loaders as raw
 import ibllib.pipes.misc as misc
-
 import iblrig.path_helper as ph
 
 log = logging.getLogger("iblrig")
@@ -23,6 +22,7 @@ def main():
     # If you find it just rename and move the folder raw_behavior_data -> raw_passive_data,
     # If no find search specifically for that session from the metadata and try to copy the folder
     # If folder exists throw an error
+    log.info(f"Found {len(list(passive_sessions))} sessions in {IBLRIG_DATA_PATH}")
     for ps in passive_sessions:
         sett = raw.load_settings(str(ps.parent))
         esess = sett["CORRESPONDING_EPHYS_SESSION"]
@@ -42,6 +42,7 @@ def main():
             str(Path(esess) / "raw_passive_data"),
             force=False,
         )
+        log.info(f"Moved passive data to {esess}")
         ps.unlink()
 
 
