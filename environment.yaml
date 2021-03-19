@@ -11,7 +11,7 @@ dependencies:
     - colorama==0.4.1
     - cython==0.29.6
     - globus-sdk==1.7.1
-    - ibllib==1.5.39
+    - ibllib==1.6.2
     - libusb1==1.7
     - numpy==1.19.3
     - packaging==20.8
