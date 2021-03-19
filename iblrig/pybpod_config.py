@@ -62,7 +62,7 @@ def _update_pybpod_obj_json(obj, patch: dict):
 
 
 def alyx_project_exists(name, one=None):
-    one =  one or ONE()
+    one = one or ONE()
     print(f"Checking existence of project [{name}] on Alyx")
     all_projects_names = [x["name"] for x in one.alyx.rest("projects", "list")]
     if name not in all_projects_names:
@@ -75,7 +75,7 @@ def alyx_project_exists(name, one=None):
 
 
 def alyx_user_exists(name, one=None):
-    one =  one or ONE()
+    one = one or ONE()
     print(f"Checking existence of user [{name}] on Alyx")
     all_user_names = [x["username"] for x in one.alyx.rest("users", "list")]
     if name not in all_user_names:
@@ -88,7 +88,7 @@ def alyx_user_exists(name, one=None):
 
 
 def alyx_subject_exists(name, one=None):
-    one =  one or ONE()
+    one = one or ONE()
     print(f"Checking existence of subject [{name}] on Alyx")
     resp = one.alyx.rest("subjects", "list", nickname=name)
     if not resp:
@@ -130,7 +130,7 @@ def create_project(name, force=False):
 
 
 def create_alyx_project(name, one=None, force=False):
-    one =  one or ONE()
+    one = one or ONE()
     if force or alyx_project_exists(name, one=one):
         p = create_project(name, force=force)
         out = _load_pybpod_obj_json(p)
@@ -164,7 +164,7 @@ def create_subject(project_name, subject_name: str, force=False):
 def _get_alyx_subjects(project_name, one=None):
     if not alyx_project_exists(project_name, one=one):
         return []
-    one =  one or ONE()
+    one = one or ONE()
     all_proj_subs = list(one.alyx.rest("subjects", "list", project=project_name))
 
     return all_proj_subs
@@ -179,7 +179,7 @@ def _create_alyx_subject(project_name, asub, force=False):
 
 def create_alyx_subjects(project_name, one=None, force=False):
     project_path = IBLRIG_PARAMS_FOLDER / project_name
-    one =  one or ONE()
+    one = one or ONE()
     alyx_subjects = _get_alyx_subjects(project_name, one=one)
     print(f"Creating [{len(alyx_subjects)}] subjects for project [{project_name}]")
     patched_subjects = []
@@ -214,7 +214,7 @@ def create_user(project_name, username="_iblrig_test_user", force=False):
 
 
 def create_alyx_user(project_name, one=None, force=False):
-    one =  one or ONE()
+    one = one or ONE()
     out = None
     uname = one._par.ALYX_LOGIN
     if not alyx_user_exists(uname, one=one):
