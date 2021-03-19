@@ -14,6 +14,9 @@ import os
 # ax1 = fig.add_subplot(211)
 # ax2 = fig.add_subplot(212)
 
+fpath = r'C:\Users\User\Desktop\scratch_bonsai-harp\NIdata.bin'
+data = np.fromfile(fpath, dtype=np.float64)
+
 nsamples = 1024
 sample_frequency = 1000
 # freqs = np.linspace(0, int(sample_frequency / 2), int(nsamples / 2 + 1))
