@@ -2,7 +2,7 @@
 
 ## **Release Notes develop**
 
-* Added camaera config script == videopc
+* Added camera config script == videopc
 * Added CI builds for windows/ubuntu install
 * Optimized and fixed broken install procedure
 * Added script for calculation of wheel to screen positions
