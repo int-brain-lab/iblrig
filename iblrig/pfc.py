@@ -38,7 +38,7 @@ log.setLevel(logging.DEBUG)
 
 
 def _grep_param_dict(pattern):
-    pardict = params.load_params_file()
+    pardict = params.load_params_file(silent=True)
     return {k: pardict[k] for k in pardict if pattern in k}
 
 
@@ -46,39 +46,39 @@ def params_comports_ok() -> bool:
     # Load PARAMS file ports
     # If file exists open file if not initialize
     subdict = _grep_param_dict("COM")
-    out = True if all(subdict.values) else False
+    out = True if all(subdict.values()) else False
     if not out:
         log.warning(f"Not all comports are present: {subdict}")
     log.debug("Loading params file...")
     return out
 
 
-def _
-
-
 def calibration_dates_ok() -> bool:
     """
-    {
-        "F2TTL_CALIBRATION_DATE": datetime.timedelta(days=7),
-        "SCREEN_FREQ_TEST_DATE": every 4 months,
-        "SCREEN_LUX_DATE": every 4 months,
-        "WATER_CALIBRATION_DATE": monthly,
-        "BPOD_TTL_TEST_DATE": every 4 months,
-    }
     """
     subdict = _grep_param_dict("DATE")
+    thresh = {
+        "F2TTL_CALIBRATION_DATE": datetime.timedelta(days=7),
+        "SCREEN_FREQ_TEST_DATE": relativedelta(months=4),
+        "SCREEN_LUX_DATE": relativedelta(months=4),
+        "WATER_CALIBRATION_DATE": relativedelta(months=1),
+        "BPOD_TTL_TEST_DATE": relativedelta(months=4),
+    }
+    assert thresh.keys() == subdict.keys()
+
     today = datetime.datetime.now().date()
-    out = True if all(subdict.values()) else False
-    if not out:
+
+    cal_dates_exist = True if all(subdict.values()) else False
+    if not cal_dates_exist:
         log.warning(f"Not all calibration dates are present: {subdict}")
     else:
-        subdict = {k: datetime.datetime.strptime(v, "%Y-%m-%d") for k, v in subdict.items()}
-        if today - relativedelta(months=4)
-
-
-    datestr = str(datetime.datetime.now().date())
-    datetime.datetime.strptime(datestr, "%Y-%m-%d")
-    return out
+        subdict = {k: datetime.datetime.strptime(v, "%Y-%m-%d").date() for k, v in subdict.items()}
+        out = dict.fromkeys(subdict)
+        for k in subdict:
+            out[k] = subdict[k] + thresh[k] < today
+    if not all(out.values()):
+        log.warning(f"Outdated calibrations: {[k for k, v in out.items() if not v]}")
+    return all(out.values())
 
 # Check if Alyx is accessible
 log.debug("Alyx: Connecting...")
