@@ -184,8 +184,7 @@ def write_params_file(data: dict = None, force: bool = False) -> dict:
     return data
 
 
-
-def load_params_file(upload=False) -> dict:
+def load_params_file(upload=False, silent=False) -> dict:
     """load_params_file loads the .iblrig_params.json file from default location
      (iblrig/../iblrig_params/.iblrig_params.json), will create default params
      file if file is not found
@@ -200,7 +199,8 @@ def load_params_file(upload=False) -> dict:
         with open(fpath, "r") as f:
             out = json.load(f)
         out = ensure_all_keys_present(out, upload=upload)
-        log.info(out)
+        if not silent:
+            log.info(out)
         return out
     elif not fpath.exists() and bpod_comports.exists():
         log.warning(
