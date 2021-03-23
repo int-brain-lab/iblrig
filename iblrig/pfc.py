@@ -80,9 +80,28 @@ def calibration_dates_ok() -> bool:
         log.warning(f"Outdated calibrations: {[k for k, v in out.items() if not v]}")
     return all(out.values())
 
+
+def connectivity_check():
+    """
+    Try Alyx, try local server, try local
+    """
+    try:
+        ONE()
+    except BaseException as e:
+        log.warning(f"{e} /nCan't connect to Alyx.")
+
+    try:
+        pass
+    except BaseException as e:
+        log.warning(f"{e} /nCan't connect to local_server.")
+
+    try:
+        pass
+    except BaseException as e:
+        log.warning(f"{e} /nCan't find data_folder.")
+
+
 # Check if Alyx is accessible
-log.debug("Alyx: Connecting...")
-one = ONE()
 # Check PARAMS values
 checks = []
 for k in PARAMS:
