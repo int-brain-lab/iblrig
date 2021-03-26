@@ -157,8 +157,42 @@ def f2ttl_ok() -> bool:
         log.warning(f"{e} \nCan't connect to Frame2TTL.")
     return out
 
-# Check Mic connection?
 
+################################
+# How TF do I find microphone????? not a com? USB Device
+# c/o https://python-sounddevice.readthedocs.io/en/0.4.1/examples.html#plot-microphone-signal-s-in-real-time
+# c/o https://python-sounddevice.readthedocs.io/en/0.4.1/examples.html#input-to-output-pass-through
+
+import pprint
+ports = serial.tools.list_ports.comports()
+for p in sorted(ports):
+    pprint.pprint(dict(p.__dict__.items()))
+
+import platform
+import glob
+# A function that tries to list serial ports on most common platforms
+def list_serial_ports():
+    system_name = platform.system()
+    if system_name == "Windows":
+        # Scan for available ports.
+        available = []
+        for i in range(256):
+            port = f"COM{i}"
+            try:
+                s = serial.Serial(port)
+                available.append(port)
+                s.close()
+            except serial.SerialException:
+                pass
+        return available
+    elif system_name == "Darwin":
+        # Mac
+        return glob.glob('/dev/tty*') + glob.glob('/dev/cu*')
+    else:
+        # Assume Linux or something else
+        return glob.glob('/dev/ttyS*') + glob.glob('/dev/ttyUSB*')
+
+# Check Mic connection?
 # Check Xonar sound card existence if on ephys rig
 
 # Check HarpSoundCard if on ephys rig
