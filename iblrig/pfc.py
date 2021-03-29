@@ -158,6 +158,24 @@ def f2ttl_ok() -> bool:
     return out
 
 
+# Check Xonar sound card existence if on ephys rig
+
+# Check HarpSoundCard if on ephys rig
+
+# Cameras check + setup
+# iblrig.camera_config
+
+# Check Task IO Run fast habituation task with fast delays?
+
+# Ask user info
+
+# Create missing session folders
+
+# Create Alyx session reference? NO
+
+# Open Alyx session notes in browser? NO
+
+# Check Mic connection?
 ################################
 # How TF do I find microphone????? not a com? USB Device
 # c/o https://python-sounddevice.readthedocs.io/en/0.4.1/examples.html#plot-microphone-signal-s-in-real-time
@@ -191,23 +209,5 @@ def list_serial_ports():
     else:
         # Assume Linux or something else
         return glob.glob('/dev/ttyS*') + glob.glob('/dev/ttyUSB*')
-
-# Check Mic connection?
-# Check Xonar sound card existence if on ephys rig
-
-# Check HarpSoundCard if on ephys rig
-
-# Cameras check + setup
-# iblrig.camera_config
-
-# Check Task IO Run fast habituation task with fast delays?
-
-# Ask user info
-
-# Create missing session folders
-
-# Create Alyx session reference? NO
-
-# Open Alyx session notes in browser? NO
 
 print(".")
