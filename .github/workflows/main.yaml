@@ -34,7 +34,6 @@ jobs:
           activate-environment: iblenv
           environment-file: environment.yaml
       - name: Commands
-        shell: bash -l {0}
         run: |
           conda activate base
           python -V
