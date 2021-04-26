@@ -12,27 +12,36 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  build:
+  incubator:
     name: build (${{ matrix.python-version }}, ${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: false  # Whether to stop execution of other instances
-      max-parallel: 2
+      fail-fast: false
+      max-parallel: 3
       matrix:
-        os: ["ubuntu-latest", "windows-latest"]  #  , "macos-latest"
+        os: ["ubuntu-latest", "windows-latest"]  # "macos-latest",
         python-version: ["3.7"]
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Commands
-      run: |
-        python -V
-        which pip
-        pip install setuptools wheel packaging
-        python install.py --reinstall-response y --config-response y --bonsai-response n
-        conda activate iblenv
-        python -c "from oneibl.one import ONE; ONE(silent=True)"
-        python -m unittest discover
+      - name: Clone iblrig repo
+        uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+          activate-environment: iblenv
+          environment-file: environment.yaml
+      - name: Commands
+        shell: bash -l {0}
+        run: |
+          conda activate base
+          python -V
+          which pip
+          pip install setuptools wheel packaging
+          python install.py --reinstall-response y --config-response y --bonsai-response n
+          conda activate iblenv
+          python -c "from oneibl.one import ONE; ONE(silent=True)"
+          python -m unittest discover
+
