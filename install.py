@@ -133,7 +133,7 @@ def create_environment(env_name="iblenv", use_conda_yaml=False, resp=False):
     env = get_env_folder(env_name=env_name)
     print(env)
     # Creates commands
-    create_command = f"conda create -y -n {env_name} python=3.7"
+    create_command = f"conda create -y -n {env_name} python=3.8"
     remove_command = f"conda env remove -y -n {env_name}"
     # Installes the env
     if env:
