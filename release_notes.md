@@ -15,6 +15,8 @@
 * Added backup params file on write
 * Added register_screen_lux script
 * Transfer data will attempt to move all passive session that it finds before starting
+* Fixed stimulus overshooting/undershooting on center or right/left thresholds
+* TODO: Update Bonsai
 
 ## **Release Notes 6.4.2**
 
@@ -64,12 +66,12 @@ Minor update (added functionality)
 ## **Release Notes 6.2.5**
 
 *THIS: State Machine changed*
-Patch update (bugfixes)  
+Patch update (bugfixes)
 
 * Fixed stimulus sometimes keeps moving after reward for all tasks
 * Fixed session_params bug in ephysCW
 * Under the hood refactorings
-  
+
 ## **Release Notes 6.2.4**
 
 Patch update (bugfixes)
@@ -89,13 +91,13 @@ Patch update (bugfixes)
 
 ## **Release Notes 6.2.2**
 
-Patch update (bugfixes)  
+Patch update (bugfixes)
 
 * SESSION_ORDER bugfix
 
 ## **Release Notes 6.2.1**
 
-Patch update (bugfixes)  
+Patch update (bugfixes)
 Mainly in **ephysCW** and **passiveCW**
 
 * Poop only at end o passive run
