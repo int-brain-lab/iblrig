@@ -16,7 +16,7 @@
 * Added register_screen_lux script
 * Transfer data will attempt to move all passive session that it finds before starting
 * Fixed stimulus overshooting/undershooting on center or right/left thresholds
-* TODO: Update Bonsai
+* Updated Bonsai and packages
 
 ## **Release Notes 6.4.2**
 
