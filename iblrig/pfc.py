@@ -26,6 +26,7 @@ from pathlib import Path
 import struct
 
 import serial
+import serial.tools.list_ports
 from dateutil.relativedelta import relativedelta
 from oneibl.one import ONE
 from pybpod_rotaryencoder_module.module_api import RotaryEncoderModule
@@ -59,6 +60,7 @@ def calibration_dates_ok() -> bool:
     should be enough to know if the values are there.
     """
     subdict = _grep_param_dict("DATE")
+    out = dict.fromkeys(subdict)
     thresh = {
         "F2TTL_CALIBRATION_DATE": datetime.timedelta(days=7),
         "SCREEN_FREQ_TEST_DATE": relativedelta(months=4),
@@ -84,6 +86,32 @@ def calibration_dates_ok() -> bool:
     if not all(out.values()):
         log.warning(f"Outdated calibrations: {[k for k, v in out.items() if not v]}")
     return all(out.values())
+
+
+def alyx_ok() -> bool:
+    out = False
+    try:
+        ONE()
+        out = True
+    except BaseException as e:
+        log.warning(f"{e} \nCan't connect to Alyx.")
+    return out
+
+
+def local_server_ok() -> bool:
+    pars = _grep_param_dict("")
+    out = Path(pars["DATA_FOLDER_REMOTE"]).exists()
+    if not out:
+        log.warning(f"{e} \nCan't connect to local_server.")
+    return out
+
+
+def rig_data_folder_ok() -> bool:
+    pars = _grep_param_dict("")
+    out = Path(pars["DATA_FOLDER_LOCAL"]).exists()
+    if not out:
+        log.warning(f"{e} \nCan't connect to local_server.")
+    return out
 
 
 def alyx_server_rig_ok() -> bin:
@@ -149,14 +177,12 @@ def f2ttl_ok() -> bool:
         pars = _grep_param_dict("")
         f = Frame2TTL(pars["COM_F2TTL"])
         out = f.ser.isOpen()
-        f.set_thresholds(
-            dark=pars["F2TTL_DARK_THRESH"], light=pars["F2TTL_LIGHT_THRESH"]
-        )
         f.close()
     except BaseException as e:
         log.warning(f"{e} \nCan't connect to Frame2TTL.")
     return out
 
+def check_rig() -> bool:
 
 # Check Xonar sound card existence if on ephys rig
 

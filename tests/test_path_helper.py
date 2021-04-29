@@ -5,7 +5,13 @@ from pathlib import Path
 
 class TestPathHelper(unittest.TestCase):
     def setUp(self):
-        pass
+        self.drives = ['C:\\', 'Y:\\', "~/Projects/IBL/github/iblserver"]
+
+    def test_get_network_drives(self):
+        nd = ph.get_network_drives()
+        self.assertTrue(all([x in self.drives for x in nd]))
+
+    def test_get_iblserver_data_folder(self):
 
     def test_get_iblrig_folder(self):
         f = ph.get_iblrig_folder()
