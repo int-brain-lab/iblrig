@@ -87,12 +87,12 @@ def get_iblrig_data_folder(subjects: bool = True) -> str:
 def get_commit_hash(folder: str):
     here = os.getcwd()
     os.chdir(folder)
-    out = subprocess.check_output(["git", "rev-parse", "HEAD"]).decode()
+    out = subprocess.check_output(["git", "rev-parse", "HEAD"]).decode().strip()
     os.chdir(here)
     if not out:
         log.debug("Commit hash is empty string")
     log.debug(f"Found commit hash {out}")
-    return out.strip()
+    return out
 
 
 def get_version_tag(folder: str) -> str:
