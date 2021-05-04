@@ -5,12 +5,12 @@
                  xmlns:scr="clr-namespace:Bonsai.Scripting;assembly=Bonsai.Scripting"
                  xmlns:gl="clr-namespace:Bonsai.Shaders;assembly=Bonsai.Shaders"
                  xmlns:dsp="clr-namespace:Bonsai.Dsp;assembly=Bonsai.Dsp"
-                 xmlns:num="clr-namespace:Bonsai.Numerics;assembly=Bonsai.Numerics"
                  xmlns:osc="clr-namespace:Bonsai.Osc;assembly=Bonsai.Osc"
+                 xmlns:num="clr-namespace:Bonsai.Numerics;assembly=Bonsai.Numerics"
                  xmlns:wie="clr-namespace:Bonsai.Windows.Input;assembly=Bonsai.Windows.Input"
+                 xmlns:rx="clr-namespace:Bonsai.Reactive;assembly=Bonsai.Core"
                  xmlns:gli="clr-namespace:Bonsai.Shaders.Input;assembly=Bonsai.Shaders"
                  xmlns:res="clr-namespace:Bonsai.Resources;assembly=Bonsai.System"
-                 xmlns:rx="clr-namespace:Bonsai.Reactive;assembly=Bonsai.Core"
                  xmlns:cv="clr-namespace:Bonsai.Vision;assembly=Bonsai.Vision"
                  xmlns:io="clr-namespace:Bonsai.IO;assembly=Bonsai.System"
                  xmlns="https://bonsai-rx.org/2018/workflow">
@@ -110,6 +110,37 @@
               <Name>InitializeVars</Name>
               <Workflow>
                 <Nodes>
+                  <Expression xsi:type="GroupWorkflow">
+                    <Name>BpodOSCClient</Name>
+                    <Description>OSC channels:
+            USED:
+            /t  -&gt; (int)    trial number current
+            /p  -&gt; (int)    position of stimulus init for current trial
+            /h  -&gt; (float)  phase of gabor for current trial
+            /c  -&gt; (float)  contrast of stimulus for current trial
+            /f  -&gt; (float)  frequency of gabor patch for current trial
+            /a  -&gt; (float)  angle of gabor patch for current trial
+            /g  -&gt; (float)  gain of RE to visual stim displacement
+            /s  -&gt; (float)  sigma of the 2D gaussian of gabor
+            /e  -&gt; (int)    events transitions  USED BY SOFTCODE HANDLER FUNC
+            /r  -&gt; (int)    wheter to reverse the side contingencies (0, 1)</Description>
+                    <Workflow>
+                      <Nodes>
+                        <Expression xsi:type="Combinator">
+                          <Combinator xsi:type="osc:CreateUdpClient">
+                            <osc:Name>bpod</osc:Name>
+                            <osc:Port>7110</osc:Port>
+                            <osc:RemoteHostName>127.0.0.1</osc:RemoteHostName>
+                            <osc:RemotePort>0</osc:RemotePort>
+                          </Combinator>
+                        </Expression>
+                        <Expression xsi:type="WorkflowOutput" />
+                      </Nodes>
+                      <Edges>
+                        <Edge From="0" To="1" Label="Source1" />
+                      </Edges>
+                    </Workflow>
+                  </Expression>
                   <Expression xsi:type="ExternalizedMapping">
                     <Property Name="TranslationZ" />
                   </Expression>
@@ -231,6 +262,14 @@
                     <Name>StimContrast</Name>
                   </Expression>
                   <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="IntProperty">
+                      <Value>0</Value>
+                    </Combinator>
+                  </Expression>
+                  <Expression xsi:type="BehaviorSubject">
+                    <Name>StimReverse</Name>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
                     <Combinator xsi:type="FloatProperty">
                       <Value>0</Value>
                     </Combinator>
@@ -242,59 +281,52 @@
                     <Property Name="Connection" />
                   </Expression>
                   <Expression xsi:type="osc:ReceiveMessage">
+                    <osc:Address>/t</osc:Address>
+                    <osc:TypeTag>i</osc:TypeTag>
+                    <osc:Connection>bpod</osc:Connection>
+                  </Expression>
+                  <Expression xsi:type="BehaviorSubject">
+                    <Name>TrialNum</Name>
+                  </Expression>
+                  <Expression xsi:type="osc:ReceiveMessage">
                     <osc:Address>/p</osc:Address>
                     <osc:TypeTag>i</osc:TypeTag>
                     <osc:Connection>bpod</osc:Connection>
                   </Expression>
-                  <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="gl:SampleOnRenderFrame" />
-                  </Expression>
                   <Expression xsi:type="BehaviorSubject">
-                    <Name>InitPosition</Name>
+                    <Name>TrialInitPosition</Name>
                   </Expression>
                   <Expression xsi:type="osc:ReceiveMessage">
                     <osc:Address>/c</osc:Address>
                     <osc:TypeTag>f</osc:TypeTag>
                     <osc:Connection>bpod</osc:Connection>
                   </Expression>
-                  <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="gl:SampleOnRenderFrame" />
-                  </Expression>
                   <Expression xsi:type="BehaviorSubject">
-                    <Name>Contrast</Name>
-                  </Expression>
-                  <Expression xsi:type="osc:ReceiveMessage">
-                    <osc:Address>/t</osc:Address>
-                    <osc:TypeTag>i</osc:TypeTag>
-                    <osc:Connection>bpod</osc:Connection>
-                  </Expression>
-                  <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="gl:SampleOnRenderFrame" />
-                  </Expression>
-                  <Expression xsi:type="BehaviorSubject">
-                    <Name>TrialNum</Name>
+                    <Name>TrialStimContrast</Name>
                   </Expression>
                   <Expression xsi:type="osc:ReceiveMessage">
                     <osc:Address>/f</osc:Address>
                     <osc:TypeTag>f</osc:TypeTag>
                     <osc:Connection>bpod</osc:Connection>
                   </Expression>
-                  <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="gl:SampleOnRenderFrame" />
-                  </Expression>
                   <Expression xsi:type="BehaviorSubject">
-                    <Name>StimFreq</Name>
+                    <Name>TrialStimFreq</Name>
                   </Expression>
                   <Expression xsi:type="osc:ReceiveMessage">
                     <osc:Address>/a</osc:Address>
                     <osc:TypeTag>f</osc:TypeTag>
                     <osc:Connection>bpod</osc:Connection>
                   </Expression>
-                  <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="gl:SampleOnRenderFrame" />
+                  <Expression xsi:type="BehaviorSubject">
+                    <Name>TrialStimAngle</Name>
+                  </Expression>
+                  <Expression xsi:type="osc:ReceiveMessage">
+                    <osc:Address>/r</osc:Address>
+                    <osc:TypeTag>i</osc:TypeTag>
+                    <osc:Connection>bpod</osc:Connection>
                   </Expression>
                   <Expression xsi:type="BehaviorSubject">
-                    <Name>StimAngle</Name>
+                    <Name>TrialStimReverse</Name>
                   </Expression>
                   <Expression xsi:type="osc:ReceiveMessage">
                     <osc:Address>/s</osc:Address>
@@ -302,26 +334,12 @@
                     <osc:Connection>bpod</osc:Connection>
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="gl:SampleOnRenderFrame" />
-                  </Expression>
-                  <Expression xsi:type="Combinator">
                     <Combinator xsi:type="dsp:Pow">
                       <dsp:Power>2</dsp:Power>
                     </Combinator>
                   </Expression>
                   <Expression xsi:type="BehaviorSubject">
-                    <Name>StimSize</Name>
-                  </Expression>
-                  <Expression xsi:type="osc:ReceiveMessage">
-                    <osc:Address>/g</osc:Address>
-                    <osc:TypeTag>f</osc:TypeTag>
-                    <osc:Connection>bpod</osc:Connection>
-                  </Expression>
-                  <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="gl:SampleOnRenderFrame" />
-                  </Expression>
-                  <Expression xsi:type="BehaviorSubject">
-                    <Name>Gain</Name>
+                    <Name>TrialStimSize</Name>
                   </Expression>
                   <Expression xsi:type="osc:ReceiveMessage">
                     <osc:Address>/h</osc:Address>
@@ -329,13 +347,18 @@
                     <osc:Connection>bpod</osc:Connection>
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="gl:SampleOnRenderFrame" />
-                  </Expression>
-                  <Expression xsi:type="Combinator">
                     <Combinator xsi:type="num:RadianToDegree" />
                   </Expression>
                   <Expression xsi:type="BehaviorSubject">
-                    <Name>StimPhase</Name>
+                    <Name>TrialStimPhase</Name>
+                  </Expression>
+                  <Expression xsi:type="osc:ReceiveMessage">
+                    <osc:Address>/g</osc:Address>
+                    <osc:TypeTag>f</osc:TypeTag>
+                    <osc:Connection>bpod</osc:Connection>
+                  </Expression>
+                  <Expression xsi:type="BehaviorSubject">
+                    <Name>TrialWheelGain</Name>
                   </Expression>
                   <Expression xsi:type="osc:ReceiveMessage">
                     <osc:Address>/re</osc:Address>
@@ -345,224 +368,216 @@
                   <Expression xsi:type="MulticastSubject">
                     <Name>BpodEvent</Name>
                   </Expression>
-                  <Expression xsi:type="GroupWorkflow">
-                    <Name>BpodOverrides</Name>
-                    <Workflow>
-                      <Nodes>
-                        <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="FloatProperty">
-                            <Value>7</Value>
-                          </Combinator>
-                        </Expression>
-                        <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="dsp:Pow">
-                            <dsp:Power>2</dsp:Power>
-                          </Combinator>
-                        </Expression>
-                        <Expression xsi:type="MulticastSubject">
-                          <Name>StimSize</Name>
-                        </Expression>
-                        <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="FloatProperty">
-                            <Value>0</Value>
-                          </Combinator>
-                        </Expression>
-                        <Expression xsi:type="MulticastSubject">
-                          <Name>StimPhase</Name>
-                        </Expression>
-                        <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="FloatProperty">
-                            <Value>4</Value>
-                          </Combinator>
-                        </Expression>
-                        <Expression xsi:type="MulticastSubject">
-                          <Name>Gain</Name>
-                        </Expression>
-                        <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="IntProperty">
-                            <Value>-35</Value>
-                          </Combinator>
-                        </Expression>
-                        <Expression xsi:type="MulticastSubject">
-                          <Name>InitPosition</Name>
-                        </Expression>
-                        <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="FloatProperty">
-                            <Value>1</Value>
-                          </Combinator>
-                        </Expression>
-                        <Expression xsi:type="MulticastSubject">
-                          <Name>Contrast</Name>
-                        </Expression>
-                        <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="IntProperty">
-                            <Value>0</Value>
-                          </Combinator>
-                        </Expression>
-                        <Expression xsi:type="MulticastSubject">
-                          <Name>TrialNum</Name>
-                        </Expression>
-                        <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="FloatProperty">
-                            <Value>0.1</Value>
-                          </Combinator>
-                        </Expression>
-                        <Expression xsi:type="MulticastSubject">
-                          <Name>StimFreq</Name>
-                        </Expression>
-                        <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="FloatProperty">
-                            <Value>0</Value>
-                          </Combinator>
-                        </Expression>
-                        <Expression xsi:type="MulticastSubject">
-                          <Name>StimAngle</Name>
-                        </Expression>
-                        <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="IntProperty">
-                            <Value>0</Value>
-                          </Combinator>
-                        </Expression>
-                        <Expression xsi:type="MulticastSubject">
-                          <Name>StimLocationX</Name>
-                        </Expression>
-                        <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="wie:KeyDown">
-                            <wie:Filter>D1</wie:Filter>
-                            <wie:SuppressRepetitions>false</wie:SuppressRepetitions>
-                          </Combinator>
-                        </Expression>
-                        <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="IntProperty">
-                            <Value>1</Value>
-                          </Combinator>
-                        </Expression>
-                        <Expression xsi:type="MulticastSubject">
-                          <Name>BpodEvent</Name>
-                        </Expression>
-                        <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="wie:KeyDown">
-                            <wie:Filter>D2</wie:Filter>
-                            <wie:SuppressRepetitions>false</wie:SuppressRepetitions>
-                          </Combinator>
-                        </Expression>
-                        <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="IntProperty">
-                            <Value>2</Value>
-                          </Combinator>
-                        </Expression>
-                        <Expression xsi:type="MulticastSubject">
-                          <Name>BpodEvent</Name>
-                        </Expression>
-                        <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="wie:KeyDown">
-                            <wie:Filter>D3</wie:Filter>
-                            <wie:SuppressRepetitions>false</wie:SuppressRepetitions>
-                          </Combinator>
-                        </Expression>
-                        <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="IntProperty">
-                            <Value>3</Value>
-                          </Combinator>
-                        </Expression>
-                        <Expression xsi:type="MulticastSubject">
-                          <Name>BpodEvent</Name>
-                        </Expression>
-                        <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="wie:KeyDown">
-                            <wie:Filter>D4</wie:Filter>
-                            <wie:SuppressRepetitions>false</wie:SuppressRepetitions>
-                          </Combinator>
-                        </Expression>
-                        <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="IntProperty">
-                            <Value>4</Value>
-                          </Combinator>
-                        </Expression>
-                        <Expression xsi:type="MulticastSubject">
-                          <Name>BpodEvent</Name>
-                        </Expression>
-                        <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="gli:MouseMove" />
-                        </Expression>
-                        <Expression xsi:type="MemberSelector">
-                          <Selector>EventArgs.X</Selector>
-                        </Expression>
-                        <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="dsp:Rescale">
-                            <dsp:Min>0</dsp:Min>
-                            <dsp:Max>1024</dsp:Max>
-                            <dsp:RangeMin>-20</dsp:RangeMin>
-                            <dsp:RangeMax>20</dsp:RangeMax>
-                            <dsp:RescaleType>Linear</dsp:RescaleType>
-                          </Combinator>
-                        </Expression>
-                        <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="gl:SampleOnRenderFrame" />
-                        </Expression>
-                        <Expression xsi:type="MulticastSubject">
-                          <Name>EncoderPosition</Name>
-                        </Expression>
-                      </Nodes>
-                      <Edges>
-                        <Edge From="0" To="1" Label="Source1" />
-                        <Edge From="1" To="2" Label="Source1" />
-                        <Edge From="3" To="4" Label="Source1" />
-                        <Edge From="5" To="6" Label="Source1" />
-                        <Edge From="7" To="8" Label="Source1" />
-                        <Edge From="9" To="10" Label="Source1" />
-                        <Edge From="11" To="12" Label="Source1" />
-                        <Edge From="13" To="14" Label="Source1" />
-                        <Edge From="15" To="16" Label="Source1" />
-                        <Edge From="17" To="18" Label="Source1" />
-                        <Edge From="19" To="20" Label="Source1" />
-                        <Edge From="20" To="21" Label="Source1" />
-                        <Edge From="22" To="23" Label="Source1" />
-                        <Edge From="23" To="24" Label="Source1" />
-                        <Edge From="25" To="26" Label="Source1" />
-                        <Edge From="26" To="27" Label="Source1" />
-                        <Edge From="28" To="29" Label="Source1" />
-                        <Edge From="29" To="30" Label="Source1" />
-                        <Edge From="31" To="32" Label="Source1" />
-                        <Edge From="32" To="33" Label="Source1" />
-                        <Edge From="33" To="34" Label="Source1" />
-                        <Edge From="34" To="35" Label="Source1" />
-                      </Edges>
-                    </Workflow>
+                  <Expression xsi:type="Disable">
+                    <Builder xsi:type="GroupWorkflow">
+                      <Name>BpodOverrides</Name>
+                      <Workflow>
+                        <Nodes>
+                          <Expression xsi:type="Combinator">
+                            <Combinator xsi:type="IntProperty">
+                              <Value>0</Value>
+                            </Combinator>
+                          </Expression>
+                          <Expression xsi:type="MulticastSubject">
+                            <Name>TrialNum</Name>
+                          </Expression>
+                          <Expression xsi:type="Combinator">
+                            <Combinator xsi:type="IntProperty">
+                              <Value>-35</Value>
+                            </Combinator>
+                          </Expression>
+                          <Expression xsi:type="MulticastSubject">
+                            <Name>TrialInitPosition</Name>
+                          </Expression>
+                          <Expression xsi:type="Combinator">
+                            <Combinator xsi:type="FloatProperty">
+                              <Value>1</Value>
+                            </Combinator>
+                          </Expression>
+                          <Expression xsi:type="MulticastSubject">
+                            <Name>TrialStimContrast</Name>
+                          </Expression>
+                          <Expression xsi:type="Combinator">
+                            <Combinator xsi:type="FloatProperty">
+                              <Value>0.1</Value>
+                            </Combinator>
+                          </Expression>
+                          <Expression xsi:type="MulticastSubject">
+                            <Name>TrialStimFreq</Name>
+                          </Expression>
+                          <Expression xsi:type="Combinator">
+                            <Combinator xsi:type="FloatProperty">
+                              <Value>0</Value>
+                            </Combinator>
+                          </Expression>
+                          <Expression xsi:type="MulticastSubject">
+                            <Name>TrialStimAngle</Name>
+                          </Expression>
+                          <Expression xsi:type="Combinator">
+                            <Combinator xsi:type="IntProperty">
+                              <Value>0</Value>
+                            </Combinator>
+                          </Expression>
+                          <Expression xsi:type="MulticastSubject">
+                            <Name>TrialStimReverse</Name>
+                          </Expression>
+                          <Expression xsi:type="Combinator">
+                            <Combinator xsi:type="FloatProperty">
+                              <Value>7</Value>
+                            </Combinator>
+                          </Expression>
+                          <Expression xsi:type="Combinator">
+                            <Combinator xsi:type="dsp:Pow">
+                              <dsp:Power>2</dsp:Power>
+                            </Combinator>
+                          </Expression>
+                          <Expression xsi:type="MulticastSubject">
+                            <Name>TrialStimSize</Name>
+                          </Expression>
+                          <Expression xsi:type="Combinator">
+                            <Combinator xsi:type="FloatProperty">
+                              <Value>0</Value>
+                            </Combinator>
+                          </Expression>
+                          <Expression xsi:type="MulticastSubject">
+                            <Name>TrialStimPhase</Name>
+                          </Expression>
+                          <Expression xsi:type="Combinator">
+                            <Combinator xsi:type="FloatProperty">
+                              <Value>4</Value>
+                            </Combinator>
+                          </Expression>
+                          <Expression xsi:type="MulticastSubject">
+                            <Name>TrialWheelGain</Name>
+                          </Expression>
+                          <Expression xsi:type="Combinator">
+                            <Combinator xsi:type="wie:KeyDown">
+                              <wie:Filter>D1</wie:Filter>
+                              <wie:SuppressRepetitions>false</wie:SuppressRepetitions>
+                            </Combinator>
+                          </Expression>
+                          <Expression xsi:type="Combinator">
+                            <Combinator xsi:type="IntProperty">
+                              <Value>1</Value>
+                            </Combinator>
+                          </Expression>
+                          <Expression xsi:type="Combinator">
+                            <Combinator xsi:type="wie:KeyDown">
+                              <wie:Filter>D2</wie:Filter>
+                              <wie:SuppressRepetitions>false</wie:SuppressRepetitions>
+                            </Combinator>
+                          </Expression>
+                          <Expression xsi:type="Combinator">
+                            <Combinator xsi:type="IntProperty">
+                              <Value>2</Value>
+                            </Combinator>
+                          </Expression>
+                          <Expression xsi:type="Combinator">
+                            <Combinator xsi:type="wie:KeyDown">
+                              <wie:Filter>D3</wie:Filter>
+                              <wie:SuppressRepetitions>false</wie:SuppressRepetitions>
+                            </Combinator>
+                          </Expression>
+                          <Expression xsi:type="Combinator">
+                            <Combinator xsi:type="IntProperty">
+                              <Value>3</Value>
+                            </Combinator>
+                          </Expression>
+                          <Expression xsi:type="Combinator">
+                            <Combinator xsi:type="wie:KeyDown">
+                              <wie:Filter>D4</wie:Filter>
+                              <wie:SuppressRepetitions>false</wie:SuppressRepetitions>
+                            </Combinator>
+                          </Expression>
+                          <Expression xsi:type="Combinator">
+                            <Combinator xsi:type="IntProperty">
+                              <Value>4</Value>
+                            </Combinator>
+                          </Expression>
+                          <Expression xsi:type="Combinator">
+                            <Combinator xsi:type="rx:Merge" />
+                          </Expression>
+                          <Expression xsi:type="MulticastSubject">
+                            <Name>BpodEvent</Name>
+                          </Expression>
+                          <Expression xsi:type="Combinator">
+                            <Combinator xsi:type="gli:MouseMove" />
+                          </Expression>
+                          <Expression xsi:type="MemberSelector">
+                            <Selector>EventArgs.X</Selector>
+                          </Expression>
+                          <Expression xsi:type="Combinator">
+                            <Combinator xsi:type="dsp:Rescale">
+                              <dsp:Min>0</dsp:Min>
+                              <dsp:Max>1024</dsp:Max>
+                              <dsp:RangeMin>-20</dsp:RangeMin>
+                              <dsp:RangeMax>20</dsp:RangeMax>
+                              <dsp:RescaleType>Linear</dsp:RescaleType>
+                            </Combinator>
+                          </Expression>
+                          <Expression xsi:type="Combinator">
+                            <Combinator xsi:type="gl:SampleOnRenderFrame" />
+                          </Expression>
+                          <Expression xsi:type="MulticastSubject">
+                            <Name>EncoderPosition</Name>
+                          </Expression>
+                        </Nodes>
+                        <Edges>
+                          <Edge From="0" To="1" Label="Source1" />
+                          <Edge From="2" To="3" Label="Source1" />
+                          <Edge From="4" To="5" Label="Source1" />
+                          <Edge From="6" To="7" Label="Source1" />
+                          <Edge From="8" To="9" Label="Source1" />
+                          <Edge From="10" To="11" Label="Source1" />
+                          <Edge From="12" To="13" Label="Source1" />
+                          <Edge From="13" To="14" Label="Source1" />
+                          <Edge From="15" To="16" Label="Source1" />
+                          <Edge From="17" To="18" Label="Source1" />
+                          <Edge From="19" To="20" Label="Source1" />
+                          <Edge From="20" To="27" Label="Source1" />
+                          <Edge From="21" To="22" Label="Source1" />
+                          <Edge From="22" To="27" Label="Source2" />
+                          <Edge From="23" To="24" Label="Source1" />
+                          <Edge From="24" To="27" Label="Source3" />
+                          <Edge From="25" To="26" Label="Source1" />
+                          <Edge From="26" To="27" Label="Source4" />
+                          <Edge From="27" To="28" Label="Source1" />
+                          <Edge From="29" To="30" Label="Source1" />
+                          <Edge From="30" To="31" Label="Source1" />
+                          <Edge From="31" To="32" Label="Source1" />
+                          <Edge From="32" To="33" Label="Source1" />
+                        </Edges>
+                      </Workflow>
+                    </Builder>
                   </Expression>
                 </Nodes>
                 <Edges>
-                  <Edge From="0" To="1" Label="Source1" />
-                  <Edge From="2" To="3" Label="Source1" />
-                  <Edge From="4" To="5" Label="Source1" />
-                  <Edge From="6" To="7" Label="Source1" />
-                  <Edge From="6" To="10" Label="Source1" />
-                  <Edge From="6" To="13" Label="Source1" />
-                  <Edge From="6" To="16" Label="Source1" />
-                  <Edge From="6" To="19" Label="Source1" />
-                  <Edge From="6" To="22" Label="Source1" />
-                  <Edge From="6" To="26" Label="Source1" />
-                  <Edge From="6" To="29" Label="Source1" />
-                  <Edge From="6" To="33" Label="Source1" />
+                  <Edge From="1" To="2" Label="Source1" />
+                  <Edge From="3" To="4" Label="Source1" />
+                  <Edge From="5" To="6" Label="Source1" />
                   <Edge From="7" To="8" Label="Source1" />
-                  <Edge From="8" To="9" Label="Source1" />
+                  <Edge From="9" To="10" Label="Source1" />
+                  <Edge From="9" To="12" Label="Source1" />
+                  <Edge From="9" To="14" Label="Source1" />
+                  <Edge From="9" To="16" Label="Source1" />
+                  <Edge From="9" To="18" Label="Source1" />
+                  <Edge From="9" To="20" Label="Source1" />
+                  <Edge From="9" To="22" Label="Source1" />
+                  <Edge From="9" To="25" Label="Source1" />
+                  <Edge From="9" To="28" Label="Source1" />
+                  <Edge From="9" To="30" Label="Source1" />
                   <Edge From="10" To="11" Label="Source1" />
-                  <Edge From="11" To="12" Label="Source1" />
-                  <Edge From="13" To="14" Label="Source1" />
+                  <Edge From="12" To="13" Label="Source1" />
                   <Edge From="14" To="15" Label="Source1" />
                   <Edge From="16" To="17" Label="Source1" />
-                  <Edge From="17" To="18" Label="Source1" />
-                  <Edge From="19" To="20" Label="Source1" />
+                  <Edge From="18" To="19" Label="Source1" />
                   <Edge From="20" To="21" Label="Source1" />
                   <Edge From="22" To="23" Label="Source1" />
                   <Edge From="23" To="24" Label="Source1" />
-                  <Edge From="24" To="25" Label="Source1" />
+                  <Edge From="25" To="26" Label="Source1" />
                   <Edge From="26" To="27" Label="Source1" />
-                  <Edge From="27" To="28" Label="Source1" />
-                  <Edge From="29" To="30" Label="Source1" />
+                  <Edge From="28" To="29" Label="Source1" />
                   <Edge From="30" To="31" Label="Source1" />
-                  <Edge From="31" To="32" Label="Source1" />
-                  <Edge From="33" To="34" Label="Source1" />
                 </Edges>
               </Workflow>
             </Expression>
@@ -764,7 +779,7 @@
                     <Name>Draw</Name>
                   </Expression>
                   <Expression xsi:type="SubscribeSubject">
-                    <Name>StimSize</Name>
+                    <Name>TrialStimSize</Name>
                   </Expression>
                   <Expression xsi:type="SubscribeSubject">
                     <Name>VisualSpan</Name>
@@ -790,7 +805,7 @@
                     </PropertyMappings>
                   </Expression>
                   <Expression xsi:type="SubscribeSubject">
-                    <Name>StimFreq</Name>
+                    <Name>TrialStimFreq</Name>
                   </Expression>
                   <Expression xsi:type="PropertyMapping">
                     <PropertyMappings>
@@ -881,7 +896,7 @@
                     </PropertyMappings>
                   </Expression>
                   <Expression xsi:type="SubscribeSubject">
-                    <Name>StimPhase</Name>
+                    <Name>TrialStimPhase</Name>
                   </Expression>
                   <Expression xsi:type="PropertyMapping">
                     <PropertyMappings>
@@ -889,7 +904,7 @@
                     </PropertyMappings>
                   </Expression>
                   <Expression xsi:type="IncludeWorkflow" Path="BonVision:Primitives.DrawGratings.bonsai">
-                    <LocationX>-32.7174377</LocationX>
+                    <LocationX>40.32598</LocationX>
                     <LocationY>0</LocationY>
                     <Layer>0</Layer>
                     <Angle>0</Angle>
@@ -897,11 +912,11 @@
                     <TemporalFrequency>0</TemporalFrequency>
                     <Phase>0</Phase>
                     <SquareWave>false</SquareWave>
-                    <Contrast>0</Contrast>
+                    <Contrast>1</Contrast>
                     <DutyCycle xsi:nil="true" />
                     <Radius>0.445389926</Radius>
                     <Aperture>0.445389926</Aperture>
-                    <Opacity>0</Opacity>
+                    <Opacity>1</Opacity>
                     <ExtentX>110.015961</ExtentX>
                     <ExtentY>110.015961</ExtentY>
                   </Expression>
@@ -1045,26 +1060,25 @@
               </Workflow>
             </Expression>
             <Expression xsi:type="SelectMany">
-              <Name>UpdateInitPosition</Name>
-              <Description>shoud set contrast of stim to trial contrast
-probably there is no need to reset the position also
-</Description>
+              <Name>UpdateStimReverse</Name>
               <Workflow>
                 <Nodes>
                   <Expression xsi:type="WorkflowInput">
                     <Name>Source1</Name>
                   </Expression>
                   <Expression xsi:type="SubscribeSubject">
-                    <Name>InitPosition</Name>
+                    <Name>TrialStimReverse</Name>
                   </Expression>
                   <Expression xsi:type="Combinator">
                     <Combinator xsi:type="rx:Sample" />
                   </Expression>
-                  <Expression xsi:type="scr:ExpressionTransform">
-                    <scr:Expression>single(it)</scr:Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="rx:Take">
+                      <rx:Count>1</rx:Count>
+                    </Combinator>
                   </Expression>
                   <Expression xsi:type="MulticastSubject">
-                    <Name>StimLocationX</Name>
+                    <Name>StimReverse</Name>
                   </Expression>
                   <Expression xsi:type="WorkflowOutput" />
                 </Nodes>
@@ -1078,11 +1092,107 @@ probably there is no need to reset the position also
               </Workflow>
             </Expression>
             <Expression xsi:type="SelectMany">
-              <Name>UpdateContrast</Name>
+              <Name>UpdateStimLocationX</Name>
+              <Description>shoud set contrast of stim to trial contrast
+probably there is no need to reset the position also
+</Description>
+              <Workflow>
+                <Nodes>
+                  <Expression xsi:type="WorkflowInput">
+                    <Name>Source1</Name>
+                  </Expression>
+                  <Expression xsi:type="SubscribeSubject">
+                    <Name>TrialInitPosition</Name>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="rx:Sample" />
+                  </Expression>
+                  <Expression xsi:type="Condition">
+                    <Name>Normal</Name>
+                    <Workflow>
+                      <Nodes>
+                        <Expression xsi:type="WorkflowInput">
+                          <Name>Source1</Name>
+                        </Expression>
+                        <Expression xsi:type="SubscribeSubject">
+                          <Name>TrialStimReverse</Name>
+                        </Expression>
+                        <Expression xsi:type="Equal">
+                          <Operand xsi:type="IntProperty">
+                            <Value>0</Value>
+                          </Operand>
+                        </Expression>
+                        <Expression xsi:type="WorkflowOutput" />
+                      </Nodes>
+                      <Edges>
+                        <Edge From="1" To="2" Label="Source1" />
+                        <Edge From="2" To="3" Label="Source1" />
+                      </Edges>
+                    </Workflow>
+                  </Expression>
+                  <Expression xsi:type="scr:ExpressionTransform">
+                    <scr:Expression>single(it)</scr:Expression>
+                  </Expression>
+                  <Expression xsi:type="Condition">
+                    <Name>Reverse</Name>
+                    <Workflow>
+                      <Nodes>
+                        <Expression xsi:type="WorkflowInput">
+                          <Name>Source1</Name>
+                        </Expression>
+                        <Expression xsi:type="SubscribeSubject">
+                          <Name>TrialStimReverse</Name>
+                        </Expression>
+                        <Expression xsi:type="Equal">
+                          <Operand xsi:type="IntProperty">
+                            <Value>1</Value>
+                          </Operand>
+                        </Expression>
+                        <Expression xsi:type="WorkflowOutput" />
+                      </Nodes>
+                      <Edges>
+                        <Edge From="1" To="2" Label="Source1" />
+                        <Edge From="2" To="3" Label="Source1" />
+                      </Edges>
+                    </Workflow>
+                  </Expression>
+                  <Expression xsi:type="scr:ExpressionTransform">
+                    <scr:Expression>single(-it)</scr:Expression>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="rx:Merge" />
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="rx:Take">
+                      <rx:Count>1</rx:Count>
+                    </Combinator>
+                  </Expression>
+                  <Expression xsi:type="MulticastSubject">
+                    <Name>StimLocationX</Name>
+                  </Expression>
+                  <Expression xsi:type="WorkflowOutput" />
+                </Nodes>
+                <Edges>
+                  <Edge From="0" To="2" Label="Source2" />
+                  <Edge From="1" To="2" Label="Source1" />
+                  <Edge From="2" To="3" Label="Source1" />
+                  <Edge From="2" To="5" Label="Source1" />
+                  <Edge From="3" To="4" Label="Source1" />
+                  <Edge From="4" To="7" Label="Source1" />
+                  <Edge From="5" To="6" Label="Source1" />
+                  <Edge From="6" To="7" Label="Source2" />
+                  <Edge From="7" To="8" Label="Source1" />
+                  <Edge From="8" To="9" Label="Source1" />
+                  <Edge From="9" To="10" Label="Source1" />
+                </Edges>
+              </Workflow>
+            </Expression>
+            <Expression xsi:type="SelectMany">
+              <Name>UpdateStimContrast</Name>
               <Workflow>
                 <Nodes>
                   <Expression xsi:type="SubscribeSubject">
-                    <Name>Contrast</Name>
+                    <Name>TrialStimContrast</Name>
                   </Expression>
                   <Expression xsi:type="Combinator">
                     <Combinator xsi:type="rx:Take">
@@ -1092,10 +1202,10 @@ probably there is no need to reset the position also
                   <Expression xsi:type="MulticastSubject">
                     <Name>StimContrast</Name>
                   </Expression>
-                  <Expression xsi:type="WorkflowOutput" />
                   <Expression xsi:type="MulticastSubject">
                     <Name>UpdateSyncSquare</Name>
                   </Expression>
+                  <Expression xsi:type="WorkflowOutput" />
                   <Expression xsi:type="WorkflowInput">
                     <Name>Source1</Name>
                   </Expression>
@@ -1103,8 +1213,8 @@ probably there is no need to reset the position also
                 <Edges>
                   <Edge From="0" To="1" Label="Source1" />
                   <Edge From="1" To="2" Label="Source1" />
-                  <Edge From="1" To="4" Label="Source1" />
                   <Edge From="2" To="3" Label="Source1" />
+                  <Edge From="3" To="4" Label="Source1" />
                 </Edges>
               </Workflow>
             </Expression>
@@ -1221,7 +1331,7 @@ Value = whhel_radius for wheel_perim</Description>
                                 </Workflow>
                               </Expression>
                               <Expression xsi:type="SubscribeSubject">
-                                <Name>Gain</Name>
+                                <Name>TrialWheelGain</Name>
                               </Expression>
                               <Expression xsi:type="Combinator">
                                 <Combinator xsi:type="rx:CombineLatest" />
@@ -1311,7 +1421,7 @@ Value = whhel_radius for wheel_perim</Description>
                     </Workflow>
                   </Expression>
                   <Expression xsi:type="SubscribeSubject">
-                    <Name>InitPosition</Name>
+                    <Name>TrialInitPosition</Name>
                   </Expression>
                   <Expression xsi:type="Combinator">
                     <Combinator xsi:type="rx:CombineLatest" />
@@ -1436,6 +1546,58 @@ Value = whhel_radius for wheel_perim</Description>
                   </Expression>
                   <Expression xsi:type="MemberSelector">
                     <Selector>Item1</Selector>
+                  </Expression>
+                  <Expression xsi:type="Condition">
+                    <Name>Normal</Name>
+                    <Workflow>
+                      <Nodes>
+                        <Expression xsi:type="WorkflowInput">
+                          <Name>Source1</Name>
+                        </Expression>
+                        <Expression xsi:type="SubscribeSubject">
+                          <Name>TrialStimReverse</Name>
+                        </Expression>
+                        <Expression xsi:type="Equal">
+                          <Operand xsi:type="IntProperty">
+                            <Value>0</Value>
+                          </Operand>
+                        </Expression>
+                        <Expression xsi:type="WorkflowOutput" />
+                      </Nodes>
+                      <Edges>
+                        <Edge From="1" To="2" Label="Source1" />
+                        <Edge From="2" To="3" Label="Source1" />
+                      </Edges>
+                    </Workflow>
+                  </Expression>
+                  <Expression xsi:type="Condition">
+                    <Name>Reverse</Name>
+                    <Workflow>
+                      <Nodes>
+                        <Expression xsi:type="WorkflowInput">
+                          <Name>Source1</Name>
+                        </Expression>
+                        <Expression xsi:type="SubscribeSubject">
+                          <Name>TrialStimReverse</Name>
+                        </Expression>
+                        <Expression xsi:type="Equal">
+                          <Operand xsi:type="IntProperty">
+                            <Value>1</Value>
+                          </Operand>
+                        </Expression>
+                        <Expression xsi:type="WorkflowOutput" />
+                      </Nodes>
+                      <Edges>
+                        <Edge From="1" To="2" Label="Source1" />
+                        <Edge From="2" To="3" Label="Source1" />
+                      </Edges>
+                    </Workflow>
+                  </Expression>
+                  <Expression xsi:type="scr:ExpressionTransform">
+                    <scr:Expression>-it</scr:Expression>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="rx:Merge" />
                   </Expression>
                   <Expression xsi:type="MulticastSubject">
                     <Name>StimLocationX</Name>
@@ -1603,6 +1765,9 @@ Value = whhel_radius for wheel_perim</Description>
                     </Workflow>
                   </Expression>
                   <Expression xsi:type="WorkflowOutput" />
+                  <Expression xsi:type="SubscribeSubject">
+                    <Name>StimReverse</Name>
+                  </Expression>
                 </Nodes>
                 <Edges>
                   <Edge From="1" To="2" Label="Source1" />
@@ -1630,13 +1795,18 @@ Value = whhel_radius for wheel_perim</Description>
                   <Edge From="20" To="21" Label="Source1" />
                   <Edge From="21" To="22" Label="Source2" />
                   <Edge From="22" To="23" Label="Source1" />
-                  <Edge From="22" To="27" Label="Source1" />
+                  <Edge From="22" To="31" Label="Source1" />
                   <Edge From="23" To="24" Label="Source1" />
                   <Edge From="24" To="25" Label="Source1" />
-                  <Edge From="25" To="26" Label="Source1" />
-                  <Edge From="27" To="28" Label="Source1" />
+                  <Edge From="24" To="26" Label="Source1" />
+                  <Edge From="25" To="28" Label="Source1" />
+                  <Edge From="26" To="27" Label="Source1" />
+                  <Edge From="27" To="28" Label="Source2" />
                   <Edge From="28" To="29" Label="Source1" />
                   <Edge From="29" To="30" Label="Source1" />
+                  <Edge From="31" To="32" Label="Source1" />
+                  <Edge From="32" To="33" Label="Source1" />
+                  <Edge From="33" To="34" Label="Source1" />
                 </Edges>
               </Workflow>
             </Expression>
@@ -1672,31 +1842,31 @@ _iblrig_micData.raw.wav
               <Workflow>
                 <Nodes>
                   <Expression xsi:type="SubscribeSubject">
-                    <Name>StimAngle</Name>
+                    <Name>TrialStimAngle</Name>
                   </Expression>
                   <Expression xsi:type="SubscribeSubject">
-                    <Name>Gain</Name>
+                    <Name>TrialWheelGain</Name>
                   </Expression>
                   <Expression xsi:type="SubscribeSubject">
                     <Name>TrialNum</Name>
                   </Expression>
                   <Expression xsi:type="SubscribeSubject">
-                    <Name>InitPosition</Name>
+                    <Name>TrialInitPosition</Name>
                   </Expression>
                   <Expression xsi:type="SubscribeSubject">
-                    <Name>Contrast</Name>
+                    <Name>TrialStimContrast</Name>
                   </Expression>
                   <Expression xsi:type="SubscribeSubject">
-                    <Name>StimFreq</Name>
+                    <Name>TrialStimFreq</Name>
                   </Expression>
                   <Expression xsi:type="SubscribeSubject">
-                    <Name>StimSize</Name>
+                    <Name>TrialStimSize</Name>
                   </Expression>
                   <Expression xsi:type="Combinator">
                     <Combinator xsi:type="rx:Zip" />
                   </Expression>
                   <Expression xsi:type="SubscribeSubject">
-                    <Name>StimPhase</Name>
+                    <Name>TrialStimPhase</Name>
                   </Expression>
                   <Expression xsi:type="Combinator">
                     <Combinator xsi:type="rx:Zip" />
@@ -1832,20 +2002,21 @@ _iblrig_micData.raw.wav
             <Edge From="4" To="5" Label="Source1" />
             <Edge From="6" To="7" Label="Source1" />
             <Edge From="6" To="9" Label="Source1" />
-            <Edge From="6" To="12" Label="Source1" />
+            <Edge From="6" To="13" Label="Source1" />
             <Edge From="7" To="8" Label="Source1" />
             <Edge From="9" To="10" Label="Source1" />
             <Edge From="10" To="11" Label="Source1" />
-            <Edge From="12" To="13" Label="Source1" />
+            <Edge From="11" To="12" Label="Source1" />
             <Edge From="13" To="14" Label="Source1" />
-            <Edge From="15" To="19" Label="Source1" />
-            <Edge From="16" To="19" Label="Source2" />
-            <Edge From="17" To="19" Label="Source3" />
-            <Edge From="18" To="19" Label="Source4" />
-            <Edge From="20" To="23" Label="Source1" />
-            <Edge From="21" To="22" Label="Source1" />
-            <Edge From="22" To="23" Label="Source2" />
-            <Edge From="23" To="24" Label="Source1" />
+            <Edge From="14" To="15" Label="Source1" />
+            <Edge From="16" To="20" Label="Source1" />
+            <Edge From="17" To="20" Label="Source2" />
+            <Edge From="18" To="20" Label="Source3" />
+            <Edge From="19" To="20" Label="Source4" />
+            <Edge From="21" To="24" Label="Source1" />
+            <Edge From="22" To="23" Label="Source1" />
+            <Edge From="23" To="24" Label="Source2" />
+            <Edge From="24" To="25" Label="Source1" />
           </Edges>
         </Workflow>
       </Expression>
