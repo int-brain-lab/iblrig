@@ -10,8 +10,8 @@
     <Nodes>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="gl:CreateWindow">
-          <gl:Width>640</gl:Width>
-          <gl:Height>480</gl:Height>
+          <gl:Width>1280</gl:Width>
+          <gl:Height>960</gl:Height>
           <gl:VSync>On</gl:VSync>
           <gl:SwapSync>false</gl:SwapSync>
           <gl:ClearColor>Black</gl:ClearColor>
@@ -21,7 +21,7 @@
           <gl:WindowBorder>Resizable</gl:WindowBorder>
           <gl:WindowState>Fullscreen</gl:WindowState>
           <gl:DisplayDevice>Second</gl:DisplayDevice>
-          <gl:TargetRenderFrequency>0</gl:TargetRenderFrequency>
+          <gl:TargetRenderFrequency>60</gl:TargetRenderFrequency>
           <gl:TargetUpdateFrequency xsi:nil="true" />
           <gl:RenderState />
           <gl:GraphicsMode>
@@ -116,8 +116,8 @@
         <LocationX>1.33</LocationX>
         <LocationY>-1.03</LocationY>
         <ColorR>1</ColorR>
-        <ColorG>0.5</ColorG>
-        <ColorB>0.5</ColorB>
+        <ColorG>0</ColorG>
+        <ColorB>1</ColorB>
         <ColorA>1</ColorA>
       </Expression>
       <Expression xsi:type="Combinator">

@@ -591,8 +591,8 @@
                 <Nodes>
                   <Expression xsi:type="Combinator">
                     <Combinator xsi:type="gl:CreateWindow">
-                      <gl:Width>640</gl:Width>
-                      <gl:Height>480</gl:Height>
+                      <gl:Width>1280</gl:Width>
+                      <gl:Height>960</gl:Height>
                       <gl:VSync>On</gl:VSync>
                       <gl:SwapSync>false</gl:SwapSync>
                       <gl:ClearColor>Gray</gl:ClearColor>
