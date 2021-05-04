@@ -17,6 +17,7 @@
 * Transfer data will attempt to move all passive session that it finds before starting
 * Fixed stimulus overshooting/undershooting on center or right/left thresholds
 * Updated Bonsai and packages
+* Added stimulus capability for reverse contingencies
 
 ## **Release Notes 6.4.2**
 

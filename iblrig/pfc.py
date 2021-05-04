@@ -94,7 +94,7 @@ def alyx_ok() -> bool:
         ONE()
         out = True
     except BaseException as e:
-        log.warning(f"{e} \nCan't connect to Alyx.")
+        log.warning(f"Can't connect to Alyx.")
     return out
 
 
@@ -102,7 +102,7 @@ def local_server_ok() -> bool:
     pars = _grep_param_dict("")
     out = Path(pars["DATA_FOLDER_REMOTE"]).exists()
     if not out:
-        log.warning(f"{e} \nCan't connect to local_server.")
+        log.warning(f"Can't connect to local_server.")
     return out
 
 
@@ -110,7 +110,7 @@ def rig_data_folder_ok() -> bool:
     pars = _grep_param_dict("")
     out = Path(pars["DATA_FOLDER_LOCAL"]).exists()
     if not out:
-        log.warning(f"{e} \nCan't connect to local_server.")
+        log.warning(f"Can't connect to local_server.")
     return out
 
 
@@ -183,6 +183,7 @@ def f2ttl_ok() -> bool:
     return out
 
 def check_rig() -> bool:
+    pass
 
 # Check Xonar sound card existence if on ephys rig
 
