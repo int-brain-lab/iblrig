@@ -72,6 +72,7 @@ class TrialParamHandler(object):
         # Initialize parameters that may change every trial
         self.trial_num = 0
         self.stim_phase = 0.0
+        self.stim_reverse = 0
 
         self.block_num = 0
         self.block_trial_num = 0

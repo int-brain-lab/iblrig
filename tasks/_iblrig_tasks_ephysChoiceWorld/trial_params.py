@@ -74,6 +74,7 @@ class TrialParamHandler(object):
         self.contrast = self.contrast_buffer[0]
         self.quiescent_period = self.quiescent_period_buffer[0]
         self.stim_phase = self.stim_phase_buffer[0]
+        self.stim_reverse = 0
         self.block_len = self.len_blocks_buffer[0]
 
         self.block_num = 0

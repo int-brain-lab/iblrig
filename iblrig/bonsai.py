@@ -217,6 +217,7 @@ else:
             /g  -> (float)  gain of RE to visual stim displacement
             /s  -> (float)  sigma of the 2D gaussian of gabor
             /e  -> (int)    events transitions  USED BY SOFTCODE HANDLER FUNC
+            /r  -> (int)    wheter to reverse the side contingencies (0, 1)
         """
         if tph.osc_client is None:
             log.error("Can't send trial info to Bonsai osc_client = None")
@@ -233,6 +234,8 @@ else:
         tph.osc_client.send_message("/a", tph.stim_angle)
         tph.osc_client.send_message("/g", tph.stim_gain)
         tph.osc_client.send_message("/s", tph.stim_sigma)
+        tph.osc_client.send_message("/r", tph.stim_reverse)
+
 
     def send_stim_info(
         osc_client,
@@ -245,6 +248,7 @@ else:
         gain=4.0,
         sigma=7.0,
     ):
+        """For passive stim"""
         if osc_client is None:
             log.error("Can't send trial info to Bonsai osc_client = None")
             raise UnboundLocalError("Can't send trial info to Bonsai osc_client = None")
@@ -257,6 +261,7 @@ else:
         osc_client.send_message("/a", angle)
         osc_client.send_message("/g", gain)
         osc_client.send_message("/s", sigma)
+        osc_client.send_message("/t", 0)
 
     def osc_client(workflow):
         ip = "127.0.0.1"
