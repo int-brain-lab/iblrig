@@ -1197,11 +1197,6 @@ probably there is no need to reset the position also
                       <rx:Count>1</rx:Count>
                     </Combinator>
                   </Expression>
-                  <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="FloatProperty">
-                      <Value>1</Value>
-                    </Combinator>
-                  </Expression>
                   <Expression xsi:type="MulticastSubject">
                     <Name>StimContrast</Name>
                   </Expression>
@@ -1218,7 +1213,6 @@ probably there is no need to reset the position also
                   <Edge From="1" To="2" Label="Source1" />
                   <Edge From="2" To="3" Label="Source1" />
                   <Edge From="3" To="4" Label="Source1" />
-                  <Edge From="4" To="5" Label="Source1" />
                 </Edges>
               </Workflow>
             </Expression>
