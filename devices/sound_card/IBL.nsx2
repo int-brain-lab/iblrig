@@ -1,0 +1,21 @@
+<?xml version="1.0" ?>
+<nhAsusSC40Settings>
+    <!-- Settings for nhAsusSC40-->
+    <Settings>
+        <kNhSet_CompressorState Value="0" />
+        <kNhSet_CompressorLevel Value="0.33" />
+        <kNhSet_BassBoostState Value="0" />
+        <kNhSet_BassBoostGainDB Value="6" />
+        <kNhSet_ClarityState Value="0" />
+        <kNhSet_ClarityVoiceGainDB Value="3" />
+        <kNhSet_ClarityPresenceGainDB Value="0" />
+        <kNhSet_VolumeBoostState Value="1" />
+        <kNhSet_VolumeBoostGainDB Value="0" />
+        <kNhSet_SpkVirtualSurroundState Value="0" />
+        <kNhSet_HpVirtualSurroundState Value="0" />
+        <kNhSet_StereoWideningState Value="0" />
+        <kNhSet_ReverbState Value="0" />
+        <kNhSet_ReverbFilterId Value="2" />
+        <kNhSet_ReverbGainDB Value="-9" />
+    </Settings>
+</nhAsusSC40Settings>
