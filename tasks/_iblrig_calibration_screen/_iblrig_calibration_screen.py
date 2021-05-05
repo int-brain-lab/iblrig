@@ -25,7 +25,7 @@ server = (
 # server = subprocess.Popen(server_cmd, stdout=subprocess.PIPE)
 # print(server)
 
-bns = Path(sph.IBLRIG_FOLDER) / "Bonsai" / "Bonsai64.exe"
+bns = Path(sph.IBLRIG_FOLDER) / "Bonsai" / "Bonsai.exe"
 wrkfl = (
     Path(sph.IBLRIG_FOLDER)
     / "visual_stim"

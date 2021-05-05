@@ -10,7 +10,7 @@ IBLRIG_FOLDER = r"C:\iblrig"
 CWD = os.getcwd()
 BONSAI_FOLDER = Path(IBLRIG_FOLDER) / "Bonsai"
 
-bns = str(BONSAI_FOLDER / "Bonsai64.exe")
+bns = str(BONSAI_FOLDER / "Bonsai.exe")
 certification_folder = Path(IBLRIG_FOLDER) / "visual_stim" / "ephys_certification"
 wrkfl = str(certification_folder / "ephys_certification.bonsai")
 SESSION_RAW_DATA_FOLDER = certification_folder

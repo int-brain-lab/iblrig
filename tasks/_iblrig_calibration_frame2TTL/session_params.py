@@ -61,7 +61,7 @@ class SessionParamHandler(object):
     def start_screen_color(self):
         here = os.getcwd()
         os.chdir(str(Path(self.IBLRIG_FOLDER) / "visual_stim" / "f2ttl_calibration"))
-        bns = str(Path(self.IBLRIG_FOLDER) / "Bonsai" / "Bonsai64.exe")
+        bns = str(Path(self.IBLRIG_FOLDER) / "Bonsai" / "Bonsai.exe")
         wrkfl = str(
             Path(self.IBLRIG_FOLDER)
             / "visual_stim"

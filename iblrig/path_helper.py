@@ -313,9 +313,9 @@ def get_bonsai_path(use_iblrig_bonsai: bool = True) -> str:
     iblrig_folder = get_iblrig_folder()
     folders = get_subfolder_paths(iblrig_folder)
     bonsai_folder = [x for x in folders if "Bonsai" in x][0]
-    ibl_bonsai = os.path.join(bonsai_folder, "Bonsai64.exe")
+    ibl_bonsai = os.path.join(bonsai_folder, "Bonsai.exe")
 
-    preexisting_bonsai = Path.home() / "AppData/Local/Bonsai/Bonsai64.exe"
+    preexisting_bonsai = Path.home() / "AppData/Local/Bonsai/Bonsai.exe"
     if use_iblrig_bonsai is True:
         BONSAI = ibl_bonsai
     elif use_iblrig_bonsai is False and preexisting_bonsai.exists():

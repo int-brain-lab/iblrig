@@ -139,11 +139,10 @@ def update_ibllib():
     os.system("pip install ibllib -U")
 
 
-def update_bonsai():
+def update_bonsai_config():
     print("\nUpdating Bonsai")
     broot = IBLRIG_ROOT_PATH / 'Bonsai'
-    subprocess.call([str(
-        broot / 'Bonsai64.exe'), '--no-editor', str(broot / 'empty.bonsai')])
+    subprocess.call([str(broot / 'Bonsai.exe'), '--no-editor'])
     print('Done')
 
 
@@ -158,6 +157,10 @@ def upgrade_bonsai(version, branch):
         checkout_branch(branch)
     elif not branch:
         checkout_version(version)
+    here = os.getcwd()
+    os.chdir(os.path.join(IBLRIG_ROOT_PATH, "Bonsai"))
+    subprocess.call("setup.bat")
+    os.chdir(here)
 
 
 def branch_info():
@@ -218,7 +221,7 @@ def _update(branch=None, version=None):
         import_tasks()
         if UPGRADE_BONSAI:
             upgrade_bonsai(version, branch)
-        update_bonsai()
+        update_bonsai_config()
     else:
         return
 
@@ -269,7 +272,7 @@ def main(args):
 
     if args.upgrade_bonsai:
         upgrade_bonsai(VERSION, BRANCH)
-        update_bonsai()
+        update_bonsai_config()
 
     return
 
