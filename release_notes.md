@@ -18,6 +18,8 @@
 * Fixed stimulus overshooting/undershooting on center or right/left thresholds
 * Updated Bonsai and packages
 * Added stimulus capability for reverse contingencies
+* Updated Bonsai deployment methods
+* Removed all ONE calls from task launching procedures
 
 ## **Release Notes 6.4.2**
 
