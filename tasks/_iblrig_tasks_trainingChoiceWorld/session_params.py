@@ -56,7 +56,7 @@ class SessionParamHandler(object):
         self.SUBJECT_WEIGHT = user.ask_subject_weight(self.PYBPOD_SUBJECTS[0])
         self.SUBJECT_DISENGAGED_TRIGGERED = False
         self.SUBJECT_DISENGAGED_TRIALNUM = None
-        self.SUBJECT_PROJECT = user.ask_project(self.PYBPOD_SUBJECTS[0])
+        self.SUBJECT_PROJECT = None  # user.ask_project(self.PYBPOD_SUBJECTS[0])
         # =====================================================================
         # OSC CLIENT
         # =====================================================================

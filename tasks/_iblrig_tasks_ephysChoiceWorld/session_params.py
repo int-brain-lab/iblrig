@@ -198,7 +198,7 @@ class SessionParamHandler(object):
             form_data = user_input.session_form(mouse_name=self.SUBJECT_NAME)
         self.SUBJECT_WEIGHT = user_input.get_form_subject_weight(form_data)
         self.PROBE_DATA = user_input.get_form_probe_data(form_data)
-        self.SUBJECT_PROJECT = user_input.ask_project(self.PYBPOD_SUBJECTS[0])
+        self.SUBJECT_PROJECT = None  # user_input.ask_project(self.PYBPOD_SUBJECTS[0])
         # =====================================================================
         # VISUAL STIM
         # =====================================================================
