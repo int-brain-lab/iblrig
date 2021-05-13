@@ -134,10 +134,6 @@ else:
         return
 
     def start_camera_recording(sph):
-        if sph.OPEN_CAMERA_VIEW is False:
-            log.error("Task will hang waiting for camera frame sync pulse")
-            raise (UnboundLocalError)
-            return
         # Run Workflow
         here = os.getcwd()
         os.chdir(sph.VIDEO_RECORDING_FOLDER)
