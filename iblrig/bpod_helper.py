@@ -79,6 +79,15 @@ class BpodMessageCreator(object):
         self.default_message_idx += 1
         return bonsai_freeze_stim
 
+    def bonsai_show_center(self):
+        # Freeze the stim
+        bonsai_freeze_stim = self.default_message_idx + 1
+        self.bpod.load_serial_message(
+            self.rotary_encoder, bonsai_freeze_stim, [ord("#"), 5]
+        )
+        self.default_message_idx += 1
+        return bonsai_freeze_stim
+
     def sound_card_play_idx(self, tone_idx):
         if self.sound_card is None:
             return
