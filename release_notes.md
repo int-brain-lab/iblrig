@@ -20,6 +20,7 @@
 * Added stimulus capability for reverse contingencies
 * Updated Bonsai deployment methods
 * Removed all ONE calls from task launching procedures
+* Added sonic studio config file for xonar sound card config (in iblrig/devices/sound_card/IBL.nsx2)
 
 ## **Release Notes 6.4.2**
 
