@@ -134,7 +134,7 @@ else:
         return
 
     def start_camera_recording(sph):
-        if sph.RECORD_VIDEO is False and sph.OPEN_CAMERA_VIEW is False:
+        if sph.OPEN_CAMERA_VIEW is False:
             log.error("Task will hang waiting for camera frame sync pulse")
             raise (UnboundLocalError)
             return
@@ -158,8 +158,6 @@ else:
             sph.SESSION_RAW_VIDEO_DATA_FOLDER, "_iblrig_leftCamera.GPIO.bin"
         )
 
-        rec = "-p:SaveVideo=" + str(sph.RECORD_VIDEO)
-
         mic = "-p:FileNameMic=" + os.path.join(
             sph.SESSION_RAW_DATA_FOLDER, "_iblrig_micData.raw.wav"
         )
@@ -168,7 +166,7 @@ else:
         start = "--start"
         noboot = "--no-boot"
 
-        subprocess.Popen([bns, wkfl, start, ts, vid, fc, gpio, rec, mic, srec, noboot])
+        subprocess.Popen([bns, wkfl, start, ts, vid, fc, gpio, mic, srec, noboot])
         os.chdir(here)
         return
 

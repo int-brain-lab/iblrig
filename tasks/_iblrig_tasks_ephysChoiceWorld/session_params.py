@@ -58,7 +58,6 @@ class SessionParamHandler(object):
         # =====================================================================
         self.RECORD_SOUND = True
         self.RECORD_AMBIENT_SENSOR_DATA = True
-        self.RECORD_VIDEO = True
         self.OPEN_CAMERA_VIEW = True  # Always True if RECORD_VIDEO is True
 
         self.NTRIALS = 2000  # Number of trials for the current session
