@@ -329,19 +329,17 @@ def get_bonsai_path(use_iblrig_bonsai: bool = True) -> str:
 
 
 def get_visual_stim_type(protocol: str) -> str:
-    if "habituation" in protocol or "bpod_ttl_test" in protocol:
-        return "GaborHabituationTask"
+    if "bpod_ttl_test" in protocol:
+        return "GaborTestStimuli"
     elif "ephys_certification" in protocol:
         return "ephys_certification"
-    elif "passive" in protocol:
-        return "GaborIBLTask"
     else:
         return "GaborIBLTask"
 
 
 def get_visual_stim_file_name(visual_stimulus_type: str) -> str:
-    if "GaborHabituationTask" in visual_stimulus_type:
-        return "Gabor2D.bonsai"
+    if "GaborTestStimuli" in visual_stimulus_type:
+        return "Gabor2D_TTLTest.bonsai"
     elif "ephys_certification" in visual_stimulus_type:
         return "ephys_certification.bonsai"
     elif "GaborIBLTask" in visual_stimulus_type:
