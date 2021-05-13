@@ -21,6 +21,10 @@
 * Updated Bonsai deployment methods
 * Removed all ONE calls from task launching procedures
 * Added sonic studio config file for xonar sound card config (in iblrig/devices/sound_card/IBL.nsx2)
+* HabituationCW now uses IBL default stimulus
+* Fixed bug in camera recording where SAVE_VIDEO = False would make stream not start (deprecated task settings SAVE_VIDEO flag)
+* Added bonsai.show_stim method to BpodMessageCreator obj
+*
 
 ## **Release Notes 6.4.2**
 
