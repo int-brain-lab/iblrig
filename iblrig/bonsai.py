@@ -141,18 +141,24 @@ else:
         bns = sph.BONSAI
         wkfl = sph.VIDEO_RECORDING_FILE
 
-        ts = "-p:TimestampsFileName=" + os.path.join(
-            sph.SESSION_RAW_VIDEO_DATA_FOLDER, "_iblrig_leftCamera.timestamps.ssv"
-        )
-        vid = "-p:VideoFileName=" + os.path.join(
+        vid = "-p:FileNameLeft=" + os.path.join(
             sph.SESSION_RAW_VIDEO_DATA_FOLDER, "_iblrig_leftCamera.raw.avi"
         )
-        fc = "-p:FrameCounterFileName=" + os.path.join(
-            sph.SESSION_RAW_VIDEO_DATA_FOLDER, "_iblrig_leftCamera.frame_counter.bin"
+        fd = "-p:FileNameLeftData=" + os.path.join(
+            sph.SESSION_RAW_VIDEO_DATA_FOLDER, "_iblrig_leftCamera.FrameData.bin"
         )
-        gpio = "-p:GPIOFileName=" + os.path.join(
-            sph.SESSION_RAW_VIDEO_DATA_FOLDER, "_iblrig_leftCamera.GPIO.bin"
-        )
+        # ts = "-p:TimestampsFileName=" + os.path.join(
+        #     sph.SESSION_RAW_VIDEO_DATA_FOLDER, "_iblrig_leftCamera.timestamps.ssv"
+        # )
+        # vid = "-p:VideoFileName=" + os.path.join(
+        #     sph.SESSION_RAW_VIDEO_DATA_FOLDER, "_iblrig_leftCamera.raw.avi"
+        # )
+        # fc = "-p:FrameCounterFileName=" + os.path.join(
+        #     sph.SESSION_RAW_VIDEO_DATA_FOLDER, "_iblrig_leftCamera.frame_counter.bin"
+        # )
+        # gpio = "-p:GPIOFileName=" + os.path.join(
+        #     sph.SESSION_RAW_VIDEO_DATA_FOLDER, "_iblrig_leftCamera.GPIO.bin"
+        # )
 
         mic = "-p:FileNameMic=" + os.path.join(
             sph.SESSION_RAW_DATA_FOLDER, "_iblrig_micData.raw.wav"
@@ -162,7 +168,8 @@ else:
         start = "--start"
         noboot = "--no-boot"
 
-        subprocess.Popen([bns, wkfl, start, ts, vid, fc, gpio, mic, srec, noboot])
+        # subprocess.Popen([bns, wkfl, start, ts, vid, fc, gpio, mic, srec, noboot])
+        subprocess.Popen([bns, wkfl, start, vid, fd, mic, srec, noboot])
         os.chdir(here)
         return
 
