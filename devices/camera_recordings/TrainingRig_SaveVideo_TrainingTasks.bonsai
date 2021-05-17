@@ -24,7 +24,7 @@
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="cv:VideoWriter">
-          <cv:FileName>D:\iblrig_data\Subjects\_iblrig_test_mouse\2000-01-01\001\raw_video_data\_iblrig_leftCamera.raw.avi</cv:FileName>
+          <cv:FileName>C:\iblrig_data\Subjects\_iblrig_test_mouse\2000-01-01\001\raw_video_data\_iblrig_leftCamera.raw.avi</cv:FileName>
           <cv:Suffix>None</cv:Suffix>
           <cv:Buffered>true</cv:Buffered>
           <cv:Overwrite>true</cv:Overwrite>
@@ -46,7 +46,7 @@
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="dsp:MatrixWriter">
-          <dsp:Path>D:\iblrig_data\Subjects\_iblrig_test_mouse\2000-01-01\001\raw_video_data\_iblrig_leftCamera.FrameData.bin</dsp:Path>
+          <dsp:Path>C:\iblrig_data\Subjects\_iblrig_test_mouse\2000-01-01\001\raw_video_data\_iblrig_leftCamera.FrameData.bin</dsp:Path>
           <dsp:Suffix>None</dsp:Suffix>
           <dsp:Overwrite>true</dsp:Overwrite>
           <dsp:Layout>ColumnMajor</dsp:Layout>
