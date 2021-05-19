@@ -297,7 +297,12 @@ def list_serial_ports():
         'Status', 'StatusInfo', 'SystemCreationClassName', 'SystemName', '----------'
     )
     bla = [getattr(x, y, None) for x in devices for y in ('Caption', 'Name', '----')]
-    bla = [getattr(x, y, None) for x in devices for y in ('Caption', 'Name', '----')]
+    bla = {i: {y: getattr(x, y, None)} for i, x in enumerate(devices) for y in fields}
+
+    dev_dicts = {}
+    for i, d in enumerate(devices):
+        dev_dicts[i].update({y: getattr(d, y, None) for y in fields})
+
     for item in objSWbemServices.ExecQuery("SELECT * FROM Win32_PnPEntity"):
         print('-'*60)
         for name in ('Availability', 'Caption', 'ClassGuid', 'ConfigManagerUserConfig',
