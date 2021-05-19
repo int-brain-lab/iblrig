@@ -183,7 +183,7 @@ def bpod_modules_ok() -> bool:
     # List bpod modules
     # figure out if RE is in Module 1, Ambient sensore in port 2 and
     # if ephys in board name if SoundCard in port 3
-    ephys_rig = 'ephys' in _grep_param_dict("NAME")
+    ephys_rig = "ephys" in _grep_param_dict("NAME")
     if ephys_rig:
         expected_modules = [
             "RotaryEncoder1",
@@ -205,7 +205,7 @@ def bpod_modules_ok() -> bool:
         if all(oks):
             out = True
         else:
-            missing =  set(expected_modules) - set(mods)
+            missing = set(expected_modules) - set(mods)
             log.warning(f"Missing modules: {missing}")
     except BaseException as e:
         log.warning(f"{e} \nCan't check modules from Bpod.")
@@ -232,14 +232,17 @@ def check_rig() -> bool:
 
 def xonar_ok() -> bool:
     # Check Xonar sound card existence if on ephys rig don't need it
-    ephys_rig = 'ephys' in _grep_param_dict("NAME")
+    ephys_rig = "ephys" in _grep_param_dict("NAME")
     if ephys_rig:
         return True
     out = False
     try:
         import sounddevice as sd
+
         devices = sd.query_devices()
-        xonar = [(i, d) for i, d in enumerate(devices) if "XONAR SOUND CARD(64)" in d["name"]]
+        xonar = [
+            (i, d) for i, d in enumerate(devices) if "XONAR SOUND CARD(64)" in d["name"]
+        ]
         if len(xonar) == 1:
             out = True
     except BaseException as e:
@@ -249,10 +252,12 @@ def xonar_ok() -> bool:
 
 
 def HarpSoundCard_ok() -> bool:
-    ephys_rig = 'ephys' in _grep_param_dict("NAME")
+    ephys_rig = "ephys" in _grep_param_dict("NAME")
+
 
 # Check HarpSoundCard if on ephys rig
 
+# Check Mic connection?
 # Cameras check + setup
 # iblrig.camera_config
 
@@ -262,15 +267,14 @@ def HarpSoundCard_ok() -> bool:
 
 # Create missing session folders
 
-# Create Alyx session reference? NO
-
-# Open Alyx session notes in browser? NO
-
-# Check Mic connection?
 ################################
 # How TF do I find microphone????? not a com? USB Device
 # c/o https://python-sounddevice.readthedocs.io/en/0.4.1/examples.html#plot-microphone-signal-s-in-real-time
 # c/o https://python-sounddevice.readthedocs.io/en/0.4.1/examples.html#input-to-output-pass-through
+
+# Create Alyx session reference? NO
+
+# Open Alyx session notes in browser? NO
 
 import pprint
 
@@ -286,17 +290,36 @@ import platform
 def list_serial_ports():
     import win32com.client
 
-    objSWbemServices = win32com.client.Dispatch("WbemScripting.SWbemLocator").ConnectServer(".","root\cimv2")
+    objSWbemServices = win32com.client.Dispatch(
+        "WbemScripting.SWbemLocator"
+    ).ConnectServer(".", "root\cimv2")
 
     devices = [i for i in objSWbemServices.ExecQuery("SELECT * FROM Win32_PnPEntity")]
     fields = (
-        'Availability', 'Caption', 'ClassGuid', 'ConfigManagerUserConfig',
-        'CreationClassName', 'Description','DeviceID', 'ErrorCleared', 'ErrorDescription',
-        'InstallDate', 'LastErrorCode', 'Manufacturer', 'Name', 'PNPDeviceID',
-        'PowerManagementCapabilities ', 'PowerManagementSupported', 'Service',
-        'Status', 'StatusInfo', 'SystemCreationClassName', 'SystemName', '----------'
+        "Availability",
+        "Caption",
+        "ClassGuid",
+        "ConfigManagerUserConfig",
+        "CreationClassName",
+        "Description",
+        "DeviceID",
+        "ErrorCleared",
+        "ErrorDescription",
+        "InstallDate",
+        "LastErrorCode",
+        "Manufacturer",
+        "Name",
+        "PNPDeviceID",
+        "PowerManagementCapabilities ",
+        "PowerManagementSupported",
+        "Service",
+        "Status",
+        "StatusInfo",
+        "SystemCreationClassName",
+        "SystemName",
+        "----------",
     )
-    bla = [getattr(x, y, None) for x in devices for y in ('Caption', 'Name', '----')]
+    bla = [getattr(x, y, None) for x in devices for y in ("Caption", "Name", "----")]
     bla = {i: {y: getattr(x, y, None)} for i, x in enumerate(devices) for y in fields}
 
     dev_dicts = {}
@@ -304,13 +327,33 @@ def list_serial_ports():
         dev_dicts[i].update({y: getattr(d, y, None) for y in fields})
 
     for item in objSWbemServices.ExecQuery("SELECT * FROM Win32_PnPEntity"):
-        print('-'*60)
-        for name in ('Availability', 'Caption', 'ClassGuid', 'ConfigManagerUserConfig',
-                    'CreationClassName', 'Description','DeviceID', 'ErrorCleared', 'ErrorDescription',
-                    'InstallDate', 'LastErrorCode', 'Manufacturer', 'Name', 'PNPDeviceID', 'PowerManagementCapabilities ',
-                    'PowerManagementSupported', 'Service', 'Status', 'StatusInfo', 'SystemCreationClassName', 'SystemName'):
+        print("-" * 60)
+        for name in (
+            "Availability",
+            "Caption",
+            "ClassGuid",
+            "ConfigManagerUserConfig",
+            "CreationClassName",
+            "Description",
+            "DeviceID",
+            "ErrorCleared",
+            "ErrorDescription",
+            "InstallDate",
+            "LastErrorCode",
+            "Manufacturer",
+            "Name",
+            "PNPDeviceID",
+            "PowerManagementCapabilities ",
+            "PowerManagementSupported",
+            "Service",
+            "Status",
+            "StatusInfo",
+            "SystemCreationClassName",
+            "SystemName",
+        ):
             a = getattr(item, name, None)
             if a is not None:
-                print('%s: %s' % (name, a))
+                print("%s: %s" % (name, a))
+
 
 print(".")
