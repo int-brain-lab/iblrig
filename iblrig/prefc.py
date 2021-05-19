@@ -30,6 +30,7 @@ import serial.tools.list_ports
 from dateutil.relativedelta import relativedelta
 from oneibl.one import ONE
 from pybpod_rotaryencoder_module.module_api import RotaryEncoderModule
+from pybpod_soundcard_module.module_api import SoundCardModule
 from pybpodapi.protocol import Bpod
 
 import iblrig.logging_  # noqa
@@ -41,8 +42,10 @@ log.setLevel(logging.DEBUG)
 
 
 def _grep_param_dict(pattern: str = "") -> dict or str:
-    """Returns subdict of all matches of pattern
-    If subdict only has one entry will return just the value"""
+    """
+    Returns subdict of all matches of pattern
+    If subdict only has one entry will return just the value
+    """
     pardict = params.load_params_file()
     out = {k: pardict[k] for k in pardict if pattern in k}
     if len(out) == 1:
@@ -176,23 +179,37 @@ def bpod_ok() -> bool:
     return out
 
 
-def check_bpod_modules_ok() -> bool:
+def bpod_modules_ok() -> bool:
     # List bpod modules
     # figure out if RE is in Module 1, Ambient sensore in port 2 and
     # if ephys in board name if SoundCard in port 3
-    expected_modules = [
-        "RotaryEncoder",
-        "AmbientSensor",
-        "SoundCard",
-    ]
+    ephys_rig = 'ephys' in _grep_param_dict("NAME")
+    if ephys_rig:
+        expected_modules = [
+            "RotaryEncoder1",
+            "AmbientModule1",
+            "SoundCard1",
+        ]
+    else:
+        expected_modules = [
+            "RotaryEncoder1",
+            "AmbientModule1",
+        ]
     out = False
     try:
-        comport = _grep_param_dict("COM_BPOD")["COM_BPOD"]
+        comport = _grep_param_dict("COM_BPOD")
         bpod = Bpod(serial_port=comport)
         mods = [x.name for x in bpod.modules]
-        out = all([x in mods for x in expected_modules])
+        bpod.close()
+        oks = [x in mods for x in expected_modules]
+        if all(oks):
+            out = True
+        else:
+            missing =  set(expected_modules) - set(mods)
+            log.warning(f"Missing modules: {missing}")
     except BaseException as e:
-        log.warning(f"{e} \nNot all modules detected by Bpod.")
+        log.warning(f"{e} \nCan't check modules from Bpod.")
+
     return out
 
 
@@ -208,10 +225,31 @@ def f2ttl_ok() -> bool:
         log.warning(f"{e} \nCan't connect to Frame2TTL.")
     return out
 
+
 def check_rig() -> bool:
     pass
 
-# Check Xonar sound card existence if on ephys rig
+
+def xonar_ok() -> bool:
+    # Check Xonar sound card existence if on ephys rig don't need it
+    ephys_rig = 'ephys' in _grep_param_dict("NAME")
+    if ephys_rig:
+        return True
+    out = False
+    try:
+        import sounddevice as sd
+        devices = sd.query_devices()
+        xonar = [(i, d) for i, d in enumerate(devices) if "XONAR SOUND CARD(64)" in d["name"]]
+        if len(xonar) == 1:
+            out = True
+    except BaseException as e:
+        log.warning(f"{e} \nCan't query system sound devices.")
+
+    return out
+
+
+def HarpSoundCard_ok() -> bool:
+    ephys_rig = 'ephys' in _grep_param_dict("NAME")
 
 # Check HarpSoundCard if on ephys rig
 
@@ -246,24 +284,28 @@ import platform
 
 # A function that tries to list serial ports on most common platforms
 def list_serial_ports():
-    system_name = platform.system()
-    if system_name == "Windows":
-        # Scan for available ports.
-        available = []
-        for i in range(256):
-            port = f"COM{i}"
-            try:
-                s = serial.Serial(port)
-                available.append(port)
-                s.close()
-            except serial.SerialException:
-                pass
-        return available
-    elif system_name == "Darwin":
-        # Mac
-        return glob.glob('/dev/tty*') + glob.glob('/dev/cu*')
-    else:
-        # Assume Linux or something else
-        return glob.glob('/dev/ttyS*') + glob.glob('/dev/ttyUSB*')
+    import win32com.client
+
+    objSWbemServices = win32com.client.Dispatch("WbemScripting.SWbemLocator").ConnectServer(".","root\cimv2")
+
+    devices = [i for i in objSWbemServices.ExecQuery("SELECT * FROM Win32_PnPEntity")]
+    fields = (
+        'Availability', 'Caption', 'ClassGuid', 'ConfigManagerUserConfig',
+        'CreationClassName', 'Description','DeviceID', 'ErrorCleared', 'ErrorDescription',
+        'InstallDate', 'LastErrorCode', 'Manufacturer', 'Name', 'PNPDeviceID',
+        'PowerManagementCapabilities ', 'PowerManagementSupported', 'Service',
+        'Status', 'StatusInfo', 'SystemCreationClassName', 'SystemName', '----------'
+    )
+    bla = [getattr(x, y, None) for x in devices for y in ('Caption', 'Name', '----')]
+    bla = [getattr(x, y, None) for x in devices for y in ('Caption', 'Name', '----')]
+    for item in objSWbemServices.ExecQuery("SELECT * FROM Win32_PnPEntity"):
+        print('-'*60)
+        for name in ('Availability', 'Caption', 'ClassGuid', 'ConfigManagerUserConfig',
+                    'CreationClassName', 'Description','DeviceID', 'ErrorCleared', 'ErrorDescription',
+                    'InstallDate', 'LastErrorCode', 'Manufacturer', 'Name', 'PNPDeviceID', 'PowerManagementCapabilities ',
+                    'PowerManagementSupported', 'Service', 'Status', 'StatusInfo', 'SystemCreationClassName', 'SystemName'):
+            a = getattr(item, name, None)
+            if a is not None:
+                print('%s: %s' % (name, a))
 
 print(".")
