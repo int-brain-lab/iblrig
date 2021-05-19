@@ -301,7 +301,7 @@ else:
         os.chdir(here)
         return s
 
-    def start_screen_color(sph):
+    def start_screen_color():
         here = os.getcwd()
         iblrig_folder_path = Path(ph.get_iblrig_folder())
         os.chdir(str(iblrig_folder_path / "visual_stim" / "f2ttl_calibration"))
