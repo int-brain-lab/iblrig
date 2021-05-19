@@ -105,17 +105,17 @@ def update_alyx_params(data: dict, force: bool = False, one=None) -> dict:
     If keys don't exist already will skip them
     """
     one = one or ONE()
-    old = load_alyx_params(data["NAME"], one=one)
+    board = rig_params.get_board_name()
+    if "NAME" in data and data["NAME"] != board:
+        log.error(f"Board {board} not equal to data['NAME'] {data['NAME']}")
+        raise (AttributeError)
+    old = load_alyx_params(board, one=one)
     if old is None:
         log.info("board params not found, creating...")
         new = rig_params.create_new_params_dict()
         write_alyx_params(new, one=one)
         old = load_alyx_params(new["NAME"], one=one)
 
-    board = rig_params.get_board_name()
-    if "NAME" in data and data["NAME"] != board:
-        log.error(f"Board {board} not equal to data['NAME'] {data['NAME']}")
-        raise (AttributeError)
     for k in data:
         if k in old.keys():
             old[k] = data[k]

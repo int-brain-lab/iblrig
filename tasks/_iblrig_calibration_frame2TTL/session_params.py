@@ -61,6 +61,7 @@ class SessionParamHandler(object):
     # =========================================================================
     def start_screen_color(self):
         bonsai.start_screen_color()
+        self.set_screen(rgb=[255, 255, 255])
 
     def stop_screen_color(self):
         self.OSC_CLIENT.send_message("/x", 1)
