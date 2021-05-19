@@ -22,14 +22,15 @@ end with user input
 """
 import datetime
 import logging
-from pathlib import Path
 import struct
+from pathlib import Path
 
 import serial
 import serial.tools.list_ports
 from dateutil.relativedelta import relativedelta
 from oneibl.one import ONE
 from pybpod_rotaryencoder_module.module_api import RotaryEncoderModule
+from pybpodapi.protocol import Bpod
 
 import iblrig.logging_  # noqa
 import iblrig.params as params
@@ -39,9 +40,14 @@ log = logging.getLogger("iblrig")
 log.setLevel(logging.DEBUG)
 
 
-def _grep_param_dict(pattern):
-    pardict = params.load_params_file(silent=True)
-    return {k: pardict[k] for k in pardict if pattern in k}
+def _grep_param_dict(pattern: str = "") -> dict or str:
+    """Returns subdict of all matches of pattern
+    If subdict only has one entry will return just the value"""
+    pardict = params.load_params_file()
+    out = {k: pardict[k] for k in pardict if pattern in k}
+    if len(out) == 1:
+        out = list(out.values())[0]
+    return out
 
 
 def params_comports_ok() -> bool:
@@ -94,12 +100,12 @@ def alyx_ok() -> bool:
         ONE()
         out = True
     except BaseException as e:
-        log.warning(f"Can't connect to Alyx.")
+        log.warning(f"{e}\nCan't connect to Alyx.")
     return out
 
 
 def local_server_ok() -> bool:
-    pars = _grep_param_dict("")
+    pars = _grep_param_dict()
     out = Path(pars["DATA_FOLDER_REMOTE"]).exists()
     if not out:
         log.warning(f"Can't connect to local_server.")
@@ -107,7 +113,7 @@ def local_server_ok() -> bool:
 
 
 def rig_data_folder_ok() -> bool:
-    pars = _grep_param_dict("")
+    pars = _grep_param_dict()
     out = Path(pars["DATA_FOLDER_LOCAL"]).exists()
     if not out:
         log.warning(f"Can't connect to local_server.")
@@ -125,7 +131,7 @@ def alyx_server_rig_ok() -> bin:
     except BaseException as e:
         log.warning(f"{e} \nCan't connect to Alyx.")
 
-    pars = _grep_param_dict("")
+    pars = _grep_param_dict()
     try:
         list(Path(pars["DATA_FOLDER_REMOTE"]).glob("*"))
         alyx_server_rig += 0b010
@@ -144,7 +150,7 @@ def alyx_server_rig_ok() -> bin:
 def rotary_encoder_ok() -> bool:
     # Check RE
     try:
-        pars = _grep_param_dict("")
+        pars = _grep_param_dict()
         m = RotaryEncoderModule(pars["COM_ROTARY_ENCODER"])
         m.set_zero_position()  # Not necessarily needed
         m.close()
@@ -156,10 +162,10 @@ def rotary_encoder_ok() -> bool:
 
 
 def bpod_ok() -> bool:
-    # Check RE
+    # Check Bpod
     out = False
     try:
-        pars = _grep_param_dict("")
+        pars = _grep_param_dict()
         bpod = serial.Serial(port=pars["COM_BPOD"], baudrate=115200, timeout=1)
         bpod.write(struct.pack("cB", b":", 0))
         bpod.write(struct.pack("cB", b":", 1))
@@ -170,11 +176,31 @@ def bpod_ok() -> bool:
     return out
 
 
+def check_bpod_modules_ok() -> bool:
+    # List bpod modules
+    # figure out if RE is in Module 1, Ambient sensore in port 2 and
+    # if ephys in board name if SoundCard in port 3
+    expected_modules = [
+        "RotaryEncoder",
+        "AmbientSensor",
+        "SoundCard",
+    ]
+    out = False
+    try:
+        comport = _grep_param_dict("COM_BPOD")["COM_BPOD"]
+        bpod = Bpod(serial_port=comport)
+        mods = [x.name for x in bpod.modules]
+        out = all([x in mods for x in expected_modules])
+    except BaseException as e:
+        log.warning(f"{e} \nNot all modules detected by Bpod.")
+    return out
+
+
 def f2ttl_ok() -> bool:
     # Check Frame2TTL (by setting the thresholds)
     out = False
     try:
-        pars = _grep_param_dict("")
+        pars = _grep_param_dict()
         f = Frame2TTL(pars["COM_F2TTL"])
         out = f.ser.isOpen()
         f.close()
@@ -209,12 +235,15 @@ def check_rig() -> bool:
 # c/o https://python-sounddevice.readthedocs.io/en/0.4.1/examples.html#input-to-output-pass-through
 
 import pprint
+
 ports = serial.tools.list_ports.comports()
 for p in sorted(ports):
     pprint.pprint(dict(p.__dict__.items()))
 
-import platform
 import glob
+import platform
+
+
 # A function that tries to list serial ports on most common platforms
 def list_serial_ports():
     system_name = platform.system()
