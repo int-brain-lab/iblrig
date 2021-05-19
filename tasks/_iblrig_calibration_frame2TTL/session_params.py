@@ -10,6 +10,7 @@ from pathlib import Path
 
 from pythonosc import udp_client
 
+import iblrig.bonsai as bonsai
 import iblrig.iotasks as iotasks
 from iblrig.path_helper import SessionPathCreator
 
@@ -59,23 +60,7 @@ class SessionParamHandler(object):
     # METHODS
     # =========================================================================
     def start_screen_color(self):
-        here = os.getcwd()
-        os.chdir(str(Path(self.IBLRIG_FOLDER) / "visual_stim" / "f2ttl_calibration"))
-        bns = str(Path(self.IBLRIG_FOLDER) / "Bonsai" / "Bonsai.exe")
-        wrkfl = str(
-            Path(self.IBLRIG_FOLDER)
-            / "visual_stim"
-            / "f2ttl_calibration"
-            / "screen_color.bonsai"
-        )
-        noedit = "--no-editor"  # implies start
-        # nodebug = '--start-no-debug'
-        # start = '--start'
-        noboot = "--no-boot"
-        editor = noedit
-        subprocess.Popen([bns, wrkfl, editor, noboot])
-        time.sleep(3)
-        os.chdir(here)
+        bonsai.start_screen_color()
 
     def stop_screen_color(self):
         self.OSC_CLIENT.send_message("/x", 1)

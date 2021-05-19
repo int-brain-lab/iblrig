@@ -237,7 +237,6 @@ else:
         tph.osc_client.send_message("/s", tph.stim_sigma)
         tph.osc_client.send_message("/r", tph.stim_reverse)
 
-
     def send_stim_info(
         osc_client,
         trial_num,
@@ -302,6 +301,25 @@ else:
         os.chdir(here)
         return s
 
+    def start_screen_color(sph):
+        here = os.getcwd()
+        iblrig_folder_path = Path(ph.get_iblrig_folder())
+        os.chdir(str(iblrig_folder_path / "visual_stim" / "f2ttl_calibration"))
+        bns = ph.get_bonsai_path()
+        wrkfl = str(
+            iblrig_folder_path
+            / "visual_stim"
+            / "f2ttl_calibration"
+            / "screen_color.bonsai"
+        )
+        noedit = "--no-editor"  # implies start
+        # nodebug = '--start-no-debug'
+        # start = '--start'
+        noboot = "--no-boot"
+        editor = noedit
+        subprocess.Popen([bns, wrkfl, editor, noboot])
+        time.sleep(3)
+        os.chdir(here)
 
 def stop_wrkfl(name):
     ports = {
