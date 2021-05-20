@@ -250,25 +250,40 @@ def xonar_ok() -> bool:
     return out
 
 
-def HarpSoundCard_ok() -> bool:
+def harp_sound_card_ok() -> bool:
     # Check HarpSoundCard if on ephys rig
     ephys_rig = "ephys" in _grep_param_dict("NAME")
-    if ephys_rig:
+    harp_sc_name = "Harp Sound Card"
+    nscs = len(_list_pc_devices(harp_sc_name))
+    if nscs > 1:
+        log.warning("Multiple Harp Sound Card devices found")
+        return False
+    if nscs and ephys_rig:
         scard = SoundCardModule()
         out = scard.connected
         scard.close()
+    elif not nscs and ephys_rig:
+        out = False
+    elif nscs and not ephys_rig:
+        log.warning("Harp Sound Card detected: UNUSED, this is a traing rig!")
+        out = True
+    elif not nscs and not ephys_rig:
+        # no sound card no ephys_rig, no problem
+        out = True
     return out
 
 
 def camera_ok() -> bool:
     # Cameras check if on training rig + setup?
     # iblrig.camera_config requires pyspin 37 to be installed
-    pass
+    cam_name = "FLIR USB3 Vision Camera"
+    ncams = len(_list_pc_devices(cam_name))
 
 
 def ultramic_ok() -> bool:
     # Check Mic connection
-    pass
+    mic_name = "UltraMic 200K 16 bit r4"
+    nmics = len(_list_pc_devices(mic_name))
 
 
 # Check Task IO Run fast habituation task with fast delays?
@@ -312,12 +327,12 @@ def _list_pc_devices(grep=""):
         "SystemName",
     )
 
-    dev_dicts = {}
+    dev_dicts = {k: {} for k in range(len(devices))}
     for i, d in enumerate(devices):
         dev_dicts[i].update({y: getattr(d, y, None) for y in fields})
 
     devs = list(dev_dicts.values())
-    out = [x for x in devs if grep in getattr(x, "Name")]
+    out = [x for x in devs if x["Name"] and grep.lower() in x["Name"].lower()]
     return out
 
 
