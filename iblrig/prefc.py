@@ -278,13 +278,20 @@ def camera_ok() -> bool:
     # iblrig.camera_config requires pyspin 37 to be installed
     cam_name = "FLIR USB3 Vision Camera"
     ncams = len(_list_pc_devices(cam_name))
+    out = False
+    if ncams == 1:
+        out = True
+    return out
 
 
 def ultramic_ok() -> bool:
     # Check Mic connection
     mic_name = "UltraMic 200K 16 bit r4"
     nmics = len(_list_pc_devices(mic_name))
-
+    out = False
+    if nmics == 1:
+        out = True
+    return out
 
 # Check Task IO Run fast habituation task with fast delays?
 
