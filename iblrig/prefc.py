@@ -226,10 +226,6 @@ def f2ttl_ok() -> bool:
     return out
 
 
-def check_rig() -> bool:
-    pass
-
-
 def xonar_ok() -> bool:
     # Check Xonar sound card existence if on ephys rig don't need it
     ephys_rig = "ephys" in _grep_param_dict("NAME")
@@ -355,5 +351,26 @@ def list_serial_ports():
             if a is not None:
                 print("%s: %s" % (name, a))
 
+
+
+def rig_ok() -> bool:
+    # Stuff to check on all rig types
+    {
+
+    }
+
+
+def ephys_rig_ok() -> bool:
+    # Stuff only present on ephys rig
+    {
+
+    }
+
+
+def training_rig_ok() -> bool:
+    # Stuff only present on training rig
+    {
+
+    }
 
 print(".")
