@@ -21,7 +21,10 @@ Check Alyx connection
 end with user input
 """
 import datetime
+import glob
 import logging
+import platform
+import pprint
 import struct
 from pathlib import Path
 
@@ -248,14 +251,25 @@ def xonar_ok() -> bool:
 
 
 def HarpSoundCard_ok() -> bool:
+    # Check HarpSoundCard if on ephys rig
     ephys_rig = "ephys" in _grep_param_dict("NAME")
+    if ephys_rig:
+        scard = SoundCardModule()
+        out = scard.connected
+        scard.close()
+    return out
 
 
-# Check HarpSoundCard if on ephys rig
+def camera_ok() -> bool:
+    # Cameras check if on training rig + setup?
+    # iblrig.camera_config requires pyspin 37 to be installed
+    pass
 
-# Check Mic connection?
-# Cameras check + setup
-# iblrig.camera_config
+
+def ultramic_ok() -> bool:
+    # Check Mic connection
+    pass
+
 
 # Check Task IO Run fast habituation task with fast delays?
 
@@ -263,27 +277,10 @@ def HarpSoundCard_ok() -> bool:
 
 # Create missing session folders
 
-################################
-# How TF do I find microphone????? not a com? USB Device
-# c/o https://python-sounddevice.readthedocs.io/en/0.4.1/examples.html#plot-microphone-signal-s-in-real-time
-# c/o https://python-sounddevice.readthedocs.io/en/0.4.1/examples.html#input-to-output-pass-through
 
-# Create Alyx session reference? NO
-
-# Open Alyx session notes in browser? NO
-
-import pprint
-
-ports = serial.tools.list_ports.comports()
-for p in sorted(ports):
-    pprint.pprint(dict(p.__dict__.items()))
-
-import glob
-import platform
-
-
-# A function that tries to list serial ports on most common platforms
-def list_serial_ports():
+def _list_pc_devices(grep=""):
+    # Tries to list all devices connected to mother board on windows
+    # will return list of devices that match grep apttern in field 'Name'
     import win32com.client
 
     objSWbemServices = win32com.client.Dispatch(
@@ -313,64 +310,30 @@ def list_serial_ports():
         "StatusInfo",
         "SystemCreationClassName",
         "SystemName",
-        "----------",
     )
-    bla = [getattr(x, y, None) for x in devices for y in ("Caption", "Name", "----")]
-    bla = {i: {y: getattr(x, y, None)} for i, x in enumerate(devices) for y in fields}
 
     dev_dicts = {}
     for i, d in enumerate(devices):
         dev_dicts[i].update({y: getattr(d, y, None) for y in fields})
 
-    for item in objSWbemServices.ExecQuery("SELECT * FROM Win32_PnPEntity"):
-        print("-" * 60)
-        for name in (
-            "Availability",
-            "Caption",
-            "ClassGuid",
-            "ConfigManagerUserConfig",
-            "CreationClassName",
-            "Description",
-            "DeviceID",
-            "ErrorCleared",
-            "ErrorDescription",
-            "InstallDate",
-            "LastErrorCode",
-            "Manufacturer",
-            "Name",
-            "PNPDeviceID",
-            "PowerManagementCapabilities ",
-            "PowerManagementSupported",
-            "Service",
-            "Status",
-            "StatusInfo",
-            "SystemCreationClassName",
-            "SystemName",
-        ):
-            a = getattr(item, name, None)
-            if a is not None:
-                print("%s: %s" % (name, a))
-
+    devs = list(dev_dicts.values())
+    out = [x for x in devs if grep in getattr(x, "Name")]
+    return out
 
 
 def rig_ok() -> bool:
     # Stuff to check on all rig types
-    {
-
-    }
+    {}
 
 
 def ephys_rig_ok() -> bool:
     # Stuff only present on ephys rig
-    {
-
-    }
+    {}
 
 
 def training_rig_ok() -> bool:
     # Stuff only present on training rig
-    {
+    {}
 
-    }
 
 print(".")
