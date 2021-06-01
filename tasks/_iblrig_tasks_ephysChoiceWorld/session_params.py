@@ -58,8 +58,6 @@ class SessionParamHandler(object):
         # =====================================================================
         self.RECORD_SOUND = True
         self.RECORD_AMBIENT_SENSOR_DATA = True
-        self.RECORD_VIDEO = True
-        self.OPEN_CAMERA_VIEW = True  # Always True if RECORD_VIDEO is True
 
         self.NTRIALS = 2000  # Number of trials for the current session
         self.USE_AUTOMATIC_STOPPING_CRITERIONS = True  # Weather to check for the Automatic stopping criterions or not  # noqa
@@ -198,7 +196,7 @@ class SessionParamHandler(object):
             form_data = user_input.session_form(mouse_name=self.SUBJECT_NAME)
         self.SUBJECT_WEIGHT = user_input.get_form_subject_weight(form_data)
         self.PROBE_DATA = user_input.get_form_probe_data(form_data)
-        self.SUBJECT_PROJECT = user_input.ask_project(self.PYBPOD_SUBJECTS[0])
+        self.SUBJECT_PROJECT = None  # user_input.ask_project(self.PYBPOD_SUBJECTS[0])
         # =====================================================================
         # VISUAL STIM
         # =====================================================================
@@ -333,7 +331,7 @@ if __name__ == "__main__":
         calling bonsai
         turning off lights of bpod board
     """
-    import task_settings as _task_settings
+    import iblrig.fake_task_settings as _task_settings
     import iblrig.fake_user_settings as _user_settings
     import datetime
 

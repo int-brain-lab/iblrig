@@ -53,7 +53,7 @@ class SessionParamHandler(object):
         # SUBJECT
         # =====================================================================
         self.SUBJECT_WEIGHT = user.ask_subject_weight(self.PYBPOD_SUBJECTS[0])
-        self.SUBJECT_PROJECT = user.ask_project(self.PYBPOD_SUBJECTS[0])
+        self.SUBJECT_PROJECT = None  # user.ask_project(self.PYBPOD_SUBJECTS[0])
         # =====================================================================
         # OSC CLIENT
         # =====================================================================
@@ -110,10 +110,6 @@ class SessionParamHandler(object):
             ("SoftCode", 0) if self.SOFT_SOUND else ("Serial3", ord("X"))
         )
         self.OUT_TONE = ("SoftCode", 1) if self.SOFT_SOUND else ("Serial3", 5)
-        # =====================================================================
-        # RUN VISUAL STIM
-        # =====================================================================
-        bonsai.start_visual_stim(self)
         # =====================================================================
         # SAVE SETTINGS FILE AND TASK CODE
         # =====================================================================

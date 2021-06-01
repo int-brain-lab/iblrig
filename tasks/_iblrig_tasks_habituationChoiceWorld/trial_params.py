@@ -52,6 +52,7 @@ class TrialParamHandler(object):
         self.trial_num = 0
         self.position = random.choice(self.position_set)
         self.stim_phase = 0.0
+        self.stim_reverse = 0
         self.contrast = random.choice(self.contrast_set)
         self.delay_to_stim_center_mean = sph.DELAY_TO_STIM_CENTER
         self.delay_to_stim_center = np.random.normal(self.delay_to_stim_center_mean, 2)

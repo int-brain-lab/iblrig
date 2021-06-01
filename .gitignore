@@ -4,15 +4,17 @@ __pycache__/
 \.pytest*
 .pytest*
 *.pyc
-Bonsai-2\.3/
+Bonsai/*
+#Bonsai/Packages
+Bonsai/Bonsai.exe.settings
 docs/_build
 scratch/
 src/
 pybpod-api.log
 iblrig.egg-info/
-Bonsai/
 bin
 obj
 run.bat
 
 XDG_CACHE_HOME/
+app.log

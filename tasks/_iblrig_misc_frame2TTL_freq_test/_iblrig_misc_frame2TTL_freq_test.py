@@ -22,7 +22,7 @@ sys.stdout.flush()
 log = logging.getLogger("iblrig")
 log.setLevel(logging.INFO)
 
-PARAMS = params.load_params()
+PARAMS = params.load_params_file()
 subj = "_iblrig_test_mouse"
 datetime = parser.parse(user_settings.PYBPOD_SESSION).isoformat().replace(":", "_")
 folder = Path(ph.get_iblrig_data_folder()) / subj / datetime

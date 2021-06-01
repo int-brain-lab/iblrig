@@ -19,7 +19,7 @@ import iblrig.sound as sound
 import iblrig.path_helper as ph
 
 log = logging.getLogger("iblrig")
-
+log.setLevel(logging.DEBUG)
 
 class SessionParamHandler(object):
     """Session object imports user_settings and task_settings
@@ -72,8 +72,6 @@ class SessionParamHandler(object):
         # =====================================================================
         self.RECORD_SOUND = True
         self.RECORD_AMBIENT_SENSOR_DATA = True
-        self.RECORD_VIDEO = True
-        self.OPEN_CAMERA_VIEW = True  # Always True if RECORD_VIDEO is True
 
         self.NTRIALS = 300  # Number of trials for the current session
         self.USE_AUTOMATIC_STOPPING_CRITERIONS = None  # Weather to check for the Automatic stopping criterions or not  # noqa

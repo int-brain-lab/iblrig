@@ -10,7 +10,6 @@ from pathlib import Path
 import ibllib.io.params as lib_params
 import ibllib.io.raw_data_loaders as raw
 import oneibl.params
-# from ibllib.pipes.experimental_data import create
 from oneibl.registration import RegistrationClient
 
 from oneibl.one import ONE
@@ -18,6 +17,16 @@ from oneibl.one import ONE
 import iblrig.params as rig_params
 
 log = logging.getLogger("iblrig")
+
+
+def check_alyx_ok():
+    try:
+        ONE()
+        return True
+    except Exception as e:
+        print(e)
+        log.warning("Cannot create one client: working offline")
+        return False
 
 
 def create_session(session_folder, one=None):
@@ -69,7 +78,7 @@ def get_latest_session_eid(subject_nickname, one=None):
 
 def write_alyx_params(data: dict, force: bool = False, one=None) -> None:
     one = one or ONE()
-    p = load_alyx_params(data["NAME"])
+    p = load_alyx_params(data["NAME"], one=one)
     if p and not force:
         log.info("Board params already present, exiting...")
         return p
@@ -92,17 +101,21 @@ def load_alyx_params(board: str, one=None) -> dict:
 
 
 def update_alyx_params(data: dict, force: bool = False, one=None) -> dict:
-    old = load_alyx_params(data["NAME"], one=one)
-    if old is None:
-        log.info("board params not found, creating...")
-        new = rig_params.create_new_params_dict()
-        write_alyx_params(new)
-        old = load_alyx_params(new["NAME"], one=one)
-
+    """ Updates keys in data dict to json field in alyx
+    If keys don't exist already will skip them
+    """
+    one = one or ONE()
     board = rig_params.get_board_name()
     if "NAME" in data and data["NAME"] != board:
         log.error(f"Board {board} not equal to data['NAME'] {data['NAME']}")
         raise (AttributeError)
+    old = load_alyx_params(board, one=one)
+    if old is None:
+        log.info("board params not found, creating...")
+        new = rig_params.create_new_params_dict()
+        write_alyx_params(new, one=one)
+        old = load_alyx_params(new["NAME"], one=one)
+
     for k in data:
         if k in old.keys():
             old[k] = data[k]
@@ -148,6 +161,44 @@ def create_current_running_session(session_folder, one=None):
 
 def update_completed_session(session_folder):
     pass
+
+
+# # Methods for tasks from alyx w/ fallback
+# def update_params(data: dict) -> None:
+#     rig_params.update_params_file(data=data)
+#     try:
+#         update_alyx_params(data=data)
+#     except Exception as e:
+#         log.warning(
+#             f"Could not update board params on Alyx. Saved locally:\n{data}\n{e}"
+#         )
+
+
+# def load_params() -> dict:
+#     params_local = rig_params.load_params_file()
+#     params_alyx = load_alyx_params(params_local["NAME"])
+#     if params_alyx is None:
+#         log.warning(f"Could not load board params from Alyx.")
+#     if params_alyx != params_local:
+#         log.warning(f"Local data and Alyx data mismatch. Trying to update Alyx.")
+#         update_alyx_params(data=params_local, force=True)
+#     return params_local
+
+
+# def write_params(data: dict = None, force: bool = False, upload: bool = True) -> None:
+#     rig_params.write_params_file(data=data, force=force)
+#     if upload:
+#         try:
+#             write_alyx_params(data=data, force=force)
+#         except Exception as e:
+#             log.warning(
+#                 f"Could not write board params to Alyx. Written to local file:\n{e}"
+#             )
+#     return
+
+
+def sync_alyx_subjects(one=None):
+    one = one or ONE()
 
 
 if __name__ == "__main__":

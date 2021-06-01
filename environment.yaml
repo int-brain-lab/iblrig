@@ -1,0 +1,22 @@
+name: iblenv
+channels:
+  - defaults
+dependencies:
+  - python=3.7.9
+  - pip>=20.3.1
+  - setuptools>=51.0.0
+  - wheel>=0.36.1
+  - pip:
+    - asn1crypto==0.24.0
+    - colorama==0.4.1
+    - cython==0.29.6
+    - globus-sdk==1.7.1
+    - ibllib==1.6.2
+    - libusb1==1.7
+    - numpy==1.19.3
+    - packaging==20.8
+    - pybpod==1.8.2
+    - pyopenssl==19.0.0
+    - pysocks==1.6.8
+    - python-osc==1.7.0
+    - sounddevice==0.3.13

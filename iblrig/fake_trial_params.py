@@ -260,6 +260,7 @@ class TrialParamHandler(object):
         self.position = random.choice(sph.STIM_POSITIONS)
         self.stim_probability_left = sph.STIM_PROBABILITY_LEFT
         self.stim_phase = 0.0
+        self.stim_reverse = 0
         self.event_error = self.threshold_events_dict[self.position]
         self.event_reward = self.threshold_events_dict[-self.position]
         self.movement_left = self.threshold_events_dict[sph.QUIESCENCE_THRESHOLDS[0]]

@@ -9,8 +9,6 @@ IBLRIG_DATA_FOLDER = (
 # SOUND, AMBIENT SENSOR, AND VIDEO RECORDINGS
 RECORD_SOUND = True
 RECORD_AMBIENT_SENSOR_DATA = True
-RECORD_VIDEO = True
-OPEN_CAMERA_VIEW = True  # if RECORD_VIDEO == True OPEN_CAMERA_VIEW is ignored
 # REWARDS
 AUTOMATIC_CALIBRATION = True  # Wether to look for a calibration session and func to define the valve opening time  # noqa
 CALIBRATION_VALUE = 0.067  # calibration value for 3ul of target reward amount (ignored if automatic ON)  # noqa

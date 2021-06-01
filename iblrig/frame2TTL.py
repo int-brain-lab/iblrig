@@ -26,13 +26,13 @@ class Frame2TTL(object):
     def connect(self, serial_port) -> serial.Serial:
         """Create connection to serial_port"""
         ser = serial.Serial(port=serial_port, baudrate=115200, timeout=1., write_timeout=1.)
-        self.connected = True
+        self.connected = ser.isOpen()
         return ser
 
     def close(self) -> None:
         """Close connection to serial port"""
         self.ser.close()
-        self.connected = False
+        self.connected = self.ser.isOpen()
 
     def start_stream(self) -> None:
         """Enable streaming to USB (stream rate 100Hz)
@@ -179,7 +179,6 @@ def get_and_set_thresholds():
         if "F2TTL" in k and params[k] is None:
             log.error(f"Missing parameter {k}, please calibrate the device.")
             raise (KeyError)
-            return -1
 
     dev = Frame2TTL(params["COM_F2TTL"])
     dev.set_thresholds(

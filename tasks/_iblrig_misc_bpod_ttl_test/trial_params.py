@@ -41,6 +41,7 @@ class TrialParamHandler(object):
         self.trial_num = 0
         self.position = 0
         self.stim_phase = 0
+        self.stim_reverse = 0
         self.contrast = 1
         self.signed_contrast = self.contrast * np.sign(self.position)
 

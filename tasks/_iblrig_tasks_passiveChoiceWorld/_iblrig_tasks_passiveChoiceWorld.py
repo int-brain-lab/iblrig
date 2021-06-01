@@ -54,7 +54,7 @@ card_play_noise = bytes(np.array([2, 6, 32, 255, 2, 3, 0, 44], dtype=np.int8))
 def do_gabor(osc_client, pcs_idx, pos, cont, phase):
     # send pcs to Bonsai
     bonsai.send_stim_info(
-        sph.OSC_CLIENT,
+        osc_client,
         pcs_idx,
         int(pos),
         cont,
@@ -65,9 +65,9 @@ def do_gabor(osc_client, pcs_idx, pos, cont, phase):
         sigma=7.0,
     )
 
-    sph.OSC_CLIENT.send_message("/re", 2)  # show_stim 2
+    osc_client.send_message("/re", 2)  # show_stim 2
     time.sleep(0.3)
-    sph.OSC_CLIENT.send_message("/re", 1)  # stop_stim 1
+    osc_client.send_message("/re", 1)  # stop_stim 1
 
 
 def do_valve_click(bpod, reward_valve_time):

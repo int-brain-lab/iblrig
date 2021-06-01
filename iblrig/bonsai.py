@@ -86,8 +86,7 @@ else:
                 editor = noeditor
 
             if (
-                "habituation" in sph.PYBPOD_PROTOCOL
-                or "bpod_ttl_test" in sph.PYBPOD_PROTOCOL
+                "bpod_ttl_test" in sph.PYBPOD_PROTOCOL
             ):
                 subprocess.Popen(
                     [bns, wkfl, editor, noboot, evt, itr, com, sync_x, sync_y]
@@ -134,10 +133,6 @@ else:
         return
 
     def start_camera_recording(sph):
-        if sph.RECORD_VIDEO is False and sph.OPEN_CAMERA_VIEW is False:
-            log.error("Task will hang waiting for camera frame sync pulse")
-            raise (UnboundLocalError)
-            return
         # Run Workflow
         here = os.getcwd()
         os.chdir(sph.VIDEO_RECORDING_FOLDER)
@@ -145,20 +140,24 @@ else:
         bns = sph.BONSAI
         wkfl = sph.VIDEO_RECORDING_FILE
 
-        ts = "-p:TimestampsFileName=" + os.path.join(
-            sph.SESSION_RAW_VIDEO_DATA_FOLDER, "_iblrig_leftCamera.timestamps.ssv"
-        )
-        vid = "-p:VideoFileName=" + os.path.join(
+        vid = "-p:FileNameLeft=" + os.path.join(
             sph.SESSION_RAW_VIDEO_DATA_FOLDER, "_iblrig_leftCamera.raw.avi"
         )
-        fc = "-p:FrameCounterFileName=" + os.path.join(
-            sph.SESSION_RAW_VIDEO_DATA_FOLDER, "_iblrig_leftCamera.frame_counter.bin"
+        fd = "-p:FileNameLeftData=" + os.path.join(
+            sph.SESSION_RAW_VIDEO_DATA_FOLDER, "_iblrig_leftCamera.frameData.bin"
         )
-        gpio = "-p:GPIOFileName=" + os.path.join(
-            sph.SESSION_RAW_VIDEO_DATA_FOLDER, "_iblrig_leftCamera.GPIO.bin"
-        )
-
-        rec = "-p:SaveVideo=" + str(sph.RECORD_VIDEO)
+        # ts = "-p:TimestampsFileName=" + os.path.join(
+        #     sph.SESSION_RAW_VIDEO_DATA_FOLDER, "_iblrig_leftCamera.timestamps.ssv"
+        # )
+        # vid = "-p:VideoFileName=" + os.path.join(
+        #     sph.SESSION_RAW_VIDEO_DATA_FOLDER, "_iblrig_leftCamera.raw.avi"
+        # )
+        # fc = "-p:FrameCounterFileName=" + os.path.join(
+        #     sph.SESSION_RAW_VIDEO_DATA_FOLDER, "_iblrig_leftCamera.frame_counter.bin"
+        # )
+        # gpio = "-p:GPIOFileName=" + os.path.join(
+        #     sph.SESSION_RAW_VIDEO_DATA_FOLDER, "_iblrig_leftCamera.GPIO.bin"
+        # )
 
         mic = "-p:FileNameMic=" + os.path.join(
             sph.SESSION_RAW_DATA_FOLDER, "_iblrig_micData.raw.wav"
@@ -168,7 +167,8 @@ else:
         start = "--start"
         noboot = "--no-boot"
 
-        subprocess.Popen([bns, wkfl, start, ts, vid, fc, gpio, rec, mic, srec, noboot])
+        # subprocess.Popen([bns, wkfl, start, ts, vid, fc, gpio, mic, srec, noboot])
+        subprocess.Popen([bns, wkfl, start, vid, fd, mic, srec, noboot])
         os.chdir(here)
         return
 
@@ -217,6 +217,7 @@ else:
             /g  -> (float)  gain of RE to visual stim displacement
             /s  -> (float)  sigma of the 2D gaussian of gabor
             /e  -> (int)    events transitions  USED BY SOFTCODE HANDLER FUNC
+            /r  -> (int)    wheter to reverse the side contingencies (0, 1)
         """
         if tph.osc_client is None:
             log.error("Can't send trial info to Bonsai osc_client = None")
@@ -233,6 +234,7 @@ else:
         tph.osc_client.send_message("/a", tph.stim_angle)
         tph.osc_client.send_message("/g", tph.stim_gain)
         tph.osc_client.send_message("/s", tph.stim_sigma)
+        tph.osc_client.send_message("/r", tph.stim_reverse)
 
     def send_stim_info(
         osc_client,
@@ -244,7 +246,9 @@ else:
         angle=0.0,
         gain=4.0,
         sigma=7.0,
+        reverse=0,
     ):
+        """For passive stim"""
         if osc_client is None:
             log.error("Can't send trial info to Bonsai osc_client = None")
             raise UnboundLocalError("Can't send trial info to Bonsai osc_client = None")
@@ -257,6 +261,7 @@ else:
         osc_client.send_message("/a", angle)
         osc_client.send_message("/g", gain)
         osc_client.send_message("/s", sigma)
+        osc_client.send_message("/r", reverse )
 
     def osc_client(workflow):
         ip = "127.0.0.1"
@@ -296,6 +301,25 @@ else:
         os.chdir(here)
         return s
 
+    def start_screen_color():
+        here = os.getcwd()
+        iblrig_folder_path = Path(ph.get_iblrig_folder())
+        os.chdir(str(iblrig_folder_path / "visual_stim" / "f2ttl_calibration"))
+        bns = ph.get_bonsai_path()
+        wrkfl = str(
+            iblrig_folder_path
+            / "visual_stim"
+            / "f2ttl_calibration"
+            / "screen_color.bonsai"
+        )
+        noedit = "--no-editor"  # implies start
+        # nodebug = '--start-no-debug'
+        # start = '--start'
+        noboot = "--no-boot"
+        editor = noedit
+        subprocess.Popen([bns, wrkfl, editor, noboot])
+        time.sleep(3)
+        os.chdir(here)
 
 def stop_wrkfl(name):
     ports = {
