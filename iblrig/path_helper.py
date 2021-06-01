@@ -344,7 +344,7 @@ def get_visual_stim_file_name(visual_stimulus_type: str) -> str:
         return "ephys_certification.bonsai"
     elif "GaborIBLTask" in visual_stimulus_type:
         return "Gabor2D.bonsai"
-    elif "passiveChoiceWorld" in visual_stimulus_type:
+    elif "passiveChoiceWorld" in visual_stimulus_type:  # Never called?
         return "passiveChoiceWorld_passive.bonsai"
 
 

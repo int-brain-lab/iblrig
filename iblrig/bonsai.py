@@ -86,8 +86,7 @@ else:
                 editor = noeditor
 
             if (
-                "habituation" in sph.PYBPOD_PROTOCOL
-                or "bpod_ttl_test" in sph.PYBPOD_PROTOCOL
+                "bpod_ttl_test" in sph.PYBPOD_PROTOCOL
             ):
                 subprocess.Popen(
                     [bns, wkfl, editor, noboot, evt, itr, com, sync_x, sync_y]
@@ -247,6 +246,7 @@ else:
         angle=0.0,
         gain=4.0,
         sigma=7.0,
+        reverse=0,
     ):
         """For passive stim"""
         if osc_client is None:
@@ -261,7 +261,7 @@ else:
         osc_client.send_message("/a", angle)
         osc_client.send_message("/g", gain)
         osc_client.send_message("/s", sigma)
-        osc_client.send_message("/t", 0)
+        osc_client.send_message("/r", reverse )
 
     def osc_client(workflow):
         ip = "127.0.0.1"

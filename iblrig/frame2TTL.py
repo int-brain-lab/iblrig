@@ -179,7 +179,6 @@ def get_and_set_thresholds():
         if "F2TTL" in k and params[k] is None:
             log.error(f"Missing parameter {k}, please calibrate the device.")
             raise (KeyError)
-            return -1
 
     dev = Frame2TTL(params["COM_F2TTL"])
     dev.set_thresholds(
