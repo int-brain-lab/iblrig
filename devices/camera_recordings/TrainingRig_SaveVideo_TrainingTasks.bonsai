@@ -46,7 +46,7 @@
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="dsp:MatrixWriter">
-          <dsp:Path>C:\iblrig_data\Subjects\_iblrig_test_mouse\2000-01-01\001\raw_video_data\_iblrig_leftCamera.FrameData.bin</dsp:Path>
+          <dsp:Path>C:\iblrig_data\Subjects\_iblrig_test_mouse\2000-01-01\001\raw_video_data\_iblrig_leftCamera.frameData.bin</dsp:Path>
           <dsp:Suffix>None</dsp:Suffix>
           <dsp:Overwrite>true</dsp:Overwrite>
           <dsp:Layout>ColumnMajor</dsp:Layout>

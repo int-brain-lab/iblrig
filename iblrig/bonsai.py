@@ -145,7 +145,7 @@ else:
             sph.SESSION_RAW_VIDEO_DATA_FOLDER, "_iblrig_leftCamera.raw.avi"
         )
         fd = "-p:FileNameLeftData=" + os.path.join(
-            sph.SESSION_RAW_VIDEO_DATA_FOLDER, "_iblrig_leftCamera.FrameData.bin"
+            sph.SESSION_RAW_VIDEO_DATA_FOLDER, "_iblrig_leftCamera.frameData.bin"
         )
         # ts = "-p:TimestampsFileName=" + os.path.join(
         #     sph.SESSION_RAW_VIDEO_DATA_FOLDER, "_iblrig_leftCamera.timestamps.ssv"
