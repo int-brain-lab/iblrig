@@ -16,11 +16,11 @@
     <EditorDialogSettings>
       <Visible>true</Visible>
       <Location>
-        <X>627</X>
+        <X>1162</X>
         <Y>72</Y>
       </Location>
       <Size>
-        <Width>1062</Width>
+        <Width>527</Width>
         <Height>549</Height>
       </Size>
       <WindowState>Normal</WindowState>
@@ -56,7 +56,7 @@
             <Y>3</Y>
           </Location>
           <Size>
-            <Width>1036</Width>
+            <Width>501</Width>
             <Height>475</Height>
           </Size>
           <WindowState>Normal</WindowState>
@@ -308,7 +308,7 @@
             <Y>3</Y>
           </Location>
           <Size>
-            <Width>1036</Width>
+            <Width>501</Width>
             <Height>475</Height>
           </Size>
           <WindowState>Normal</WindowState>
@@ -376,8 +376,8 @@
                 <Y>3</Y>
               </Location>
               <Size>
-                <Width>1036</Width>
-                <Height>475</Height>
+                <Width>290</Width>
+                <Height>165</Height>
               </Size>
               <WindowState>Normal</WindowState>
             </EditorDialogSettings>
@@ -876,23 +876,14 @@
           <DialogSettings>
             <Visible>false</Visible>
             <Location>
-              <X>234</X>
-              <Y>234</Y>
+              <X>0</X>
+              <Y>0</Y>
             </Location>
             <Size>
-              <Width>416</Width>
-              <Height>279</Height>
+              <Width>0</Width>
+              <Height>0</Height>
             </Size>
             <WindowState>Normal</WindowState>
-            <VisualizerTypeName>Bonsai.Design.Visualizers.TimeSeriesVisualizer</VisualizerTypeName>
-            <VisualizerSettings>
-              <TimeSeriesVisualizer>
-                <Capacity>640</Capacity>
-                <Min>0</Min>
-                <Max>1.1</Max>
-                <AutoScale>true</AutoScale>
-              </TimeSeriesVisualizer>
-            </VisualizerSettings>
           </DialogSettings>
           <DialogSettings>
             <Visible>false</Visible>
@@ -1058,8 +1049,8 @@
             <Y>3</Y>
           </Location>
           <Size>
-            <Width>1036</Width>
-            <Height>475</Height>
+            <Width>290</Width>
+            <Height>165</Height>
           </Size>
           <WindowState>Normal</WindowState>
         </EditorDialogSettings>
