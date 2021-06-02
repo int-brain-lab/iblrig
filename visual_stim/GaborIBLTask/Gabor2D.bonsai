@@ -267,7 +267,7 @@
                     </Combinator>
                   </Expression>
                   <Expression xsi:type="BehaviorSubject">
-                    <Name>StimReverse</Name>
+                    <Name>TrialStimReverse</Name>
                   </Expression>
                   <Expression xsi:type="Combinator">
                     <Combinator xsi:type="FloatProperty">
@@ -325,7 +325,7 @@
                     <osc:TypeTag>i</osc:TypeTag>
                     <osc:Connection>bpod</osc:Connection>
                   </Expression>
-                  <Expression xsi:type="BehaviorSubject">
+                  <Expression xsi:type="MulticastSubject">
                     <Name>TrialStimReverse</Name>
                   </Expression>
                   <Expression xsi:type="osc:ReceiveMessage">
@@ -1091,7 +1091,7 @@
                     </Combinator>
                   </Expression>
                   <Expression xsi:type="MulticastSubject">
-                    <Name>StimReverse</Name>
+                    <Name>TrialStimReverse</Name>
                   </Expression>
                   <Expression xsi:type="WorkflowOutput" />
                 </Nodes>
