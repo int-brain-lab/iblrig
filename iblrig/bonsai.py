@@ -42,6 +42,8 @@ if platform == "linux":
 
     def start_visual_stim(*args, **kwargs):
         return
+
+
 else:
     # =====================================================================
     # SESSION PARAM HANDLER OBJECT METHODS
@@ -85,9 +87,7 @@ else:
             elif not sph.BONSAI_EDITOR:
                 editor = noeditor
 
-            if (
-                "bpod_ttl_test" in sph.PYBPOD_PROTOCOL
-            ):
+            if "bpod_ttl_test" in sph.PYBPOD_PROTOCOL:
                 subprocess.Popen(
                     [bns, wkfl, editor, noboot, evt, itr, com, sync_x, sync_y]
                 )
@@ -172,7 +172,9 @@ else:
         os.chdir(here)
         return
 
-    def start_passive_visual_stim(save2folder):
+    def start_passive_visual_stim(
+        save2folder, map_time="00:05:00", fname="_iblrig_RFMapStim.raw.bin", rate=0.1
+    ):
         here = os.getcwd()
         bns = ph.get_bonsai_path()
         stim_folder = str(
@@ -186,11 +188,21 @@ else:
         # Properties
         SA0_DueTime = "-p:Stim.SpontaneousActivity0.DueTime=00:10:00"
         RFM_FileName = "-p:Stim.ReceptiveFieldMappingStim.FileNameRFMapStim=" + str(
-            Path(save2folder) / "_iblrig_RFMapStim.raw.bin"
+            Path(save2folder) / fname
         )
-        RFM_MappingTime = "-p:Stim.ReceptiveFieldMappingStim.MappingTime=00:05:00"
+        RFM_MappingTime = f"-p:Stim.ReceptiveFieldMappingStim.MappingTime=" + map_time
+        RFM_StimRate = f"-p:Stim.ReceptiveFieldMappingStim.Rate=" + rate
 
-        cmd = [bns, wkfl, noboot, noedit, SA0_DueTime, RFM_FileName, RFM_MappingTime]
+        cmd = [
+            bns,
+            wkfl,
+            noboot,
+            noedit,
+            SA0_DueTime,
+            RFM_FileName,
+            RFM_MappingTime,
+            RFM_StimRate,
+        ]
 
         log.info("Starting spontaneous activity and RF mapping stims")
         os.chdir(stim_folder)
@@ -261,7 +273,7 @@ else:
         osc_client.send_message("/a", angle)
         osc_client.send_message("/g", gain)
         osc_client.send_message("/s", sigma)
-        osc_client.send_message("/r", reverse )
+        osc_client.send_message("/r", reverse)
 
     def osc_client(workflow):
         ip = "127.0.0.1"
@@ -277,27 +289,36 @@ else:
         here = os.getcwd()
         bns = ph.get_bonsai_path()
         stim_folder = str(
-            Path(ph.get_iblrig_folder()) / 'visual_stim' / 'f2ttl_calibration'
+            Path(ph.get_iblrig_folder()) / "visual_stim" / "f2ttl_calibration"
         )
-        wkfl = os.path.join(stim_folder, 'screen_60Hz.bonsai')
+        wkfl = os.path.join(stim_folder, "screen_60Hz.bonsai")
         # Flags
-        noedit = '--no-editor'  # implies start and no-debug?
-        noboot = '--no-boot'
+        noedit = "--no-editor"  # implies start and no-debug?
+        noboot = "--no-boot"
         data_file_name = "-p:FileNameData=" + str(data_file)
         lengths_file_name = "-p:FileNameDataLengths=" + str(lengths_file)
         if harp:
-            harp_file_name = "-p:FileName=" + str(data_file.parent / 'harp_ts_data.csv')
+            harp_file_name = "-p:FileName=" + str(data_file.parent / "harp_ts_data.csv")
         # Properties
-        log.info('Starting pulses @ 60Hz')
+        log.info("Starting pulses @ 60Hz")
         sys.stdout.flush()
         os.chdir(stim_folder)
         if harp:
             s = subprocess.Popen(
-                [bns, wkfl, noboot, noedit, data_file_name, lengths_file_name, harp_file_name]
+                [
+                    bns,
+                    wkfl,
+                    noboot,
+                    noedit,
+                    data_file_name,
+                    lengths_file_name,
+                    harp_file_name,
+                ]
             )
         else:
             s = subprocess.Popen(
-                [bns, wkfl, noboot, noedit, data_file_name, lengths_file_name])
+                [bns, wkfl, noboot, noedit, data_file_name, lengths_file_name]
+            )
         os.chdir(here)
         return s
 
@@ -321,11 +342,12 @@ else:
         time.sleep(3)
         os.chdir(here)
 
+
 def stop_wrkfl(name):
     ports = {
-        'stim': 7110,
-        'camera': 7111,
-        'mic': 7112,
+        "stim": 7110,
+        "camera": 7111,
+        "mic": 7112,
     }
     if name in ports:
         osc_port = ports[name]
