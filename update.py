@@ -1,13 +1,12 @@
-'''
+"""
 Filename: c:\iblrig\update.py
 Path: c:\iblrig
 Created Date: Tuesday, August 4th 2020, 5:29:26 pm
 Author: Niccolo' Bonacchi
 
 Copyright (c) 2021 Your Company
-'''
+"""
 import argparse
-import os
 import subprocess
 from pathlib import Path
 
