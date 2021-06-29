@@ -337,7 +337,7 @@
                     <Translation>
                       <X>0</X>
                       <Y>0</Y>
-                      <Z>-10</Z>
+                      <Z>-8</Z>
                     </Translation>
                   </Expression>
                   <Expression xsi:type="GroupWorkflow">
@@ -512,10 +512,12 @@
                   <Expression xsi:type="ExternalizedMapping">
                     <Property Name="FileNameRFMapStim" />
                     <Property Name="MappingTime" />
+                    <Property Name="Rate" />
                   </Expression>
                   <Expression xsi:type="IncludeWorkflow" Path="Extensions\ReceptiveFieldMappingStim.bonsai">
                     <MappingTime>PT2S</MappingTime>
                     <FileNameRFMapStim>NoiseLocations.bin</FileNameRFMapStim>
+                    <Rate>0.1</Rate>
                   </Expression>
                   <Expression xsi:type="Combinator">
                     <Combinator xsi:type="gl:UpdateFrame" />
