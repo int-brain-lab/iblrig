@@ -1,11 +1,8 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
-"""
-File: /update.py
-Project: iblrig
-Created Date: Saturday, August 10th 2019, 10:31:02 am
-Author: Niccolo' Bonacchi (@nbonacchi)
-"""
+# @File: iblrig/update.py
+# @Author: Niccolo' Bonacchi (@nbonacchi)
+# @Date: Saturday, August 10th 2019, 10:31:02 am
 import argparse
 import subprocess
 from pathlib import Path

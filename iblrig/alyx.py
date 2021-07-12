@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
-# @Author: Niccolò Bonacchi
+# @File: iblrig/alyx.py
+# @Author: Niccolo' Bonacchi (@nbonacchi)
 # @Date: Tuesday, May 7th 2019, 12:07:26 pm
 import json
 import logging

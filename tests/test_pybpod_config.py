@@ -1,3 +1,8 @@
+#!/usr/bin/env python
+# -*- coding:utf-8 -*-
+# @File: tests/test_pybpod_config.py
+# @Author: Niccolo' Bonacchi (@nbonacchi)
+# @Date: Friday, July 9th 2021, 1:13:04 pm
 import shutil
 import unittest
 from pathlib import Path
