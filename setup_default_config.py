@@ -11,8 +11,6 @@ from pybpodgui_api.models.project import Project
 IBLRIG_FOLDER = Path(__file__).absolute().parent
 IBLRIG_PARAMS_FOLDER = IBLRIG_FOLDER.parent / "iblrig_params"
 
-print(IBLRIG_FOLDER, "\n", IBLRIG_PARAMS_FOLDER)
-
 
 ################################################################################
 def delete_untracked_files(iblrig_params_path):
@@ -478,6 +476,8 @@ def main(iblrig_params_path):
     Change location of all post scripts to iblrig/scripts
     and removeall files in iblrig_params except user_settings.
     """
+    print(IBLRIG_FOLDER, "\n", IBLRIG_PARAMS_FOLDER)
+
     iblrig_params_path = Path(iblrig_params_path)
     iblproject_path = iblrig_params_path / "IBL"
 
