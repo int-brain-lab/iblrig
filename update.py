@@ -4,91 +4,17 @@
 # @Author: Niccolo' Bonacchi (@nbonacchi)
 # @Date: Saturday, August 10th 2019, 10:31:02 am
 import argparse
-import subprocess
 from pathlib import Path
-
-
-def get_versions():
-    vers = (
-        subprocess.check_output(["git", "ls-remote", "--tags", "origin"])
-        .decode()
-        .split()
-    )
-    vers = [x for x in vers[1::2] if "{" not in x]
-    vers = [x.split("/")[-1] for x in vers]
-    broken = ["6.3.0", "6.3.1"]
-    available = [x for x in vers if x >= "6.2.5" and x not in broken]
-    print("Available versions: {}".format(available))
-    return vers
-
-
-def get_branches():
-    branches = (
-        subprocess.check_output(["git", "ls-remote", "--heads", "origin"])
-        .decode()
-        .split()
-    )
-    branches = [x.split("heads")[-1] for x in branches[1::2]]
-    branches = [x[1:] for x in branches]
-    print("Available branches: {}".format(branches))
-
-    return branches
-
-
-def get_current_branch():
-    branch = (
-        subprocess.check_output(["git", "branch", "--points-at", "HEAD"])
-        .decode()
-        .strip()
-        .strip("* ")
-    )
-    print("Current branch: {}".format(branch))
-    return branch
-
-
-def get_current_version():
-    tag = (
-        subprocess.check_output(["git", "tag", "--points-at", "HEAD"]).decode().strip()
-    )
-    print("Current version: {}".format(tag))
-    return tag
-
-
-def pull(branch):
-    subprocess.call(["git", "pull", "origin", branch])
-
-
-def fetch():
-    subprocess.call(["git", "fetch", "--all"])
-
-
-def checkout_version(ver):
-    print("\nChecking out {}".format(ver))
-    subprocess.call(["git", "reset", "--hard"])
-    subprocess.call(["git", "checkout", "tags/" + ver])
-    pull(f"tags/{ver}")
-
-
-def checkout_branch(branch):
-    print("\nChecking out {}".format(branch))
-    subprocess.call(["git", "reset", "--hard"])
-    subprocess.call(["git", "checkout", branch])
-    pull(branch)
-
-
-def checkout_single_file(file=None, branch="master"):
-    subprocess.call("git checkout origin/{} -- {}".format(branch, file).split())
-
-    print("Checked out", file, "from branch", branch)
+import iblrig.git as git
 
 
 if __name__ == "__main__":
     IBLRIG_ROOT_PATH = Path.cwd()
-    fetch()
-    ALL_BRANCHES = get_branches()
-    ALL_VERSIONS = get_versions()
-    BRANCH = get_current_branch()
-    VERSION = get_current_version()
+    git.fetch()
+    ALL_BRANCHES = git.get_branches()
+    ALL_VERSIONS = git.get_versions()
+    BRANCH = git.get_current_branch()
+    VERSION = git.get_current_version()
     UPGRADE_BONSAI = True if list(Path().glob("upgrade_bonsai")) else False
     parser = argparse.ArgumentParser(description="Update iblrig")
     parser.add_argument(
