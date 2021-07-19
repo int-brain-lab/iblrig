@@ -25,6 +25,7 @@
 * Fixed bug in camera recording where SAVE_VIDEO = False would make stream not start (deprecated task settings SAVE_VIDEO flag)
 * Added bonsai.show_stim method to BpodMessageCreator obj
 * Deprecated RECORD_VIDEO "knob"
+* Refactored update with _update, and git module
 
 ## **Release Notes 6.4.2**
 
