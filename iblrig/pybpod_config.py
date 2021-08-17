@@ -6,7 +6,8 @@ Create default rig subjects and all subjects associated to the project_name
 Create default user and currently logged in user (uses ONE params ALYX_USER)
 
 Usage:
-    python pybpod_config.py [project_name]
+  CLI in ./scripts
+    python create_custom_project_from_alyx.py [project_name]
 
 
 Local pybpod functions (used in setup_default config):
@@ -231,18 +232,21 @@ def create_alyx_user(project_name, one=None, force=False):
     return out
 
 
-def create_alyx_project_users(project_name, one=None, force=False):
+def create_alyx_project_users(project_name, one=None, force=False) -> None:
     one = one or ONE()
-    unames = one.alyx.rest("projects", "read", id=project_name)["users"]
-    for u in unames:
-        create_user(project_name, username=u, force=force)
+    try:
+        unames = one.alyx.rest("projects", "read", id=project_name)["users"]
+        for u in unames:
+            create_user(project_name, username=u, force=force)
+    except:  # noqa
+        print(f"No project found on alyx with name [{project_name}]")
 
 
 def create_custom_project_from_alyx(project_name, one=None, force=False) -> None:
     one = one or ONE()
     create_alyx_project(project_name, one=one, force=force)
     create_alyx_subjects(project_name, one=one, force=force)
-    create_alyx_project_users(project_name, one=one, force=force
+    create_alyx_project_users(project_name, one=one, force=force)
 
 
 if __name__ == "__main__":
