@@ -125,7 +125,8 @@ def create_project(name, force=False):
         print(f"  Project created: [{name}]")
     else:
         print(f"  Skipping creation: project [{name}] found in: [{project_path}]")
-
+        p = Project()
+        p.load(project_path)
     return p
 
 
@@ -202,10 +203,12 @@ def create_user(project_name, username="_iblrig_test_user", force=False):
         user = p.create_user()
         user.name = username
         p.save(project_path)
-        print(f"  Created user: [{user.name}]")
+        print(f"  Created user: [{user.name}] in project [{project_name}]")
     else:
         user = p.find_user(username)
-        print(f"  Skipping creation: User [{user.name}] already exists")
+        print(
+            f"  Skipping creation: User [{user.name}] already exists in project [{project_name}]"
+        )
 
     if p.find_user("_iblrig_test_user") is None:
         create_user(project_name, username="_iblrig_test_user", force=True)
@@ -213,6 +216,7 @@ def create_user(project_name, username="_iblrig_test_user", force=False):
     return user
 
 
+# XXX: Change on ONE2 migration
 def create_alyx_user(project_name, one=None, force=False):
     one = one or ONE()
     out = None
@@ -225,6 +229,20 @@ def create_alyx_user(project_name, one=None, force=False):
         out = _load_pybpod_obj_json(user)
 
     return out
+
+
+def create_alyx_project_users(project_name, one=None, force=False):
+    one = one or ONE()
+    unames = one.alyx.rest("projects", "read", id=project_name)["users"]
+    for u in unames:
+        create_user(project_name, username=u, force=force)
+
+
+def create_custom_project_from_alyx(project_name, one=None, force=False) -> None:
+    one = one or ONE()
+    create_alyx_project(project_name, one=one, force=force)
+    create_alyx_subjects(project_name, one=one, force=force)
+    create_alyx_project_users(project_name, one=one, force=force
 
 
 if __name__ == "__main__":
