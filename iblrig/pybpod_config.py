@@ -247,6 +247,42 @@ def create_custom_project_from_alyx(project_name, one=None, force=False) -> None
     create_alyx_project(project_name, one=one, force=force)
     create_alyx_subjects(project_name, one=one, force=force)
     create_alyx_project_users(project_name, one=one, force=force)
+    create_board(project_name, force=False)
+
+
+# BOARD (requires one board per rig)
+def create_board(project_name, force=False):
+    project_path = IBLRIG_PARAMS_FOLDER / project_name
+    iblproj = Project()
+    iblproj.load(IBLRIG_PARAMS_FOLDER / 'IBL')
+    print("Looking for boards in default project")
+    if not iblproj.boards or len(iblproj.boards) > 1:
+        print(f"No board or too many boards found in main project: {[x.name for x in iblproj.boards]}")
+        return
+
+    bname = iblproj.boards[0].name
+    print("Board found: [{}]".format(bname))
+    p = Project()
+    if not pybpod_project_exists(project_name):
+        return
+
+    print(f"Loading [{project_path}]")
+    p.load(project_path)
+    if force or not p.boards:
+        board = p.create_board()
+        board.name = iblproj.boards[0].name
+        p.save(project_path)
+        print(f"  Created board: [{board.name}] in project [{project_name}]")
+    elif len(p.boards) > 1:
+        print(
+            f"  Skipping creation: project [{project_name}] already has [{len(p.boards)}] boards configured"
+        )
+    elif len(p.boards) == 1:
+        print(
+            f"  Skipping creation: Board [{p.boards[0].name}] already exists in project [{project_name}]"
+        )
+
+    return
 
 
 if __name__ == "__main__":
