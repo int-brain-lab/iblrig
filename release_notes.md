@@ -25,6 +25,7 @@
 * Fixed bug in camera recording where SAVE_VIDEO = False would make stream not start (deprecated task settings SAVE_VIDEO flag)
 * Added bonsai.show_stim method to BpodMessageCreator obj
 * Deprecated RECORD_VIDEO "knob"
+* Refactored update with _update, and git module
 * Exposed rate of passive stimulation workflow defaults to 0.1
 * Refactored update with _update, and git module
 * Added create_custom_project CLI for syncing pybpod w/ Alyx project/users/subjects
