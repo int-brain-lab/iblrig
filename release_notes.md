@@ -27,6 +27,9 @@
 * Deprecated RECORD_VIDEO "knob"
 * Exposed rate of passive stimulation workflow defaults to 0.1
 * Refactored update with _update, and git module
+* Added create_custom_project CLI for syncing pybpod w/ Alyx project/users/subjects
+* move_passive will now try/catch to move all possible sessions
+
 
 ## **Release Notes 6.4.2**
 
