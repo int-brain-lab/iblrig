@@ -13,7 +13,7 @@ from pyforms.basewidget import BaseWidget
 from pyforms.controls import (ControlButton, ControlCheckBox, ControlLabel,
                               ControlText)
 
-import iblrig.logging_
+import iblrig.logging_  # noqa
 from iblrig.misc import patch_settings_file
 
 log = logging.getLogger("iblrig")

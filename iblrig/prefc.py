@@ -21,10 +21,7 @@ Check Alyx connection
 end with user input
 """
 import datetime
-import glob
 import logging
-import platform
-import pprint
 import struct
 from pathlib import Path
 
@@ -114,7 +111,7 @@ def local_server_ok() -> bool:
     pars = _grep_param_dict()
     out = Path(pars["DATA_FOLDER_REMOTE"]).exists()
     if not out:
-        log.warning(f"Can't connect to local_server.")
+        log.warning("Can't connect to local_server.")
     return out
 
 
@@ -122,7 +119,7 @@ def rig_data_folder_ok() -> bool:
     pars = _grep_param_dict()
     out = Path(pars["DATA_FOLDER_LOCAL"]).exists()
     if not out:
-        log.warning(f"Can't connect to local_server.")
+        log.warning("Can't connect to local_server.")
     return out
 
 
@@ -307,7 +304,7 @@ def _list_pc_devices(grep=""):
 
     objSWbemServices = win32com.client.Dispatch(
         "WbemScripting.SWbemLocator"
-    ).ConnectServer(".", "root\cimv2")
+    ).ConnectServer(".", r"root\cimv2")
 
     devices = [i for i in objSWbemServices.ExecQuery("SELECT * FROM Win32_PnPEntity")]
     fields = (

@@ -1,13 +1,16 @@
-"""Pass input directly to output.
-
-https://app.assembla.com/spaces/portaudio/git/source/master/test/patest_wire.c
-
-"""
+#!/usr/bin/env python
+# -*- coding:utf-8 -*-
+# @File: iblrig/scratch.py
+# @Author: Niccolo' Bonacchi (@nbonacchi)
+# @Date: Thursday, August 26th 2021, 5:02:19 pm
+# Pass input directly to output.
+# https://app.assembla.com/spaces/portaudio/git/source/master/test/patest_wire.c
 import argparse
+import glob
+import platform
 
+import serial
 import sounddevice as sd
-import numpy  # Make sure NumPy is loaded before it is used in the callback
-assert numpy  # avoid "imported but unused" message (W0611)
 
 
 def int_or_str(text):
@@ -66,11 +69,7 @@ except KeyboardInterrupt:
 except Exception as e:
     parser.exit(type(e).__name__ + ': ' + str(e))
 
-
-
-import platform
-import serial
-import glob
+# %%
 # A function that tries to list serial ports on most common platforms
 def list_serial_ports():
     system_name = platform.system()

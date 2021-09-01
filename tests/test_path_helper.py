@@ -10,7 +10,7 @@ class TestPathHelper(unittest.TestCase):
     def test_get_network_drives(self):
         nd = ph.get_network_drives()
         print(nd)
-        outs = ["C:\\", "Y:\\", "~/Projects/IBL/github/iblserver"]
+        # outs = ["C:\\", "Y:\\", "~/Projects/IBL/github/iblserver"]
         # self.assertTrue(all([x in outs for x in nd]))
 
     def test_get_iblserver_data_folder(self):

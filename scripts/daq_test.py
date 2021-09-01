@@ -1,8 +1,7 @@
 import nidaqmx
-from nidaqmx.constants import AcquisitionType, Edge, TerminalConfiguration, VoltageUnits, Signal
+from nidaqmx.constants import AcquisitionType, Edge, TerminalConfiguration, VoltageUnits  # Signal
 
 import numpy as np
-import matplotlib.pyplot as plt
 
 device = "Dev1"
 sampling_freq = 1000
@@ -38,7 +37,6 @@ def done_callback(task_handle, status, callback_data):
 
 
 if __name__ == "__main__":
-
 
     # Set pmt gain
     # pmt_gain = 0.5
@@ -76,7 +74,6 @@ if __name__ == "__main__":
 
     print(len(out))
     print(len(out) % buffer_size)
-
 
     # out = {'data': [], 'n': 0}
     # task = nidaqmx.Task()

@@ -5,17 +5,17 @@
 import datetime
 import json
 import logging
-import webbrowser as wb
+# import webbrowser as wb
 from pathlib import Path, PurePath
 
-import ibllib.io.flags as flags
-import ibllib.io.params as lib_params
-import ibllib.io.raw_data_loaders as raw
+# import ibllib.io.flags as flags
+# import ibllib.io.params as lib_params
+# import ibllib.io.raw_data_loaders as raw
 import oneibl.params
-from ibllib.pipes.experimental_data import create
+# from ibllib.pipes.experimental_data import create
 from oneibl.one import ONE
 
-import iblrig.params as rig_params
+# import iblrig.params as rig_params
 
 log = logging.getLogger("iblrig")
 
@@ -23,13 +23,13 @@ log = logging.getLogger("iblrig")
 def which_tables(alf_dir=None):
     alf_dir = alf_dir or get_alf_dir_from_one_params()
     alf_dir = Path(alf_dir)
-    meta_files = list(alf_dir.rglob("*.metadata.*"))
+    meta_files = list(alf_dir.rglob("*.metadata.*"))  # noqa
     # XXX: FINISH ME
 
 
 def sync_alyx(one=None):
     one = one or ONE()
-    alf_dir = get_alf_dir_from_one_params()
+    alf_dir = get_alf_dir_from_one_params()  # noqa
     sync_alyx_table('subjects', one=one)
     sync_alyx_table('subjects', one=one)
 
@@ -62,7 +62,7 @@ one = ONE(base_url='https://alyx.internationalbrainlab.org')
 def sync_alyx_table(table_name, one=None, save=True):
     one = one or ONE()
     alf_dir = Path(get_alf_dir_from_one(one=one))
-    sync_status = None
+    sync_status = None  # noqa
     if table_name == 'subjects':
         table = one.alyx.rest(table_name, 'list')
         table.append({'dump_date': datetime.datetime.utcnow().isoformat()})
@@ -72,8 +72,7 @@ def sync_alyx_table(table_name, one=None, save=True):
 
 def check_sync_status(table_name, one=None):
     one = one or ONE()
-    alf_dir = Path(get_alf_dir_from_one(one=one))
-
+    alf_dir = Path(get_alf_dir_from_one(one=one))  # noqa
 
 
 ALF_PARAMS = {

@@ -54,7 +54,8 @@ def check_dependencies():
     print("N" * 79)
     try:
         os.system("conda -V")
-        # conda_version = str(subprocess.check_output(["conda", "-V"])).split(" ")[1].split("\\n")[0]
+        # conda_version = str(subprocess.check_output(["conda", "-V"]))
+        # .split(" ")[1].split("\\n")[0]
         # if version.parse(conda_version) < version.parse("4.9"):
         #     print("Trying to update conda")
         #     # os.system("conda update -y -n base -c defaults conda")
@@ -71,8 +72,8 @@ def check_dependencies():
     try:
         python_version = (
             str(subprocess.check_output(["python", "-V"])).split(" ")[1].split("\\n")[0]
-        ).strip('\\r')
-        print(f'python {python_version}')
+        ).strip("\\r")
+        print(f"python {python_version}")
         if version.parse(python_version) < version.parse("3.7"):
             print("Trying to update python base version...")
             os.system("conda update -y -n base python")
@@ -100,7 +101,9 @@ def check_dependencies():
         subprocess.check_output(["git", "--version"])
         os.system("git --version")
         git_version = (
-            str(subprocess.check_output(["git", "--version"])).split(" ")[2].strip("\\n'")
+            str(subprocess.check_output(["git", "--version"]))
+            .split(" ")[2]
+            .strip("\\n'")
         )
         # Remove windows moniker from version number
         git_version = ".".join(git_version.split(".")[0:3])
@@ -186,7 +189,9 @@ def configure_iblrig_params(env_name: str = "iblenv", resp=False):
         if user_input == "n":
             return
         elif user_input == "y":
-            subprocess.call([python, "setup_default_config.py", str(iblrig_params_path)])
+            subprocess.call(
+                [python, "setup_default_config.py", str(iblrig_params_path)]
+            )
         elif user_input != "n" and user_input != "y":
             print("\n Please select either y of n")
             return configure_iblrig_params(env_name=env_name)
@@ -215,7 +220,9 @@ def main(args):
     try:
         check_dependencies()
         create_environment(
-            env_name=args.env_name, use_conda_yaml=args.use_conda, resp=args.reinstall_response
+            env_name=args.env_name,
+            use_conda_yaml=args.use_conda,
+            resp=args.reinstall_response,
         )
         install_iblrig(env_name=args.env_name)
         configure_iblrig_params(env_name=args.env_name, resp=args.config_response)
@@ -267,13 +274,22 @@ if __name__ == "__main__":
     if args.use_conda:
         args.env_name = "iblenv"
     if args.bonsai_response not in RESPONSES:
-        print(f"Invalid --bonsai-response argument {args.bonsai_response} please use {RESPONSES})")
+        print(
+            f"Invalid --bonsai-response argument {args.bonsai_response}",
+            "\nPlease use {RESPONSES})"
+        )
         RUN = 0
     if args.config_response not in RESPONSES:
-        print(f"Invalid --config-response argument {args.config_response} please use {RESPONSES})")
+        print(
+            f"Invalid --config-response argument {args.config_response}",
+            "\nPlease use {RESPONSES})"
+        )
         RUN = 0
     if args.reinstall_response not in RESPONSES:
-        print(f"Invalid --reinstall-response {args.reinstall_response} argument please use {RESPONSES})")
+        print(
+            f"Invalid --reinstall-response argument {args.reinstall_response}",
+            "\nPlease use {RESPONSES})"
+        )
         RUN = 0
 
     if RUN:

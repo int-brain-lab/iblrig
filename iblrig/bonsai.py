@@ -190,8 +190,8 @@ else:
         RFM_FileName = "-p:Stim.ReceptiveFieldMappingStim.FileNameRFMapStim=" + str(
             Path(save2folder) / fname
         )
-        RFM_MappingTime = f"-p:Stim.ReceptiveFieldMappingStim.MappingTime=" + map_time
-        RFM_StimRate = f"-p:Stim.ReceptiveFieldMappingStim.Rate=" + str(rate)
+        RFM_MappingTime = "-p:Stim.ReceptiveFieldMappingStim.MappingTime=" + map_time
+        RFM_StimRate = "-p:Stim.ReceptiveFieldMappingStim.Rate=" + str(rate)
 
         cmd = [
             bns,

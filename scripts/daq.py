@@ -1,11 +1,9 @@
 import time
 
-import matplotlib.pyplot as plt
 import nidaqmx
 import numpy as np
 from nidaqmx.constants import AcquisitionType, Edge, TerminalConfiguration, VoltageUnits
 from pathlib import Path
-import numpy as np
 import os
 
 
@@ -27,7 +25,8 @@ sample_frequency = 1000
 #         "Dev1/port0/line0",
 #     )
 #     task.timing.cfg_samp_clk_timing(
-#         sample_frequency, active_edge=Edge.RISING, sample_mode=AcquisitionType.CONTINUOUS, samps_per_chan=nsamples
+#         sample_frequency, active_edge=Edge.RISING,
+#         sample_mode=AcquisitionType.CONTINUOUS, samps_per_chan=nsamples
 #     )
 #     # task.start()
 #     # task.stop()

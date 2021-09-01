@@ -8,8 +8,10 @@ UserDefinedGain = 4.0
 mm_per_deg = (2 * Pi * WheelRadius) / 360
 where WheelRadius = 31mm
 
-Now that I have the transformation done as if the stimulus would start from the center I need to offset it by the InitPosition of the stimulus (either -35 or 35)
-Then for "safety" I pass an unwrapping function for the cases when the stimulus ight go over the edge of the screen
+Now that I have the transformation done as if the stimulus would start from the center I need to
+offset it by the InitPosition of the stimulus (either -35 or 35)
+Then for "safety" I pass an unwrapping function for the cases when the stimulus ight go over the
+edge of the screen
 I do this in the same go
 ((InitPosition + out_value) + 180) % 360 - 180 and that is what is sent to the screen...
 
