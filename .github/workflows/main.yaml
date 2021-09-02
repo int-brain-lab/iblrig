@@ -42,6 +42,6 @@ jobs:
           pip install setuptools wheel packaging
           python install.py --reinstall-response y --config-response y --bonsai-response n
           conda activate iblenv
-          python -c "from one.api import ONE; ONE(silent=True)"
+          python -c "from one.api import ONE; ONE(base_url='https://test.alyx.internationalbrainlab.org', username='test_user', password='TapetesBloc18', silent=True)"
           python -m unittest discover
 
