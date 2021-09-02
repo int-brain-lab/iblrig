@@ -11,7 +11,7 @@ from pathlib import Path, PurePath
 # import ibllib.io.flags as flags
 # import ibllib.io.params as lib_params
 # import ibllib.io.raw_data_loaders as raw
-import oneibl.params
+import oneibl.params  # XXX: Check THIS!
 # from ibllib.pipes.experimental_data import create
 from one.api import ONE
 
@@ -35,7 +35,7 @@ def sync_alyx(one=None):
 
 # Get root data folder from ONE params
 def get_alf_dir_from_one_params() -> str:
-    one_params = oneibl.params.get().as_dict()
+    one_params = oneibl.params.get().as_dict()  # XXX: Check THIS!
     data_dir = one_params['CACHE_DIR']
     alf_dir = Path(data_dir).joinpath('.alf')
     if not alf_dir.exists():
@@ -45,7 +45,10 @@ def get_alf_dir_from_one_params() -> str:
 
 def get_alf_dir_from_one(one: ONE = None) -> str:
     one = one or ONE()
-    data_dir = one.alyx.cache_dir
+    try:
+        data_dir = one.alyx.cache_dir
+    except BaseException:
+        data_dir = one._par.as_dict()['CACHE_DIR']
     alf_dir = Path(data_dir).joinpath('.alf')
     if not alf_dir.exists():
         alf_dir.mkdir()

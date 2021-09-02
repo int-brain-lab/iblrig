@@ -9,7 +9,7 @@ from pathlib import Path
 
 import iblrig.path_helper as ph
 import iblrig.pybpod_config as config
-from oneibl.one import ONE
+from one.api.import ONE  # XXX: Check THIS!
 
 
 one = ONE(

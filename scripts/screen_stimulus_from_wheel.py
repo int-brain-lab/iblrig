@@ -1,6 +1,6 @@
 import math
 import alf.io
-from oneibl.one import ONE
+from one.api.import ONE  # XXX: Check THIS!
 import numpy as np
 
 

@@ -1,6 +1,6 @@
 import unittest
 
-from oneibl.one import ONE
+from one.api.import ONE  # XXX: Check THIS!
 
 import iblrig.alyx as alyx  # noqa
 
