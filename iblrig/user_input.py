@@ -8,7 +8,7 @@ import sys
 import ibllib.graphic as graph
 import pyforms
 from AnyQt.QtWidgets import QApplication
-from oneibl.one import ONE
+from one.api import ONE
 from pyforms.basewidget import BaseWidget
 from pyforms.controls import (ControlButton, ControlCheckBox, ControlLabel,
                               ControlText)
@@ -432,7 +432,7 @@ def ask_subject_project(subject: str, settings_file_path: str = None) -> float:
     import datetime
     import json
 
-    from oneibl.one import ONE
+    from one.api import ONE
 
     one = ONE()
     all_subjects = list(one.alyx.rest("subjects", "list"))

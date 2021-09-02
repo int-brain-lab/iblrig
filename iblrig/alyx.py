@@ -13,7 +13,7 @@ import ibllib.io.raw_data_loaders as raw
 import oneibl.params
 from oneibl.registration import RegistrationClient
 
-from oneibl.one import ONE
+from one.api import ONE
 
 import iblrig.params as rig_params
 

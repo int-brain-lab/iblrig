@@ -26,7 +26,7 @@ Return: None or json dict
 import json
 from pathlib import Path
 
-from oneibl.one import ONE
+from one.api import ONE
 from pybpodgui_api.models.project import Project
 
 import iblrig.path_helper as ph
@@ -217,11 +217,10 @@ def create_user(project_name, username="_iblrig_test_user", force=False):
     return user
 
 
-# XXX: Change on ONE2 migration
 def create_alyx_user(project_name, one=None, force=False):
     one = one or ONE()
     out = None
-    uname = one._par.ALYX_LOGIN
+    uname = one.alyx.user
     if not alyx_user_exists(uname, one=one):
         return
 

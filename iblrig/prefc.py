@@ -28,7 +28,7 @@ from pathlib import Path
 import serial
 import serial.tools.list_ports
 from dateutil.relativedelta import relativedelta
-from oneibl.one import ONE
+from one.api import ONE
 from pybpod_rotaryencoder_module.module_api import RotaryEncoderModule
 from pybpod_soundcard_module.module_api import SoundCardModule
 from pybpodapi.protocol import Bpod
