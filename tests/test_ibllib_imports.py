@@ -20,8 +20,8 @@ class TestIBLRigImports(unittest.TestCase):
         from ibllib.misc import logger_config  # noqa
         from ibllib.pipes.purge_rig_data import purge_local_data  # noqa
         from ibllib.pipes.transfer_rig_data import main  # noqa
-        from one.api.import ONE  # noqa  # XXX: Check THIS!
-        from oneibl.registration import RegistrationClient  # noqa  # XXX: Check THIS!
+        from one.api import ONE  # noqa  # XXX: Check THIS!
+        from one.registration import RegistrationClient  # noqa  # XXX: Check THIS!
 
     def tearDown(self):
         pass

@@ -45,10 +45,7 @@ def get_alf_dir_from_one_params() -> str:
 
 def get_alf_dir_from_one(one: ONE = None) -> str:
     one = one or ONE()
-    try:
-        data_dir = one.alyx.cache_dir
-    except BaseException:
-        data_dir = one._par.as_dict()['CACHE_DIR']
+    data_dir = one.alyx.cache_dir
     alf_dir = Path(data_dir).joinpath('.alf')
     if not alf_dir.exists():
         alf_dir.mkdir()

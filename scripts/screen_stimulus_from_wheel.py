@@ -1,6 +1,6 @@
 import math
 import alf.io
-from one.api.import ONE  # XXX: Check THIS!
+from one.api import ONE  # XXX: Check THIS!
 import numpy as np
 
 

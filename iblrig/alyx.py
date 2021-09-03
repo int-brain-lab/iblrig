@@ -10,8 +10,8 @@ from pathlib import Path
 
 import ibllib.io.params as lib_params
 import ibllib.io.raw_data_loaders as raw
-import oneibl.params
-from oneibl.registration import RegistrationClient
+import oneibl.params  # XXX: Check THIS!
+from one.registration import RegistrationClient  # XXX: Check THIS!
 
 from one.api import ONE
 
@@ -34,7 +34,7 @@ def create_session(session_folder, one=None):
     one = one or ONE()
     pfile = Path(lib_params.getfile("one_params"))
     if not pfile.exists():
-        oneibl.params.setup_alyx_params()
+        oneibl.params.setup_alyx_params()  # XXX: Check THIS!
 
     RegistrationClient(one=one).register_session(session_folder, file_list=False)
 

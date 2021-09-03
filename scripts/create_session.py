@@ -6,9 +6,9 @@ import argparse
 from pathlib import Path
 
 import ibllib.io.params as params
-import oneibl.params
+import oneibl.params  # XXX: Check THIS!
 # from ibllib.pipes.experimental_data import create
-from oneibl.registration import RegistrationClient
+from one.registration import RegistrationClient  # XXX: Check THIS!
 
 from iblrig.poop_count import poop
 
@@ -20,7 +20,7 @@ IBLRIG_PARAMS_FOLDER = IBLRIG_FOLDER.parent / "iblrig_params"
 def main():
     pfile = Path(params.getfile("one_params"))
     if not pfile.exists():
-        oneibl.params.setup_alyx_params()
+        oneibl.params.setup_alyx_params()  # XXX: Check THIS!
 
     RegistrationClient(one=None).create_sessions(IBLRIG_DATA, dry=False)
     # create(IBLRIG_DATA, dry=False)

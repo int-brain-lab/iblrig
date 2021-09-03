@@ -220,10 +220,7 @@ def create_user(project_name, username="_iblrig_test_user", force=False):
 def create_alyx_user(project_name, one=None, force=False):
     one = one or ONE()
     out = None
-    try:
-        uname = one.alyx.user
-    except BaseException:
-        uname = one._par.ALYX_LOGIN
+    uname = one.alyx.user
     if not alyx_user_exists(uname, one=one):
         return
 
