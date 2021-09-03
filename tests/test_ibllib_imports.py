@@ -13,15 +13,15 @@ class TestIBLRigImports(unittest.TestCase):
         import ibllib.io.params as lib_params  # noqa
         import ibllib.io.raw_data_loaders as raw  # noqa
         import ibllib.pipes.misc as misc  # noqa
-        import oneibl.params  # noqa  # XXX: Check THIS!
+        import one.params  # noqa
+        from one.api import ONE  # noqa
+        from oneibl.registration import RegistrationClient  # noqa
         from ibllib.dsp.smooth import rolling_window as smooth  # noqa
         from ibllib.graphic import numinput, popup, strinput  # noqa
         from ibllib.io import raw_data_loaders as raw  # noqa
         from ibllib.misc import logger_config  # noqa
         from ibllib.pipes.purge_rig_data import purge_local_data  # noqa
         from ibllib.pipes.transfer_rig_data import main  # noqa
-        from one.api import ONE  # noqa  # XXX: Check THIS!
-        from one.registration import RegistrationClient  # noqa  # XXX: Check THIS!
 
     def tearDown(self):
         pass
