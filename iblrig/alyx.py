@@ -8,7 +8,7 @@ import logging
 import webbrowser as wb
 from pathlib import Path
 
-import ibllib.io.params as lib_params
+import iblutil.io.params as lib_params
 import ibllib.io.raw_data_loaders as raw
 import one.params
 from oneibl.registration import RegistrationClient

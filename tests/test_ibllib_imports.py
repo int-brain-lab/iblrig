@@ -10,7 +10,7 @@ class TestIBLRigImports(unittest.TestCase):
         # List of all import statements in iblrig on dev 20200609
         import ibllib.graphic as graph  # noqa
         import ibllib.io.flags as flags  # noqa
-        import ibllib.io.params as lib_params  # noqa
+        import iblutil.io.params as lib_params  # noqa
         import ibllib.io.raw_data_loaders as raw  # noqa
         import ibllib.pipes.misc as misc  # noqa
         import one.params  # noqa

@@ -5,7 +5,7 @@
 import argparse
 from pathlib import Path
 
-import ibllib.io.params as params
+import iblutil.io.params as params
 import one.params
 # from ibllib.pipes.experimental_data import create
 from oneibl.registration import RegistrationClient
