@@ -15,7 +15,7 @@ class TestIBLRigImports(unittest.TestCase):
         import ibllib.pipes.misc as misc  # noqa
         import one.params  # noqa
         from one.api import ONE  # noqa
-        from oneibl.registration import RegistrationClient  # noqa
+        from ibllib.oneibl.registration import RegistrationClient  # noqa
         from ibllib.dsp.smooth import rolling_window as smooth  # noqa
         from ibllib.graphic import numinput, popup, strinput  # noqa
         from ibllib.io import raw_data_loaders as raw  # noqa

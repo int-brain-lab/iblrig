@@ -11,7 +11,7 @@ from pathlib import Path
 import iblutil.io.params as lib_params
 import ibllib.io.raw_data_loaders as raw
 import one.params
-from oneibl.registration import RegistrationClient
+from ibllib.oneibl.registration import RegistrationClient
 
 from one.api import ONE
 
