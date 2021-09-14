@@ -39,8 +39,9 @@ if __name__ == "__main__":
 
     if args.poop:
         poop()
+    try:
         main()
-    else:
-        main()
+    except BaseException as e:
+        print(e, "\n\nFailed to create session, will try again from local server after transfer...")
 
     print("done")
