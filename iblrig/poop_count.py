@@ -9,9 +9,7 @@ from ibllib.graphic import numinput
 
 from iblrig.misc import patch_settings_file
 
-IBLRIG_DATA = (
-    Path().cwd().parent.parent.parent.parent / "iblrig_data" / "Subjects"
-)  # noqa
+IBLRIG_DATA = Path().cwd().parent.parent.parent.parent / "iblrig_data" / "Subjects"  # noqa
 
 
 def poop() -> None:

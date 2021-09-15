@@ -23,20 +23,31 @@ def int_or_str(text):
 
 parser = argparse.ArgumentParser(add_help=False)
 parser.add_argument(
-    "-l", "--list-devices", action="store_true", help="show list of audio devices and exit"
+    "-l",
+    "--list-devices",
+    action="store_true",
+    help="show list of audio devices and exit",
 )
 args, remaining = parser.parse_known_args()
 if args.list_devices:
     print(sd.query_devices())
     parser.exit(0)
 parser = argparse.ArgumentParser(
-    description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter, parents=[parser]
+    description=__doc__,
+    formatter_class=argparse.RawDescriptionHelpFormatter,
+    parents=[parser],
 )
 parser.add_argument(
-    "-i", "--input-device", type=int_or_str, help="input device (numeric ID or substring)"
+    "-i",
+    "--input-device",
+    type=int_or_str,
+    help="input device (numeric ID or substring)",
 )
 parser.add_argument(
-    "-o", "--output-device", type=int_or_str, help="output device (numeric ID or substring)"
+    "-o",
+    "--output-device",
+    type=int_or_str,
+    help="output device (numeric ID or substring)",
 )
 parser.add_argument("-c", "--channels", type=int, default=2, help="number of channels")
 parser.add_argument("--dtype", help="audio data type")

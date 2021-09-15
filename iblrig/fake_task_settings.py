@@ -3,15 +3,15 @@
 # =============================================================================
 # IBL rig root folder
 IBLRIG_FOLDER = "C:\\iblrig"
-IBLRIG_DATA_FOLDER = (
-    None  # If None data folder will be ..\\iblrig_data from IBLRIG_FOLDER  # noqa
-)
+IBLRIG_DATA_FOLDER = None  # If None data folder will be ..\\iblrig_data from IBLRIG_FOLDER  # noqa
 # SOUND, AMBIENT SENSOR, AND VIDEO RECORDINGS
 RECORD_SOUND = True
 RECORD_AMBIENT_SENSOR_DATA = True
 # REWARDS
 AUTOMATIC_CALIBRATION = True  # Wether to look for a calibration session and func to define the valve opening time  # noqa
-CALIBRATION_VALUE = 0.067  # calibration value for 3ul of target reward amount (ignored if automatic ON)  # noqa
+CALIBRATION_VALUE = (
+    0.067  # calibration value for 3ul of target reward amount (ignored if automatic ON)  # noqa
+)
 REWARD_AMOUNT = 3.0  # (µl) Amount of reward to be delivered upon correct choice each trial (overwitten if adaptive ON)  # noqa
 REWARD_TYPE = "Water 10% Sucrose"  # Water, Water 10% Sucrose, Water 15% Sucrose, Water 2% Citric Acid (Guo et al.. PLoS One 2014)  # noqa
 # TASK
@@ -49,9 +49,7 @@ GO_TONE_FREQUENCY = 5000  # 5KHz
 GO_TONE_AMPLITUDE = 0.0272  # [0->1] 0.0272 for 70dB SPL Xonar
 # ADAPTIVE PARAMETERS
 # ADAPTIVE REWARD PARAMETERS (IGNORED IF ADAPTIVE_REWARD = False)
-ADAPTIVE_REWARD = (
-    True  # wether to increase reware at session start usin AR_* criteria  # noqa
-)
+ADAPTIVE_REWARD = True  # wether to increase reware at session start usin AR_* criteria  # noqa
 AR_INIT_VALUE = 3  # µl
 AR_MAX_VALUE = 3
 AR_MIN_VALUE = 1.5  # (µl) 1.5 µl for sugar water, 2 µl for normal water
@@ -72,15 +70,9 @@ ADAPTIVE_CONTRAST = True  # Wether to use Adaptive contrast rule or not
 AC_INIT_CONTRASTS = [1.0, 0.5]
 AC_BUFFER_SIZE = 50  # Buffer size to compute preformance for each contrast
 AC_PERF_CRIT = 0.7  # Criterion for adding next contrast L AND R have to pass
-AC_NTRIALS_TO_SIX = (
-    200  # Number of trials after 0.125 to introduce the 6% contrast  # noqa
-)
-AC_NTRIALS_TO_ZERO = (
-    400  # Number of trials after 0.125 to introduce the 0% contrast  # noqa
-)
-AC_NTRIALS_TO_REMOVE_50 = (
-    600  # Number of trials after 0.125 to remove the 50% contrst  # noqa
-)
+AC_NTRIALS_TO_SIX = 200  # Number of trials after 0.125 to introduce the 6% contrast  # noqa
+AC_NTRIALS_TO_ZERO = 400  # Number of trials after 0.125 to introduce the 0% contrast  # noqa
+AC_NTRIALS_TO_REMOVE_50 = 600  # Number of trials after 0.125 to remove the 50% contrst  # noqa
 # ADAPTIVE_GAIN PARAMETERS (IGNORED IF ADAPTIVE_GAIN = False)
 ADAPTIVE_GAIN = True
 AG_INIT_VALUE = 8.0  # Adaptive Gain init value (azimuth_degree/mm)

@@ -411,7 +411,8 @@ class SessionPathCreator(object):
             self.IBLRIG_FOLDER, "devices", "camera_recordings"
         )
         self.VIDEO_RECORDING_FILE = os.path.join(
-            self.VIDEO_RECORDING_FOLDER, "TrainingRig_SaveVideo_TrainingTasks.bonsai")
+            self.VIDEO_RECORDING_FOLDER, "TrainingRig_SaveVideo_TrainingTasks.bonsai"
+        )
 
         self.MIC_RECORDING_FOLDER = os.path.join(self.IBLRIG_FOLDER, "devices", "microphone")
         self.MIC_RECORDING_FILE = os.path.join(self.MIC_RECORDING_FOLDER, "record_mic.bonsai")

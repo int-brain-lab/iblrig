@@ -6,7 +6,9 @@ RECORD_SOUND = True
 RECORD_AMBIENT_SENSOR_DATA = True
 # REWARDS
 AUTOMATIC_CALIBRATION = True  # Wether to look for a calibration session and func to define the valve opening time  # noqa
-CALIBRATION_VALUE = 0.067  # calibration value for 3ul of target reward amount (ignored if automatic ON)  # noqa
+CALIBRATION_VALUE = (
+    0.067  # calibration value for 3ul of target reward amount (ignored if automatic ON)  # noqa
+)
 REWARD_AMOUNT = 1.5  # (µl) Amount of reward to be delivered upon correct choice each trial (overwitten if adaptive ON)  # noqa
 REWARD_TYPE = "Water 10% Sucrose"  # Water, Water 10% Sucrose, Water 15% Sucrose, Water 2% Citric Acid (Guo et al.. PLoS One 2014)  # noqa
 # TASK
@@ -41,7 +43,9 @@ BLOCK_LEN_MAX = 100
 STIM_POSITIONS = [-35, 35]  # All possible positions for this session (deg)
 # CONTRASTS
 CONTRAST_SET = [1.0, 0.25, 0.125, 0.0625, 0.0]  # Full contrast set
-CONTRAST_SET_PROBABILITY_TYPE = "uniform"  # 'biased' or 'uniform'. Will half the probability of drawing a 0.  # noqa
+CONTRAST_SET_PROBABILITY_TYPE = (
+    "uniform"  # 'biased' or 'uniform'. Will half the probability of drawing a 0.  # noqa
+)
 # SOUNDS
 SOFT_SOUND = "xonar"  # Use software sound 'xonar', 'sysdefault' or None for BpodSoundCard  # noqa
 SOUND_BOARD_BPOD_PORT = "Serial3"  # (on Bpod) - Ignored if using SOFT_SOUND

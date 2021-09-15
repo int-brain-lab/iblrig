@@ -31,19 +31,15 @@ class SessionParamHandler(object):
         # IMPORT task_settings, user_settings, and SessionPathCreator params
         # =====================================================================
         ts = {
-            i: task_settings.__dict__[i]
-            for i in [x for x in dir(task_settings) if "__" not in x]
+            i: task_settings.__dict__[i] for i in [x for x in dir(task_settings) if "__" not in x]
         }
         self.__dict__.update(ts)
         us = {
-            i: user_settings.__dict__[i]
-            for i in [x for x in dir(user_settings) if "__" not in x]
+            i: user_settings.__dict__[i] for i in [x for x in dir(user_settings) if "__" not in x]
         }
         self.__dict__.update(us)
         self = iotasks.deserialize_pybpod_user_settings(self)
-        spc = SessionPathCreator(
-            self.PYBPOD_SUBJECTS[0], protocol=self.PYBPOD_PROTOCOL, make=make
-        )
+        spc = SessionPathCreator(self.PYBPOD_SUBJECTS[0], protocol=self.PYBPOD_PROTOCOL, make=make)
         self.__dict__.update(spc.__dict__)
 
         # =====================================================================
@@ -57,9 +53,7 @@ class SessionParamHandler(object):
         # =====================================================================
         self.OSC_CLIENT_PORT = 7110
         self.OSC_CLIENT_IP = "127.0.0.1"
-        self.OSC_CLIENT = udp_client.SimpleUDPClient(
-            self.OSC_CLIENT_IP, self.OSC_CLIENT_PORT
-        )
+        self.OSC_CLIENT = udp_client.SimpleUDPClient(self.OSC_CLIENT_IP, self.OSC_CLIENT_PORT)
         # =====================================================================
         # PREVIOUS DATA FILES
         # =====================================================================
@@ -117,9 +111,7 @@ class SessionParamHandler(object):
                 indexes=[self.GO_TONE_IDX, self.WHITE_NOISE_IDX],
                 sample_rate=self.SOUND_SAMPLE_FREQ,
             )
-        self.OUT_STOP_SOUND = (
-            ("SoftCode", 0) if self.SOFT_SOUND else ("Serial3", ord("X"))
-        )
+        self.OUT_STOP_SOUND = ("SoftCode", 0) if self.SOFT_SOUND else ("Serial3", ord("X"))
         self.OUT_TONE = ("SoftCode", 1) if self.SOFT_SOUND else ("Serial3", 6)
         self.OUT_NOISE = ("SoftCode", 2) if self.SOFT_SOUND else ("Serial3", 7)
         # =====================================================================
@@ -147,9 +139,7 @@ class SessionParamHandler(object):
         misc.patch_settings_file(self.SETTINGS_FILE_PATH, patch)
 
     def save_ambient_sensor_reading(self, bpod_instance):
-        return ambient_sensor.get_reading(
-            bpod_instance, save_to=self.SESSION_RAW_DATA_FOLDER
-        )
+        return ambient_sensor.get_reading(bpod_instance, save_to=self.SESSION_RAW_DATA_FOLDER)
 
     def bpod_lights(self, command: int):
         fpath = Path(self.IBLRIG_FOLDER) / "scripts" / "bpod_lights.py"

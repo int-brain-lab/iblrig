@@ -20,9 +20,7 @@ def make_fig(sph):
     f.canvas.draw_idle()
     plt.show()
 
-    f.suptitle(
-        f"{sph.SUBJECT_NAME} - {sph.SUBJECT_WEIGHT}gr - {sph.SESSION_DATETIME}"
-    )  # noqa
+    f.suptitle(f"{sph.SUBJECT_NAME} - {sph.SUBJECT_WEIGHT}gr - {sph.SESSION_DATETIME}")  # noqa
 
     axes = (ax_bars, ax_psych, ax_chron, ax_vars, ax_vars2)
     # plt.pause(0.001)
@@ -61,19 +59,14 @@ def get_barplot_data(tph):
 
 def get_psych_data(tph):
     sig_contrasts_all = np.array(tph.contrast_set)
-    sig_contrasts_all = np.append(
-        sig_contrasts_all, [-x for x in sig_contrasts_all if x != 0]
-    )
+    sig_contrasts_all = np.append(sig_contrasts_all, [-x for x in sig_contrasts_all if x != 0])
     sig_contrasts_all = np.sort(sig_contrasts_all)
 
     sig_contrast_buffer = np.array(tph.signed_contrast_buffer)
     response_side_buffer = np.array(tph.response_side_buffer)
 
     ntrials_ccw = np.array(
-        [
-            sum(response_side_buffer[sig_contrast_buffer == x] < 0)
-            for x in sig_contrasts_all
-        ]
+        [sum(response_side_buffer[sig_contrast_buffer == x] < 0) for x in sig_contrasts_all]
     )
     ntrials = np.array([sum(sig_contrast_buffer == x) for x in sig_contrasts_all])
 
@@ -88,10 +81,7 @@ def get_chron_data(tph):
 
     signed_contrast_buffer = np.array(tph.signed_contrast_buffer)
     resopnse_time_buffer = np.array(tph.response_time_buffer)
-    rts = [
-        np.median(resopnse_time_buffer[signed_contrast_buffer == x])
-        for x in sig_contrasts_all
-    ]
+    rts = [np.median(resopnse_time_buffer[signed_contrast_buffer == x]) for x in sig_contrasts_all]
     rts = [x if not np.isnan(x) else 0 for x in rts]
 
     return sig_contrasts_all, rts

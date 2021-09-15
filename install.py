@@ -101,9 +101,7 @@ def check_dependencies():
         subprocess.check_output(["git", "--version"])
         os.system("git --version")
         git_version = (
-            str(subprocess.check_output(["git", "--version"]))
-            .split(" ")[2]
-            .strip("\\n'")
+            str(subprocess.check_output(["git", "--version"])).split(" ")[2].strip("\\n'")
         )
         # Remove windows moniker from version number
         git_version = ".".join(git_version.split(".")[0:3])
@@ -189,9 +187,7 @@ def configure_iblrig_params(env_name: str = "iblenv", resp=False):
         if user_input == "n":
             return
         elif user_input == "y":
-            subprocess.call(
-                [python, "setup_default_config.py", str(iblrig_params_path)]
-            )
+            subprocess.call([python, "setup_default_config.py", str(iblrig_params_path)])
         elif user_input != "n" and user_input != "y":
             print("\n Please select either y of n")
             return configure_iblrig_params(env_name=env_name)
@@ -276,19 +272,19 @@ if __name__ == "__main__":
     if args.bonsai_response not in RESPONSES:
         print(
             f"Invalid --bonsai-response argument {args.bonsai_response}",
-            "\nPlease use {RESPONSES})"
+            "\nPlease use {RESPONSES})",
         )
         RUN = 0
     if args.config_response not in RESPONSES:
         print(
             f"Invalid --config-response argument {args.config_response}",
-            "\nPlease use {RESPONSES})"
+            "\nPlease use {RESPONSES})",
         )
         RUN = 0
     if args.reinstall_response not in RESPONSES:
         print(
             f"Invalid --reinstall-response argument {args.reinstall_response}",
-            "\nPlease use {RESPONSES})"
+            "\nPlease use {RESPONSES})",
         )
         RUN = 0
 

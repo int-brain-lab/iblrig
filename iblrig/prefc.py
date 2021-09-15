@@ -85,10 +85,7 @@ def calibration_dates_ok() -> bool:
     if not cal_dates_exist:
         log.warning(f"Not all calibration dates are present: {subdict}")
     else:
-        subdict = {
-            k: datetime.datetime.strptime(v, "%Y-%m-%d").date()
-            for k, v in subdict.items()
-        }
+        subdict = {k: datetime.datetime.strptime(v, "%Y-%m-%d").date() for k, v in subdict.items()}
         out = dict.fromkeys(subdict)
         for k in subdict:
             out[k] = subdict[k] + thresh[k] < today
@@ -236,9 +233,7 @@ def xonar_ok() -> bool:
         import sounddevice as sd
 
         devices = sd.query_devices()
-        xonar = [
-            (i, d) for i, d in enumerate(devices) if "XONAR SOUND CARD(64)" in d["name"]
-        ]
+        xonar = [(i, d) for i, d in enumerate(devices) if "XONAR SOUND CARD(64)" in d["name"]]
         if len(xonar) == 1:
             out = True
     except BaseException as e:
@@ -290,6 +285,7 @@ def ultramic_ok() -> bool:
         out = True
     return out
 
+
 # Check Task IO Run fast habituation task with fast delays?
 
 # Ask user info
@@ -302,9 +298,9 @@ def _list_pc_devices(grep=""):
     # will return list of devices that match grep apttern in field 'Name'
     import win32com.client
 
-    objSWbemServices = win32com.client.Dispatch(
-        "WbemScripting.SWbemLocator"
-    ).ConnectServer(".", r"root\cimv2")
+    objSWbemServices = win32com.client.Dispatch("WbemScripting.SWbemLocator").ConnectServer(
+        ".", r"root\cimv2"
+    )
 
     devices = [i for i in objSWbemServices.ExecQuery("SELECT * FROM Win32_PnPEntity")]
     fields = (

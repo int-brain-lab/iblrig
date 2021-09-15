@@ -63,7 +63,13 @@ absolute_screen_deg_form_left_stim = list(pos_on_screen(relative_wheel_degrees, 
 absolute_screen_deg_form_right_stim = list(pos_on_screen(relative_wheel_degrees, 35))
 
 ax = plt.subplot(111)
-ax.plot(relative_wheel_degrees, absolute_screen_deg_form_left_stim, c="b", ls="--", marker=".")
+ax.plot(
+    relative_wheel_degrees,
+    absolute_screen_deg_form_left_stim,
+    c="b",
+    ls="--",
+    marker=".",
+)
 ax.plot(relative_wheel_degrees, absolute_screen_deg_form_right_stim[::-1], "g.--")
 ax.axhline()
 ax.axhline(-35)

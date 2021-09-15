@@ -7,6 +7,7 @@ import logging
 import iblrig.bonsai as bonsai
 import user_settings
 from iblrig.bpod_helper import BpodMessageCreator
+
 # from pybpod_rotaryencoder_module.module import RotaryEncoder
 from pybpodapi.protocol import Bpod, StateMachine
 

@@ -21,9 +21,7 @@ log.setLevel(logging.INFO)
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Delete files from rig")
     parser.add_argument("folder", help="Local iblrig_data folder")
-    parser.add_argument(
-        "file", help="File name to search and destroy for every session"
-    )
+    parser.add_argument("file", help="File name to search and destroy for every session")
     parser.add_argument(
         "-lab",
         required=False,

@@ -39,19 +39,15 @@ class SessionParamHandler(object):
         # IMPORT task_settings, user_settings, and SessionPathCreator params
         # =====================================================================
         ts = {
-            i: task_settings.__dict__[i]
-            for i in [x for x in dir(task_settings) if "__" not in x]
+            i: task_settings.__dict__[i] for i in [x for x in dir(task_settings) if "__" not in x]
         }
         self.__dict__.update(ts)
         us = {
-            i: user_settings.__dict__[i]
-            for i in [x for x in dir(user_settings) if "__" not in x]
+            i: user_settings.__dict__[i] for i in [x for x in dir(user_settings) if "__" not in x]
         }
         self.__dict__.update(us)
         self = iotasks.deserialize_pybpod_user_settings(self)
-        spc = SessionPathCreator(
-            self.PYBPOD_SUBJECTS[0], protocol=self.PYBPOD_PROTOCOL, make=make
-        )
+        spc = SessionPathCreator(self.PYBPOD_SUBJECTS[0], protocol=self.PYBPOD_PROTOCOL, make=make)
         self.__dict__.update(spc.__dict__)
         # =====================================================================
         # SETTINGS
@@ -60,7 +56,9 @@ class SessionParamHandler(object):
         self.RECORD_AMBIENT_SENSOR_DATA = True
 
         self.NTRIALS = 2000  # Number of trials for the current session
-        self.USE_AUTOMATIC_STOPPING_CRITERIONS = True  # Weather to check for the Automatic stopping criterions or not  # noqa
+        self.USE_AUTOMATIC_STOPPING_CRITERIONS = (
+            True  # Weather to check for the Automatic stopping criterions or not  # noqa
+        )
         self.REPEAT_ON_ERROR = False  # not used
         self.INTERACTIVE_DELAY = 0.0
         self.RESPONSE_WINDOW = 60
@@ -84,18 +82,14 @@ class SessionParamHandler(object):
         # =====================================================================
         self.OSC_CLIENT_PORT = 7110
         self.OSC_CLIENT_IP = "127.0.0.1"
-        self.OSC_CLIENT = udp_client.SimpleUDPClient(
-            self.OSC_CLIENT_IP, self.OSC_CLIENT_PORT
-        )
+        self.OSC_CLIENT = udp_client.SimpleUDPClient(self.OSC_CLIENT_IP, self.OSC_CLIENT_PORT)
         # =====================================================================
         # PREVIOUS DATA FILES
         # =====================================================================
         self.LAST_TRIAL_DATA = iotasks.load_data(self.PREVIOUS_SESSION_PATH)
         self.LAST_SETTINGS_DATA = iotasks.load_settings(self.PREVIOUS_SESSION_PATH)
         bonsai.start_mic_recording(self)
-        self.IS_MOCK = (
-            user_input.ask_is_mock()
-        )  # Change to False if mock has its own task
+        self.IS_MOCK = user_input.ask_is_mock()  # Change to False if mock has its own task
         # Get pregenerated session num (the num in the filename!)
         if self.IS_MOCK:
             self.SESSION_ORDER = None
@@ -185,9 +179,7 @@ class SessionParamHandler(object):
         )
         self.OUT_TONE = ("SoftCode", 1) if self.SOFT_SOUND else ("Serial3", 6)
         self.OUT_NOISE = ("SoftCode", 2) if self.SOFT_SOUND else ("Serial3", 7)
-        self.OUT_STOP_SOUND = (
-            ("SoftCode", 0) if self.SOFT_SOUND else ("Serial3", ord("X"))
-        )
+        self.OUT_STOP_SOUND = ("SoftCode", 0) if self.SOFT_SOUND else ("Serial3", ord("X"))
         # =====================================================================
         # PROBES + WEIGHT
         # =====================================================================
@@ -237,9 +229,7 @@ class SessionParamHandler(object):
         root.quit()
 
     def save_ambient_sensor_reading(self, bpod_instance):
-        return ambient_sensor.get_reading(
-            bpod_instance, save_to=self.SESSION_RAW_DATA_FOLDER
-        )
+        return ambient_sensor.get_reading(bpod_instance, save_to=self.SESSION_RAW_DATA_FOLDER)
 
     def bpod_lights(self, command: int):
         fpath = Path(self.IBLRIG_FOLDER) / "scripts" / "bpod_lights.py"

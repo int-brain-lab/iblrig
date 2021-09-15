@@ -39,9 +39,7 @@ def update_probability_left(tph):
 
 def draw_position(position_set, stim_probability_left):
     return int(
-        np.random.choice(
-            position_set, p=[stim_probability_left, 1 - stim_probability_left]
-        )
+        np.random.choice(position_set, p=[stim_probability_left, 1 - stim_probability_left])
     )
 
 

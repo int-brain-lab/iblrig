@@ -85,9 +85,7 @@ class TrialParamHandler(object):
         # Position
         self.stim_probability_left = blocks.init_probability_left(self)
         self.stim_probability_left_buffer = [self.stim_probability_left]
-        self.position = blocks.draw_position(
-            self.position_set, self.stim_probability_left
-        )
+        self.position = blocks.draw_position(self.position_set, self.stim_probability_left)
         self.position_buffer = [self.position]
         # Contrast
         self.contrast = misc.draw_contrast(self.contrast_set)
@@ -120,9 +118,7 @@ class TrialParamHandler(object):
 
     def save_ambient_sensor_data(self, bpod_instance, destination):
         if self.save_ambient_data:
-            self.as_data = ambient_sensor.get_reading(
-                bpod_instance, save_to=destination
-            )
+            self.as_data = ambient_sensor.get_reading(bpod_instance, save_to=destination)
             return self.as_data
         else:
             log.info("Ambient Sensor data disabled in task settings")
@@ -182,9 +178,7 @@ RELATIVE HUMIDITY:    {self.as_data['RelativeHumidity']} %
         self.stim_probability_left = blocks.update_probability_left(self)
         self.stim_probability_left_buffer.append(self.stim_probability_left)
         # Update position + buffer
-        self.position = blocks.draw_position(
-            self.position_set, self.stim_probability_left
-        )
+        self.position = blocks.draw_position(self.position_set, self.stim_probability_left)
         self.position_buffer.append(self.position)
         # Update contrast + buffer
         self.contrast = misc.draw_contrast(
@@ -797,9 +791,7 @@ if __name__ == "__main__":
         # print('next_trial took: ', next_trial_times[-1], '(s)')
         t = time.time()
         tph = tph.trial_completed(
-            np.random.choice(
-                [correct_trial, error_trial, no_go_trial], p=[0.9, 0.05, 0.05]
-            )
+            np.random.choice([correct_trial, error_trial, no_go_trial], p=[0.9, 0.05, 0.05])
         )
 
         if not x % 50:
@@ -810,9 +802,7 @@ if __name__ == "__main__":
 
         trial_completed_times.append(time.time() - t)
         print("\nBLOCK NUM: {:>16}".format(tph.block_num))
-        print(
-            "BLOCK TRIAL NUM: {:>10s}".format(f"{tph.block_trial_num}/{tph.block_len}")
-        )
+        print("BLOCK TRIAL NUM: {:>10s}".format(f"{tph.block_trial_num}/{tph.block_len}"))
         print("PROBABILITY_LEFT: {:>9}".format(tph.stim_probability_left))
         print("SIGNED CONTRAST: {:>10}".format(tph.signed_contrast))
 

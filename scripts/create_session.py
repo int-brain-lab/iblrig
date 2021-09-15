@@ -42,7 +42,8 @@ if __name__ == "__main__":
         main()
     except BaseException as e:
         print(
-            e, "\n\nFailed to create session, will try again from local server after transfer..."
+            e,
+            "\n\nFailed to create session, will try again from local server after transfer...",
         )
 
     print("done")

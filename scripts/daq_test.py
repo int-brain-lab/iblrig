@@ -1,5 +1,10 @@
 import nidaqmx
-from nidaqmx.constants import AcquisitionType, Edge, TerminalConfiguration, VoltageUnits  # Signal
+from nidaqmx.constants import (
+    AcquisitionType,
+    Edge,
+    TerminalConfiguration,
+    VoltageUnits,
+)  # Signal
 
 import numpy as np
 
@@ -10,8 +15,7 @@ global out
 out = np.array([])
 
 
-def callback(task_handle, every_n_samples_event_type,
-             number_of_samples, callback_data):
+def callback(task_handle, every_n_samples_event_type, number_of_samples, callback_data):
     global out
     print(task_handle)
     print(every_n_samples_event_type)
@@ -54,22 +58,21 @@ if __name__ == "__main__":
         min_val=0,
         max_val=10,
         units=VoltageUnits.VOLTS,
-        custom_scale_name="")
+        custom_scale_name="",
+    )
 
     task.timing.cfg_samp_clk_timing(
         sampling_freq,
         source="",
         active_edge=Edge.RISING,
         sample_mode=AcquisitionType.CONTINUOUS,
-        samps_per_chan=buffer_size)
-    task.register_every_n_samples_acquired_into_buffer_event(
-        buffer_size,
-        callback
+        samps_per_chan=buffer_size,
     )
+    task.register_every_n_samples_acquired_into_buffer_event(buffer_size, callback)
     task.register_done_event(done_callback)
 
     task.start()
-    input('Running task. Press Enter to stop. Seconds elapsed: \n')
+    input("Running task. Press Enter to stop. Seconds elapsed: \n")
     task.stop()
 
     print(len(out))

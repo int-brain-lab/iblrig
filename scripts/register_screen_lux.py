@@ -16,5 +16,5 @@ apars = alyx.update_alyx_params(pars, force=True)
 print(
     "\nLux measurement updated on",
     f"[{lpars['SCREEN_LUX_DATE']}] with value [{lpars['SCREEN_LUX_VALUE']}]",
-    "\n"
+    "\n",
 )

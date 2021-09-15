@@ -354,26 +354,18 @@ def create_experiment_setups(iblproject_path, exp_name: str):  # XXX:THIS!
     if exp.name == "_iblrig_calibration":
         screen = create_setup(exp, "screen", p.boards[0].name, calib_subj)  # noqa
         water = create_setup(exp, "water", p.boards[0].name, calib_subj)  # noqa
-        input_listner = create_setup(  # noqa
-            exp, "input_listner", p.boards[0].name, calib_subj
-        )
+        input_listner = create_setup(exp, "input_listner", p.boards[0].name, calib_subj)  # noqa
         frame2TTL = create_setup(exp, "frame2TTL", p.boards[0].name, calib_subj)  # noqa
 
     if exp.name == "_iblrig_misc":
-        flush_water = create_setup(  # noqa
-            exp, "flush_water", p.boards[0].name, test_subj
-        )
-        bpod_ttl_test = create_setup(  # noqa
-            exp, "bpod_ttl_test", p.boards[0].name, test_subj
-        )
+        flush_water = create_setup(exp, "flush_water", p.boards[0].name, test_subj)  # noqa
+        bpod_ttl_test = create_setup(exp, "bpod_ttl_test", p.boards[0].name, test_subj)  # noqa
         frame2TTL_freq_test = create_setup(  # noqa
             exp, "frame2TTL_freq_test", p.boards[0].name, test_subj
         )
 
     if exp.name == "_iblrig_tasks":
-        biasedChoiceWorld = create_setup(  # noqa
-            exp, "biasedChoiceWorld", p.boards[0].name, None
-        )
+        biasedChoiceWorld = create_setup(exp, "biasedChoiceWorld", p.boards[0].name, None)  # noqa
         habituationChoiceWorld = create_setup(  # noqa
             exp, "habituationChoiceWorld", p.boards[0].name, None
         )
@@ -432,18 +424,14 @@ def copy_task_files(iblrig_params_path, exclude_filename=None):
         src_folder = Path(src_folder)
         dst_folder = Path(dst_folder)
         src_list = [
-            x
-            for x in src_folder.glob(glob)
-            if x.is_file() and exclude_filename not in str(x)
+            x for x in src_folder.glob(glob) if x.is_file() and exclude_filename not in str(x)
         ]
         for f in src_list:
             shutil.copy(f, dst_folder)
             print(f"  Copied {f} to {dst_folder}")
 
     # Copy all tasks
-    tasks = [
-        x for x in iblrig_tasks_path.glob("*") if x.is_dir() and x.name != "__pycache__"
-    ]
+    tasks = [x for x in iblrig_tasks_path.glob("*") if x.is_dir() and x.name != "__pycache__"]
     for sf in tasks:
         df = iblrig_params_tasks_path / sf.name
         df.mkdir(parents=True, exist_ok=True)

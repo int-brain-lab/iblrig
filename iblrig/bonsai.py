@@ -88,9 +88,7 @@ else:
                 editor = noeditor
 
             if "bpod_ttl_test" in sph.PYBPOD_PROTOCOL:
-                subprocess.Popen(
-                    [bns, wkfl, editor, noboot, evt, itr, com, sync_x, sync_y]
-                )
+                subprocess.Popen([bns, wkfl, editor, noboot, evt, itr, com, sync_x, sync_y])
             else:
                 subprocess.Popen(
                     [
@@ -177,9 +175,7 @@ else:
     ):
         here = os.getcwd()
         bns = ph.get_bonsai_path()
-        stim_folder = str(
-            Path(ph.get_iblrig_folder()) / "visual_stim" / "passiveChoiceWorld"
-        )
+        stim_folder = str(Path(ph.get_iblrig_folder()) / "visual_stim" / "passiveChoiceWorld")
         wkfl = os.path.join(stim_folder, "passiveChoiceWorld_passive.bonsai")
         os.chdir(stim_folder)
         # Flags
@@ -288,9 +284,7 @@ else:
     def start_frame2ttl_test(data_file, lengths_file, harp=False):
         here = os.getcwd()
         bns = ph.get_bonsai_path()
-        stim_folder = str(
-            Path(ph.get_iblrig_folder()) / "visual_stim" / "f2ttl_calibration"
-        )
+        stim_folder = str(Path(ph.get_iblrig_folder()) / "visual_stim" / "f2ttl_calibration")
         wkfl = os.path.join(stim_folder, "screen_60Hz.bonsai")
         # Flags
         noedit = "--no-editor"  # implies start and no-debug?
@@ -316,9 +310,7 @@ else:
                 ]
             )
         else:
-            s = subprocess.Popen(
-                [bns, wkfl, noboot, noedit, data_file_name, lengths_file_name]
-            )
+            s = subprocess.Popen([bns, wkfl, noboot, noedit, data_file_name, lengths_file_name])
         os.chdir(here)
         return s
 
@@ -328,10 +320,7 @@ else:
         os.chdir(str(iblrig_folder_path / "visual_stim" / "f2ttl_calibration"))
         bns = ph.get_bonsai_path()
         wrkfl = str(
-            iblrig_folder_path
-            / "visual_stim"
-            / "f2ttl_calibration"
-            / "screen_color.bonsai"
+            iblrig_folder_path / "visual_stim" / "f2ttl_calibration" / "screen_color.bonsai"
         )
         noedit = "--no-editor"  # implies start
         # nodebug = '--start-no-debug'

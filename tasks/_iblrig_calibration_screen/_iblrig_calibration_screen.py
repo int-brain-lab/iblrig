@@ -14,24 +14,14 @@ from session_params import SessionParamHandler
 
 sph = SessionParamHandler(task_settings, user_settings)
 
-server = (
-    Path(sph.IBLRIG_FOLDER)
-    / "visual_stim"
-    / "screen_calibration"
-    / "photodiode_server.py"
-)
+server = Path(sph.IBLRIG_FOLDER) / "visual_stim" / "screen_calibration" / "photodiode_server.py"
 # Start the frame2TTL server
 # server_cmd = ['python', server, sph.PARAMS['COM_F2TTL']]
 # server = subprocess.Popen(server_cmd, stdout=subprocess.PIPE)
 # print(server)
 
 bns = Path(sph.IBLRIG_FOLDER) / "Bonsai" / "Bonsai.exe"
-wrkfl = (
-    Path(sph.IBLRIG_FOLDER)
-    / "visual_stim"
-    / "screen_calibration"
-    / "screen_sweep.bonsai"
-)
+wrkfl = Path(sph.IBLRIG_FOLDER) / "visual_stim" / "screen_calibration" / "screen_sweep.bonsai"
 noedit = "--no-editor"  # implies start
 nodebug = "--start-no-debug"
 start = "--start"

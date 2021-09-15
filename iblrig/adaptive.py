@@ -96,9 +96,7 @@ def init_reward_valve_time(sph: object) -> float:
     if not sph.AUTOMATIC_CALIBRATION:
         out = manual_reward_valve_time(sph.REWARD_AMOUNT, sph.CALIBRATION_VALUE)
     elif sph.AUTOMATIC_CALIBRATION and sph.CALIB_FUNC is not None:
-        out = calc_reward_valve_time(
-            sph.REWARD_AMOUNT, sph.CALIB_FUNC, sph.CALIB_FUNC_RANGE
-        )
+        out = calc_reward_valve_time(sph.REWARD_AMOUNT, sph.CALIB_FUNC, sph.CALIB_FUNC_RANGE)
     elif sph.AUTOMATIC_CALIBRATION and sph.CALIB_FUNC is None:
         msg = f"""
         ##########################################

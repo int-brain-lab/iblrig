@@ -46,45 +46,35 @@ class BpodMessageCreator(object):
     def bonsai_hide_stim(self):
         # Stop the stim
         bonsai_hide_stim = self.default_message_idx + 1
-        self.bpod.load_serial_message(
-            self.rotary_encoder, bonsai_hide_stim, [ord("#"), 1]
-        )
+        self.bpod.load_serial_message(self.rotary_encoder, bonsai_hide_stim, [ord("#"), 1])
         self.default_message_idx += 1
         return bonsai_hide_stim
 
     def bonsai_show_stim(self):
         # Stop the stim
         bonsai_show_stim = self.default_message_idx + 1
-        self.bpod.load_serial_message(
-            self.rotary_encoder, bonsai_show_stim, [ord("#"), 2]
-        )
+        self.bpod.load_serial_message(self.rotary_encoder, bonsai_show_stim, [ord("#"), 2])
         self.default_message_idx += 1
         return bonsai_show_stim
 
     def bonsai_close_loop(self):
         # Stop the stim
         bonsai_close_loop = self.default_message_idx + 1
-        self.bpod.load_serial_message(
-            self.rotary_encoder, bonsai_close_loop, [ord("#"), 3]
-        )
+        self.bpod.load_serial_message(self.rotary_encoder, bonsai_close_loop, [ord("#"), 3])
         self.default_message_idx += 1
         return bonsai_close_loop
 
     def bonsai_freeze_stim(self):
         # Freeze the stim
         bonsai_freeze_stim = self.default_message_idx + 1
-        self.bpod.load_serial_message(
-            self.rotary_encoder, bonsai_freeze_stim, [ord("#"), 4]
-        )
+        self.bpod.load_serial_message(self.rotary_encoder, bonsai_freeze_stim, [ord("#"), 4])
         self.default_message_idx += 1
         return bonsai_freeze_stim
 
     def bonsai_show_center(self):
         # Freeze the stim
         bonsai_freeze_stim = self.default_message_idx + 1
-        self.bpod.load_serial_message(
-            self.rotary_encoder, bonsai_freeze_stim, [ord("#"), 5]
-        )
+        self.bpod.load_serial_message(self.rotary_encoder, bonsai_freeze_stim, [ord("#"), 5])
         self.default_message_idx += 1
         return bonsai_freeze_stim
 
@@ -92,9 +82,7 @@ class BpodMessageCreator(object):
         if self.sound_card is None:
             return
         sc_play_idx = self.default_message_idx + 1
-        self.bpod.load_serial_message(
-            self.sound_card, sc_play_idx, [ord("P"), tone_idx]
-        )
+        self.bpod.load_serial_message(self.sound_card, sc_play_idx, [ord("P"), tone_idx])
         self.default_message_idx += 1
         return sc_play_idx
 
