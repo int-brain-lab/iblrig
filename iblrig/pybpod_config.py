@@ -18,8 +18,8 @@ Local pybpod functions (used in setup_default config):
 
 Alyx dependent functions:
     create_alyx_project
-    create_alyx_user
-    create_alyx_subjects
+    create_ONE_alyx_user
+    create_local_subjects_from_alyx
 
 Return: None or json dict
 """
@@ -35,6 +35,8 @@ IBLRIG_PARAMS_FOLDER = Path(ph.get_iblrig_params_folder())
 
 print(ph.get_iblrig_folder(), "\n", IBLRIG_PARAMS_FOLDER)
 
+local2alyx_names = {"IBL": "ibl_neuropixel_brainwide_01"}
+alyx2local_names = {"ibl_neuropixel_brainwide_01": "IBL"}
 
 # UTILS
 def _load_pybpod_obj_json(obj):
@@ -62,12 +64,13 @@ def _update_pybpod_obj_json(obj, patch: dict):
     return objdict
 
 
-def alyx_project_exists(name, one=None):
+def alyx_project_exists(project_name, one=None):
+    project_name = local2alyx_names.get(project_name, project_name)
     one = one or ONE()
-    print(f"Checking existence of project [{name}] on Alyx")
+    print(f"Checking existence of project [{project_name}] on Alyx")
     all_projects_names = [x["name"] for x in one.alyx.rest("projects", "list")]
-    if name not in all_projects_names:
-        print(f"Project [{name}] not found on Alyx")
+    if project_name not in all_projects_names:
+        print(f"Project [{project_name}] not found on Alyx")
         out = False
     else:
         out = True
@@ -102,12 +105,13 @@ def alyx_subject_exists(name, one=None):
 
 
 # PROJECT
-def pybpod_project_exists(name):
-    project_path = IBLRIG_PARAMS_FOLDER / name
+def pybpod_project_exists(project_name):
+    project_name = alyx2local_names.get(project_name, project_name)
+    project_path = IBLRIG_PARAMS_FOLDER / project_name
     p = Project()
     project_exists = None
     try:
-        print(f"Checking existence of project [{name}] locally")
+        print(f"Checking existence of project [{project_name}] locally")
         p.load(project_path)
         project_exists = True
     except:  # noqa
@@ -117,24 +121,26 @@ def pybpod_project_exists(name):
     return project_exists
 
 
-def create_project(name, force=False):
-    project_path = IBLRIG_PARAMS_FOLDER / name
+def create_project(project_name, force=False):
+    project_name = alyx2local_names.get(project_name, project_name)
+    project_path = IBLRIG_PARAMS_FOLDER / project_name
     p = Project()
-    if force or not pybpod_project_exists(name):
-        p.name = name
+    if force or not pybpod_project_exists(project_name):
+        p.name = project_name
         p.save(project_path)
-        print(f"  Project created: [{name}]")
+        print(f"  Project created: [{project_name}]")
     else:
-        print(f"  Skipping creation: project [{name}] found in: [{project_path}]")
+        print(f"  Skipping creation: project [{project_name}] found in: [{project_path}]")
         p = Project()
         p.load(project_path)
     return p
 
 
-def create_alyx_project(name, one=None, force=False):
+def create_local_project_from_alyx(project_name, one=None, force=False):
+    project_name = local2alyx_names.get(project_name, project_name)
     one = one or ONE()
-    if force or alyx_project_exists(name, one=one):
-        p = create_project(name, force=force)
+    if force or alyx_project_exists(project_name, one=one):
+        p = create_project(project_name, force=force)
         out = _load_pybpod_obj_json(p)
     else:
         out = None
@@ -144,6 +150,7 @@ def create_alyx_project(name, one=None, force=False):
 
 # SUBJECTS
 def create_subject(project_name, subject_name: str, force=False):
+    project_name = alyx2local_names.get(project_name, project_name)
     project_path = IBLRIG_PARAMS_FOLDER / project_name
     p = Project()
     print(f"Loading [{project_path}]")
@@ -164,6 +171,7 @@ def create_subject(project_name, subject_name: str, force=False):
 
 
 def _get_alyx_subjects(project_name, one=None):
+    project_name = local2alyx_names.get(project_name, project_name)
     if not alyx_project_exists(project_name, one=one):
         return []
     one = one or ONE()
@@ -172,27 +180,30 @@ def _get_alyx_subjects(project_name, one=None):
     return all_proj_subs
 
 
-def _create_alyx_subject(project_name, asub, force=False):
+def _create_and_patch_subject(project_name, asub, force=False):
+    """creates local subject subject and patches pybpod json obj using asub data from alyx subject
+    returns patched dict of pybpod json object"""
+    project_name = alyx2local_names.get(project_name, project_name)
     s = create_subject(project_name, asub["nickname"], force=force)
     sdict = _update_pybpod_obj_json(s, asub)
 
     return sdict
 
 
-def create_alyx_subjects(project_name, one=None, force=False):
-    project_path = IBLRIG_PARAMS_FOLDER / project_name
-    one = one or ONE()
+def create_local_subjects_from_alyx_project(project_name, one=None, force=False):
+    project_name = alyx2local_names.get(project_name, project_name)
     alyx_subjects = _get_alyx_subjects(project_name, one=one)
     print(f"Creating [{len(alyx_subjects)}] subjects for project [{project_name}]")
     patched_subjects = []
     for asub in alyx_subjects:
-        patched_subjects.append(_create_alyx_subject(project_path, asub, force=force))
+        patched_subjects.append(_create_and_patch_subject(project_name, asub, force=force))
 
     return patched_subjects
 
 
 # USERS
 def create_user(project_name, username="_iblrig_test_user", force=False):
+    project_name = alyx2local_names.get(project_name, project_name)
     project_path = IBLRIG_PARAMS_FOLDER / project_name
     p = Project()
     print(f"Loading [{project_path}]")
@@ -217,7 +228,8 @@ def create_user(project_name, username="_iblrig_test_user", force=False):
     return user
 
 
-def create_alyx_user(project_name, one=None, force=False):
+def create_ONE_alyx_user(project_name, one=None, force=False):
+    project_name = local2alyx_names.get(project_name, project_name)
     one = one or ONE()
     out = None
     uname = one.alyx.user
@@ -231,7 +243,8 @@ def create_alyx_user(project_name, one=None, force=False):
     return out
 
 
-def create_alyx_project_users(project_name, one=None, force=False) -> None:
+def create_local_users_from_alyx_project(project_name, one=None, force=False) -> None:
+    project_name = local2alyx_names.get(project_name, project_name)
     one = one or ONE()
     try:
         unames = one.alyx.rest("projects", "read", id=project_name)["users"]
@@ -242,22 +255,27 @@ def create_alyx_project_users(project_name, one=None, force=False) -> None:
 
 
 def create_custom_project_from_alyx(project_name, one=None, force=False) -> None:
+    project_name = local2alyx_names.get(project_name, project_name)
     one = one or ONE()
-    create_alyx_project(project_name, one=one, force=force)
-    create_alyx_subjects(project_name, one=one, force=force)
-    create_alyx_project_users(project_name, one=one, force=force)
-    create_board(project_name, force=False)
+    create_local_project_from_alyx(project_name, one=one, force=force)
+    create_local_subjects_from_alyx_project(project_name, one=one, force=force)
+    create_local_users_from_alyx_project(project_name, one=one, force=force)
+    create_board_from_main_project_to(project_name, force=False)
 
 
 # BOARD (requires one board per rig)
-def create_board(project_name, force=False):
+def create_board_from_main_project_to(project_name, force=False):
+    project_name = alyx2local_names.get(project_name, project_name)
+    if project_name == "IBL":
+        print("Can't create board of main project")
+        return
     project_path = IBLRIG_PARAMS_FOLDER / project_name
     iblproj = Project()
     iblproj.load(IBLRIG_PARAMS_FOLDER / 'IBL')
     print("Looking for boards in default project")
     if not iblproj.boards or len(iblproj.boards) > 1:
         print(
-            f"0 or 2+ boars found in main project: {[x.name for x in iblproj.boards]}")
+            f"0 or 2+ boards found in main project: {[x.name for x in iblproj.boards]}")
         return
 
     bname = iblproj.boards[0].name

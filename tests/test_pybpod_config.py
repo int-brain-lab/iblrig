@@ -26,17 +26,17 @@ class TestsPybpodConfig(unittest.TestCase):
         self.project_path = Path(ph.get_iblrig_params_folder()) / self.project_name
 
     def test_create_alyx(self):
-        p = config.create_alyx_project(self.project_name, one=one, force=False)
+        p = config.create_local_project_from_alyx(self.project_name, one=one, force=False)
         self.assertTrue(self.project_path.exists())
         self.assertTrue(isinstance(p, dict))
 
-        u = config.create_alyx_user(self.project_name, one=one, force=False)
+        u = config.create_ONE_alyx_user(self.project_name, one=one, force=False)
         self.assertTrue(self.project_path.joinpath("users", one.alyx.user).exists())
         self.assertTrue(self.project_path.joinpath("users", "_iblrig_test_user").exists())
         self.assertTrue(self.project_path.exists())
         self.assertTrue(isinstance(u, dict))
 
-        s = config.create_alyx_subjects(self.project_name, one=one, force=False)
+        s = config.create_local_subjects_from_alyx_project(self.project_name, one=one, force=False)
         self.assertTrue(self.project_path.joinpath("subjects", "clns0730").exists())
         self.assertTrue(self.project_path.joinpath("subjects", "flowers").exists())
         self.assertTrue(self.project_path.joinpath("subjects", "IBL_46").exists())
