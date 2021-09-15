@@ -2,7 +2,6 @@ import unittest
 
 
 class TestIBLRigImports(unittest.TestCase):
-
     def setUp(self):
         pass
 
@@ -13,7 +12,7 @@ class TestIBLRigImports(unittest.TestCase):
         import iblutil.io.params as lib_params  # noqa
         import ibllib.io.raw_data_loaders as raw  # noqa
         import ibllib.pipes.misc as misc  # noqa
-        import one.params  # noqa
+        import one.params as oneparams  # noqa
         from one.api import ONE  # noqa
         from ibllib.oneibl.registration import RegistrationClient  # noqa
         from ibllib.dsp.smooth import rolling_window as smooth  # noqa

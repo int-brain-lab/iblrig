@@ -7,8 +7,7 @@ from pathlib import Path
 
 import iblutil.io.params as params
 import one.params
-# from ibllib.pipes.experimental_data import create
-from oneibl.registration import RegistrationClient
+from ibllib.oneibl.registration import RegistrationClient
 
 from iblrig.poop_count import poop
 
@@ -42,6 +41,8 @@ if __name__ == "__main__":
     try:
         main()
     except BaseException as e:
-        print(e, "\n\nFailed to create session, will try again from local server after transfer...")
+        print(
+            e, "\n\nFailed to create session, will try again from local server after transfer..."
+        )
 
     print("done")
