@@ -85,9 +85,7 @@ class AdaptiveContrast(object):
         else:
             _buffer = self.last_trial_data["ac"]["buffer"]
             if len(_buffer) > 2:
-                _buffer = np.zeros(
-                    (2, self.buffer_size, len(self.all_contrasts))
-                ).tolist()
+                _buffer = np.zeros((2, self.buffer_size, len(self.all_contrasts))).tolist()
         return _buffer
 
     def _init_contrast(self):
@@ -150,12 +148,7 @@ class AdaptiveContrast(object):
         self.contrast_set.reverse()
 
     def _min_trials_at(self, prob, alpha):
-        return int(
-            sum(
-                1 - st.binom.cdf(range(self.buffer_size), self.buffer_size, prob)
-                >= alpha
-            )
-        )
+        return int(sum(1 - st.binom.cdf(range(self.buffer_size), self.buffer_size, prob) >= alpha))
 
     def trial_completed(self, trial_correct):
         self.ntrials += 1
@@ -289,7 +282,7 @@ class TrialParamHandler(object):
 
     def trial_completed(self, behavior_data):
         """Update outcome variables using bpod.session.current_trial
-        Check trial for state entries, first value of first tuple """
+        Check trial for state entries, first value of first tuple"""
         # Update elapsed_time
         self.elapsed_time = datetime.datetime.now() - self.init_datetime
         self.behavior_data = behavior_data
@@ -359,9 +352,7 @@ class TrialParamHandler(object):
 
     def save_ambient_sensor_data(self, bpod_instance, destination):
         if self.save_ambient_data:
-            self.as_data = ambient_sensor.get_reading(
-                bpod_instance, save_to=destination
-            )
+            self.as_data = ambient_sensor.get_reading(bpod_instance, save_to=destination)
             return self.as_data
         else:
             log.info("Ambient Sensor data disabled in task settings")
@@ -1004,9 +995,7 @@ if __name__ == "__main__":
         # print('next_trial took: ', next_trial_times[-1], '(s)')
         t = time.time()
         tph = tph.trial_completed(
-            np.random.choice(
-                [correct_trial, error_trial, no_go_trial], p=[0.8, 0.1, 0.1]
-            )
+            np.random.choice([correct_trial, error_trial, no_go_trial], p=[0.8, 0.1, 0.1])
         )
         # tph = tph.trial_completed(correct_trial)
         op.update_fig(f, axes, tph)

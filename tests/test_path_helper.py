@@ -50,6 +50,7 @@ class TestPathHelper(unittest.TestCase):
 
     def test_get_commit_hash(self):
         import subprocess
+
         out = subprocess.check_output(["git", "rev-parse", "HEAD"]).decode().strip()
         # Run it
         ch = ph.get_commit_hash(ph.get_iblrig_folder())

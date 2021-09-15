@@ -25,7 +25,7 @@ class Frame2TTL(object):
 
     def connect(self, serial_port) -> serial.Serial:
         """Create connection to serial_port"""
-        ser = serial.Serial(port=serial_port, baudrate=115200, timeout=1., write_timeout=1.)
+        ser = serial.Serial(port=serial_port, baudrate=115200, timeout=1.0, write_timeout=1.0)
         self.connected = ser.isOpen()
         return ser
 
@@ -121,9 +121,7 @@ class Frame2TTL(object):
             )
         if self.recomend_dark - self.recomend_light < 5:
             log.error("Cannot recommend thresholds:"),
-            log.error(
-                "Black and White measurements may be too close for accurate frame detection"
-            )
+            log.error("Black and White measurements may be too close for accurate frame detection")
             log.error(f"Light = {self.recomend_light}, Dark = {self.recomend_dark}")
             return -1
         else:
@@ -162,9 +160,7 @@ class Frame2TTL(object):
                 "light and dark measurements may be too close for accurate frame detection",
             )
         else:
-            log.info(
-                f"Recommended thresholds: Light = {recomend_light}, Dark = {recomend_dark}."
-            )
+            log.info(f"Recommended thresholds: Light = {recomend_light}, Dark = {recomend_dark}.")
             log.info("Sending thresholds to device...")
             self.recomend_dark = recomend_dark
             self.recomend_light = recomend_light
@@ -181,9 +177,7 @@ def get_and_set_thresholds():
             raise (KeyError)
 
     dev = Frame2TTL(params["COM_F2TTL"])
-    dev.set_thresholds(
-        dark=params["F2TTL_DARK_THRESH"], light=params["F2TTL_LIGHT_THRESH"]
-    )
+    dev.set_thresholds(dark=params["F2TTL_DARK_THRESH"], light=params["F2TTL_LIGHT_THRESH"])
     log.info("Frame2TTL: Thresholds set.")
     return 0
 

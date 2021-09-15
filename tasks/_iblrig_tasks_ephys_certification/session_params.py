@@ -27,19 +27,15 @@ class SessionParamHandler(object):
         # IMPORT task_settings, user_settings, and SessionPathCreator params
         # =====================================================================
         ts = {
-            i: task_settings.__dict__[i]
-            for i in [x for x in dir(task_settings) if "__" not in x]
+            i: task_settings.__dict__[i] for i in [x for x in dir(task_settings) if "__" not in x]
         }
         self.__dict__.update(ts)
         us = {
-            i: user_settings.__dict__[i]
-            for i in [x for x in dir(user_settings) if "__" not in x]
+            i: user_settings.__dict__[i] for i in [x for x in dir(user_settings) if "__" not in x]
         }
         self.__dict__.update(us)
         self = iotasks.deserialize_pybpod_user_settings(self)
-        spc = SessionPathCreator(
-            self.PYBPOD_SUBJECTS[0], protocol=self.PYBPOD_PROTOCOL, make=True
-        )
+        spc = SessionPathCreator(self.PYBPOD_SUBJECTS[0], protocol=self.PYBPOD_PROTOCOL, make=True)
         self.__dict__.update(spc.__dict__)
 
         # =====================================================================
@@ -47,9 +43,7 @@ class SessionParamHandler(object):
         # =====================================================================
         self.OSC_CLIENT_PORT = 7110
         self.OSC_CLIENT_IP = "127.0.0.1"
-        self.OSC_CLIENT = udp_client.SimpleUDPClient(
-            self.OSC_CLIENT_IP, self.OSC_CLIENT_PORT
-        )
+        self.OSC_CLIENT = udp_client.SimpleUDPClient(self.OSC_CLIENT_IP, self.OSC_CLIENT_PORT)
         # =====================================================================
         # frame2TTL
         # =====================================================================
@@ -177,8 +171,7 @@ class SessionParamHandler(object):
             "stim_off_time": 1,  # seconds
             "stim_azimuth_set": [-35, 35],
             "stim_contrast_set": [1.0, 0.5, 0.25, 0.125, 0.0625],
-            "stim_file":
-                "iblrig/visual_stim/ephys_certification/04_ContrastSelectivityTaskStim/stims.csv",
+            "stim_file": "iblrig/visual_stim/ephys_certification/04_ContrastSelectivityTaskStim/stims.csv",  # noqa
             "stim_file_columns": ("azimuth", "contrast"),
             "polarity_start": +1,
             "polarity_end": -1,
@@ -202,12 +195,12 @@ class SessionParamHandler(object):
         d["OSC_CLIENT"] = str(d["OSC_CLIENT"])
         d["VISUAL_STIM_1"]["dva_mat"] = d["VISUAL_STIM_1"]["dva_mat"].tolist()
         d["VISUAL_STIM_3"]["dva_mat"] = d["VISUAL_STIM_3"]["dva_mat"].tolist()
-        d["VISUAL_STIM_3"]["stim_patch_contrasts"][1] = d["VISUAL_STIM_3"][
-            "stim_patch_contrasts"
-        ][1].tolist()
-        d["VISUAL_STIM_3"]["stim_patch_contrasts"][2] = d["VISUAL_STIM_3"][
-            "stim_patch_contrasts"
-        ][2].tolist()
+        d["VISUAL_STIM_3"]["stim_patch_contrasts"][1] = d["VISUAL_STIM_3"]["stim_patch_contrasts"][
+            1
+        ].tolist()
+        d["VISUAL_STIM_3"]["stim_patch_contrasts"][2] = d["VISUAL_STIM_3"]["stim_patch_contrasts"][
+            2
+        ].tolist()
         return d
 
 

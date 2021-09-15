@@ -32,9 +32,7 @@ sph = SessionParamHandler(task_settings, user_settings)
 if frame2TTL.get_and_set_thresholds() == 0:
     sph.F2TTL_GET_AND_SET_THRESHOLDS = True
 # Rotary encoder
-re = MyRotaryEncoder(
-    sph.ALL_THRESHOLDS, sph.STIM_GAIN, sph.PARAMS["COM_ROTARY_ENCODER"]
-)
+re = MyRotaryEncoder(sph.ALL_THRESHOLDS, sph.STIM_GAIN, sph.PARAMS["COM_ROTARY_ENCODER"])
 sph.ROTARY_ENCODER = re
 
 # get bpod
@@ -166,7 +164,7 @@ bpod.close()
 # Turn bpod light's back on
 bpod_lights(PARAMS["COM_BPOD"], 1)
 # Close Bonsai stim
-bonsai.stop_wrkfl('stim')
+bonsai.stop_wrkfl("stim")
 msg = "Passive protocol done, please remove subject.\n" * 42
 log.info(msg)
 msg = "Passive protocol is over.\nMake sure you turn the VALVE back ON!"

@@ -10,8 +10,7 @@ import pyforms
 from AnyQt.QtWidgets import QApplication
 from one.api import ONE
 from pyforms.basewidget import BaseWidget
-from pyforms.controls import (ControlButton, ControlCheckBox, ControlLabel,
-                              ControlText)
+from pyforms.controls import ControlButton, ControlCheckBox, ControlLabel, ControlText
 
 import iblrig.logging_  # noqa
 from iblrig.misc import patch_settings_file
@@ -401,6 +400,7 @@ def ask_confirm_session_idx(session_idx):
     if sess_num != session_idx + 1:
         session_idx = sess_num - 1
     return session_idx
+
 
 # XXX: THIS ONE CALL HAS TO CHANGE in favor of local param folder:
 # Find configured projects

@@ -8,11 +8,7 @@ import subprocess
 
 
 def get_versions(verbose=False):
-    vers = (
-        subprocess.check_output(["git", "ls-remote", "--tags", "origin"])
-        .decode()
-        .split()
-    )
+    vers = subprocess.check_output(["git", "ls-remote", "--tags", "origin"]).decode().split()
     vers = [x for x in vers[1::2] if "{" not in x]
     vers = [x.split("/")[-1] for x in vers]
     broken = ["6.3.0", "6.3.1"]
@@ -23,11 +19,7 @@ def get_versions(verbose=False):
 
 
 def get_branches(verbose=False):
-    branches = (
-        subprocess.check_output(["git", "ls-remote", "--heads", "origin"])
-        .decode()
-        .split()
-    )
+    branches = subprocess.check_output(["git", "ls-remote", "--heads", "origin"]).decode().split()
     branches = [x.split("heads")[-1] for x in branches[1::2]]
     branches = [x[1:] for x in branches]
     if verbose:
@@ -49,9 +41,7 @@ def get_current_branch(verbose=False):
 
 
 def get_current_version(verbose=False):
-    tag = (
-        subprocess.check_output(["git", "tag", "--points-at", "HEAD"]).decode().strip()
-    )
+    tag = subprocess.check_output(["git", "tag", "--points-at", "HEAD"]).decode().strip()
     if verbose:
         print("Current version: {}".format(tag))
     return tag
@@ -85,7 +75,7 @@ def checkout_single_file(file=None, branch="master"):
 
 
 def update_remotes():
-    subprocess.call(['git', 'remote', 'update'])
+    subprocess.call(["git", "remote", "update"])
 
 
 def branch_info():

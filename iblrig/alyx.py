@@ -10,7 +10,7 @@ from pathlib import Path
 
 import iblutil.io.params as lib_params
 import ibllib.io.raw_data_loaders as raw
-import one.params
+import one.params as oneparams
 from ibllib.oneibl.registration import RegistrationClient
 
 from one.api import ONE
@@ -34,7 +34,7 @@ def create_session(session_folder, one=None):
     one = one or ONE()
     pfile = Path(lib_params.getfile("one_params"))
     if not pfile.exists():
-        one.params.setup()
+        oneparams.setup()
 
     RegistrationClient(one=one).register_session(session_folder, file_list=False)
 
@@ -102,7 +102,7 @@ def load_alyx_params(board: str, one=None) -> dict:
 
 
 def update_alyx_params(data: dict, force: bool = False, one=None) -> dict:
-    """ Updates keys in data dict to json field in alyx
+    """Updates keys in data dict to json field in alyx
     If keys don't exist already will skip them
     """
     one = one or ONE()
@@ -125,9 +125,7 @@ def update_alyx_params(data: dict, force: bool = False, one=None) -> dict:
                 log.info(f"Unknown key {k}: skipping key...")
                 continue
             elif force:
-                log.info(
-                    f"Adding new key {k} with value {data[k]} to {board} json field"
-                )
+                log.info(f"Adding new key {k} with value {data[k]} to {board} json field")
                 old[k] = data[k]
     write_alyx_params(data=old, force=True, one=one)
     log.info(f"Changed board params: {data}")
@@ -138,9 +136,7 @@ def update_alyx_params(data: dict, force: bool = False, one=None) -> dict:
 def create_current_running_session(session_folder, one=None):
     one = one or ONE()
     settings = raw.load_settings(session_folder)
-    subject = one.alyx.rest(
-        "subjects?nickname=" + settings["PYBPOD_SUBJECTS"][0], "list"
-    )[0]
+    subject = one.alyx.rest("subjects?nickname=" + settings["PYBPOD_SUBJECTS"][0], "list")[0]
     ses_ = {
         "subject": subject["nickname"],
         "users": [settings["PYBPOD_CREATOR"][0]],

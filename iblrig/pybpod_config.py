@@ -271,11 +271,10 @@ def create_board_from_main_project_to(project_name, force=False):
         return
     project_path = IBLRIG_PARAMS_FOLDER / project_name
     iblproj = Project()
-    iblproj.load(IBLRIG_PARAMS_FOLDER / 'IBL')
+    iblproj.load(IBLRIG_PARAMS_FOLDER / "IBL")
     print("Looking for boards in default project")
     if not iblproj.boards or len(iblproj.boards) > 1:
-        print(
-            f"0 or 2+ boards found in main project: {[x.name for x in iblproj.boards]}")
+        print(f"0 or 2+ boards found in main project: {[x.name for x in iblproj.boards]}")
         return
 
     bname = iblproj.boards[0].name
@@ -297,9 +296,7 @@ def create_board_from_main_project_to(project_name, force=False):
         )
     elif len(p.boards) == 1:
         bname = p.boards[0].name
-        print(
-            f"  Skipping creation: Board [{bname}] already exists in project [{project_name}]"
-        )
+        print(f"  Skipping creation: Board [{bname}] already exists in project [{project_name}]")
 
     return
 

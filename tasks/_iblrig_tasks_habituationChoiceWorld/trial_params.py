@@ -64,7 +64,7 @@ class TrialParamHandler(object):
 
     def trial_completed(self, behavior_data):
         """Update outcome variables using bpod.session.current_trial
-        Check trial for state entries, first value of first tuple """
+        Check trial for state entries, first value of first tuple"""
         # Update elapsed_time
         self.elapsed_time = datetime.datetime.now() - self.init_datetime
         # SAVE TRIAL DATA
@@ -641,9 +641,7 @@ if __name__ == "__main__":
         print("next_trial took: ", next_trial_times[-1], "(s)")
         t = time.time()
         data = tph.trial_completed(
-            np.random.choice(
-                [correct_trial, error_trial, no_go_trial], p=[0.8, 0.15, 0.05]
-            )
+            np.random.choice([correct_trial, error_trial, no_go_trial], p=[0.8, 0.15, 0.05])
         )
         trial_completed_times.append(time.time() - t)
 
