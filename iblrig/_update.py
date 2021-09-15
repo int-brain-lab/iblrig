@@ -149,7 +149,7 @@ def main(args):
         update_to_latest()
 
     if args.update:
-        git.checkout_single_file(file='_update.py', branch='master')
+        git.checkout_single_file(file='iblrig/_update.py', branch='master')
 
     if args.update and args.b:
         if args.b not in ALL_BRANCHES:
