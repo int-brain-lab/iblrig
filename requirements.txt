@@ -9,4 +9,4 @@ pyOpenSSL==19.0.0
 PySocks==1.6.8
 python-osc==1.7.0
 sounddevice==0.3.13
-ibllib==2.0.6
+ibllib>=2.0.7
