@@ -31,6 +31,7 @@
 * Added create_custom_project CLI for syncing pybpod w/ Alyx project/users/subjects
 * move_passive will now try/catch to move all possible sessions
 * Migrated to ONE2
+* Bugfixed visual stim BpodEvents now not sampled on render frame
 
 ## **Release Notes 6.4.2**
 
