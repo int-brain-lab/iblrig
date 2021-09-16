@@ -5,12 +5,12 @@
 import os
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 from setup_default_config import main as setup_pybpod
 
 import iblrig.git as git
-
 
 IBLRIG_ROOT_PATH = Path.cwd()
 git.fetch()
@@ -53,6 +53,9 @@ def update_ibllib():
 
 
 def update_bonsai_config():
+    if sys.platform not in ["Windows", "windows", "win32"]:
+        print("Skipping Bonsai installation on non Windows platforms" )
+        return
     print("\nUpdating Bonsai")
     broot = IBLRIG_ROOT_PATH / "Bonsai"
     subprocess.call([str(broot / "Bonsai.exe"), "--no-editor"])
@@ -60,12 +63,18 @@ def update_bonsai_config():
 
 
 def remove_bonsai():
+    if sys.platform not in ["Windows", "windows", "win32"]:
+        print("Skipping Bonsai installation on non Windows platforms" )
+        return
     broot = IBLRIG_ROOT_PATH / "Bonsai"
     shutil.rmtree(broot)
 
 
 def upgrade_bonsai(version, branch):
     print("\nUpgrading Bonsai")
+    if sys.platform not in ["Windows", "windows", "win32"]:
+        print("Skipping Bonsai installation on non Windows platforms" )
+        return
     remove_bonsai()
     if not version:
         git.checkout_branch(branch)
