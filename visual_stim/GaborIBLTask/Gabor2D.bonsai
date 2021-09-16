@@ -3,8 +3,8 @@
                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                  xmlns:p1="clr-namespace:Bonsai.Bpod;assembly=Bonsai.Bpod"
                  xmlns:scr="clr-namespace:Bonsai.Scripting;assembly=Bonsai.Scripting"
-                 xmlns:gl="clr-namespace:Bonsai.Shaders;assembly=Bonsai.Shaders"
                  xmlns:dsp="clr-namespace:Bonsai.Dsp;assembly=Bonsai.Dsp"
+                 xmlns:gl="clr-namespace:Bonsai.Shaders;assembly=Bonsai.Shaders"
                  xmlns:osc="clr-namespace:Bonsai.Osc;assembly=Bonsai.Osc"
                  xmlns:num="clr-namespace:Bonsai.Numerics;assembly=Bonsai.Numerics"
                  xmlns:wie="clr-namespace:Bonsai.Windows.Input;assembly=Bonsai.Windows.Input"
@@ -50,9 +50,6 @@
                   <Expression xsi:type="scr:ExpressionTransform">
                     <scr:Expression>single(it)</scr:Expression>
                   </Expression>
-                  <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="gl:SampleOnRenderFrame" />
-                  </Expression>
                   <Expression xsi:type="BehaviorSubject">
                     <Name>BpodEvent</Name>
                   </Expression>
@@ -87,19 +84,18 @@
                 <Edges>
                   <Edge From="0" To="1" Label="Source1" />
                   <Edge From="1" To="2" Label="Source1" />
-                  <Edge From="1" To="9" Label="Source1" />
+                  <Edge From="1" To="8" Label="Source1" />
                   <Edge From="2" To="3" Label="Source1" />
                   <Edge From="3" To="4" Label="Source1" />
                   <Edge From="3" To="5" Label="Source1" />
                   <Edge From="5" To="6" Label="Source1" />
                   <Edge From="6" To="7" Label="Source1" />
-                  <Edge From="7" To="8" Label="Source1" />
+                  <Edge From="8" To="9" Label="Source1" />
                   <Edge From="9" To="10" Label="Source1" />
-                  <Edge From="10" To="11" Label="Source1" />
-                  <Edge From="10" To="12" Label="Source1" />
+                  <Edge From="9" To="11" Label="Source1" />
+                  <Edge From="11" To="12" Label="Source1" />
                   <Edge From="12" To="13" Label="Source1" />
                   <Edge From="13" To="14" Label="Source1" />
-                  <Edge From="14" To="15" Label="Source1" />
                 </Edges>
               </Workflow>
             </Expression>
@@ -164,7 +160,7 @@
                         </Expression>
                         <Expression xsi:type="Combinator">
                           <Combinator xsi:type="FloatProperty">
-                            <Value>-7</Value>
+                            <Value>-8</Value>
                           </Combinator>
                         </Expression>
                         <Expression xsi:type="BehaviorSubject">
@@ -207,7 +203,7 @@
                         </Expression>
                         <Expression xsi:type="Divide">
                           <Operand xsi:type="FloatProperty">
-                            <Value>7</Value>
+                            <Value>8</Value>
                           </Operand>
                         </Expression>
                         <Expression xsi:type="Combinator">
@@ -684,7 +680,7 @@
                     <Combinator xsi:type="cv:CreatePoint3d">
                       <cv:X>0</cv:X>
                       <cv:Y>0</cv:Y>
-                      <cv:Z>-7</cv:Z>
+                      <cv:Z>-8</cv:Z>
                     </Combinator>
                   </Expression>
                   <Expression xsi:type="PropertyMapping">
@@ -718,7 +714,7 @@
                     <Translation>
                       <X>0</X>
                       <Y>0</Y>
-                      <Z>-7</Z>
+                      <Z>-8</Z>
                     </Translation>
                   </Expression>
                   <Expression xsi:type="IncludeWorkflow" Path="BonVision:Environment.NormalizedView.bonsai" />
@@ -783,9 +779,9 @@
                     <LocationY>-1.03</LocationY>
                     <Layer>1</Layer>
                     <Angle>0</Angle>
-                    <ColorR>0</ColorR>
-                    <ColorG>0</ColorG>
-                    <ColorB>0</ColorB>
+                    <ColorR>1</ColorR>
+                    <ColorG>1</ColorG>
+                    <ColorB>1</ColorB>
                     <ColorA>1</ColorA>
                   </Expression>
                   <Expression xsi:type="SubscribeSubject">
@@ -805,7 +801,7 @@
                   <Expression xsi:type="Combinator">
                     <Combinator xsi:type="dsp:Rescale">
                       <dsp:Min>0</dsp:Min>
-                      <dsp:Max>110.01596088640814</dsp:Max>
+                      <dsp:Max>102.68038349181981</dsp:Max>
                       <dsp:RangeMin>0</dsp:RangeMin>
                       <dsp:RangeMax>1</dsp:RangeMax>
                       <dsp:RescaleType>Linear</dsp:RescaleType>
@@ -917,21 +913,21 @@
                     </PropertyMappings>
                   </Expression>
                   <Expression xsi:type="IncludeWorkflow" Path="BonVision:Primitives.DrawGratings.bonsai">
-                    <LocationX>0</LocationX>
+                    <LocationX>-35</LocationX>
                     <LocationY>0</LocationY>
                     <Layer>0</Layer>
                     <Angle>0</Angle>
                     <SpatialFrequency>0.1</SpatialFrequency>
                     <TemporalFrequency>0</TemporalFrequency>
-                    <Phase>0</Phase>
+                    <Phase>15637.7275</Phase>
                     <SquareWave>false</SquareWave>
-                    <Contrast>1</Contrast>
+                    <Contrast>0.125</Contrast>
                     <DutyCycle xsi:nil="true" />
-                    <Radius>0.445389926</Radius>
-                    <Aperture>0.445389926</Aperture>
+                    <Radius>0.477208972</Radius>
+                    <Aperture>0.477208972</Aperture>
                     <Opacity>1</Opacity>
-                    <ExtentX>110.015961</ExtentX>
-                    <ExtentY>110.015961</ExtentY>
+                    <ExtentX>102.680382</ExtentX>
+                    <ExtentY>102.680382</ExtentY>
                   </Expression>
                 </Nodes>
                 <Edges>
@@ -1903,6 +1899,12 @@ Value = whhel_radius for wheel_perim</Description>
                 </Edges>
               </Workflow>
             </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="rx:Merge" />
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="rx:Repeat" />
+            </Expression>
             <Expression xsi:type="ExternalizedMapping">
               <Property Name="FileNameTrialInfo" />
               <Property Name="FileNameSyncSquareUpdate" />
@@ -1968,7 +1970,7 @@ _iblrig_micData.raw.wav
                     <Property Name="FileName" DisplayName="FileNameTrialInfo" />
                   </Expression>
                   <Expression xsi:type="io:CsvWriter">
-                    <io:FileName>c:\iblrig_data\Subjects\_iblrig_test_mouse\2021-05-04\009\raw_behavior_data\_iblrig_encoderTrialInfo.raw.ssv</io:FileName>
+                    <io:FileName>c:\iblrig_data\Subjects\_iblrig_test_mouse\2021-09-16\007\raw_behavior_data\_iblrig_encoderTrialInfo.raw.ssv</io:FileName>
                     <io:Append>false</io:Append>
                     <io:Overwrite>true</io:Overwrite>
                     <io:Suffix>None</io:Suffix>
@@ -1982,7 +1984,7 @@ _iblrig_micData.raw.wav
                     <Property Name="FileName" DisplayName="FileNameEvents" />
                   </Expression>
                   <Expression xsi:type="io:CsvWriter">
-                    <io:FileName>c:\iblrig_data\Subjects\_iblrig_test_mouse\2021-05-04\009\raw_behavior_data\_iblrig_encoderEvents.raw.ssv</io:FileName>
+                    <io:FileName>c:\iblrig_data\Subjects\_iblrig_test_mouse\2021-09-16\007\raw_behavior_data\_iblrig_encoderEvents.raw.ssv</io:FileName>
                     <io:Append>false</io:Append>
                     <io:Overwrite>true</io:Overwrite>
                     <io:Suffix>None</io:Suffix>
@@ -1996,7 +1998,7 @@ _iblrig_micData.raw.wav
                     <Property Name="FileName" DisplayName="FileNamePositions" />
                   </Expression>
                   <Expression xsi:type="io:CsvWriter">
-                    <io:FileName>c:\iblrig_data\Subjects\_iblrig_test_mouse\2021-05-04\009\raw_behavior_data\_iblrig_encoderPositions.raw.ssv</io:FileName>
+                    <io:FileName>c:\iblrig_data\Subjects\_iblrig_test_mouse\2021-09-16\007\raw_behavior_data\_iblrig_encoderPositions.raw.ssv</io:FileName>
                     <io:Append>false</io:Append>
                     <io:Overwrite>true</io:Overwrite>
                     <io:Suffix>None</io:Suffix>
@@ -2019,7 +2021,7 @@ _iblrig_micData.raw.wav
                     <Combinator xsi:type="rx:Timestamp" />
                   </Expression>
                   <Expression xsi:type="io:CsvWriter">
-                    <io:FileName>c:\iblrig_data\Subjects\_iblrig_test_mouse\2021-05-04\009\raw_behavior_data\_iblrig_stimPositionScreen.raw.csv</io:FileName>
+                    <io:FileName>c:\iblrig_data\Subjects\_iblrig_test_mouse\2021-09-16\007\raw_behavior_data\_iblrig_stimPositionScreen.raw.csv</io:FileName>
                     <io:Append>false</io:Append>
                     <io:Overwrite>true</io:Overwrite>
                     <io:Suffix>None</io:Suffix>
@@ -2035,7 +2037,7 @@ _iblrig_micData.raw.wav
                     <Combinator xsi:type="rx:Timestamp" />
                   </Expression>
                   <Expression xsi:type="io:CsvWriter">
-                    <io:FileName>c:\iblrig_data\Subjects\_iblrig_test_mouse\2021-05-04\009\raw_behavior_data\_iblrig_syncSquareUpdate.raw.csv</io:FileName>
+                    <io:FileName>c:\iblrig_data\Subjects\_iblrig_test_mouse\2021-09-16\007\raw_behavior_data\_iblrig_syncSquareUpdate.raw.csv</io:FileName>
                     <io:Append>false</io:Append>
                     <io:Overwrite>true</io:Overwrite>
                     <io:Suffix>None</io:Suffix>
@@ -2095,20 +2097,25 @@ _iblrig_micData.raw.wav
             <Edge From="6" To="13" Label="Source1" />
             <Edge From="6" To="16" Label="Source1" />
             <Edge From="7" To="8" Label="Source1" />
+            <Edge From="8" To="18" Label="Source1" />
             <Edge From="9" To="10" Label="Source1" />
             <Edge From="10" To="11" Label="Source1" />
             <Edge From="11" To="12" Label="Source1" />
+            <Edge From="12" To="18" Label="Source2" />
             <Edge From="13" To="14" Label="Source1" />
             <Edge From="14" To="15" Label="Source1" />
+            <Edge From="15" To="18" Label="Source3" />
             <Edge From="16" To="17" Label="Source1" />
-            <Edge From="18" To="22" Label="Source1" />
-            <Edge From="19" To="22" Label="Source2" />
-            <Edge From="20" To="22" Label="Source3" />
-            <Edge From="21" To="22" Label="Source4" />
-            <Edge From="23" To="26" Label="Source1" />
-            <Edge From="24" To="25" Label="Source1" />
-            <Edge From="25" To="26" Label="Source2" />
+            <Edge From="17" To="18" Label="Source4" />
+            <Edge From="18" To="19" Label="Source1" />
+            <Edge From="20" To="24" Label="Source1" />
+            <Edge From="21" To="24" Label="Source2" />
+            <Edge From="22" To="24" Label="Source3" />
+            <Edge From="23" To="24" Label="Source4" />
+            <Edge From="25" To="28" Label="Source1" />
             <Edge From="26" To="27" Label="Source1" />
+            <Edge From="27" To="28" Label="Source2" />
+            <Edge From="28" To="29" Label="Source1" />
           </Edges>
         </Workflow>
       </Expression>
