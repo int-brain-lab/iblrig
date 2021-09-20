@@ -3,7 +3,7 @@ asn1crypto==0.24.0
 colorama==0.4.1
 Cython==0.29.6
 globus-sdk==1.7.1
-libusb1==1.7
+libusb1>=1.7
 packaging==20.8
 pyOpenSSL==19.0.0
 PySocks==1.6.8
