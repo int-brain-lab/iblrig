@@ -254,7 +254,7 @@ def config_task(iblproject_path, task_name: str):  # XXX: THIS!
     if task.name == "_iblrig_tasks_trainingChoiceWorld":
         task = create_task_create_command(task, poop=True)
     if task.name == "_iblrig_tasks_biasedChoiceWorld":
-        task = create_task_create_command(task, poop=False)
+        task = create_task_create_command(task, poop=True)
     if task.name == "_iblrig_tasks_ephysChoiceWorld":
         task = create_task_create_command(task, poop=False)
     if task.name == "_iblrig_tasks_ephys_certification":
