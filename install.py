@@ -111,7 +111,7 @@ def check_dependencies():
             elif sys.platform in ["linux", "unix"]:
                 print("Please update git using your package manager")
                 raise FileNotFoundError
-            os.system("conda -y install git")
+            os.system("conda install -y git")
             return check_dependencies()
         print("git... OK")
     except BaseException as e:
