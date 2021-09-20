@@ -248,13 +248,17 @@ def config_task(iblproject_path, task_name: str):  # XXX: THIS!
         task = create_task_bonsai_stop_command(task, port=7110)  # visual stimulus
         task = create_task_bonsai_stop_command(task, port=7111)  # camera recording
         task = create_task_cleanup_command(task)
+        task = create_task_bpod_lights_command(task, 0, when="PRE")
         task = create_task_bpod_lights_command(task, 1, when="POST")
     if task.name == "_iblrig_tasks_habituationChoiceWorld":
         task = create_task_create_command(task, poop=True)
+        task = create_task_bonsai_stop_command(task, port=7112)  # record_mic
     if task.name == "_iblrig_tasks_trainingChoiceWorld":
         task = create_task_create_command(task, poop=True)
+        task = create_task_bonsai_stop_command(task, port=7112)  # record_mic
     if task.name == "_iblrig_tasks_biasedChoiceWorld":
         task = create_task_create_command(task, poop=True)
+        task = create_task_bonsai_stop_command(task, port=7112)  # record_mic
     if task.name == "_iblrig_tasks_ephysChoiceWorld":
         task = create_task_create_command(task, poop=False)
     if task.name == "_iblrig_tasks_ephys_certification":
