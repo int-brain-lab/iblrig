@@ -6,6 +6,7 @@ import argparse
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -132,6 +133,7 @@ def create_environment(env_name="iblenv", use_conda_yaml=False, resp=False):
         print(user_input)
         if user_input == "y":
             os.system(remove_command)
+            shutil.rmtree(env, ignore_errors=True)
             return create_environment(env_name=env_name)
         elif user_input != "n" and user_input != "y":
             print("Please answer 'y' or 'n'")
