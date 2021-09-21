@@ -55,56 +55,57 @@ def check_dependencies():
     print("N" * 79)
 
     try:
-        print("Trying to clean up conda cache")
+        print("\n\n--->Cleaning up conda cache")
         os.system("conda clean -q -y --all")
-        print("\nconda and cache... OK")
+        print("\n--->conda and cache... OK")
     except BaseException as e:
         print(e)
         print("Could not clean conda cache, aborting install...")
         return 1
 
     try:
-        print("Trying to update base environment")
-        print("Trying to update base python")
+        print("\n\n--->Updating base environment python")
         os.system("conda update -q -y -n base -c defaults python")
-        print("\npython update... OK")
+        print("\n--->python update... OK")
     except BaseException as e:
         print(e)
         print("Could not update python, aborting install...")
         return 1
 
     try:
-        print("Trying to update base conda and conda-build")
+        print("\n\n--->Updating base conda and conda-build")
         os.system("conda update -q -y -n base -c defaults conda conda-build")
-        print("\nconda and conda-build update... OK")
+        print("\n   conda and conda-build update... OK")
     except BaseException as e:
         print(e)
         print("Could nor update conda and conda-build, aborting install...")
         raise FileNotFoundError
 
     try:
-        print("Trying to upgrade pip...")
+        print("\n\n--->Upgrading pip...")
         os.system("python -m pip install --upgrade pip")
-        print("pip upgrade... OK")
+        print("\n--->pip upgrade... OK")
     except BaseException as e:
         print(e)
         print("Could not upgrade pip, aborting install...")
         raise FileNotFoundError
 
     try:
-        os.system("git --version")
-        # Remove windows moniker from version number
-        # if sys.platform in ["Windows", "windows", "win32"]:
-        #     os.system("git update-git-for-windows -y")
-        # elif sys.platform in ["linux", "unix"]:
-        #     print("Please update git using your package manager")
-        #     raise FileNotFoundError
+        print("\n\n--->Installing git")
         os.system("conda install -q -y git")
-        print("git... OK")
+        print("\n\n--->git... OK")
     except BaseException as e:
         print(e)
         print("Not found: git, aborting install...")
         raise FileNotFoundError
+
+    try:
+        print("\n\n--->Updating remaning base packages...")
+        os.system("conda update -q -y -n base -c defaults --all")
+        print("\n--->Update of remaining packages... OK")
+    except BaseException as e:
+        print(e)
+        print("Could not Update remaining packages, trying to continue install...")
 
     print("N" * 79)
     print("All dependencies OK.")
