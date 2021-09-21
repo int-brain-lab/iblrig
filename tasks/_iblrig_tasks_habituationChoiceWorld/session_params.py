@@ -125,6 +125,8 @@ class SessionParamHandler(object):
 
     # Bonsai start camera called from main task file
     def start_camera_recording(self):
+        if "ephys" in self.PYBPOD_BOARD:  # If on ephys record only sound
+            return bonsai.start_mic_recording(self)
         return bonsai.start_camera_recording(self)
 
     def get_port_events(self, events, name=""):
