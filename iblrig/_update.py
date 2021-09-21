@@ -54,7 +54,7 @@ def update_ibllib():
 
 def update_bonsai_config():
     if sys.platform not in ["Windows", "windows", "win32"]:
-        print("Skipping Bonsai installation on non Windows platforms" )
+        print('Skipping Bonsai installation on non-Windows platforms')
         return
     print("\nUpdating Bonsai")
     broot = IBLRIG_ROOT_PATH / "Bonsai"
@@ -64,7 +64,7 @@ def update_bonsai_config():
 
 def remove_bonsai():
     if sys.platform not in ["Windows", "windows", "win32"]:
-        print("Skipping Bonsai installation on non Windows platforms" )
+        print('Skipping Bonsai installation on non-Windows platforms')
         return
     broot = IBLRIG_ROOT_PATH / "Bonsai"
     shutil.rmtree(broot)
@@ -73,7 +73,7 @@ def remove_bonsai():
 def upgrade_bonsai(version, branch):
     print("\nUpgrading Bonsai")
     if sys.platform not in ["Windows", "windows", "win32"]:
-        print("Skipping Bonsai installation on non Windows platforms" )
+        print('Skipping Bonsai installation on non-Windows platforms')
         return
     remove_bonsai()
     if not version:

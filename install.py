@@ -201,6 +201,9 @@ def install_bonsai(resp=False):
     user_input = input() if not resp else resp
     print(user_input)
     if user_input == "y":
+        if sys.platform not in ["Windows", "windows", "win32"]:
+            print('Skipping Bonsai installation on non-Windows platforms')
+            return
         here = os.getcwd()
         os.chdir(os.path.join(IBLRIG_ROOT_PATH, "Bonsai"))
         subprocess.call("setup.bat")
