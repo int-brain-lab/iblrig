@@ -50,69 +50,55 @@ def get_env_python(env_name: str = "iblenv", rpip=False):
 
 def check_dependencies():
     # Check if Git and conda are installed
-    print("\n\nINFO: Checking for OS dependencies:")
+    print("\n\nINFO: Checking for dependencies:")
     print("N" * 79)
+
     try:
-        os.system("conda -V")
-        # conda_version = str(subprocess.check_output(["conda", "-V"]))
-        # .split(" ")[1].split("\\n")[0]
-        # if version.parse(conda_version) < version.parse("4.9"):
-        #     print("Trying to update conda")
-        #     # os.system("conda update -y -n base -c defaults conda")
-        #     subprocess.check_output(
-        #         ["conda", "update", "-y", "-n", "base", "-c", "defaults", "conda"]
-        #     )
-        #     return check_dependencies()
-        print("conda... OK")
+        print("Trying to clean up conda cache")
+        os.system("conda clean -q -y --all")
+        print("\nconda and cache... OK")
     except BaseException as e:
         print(e)
-        print("Not found: conda, aborting install...")
+        print("Could not clean conda cache, aborting install...")
         return 1
 
     try:
-        python_version = (
-            str(subprocess.check_output(["python", "-V"])).split(" ")[1].split("\\n")[0]
-        ).strip("\\r")
-        print(f"python {python_version}")
-        if version.parse(python_version) < version.parse("3.7"):
-            print("Trying to update python base version...")
-            os.system("conda update -y -n base python")
-            return check_dependencies()
-        print("python... OK")
+        print("Trying to update base environment")
+        print("Trying to update base python")
+        os.system("conda update -q -y -n base -c defaults python")
+        print("\npython update... OK")
     except BaseException as e:
         print(e)
-        print("Not found: python, aborting install...")
+        print("Could not update python, aborting install...")
+        return 1
+
+    try:
+        print("Trying to update base conda and conda-build")
+        os.system("conda update -q -y -n base -c defaults conda conda-build")
+        print("\nconda and conda-build update... OK")
+    except BaseException as e:
+        print(e)
+        print("Could nor update conda and conda-build, aborting install...")
         raise FileNotFoundError
 
     try:
-        os.system("pip -V")
-        pip_version = str(subprocess.check_output(["pip", "-V"])).split(" ")[1]
-        if not version.parse(pip_version) >= version.parse("20.0.0"):
-            print("Trying to upgrade pip...")
-            os.system("python -m pip install --upgrade pip")
-            return check_dependencies()
-        print("pip... OK")
+        print("Trying to upgrade pip...")
+        os.system("python -m pip install --upgrade pip")
+        print("pip upgrade... OK")
     except BaseException as e:
         print(e)
-        print("Not found: pip, aborting install...")
+        print("Could not upgrade pip, aborting install...")
         raise FileNotFoundError
 
     try:
-        subprocess.check_output(["git", "--version"])
         os.system("git --version")
-        git_version = (
-            str(subprocess.check_output(["git", "--version"])).split(" ")[2].strip("\\n'")
-        )
         # Remove windows moniker from version number
-        git_version = ".".join(git_version.split(".")[0:3])
-        if version.parse(git_version) < version.parse("2.25.1"):
-            if sys.platform in ["Windows", "windows", "win32"]:
-                os.system("git update-git-for-windows -y")
-            elif sys.platform in ["linux", "unix"]:
-                print("Please update git using your package manager")
-                raise FileNotFoundError
-            os.system("conda install -y git")
-            return check_dependencies()
+        # if sys.platform in ["Windows", "windows", "win32"]:
+        #     os.system("git update-git-for-windows -y")
+        # elif sys.platform in ["linux", "unix"]:
+        #     print("Please update git using your package manager")
+        #     raise FileNotFoundError
+        os.system("conda install -q -y git")
         print("git... OK")
     except BaseException as e:
         print(e)
