@@ -19,9 +19,6 @@ log = logging.getLogger("iblrig")
 
 if platform == "linux":
 
-    def osc_client(*args, **kwargs):
-        return
-
     def send_current_trial_info(*args, **kwargs):
         return
 
@@ -271,16 +268,6 @@ else:
         osc_client.send_message("/s", sigma)
         osc_client.send_message("/r", reverse)
 
-    def osc_client(workflow):
-        ip = "127.0.0.1"
-        if "stim" in workflow:
-            port = 7110
-        elif "camera" in workflow:
-            port = 7111
-        elif "mic" in workflow:
-            port = 7112
-        return udp_client.SimpleUDPClient(ip, port)
-
     def start_frame2ttl_test(data_file, lengths_file, harp=False):
         here = os.getcwd()
         bns = ph.get_bonsai_path()
@@ -330,6 +317,36 @@ else:
         subprocess.Popen([bns, wrkfl, editor, noboot])
         time.sleep(3)
         os.chdir(here)
+
+
+def osc_client(workflow):
+    ip = "127.0.0.1"
+    if "stim" in workflow:
+        port = 7110
+    elif "camera" in workflow:
+        port = 7111
+    elif "mic" in workflow:
+        port = 7112
+    return udp_client.SimpleUDPClient(ip, port)
+
+
+def close_all_workflows()
+    """Close all possible bonsai workflows that have a /x switch
+    Closing a workflow that is not running returns no error"""
+    # Close stimulus, camera, and mic workflows
+    stim_client = bonsai.osc_client("stim")
+    camera_client = bonsai.osc_client("camera")
+    mic_client = bonsai.osc_client("mic")
+    if stim_client is not None:
+        stim_client.send_message("/x", 1)
+        print("Closed: stim workflow")
+    if camera_client is not None:
+        camera_client.send_message("/x", 1)
+        print("Closed: camera workflow")
+    if mic_client is not None:
+        mic_client.send_message("/x", 1)
+        print("Closed: mic workflow")
+    return
 
 
 def stop_wrkfl(name):
