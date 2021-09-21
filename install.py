@@ -55,17 +55,27 @@ def check_dependencies():
     print("N" * 79)
 
     try:
-        print("\n\n--->Cleaning up conda cache")
-        os.system("conda clean -q -y --all")
-        print("\n--->conda and cache... OK")
+        print("\n\n--->Installing mamba")
+        os.system("conda install mamba -y -n base -c conda-forge")
+        print("\n--->mamba installed... OK")
+        conda = 'mamba'
     except BaseException as e:
         print(e)
-        print("Could not clean conda cache, aborting install...")
+        print("Could not install mamba, using conda...")
+        conda = 'conda'
+
+    try:
+        print(f"\n\n--->Cleaning up {conda} cache")
+        os.system("mamba clean -q -y --all")
+        print(f"\n--->{conda} and cache... OK")
+    except BaseException as e:
+        print(e)
+        print(f"Could not clean {conda} cache, aborting install...")
         return 1
 
     try:
         print("\n\n--->Updating base environment python")
-        os.system("conda update -q -y -n base -c defaults python")
+        os.system(f"{conda} update -q -y -n base -c defaults python")
         print("\n--->python update... OK")
     except BaseException as e:
         print(e)
@@ -73,18 +83,17 @@ def check_dependencies():
         return 1
 
     try:
-        print("\n\n--->Updating base conda and conda-build")
-        os.system("conda update -q -y -n base -c defaults conda conda-build")
-        print("\n   conda and conda-build update... OK")
+        print(f"\n\n--->Updating base {conda}")
+        os.system(f"{conda} update -q -y -n base -c defaults conda")
+        print("\n   {conda} update... OK")
     except BaseException as e:
         print(e)
-        print("Could nor update conda and conda-build, aborting install...")
+        print("Could nor update conda, aborting install...")
         raise FileNotFoundError
 
     try:
         print("\n\n--->Upgrading pip...")
-        os.system("python -m pip install --upgrade pip")
-        os.system("conda install -q -y -n base -c defaults pip --force-reinstall")
+        os.system(f"{conda} install -q -y -n base -c defaults pip --force-reinstall")
         print("\n--->pip upgrade... OK")
     except BaseException as e:
         print(e)
@@ -93,7 +102,7 @@ def check_dependencies():
 
     try:
         print("\n\n--->Installing git")
-        os.system("conda install -q -y git")
+        os.system(f"{conda} install -q -y git")
         print("\n\n--->git... OK")
     except BaseException as e:
         print(e)
@@ -102,7 +111,7 @@ def check_dependencies():
 
     try:
         print("\n\n--->Updating remaning base packages...")
-        os.system("conda update -q -y -n base -c defaults --all")
+        os.system(f"{conda} update -q -y -n base -c defaults --all")
         print("\n--->Update of remaining packages... OK")
     except BaseException as e:
         print(e)
@@ -115,7 +124,7 @@ def check_dependencies():
 
 def create_environment(env_name="iblenv", use_conda_yaml=False, resp=False):
     if use_conda_yaml:
-        os.system("conda env create -f environment.yml")
+        os.system("mamba env create -f environment.yaml")
         return
     print(f"\n\nINFO: Installing {env_name}:")
     print("N" * 79)
@@ -123,8 +132,8 @@ def create_environment(env_name="iblenv", use_conda_yaml=False, resp=False):
     env = get_env_folder(env_name=env_name)
     print(env)
     # Creates commands
-    create_command = f"conda create -y -n {env_name} python=3.7"
-    remove_command = f"conda env remove -y -n {env_name}"
+    create_command = f"mamba create -y -n {env_name} python=3.7"
+    remove_command = f"mamba env remove -y -n {env_name}"
     # Installes the env
     if env:
         print(
