@@ -84,6 +84,7 @@ def check_dependencies():
     try:
         print("\n\n--->Upgrading pip...")
         os.system("python -m pip install --upgrade pip")
+        os.system("conda install -q -y -n base -c defaults pip --force-reinstall")
         print("\n--->pip upgrade... OK")
     except BaseException as e:
         print(e)
