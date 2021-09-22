@@ -143,13 +143,13 @@ def create_environment(env_name="iblenv", use_conda_yaml=False, resp=False):
     if use_conda_yaml:
         os.system(f"{MC} env create -f environment.yaml")
         return
-    print(f"\n\nINFO: Installing {env_name}:")
+    print(f"\n\nINFO: Creating {env_name}:")
     print("N" * 79)
     # Checks if env is already installed
     env = get_env_folder(env_name=env_name)
     print(env)
     # Creates commands
-    create_command = f"{MC} create -q -y -n {env_name} python=3.7.11"
+    create_command = f"{MC} create -q -y -n {env_name} python==3.7.11"
     remove_command = f"{MC} env remove -q -y -n {env_name}"
     # Installes the env
     if env:
@@ -170,6 +170,9 @@ def create_environment(env_name="iblenv", use_conda_yaml=False, resp=False):
             return
     else:
         os.system(create_command)
+        python = get_env_python(env_name=env_name)
+        update_pip_command = f"{python} -m pip install --upgrade pip setuptools wheel"
+        os.system(update_pip_command)
 
     print("N" * 79)
     print(f"{env_name} installed.")
