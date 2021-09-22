@@ -18,6 +18,31 @@ IBLRIG_ROOT_PATH = Path.cwd()
 
 if sys.platform not in ["Windows", "windows", "win32"]:
     print("\nWARNING: Unsupported OS\nInstallation might not work!")
+
+try:
+    print("\n\n--->Cleaning up conda cache")
+    os.system("conda clean -q -y --all")
+    print("\n--->conda cache... OK")
+except BaseException as e:
+    print(e)
+    raise BaseException("Could not clean conda cache, is conda installed? aborting...")
+
+try:
+    print("\n\n--->Installing mamba")
+    os.system("conda install mamba -q -y -n base -c conda-forge")
+    print("\n--->mamba installed... OK")
+    CM = "mamba"
+except BaseException as e:
+    print(e)
+    print("Could not install mamba, using conda...")
+    CM = "conda"
+
+try:
+    print("\n\n--->Installing packaging")  # In case of miniconda install packaging
+    os.system(f"{CM} install packaging -q -y -n base -c defaults")
+except BaseException as e:
+    print(e)
+    raise SystemError("Could not install packaging, aborting...")
 # END CONSTANT DEFINITION
 
 
@@ -29,7 +54,7 @@ def get_env_folder(env_name: str = "iblenv") -> str:
     :return: folder path of conda environment
     :rtype: str
     """
-    all_envs = subprocess.check_output(["conda", "env", "list", "--json"])
+    all_envs = subprocess.check_output([f"{CM}", "env", "list", "--json"])
     all_envs = json.loads(all_envs.decode("utf-8"))
     pat = re.compile(f"^.+{env_name}$")
     env = [x for x in all_envs["envs"] if pat.match(x)]
@@ -49,73 +74,59 @@ def get_env_python(env_name: str = "iblenv", rpip=False):
     return python if not rpip else pip
 
 
-def check_dependencies():
+def check_update_dependencies():
     # Check if Git and conda are installed
     print("\n\nINFO: Checking for dependencies:")
     print("N" * 79)
 
-    try:
-        print("\n\n--->Installing mamba")
-        os.system("conda install mamba -y -n base -c conda-forge")
-        print("\n--->mamba installed... OK")
-        conda = 'mamba'
-    except BaseException as e:
-        print(e)
-        print("Could not install mamba, using conda...")
-        conda = 'conda'
+    conda_version = str(subprocess.check_output(["conda", "-V"])).split(" ")[1].split("\\n")[0]
+    python_version = (
+        str(subprocess.check_output(["python", "-V"])).split(" ")[1].split("\\n")[0]
+    ).strip("\\r")
+    pip_version = str(subprocess.check_output(["pip", "-V"])).split(" ")[1]
 
-    try:
-        print(f"\n\n--->Cleaning up {conda} cache")
-        os.system("mamba clean -q -y --all")
-        print(f"\n--->{conda} cache... OK")
-    except BaseException as e:
-        print(e)
-        print(f"Could not clean {conda} cache, aborting install...")
-        return 1
+    if conda_version < "4.10.3":
+        try:
+            print(f"\n\n--->Updating base conda")
+            os.system(f"{CM} update -q -y -n base -c defaults conda")
+            print("\n--->{CM} update... OK")
+        except BaseException as e:
+            print(e)
+            raise SystemError("Could not update conda, aborting install...")
 
-    try:
-        print("\n\n--->Updating base environment python")
-        os.system(f"{conda} update -q -y -n base -c defaults python")
-        print("\n--->python update... OK")
-    except BaseException as e:
-        print(e)
-        print("Could not update python, aborting install...")
-        return 1
+    if python_version < "3.7.11":
+        try:
+            print("\n\n--->Updating base environment python")
+            os.system(f"{CM} update -q -y -n base -c defaults python>=3.8")
+            print("\n--->python update... OK")
+        except BaseException as e:
+            print(e)
+            raise SystemError("Could not update python, aborting install...")
 
-    try:
-        print(f"\n\n--->Updating base {conda}")
-        os.system(f"{conda} update -q -y -n base -c defaults conda")
-        print("\n--->{conda} update... OK")
-    except BaseException as e:
-        print(e)
-        print("Could not update conda, aborting install...")
-        raise FileNotFoundError
-
-    try:
-        print("\n\n--->Upgrading pip...")
-        os.system(f"{conda} install -q -y -n base -c defaults pip --force-reinstall")
-        print("\n--->pip upgrade... OK")
-    except BaseException as e:
-        print(e)
-        print("Could not upgrade pip, aborting install...")
-        raise FileNotFoundError
+    if pip_version < "20.2.4":
+        try:
+            print("\n\n--->Reinstalling pip...")
+            os.system(f"{CM} install -q -y -n base -c defaults pip>=20.2.4 --force-reinstall")
+            print("\n--->pip upgrade... OK")
+        except BaseException as e:
+            print(e)
+            raise SystemError("Could not reinstall pip, aborting install...")
 
     try:
         print("\n\n--->Installing git")
-        os.system(f"{conda} install -q -y git")
+        os.system(f"{CM} install -q -y git")
         print("\n\n--->git... OK")
     except BaseException as e:
         print(e)
-        print("Not found: git, aborting install...")
-        raise FileNotFoundError
+        raise SystemError("Could not install git, aborting install...")
 
-    try:
-        print("\n\n--->Updating remaning base packages...")
-        os.system(f"{conda} update -q -y -n base -c defaults --all")
-        print("\n--->Update of remaining packages... OK")
-    except BaseException as e:
-        print(e)
-        print("Could not update remaining packages, trying to continue install...")
+    # try:
+    #     print("\n\n--->Updating remaning base packages...")
+    #     os.system(f"{CM} update -q -y -n base -c defaults --all")
+    #     print("\n--->Update of remaining packages... OK")
+    # except BaseException as e:
+    #     print(e)
+    #     print("Could not update remaining packages, trying to continue install...")
 
     print("N" * 79)
     print("All dependencies OK.")
@@ -124,7 +135,7 @@ def check_dependencies():
 
 def create_environment(env_name="iblenv", use_conda_yaml=False, resp=False):
     if use_conda_yaml:
-        os.system("mamba env create -f environment.yaml")
+        os.system(f"{CM} env create -f environment.yaml")
         return
     print(f"\n\nINFO: Installing {env_name}:")
     print("N" * 79)
@@ -132,8 +143,8 @@ def create_environment(env_name="iblenv", use_conda_yaml=False, resp=False):
     env = get_env_folder(env_name=env_name)
     print(env)
     # Creates commands
-    create_command = f"mamba create -y -n {env_name} python=3.7.11"
-    remove_command = f"mamba env remove -y -n {env_name}"
+    create_command = f"{CM} create -y -n {env_name} python=3.7.11"
+    remove_command = f"{CM} env remove -y -n {env_name}"
     # Installes the env
     if env:
         print(
@@ -201,7 +212,7 @@ def install_bonsai(resp=False):
     print(user_input)
     if user_input == "y":
         if sys.platform not in ["Windows", "windows", "win32"]:
-            print('Skipping Bonsai installation on non-Windows platforms')
+            print("Skipping Bonsai installation on non-Windows platforms")
             return
         here = os.getcwd()
         os.chdir(os.path.join(IBLRIG_ROOT_PATH, "Bonsai"))
@@ -216,11 +227,9 @@ def install_bonsai(resp=False):
 
 def main(args):
     try:
-        check_dependencies()
+        check_update_dependencies()
         create_environment(
-            env_name=args.env_name,
-            use_conda_yaml=args.use_conda,
-            resp=args.reinstall_response,
+            env_name=args.env_name, use_conda_yaml=args.use_conda, resp=args.reinstall_response,
         )
         install_iblrig(env_name=args.env_name)
         configure_iblrig_params(env_name=args.env_name, resp=args.config_response)
