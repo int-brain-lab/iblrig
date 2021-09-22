@@ -148,7 +148,7 @@ def _update(branch=None, version=None):
             git.checkout_version(version)
         elif branch is None and version is None:
             git.checkout_version(sorted(ALL_VERSIONS)[-1])
-        REINSTALL = True if list(Path().glob("reinstall")) else False
+        REINSTALL = True if list(Path(IBLRIG_ROOT_PATH).glob("reinstall")) else False
         if REINSTALL:
             os.system("conda deactivate && python install.py")
             return
