@@ -31,15 +31,15 @@ try:
     print("\n\n--->Installing mamba")
     os.system("conda install mamba -q -y -n base -c conda-forge")
     print("\n--->mamba installed... OK")
-    CM = "mamba"
+    MC = "mamba"
 except BaseException as e:
     print(e)
     print("Could not install mamba, using conda...")
-    CM = "conda"
+    MC = "conda"
 
 try:
     print("\n\n--->Installing packaging")  # In case of miniconda install packaging
-    os.system(f"{CM} install packaging -q -y -n base -c defaults")
+    os.system(f"{MC} install packaging -q -y -n base -c defaults")
 except BaseException as e:
     print(e)
     raise SystemError("Could not install packaging, aborting...")
@@ -54,7 +54,7 @@ def get_env_folder(env_name: str = "iblenv") -> str:
     :return: folder path of conda environment
     :rtype: str
     """
-    all_envs = subprocess.check_output([f"{CM}", "env", "list", "--json"])
+    all_envs = subprocess.check_output([f"{MC}", "env", "list", "--json"])
     all_envs = json.loads(all_envs.decode("utf-8"))
     pat = re.compile(f"^.+{env_name}$")
     env = [x for x in all_envs["envs"] if pat.match(x)]
@@ -79,7 +79,7 @@ def check_update_dependencies():
     print("\n\nINFO: Checking for dependencies:")
     print("N" * 79)
 
-    conda_version = str(subprocess.check_output(["conda", "-V"])).split(" ")[1].split("\\n")[0]
+    conda_version = str(subprocess.check_output([f"{MC}", "-V"])).split(" ")[1].split("\\n")[0]
     python_version = (
         str(subprocess.check_output(["python", "-V"])).split(" ")[1].split("\\n")[0]
     ).strip("\\r")
@@ -88,8 +88,8 @@ def check_update_dependencies():
     if conda_version < "4.10.3":
         try:
             print(f"\n\n--->Updating base conda")
-            os.system(f"{CM} update -q -y -n base -c defaults conda")
-            print("\n--->{CM} update... OK")
+            os.system(f"{MC} update -q -y -n base -c defaults conda")
+            print("\n--->{MC} update... OK")
         except BaseException as e:
             print(e)
             raise SystemError("Could not update conda, aborting install...")
@@ -97,7 +97,7 @@ def check_update_dependencies():
     if python_version < "3.7.11":
         try:
             print("\n\n--->Updating base environment python")
-            os.system(f"{CM} update -q -y -n base -c defaults python>=3.8")
+            os.system(f"{MC} update -q -y -n base -c defaults python>=3.8")
             print("\n--->python update... OK")
         except BaseException as e:
             print(e)
@@ -106,7 +106,7 @@ def check_update_dependencies():
     if pip_version < "20.2.4":
         try:
             print("\n\n--->Reinstalling pip...")
-            os.system(f"{CM} install -q -y -n base -c defaults pip>=20.2.4 --force-reinstall")
+            os.system(f"{MC} install -q -y -n base -c defaults pip>=20.2.4 --force-reinstall")
             print("\n--->pip upgrade... OK")
         except BaseException as e:
             print(e)
@@ -114,7 +114,7 @@ def check_update_dependencies():
 
     try:
         print("\n\n--->Installing git")
-        os.system(f"{CM} install -q -y git")
+        os.system(f"{MC} install -q -y git")
         print("\n\n--->git... OK")
     except BaseException as e:
         print(e)
@@ -122,7 +122,7 @@ def check_update_dependencies():
 
     # try:
     #     print("\n\n--->Updating remaning base packages...")
-    #     os.system(f"{CM} update -q -y -n base -c defaults --all")
+    #     os.system(f"{MC} update -q -y -n base -c defaults --all")
     #     print("\n--->Update of remaining packages... OK")
     # except BaseException as e:
     #     print(e)
@@ -135,7 +135,7 @@ def check_update_dependencies():
 
 def create_environment(env_name="iblenv", use_conda_yaml=False, resp=False):
     if use_conda_yaml:
-        os.system(f"{CM} env create -f environment.yaml")
+        os.system(f"{MC} env create -f environment.yaml")
         return
     print(f"\n\nINFO: Installing {env_name}:")
     print("N" * 79)
@@ -143,8 +143,8 @@ def create_environment(env_name="iblenv", use_conda_yaml=False, resp=False):
     env = get_env_folder(env_name=env_name)
     print(env)
     # Creates commands
-    create_command = f"{CM} create -y -n {env_name} python=3.7.11"
-    remove_command = f"{CM} env remove -y -n {env_name}"
+    create_command = f"{MC} create -q -y -n {env_name} python=3.7.11"
+    remove_command = f"{MC} env remove -q -y -n {env_name}"
     # Installes the env
     if env:
         print(
