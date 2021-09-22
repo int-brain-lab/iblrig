@@ -27,6 +27,7 @@ except BaseException as e:
     print(e)
     raise BaseException("Could not clean conda cache, is conda installed? aborting...")
 
+MC = "mamba"
 if 'mamba' not in str(subprocess.check_output(["conda", "list", "--json"])):
     print("\n\n--->mamba not found")
     try:
