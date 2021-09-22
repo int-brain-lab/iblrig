@@ -36,13 +36,6 @@ except BaseException as e:
     print(e)
     print("Could not install mamba, using conda...")
     MC = "conda"
-
-try:
-    print("\n\n--->Installing packaging")  # In case of miniconda install packaging
-    os.system(f"{MC} install packaging -q -y -n base -c defaults")
-except BaseException as e:
-    print(e)
-    raise SystemError("Could not install packaging, aborting...")
 # END CONSTANT DEFINITION
 
 
@@ -78,6 +71,13 @@ def check_update_dependencies():
     # Check if Git and conda are installed
     print("\n\nINFO: Checking for dependencies:")
     print("N" * 79)
+    if not 'packaging' in str(subprocess.check_output([f"{MC}", "list", "--json"])):
+        try:
+            print("\n\n--->Installing packaging")  # In case of miniconda install packaging
+            os.system(f"{MC} install packaging -q -y -n base -c defaults")
+        except BaseException as e:
+            print(e)
+            raise SystemError("Could not install packaging, aborting...")
 
     conda_version = str(subprocess.check_output([f"{MC}", "-V"])).split(" ")[1].split("\\n")[0]
     python_version = (
@@ -85,7 +85,7 @@ def check_update_dependencies():
     ).strip("\\r")
     pip_version = str(subprocess.check_output(["pip", "-V"])).split(" ")[1]
 
-    if conda_version < "4.10.3":
+    if version(conda_version) < version("4.10.3"):
         try:
             print(f"\n\n--->Updating base conda")
             os.system(f"{MC} update -q -y -n base -c defaults conda")
@@ -94,7 +94,7 @@ def check_update_dependencies():
             print(e)
             raise SystemError("Could not update conda, aborting install...")
 
-    if python_version < "3.7.11":
+    if version(python_version) < version("3.7.11"):
         try:
             print("\n\n--->Updating base environment python")
             os.system(f"{MC} update -q -y -n base -c defaults python>=3.8")
@@ -103,7 +103,7 @@ def check_update_dependencies():
             print(e)
             raise SystemError("Could not update python, aborting install...")
 
-    if pip_version < "20.2.4":
+    if version(pip_version) < version("20.2.4"):
         try:
             print("\n\n--->Reinstalling pip...")
             os.system(f"{MC} install -q -y -n base -c defaults pip>=20.2.4 --force-reinstall")
@@ -113,12 +113,15 @@ def check_update_dependencies():
             raise SystemError("Could not reinstall pip, aborting install...")
 
     try:
-        print("\n\n--->Installing git")
-        os.system(f"{MC} install -q -y git")
-        print("\n\n--->git... OK")
-    except BaseException as e:
-        print(e)
-        raise SystemError("Could not install git, aborting install...")
+        subprocess.check_output(["git", "--version"])
+    except:
+        try:
+            print("\n\n--->Installing git")
+            os.system(f"{MC} install -q -y git")
+            print("\n\n--->git... OK")
+        except BaseException as e:
+            print(e)
+            raise SystemError("Could not install git, aborting install...")
 
     # try:
     #     print("\n\n--->Updating remaning base packages...")
