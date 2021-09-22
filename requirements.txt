@@ -11,4 +11,4 @@ sounddevice==0.3.13
 ibllib>=2.0.7
 opencv-python==3.4.5.20
 numpy<1.21,>=1.17
-pandas>=1.2.4
+pandas==0.25.3
