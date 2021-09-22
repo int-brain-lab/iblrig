@@ -27,15 +27,17 @@ except BaseException as e:
     print(e)
     raise BaseException("Could not clean conda cache, is conda installed? aborting...")
 
-try:
-    print("\n\n--->Installing mamba")
-    os.system("conda install mamba -q -y -n base -c conda-forge")
-    print("\n--->mamba installed... OK")
-    MC = "mamba"
-except BaseException as e:
-    print(e)
-    print("Could not install mamba, using conda...")
-    MC = "conda"
+if 'mamba' not in str(subprocess.check_output(["conda", "list", "--json"])):
+    print("\n\n--->mamba not found")
+    try:
+        print("\n\n--->Installing mamba")
+        os.system("conda install mamba -q -y -n base -c conda-forge")
+        print("\n--->mamba installed... OK")
+        MC = "mamba"
+    except BaseException as e:
+        print(e)
+        print("Could not install mamba, using conda...")
+        MC = "conda"
 # END CONSTANT DEFINITION
 
 
@@ -279,9 +281,8 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-    print(type(args.use_conda))
     RUN = 1
-    if args.use_conda:
+    if args.use_conda:  # bool
         args.env_name = "iblenv"
     if args.bonsai_response not in RESPONSES:
         print(
