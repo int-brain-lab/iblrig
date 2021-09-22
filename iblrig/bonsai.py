@@ -330,13 +330,13 @@ def osc_client(workflow):
     return udp_client.SimpleUDPClient(ip, port)
 
 
-def close_all_workflows()
+def close_all_workflows():
     """Close all possible bonsai workflows that have a /x switch
     Closing a workflow that is not running returns no error"""
     # Close stimulus, camera, and mic workflows
-    stim_client = bonsai.osc_client("stim")
-    camera_client = bonsai.osc_client("camera")
-    mic_client = bonsai.osc_client("mic")
+    stim_client = osc_client("stim")
+    camera_client = osc_client("camera")
+    mic_client = osc_client("mic")
     if stim_client is not None:
         stim_client.send_message("/x", 1)
         print("Closed: stim workflow")
