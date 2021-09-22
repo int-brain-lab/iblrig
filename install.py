@@ -159,12 +159,12 @@ def create_environment(env_name="iblenv", use_conda_yaml=False, resp=False):
 
 
 def install_iblrig(env_name: str = "iblenv") -> None:
-    print(f"\n\nINFO: Checking iblrig dependencies in {env_name}:")
+    print(f"\n\nINFO: Installing iblrig in {env_name}:")
     print("N" * 79)
     pip = get_env_python(env_name=env_name, rpip=True)
     os.system(f"{pip} install --no-warn-script-location -e .")
     print("N" * 79)
-    print(f"iblrig dependencies installed in {env_name}.")
+    print(f"iblrig installed in {env_name}.")
 
 
 def configure_iblrig_params(env_name: str = "iblenv", resp=False):
