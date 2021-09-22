@@ -67,7 +67,7 @@ def check_dependencies():
     try:
         print(f"\n\n--->Cleaning up {conda} cache")
         os.system("mamba clean -q -y --all")
-        print(f"\n--->{conda} and cache... OK")
+        print(f"\n--->{conda} cache... OK")
     except BaseException as e:
         print(e)
         print(f"Could not clean {conda} cache, aborting install...")
@@ -85,10 +85,10 @@ def check_dependencies():
     try:
         print(f"\n\n--->Updating base {conda}")
         os.system(f"{conda} update -q -y -n base -c defaults conda")
-        print("\n   {conda} update... OK")
+        print("\n--->{conda} update... OK")
     except BaseException as e:
         print(e)
-        print("Could nor update conda, aborting install...")
+        print("Could not update conda, aborting install...")
         raise FileNotFoundError
 
     try:
@@ -115,7 +115,7 @@ def check_dependencies():
         print("\n--->Update of remaining packages... OK")
     except BaseException as e:
         print(e)
-        print("Could not Update remaining packages, trying to continue install...")
+        print("Could not update remaining packages, trying to continue install...")
 
     print("N" * 79)
     print("All dependencies OK.")
@@ -132,7 +132,7 @@ def create_environment(env_name="iblenv", use_conda_yaml=False, resp=False):
     env = get_env_folder(env_name=env_name)
     print(env)
     # Creates commands
-    create_command = f"mamba create -y -n {env_name} python=3.7"
+    create_command = f"mamba create -y -n {env_name} python=3.7.11"
     remove_command = f"mamba env remove -y -n {env_name}"
     # Installes the env
     if env:
