@@ -11,7 +11,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from packaging import version
+from packaging.version import parse as version
 
 # BEGIN CONSTANT DEFINITION
 IBLRIG_ROOT_PATH = Path.cwd()
