@@ -148,11 +148,16 @@ def _update(branch=None, version=None):
             git.checkout_version(version)
         elif branch is None and version is None:
             git.checkout_version(sorted(ALL_VERSIONS)[-1])
-        update_pip()
-        update_env()
-        import_tasks()
-        upgrade_bonsai(version, branch)
-        update_bonsai_config()
+        REINSTALL = True if list(Path().glob("reinstall")) else False
+        if REINSTALL:
+            os.system("conda deactivate && python install.py")
+            return
+        else:
+            update_pip()
+            update_env()
+            import_tasks()
+            upgrade_bonsai(version, branch)
+            update_bonsai_config()
     else:
         return
 
