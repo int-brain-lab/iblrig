@@ -18,7 +18,6 @@ ALL_BRANCHES = git.get_branches()
 ALL_VERSIONS = git.get_versions()
 BRANCH = git.get_current_branch()
 VERSION = git.get_current_version()
-UPGRADE_BONSAI = True if list(Path().glob("upgrade_bonsai")) else False
 
 
 def iblrig_params_path():
@@ -152,8 +151,7 @@ def _update(branch=None, version=None):
         update_pip()
         update_env()
         import_tasks()
-        if UPGRADE_BONSAI:
-            upgrade_bonsai(version, branch)
+        upgrade_bonsai(version, branch)
         update_bonsai_config()
     else:
         return
