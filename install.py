@@ -92,7 +92,7 @@ def check_update_dependencies():
         try:
             print(f"\n\n--->Updating base conda")
             os.system(f"{MC} update -q -y -n base -c defaults conda")
-            print("\n--->{MC} update... OK")
+            print("\n--->conda update... OK")
         except BaseException as e:
             print(e)
             raise SystemError("Could not update conda, aborting install...")
@@ -108,16 +108,17 @@ def check_update_dependencies():
 
     if version(pip_version) < version("20.2.4"):
         try:
-            print("\n\n--->Reinstalling pip...")
+            print("\n\n--->Reinstalling pip, setuptools, wheel...")
             os.system(f"{MC} install -q -y -n base -c defaults pip>=20.2.4 --force-reinstall")
-            print("\n--->pip upgrade... OK")
+            os.system(f"{MC} update -q -y -n base -c defaults setuptools wheel")
+            print("\n--->pip, setuptools, wheel upgrade... OK")
         except BaseException as e:
             print(e)
             raise SystemError("Could not reinstall pip, aborting install...")
 
     try:
         subprocess.check_output(["git", "--version"])
-    except:
+    except BaseException as e:
         try:
             print("\n\n--->Installing git")
             os.system(f"{MC} install -q -y git")
@@ -173,6 +174,7 @@ def create_environment(env_name="iblenv", use_conda_yaml=False, resp=False):
         python = get_env_python(env_name=env_name)
         update_pip_command = f"{python} -m pip install --upgrade pip setuptools wheel"
         os.system(update_pip_command)
+        os.system(f"{MC} install -n {env_name} git")
 
     print("N" * 79)
     print(f"{env_name} installed.")
@@ -223,8 +225,15 @@ def install_bonsai(resp=False):
         if sys.platform not in ["Windows", "windows", "win32"]:
             print("Skipping Bonsai installation on non-Windows platforms")
             return
+        # Remove Bonsai folder, git pull, and setup Bonsai
+        bonsai_folder = os.path.join(IBLRIG_ROOT_PATH, "Bonsai")
+        shutil.rmtree(bonsai_folder, ignore_errors=True)
+        subprocess.call(["git", "fetch", "--all", "-q"])
+        subprocess.call(["git", "reset", "--hard", "-q"])
+        subprocess.call(["git", "pull", "-q"])
+        # Setup Bonsai
         here = os.getcwd()
-        os.chdir(os.path.join(IBLRIG_ROOT_PATH, "Bonsai"))
+        os.chdir(bonsai_folder)
         subprocess.call("setup.bat")
         os.chdir(here)
     elif user_input != "n" and user_input != "y":
