@@ -28,7 +28,7 @@ except BaseException as e:
     raise BaseException("Could not clean conda cache, is conda installed? aborting...")
 
 MC = "mamba"
-if 'mamba' not in str(subprocess.check_output(["conda", "list", "--json"])):
+if "mamba" not in str(subprocess.check_output(["conda", "list", "--json"])):
     print("\n\n--->mamba not found")
     try:
         print("\n\n--->Installing mamba")
@@ -74,7 +74,7 @@ def check_update_dependencies():
     # Check if Git and conda are installed
     print("\n\nINFO: Checking for dependencies:")
     print("N" * 79)
-    if 'packaging' not in str(subprocess.check_output([f"{MC}", "list", "--json"])):
+    if "packaging" not in str(subprocess.check_output([f"{MC}", "list", "--json"])):
         try:
             print("\n\n--->Installing packaging")  # In case of miniconda install packaging
             os.system(f"{MC} install packaging -q -y -n base -c defaults")
@@ -90,7 +90,7 @@ def check_update_dependencies():
 
     if version(conda_version) < version("4.10.3"):
         try:
-            print(f"\n\n--->Updating base conda")
+            print("\n\n--->Updating base conda")
             os.system(f"{MC} update -q -y -n base -c defaults conda")
             print("\n--->conda update... OK")
         except BaseException as e:
@@ -119,6 +119,7 @@ def check_update_dependencies():
     try:
         subprocess.check_output(["git", "--version"])
     except BaseException as e:
+        print(e, "\ngit not found trying to install...")
         try:
             print("\n\n--->Installing git")
             os.system(f"{MC} install -q -y git")
@@ -155,6 +156,7 @@ def create_ibllib_env(env_name: str = "ibllib"):
         try:
             print("\n\n--->Creating environment")
             os.system(f"{MC} create -q -y -n {env_name} -c defaults python=3.8")
+            os.system(f"conda activate {env_name} && pip install ibllib")
             print("\n--->Environment created... OK")
         except BaseException as e:
             print(e)
