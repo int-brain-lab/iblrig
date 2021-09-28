@@ -10,7 +10,12 @@ import subprocess
 import sys
 from pathlib import Path
 
-MC = 'conda' if "mamba" not in str(subprocess.check_output(["conda", "list", "--json"])) else 'mamba'
+MC = (
+    "conda"
+    if "mamba" not in str(subprocess.check_output(["conda", "list", "--json"]))
+    else "mamba"
+)
+
 
 def get_env_folder(env_name: str = "iblenv") -> str:
     """get_env_folder Return conda folder of [env_name] environment
@@ -49,13 +54,13 @@ def get_env_pip(env_name: str = "iblenv"):
 
 
 def get_base_python():
-    return os.environ['CONDA_PYTHON_EXE']
+    return os.environ["CONDA_PYTHON_EXE"]
 
 
 def get_base_pip():
     if sys.platform in ["Windows", "windows", "win32"]:
-        return Path(os.environ['CONDA_PYTHON_EXE']).parent.joinpath('Scripts', 'pip.exe')
+        return Path(os.environ["CONDA_PYTHON_EXE"]).parent.joinpath("Scripts", "pip.exe")
     elif sys.platform in ["Linux", "linux"]:
-        return Path(os.environ['CONDA_PYTHON_EXE']).parent.joinpath('pip')
+        return Path(os.environ["CONDA_PYTHON_EXE"]).parent.joinpath("pip")
     else:
         raise ValueError("Unsupported platform")
