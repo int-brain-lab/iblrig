@@ -140,6 +140,35 @@ def check_update_dependencies():
     return 0
 
 
+def create_ibllib_env(env_name: str = "ibllib"):
+    """create_ibllib_env Create conda environment named [env_name]
+
+    :param env_name: name of conda environment to be created, defaults to 'ibllib'
+    :type env_name: str, optional
+    :return: 0 if success, 1 otherwise
+    :rtype: int
+    """
+    print(f"\n\nINFO: Creating environment {env_name}...")
+    print("N" * 79)
+    env = get_env_folder(env_name=env_name)
+    if not env:
+        try:
+            print("\n\n--->Creating environment")
+            os.system(f"{MC} create -q -y -n {env_name} -c defaults python=3.8")
+            print("\n--->Environment created... OK")
+        except BaseException as e:
+            print(e)
+            raise SystemError(f"Could not create {env_name} environment, aborting...")
+    else:
+        print(f"\n\nINFO: Environment {env_name} already exists, reinstalling.")
+        remove_command = f"{MC} env remove -q -y -n {env_name}"
+        os.system(remove_command)
+        shutil.rmtree(env, ignore_errors=True)
+        return create_ibllib_env(env_name=env_name)
+    print("N" * 79)
+    return 0
+
+
 def create_environment(env_name="iblenv", use_conda_yaml=False, resp=False):
     if use_conda_yaml:
         os.system(f"{MC} env create -f environment.yaml")
@@ -249,6 +278,7 @@ def main(args):
         create_environment(
             env_name=args.env_name, use_conda_yaml=args.use_conda, resp=args.reinstall_response,
         )
+        create_ibllib_env()
         install_iblrig(env_name=args.env_name)
         configure_iblrig_params(env_name=args.env_name, resp=args.config_response)
         install_bonsai(resp=args.bonsai_response)
