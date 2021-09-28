@@ -4,12 +4,12 @@
 # @Date: Thursday, January 31st 2019, 1:15:46 pm
 import argparse
 from pathlib import Path
+import os
 
-import iblutil.io.params as params
-import one.params
 from ibllib.oneibl.registration import RegistrationClient
 
 from iblrig.poop_count import poop
+from iblrig import envs
 
 IBLRIG_FOLDER = Path(__file__).absolute().parent.parent
 IBLRIG_DATA = IBLRIG_FOLDER.parent / "iblrig_data" / "Subjects"  # noqa
@@ -17,12 +17,7 @@ IBLRIG_PARAMS_FOLDER = IBLRIG_FOLDER.parent / "iblrig_params"
 
 
 def main():
-    pfile = Path(params.getfile("one_params"))
-    if not pfile.exists():
-        one.params.setup()
-
     RegistrationClient(one=None).create_sessions(IBLRIG_DATA, dry=False)
-    # create(IBLRIG_DATA, dry=False)
 
 
 if __name__ == "__main__":
@@ -39,7 +34,12 @@ if __name__ == "__main__":
     if args.poop:
         poop()
     try:
-        main()
+        python = envs.get_env_python(env_name='ibllib')
+        here = os.getcwd()
+        os.chdir(os.path.join(IBLRIG_FOLDER, 'scripts'))
+        os.system(f'{python} register_session.py {IBLRIG_DATA}')
+        os.chdir(here)
+
     except BaseException as e:
         print(
             e,
