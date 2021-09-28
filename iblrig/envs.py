@@ -8,7 +8,7 @@ import os
 import re
 import subprocess
 import sys
-
+from pathlib import Path
 
 MC = 'conda' if "mamba" not in str(subprocess.check_output(["conda", "list", "--json"])) else 'mamba'
 
@@ -46,3 +46,16 @@ def get_env_python(env_name: str = "iblenv"):
 
 def get_env_pip(env_name: str = "iblenv"):
     return _get_env_python_ou_pip(env_name=env_name, rpip=True)
+
+
+def get_base_python():
+    return os.environ['CONDA_PYTHON_EXE']
+
+
+def get_base_pip():
+    if sys.platform in ["Windows", "windows", "win32"]:
+        return Path(os.environ['CONDA_PYTHON_EXE']).parent.joinpath('Scripts', 'pip.exe')
+    elif sys.platform in ["Linux", "linux"]:
+        return Path(os.environ['CONDA_PYTHON_EXE']).parent.joinpath('pip')
+    else:
+        raise ValueError("Unsupported platform")

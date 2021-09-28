@@ -149,7 +149,8 @@ def _update(branch=None, version=None):
             git.checkout_version(sorted(ALL_VERSIONS)[-1])
         REINSTALL = True if list(Path(IBLRIG_ROOT_PATH).glob("reinstall")) else False
         if REINSTALL:
-            os.system("conda deactivate && python install.py")
+            python = envs.get_base_python()
+            os.system(f"{python} install.py")
             return
         else:
             update_pip()
@@ -185,7 +186,8 @@ def main(args):
         print("Version", args.v, "not found")
 
     if args.reinstall:
-        os.system("conda deactivate && python install.py")
+        python = envs.get_base_python()
+        os.system(f"{python} install.py")
 
     if args.ibllib:
         update_ibllib()
