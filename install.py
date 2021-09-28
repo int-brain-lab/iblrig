@@ -130,7 +130,7 @@ def create_ibllib_env(env_name: str = "ibllib"):
             print("\n\n--->Creating environment")
             os.system(f"{MC} create -q -y -n {env_name} -c defaults python=3.8")
             pip = envs.get_env_pip(env_name)
-            os.system(f"{pip} install ibllib")
+            os.system(f"{pip} install --no-warn-script-location ibllib")
             print("\n--->Environment created... OK")
         except BaseException as e:
             print(e)
