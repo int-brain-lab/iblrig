@@ -12,7 +12,7 @@ from pathlib import Path
 
 MC = (
     "conda"
-    if "mamba" not in str(subprocess.check_output(["conda", "list", "-n", "base", "--json"]))
+    if "mamba" not in str(subprocess.check_output([os.environ["CONDA_EXE"], "list", "-n", "base", "--json"]))
     else "mamba"
 )
 
