@@ -74,7 +74,7 @@ def check_update_dependencies():
     # Check if Git and conda are installed
     print("\n\nINFO: Checking for dependencies:")
     print("N" * 79)
-    if not 'packaging' in str(subprocess.check_output([f"{MC}", "list", "--json"])):
+    if 'packaging' not in str(subprocess.check_output([f"{MC}", "list", "--json"])):
         try:
             print("\n\n--->Installing packaging")  # In case of miniconda install packaging
             os.system(f"{MC} install packaging -q -y -n base -c defaults")
@@ -114,7 +114,7 @@ def check_update_dependencies():
             print("\n--->pip, setuptools, wheel upgrade... OK")
         except BaseException as e:
             print(e)
-            raise SystemError("Could not reinstall pip, aborting install...")
+            raise SystemError("Could not reinstall pip, setuptools, wheel aborting install...")
 
     try:
         subprocess.check_output(["git", "--version"])
@@ -174,7 +174,7 @@ def create_environment(env_name="iblenv", use_conda_yaml=False, resp=False):
         python = get_env_python(env_name=env_name)
         update_pip_command = f"{python} -m pip install --upgrade pip setuptools wheel"
         os.system(update_pip_command)
-        os.system(f"{MC} install -n {env_name} git")
+        os.system(f"{MC} install -q -y -n {env_name} git")
 
     print("N" * 79)
     print(f"{env_name} installed.")
