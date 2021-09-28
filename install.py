@@ -3,9 +3,7 @@
 # @Author: Niccolò Bonacchi
 # @Date:   2018-06-08 11:04:05
 import argparse
-import json
 import os
-import re
 import shutil
 import subprocess
 import sys
@@ -29,11 +27,7 @@ except BaseException as e:
     print(e)
     raise BaseException("Could not clean conda cache, is conda installed? aborting...")
 
-MC = (
-    "conda"
-    if "mamba" not in str(subprocess.check_output(["conda", "list", "--json"]))
-    else "mamba"
-)
+MC = envs.MC  # checks if mamba is installed on base environment
 
 if MC == "conda":
     print("\n\n--->mamba not found")
