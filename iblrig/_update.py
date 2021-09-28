@@ -8,7 +8,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from setup_default_config import main as setup_pybpod
+from setup_pybpod import main as setup_pybpod
 
 import iblrig.git as git
 import iblrig.envs as envs
@@ -23,10 +23,6 @@ VERSION = git.get_current_version()
 
 def iblrig_params_path():
     return str(Path(os.getcwd()).parent / "iblrig_params")
-
-
-def import_tasks():
-    setup_pybpod(iblrig_params_path())
 
 
 def update_env():
@@ -158,7 +154,7 @@ def _update(branch=None, version=None):
         else:
             update_pip()
             update_env()
-            import_tasks()
+            setup_pybpod(iblrig_params_path())
             upgrade_bonsai(version, branch)
             update_bonsai_config()
     else:
@@ -197,8 +193,8 @@ def main(args):
     if args.info:
         info()
 
-    if args.import_tasks:
-        import_tasks()
+    if args.setup_pybpod:
+        setup_pybpod(iblrig_params_path())
 
     if args.iblenv:
         update_env()

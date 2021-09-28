@@ -65,11 +65,11 @@ if __name__ == "__main__":
         help="Update iblenv only",
     )
     parser.add_argument(
-        "--import-tasks",
+        "--setup-pybpod",
         required=False,
         default=False,
         action="store_true",
-        help="Reimport tasks only",
+        help="Reset pybpod to default config",
     )
     parser.add_argument(
         "--conda",

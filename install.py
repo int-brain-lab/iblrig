@@ -214,13 +214,13 @@ def configure_iblrig_params(env_name: str = "iblenv", resp=False):
         if user_input == "n":
             return
         elif user_input == "y":
-            subprocess.call([python, "setup_default_config.py", str(iblrig_params_path)])
+            subprocess.call([python, "setup_pybpod.py", str(iblrig_params_path)])
         elif user_input != "n" and user_input != "y":
             print("\n Please select either y of n")
             return configure_iblrig_params(env_name=env_name)
     else:
         iblrig_params_path.mkdir(parents=True, exist_ok=True)
-        subprocess.call([python, "setup_default_config.py", str(iblrig_params_path)])
+        subprocess.call([python, "setup_pybpod.py", str(iblrig_params_path)])
 
 
 def install_bonsai(resp=False):
