@@ -32,9 +32,6 @@ def check_alyx_ok():
 
 def create_session(session_folder, one=None):
     one = one or ONE()
-    pfile = Path(lib_params.getfile("one_params"))
-    if not pfile.exists():
-        oneparams.setup()
 
     RegistrationClient(one=one).register_session(session_folder, file_list=False)
 
