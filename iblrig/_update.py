@@ -135,7 +135,7 @@ def update_to_latest():
         _update(version=versions[-1])
 
 
-# THIS guy!!!
+# THIS guy!!!return
 def _update(branch=None, version=None):
     info()
     ver = branch or version
@@ -147,17 +147,13 @@ def _update(branch=None, version=None):
             git.checkout_version(version)
         elif branch is None and version is None:
             git.checkout_version(sorted(ALL_VERSIONS)[-1])
-        REINSTALL = True if list(Path(IBLRIG_ROOT_PATH).glob("reinstall")) else False
-        if REINSTALL:
-            python = envs.get_base_python()
-            os.system(f"{python} install.py")
-            return
-        else:
-            update_pip()
-            update_env()
-            setup_pybpod(iblrig_params_path())
-            upgrade_bonsai(version, branch)
-            update_bonsai_config()
+
+        update_pip()
+        update_env()
+        update_ibllib()
+        setup_pybpod(iblrig_params_path())
+        upgrade_bonsai(version, branch)
+        update_bonsai_config()
     else:
         return
 
@@ -184,10 +180,6 @@ def main(args):
         _update(version=args.v)
     elif args.v and args.v not in ALL_VERSIONS:
         print("Version", args.v, "not found")
-
-    if args.reinstall:
-        python = envs.get_base_python()
-        os.system(f"{python} install.py")
 
     if args.ibllib:
         update_ibllib()

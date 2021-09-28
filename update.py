@@ -11,6 +11,15 @@ import iblrig.git as git
 if __name__ == "__main__":
     IBLRIG_ROOT_PATH = Path.cwd()
     git.fetch()
+    REINSTALL = True if list(Path(IBLRIG_ROOT_PATH).glob("reinstall")) else False
+    if REINSTALL:
+        print("\nPlease deactivate iblenv and reinstall from the base environment")
+        print("\n-------------------------------------")
+        print("\nconda deactivate && python install.py")
+        print("\n-------------------------------------\n")
+
+        raise SystemError("This rig version needs to be reinstalled from base environment\n")
+
     ALL_BRANCHES = git.get_branches()
     ALL_VERSIONS = git.get_versions()
     BRANCH = git.get_current_branch()
