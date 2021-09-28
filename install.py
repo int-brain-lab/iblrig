@@ -13,6 +13,8 @@ from pathlib import Path
 
 from packaging.version import parse as version
 
+from iblrig import envs
+
 # BEGIN CONSTANT DEFINITION
 IBLRIG_ROOT_PATH = Path.cwd()
 
@@ -27,8 +29,8 @@ except BaseException as e:
     print(e)
     raise BaseException("Could not clean conda cache, is conda installed? aborting...")
 
-MC = "mamba"
-if "mamba" not in str(subprocess.check_output(["conda", "list", "--json"])):
+MC = envs.MC
+if MC == "conda":
     print("\n\n--->mamba not found")
     try:
         print("\n\n--->Installing mamba")
@@ -40,34 +42,6 @@ if "mamba" not in str(subprocess.check_output(["conda", "list", "--json"])):
         print("Could not install mamba, using conda...")
         MC = "conda"
 # END CONSTANT DEFINITION
-
-
-def get_env_folder(env_name: str = "iblenv") -> str:
-    """get_env_folder Return conda folder of [env_name] environment
-
-    :param env_name: name of conda environment to look for, defaults to 'iblenv'
-    :type env_name: str, optional
-    :return: folder path of conda environment
-    :rtype: str
-    """
-    all_envs = subprocess.check_output([f"{MC}", "env", "list", "--json"])
-    all_envs = json.loads(all_envs.decode("utf-8"))
-    pat = re.compile(f"^.+{env_name}$")
-    env = [x for x in all_envs["envs"] if pat.match(x)]
-    env = env[0] if env else None
-    return env
-
-
-def get_env_python(env_name: str = "iblenv", rpip=False):
-    env = get_env_folder(env_name=env_name)
-    if sys.platform in ["Windows", "windows", "win32"]:
-        pip = os.path.join(env, "Scripts", "pip.exe")
-        python = os.path.join(env, "python.exe")
-    else:
-        pip = os.path.join(env, "bin", "pip")
-        python = os.path.join(env, "bin", "python")
-
-    return python if not rpip else pip
 
 
 def check_update_dependencies():
@@ -151,12 +125,13 @@ def create_ibllib_env(env_name: str = "ibllib"):
     """
     print(f"\n\nINFO: Creating environment {env_name}...")
     print("N" * 79)
-    env = get_env_folder(env_name=env_name)
+    env = envs.get_env_folder(env_name=env_name)
     if not env:
         try:
             print("\n\n--->Creating environment")
             os.system(f"{MC} create -q -y -n {env_name} -c defaults python=3.8")
-            os.system(f"conda activate {env_name} && pip install ibllib")
+            pip = envs.get_env_pip(env_name)
+            os.system(f"{pip} install ibllib")
             print("\n--->Environment created... OK")
         except BaseException as e:
             print(e)
@@ -178,7 +153,7 @@ def create_environment(env_name="iblenv", use_conda_yaml=False, resp=False):
     print(f"\n\nINFO: Creating {env_name}:")
     print("N" * 79)
     # Checks if env is already installed
-    env = get_env_folder(env_name=env_name)
+    env = envs.get_env_folder(env_name=env_name)
     print(env)
     # Creates commands
     create_command = f"{MC} create -q -y -n {env_name} python==3.7.11"
@@ -202,7 +177,7 @@ def create_environment(env_name="iblenv", use_conda_yaml=False, resp=False):
             return
     else:
         os.system(create_command)
-        python = get_env_python(env_name=env_name)
+        python = envs.get_env_python(env_name=env_name)
         update_pip_command = f"{python} -m pip install --upgrade pip setuptools wheel"
         os.system(update_pip_command)
         os.system(f"{MC} install -q -y -n {env_name} git")
@@ -214,7 +189,7 @@ def create_environment(env_name="iblenv", use_conda_yaml=False, resp=False):
 def install_iblrig(env_name: str = "iblenv") -> None:
     print(f"\n\nINFO: Installing iblrig in {env_name}:")
     print("N" * 79)
-    pip = get_env_python(env_name=env_name, rpip=True)
+    pip = envs.get_env_pip(env_name=env_name)
     os.system(f"{pip} install --no-warn-script-location -e .")
     print("N" * 79)
     print(f"iblrig installed in {env_name}.")
@@ -223,11 +198,11 @@ def install_iblrig(env_name: str = "iblenv") -> None:
 def configure_iblrig_params(env_name: str = "iblenv", resp=False):
     print("\n\nINFO: Setting up default project config in ../iblrig_params:")
     print("N" * 79)
-    iblenv = get_env_folder(env_name=env_name)
+    iblenv = envs.get_env_folder(env_name=env_name)
     if iblenv is None:
         msg = f"Can't configure iblrig_params, {env_name} not found"
         raise ValueError(msg)
-    python = get_env_python(env_name=env_name)
+    python = envs.get_env_python(env_name=env_name)
     iblrig_params_path = IBLRIG_ROOT_PATH.parent / "iblrig_params"
     if iblrig_params_path.exists():
         print(
