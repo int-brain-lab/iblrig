@@ -46,4 +46,3 @@ if __name__ == "__main__":
             "\n\nFailed to create session, will try again from local server after transfer...",
         )
 
-    print("done")

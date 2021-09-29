@@ -9,4 +9,10 @@ import sys
 
 if __name__ == '__main__':
     IBLRIG_DATA = sys.argv[1]
-    RegistrationClient(one=None).create_sessions(IBLRIG_DATA, dry=False)
+    try:
+        RegistrationClient(one=None).create_sessions(IBLRIG_DATA, dry=False)
+    except BaseException as e:
+        print(
+            e,
+            "\n\nFailed to create session, will try again from local server after transfer...",
+        )
