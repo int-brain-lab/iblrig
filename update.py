@@ -11,20 +11,10 @@ import iblrig.git as git
 if __name__ == "__main__":
     IBLRIG_ROOT_PATH = Path.cwd()
     git.fetch()
-    REINSTALL = True if list(Path(IBLRIG_ROOT_PATH).glob("reinstall")) else False
-    if REINSTALL:
-        print("\nPlease deactivate iblenv and reinstall from the base environment")
-        print("\n-------------------------------------")
-        print("\nconda deactivate && python install.py")
-        print("\n-------------------------------------\n")
-
-        raise SystemError("This rig version needs to be reinstalled from base environment\n")
-
     ALL_BRANCHES = git.get_branches()
     ALL_VERSIONS = git.get_versions()
     BRANCH = git.get_current_branch()
     VERSION = git.get_current_version()
-    UPGRADE_BONSAI = True if list(Path().glob("upgrade_bonsai")) else False
     parser = argparse.ArgumentParser(description="Update iblrig")
     parser.add_argument(
         "-v",
@@ -107,6 +97,13 @@ if __name__ == "__main__":
         default=False,
         action="store_true",
         help="Upgrade Bonsai",
+    )
+    parser.add_argument(
+        "--update-exists",
+        required=False,
+        default=False,
+        action="store_true",
+        help="Check if new version of rig code exists",
     )
     args = parser.parse_args()
 
