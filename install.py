@@ -27,7 +27,11 @@ except BaseException as e:
     print(e)
     raise BaseException("Could not clean conda cache, is conda installed? aborting...")
 
-MC = envs.MC  # checks if mamba is installed on base environment
+try:
+    os.system("mamba -V")
+    MC = "mamba"
+except BaseException:
+    MC = "conda"
 
 if MC == "conda":
     print("\n\n--->mamba not found")
