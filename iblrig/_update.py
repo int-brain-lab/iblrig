@@ -164,6 +164,8 @@ def _update(branch=None, version=None):
         elif branch is None and version is None:
             git.checkout_version(sorted(ALL_VERSIONS)[-1])
 
+        check_reinstall_required()  # Will raise error if reinstall file exists
+
         update_pip()
         update_env()
         update_ibllib()
