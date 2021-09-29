@@ -10,11 +10,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-MC = (
-    "conda"
-    if "mamba" not in str(subprocess.check_output([os.environ["CONDA_EXE"], "list", "-n", "base", "--json"]))
-    else "mamba"
-)
+MC = "mamba"
 
 
 def get_env_folder(env_name: str = "iblenv") -> str:
