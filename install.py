@@ -252,6 +252,32 @@ def install_bonsai(resp=False):
         return
 
 
+def setup_ONE(resp=False):
+    """
+    """
+    print(f"\n\nINFO: ONE setup")
+    print("N" * 79)
+    print("\n\nDo you want to install ONE now? (y/n):")
+    user_input = input() if not resp else resp
+    print(user_input)
+    if user_input == "y":
+        try:
+            python = envs.get_env_python(env_name='ibllib')
+            os.system(f"{python} -c 'from one.api import ONE ; ONE()'")
+        except BaseException as e:
+            print(
+                e,
+                "\n\nONE setup incomplete please set up ONE manually",
+            )
+    elif user_input != "n" and user_input != "y":
+        print("Please answer 'y' or 'n'")
+        return setup_ONE()
+    elif user_input == "n":
+        pass
+    print("N" * 79)
+    return
+
+
 def main(args):
     try:
         check_update_dependencies()
@@ -261,6 +287,7 @@ def main(args):
         create_ibllib_env()
         install_iblrig(env_name=args.env_name)
         configure_iblrig_params(env_name=args.env_name, resp=args.config_response)
+        setup_ONE(resp=args.ONE_response)
         install_bonsai(resp=args.bonsai_response)
     except BaseException as msg:
         print(msg, "\n\nSOMETHING IS WRONG: Bad! Bad install file!")
@@ -302,6 +329,12 @@ if __name__ == "__main__":
         default=False,
         help="Use this response when if asked to reinstall env",
     )
+    parser.add_argument(
+        "--ONE-response",
+        required=False,
+        default=False,
+        help="Use this response when if asked to setuo ONE",
+    )
 
     args = parser.parse_args()
     RUN = 1
@@ -320,6 +353,12 @@ if __name__ == "__main__":
         )
         RUN = 0
     if args.reinstall_response not in RESPONSES:
+        print(
+            f"Invalid --reinstall-response argument {args.reinstall_response}",
+            "\nPlease use {RESPONSES})",
+        )
+        RUN = 0
+    if args.ONE_response not in RESPONSES:
         print(
             f"Invalid --reinstall-response argument {args.reinstall_response}",
             "\nPlease use {RESPONSES})",
