@@ -21,6 +21,17 @@ BRANCH = git.get_current_branch()
 VERSION = git.get_current_version()
 
 
+def check_reinstall_required():
+    REINSTALL = True if list(Path(IBLRIG_ROOT_PATH).glob("reinstall")) else False
+    if REINSTALL:
+        print("\nPlease deactivate iblenv and reinstall from the base environment")
+        print("\n-------------------------------------")
+        print("\nconda deactivate && python install.py")
+        print("\n-------------------------------------\n")
+
+        raise SystemError("This rig version needs to be reinstalled from base environment\n")
+
+
 def iblrig_params_path():
     return str(Path(os.getcwd()).parent / "iblrig_params")
 
@@ -84,6 +95,20 @@ def upgrade_bonsai(version, branch):
     os.chdir(here)
 
 
+def check_update_exists():
+    idx = sorted(ALL_VERSIONS).index(VERSION) if VERSION in ALL_VERSIONS else 0
+    if idx + 1 == len(ALL_VERSIONS):
+        print("The version you have checked out is the latest version\n")
+        return False
+    else:
+        print(
+            "Newest version |{}| type:\n\npython update.py {}\n".format(
+                sorted(ALL_VERSIONS)[-1], sorted(ALL_VERSIONS)[-1]
+            )
+        )
+        return True
+
+
 def info():
     print("--")
     git.update_remotes()
@@ -95,22 +120,13 @@ def info():
     print("Current version: {}".format(VERSION))
     print("--")
     ver = VERSION
-    versions = ALL_VERSIONS
     if not ver:
         print(
             "\nWARNING: You appear to be on an untagged commit.",
             "\n         Try updating to a specific version\n",
         )
     else:
-        idx = sorted(versions).index(ver) if ver in versions else 0
-        if idx + 1 == len(versions):
-            print("The version you have checked out is the latest version\n")
-        else:
-            print(
-                "Newest version |{}| type:\n\npython update.py {}\n".format(
-                    sorted(versions)[-1], sorted(versions)[-1]
-                )
-            )
+        check_update_exists()
     print("--")
 
 
@@ -202,6 +218,9 @@ def main(args):
     if args.upgrade_bonsai:
         upgrade_bonsai(VERSION, BRANCH)
         update_bonsai_config()
+
+    if args.update_exists:
+        check_update_exists()
 
     return
 
