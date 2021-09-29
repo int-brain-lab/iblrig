@@ -25,7 +25,7 @@ def get_env_folder(env_name: str = "iblenv") -> str:
     :return: folder path of conda environment
     :rtype: str
     """
-    all_envs = subprocess.check_output([f"{MC}", "env", "list", "--json"])
+    all_envs = subprocess.check_output([f"{MC}", "env", "list", "--json"], shell=True)
     all_envs = json.loads(all_envs.decode("utf-8"))
     pat = re.compile(f"^.+{env_name}$")
     env = [x for x in all_envs["envs"] if pat.match(x)]
