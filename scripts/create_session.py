@@ -34,15 +34,13 @@ if __name__ == "__main__":
     if args.poop:
         poop()
     try:
-        python = envs.get_env_python(env_name='ibllib')
+        python = envs.get_env_python(env_name="ibllib")
         here = os.getcwd()
-        os.chdir(os.path.join(IBLRIG_FOLDER, 'scripts'))
-        os.system(f'{python} register_session.py {IBLRIG_DATA}')
+        os.chdir(os.path.join(IBLRIG_FOLDER, "scripts"))
+        os.system(f"{python} register_session.py {IBLRIG_DATA}")
         os.chdir(here)
 
     except BaseException as e:
         print(
-            e,
-            "\n\nFailed to create session, will try again from local server after transfer...",
+            e, "\n\nFailed to create session, will try again from local server after transfer...",
         )
-

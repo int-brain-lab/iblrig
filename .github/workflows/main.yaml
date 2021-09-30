@@ -6,9 +6,9 @@ name: CI
 # events but only for the master branch
 on:
   push:
-    branches: [ develop, rc]
+    branches: [develop, rc]
   pull_request:
-    branches: [ develop, rc ]
+    branches: [develop, rc]
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -19,7 +19,7 @@ jobs:
       fail-fast: false
       max-parallel: 3
       matrix:
-        os: ["ubuntu-latest", "windows-latest"]  # "macos-latest",
+        os: ["ubuntu-latest", "windows-latest"] # "macos-latest",
         python-version: ["3.7"]
     steps:
       - name: Clone iblrig repo
@@ -44,4 +44,3 @@ jobs:
           conda activate iblenv
           python -c "from one.api import ONE; ONE(base_url='https://test.alyx.internationalbrainlab.org', username='test_user', password='TapetesBloc18', silent=True)"
           python -m unittest discover
-
