@@ -1,6 +1,6 @@
 # **Release notes**
 
-## **Release Notes develop**
+## **Release Notes 6.5.0**
 
 * Added camera config script == videopc
 * Added CI builds for windows/ubuntu install
@@ -25,13 +25,21 @@
 * Fixed bug in camera recording where SAVE_VIDEO = False would make stream not start (deprecated task settings SAVE_VIDEO flag)
 * Added bonsai.show_stim method to BpodMessageCreator obj
 * Deprecated RECORD_VIDEO "knob"
-* Refactored update with _update, and git module
 * Exposed rate of passive stimulation workflow defaults to 0.1
 * Refactored update with _update, and git module
 * Added create_custom_project CLI for syncing pybpod w/ Alyx project/users/subjects
 * move_passive will now try/catch to move all possible sessions
 * Migrated to ONE2
 * Bugfixed visual stim BpodEvents now not sampled on render frame
+* Changed install and setup procedures
+* Added mamba dependency to conda environment
+* Added updating of conda and base python pip wheel and setuptools, clearing cona cache before install
+* Install procedure now deletes Bonsai folder if it exists and Bonsai setup
+* Fixed version of python to 3.7.11
+* Created new ibllib 'hidden' environment just to do ONE2 tasks install and update methods updated
+* Launching pybpod will now not try to update update procedures
+* Created envs.py module to deal with environment related juggling for launching different scripts in different contexts
+* ONE/ibllib still installed in iblenv but ready to be removed for next release
 
 ## **Release Notes 6.4.2**
 

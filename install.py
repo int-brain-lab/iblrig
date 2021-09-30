@@ -29,7 +29,8 @@ except BaseException as e:
 
 MC = (
     "conda"
-    if "mamba" not in str(subprocess.check_output([os.environ["CONDA_EXE"], "list", "-n", "base", "--json"]))
+    if "mamba"
+    not in str(subprocess.check_output([os.environ["CONDA_EXE"], "list", "-n", "base", "--json"]))
     else "mamba"
 )
 
@@ -255,19 +256,18 @@ def install_bonsai(resp=False):
 def setup_ONE(resp=False):
     """
     """
-    print(f"\n\nINFO: ONE setup")
+    print("\n\nINFO: ONE setup")
     print("N" * 79)
     print("\n\nDo you want to install ONE now? (y/n):")
     user_input = input() if not resp else resp
     print(user_input)
     if user_input == "y":
         try:
-            python = envs.get_env_python(env_name='ibllib')
+            python = envs.get_env_python(env_name="ibllib")
             os.system(f"{python} -c 'from one.api import ONE ; ONE()'")
         except BaseException as e:
             print(
-                e,
-                "\n\nONE setup incomplete please set up ONE manually",
+                e, "\n\nONE setup incomplete please set up ONE manually",
             )
     elif user_input != "n" and user_input != "y":
         print("Please answer 'y' or 'n'")
