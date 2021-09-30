@@ -4,11 +4,11 @@
 # SOUND, AMBIENT SENSOR, AND VIDEO RECORDINGS
 RECORD_SOUND = True
 RECORD_AMBIENT_SENSOR_DATA = True
-RECORD_VIDEO = True
-OPEN_CAMERA_VIEW = True  # if RECORD_VIDEO == True OPEN_CAMERA_VIEW is True
 # REWARDS
 AUTOMATIC_CALIBRATION = True  # Wether to look for a calibration session and func to define the valve opening time  # noqa
-CALIBRATION_VALUE = 0.067  # calibration value for 3ul of target reward amount (ignored if automatic ON)  # noqa
+CALIBRATION_VALUE = (
+    0.067  # calibration value for 3ul of target reward amount (ignored if automatic ON)  # noqa
+)
 REWARD_TYPE = "Water 10% Sucrose"  # Water, Water 10% Sucrose, Water 15% Sucrose, Water 2% Citric Acid (Guo et al.. PLoS One 2014)  # noqa
 REWARD_AMOUNT = 3.0  # (µl) Target resward amount
 # TASK
@@ -23,8 +23,8 @@ STIM_POSITIONS = [-35, 35]  # All possible positions for this session (deg)
 STIM_FREQ = 0.10  # cycle/visual degree
 STIM_ANGLE = 0.0  # Vertical orientation of Gabor patch - NOT IN USE
 STIM_SIGMA = 7.0  # (azimuth_degree²) Size of Gabor patch
-SYNC_SQUARE_X = 0.95
-SYNC_SQUARE_Y = 0.17
+SYNC_SQUARE_X = 1.33
+SYNC_SQUARE_Y = -1.03
 # CONTRASTS
 CONTRAST_SET = [1.0]  # Full contrast set, used if adaptive contrast = False
 # SOUNDS

@@ -29,35 +29,77 @@ EMPTY_BOARD_PARAMS = {
     "F2TTL_DARK_THRESH": None,  # float
     "F2TTL_LIGHT_THRESH": None,  # float
     "F2TTL_CALIBRATION_DATE": None,  # str
-    "SCREEN_FREQ_TARGET": 60,  # int (Hz)
+    "SCREEN_FREQ_TARGET": None,  # int (Hz)
     "SCREEN_FREQ_TEST_STATUS": None,  # str
     "SCREEN_FREQ_TEST_DATE": None,  # str
+    "SCREEN_LUX_VALUE": None,  # lux (float?)
+    "SCREEN_LUX_DATE": None,  # str
     "WATER_CALIBRATION_RANGE": None,  # [min, max]
     "WATER_CALIBRATION_OPEN_TIMES": None,  # [float, float, ...]
     "WATER_CALIBRATION_WEIGHT_PERDROP": None,  # [float, float, ...]
     "WATER_CALIBRATION_DATE": None,  # str
-    "BPOD_TTL_TEST_STATUS": None,
-    "BPOD_TTL_TEST_DATE": None,
+    "BPOD_TTL_TEST_STATUS": None,  # str
+    "BPOD_TTL_TEST_DATE": None,  # str
+    "DATA_FOLDER_LOCAL": None,  # str
+    "DATA_FOLDER_REMOTE": None,  # str
 }
+
+global AUTO_UPDATABLE_PARAMS
+AUTO_UPDATABLE_PARAMS = dict.fromkeys(
+    [
+        "NAME",
+        "IBLRIG_VERSION",
+        "COM_BPOD",
+        "SCREEN_FREQ_TARGET",
+        "DATA_FOLDER_LOCAL",
+        "DATA_FOLDER_REMOTE",
+    ]
+)
 
 
 def ensure_all_keys_present(loaded_params, upload=True):
+    """
+    Ensures allo keys are present and empty knowable values are filled
+    """
+    anything_new = False
     for k in EMPTY_BOARD_PARAMS:
         if k in loaded_params:
-            pass
+            if loaded_params[k] is None and k in AUTO_UPDATABLE_PARAMS:
+                loaded_params[k] = update_param_key_values(k)
+                anything_new = True
         elif k not in loaded_params:
-            loaded_params.update({k: None})
-
-    write_params(loaded_params, force=True, upload=upload)
+            loaded_params.update({k: update_param_key_values(k)})
+            anything_new = True
+    if anything_new:
+        write_params_file(data=loaded_params, force=True)
+    if upload:
+        alyx.write_alyx_params(data=loaded_params, force=True)
     return loaded_params
 
 
 def create_new_params_dict():
     params = EMPTY_BOARD_PARAMS
-    params["NAME"] = get_pybpod_board_name()
-    params["IBLRIG_VERSION"] = get_iblrig_version()
-    params["COM_BPOD"] = get_board_comport()
+    for k in params:
+        params[k] = update_param_key_values(k)
+
     return params
+
+
+def update_param_key_values(param_key):
+    if param_key == "NAME":
+        return get_pybpod_board_name()
+    elif param_key == "IBLRIG_VERSION":
+        return get_iblrig_version()
+    elif param_key == "COM_BPOD":
+        return get_pybpod_board_comport()
+    elif param_key == "SCREEN_FREQ_TARGET":
+        return 60
+    elif param_key == "DATA_FOLDER_LOCAL":
+        return ph.get_iblrig_data_folder(subjects=False)
+    elif param_key == "DATA_FOLDER_REMOTE":
+        return ph.get_iblserver_data_folder(subjects=False)
+    else:
+        return None
 
 
 def get_iblrig_version():
@@ -126,18 +168,23 @@ def write_params_file(data: dict = None, force: bool = False) -> dict:
     """
     iblrig_params = Path(ph.get_iblrig_params_folder())
     fpath = iblrig_params / ".iblrig_params.json"
+    fpath_bckp = iblrig_params / ".iblrig_params_bckp.json"
+    if data is None:
+        data = create_new_params_dict()
     if fpath.exists() and not force:
         log.warning(f"iblrig params file already exists {fpath}. Not writing...")
         return
-    if data is None:
-        data = create_new_params_dict()
-    with open(fpath, "w") as f:
-        log.info(f"Writing {data} to {fpath}")
-        json.dump(data, f, indent=1)
+    elif fpath.exists() and force:
+        shutil.copy(fpath, fpath_bckp)
+    if not fpath.exists() or force:
+        with open(fpath, "w") as f:
+            log.info(f"Writing {data} to {fpath}")
+            json.dump(data, f, indent=1)
+
     return data
 
 
-def load_params_file() -> dict:
+def load_params_file(upload=False, silent=True) -> dict:
     """load_params_file loads the .iblrig_params.json file from default location
      (iblrig/../iblrig_params/.iblrig_params.json), will create default params
      file if file is not found
@@ -151,7 +198,10 @@ def load_params_file() -> dict:
     if fpath.exists():
         with open(fpath, "r") as f:
             out = json.load(f)
-        return ensure_all_keys_present(out, upload=False)
+        out = ensure_all_keys_present(out, upload=upload)
+        if not silent:
+            log.info(out)
+        return out
     elif not fpath.exists() and bpod_comports.exists():
         log.warning(
             "Params file does not exist, found old bpod_comports file. Trying to migrate..."
@@ -190,12 +240,10 @@ def update_params_file(data: dict, force: bool = False) -> None:
                 log.info(f"Unknown key {k}: skipping key...")
                 continue
             elif force:
-                log.info(
-                    f"Adding new key {k} with value {data[k]} to .iblrig_params.json"
-                )
+                log.info(f"Adding new key {k} with value {data[k]} to .iblrig_params.json")
                 old[k] = data[k]
-    write_params_file(data=old, force=True)
     log.info("Updated params file")
+    write_params_file(data=old, force=True)
 
     return old
 
@@ -217,40 +265,6 @@ def ask_params_comports(data: dict) -> dict:
         log.debug(f"Updating params file with: {patch}")
 
     return data
-
-
-# Methods for tasks from alyx w/ fallback
-def update_params(data: dict) -> None:
-    update_params_file(data=data)
-    try:
-        alyx.update_alyx_params(data=data)
-    except Exception as e:
-        log.warning(
-            f"Could not update board params on Alyx. Saved locally:\n{data}\n{e}"
-        )
-
-
-def load_params() -> dict:
-    params_local = load_params_file()
-    params_alyx = alyx.load_alyx_params(params_local["NAME"])
-    if params_alyx is None:
-        log.warning("Could not load board params from Alyx.")
-    if params_alyx != params_local:
-        log.warning("Local data and Alyx data mismatch. Trying to update Alyx.")
-        alyx.update_alyx_params(data=params_local, force=True)
-    return params_local
-
-
-def write_params(data: dict = None, force: bool = False, upload: bool = True) -> None:
-    write_params_file(data=data, force=force)
-    if upload:
-        try:
-            alyx.write_alyx_params(data=data, force=force)
-        except Exception as e:
-            log.warning(
-                f"Could not write board params to Alyx. Written to local file:\n{e}"
-            )
-    return
 
 
 def try_migrate_to_params(force=False):
@@ -289,14 +303,10 @@ def try_migrate_to_params(force=False):
     ):
         water_dict.update(ph.load_water_calibraition_range_file(range_file))
         water_dict.update(ph.load_water_calibraition_func_file(func_file))
-        water_dict.update(
-            {"WATER_CALIBRATION_DATE": func_file.parent.parent.parent.name}
-        )
+        water_dict.update({"WATER_CALIBRATION_DATE": func_file.parent.parent.parent.name})
     if str(func_file) != ".":
         water_dict.update(ph.load_water_calibraition_func_file(func_file))
-        water_dict.update(
-            {"WATER_CALIBRATION_DATE": func_file.parent.parent.parent.name}
-        )
+        water_dict.update({"WATER_CALIBRATION_DATE": func_file.parent.parent.parent.name})
     # Find latest F2TTL calib and set F2TTL values
     f2ttl_params = alyx.load_alyx_params(get_pybpod_board_name())
     if f2ttl_params is None:
@@ -316,9 +326,7 @@ def try_migrate_to_params(force=False):
         elif "F2TTL_COM" in f2ttl_params:
             f2ttl_dict.update({"COM_F2TTL": f2ttl_params["F2TTL_COM"]})
         if "F2TTL_CALIBRATION_DATE" in f2ttl_params:
-            f2ttl_dict.update(
-                {"F2TTL_CALIBRATION_DATE": f2ttl_params["F2TTL_CALIBRATION_DATE"]}
-            )
+            f2ttl_dict.update({"F2TTL_CALIBRATION_DATE": f2ttl_params["F2TTL_CALIBRATION_DATE"]})
 
     # Save locally
     final_dict = {}

@@ -3,13 +3,10 @@
 # @Author: Niccolò Bonacchi
 # @Date: Thursday, June 6th 2019, 11:42:40 am
 import logging
-import os
-import subprocess
-import time
-from pathlib import Path
 
 from pythonosc import udp_client
 
+import iblrig.bonsai as bonsai
 import iblrig.iotasks as iotasks
 from iblrig.path_helper import SessionPathCreator
 
@@ -26,28 +23,22 @@ class SessionParamHandler(object):
         # IMPORT task_settings, user_settings, and SessionPathCreator params
         # =====================================================================
         ts = {
-            i: task_settings.__dict__[i]
-            for i in [x for x in dir(task_settings) if "__" not in x]
+            i: task_settings.__dict__[i] for i in [x for x in dir(task_settings) if "__" not in x]
         }
         self.__dict__.update(ts)
         us = {
-            i: user_settings.__dict__[i]
-            for i in [x for x in dir(user_settings) if "__" not in x]
+            i: user_settings.__dict__[i] for i in [x for x in dir(user_settings) if "__" not in x]
         }
         self.__dict__.update(us)
         self = iotasks.deserialize_pybpod_user_settings(self)
-        spc = SessionPathCreator(
-            self.PYBPOD_SUBJECTS[0], protocol=self.PYBPOD_PROTOCOL, make=True
-        )
+        spc = SessionPathCreator(self.PYBPOD_SUBJECTS[0], protocol=self.PYBPOD_PROTOCOL, make=True)
         self.__dict__.update(spc.__dict__)
         # =====================================================================
         # OSC CLIENT
         # =====================================================================
         self.OSC_CLIENT_PORT = 7110
         self.OSC_CLIENT_IP = "127.0.0.1"
-        self.OSC_CLIENT = udp_client.SimpleUDPClient(
-            self.OSC_CLIENT_IP, self.OSC_CLIENT_PORT
-        )
+        self.OSC_CLIENT = udp_client.SimpleUDPClient(self.OSC_CLIENT_IP, self.OSC_CLIENT_PORT)
         # =====================================================================
         # SAVE SETTINGS FILE AND TASK CODE
         # =====================================================================
@@ -59,23 +50,8 @@ class SessionParamHandler(object):
     # METHODS
     # =========================================================================
     def start_screen_color(self):
-        here = os.getcwd()
-        os.chdir(str(Path(self.IBLRIG_FOLDER) / "visual_stim" / "f2ttl_calibration"))
-        bns = str(Path(self.IBLRIG_FOLDER) / "Bonsai" / "Bonsai64.exe")
-        wrkfl = str(
-            Path(self.IBLRIG_FOLDER)
-            / "visual_stim"
-            / "f2ttl_calibration"
-            / "screen_color.bonsai"
-        )
-        noedit = "--no-editor"  # implies start
-        # nodebug = '--start-no-debug'
-        # start = '--start'
-        noboot = "--no-boot"
-        editor = noedit
-        subprocess.Popen([bns, wrkfl, editor, noboot])
-        time.sleep(3)
-        os.chdir(here)
+        bonsai.start_screen_color()
+        self.set_screen(rgb=[255, 255, 255])
 
     def stop_screen_color(self):
         self.OSC_CLIENT.send_message("/x", 1)

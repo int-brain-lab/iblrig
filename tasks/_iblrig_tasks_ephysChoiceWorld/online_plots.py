@@ -20,9 +20,7 @@ def make_fig(sph):
     f.canvas.draw_idle()
     #     plt.show()
 
-    f.suptitle(
-        f"{sph.SUBJECT_NAME} - {sph.SUBJECT_WEIGHT}gr - {sph.SESSION_DATETIME}"
-    )  # noqa
+    f.suptitle(f"{sph.SUBJECT_NAME} - {sph.SUBJECT_WEIGHT}gr - {sph.SESSION_DATETIME}")  # noqa
 
     axes = (ax_bars, ax_psych, ax_chron, ax_vars, ax_vars2)
     plt.pause(0.001)
@@ -63,9 +61,7 @@ def get_barplot_data(tph):
 
 def get_psych_data(tph):
     sig_contrasts_all = np.array(tph.contrast_set)
-    sig_contrasts_all = np.append(
-        sig_contrasts_all, [-x for x in sig_contrasts_all if x != 0]
-    )
+    sig_contrasts_all = np.append(sig_contrasts_all, [-x for x in sig_contrasts_all if x != 0])
     sig_contrasts_all = np.sort(sig_contrasts_all)
 
     signed_contrast_buffer = np.array(tph.signed_contrast_buffer)
@@ -296,9 +292,7 @@ def plot_chron(chron_data, ax=None):
     y05 = chron_data[2]
     y08 = chron_data[3]
 
-    ax.plot(
-        x, y05, c="k", label="Median response time 50/50", marker="o", ls="-", alpha=0.5
-    )
+    ax.plot(x, y05, c="k", label="Median response time 50/50", marker="o", ls="-", alpha=0.5)
     ax.plot(x, y02, c="g", label="Median response time 20/80", marker="o", ls="-")
     ax.plot(x, y08, c="b", label="Median response time 80/20", marker="o", ls="-")
 

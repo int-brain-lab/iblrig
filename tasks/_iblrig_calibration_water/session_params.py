@@ -33,15 +33,12 @@ class SessionParamHandler(object):
             ts = task_settings
         self.__dict__.update(ts)
         us = {
-            i: user_settings.__dict__[i]
-            for i in [x for x in dir(user_settings) if "__" not in x]
+            i: user_settings.__dict__[i] for i in [x for x in dir(user_settings) if "__" not in x]
         }
         self.__dict__.update(us)
         self.deserialize_session_user_settings()
 
-        spc = SessionPathCreator(
-            self.PYBPOD_SUBJECTS[0], protocol=self.PYBPOD_PROTOCOL, make=True
-        )
+        spc = SessionPathCreator(self.PYBPOD_SUBJECTS[0], protocol=self.PYBPOD_PROTOCOL, make=True)
         self.__dict__.update(spc.__dict__)
 
         self.CALIBRATION_FUNCTION_FILE_PATH = os.path.join(
@@ -76,9 +73,7 @@ class SessionParamHandler(object):
         self.PYBPOD_CREATOR = json.loads(self.PYBPOD_CREATOR)
         self.PYBPOD_USER_EXTRA = json.loads(self.PYBPOD_USER_EXTRA)
 
-        self.PYBPOD_SUBJECTS = [
-            json.loads(x.replace("'", '"')) for x in self.PYBPOD_SUBJECTS
-        ]
+        self.PYBPOD_SUBJECTS = [json.loads(x.replace("'", '"')) for x in self.PYBPOD_SUBJECTS]
         if len(self.PYBPOD_SUBJECTS) == 1:
             self.PYBPOD_SUBJECTS = self.PYBPOD_SUBJECTS[0]
         else:
@@ -102,9 +97,7 @@ class SessionParamHandler(object):
 
     def _copy_task_code(self):
         # Copy behavioral task python code
-        src = os.path.join(
-            self.IBLRIG_PARAMS_FOLDER, "IBL", "tasks", self.PYBPOD_PROTOCOL
-        )
+        src = os.path.join(self.IBLRIG_PARAMS_FOLDER, "IBL", "tasks", self.PYBPOD_PROTOCOL)
         dst = os.path.join(self.SESSION_RAW_DATA_FOLDER, self.PYBPOD_PROTOCOL)
         shutil.copytree(src, dst)
 

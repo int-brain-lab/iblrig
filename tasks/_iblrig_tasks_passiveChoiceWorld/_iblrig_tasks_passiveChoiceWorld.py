@@ -32,9 +32,7 @@ sph = SessionParamHandler(task_settings, user_settings)
 if frame2TTL.get_and_set_thresholds() == 0:
     sph.F2TTL_GET_AND_SET_THRESHOLDS = True
 # Rotary encoder
-re = MyRotaryEncoder(
-    sph.ALL_THRESHOLDS, sph.STIM_GAIN, sph.PARAMS["COM_ROTARY_ENCODER"]
-)
+re = MyRotaryEncoder(sph.ALL_THRESHOLDS, sph.STIM_GAIN, sph.PARAMS["COM_ROTARY_ENCODER"])
 sph.ROTARY_ENCODER = re
 
 # get bpod
@@ -54,7 +52,7 @@ card_play_noise = bytes(np.array([2, 6, 32, 255, 2, 3, 0, 44], dtype=np.int8))
 def do_gabor(osc_client, pcs_idx, pos, cont, phase):
     # send pcs to Bonsai
     bonsai.send_stim_info(
-        sph.OSC_CLIENT,
+        osc_client,
         pcs_idx,
         int(pos),
         cont,
@@ -65,9 +63,9 @@ def do_gabor(osc_client, pcs_idx, pos, cont, phase):
         sigma=7.0,
     )
 
-    sph.OSC_CLIENT.send_message("/re", 2)  # show_stim 2
+    osc_client.send_message("/re", 2)  # show_stim 2
     time.sleep(0.3)
-    sph.OSC_CLIENT.send_message("/re", 1)  # stop_stim 1
+    osc_client.send_message("/re", 1)  # stop_stim 1
 
 
 def do_valve_click(bpod, reward_valve_time):
@@ -118,7 +116,7 @@ bonsai.start_passive_visual_stim(sph.SESSION_RAW_DATA_FOLDER)  # Locks
 
 # start Bonsai stim workflow
 bonsai.start_visual_stim(sph)
-time.sleep(3)
+time.sleep(5)
 log.info("Starting replay of task stims")
 pcs_idx = 0
 scount = 1
@@ -166,7 +164,7 @@ bpod.close()
 # Turn bpod light's back on
 bpod_lights(PARAMS["COM_BPOD"], 1)
 # Close Bonsai stim
-bonsai.stop_wrkfl('stim')
+bonsai.stop_wrkfl("stim")
 msg = "Passive protocol done, please remove subject.\n" * 42
 log.info(msg)
 msg = "Passive protocol is over.\nMake sure you turn the VALVE back ON!"

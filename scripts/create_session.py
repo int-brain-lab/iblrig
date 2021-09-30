@@ -4,13 +4,12 @@
 # @Date: Thursday, January 31st 2019, 1:15:46 pm
 import argparse
 from pathlib import Path
+import os
 
-import ibllib.io.params as params
-import oneibl.params
-# from ibllib.pipes.experimental_data import create
-from oneibl.registration import RegistrationClient
+from ibllib.oneibl.registration import RegistrationClient
 
 from iblrig.poop_count import poop
+from iblrig import envs
 
 IBLRIG_FOLDER = Path(__file__).absolute().parent.parent
 IBLRIG_DATA = IBLRIG_FOLDER.parent / "iblrig_data" / "Subjects"  # noqa
@@ -18,12 +17,7 @@ IBLRIG_PARAMS_FOLDER = IBLRIG_FOLDER.parent / "iblrig_params"
 
 
 def main():
-    pfile = Path(params.getfile("one_params"))
-    if not pfile.exists():
-        oneibl.params.setup_alyx_params()
-
     RegistrationClient(one=None).create_sessions(IBLRIG_DATA, dry=False)
-    # create(IBLRIG_DATA, dry=False)
 
 
 if __name__ == "__main__":
@@ -39,8 +33,14 @@ if __name__ == "__main__":
 
     if args.poop:
         poop()
-        main()
-    else:
-        main()
+    try:
+        python = envs.get_env_python(env_name="ibllib")
+        here = os.getcwd()
+        os.chdir(os.path.join(IBLRIG_FOLDER, "scripts"))
+        os.system(f"{python} register_session.py {IBLRIG_DATA}")
+        os.chdir(here)
 
-    print("done")
+    except BaseException as e:
+        print(
+            e, "\n\nFailed to create session, will try again from local server after transfer...",
+        )

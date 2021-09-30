@@ -4,11 +4,14 @@
 # @Date:   2018-02-02 12:31:13
 import logging
 
-from pybpod_rotaryencoder_module.module import RotaryEncoder
+import iblrig.bonsai as bonsai
+import user_settings
+from iblrig.bpod_helper import BpodMessageCreator
+
+# from pybpod_rotaryencoder_module.module import RotaryEncoder
 from pybpodapi.protocol import Bpod, StateMachine
 
 import task_settings
-import user_settings
 from session_params import SessionParamHandler
 from trial_params import TrialParamHandler
 
@@ -17,6 +20,7 @@ log.setLevel(logging.INFO)
 
 global sph
 sph = SessionParamHandler(task_settings, user_settings)
+bonsai.start_visual_stim(sph)
 
 
 def softcode_handler(data):
@@ -42,37 +46,23 @@ def softcode_handler(data):
 bpod = Bpod()
 # Soft code handler function can run arbitrary code from within state machine
 bpod.softcode_handler_function = softcode_handler
-# Rotary Encoder State Machine handle
-rotary_encoder = [x for x in bpod.modules if x.name == "RotaryEncoder1"][0]
-# ROTARY ENCODER EVENTS
-rotary_encoder_reset = 1
-bpod.load_serial_message(
-    rotary_encoder,
-    rotary_encoder_reset,
-    [RotaryEncoder.COM_SETZEROPOS, RotaryEncoder.COM_ENABLE_ALLTHRESHOLDS],  # ord('Z')
-)  # ord('E')
-# Stop the stim
-re_stop_stim = rotary_encoder_reset + 1
-bpod.load_serial_message(rotary_encoder, re_stop_stim, [ord("#"), 1])
-# Show the stim
-re_show_stim = rotary_encoder_reset + 2
-bpod.load_serial_message(rotary_encoder, re_show_stim, [ord("#"), 2])
-# Shwo stim at center of screen
-re_show_center = rotary_encoder_reset + 3
-bpod.load_serial_message(rotary_encoder, re_show_center, [ord("#"), 3])
-if sph.SOFT_SOUND is None:
-    # SOUND CARD
-    sound_card = [x for x in bpod.modules if x.name == "SoundCard1"][0]
-    # Play tone
-    sc_play_tone = rotary_encoder_reset + 4
-    bpod.load_serial_message(sound_card, sc_play_tone, [ord("P"), sph.GO_TONE_IDX])
+# Create messages
+msg = BpodMessageCreator(bpod)
+rotary_encoder_reset = msg.rotary_encoder_reset()
+bonsai_hide_stim = msg.bonsai_hide_stim()
+bonsai_show_stim = msg.bonsai_show_stim()
+bonsai_show_center = msg.bonsai_show_center()
+sc_play_tone = msg.sound_card_play_idx(sph.GO_TONE_IDX)
+bpod = msg.return_bpod()
 
 # =============================================================================
 # TRIAL PARAMETERS AND STATE MACHINE
 # =============================================================================
 global tph
 tph = TrialParamHandler(sph)
-
+# =====================================================================
+# RUN VISUAL STIM
+# =====================================================================
 for i in range(sph.NTRIALS):  # Main loop
     tph.next_trial()
     log.info(f"Starting trial: {i + 1}")
@@ -87,28 +77,28 @@ for i in range(sph.NTRIALS):  # Main loop
             state_name="trial_start",
             state_timer=3600,
             state_change_conditions={"Port1In": "stim_on"},
-            output_actions=[("Serial1", re_stop_stim), ("SoftCode", 3)],
+            output_actions=[("Serial1", bonsai_hide_stim), ("SoftCode", 3)],
         )  # sart camera
     else:
         sma.add_state(
             state_name="trial_start",
             state_timer=1,  # Stim off for 1 sec
             state_change_conditions={"Tup": "stim_on"},
-            output_actions=[("Serial1", re_stop_stim)],
+            output_actions=[("Serial1", bonsai_hide_stim)],
         )
 
     sma.add_state(
         state_name="stim_on",
         state_timer=tph.delay_to_stim_center,
         state_change_conditions={"Tup": "stim_center"},
-        output_actions=[("Serial1", re_show_stim), tph.out_tone],
+        output_actions=[("Serial1", bonsai_show_stim), tph.out_tone],
     )
 
     sma.add_state(
         state_name="stim_center",
         state_timer=0.5,
         state_change_conditions={"Tup": "reward"},
-        output_actions=[("Serial1", re_show_center)],
+        output_actions=[("Serial1", bonsai_show_center)],
     )
 
     sma.add_state(

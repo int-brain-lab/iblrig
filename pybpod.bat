@@ -8,9 +8,6 @@ call activate iblenv %*
 echo Finding iblrig folder...
 chdir /D %iblrig_dir%
 
-echo Updating update routines...
-call python update.py --update
-
 echo Checking for updates...
 call python update.py
 

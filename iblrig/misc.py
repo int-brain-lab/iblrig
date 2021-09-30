@@ -30,9 +30,9 @@ def make_square_dvamat(size, dva):
     c = np.arange(size) - int(size / 2)
     x = np.array([c] * 15)
     y = np.rot90(x)
-    dvamat = np.array(
-        list(zip(y.ravel() * dva, x.ravel() * dva)), dtype=("int, int")
-    ).reshape(x.shape)
+    dvamat = np.array(list(zip(y.ravel() * dva, x.ravel() * dva)), dtype=("int, int")).reshape(
+        x.shape
+    )
     return dvamat
 
 
@@ -174,9 +174,7 @@ def draw_session_order():
 
 def patch_settings_file(sess_or_file: str, patch: dict) -> None:
     sess_or_file = Path(sess_or_file)
-    if sess_or_file.is_file() and sess_or_file.name.endswith(
-        "_iblrig_taskSettings.raw.json"
-    ):
+    if sess_or_file.is_file() and sess_or_file.name.endswith("_iblrig_taskSettings.raw.json"):
         session = sess_or_file.parent.parent
         file = sess_or_file
     elif sess_or_file.is_dir() and sess_or_file.name.isdecimal():

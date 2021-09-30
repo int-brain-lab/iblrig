@@ -22,7 +22,9 @@ from ibllib.graphic import numinput
 from pybpodapi.bpod import Bpod
 from pybpodapi.state_machine import StateMachine
 
+import iblrig.alyx as alyx
 import iblrig.params as params
+
 # import iblrig.path_helper as path_helper
 import task_settings
 import user_settings  # PyBpod creates this file on run.
@@ -138,17 +140,13 @@ ntrials = sph.NTRIALS
 # in milliseconds, 10 to 100ms opening time
 open_times = range(sph.MIN_OPEN_TIME, sph.MAX_OPEN_TIME, sph.STEP)
 open_times = [
-    i
-    for i in range(sph.MIN_OPEN_TIME, sph.MAX_OPEN_TIME, sph.STEP)
-    for _ in range(sph.PASSES)
+    i for i in range(sph.MIN_OPEN_TIME, sph.MAX_OPEN_TIME, sph.STEP) for _ in range(sph.PASSES)
 ]
 
 if sph.OAHUS_SCALE_PORT:
     stopweight = scale_read(sph.OAHUS_SCALE_PORT)
 else:
-    stopweight = numinput(
-        "Initialize weight", "Enter the weight diplayed on the scale (gr):"
-    )
+    stopweight = numinput("Initialize weight", "Enter the weight diplayed on the scale (gr):")
 
 pass_ = 1
 progress = 0
@@ -266,9 +264,7 @@ func_patch = {
     "WATER_CALIBRATION_OPEN_TIMES": df1["open_time"].to_list(),
     "WATER_CALIBRATION_WEIGHT_PERDROP": df1["weight_perdrop"].to_list(),
 }
-range_patch = {
-    "WATER_CALIBRATION_RANGE": [df2.min_open_time.iloc[0], df2.max_open_time.iloc[0]]
-}
+range_patch = {"WATER_CALIBRATION_RANGE": [df2.min_open_time.iloc[0], df2.max_open_time.iloc[0]]}
 # func_patch = path_helper.load_water_calibraition_func_file(sph.CALIBRATION_FUNCTION_FILE_PATH)
 # range_patch = path_helper.load_water_calibraition_range_file(sph.CALIBRATION_RANGE_FILE_PATH)
 date_patch = {"WATER_CALIBRATION_DATE": datetime.datetime.now().date().isoformat()}
@@ -276,7 +272,8 @@ patch = {}
 patch.update(range_patch)
 patch.update(func_patch)
 patch.update(date_patch)
-params.update_params(data=patch)
+params.update_params_file(data=patch)
+alyx.update_alyx_params(data=patch)
 
 os.system(sph.CALIBRATION_CURVE_FILE_PATH[:-4] + "_range.pdf")
 bpod.close()

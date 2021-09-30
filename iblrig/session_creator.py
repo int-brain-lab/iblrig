@@ -34,7 +34,7 @@ def make_ephysCW_pc():
         len_block.append(blocks.get_block_len(60, min_=20, max_=100))
         for x in range(len_block[-1]):
             p = blocks.draw_position([-35, 35], prob_left)
-            c = misc.draw_contrast(contrasts, prob_type='uniform')
+            c = misc.draw_contrast(contrasts, prob_type="uniform")
             pc = np.append(pc, np.array([[p, c, prob_left]]), axis=0)
             # do this in PC space
         prob_left = np.round(np.abs(1 - prob_left), 1)
@@ -96,9 +96,7 @@ def plot_pcqs(session_num, folder="./tasks/_iblrig_tasks_ephysChoiceWorld/sessio
         )
 
     ax_position.plot(pcqs[:, 0], ".", label="Position", color="b")
-    ax_position.plot(
-        smooth(pcqs[:, 0], window_len=20, window="blackman"), alpha=0.5, color="k"
-    )
+    ax_position.plot(smooth(pcqs[:, 0], window_len=20, window="blackman"), alpha=0.5, color="k")
 
     ax_contrast.plot(pcqs[:, 1] * 100, ".", label="Contrasts")
 
@@ -110,12 +108,7 @@ def plot_pcqs(session_num, folder="./tasks/_iblrig_tasks_ephysChoiceWorld/sessio
         ax.set_ylabel(l)
         for ax, l in zip(
             f.axes,
-            [
-                "Position (º)",
-                "Contrasts (%)",
-                "Quiescent period (s)",
-                "Stimulus phase (rad)",
-            ],
+            ["Position (º)", "Contrasts (%)", "Quiescent period (s)", "Stimulus phase (rad)",],
         )
     ]
     [ax.axvline(x, alpha=0.5) for x in np.cumsum(len_block) for ax in f.axes]
@@ -220,11 +213,7 @@ def make_passiveCW_session_delays_ids(seed_num=None):
     sess_delays_out = np.insert(np.diff(sess_delays_cumsum), 0, sess_delays_cumsum[0])
     tot_dur = (
         np.sum(
-            np.sum(g_len)
-            + np.sum(n_len)
-            + np.sum(t_len)
-            + np.sum(v_len)
-            + np.sum(sess_delays_out)
+            np.sum(g_len) + np.sum(n_len) + np.sum(t_len) + np.sum(v_len) + np.sum(sess_delays_out)
         )
         / 60
     )
@@ -243,22 +232,20 @@ def pre_generate_passiveCW_session_files(
     path = iblrig_path / Path(path)
     path.mkdir(parents=True, exist_ok=True)
     for i in range(nsessions):
-        delays, ids, = make_passiveCW_session_delays_ids()
+        (delays, ids,) = make_passiveCW_session_delays_ids()
         pcs = make_stims_for_passiveCW_pcs()
         np.save(path / f"session_{i}_passive_stimIDs.npy", ids)
         np.save(path / f"session_{i}_passive_stimDelays.npy", delays)
         np.save(path / f"session_{i}_passive_pcs.npy", pcs)
     else:
-        delays, ids, = make_passiveCW_session_delays_ids()
+        (delays, ids,) = make_passiveCW_session_delays_ids()
         pcs = make_stims_for_passiveCW_pcs()
         np.save(path / "session_mock_passive_stimIDs.npy", ids)
         np.save(path / "session_mock_passive_stimDelays.npy", delays)
         np.save(path / "session_mock_passive_pcs.npy", pcs)
 
 
-def pre_generate_stim_phase(
-    nsessions, path="./tasks/_iblrig_tasks_ephysChoiceWorld/sessions"
-):
+def pre_generate_stim_phase(nsessions, path="./tasks/_iblrig_tasks_ephysChoiceWorld/sessions"):
     iblrig_path = Path(ph.get_iblrig_folder())
     path = iblrig_path / Path(path)
     path.mkdir(parents=True, exist_ok=True)
