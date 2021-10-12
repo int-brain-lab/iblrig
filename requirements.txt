@@ -9,6 +9,6 @@ PySocks==1.6.8
 python-osc==1.7.0
 sounddevice==0.3.13
 ibllib>=2.0.7
-opencv-python==3.4.5.20
+opencv-python==3.4.7.28
 numpy<1.21,>=1.17
 pandas==0.25.3
