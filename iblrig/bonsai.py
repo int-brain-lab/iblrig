@@ -168,7 +168,7 @@ else:
         return
 
     def start_passive_visual_stim(
-        save2folder, map_time="00:05:00", fname="_iblrig_RFMapStim.raw.bin", rate=0.1
+        save2folder, map_time="00:05:00", fname="_iblrig_RFMapStim.raw.bin", rate=0.1, sa_time="00:10:00"
     ):
         here = os.getcwd()
         bns = ph.get_bonsai_path()
@@ -179,7 +179,7 @@ else:
         noedit = "--no-editor"  # implies start and no-debug?
         noboot = "--no-boot"
         # Properties
-        SA0_DueTime = "-p:Stim.SpontaneousActivity0.DueTime=00:10:00"
+        SA0_DueTime = "-p:Stim.SpontaneousActivity0.DueTime=" + sa_time
         RFM_FileName = "-p:Stim.ReceptiveFieldMappingStim.FileNameRFMapStim=" + str(
             Path(save2folder) / fname
         )
