@@ -134,7 +134,7 @@ df1 = pd.DataFrame(
         "ndrops",
         "mean_measured_weight",
         "std_measured_weight",
-    ]
+    ], dtype=object
 )
 ntrials = sph.NTRIALS
 # in milliseconds, 10 to 100ms opening time
