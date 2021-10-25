@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<WorkflowBuilder Version="2.6.0"
+<WorkflowBuilder Version="2.6.2"
                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                  xmlns:p1="clr-namespace:Bonsai.Bpod;assembly=Bonsai.Bpod"
                  xmlns:scr="clr-namespace:Bonsai.Scripting;assembly=Bonsai.Scripting"
@@ -1899,12 +1899,6 @@ Value = whhel_radius for wheel_perim</Description>
                 </Edges>
               </Workflow>
             </Expression>
-            <Expression xsi:type="Combinator">
-              <Combinator xsi:type="rx:Merge" />
-            </Expression>
-            <Expression xsi:type="Combinator">
-              <Combinator xsi:type="rx:Repeat" />
-            </Expression>
             <Expression xsi:type="ExternalizedMapping">
               <Property Name="FileNameTrialInfo" />
               <Property Name="FileNameSyncSquareUpdate" />
@@ -2097,25 +2091,20 @@ _iblrig_micData.raw.wav
             <Edge From="6" To="13" Label="Source1" />
             <Edge From="6" To="16" Label="Source1" />
             <Edge From="7" To="8" Label="Source1" />
-            <Edge From="8" To="18" Label="Source1" />
             <Edge From="9" To="10" Label="Source1" />
             <Edge From="10" To="11" Label="Source1" />
             <Edge From="11" To="12" Label="Source1" />
-            <Edge From="12" To="18" Label="Source2" />
             <Edge From="13" To="14" Label="Source1" />
             <Edge From="14" To="15" Label="Source1" />
-            <Edge From="15" To="18" Label="Source3" />
             <Edge From="16" To="17" Label="Source1" />
-            <Edge From="17" To="18" Label="Source4" />
-            <Edge From="18" To="19" Label="Source1" />
-            <Edge From="20" To="24" Label="Source1" />
-            <Edge From="21" To="24" Label="Source2" />
-            <Edge From="22" To="24" Label="Source3" />
-            <Edge From="23" To="24" Label="Source4" />
-            <Edge From="25" To="28" Label="Source1" />
+            <Edge From="18" To="22" Label="Source1" />
+            <Edge From="19" To="22" Label="Source2" />
+            <Edge From="20" To="22" Label="Source3" />
+            <Edge From="21" To="22" Label="Source4" />
+            <Edge From="23" To="26" Label="Source1" />
+            <Edge From="24" To="25" Label="Source1" />
+            <Edge From="25" To="26" Label="Source2" />
             <Edge From="26" To="27" Label="Source1" />
-            <Edge From="27" To="28" Label="Source2" />
-            <Edge From="28" To="29" Label="Source1" />
           </Edges>
         </Workflow>
       </Expression>
