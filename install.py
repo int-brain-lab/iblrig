@@ -264,7 +264,7 @@ def setup_ONE(resp=False):
     if user_input == "y":
         try:
             python = envs.get_env_python(env_name="ibllib")
-            os.system(f"{python} -c 'from one.api import ONE ; ONE()'")
+            os.system(f'{python} -c "from one.api import ONE; ONE()"')
         except BaseException as e:
             print(
                 e, "\n\nONE setup incomplete please set up ONE manually",
