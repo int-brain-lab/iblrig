@@ -21,3 +21,4 @@ if __name__ == "__main__":
         log.warning(
             "Failed to register session on Alyx, will try again from local server after transfer...",
         )
+
