@@ -4,22 +4,21 @@
 # @Date: Thursday, January 31st 2019, 1:15:46 pm
 import argparse
 from pathlib import Path
-import traceback
 import logging
 import os
+import traceback
+from pathlib import Path
 
 from ibllib.oneibl.registration import RegistrationClient
 from iblrig.poop_count import poop
 from iblrig import envs
+from iblrig.poop_count import poop
 
 _logger = logging.getLogger('ibllib')
 IBLRIG_FOLDER = Path(__file__).absolute().parent.parent
 IBLRIG_DATA = IBLRIG_FOLDER.parent / "iblrig_data" / "Subjects"  # noqa
 IBLRIG_PARAMS_FOLDER = IBLRIG_FOLDER.parent / "iblrig_params"
-
-
-def main():
-    RegistrationClient(one=None).create_sessions(IBLRIG_DATA, dry=False)
+log = logging.getLogger("iblrig")
 
 
 if __name__ == "__main__":
@@ -42,6 +41,8 @@ if __name__ == "__main__":
         os.system(f"{python} register_session.py {IBLRIG_DATA}")
         os.chdir(here)
 
-    except BaseException as e:
-        _logger.error(traceback.format_exc())
-        _logger.error("\n\nFailed to create session, will try again from local server after transfer...")
+    except BaseException:
+        log.error(traceback.format_exc())
+        log.warning(
+            "Failed to register session on Alyx, will try again from local server after transfer...",
+        )
