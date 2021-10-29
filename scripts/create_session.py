@@ -4,13 +4,15 @@
 # @Date: Thursday, January 31st 2019, 1:15:46 pm
 import argparse
 from pathlib import Path
+import traceback
+import logging
 import os
 
 from ibllib.oneibl.registration import RegistrationClient
-
 from iblrig.poop_count import poop
 from iblrig import envs
 
+_logger = logging.getLogger('ibllib')
 IBLRIG_FOLDER = Path(__file__).absolute().parent.parent
 IBLRIG_DATA = IBLRIG_FOLDER.parent / "iblrig_data" / "Subjects"  # noqa
 IBLRIG_PARAMS_FOLDER = IBLRIG_FOLDER.parent / "iblrig_params"
@@ -41,6 +43,5 @@ if __name__ == "__main__":
         os.chdir(here)
 
     except BaseException as e:
-        print(
-            e, "\n\nFailed to create session, will try again from local server after transfer...",
-        )
+        _logger.error(traceback.format_exc())
+        _logger.error("\n\nFailed to create session, will try again from local server after transfer...")
