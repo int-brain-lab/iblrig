@@ -1,5 +1,19 @@
 # **Release notes**
 
+## **Release Notes 6.5.1**
+
+* Exposed Spontaneous activity timer to task code so users can change it if they want.
+* Small Bugfix in copy task code routine for personal projects, now consideres the project folder
+* Bugfix introduced by pandas syntax change in water calibration
+* Removed maxval of 12 for selection of pregenerated sessions in pop up prompt
+* Reversed double and single quote in install for ONE install procedure
+* Updated Bonsai.Design.Visualizers" version="2.6.2
+* Some refactoring of session_creator.py in preparation of full session creation on task startup
+* Removed Merge and Repeat node encapsulation of Bonsai state machine in visual stim
+* Added disabled node with rollback of closed_loop state in Bonsai visual stim workflow
+* Bugfix: Training/HabituationCW video folder now not created on ephys rig
+* Added logging and traceback to create_session.py and register_session.py PR#370
+
 ## **Release Notes 6.5.0**
 
 * Added camera config script == videopc
