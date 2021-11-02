@@ -19,6 +19,5 @@ if __name__ == "__main__":
     except Exception:
         log.error(traceback.format_exc())
         log.warning(
-            "Failed to register session on Alyx, will try again from local server after transfer...",
+            "Failed to register session on Alyx, will try again from local server after transfer",
         )
-
