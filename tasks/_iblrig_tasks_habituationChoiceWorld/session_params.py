@@ -114,8 +114,9 @@ class SessionParamHandler(object):
             iotasks.save_session_settings(self)
             iotasks.copy_task_code(self)
             iotasks.save_task_code(self)
-            iotasks.copy_video_code(self)
-            iotasks.save_video_code(self)
+            if "ephys" not in self.PYBPOD_BOARD:
+                iotasks.copy_video_code(self)
+                iotasks.save_video_code(self)
             self.bpod_lights(0)
 
     # =========================================================================
