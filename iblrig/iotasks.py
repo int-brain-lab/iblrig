@@ -58,7 +58,7 @@ def save_session_settings(sph: object) -> None:
 
 def copy_task_code(sph: object) -> None:
     # Copy behavioral task python code
-    src = os.path.join(sph.IBLRIG_PARAMS_FOLDER, "IBL", "tasks", sph.PYBPOD_PROTOCOL)
+    src = os.path.join(sph.IBLRIG_PARAMS_FOLDER, sph.PYBPOD_PROJECT, "tasks", sph.PYBPOD_PROTOCOL)
     dst = os.path.join(sph.SESSION_RAW_DATA_FOLDER, sph.PYBPOD_PROTOCOL)
     shutil.copytree(src, dst)
     # Copy stimulus folder with bonsai workflow

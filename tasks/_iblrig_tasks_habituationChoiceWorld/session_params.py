@@ -30,7 +30,6 @@ class SessionParamHandler(object):
 
     def __init__(self, task_settings, user_settings, debug=False, fmake=True):
         self.DEBUG = debug
-        make = False if not fmake else ["video"]
         # =====================================================================
         # IMPORT task_settings, user_settings, and SessionPathCreator params
         # =====================================================================
@@ -43,6 +42,12 @@ class SessionParamHandler(object):
         }
         self.__dict__.update(us)
         self = iotasks.deserialize_pybpod_user_settings(self)
+        if not fmake:
+            make = False
+        elif fmake and "ephys" in self.PYBPOD_BOARD:
+            make = True  # True makes only raw_behavior_data folder
+        else:
+            make = ["video"]  # besides behavior which folders to create
         spc = SessionPathCreator(self.PYBPOD_SUBJECTS[0], protocol=self.PYBPOD_PROTOCOL, make=make)
         self.__dict__.update(spc.__dict__)
         # =====================================================================

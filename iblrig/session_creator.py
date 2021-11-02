@@ -108,7 +108,7 @@ def plot_pcqs(session_num, folder="./tasks/_iblrig_tasks_ephysChoiceWorld/sessio
         ax.set_ylabel(l)
         for ax, l in zip(
             f.axes,
-            ["Position (º)", "Contrasts (%)", "Quiescent period (s)", "Stimulus phase (rad)",],
+            ["Position (º)", "Contrasts (%)", "Quiescent period (s)", "Stimulus phase (rad)", ],
         )
     ]
     [ax.axvline(x, alpha=0.5) for x in np.cumsum(len_block) for ax in f.axes]
@@ -144,10 +144,9 @@ def make_stims_for_certification_pcs(seed_num=None, save=False):
 
 
 # PASSIVE CHOICE WORLD
-def make_stims_for_passiveCW_pcs(seed_num=None, save=False):
+def make_stims_for_passiveCW_pcs(seed_num=None):  # XXX
     if seed_num is not None:
         np.random.seed(seed_num)
-    iblrig_path = Path(ph.get_iblrig_folder())
     # Generate the position and contrast for the replayed stims
     contrasts = [1.0, 0.25, 0.125, 0.0625]
     zero_contrasts = [0.0]
@@ -167,15 +166,15 @@ def make_stims_for_passiveCW_pcs(seed_num=None, save=False):
 
     np.random.shuffle(gabors)
     # Make into strings for saving
-    if save:
-        fpath = iblrig_path / "visual_stim" / "passiveChoiceWorld"
-        fpath = fpath / "Extensions" / "passiveCW_stims.csv"
-        np.savetxt(fpath, gabors, delimiter=" ", fmt=["%d", "%f", "%f"])
+    # if save:
+    #     fpath = iblrig_path / "visual_stim" / "passiveChoiceWorld"
+    #     fpath = fpath / "Extensions" / "passiveCW_stims.csv"
+    #     np.savetxt(fpath, gabors, delimiter=" ", fmt=["%d", "%f", "%f"])
 
     return gabors
 
 
-def make_passiveCW_session_delays_ids(seed_num=None):
+def make_passiveCW_session_delays_ids(seed_num=None):  # XXX
     if seed_num is not None:
         np.random.seed(seed_num)
 
@@ -228,8 +227,9 @@ def make_passiveCW_session_delays_ids(seed_num=None):
 def pre_generate_passiveCW_session_files(
     nsessions, path="./tasks/_iblrig_tasks_ephysChoiceWorld/sessions"
 ):
-    iblrig_path = Path(ph.get_iblrig_folder())
-    path = iblrig_path / Path(path)
+    # Standalone passive in
+    # /home/nico/Projects/IBL/int-brain-lab/personal_project_protocols/carandiniharris_midbrain_ibl/tasks/_chmid_tasks_passive/sessions
+    path = Path(path)
     path.mkdir(parents=True, exist_ok=True)
     for i in range(nsessions):
         (delays, ids,) = make_passiveCW_session_delays_ids()
@@ -246,8 +246,7 @@ def pre_generate_passiveCW_session_files(
 
 
 def pre_generate_stim_phase(nsessions, path="./tasks/_iblrig_tasks_ephysChoiceWorld/sessions"):
-    iblrig_path = Path(ph.get_iblrig_folder())
-    path = iblrig_path / Path(path)
+    path = Path(path)
     path.mkdir(parents=True, exist_ok=True)
     for i in range(nsessions):
         length = len(np.load(path.joinpath(f"session_{i}_ephys_pcqs.npy")))
@@ -257,6 +256,16 @@ def pre_generate_stim_phase(nsessions, path="./tasks/_iblrig_tasks_ephysChoiceWo
         length = len(np.load(path.joinpath("session_mock_ephys_pcqs.npy")))
         sphase = np.array([np.random.uniform(0, 2 * math.pi) for x in range(length)])
         np.save(path / "session_mock_stim_phase.npy", sphase)
+
+# Variables thatchange every trial:
+# contrast, position, phase, quiescence_duration, probability_left,
+# reverse_contingecy, laser_on, block_id, trial_id
+
+def create_session_contrasts(seed=None):
+    if seed is not None:
+        np.random.seed(seed)
+
+    return np.random.uniform(0.1, 0.9, 180)
 
 
 if __name__ == "__main__":

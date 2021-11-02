@@ -398,7 +398,6 @@ def ask_confirm_session_idx(session_idx):
         default=sess_num,
         askint=True,
         minval=1,
-        maxval=12,
     )
     if sess_num != session_idx + 1:
         session_idx = sess_num - 1
