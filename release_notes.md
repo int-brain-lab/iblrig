@@ -13,6 +13,7 @@
 * Added disabled node with rollback of closed_loop state in Bonsai visual stim workflow
 * Bugfix: Training/HabituationCW video folder now not created on ephys rig
 * Added logging and traceback to create_session.py and register_session.py PR#370
+* Fixed a move_passive bug
 
 ## **Release Notes 6.5.0**
 
