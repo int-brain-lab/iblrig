@@ -168,7 +168,11 @@ else:
         return
 
     def start_passive_visual_stim(
-        save2folder, map_time="00:05:00", fname="_iblrig_RFMapStim.raw.bin", rate=0.1, sa_time="00:10:00"
+        save2folder,
+        map_time="00:05:00",
+        fname="_iblrig_RFMapStim.raw.bin",
+        rate=0.1,
+        sa_time="00:10:00",
     ):
         here = os.getcwd()
         bns = ph.get_bonsai_path()
@@ -286,15 +290,7 @@ else:
         os.chdir(stim_folder)
         if harp:
             s = subprocess.Popen(
-                [
-                    bns,
-                    wkfl,
-                    noboot,
-                    noedit,
-                    data_file_name,
-                    lengths_file_name,
-                    harp_file_name,
-                ]
+                [bns, wkfl, noboot, noedit, data_file_name, lengths_file_name, harp_file_name, ]
             )
         else:
             s = subprocess.Popen([bns, wkfl, noboot, noedit, data_file_name, lengths_file_name])

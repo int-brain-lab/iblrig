@@ -3,14 +3,11 @@
 # @Author: Niccolò Bonacchi
 # @Date: Thursday, January 31st 2019, 1:15:46 pm
 import argparse
-from pathlib import Path
 import logging
 import os
 import traceback
 from pathlib import Path
 
-from ibllib.oneibl.registration import RegistrationClient
-from iblrig.poop_count import poop
 from iblrig import envs
 from iblrig.poop_count import poop
 
@@ -44,5 +41,5 @@ if __name__ == "__main__":
     except BaseException:
         log.error(traceback.format_exc())
         log.warning(
-            "Failed to register session on Alyx, will try again from local server after transfer...",
+            "Failed to register session on Alyx, will try again from local server after transfer",
         )
