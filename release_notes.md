@@ -1,5 +1,10 @@
 # **Release notes**
 
+## **Release Notes 6.5.2**
+
+* Bugfix: avoid code copy in HabituationCW and TrainingCW on ephys rig
+* Bugfix: avoid shader window freezing Bonsai processing: Keep latest bootstrapper, downgraded shader package/Bonvision
+
 ## **Release Notes 6.5.1**
 
 * Exposed Spontaneous activity timer to task code so users can change it if they want.
