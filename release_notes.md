@@ -2,6 +2,9 @@
 
 ## **Release Notes 6.5.2**
 
+* Bugfix: Reinstated old bootstrapping method of Bonsai installation
+## **Release Notes 6.5.2**
+
 * Bugfix: avoid code copy in HabituationCW and TrainingCW on ephys rig
 * Bugfix: avoid shader window freezing Bonsai processing: Keep latest bootstrapper, downgraded shader package/Bonvision
 
