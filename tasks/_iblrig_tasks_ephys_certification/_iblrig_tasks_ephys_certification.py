@@ -17,7 +17,7 @@ sph = SessionParamHandler(task_settings, user_settings)
 CWD = os.getcwd()
 BONSAI_FOLDER = Path(sph.IBLRIG_FOLDER) / "Bonsai"
 
-bns = str(BONSAI_FOLDER / "Bonsai.exe")
+bns = str(BONSAI_FOLDER / "Bonsai64.exe")
 certification_folder = Path(sph.IBLRIG_FOLDER) / "visual_stim" / "ephys_certification"
 wrkfl = str(certification_folder / "ephys_certification.bonsai")
 
