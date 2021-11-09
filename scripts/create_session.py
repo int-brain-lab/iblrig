@@ -11,7 +11,6 @@ from pathlib import Path
 from iblrig import envs
 from iblrig.poop_count import poop
 
-_logger = logging.getLogger('ibllib')
 IBLRIG_FOLDER = Path(__file__).absolute().parent.parent
 IBLRIG_DATA = IBLRIG_FOLDER.parent / "iblrig_data" / "Subjects"  # noqa
 IBLRIG_PARAMS_FOLDER = IBLRIG_FOLDER.parent / "iblrig_params"
@@ -32,6 +31,7 @@ if __name__ == "__main__":
     if args.poop:
         poop()
     try:
+        print("Creating session from ibllib environment...")
         python = envs.get_env_python(env_name="ibllib")
         here = os.getcwd()
         os.chdir(os.path.join(IBLRIG_FOLDER, "scripts"))
