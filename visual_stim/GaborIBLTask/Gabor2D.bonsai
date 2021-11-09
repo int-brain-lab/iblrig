@@ -1,17 +1,17 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<WorkflowBuilder Version="2.5.0"
+<WorkflowBuilder Version="2.6.2"
                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                  xmlns:scr="clr-namespace:Bonsai.Scripting;assembly=Bonsai.Scripting"
                  xmlns:rx="clr-namespace:Bonsai.Reactive;assembly=Bonsai.Core"
                  xmlns:osc="clr-namespace:Bonsai.Osc;assembly=Bonsai.Osc"
-                 xmlns:p1="clr-namespace:Bonsai.Numerics;assembly=Bonsai.Numerics"
+                 xmlns:num="clr-namespace:Bonsai.Numerics;assembly=Bonsai.Numerics"
                  xmlns:dsp="clr-namespace:Bonsai.Dsp;assembly=Bonsai.Dsp"
                  xmlns:wie="clr-namespace:Bonsai.Windows.Input;assembly=Bonsai.Windows.Input"
                  xmlns:gli="clr-namespace:Bonsai.Shaders.Input;assembly=Bonsai.Shaders"
                  xmlns:gl="clr-namespace:Bonsai.Shaders;assembly=Bonsai.Shaders"
                  xmlns:res="clr-namespace:Bonsai.Resources;assembly=Bonsai.System"
                  xmlns:cv="clr-namespace:Bonsai.Vision;assembly=Bonsai.Vision"
-                 xmlns:p2="clr-namespace:Bonsai.Bpod;assembly=Bonsai.Bpod"
+                 xmlns:p1="clr-namespace:Bonsai.Bpod;assembly=Bonsai.Bpod"
                  xmlns:io="clr-namespace:Bonsai.IO;assembly=Bonsai.System"
                  xmlns="https://bonsai-rx.org/2018/workflow">
   <Workflow>
@@ -184,7 +184,7 @@
                           <Name>TranslationZ</Name>
                         </Expression>
                         <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="p1:Abs" />
+                          <Combinator xsi:type="num:Abs" />
                         </Expression>
                         <Expression xsi:type="PropertyMapping">
                           <PropertyMappings>
@@ -205,10 +205,10 @@
                           </Operand>
                         </Expression>
                         <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="p1:Atan" />
+                          <Combinator xsi:type="num:Atan" />
                         </Expression>
                         <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="p1:RadianToDegree" />
+                          <Combinator xsi:type="num:RadianToDegree" />
                         </Expression>
                         <Expression xsi:type="Multiply">
                           <Operand xsi:type="DoubleProperty">
@@ -341,7 +341,7 @@
                     <osc:Connection>bpod</osc:Connection>
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="p1:RadianToDegree" />
+                    <Combinator xsi:type="num:RadianToDegree" />
                   </Expression>
                   <Expression xsi:type="BehaviorSubject">
                     <Name>TrialStimPhase</Name>
@@ -775,6 +775,8 @@
                     <ExtentY>0.2</ExtentY>
                     <LocationX>1.23333335</LocationX>
                     <LocationY>-1</LocationY>
+                    <Layer>1</Layer>
+                    <Angle>0</Angle>
                     <ColorR>0</ColorR>
                     <ColorG>0</ColorG>
                     <ColorB>0</ColorB>
@@ -911,12 +913,14 @@
                   <Expression xsi:type="IncludeWorkflow" Path="BonVision:Primitives.DrawGratings.bonsai">
                     <LocationX>0</LocationX>
                     <LocationY>0</LocationY>
+                    <Layer>0</Layer>
                     <Angle>0</Angle>
                     <SpatialFrequency>0.1</SpatialFrequency>
                     <TemporalFrequency>0</TemporalFrequency>
                     <Phase>0</Phase>
                     <SquareWave>false</SquareWave>
                     <Contrast>1</Contrast>
+                    <DutyCycle xsi:nil="true" />
                     <Radius>0.477208972</Radius>
                     <Aperture>0.477208972</Aperture>
                     <Opacity>1</Opacity>
@@ -996,12 +1000,12 @@
                     <Property Name="PortName" DisplayName="REPortName" />
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="p2:Encoder">
-                      <p2:PortName>COM7</p2:PortName>
+                    <Combinator xsi:type="p1:Encoder">
+                      <p1:PortName>COM7</p1:PortName>
                     </Combinator>
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="p2:EncoderEvent" />
+                    <Combinator xsi:type="p1:EncoderEvent" />
                   </Expression>
                   <Expression xsi:type="MemberSelector">
                     <Selector>Timestamp,Data</Selector>
@@ -1019,7 +1023,7 @@
                     <Name>BpodEvent</Name>
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="p2:EncoderPosition" />
+                    <Combinator xsi:type="p1:EncoderPosition" />
                   </Expression>
                   <Expression xsi:type="MemberSelector">
                     <Selector>Timestamp,Position</Selector>
@@ -3130,6 +3134,7 @@ Value = whhel_radius for wheel_perim</Description>
               <Combinator xsi:type="rx:Switch" />
             </Expression>
             <Expression xsi:type="Condition">
+              <Name>SHOW CENTER</Name>
               <Workflow>
                 <Nodes>
                   <Expression xsi:type="WorkflowInput">
