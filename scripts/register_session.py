@@ -17,6 +17,7 @@ if __name__ == "__main__":
     try:
         log.info("Trying to register session in Alyx...")
         RegistrationClient(one=None).create_sessions(IBLRIG_DATA, dry=False)
+        log.info("Done")
     except Exception:
         log.error(traceback.format_exc())
         log.warning(
