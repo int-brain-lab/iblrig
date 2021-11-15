@@ -1,11 +1,13 @@
 # **Release notes**
+## **Release Notes 6.4.3**
+* Move passive bugfix
 
 ## **Release Notes 6.4.2**
 
 Patch update (bugfixes)
 
 * Increased stim_off state timer to 150ms
-* Updated ibllib, Bonsai and Bonvision 
+* Updated ibllib, Bonsai and Bonvision
 * New update procedure for Bonsai that will simplify updates for users
 * New pipeline architecture (removed deprecated flag creations on transfer)
 * Mice that have more than one project now will require user to pick the project on run
@@ -48,12 +50,12 @@ Minor update (added functionality)
 ## **Release Notes 6.2.5**
 
 *THIS: State Machine changed*
-Patch update (bugfixes)  
+Patch update (bugfixes)
 
 * Fixed stimulus sometimes keeps moving after reward for all tasks
 * Fixed session_params bug in ephysCW
 * Under the hood refactorings
-  
+
 ## **Release Notes 6.2.4**
 
 Patch update (bugfixes)
@@ -73,13 +75,13 @@ Patch update (bugfixes)
 
 ## **Release Notes 6.2.2**
 
-Patch update (bugfixes)  
+Patch update (bugfixes)
 
 * SESSION_ORDER bugfix
 
 ## **Release Notes 6.2.1**
 
-Patch update (bugfixes)  
+Patch update (bugfixes)
 Mainly in **ephysCW** and **passiveCW**
 
 * Poop only at end o passive run

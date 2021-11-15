@@ -16,13 +16,14 @@ IBLRIG_DATA_PATH = Path(ph.get_iblrig_data_folder())
 
 
 def main():
-    passive_sessions = IBLRIG_DATA_PATH.rglob("passive_data_for_ephys.flag")
+    passive_sessions = list(IBLRIG_DATA_PATH.rglob("passive_data_for_ephys.flag"))
 
     # For each passive session found look into passiveSettings to find ephysSession name
     # search for the ephys session session in the rglobbed ephys sessions
     # If you find it just rename and move the folder raw_behavior_data -> raw_passive_data,
     # If no find search specifically for that session from the metadata and try to copy the folder
     # If folder exists throw an error
+    log.info(f"Found {len(passive_sessions)} sessions in {IBLRIG_DATA_PATH}")
     for ps in passive_sessions:
         sett = raw.load_settings(str(ps.parent))
         esess = sett["CORRESPONDING_EPHYS_SESSION"]
