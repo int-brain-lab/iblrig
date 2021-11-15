@@ -15,7 +15,7 @@ ibllib==1.5.5
 idna==2.8
 kiwisolver==1.1.0
 libusb==1.0.22b4
-libusb1==1.7
+libusb1>=1.7
 logging-bootstrap==1.0.0
 matplotlib==3.0.3
 numpy==1.17.2
