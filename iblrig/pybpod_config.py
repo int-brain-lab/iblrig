@@ -149,7 +149,7 @@ def create_local_project_from_alyx(project_name, one=None, force=False):
 
 
 # SUBJECTS
-def create_subject(project_name, subject_name: str, force=False):
+def create_subject(project_name, subject_name: str = "_iblrig_test_mouse", force=False):
     project_name = alyx2local_names.get(project_name, project_name)
     project_path = IBLRIG_PARAMS_FOLDER / project_name
     p = Project()
