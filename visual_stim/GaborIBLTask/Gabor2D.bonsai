@@ -1,17 +1,17 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<WorkflowBuilder Version="2.5.0"
+<WorkflowBuilder Version="2.6.2"
                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                  xmlns:osc="clr-namespace:Bonsai.Osc;assembly=Bonsai.Osc"
+                 xmlns:gl="clr-namespace:Bonsai.Shaders;assembly=Bonsai.Shaders"
                  xmlns:dsp="clr-namespace:Bonsai.Dsp;assembly=Bonsai.Dsp"
+                 xmlns:num="clr-namespace:Bonsai.Numerics;assembly=Bonsai.Numerics"
                  xmlns:wie="clr-namespace:Bonsai.Windows.Input;assembly=Bonsai.Windows.Input"
                  xmlns:gli="clr-namespace:Bonsai.Shaders.Input;assembly=Bonsai.Shaders"
-                 xmlns:gl="clr-namespace:Bonsai.Shaders;assembly=Bonsai.Shaders"
-                 xmlns:p1="clr-namespace:Bonsai.Numerics;assembly=Bonsai.Numerics"
                  xmlns:res="clr-namespace:Bonsai.Resources;assembly=Bonsai.System"
                  xmlns:rx="clr-namespace:Bonsai.Reactive;assembly=Bonsai.Core"
                  xmlns:cv="clr-namespace:Bonsai.Vision;assembly=Bonsai.Vision"
                  xmlns:scr="clr-namespace:Bonsai.Scripting;assembly=Bonsai.Scripting"
-                 xmlns:p2="clr-namespace:Bonsai.Bpod;assembly=Bonsai.Bpod"
+                 xmlns:p1="clr-namespace:Bonsai.Bpod;assembly=Bonsai.Bpod"
                  xmlns:io="clr-namespace:Bonsai.IO;assembly=Bonsai.System"
                  xmlns="https://bonsai-rx.org/2018/workflow">
   <Workflow>
@@ -134,7 +134,7 @@
                     <Combinator xsi:type="gl:SampleOnRenderFrame" />
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="p1:RadianToDegree" />
+                    <Combinator xsi:type="num:RadianToDegree" />
                   </Expression>
                   <Expression xsi:type="BehaviorSubject">
                     <Name>StimPhase</Name>
@@ -286,6 +286,20 @@
                             <Name>BpodEvent</Name>
                           </Expression>
                           <Expression xsi:type="Combinator">
+                            <Combinator xsi:type="wie:KeyDown">
+                              <wie:Filter>D5</wie:Filter>
+                              <wie:SuppressRepetitions>false</wie:SuppressRepetitions>
+                            </Combinator>
+                          </Expression>
+                          <Expression xsi:type="Combinator">
+                            <Combinator xsi:type="IntProperty">
+                              <Value>5</Value>
+                            </Combinator>
+                          </Expression>
+                          <Expression xsi:type="MulticastSubject">
+                            <Name>BpodEvent</Name>
+                          </Expression>
+                          <Expression xsi:type="Combinator">
                             <Combinator xsi:type="gli:MouseMove" />
                           </Expression>
                           <Expression xsi:type="MemberSelector">
@@ -296,7 +310,7 @@
                               <dsp:Min>0</dsp:Min>
                               <dsp:Max>1024</dsp:Max>
                               <dsp:RangeMin>-20</dsp:RangeMin>
-                              <dsp:RangeMax>3333331</dsp:RangeMax>
+                              <dsp:RangeMax>20</dsp:RangeMax>
                               <dsp:RescaleType>Linear</dsp:RescaleType>
                             </Combinator>
                           </Expression>
@@ -328,8 +342,10 @@
                           <Edge From="29" To="30" Label="Source1" />
                           <Edge From="31" To="32" Label="Source1" />
                           <Edge From="32" To="33" Label="Source1" />
-                          <Edge From="33" To="34" Label="Source1" />
                           <Edge From="34" To="35" Label="Source1" />
+                          <Edge From="35" To="36" Label="Source1" />
+                          <Edge From="36" To="37" Label="Source1" />
+                          <Edge From="37" To="38" Label="Source1" />
                         </Edges>
                       </Workflow>
                     </Builder>
@@ -427,7 +443,7 @@
                           <Name>TranslationZ</Name>
                         </Expression>
                         <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="p1:Abs" />
+                          <Combinator xsi:type="num:Abs" />
                         </Expression>
                         <Expression xsi:type="PropertyMapping">
                           <PropertyMappings>
@@ -448,10 +464,10 @@
                           </Operand>
                         </Expression>
                         <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="p1:Atan" />
+                          <Combinator xsi:type="num:Atan" />
                         </Expression>
                         <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="p1:RadianToDegree" />
+                          <Combinator xsi:type="num:RadianToDegree" />
                         </Expression>
                         <Expression xsi:type="Multiply">
                           <Operand xsi:type="DoubleProperty">
@@ -669,9 +685,11 @@
                     <ExtentY>0.2</ExtentY>
                     <LocationX>1.23333335</LocationX>
                     <LocationY>-1</LocationY>
-                    <ColorR>0</ColorR>
-                    <ColorG>0</ColorG>
-                    <ColorB>0</ColorB>
+                    <Layer>1</Layer>
+                    <Angle>0</Angle>
+                    <ColorR>1</ColorR>
+                    <ColorG>1</ColorG>
+                    <ColorB>1</ColorB>
                     <ColorA>1</ColorA>
                   </Expression>
                   <Expression xsi:type="SubscribeSubject">
@@ -805,15 +823,17 @@
                   <Expression xsi:type="IncludeWorkflow" Path="BonVision:Primitives.DrawGratings.bonsai">
                     <LocationX>0</LocationX>
                     <LocationY>0</LocationY>
+                    <Layer>0</Layer>
                     <Angle>0</Angle>
                     <SpatialFrequency>0.1</SpatialFrequency>
                     <TemporalFrequency>0</TemporalFrequency>
-                    <Phase>572.9578</Phase>
+                    <Phase>0</Phase>
                     <SquareWave>false</SquareWave>
-                    <Contrast>0</Contrast>
+                    <Contrast>1</Contrast>
+                    <DutyCycle xsi:nil="true" />
                     <Radius>0.445389926</Radius>
                     <Aperture>0.445389926</Aperture>
-                    <Opacity>0</Opacity>
+                    <Opacity>1</Opacity>
                     <ExtentX>110.015961</ExtentX>
                     <ExtentY>110.015961</ExtentY>
                   </Expression>
@@ -891,12 +911,12 @@
                     <Property Name="PortName" DisplayName="REPortName" />
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="p2:Encoder">
-                      <p2:PortName>COM7</p2:PortName>
+                    <Combinator xsi:type="p1:Encoder">
+                      <p1:PortName>COM7</p1:PortName>
                     </Combinator>
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="p2:EncoderEvent" />
+                    <Combinator xsi:type="p1:EncoderEvent" />
                   </Expression>
                   <Expression xsi:type="MemberSelector">
                     <Selector>Timestamp,Data</Selector>
@@ -917,7 +937,7 @@
                     <Name>BpodEvent</Name>
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="p2:EncoderPosition" />
+                    <Combinator xsi:type="p1:EncoderPosition" />
                   </Expression>
                   <Expression xsi:type="MemberSelector">
                     <Selector>Timestamp,Position</Selector>
@@ -1422,6 +1442,63 @@ Value = whhel_radius for wheel_perim</Description>
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="rx:Switch" />
             </Expression>
+            <Expression xsi:type="Condition">
+              <Name>SHOWCENTER</Name>
+              <Workflow>
+                <Nodes>
+                  <Expression xsi:type="WorkflowInput">
+                    <Name>Source1</Name>
+                  </Expression>
+                  <Expression xsi:type="Equal">
+                    <Operand xsi:type="FloatProperty">
+                      <Value>5</Value>
+                    </Operand>
+                  </Expression>
+                  <Expression xsi:type="WorkflowOutput" />
+                </Nodes>
+                <Edges>
+                  <Edge From="0" To="1" Label="Source1" />
+                  <Edge From="1" To="2" Label="Source1" />
+                </Edges>
+              </Workflow>
+            </Expression>
+            <Expression xsi:type="SelectMany">
+              <Workflow>
+                <Nodes>
+                  <Expression xsi:type="WorkflowInput">
+                    <Name>Source1</Name>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="FloatProperty">
+                      <Value>0</Value>
+                    </Combinator>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="rx:Sample" />
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="rx:Take">
+                      <rx:Count>1</rx:Count>
+                    </Combinator>
+                  </Expression>
+                  <Expression xsi:type="MulticastSubject">
+                    <Name>StimLocationX</Name>
+                  </Expression>
+                  <Expression xsi:type="MulticastSubject">
+                    <Name>UpdateSyncSquare</Name>
+                  </Expression>
+                  <Expression xsi:type="WorkflowOutput" />
+                </Nodes>
+                <Edges>
+                  <Edge From="0" To="2" Label="Source2" />
+                  <Edge From="1" To="2" Label="Source1" />
+                  <Edge From="2" To="3" Label="Source1" />
+                  <Edge From="3" To="4" Label="Source1" />
+                  <Edge From="4" To="5" Label="Source1" />
+                  <Edge From="5" To="6" Label="Source1" />
+                </Edges>
+              </Workflow>
+            </Expression>
             <Expression xsi:type="ExternalizedMapping">
               <Property Name="FileNameTrialInfo" />
               <Property Name="FileNameSyncSquareUpdate" />
@@ -1611,24 +1688,28 @@ _iblrig_micData.raw.wav
             <Edge From="5" To="6" Label="Source1" />
             <Edge From="5" To="8" Label="Source1" />
             <Edge From="5" To="11" Label="Source1" />
+            <Edge From="5" To="14" Label="Source1" />
             <Edge From="6" To="7" Label="Source1" />
             <Edge From="8" To="9" Label="Source1" />
             <Edge From="9" To="10" Label="Source1" />
             <Edge From="11" To="12" Label="Source1" />
             <Edge From="12" To="13" Label="Source1" />
-            <Edge From="14" To="18" Label="Source1" />
-            <Edge From="15" To="18" Label="Source2" />
-            <Edge From="16" To="18" Label="Source3" />
-            <Edge From="17" To="18" Label="Source4" />
-            <Edge From="19" To="22" Label="Source1" />
-            <Edge From="20" To="21" Label="Source1" />
-            <Edge From="21" To="22" Label="Source2" />
+            <Edge From="14" To="15" Label="Source1" />
+            <Edge From="16" To="20" Label="Source1" />
+            <Edge From="17" To="20" Label="Source2" />
+            <Edge From="18" To="20" Label="Source3" />
+            <Edge From="19" To="20" Label="Source4" />
+            <Edge From="21" To="24" Label="Source1" />
             <Edge From="22" To="23" Label="Source1" />
+            <Edge From="23" To="24" Label="Source2" />
+            <Edge From="24" To="25" Label="Source1" />
           </Edges>
         </Workflow>
       </Expression>
       <Expression xsi:type="Combinator">
-        <Combinator xsi:type="rx:Last" />
+        <Combinator xsi:type="rx:Take">
+          <rx:Count>1</rx:Count>
+        </Combinator>
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="rx:Delay">
