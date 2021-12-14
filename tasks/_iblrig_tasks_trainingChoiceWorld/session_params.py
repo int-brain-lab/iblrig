@@ -94,6 +94,10 @@ class SessionParamHandler(object):
             self.ALL_THRESHOLDS, self.STIM_GAIN, self.PARAMS["COM_ROTARY_ENCODER"]
         )
         # =====================================================================
+        # RUN VISUAL STIM
+        # =====================================================================
+        bonsai.start_visual_stim(self)
+        # =====================================================================
         # SOUNDS
         # =====================================================================
         self.SOFT_SOUND = None if "ephys" in self.PYBPOD_BOARD else self.SOFT_SOUND
@@ -124,10 +128,6 @@ class SessionParamHandler(object):
         self.OUT_STOP_SOUND = ("SoftCode", 0) if self.SOFT_SOUND else ("Serial3", ord("X"))
         self.OUT_TONE = ("SoftCode", 1) if self.SOFT_SOUND else ("Serial3", 6)
         self.OUT_NOISE = ("SoftCode", 2) if self.SOFT_SOUND else ("Serial3", 7)
-        # =====================================================================
-        # RUN VISUAL STIM
-        # =====================================================================
-        bonsai.start_visual_stim(self)
         # =====================================================================
         # SAVE SETTINGS FILE AND TASK CODE
         # =====================================================================

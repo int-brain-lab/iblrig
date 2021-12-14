@@ -134,6 +134,14 @@ class SessionParamHandler(object):
             self.ALL_THRESHOLDS, self.STIM_GAIN, self.PARAMS["COM_ROTARY_ENCODER"]
         )
         # =====================================================================
+        # VISUAL STIM
+        # =====================================================================
+        self.SYNC_SQUARE_X = 1.33
+        self.SYNC_SQUARE_Y = -1.03
+        self.USE_VISUAL_STIMULUS = True  # Run the visual stim in bonsai
+        self.BONSAI_EDITOR = False  # Open the Bonsai editor of visual stim
+        bonsai.start_visual_stim(self)
+        # =====================================================================
         # frame2TTL
         # =====================================================================
         # XXX: device
@@ -189,14 +197,6 @@ class SessionParamHandler(object):
         self.SUBJECT_WEIGHT = user_input.get_form_subject_weight(form_data)
         self.PROBE_DATA = user_input.get_form_probe_data(form_data)
         self.SUBJECT_PROJECT = None  # user_input.ask_project(self.PYBPOD_SUBJECTS[0])
-        # =====================================================================
-        # VISUAL STIM
-        # =====================================================================
-        self.SYNC_SQUARE_X = 1.33
-        self.SYNC_SQUARE_Y = -1.03
-        self.USE_VISUAL_STIMULUS = True  # Run the visual stim in bonsai
-        self.BONSAI_EDITOR = False  # Open the Bonsai editor of visual stim
-        bonsai.start_visual_stim(self)
         # =====================================================================
         # SAVE SETTINGS FILE AND TASK CODE
         # =====================================================================
