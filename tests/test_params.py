@@ -29,6 +29,8 @@ class TestParams(unittest.TestCase):
         from pkg_resources import parse_version
 
         out = params.get_iblrig_version()
+        if 'canary' in out:
+            return
         self.assertTrue(parse_version(out) >= parse_version("6.4.2"))
 
     def test_get_pybpod_board_name(self):

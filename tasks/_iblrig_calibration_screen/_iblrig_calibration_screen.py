@@ -4,6 +4,7 @@ from pathlib import Path
 import task_settings
 import user_settings  # PyBpod creates this file on run.
 from session_params import SessionParamHandler
+from iblrig.path_helper import get_bonsai_path
 
 # r = "/home/nico/Projects/IBL/github/iblrig"
 # task_settings.IBLRIG_FOLDER = r
@@ -20,7 +21,10 @@ server = Path(sph.IBLRIG_FOLDER) / "visual_stim" / "screen_calibration" / "photo
 # server = subprocess.Popen(server_cmd, stdout=subprocess.PIPE)
 # print(server)
 
-bns = Path(sph.IBLRIG_FOLDER) / "Bonsai" / "Bonsai.exe"
+bns = get_bonsai_path()
+# Path(sph.IBLRIG_FOLDER) / "Bonsai" / "Bonsai64.exe"
+# if not bns.exists():
+#     bns = Path(sph.IBLRIG_FOLDER) / "Bonsai" / "Bonsai.exe"
 wrkfl = Path(sph.IBLRIG_FOLDER) / "visual_stim" / "screen_calibration" / "screen_sweep.bonsai"
 noedit = "--no-editor"  # implies start
 nodebug = "--start-no-debug"

@@ -67,7 +67,12 @@ def update_bonsai_config():
         return
     print("\nUpdating Bonsai")
     broot = IBLRIG_ROOT_PATH / "Bonsai"
-    subprocess.call([str(broot / "Bonsai.exe"), "--no-editor"])
+    bonsai_exe = broot / "Bonsai64.exe"
+    if bonsai_exe.exists():
+        subprocess.call([str(bonsai_exe), '--no-editor', str(broot / 'empty.bonsai')])
+    else:
+        bonsai_exe = broot / "Bonsai.exe"
+        subprocess.call([str(bonsai_exe), "--no-editor"])
     print("Done")
 
 
@@ -91,7 +96,12 @@ def upgrade_bonsai(version, branch):
         git.checkout_version(version)
     here = os.getcwd()
     os.chdir(os.path.join(IBLRIG_ROOT_PATH, "Bonsai"))
-    subprocess.call("setup.bat")
+    broot = IBLRIG_ROOT_PATH / "Bonsai"
+    bonsai_exe = broot / "Bonsai64.exe"
+    if bonsai_exe.exists():
+        subprocess.call([str(bonsai_exe), '--no-editor', str(broot / 'empty.bonsai')])
+    else:
+        subprocess.call("setup.bat")
     os.chdir(here)
 
 
@@ -102,7 +112,7 @@ def check_update_exists():
         return False
     else:
         print(
-            "Newest version |{}| type:\n\npython update.py {}\n".format(
+            "Newer version available |{}| type:\n\npython update.py -v {}\n".format(
                 sorted(ALL_VERSIONS)[-1], sorted(ALL_VERSIONS)[-1]
             )
         )

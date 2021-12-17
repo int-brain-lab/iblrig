@@ -244,7 +244,11 @@ def install_bonsai(resp=False):
         # Setup Bonsai
         here = os.getcwd()
         os.chdir(bonsai_folder)
-        subprocess.call("setup.bat")
+        bonsai_exe = os.path.join(IBLRIG_ROOT_PATH, "Bonsai", "Bonsai64.exe")
+        if Path(bonsai_exe).exists():  # Either the bonsai64.exe exisits for old deplotment or
+            subprocess.call(bonsai_exe)  # call to restore state, will halt until window close
+        else:  # the new deployment will download the bonsai exe
+            subprocess.call("setup.bat")
         os.chdir(here)
     elif user_input != "n" and user_input != "y":
         print("Please answer 'y' or 'n'")
