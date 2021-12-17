@@ -22,6 +22,7 @@ end with user input
 """
 import datetime
 import logging
+import os
 import struct
 from pathlib import Path
 
@@ -35,6 +36,8 @@ from pybpodapi.protocol import Bpod
 
 import iblrig.logging_  # noqa
 import iblrig.params as params
+import iblrig.path_helper as ph
+from iblrig import envs
 from iblrig.frame2TTL import Frame2TTL
 
 log = logging.getLogger("iblrig")
@@ -60,6 +63,8 @@ def params_comports_ok() -> bool:
     out = True if all(subdict.values()) else False
     if not out:
         log.warning(f"Not all comports are present: \n{subdict}")
+    else:
+        log.info(f"All comports are present: \n{subdict}")
     return out
 
 
@@ -97,7 +102,11 @@ def calibration_dates_ok() -> bool:
 def alyx_ok() -> bool:
     out = False
     try:
-        ONE()
+        python = envs.get_env_python(env_name="ibllib")
+        here = os.getcwd()
+        os.chdir(os.path.join(ph.get_iblrig_folder(), "scripts"))
+        os.system(f'{python} -c "from one.api import ONE; ONE()"')
+        os.chdir(here)
         out = True
     except BaseException as e:
         log.warning(f"{e}\nCan't connect to Alyx.")
@@ -125,11 +134,10 @@ def alyx_server_rig_ok() -> bin:
     Try Alyx, try local server, try data folder
     """
     alyx_server_rig = 0b000
-    try:
-        ONE()
+    if alyx_ok():
         alyx_server_rig += 0b100
-    except BaseException as e:
-        log.warning(f"{e} \nCan't connect to Alyx.")
+    else:
+        log.warning(f"Can't connect to Alyx.")
 
     pars = _grep_param_dict()
     try:
@@ -338,16 +346,32 @@ def _list_pc_devices(grep=""):
 
 def rig_ok() -> bool:
     # Stuff to check on all rig types
+    ultramic_ok()
+    camera_ok()
+    f2ttl_ok()
+    bpod_modules_ok()
+    bpod_ok()
+    rotary_encoder_ok()
+    # alyx_server_rig_ok()
+    rig_data_folder_ok()
+    local_server_ok()
+    alyx_ok()
+    calibration_dates_ok()
+    params_comports_ok()
     {}
 
 
 def ephys_rig_ok() -> bool:
     # Stuff only present on ephys rig
+    rig_ok()
+    harp_sound_card_ok()
     {}
 
 
 def training_rig_ok() -> bool:
     # Stuff only present on training rig
+    rig_ok()
+    xonar_ok()
     {}
 
 
