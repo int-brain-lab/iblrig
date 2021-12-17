@@ -112,7 +112,7 @@ def check_update_exists():
         return False
     else:
         print(
-            "Newest version |{}| type:\n\npython update.py {}\n".format(
+            "Newer version available |{}| type:\n\npython update.py -v {}\n".format(
                 sorted(ALL_VERSIONS)[-1], sorted(ALL_VERSIONS)[-1]
             )
         )
