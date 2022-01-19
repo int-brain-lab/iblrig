@@ -6,28 +6,60 @@
 from ArCOM_F2TTL import ArCOM
 import numpy as np
 import time
+import serial
+
+
+class Frame2TTLv2(object):
+    def __init__(self, serial_port) -> None:
+        self.serial_port = serial_port
+        self.connected = False
+        self.hw_version = None
+        self.ser = self.connect()
+        self.light_threshold = 40
+        self.dark_threshold = 80
+        self.streaming = False
+        self.measured_black = None
+        self.measured_white = None
+        self.recomend_dark = None
+        self.recomend_light = None
+
+    def connect(self) -> serial.Serial:
+        """Create connection to serial_port"""
+        ser = serial.Serial(port=self.serial_port, baudrate=115200, timeout=1.0, write_timeout=1.0)
+        self.connected = ser.isOpen()
+        handshakeByte = self.ser.read(1)
+        self.hw_version =
+        return ser
+
+    def close(self) -> None:
+        """Close connection to serial port"""
+        self.ser.close()
+        self.connected = self.ser.isOpen()
 
 class Frame2TTLv2(object):
     def __init__(self, PortName):
         self.Port = ArCOM(PortName, 115200)
-        self.Port.write(ord('C'), 'uint8')
-        handshakeByte = self.Port.read(1, 'uint8')
+        self.Port.write(ord("C"), "uint8")
+        handshakeByte = self.Port.read(1, "uint8")
         if handshakeByte != 218:
-            raise F2TTLError('Error: Frame2TTL not detected on port ' + PortName + '.')
-        self.Port.write(ord('#'), 'uint8')
-        hardwareVersion = self.Port.read(1, 'uint8')
+            raise F2TTLError("Error: Frame2TTL not detected on port " + PortName + ".")
+        self.Port.write(ord("#"), "uint8")
+        hardwareVersion = self.Port.read(1, "uint8")
         if hardwareVersion != 2:
-            raise F2TTLError('Error: Frame2TTLv2 requires hardware version 2.')
-        self._lightThreshold = 150; # This is not a threshold of raw sensor data.
-        self._darkThreshold = -150; # It is a 20-sample sliding window avg of
-                                    # sample-wise differences in the raw signal.
+            raise F2TTLError("Error: Frame2TTLv2 requires hardware version 2.")
+        self._lightThreshold = 150
+        # This is not a threshold of raw sensor data.
+        self._darkThreshold = -150
+        # It is a 20-sample sliding window avg of
+        # sample-wise differences in the raw signal.
+
     @property
     def lightThreshold(self):
         return self._lightThreshold
 
     @lightThreshold.setter
     def lightThreshold(self, value):
-        self.Port.write(ord('T'), 'uint8', (value, self.darkThreshold), 'int16');
+        self.Port.write(ord("T"), "uint8", (value, self.darkThreshold), "int16")
         self._lightThreshold = value
 
     @property
@@ -36,24 +68,24 @@ class Frame2TTLv2(object):
 
     @darkThreshold.setter
     def darkThreshold(self, value):
-        self.Port.write(ord('T'), 'uint8', (self.lightThreshold, value), 'int16');
+        self.Port.write(ord("T"), "uint8", (self.lightThreshold, value), "int16")
         self._darkThreshold = value
 
-    def setLightThreshold_Auto(self): # Run with the sync patch set to black
-        self.Port.write(ord('L'), 'uint8')
+    def setLightThreshold_Auto(self):  # Run with the sync patch set to black
+        self.Port.write(ord("L"), "uint8")
         time.sleep(3)
-        newThreshold = self.Port.read(1, 'int16')
+        newThreshold = self.Port.read(1, "int16")
         self.lightThreshold = newThreshold[0]
 
-    def setDarkThreshold_Auto(self): # Run with the sync patch set to white
-        self.Port.write(ord('D'), 'uint8')
+    def setDarkThreshold_Auto(self):  # Run with the sync patch set to white
+        self.Port.write(ord("D"), "uint8")
         time.sleep(3)
-        newThreshold = self.Port.read(1, 'int16')
+        newThreshold = self.Port.read(1, "int16")
         self.darkThreshold = newThreshold[0]
 
-    def read_sensor(self, nSamples): # Return contiguous samples (raw sensor data)
-        self.Port.write(ord('V'), 'uint8', nSamples, 'uint32')
-        value = self.Port.read(nSamples, 'uint16')
+    def read_sensor(self, nSamples):  # Return contiguous samples (raw sensor data)
+        self.Port.write(ord("V"), "uint8", nSamples, "uint32")
+        value = self.Port.read(nSamples, "uint16")
         return value
 
     def measure_photons(self, num_samples: int = 250) -> dict:
@@ -71,15 +103,19 @@ class Frame2TTLv2(object):
         }
         return out
 
-    def __repr__ (self): # Self description when the object is entered into the IPython console with no properties or methods specified
-        return ('\nBpodHiFi with user properties:' + '\n\n'
-        'Port: ArCOMObject(' + self.Port.serialObject.port + ')'  + '\n'
-        'lightThreshold: ' + str(self.lightThreshold) + '\n'
-        'darkThreshold: ' + str(self.darkThreshold) + '\n'
+    def __repr__(
+        self,
+    ):  # Self description when the object is entered into the IPython console with no properties or methods specified
+        return (
+            "\nBpodHiFi with user properties:" + "\n\n"
+            "Port: ArCOMObject(" + self.Port.serialObject.port + ")" + "\n"
+            "lightThreshold: " + str(self.lightThreshold) + "\n"
+            "darkThreshold: " + str(self.darkThreshold) + "\n"
         )
 
     def __del__(self):
         self.Port.close()
+
 
 class F2TTLError(Exception):
     pass
@@ -87,5 +123,10 @@ class F2TTLError(Exception):
 
 if __name__ == "__main__":
     # Example usage:
-    f = Frame2TTLv2('COM4')
+    # port = 'COM4'
+    # port = '/dev/ttyACM0'
+    port = "/dev/serial/by-id/usb-Teensyduino_USB_Serial_10295450-if00"
+    f = Frame2TTLv2(port)
     print(f)
+
+    # Bus 001 Device 012: ID 16c0:0483 Van Ooijen Technische Informatica Teensyduino Serial
