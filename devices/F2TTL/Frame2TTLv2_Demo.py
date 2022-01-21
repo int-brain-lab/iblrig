@@ -6,11 +6,11 @@
 from Frame2TTLv2 import Frame2TTLv2
 import numpy as np
 
-F = Frame2TTLv2('COM4')
-F.lightThreshold = 150 # See note about threshold units in Frame2TTLv2.py
+F = Frame2TTLv2('/dev/ttyACM3')
+F.lightThreshold = 150  # See note about threshold units in Frame2TTLv2.py
 F.darkThreshold = -150
-myRawData = F.read_sensor(20000) # Read 20k samples of raw, contiguous sensor data
-F.measure_photons(1000) # Read 1000 samples and report stats
+myRawData = F.read_sensor(6)  # Read 20k samples of raw, contiguous sensor data
+F.measure_photons(1000)  # Read 1000 samples and report stats
 
 # Also note:
 
