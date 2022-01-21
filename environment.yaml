@@ -1,4 +1,4 @@
-name: iblenv
+name: iblrig
 channels:
   - defaults
 dependencies:

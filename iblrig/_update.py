@@ -24,7 +24,7 @@ VERSION = git.get_current_version()
 def check_reinstall_required():
     REINSTALL = True if list(Path(IBLRIG_ROOT_PATH).glob("reinstall")) else False
     if REINSTALL:
-        print("\nPlease deactivate iblenv and reinstall from the base environment")
+        print("\nPlease deactivate iblrig and reinstall from the base environment")
         print("\n-------------------------------------")
         print("\nconda deactivate && python install.py")
         print("\n-------------------------------------\n")
@@ -37,7 +37,7 @@ def iblrig_params_path():
 
 
 def update_env():
-    print("\nUpdating iblenv")
+    print("\nUpdating iblrig")
     os.system("pip install -r requirements.txt -U")
     os.system("pip install -e .")
 
@@ -218,7 +218,7 @@ def main(args):
     if args.setup_pybpod:
         setup_pybpod(iblrig_params_path())
 
-    if args.iblenv:
+    if args.iblrig:
         update_env()
 
     if args.pip:

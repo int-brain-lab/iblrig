@@ -31,7 +31,7 @@ jobs:
       - uses: conda-incubator/setup-miniconda@v2
         with:
           python-version: ${{ matrix.python-version }}
-          activate-environment: iblenv
+          activate-environment: iblrig
           environment-file: environment.yaml
       - name: Commands
         shell: bash -l {0}
@@ -41,6 +41,6 @@ jobs:
           which pip
           pip install setuptools wheel packaging
           python install.py --reinstall-response y --config-response y --bonsai-response y --ONE-response n
-          conda activate iblenv
+          conda activate iblrig
           python -c "from one.api import ONE; ONE(base_url='https://test.alyx.internationalbrainlab.org', username='test_user', password='TapetesBloc18', silent=True)"
           python -m unittest discover
