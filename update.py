@@ -43,7 +43,7 @@ if __name__ == "__main__":
         help="Disply information on branches and versions",
     )
     parser.add_argument(
-        "--iblenv", required=False, default=False, action="store_true", help="Update iblenv only",
+        "--iblrig", required=False, default=False, action="store_true", help="Update iblrig only",
     )
     parser.add_argument(
         "--setup-pybpod",
