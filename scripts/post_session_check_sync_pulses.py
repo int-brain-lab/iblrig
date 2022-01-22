@@ -5,7 +5,7 @@
 import sys
 from pathlib import Path
 
-import ibllib.io.raw_data_loaders as raw
+import ibllib.io.raw_data_loaders as raw  # TODO: remove when safely implemented natively
 import matplotlib.pyplot as plt
 import numpy as np
 

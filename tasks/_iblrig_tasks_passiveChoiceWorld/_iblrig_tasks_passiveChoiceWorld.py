@@ -8,7 +8,7 @@ import time
 
 import numpy as np
 import usb
-from ibllib.graphic import popup
+from ibllib.graphic import popup  # TODO: remove when safely implemented natively
 from pybpodapi.protocol import Bpod, StateMachine
 
 import iblrig.bonsai as bonsai

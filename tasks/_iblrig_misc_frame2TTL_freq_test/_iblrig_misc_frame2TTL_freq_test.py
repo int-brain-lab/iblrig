@@ -8,7 +8,7 @@ import sys
 from pathlib import Path
 
 import dateutil.parser as parser
-import ibllib.io.raw_data_loaders as raw
+import ibllib.io.raw_data_loaders as raw  # TODO: remove when safely implemented natively
 from pybpodapi.protocol import Bpod, StateMachine
 
 import iblrig.bonsai as bonsai

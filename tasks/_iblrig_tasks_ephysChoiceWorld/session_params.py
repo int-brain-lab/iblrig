@@ -221,8 +221,6 @@ class SessionParamHandler(object):
             "Please start recording in spikeglx then press OK\n"
             + "Behavior task will run after you start the bonsai workflow"
         )
-        # from ibllib.graphic import popup
-        # popup(title, msg)
         root = tk.Tk()
         root.withdraw()
         messagebox.showinfo(title, msg)

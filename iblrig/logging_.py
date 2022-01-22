@@ -5,6 +5,7 @@
 # 4 ibllib misc
 import logging
 
+# TODO: implement natively
 from ibllib.misc import logger_config
 
 USE_LOGGING = True

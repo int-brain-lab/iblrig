@@ -25,6 +25,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--reinstall", required=False, default=False, action="store_true", help="Reinstall iblrig",
     )
+    # TODO: remove when safely implemented natively
     parser.add_argument(
         "--ibllib", required=False, default=False, action="store_true", help="Update ibllib only",
     )

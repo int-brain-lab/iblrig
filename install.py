@@ -119,6 +119,7 @@ def check_update_dependencies():
     return 0
 
 
+# TODO: remove once implement natively
 def create_ibllib_env(env_name: str = "ibllib"):
     """create_ibllib_env Create conda environment named [env_name]
 
@@ -135,7 +136,7 @@ def create_ibllib_env(env_name: str = "ibllib"):
             print("\n\n--->Creating environment")
             os.system(f"{MC} create -q -y -n {env_name} -c defaults python=3.8")
             pip = envs.get_env_pip(env_name)
-            os.system(f"{pip} install --no-warn-script-location ibllib")
+            os.system(f"{pip} install --no-warn-script-location ibllib")  # TODO: remove once implemented natively
             print("\n--->Environment created... OK")
         except BaseException as e:
             print(e)
@@ -145,7 +146,7 @@ def create_ibllib_env(env_name: str = "ibllib"):
         remove_command = f"{MC} env remove -q -y -n {env_name}"
         os.system(remove_command)
         shutil.rmtree(env, ignore_errors=True)
-        return create_ibllib_env(env_name=env_name)
+        return create_ibllib_env(env_name=env_name) # TODO: rename once ibllib functionality implemented natively
     print("N" * 79)
     return 0
 

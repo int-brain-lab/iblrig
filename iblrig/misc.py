@@ -8,6 +8,7 @@ import logging
 from pathlib import Path
 
 import numpy as np
+# TODO: implement natively
 from ibllib.io import raw_data_loaders as raw
 
 FLAG_FILE_NAMES = [

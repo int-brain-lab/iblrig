@@ -55,6 +55,7 @@ def update_pip():
     os.system("python -m pip install --upgrade pip")
 
 
+# TODO: remove once safely implemented natively
 def update_ibllib():
     pip = envs.get_env_pip("ibllib")
     os.system("pip install ibllib -U")
@@ -178,7 +179,7 @@ def _update(branch=None, version=None):
 
         update_pip()
         update_env()
-        update_ibllib()
+        update_ibllib()  # TODO: remove once functionality implemented natively
         setup_pybpod(iblrig_params_path())
         upgrade_bonsai(version, branch)
         update_bonsai_config()
@@ -209,6 +210,7 @@ def main(args):
     elif args.v and args.v not in ALL_VERSIONS:
         print("Version", args.v, "not found")
 
+    # TODO: remove once functionality implemented natively
     if args.ibllib:
         update_ibllib()
 

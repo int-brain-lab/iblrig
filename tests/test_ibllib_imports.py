@@ -7,7 +7,7 @@ class TestIBLRigImports(unittest.TestCase):
 
     def test_iblrig_imports(self):
         # List of all import statements in iblrig on dev 20200609
-        import ibllib.graphic as graph  # noqa
+        import ibllib.graphic as graph  # noqa # TODO: remove when safely implemented natively
         import ibllib.io.flags as flags  # noqa
         import iblutil.io.params as lib_params  # noqa
         import ibllib.io.raw_data_loaders as raw  # noqa

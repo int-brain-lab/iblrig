@@ -5,7 +5,7 @@
 import logging
 from sys import platform
 
-import ibllib.io.raw_data_loaders as raw
+import ibllib.io.raw_data_loaders as raw  # TODO: remove when safely implemented natively
 import numpy as np
 from pythonosc import udp_client
 

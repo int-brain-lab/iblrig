@@ -7,6 +7,7 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
+# TODO: implement natively
 from ibllib.dsp.smooth import rolling_window as smooth
 
 import iblrig.blocks as blocks
