@@ -6,14 +6,11 @@
 import json
 import logging
 import webbrowser as wb
-
-# TODO: implement natively
-import ibllib.io.raw_data_loaders as raw
-from ibllib.oneibl.registration import RegistrationClient
-
-from one.api import ONE
-
 import iblrig.params as rig_params
+
+from iblrig.registration import RegistrationClient
+from iblrig.raw_data_loaders import load_settings
+from one.api import ONE
 
 log = logging.getLogger("iblrig")
 
@@ -130,7 +127,7 @@ def update_alyx_params(data: dict, force: bool = False, one=None) -> dict:
 
 def create_current_running_session(session_folder, one=None):
     one = one or ONE()
-    settings = raw.load_settings(session_folder)
+    settings = load_settings(session_folder)
     subject = one.alyx.rest("subjects?nickname=" + settings["PYBPOD_SUBJECTS"][0], "list")[0]
     ses_ = {
         "subject": subject["nickname"],

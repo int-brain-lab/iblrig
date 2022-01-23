@@ -1,15 +1,17 @@
 #!/usr/bin/env python
-# -*- coding:utf-8 -*-
-# @Author: Niccolò Bonacchi
-# @Date: Friday, February 8th 2019, 12:51:51 pm
+"""
+Provides collection of functionality used throughout the iblrig repository.
+
+Assortment of functions, frequently used, but without a great deal of commonality. Functions can, and should, be
+broken out into their own files and/or classes as the organizational needs of this repo change over time.
+"""
 import datetime
 import json
 import logging
-from pathlib import Path
-
 import numpy as np
-# TODO: implement natively
-from ibllib.io import raw_data_loaders as raw
+
+from iblrig.raw_data_loaders import load_settings
+from pathlib import Path
 
 FLAG_FILE_NAMES = [
     "transfer_me.flag",
@@ -26,14 +28,13 @@ def checkerboard(shape):
 
 
 def make_square_dvamat(size, dva):
-    import numpy as np
+    # likely safe to remove import and use outer scope np (numpy) import
+    import numpy as mq_np
 
-    c = np.arange(size) - int(size / 2)
-    x = np.array([c] * 15)
-    y = np.rot90(x)
-    dvamat = np.array(list(zip(y.ravel() * dva, x.ravel() * dva)), dtype=("int, int")).reshape(
-        x.shape
-    )
+    c = mq_np.arange(size) - int(size / 2)
+    x = mq_np.array([c] * 15)
+    y = mq_np.rot90(x)
+    dvamat = mq_np.array(list(zip(y.ravel() * dva, x.ravel() * dva)), dtype="int, int").reshape(x.shape)
     return dvamat
 
 
@@ -185,7 +186,7 @@ def patch_settings_file(sess_or_file: str, patch: dict) -> None:
         print("not a settings file or a session folder")
         return
 
-    settings = raw.load_settings(session)
+    settings = load_settings(session)
     settings.update(patch)
     # Rename file on disk keeps pathlib ref to "file" intact
     file.rename(file.with_suffix(".json_bk"))
@@ -194,7 +195,7 @@ def patch_settings_file(sess_or_file: str, patch: dict) -> None:
         f.write("\n")
         f.flush()
     # Check if properly saved
-    saved_settings = raw.load_settings(session)
+    saved_settings = load_settings(session)
     if settings == saved_settings:
         file.with_suffix(".json_bk").unlink()
     return

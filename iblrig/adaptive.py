@@ -1,80 +1,18 @@
 #!/usr/bin/env python
-# -*- coding:utf-8 -*-
-# @Author: Niccolò Bonacchi
-# @Date: Tuesday, February 5th 2019, 4:11:13 pm
+"""
+Short summary of file's purpose, calibration tests and reward configurations?
+
+Longer explanation of file's purpose, if __name__ == "__main__" is calling out very particular paths?
+"""
 import logging
 import numpy as np
 import scipy as sp
 import scipy.interpolate
 import iblrig.params as params
 
-from pathlib import Path
-from typing import Union
-from iblutil.io import jsonable
+from iblrig.raw_data_loaders import load_data
 
 log = logging.getLogger("iblrig")
-
-
-def trial_times_to_times(raw_trial):
-    """
-    Parse and convert all trial timestamps to "absolute" time.
-    Float64 seconds from session start.
-    0---BpodStart---TrialStart0---------TrialEnd0-----TrialStart1---TrialEnd1...0---ts0---ts1---
-    tsN...absTS = tsN + TrialStartN - BpodStart
-    Bpod timestamps are in microseconds (µs)
-    PyBpod timestamps are is seconds (s)
-    :param raw_trial: raw trial data
-    :type raw_trial: dict
-    :return: trial data with modified timestamps
-    :rtype: dict
-    """
-    ts_bs = raw_trial['behavior_data']['Bpod start timestamp']
-    ts_ts = raw_trial['behavior_data']['Trial start timestamp']
-
-    def convert(ts):
-        return ts + ts_ts - ts_bs
-
-    converted_events = {}
-    for k, v in raw_trial['behavior_data']['Events timestamps'].items():
-        converted_events.update({k: [convert(i) for i in v]})
-    raw_trial['behavior_data']['Events timestamps'] = converted_events
-
-    converted_states = {}
-    for k, v in raw_trial['behavior_data']['States timestamps'].items():
-        converted_states.update({k: [[convert(i) for i in x] for x in v]})
-    raw_trial['behavior_data']['States timestamps'] = converted_states
-
-    shift = raw_trial['behavior_data']['Bpod start timestamp']
-    raw_trial['behavior_data']['Bpod start timestamp'] -= shift
-    raw_trial['behavior_data']['Trial start timestamp'] -= shift
-    raw_trial['behavior_data']['Trial end timestamp'] -= shift
-    assert(raw_trial['behavior_data']['Bpod start timestamp'] == 0)
-    return raw_trial
-
-
-def load_data(session_path: Union[str, Path], time='absolute'):
-    """
-    Load PyBpod data files (.jsonable).
-    Bpod timestamps are in microseconds (µs)
-    PyBpod timestamps are is seconds (s)
-    :param session_path: Absolute path of session folder
-    :type session_path: str, Path
-    :param time: used to help define the return format of the data
-    :return: A list of len ntrials each trial being a dictionary
-    :rtype: list of dicts
-    """
-    if session_path is None:
-        log.warning("No data loaded: session_path is None")
-        return
-    path = Path(session_path).joinpath("raw_behavior_data")
-    path = next(path.glob("_iblrig_taskData.raw*.jsonable"), None)
-    if not path:
-        log.warning("No data loaded: could not find raw data file")
-        return None
-    ld_data = jsonable.read(path)
-    if time == 'absolute':
-        ld_data = [trial_times_to_times(t) for t in ld_data]
-    return ld_data
 
 
 def init_reward_amount(sph: object) -> float:
