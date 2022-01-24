@@ -1,12 +1,12 @@
 #!/usr/bin/env python
-# -*- coding:utf-8 -*-
-# @Author: Niccolò Bonacchi
-# @Date: Friday, January 11th 2019, 2:04:42 pm
-# 4 ibllib misc
+# @Author: Niccolò Bonacchi & Michele Fabbri
+# @Date: 2022-01-24
+"""
+Configuration for logging
+"""
 import logging
 
-# TODO: implement natively
-from ibllib.misc import logger_config
+from iblrig.misc import logger_config
 
 USE_LOGGING = True
 LOGLEVEL = logging.INFO

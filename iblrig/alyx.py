@@ -1,8 +1,9 @@
 #!/usr/bin/env python
-# -*- coding:utf-8 -*-
-# @File: iblrig/alyx.py
-# @Author: Niccolo' Bonacchi (@nbonacchi)
-# @Date: Tuesday, May 7th 2019, 12:07:26 pm
+# @Author: Niccolò Bonacchi & Michele Fabbri
+# @Date: 2022-01-24
+"""
+Alyx server interface functions
+"""
 import json
 import logging
 import webbrowser as wb

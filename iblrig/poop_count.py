@@ -1,14 +1,13 @@
 #!/usr/bin/env python
-# -*- coding:utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date: Thursday, January 31st 2019, 4:12:19 pm
-from pathlib import Path
-
+"""
+Find the number of poop pellets recorded by user
+"""
 from dateutil import parser
-# TODO: implement natively
-from ibllib.graphic import numinput
-
+from iblrig.graphic import numinput
 from iblrig.misc import patch_settings_file
+from pathlib import Path
 
 IBLRIG_DATA = Path().cwd().parent.parent.parent.parent / "iblrig_data" / "Subjects"  # noqa
 

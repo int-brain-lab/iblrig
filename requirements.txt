@@ -13,3 +13,4 @@ iblutil~=1.0.0
 opencv-python==3.4.5.20
 numpy<1.21,>=1.17
 pandas==0.25.3
+python-dateutil~=2.8.2

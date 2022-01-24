@@ -1,8 +1,8 @@
 #!/usr/bin/env python
+# @Authors: Niccolò Bonacchi & Michele Fabbri
+# @Date: 2022-01-24
 """
-Short summary of file's purpose, calibration tests and reward configurations?
-
-Longer explanation of file's purpose, if __name__ == "__main__" is calling out very particular paths?
+Calibration tests and reward configurations
 """
 import logging
 import numpy as np

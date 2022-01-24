@@ -1,21 +1,21 @@
 #!/usr/bin/env python
-# -*- coding:utf-8 -*-
-# @Author: Niccolò Bonacchi
-# @Date: Wednesday, November 14th 2018, 10:40:43 am
+# @Authors: Niccolò Bonacchi & Michele Fabbri
+# @Date: 2022-01-24
+"""
+Various get functions to return paths of folders and network drives
+"""
 import datetime
 import logging
 import os
+import platform
 import subprocess
+import iblrig.logging_  # noqa
+import iblrig.params as params
+import iblrig.raw_data_loaders as raw
+
 from os import listdir
 from os.path import join
 from pathlib import Path
-
-# TODO: implement natively
-from ibllib.io import raw_data_loaders as raw
-import platform
-
-import iblrig.logging_  # noqa
-import iblrig.params as params
 
 log = logging.getLogger("iblrig")
 

@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+# @Author: Niccolò Bonacchi & Michele Fabbri
+# @Date: 2022-01-24
 """
 Raw Data Loader functions for PyBpod rig
 
@@ -16,7 +18,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Union
 from iblutil.io import jsonable
-from iblrig.video import assert_valid_label
+from iblrig.misc import assert_valid_video_label
 from iblrig.time import uncycle_pgts, convert_pgts
 
 _logger = logging.getLogger('iblrig')
@@ -127,7 +129,7 @@ def load_camera_frame_data(session_path, camera: str = 'left', raw: bool = False
                 embeddedGPIOPinState    # GPIO pin state integer representation of 4 pins
             }
     """
-    camera = assert_valid_label(camera)
+    camera = assert_valid_video_label(camera)
     fpath = Path(session_path).joinpath("raw_video_data")
     fpath = next(fpath.glob(f"_iblrig_{camera}Camera.frameData*.bin"), None)
     assert fpath, f"{fpath}\nFile not Found: Could not find bin file for cam <{camera}>"
@@ -163,7 +165,7 @@ def load_camera_ssv_times(session_path, camera: str):
     :param camera: Name of the camera to load, e.g. 'left'
     :return: array of datetimes, array of frame times in seconds
     """
-    camera = assert_valid_label(camera)
+    camera = assert_valid_video_label(camera)
     video_path = Path(session_path).joinpath('raw_video_data')
     if next(video_path.glob(f'_iblrig_{camera}Camera.frameData*.bin'), None):
         df = load_camera_frame_data(session_path, camera=camera)
@@ -222,7 +224,7 @@ def load_camera_frame_count(session_path, label: str, raw=True):
     if session_path is None:
         return
 
-    label = assert_valid_label(label)
+    label = assert_valid_video_label(label)
     video_path = Path(session_path).joinpath('raw_video_data')
     if next(video_path.glob(f'_iblrig_{label}Camera.frameData*.bin'), None):
         df = load_camera_frame_data(session_path, camera=label)
@@ -259,7 +261,7 @@ def load_camera_gpio(session_path, label: str, as_dicts=False):
     if session_path is None:
         return
     raw_path = Path(session_path).joinpath('raw_video_data')
-    label = assert_valid_label(label)
+    label = assert_valid_video_label(label)
 
     # Load pin state
     if next(raw_path.glob(f'_iblrig_{label}Camera.frameData*.bin'), False):

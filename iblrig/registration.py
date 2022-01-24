@@ -1,11 +1,11 @@
 #!/usr/bin/env python
+# @Author: Niccolò Bonacchi & Michele Fabbri
+# @Date: 2022-01-24
 """
-Short summary of file's purpose, calibration tests and reward configurations?
-
-Longer explanation of file's purpose, if __name__ == "__main__" is calling out very particular paths?
+Registering procedures and sessions to Alyx
 """
-import json
 import datetime
+import json
 import logging
 import re
 import iblrig.extractors_base as extractors
@@ -21,7 +21,7 @@ from one.alf.files import get_session_path
 from one.api import ONE
 from pathlib import Path
 
-_logger = logging.getLogger('ibllib')
+_logger = logging.getLogger('iblrig')
 EXCLUDED_EXTENSIONS = ['.flag', '.error', '.avi']
 REGISTRATION_GLOB_PATTERNS = ['alf/**/*.*',
                               'raw_behavior_data/**/_iblrig_*.*',

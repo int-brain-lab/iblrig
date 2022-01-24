@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+# @Author: Niccolò Bonacchi & Michele Fabbri
+# @Date: 2022-01-24
 """
 Used to read and manipulate flags fond within a session folder.
 """

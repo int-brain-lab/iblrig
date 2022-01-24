@@ -1,9 +1,12 @@
 #!/usr/bin/env python
+# @Author: Niccolò Bonacchi & Michele Fabbri
+# @Date: 2022-01-24
 """
 Provides collection of functionality used throughout the iblrig repository.
 
-Assortment of functions, frequently used, but without a great deal of commonality. Functions can, and should, be
-broken out into their own files and/or classes as the organizational needs of this repo change over time.
+Assortment of functions, frequently used, but without a great deal of commonality. Functions can,
+and should, be broken out into their own files and/or classes as the organizational needs of this
+repo change over time.
 """
 import datetime
 import json
@@ -21,6 +24,104 @@ FLAG_FILE_NAMES = [
 ]
 
 log = logging.getLogger("iblrig")
+
+
+def assert_valid_video_label(label):
+    """
+    Raises a value error is the provided label is not supported.
+    :param label: A video label to verify
+    :return: the label in lowercase
+    """
+    video_labels = ('left', 'right', 'body')
+    if not isinstance(label, str):
+        try:
+            return tuple(map(assert_valid_video_label, label))
+        except AttributeError:
+            raise ValueError('label must be string or iterable of strings')
+    if label.lower() not in video_labels:
+        raise ValueError(f"camera must be one of ({', '.join(video_labels)})")
+    return label.lower()
+
+
+def smooth_rolling_window(x, window_len=11, window='blackman'):
+    """
+    Smooth the data using a window with requested size.
+
+    This method is based on the convolution of a scaled window with the signal.
+    The signal is prepared by introducing reflected copies of the signal
+    (with the window size) in both ends so that transient parts are minimized
+    in the beginning and end part of the output signal.
+
+    :param x: The input signal
+    :type x: list or numpy.array
+    :param window_len: The dimension of the smoothing window,
+                       should be an **odd** integer, defaults to 11
+    :type window_len: int, optional
+    :param window: The type of window from ['flat', 'hanning', 'hamming',
+                   'bartlett', 'blackman']
+                   flat window will produce a moving average smoothing,
+                   defaults to 'blackman'
+    :type window: str, optional
+    :raises ValueError: Smooth only accepts 1 dimension arrays.
+    :raises ValueError: Input vector needs to be bigger than window size.
+    :raises ValueError: Window is not one of 'flat', 'hanning', 'hamming',
+                        'bartlett', 'blackman'
+    :return: Smoothed array
+    :rtype: numpy.array
+    """
+    # **NOTE:** length(output) != length(input), to correct this:
+    # return y[(window_len/2-1):-(window_len/2)] instead of just y.
+    if isinstance(x, list):
+        x = np.array(x)
+
+    if x.ndim != 1:
+        raise ValueError("smooth only accepts 1 dimension arrays.")
+
+    if x.size < window_len:
+        raise ValueError("Input vector needs to be bigger than window size.")
+
+    if window_len < 3:
+        return x
+
+    if window not in ['flat', 'hanning', 'hamming', 'bartlett', 'blackman']:
+        raise ValueError("Window is not one of 'flat', 'hanning', 'hamming',\
+'bartlett', 'blackman'")
+
+    s = np.r_[x[window_len - 1:0:-1], x, x[-1:-window_len:-1]]
+    # print(len(s))
+    if window == 'flat':  # moving average
+        w = np.ones(window_len, 'd')
+    else:
+        w = eval('np.' + window + '(window_len)')
+
+    y = np.convolve(w / w.sum(), s, mode='valid')
+    return y[round((window_len / 2 - 1)):round(-(window_len / 2))]
+
+
+def logger_config(name=None):
+    import logging
+    import colorlog
+    """
+        Setup the logging environment
+    """
+    if not name:
+        lc_log = logging.getLogger()  # root logger
+    else:
+        lc_log = logging.getLogger(name)
+    lc_log.setLevel(logging.INFO)
+    format_str = '%(asctime)s.%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s'
+    date_format = '%Y-%m-%d %H:%M:%S'
+    cformat = '%(log_color)s' + format_str
+    colors = {'DEBUG': 'green',
+              'INFO': 'cyan',
+              'WARNING': 'bold_yellow',
+              'ERROR': 'bold_red',
+              'CRITICAL': 'bold_purple'}
+    formatter = colorlog.ColoredFormatter(cformat, date_format, log_colors=colors)
+    stream_handler = logging.StreamHandler()
+    stream_handler.setFormatter(formatter)
+    lc_log.addHandler(stream_handler)
+    return lc_log
 
 
 def checkerboard(shape):

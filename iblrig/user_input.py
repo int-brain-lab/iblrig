@@ -1,20 +1,21 @@
-# -*- coding:utf-8 -*-
-# @Author: Niccolò Bonacchi
-# @Date: Friday, May 17th 2019, 9:21:19 am
+#!/usr/bin/env python
+# @Author: Niccolò Bonacchi & Michele Fabbri
+# @Date: 2022-01-24
+"""
+Various interaction with user and session forms
+"""
 import ast
 import logging
-import sys
-
-# TODO: implement natively
-import ibllib.graphic as graph
 import pyforms
+import sys
+import iblrig.graphic as graph
+import iblrig.logging_  # noqa
+from iblrig.misc import patch_settings_file
+
 from AnyQt.QtWidgets import QApplication
 from one.api import ONE
 from pyforms.basewidget import BaseWidget
 from pyforms.controls import ControlButton, ControlCheckBox, ControlLabel, ControlText
-
-import iblrig.logging_  # noqa
-from iblrig.misc import patch_settings_file
 
 log = logging.getLogger("iblrig")
 

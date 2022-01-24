@@ -1,21 +1,21 @@
 #!/usr/bin/env python
-# -*- coding:utf-8 -*-
-# @Author: Niccolò Bonacchi
-# @Date: Friday, September 13th 2019, 2:57:40 pm
+# @Author: Niccolò Bonacchi & Michele Fabbri
+# @Date: 2022-01-24
+"""
+Getting and loading parameters
+"""
 import datetime
 import json
 import logging
 import re
 import shutil
-from pathlib import Path
-
-# TODO: implement natively
-from ibllib.graphic import strinput
-from pybpodgui_api.models.project import Project
-
 import iblrig.alyx as alyx
 import iblrig.logging_  # noqa
 import iblrig.path_helper as ph
+
+from pathlib import Path
+from iblrig.graphic import strinput
+from pybpodgui_api.models.project import Project
 
 log = logging.getLogger("iblrig")
 
@@ -79,11 +79,11 @@ def ensure_all_keys_present(loaded_params, upload=True):
 
 
 def create_new_params_dict():
-    params = EMPTY_BOARD_PARAMS
-    for k in params:
-        params[k] = update_param_key_values(k)
+    new_params = EMPTY_BOARD_PARAMS
+    for k in new_params:
+        new_params[k] = update_param_key_values(k)
 
-    return params
+    return new_params
 
 
 def update_param_key_values(param_key):
