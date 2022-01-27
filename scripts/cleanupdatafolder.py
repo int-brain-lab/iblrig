@@ -1,10 +1,7 @@
-from pathlib import Path
-
-# TODO: implement native
-import ibllib.io.raw_data_loaders as raw
-
+import iblrig.raw_data_loaders as raw
 import iblrig.path_helper as ph
 
+from pathlib import Path
 
 # Remove empty folders
 def check_delete_empty_folders(path, rglob_pattern="*", dry=True):

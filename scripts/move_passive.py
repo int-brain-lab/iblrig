@@ -1,13 +1,11 @@
 #!/usr/bin/env python
-# -*- coding:utf-8 -*-
-# @Author: Niccolò Bonacchi
-# @Date: Monday, December 2nd 2019, 4:52:40 pm
+# @Author: Niccolò Bonacchi & Michele Fabbri
 import logging
-from pathlib import Path
-
-import ibllib.io.raw_data_loaders as raw
-import ibllib.pipes.misc as misc
+import iblrig.raw_data_loaders as raw
 import iblrig.path_helper as ph
+import iblrig.misc as misc
+
+from pathlib import Path
 
 log = logging.getLogger("iblrig")
 

@@ -1,13 +1,11 @@
 #!/usr/bin/env python
-# -*- coding:utf-8 -*-
-# @File: scripts/register_session.py
-# @Author: Niccolo' Bonacchi (@nbonacchi)
-# @Date: Tuesday, September 28th 2021, 3:03:38 pm
+# @Author: Niccolò Bonacchi & Michele Fabbri
+# @Date: 2022-01-24
 import logging
 import sys
 import traceback
 
-from ibllib.oneibl.registration import RegistrationClient
+from iblrig.registration import RegistrationClient
 
 log = logging.getLogger("ibllib")
 

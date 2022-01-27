@@ -1,14 +1,13 @@
-#!/usr/bin/env python  # noqa
-# -*- coding:utf-8 -*-
-# @Author: Niccolò Bonacchi
-# @Date: Friday, January 4th 2019, 11:52:41 am
+#!/usr/bin/env python
+# @Authors: Niccolò Bonacchi & Michele Fabbri
+# @Date: 2022-01-27
 import json
 import logging
 import sys
 from pathlib import Path
 
 import dateutil.parser as parser
-import ibllib.io.raw_data_loaders as raw  # TODO: remove when safely implemented natively
+import iblrig.raw_data_loaders as raw
 from pybpodapi.protocol import Bpod, StateMachine
 
 import iblrig.bonsai as bonsai

@@ -12,6 +12,7 @@ import datetime
 import json
 import logging
 import numpy as np
+import shutil
 
 from iblrig.raw_data_loaders import load_settings
 from pathlib import Path
@@ -24,6 +25,33 @@ FLAG_FILE_NAMES = [
 ]
 
 log = logging.getLogger("iblrig")
+
+
+def check_transfer(src_session_path: str, dst_session_path: str):
+    """
+    Check all the files in the source directory match those in the destination directory.
+    :param src_session_path: The source directory that was copied
+    :param dst_session_path: The copy target directory
+    :return:
+    """
+    src_files = sorted([x for x in Path(src_session_path).rglob('*') if x.is_file()])
+    dst_files = sorted([x for x in Path(dst_session_path).rglob('*') if x.is_file()])
+    assert len(src_files) == len(dst_files), 'Not all files transferred'
+    for s, d in zip(src_files, dst_files):
+        assert s.name == d.name, 'file name mismatch'
+        assert s.stat().st_size == d.stat().st_size, 'file size mismatch'
+
+
+def transfer_folder(src: Path, dst: Path, force: bool = False) -> None:
+    print(f"Attempting to copy:\n{src}\n--> {dst}")
+    if force:
+        print(f"Removing {dst}")
+        shutil.rmtree(dst, ignore_errors=True)
+    print(f"Copying all files:\n{src}\n--> {dst}")
+    shutil.copytree(src, dst)
+    # If folder was created delete the src_flag_file
+    if check_transfer(src, dst) is None:
+        print("All files copied")
 
 
 def assert_valid_video_label(label):

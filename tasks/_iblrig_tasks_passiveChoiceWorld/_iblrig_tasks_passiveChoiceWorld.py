@@ -1,14 +1,13 @@
 #!/usr/bin/env python
-# -*- coding:utf-8 -*-
-# @Author: Niccolò Bonacchi
-# @Date: Friday, November 15th 2019, 12:05:29 pm
+# @Authors: Niccolò Bonacchi & Michele Fabbri
+# @Date: 2022-01-27
 import logging
 import sys
 import time
 
 import numpy as np
 import usb
-from ibllib.graphic import popup  # TODO: remove when safely implemented natively
+from iblrig.graphic import popup
 from pybpodapi.protocol import Bpod, StateMachine
 
 import iblrig.bonsai as bonsai
