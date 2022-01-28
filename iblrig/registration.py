@@ -55,7 +55,7 @@ def register_dataset(file_list, one=None, created_by=None, repository=None, serv
     :param created_by: (string) name of user in Alyx (defaults to 'root')
     :param repository: optional: (string) name of the repository in Alyx
     :param server_only: optional: (bool) if True only creates on the Flatiron (defaults to False)
-    :param versions: optional (list of strings): versions tags (defaults to ibllib version)
+    :param versions: optional (list of strings): versions tags (defaults to iblrig version)
     :param default: optional (bool) whether to set as default dataset (defaults to True)
     :param dry: (bool) False by default
     :param max_md5_size: (int) maximum file in bytes to compute md5 sum (always compute if None)
@@ -72,7 +72,7 @@ def register_dataset(file_list, one=None, created_by=None, repository=None, serv
     assert len(set([get_session_path(f) for f in file_list])) == 1
     assert all([Path(f).exists() for f in file_list])
     if versions is None:
-        versions = version.ibllib()
+        versions = version.iblrig()
     if isinstance(versions, str):
         versions = [versions for _ in file_list]
     assert isinstance(versions, list) and len(versions) == len(file_list)
@@ -344,7 +344,7 @@ class RegistrationClient:
               'filenames': F,
               'hashes': md5s,
               'filesizes': file_sizes,
-              'versions': [version.ibllib() for _ in F]
+              'versions': [version.iblrig() for _ in F]
               }
         self.one.alyx.post('/register-file', data=r_)
         return session

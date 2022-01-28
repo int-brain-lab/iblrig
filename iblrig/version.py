@@ -4,6 +4,7 @@
 """
 Small collection of versioning check functions
 """
+import pkg_resources
 
 
 def _compare_version_tag(v1, v2, fcn):
@@ -75,3 +76,10 @@ def eq(v1, v2):
     :return: bool
     """
     return _compare_version_tag(v1, v2, str.__eq__)
+
+def iblrig():
+    try:
+        version = pkg_resources.get_distribution("iblrig").version
+    except pkg_resources.DistributionNotFound:
+        version = 'unversioned'
+    return version

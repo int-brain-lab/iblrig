@@ -1,8 +1,6 @@
 #!/usr/bin/env python
-# -*- coding:utf-8 -*-
-# @File: iblrig/update.py
-# @Author: Niccolo' Bonacchi (@nbonacchi)
-# @Date: Saturday, August 10th 2019, 10:31:02 am
+# @Author: Niccolò Bonacchi & Michele Fabbri
+# @Date: 2022-01-28
 import argparse
 from pathlib import Path
 import iblrig.git as git
@@ -24,10 +22,6 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--reinstall", required=False, default=False, action="store_true", help="Reinstall iblrig",
-    )
-    # TODO: remove when safely implemented natively
-    parser.add_argument(
-        "--ibllib", required=False, default=False, action="store_true", help="Update ibllib only",
     )
     parser.add_argument(
         "--update",

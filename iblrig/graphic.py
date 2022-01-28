@@ -187,21 +187,3 @@ def multi_input(title='Enter Credentials', add_fields=None, defaults=None):
     toto = Toto(root, title=title, add_fields=add_fields, defaults=defaults)
     root.mainloop()
     return toto.ADD
-
-# from ibllib.misc import login
-# a, b =login.login(default_passwd='tutu', default_username='turluser')
-# a, b =login.login(default_passwd='tutu', default_username='turluser', title='supertitre')
-# a, b, add1, add2 =login.login(default_passwd='tutu', default_username='turluser',
-#                               title='supertitre', add_fields=['tuasdf', 'adfasdf'])
-
-# title = 'Recording site'
-# fields = ['X (float):', 'Y (float):', 'Z (flaot):', 'D (float):',
-#     'Angle (10 or 20):', 'Origin (bregma or lambda):']
-# defaults = [None, None, None, None, '10', 'bregma']
-# types = [float, float, float, float, int, str]
-# bla = multi_input(title=title, add_fields=fields, defaults=defaults)
-# try:
-#     out = [t(x) for x, t in zip(bla, types)]
-# except Exception:
-#     bla = multi_input(title=title, add_fields=fields, defaults=defaults)
-# print(bla)

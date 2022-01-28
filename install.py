@@ -1,7 +1,6 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-# @Author: Niccolò Bonacchi
-# @Date:   2018-06-08 11:04:05
+# @Author: Niccolò Bonacchi & Michele Fabbri
+# @Date: 2022-01-28
 import argparse
 import os
 import shutil
@@ -116,38 +115,6 @@ def check_update_dependencies():
 
     print("N" * 79)
     print("All dependencies OK.")
-    return 0
-
-
-# TODO: remove once implement natively
-def create_ibllib_env(env_name: str = "ibllib"):
-    """create_ibllib_env Create conda environment named [env_name]
-
-    :param env_name: name of conda environment to be created, defaults to 'ibllib'
-    :type env_name: str, optional
-    :return: 0 if success, 1 otherwise
-    :rtype: int
-    """
-    print(f"\n\nINFO: Creating environment {env_name}...")
-    print("N" * 79)
-    env = envs.get_env_folder(env_name=env_name)
-    if not env:
-        try:
-            print("\n\n--->Creating environment")
-            os.system(f"{MC} create -q -y -n {env_name} -c defaults python=3.8")
-            pip = envs.get_env_pip(env_name)
-            os.system(f"{pip} install --no-warn-script-location ibllib")  # TODO: remove once implemented natively
-            print("\n--->Environment created... OK")
-        except BaseException as e:
-            print(e)
-            raise SystemError(f"Could not create {env_name} environment, aborting...")
-    else:
-        print(f"\n\nINFO: Environment {env_name} already exists, reinstalling.")
-        remove_command = f"{MC} env remove -q -y -n {env_name}"
-        os.system(remove_command)
-        shutil.rmtree(env, ignore_errors=True)
-        return create_ibllib_env(env_name=env_name) # TODO: rename once ibllib functionality implemented natively
-    print("N" * 79)
     return 0
 
 
@@ -268,7 +235,7 @@ def setup_ONE(resp=False):
     print(user_input)
     if user_input == "y":
         try:
-            python = envs.get_env_python(env_name="ibllib")
+            python = envs.get_env_python(env_name="iblrig")
             os.system(f'{python} -c "from one.api import ONE; ONE()"')
         except BaseException as e:
             print(
@@ -289,7 +256,6 @@ def main(args):
         create_environment(
             env_name=args.env_name, use_conda_yaml=args.use_conda, resp=args.reinstall_response,
         )
-        create_ibllib_env()
         install_iblrig(env_name=args.env_name)
         configure_iblrig_params(env_name=args.env_name, resp=args.config_response)
         setup_ONE(resp=args.ONE_response)

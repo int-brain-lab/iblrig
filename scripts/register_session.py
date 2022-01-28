@@ -7,7 +7,7 @@ import traceback
 
 from iblrig.registration import RegistrationClient
 
-log = logging.getLogger("ibllib")
+log = logging.getLogger("iblrig")
 
 
 if __name__ == "__main__":

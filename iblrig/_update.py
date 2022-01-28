@@ -1,17 +1,14 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-# @Author: Niccolò Bonacchi
-# @Date:   2018-06-08 11:04:05
+# @Author: Niccolò Bonacchi & Michele Fabbri
+# @Date: 2022-01-28
+import iblrig.git as git
 import os
 import shutil
 import subprocess
 import sys
+
 from pathlib import Path
-
 from setup_pybpod import main as setup_pybpod
-
-import iblrig.git as git
-import iblrig.envs as envs
 
 IBLRIG_ROOT_PATH = Path.cwd()
 git.fetch()
@@ -36,7 +33,7 @@ def iblrig_params_path():
     return str(Path(os.getcwd()).parent / "iblrig_params")
 
 
-def update_env():
+def update_rig_env():
     print("\nUpdating iblrig")
     os.system("pip install -r requirements.txt -U")
     os.system("pip install -e .")
@@ -53,13 +50,6 @@ def update_pip():
     print("\nUpdating pip et al.")
     os.system("pip install -U setuptools wheel")
     os.system("python -m pip install --upgrade pip")
-
-
-# TODO: remove once safely implemented natively
-def update_ibllib():
-    pip = envs.get_env_pip("ibllib")
-    os.system("pip install ibllib -U")
-    os.system(f"{pip} install ibllib -U")
 
 
 def update_bonsai_config():
@@ -178,8 +168,7 @@ def _update(branch=None, version=None):
         check_reinstall_required()  # Will raise error if reinstall file exists
 
         update_pip()
-        update_env()
-        update_ibllib()  # TODO: remove once functionality implemented natively
+        update_rig_env()
         setup_pybpod(iblrig_params_path())
         upgrade_bonsai(version, branch)
         update_bonsai_config()
@@ -210,10 +199,6 @@ def main(args):
     elif args.v and args.v not in ALL_VERSIONS:
         print("Version", args.v, "not found")
 
-    # TODO: remove once functionality implemented natively
-    if args.ibllib:
-        update_ibllib()
-
     if args.info:
         info()
 
@@ -221,7 +206,7 @@ def main(args):
         setup_pybpod(iblrig_params_path())
 
     if args.iblrig:
-        update_env()
+        update_rig_env()
 
     if args.pip:
         update_pip()

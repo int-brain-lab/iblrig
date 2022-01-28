@@ -102,8 +102,7 @@ def calibration_dates_ok() -> bool:
 def alyx_ok() -> bool:
     out = False
     try:
-        # TODO: remove once implemented natively ?
-        python = envs.get_env_python(env_name="ibllib")
+        python = envs.get_env_python(env_name="iblrig")
         here = os.getcwd()
         os.chdir(os.path.join(ph.get_iblrig_folder(), "scripts"))
         os.system(f'{python} -c "from one.api import ONE; ONE()"')

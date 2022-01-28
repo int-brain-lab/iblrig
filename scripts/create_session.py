@@ -1,7 +1,6 @@
 #!/usr/bin/env python
-# -*- coding:utf-8 -*-
-# @Author: Niccolò Bonacchi
-# @Date: Thursday, January 31st 2019, 1:15:46 pm
+# @Author: Niccolò Bonacchi & Michele Fabbri
+# @Date: 2022-01-28
 import argparse
 import logging
 import os
@@ -31,8 +30,8 @@ if __name__ == "__main__":
     if args.poop:
         poop()
     try:
-        print("Creating session from ibllib environment...")
-        python = envs.get_env_python(env_name="ibllib")
+        print("Creating session from iblrig environment...")
+        python = envs.get_env_python(env_name="iblrig")
         here = os.getcwd()
         os.chdir(os.path.join(IBLRIG_FOLDER, "scripts"))
         os.system(f"{python} register_session.py {IBLRIG_DATA}")
