@@ -3,7 +3,7 @@
 # @File: F2TTL\ARCOM.py
 # @Author: Niccolo' Bonacchi (@nbonacchi)
 # @Date: Tuesday, December 7th 2021, 12:01:15 pm
-'''
+"""
 ----------------------------------------------------------------------------
 
 This file is part of the Sanworks ArCOM repository
@@ -21,7 +21,7 @@ See the GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
-'''
+"""
 import numpy as np
 import serial
 
@@ -29,9 +29,9 @@ import serial
 class ArCOM(object):
     def __init__(self, serialPortName, baudRate):
         self.serialObject = 0
-        self.typeNames = ('uint8', 'int8', 'char', 'uint16', 'int16', 'uint32', 'int32', 'single')
+        self.typeNames = ("uint8", "int8", "char", "uint16", "int16", "uint32", "int32", "single")
         self.typeBytes = (1, 1, 1, 2, 2, 4, 4)
-        self.typeSymbols = ('B', 'b', 'c', 'H', 'h', 'L', 'l')
+        self.typeSymbols = ("B", "b", "c", "H", "h", "L", "l")
         self.serialObject = serial.Serial(serialPortName, timeout=10, rtscts=True)
 
     def open(self, serialPortName, baudRate):
@@ -51,15 +51,15 @@ class ArCOM(object):
         """
         nTypes = int(len(arg) / 2)
         argPos = 0
-        messageBytes = b''
+        messageBytes = b""
         for i in range(0, nTypes):
             data = arg[argPos]
             argPos += 1
             datatype = arg[argPos]
             argPos += 1  # not needed
             if datatype not in self.typeNames:
-                raise ArCOMError('Error: ' + datatype + ' is not a data type supported by ArCOM.')
-            datatypePos = self.typeNames.index(datatype)  # Not used?
+                raise ArCOMError("Error: " + datatype + " is not a data type supported by ArCOM.")
+            # datatypePos = self.typeNames.index(datatype)  # Not used?
 
             if type(data).__module__ == np.__name__:
                 NPdata = data.astype(datatype)
@@ -68,7 +68,7 @@ class ArCOM(object):
             messageBytes += NPdata.tobytes()
         self.serialObject.write(messageBytes)
 
-    def read(self, *arg): # Read an array of values
+    def read(self, *arg):  # Read an array of values
         nTypes = int(len(arg) / 2)
         argPos = 0
         outputs = []
@@ -76,8 +76,8 @@ class ArCOM(object):
             nValues = arg[argPos]
             argPos += 1
             datatype = arg[argPos]
-            if ((datatype in self.typeNames) is False):
-                raise ArCOMError('Error: ' + datatype + ' is not a data type supported by ArCOM.')
+            if (datatype in self.typeNames) is False:
+                raise ArCOMError("Error: " + datatype + " is not a data type supported by ArCOM.")
             argPos += 1
             typeIndex = self.typeNames.index(datatype)
             byteWidth = self.typeBytes[typeIndex]
@@ -85,7 +85,13 @@ class ArCOM(object):
             messageBytes = self.serialObject.read(nBytes2Read)
             nBytesRead = len(messageBytes)
             if nBytesRead < nBytes2Read:
-                raise ArCOMError('Error: serial port timed out. ' + str(nBytesRead) + ' bytes read. Expected ' + str(nBytes2Read) +' byte(s).')
+                raise ArCOMError(
+                    "Error: serial port timed out. "
+                    + str(nBytesRead)
+                    + " bytes read. Expected "
+                    + str(nBytes2Read)
+                    + " byte(s)."
+                )
             thisOutput = np.frombuffer(messageBytes, datatype)
             outputs.append(thisOutput)
         if nTypes == 1:
@@ -101,10 +107,10 @@ class ArCOMError(Exception):
     pass
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import struct
 
-    port = '/dev/ttyACM3'
+    port = "/dev/ttyACM3"
     nsamples = 6
 
     # Hello ser
@@ -142,4 +148,4 @@ if __name__ == '__main__':
     arc.write(ord("V"), "uint8")
     arcout = arc.read(1, "uint16")
     print(arcout)
-    del(arc)
+    del arc
