@@ -12,7 +12,6 @@ from pathlib import Path
 from ibllib.graphic import strinput
 from pybpodgui_api.models.project import Project
 
-import iblrig.alyx as alyx
 import iblrig.logging_  # noqa
 import iblrig.path_helper as ph
 
@@ -57,7 +56,8 @@ AUTO_UPDATABLE_PARAMS = dict.fromkeys(
 )
 
 
-def ensure_all_keys_present(loaded_params, upload=True):
+def ensure_all_keys_present(loaded_params, upload=False):
+    # TODO: search and destroy calls that use upload param
     """
     Ensures allo keys are present and empty knowable values are filled
     """
@@ -72,8 +72,6 @@ def ensure_all_keys_present(loaded_params, upload=True):
             anything_new = True
     if anything_new:
         write_params_file(data=loaded_params, force=True)
-    if upload:
-        alyx.write_alyx_params(data=loaded_params, force=True)
     return loaded_params
 
 
@@ -308,7 +306,7 @@ def try_migrate_to_params(force=False):
         water_dict.update(ph.load_water_calibraition_func_file(func_file))
         water_dict.update({"WATER_CALIBRATION_DATE": func_file.parent.parent.parent.name})
     # Find latest F2TTL calib and set F2TTL values
-    f2ttl_params = alyx.load_alyx_params(get_pybpod_board_name())
+    f2ttl_params = None
     if f2ttl_params is None:
         f2ttl_dict = {
             "F2TTL_DARK_THRESH": "",
@@ -335,8 +333,6 @@ def try_migrate_to_params(force=False):
     final_dict.update(f2ttl_dict)
     final_dict.update(water_dict)
     write_params_file(data=final_dict, force=True)
-    # upload to Alyx board
-    alyx.write_alyx_params(data=final_dict, force=True)
     # Delete old comports file
     if comports_file.exists():
         bk = Path(ph.get_iblrig_params_folder()) / ".bpod_comports.json_bk"
