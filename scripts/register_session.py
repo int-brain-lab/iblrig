@@ -5,7 +5,7 @@ import logging
 import sys
 import traceback
 
-from iblrig.registration import RegistrationClient
+from ibllib.oneibl.registration import RegistrationClient
 
 log = logging.getLogger("iblrig")
 
