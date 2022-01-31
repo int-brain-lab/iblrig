@@ -9,13 +9,14 @@ import json
 import logging
 import re
 import shutil
+from pathlib import Path
+
+from pybpodgui_api.models.project import Project
+
 import iblrig.alyx as alyx
 import iblrig.logging_  # noqa
 import iblrig.path_helper as ph
-
-from pathlib import Path
 from iblrig.graphic import strinput
-from pybpodgui_api.models.project import Project
 
 log = logging.getLogger("iblrig")
 
