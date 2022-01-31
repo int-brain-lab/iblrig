@@ -13,7 +13,6 @@ import iblrig.logging_  # noqa
 from iblrig.misc import patch_settings_file
 
 from AnyQt.QtWidgets import QApplication
-from one.api import ONE
 from pyforms.basewidget import BaseWidget
 from pyforms.controls import ControlButton, ControlCheckBox, ControlLabel, ControlText
 
