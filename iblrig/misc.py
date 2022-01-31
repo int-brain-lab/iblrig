@@ -11,11 +11,13 @@ repo change over time.
 import datetime
 import json
 import logging
-import numpy as np
 import shutil
+from pathlib import Path
+from typing import Optional, Union
+
+import numpy as np
 
 from iblrig.raw_data_loaders import load_settings
-from pathlib import Path
 
 FLAG_FILE_NAMES = [
     "transfer_me.flag",
@@ -25,6 +27,36 @@ FLAG_FILE_NAMES = [
 ]
 
 log = logging.getLogger("iblrig")
+
+
+def _isdatetime(x: str) -> Optional[bool]:
+    """
+    Check if string is a date in the format YYYY-MM-DD.
+
+    :param x: The string to check
+    :return: True if the string matches the date format, False otherwise.
+    :rtype: Optional[bool]
+    """
+    try:
+        datetime.strptime(s, '%Y-%m-%d')
+        return True
+    except ValueError:
+        return False
+
+
+def get_session_path(path: Union[str, Path]) -> Optional[Path]:
+    """Returns the session path from any filepath if the date/number
+    pattern is found"""
+    if path is None:
+        return
+    if isinstance(path, str):
+        path = Path(path)
+    sess = None
+    for i, p in enumerate(path.parts):
+        if p.isdigit() and _isdatetime(path.parts[i - 1]):
+            sess = Path().joinpath(*path.parts[:i + 1])
+
+    return sess
 
 
 def check_transfer(src_session_path: str, dst_session_path: str):
@@ -111,6 +143,7 @@ def smooth_rolling_window(x, window_len=11, window='blackman'):
 
 def logger_config(name=None):
     import logging
+
     import colorlog
     """
         Setup the logging environment
