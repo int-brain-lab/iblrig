@@ -18,10 +18,26 @@ from datetime import datetime
 from pathlib import Path
 from typing import Union
 from iblutil.io import jsonable
-from iblrig.misc import assert_valid_video_label
 from iblrig.time import uncycle_pgts, convert_pgts
 
 _logger = logging.getLogger('iblrig')
+
+
+def assert_valid_video_label(label):
+    """
+    Raises a value error is the provided label is not supported.
+    :param label: A video label to verify
+    :return: the label in lowercase
+    """
+    video_labels = ('left', 'right', 'body')
+    if not isinstance(label, str):
+        try:
+            return tuple(map(assert_valid_video_label, label))
+        except AttributeError:
+            raise ValueError('label must be string or iterable of strings')
+    if label.lower() not in video_labels:
+        raise ValueError(f"camera must be one of ({', '.join(video_labels)})")
+    return label.lower()
 
 
 def trial_times_to_times(raw_trial):

@@ -54,23 +54,6 @@ def transfer_folder(src: Path, dst: Path, force: bool = False) -> None:
         print("All files copied")
 
 
-def assert_valid_video_label(label):
-    """
-    Raises a value error is the provided label is not supported.
-    :param label: A video label to verify
-    :return: the label in lowercase
-    """
-    video_labels = ('left', 'right', 'body')
-    if not isinstance(label, str):
-        try:
-            return tuple(map(assert_valid_video_label, label))
-        except AttributeError:
-            raise ValueError('label must be string or iterable of strings')
-    if label.lower() not in video_labels:
-        raise ValueError(f"camera must be one of ({', '.join(video_labels)})")
-    return label.lower()
-
-
 def smooth_rolling_window(x, window_len=11, window='blackman'):
     """
     Smooth the data using a window with requested size.
