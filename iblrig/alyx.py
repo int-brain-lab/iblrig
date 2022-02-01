@@ -14,7 +14,6 @@ from one.api import ONE
 
 import iblrig.params as rig_params
 from iblrig.raw_data_loaders import load_settings
-from iblrig.registration import RegistrationClient
 
 log = logging.getLogger("iblrig")
 
@@ -27,12 +26,6 @@ def check_alyx_ok():
         print(e)
         log.warning("Cannot create one client: working offline")
         return False
-
-
-def create_session(session_folder, one=None):
-    one = one or ONE()
-
-    RegistrationClient(one=one).register_session(session_folder, file_list=False)
 
 
 def open_session_narrative(session_url: str) -> None:
