@@ -40,7 +40,7 @@ def _isdatetime(x: str) -> Optional[bool]:
     :rtype: Optional[bool]
     """
     try:
-        datetime.strptime(s, '%Y-%m-%d')
+        datetime.strptime(x, '%Y-%m-%d')
         return True
     except ValueError:
         return False
@@ -141,33 +141,6 @@ def smooth_rolling_window(x, window_len=11, window='blackman'):
 
     y = np.convolve(w / w.sum(), s, mode='valid')
     return y[round((window_len / 2 - 1)):round(-(window_len / 2))]
-
-
-def logger_config(name=None):
-    import logging
-
-    import colorlog
-    """
-        Setup the logging environment
-    """
-    if not name:
-        lc_log = logging.getLogger()  # root logger
-    else:
-        lc_log = logging.getLogger(name)
-    lc_log.setLevel(logging.INFO)
-    format_str = '%(asctime)s.%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s'
-    date_format = '%Y-%m-%d %H:%M:%S'
-    cformat = '%(log_color)s' + format_str
-    colors = {'DEBUG': 'green',
-              'INFO': 'cyan',
-              'WARNING': 'bold_yellow',
-              'ERROR': 'bold_red',
-              'CRITICAL': 'bold_purple'}
-    formatter = colorlog.ColoredFormatter(cformat, date_format, log_colors=colors)
-    stream_handler = logging.StreamHandler()
-    stream_handler.setFormatter(formatter)
-    lc_log.addHandler(stream_handler)
-    return lc_log
 
 
 def checkerboard(shape):
