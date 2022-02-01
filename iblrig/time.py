@@ -1,10 +1,13 @@
 #!/usr/bin/env python
-# @Author: Niccolò Bonacchi & Michele Fabbri
-# @Date: 2022-01-24
+# @Author: Niccolò Bonacchi
+# @Creation_Date: 2022-01-24
+# @Editor: Michele Fabbri
+# @Edit_Date: 2022-02-01
 """
 Library of small time related functions
 """
 import datetime
+
 import numpy as np
 
 

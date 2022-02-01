@@ -1,20 +1,23 @@
 #!/usr/bin/env python
-# @Author: Niccolò Bonacchi & Michele Fabbri
-# @Date: 2022-01-24
+# @Author: Niccolò Bonacchi
+# @Creation_Date: Tuesday, February 5th 2019, 3:13:18 pm
+# Editor: Michele Fabbri
+# @Edit_Date: 2022-02-01
 """
 Saving, loading, and zip functionality
 """
 import json
 import logging
-import numpy as np
 import os
 import shutil
 import zipfile
+from pathlib import Path
+
+import numpy as np
+
 import iblrig.misc as misc
 import iblrig.path_helper as ph
 import iblrig.raw_data_loaders as raw
-
-from pathlib import Path
 
 log = logging.getLogger("iblrig")
 

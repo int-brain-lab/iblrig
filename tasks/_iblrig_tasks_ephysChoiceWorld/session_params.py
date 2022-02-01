@@ -1,7 +1,8 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 # @Author: Niccolò Bonacchi
-# @Date:   2018-02-02 17:19:09
+# @Creation_Date: 2018-02-02 17:19:09
+# @Editor: Michele Fabbri
+# @Edit_Date: 2022-02-01
 import logging
 import os
 import tkinter as tk

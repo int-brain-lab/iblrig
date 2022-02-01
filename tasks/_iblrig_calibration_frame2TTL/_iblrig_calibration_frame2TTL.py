@@ -2,9 +2,10 @@ import datetime
 import logging
 import time
 
+import user_settings
+
 import iblrig.params as params
 import task_settings
-import user_settings
 from iblrig.frame2TTL import Frame2TTL
 from session_params import SessionParamHandler
 

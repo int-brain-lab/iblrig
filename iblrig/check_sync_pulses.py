@@ -1,17 +1,20 @@
 #!/usr/bin/env python
-# @Author: Niccolò Bonacchi & Michele Fabbri
-# @Date: 2022-01-24
+# @Author: Niccolò Bonacchi
+# @Creation_Date: Monday, February 25th 2019, 2:10:38 pm
+# @Editor: Michele Fabbri
+# @Edit_Date: 2022-01-24
 """
 Synchronization check of visual stimulus, sound, and camera
 """
 import logging
 import sys
-import iblrig.raw_data_loaders as raw
+from pathlib import Path
+
 import matplotlib.pyplot as plt
 import numpy as np
 
+import iblrig.raw_data_loaders as raw
 from iblrig.misc import get_port_events
-from pathlib import Path
 
 log = logging.getLogger("iblrig")
 

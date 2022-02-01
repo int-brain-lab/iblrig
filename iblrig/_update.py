@@ -1,13 +1,15 @@
 #!/usr/bin/env python
-# @Author: Niccolò Bonacchi & Michele Fabbri
-# @Date: 2022-01-28
-import iblrig.git as git
+# @Author: Niccolò Bonacchi
+# @Creation_Date:   2018-06-08 11:04:05
+# @Editor: Michele Fabbri
+# @Edit_Date: 2022-01-28
 import os
 import shutil
 import subprocess
 import sys
-
 from pathlib import Path
+
+import iblrig.git as git
 from setup_pybpod import main as setup_pybpod
 
 IBLRIG_ROOT_PATH = Path.cwd()

@@ -1,15 +1,18 @@
 #!/usr/bin/env python
-# @Authors: Niccolò Bonacchi & Michele Fabbri
-# @Date: 2022-01-24
+# @Author: Niccolò Bonacchi
+# @Creation_Date: Tuesday, February 5th 2019, 4:11:13 pm
+# @Editor: Michele Fabbri
+# @Edit_Date: 2022-01-24
 """
 Calibration tests and reward configurations
 """
 import logging
+
 import numpy as np
 import scipy as sp
 import scipy.interpolate
-import iblrig.params as params
 
+import iblrig.params as params
 from iblrig.raw_data_loaders import load_data
 
 log = logging.getLogger("iblrig")

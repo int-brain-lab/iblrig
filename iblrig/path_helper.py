@@ -1,6 +1,8 @@
 #!/usr/bin/env python
-# @Authors: Niccolò Bonacchi & Michele Fabbri
-# @Date: 2022-01-24
+# @Author: Niccolò Bonacchi
+# @Creation_Date: Wednesday, November 14th 2018, 10:40:43 am
+# @Editor: Michele Fabbri
+# @Edit_Date: 2022-02-01
 """
 Various get functions to return paths of folders and network drives
 """
@@ -9,13 +11,13 @@ import logging
 import os
 import platform
 import subprocess
-import iblrig.logging_  # noqa
-import iblrig.params as params
-import iblrig.raw_data_loaders as raw
-
 from os import listdir
 from os.path import join
 from pathlib import Path
+
+import iblrig.logging_  # noqa
+import iblrig.params as params
+import iblrig.raw_data_loaders as raw
 
 log = logging.getLogger("iblrig")
 

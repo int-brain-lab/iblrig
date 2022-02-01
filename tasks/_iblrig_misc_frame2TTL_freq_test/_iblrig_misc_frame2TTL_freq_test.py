@@ -1,20 +1,22 @@
 #!/usr/bin/env python
-# @Authors: Niccolò Bonacchi & Michele Fabbri
-# @Date: 2022-01-27
+# @Author: Niccolò Bonacchi
+# @Creation_Date: Friday, January 4th 2019, 11:52:41 am
+# @Editor: Michele Fabbri
+# @Edit_Date: 2022-02-01
 import json
 import logging
 import sys
 from pathlib import Path
 
 import dateutil.parser as parser
-import iblrig.raw_data_loaders as raw
+import user_settings  # noqa
 from pybpodapi.protocol import Bpod, StateMachine
 
 import iblrig.bonsai as bonsai
 import iblrig.frame2TTL
 import iblrig.params as params
 import iblrig.path_helper as ph
-import user_settings  # noqa
+import iblrig.raw_data_loaders as raw
 
 sys.stdout.flush()
 

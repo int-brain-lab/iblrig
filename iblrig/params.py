@@ -1,6 +1,8 @@
 #!/usr/bin/env python
-# @Author: Niccolò Bonacchi & Michele Fabbri
-# @Date: 2022-01-24
+# @Author: Niccolò Bonacchi
+# @Creation_Date: Friday, September 13th 2019, 2:57:40 pm
+# @Editor: Michele Fabbri
+# @Edit_Date: 2022-02-01
 """
 Getting and loading parameters
 """

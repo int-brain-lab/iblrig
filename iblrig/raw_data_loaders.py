@@ -1,6 +1,8 @@
 #!/usr/bin/env python
-# @Author: Niccolò Bonacchi & Michele Fabbri
-# @Date: 2022-01-24
+# @Author: Niccolò Bonacchi
+# @Creation_Date: 2022-01-24
+# @Editor: Michele Fabbri
+# @Edit_Date: 2022-02-01
 """
 Raw Data Loader functions for PyBpod rig
 
@@ -8,16 +10,17 @@ Module contains one loader function per raw datafile
 """
 import json
 import logging
-import numpy as np
-import pandas as pd
 import wave
-import iblrig.version as version
-
 from collections import OrderedDict
 from datetime import datetime
 from pathlib import Path
 from typing import Union
+
+import numpy as np
+import packaging.version as version
+import pandas as pd
 from iblutil.io import jsonable
+
 from iblrig.time import uncycle_pgts, convert_pgts
 
 _logger = logging.getLogger('iblrig')
@@ -380,7 +383,7 @@ def load_encoder_events(session_path, settings=False):
     path = next(path.glob("_iblrig_encoderEvents.raw*.ssv"), None)
     if not settings:
         settings = load_settings(session_path)
-    if settings is None or settings['IBLRIG_VERSION_TAG'] == '':
+    if settings is None or settings['IBLRIG__TAG'] == '':
         settings = {'IBLRIG_VERSION_TAG': '100.0.0'}
         # auto-detect old files when version is not labeled
         with open(path) as fid:
@@ -389,7 +392,7 @@ def load_encoder_events(session_path, settings=False):
             settings = {'IBLRIG_VERSION_TAG': '0.0.0'}
     if not path:
         return None
-    if version.ge(settings['IBLRIG_VERSION_TAG'], '5.0.0'):
+    if version.parse(settings['IBLRIG_VERSION_TAG']) >= version.parse('5.0.0'):
         return _load_encoder_events_file_ge5(path)
     else:
         return _load_encoder_events_file_lt5(path)
@@ -494,7 +497,7 @@ def load_encoder_positions(session_path, settings=False):
     if not path:
         _logger.warning("No data loaded: could not find raw encoderPositions file")
         return None
-    if version.ge(settings['IBLRIG_VERSION_TAG'], '5.0.0'):
+    if version.parse(settings['IBLRIG_VERSION_TAG']) > version.parse('5.0.0'):
         return _load_encoder_positions_file_ge5(path)
     else:
         return _load_encoder_positions_file_lt5(path)

@@ -1,10 +1,12 @@
 #!/usr/bin/env python
-# @Author: Niccolò Bonacchi & Michele Fabbri
-# @Date: 2022-01-28
+# @Author: Niccolò Bonacchi
+# @Creation_Date: 2018-06-08 11:04:05
+# @Editor: Michele Fabbri
+# @Edit_Date: 2022-01-28
 import argparse
 from pathlib import Path
-import iblrig.git as git
 
+import iblrig.git as git
 
 if __name__ == "__main__":
     IBLRIG_ROOT_PATH = Path.cwd()

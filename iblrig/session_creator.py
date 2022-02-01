@@ -1,17 +1,20 @@
 #!/usr/bin/env python
-# @Author: Niccolò Bonacchi & Michele Fabbri
-# @Date: 2022-01-24
+# @Author: Niccolò Bonacchi
+# @Creation_Date: Thursday, March 28th 2019, 7:19:15 pm
+# @Editor: Michele Fabbri
+# @Edit_Date: 2022-02-01
 """
 Creates sessions, pre-generates stim and ephys sessions
 """
-import iblrig.blocks as blocks
-import iblrig.misc as misc
-import iblrig.path_helper as ph
 import math
+from pathlib import Path
+
 import matplotlib.pyplot as plt
 import numpy as np
 
-from pathlib import Path
+import iblrig.blocks as blocks
+import iblrig.misc as misc
+import iblrig.path_helper as ph
 from iblrig.misc import smooth_rolling_window as smooth
 
 

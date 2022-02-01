@@ -1,6 +1,8 @@
 #!/usr/bin/env python
-# @Author: Niccolò Bonacchi & Michele Fabbri
-# @Date: 2022-01-24
+# @Author: Niccolò Bonacchi
+# @Creation_Date: Friday, February 8th 2019, 12:51:51 pm
+# @Editor: Michele Fabbri
+# @Edit_Date: 2022-02-01
 """
 Provides collection of functionality used throughout the iblrig repository.
 

@@ -1,6 +1,8 @@
 #!/usr/bin/env python
-# @Author: Niccolò Bonacchi & Michele Fabbri
-# @Date: 2022-01-24
+# @Author: Niccolò Bonacchi
+# @Creation_Date: 2022-01-24
+# @Editor: Michele Fabbri
+# @Edit_Date: 2022-02-01
 """
 Registering procedures and sessions to Alyx
 """
@@ -8,18 +10,19 @@ import datetime
 import json
 import logging
 import re
-import iblrig.extractors_base as extractors
-import iblrig.flags as flags
-import iblrig.raw_data_loaders as raw
-import iblrig.time as time
-import iblrig.version as version
-import one.alf.exceptions as alferr
+from pathlib import Path
 
+import one.alf.exceptions as alferr
 from dateutil import parser as dateparser
 from iblutil.io import hashfile
 from one.alf.files import get_session_path
 from one.api import ONE
-from pathlib import Path
+
+import iblrig.extractors_base as extractors
+import iblrig.flags as flags
+import iblrig.raw_data_loaders as raw
+import iblrig.time as time
+import packaging.version as version
 
 _logger = logging.getLogger('iblrig')
 EXCLUDED_EXTENSIONS = ['.flag', '.error', '.avi']
@@ -388,7 +391,7 @@ def _read_settings_json_compatibility_enforced(json_file):
         _logger.warning("You appear to be on an untagged version...")
         return md
     # 2018-12-05 Version 3.2.3 fixes (permanent fixes in IBL_RIG from 3.2.4 on)
-    if version.le(md['IBLRIG_VERSION_TAG'], '3.2.3'):
+    if version.parse(md['IBLRIG_VERSION_TAG']) <= version.parse('3.2.3'):
         if 'LAST_TRIAL_DATA' in md.keys():
             md.pop('LAST_TRIAL_DATA')
         if 'weighings' in md['PYBPOD_SUBJECT_EXTRA'].keys():
@@ -409,7 +412,7 @@ def _read_settings_json_compatibility_enforced(json_file):
 def rename_files_compatibility(ses_path, version_tag):
     if not version_tag:
         return
-    if version.le(version_tag, '3.2.3'):
+    if version.parse(version_tag) <= version.parse('3.2.3'):
         task_code = ses_path.glob('**/_ibl_trials.iti_duration.npy')
         for fn in task_code:
             fn.replace(fn.parent.joinpath('_ibl_trials.itiDuration.npy'))

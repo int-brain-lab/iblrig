@@ -1,6 +1,8 @@
 #!/usr/bin/env python
-# @Author: Niccolò Bonacchi & Michele Fabbri
-# @Date: 2022-01-24
+# @Author: Niccolò Bonacchi
+# @Creation_Date: Thursday, March 28th 2019, 7:53:44 pm
+# @Editor: Michele Fabbri
+# @Edit_Date: 2022-02-01
 """
 Purge data from RIG
 - Find all files by rglob
@@ -9,12 +11,12 @@ Purge data from RIG
 sessions and files on Flatiron
 - Delete local raw file if found on Flatiron
 """
-import logging
 import argparse
-
-from one.api import ONE
-from one.alf.files import get_session_path
+import logging
 from pathlib import Path
+
+from one.alf.files import get_session_path
+from one.api import ONE
 
 log = logging.getLogger("iblrig")
 log.setLevel(logging.INFO)

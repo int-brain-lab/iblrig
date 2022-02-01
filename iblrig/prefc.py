@@ -1,7 +1,8 @@
 #!/usr/bin/env python
-# -*- coding:utf-8 -*-
 # @Author: Niccolò Bonacchi
-# @Date: Wednesday, September 4th 2019, 4:24:59 pm
+# @Creation_Date: Wednesday, September 4th 2019, 4:24:59 pm
+# @Editor: Michele Fabbri
+# @Edit_Date: 2022-02-01
 """Pre flight checklist
 Define task, user, subject and board
 Check Alyx connection
@@ -29,7 +30,6 @@ from pathlib import Path
 import serial
 import serial.tools.list_ports
 from dateutil.relativedelta import relativedelta
-from one.api import ONE
 from pybpod_rotaryencoder_module.module_api import RotaryEncoderModule
 from pybpod_soundcard_module.module_api import SoundCardModule
 from pybpodapi.protocol import Bpod

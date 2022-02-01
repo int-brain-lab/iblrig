@@ -1,15 +1,17 @@
 #!/usr/bin/env python
-# @Authors: Niccolò Bonacchi & Michele Fabbri
-# @Date: 2022-01-27
+# @Author: Niccolò Bonacchi
+# @Creation_Date: Thursday, July 4th 2019, 1:37:34 pm
+# @Editor: Michele Fabbri
+# @Edit_Date: 2022-02-01
 import argparse
-import iblrig.flags as flags
-import iblrig.raw_data_loaders as raw
 import logging
 import os
 import shutil
-
 from pathlib import Path
 from shutil import ignore_patterns as ig
+
+import iblrig.flags as flags
+import iblrig.raw_data_loaders as raw
 from iblrig.extractors_base import get_session_extractor_type
 
 log = logging.getLogger("iblrig")

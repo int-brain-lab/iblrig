@@ -1,6 +1,8 @@
 #!/usr/bin/env python
-# @Authors: Anne Urai (CSHL), Niccolò Bonacchi, & Michele Fabbri
-# @Date: 2022-01-24
+# @Author: Anne Urai (CSHL)
+# @Creation_Date: 2018
+# @Editors: Niccolò Bonacchi & Michele Fabbri
+# @Edit_Date: 2022-02-01
 """
 Automatic water calibration for pyBpod
 """
@@ -17,16 +19,15 @@ import pandas as pd
 import scipy as sp
 import seaborn as sns  # for easier plotting at the end
 import serial
-from iblrig.graphic import numinput
+import user_settings  # PyBpod creates this file on run.
 from pybpodapi.bpod import Bpod
 from pybpodapi.state_machine import StateMachine
 
 import iblrig.alyx as alyx
 import iblrig.params as params
-
 # import iblrig.path_helper as path_helper
 import task_settings
-import user_settings  # PyBpod creates this file on run.
+from iblrig.graphic import numinput
 from session_params import SessionParamHandler
 
 sph = SessionParamHandler(task_settings, user_settings)

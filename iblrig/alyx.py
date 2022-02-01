@@ -1,17 +1,20 @@
 #!/usr/bin/env python
-# @Author: Niccolò Bonacchi & Michele Fabbri
-# @Date: 2022-01-24
+# @Author: Niccolo Bonacchi
+# @Creation_Date: Tuesday, May 7th 2019, 12:07:26 pm
+# @Editor: Michele Fabbri
+# @Editor_Date: 2022-01-24
 """
 Alyx server interface functions
 """
 import json
 import logging
 import webbrowser as wb
-import iblrig.params as rig_params
 
-from iblrig.registration import RegistrationClient
-from iblrig.raw_data_loaders import load_settings
 from one.api import ONE
+
+import iblrig.params as rig_params
+from iblrig.raw_data_loaders import load_settings
+from iblrig.registration import RegistrationClient
 
 log = logging.getLogger("iblrig")
 
