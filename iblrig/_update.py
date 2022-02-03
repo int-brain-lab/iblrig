@@ -9,8 +9,11 @@ import subprocess
 import sys
 from pathlib import Path
 
-import iblrig.git as git
 from setup_pybpod import main as setup_pybpod
+
+import iblrig.envs as envs
+import iblrig.git as git
+
 
 IBLRIG_ROOT_PATH = Path.cwd()
 git.fetch()
@@ -52,6 +55,13 @@ def update_pip():
     print("\nUpdating pip et al.")
     os.system("pip install -U setuptools wheel")
     os.system("python -m pip install --upgrade pip")
+
+
+# TODO: remove once safely implemented natively
+def update_ibllib():
+    pip = envs.get_env_pip("ibllib")
+    os.system("pip install ibllib -U")
+    os.system(f"{pip} install ibllib -U")
 
 
 def update_bonsai_config():
@@ -200,6 +210,10 @@ def main(args):
         _update(version=args.v)
     elif args.v and args.v not in ALL_VERSIONS:
         print("Version", args.v, "not found")
+
+    # TODO: remove once functionality implemented natively
+    if args.ibllib:
+        update_ibllib()
 
     if args.info:
         info()
