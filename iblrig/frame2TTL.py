@@ -12,6 +12,10 @@ log = logging.getLogger("iblrig")
 
 
 class Frame2TTL(object):
+    def __init__(self, serial_port) -> None:
+        pass
+
+class Frame2TTLv1(Frame2TTL):
     def __init__(self, serial_port):
         self.serial_port = serial_port
         self.connected = False
@@ -183,7 +187,7 @@ def get_and_set_thresholds():
     return 0
 
 
-class Frame2TTLv2(object):
+class Frame2TTLv2(Frame2TTL):
     def __init__(self, serial_port) -> None:
         self.serial_port = serial_port
         self.connected = False
