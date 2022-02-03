@@ -23,8 +23,8 @@ log = logging.getLogger("iblrig")
 
 
 def get_network_drives():
-    if platform.system() == "Linux":
-        return "~/Projects/IBL/github/iblserver"
+    if platform.system() not in ["Windows", "windows", "win32"]:
+        return "~/Projects/IBL/int-brain-lab/iblserver"  # XXX: This is a quick hack
     import win32api
     import win32com.client
     from win32com.shell import shell, shellcon
