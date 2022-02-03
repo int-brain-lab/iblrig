@@ -40,7 +40,7 @@ def _isdatetime(x: str) -> Optional[bool]:
     :rtype: Optional[bool]
     """
     try:
-        datetime.strptime(x, '%Y-%m-%d')
+        datetime.strptime(x, "%Y-%m-%d")
         return True
     except ValueError:
         return False
@@ -56,7 +56,7 @@ def get_session_path(path: Union[str, Path]) -> Optional[Path]:
     sess = None
     for i, p in enumerate(path.parts):
         if p.isdigit() and _isdatetime(path.parts[i - 1]):
-            sess = Path().joinpath(*path.parts[:i + 1])
+            sess = Path().joinpath(*path.parts[: i + 1])
 
     return sess
 
@@ -68,12 +68,12 @@ def check_transfer(src_session_path: str, dst_session_path: str):
     :param dst_session_path: The copy target directory
     :return:
     """
-    src_files = sorted([x for x in Path(src_session_path).rglob('*') if x.is_file()])
-    dst_files = sorted([x for x in Path(dst_session_path).rglob('*') if x.is_file()])
-    assert len(src_files) == len(dst_files), 'Not all files transferred'
+    src_files = sorted([x for x in Path(src_session_path).rglob("*") if x.is_file()])
+    dst_files = sorted([x for x in Path(dst_session_path).rglob("*") if x.is_file()])
+    assert len(src_files) == len(dst_files), "Not all files transferred"
     for s, d in zip(src_files, dst_files):
-        assert s.name == d.name, 'file name mismatch'
-        assert s.stat().st_size == d.stat().st_size, 'file size mismatch'
+        assert s.name == d.name, "file name mismatch"
+        assert s.stat().st_size == d.stat().st_size, "file size mismatch"
 
 
 def transfer_folder(src: Path, dst: Path, force: bool = False) -> None:
@@ -88,7 +88,7 @@ def transfer_folder(src: Path, dst: Path, force: bool = False) -> None:
         print("All files copied")
 
 
-def smooth_rolling_window(x, window_len=11, window='blackman'):
+def smooth_rolling_window(x, window_len=11, window="blackman"):
     """
     Smooth the data using a window with requested size.
 
@@ -128,19 +128,21 @@ def smooth_rolling_window(x, window_len=11, window='blackman'):
     if window_len < 3:
         return x
 
-    if window not in ['flat', 'hanning', 'hamming', 'bartlett', 'blackman']:
-        raise ValueError("Window is not one of 'flat', 'hanning', 'hamming',\
-'bartlett', 'blackman'")
+    if window not in ["flat", "hanning", "hamming", "bartlett", "blackman"]:
+        raise ValueError(
+            "Window is not one of 'flat', 'hanning', 'hamming',\
+'bartlett', 'blackman'"
+        )
 
-    s = np.r_[x[window_len - 1:0:-1], x, x[-1:-window_len:-1]]
+    s = np.r_[x[window_len - 1 : 0 : -1], x, x[-1:-window_len:-1]]
     # print(len(s))
-    if window == 'flat':  # moving average
-        w = np.ones(window_len, 'd')
+    if window == "flat":  # moving average
+        w = np.ones(window_len, "d")
     else:
-        w = eval('np.' + window + '(window_len)')
+        w = eval("np." + window + "(window_len)")
 
-    y = np.convolve(w / w.sum(), s, mode='valid')
-    return y[round((window_len / 2 - 1)):round(-(window_len / 2))]
+    y = np.convolve(w / w.sum(), s, mode="valid")
+    return y[round((window_len / 2 - 1)) : round(-(window_len / 2))]
 
 
 def checkerboard(shape):
@@ -151,7 +153,9 @@ def make_square_dvamat(size, dva):
     c = np.arange(size) - int(size / 2)
     x = np.array([c] * 15)
     y = np.rot90(x)
-    dvamat = np.array(list(zip(y.ravel() * dva, x.ravel() * dva)), dtype="int, int").reshape(x.shape)
+    dvamat = np.array(list(zip(y.ravel() * dva, x.ravel() * dva)), dtype="int, int").reshape(
+        x.shape
+    )
     return dvamat
 
 
