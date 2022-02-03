@@ -1,6 +1,7 @@
 import unittest
-import iblrig.path_helper as ph
 from pathlib import Path
+
+import iblrig.path_helper as ph
 
 
 class TestPathHelper(unittest.TestCase):
