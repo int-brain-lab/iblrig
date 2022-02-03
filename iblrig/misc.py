@@ -148,13 +148,10 @@ def checkerboard(shape):
 
 
 def make_square_dvamat(size, dva):
-    # likely safe to remove import and use outer scope np (numpy) import
-    import numpy as mq_np
-
-    c = mq_np.arange(size) - int(size / 2)
-    x = mq_np.array([c] * 15)
-    y = mq_np.rot90(x)
-    dvamat = mq_np.array(list(zip(y.ravel() * dva, x.ravel() * dva)), dtype="int, int").reshape(x.shape)
+    c = np.arange(size) - int(size / 2)
+    x = np.array([c] * 15)
+    y = np.rot90(x)
+    dvamat = np.array(list(zip(y.ravel() * dva, x.ravel() * dva)), dtype="int, int").reshape(x.shape)
     return dvamat
 
 
