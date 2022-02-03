@@ -150,12 +150,12 @@ def impulsive_control(sph: object):
     crit_1 = False  # 50% perf on one side ~100% on other
     crit_2 = False  # Median RT on hard (<50%) contrasts < 300ms
     crit_3 = False  # Getting enough water
-    imp_ctl_data = load_data(sph.PREVIOUS_SESSION_PATH)
-    if imp_ctl_data is None or not imp_ctl_data:
+    data = load_data(sph.PREVIOUS_SESSION_PATH)  # Loads data of previous session
+    if data is None or not data:
         return sph
 
-    signed_contrast = np.array([x["signed_contrast"] for x in imp_ctl_data])
-    trial_correct = np.array([x["trial_correct"] for x in imp_ctl_data])
+    signed_contrast = np.array([x["signed_contrast"] for x in data])
+    trial_correct = np.array([x["trial_correct"] for x in data])
 
     # Check crit 1
     l_trial_correct = trial_correct[signed_contrast < 0]
@@ -174,7 +174,7 @@ def impulsive_control(sph: object):
         [
             x["behavior_data"]["States timestamps"]["closed_loop"][0][1]
             - x["behavior_data"]["States timestamps"]["stim_on"][0][0]
-            for x in imp_ctl_data
+            for x in
         ]
     )
     if sp.median(rt[np.abs(signed_contrast) < 0.5]) < 0.3:
