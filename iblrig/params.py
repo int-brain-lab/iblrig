@@ -196,7 +196,6 @@ def load_params_file(upload=False, silent=True) -> dict:
     """
     iblrig_params = Path(ph.get_iblrig_params_folder())
     fpath = iblrig_params / ".iblrig_params.json"
-    bpod_comports = iblrig_params / ".bpod_comports.json"
     if fpath.exists():
         with open(fpath, "r") as f:
             out = json.load(f)
@@ -204,13 +203,7 @@ def load_params_file(upload=False, silent=True) -> dict:
         if not silent:
             log.info(out)
         return out
-    elif not fpath.exists() and bpod_comports.exists():
-        log.warning(
-            "Params file does not exist, found old bpod_comports file. Trying to migrate..."
-        )
-        try_migrate_to_params()
-        return load_params_file()
-    elif not fpath.exists() and not bpod_comports.exists():
+    elif not fpath.exists():
         log.warning("Could not load params file does not exist. Creating...")
         out = ask_params_comports(write_params_file())
         return out
@@ -269,84 +262,6 @@ def ask_params_comports(data: dict) -> dict:
     return data
 
 
-def try_migrate_to_params(force=False):
-    params_file = Path(ph.get_iblrig_params_folder()) / ".iblrig_params.json"
-    comports_file = Path(ph.get_iblrig_params_folder()) / ".bpod_comports.json"
-    # See if file exists:
-    if params_file.exists() and not force:
-        log.info(f"No steps taken - File exists: {params_file}")
-        return
-    # Get .bpod_comports file and set the COM values
-    if comports_file.exists():
-        with open(comports_file, "r") as f:
-            com_data = json.load(f)
-        com_dict = {
-            "COM_BPOD": com_data["BPOD"],  # str
-            "COM_ROTARY_ENCODER": com_data["ROTARY_ENCODER"],  # str
-            "COM_F2TTL": com_data["FRAME2TTL"],
-        }  # str
-    else:
-        com_dict = {
-            "COM_BPOD": get_board_comport(),
-            "COM_F2TTL": "",
-            "COM_ROTARY_ENCODER": "",
-        }
-    # Find latest H2O calib and set WATER values
-    water_dict = {
-        "WATER_CALIBRATION_RANGE": "",  # [min, max]
-        "WATER_CALIBRATION_OPEN_TIMES": "",  # [float, float, ...]
-        "WATER_CALIBRATION_WEIGHT_PERDROP": "",  # [float, float, ...]
-        "WATER_CALIBRATION_DATE": "",
-    }  # str
-    range_file = ph.get_water_calibration_range_file()
-    func_file = ph.get_water_calibration_func_file()
-    if (str(func_file) != "." and str(range_file) != ".") and (
-        func_file.parent == range_file.parent
-    ):
-        water_dict.update(ph.load_water_calibraition_range_file(range_file))
-        water_dict.update(ph.load_water_calibraition_func_file(func_file))
-        water_dict.update({"WATER_CALIBRATION_DATE": func_file.parent.parent.parent.name})
-    if str(func_file) != ".":
-        water_dict.update(ph.load_water_calibraition_func_file(func_file))
-        water_dict.update({"WATER_CALIBRATION_DATE": func_file.parent.parent.parent.name})
-    # Find latest F2TTL calib and set F2TTL values
-    f2ttl_params = None
-    if f2ttl_params is None:
-        f2ttl_dict = {
-            "F2TTL_DARK_THRESH": "",
-            "F2TTL_LIGHT_THRESH": "",
-            "F2TTL_CALIBRATION_DATE": "",
-        }
-    else:
-        f2ttl_dict = {
-            "F2TTL_DARK_THRESH": f2ttl_params["F2TTL_DARK_THRESH"],
-            "F2TTL_LIGHT_THRESH": f2ttl_params["F2TTL_LIGHT_THRESH"],
-            "F2TTL_CALIBRATION_DATE": datetime.datetime.now().date().isoformat(),
-        }
-        if "COM_F2TTL" in f2ttl_params:
-            f2ttl_dict.update({"COM_F2TTL": f2ttl_params["COM_F2TTL"]})
-        elif "F2TTL_COM" in f2ttl_params:
-            f2ttl_dict.update({"COM_F2TTL": f2ttl_params["F2TTL_COM"]})
-        if "F2TTL_CALIBRATION_DATE" in f2ttl_params:
-            f2ttl_dict.update({"F2TTL_CALIBRATION_DATE": f2ttl_params["F2TTL_CALIBRATION_DATE"]})
-
-    # Save locally
-    final_dict = {}
-    final_dict.update({"NAME": get_board_name()})  # from GUI
-    final_dict.update(com_dict)
-    final_dict.update(f2ttl_dict)
-    final_dict.update(water_dict)
-    write_params_file(data=final_dict, force=True)
-    # Delete old comports file
-    if comports_file.exists():
-        bk = Path(ph.get_iblrig_params_folder()) / ".bpod_comports.json_bk"
-        shutil.copy(str(comports_file), str(bk))
-        comports_file.unlink()
-    return
-
-
 if __name__ == "__main__":
-    # try_migrate_to_params(force=True)
-    # try_migrate_to_params(force=False)
     params = load_params_file()
     print(".")
