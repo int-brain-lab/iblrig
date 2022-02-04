@@ -10,14 +10,13 @@ from pathlib import Path
 from sys import platform
 from tkinter import messagebox
 
-from pythonosc import udp_client
-
 import iblrig.adaptive as adaptive
 import iblrig.ambient_sensor as ambient_sensor
 import iblrig.iotasks as iotasks
 import iblrig.misc as misc
 import iblrig.path_helper as ph
 import iblrig.sound as sound
+from pythonosc import udp_client
 
 log = logging.getLogger("iblrig")
 log.setLevel(logging.DEBUG)
@@ -320,9 +319,11 @@ if __name__ == "__main__":
         calling bonsai
         turning off lights of bpod board
     """
-    import task_settings as _task_settings
-    import iblrig.fake_user_settings as _user_settings
     import datetime
+
+    import iblrig.fake_user_settings as _user_settings
+
+    import task_settings as _task_settings
 
     dt = datetime.datetime.now()
     dt = [
