@@ -19,11 +19,31 @@ from typing import Union
 import numpy as np
 import packaging.version as version
 import pandas as pd
-from iblutil.io import jsonable
 
 from iblrig.time import uncycle_pgts, convert_pgts
 
-_logger = logging.getLogger('iblrig')
+_logger = logging.getLogger("iblrig")
+
+
+# class definition with no init is used as a namespace
+class jsonable(object):
+    def read(file):
+        data = []
+        with open(file, "r") as f:
+            for line in f:
+                data.append(json.loads(line))
+        return data
+
+    def _write(file, data, mode):
+        with open(file, mode) as f:
+            for obj in data:
+                f.write(json.dumps(obj) + "\n")
+
+    def write(file, data):
+        jsonable._write(file, data, "w+")
+
+    def append(file, data):
+        jsonable._write(file, data, "a")
 
 
 def assert_valid_video_label(label):
@@ -32,12 +52,12 @@ def assert_valid_video_label(label):
     :param label: A video label to verify
     :return: the label in lowercase
     """
-    video_labels = ('left', 'right', 'body')
+    video_labels = ("left", "right", "body")
     if not isinstance(label, str):
         try:
             return tuple(map(assert_valid_video_label, label))
         except AttributeError:
-            raise ValueError('label must be string or iterable of strings')
+            raise ValueError("label must be string or iterable of strings")
     if label.lower() not in video_labels:
         raise ValueError(f"camera must be one of ({', '.join(video_labels)})")
     return label.lower()
@@ -59,28 +79,28 @@ def trial_times_to_times(raw_trial):
     :return: trial data with modified timestamps
     :rtype: dict
     """
-    ts_bs = raw_trial['behavior_data']['Bpod start timestamp']
-    ts_ts = raw_trial['behavior_data']['Trial start timestamp']
+    ts_bs = raw_trial["behavior_data"]["Bpod start timestamp"]
+    ts_ts = raw_trial["behavior_data"]["Trial start timestamp"]
     # ts_te = raw_trial['behavior_data']['Trial end timestamp']
 
     def convert(ts):
         return ts + ts_ts - ts_bs
 
     converted_events = {}
-    for k, v in raw_trial['behavior_data']['Events timestamps'].items():
+    for k, v in raw_trial["behavior_data"]["Events timestamps"].items():
         converted_events.update({k: [convert(i) for i in v]})
-    raw_trial['behavior_data']['Events timestamps'] = converted_events
+    raw_trial["behavior_data"]["Events timestamps"] = converted_events
 
     converted_states = {}
-    for k, v in raw_trial['behavior_data']['States timestamps'].items():
+    for k, v in raw_trial["behavior_data"]["States timestamps"].items():
         converted_states.update({k: [[convert(i) for i in x] for x in v]})
-    raw_trial['behavior_data']['States timestamps'] = converted_states
+    raw_trial["behavior_data"]["States timestamps"] = converted_states
 
-    shift = raw_trial['behavior_data']['Bpod start timestamp']
-    raw_trial['behavior_data']['Bpod start timestamp'] -= shift
-    raw_trial['behavior_data']['Trial start timestamp'] -= shift
-    raw_trial['behavior_data']['Trial end timestamp'] -= shift
-    assert(raw_trial['behavior_data']['Bpod start timestamp'] == 0)
+    shift = raw_trial["behavior_data"]["Bpod start timestamp"]
+    raw_trial["behavior_data"]["Bpod start timestamp"] -= shift
+    raw_trial["behavior_data"]["Trial start timestamp"] -= shift
+    raw_trial["behavior_data"]["Trial end timestamp"] -= shift
+    assert raw_trial["behavior_data"]["Bpod start timestamp"] == 0
     return raw_trial
 
 
@@ -94,7 +114,7 @@ def load_bpod(session_path):
     return load_settings(session_path), load_data(session_path)
 
 
-def load_data(session_path: Union[str, Path], time='absolute'):
+def load_data(session_path: Union[str, Path], time="absolute"):
     """
     Load PyBpod data files (.jsonable).
 
@@ -116,12 +136,12 @@ def load_data(session_path: Union[str, Path], time='absolute'):
         _logger.warning("No data loaded: could not find raw data file")
         return None
     data = jsonable.read(path)
-    if time == 'absolute':
+    if time == "absolute":
         data = [trial_times_to_times(t) for t in data]
     return data
 
 
-def load_camera_frame_data(session_path, camera: str = 'left', raw: bool = False) -> pd.DataFrame:
+def load_camera_frame_data(session_path, camera: str = "left", raw: bool = False) -> pd.DataFrame:
     """ Loads binary frame data from Bonsai camera recording workflow.
 
     Args:
@@ -185,15 +205,15 @@ def load_camera_ssv_times(session_path, camera: str):
     :return: array of datetimes, array of frame times in seconds
     """
     camera = assert_valid_video_label(camera)
-    video_path = Path(session_path).joinpath('raw_video_data')
-    if next(video_path.glob(f'_iblrig_{camera}Camera.frameData*.bin'), None):
+    video_path = Path(session_path).joinpath("raw_video_data")
+    if next(video_path.glob(f"_iblrig_{camera}Camera.frameData*.bin"), None):
         df = load_camera_frame_data(session_path, camera=camera)
-        return df['Timestamp'].values, df['embeddedTimeStamp'].values
+        return df["Timestamp"].values, df["embeddedTimeStamp"].values
 
-    file = next(video_path.glob(f'_iblrig_{camera.lower()}Camera.timestamps*.ssv'), None)
+    file = next(video_path.glob(f"_iblrig_{camera.lower()}Camera.timestamps*.ssv"), None)
     if not file:
-        file = str(video_path.joinpath(f'_iblrig_{camera.lower()}Camera.timestamps.ssv'))
-        raise FileNotFoundError(file + ' not found')
+        file = str(video_path.joinpath(f"_iblrig_{camera.lower()}Camera.timestamps.ssv"))
+        raise FileNotFoundError(file + " not found")
     # NB: Numpy has deprecated support for non-naive timestamps.
     # Converting them is extremely slow: 6000 timestamps takes 0.8615s vs 0.0352s.
     # from datetime import timezone
@@ -201,17 +221,17 @@ def load_camera_ssv_times(session_path, camera: str):
 
     # Determine the order of the columns by reading one line and testing whether the first value
     # is an integer or not.
-    with open(file, 'r') as f:
+    with open(file, "r") as f:
         line = f.readline()
-    type_map = OrderedDict(bonsai='<M8[ns]', camera='<u4')
+    type_map = OrderedDict(bonsai="<M8[ns]", camera="<u4")
     try:
-        int(line.split(' ')[1])
+        int(line.split(" ")[1])
     except ValueError:
-        type_map.move_to_end('bonsai')
-    ssv_params = dict(names=type_map.keys(), dtype=','.join(type_map.values()), delimiter=' ')
+        type_map.move_to_end("bonsai")
+    ssv_params = dict(names=type_map.keys(), dtype=",".join(type_map.values()), delimiter=" ")
     ssv_times = np.genfromtxt(file, **ssv_params)  # np.loadtxt is slower for some reason
-    bonsai_times = ssv_times['bonsai']
-    camera_times = uncycle_pgts(convert_pgts(ssv_times['camera']))
+    bonsai_times = ssv_times["bonsai"]
+    camera_times = uncycle_pgts(convert_pgts(ssv_times["camera"]))
     return bonsai_times, camera_times
 
 
@@ -244,13 +264,13 @@ def load_camera_frame_count(session_path, label: str, raw=True):
         return
 
     label = assert_valid_video_label(label)
-    video_path = Path(session_path).joinpath('raw_video_data')
-    if next(video_path.glob(f'_iblrig_{label}Camera.frameData*.bin'), None):
+    video_path = Path(session_path).joinpath("raw_video_data")
+    if next(video_path.glob(f"_iblrig_{label}Camera.frameData*.bin"), None):
         df = load_camera_frame_data(session_path, camera=label)
-        return df['embeddedFrameCounter'].values
+        return df["embeddedFrameCounter"].values
 
     # Load frame count
-    glob = video_path.glob(f'_iblrig_{label}Camera.frame_counter*.bin')
+    glob = video_path.glob(f"_iblrig_{label}Camera.frame_counter*.bin")
     count_file = next(glob, None)
     count = np.fromfile(count_file, dtype=np.float64).astype(int) if count_file else []
     if len(count) == 0:
@@ -279,22 +299,22 @@ def load_camera_gpio(session_path, label: str, as_dicts=False):
     """
     if session_path is None:
         return
-    raw_path = Path(session_path).joinpath('raw_video_data')
+    raw_path = Path(session_path).joinpath("raw_video_data")
     label = assert_valid_video_label(label)
 
     # Load pin state
-    if next(raw_path.glob(f'_iblrig_{label}Camera.frameData*.bin'), False):
+    if next(raw_path.glob(f"_iblrig_{label}Camera.frameData*.bin"), False):
         df = load_camera_frame_data(session_path, camera=label, raw=False)
-        gpio = np.array([x for x in df['embeddedGPIOPinState'].values])
+        gpio = np.array([x for x in df["embeddedGPIOPinState"].values])
         if len(gpio) == 0:
             return [None] * 4 if as_dicts else None
     else:
-        GPIO_file = next(raw_path.glob(f'_iblrig_{label}Camera.GPIO*.bin'), None)
+        GPIO_file = next(raw_path.glob(f"_iblrig_{label}Camera.GPIO*.bin"), None)
         # This deals with missing and empty files the same
         gpio = np.fromfile(GPIO_file, dtype=np.float64).astype(np.uint32) if GPIO_file else []
         # Check values make sense (4 pins = 16 possible values)
         if not np.isin(gpio, np.left_shift(np.arange(2 ** 4, dtype=np.uint32), 32 - 4)).all():
-            _logger.warning('Unexpected GPIO values; decoding may fail')
+            _logger.warning("Unexpected GPIO values; decoding may fail")
         if len(gpio) == 0:
             return [None] * 4 if as_dicts else None
         # 4 pins represented as uint32
@@ -303,17 +323,18 @@ def load_camera_gpio(session_path, label: str, as_dicts=False):
 
     if as_dicts:
         if not gpio.any():
-            _logger.error('No GPIO changes')
+            _logger.error("No GPIO changes")
             return [None] * 4
         # Find state changes for each pin and construct a dict of indices and polarities for each
         edges = np.vstack((gpio[0, :], np.diff(gpio.astype(int), axis=0)))
         # gpio = [(ind := np.where(edges[:, i])[0], edges[ind, i]) for i in range(4)]
         # gpio = [dict(zip(('indices', 'polarities'), x)) for x in gpio_]  # py3.8
-        gpio = [{'indices': np.where(edges[:, i])[0],
-                 'polarities': edges[edges[:, i] != 0, i]}
-                for i in range(4)]
+        gpio = [
+            {"indices": np.where(edges[:, i])[0], "polarities": edges[edges[:, i] != 0, i]}
+            for i in range(4)
+        ]
         # Replace empty dicts with None
-        gpio = [None if x['indices'].size == 0 else x for x in gpio]
+        gpio = [None if x["indices"].size == 0 else x for x in gpio]
 
     return gpio
 
@@ -337,10 +358,10 @@ def load_settings(session_path: Union[str, Path]):
     if not path:
         _logger.warning("No data loaded: could not find raw settings file")
         return None
-    with open(path, 'r') as f:
+    with open(path, "r") as f:
         settings = json.load(f)
-    if 'IBLRIG_VERSION_TAG' not in settings.keys():
-        settings['IBLRIG_VERSION_TAG'] = ''
+    if "IBLRIG_VERSION_TAG" not in settings.keys():
+        settings["IBLRIG_VERSION_TAG"] = ""
     return settings
 
 
@@ -348,9 +369,9 @@ def load_stim_position_screen(session_path):
     path = Path(session_path).joinpath("raw_behavior_data")
     path = next(path.glob("_iblrig_stimPositionScreen.raw*.csv"), None)
 
-    data = pd.read_csv(path, sep=',', header=None, error_bad_lines=False)
-    data.columns = ['contrast', 'position', 'bns_ts']
-    data['bns_ts'] = pd.to_datetime(data['bns_ts'])
+    data = pd.read_csv(path, sep=",", header=None, error_bad_lines=False)
+    data.columns = ["contrast", "position", "bns_ts"]
+    data["bns_ts"] = pd.to_datetime(data["bns_ts"])
     return data
 
 
@@ -383,16 +404,16 @@ def load_encoder_events(session_path, settings=False):
     path = next(path.glob("_iblrig_encoderEvents.raw*.ssv"), None)
     if not settings:
         settings = load_settings(session_path)
-    if settings is None or settings['IBLRIG__TAG'] == '':
-        settings = {'IBLRIG_VERSION_TAG': '100.0.0'}
+    if settings is None or settings["IBLRIG__TAG"] == "":
+        settings = {"IBLRIG_VERSION_TAG": "100.0.0"}
         # auto-detect old files when version is not labeled
         with open(path) as fid:
             line = fid.readline()
-        if line.startswith('Event') and 'StateMachine' in line:
-            settings = {'IBLRIG_VERSION_TAG': '0.0.0'}
+        if line.startswith("Event") and "StateMachine" in line:
+            settings = {"IBLRIG_VERSION_TAG": "0.0.0"}
     if not path:
         return None
-    if version.parse(settings['IBLRIG_VERSION_TAG']) >= version.parse('5.0.0'):
+    if version.parse(settings["IBLRIG_VERSION_TAG"]) >= version.parse("5.0.0"):
         return _load_encoder_events_file_ge5(path)
     else:
         return _load_encoder_events_file_lt5(path)
@@ -403,7 +424,7 @@ def _load_encoder_ssv_file(file_path, **kwargs):
     if file_path.stat().st_size == 0:
         _logger.error(f"{file_path.name} is an empty file. ")
         raise ValueError(f"{file_path.name} is an empty file. ABORT EXTRACTION. ")
-    return pd.read_csv(file_path, sep=' ', header=None, error_bad_lines=False, **kwargs)
+    return pd.read_csv(file_path, sep=" ", header=None, error_bad_lines=False, **kwargs)
 
 
 def _load_encoder_positions_file_lt5(file_path):
@@ -412,10 +433,12 @@ def _load_encoder_positions_file_lt5(file_path):
     :param file_path:
     :return: dataframe of encoder events
     """
-    data = _load_encoder_ssv_file(file_path,
-                                  names=['_', 're_ts', 're_pos', 'bns_ts', '__'],
-                                  usecols=['re_ts', 're_pos', 'bns_ts'])
-    return _groom_wheel_data_lt5(data, label='_iblrig_encoderPositions.raw.ssv', path=file_path)
+    data = _load_encoder_ssv_file(
+        file_path,
+        names=["_", "re_ts", "re_pos", "bns_ts", "__"],
+        usecols=["re_ts", "re_pos", "bns_ts"],
+    )
+    return _groom_wheel_data_lt5(data, label="_iblrig_encoderPositions.raw.ssv", path=file_path)
 
 
 def _load_encoder_positions_file_ge5(file_path):
@@ -424,10 +447,10 @@ def _load_encoder_positions_file_ge5(file_path):
     :param file_path:
     :return: dataframe of encoder events
     """
-    data = _load_encoder_ssv_file(file_path,
-                                  names=['re_ts', 're_pos', '_'],
-                                  usecols=['re_ts', 're_pos'])
-    return _groom_wheel_data_ge5(data, label='_iblrig_encoderPositions.raw.ssv', path=file_path)
+    data = _load_encoder_ssv_file(
+        file_path, names=["re_ts", "re_pos", "_"], usecols=["re_ts", "re_pos"]
+    )
+    return _groom_wheel_data_ge5(data, label="_iblrig_encoderPositions.raw.ssv", path=file_path)
 
 
 def _load_encoder_events_file_lt5(file_path):
@@ -436,10 +459,12 @@ def _load_encoder_events_file_lt5(file_path):
     :param file_path:
     :return: dataframe of encoder events
     """
-    data = _load_encoder_ssv_file(file_path,
-                                  names=['_', 're_ts', '__', 'sm_ev', 'bns_ts', '___'],
-                                  usecols=['re_ts', 'sm_ev', 'bns_ts'])
-    return _groom_wheel_data_lt5(data, label='_iblrig_encoderEvents.raw.ssv', path=file_path)
+    data = _load_encoder_ssv_file(
+        file_path,
+        names=["_", "re_ts", "__", "sm_ev", "bns_ts", "___"],
+        usecols=["re_ts", "sm_ev", "bns_ts"],
+    )
+    return _groom_wheel_data_lt5(data, label="_iblrig_encoderEvents.raw.ssv", path=file_path)
 
 
 def _load_encoder_events_file_ge5(file_path):
@@ -448,10 +473,10 @@ def _load_encoder_events_file_ge5(file_path):
     :param file_path:
     :return: dataframe of encoder events
     """
-    data = _load_encoder_ssv_file(file_path,
-                                  names=['re_ts', 'sm_ev', '_'],
-                                  usecols=['re_ts', 'sm_ev'])
-    return _groom_wheel_data_ge5(data, label='_iblrig_encoderEvents.raw.ssv', path=file_path)
+    data = _load_encoder_ssv_file(
+        file_path, names=["re_ts", "sm_ev", "_"], usecols=["re_ts", "sm_ev"]
+    )
+    return _groom_wheel_data_ge5(data, label="_iblrig_encoderEvents.raw.ssv", path=file_path)
 
 
 def load_encoder_positions(session_path, settings=False):
@@ -487,17 +512,17 @@ def load_encoder_positions(session_path, settings=False):
     path = next(path.glob("_iblrig_encoderPositions.raw*.ssv"), None)
     if not settings:
         settings = load_settings(session_path)
-    if settings is None or settings['IBLRIG_VERSION_TAG'] == '':
-        settings = {'IBLRIG_VERSION_TAG': '100.0.0'}
+    if settings is None or settings["IBLRIG_VERSION_TAG"] == "":
+        settings = {"IBLRIG_VERSION_TAG": "100.0.0"}
         # auto-detect old files when version is not labeled
         with open(path) as fid:
             line = fid.readline()
-        if line.startswith('Position'):
-            settings = {'IBLRIG_VERSION_TAG': '0.0.0'}
+        if line.startswith("Position"):
+            settings = {"IBLRIG_VERSION_TAG": "0.0.0"}
     if not path:
         _logger.warning("No data loaded: could not find raw encoderPositions file")
         return None
-    if version.parse(settings['IBLRIG_VERSION_TAG']) > version.parse('5.0.0'):
+    if version.parse(settings["IBLRIG_VERSION_TAG"]) > version.parse("5.0.0"):
         return _load_encoder_positions_file_ge5(path)
     else:
         return _load_encoder_positions_file_lt5(path)
@@ -538,10 +563,19 @@ def load_encoder_trial_info(session_path):
     path = next(path.glob("_iblrig_encoderTrialInfo.raw*.ssv"), None)
     if not path:
         return None
-    data = pd.read_csv(path, sep=' ', header=None)
+    data = pd.read_csv(path, sep=" ", header=None)
     data = data.drop([9], axis=1)
-    data.columns = ['trial_num', 'stim_pos_init', 'stim_contrast', 'stim_freq',
-                    'stim_angle', 'stim_gain', 'stim_sigma', 'stim_phase', 'bns_ts']
+    data.columns = [
+        "trial_num",
+        "stim_pos_init",
+        "stim_contrast",
+        "stim_freq",
+        "stim_angle",
+        "stim_gain",
+        "stim_sigma",
+        "stim_phase",
+        "bns_ts",
+    ]
     # return _groom_wheel_data_lt5(data, label='_iblrig_encoderEvents.raw.ssv', path=path)
     return data
 
@@ -569,7 +603,7 @@ def load_ambient_sensor(session_path):
     if not path:
         return None
     data = []
-    with open(path, 'r') as f:
+    with open(path, "r") as f:
         for line in f:
             data.append(json.loads(line))
     return data
@@ -601,40 +635,47 @@ def load_mic(session_path):
 
 def _clean_wheel_dataframe(data, label, path):
     if np.any(data.isna()):
-        _logger.warning(label + ' has missing/incomplete records \n %s', path)
+        _logger.warning(label + " has missing/incomplete records \n %s", path)
     # first step is to re-interpret as numeric objects if not already done
     for col in data.columns:
-        if data[col].dtype == object and col not in ['bns_ts']:
-            data[col] = pd.to_numeric(data[col], errors='coerce')
+        if data[col].dtype == object and col not in ["bns_ts"]:
+            data[col] = pd.to_numeric(data[col], errors="coerce")
     # then drop Nans and duplicates
     data.dropna(inplace=True)
-    data.drop_duplicates(keep='first', inplace=True)
+    data.drop_duplicates(keep="first", inplace=True)
     data.reset_index(inplace=True)
     # handle the clock resets when microseconds exceed uint32 max value
     drop_first = False
-    data['re_ts'] = data['re_ts'].astype(np.double, copy=False)
-    if any(np.diff(data['re_ts']) < 0):
-        ind = np.where(np.diff(data['re_ts']) < 0)[0]
+    data["re_ts"] = data["re_ts"].astype(np.double, copy=False)
+    if any(np.diff(data["re_ts"]) < 0):
+        ind = np.where(np.diff(data["re_ts"]) < 0)[0]
         for i in ind:
             # the first sample may be corrupt, in this case throw away
             if i <= 1:
                 drop_first = i
-                _logger.warning(label + ' rotary encoder positions timestamps'
-                                        ' first sample corrupt ' + str(path))
+                _logger.warning(
+                    label + " rotary encoder positions timestamps"
+                    " first sample corrupt " + str(path)
+                )
             # if it's an uint32 wraparound, the diff should be close to 2 ** 32
-            elif 32 - np.log2(data['re_ts'][i] - data['re_ts'][i + 1]) < 0.2:
-                data.loc[i + 1:, 're_ts'] = data.loc[i + 1:, 're_ts'] + 2 ** 32
+            elif 32 - np.log2(data["re_ts"][i] - data["re_ts"][i + 1]) < 0.2:
+                data.loc[i + 1 :, "re_ts"] = data.loc[i + 1 :, "re_ts"] + 2 ** 32
             # there is also the case where 2 positions are swapped and need to be swapped back
 
-            elif data['re_ts'][i] > data['re_ts'][i + 1] > data['re_ts'][i - 1]:
-                _logger.warning(label + ' rotary encoder timestamps swapped at index: ' +
-                                str(i) + '  ' + str(path))
+            elif data["re_ts"][i] > data["re_ts"][i + 1] > data["re_ts"][i - 1]:
+                _logger.warning(
+                    label
+                    + " rotary encoder timestamps swapped at index: "
+                    + str(i)
+                    + "  "
+                    + str(path)
+                )
                 a, b = data.iloc[i].copy(), data.iloc[i + 1].copy()
                 data.iloc[i], data.iloc[i + 1] = b, a
             # if none of those 3 cases apply, raise an error
             else:
-                _logger.error(label + ' Rotary encoder timestamps are not sorted.' + str(path))
-                data.sort_values('re_ts', inplace=True)
+                _logger.error(label + " Rotary encoder timestamps are not sorted." + str(path))
+                data.sort_values("re_ts", inplace=True)
                 data.reset_index(inplace=True)
     if drop_first is not False:
         data.drop(data.loc[:drop_first].index, inplace=True)
@@ -642,7 +683,7 @@ def _clean_wheel_dataframe(data, label, path):
     return data
 
 
-def _groom_wheel_data_lt5(data, label='file ', path=''):
+def _groom_wheel_data_lt5(data, label="file ", path=""):
     """
     The whole purpose of this function is to account for variability and corruption in
     the wheel position files. There are many possible errors described below, but
@@ -651,16 +692,20 @@ def _groom_wheel_data_lt5(data, label='file ', path=''):
     data = _clean_wheel_dataframe(data, label, path)
     data.drop(data.loc[data.bns_ts.apply(len) != 33].index, inplace=True)
     # check if the time scale is in ms
-    sess_len_sec = (datetime.strptime(data['bns_ts'].iloc[-1][:25], '%Y-%m-%dT%H:%M:%S.%f') -
-                    datetime.strptime(data['bns_ts'].iloc[0][:25], '%Y-%m-%dT%H:%M:%S.%f')).seconds
-    if data['re_ts'].iloc[-1] / (sess_len_sec + 1e-6) < 1e5:  # should be 1e6 normally
-        _logger.warning('Rotary encoder reset logs events in ms instead of us: ' +
-                        'RE firmware needs upgrading and wheel velocity is potentially inaccurate')
-        data['re_ts'] = data['re_ts'] * 1000
+    sess_len_sec = (
+        datetime.strptime(data["bns_ts"].iloc[-1][:25], "%Y-%m-%dT%H:%M:%S.%f")
+        - datetime.strptime(data["bns_ts"].iloc[0][:25], "%Y-%m-%dT%H:%M:%S.%f")
+    ).seconds
+    if data["re_ts"].iloc[-1] / (sess_len_sec + 1e-6) < 1e5:  # should be 1e6 normally
+        _logger.warning(
+            "Rotary encoder reset logs events in ms instead of us: "
+            + "RE firmware needs upgrading and wheel velocity is potentially inaccurate"
+        )
+        data["re_ts"] = data["re_ts"] * 1000
     return data
 
 
-def _groom_wheel_data_ge5(data, label='file ', path=''):
+def _groom_wheel_data_ge5(data, label="file ", path=""):
     """
     The whole purpose of this function is to account for variability and corruption in
     the wheel position files. There are many possible errors described below, but
@@ -668,10 +713,12 @@ def _groom_wheel_data_ge5(data, label='file ', path=''):
     """
     data = _clean_wheel_dataframe(data, label, path)
     # check if the time scale is in ms
-    if (data['re_ts'].iloc[-1] - data['re_ts'].iloc[0]) / 1e6 < 20:
-        _logger.warning('Rotary encoder reset logs events in ms instead of us: ' +
-                        'RE firmware needs upgrading and wheel velocity is potentially inaccurate')
-        data['re_ts'] = data['re_ts'] * 1000
+    if (data["re_ts"].iloc[-1] - data["re_ts"].iloc[0]) / 1e6 < 20:
+        _logger.warning(
+            "Rotary encoder reset logs events in ms instead of us: "
+            + "RE firmware needs upgrading and wheel velocity is potentially inaccurate"
+        )
+        data["re_ts"] = data["re_ts"] * 1000
     return data
 
 
@@ -681,12 +728,13 @@ def save_bool(save, dataset_type):
     elif isinstance(save, list):
         out = (dataset_type in save) or (Path(dataset_type).stem in save)
     if out:
-        _logger.debug('extracting' + dataset_type)
+        _logger.debug("extracting" + dataset_type)
     return out
 
 
-def sync_trials_robust(t0, t1, diff_threshold=0.001, drift_threshold_ppm=200, max_shift=5,
-                       return_index=False):
+def sync_trials_robust(
+    t0, t1, diff_threshold=0.001, drift_threshold_ppm=200, max_shift=5, return_index=False
+):
     """
     Attempts to find matching timestamps in 2 time-series that have an offset, are drifting,
     and are most likely incomplete: sizes don't have to match, some pulses may be missing
@@ -801,7 +849,7 @@ def load_bpod_fronts(session_path: str, data: list = False) -> list:
     return [BNC1, BNC2]
 
 
-def get_port_events(trial: dict, name: str = '') -> list:
+def get_port_events(trial: dict, name: str = "") -> list:
     """get_port_events
     Return all event timestamps from bpod raw data trial that match 'name'
     --> looks in trial['behavior_data']['Events timestamps']
@@ -815,7 +863,7 @@ def get_port_events(trial: dict, name: str = '') -> list:
     TODO: add polarities?
     """
     out: list = []
-    events = trial['behavior_data']['Events timestamps']
+    events = trial["behavior_data"]["Events timestamps"]
     for k in events:
         if name in k:
             out.extend(events[k])
