@@ -174,7 +174,7 @@ def impulsive_control(sph: object):
         [
             x["behavior_data"]["States timestamps"]["closed_loop"][0][1]
             - x["behavior_data"]["States timestamps"]["stim_on"][0][0]
-            for x in
+            for x in data
         ]
     )
     if sp.median(rt[np.abs(signed_contrast) < 0.5]) < 0.3:
