@@ -26,6 +26,9 @@ if __name__ == "__main__":
         "--reinstall", required=False, default=False, action="store_true", help="Reinstall iblrig",
     )
     parser.add_argument(
+        "--ibllib", required=False, default=False, action="store_true", help="Update ibllib only",
+    )
+    parser.add_argument(
         "--update",
         required=False,
         default=False,
