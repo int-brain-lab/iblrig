@@ -137,7 +137,7 @@ def alyx_server_rig_ok() -> bin:
     if alyx_ok():
         alyx_server_rig += 0b100
     else:
-        log.warning(f"Can't connect to Alyx.")
+        log.warning("Can't connect to Alyx.")
 
     pars = _grep_param_dict()
     try:
