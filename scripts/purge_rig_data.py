@@ -25,20 +25,20 @@ log.setLevel(logging.INFO)
 def session_name(path) -> str:
     """Returns the session name (subject/date/number) string for any filepath
     using session_path"""
-    return '/'.join(get_session_path(path).parts[-3:])
+    return "/".join(get_session_path(path).parts[-3:])
 
 
 def purge_local_data(local_folder, file_name, lab=None, dry=False):
     # Figure out datasetType from file_name or file path
     file_name = Path(file_name).name
-    alf_parts = file_name.split('.')
-    dstype = '.'.join(alf_parts[:2])
-    print(f'Looking for file <{file_name}> in folder <{local_folder}>')
+    alf_parts = file_name.split(".")
+    dstype = ".".join(alf_parts[:2])
+    print(f"Looking for file <{file_name}> in folder <{local_folder}>")
     # Get all paths for file_name in local folder
     local_folder = Path(local_folder)
-    files = list(local_folder.rglob(f'*{file_name}'))
-    print(f'Found {len(files)} files')
-    print(f'Checking on Flatiron for datsetType: {dstype}...')
+    files = list(local_folder.rglob(f"*{file_name}"))
+    print(f"Found {len(files)} files")
+    print(f"Checking on Flatiron for datsetType: {dstype}...")
     # Get all sessions and details from Alyx that have the dstype
     one = ONE(cache_rest=None)
     if lab is None:
@@ -47,18 +47,23 @@ def purge_local_data(local_folder, file_name, lab=None, dry=False):
         eid, det = one.search(dataset_types=[dstype], lab=lab, details=True)
     urls = []
     for d in det:
-        urls.extend([x['data_url'] for x in d['data_dataset_session_related']
-                     if x['dataset_type'] == dstype])
+        urls.extend(
+            [
+                x["data_url"]
+                for x in d["data_dataset_session_related"]
+                if x["dataset_type"] == dstype
+            ]
+        )
     # Remove None answers when session is registered but dstype not htere yet
     urls = [u for u in urls if u is not None]
-    print(f'Found files on Flatiron: {len(urls)}')
+    print(f"Found files on Flatiron: {len(urls)}")
     to_remove = []
     for f in files:
         sess_name = session_name(f)
         for u in urls:
             if sess_name in u:
                 to_remove.append(f)
-    print(f'Local files to remove: {len(to_remove)}')
+    print(f"Local files to remove: {len(to_remove)}")
     for f in to_remove:
         print(f)
         if dry:
