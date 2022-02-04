@@ -27,13 +27,13 @@ def get_task_protocol(session_path):
         log.error(f"Can't read settings for {session_path}")
         return
     if settings:
-        return settings.get('PYBPOD_PROTOCOL', None)
+        return settings.get("PYBPOD_PROTOCOL", None)
     else:
         return
 
 
 def _get_task_types_json_config():
-    with open(Path(__file__).parent.joinpath('extractor_types.json')) as fp:
+    with open(Path(__file__).parent.joinpath("extractor_types.json")) as fp:
         task_types = json.load(fp)
     return task_types
 
@@ -68,7 +68,7 @@ def get_session_extractor_type(session_path):
     if settings is None:
         log.error(f'ABORT: No data found in "raw_behavior_data" folder {session_path}')
         return False
-    extractor_type = get_task_extractor_type(settings['PYBPOD_PROTOCOL'])
+    extractor_type = get_task_extractor_type(settings["PYBPOD_PROTOCOL"])
     if extractor_type:
         return extractor_type
     else:
@@ -107,26 +107,30 @@ def main(local_folder: str, remote_folder: str, force: bool = False) -> None:
         # finally if folder was created delete the src flag_file and create compress_me.flag
         if dst.exists():
             task_type = get_session_extractor_type(Path(src))
-            if task_type not in ['ephys', 'ephys_sync', 'ephys_mock']:
-                flags.write_flag_file(dst.joinpath('raw_session.flag'))
+            if task_type not in ["ephys", "ephys_sync", "ephys_mock"]:
+                flags.write_flag_file(dst.joinpath("raw_session.flag"))
                 settings = raw.load_settings(dst)
-                if 'ephys' in settings['PYBPOD_BOARD']:  # Any traing task on an ephys rig
-                    dst.joinpath('raw_session.flag').unlink()
+                if "ephys" in settings["PYBPOD_BOARD"]:  # Any traing task on an ephys rig
+                    dst.joinpath("raw_session.flag").unlink()
             log.info(f"Copied to {remote_folder}: Session {src_flag_file.parent}")
             src_flag_file.unlink()
 
         # Cleanup
-        src_video_file = src / 'raw_video_data' / '_iblrig_leftCamera.raw.avi'
-        dst_video_file = dst / 'raw_video_data' / '_iblrig_leftCamera.raw.avi'
-        src_audio_file = src / 'raw_behavior_data' / '_iblrig_micData.raw.wav'
-        dst_audio_file = dst / 'raw_behavior_data' / '_iblrig_micData.raw.wav'
+        src_video_file = src / "raw_video_data" / "_iblrig_leftCamera.raw.avi"
+        dst_video_file = dst / "raw_video_data" / "_iblrig_leftCamera.raw.avi"
+        src_audio_file = src / "raw_behavior_data" / "_iblrig_micData.raw.wav"
+        dst_audio_file = dst / "raw_behavior_data" / "_iblrig_micData.raw.wav"
 
-        if src_audio_file.exists() and \
-                src_audio_file.stat().st_size == dst_audio_file.stat().st_size:
+        if (
+            src_audio_file.exists()
+            and src_audio_file.stat().st_size == dst_audio_file.stat().st_size
+        ):
             src_audio_file.unlink()
 
-        if src_video_file.exists() and \
-                src_video_file.stat().st_size == dst_video_file.stat().st_size:
+        if (
+            src_video_file.exists()
+            and src_video_file.stat().st_size == dst_video_file.stat().st_size
+        ):
             src_video_file.unlink()
 
 
