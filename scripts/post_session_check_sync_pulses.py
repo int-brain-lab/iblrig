@@ -6,10 +6,9 @@
 import sys
 from pathlib import Path
 
+import iblrig.raw_data_loaders as raw
 import matplotlib.pyplot as plt
 import numpy as np
-
-import iblrig.raw_data_loaders as raw
 from iblrig.misc import get_port_events
 
 if __name__ == "__main__":
