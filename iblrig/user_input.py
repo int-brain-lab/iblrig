@@ -167,7 +167,7 @@ class SessionForm(BaseWidget):
         self.app_main_window.close()
         return
 
-
+# TODO: Finish consolidating user input for ephys sessions and use this!
 class EphysSessionForm(BaseWidget):
     def __init__(self):
         super(EphysSessionForm, self).__init__("Session info")
