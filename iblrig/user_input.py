@@ -394,77 +394,6 @@ def ask_confirm_session_idx(session_idx):
     return session_idx
 
 
-# XXX: THIS ONE CALL HAS TO CHANGE in favor of local param folder:
-# Find configured projects
-# Find mice in projects
-# if subj_name in more than one configured project, ask which one to use
-def ask_project(subject_name, one=None):
-    if subject_name == "_iblrig_test_mouse":
-        log.info(f"Test mouse detected Project for {subject_name}: _iblrig_test_project")
-        return "_iblrig_test_project"
-    one = one or ONE()
-    projects = one.alyx.rest("subjects", "read", subject_name)["session_projects"]
-    if not projects:
-        log.info(f"No Projects found for Subject {subject_name}: []")
-        return None
-    elif len(projects) == 1:
-        log.info(f"One project found for subject {subject_name}: [{projects[0]}]")
-        return projects[0]
-    else:
-        log.info(f"Multiple projects found for subject {subject_name}:{projects}")
-        last_sessions = one.search(subject=subject_name, limit=10)
-        last_project = one.alyx.rest("sessions", "read", last_sessions[0])["project"]
-        title = "Select Project"
-        prompt = str(projects)
-        default = last_project
-        out_proj = graph.strinput(title, prompt, default=default, nullable=True)
-        if out_proj not in projects:
-            return ask_project(subject_name, one=one)
-        return out_proj
-
-
-def ask_subject_project(subject: str, settings_file_path: str = None) -> float:
-    import datetime
-    import json
-
-    from one.api import ONE
-
-    one = ONE()
-    all_subjects = list(one.alyx.rest("subjects", "list"))
-    all_subjects.append({"dump_date": datetime.datetime.utcnow().isoformat()})
-
-    fpath = None  # Find Subjects folder
-    # Save json in Subjects folder
-
-    with open(fpath, "w+") as f:
-        f.write(json.dumps(all_subjects, indent=1))
-        f.write("\n")
-    # Load subjects from disk
-    with open(fpath, "r") as f:
-        all_subjects = json.loads(f.readlines())
-
-    # Given Subject load 'session_projects'
-    all_projects = {x["nickname"]: x["session_projects"] for x in all_subjects}
-    projects = all_projects[subject]
-
-    if not projects:
-        return projects
-    elif len(projects) == 1:
-        return projects[0]
-    else:
-        resp = graph.strinput(
-            "Select project", str(projects), default=projects[0], nullable=False,
-        )
-        return resp
-
-    out = graph.numinput("Subject project", f"{subject} project (gr):", nullable=False)
-    log.info(f"Subject weight {out}")
-    if settings_file_path is not None:
-        patch = {"SUBJECT_WEIGHT": out}
-        patch_settings_file(settings_file_path, patch)
-    return out
-
-
 if __name__ == "__main__":
     # settings_file_path = '/home/nico/Projects/IBL/github/iblrig_data/Subjects/_iblrig_fake_subject/2019-09-25/002/raw_behavior_data/_iblrig_taskSettings.raw.json'  # noqa
     # delay = ask_session_delay(settings_file_path)
@@ -499,6 +428,4 @@ if __name__ == "__main__":
     bla = ephys_session_form(session_dict=session_dict)
 
     # subject_name = 'CSHL046'
-    # proj = ask_project(subject_name, one=None)
-    # print(proj)
     print(".")
