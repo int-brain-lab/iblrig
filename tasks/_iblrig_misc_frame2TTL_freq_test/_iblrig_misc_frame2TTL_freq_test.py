@@ -9,14 +9,14 @@ import sys
 from pathlib import Path
 
 import dateutil.parser as parser
-import user_settings  # noqa
-from pybpodapi.protocol import Bpod, StateMachine
-
 import iblrig.bonsai as bonsai
 import iblrig.frame2TTL
 import iblrig.params as params
 import iblrig.path_helper as ph
 import iblrig.raw_data_loaders as raw
+from pybpodapi.protocol import Bpod, StateMachine
+
+import user_settings  # noqa
 
 sys.stdout.flush()
 
