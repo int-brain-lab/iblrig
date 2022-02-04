@@ -6,7 +6,6 @@
 """
 Getting and loading parameters
 """
-import datetime
 import json
 import logging
 import re
