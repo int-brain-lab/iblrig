@@ -528,21 +528,6 @@ class SessionPathCreator(object):
                     USING INIT VALUES
         ##########################################"""
                     log.warning(msg)
-                if k == "LATEST_WATER_CALIBRATION_FILE":
-                    msg = """
-        ##########################################
-         NOT FOUND: LATEST_WATER_CALIBRATION_FILE
-        ##########################################"""
-                    log.warning(msg)
-                if k == "LATEST_WATER_CALIB_RANGE_FILE":
-                    msg = """
-        ##########################################
-         NOT FOUND: LATEST_WATER_CALIB_RANGE_FILE
-        ##########################################
-                    Using full range
-        ##########################################
-        """
-                    log.warning(msg)
 
 
 if __name__ == "__main__":
