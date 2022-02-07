@@ -366,13 +366,9 @@ def get_session_number(session_date_folder: str) -> str:
         if os.path.isdir(os.path.join(session_date_folder, x))
     ]
     if not session_nums:
-        out = "00" + str(1)
-    elif max(session_nums) < 9:
-        out = "00" + str(int(max(session_nums)) + 1)
-    elif 99 > max(session_nums) >= 9:
-        out = "0" + str(int(max(session_nums)) + 1)
-    elif max(session_nums) > 99:
-        out = str(int(max(session_nums)) + 1)
+        out = str(1).zfill(3)
+    else:
+        out = str(max(session_nums)).zfill(3)
     log.debug(f"Setting session number to: {out}")
 
     return out
