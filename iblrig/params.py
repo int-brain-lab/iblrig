@@ -59,8 +59,7 @@ AUTO_UPDATABLE_PARAMS = dict.fromkeys(
 )
 
 
-def ensure_all_keys_present(loaded_params, upload=False):
-    # TODO: search and destroy calls that use upload param
+def ensure_all_keys_present(loaded_params):
     """
     Ensures allo keys are present and empty knowable values are filled
     """
@@ -185,7 +184,7 @@ def write_params_file(data: dict = None, force: bool = False) -> dict:
     return data
 
 
-def load_params_file(upload=False, silent=True) -> dict:
+def load_params_file(silent=True) -> dict:
     """load_params_file loads the .iblrig_params.json file from default location
      (iblrig/../iblrig_params/.iblrig_params.json), will create default params
      file if file is not found
@@ -198,7 +197,7 @@ def load_params_file(upload=False, silent=True) -> dict:
     if fpath.exists():
         with open(fpath, "r") as f:
             out = json.load(f)
-        out = ensure_all_keys_present(out, upload=upload)
+        out = ensure_all_keys_present(out)
         if not silent:
             log.info(out)
         return out
