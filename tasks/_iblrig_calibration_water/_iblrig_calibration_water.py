@@ -14,7 +14,6 @@ import time
 import tkinter as tk
 from tkinter import messagebox
 
-import iblrig.alyx as alyx
 import iblrig.params as params
 import matplotlib.pyplot as plt
 import numpy as np
@@ -262,7 +261,6 @@ patch.update(range_patch)
 patch.update(func_patch)
 patch.update(date_patch)
 params.update_params_file(data=patch)
-alyx.update_alyx_params(data=patch)
 
 os.system(sph.CALIBRATION_CURVE_FILE_PATH[:-4] + "_range.pdf")
 bpod.close()
