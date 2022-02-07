@@ -400,8 +400,6 @@ class SessionPathCreator(object):
         self.IBLRIG_DATA_SUBJECTS_FOLDER = get_iblrig_data_folder(subjects=True)
 
         self.PARAMS = params.load_params_file()
-        # TODO: check if can remove old bpod_comports file
-        self.IBLRIG_PARAMS_FILE = str(Path(self.IBLRIG_PARAMS_FOLDER) / ".bpod_comports.json")
         self.SUBJECT_NAME = subject_name
         self.SUBJECT_FOLDER = os.path.join(self.IBLRIG_DATA_SUBJECTS_FOLDER, self.SUBJECT_NAME)
 
