@@ -309,6 +309,7 @@ class Frame2TTLv2(object):
             arr = self.read_sensor(20000)
             threshold = self._calc_threshold(arr, light=True)
             self.manual_light = threshold
+            return arr, threshold
 
     def measure_white(self, mode="auto"):
         """Measure white levels and calculate dark threshold.
@@ -325,6 +326,7 @@ class Frame2TTLv2(object):
             arr = self.read_sensor(20000)
             threshold = self._calc_threshold(arr, light=False)
             self.manual_dark = threshold
+            return arr, threshold
 
     def _calc_threshold(self, arr, dark=False, light=False):
         """Calc the light/dark threshold using hardware values
@@ -346,23 +348,32 @@ class Frame2TTLv2(object):
         return out
 
     def calc_recomend_thresholds(self):
-        """Calculate recomended light and dark thresholds for the sensor
+        """Calculate / check (name maintained for compatibility reasons)
+        recomended light and dark thresholds for the sensor
         from the auto and manual measurments and calculations.
         """
-        if (
-            (self.auto_dark is None)
-            or (self.auto_light is None)
-            # or (self.manual_dark is None)
-            # or (self.manual_light is None)
-        ):
-            log.error("Not all sensor measurments present")
+        manual_calib_run = self.manual_dark is not None and self.manual_light is not None
+        auto_calib_run = self.auto_dark is not None and self.auto_light is not None
+        if not auto_calib_run:
+            log.info("No measurments detected for automatic calibration.")
+        if not manual_calib_run:
+            log.info("No measurments detected for manual calibration.")
+        if not auto_calib_run and not manual_calib_run:
+            log.error("Please run .measure_white and .measure_black to recalculate thresholds.")
             return -1
-
         # Check if manual and auto recomendations are similar
-        assert np.allclose(self.auto_dark, self.manual_dark, atol=100)
-        assert np.allclose(self.auto_light, self.manual_light, atol=100)
-        self.recomend_dark = self.auto_dark
-        self.recomend_light = self.auto_light
+        if auto_calib_run and manual_calib_run:
+            assert np.allclose(
+                self.auto_dark, self.manual_dark, atol=75
+            ), "Values of manual and auto calibration are too different."
+            assert np.allclose(
+                self.auto_light, self.manual_light, atol=75
+            ), "Values of manual and auto calibration are too different."
+
+        # Either use the auto calib after verifying they are close to the manual ones
+        # or use the manual values if they are the only ones. Default to the auto values
+        self.recomend_dark = self.auto_dark or self.manual_dark
+        self.recomend_light = self.auto_light or self.manual_light
 
         if self.auto_dark > self.self.auto_light:
             log.error("Something looks wrong with the thresholds!"),
@@ -372,7 +383,7 @@ class Frame2TTLv2(object):
         else:
             log.info("Recommended thresholds:")
             log.info(f"Light ={self.recomend_light}, Dark = {self.recomend_dark}.")
-            print("Recommended thresholds not set yet. Pleas callset_recommendations()")
+            print("Recommended thresholds not set yet. Please callset_recommendations()")
             return self.recomend_dark, self.recomend_light
 
     def set_thresholds(self, dark=None, light=None) -> None:
