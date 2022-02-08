@@ -1,5 +1,9 @@
 # **Release notes**
 
+## **Release Notes develop**
+
+- Changed default rig environment name from iblenv to iblrig
+
 ## **Release Notes 6.5.3**
 
 - Removed botched releases and patched release notes accordingly.
