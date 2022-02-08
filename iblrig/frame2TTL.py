@@ -1,3 +1,7 @@
+#!/usr/bin/env python
+# @File: iblrig/frame2TTL.py
+# @Author: Niccolo' Bonacchi (@nbonacchi)
+# @Date: Friday, November 5th 2021, 12:47:34 pm
 import logging
 import struct
 import time
@@ -11,11 +15,26 @@ import iblrig.params
 log = logging.getLogger("iblrig")
 
 
-class Frame2TTL(object):
-    def __init__(self, serial_port) -> None:
-        pass
+def Frame2TTL(serial_port: str) -> object:
+    """Determine whether to use v1 or v2 by trying to connect to v2 and find the hw_version
 
-class Frame2TTLv1(Frame2TTL):
+    Args:
+        serial_port (str): Serial port where the device is connected
+
+    Returns:
+        object: Instance of the v1/v2 class
+    """
+    f2ttl = None
+    try:
+        f2ttl = Frame2TTLv2(serial_port)
+        print(f2ttl.hw_version)
+    except BaseException:
+        f2ttl = Frame2TTLv1(serial_port)
+
+    return f2ttl
+
+
+class Frame2TTLv1(object):
     def __init__(self, serial_port):
         self.serial_port = serial_port
         self.connected = False
@@ -173,21 +192,7 @@ class Frame2TTLv1(Frame2TTL):
             print("Done")
 
 
-def get_and_set_thresholds():
-    params = iblrig.params.load_params_file()
-
-    for k in params:
-        if "F2TTL" in k and params[k] is None:
-            log.error(f"Missing parameter {k}, please calibrate the device.")
-            raise (KeyError)
-
-    dev = Frame2TTL(params["COM_F2TTL"])
-    dev.set_thresholds(dark=params["F2TTL_DARK_THRESH"], light=params["F2TTL_LIGHT_THRESH"])
-    log.info("Frame2TTL: Thresholds set.")
-    return 0
-
-
-class Frame2TTLv2(Frame2TTL):
+class Frame2TTLv2(object):
     def __init__(self, serial_port) -> None:
         self.serial_port = serial_port
         self.connected = False
@@ -402,6 +407,20 @@ class Frame2TTLv2(Frame2TTL):
 
     def __del__(self):
         self.close()
+
+
+def get_and_set_thresholds():
+    params = iblrig.params.load_params_file()
+
+    for k in params:
+        if "F2TTL" in k and params[k] is None:
+            log.error(f"Missing parameter {k}, please calibrate the device.")
+            raise (KeyError)
+
+    dev = Frame2TTL(params["COM_F2TTL"])
+    dev.set_thresholds(dark=params["F2TTL_DARK_THRESH"], light=params["F2TTL_LIGHT_THRESH"])
+    log.info("Frame2TTL: Thresholds set.")
+    return 0
 
 
 if __name__ == "__main__":
