@@ -26,6 +26,7 @@ EMPTY_BOARD_PARAMS = {
     "COM_BPOD": None,  # str
     "COM_ROTARY_ENCODER": None,  # str
     "COM_F2TTL": None,  # str
+    "F2TTL_HW_VERSION": None,  # float
     "F2TTL_DARK_THRESH": None,  # float
     "F2TTL_LIGHT_THRESH": None,  # float
     "F2TTL_CALIBRATION_DATE": None,  # str

@@ -1,5 +1,10 @@
+#!/usr/bin/env python
+# @File: iblrig/frame2TTL.py
+# @Author: Niccolo' Bonacchi (@nbonacchi)
+# @Date: Friday, November 5th 2021, 12:47:34 pm
 import logging
 import struct
+import time
 
 import numpy as np
 import serial
@@ -10,7 +15,26 @@ import iblrig.params
 log = logging.getLogger("iblrig")
 
 
-class Frame2TTL(object):
+def Frame2TTL(serial_port: str) -> object:
+    """Determine whether to use v1 or v2 by trying to connect to v2 and find the hw_version
+
+    Args:
+        serial_port (str): Serial port where the device is connected
+
+    Returns:
+        object: Instance of the v1/v2 class
+    """
+    f2ttl = None
+    try:
+        f2ttl = Frame2TTLv2(serial_port)
+        print(f2ttl.hw_version)
+    except BaseException:
+        f2ttl = Frame2TTLv1(serial_port)
+
+    return f2ttl
+
+
+class Frame2TTLv1(object):
     def __init__(self, serial_port):
         self.serial_port = serial_port
         self.connected = False
@@ -168,6 +192,234 @@ class Frame2TTL(object):
             print("Done")
 
 
+class Frame2TTLv2(object):
+    def __init__(self, serial_port) -> None:
+        self.serial_port = serial_port
+        self.connected = False
+        self.hw_version = None
+        self.ser = self.connect()
+        self.streaming = False
+
+        self._dark_threshold = -150
+        self._light_threshold = 150
+        self.recomend_black = None
+        self.recomend_white = None
+        self.auto_dark = None  # Result of the auto threshold procedure from device
+        self.auto_light = None  # Result of the auto threshold procedure from device
+        self.manual_dark = None  # Reimplementation of threshold procedure locally
+        self.manual_light = None  # Reimplementation of threshold procedure locally
+
+    @property
+    def light_threshold(self) -> int:
+        return self._light_threshold
+
+    @light_threshold.setter
+    def light_threshold(self, value: int) -> None:
+        """Set the light threshold
+        Command: 5 bytes | [b"T", (light_threshold (uint16), dark_threshold (uint16))]
+        Response: None
+        """
+        self.ser.write(struct.pack("<BHH", b"T", value, self.dark_threshold))
+        self._light_threshold = value
+
+    @property
+    def dark_threshold(self) -> int:
+        return self._dark_threshold
+
+    @dark_threshold.setter
+    def dark_threshold(self, value: int) -> None:
+        """Set the dark threshold
+        Command: 5 bytes | [b"T", (light_threshold (uint16), dark_threshold (uint16))]
+        Response: None
+        """
+        self.ser.write(struct.pack("<BHH", b"T", self.light_threshold, value))
+        self._dark_threshold = value
+
+    def connect(self) -> serial.Serial:
+        """Create connection to serial_port
+        Perform a handshake and confirm it's a version 2 device
+        """
+        ser = serial.Serial(port=self.serial_port, baudrate=115200, timeout=3.0, write_timeout=1.0)
+        self.connected = ser.isOpen()
+        # Handshake
+        # ser.write(struct.pack("c", b"C"))
+        ser.write(b"C")
+        # 1 byte response expected (unsigned)
+        handshakeByte = int.from_bytes(ser.read(1), byteorder="little", signed=False)
+        if handshakeByte != 218:
+            raise serial.SerialException("Handshake with F2TTL device failed")
+        # HW version
+        # ser.write(struct.pack("c", b"#"))
+        ser.write(b"#")
+        # 1 byte response expected (unsigned)
+        self.hw_version = int.from_bytes(ser.read(1), byteorder="little", signed=False)
+        if self.hw_version != 2:
+            raise serial.SerialException("Error: Frame2TTLv2 requires hardware version 2.")
+        return ser
+
+    def close(self) -> None:
+        """Close connection to serial port"""
+        self.ser.close()
+        self.connected = self.ser.isOpen()
+
+    def start_stream(self) -> None:
+        """Enable streaming to USB (stream rate 100Hz? sensor samples at 20kHz)
+        minicom --device /dev/ttyACM0 --baud 115200
+        response = int.from_bytes(self.ser.read(4), byteorder='little')"""
+        # char "S" plus 1 byte [0, 1] (uint8)
+        # self.ser.write(struct.pack("cB", b"S", 1))
+        self.ser.write(b"S" + int.to_bytes(1, 1, byteorder="little", signed=False))
+        self.streaming = True
+
+    def stop_stream(self) -> None:
+        """Disable streaming to USB"""
+        # char "S" plus 1 byte [0, 1] (uint8)
+        # self.ser.write(struct.pack("cB", b"S", 0))
+        self.ser.write(b"S" + int.to_bytes(1, 0, byteorder="little", signed=False))
+        self.streaming = False
+
+    def read_sensor(self, nsamples: int = 1) -> int:
+        """Reads N contiguous samples from the sensor (raw data)
+        Command: 5 bytes | [b"V" (uint8), nSamples (uint32)]
+        Response: 2 bytes * nsamples | [sensorValue (uint16) * nsamples]
+        """
+        # self.ser.write(struct.pack("cB", b"V", nsamples))
+        self.ser.write(b"V" + int.to_bytes(nsamples, 4, byteorder="little", signed=False))
+        dt = np.uint16
+        dt = dt.newbyteorder("<")
+        values = np.frombuffer(self.ser.read(nsamples * 2), dtype=dt)
+        return values
+
+    def read_value(self) -> int:
+        """Read one value from sensor (current)"""
+        return self.read_sensor()
+
+    def measure_black(self, mode="auto"):
+        """Measure black levels and calculate light threshold.
+        Command: 1 bytes | b"L" (uint8)
+        Response: 2 bytes | value (int16)
+        """
+        if mode == "auto":
+            # Run the firmware routine to find the light threshold
+            self.ser.write(b"L")
+            time.sleep(3)
+            threshold = int.from_bytes(self.ser.read(2), byteorder="little", signed=True)
+            self.auto_light = threshold
+        elif mode == "manual":
+            arr = self.read_sensor(20000)
+            threshold = self._calc_threshold(arr, light=True)
+            self.manual_light = threshold
+            return arr, threshold
+
+    def measure_white(self, mode="auto"):
+        """Measure white levels and calculate dark threshold.
+        Command: 1 bytes | b"D" (uint8)
+        Response: 2 bytes | value (int16)
+        """
+        if mode == "auto":
+            # Run the firmware routine to find the dark threshold
+            self.ser.write(b"D")
+            time.sleep(3)
+            threshold = int.from_bytes(self.ser.read(2), byteorder="little", signed=True)
+            self.auto_dark = threshold
+        elif mode == "manual":
+            arr = self.read_sensor(20000)
+            threshold = self._calc_threshold(arr, light=False)
+            self.manual_dark = threshold
+            return arr, threshold
+
+    def _calc_threshold(self, arr, dark=False, light=False):
+        """Calc the light/dark threshold using hardware values
+        Of 20000 samples calculate the means of the changes in value of each
+        sliding window of 20 samples from the beginning to the end of the array.
+        - If the array is from a black sync square this will set the light threshold
+        by multiplying the max mean diff value by 1.5
+        - If the array is from a white sync square this will set the dark threshold
+        by multiplying the min mean diff value by 2
+        """
+        mean_diffs = []
+        for i, _ in enumerate(arr):
+            if i + 20 <= len(arr):
+                mean_diffs.append(np.diff(arr[i : i + 20]).mean())
+        if dark:
+            out = np.min(mean_diffs) * 2
+        if light:
+            out = np.max(mean_diffs) * 1.5
+        return out
+
+    def calc_recomend_thresholds(self):
+        """Calculate / check (name maintained for compatibility reasons)
+        recomended light and dark thresholds for the sensor
+        from the auto and manual measurments and calculations.
+        """
+        manual_calib_run = self.manual_dark is not None and self.manual_light is not None
+        auto_calib_run = self.auto_dark is not None and self.auto_light is not None
+        if not auto_calib_run:
+            log.info("No measurments detected for automatic calibration.")
+        if not manual_calib_run:
+            log.info("No measurments detected for manual calibration.")
+        if not auto_calib_run and not manual_calib_run:
+            log.error("Please run .measure_white and .measure_black to recalculate thresholds.")
+            return -1
+        # Check if manual and auto recomendations are similar
+        if auto_calib_run and manual_calib_run:
+            assert np.allclose(
+                self.auto_dark, self.manual_dark, atol=75
+            ), "Values of manual and auto calibration are too different."
+            assert np.allclose(
+                self.auto_light, self.manual_light, atol=75
+            ), "Values of manual and auto calibration are too different."
+
+        # Either use the auto calib after verifying they are close to the manual ones
+        # or use the manual values if they are the only ones. Default to the auto values
+        self.recomend_dark = self.auto_dark or self.manual_dark
+        self.recomend_light = self.auto_light or self.manual_light
+
+        if self.auto_dark > self.self.auto_light:
+            log.error("Something looks wrong with the thresholds!"),
+            log.error("Dark threshold must be lower than light threshold")
+            log.error(f"Dark = {self.auto_dark}, Light = {self.auto_light}")
+            return -1
+        else:
+            log.info("Recommended thresholds:")
+            log.info(f"Light ={self.recomend_light}, Dark = {self.recomend_dark}.")
+            print("Recommended thresholds not set yet. Please callset_recommendations()")
+            return self.recomend_dark, self.recomend_light
+
+    def set_thresholds(self, dark=None, light=None) -> None:
+        """Set light, dark, or both thresholds for the device"""
+        if dark is None:
+            dark = self.recomend_dark
+        if light is None:
+            light = self.recomend_light
+
+        # Device wants light threshold before dark
+        if dark != self.dark_threshold:
+            log.info(f"Setting dark threshold to {dark}")
+        if light != self.light_threshold:
+            log.info(f"Setting light threshold to {light}")
+        if dark == -150 and light == 150:
+            log.info(f"Resetting to default values: light={light} - dark={dark}")
+        self.dark_threshold = dark
+        self.light_threshold = light
+
+    def set_recommendations(self):
+        log.info("Sending thresholds to device...")
+        self.set_thresholds(dark=self.recomend_dark, light=self.recomend_light)
+
+    def __repr__(self) -> str:
+        return f"""
+            Bpod Frame2TTL device version 2.0
+            Serial port:        {self.serial_port}
+            Connected:          {self.connected}
+            Streaming:          {self.streaming}
+            Dark Threshold:     {self.dark_threshold}
+            Light Threshold:    {self.light_threshold}"""
+
+    def __del__(self):
+        self.close()
+
+
 def get_and_set_thresholds():
     params = iblrig.params.load_params_file()
 
@@ -183,13 +435,13 @@ def get_and_set_thresholds():
 
 
 if __name__ == "__main__":
-    com_port = "COM3"
+    com_port = "COM4"
     f = Frame2TTL(com_port)
-    print(f.read_value())
-    print(f.measure_photons())
-    f.set_thresholds()
-    f.set_thresholds(light=41, dark=81)
-    f.set_thresholds(light=41)
-    f.set_thresholds(dark=81)
-    f.suggest_thresholds()
-    print(".")
+    # print(f.read_value())
+    # print(f.measure_photons())
+    # f.set_thresholds()
+    # f.set_thresholds(light=41, dark=81)
+    # f.set_thresholds(light=41)
+    # f.set_thresholds(dark=81)
+    # f.suggest_thresholds()
+    # print(".")
