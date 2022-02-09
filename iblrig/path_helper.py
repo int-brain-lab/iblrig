@@ -212,7 +212,6 @@ def get_previous_session_folders(subject_name: str, session_folder: str) -> list
     Returns
     ------
     list of all previous session folders on both remote and local, sorted by date/number
-    # TODO: Sort return by date/number, C and Y drive will be in the beginning of the string
     """
     log.debug("Looking for previous session folders")
 
@@ -242,32 +241,62 @@ def get_previous_session_folders(subject_name: str, session_folder: str) -> list
                   f"rig computer; setting to remote")
         # Set subject to remote
         subject_folder = remote_subject_folder
-    else:  # Previous sessions found on both local and remote, comparison required
-        # Find most recent folders
-        local_sess_folders = []
-        for date in get_subfolder_paths(local_subject_folder):
-            local_sess_folders.append(date)
-        remote_sess_folders = []
-        for date in get_subfolder_paths(remote_subject_folder):
-            remote_sess_folders.append(date)
+    
+    # Previous sessions found on both local rig and remote lab server
+    # Append string paths to return list, prioritizing local rig locations
+    else:
+        # Keep track of how many runs there have been of the outer loop
+        # TODO: implement loop tracker more cleanly
+        num_of_runs = 0
+        num_of_local_paths = len(get_subfolder_paths(local_subject_folder))
+        subject_date_ymd_list = []
+        subject_folder_list = []
+        for local_date_path in get_subfolder_paths(local_subject_folder):
+            num_of_runs += 1
+            if num_of_runs == num_of_local_paths:
+                last_run = True
+            else:
+                last_run = False
 
-        # Sort the session folders
-        local_sess_folders = sorted(local_sess_folders)
-        remote_sess_folders = sorted(remote_sess_folders)
+            # Add the local path to the subject_folder_list list to be returned
+            subject_folder_list.append(local_date_path)
 
-        # Format latest entries as dates for comparison
-        local_latest_datetime = datetime.datetime.strptime(
-            (local_sess_folders.pop())[-10:], '%Y-%m-%d')
-        remote_latest_datetime = datetime.datetime.strptime(
-            (remote_sess_folders.pop())[-10:], '%Y-%m-%d')
-        if remote_latest_datetime > local_latest_datetime:
-            subject_folder = remote_subject_folder
-        else:  # local folder is the most recent
-            subject_folder = local_subject_folder
+            # Generate Year-Month-Date formatted datetime objects for comparison logic
+            local_date_ymd = datetime.datetime.strptime(local_date_path[-10:], '%Y-%m-%d')
+            subject_date_ymd_list.append(local_date_ymd)
+
+            for remote_date_path in get_subfolder_paths(remote_subject_folder):
+                remote_date_ymd = datetime.datetime.strptime(remote_date_path[-10:], '%Y-%m-%d')
+                # skip further evaluation if date is already in subject_date_ymd_list
+                if remote_date_ymd in subject_date_ymd_list:
+                    continue
+                elif remote_date_ymd == local_date_ymd:
+                    # keep local and break
+                    break
+                elif remote_date_ymd < local_date_ymd:
+                    # insert the earlier date into the list
+                    subject_folder_list.insert(
+                        subject_folder_list.index(local_date_path), remote_date_path)
+                    # append to subject_date_ymd_list for future comparison logic
+                    subject_date_ymd_list.append(remote_date_ymd)
+                    continue
+                else:  # remote_date_ymd > local_date_ymd:
+                    if last_run:
+                        # append remote_date_path
+                        subject_folder_list.append(remote_date_path)
+                        continue
+                    else: # not the last_run, grab the next local_date_path
+                        break
 
     # Build out sess_folders paths
-    for date in get_subfolder_paths(subject_folder):
-        sess_folders.extend(get_subfolder_paths(date))
+    if subject_folder_list:
+        for subject_folder in subject_folder_list:
+            for date_path in get_subfolder_paths(subject_folder):
+                sess_folders.extend(get_subfolder_paths(date_path))
+        subject_folder = Path(subject_folder_list.pop())
+    else:  # subject_folder_list never created, subject_folder was set above
+        for date_path in get_subfolder_paths(subject_folder):
+            sess_folders.extend(get_subfolder_paths(date_path))
 
     # Check if session_folder is contained in sess_folders
     sess_folders = [x for x in sorted(sess_folders) if session_folder not in x]
