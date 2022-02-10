@@ -222,7 +222,9 @@ def get_previous_session_folders(subject_name: str, session_folder: str) -> list
     # TODO: 'Y:\' string should be set to a variable like DATA_FOLDER_REMOTE, pull from params.py
     remote_subject_folder = Path('Y:\\' + str(local_subject_folder)[15:])
 
+    # Set return list variable
     sess_folders = []
+
     # Verify local and remote folders exist
     local_subject_folder_exists = local_subject_folder.exists()
     remote_subject_folder_exists = remote_subject_folder.exists()
@@ -243,53 +245,68 @@ def get_previous_session_folders(subject_name: str, session_folder: str) -> list
         subject_folder = remote_subject_folder
     
     # Previous sessions found on both local rig and remote lab server
-    # Append string paths to return list, prioritizing local rig locations
     else:
-        # Keep track of how many runs there have been of the outer loop
-        # TODO: implement loop tracker more cleanly
-        num_of_runs = 0
-        num_of_local_paths = len(get_subfolder_paths(local_subject_folder))
-        subject_date_ymd_list = []
+        # TODO: needs testing
+        # find the key that we want to sort the subject_folder_list
+        def subject_date_sort_key(e):
+            return datetime.datetime.strptime(e[-10:], '%Y-%m-%d')
+
+        # generate list of all subject folders with date, includes duplicate dates if data on
+        # both local and remote
         subject_folder_list = []
         for local_date_path in get_subfolder_paths(local_subject_folder):
-            num_of_runs += 1
-            if num_of_runs == num_of_local_paths:
-                last_run = True
-            else:
-                last_run = False
-
-            # Add the local path to the subject_folder_list list to be returned
             subject_folder_list.append(local_date_path)
+        for remote_date_path in get_subfolder_paths(remote_subject_folder):
+            subject_folder_list.append(remote_date_path)
 
-            # Generate Year-Month-Date formatted datetime objects for comparison logic
-            local_date_ymd = datetime.datetime.strptime(local_date_path[-10:], '%Y-%m-%d')
-            subject_date_ymd_list.append(local_date_ymd)
+        # sort list of folders for subject_folder with dates
+        subject_folder_list.sort(key=subject_date_sort_key)
 
-            for remote_date_path in get_subfolder_paths(remote_subject_folder):
-                remote_date_ymd = datetime.datetime.strptime(remote_date_path[-10:], '%Y-%m-%d')
-                # skip further evaluation if date is already in subject_date_ymd_list
-                if remote_date_ymd in subject_date_ymd_list:
-                    continue
-                elif remote_date_ymd == local_date_ymd:
-                    # keep local and break
-                    break
-                elif remote_date_ymd < local_date_ymd:
-                    # insert the earlier date into the list
-                    subject_folder_list.insert(
-                        subject_folder_list.index(local_date_path), remote_date_path)
-                    # append to subject_date_ymd_list for future comparison logic
-                    subject_date_ymd_list.append(remote_date_ymd)
-                    continue
-                else:  # remote_date_ymd > local_date_ymd:
-                    if last_run:
-                        # append remote_date_path
-                        subject_folder_list.append(remote_date_path)
-                        continue
-                    else: # not the last_run, grab the next local_date_path
-                        break
+        # Below only to be implemented if we care about duplicates
+        # Keep track of how many runs there have been of the outer loop
+        # num_of_runs = 0
+        # num_of_local_paths = len(get_subfolder_paths(local_subject_folder))
+        # subject_date_ymd_list = []
+        # subject_folder_list = []
+        # for local_date_path in get_subfolder_paths(local_subject_folder):
+        #     num_of_runs += 1
+        #     if num_of_runs == num_of_local_paths:
+        #         last_run = True
+        #     else:
+        #         last_run = False
+        #
+        #     # Add the local path to the subject_folder_list list to be returned
+        #     subject_folder_list.append(local_date_path)
+        #
+        #     # Generate Year-Month-Date formatted datetime objects for comparison logic
+        #     local_date_ymd = datetime.datetime.strptime(local_date_path[-10:], '%Y-%m-%d')
+        #     subject_date_ymd_list.append(local_date_ymd)
+        #
+        #     for remote_date_path in get_subfolder_paths(remote_subject_folder):
+        #         remote_date_ymd = datetime.datetime.strptime(remote_date_path[-10:], '%Y-%m-%d')
+        #         # skip further evaluation if date is already in subject_date_ymd_list
+        #         if remote_date_ymd in subject_date_ymd_list:
+        #             continue
+        #         elif remote_date_ymd == local_date_ymd:
+        #             # keep local and break
+        #             break
+        #         elif remote_date_ymd < local_date_ymd:
+        #             # insert the earlier date into the list
+        #             subject_folder_list.insert(
+        #                 subject_folder_list.index(local_date_path), remote_date_path)
+        #             # append to subject_date_ymd_list for future comparison logic
+        #             subject_date_ymd_list.append(remote_date_ymd)
+        #             continue
+        #         else:  # remote_date_ymd > local_date_ymd:
+        #             if last_run:
+        #                 # append remote_date_path
+        #                 subject_folder_list.append(remote_date_path)
+        #                 continue
+        #             else:  # not the last_run, grab the next local_date_path
+        #                 break
 
     # Build out sess_folders paths
-    if subject_folder_list:
+    if subject_folder_list:  # only exists if subject data on both local rig and remote server
         for subject_folder in subject_folder_list:
             for date_path in get_subfolder_paths(subject_folder):
                 sess_folders.extend(get_subfolder_paths(date_path))
