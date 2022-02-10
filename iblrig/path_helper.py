@@ -262,6 +262,9 @@ def get_previous_session_folders(subject_name: str, session_folder: str) -> list
         # sort list of folders for subject_folder with dates
         subject_folder_list.sort(key=subject_date_sort_key)
 
+        # set subject_folder to the most recent entry
+        subject_folder = Path(subject_folder_list.pop())
+
         # Below only to be implemented if we care about duplicates
         # Keep track of how many runs there have been of the outer loop
         # num_of_runs = 0
@@ -306,14 +309,8 @@ def get_previous_session_folders(subject_name: str, session_folder: str) -> list
         #                 break
 
     # Build out sess_folders paths
-    if subject_folder_list:  # only exists if subject data on both local rig and remote server
-        for subject_folder in subject_folder_list:
-            for date_path in get_subfolder_paths(subject_folder):
-                sess_folders.extend(get_subfolder_paths(date_path))
-        subject_folder = Path(subject_folder_list.pop())
-    else:  # subject_folder_list never created, subject_folder was set above
-        for date_path in get_subfolder_paths(subject_folder):
-            sess_folders.extend(get_subfolder_paths(date_path))
+    for date_path in get_subfolder_paths(subject_folder):
+        sess_folders.extend(get_subfolder_paths(date_path))
 
     # Check if session_folder is contained in sess_folders
     sess_folders = [x for x in sorted(sess_folders) if session_folder not in x]
