@@ -1,17 +1,18 @@
 #!/usr/bin/env python
-# -*- coding:utf-8 -*-
 # @Author: Niccolò Bonacchi
-# @Date: Wednesday, November 14th 2018, 10:40:43 am
+# @Creation_Date: Wednesday, November 14th 2018, 10:40:43 am
+# @Editor: Michele Fabbri
+# @Edit_Date: 2022-02-03
 import datetime
 import logging
 import os
+import platform
 import subprocess
 from os import listdir
 from os.path import join
 from pathlib import Path
 
 from ibllib.io import raw_data_loaders as raw
-import platform
 
 import iblrig.logging_  # noqa
 import iblrig.params as params
@@ -200,24 +201,86 @@ def make_folder(str1: str or Path) -> None:
 
 
 def get_previous_session_folders(subject_name: str, session_folder: str) -> list:
-    """"""
+    """
+    Function to find the most recent session folders, evaluates the local and remote storage
+
+    Parameters
+    ------
+    subject_name: str - example: 'ZM_1098' or '_iblrig_test_mouse'
+    session_folder: str - session folder to be created, example:
+        'C:\\iblrig_data\\Subjects\\_iblrig_test_mouse\\2022-02-11\\001'
+
+    Returns
+    ------
+    list of all previous session folders on both remote and local, sorted by date/number
+        NOTE: this includes duplicates if the same date is found on both remote and local
+    """
     log.debug("Looking for previous session folders")
-    subject_folder = Path(get_iblrig_data_folder(subjects=True)) / subject_name
-    sess_folders = []
-    if not subject_folder.exists():
-        log.debug(f"NOT FOUND: No previous sessions for subject {subject_folder.name}")
-        return sess_folders
 
-    for date in get_subfolder_paths(subject_folder):
-        sess_folders.extend(get_subfolder_paths(date))
+    # Set local subject folder Path
+    local_subject_folder = Path(get_iblrig_data_folder(subjects=True)) / subject_name
 
-    sess_folders = [x for x in sorted(sess_folders) if session_folder not in x]
-    if not sess_folders:
-        log.debug(f"NOT FOUND: No previous sessions for subject {subject_folder.name}")
+    # Set remote subject folder Path
+    # TODO: 'Y:\' string should be set to a variable like DATA_FOLDER_REMOTE, pull from params.py
+    #   C:\iblrig_params\.iblrig_params.json - "DATA_FOLDER_REMOTE": "Y:\\",
+    remote_subject_folder = Path('Y:\\' + str(local_subject_folder)[15:])
 
-    log.debug(f"Found {len(sess_folders)} session folders for mouse {subject_folder.name}")
+    # Set return list variable
+    previous_session_folders = []
 
-    return sess_folders
+    # Verify local and remote folders exist
+    local_subject_folder_exists = local_subject_folder.exists()
+    remote_subject_folder_exists = remote_subject_folder.exists()
+
+    date_folder_list = []
+    # Look for previous session on the lab server
+    if (not local_subject_folder_exists) & (not remote_subject_folder_exists):
+        log.debug(f"NOT FOUND: No previous sessions for subject {local_subject_folder.name} on "
+                  f"lab server or rig computer")
+        return previous_session_folders
+    elif local_subject_folder_exists & (not remote_subject_folder_exists):
+        log.debug(f"NOT FOUND: No previous sessions for subject {local_subject_folder.name} on "
+                  f"lab server")
+        # Set subject to local
+        date_folder_list.extend(get_subfolder_paths(local_subject_folder))
+    elif remote_subject_folder_exists & (not local_subject_folder_exists):
+        log.debug(f"NOT FOUND: No previous sessions for subject {local_subject_folder.name} on "
+                  f"rig computer; setting to remote")
+        # Set subject to remote
+        date_folder_list.extend(get_subfolder_paths(remote_subject_folder))
+    
+    # Previous sessions found on both local rig and remote lab server
+    else:
+        # find the key that we want to sort the date_folder_list
+        def date_folder_list_sort_key(e):
+            return datetime.datetime.strptime(e[-10:], '%Y-%m-%d')
+
+        # generate list of all subject folders with date
+        # NOTE: this includes duplicate dates if data is on both local and remote
+        date_folder_list.extend(get_subfolder_paths(local_subject_folder))
+        date_folder_list.extend(get_subfolder_paths(remote_subject_folder))
+
+        # sort list of folders for subject_folder with dates
+        date_folder_list.sort(key=date_folder_list_sort_key)
+
+    # Build out previous_session_folders paths
+    for date_folders in date_folder_list:
+        for sess_folder in get_subfolder_paths(date_folders):
+            previous_session_folders.append(sess_folder)
+
+    # Check if session_folder is contained in previous_session_folders
+    previous_session_folders = \
+        [x for x in sorted(previous_session_folders) if session_folder not in x]
+    if not previous_session_folders:
+        log.debug(f"NOT FOUND: No previous sessions for subject {subject_name}")
+        return previous_session_folders
+
+    # No errors encountered
+    log.debug(f"Found {len(previous_session_folders)} session folders for mouse {subject_name}")
+
+    # list of all previous session folders on both remote and local, sorted by date/number
+    #   NOTE: this includes duplicates if the same date is found on both remote and local
+    return previous_session_folders
 
 
 def get_previous_data_files(
@@ -427,6 +490,9 @@ class SessionPathCreator(object):
 
         self.SESSION_DATE_FOLDER = os.path.join(self.SUBJECT_FOLDER, self.SESSION_DATE)
 
+        # TODO: check server to see if a session has already run today, intention is to decide
+        #  what the next session number will be; this will occur in the get_session_number
+        #  function (will likely be a separate branch)
         self.SESSION_NUMBER = get_session_number(self.SESSION_DATE_FOLDER)
 
         self.SESSION_FOLDER = str(Path(self.SESSION_DATE_FOLDER) / self.SESSION_NUMBER)
@@ -464,6 +530,7 @@ class SessionPathCreator(object):
             self.LATEST_WATER_CALIBRATION_FILE = None
             self.LATEST_WATER_CALIB_RANGE_FILE = None
         # Previous session files
+        # TODO: next 3 functions accept
         self.PREVIOUS_DATA_FILE = get_previous_data_file(
             self._PROTOCOL, self.SUBJECT_NAME, self.SESSION_FOLDER
         )
@@ -552,7 +619,7 @@ if __name__ == "__main__":
     # spc = SessionPathCreator('C:\\iblrig', None, '_iblrig_test_mouse',
     # 'trainingChoiceWorld')
     # '/coder/mnt/nbonacchi/iblrig', None,
-    spc = SessionPathCreator("_iblrig_test_mouse", protocol="passiveChoiceWorld", make=True)
+    spc = SessionPathCreator("_iblrig_test_mouse", protocol="passiveChoiceWorld", make=False)
 
     print("")
     for k in spc.__dict__:

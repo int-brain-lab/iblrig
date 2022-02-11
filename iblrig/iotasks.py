@@ -1,7 +1,8 @@
 #!/usr/bin/env python
-# -*- coding:utf-8 -*-
 # @Author: Niccolò Bonacchi
-# @Date: Tuesday, February 5th 2019, 3:13:18 pm
+# @Creation_Date: Tuesday, February 5th 2019, 3:13:18 pm
+# @Editor: Michele Fabbri
+# @Edit_Date: 2022-02-03
 import json
 import logging
 import os
