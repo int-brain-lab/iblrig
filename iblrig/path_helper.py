@@ -206,8 +206,9 @@ def get_previous_session_folders(subject_name: str, session_folder: str) -> list
 
     Parameters
     ------
-    subject_name: str
-    session_folder: str
+    subject_name: str - example: 'ZM_1098' or '_iblrig_test_mouse'
+    session_folder: str - session folder to be created, example:
+        'C:\\iblrig_data\\Subjects\\_iblrig_test_mouse\\2022-02-11\\001'
 
     Returns
     ------

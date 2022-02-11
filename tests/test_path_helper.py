@@ -60,6 +60,15 @@ class TestPathHelper(unittest.TestCase):
     def tearDown(self):
         pass
 
+    def test_get_previous_session_folders(self):
+        test_subject_name = '_iblrig_test_mouse'
+        test_session_folder = 'C:\\iblrig_data\\Subjects\\_iblrig_test_mouse\\2022-02-11\\001'
+        test_previous_session_folders = ph.get_previous_session_folders(test_subject_name,
+                                                                        test_session_folder)
+        self.assertTrue(isinstance(test_previous_session_folders, list))
+        if test_previous_session_folders:  # returned list is not empty and should contain strings
+            for test_a_previous_session_folder in test_previous_session_folders:
+                self.assertTrue(isinstance(test_a_previous_session_folder, str))
 
 if __name__ == "__main__":
     unittest.main(exit=False)

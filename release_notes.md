@@ -2,7 +2,7 @@
 
 ## **Release Notes develop**
 
-- When creating new sessions, the local machine and now the local lab server are checked for the most recent previous sessions
+- When creating new sessions, the local rig and the local lab server will be queried are checked for their most recent previous sessions
 
 ## **Release Notes 6.5.3**
 
