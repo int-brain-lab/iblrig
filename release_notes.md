@@ -3,6 +3,7 @@
 ## **Release Notes develop**
 
 - When creating new sessions, the local rig and the local lab server will be queried are checked for their most recent previous sessions
+- Changed default rig environment name from iblenv to iblrig
 
 ## **Release Notes 6.5.3**
 
