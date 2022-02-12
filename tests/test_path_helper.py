@@ -61,6 +61,7 @@ class TestPathHelper(unittest.TestCase):
         pass
 
     def test_get_previous_session_folders(self):
+        # Test for expected values
         test_subject_name = '_iblrig_test_mouse'
         test_session_folder = 'C:\\iblrig_data\\Subjects\\_iblrig_test_mouse\\2022-02-11\\001'
         test_previous_session_folders = ph.get_previous_session_folders(test_subject_name,
@@ -69,6 +70,8 @@ class TestPathHelper(unittest.TestCase):
         if test_previous_session_folders:  # returned list is not empty and should contain strings
             for test_a_previous_session_folder in test_previous_session_folders:
                 self.assertTrue(isinstance(test_a_previous_session_folder, str))
+
+        # TODO: Add test for empty list return
 
 if __name__ == "__main__":
     unittest.main(exit=False)
