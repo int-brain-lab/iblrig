@@ -202,7 +202,10 @@ def make_folder(str1: str or Path) -> None:
 
 def get_previous_session_folders(subject_name: str, session_folder: str) -> list:
     """
-    Function to find the most recent session folders, evaluates the local and remote storage
+    Function to find the all previous session folders, evaluates the local and remote storage.
+    Returned list will be sorted by date/number, this list will include duplicates if the same
+    date is found on both remote and local. Returned list will be empty if no previous sessions
+    are found on either the remote or local storage.
 
     Parameters
     ------
@@ -212,8 +215,8 @@ def get_previous_session_folders(subject_name: str, session_folder: str) -> list
 
     Returns
     ------
-    list of all previous session folders on both remote and local, sorted by date/number
-        NOTE: this includes duplicates if the same date is found on both remote and local
+    list of strings or an empty list
+
     """
     log.debug("Looking for previous session folders")
 
@@ -222,22 +225,22 @@ def get_previous_session_folders(subject_name: str, session_folder: str) -> list
 
     # Set remote subject folder Path
     # TODO: 'Y:\' string should be set to a variable like DATA_FOLDER_REMOTE, pull from params.py
-    #   C:\iblrig_params\.iblrig_params.json - "DATA_FOLDER_REMOTE": "Y:\\",
+    #   C:\iblrig_params\.iblrig_params.json - "DATA_FOLDER_REMOTE": "Y:\\"
+    #   get_network_drives() function?
     remote_subject_folder = Path('Y:\\' + str(local_subject_folder)[15:])
 
-    # Set return list variable
-    previous_session_folders = []
+    # Set return list and date_folder_list variables
+    previous_session_folders, date_folder_list = [], []
 
     # Verify local and remote folders exist
     local_subject_folder_exists = local_subject_folder.exists()
     remote_subject_folder_exists = remote_subject_folder.exists()
 
-    date_folder_list = []
     # Look for previous session on the lab server
     if (not local_subject_folder_exists) & (not remote_subject_folder_exists):
         log.debug(f"NOT FOUND: No previous sessions for subject {local_subject_folder.name} on "
                   f"lab server or rig computer")
-        return previous_session_folders
+        return date_folder_list
     elif local_subject_folder_exists & (not remote_subject_folder_exists):
         log.debug(f"NOT FOUND: No previous sessions for subject {local_subject_folder.name} on "
                   f"lab server")
@@ -319,7 +322,7 @@ def get_previous_data_files(
         log.debug(f"NOT FOUND: Previous data files for task {protocol}")
     if not settings_out:
         log.debug(f"NOT FOUND: Previous settings files for task {protocol}")
-    log.debug(f"Reurning {typ} files")
+    log.debug(f"Returning {typ} files")
 
     return data_out if typ == "data" else settings_out
 
@@ -492,7 +495,7 @@ class SessionPathCreator(object):
 
         # TODO: check server to see if a session has already run today, intention is to decide
         #  what the next session number will be; this will occur in the get_session_number
-        #  function (will likely be a separate branch)
+        #  function (will likely be a separate issue/branch)
         self.SESSION_NUMBER = get_session_number(self.SESSION_DATE_FOLDER)
 
         self.SESSION_FOLDER = str(Path(self.SESSION_DATE_FOLDER) / self.SESSION_NUMBER)
@@ -517,7 +520,7 @@ class SessionPathCreator(object):
         self.DATA_FILE_PATH = os.path.join(
             self.SESSION_RAW_DATA_FOLDER, self.BASE_FILENAME + "Data.raw.jsonable"
         )
-        # Water calinbration files
+        # Water calibration files
         self.LATEST_WATER_CALIBRATION_FILE = get_water_calibration_func_file(latest=True)
         self.LATEST_WATER_CALIB_RANGE_FILE = get_water_calibration_range_file(latest=True)
         if self.LATEST_WATER_CALIBRATION_FILE.parent != self.LATEST_WATER_CALIB_RANGE_FILE.parent:
@@ -550,7 +553,7 @@ class SessionPathCreator(object):
         makelist = True will make default folders with only raw_behavior_data
         makelist = False will not make any folders
         makelist = [list] will make the default folders and the raw_folders
-        that are specifiec in the list
+        that are specific in the list
         """
         if isinstance(makelist, bool) and makelist is True:
             log.debug("Making default folders")
