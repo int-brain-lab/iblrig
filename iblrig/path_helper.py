@@ -109,28 +109,6 @@ def get_version_tag(folder: str) -> str:
     return tag
 
 
-def get_session_next_number(session_date_folder: str) -> str:
-    log.debug("Initializing session number")
-    if not Path(session_date_folder).exists():
-        return "001"
-    session_nums = [
-        int(x)
-        for x in os.listdir(session_date_folder)
-        if os.path.isdir(os.path.join(session_date_folder, x))
-    ]
-    if not session_nums:
-        out = "00" + str(1)
-    elif max(session_nums) < 9:
-        out = "00" + str(int(max(session_nums)) + 1)
-    elif 99 > max(session_nums) >= 9:
-        out = "0" + str(int(max(session_nums)) + 1)
-    elif max(session_nums) > 99:
-        out = str(int(max(session_nums)) + 1)
-    log.debug(f"Setting session number to: {out}")
-
-    return out
-
-
 def get_visual_stim_folder_name(protocol: str) -> str:
     if "habituation" in protocol or "sync_test" in protocol:
         return "GaborHabituationTask"
@@ -368,7 +346,7 @@ def get_session_number(session_date_folder: str) -> str:
     if not session_nums:
         out = str(1).zfill(3)
     else:
-        out = str(max(session_nums)).zfill(3)
+        out = str(max(session_nums) + 1).zfill(3)
     log.debug(f"Setting session number to: {out}")
 
     return out
