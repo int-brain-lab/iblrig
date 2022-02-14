@@ -1,7 +1,8 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 # @Author: Niccolò Bonacchi
-# @Date:   2018-06-08 11:04:05
+# @Date: 2018-06-08 11:04:05
+# @Editor: Michele Fabbri
+# @Edit_Date: 2022-02-01
 import argparse
 import os
 import shutil
@@ -150,7 +151,7 @@ def create_ibllib_env(env_name: str = "ibllib"):
     return 0
 
 
-def create_environment(env_name="iblenv", use_conda_yaml=False, resp=False):
+def create_environment(env_name="iblrig", use_conda_yaml=False, resp=False):
     if use_conda_yaml:
         os.system(f"{MC} env create -f environment.yaml")
         return
@@ -190,7 +191,7 @@ def create_environment(env_name="iblenv", use_conda_yaml=False, resp=False):
     print(f"{env_name} installed.")
 
 
-def install_iblrig(env_name: str = "iblenv") -> None:
+def install_iblrig(env_name: str = "iblrig") -> None:
     print(f"\n\nINFO: Installing iblrig in {env_name}:")
     print("N" * 79)
     pip = envs.get_env_pip(env_name=env_name)
@@ -199,11 +200,11 @@ def install_iblrig(env_name: str = "iblenv") -> None:
     print(f"iblrig installed in {env_name}.")
 
 
-def configure_iblrig_params(env_name: str = "iblenv", resp=False):
+def configure_iblrig_params(env_name: str = "iblrig", resp=False):
     print("\n\nINFO: Setting up default project config in ../iblrig_params:")
     print("N" * 79)
-    iblenv = envs.get_env_folder(env_name=env_name)
-    if iblenv is None:
+    iblrig = envs.get_env_folder(env_name=env_name)
+    if iblrig is None:
         msg = f"Can't configure iblrig_params, {env_name} not found"
         raise ValueError(msg)
     python = envs.get_env_python(env_name=env_name)
@@ -305,7 +306,7 @@ if __name__ == "__main__":
         "--env-name",
         "-n",
         required=False,
-        default="iblenv",
+        default="iblrig",
         help="Environment name for IBL rig installation",
     )
     parser.add_argument(
@@ -343,7 +344,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     RUN = 1
     if args.use_conda:  # bool
-        args.env_name = "iblenv"
+        args.env_name = "iblrig"
     if args.bonsai_response not in RESPONSES:
         print(
             f"Invalid --bonsai-response argument {args.bonsai_response}",

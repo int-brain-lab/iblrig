@@ -1,27 +1,30 @@
 #!/usr/bin/env python
-# -*- coding:utf-8 -*-
 # @Author: Niccolò Bonacchi
-# @Date: Wednesday, November 14th 2018, 10:40:43 am
+# @Creation_Date: Wednesday, November 14th 2018, 10:40:43 am
+# @Editor: Michele Fabbri
+# @Edit_Date: 2022-02-01
+"""
+Various get functions to return paths of folders and network drives
+"""
 import datetime
 import logging
 import os
+import platform
 import subprocess
 from os import listdir
 from os.path import join
 from pathlib import Path
 
-from ibllib.io import raw_data_loaders as raw
-import platform
-
 import iblrig.logging_  # noqa
 import iblrig.params as params
+import iblrig.raw_data_loaders as raw
 
 log = logging.getLogger("iblrig")
 
 
 def get_network_drives():
-    if platform.system() == "Linux":
-        return "~/Projects/IBL/github/iblserver"
+    if platform.system() not in ["Windows", "windows", "win32"]:
+        return "~/Projects/IBL/int-brain-lab/iblserver"  # XXX: This is a quick hack
     import win32api
     import win32com.client
     from win32com.shell import shell, shellcon
@@ -363,13 +366,9 @@ def get_session_number(session_date_folder: str) -> str:
         if os.path.isdir(os.path.join(session_date_folder, x))
     ]
     if not session_nums:
-        out = "00" + str(1)
-    elif max(session_nums) < 9:
-        out = "00" + str(int(max(session_nums)) + 1)
-    elif 99 > max(session_nums) >= 9:
-        out = "0" + str(int(max(session_nums)) + 1)
-    elif max(session_nums) > 99:
-        out = str(int(max(session_nums)) + 1)
+        out = str(1).zfill(3)
+    else:
+        out = str(max(session_nums)).zfill(3)
     log.debug(f"Setting session number to: {out}")
 
     return out
@@ -397,8 +396,6 @@ class SessionPathCreator(object):
         self.IBLRIG_DATA_SUBJECTS_FOLDER = get_iblrig_data_folder(subjects=True)
 
         self.PARAMS = params.load_params_file()
-        # TODO: check if can remove old bpod_comports file
-        self.IBLRIG_PARAMS_FILE = str(Path(self.IBLRIG_PARAMS_FOLDER) / ".bpod_comports.json")
         self.SUBJECT_NAME = subject_name
         self.SUBJECT_FOLDER = os.path.join(self.IBLRIG_DATA_SUBJECTS_FOLDER, self.SUBJECT_NAME)
 
@@ -530,21 +527,6 @@ class SessionPathCreator(object):
         ##########################################
                     USING INIT VALUES
         ##########################################"""
-                    log.warning(msg)
-                if k == "LATEST_WATER_CALIBRATION_FILE":
-                    msg = """
-        ##########################################
-         NOT FOUND: LATEST_WATER_CALIBRATION_FILE
-        ##########################################"""
-                    log.warning(msg)
-                if k == "LATEST_WATER_CALIB_RANGE_FILE":
-                    msg = """
-        ##########################################
-         NOT FOUND: LATEST_WATER_CALIB_RANGE_FILE
-        ##########################################
-                    Using full range
-        ##########################################
-        """
                     log.warning(msg)
 
 

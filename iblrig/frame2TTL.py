@@ -9,7 +9,6 @@ import time
 import numpy as np
 import serial
 
-import iblrig.alyx
 import iblrig.params
 
 log = logging.getLogger("iblrig")

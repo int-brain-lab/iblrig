@@ -1,14 +1,14 @@
 #!/usr/bin/env python
-# -*- coding:utf-8 -*-
 # @Author: Niccolò Bonacchi
-# @Date: Thursday, February 21st 2019, 7:13:37 pm
+# @Creation_Date: Thursday, February 21st 2019, 7:13:37 pm
+# @Editor: Michele Fabbri
+# @Edit_Date: 2022-02-01
 import sys
 from pathlib import Path
 
-import ibllib.io.raw_data_loaders as raw
+import iblrig.raw_data_loaders as raw
 import matplotlib.pyplot as plt
 import numpy as np
-
 from iblrig.misc import get_port_events
 
 if __name__ == "__main__":

@@ -13,10 +13,10 @@ from pathlib import Path
 MC = "mamba"
 
 
-def get_env_folder(env_name: str = "iblenv") -> str:
+def get_env_folder(env_name: str = "iblrig") -> str:
     """get_env_folder Return conda folder of [env_name] environment
 
-    :param env_name: name of conda environment to look for, defaults to 'iblenv'
+    :param env_name: name of conda environment to look for, defaults to 'iblrig'
     :type env_name: str, optional
     :return: folder path of conda environment
     :rtype: str
@@ -36,7 +36,7 @@ def get_env_folder(env_name: str = "iblenv") -> str:
     return env
 
 
-def _get_env_python_ou_pip(env_name: str = "iblenv", rpip=False):
+def _get_env_python_ou_pip(env_name: str = "iblrig", rpip=False):
     env = get_env_folder(env_name=env_name)
     if sys.platform in ["Windows", "windows", "win32"]:
         pip = os.path.join(env, "Scripts", "pip.exe")
@@ -48,11 +48,11 @@ def _get_env_python_ou_pip(env_name: str = "iblenv", rpip=False):
     return python if not rpip else pip
 
 
-def get_env_python(env_name: str = "iblenv"):
+def get_env_python(env_name: str = "iblrig"):
     return _get_env_python_ou_pip(env_name=env_name, rpip=False)
 
 
-def get_env_pip(env_name: str = "iblenv"):
+def get_env_pip(env_name: str = "iblrig"):
     return _get_env_python_ou_pip(env_name=env_name, rpip=True)
 
 

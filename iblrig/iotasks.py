@@ -1,7 +1,11 @@
 #!/usr/bin/env python
-# -*- coding:utf-8 -*-
 # @Author: Niccolò Bonacchi
-# @Date: Tuesday, February 5th 2019, 3:13:18 pm
+# @Creation_Date: Tuesday, February 5th 2019, 3:13:18 pm
+# Editor: Michele Fabbri
+# @Edit_Date: 2022-02-01
+"""
+Saving, loading, and zip functionality
+"""
 import json
 import logging
 import os
@@ -9,11 +13,11 @@ import shutil
 import zipfile
 from pathlib import Path
 
-import ibllib.io.raw_data_loaders as raw
 import numpy as np
 
 import iblrig.misc as misc
 import iblrig.path_helper as ph
+import iblrig.raw_data_loaders as raw
 
 log = logging.getLogger("iblrig")
 
@@ -35,7 +39,7 @@ def deserialize_pybpod_user_settings(sph: object) -> object:
         sph.PYBPOD_SUBJECTS = sph.PYBPOD_SUBJECTS[0]
     else:
         log.error("Multiple subjects found in PYBPOD_SUBJECTS")
-        raise (IOError)
+        raise IOError
 
     sph.PYBPOD_SUBJECT_EXTRA = [json.loads(x) for x in sph.PYBPOD_SUBJECT_EXTRA[1:-1].split('","')]
     if len(sph.PYBPOD_SUBJECT_EXTRA) == 1:
@@ -118,8 +122,8 @@ def zipdir(path: str, ziph: zipfile.ZipFile) -> None:
 
 def zipit(dir_list: list, zip_name: str) -> None:
     zipf = zipfile.ZipFile(zip_name, "w", zipfile.ZIP_DEFLATED)
-    for dir in dir_list:
-        zipdir(dir, zipf)
+    for single_dir in dir_list:
+        zipdir(single_dir, zipf)
     zipf.close()
 
 

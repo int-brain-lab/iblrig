@@ -1,14 +1,19 @@
 #!/usr/bin/env python
-# -*- coding:utf-8 -*-
 # @Author: Niccolò Bonacchi
-# @Date: Tuesday, February 5th 2019, 4:11:13 pm
+# @Creation_Date: Tuesday, February 5th 2019, 4:11:13 pm
+# @Editor: Michele Fabbri
+# @Edit_Date: 2022-01-24
+"""
+Calibration tests and reward configurations
+"""
 import logging
 
-import ibllib.io.raw_data_loaders as raw
 import numpy as np
 import scipy as sp
 import scipy.interpolate
+
 import iblrig.params as params
+from iblrig.raw_data_loaders import load_data
 
 log = logging.getLogger("iblrig")
 
@@ -49,8 +54,7 @@ def init_calib_func() -> scipy.interpolate.pchip:
         raise ValueError("Rig not calibrated")
 
     time2vol = scipy.interpolate.pchip(
-        PARAMS["WATER_CALIBRATION_OPEN_TIMES"],
-        PARAMS["WATER_CALIBRATION_WEIGHT_PERDROP"],
+        PARAMS["WATER_CALIBRATION_OPEN_TIMES"], PARAMS["WATER_CALIBRATION_WEIGHT_PERDROP"],
     )
 
     return time2vol
@@ -109,7 +113,7 @@ def init_reward_valve_time(sph: object) -> float:
             CALIBRATION_VALUE = <MANUAL_CALIBRATION>
         ##########################################"""
         log.error(msg)
-        raise (ValueError)
+        raise ValueError
 
     if out >= 1:
         msg = f"""
@@ -124,7 +128,7 @@ def init_reward_valve_time(sph: object) -> float:
             CALIBRATION_VALUE = <MANUAL_CALIBRATION>
         ##########################################"""
         log.error(msg)
-        raise (ValueError)
+        raise ValueError
 
     return float(out)
 
@@ -145,7 +149,7 @@ def impulsive_control(sph: object):
     crit_1 = False  # 50% perf on one side ~100% on other
     crit_2 = False  # Median RT on hard (<50%) contrasts < 300ms
     crit_3 = False  # Getting enough water
-    data = raw.load_data(sph.PREVIOUS_SESSION_PATH)
+    data = load_data(sph.PREVIOUS_SESSION_PATH)  # Loads data of previous session
     if data is None or not data:
         return sph
 
@@ -200,7 +204,7 @@ if __name__ == "__main__":
         "/home/nico/Projects/IBL/github/iblrig"
         + "/scratch/test_iblrig_data/Subjects/ZM_335/2018-12-13/001"
     )
-    data = raw.load_data(sess_path)
+    data = load_data(sess_path)
     sess_path = "/mnt/s0/IntegrationTests/Subjects_init/_iblrig_calibration/2019-02-21/003/raw_behavior_data"  # noqa
 
     init_calib_func_range()
