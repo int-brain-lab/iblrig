@@ -1,20 +1,21 @@
-#!/usr/bin/env python  # noqa
-# -*- coding:utf-8 -*-
+#!/usr/bin/env python
 # @Author: Niccolò Bonacchi
-# @Date: Friday, January 4th 2019, 11:52:41 am
+# @Creation_Date: Friday, January 4th 2019, 11:52:41 am
+# @Editor: Michele Fabbri
+# @Edit_Date: 2022-02-01
 import json
 import logging
 import sys
 from pathlib import Path
 
 import dateutil.parser as parser
-import ibllib.io.raw_data_loaders as raw
-from pybpodapi.protocol import Bpod, StateMachine
-
 import iblrig.bonsai as bonsai
 import iblrig.frame2TTL
 import iblrig.params as params
 import iblrig.path_helper as ph
+import iblrig.raw_data_loaders as raw
+from pybpodapi.protocol import Bpod, StateMachine
+
 import user_settings  # noqa
 
 sys.stdout.flush()

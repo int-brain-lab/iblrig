@@ -1,10 +1,14 @@
+#!/usr/bin/env python
+# @Author: Niccolò Bonacchi
+# @Creation_Date: 2018-06-08 11:04:05
+# @Editor: Michele Fabbri
+# @Edit_Date: 2022-01-28
 import logging
 import struct
 
 import numpy as np
 import serial
 
-import iblrig.alyx
 import iblrig.params
 
 log = logging.getLogger("iblrig")

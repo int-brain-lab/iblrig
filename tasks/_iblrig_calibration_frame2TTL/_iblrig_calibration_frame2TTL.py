@@ -1,12 +1,16 @@
+#!/usr/bin/env python
+# @File: _iblrig_calibration_frame2TTL/_iblrig_calibration_frame2TTL.py
+# @Author: Niccolo' Bonacchi (@nbonacchi)
+# @Date: Friday, November 5th 2021, 12:47:34 pm
 import datetime
 import logging
 import time
 
 import iblrig.params as params
-import iblrig.alyx as alyx
-import task_settings
-import user_settings
 from iblrig.frame2TTL import Frame2TTL
+
+import user_settings
+import task_settings
 from session_params import SessionParamHandler
 
 log = logging.getLogger("iblrig")
@@ -33,7 +37,6 @@ if resp != -1:
     }
 
     params.update_params_file(data=patch)
-    alyx.update_alyx_params(data=patch)
 
 sph.stop_screen_color()
 

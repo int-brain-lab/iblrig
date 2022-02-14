@@ -1,18 +1,19 @@
 #!/usr/bin/env python
-# -*- coding:utf-8 -*-
-# @File: iblrig/alyx.py
-# @Author: Niccolo' Bonacchi (@nbonacchi)
-# @Date: Tuesday, May 7th 2019, 12:07:26 pm
+# @Author: Niccolo Bonacchi
+# @Creation_Date: Tuesday, May 7th 2019, 12:07:26 pm
+# @Editor: Michele Fabbri
+# @Editor_Date: 2022-01-24
+"""
+Alyx server interface functions
+"""
 import json
 import logging
 import webbrowser as wb
 
-import ibllib.io.raw_data_loaders as raw
-from ibllib.oneibl.registration import RegistrationClient
-
 from one.api import ONE
 
 import iblrig.params as rig_params
+from iblrig.raw_data_loaders import load_settings
 
 log = logging.getLogger("iblrig")
 
@@ -25,12 +26,6 @@ def check_alyx_ok():
         print(e)
         log.warning("Cannot create one client: working offline")
         return False
-
-
-def create_session(session_folder, one=None):
-    one = one or ONE()
-
-    RegistrationClient(one=one).register_session(session_folder, file_list=False)
 
 
 def open_session_narrative(session_url: str) -> None:
@@ -129,7 +124,7 @@ def update_alyx_params(data: dict, force: bool = False, one=None) -> dict:
 
 def create_current_running_session(session_folder, one=None):
     one = one or ONE()
-    settings = raw.load_settings(session_folder)
+    settings = load_settings(session_folder)
     subject = one.alyx.rest("subjects?nickname=" + settings["PYBPOD_SUBJECTS"][0], "list")[0]
     ses_ = {
         "subject": subject["nickname"],
