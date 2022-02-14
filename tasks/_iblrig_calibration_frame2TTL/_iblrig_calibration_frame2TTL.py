@@ -10,12 +10,11 @@ import iblrig.params as params
 from iblrig.frame2TTL import Frame2TTL
 
 import user_settings
-import task_settings
 from session_params import SessionParamHandler
 
 log = logging.getLogger("iblrig")
 
-sph = SessionParamHandler(task_settings, user_settings)
+sph = SessionParamHandler(user_settings)
 f2ttl = Frame2TTL(sph.PARAMS["COM_F2TTL"])
 
 sph.start_screen_color()

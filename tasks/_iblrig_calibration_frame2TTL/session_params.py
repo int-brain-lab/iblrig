@@ -18,14 +18,14 @@ class SessionParamHandler(object):
     will and calculates other secondary session parameters,
     runs Bonsai and saves all params in a settings file.json"""
 
-    def __init__(self, task_settings, user_settings):
+    def __init__(self, user_settings):
         # =====================================================================
         # IMPORT task_settings, user_settings, and SessionPathCreator params
         # =====================================================================
-        ts = {
-            i: task_settings.__dict__[i] for i in [x for x in dir(task_settings) if "__" not in x]
-        }
-        self.__dict__.update(ts)
+        # ts = {
+        #     i: task_settings.__dict__[i] for i in [x for x in dir(task_settings) if "__" not in x]
+        # }
+        # self.__dict__.update(ts)
         us = {
             i: user_settings.__dict__[i] for i in [x for x in dir(user_settings) if "__" not in x]
         }
