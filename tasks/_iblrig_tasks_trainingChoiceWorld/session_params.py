@@ -49,16 +49,10 @@ class SessionParamHandler(object):
             make = True  # True makes only raw_behavior_data folder
         else:
             make = ["video"]  # besides behavior which folders to create
+
         spc = SessionPathCreator(self.PYBPOD_SUBJECTS[0], protocol=self.PYBPOD_PROTOCOL, make=make)
         self.__dict__.update(spc.__dict__)
 
-        # =====================================================================
-        # SUBJECT
-        # =====================================================================
-        self.SUBJECT_WEIGHT = user.ask_subject_weight(self.PYBPOD_SUBJECTS[0])
-        self.SUBJECT_DISENGAGED_TRIGGERED = False
-        self.SUBJECT_DISENGAGED_TRIALNUM = None
-        self.SUBJECT_PROJECT = None  # user.ask_project(self.PYBPOD_SUBJECTS[0])
         # =====================================================================
         # OSC CLIENT
         # =====================================================================
@@ -129,6 +123,13 @@ class SessionParamHandler(object):
         self.OUT_STOP_SOUND = ("SoftCode", 0) if self.SOFT_SOUND else ("Serial3", ord("X"))
         self.OUT_TONE = ("SoftCode", 1) if self.SOFT_SOUND else ("Serial3", 6)
         self.OUT_NOISE = ("SoftCode", 2) if self.SOFT_SOUND else ("Serial3", 7)
+        # =====================================================================
+        # SUBJECT
+        # =====================================================================
+        self.SUBJECT_WEIGHT = user.ask_subject_weight(self.PYBPOD_SUBJECTS[0])
+        self.SUBJECT_DISENGAGED_TRIGGERED = False
+        self.SUBJECT_DISENGAGED_TRIALNUM = None
+        self.SUBJECT_PROJECT = None  # user.ask_project(self.PYBPOD_SUBJECTS[0])
         # =====================================================================
         # SAVE SETTINGS FILE AND TASK CODE
         # =====================================================================
