@@ -240,10 +240,13 @@ class Frame2TTLv2(object):
     @light_threshold.setter
     def light_threshold(self, value: int) -> None:
         """Set the light threshold
-        Command: 5 bytes | [b"T", (light_threshold (uint16), dark_threshold (uint16))]
+        Command: 5 bytes | [b"T" (uint8), (light_threshold (int16), dark_threshold (int16))]
         Response: None
         """
-        self.ser.write(struct.pack("<BHH", b"T", value, self.dark_threshold))
+        print(self._dark_threshold, type(self._dark_threshold))
+        print(value, type(value))
+        self.ser.write(b"T" + int.to_bytes(value, 2, byteorder="little", signed=True) + int.to_bytes(self._dark_threshold, 2, byteorder="little", signed=True))
+        # self.ser.write(struct.pack("<Bhh", b"T", value, self._dark_threshold))
         self._light_threshold = value
 
     @property
@@ -253,10 +256,13 @@ class Frame2TTLv2(object):
     @dark_threshold.setter
     def dark_threshold(self, value: int) -> None:
         """Set the dark threshold
-        Command: 5 bytes | [b"T", (light_threshold (uint16), dark_threshold (uint16))]
+        Command: 5 bytes | [b"T" (uint8), (light_threshold (int16), dark_threshold (int16))]
         Response: None
         """
-        self.ser.write(struct.pack("<BHH", b"T", self.light_threshold, value))
+        print(self._light_threshold, type(self._light_threshold))
+        print(value, type(value))
+        self.ser.write(b"T" + int.to_bytes(self._light_threshold, 2, byteorder="little", signed=True) + int.to_bytes(value, 2, byteorder="little", signed=True))
+        # self.ser.write(struct.pack("<Bhh", b"T", self._light_threshold, value))
         self._dark_threshold = value
 
     def connect(self) -> serial.Serial:
@@ -404,7 +410,7 @@ class Frame2TTLv2(object):
         self.recomend_dark = self.auto_dark or self.manual_dark
         self.recomend_light = self.auto_light or self.manual_light
 
-        if self.auto_dark > self.self.auto_light:
+        if self.auto_dark > self.auto_light:
             log.error("Something looks wrong with the thresholds!"),
             log.error("Dark threshold must be lower than light threshold")
             log.error(f"Dark = {self.auto_dark}, Light = {self.auto_light}")
