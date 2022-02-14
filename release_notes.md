@@ -3,6 +3,7 @@
 ## **Release Notes develop**
 
 - Changed default rig environment name from iblenv to iblrig
+- Removed ibllib dependecies
 
 ## **Release Notes 6.5.3**
 
