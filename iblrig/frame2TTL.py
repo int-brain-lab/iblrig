@@ -1,7 +1,8 @@
 #!/usr/bin/env python
-# @File: iblrig/frame2TTL.py
-# @Author: Niccolo' Bonacchi (@nbonacchi)
-# @Date: Friday, November 5th 2021, 12:47:34 pm
+# @Author: Niccolò Bonacchi
+# @Creation_Date: 2018-06-08 11:04:05
+# @Editor: Michele Fabbri
+# @Edit_Date: 2022-01-28
 import logging
 import struct
 import time
@@ -9,7 +10,6 @@ import time
 import numpy as np
 import serial
 
-import iblrig.alyx
 import iblrig.params
 
 log = logging.getLogger("iblrig")

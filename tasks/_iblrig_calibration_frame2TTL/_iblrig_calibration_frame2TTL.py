@@ -1,3 +1,7 @@
+#!/usr/bin/env python
+# @File: _iblrig_calibration_frame2TTL/_iblrig_calibration_frame2TTL.py
+# @Author: Niccolo' Bonacchi (@nbonacchi)
+# @Date: Friday, November 5th 2021, 12:47:34 pm
 import datetime
 import logging
 import time
