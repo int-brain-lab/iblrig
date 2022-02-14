@@ -27,7 +27,7 @@ def Frame2TTL(serial_port: str) -> object:
     f2ttl = None
     try:
         f2ttl = Frame2TTLv2(serial_port)
-        print(f2ttl.hw_version)
+        assert f2ttl.hw_version == 2, "Not a v2 device, trying v1"
     except BaseException:
         f2ttl = Frame2TTLv1(serial_port)
 
@@ -36,6 +36,7 @@ def Frame2TTL(serial_port: str) -> object:
 
 class Frame2TTLv1(object):
     def __init__(self, serial_port):
+        assert serial_port is not None
         self.serial_port = serial_port
         self.connected = False
         self.ser = self.connect(serial_port)
@@ -194,8 +195,9 @@ class Frame2TTLv1(object):
 
 class Frame2TTLv2(object):
     def __init__(self, serial_port) -> None:
-        self.serial_port = serial_port
         self.connected = False
+        assert serial_port is not None
+        self.serial_port = serial_port
         self.hw_version = None
         self.ser = self.connect()
         self.streaming = False
@@ -241,6 +243,9 @@ class Frame2TTLv2(object):
         """
         ser = serial.Serial(port=self.serial_port, baudrate=115200, timeout=3.0, write_timeout=1.0)
         self.connected = ser.isOpen()
+        if not self.connected:
+            log.warning(f"Could not open {self.serial_port}.")
+            return
         # Handshake
         # ser.write(struct.pack("c", b"C"))
         ser.write(b"C")
@@ -417,7 +422,8 @@ class Frame2TTLv2(object):
             Light Threshold:    {self.light_threshold}"""
 
     def __del__(self):
-        self.close()
+        if self.connected:
+            self.close()
 
 
 def get_and_set_thresholds():
