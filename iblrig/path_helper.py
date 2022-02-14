@@ -226,7 +226,7 @@ def get_previous_session_folders(subject_name: str, session_folder: str) -> list
     # Set remote subject folder Path
     # TODO: 'Y:\' string should be set to a variable like DATA_FOLDER_REMOTE, pull from params.py
     #   C:\iblrig_params\.iblrig_params.json - "DATA_FOLDER_REMOTE": "Y:\\"
-    #   get_network_drives() function?
+    #   get_network_drives() function or params or get_iblserver_data_folder
     remote_subject_folder = Path('Y:\\' + str(local_subject_folder)[15:])
 
     # Set return list and date_folder_list variables
