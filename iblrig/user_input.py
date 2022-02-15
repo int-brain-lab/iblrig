@@ -1,17 +1,21 @@
-# -*- coding:utf-8 -*-
+#!/usr/bin/env python
 # @Author: Niccolò Bonacchi
-# @Date: Friday, May 17th 2019, 9:21:19 am
+# @Creation_Date: Friday, May 17th 2019, 9:21:19 am
+# @Editor: Michele Fabbri
+# @Edit_Date: 2022-02-01
+"""
+Various interaction with user and session forms
+"""
 import ast
 import logging
 import sys
 
-import ibllib.graphic as graph
 import pyforms
 from AnyQt.QtWidgets import QApplication
-from one.api import ONE
 from pyforms.basewidget import BaseWidget
 from pyforms.controls import ControlButton, ControlCheckBox, ControlLabel, ControlText
 
+import iblrig.graphic as graph
 import iblrig.logging_  # noqa
 from iblrig.misc import patch_settings_file
 
@@ -31,14 +35,10 @@ class SessionForm(BaseWidget):
             "X [M/L] (µm):", default="0", helptext="Right = Positive, Left = Negative"
         )
         self._probe00Y = ControlText(
-            "Y [A/P] (µm):",
-            default="0",
-            helptext="Anterior = Positive, Posterior = Negative",
+            "Y [A/P] (µm):", default="0", helptext="Anterior = Positive, Posterior = Negative",
         )
         self._probe00Z = ControlText(
-            "Z [D/V] (µm):",
-            default="0",
-            helptext="Dorsal = Positive, Ventral = Negative",
+            "Z [D/V] (µm):", default="0", helptext="Dorsal = Positive, Ventral = Negative",
         )
         self._probe00P = ControlText(
             "θ [polar angle] (deg):",
@@ -71,14 +71,10 @@ class SessionForm(BaseWidget):
             "X [M/L] (µm):", default="0", helptext="Right = Positive, Left = Negative"
         )
         self._probe01Y = ControlText(
-            "Y [A/P] (µm):",
-            default="0",
-            helptext="Anterior = Positive, Posterior = Negative",
+            "Y [A/P] (µm):", default="0", helptext="Anterior = Positive, Posterior = Negative",
         )
         self._probe01Z = ControlText(
-            "Z [D/V] (µm):",
-            default="0",
-            helptext="Dorsal = Positive, Ventral = Negative",
+            "Z [D/V] (µm):", default="0", helptext="Dorsal = Positive, Ventral = Negative",
         )
         self._probe01P = ControlText(
             "θ [polar angle] (deg):",
@@ -171,7 +167,7 @@ class SessionForm(BaseWidget):
         self.app_main_window.close()
         return
 
-
+# TODO: Finish consolidating user input for ephys sessions and use this!
 class EphysSessionForm(BaseWidget):
     def __init__(self):
         super(EphysSessionForm, self).__init__("Session info")
@@ -211,16 +207,13 @@ class EphysSessionForm(BaseWidget):
             label=f"Current weight for {self.session_dict['mouse_name']}:"
         )
         self._session_is_mock = ControlText(
-            label="Is this a MOCK session?",
-            default=self.session_dict["session_is_mock"],
+            label="Is this a MOCK session?", default=self.session_dict["session_is_mock"],
         )
         self._session_index = ControlText(
-            label="Session number:",
-            default=str(int(self.session_dict["session_index"]) + 1),
+            label="Session number:", default=str(int(self.session_dict["session_index"]) + 1),
         )
         self._session_delay = ControlText(
-            label="Delay session initiation by (min):",
-            default=self.session_dict["session_delay"],
+            label="Delay session initiation by (min):", default=self.session_dict["session_delay"],
         )
 
         self._button = ControlButton("Submit")
@@ -370,10 +363,7 @@ def ask_session_delay(settings_file_path: str = None) -> int:
 def ask_is_mock(settings_file_path: str = None) -> bool:
     out = None
     resp = graph.strinput(
-        "Session type",
-        "IS this a MOCK recording? (yes/NO)",
-        default="NO",
-        nullable=True,
+        "Session type", "IS this a MOCK recording? (yes/NO)", default="NO", nullable=True,
     )
     if resp is None:
         return ask_is_mock(settings_file_path)
@@ -402,80 +392,6 @@ def ask_confirm_session_idx(session_idx):
     if sess_num != session_idx + 1:
         session_idx = sess_num - 1
     return session_idx
-
-
-# XXX: THIS ONE CALL HAS TO CHANGE in favor of local param folder:
-# Find configured projects
-# Find mice in projects
-# if subj_name in more than one configured project, ask which one to use
-def ask_project(subject_name, one=None):
-    if subject_name == "_iblrig_test_mouse":
-        log.info(f"Test mouse detected Project for {subject_name}: _iblrig_test_project")
-        return "_iblrig_test_project"
-    one = one or ONE()
-    projects = one.alyx.rest("subjects", "read", subject_name)["session_projects"]
-    if not projects:
-        log.info(f"No Projects found for Subject {subject_name}: []")
-        return None
-    elif len(projects) == 1:
-        log.info(f"One project found for subject {subject_name}: [{projects[0]}]")
-        return projects[0]
-    else:
-        log.info(f"Multiple projects found for subject {subject_name}:{projects}")
-        last_sessions = one.search(subject=subject_name, limit=10)
-        last_project = one.alyx.rest("sessions", "read", last_sessions[0])["project"]
-        title = "Select Project"
-        prompt = str(projects)
-        default = last_project
-        out_proj = graph.strinput(title, prompt, default=default, nullable=True)
-        if out_proj not in projects:
-            return ask_project(subject_name, one=one)
-        return out_proj
-
-
-def ask_subject_project(subject: str, settings_file_path: str = None) -> float:
-    import datetime
-    import json
-
-    from one.api import ONE
-
-    one = ONE()
-    all_subjects = list(one.alyx.rest("subjects", "list"))
-    all_subjects.append({"dump_date": datetime.datetime.utcnow().isoformat()})
-
-    fpath = None  # Find Subjects folder
-    # Save json in Subjects folder
-
-    with open(fpath, "w+") as f:
-        f.write(json.dumps(all_subjects, indent=1))
-        f.write("\n")
-    # Load subjects from disk
-    with open(fpath, "r") as f:
-        all_subjects = json.loads(f.readlines())
-
-    # Given Subject load 'session_projects'
-    all_projects = {x["nickname"]: x["session_projects"] for x in all_subjects}
-    projects = all_projects[subject]
-
-    if not projects:
-        return projects
-    elif len(projects) == 1:
-        return projects[0]
-    else:
-        resp = graph.strinput(
-            "Select project",
-            str(projects),
-            default=projects[0],
-            nullable=False,
-        )
-        return resp
-
-    out = graph.numinput("Subject project", f"{subject} project (gr):", nullable=False)
-    log.info(f"Subject weight {out}")
-    if settings_file_path is not None:
-        patch = {"SUBJECT_WEIGHT": out}
-        patch_settings_file(settings_file_path, patch)
-    return out
 
 
 if __name__ == "__main__":
@@ -512,6 +428,4 @@ if __name__ == "__main__":
     bla = ephys_session_form(session_dict=session_dict)
 
     # subject_name = 'CSHL046'
-    # proj = ask_project(subject_name, one=None)
-    # print(proj)
     print(".")

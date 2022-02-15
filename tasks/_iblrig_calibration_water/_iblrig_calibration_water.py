@@ -1,10 +1,12 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-# automatic water calibration for pyBpod
-# Anne Urai, CSHL, 2018
-# Edited by Niccolo Bonacchi, CCU, 2018
-
+# @File: _iblrig_calibration_water/_iblrig_calibration_water.py
+# @Author: Anne Urai (CSHL), Niccolo' Bonacchi (@nbonacchi)
+# @Date: 2018 | Friday, November 5th 2021, 12:47:34 pm
+# @Editor: Michele Fabbri
+# @Edit_Date: 2022-02-01
+"""
+Automatic water calibration for pyBpod
+"""
 import datetime
 import os
 import re
@@ -12,22 +14,19 @@ import time
 import tkinter as tk
 from tkinter import messagebox
 
+import iblrig.params as params
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import scipy as sp
 import seaborn as sns  # for easier plotting at the end
 import serial
-from ibllib.graphic import numinput
+from iblrig.graphic import numinput
 from pybpodapi.bpod import Bpod
 from pybpodapi.state_machine import StateMachine
 
-import iblrig.alyx as alyx
-import iblrig.params as params
-
-# import iblrig.path_helper as path_helper
-import task_settings
 import user_settings  # PyBpod creates this file on run.
+import task_settings
 from session_params import SessionParamHandler
 
 sph = SessionParamHandler(task_settings, user_settings)
@@ -128,13 +127,8 @@ def scale_read(COMport_string):
 
 # initialize a dataframe with the results
 df1 = pd.DataFrame(
-    columns=[
-        "time",
-        "open_time",
-        "ndrops",
-        "mean_measured_weight",
-        "std_measured_weight",
-    ], dtype=object
+    columns=["time", "open_time", "ndrops", "mean_measured_weight", "std_measured_weight",],
+    dtype=object,
 )
 ntrials = sph.NTRIALS
 # in milliseconds, 10 to 100ms opening time
@@ -163,8 +157,7 @@ for open_time in open_times:
         stopweight = scale_read(sph.OAHUS_SCALE_PORT)
     else:
         stopweight = numinput(
-            f"{open_time}ms pass {pass_}",
-            "Enter the weight diplayed on the scale (gr):",
+            f"{open_time}ms pass {pass_}", "Enter the weight diplayed on the scale (gr):",
         )
     # get the value of the amout of water delivered
     measured_weight = stopweight - startweight
@@ -199,8 +192,7 @@ for open_time in open_times:
     progress += 1
 
     print(
-        f"{progress / max_prog * 100}%",
-        f"- Pass {pass_}/{sph.PASSES} @ {open_time}ms done.",
+        f"{progress / max_prog * 100}%", f"- Pass {pass_}/{sph.PASSES} @ {open_time}ms done.",
     )
 
 # SAVE
@@ -221,9 +213,7 @@ ax[0].plot(xp, time2vol(xp), "-k")
 # CALIBRATION CURVE
 sns.scatterplot(x="open_time", y="weight_perdrop", data=df1, ax=ax[0])
 ax[0].set(
-    xlabel="Open time (ms)",
-    ylabel="Measured volume (ul per drop)",
-    title="Calibration curve",
+    xlabel="Open time (ms)", ylabel="Measured volume (ul per drop)", title="Calibration curve",
 )
 title = f.suptitle(f"Water calibration {now}")
 f.savefig(sph.CALIBRATION_CURVE_FILE_PATH)
@@ -265,15 +255,12 @@ func_patch = {
     "WATER_CALIBRATION_WEIGHT_PERDROP": df1["weight_perdrop"].to_list(),
 }
 range_patch = {"WATER_CALIBRATION_RANGE": [df2.min_open_time.iloc[0], df2.max_open_time.iloc[0]]}
-# func_patch = path_helper.load_water_calibraition_func_file(sph.CALIBRATION_FUNCTION_FILE_PATH)
-# range_patch = path_helper.load_water_calibraition_range_file(sph.CALIBRATION_RANGE_FILE_PATH)
 date_patch = {"WATER_CALIBRATION_DATE": datetime.datetime.now().date().isoformat()}
 patch = {}
 patch.update(range_patch)
 patch.update(func_patch)
 patch.update(date_patch)
 params.update_params_file(data=patch)
-alyx.update_alyx_params(data=patch)
 
 os.system(sph.CALIBRATION_CURVE_FILE_PATH[:-4] + "_range.pdf")
 bpod.close()
