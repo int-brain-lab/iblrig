@@ -9,21 +9,24 @@ import time
 import iblrig.params as params
 from iblrig.frame2TTL import Frame2TTL
 
-import user_settings
 from session_params import SessionParamHandler
 
 log = logging.getLogger("iblrig")
 
-sph = SessionParamHandler(user_settings)
+sph = SessionParamHandler()
 f2ttl = Frame2TTL(sph.PARAMS["COM_F2TTL"])
+white = [175, 175, 175] if f2ttl.hw_version == 2 else [255, 255, 255]
 
 sph.start_screen_color()
-sph.set_screen(rgb=[255, 255, 255])
+time.sleep(3)
+sph.set_screen(rgb=white)
 time.sleep(1)
 f2ttl.measure_white()
+# f2ttl.measure_white(mode='manual')
 sph.set_screen(rgb=[0, 0, 0])
 time.sleep(1)
 f2ttl.measure_black()
+# f2ttl.measure_black(mode='manual')
 resp = f2ttl.calc_recomend_thresholds()
 if resp != -1:
     f2ttl.set_recommendations()
