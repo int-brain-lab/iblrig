@@ -1,8 +1,8 @@
 #!/usr/bin/env python
-# @Author: Niccolò Bonacchi
+# @File: iblrig/frame2TTL.py
+# @Author: Niccolo' Bonacchi (@nbonacchi)
+# @Date: Friday, November 5th 2021, 12:47:34 pm
 # @Creation_Date: 2018-06-08 11:04:05
-# @Editor: Michele Fabbri
-# @Edit_Date: 2022-01-28
 import logging
 import struct
 import time
@@ -15,7 +15,7 @@ import iblrig.params
 log = logging.getLogger("iblrig")
 
 
-def Frame2TTL(serial_port: str) -> object:
+def Frame2TTL(serial_port: str, version: int = 2) -> object:
     """Determine whether to use v1 or v2 by trying to connect to v2 and find the hw_version
 
     Args:
@@ -25,17 +25,30 @@ def Frame2TTL(serial_port: str) -> object:
         object: Instance of the v1/v2 class
     """
     f2ttl = None
-    try:
-        f2ttl = Frame2TTLv2(serial_port)
-        print(f2ttl.hw_version)
-    except BaseException:
-        f2ttl = Frame2TTLv1(serial_port)
+    if version == 2:
+        try:
+            f2ttl = Frame2TTLv2(serial_port)
+            assert f2ttl.hw_version == 2, "Not a v2 device, continuing with v1"
+            return f2ttl
+        except BaseException as e:
+            log.warning(f"Cannot connect assuming F2TTLv2 device, continuing with v1: {e}")
+    elif version == 1:
+        try:
+            f2ttl = Frame2TTLv1(serial_port)
+            assert f2ttl.handshake() == 218, "Not a v1 device, abort."
+            return f2ttl
+        except BaseException as e:
+            log.error(f"Couldn't connect to F2TTLv1: {str(e)}")
+    elif version == 0:
+        return None
 
-    return f2ttl
+    return Frame2TTL(serial_port, version=version-1)
 
 
 class Frame2TTLv1(object):
     def __init__(self, serial_port):
+        assert serial_port is not None
+        self.hw_version = 1
         self.serial_port = serial_port
         self.connected = False
         self.ser = self.connect(serial_port)
@@ -53,10 +66,21 @@ class Frame2TTLv1(object):
         self.connected = ser.isOpen()
         return ser
 
+    def handshake(self):
+        # Handshake
+        # ser.write(struct.pack("c", b"C"))
+        self.ser.write(b"C")
+        # 1 byte response expected (unsigned)
+        handshakeByte = int.from_bytes(self.ser.read(1), byteorder="little", signed=False)
+        if handshakeByte != 218:
+            raise serial.SerialException("Handshake with F2TTL device failed")
+        return handshakeByte
+
     def close(self) -> None:
         """Close connection to serial port"""
-        self.ser.close()
-        self.connected = self.ser.isOpen()
+        if self.connected:
+            self.ser.close()
+            self.connected = self.ser.isOpen()
 
     def start_stream(self) -> None:
         """Enable streaming to USB (stream rate 100Hz)
@@ -194,8 +218,9 @@ class Frame2TTLv1(object):
 
 class Frame2TTLv2(object):
     def __init__(self, serial_port) -> None:
-        self.serial_port = serial_port
         self.connected = False
+        assert serial_port is not None
+        self.serial_port = serial_port
         self.hw_version = None
         self.ser = self.connect()
         self.streaming = False
@@ -216,10 +241,10 @@ class Frame2TTLv2(object):
     @light_threshold.setter
     def light_threshold(self, value: int) -> None:
         """Set the light threshold
-        Command: 5 bytes | [b"T", (light_threshold (uint16), dark_threshold (uint16))]
+        Command: 5 bytes | [b"T" (uint8), (light_threshold (int16), dark_threshold (int16))]
         Response: None
         """
-        self.ser.write(struct.pack("<BHH", b"T", value, self.dark_threshold))
+        self.ser.write(b"T" + int.to_bytes(value, 2, byteorder="little", signed=True) + int.to_bytes(self._dark_threshold, 2, byteorder="little", signed=True))
         self._light_threshold = value
 
     @property
@@ -229,10 +254,10 @@ class Frame2TTLv2(object):
     @dark_threshold.setter
     def dark_threshold(self, value: int) -> None:
         """Set the dark threshold
-        Command: 5 bytes | [b"T", (light_threshold (uint16), dark_threshold (uint16))]
+        Command: 5 bytes | [b"T" (uint8), (light_threshold (int16), dark_threshold (int16))]
         Response: None
         """
-        self.ser.write(struct.pack("<BHH", b"T", self.light_threshold, value))
+        self.ser.write(b"T" + int.to_bytes(self._light_threshold, 2, byteorder="little", signed=True) + int.to_bytes(value, 2, byteorder="little", signed=True))
         self._dark_threshold = value
 
     def connect(self) -> serial.Serial:
@@ -241,6 +266,9 @@ class Frame2TTLv2(object):
         """
         ser = serial.Serial(port=self.serial_port, baudrate=115200, timeout=3.0, write_timeout=1.0)
         self.connected = ser.isOpen()
+        if not self.connected:
+            log.warning(f"Could not open {self.serial_port}.")
+            return
         # Handshake
         # ser.write(struct.pack("c", b"C"))
         ser.write(b"C")
@@ -254,13 +282,15 @@ class Frame2TTLv2(object):
         # 1 byte response expected (unsigned)
         self.hw_version = int.from_bytes(ser.read(1), byteorder="little", signed=False)
         if self.hw_version != 2:
+            self.ser.close()
             raise serial.SerialException("Error: Frame2TTLv2 requires hardware version 2.")
         return ser
 
     def close(self) -> None:
         """Close connection to serial port"""
-        self.ser.close()
-        self.connected = self.ser.isOpen()
+        if self.connected:
+            self.ser.close()
+            self.connected = self.ser.isOpen()
 
     def start_stream(self) -> None:
         """Enable streaming to USB (stream rate 100Hz? sensor samples at 20kHz)
@@ -285,9 +315,11 @@ class Frame2TTLv2(object):
         """
         # self.ser.write(struct.pack("cB", b"V", nsamples))
         self.ser.write(b"V" + int.to_bytes(nsamples, 4, byteorder="little", signed=False))
-        dt = np.uint16
+        dt = np.dtype(np.uint16)
         dt = dt.newbyteorder("<")
         values = np.frombuffer(self.ser.read(nsamples * 2), dtype=dt)
+        if len(values) != nsamples:
+            log.error(f"Failed to read {nsamples} samples from device")
         return values
 
     def read_value(self) -> int:
@@ -299,16 +331,23 @@ class Frame2TTLv2(object):
         Command: 1 bytes | b"L" (uint8)
         Response: 2 bytes | value (int16)
         """
+        log.info("Measuring BLACK variability to find LIGHT threshold...")
         if mode == "auto":
             # Run the firmware routine to find the light threshold
             self.ser.write(b"L")
             time.sleep(3)
             threshold = int.from_bytes(self.ser.read(2), byteorder="little", signed=True)
             self.auto_light = threshold
+            log.info(f"Auto LIGHT threshold value: {threshold}")
         elif mode == "manual":
             arr = self.read_sensor(20000)
-            threshold = self._calc_threshold(arr, light=True)
+            if len(arr) != 20000:
+                log.warning(f"Manual LIGHT threshold value could not be determined.")
+                threshold = None
+            else:
+                threshold = self._calc_threshold(arr, light=True)
             self.manual_light = threshold
+            log.info(f"Manual LIGHT threshold value: {threshold}")
             return arr, threshold
 
     def measure_white(self, mode="auto"):
@@ -316,16 +355,23 @@ class Frame2TTLv2(object):
         Command: 1 bytes | b"D" (uint8)
         Response: 2 bytes | value (int16)
         """
+        log.info("Measuring WHITE variability to find DARK threshold...")
         if mode == "auto":
             # Run the firmware routine to find the dark threshold
             self.ser.write(b"D")
             time.sleep(3)
             threshold = int.from_bytes(self.ser.read(2), byteorder="little", signed=True)
             self.auto_dark = threshold
+            log.info(f"Auto DARK threshold value: {threshold}")
         elif mode == "manual":
             arr = self.read_sensor(20000)
-            threshold = self._calc_threshold(arr, light=False)
+            if len(arr) != 20000:
+                log.warning(f"Manual DARK threshold value could not be determined.")
+                threshold = None
+            else:
+                threshold = self._calc_threshold(arr, dark=True)
             self.manual_dark = threshold
+            log.info(f"Manual DARK threshold value: {threshold}")
             return arr, threshold
 
     def _calc_threshold(self, arr, dark=False, light=False):
@@ -375,7 +421,7 @@ class Frame2TTLv2(object):
         self.recomend_dark = self.auto_dark or self.manual_dark
         self.recomend_light = self.auto_light or self.manual_light
 
-        if self.auto_dark > self.self.auto_light:
+        if self.auto_dark > self.auto_light:
             log.error("Something looks wrong with the thresholds!"),
             log.error("Dark threshold must be lower than light threshold")
             log.error(f"Dark = {self.auto_dark}, Light = {self.auto_light}")
@@ -383,7 +429,7 @@ class Frame2TTLv2(object):
         else:
             log.info("Recommended thresholds:")
             log.info(f"Light ={self.recomend_light}, Dark = {self.recomend_dark}.")
-            print("Recommended thresholds not set yet. Please callset_recommendations()")
+            log.warning("Recommended thresholds not set yet. Please call set_recommendations()")
             return self.recomend_dark, self.recomend_light
 
     def set_thresholds(self, dark=None, light=None) -> None:
@@ -416,8 +462,9 @@ class Frame2TTLv2(object):
             Dark Threshold:     {self.dark_threshold}
             Light Threshold:    {self.light_threshold}"""
 
-    def __del__(self):
-        self.close()
+    def reset_thresholds(self):
+        self.dark_threshold = -150
+        self.light_threshold = 150
 
 
 def get_and_set_thresholds():
@@ -435,8 +482,11 @@ def get_and_set_thresholds():
 
 
 if __name__ == "__main__":
-    com_port = "COM4"
-    f = Frame2TTL(com_port)
+    com_port_v1 = "COM3"  # v1
+    com_port_v2 = "COM4"  # v2
+    f1 = Frame2TTL(com_port_v1)
+    f2 = Frame2TTL(com_port_v2)
+    ferr = Frame2TTL("COM1")
     # print(f.read_value())
     # print(f.measure_photons())
     # f.set_thresholds()
@@ -444,4 +494,4 @@ if __name__ == "__main__":
     # f.set_thresholds(light=41)
     # f.set_thresholds(dark=81)
     # f.suggest_thresholds()
-    # print(".")
+    print(".")

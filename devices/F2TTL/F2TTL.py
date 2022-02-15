@@ -1,1 +1,1 @@
-from iblrig.frame2TTL import frame2TTL  # noqa
+from iblrig.frame2TTL import Frame2TTL  # noqa
