@@ -357,6 +357,11 @@ def get_pregen_session_folder() -> str:
     return str(iblrig_path / "tasks" / "_iblrig_tasks_ephysChoiceWorld" / "sessions")
 
 
+def get_camera_setup_wrkfl() -> str:
+    iblrig_path = Path(get_iblrig_folder())
+    return str(iblrig_path / "devices" / "camera_setup" / "setup_video.bonsai")
+
+
 class SessionPathCreator(object):
     # add subject name and protocol (maybe have a metadata struct)
     def __init__(self, subject_name, protocol=False, make=False):
