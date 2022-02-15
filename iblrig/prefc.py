@@ -347,17 +347,17 @@ def _list_pc_devices(grep=""):
 def rig_ok() -> bool:
     # Stuff to check on all rig types
     ultramic_ok()
-    camera_ok()
+    camera_ok()  # TODO: check how this works for ephys 3 cam config
+    params_comports_ok()
     f2ttl_ok()
-    bpod_modules_ok()
     bpod_ok()
+    bpod_modules_ok()
     rotary_encoder_ok()
     # alyx_server_rig_ok()
     rig_data_folder_ok()
     local_server_ok()
-    alyx_ok()
+    # alyx_ok()
     calibration_dates_ok()
-    params_comports_ok()
     {}
 
 
