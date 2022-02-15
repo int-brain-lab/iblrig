@@ -208,9 +208,10 @@ def load_params_file(silent=True) -> dict:
         return out
 
 
-def update_params_file(data: dict, force: bool = False) -> None:
+def update_params_file(data: dict = None, force: bool = False) -> None:
     """update_params_file updates the values of the params file
     If force will add unknown keys to the file, otherwise it will only add known keys.
+    Will update the updatable_params
 
     :param data: data to update, keys must be known if force=False
     :type data: dict
@@ -225,18 +226,22 @@ def update_params_file(data: dict, force: bool = False) -> None:
         write_params_file()
         old = load_params_file()
 
-    for k in data:
-        if k in old.keys():
-            old[k] = data[k]
-            log.info(f"Updated {k} with value {data[k]}")
-        else:
-            if not force:
-                log.info(f"Unknown key {k}: skipping key...")
-                continue
-            elif force:
-                log.info(f"Adding new key {k} with value {data[k]} to .iblrig_params.json")
+    for k in AUTO_UPDATABLE_PARAMS:
+        old[k] = update_param_key_values(k)
+    if data is not None:
+        for k in data:
+            if k in old.keys():
                 old[k] = data[k]
-    log.info("Updated params file")
+                log.info(f"Updated {k} with value {data[k]}")
+            else:
+                if not force:
+                    log.info(f"Unknown key {k}: skipping key...")
+                    continue
+                elif force:
+                    log.info(f"Adding new key {k} with value {data[k]} to .iblrig_params.json")
+                    old[k] = data[k]
+        log.info("Updated params file")
+
     write_params_file(data=old, force=True)
 
     return old
