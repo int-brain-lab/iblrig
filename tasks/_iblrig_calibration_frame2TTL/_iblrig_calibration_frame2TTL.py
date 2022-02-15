@@ -33,6 +33,7 @@ if resp != -1:
 
     patch = {
         "COM_F2TTL": f2ttl.serial_port,
+        "F2TTL_HW_VERSION": f2ttl.hw_version,
         "F2TTL_DARK_THRESH": f2ttl.recomend_dark,
         "F2TTL_LIGHT_THRESH": f2ttl.recomend_light,
         "F2TTL_CALIBRATION_DATE": datetime.datetime.now().date().isoformat(),
