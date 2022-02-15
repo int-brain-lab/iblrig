@@ -5,7 +5,7 @@
 RECORD_SOUND = True
 RECORD_AMBIENT_SENSOR_DATA = True
 # REWARDS
-AUTOMATIC_CALIBRATION = True  # Wether to look for a calibration session and func to define the valve opening time  # noqa
+AUTOMATIC_CALIBRATION = True  # Whether to look for a calibration session and func to define the valve opening time  # noqa
 CALIBRATION_VALUE = (
     0.067  # calibration value for 3ul of target reward amount (ignored if automatic ON)  # noqa
 )
@@ -14,7 +14,7 @@ REWARD_TYPE = "Water 10% Sucrose"  # Water, Water 10% Sucrose, Water 15% Sucrose
 # TASK
 NTRIALS = 2000  # Number of trials for the current session
 USE_AUTOMATIC_STOPPING_CRITERIONS = (
-    True  # Weather to check for the Automatic stopping criterions or not  # noqa
+    True  # Whether to check for the Automatic stopping criterions or not  # noqa
 )
 USE_VISUAL_STIMULUS = True  # Run the visual stim in bonsai
 BONSAI_EDITOR = False  # Whether to open the visual stim Bonsai editor or not
@@ -55,4 +55,4 @@ GO_TONE_DURATION = 0.1  # Length of tone
 GO_TONE_FREQUENCY = 5000  # 5KHz
 GO_TONE_AMPLITUDE = 0.0272  # [0->1] 0.0272 for 70dB SPL Xonar
 # POOP COUNT LOGGING
-POOP_COUNT = True  # Wether to ask for a poop count at the end of the session
+POOP_COUNT = True  # Whether to ask for a poop count at the end of the session
