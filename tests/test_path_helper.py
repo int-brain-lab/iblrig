@@ -59,29 +59,29 @@ class TestPathHelper(unittest.TestCase):
         self.assertTrue(out == ch)
 
     def test_get_previous_session_folders(self):
-        # TODO: Test this test
+        # Create temp directories for an existing subject test
         self.dir = tempfile.TemporaryDirectory()
+        test_subject_name = '_iblrig_test_mouse'
         test_session_folder = \
-            Path(self.dir.name) / 'Subjects' / '_iblrig_test_mouse' / '2022-02-11' / '001'
+            Path(self.dir.name) / 'Subjects' / test_subject_name / '2022-02-11' / '001'
         test_session_folder.mkdir(parents=True)
 
-        # Test for common expected values
-        test_subject_name = '_iblrig_test_mouse'
-        # test_session_folder = 'C:\\iblrig_data\\Subjects\\_iblrig_test_mouse\\2022-02-11\\001'
+        # Test for an existing subject
         test_previous_session_folders = ph.get_previous_session_folders(
-            test_subject_name, test_session_folder.name)  # pass str instead?
+            test_subject_name, test_session_folder.name)
         self.assertTrue(isinstance(test_previous_session_folders, list))
         if test_previous_session_folders:  # returned list is not empty and should contain strings
             for test_a_previous_session_folder in test_previous_session_folders:
                 self.assertTrue(isinstance(test_a_previous_session_folder, str))
 
-        # Test for return of an empty list
-        test_subject_name_empty = ''
-        test_session_folder_empty = ''
-        test_previous_session_folders_empty = ph.get_previous_session_folders(
-            test_subject_name_empty, test_session_folder_empty)
-        self.assertTrue(isinstance(test_previous_session_folders_empty, list))
-        self.assertTrue(not test_previous_session_folders_empty)
+        # Test for a new subject
+        test_new_subject_name = '_new_iblrig_test_mouse'
+        test_new_session_folder = \
+            Path(self.dir.name) / 'Subjects' / test_new_subject_name / '2022-02-11' / '001'
+        test_previous_session_folders = ph.get_previous_session_folders(
+            test_new_subject_name, test_new_session_folder.name)
+        self.assertTrue(isinstance(test_previous_session_folders, list))
+        self.assertTrue(not test_previous_session_folders)
 
     def tearDown(self):
         pass
