@@ -211,20 +211,20 @@ def get_previous_session_folders(subject_name: str, session_folder: str) -> list
     local_subject_folder_exists = local_subject_folder.exists()
     remote_subject_folder_exists = remote_subject_folder.exists()
 
-    # Look for previous session on the lab server
     if (not local_subject_folder_exists) & (not remote_subject_folder_exists):
         log.debug(f"NOT FOUND: No previous sessions for subject {local_subject_folder.name} on "
                   f"lab server or rig computer")
-        return date_folder_list
+        # Return empty list
+        return previous_session_folders
     elif local_subject_folder_exists & (not remote_subject_folder_exists):
         log.debug(f"NOT FOUND: No previous sessions for subject {local_subject_folder.name} on "
                   f"lab server")
-        # Set subject to local
+        # Build out date path for local
         date_folder_list.extend(get_subfolder_paths(local_subject_folder))
     elif remote_subject_folder_exists & (not local_subject_folder_exists):
         log.debug(f"NOT FOUND: No previous sessions for subject {local_subject_folder.name} on "
                   f"rig computer; setting to remote")
-        # Set subject to remote
+        # Build out date path for remote
         date_folder_list.extend(get_subfolder_paths(remote_subject_folder))
     
     # Previous sessions found on both local rig and remote lab server

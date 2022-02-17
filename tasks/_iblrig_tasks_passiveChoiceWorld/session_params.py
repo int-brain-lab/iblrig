@@ -108,7 +108,7 @@ class SessionParamHandler(object):
         self.LAST_SETTINGS_DATA = None  # iotasks.load_settings(self.PREVIOUS_SESSION_PATH)
         # Change to False if mock has its own task
         self.IS_MOCK = self.CORRESPONDING_EPHYS_SETTINGS_DATA["IS_MOCK"]
-        # Get pregenerated session num (the num in the filename! from corresponding ephys sesison)
+        # Get pregenerated session num (the num in the filename! from corresponding ephys session)
         self.SESSION_ORDER = self.CORRESPONDING_EPHYS_SETTINGS_DATA["SESSION_ORDER"]
         self.SESSION_IDX = self.CORRESPONDING_EPHYS_SETTINGS_DATA["SESSION_IDX"]
         self.PREGENERATED_SESSION_NUM = self.CORRESPONDING_EPHYS_SETTINGS_DATA[
