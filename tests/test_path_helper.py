@@ -68,7 +68,7 @@ class TestPathHelper(unittest.TestCase):
 
         # Test for an existing subject
         test_previous_session_folders = ph.get_previous_session_folders(
-            test_subject_name, test_session_folder)
+            test_subject_name, str(test_session_folder))
         self.assertTrue(isinstance(test_previous_session_folders, list))
         if test_previous_session_folders:  # returned list is not empty and should contain strings
             for test_a_previous_session_folder in test_previous_session_folders:
@@ -79,7 +79,7 @@ class TestPathHelper(unittest.TestCase):
         test_new_session_folder = \
             Path(self.dir.name) / 'Subjects' / test_new_subject_name / '2022-02-11' / '001'
         test_previous_session_folders = ph.get_previous_session_folders(
-            test_new_subject_name, test_new_session_folder)
+            test_new_subject_name, str(test_new_session_folder))
         self.assertTrue(isinstance(test_previous_session_folders, list))
         self.assertTrue(not test_previous_session_folders)
 
