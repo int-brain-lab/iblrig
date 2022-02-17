@@ -200,16 +200,21 @@ def get_previous_session_folders(subject_name: str, session_folder: str) -> list
     """
     log.debug("Looking for previous session folders")
 
-    # Set local and remote subject folder Path
+    # Set local folder Path and verify it exists
     local_subject_folder = Path(get_iblrig_data_folder(subjects=True)) / subject_name
-    remote_subject_folder = Path(get_iblserver_data_folder(subjects=True)) / subject_name
+    local_subject_folder_exists = local_subject_folder.exists()
+
+    # Set remote folder Path and verify it exists
+    # Ensure returned value is not None for remote drive, important before using Path()
+    remote_subject_folder = get_iblserver_data_folder(subjects=True)
+    if remote_subject_folder is not None:
+        remote_subject_folder = Path(remote_subject_folder) / subject_name
+        remote_subject_folder_exists = remote_subject_folder.exists()
+    else:
+        remote_subject_folder_exists = False
 
     # Set return list and date_folder_list variables
     previous_session_folders, date_folder_list = [], []
-
-    # Verify local and remote folders exist
-    local_subject_folder_exists = local_subject_folder.exists()
-    remote_subject_folder_exists = remote_subject_folder.exists()
 
     if (not local_subject_folder_exists) & (not remote_subject_folder_exists):
         log.debug(f"NOT FOUND: No previous sessions for subject {local_subject_folder.name} on "

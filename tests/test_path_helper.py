@@ -65,10 +65,6 @@ class TestPathHelper(unittest.TestCase):
         test_session_folder = \
             Path(self.dir.name) / 'Subjects' / test_subject_name / '2022-02-11' / '001'
         test_session_folder.mkdir(parents=True)
-        print("test for github run: ")
-        print("self.dir.name: "+self.dir.name)
-        print("test_subject_name: "+test_subject_name)
-        print("test_session_folder: "+test_session_folder)
 
         # Test for an existing subject
         test_previous_session_folders = ph.get_previous_session_folders(
