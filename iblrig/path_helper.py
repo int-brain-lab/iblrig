@@ -107,7 +107,8 @@ def get_version_tag(folder: str) -> str:
     os.chdir(here)
     if not tag:
         log.debug(f"NOT FOUND: Version TAG for {folder}")
-    log.debug(f"Found version tag {tag}")
+    else:
+        log.debug(f"Found version tag {tag}")
     return tag
 
 
