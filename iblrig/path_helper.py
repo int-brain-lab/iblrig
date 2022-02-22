@@ -302,7 +302,7 @@ def get_previous_data_files(
         log.debug(f"NOT FOUND: Previous data files for task {protocol}")
     if not settings_out:
         log.debug(f"NOT FOUND: Previous settings files for task {protocol}")
-    log.debug(f"Reurning {typ} files")
+    log.debug(f"Returning {typ} files")
 
     return data_out if typ == "data" else settings_out
 
