@@ -2,7 +2,7 @@ import unittest
 
 from one.api import ONE
 
-import iblrig.alyx as alyx  # noqa
+import iblrig.iblone.alyx as alyx  # noqa
 
 one = ONE(
     base_url="https://test.alyx.internationalbrainlab.org",

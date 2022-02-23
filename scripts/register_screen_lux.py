@@ -1,5 +1,5 @@
 import iblrig.params as params
-import iblrig.alyx as alyx
+import iblrig.iblone.alyx as alyx
 import datetime
 
 
