@@ -255,7 +255,7 @@ if __name__ == "__main__":
         _task_settings.AUTOMATIC_CALIBRATION = False
         _task_settings.USE_VISUAL_STIMULUS = False
 
-    sph = SessionParamHandler(_task_settings, _user_settings, debug=False, fmake=False)
+    sph = SessionParamHandler(_task_settings, _user_settings, debug=False, fmake=True)
     for k in sph.__dict__:
         if sph.__dict__[k] is None:
             print(f"{k}: {sph.__dict__[k]}")
