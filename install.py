@@ -25,6 +25,8 @@ if sys.platform not in ["Windows", "windows", "win32"]:
     print("\nWARNING: Unsupported OS\nInstallation might not work!")
     INSTALL_LOG_PATH = '/tmp/iblrig_install.log'
 else:
+    if not os.path.isdir('C:\Temp'):
+        os.mkdir('C:\Temp')
     INSTALL_LOG_PATH = 'C:\Temp\iblrig_install.log'
     with open(INSTALL_LOG_PATH, 'w'):
         pass
