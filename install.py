@@ -31,7 +31,7 @@ else:
     with open(INSTALL_LOG_PATH, 'w'):
         pass
 
-#logging.basicConfig(filename=LOG_FILENAME, level=logging.DEBUG)
+logging.basicConfig(filename=INSTALL_LOG_PATH, level=logging.DEBUG)
 log = logging.getLogger("iblrig")
 
 try:
