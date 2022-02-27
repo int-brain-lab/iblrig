@@ -17,14 +17,20 @@ from iblrig import envs
 
 # BEGIN CONSTANT DEFINITION
 IBLRIG_ROOT_PATH = Path.cwd()
+INSTALL_LOG_PATH = ''
+log = logging.getLogger("iblrig")
 
 # Check on platform and configure logging
 if sys.platform not in ["Windows", "windows", "win32"]:
     print("\nWARNING: Unsupported OS\nInstallation might not work!")
-    LOG_FILENAME = '/tmp/iblrig_install.log'
+    INSTALL_LOG_PATH = '/tmp/iblrig_install.log'
 else:
-    LOG_FILENAME = 'C:\\temp\\iblrig_install.log'
-logging.basicConfig(filename=LOG_FILENAME, level=logging.DEBUG)
+    INSTALL_LOG_PATH = 'C:\Temp\iblrig_install.log'
+    with open(INSTALL_LOG_PATH, 'w'):
+        pass
+
+#logging.basicConfig(filename=LOG_FILENAME, level=logging.DEBUG)
+log = logging.getLogger("iblrig")
 
 try:
     print("\n\n--->Cleaning up conda cache")
@@ -32,7 +38,7 @@ try:
     print("\n--->conda cache... OK")
 except BaseException as e:
     print(e)
-    logging.exception(e)
+    log.exception(e)
     raise BaseException("Could not clean conda cache, is conda installed? aborting...")
 
 MC = (
@@ -66,7 +72,7 @@ def check_update_dependencies():
             os.system(f"{MC} install packaging -q -y -n base -c defaults")
         except BaseException as e:
             print(e)
-            logging.exception(e)
+            log.exception(e)
             raise SystemError("Could not install packaging, aborting...")
 
     conda_version = str(subprocess.check_output([f"{MC}", "-V"])).split(" ")[1].split("\\n")[0]
@@ -82,7 +88,7 @@ def check_update_dependencies():
             print("\n--->conda update... OK")
         except BaseException as e:
             print(e)
-            logging.exception(e)
+            log.exception(e)
             raise SystemError("Could not update conda, aborting install...")
 
     if version(python_version) < version("3.7.11"):
@@ -92,7 +98,7 @@ def check_update_dependencies():
             print("\n--->python update... OK")
         except BaseException as e:
             print(e)
-            logging.exception(e)
+            log.exception(e)
             raise SystemError("Could not update python, aborting install...")
 
     if version(pip_version) < version("20.2.4"):
@@ -103,7 +109,7 @@ def check_update_dependencies():
             print("\n--->pip, setuptools, wheel upgrade... OK")
         except BaseException as e:
             print(e)
-            logging.exception(e)
+            log.exception(e)
             raise SystemError("Could not reinstall pip, setuptools, wheel aborting install...")
 
     try:
@@ -116,7 +122,7 @@ def check_update_dependencies():
             print("\n\n--->git... OK")
         except BaseException as e:
             print(e)
-            logging.exception(e)
+            log.exception(e)
             raise SystemError("Could not install git, aborting install...")
 
     # try:
@@ -152,7 +158,7 @@ def create_ibllib_env(env_name: str = "ibllib"):
             print("\n--->Environment created... OK")
         except BaseException as e:
             print(e)
-            logging.exception(e)
+            log.exception(e)
             raise SystemError(f"Could not create {env_name} environment, aborting...")
     else:
         print(f"\n\nINFO: Environment {env_name} already exists, reinstalling.")
@@ -204,7 +210,7 @@ def create_environment(env_name="iblrig", use_conda_yaml=False, resp=False):
         print(f"{env_name} installed.")
     except BaseException as e:
         print(e)
-        logging.exception(e)
+        log.exception(e)
         raise SystemError(f"Could not create {env_name} environment, aborting...")
 
 
@@ -216,7 +222,7 @@ def install_iblrig(env_name: str = "iblrig") -> None:
         os.system(f"{pip} install --no-warn-script-location -e .")
     except BaseException as e:
         print(e)
-        logging.exception(e)
+        log.exception(e)
         raise SystemError(f"Could install iblrig, aborting...")
     print("N" * 79)
     print(f"iblrig installed in {env_name}.")
@@ -252,7 +258,7 @@ def configure_iblrig_params(env_name: str = "iblrig", resp=False):
             subprocess.call([python, "setup_pybpod.py", str(iblrig_params_path)])
     except BaseException as e:
         print(e)
-        logging.exception(e)
+        log.exception(e)
         raise SystemError(f"Could not call setup_pybpod.py, aborting...")
 
 
@@ -287,7 +293,7 @@ def install_bonsai(resp=False):
             return
     except BaseException as e:
         print(e)
-        logging.exception(e)
+        log.exception(e)
         raise SystemError(f"Could not install bonsai, aborting...")
 
 
@@ -307,7 +313,7 @@ def setup_ONE(resp=False):
             print(
                 e, "\n\nONE setup incomplete please set up ONE manually",
             )
-            logging.exception(e)
+            log.exception(e)
     elif user_input != "n" and user_input != "y":
         print("Please answer 'y' or 'n'")
         return setup_ONE()
@@ -331,8 +337,8 @@ def main(args):
     except BaseException as e:
         print(e, "\n\nSomething went wrong during the installation. Please refer to the following "
                  "log file for a full traceback of the error. Please also forward the entire file,"
-                 " or content of, this file when seeking support: "+LOG_FILENAME)
-        logging.exception(e)
+                 " or content of, this file when seeking support: ")
+        log.exception(e)
     return
 
 
