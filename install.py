@@ -338,7 +338,7 @@ def main(main_args):
     except BaseException as e:
         print(e, "\n\nSomething went wrong during the installation. Please refer to the following "
                  "log file for a full traceback of the error. Please also forward the entire file,"
-                 " or content of, this file when seeking support: ")
+                 " or the relevant content of, this file when seeking support: "+INSTALL_LOG_PATH)
         log.exception(e)
     return
 
