@@ -63,7 +63,7 @@ class TestPathHelper(unittest.TestCase):
         self.dir = tempfile.TemporaryDirectory()
         test_subject_name = '_iblrig_test_mouse'
         test_session_folder = \
-            Path(self.dir.name) / 'Subjects' / test_subject_name / '2022-02-11' / '001'
+            Path(self.dir.name) / 'Subjects' / test_subject_name / '1900-01-01' / '001'
         test_session_folder.mkdir(parents=True)
 
         # Test for an existing subject
@@ -77,11 +77,11 @@ class TestPathHelper(unittest.TestCase):
         # Test for a new subject
         test_new_subject_name = '_new_iblrig_test_mouse'
         test_new_session_folder = \
-            Path(self.dir.name) / 'Subjects' / test_new_subject_name / '2022-02-11' / '001'
+            Path(self.dir.name) / 'Subjects' / test_new_subject_name / '1900-01-01' / '001'
         test_previous_session_folders = ph.get_previous_session_folders(
             test_new_subject_name, str(test_new_session_folder))
         self.assertTrue(isinstance(test_previous_session_folders, list))
-        self.assertTrue(not test_previous_session_folders)
+        self.assertTrue(not test_previous_session_folders) # returned list should be empty
 
     def tearDown(self):
         pass
