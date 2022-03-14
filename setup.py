@@ -5,19 +5,15 @@ from pathlib import Path
 CURRENT_DIRECTORY = Path(__file__).parent.absolute()
 
 CURRENT_PYTHON = sys.version_info[:2]
-REQUIRED_PYTHON = (3, 6)
-if CURRENT_PYTHON < REQUIRED_PYTHON:
-    sys.stderr.write(
-        """
+REQUIRED_PYTHON = (3, 7)
+VER_ERR_MSG = """
 ==========================
 Unsupported Python version
 ==========================
-This version of iblrig requires Python {}.{}
-Environment Python version =  {}.{}.
-""".format(
-            *(REQUIRED_PYTHON + CURRENT_PYTHON)
-        )
-    )
+This version of iblrig requires Python {}.{}, but you're trying to install it on Python {}.{}.
+"""
+if CURRENT_PYTHON < REQUIRED_PYTHON:
+    sys.stderr.write(VER_ERR_MSG.format(*REQUIRED_PYTHON + CURRENT_PYTHON))
     sys.exit(1)
 
 with open("README.md", "r") as f:
@@ -38,5 +34,5 @@ setup(
     packages=find_packages(exclude=["scratch"]),  # same as name
     # external packages as dependencies
     install_requires=require,
-    scripts={},
+    scripts=[],
 )
