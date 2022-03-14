@@ -128,8 +128,10 @@ class TestPathHelper(unittest.TestCase):
         self.assertTrue(not test_previous_session_folders) # returned list should be empty
 
     def tearDown(self):
-        self.local_dir.cleanup()
-        self.remote_dir.cleanup()
+        if self.local_dir:
+            self.local_dir.cleanup()
+        if self.remote_dir:
+            self.remote_dir.cleanup()
 
 if __name__ == "__main__":
     unittest.main(exit=False)
