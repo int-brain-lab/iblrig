@@ -180,23 +180,22 @@ def make_folder(str1: str or Path) -> None:
     log.debug(f"Created folder {path}")
 
 
-def get_previous_session_folders(subject_name: str, session_folder: str) -> list:
-    """
-    Function to find the all previous session folders, evaluates the local and remote storage.
+def get_previous_session_folders(subject_name: str, session_folder: str,
+                                 remote_subject_folder: str = None) -> list:
+    """ Function to find the all previous session folders, evaluates the local and remote storage.
     Returned list will be sorted by date/number, this list will include duplicates if the same
     date is found on both remote and local. Returned list will be empty if no previous sessions
     are found on either the remote or local storage.
 
-    Parameters
-    ------
-    subject_name: str - example: 'ZM_1098' or '_iblrig_test_mouse'
-    session_folder: str - session folder to be created, example:
+    :param subject_name: name of the subject, ex: 'ZM_1098' or '_iblrig_test_mouse'
+    :type subject_name: str
+    :param session_folder: session folder to be created, ex:
         'C:\\iblrig_data\\Subjects\\_iblrig_test_mouse\\2022-02-11\\001'
-
-    Returns
-    ------
-    list of strings or an empty list
-
+    :type session_folder: str
+    :param remote_subject_folder: override target folder for testing
+    :type remote_subject_folder: str
+    :return: list of strings or an empty list
+    :rtype: list
     """
     log.debug("Looking for previous session folders")
 
@@ -206,7 +205,7 @@ def get_previous_session_folders(subject_name: str, session_folder: str) -> list
 
     # Set remote folder Path and verify it exists
     # Ensure returned value is not None for remote drive, important before using Path()
-    remote_subject_folder = get_iblserver_data_folder(subjects=True)
+    remote_subject_folder = remote_subject_folder or get_iblserver_data_folder(subjects=True)
     if remote_subject_folder is not None:
         remote_subject_folder = Path(remote_subject_folder) / subject_name
         remote_subject_folder_exists = remote_subject_folder.exists()
