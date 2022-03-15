@@ -2,8 +2,9 @@
 
 ## **Release Notes develop**
 
+- Additional logging with tracebacks for installation script
 - Changed default rig environment name from iblenv to iblrig
-- Removed ibllib dependecies
+- Removed ibllib dependencies
 - Added support for F2TTLv2
 - params.update_params_file() now has a default behavior with no data to update all updatable params
 - removed unnecessary file task_settings.py for calibration
