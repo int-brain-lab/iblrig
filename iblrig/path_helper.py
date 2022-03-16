@@ -105,7 +105,8 @@ def get_version_tag(folder: str) -> str:
     os.chdir(here)
     if not tag:
         log.debug(f"NOT FOUND: Version TAG for {folder}")
-    log.debug(f"Found version tag {tag}")
+    else:
+        log.debug(f"Found version tag {tag}")
     return tag
 
 
@@ -230,7 +231,7 @@ def get_previous_session_folders(subject_name: str, session_folder: str,
                   f"rig computer; setting to remote")
         # Build out date path for remote
         date_folder_list.extend(get_subfolder_paths(remote_subject_folder))
-    
+
     # Previous sessions found on both local rig and remote lab server
     else:
         # find the key that we want to sort the date_folder_list

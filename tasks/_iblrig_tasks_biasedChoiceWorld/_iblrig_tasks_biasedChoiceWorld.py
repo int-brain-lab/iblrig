@@ -82,7 +82,6 @@ tph = TrialParamHandler(sph)
 f, axes = op.make_fig(sph)
 plt.pause(1)
 
-sph.start_visual_stim()
 for i in range(sph.NTRIALS):  # Main loop
     tph.next_trial()
     log.info(f"Starting trial: {i + 1}")

@@ -53,7 +53,6 @@ def save_session_settings(sph: object) -> None:
     with open(sph.SETTINGS_FILE_PATH, "a") as f:
         f.write(save_this)
         f.write("\n")
-        f.flush()
 
     save_this = json.loads(save_this)
     settings = raw.load_settings(sph.SESSION_FOLDER)

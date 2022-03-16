@@ -46,7 +46,7 @@ GO_TONE_FREQUENCY = 5000  # 5KHz
 GO_TONE_AMPLITUDE = 0.0272  # [0->1] 0.0272 for 70dB SPL Xonar
 # ADAPTIVE PARAMETERS
 # ADAPTIVE REWARD PARAMETERS (IGNORED IF ADAPTIVE_REWARD = False)
-ADAPTIVE_REWARD = True  # wether to increase reware at session start usin AR_* criteria  # noqa
+ADAPTIVE_REWARD = True  # Whether to increase reware at session start usin AR_* criteria  # noqa
 AR_INIT_VALUE = 3  # µl
 AR_MAX_VALUE = 3
 AR_MIN_VALUE = 1.5  # (µl) 1.5 µl for sugar water, 2 µl for normal water
@@ -63,7 +63,7 @@ CONTRAST_SET = [
 ]  # Full contrast set, used if adaptive contrast = False  # noqa
 REPEAT_CONTRASTS = [1.0, 0.5]  # Contrasts to be repeated if error
 # ADAPTIVE_CONTRAST PARAMETERS (IGNORED IF ADAPTIVE_CONTRAST = False)
-ADAPTIVE_CONTRAST = True  # Wether to use Adaptive contrast rule or not
+ADAPTIVE_CONTRAST = True  # Whether to use Adaptive contrast rule or not
 AC_INIT_CONTRASTS = [1.0, 0.5]
 AC_BUFFER_SIZE = 50  # Buffer size to compute preformance for each contrast
 AC_PERF_CRIT = 0.7  # Criterion for adding next contrast L AND R have to pass
@@ -77,4 +77,4 @@ AG_MIN_VALUE = 4.0  # (azimuth_degree/mm)
 # POSITION BIAS FOR REPEATED TRIALS
 RESPONSE_BUFFER_LENGTH = 10
 # POOP COUNT LOGGING
-POOP_COUNT = True  # Wether to ask for a poop count at the end of the session
+POOP_COUNT = True  # Whether to ask for a poop count at the end of the session
