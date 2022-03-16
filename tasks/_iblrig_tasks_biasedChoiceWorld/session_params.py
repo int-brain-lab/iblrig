@@ -93,6 +93,7 @@ class SessionParamHandler(object):
         self.ROTARY_ENCODER = MyRotaryEncoder(
             self.ALL_THRESHOLDS, self.STIM_GAIN, self.PARAMS["COM_ROTARY_ENCODER"]
         )
+        bonsai.start_visual_stim(self)
         # =====================================================================
         # SOUNDS
         # =====================================================================
@@ -160,9 +161,6 @@ class SessionParamHandler(object):
         if "ephys" in self.PYBPOD_BOARD:  # If on ephys record only sound
             return bonsai.start_mic_recording(self)
         return bonsai.start_camera_recording(self)
-
-    def start_visual_stim(self):
-        return bonsai.start_visual_stim(self)
 
     def get_port_events(self, events, name=""):
         return misc.get_port_events(events, name=name)

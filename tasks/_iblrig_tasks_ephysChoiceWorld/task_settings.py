@@ -5,7 +5,7 @@
 # RECORD_SOUND = True
 # RECORD_AMBIENT_SENSOR_DATA = True
 # # REWARDS
-# AUTOMATIC_CALIBRATION = True  # Wether to look for a calibration session and func to define the valve opening time  # noqa
+# AUTOMATIC_CALIBRATION = True  # Whether to look for a calibration session and func to define the valve opening time  # noqa
 # CALIBRATION_VALUE = 0.067  # calibration value for 3ul of target reward amount (ignored if automatic ON)  # noqa
 # REWARD_AMOUNT = 3.  # (µl) Amount of reward to be delivered upon correct choice each trial (overwitten if adaptive ON)  # noqa
 # REWARD_TYPE = 'Water 10% Sucrose'  # Water, Water 10% Sucrose, Water 15% Sucrose, Water 2% Citric Acid (Guo et al.. PLoS One 2014)  # noqa
@@ -49,4 +49,4 @@
 # GO_TONE_FREQUENCY = 5000  # 5KHz
 # GO_TONE_AMPLITUDE = 0.1  # [0->1]
 # # POOP COUNT LOGGING
-# POOP_COUNT = True  # Wether to ask for a poop count at the end of the session
+# POOP_COUNT = True  # Whether to ask for a poop count at the end of the session
