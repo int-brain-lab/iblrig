@@ -85,6 +85,9 @@ def ensure_all_keys_present(loaded_params):
         elif k not in loaded_params and k in AUTO_UPDATABLE_PARAMS:
             loaded_params.update({k: update_param_key_values(k)})
             anything_new = True
+        else:
+            loaded_params.update({k: EMPTY_BOARD_PARAMS[k]})
+            anything_new = True
     if anything_new:
         write_params_file(data=loaded_params, force=True)
     return loaded_params
