@@ -4,13 +4,14 @@
 # @Date:   2018-02-02 12:31:13
 import logging
 
+import iblrig.bonsai as bonsai
 import matplotlib.pyplot as plt
+import user_settings
+from iblrig.bpod_helper import BpodMessageCreator
 from pybpodapi.protocol import Bpod, StateMachine
 
 import online_plots as op
 import task_settings
-import user_settings
-from iblrig.bpod_helper import BpodMessageCreator
 from session_params import SessionParamHandler
 from trial_params import TrialParamHandler
 
@@ -72,6 +73,10 @@ tph = TrialParamHandler(sph)
 
 f, axes = op.make_fig(sph)
 plt.pause(1)
+# =====================================================================
+# RUN CAMERA SETUP
+# =====================================================================
+bonsai.start_camera_setup()
 
 for i in range(sph.NTRIALS):  # Main loop
     tph.next_trial()

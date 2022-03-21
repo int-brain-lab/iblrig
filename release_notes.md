@@ -2,6 +2,7 @@
 
 ## **Release Notes develop**
 
+- Added camera setup workflow launch, before training tasks (habituation/training/biased) 
 - Rearranged loading order of devices for tasks to account for the Bonsai load time, ensuring the first trial has stimulus 
 - When creating new sessions, the local rig and the local lab server will be queried are checked for their most recent previous sessions
 - Additional logging with tracebacks for installation script
