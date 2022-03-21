@@ -81,6 +81,7 @@ class SessionParamHandler(object):
         self.ROTARY_ENCODER = MyRotaryEncoder(
             self.ALL_THRESHOLDS, self.STIM_GAIN, self.PARAMS["COM_ROTARY_ENCODER"]
         )
+        bonsai.start_visual_stim(self)
         # =====================================================================
         # SOUNDS
         # =====================================================================

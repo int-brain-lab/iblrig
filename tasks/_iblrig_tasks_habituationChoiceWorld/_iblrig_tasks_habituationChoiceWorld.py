@@ -20,7 +20,6 @@ log.setLevel(logging.INFO)
 
 global sph
 sph = SessionParamHandler(task_settings, user_settings)
-bonsai.start_visual_stim(sph)
 
 
 def softcode_handler(data):

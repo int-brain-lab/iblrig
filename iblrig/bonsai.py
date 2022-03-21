@@ -113,7 +113,7 @@ else:
             os.chdir(here)
         else:
             sph.USE_VISUAL_STIMULUS = False
-        time.sleep(6)
+        # time.sleep(6)
         return
 
     def start_mic_recording(sph):
