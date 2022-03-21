@@ -29,13 +29,17 @@ def Frame2TTL(serial_port: str, version: int = 2) -> object:
         try:
             f2ttl = Frame2TTLv2(serial_port)
             assert f2ttl.hw_version == 2, "Not a v2 device, continuing with v1"
+            if iblrig.params.load_params_file().get("F2TTL_HW_VERSION", None) != 2:
+                iblrig.params.update_params_file(data={"F2TTL_HW_VERSION": 2})
             return f2ttl
         except BaseException as e:
             log.warning(f"Cannot connect assuming F2TTLv2 device, continuing with v1: {e}")
     elif version == 1:
         try:
             f2ttl = Frame2TTLv1(serial_port)
-            assert f2ttl.handshake() == 218, "Not a v1 device, abort."
+            assert f2ttl.handshake() == 218, "Frams2TTL handshake failed, abort."
+            if iblrig.params.load_params_file().get("F2TTL_HW_VERSION", None) != 1:
+                iblrig.params.update_params_file(data={"F2TTL_HW_VERSION": 1})
             return f2ttl
         except BaseException as e:
             log.error(f"Couldn't connect to F2TTLv1: {str(e)}")
