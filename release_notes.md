@@ -2,12 +2,18 @@
 
 ## **Release Notes develop**
 
+- Added camera setup workflow launch, before training tasks (habituation/training/biased) 
+- Rearranged loading order of devices for tasks to account for the Bonsai load time, ensuring the first trial has stimulus 
+- When creating new sessions, the local rig and the local lab server will be queried are checked for their most recent previous sessions
+- Additional logging with tracebacks for installation script
 - Changed default rig environment name from iblenv to iblrig
-- Removed ibllib dependecies
+- Removed ibllib dependencies
 - Added support for F2TTLv2
 - params.update_params_file() now has a default behavior with no data to update all updatable params
 - removed unnecessary file task_settings.py for calibration
 - SPH for f2ttl calibration now will look for user_settings and fallback on fake_user_settings
+- Single sourced iblrig version
+- Increased required python version to 3.7
 
 ## **Release Notes 6.5.3**
 

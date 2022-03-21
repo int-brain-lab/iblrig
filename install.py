@@ -4,6 +4,7 @@
 # @Editor: Michele Fabbri
 # @Edit_Date: 2022-02-01
 import argparse
+import logging
 import os
 import shutil
 import subprocess
@@ -16,17 +17,31 @@ from iblrig import envs
 
 # BEGIN CONSTANT DEFINITION
 IBLRIG_ROOT_PATH = Path.cwd()
+INSTALL_LOG_PATH = ''
+log = logging.getLogger("iblrig")
 
+# Check on platform and configure logging
 if sys.platform not in ["Windows", "windows", "win32"]:
     print("\nWARNING: Unsupported OS\nInstallation might not work!")
+    INSTALL_LOG_PATH = '/tmp/iblrig_install.log'
+else:
+    if not os.path.isdir('C:\\Temp'):
+        os.mkdir('C:\\Temp')
+    INSTALL_LOG_PATH = 'C:\\Temp\\iblrig_install.log'
+    with open(INSTALL_LOG_PATH, 'w'):
+        pass
+
+logging.basicConfig(filename=INSTALL_LOG_PATH, level=logging.DEBUG)
+log = logging.getLogger("iblrig")
 
 try:
     print("\n\n--->Cleaning up conda cache")
     os.system("conda clean -q -y --all")
     print("\n--->conda cache... OK")
-except BaseException as e:
-    print(e)
-    raise BaseException("Could not clean conda cache, is conda installed? aborting...")
+except BaseException as exception:
+    print(exception)
+    log.exception(exception)
+    raise SystemError("Could not clean conda cache, check on the state of conda, aborting...")
 
 MC = (
     "conda"
@@ -42,15 +57,15 @@ if MC == "conda":
         os.system("conda install mamba -q -y -n base -c conda-forge")
         print("\n--->mamba installed... OK")
         MC = "mamba"
-    except BaseException as e:
-        print(e)
+    except BaseException as exception:
+        print(exception)
         print("Could not install mamba, using conda...")
         MC = "conda"
 # END CONSTANT DEFINITION
 
 
 def check_update_dependencies():
-    # Check if Git and conda are installed
+    # Check if git and conda are installed
     print("\n\nINFO: Checking for dependencies:")
     print("N" * 79)
     if "packaging" not in str(subprocess.check_output([f"{MC}", "list", "--json"])):
@@ -59,6 +74,7 @@ def check_update_dependencies():
             os.system(f"{MC} install packaging -q -y -n base -c defaults")
         except BaseException as e:
             print(e)
+            log.exception(e)
             raise SystemError("Could not install packaging, aborting...")
 
     conda_version = str(subprocess.check_output([f"{MC}", "-V"])).split(" ")[1].split("\\n")[0]
@@ -74,6 +90,7 @@ def check_update_dependencies():
             print("\n--->conda update... OK")
         except BaseException as e:
             print(e)
+            log.exception(e)
             raise SystemError("Could not update conda, aborting install...")
 
     if version(python_version) < version("3.7.11"):
@@ -83,6 +100,7 @@ def check_update_dependencies():
             print("\n--->python update... OK")
         except BaseException as e:
             print(e)
+            log.exception(e)
             raise SystemError("Could not update python, aborting install...")
 
     if version(pip_version) < version("20.2.4"):
@@ -93,6 +111,7 @@ def check_update_dependencies():
             print("\n--->pip, setuptools, wheel upgrade... OK")
         except BaseException as e:
             print(e)
+            log.exception(e)
             raise SystemError("Could not reinstall pip, setuptools, wheel aborting install...")
 
     try:
@@ -105,6 +124,7 @@ def check_update_dependencies():
             print("\n\n--->git... OK")
         except BaseException as e:
             print(e)
+            log.exception(e)
             raise SystemError("Could not install git, aborting install...")
 
     # try:
@@ -140,6 +160,7 @@ def create_ibllib_env(env_name: str = "ibllib"):
             print("\n--->Environment created... OK")
         except BaseException as e:
             print(e)
+            log.exception(e)
             raise SystemError(f"Could not create {env_name} environment, aborting...")
     else:
         print(f"\n\nINFO: Environment {env_name} already exists, reinstalling.")
@@ -152,113 +173,133 @@ def create_ibllib_env(env_name: str = "ibllib"):
 
 
 def create_environment(env_name="iblrig", use_conda_yaml=False, resp=False):
-    if use_conda_yaml:
-        os.system(f"{MC} env create -f environment.yaml")
-        return
-    print(f"\n\nINFO: Creating {env_name}:")
-    print("N" * 79)
-    # Checks if env is already installed
-    env = envs.get_env_folder(env_name=env_name)
-    print(env)
-    # Creates commands
-    create_command = f"{MC} create -q -y -n {env_name} python==3.7.11"
-    remove_command = f"{MC} env remove -q -y -n {env_name}"
-    # Installes the env
-    if env:
-        print(
-            "Found pre-existing environment in {}".format(env),
-            "\nDo you want to reinstall the environment? (y/n):",
-        )
-        user_input = input() if not resp else resp
-        print(user_input)
-        if user_input == "y":
-            os.system(remove_command)
-            shutil.rmtree(env, ignore_errors=True)
-            return create_environment(env_name=env_name)
-        elif user_input != "n" and user_input != "y":
-            print("Please answer 'y' or 'n'")
-            return create_environment(env_name=env_name)
-        elif user_input == "n":
+    try:
+        if use_conda_yaml:
+            os.system(f"{MC} env create -f environment.yaml")
             return
-    else:
-        os.system(create_command)
-        python = envs.get_env_python(env_name=env_name)
-        update_pip_command = f"{python} -m pip install --upgrade pip setuptools wheel"
-        os.system(update_pip_command)
-        os.system(f"{MC} install -q -y -n {env_name} git")
-
-    print("N" * 79)
-    print(f"{env_name} installed.")
+        print(f"\n\nINFO: Creating {env_name}:")
+        print("N" * 79)
+        # Checks if env is already installed
+        env = envs.get_env_folder(env_name=env_name)
+        print(env)
+        # Create commands
+        create_command = f"{MC} create -q -y -n {env_name} python==3.7.11"
+        remove_command = f"{MC} env remove -q -y -n {env_name}"
+        # Installs the env
+        if env:
+            print(
+                "Found pre-existing environment in {}".format(env),
+                "\nDo you want to reinstall the environment? (y/n):",
+            )
+            user_input = input() if not resp else resp
+            print(user_input)
+            if user_input == "y":
+                os.system(remove_command)
+                shutil.rmtree(env, ignore_errors=True)
+                return create_environment(env_name=env_name)
+            elif user_input != "n" and user_input != "y":
+                print("Please answer 'y' or 'n'")
+                return create_environment(env_name=env_name)
+            elif user_input == "n":
+                return
+        else:
+            os.system(create_command)
+            python = envs.get_env_python(env_name=env_name)
+            update_pip_command = f"{python} -m pip install --upgrade pip setuptools wheel"
+            os.system(update_pip_command)
+            os.system(f"{MC} install -q -y -n {env_name} git")
+        print("N" * 79)
+        print(f"{env_name} installed.")
+    except BaseException as e:
+        print(e)
+        log.exception(e)
+        raise SystemError(f"Could not create {env_name} environment, aborting...")
 
 
 def install_iblrig(env_name: str = "iblrig") -> None:
     print(f"\n\nINFO: Installing iblrig in {env_name}:")
     print("N" * 79)
     pip = envs.get_env_pip(env_name=env_name)
-    os.system(f"{pip} install --no-warn-script-location -e .")
+    try:
+        os.system(f"{pip} install --no-warn-script-location -e .")
+    except BaseException as e:
+        print(e)
+        log.exception(e)
+        raise SystemError(f"Could install iblrig, aborting...")
     print("N" * 79)
     print(f"iblrig installed in {env_name}.")
 
 
 def configure_iblrig_params(env_name: str = "iblrig", resp=False):
-    print("\n\nINFO: Setting up default project config in ../iblrig_params:")
-    print("N" * 79)
-    iblrig = envs.get_env_folder(env_name=env_name)
-    if iblrig is None:
-        msg = f"Can't configure iblrig_params, {env_name} not found"
-        raise ValueError(msg)
-    python = envs.get_env_python(env_name=env_name)
-    iblrig_params_path = IBLRIG_ROOT_PATH.parent / "iblrig_params"
-    if iblrig_params_path.exists():
-        print(
-            f"Found previous configuration in {str(iblrig_params_path)}",
-            "\nDo you want to reset to default config? (y/n)",
-        )
-        user_input = input() if not resp else resp
-        print(user_input)
-        if user_input == "n":
-            return
-        elif user_input == "y":
+    try:
+        print("\n\nINFO: Setting up default project config in ../iblrig_params:")
+        print("N" * 79)
+        iblrig = envs.get_env_folder(env_name=env_name)
+        if iblrig is None:
+            msg = f"Can't configure iblrig_params, {env_name} not found"
+            raise ValueError(msg)
+        python = envs.get_env_python(env_name=env_name)
+        iblrig_params_path = IBLRIG_ROOT_PATH.parent / "iblrig_params"
+        if iblrig_params_path.exists():
+            print(
+                f"Found previous configuration in {str(iblrig_params_path)}",
+                "\nDo you want to reset to default config? (y/n)",
+            )
+            user_input = input() if not resp else resp
+            print(user_input)
+            if user_input == "n":
+                return
+            elif user_input == "y":
+                subprocess.call([python, "setup_pybpod.py", str(iblrig_params_path)])
+            elif user_input != "n" and user_input != "y":
+                print("\n Please select either y of n")
+                return configure_iblrig_params(env_name=env_name)
+        else:
+            iblrig_params_path.mkdir(parents=True, exist_ok=True)
+
             subprocess.call([python, "setup_pybpod.py", str(iblrig_params_path)])
-        elif user_input != "n" and user_input != "y":
-            print("\n Please select either y of n")
-            return configure_iblrig_params(env_name=env_name)
-    else:
-        iblrig_params_path.mkdir(parents=True, exist_ok=True)
-        subprocess.call([python, "setup_pybpod.py", str(iblrig_params_path)])
+    except BaseException as e:
+        print(e)
+        log.exception(e)
+        raise SystemError(f"Could not call setup_pybpod.py, aborting...")
 
 
 def install_bonsai(resp=False):
-    print("\n\nDo you want to install Bonsai now? (y/n):")
-    user_input = input() if not resp else resp
-    print(user_input)
-    if user_input == "y":
-        if sys.platform not in ["Windows", "windows", "win32"]:
-            print("Skipping Bonsai installation on non-Windows platforms")
+    try:
+        print("\n\nDo you want to install Bonsai now? (y/n):")
+        user_input = input() if not resp else resp
+        print(user_input)
+        if user_input == "y":
+            if sys.platform not in ["Windows", "windows", "win32"]:
+                print("Skipping Bonsai installation on non-Windows platforms")
+                return
+            # Remove Bonsai folder, git pull, and setup Bonsai
+            bonsai_folder = os.path.join(IBLRIG_ROOT_PATH, "Bonsai")
+            shutil.rmtree(bonsai_folder, ignore_errors=True)
+            subprocess.call(["git", "fetch", "--all", "-q"])
+            subprocess.call(["git", "reset", "--hard", "-q"])
+            subprocess.call(["git", "pull", "-q"])
+            # Setup Bonsai
+            here = os.getcwd()
+            os.chdir(bonsai_folder)
+            bonsai_exe = os.path.join(IBLRIG_ROOT_PATH, "Bonsai", "Bonsai64.exe")
+            if Path(bonsai_exe).exists():  # Either the bonsai64.exe exists for old deployment or
+                subprocess.call(bonsai_exe)  # call to restore state, will halt until window close
+            else:  # the new deployment will download the bonsai exe
+                subprocess.call("setup.bat")
+            os.chdir(here)
+        elif user_input != "n" and user_input != "y":
+            print("Please answer 'y' or 'n'")
+            return install_bonsai()
+        elif user_input == "n":
             return
-        # Remove Bonsai folder, git pull, and setup Bonsai
-        bonsai_folder = os.path.join(IBLRIG_ROOT_PATH, "Bonsai")
-        shutil.rmtree(bonsai_folder, ignore_errors=True)
-        subprocess.call(["git", "fetch", "--all", "-q"])
-        subprocess.call(["git", "reset", "--hard", "-q"])
-        subprocess.call(["git", "pull", "-q"])
-        # Setup Bonsai
-        here = os.getcwd()
-        os.chdir(bonsai_folder)
-        bonsai_exe = os.path.join(IBLRIG_ROOT_PATH, "Bonsai", "Bonsai64.exe")
-        if Path(bonsai_exe).exists():  # Either the bonsai64.exe exisits for old deplotment or
-            subprocess.call(bonsai_exe)  # call to restore state, will halt until window close
-        else:  # the new deployment will download the bonsai exe
-            subprocess.call("setup.bat")
-        os.chdir(here)
-    elif user_input != "n" and user_input != "y":
-        print("Please answer 'y' or 'n'")
-        return install_bonsai()
-    elif user_input == "n":
-        return
+    except BaseException as e:
+        print(e)
+        log.exception(e)
+        raise SystemError(f"Could not install bonsai, aborting...")
 
 
-def setup_ONE(resp=False):
+def setup_one(resp=False):
     """
     """
     print("\n\nINFO: ONE setup")
@@ -274,28 +315,31 @@ def setup_ONE(resp=False):
             print(
                 e, "\n\nONE setup incomplete please set up ONE manually",
             )
+            log.exception(e)
     elif user_input != "n" and user_input != "y":
         print("Please answer 'y' or 'n'")
-        return setup_ONE()
+        return setup_one()
     elif user_input == "n":
         pass
     print("N" * 79)
     return
 
 
-def main(args):
+def main(main_args):
     try:
         check_update_dependencies()
-        create_environment(
-            env_name=args.env_name, use_conda_yaml=args.use_conda, resp=args.reinstall_response,
-        )
+        create_environment(env_name=main_args.env_name, use_conda_yaml=main_args.use_conda,
+                           resp=main_args.reinstall_response)
         create_ibllib_env()
-        install_iblrig(env_name=args.env_name)
-        configure_iblrig_params(env_name=args.env_name, resp=args.config_response)
-        setup_ONE(resp=args.ONE_response)
-        install_bonsai(resp=args.bonsai_response)
-    except BaseException as msg:
-        print(msg, "\n\nSOMETHING IS WRONG: Bad! Bad install file!")
+        install_iblrig(env_name=main_args.env_name)
+        configure_iblrig_params(env_name=main_args.env_name, resp=main_args.config_response)
+        setup_one(resp=main_args.ONE_response)
+        install_bonsai(resp=main_args.bonsai_response)
+    except BaseException as e:
+        print(e, "\n\nSomething went wrong during the installation. Please refer to the following "
+                 "log file for a full traceback of the error. Please also forward the entire file,"
+                 " or the relevant content of, this file when seeking support: "+INSTALL_LOG_PATH)
+        log.exception(e)
     return
 
 
@@ -314,7 +358,7 @@ if __name__ == "__main__":
         required=False,
         default=False,
         action="store_true",
-        help="Use conda YAML file to creat environment and install deps.",
+        help="Use conda YAML file to create environment and install deps.",
     )
     parser.add_argument(
         "--config-response",
@@ -338,7 +382,7 @@ if __name__ == "__main__":
         "--ONE-response",
         required=False,
         default=False,
-        help="Use this response when if asked to setuo ONE",
+        help="Use this response when if asked to setup ONE",
     )
 
     args = parser.parse_args()

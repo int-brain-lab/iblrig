@@ -105,7 +105,8 @@ def get_version_tag(folder: str) -> str:
     os.chdir(here)
     if not tag:
         log.debug(f"NOT FOUND: Version TAG for {folder}")
-    log.debug(f"Found version tag {tag}")
+    else:
+        log.debug(f"Found version tag {tag}")
     return tag
 
 
@@ -180,25 +181,89 @@ def make_folder(str1: str or Path) -> None:
     log.debug(f"Created folder {path}")
 
 
-def get_previous_session_folders(subject_name: str, session_folder: str) -> list:
-    """"""
+def get_previous_session_folders(subject_name: str, session_folder: str,
+                                 remote_subject_folder: str = None) -> list:
+    """ Function to find the all previous session folders, evaluates the local and remote storage.
+    Returned list will be sorted by date/number, this list will include duplicates if the same
+    date is found on both remote and local. Returned list will be empty if no previous sessions
+    are found on either the remote or local storage.
+
+    :param subject_name: name of the subject, ex: 'ZM_1098' or '_iblrig_test_mouse'
+    :type subject_name: str
+    :param session_folder: session folder to be created, ex:
+        'C:\\iblrig_data\\Subjects\\_iblrig_test_mouse\\2022-02-11\\001'
+    :type session_folder: str
+    :param remote_subject_folder: override target folder for testing
+    :type remote_subject_folder: str
+    :return: list of strings or an empty list
+    :rtype: list
+    """
     log.debug("Looking for previous session folders")
-    subject_folder = Path(get_iblrig_data_folder(subjects=True)) / subject_name
-    sess_folders = []
-    if not subject_folder.exists():
-        log.debug(f"NOT FOUND: No previous sessions for subject {subject_folder.name}")
-        return sess_folders
 
-    for date in get_subfolder_paths(subject_folder):
-        sess_folders.extend(get_subfolder_paths(date))
+    # Set local folder Path and verify it exists
+    local_subject_folder = Path(get_iblrig_data_folder(subjects=True)) / subject_name
+    local_subject_folder_exists = local_subject_folder.exists()
 
-    sess_folders = [x for x in sorted(sess_folders) if session_folder not in x]
-    if not sess_folders:
-        log.debug(f"NOT FOUND: No previous sessions for subject {subject_folder.name}")
+    # Set remote folder Path and verify it exists
+    # Ensure returned value is not None for remote drive, important before using Path()
+    remote_subject_folder = remote_subject_folder or get_iblserver_data_folder(subjects=True)
+    if remote_subject_folder is not None:
+        remote_subject_folder = Path(remote_subject_folder) / subject_name
+        remote_subject_folder_exists = remote_subject_folder.exists()
+    else:
+        remote_subject_folder_exists = False
 
-    log.debug(f"Found {len(sess_folders)} session folders for mouse {subject_folder.name}")
+    # Set return list and date_folder_list variables
+    previous_session_folders, date_folder_list = [], []
 
-    return sess_folders
+    if (not local_subject_folder_exists) & (not remote_subject_folder_exists):
+        log.debug(f"NOT FOUND: No previous sessions for subject {local_subject_folder.name} on "
+                  f"lab server or rig computer")
+        # Return empty list
+        return previous_session_folders
+    elif local_subject_folder_exists & (not remote_subject_folder_exists):
+        log.debug(f"NOT FOUND: No previous sessions for subject {local_subject_folder.name} on "
+                  f"lab server")
+        # Build out date path for local
+        date_folder_list.extend(get_subfolder_paths(local_subject_folder))
+    elif remote_subject_folder_exists & (not local_subject_folder_exists):
+        log.debug(f"NOT FOUND: No previous sessions for subject {local_subject_folder.name} on "
+                  f"rig computer; setting to remote")
+        # Build out date path for remote
+        date_folder_list.extend(get_subfolder_paths(remote_subject_folder))
+
+    # Previous sessions found on both local rig and remote lab server
+    else:
+        # find the key that we want to sort the date_folder_list
+        def date_folder_list_sort_key(e):
+            return datetime.datetime.strptime(e[-10:], '%Y-%m-%d')
+
+        # generate list of all subject folders with date
+        # NOTE: this includes duplicate dates if data is on both local and remote
+        date_folder_list.extend(get_subfolder_paths(local_subject_folder))
+        date_folder_list.extend(get_subfolder_paths(remote_subject_folder))
+
+        # sort list of folders for subject_folder with dates
+        date_folder_list.sort(key=date_folder_list_sort_key)
+
+    # Build out previous_session_folders paths
+    for date_folders in date_folder_list:
+        for sess_folder in get_subfolder_paths(date_folders):
+            previous_session_folders.append(sess_folder)
+
+    # Check if session_folder is contained in previous_session_folders
+    previous_session_folders = \
+        [x for x in sorted(previous_session_folders) if session_folder not in x]
+    if not previous_session_folders:
+        log.debug(f"NOT FOUND: No previous sessions for subject {subject_name}")
+        return previous_session_folders
+
+    # No errors encountered
+    log.debug(f"Found {len(previous_session_folders)} session folders for mouse {subject_name}")
+
+    # list of all previous session folders on both remote and local, sorted by date/number
+    #   NOTE: this includes duplicates if the same date is found on both remote and local
+    return previous_session_folders
 
 
 def get_previous_data_files(
@@ -237,7 +302,7 @@ def get_previous_data_files(
         log.debug(f"NOT FOUND: Previous data files for task {protocol}")
     if not settings_out:
         log.debug(f"NOT FOUND: Previous settings files for task {protocol}")
-    log.debug(f"Reurning {typ} files")
+    log.debug(f"Returning {typ} files")
 
     return data_out if typ == "data" else settings_out
 
@@ -357,6 +422,11 @@ def get_pregen_session_folder() -> str:
     return str(iblrig_path / "tasks" / "_iblrig_tasks_ephysChoiceWorld" / "sessions")
 
 
+def get_camera_setup_wrkfl() -> str:
+    iblrig_path = Path(get_iblrig_folder())
+    return str(iblrig_path / "devices" / "camera_setup" / "setup_video.bonsai")
+
+
 class SessionPathCreator(object):
     # add subject name and protocol (maybe have a metadata struct)
     def __init__(self, subject_name, protocol=False, make=False):
@@ -402,6 +472,9 @@ class SessionPathCreator(object):
 
         self.SESSION_DATE_FOLDER = os.path.join(self.SUBJECT_FOLDER, self.SESSION_DATE)
 
+        # TODO: check server to see if a session has already run today, intention is to decide
+        #  what the next session number will be; this will occur in the get_session_number
+        #  function (will likely be a separate issue/branch)
         self.SESSION_NUMBER = get_session_number(self.SESSION_DATE_FOLDER)
 
         self.SESSION_FOLDER = str(Path(self.SESSION_DATE_FOLDER) / self.SESSION_NUMBER)
@@ -426,7 +499,7 @@ class SessionPathCreator(object):
         self.DATA_FILE_PATH = os.path.join(
             self.SESSION_RAW_DATA_FOLDER, self.BASE_FILENAME + "Data.raw.jsonable"
         )
-        # Water calinbration files
+        # Water calibration files
         self.LATEST_WATER_CALIBRATION_FILE = get_water_calibration_func_file(latest=True)
         self.LATEST_WATER_CALIB_RANGE_FILE = get_water_calibration_range_file(latest=True)
         if self.LATEST_WATER_CALIBRATION_FILE.parent != self.LATEST_WATER_CALIB_RANGE_FILE.parent:
@@ -439,6 +512,7 @@ class SessionPathCreator(object):
             self.LATEST_WATER_CALIBRATION_FILE = None
             self.LATEST_WATER_CALIB_RANGE_FILE = None
         # Previous session files
+        # TODO: next 3 functions accept
         self.PREVIOUS_DATA_FILE = get_previous_data_file(
             self._PROTOCOL, self.SUBJECT_NAME, self.SESSION_FOLDER
         )
@@ -458,7 +532,7 @@ class SessionPathCreator(object):
         makelist = True will make default folders with only raw_behavior_data
         makelist = False will not make any folders
         makelist = [list] will make the default folders and the raw_folders
-        that are specifiec in the list
+        that are specific in the list
         """
         if isinstance(makelist, bool) and makelist is True:
             log.debug("Making default folders")
@@ -512,7 +586,7 @@ if __name__ == "__main__":
     # spc = SessionPathCreator('C:\\iblrig', None, '_iblrig_test_mouse',
     # 'trainingChoiceWorld')
     # '/coder/mnt/nbonacchi/iblrig', None,
-    spc = SessionPathCreator("_iblrig_test_mouse", protocol="passiveChoiceWorld", make=True)
+    spc = SessionPathCreator("_iblrig_test_mouse", protocol="passiveChoiceWorld", make=False)
 
     print("")
     for k in spc.__dict__:

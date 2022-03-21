@@ -40,6 +40,12 @@ if platform == "linux":
     def start_visual_stim(*args, **kwargs):
         return
 
+    def start_screen_color(*args, **kwargs):
+        return
+
+    def start_camera_setup(*args, **kwargs):
+        return
+
 
 else:
     # =====================================================================
@@ -107,7 +113,7 @@ else:
             os.chdir(here)
         else:
             sph.USE_VISUAL_STIMULUS = False
-        time.sleep(6)
+        # time.sleep(6)
         return
 
     def start_mic_recording(sph):
@@ -141,19 +147,6 @@ else:
         fd = "-p:FileNameLeftData=" + os.path.join(
             sph.SESSION_RAW_VIDEO_DATA_FOLDER, "_iblrig_leftCamera.frameData.bin"
         )
-        # ts = "-p:TimestampsFileName=" + os.path.join(
-        #     sph.SESSION_RAW_VIDEO_DATA_FOLDER, "_iblrig_leftCamera.timestamps.ssv"
-        # )
-        # vid = "-p:VideoFileName=" + os.path.join(
-        #     sph.SESSION_RAW_VIDEO_DATA_FOLDER, "_iblrig_leftCamera.raw.avi"
-        # )
-        # fc = "-p:FrameCounterFileName=" + os.path.join(
-        #     sph.SESSION_RAW_VIDEO_DATA_FOLDER, "_iblrig_leftCamera.frame_counter.bin"
-        # )
-        # gpio = "-p:GPIOFileName=" + os.path.join(
-        #     sph.SESSION_RAW_VIDEO_DATA_FOLDER, "_iblrig_leftCamera.GPIO.bin"
-        # )
-
         mic = "-p:FileNameMic=" + os.path.join(
             sph.SESSION_RAW_DATA_FOLDER, "_iblrig_micData.raw.wav"
         )
@@ -162,7 +155,6 @@ else:
         start = "--start"
         noboot = "--no-boot"
 
-        # subprocess.Popen([bns, wkfl, start, ts, vid, fc, gpio, mic, srec, noboot])
         subprocess.Popen([bns, wkfl, start, vid, fd, mic, srec, noboot])
         os.chdir(here)
         return
@@ -312,6 +304,20 @@ else:
         editor = noedit
         subprocess.Popen([bns, wrkfl, editor, noboot])
         time.sleep(3)
+        os.chdir(here)
+
+    def start_camera_setup():
+        here = os.getcwd()
+        iblrig_folder_path = Path(ph.get_iblrig_folder())
+        os.chdir(str(iblrig_folder_path / "devices" / "camera_setup"))
+
+        bns = ph.get_bonsai_path()
+        wrkfl = ph.get_camera_setup_wrkfl()
+
+        noedit = "--no-editor"  # implies start
+        noboot = "--no-boot"
+        editor = "--start-no-debug"
+        subprocess.call([bns, wrkfl, editor, noboot])  # locks until Bonsai closes
         os.chdir(here)
 
 

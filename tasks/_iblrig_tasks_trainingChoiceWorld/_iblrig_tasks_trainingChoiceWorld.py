@@ -4,13 +4,14 @@
 # @Date:   2018-02-02 12:31:13
 import logging
 
+import iblrig.bonsai as bonsai
 import matplotlib.pyplot as plt
+import user_settings
+from iblrig.bpod_helper import BpodMessageCreator
 from pybpodapi.protocol import Bpod, StateMachine
 
 import online_plots as op
 import task_settings
-import user_settings
-from iblrig.bpod_helper import BpodMessageCreator
 from session_params import SessionParamHandler
 from trial_params import TrialParamHandler
 
@@ -27,7 +28,7 @@ def bpod_loop_handler():
 
 def softcode_handler(data):
     """
-    Soft codes should work with resasonable latency considering our limiting
+    Soft codes should work with reasonable latency considering our limiting
     factor is the refresh rate of the screen which should be 16.667ms @ a frame
     rate of 60Hz
     1 : go_tone
@@ -72,6 +73,10 @@ tph = TrialParamHandler(sph)
 
 f, axes = op.make_fig(sph)
 plt.pause(1)
+# =====================================================================
+# RUN CAMERA SETUP
+# =====================================================================
+bonsai.start_camera_setup()
 
 for i in range(sph.NTRIALS):  # Main loop
     tph.next_trial()
@@ -88,7 +93,7 @@ for i in range(sph.NTRIALS):  # Main loop
             state_timer=0,
             state_change_conditions={"Port1In": "reset_rotary_encoder"},
             output_actions=[("SoftCode", 3)],
-        )  # sart camera
+        )  # start camera
     else:
         sma.add_state(
             state_name="trial_start",
