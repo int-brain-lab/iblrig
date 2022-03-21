@@ -14,9 +14,13 @@ import iblrig.frame2TTL
 import iblrig.params as params
 import iblrig.path_helper as ph
 import iblrig.raw_data_loaders as raw
+from iblrig.misc import get_port_events
 from pybpodapi.protocol import Bpod, StateMachine
 
-import user_settings  # noqa
+try:
+    import user_settings  # noqa
+except:
+    import iblrig.fake_user_settings as user_settings  # noqa
 
 sys.stdout.flush()
 
@@ -27,8 +31,9 @@ PARAMS = params.load_params_file()
 subj = "_iblrig_test_mouse"
 datetime = parser.parse(user_settings.PYBPOD_SESSION).isoformat().replace(":", "_")
 folder = Path(ph.get_iblrig_data_folder()) / subj / datetime
-folder.mkdir()
+folder.mkdir(exist_ok=True)
 bpod_data_file = folder / "bpod_ts_data.jsonable"
+bpod_data_file_full = folder / "bpod_ts_data_full.jsonable"
 bpod_data_lengths_file = folder / "bpod_ts_data_lengths.jsonable"
 bonsai_data_file = folder / "bonsai_ts_data.jsonable"
 bonsai_data_lengths_file = folder / "bonsai_ts_data_lengths.jsonable"
@@ -79,7 +84,7 @@ for i in range(NITER):
 
     data = bpod.session.current_trial.export()
 
-    BNC1 = raw.get_port_events(data["Events timestamps"], name="BNC1")
+    BNC1 = get_port_events(data["Events timestamps"], name="BNC1")
     # print(BNC1, flush=True)
     # print(BNC1, flush=True)
     # print(len(BNC1), flush=True)
