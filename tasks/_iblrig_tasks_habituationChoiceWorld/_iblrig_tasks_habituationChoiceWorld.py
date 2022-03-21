@@ -7,8 +7,6 @@ import logging
 import iblrig.bonsai as bonsai
 import user_settings
 from iblrig.bpod_helper import BpodMessageCreator
-
-# from pybpod_rotaryencoder_module.module import RotaryEncoder
 from pybpodapi.protocol import Bpod, StateMachine
 
 import task_settings
@@ -20,7 +18,6 @@ log.setLevel(logging.INFO)
 
 global sph
 sph = SessionParamHandler(task_settings, user_settings)
-bonsai.start_visual_stim(sph)
 
 
 def softcode_handler(data):
@@ -61,8 +58,9 @@ bpod = msg.return_bpod()
 global tph
 tph = TrialParamHandler(sph)
 # =====================================================================
-# RUN VISUAL STIM
+# RUN CAMERA SETUP
 # =====================================================================
+bonsai.start_camera_setup()
 for i in range(sph.NTRIALS):  # Main loop
     tph.next_trial()
     log.info(f"Starting trial: {i + 1}")

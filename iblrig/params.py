@@ -14,6 +14,7 @@ from pathlib import Path
 
 from pybpodgui_api.models.project import Project
 
+import iblrig
 import iblrig.logging_  # noqa
 import iblrig.path_helper as ph
 from iblrig.graphic import strinput
@@ -104,12 +105,7 @@ def update_param_key_values(param_key):
 
 
 def get_iblrig_version():
-    ph.get_iblrig_folder()
-    # Find version number from `__init__.py` without executing it.
-    file_path = Path(ph.get_iblrig_folder()) / "setup.py"
-    with open(file_path, "r") as f:
-        version = re.search(r"version=\"([^\"]+)\"", f.read()).group(1)
-    return version
+    return iblrig.__version__
 
 
 def get_pybpod_board_name():

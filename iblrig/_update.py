@@ -57,7 +57,6 @@ def update_pip():
     os.system("python -m pip install --upgrade pip")
 
 
-# TODO: remove once safely implemented natively
 def update_ibllib():
     pip = envs.get_env_pip("ibllib")
     os.system("pip install ibllib -U")
