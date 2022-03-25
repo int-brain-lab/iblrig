@@ -11,15 +11,8 @@ import iblrig.path_helper as ph
 import iblrig.pybpod_config as config
 from iblrig.iblone.ibllib_calls import ONERunner
 
+
 ONERunner.__new__('test')
-# from one.api import ONE
-
-
-# one = ONE(
-#     base_url="https://test.alyx.internationalbrainlab.org",
-#     username="test_user",
-#     password="TapetesBloc18",
-# )
 
 
 class TestsPybpodConfig(unittest.TestCase):

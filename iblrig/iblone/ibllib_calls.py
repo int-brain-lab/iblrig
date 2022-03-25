@@ -34,7 +34,7 @@ class ONERunner:
                 "try:",
                 f"    one = {onecall}",
                 "except:",
-                "    pass",
+                "    print('Cannot instantiate ONE client')",
                 f"resp = {comm}",
                 ret
             ]
@@ -50,7 +50,8 @@ class ONERunner:
             stderr=subprocess.PIPE,
             shell=True,
         )
-        return subresp.stdout.decode().split()
+        out = subresp.stdout.decode().split()
+        return out[0] if len(out) == 1 else out
 
     @classmethod
     def get_all_project_names(cls):
