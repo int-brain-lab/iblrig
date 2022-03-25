@@ -26,7 +26,6 @@ Return: None or json dict
 import json
 from pathlib import Path
 
-from one.api import ONE
 from pybpodgui_api.models.project import Project
 
 import iblrig.path_helper as ph
@@ -186,7 +185,7 @@ def _get_alyx_subjects(project_name):
     if not alyx_project_exists(project_name):
         return []
     # one = one or ONE()
-    all_proj_subs = ONERunner.get_all_subject_from_project(project_name)
+    all_proj_subs = ONERunner.get_all_subjects_from_project(project_name)
     # all_proj_subs = list(one.alyx.rest("subjects", "list", project=project_name))
 
     return all_proj_subs

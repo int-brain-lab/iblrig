@@ -18,15 +18,16 @@ class ONERunner:
         return cls
 
     @classmethod
-    def _command_builder(
-        cls, comm: str, ret: str = "[print(x) for x in resp]"
-    ):
+    def _command_builder(cls, comm: str, ret: str = "[print(x) for x in resp]"):
         if cls.one is None:
             onecall = "ONE()"
-        elif cls.one == 'test':
-            onecall = "".join([
-                "ONE(base_url='https://test.alyx.internationalbrainlab.org',",
-                "username='test_user',password='TapetesBloc18')"])
+        elif cls.one == "test":
+            onecall = "".join(
+                [
+                    "ONE(base_url='https://test.alyx.internationalbrainlab.org',",
+                    "username='test_user',password='TapetesBloc18')",
+                ]
+            )
 
         command = "\n".join(
             [
@@ -36,13 +37,15 @@ class ONERunner:
                 "except:",
                 "    print('Cannot instantiate ONE client')",
                 f"resp = {comm}",
-                ret
+                ret,
             ]
         )
         return command
 
     @classmethod
-    def _command_runner(cls, command: str):
+    def _command_runner(
+        cls, command: str, strip: bool = True, split: bool = True, parse: bool = False
+    ):
         subresp = subprocess.run(
             f'python -c "{command}"',
             env=dict(os.environ.copy(), PATH=cls.ibllib_env),
@@ -50,7 +53,14 @@ class ONERunner:
             stderr=subprocess.PIPE,
             shell=True,
         )
-        out = subresp.stdout.decode().split()
+        out = subresp.stdout.decode()
+        if strip:
+            out = out.strip()
+        if split:
+            out = out.split()
+        if parse:
+            out = eval(out)
+
         return out[0] if len(out) == 1 else out
 
     @classmethod
@@ -76,10 +86,11 @@ class ONERunner:
         return resp
 
     @classmethod
-    def get_all_subject_from_project(cls, project_name: str):
-        command_str = f"list(one.alyx.rest('subjects', 'list', project={project_name}))"
-        command = cls._command_builder(command_str)
-        resp = cls._command_runner(command)
+    def get_all_subjects_from_project(cls, project_name: str):
+        command_str = f"list(one.alyx.rest('subjects', 'list', project='{project_name}'))"
+        command_ret = "print([x for x in resp])"
+        command = cls._command_builder(command_str, ret=command_ret)
+        resp = cls._command_runner(command, split=False, parse=True)
         return resp
 
     @classmethod
@@ -98,7 +109,7 @@ class ONERunner:
         return resp
 
 
-print(ONERunner.one)  #  = 'test'
+print(ONERunner.one)  # = 'test'
 # ONERunner.get_all_subject_from_project("ibl_mainenlab")
 
 # ONERunner.get_project_users("ibl_mainenlab")
