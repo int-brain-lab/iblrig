@@ -60,7 +60,8 @@ class ONERunner:
             out = out.split()
         if parse:
             out = eval(out)
-
+        if not out:
+            return
         return out[0] if len(out) == 1 else out
 
     @classmethod
