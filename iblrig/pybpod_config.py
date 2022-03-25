@@ -30,6 +30,8 @@ from one.api import ONE
 from pybpodgui_api.models.project import Project
 
 import iblrig.path_helper as ph
+from iblrig.iblone.ibllib_calls import ONERunner
+
 
 IBLRIG_PARAMS_FOLDER = Path(ph.get_iblrig_params_folder())
 
@@ -64,11 +66,14 @@ def _update_pybpod_obj_json(obj, patch: dict):
     return objdict
 
 
-def alyx_project_exists(project_name, one=None):
+# XXX: This
+def alyx_project_exists(project_name):
     project_name = local2alyx_names.get(project_name, project_name)
-    one = one or ONE()
+    # one = one or ONE()
     print(f"Checking existence of project [{project_name}] on Alyx")
-    all_projects_names = [x["name"] for x in one.alyx.rest("projects", "list")]
+    print(ONERunner.one)
+    all_projects_names = ONERunner.get_all_project_names()
+    # all_projects_names = [x["name"] for x in one.alyx.rest("projects", "list")]
     if project_name not in all_projects_names:
         print(f"Project [{project_name}] not found on Alyx")
         out = False
@@ -78,10 +83,12 @@ def alyx_project_exists(project_name, one=None):
     return out
 
 
-def alyx_user_exists(name, one=None):
-    one = one or ONE()
+# XXX: This
+def alyx_user_exists(name):
+    # one = one or ONE()
     print(f"Checking existence of user [{name}] on Alyx")
-    all_user_names = [x["username"] for x in one.alyx.rest("users", "list")]
+    all_user_names = ONERunner.get_all_user_names()
+    # all_user_names = [x["username"] for x in one.alyx.rest("users", "list")]
     if name not in all_user_names:
         print(f"User [{name}] not found on Alyx")
         out = False
@@ -91,10 +98,12 @@ def alyx_user_exists(name, one=None):
     return out
 
 
-def alyx_subject_exists(name, one=None):
-    one = one or ONE()
+# XXX: This
+def alyx_subject_exists(name):
+    # one = one or ONE()
     print(f"Checking existence of subject [{name}] on Alyx")
-    resp = one.alyx.rest("subjects", "list", nickname=name)
+    resp = ONERunner.get_subject_name(name)
+    # resp = one.alyx.rest("subjects", "list", nickname=name)
     if not resp:
         print(f"Subject [{name}] not found on Alyx")
         out = False
@@ -136,10 +145,11 @@ def create_project(project_name, force=False):
     return p
 
 
-def create_local_project_from_alyx(project_name, one=None, force=False):
+# XXX: This
+def create_local_project_from_alyx(project_name, force=False):
     project_name = local2alyx_names.get(project_name, project_name)
-    one = one or ONE()
-    if force or alyx_project_exists(project_name, one=one):
+    # one = one or ONE()
+    if force or alyx_project_exists(project_name):
         p = create_project(project_name, force=force)
         out = _load_pybpod_obj_json(p)
     else:
@@ -170,16 +180,19 @@ def create_subject(project_name, subject_name: str = "_iblrig_test_mouse", force
     return subject
 
 
-def _get_alyx_subjects(project_name, one=None):
+# XXX: This
+def _get_alyx_subjects(project_name):
     project_name = local2alyx_names.get(project_name, project_name)
-    if not alyx_project_exists(project_name, one=one):
+    if not alyx_project_exists(project_name):
         return []
-    one = one or ONE()
-    all_proj_subs = list(one.alyx.rest("subjects", "list", project=project_name))
+    # one = one or ONE()
+    all_proj_subs = ONERunner.get_all_subject_from_project(project_name)
+    # all_proj_subs = list(one.alyx.rest("subjects", "list", project=project_name))
 
     return all_proj_subs
 
 
+# XXX: This
 def _create_and_patch_subject(project_name, asub, force=False):
     """creates local subject subject and patches pybpod json obj using asub data from alyx subject
     returns patched dict of pybpod json object"""
@@ -190,9 +203,10 @@ def _create_and_patch_subject(project_name, asub, force=False):
     return sdict
 
 
-def create_local_subjects_from_alyx_project(project_name, one=None, force=False):
+# XXX: This
+def create_local_subjects_from_alyx_project(project_name, force=False):
     project_name = alyx2local_names.get(project_name, project_name)
-    alyx_subjects = _get_alyx_subjects(project_name, one=one)
+    alyx_subjects = _get_alyx_subjects(project_name)
     print(f"Creating [{len(alyx_subjects)}] subjects for project [{project_name}]")
     patched_subjects = []
     for asub in alyx_subjects:
@@ -228,13 +242,15 @@ def create_user(project_name, username="_iblrig_test_user", force=False):
     return user
 
 
-def create_ONE_alyx_user(project_name, one=None, force=False):
+# XXX: This
+def create_ONE_alyx_user(project_name, force=False):
     project_name = local2alyx_names.get(project_name, project_name)
-    one = one or ONE()
+    # one = one or ONE()
     out = None
-    uname = one.alyx.user
-    if not alyx_user_exists(uname, one=one):
-        return
+    uname = ONERunner.get_one_user()
+    # if ONE instance works user exists, no need for this!
+    # if not alyx_user_exists(uname, one=one):
+    #     return
 
     user = create_user(project_name, username=uname, force=force)
     if user:
@@ -243,23 +259,26 @@ def create_ONE_alyx_user(project_name, one=None, force=False):
     return out
 
 
-def create_local_users_from_alyx_project(project_name, one=None, force=False) -> None:
+# XXX: This
+def create_local_users_from_alyx_project(project_name, force=False) -> None:
     project_name = local2alyx_names.get(project_name, project_name)
-    one = one or ONE()
+    # one = one or ONE()
     try:
-        unames = one.alyx.rest("projects", "read", id=project_name)["users"]
+        unames = ONERunner.get_project_users(project_name)
+        # unames = one.alyx.rest("projects", "read", id=project_name)["users"]
         for u in unames:
             create_user(project_name, username=u, force=force)
     except:  # noqa
         print(f"No project found on alyx with name [{project_name}]")
 
 
-def create_custom_project_from_alyx(project_name, one=None, force=False) -> None:
+# XXX: This
+def create_custom_project_from_alyx(project_name, force=False) -> None:
     project_name = local2alyx_names.get(project_name, project_name)
-    one = one or ONE()
-    create_local_project_from_alyx(project_name, one=one, force=force)
-    create_local_subjects_from_alyx_project(project_name, one=one, force=force)
-    create_local_users_from_alyx_project(project_name, one=one, force=force)
+    # one = one or ONE()
+    create_local_project_from_alyx(project_name, force=force)
+    create_local_subjects_from_alyx_project(project_name, force=force)
+    create_local_users_from_alyx_project(project_name, force=force)
     create_board_from_main_project_to(project_name, force=False)
 
 
