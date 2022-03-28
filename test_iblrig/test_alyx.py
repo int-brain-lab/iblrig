@@ -4,6 +4,7 @@ import shutil
 
 from pathlib import Path
 import iblrig.ibllib_calls as calls
+import iblrig.params as params
 
 
 class TestIbllibCalls(unittest.TestCase):
@@ -17,6 +18,10 @@ class TestIbllibCalls(unittest.TestCase):
         self.assertTrue(Path().home().joinpath("TempAlyxProjectData", f"{self.project_name}_subjects.json").exists())
 
     def test_call_one_sync_params(self):
+        pars = params.load_params_file()
+        pars['NAME'] = '_iblrig_mainenlab_ephys_0'
+        params.write(pars, force=True)
+
         resp = calls.call_one_sync_params(one_test=self.one_test)
         self.assertTrue(isinstance(resp, subprocess.CompletedProcess))
         self.assertTrue(resp.returncode == 0)
