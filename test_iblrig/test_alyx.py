@@ -18,6 +18,7 @@ class TestIbllibCalls(unittest.TestCase):
         self.assertTrue(Path().home().joinpath("TempAlyxProjectData", f"{self.project_name}_subjects.json").exists())
 
     def test_call_one_sync_params(self):
+        pars = params.write_params_file(force=True)
         pars = params.load_params_file()
         pars['NAME'] = '_iblrig_mainenlab_ephys_0'
         params.write_params_file(pars, force=True)
