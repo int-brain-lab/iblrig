@@ -8,7 +8,7 @@
 - When creating new sessions, the local rig and the local lab server will be queried are checked for their most recent previous sessions
 - Additional logging with tracebacks for installation script
 - Changed default rig environment name from iblenv to iblrig
-- Removed ibllib dependencies
+- Removed ibllib dependencies and unused modules
 - Added support for F2TTLv2
 - params.update_params_file() now has a default behavior with no data to update all updatable params
 - removed unnecessary file task_settings.py for calibration
