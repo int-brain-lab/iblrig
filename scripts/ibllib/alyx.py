@@ -17,6 +17,7 @@ from one.api import ONE
 
 
 ROOT_FOLDER = Path().home().joinpath("TempAlyxProjectData")
+ROOT_FOLDER.mkdir(parents=True, exist_ok=True)
 
 
 def sync_local_params_to_alyx(one: object = None) -> None:
@@ -70,11 +71,9 @@ def get_alyx_project_info(project_name: str = None, one: object = None):
     users = one.alyx.rest("users", "list")
     subjects = one.alyx.rest("subjects", "list", project=project_name)
     # Save to disk
-    project_data_root = Path().home().joinpath("TempAlyxProjectData")
-    project_data_root.mkdir(parents=True, exist_ok=True)
-    projects_filepath = project_data_root.joinpath("projects.json")
-    users_filepath = project_data_root.joinpath("users.json")
-    subjects_filepath = project_data_root.joinpath(f"{project_name}_subjects.json")
+    projects_filepath = ROOT_FOLDER.joinpath("projects.json")
+    users_filepath = ROOT_FOLDER.joinpath("users.json")
+    subjects_filepath = ROOT_FOLDER.joinpath(f"{project_name}_subjects.json")
     for fpath, data in zip(
         [projects_filepath, users_filepath, subjects_filepath], [projects, users, subjects]
     ):

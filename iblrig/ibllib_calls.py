@@ -12,6 +12,7 @@ import json
 
 
 ROOT_FOLDER = Path().home().joinpath("TempAlyxProjectData")
+ROOT_FOLDER.mkdir(parents=True, exist_ok=True)
 
 
 def check_alyx_data() -> bool:
