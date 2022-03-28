@@ -10,8 +10,6 @@ pars["SCREEN_LUX_VALUE"] = float(value)
 pars["SCREEN_LUX_DATE"] = str(datetime.datetime.now().date())
 print("  Updating local params file...")
 lpars = params.update_params_file(pars)
-print("  Updating lab location on Alyx...")
-apars = alyx.update_alyx_params(pars, force=True)
 
 print(
     "\nLux measurement updated on",
