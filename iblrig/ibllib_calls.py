@@ -70,8 +70,6 @@ def get_one_user():
         return user_file.stem
 
 
-
-
 def call_one_get_project_data(project_name: str, one_test: bool = False):
     if one_test:
         one_test = " --one-test "
@@ -80,14 +78,16 @@ def call_one_get_project_data(project_name: str, one_test: bool = False):
 
     here = os.getcwd()
     os.chdir(Path(iblrig.__file__).parent.parent.joinpath("scripts", "ibllib"))
-    ibllib_env = Path(envs.get_env_python(env_name="ibllib")).parent
+    ibllib_env_str = envs.get_env_python(env_name="ibllib")
+    ibllib_env = Path(ibllib_env_str).parent
     resp = subprocess.run(
         f"python alyx.py{one_test}--get-project {project_name}",
-        env=dict(os.environ.copy(), PATH=ibllib_env),
+        shell=True,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
-        shell=True,
+        env=dict(os.environ.copy(), PATH=str(ibllib_env)),
     )
+
     print(resp)
     os.chdir(here)
     return
@@ -101,17 +101,15 @@ def call_one_sync_params(one_test: bool = False):
 
     here = os.getcwd()
     os.chdir(Path(iblrig.__file__).parent.parent.joinpath("scripts", "ibllib"))
-    ibllib_env = Path(envs.get_env_python(env_name="ibllib")).parent
+    ibllib_env_str = envs.get_env_python(env_name="ibllib")
+    ibllib_env = Path(ibllib_env_str).parent
     resp = subprocess.run(
         f"python alyx.py{one_test}--sync-params",
-        env=dict(os.environ.copy(), PATH=ibllib_env),
+        shell=True,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
-        shell=True,
+        env=dict(os.environ.copy(), PATH=str(ibllib_env)),
     )
+    print(resp)
     os.chdir(here)
     return resp
-
-
-if __name__ == "__main__":
-    print(".")
