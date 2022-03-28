@@ -20,7 +20,7 @@ class TestIbllibCalls(unittest.TestCase):
     def test_call_one_sync_params(self):
         pars = params.load_params_file()
         pars['NAME'] = '_iblrig_mainenlab_ephys_0'
-        params.write(pars, force=True)
+        params.write_params_file(pars, force=True)
 
         resp = calls.call_one_sync_params(one_test=self.one_test)
         self.assertTrue(isinstance(resp, subprocess.CompletedProcess))
