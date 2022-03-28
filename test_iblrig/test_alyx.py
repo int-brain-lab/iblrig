@@ -1,29 +1,21 @@
 import unittest
 
-from one.api import ONE
-
-import iblrig.iblone.alyx as alyx  # noqa
-
-one = ONE(
-    base_url="https://test.alyx.internationalbrainlab.org",
-    username="test_user",
-    password="TapetesBloc18",
-)
+from pathlib import Path
+import iblrig.ibllib_calls as calls
 
 
-class TestAlyx(unittest.TestCase):
+class TestIbllibCalls(unittest.TestCase):
     def setUp(self):
-        self.one = one
-        # Create fake session
-        # needs:
-        #     valid settings file
-        #     valid mouse name
-        #     valid user
-        #     valid taskData for ntrials
-
-    def test_create_session(self):
-        # alyx.create_session(session_folder, one=self.one)
         pass
+
+    def test_call_one_get_project_data(self):
+        calls.call_one_get_project_data("ibl_mainenlab", one_test=True)
+        self.assertTrue(Path().home().joinpath("TempAlyxProjectData").exists())
+        self.assertTrue(Path().home().joinpath("TempAlyxProjectData", "ibl_mainenlab_subjects.json").exists())
+
+    def test_call_one_sync_params(self):
+        resp = calls.call_one_sync_params(one_test=True)
+        self.assertTrue(not resp.stderr.decode())
 
     def tearDown(self):
         pass

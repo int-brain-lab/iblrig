@@ -9,10 +9,7 @@ from pathlib import Path
 
 import iblrig.path_helper as ph
 import iblrig.pybpod_config as config
-from iblrig.iblone.ibllib_calls import ONERunner
-
-
-ONERunner.__new__('test')
+import iblrig.ibllib_calls as libcalls
 
 
 class TestsPybpodConfig(unittest.TestCase):
@@ -20,6 +17,7 @@ class TestsPybpodConfig(unittest.TestCase):
         self.project_name = "ibl_mainenlab"
         self.project_name_nok = "bla"
         self.project_path = Path(ph.get_iblrig_params_folder()) / self.project_name
+        libcalls.call_one_get_project_data(self.project_name, one_test=True)
 
     def test_create_alyx(self):
         p = config.create_local_project_from_alyx(self.project_name, force=False)

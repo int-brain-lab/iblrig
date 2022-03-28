@@ -33,7 +33,7 @@ if __name__ == "__main__":
         print("Creating session from ibllib environment...")
         python = envs.get_env_python(env_name="ibllib")
         here = os.getcwd()
-        os.chdir(os.path.join(ph.get_iblrig_folder(), "scripts", "iblone"))
+        os.chdir(os.path.join(ph.get_iblrig_folder(), "scripts", "ibllib"))
         os.system(f"{python} register_session.py {ph.get_iblrig_data_folder()}")
         os.chdir(here)
 
