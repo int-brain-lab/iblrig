@@ -1,5 +1,4 @@
 import math
-import alf.io
 from one.api import ONE
 import numpy as np
 
@@ -50,10 +49,9 @@ def get_stim_from_wheel(eid, tr):
         "trials.contrastRight",
         "trials.choice",
     ]
-
     one.load(eid, dataset_types=dataset_types, dclass_output=True)
     alf_path = one.path_from_eid(eid) / "alf"
-    trials = alf.io.load_object(alf_path, "trials")
+    trials = one.load_object(alf_path, "trials")
     wheel = one.load_object(eid, "wheel")
 
     # check where stimulus started for initial shift

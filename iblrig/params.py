@@ -95,8 +95,7 @@ def ensure_all_keys_present(loaded_params):
 
 def create_new_params_dict():
     new_params = EMPTY_BOARD_PARAMS
-    for k in new_params:
-        new_params[k] = update_param_key_values(k)
+    new_params = ensure_all_keys_present(new_params)
 
     return new_params
 
