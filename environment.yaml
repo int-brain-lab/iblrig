@@ -12,7 +12,17 @@ dependencies:
     - cython==0.29.6
     - globus-sdk==1.7.1
     - packaging==20.8
-    - pybpod==1.8.2
+    - pybpod-api==1.8.2
+    - pybpod-gui-api==1.8.2
+    - pybpod-gui-plugin==1.8.2
+    - pybpod-gui-plugin-emulator==0.1.5
+    - pybpod-gui-plugin-rotaryencoder==0.1.4
+    - pybpod-gui-plugin-session-history==1.4.2
+    - pybpod-gui-plugin-soundcard==0.1.6
+    - pybpod-gui-plugin-stmdiagram==1.0.0
+    - pybpod-gui-plugin-timeline==1.0.1
+    - pybpod-gui-plugin-trial-timeline==1.0.0
+    - pybpod-gui-plugin-waveplayer==1.0
     - pyopenssl==19.0.0
     - pysocks==1.6.8
     - python-osc==1.7.0
