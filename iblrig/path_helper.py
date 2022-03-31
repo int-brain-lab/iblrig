@@ -15,6 +15,8 @@ from os import listdir
 from os.path import join
 from pathlib import Path
 
+from dateutil import parser
+
 import iblrig.logging_  # noqa
 import iblrig.params as params
 import iblrig.raw_data_loaders as raw
@@ -236,7 +238,12 @@ def get_previous_session_folders(subject_name: str, session_folder: str,
     else:
         # find the key that we want to sort the date_folder_list
         def date_folder_list_sort_key(e):
-            return datetime.datetime.strptime(e[-10:], '%Y-%m-%d')
+            # parser.parse(e.split(os.sep)[-1].replace('_',':'))
+            esplit = e.split(os.sep)
+            date = esplit[-1]
+            if '_' in date:
+                date = date.replace('_',':')
+            return parser.parse(date)
 
         # generate list of all subject folders with date
         # NOTE: this includes duplicate dates if data is on both local and remote
