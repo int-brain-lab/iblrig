@@ -55,8 +55,8 @@ class SessionParamHandler(object):
     # =========================================================================
     # METHODS
     # =========================================================================
-    def start_screen_color(self):
-        bonsai.start_screen_color()
+    def start_screen_color(self, display_idx):
+        bonsai.start_screen_color(display_idx=display_idx)
         self.set_screen(rgb=[128, 128, 128])
 
     def stop_screen_color(self):
