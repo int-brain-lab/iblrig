@@ -1,25 +1,26 @@
 #!/usr/bin/env python
-# -*- coding:utf-8 -*-
 # @Author: Niccolò Bonacchi
-# @Date: Friday, November 15th 2019, 12:05:29 pm
+# @Creation_Date: Friday, November 15th 2019, 12:05:29 pm
+# @Editor: Michele Fabbri
+# @Edit_Date: 2022-02-01
 import logging
 import sys
 import time
-
-import numpy as np
-import usb
-from ibllib.graphic import popup
-from pybpodapi.protocol import Bpod, StateMachine
 
 import iblrig.bonsai as bonsai
 import iblrig.frame2TTL as frame2TTL
 import iblrig.iotasks as iotasks
 import iblrig.misc as misc
 import iblrig.params as params
+import numpy as np
+import usb
+from iblrig.bpod_helper import BpodMessageCreator, bpod_lights
+from iblrig.graphic import popup
+from iblrig.rotary_encoder import MyRotaryEncoder
+from pybpodapi.protocol import Bpod, StateMachine
+
 import task_settings
 import user_settings
-from iblrig.bpod_helper import BpodMessageCreator, bpod_lights
-from iblrig.rotary_encoder import MyRotaryEncoder
 from session_params import SessionParamHandler
 
 log = logging.getLogger("iblrig")
@@ -112,7 +113,7 @@ msg = (
 popup("WARNING!", msg)  # Locks
 
 # Run the passive part i.e. spontaneous activity and RFMapping stim
-bonsai.start_passive_visual_stim(sph.SESSION_RAW_DATA_FOLDER)  # Locks
+bonsai.start_passive_visual_stim(sph.SESSION_RAW_DATA_FOLDER, display_idx=sph.PARAMS["DISPLAY_IDX"])  # Locks
 
 # start Bonsai stim workflow
 bonsai.start_visual_stim(sph)

@@ -1,7 +1,8 @@
 #!/usr/bin/env python
-# -*- coding:utf-8 -*-
 # @Author: Niccolò Bonacchi
-# @Date: Wednesday, September 4th 2019, 4:24:59 pm
+# @Creation_Date: Wednesday, September 4th 2019, 4:24:59 pm
+# @Editor: Michele Fabbri
+# @Edit_Date: 2022-02-01
 """Pre flight checklist
 Define task, user, subject and board
 Check Alyx connection
@@ -29,7 +30,6 @@ from pathlib import Path
 import serial
 import serial.tools.list_ports
 from dateutil.relativedelta import relativedelta
-from one.api import ONE
 from pybpod_rotaryencoder_module.module_api import RotaryEncoderModule
 from pybpod_soundcard_module.module_api import SoundCardModule
 from pybpodapi.protocol import Bpod
@@ -137,7 +137,7 @@ def alyx_server_rig_ok() -> bin:
     if alyx_ok():
         alyx_server_rig += 0b100
     else:
-        log.warning(f"Can't connect to Alyx.")
+        log.warning("Can't connect to Alyx.")
 
     pars = _grep_param_dict()
     try:
@@ -347,17 +347,17 @@ def _list_pc_devices(grep=""):
 def rig_ok() -> bool:
     # Stuff to check on all rig types
     ultramic_ok()
-    camera_ok()
+    camera_ok()  # TODO: check how this works for ephys 3 cam config
+    params_comports_ok()
     f2ttl_ok()
-    bpod_modules_ok()
     bpod_ok()
+    bpod_modules_ok()
     rotary_encoder_ok()
     # alyx_server_rig_ok()
     rig_data_folder_ok()
     local_server_ok()
-    alyx_ok()
+    # alyx_ok()
     calibration_dates_ok()
-    params_comports_ok()
     {}
 
 

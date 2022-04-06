@@ -1,7 +1,8 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 # @Author: Niccolò Bonacchi
-# @Date:   2018-02-02 17:19:09
+# @Creation_Date: 2018-02-02 17:19:09
+# @Editor: Michele Fabbri
+# @Edit_Date: 2022-02-01
 import logging
 import os
 import tkinter as tk
@@ -9,14 +10,13 @@ from pathlib import Path
 from sys import platform
 from tkinter import messagebox
 
-from pythonosc import udp_client
-
 import iblrig.adaptive as adaptive
 import iblrig.ambient_sensor as ambient_sensor
 import iblrig.iotasks as iotasks
 import iblrig.misc as misc
-import iblrig.sound as sound
 import iblrig.path_helper as ph
+import iblrig.sound as sound
+from pythonosc import udp_client
 
 log = logging.getLogger("iblrig")
 log.setLevel(logging.DEBUG)
@@ -108,7 +108,7 @@ class SessionParamHandler(object):
         self.LAST_SETTINGS_DATA = None  # iotasks.load_settings(self.PREVIOUS_SESSION_PATH)
         # Change to False if mock has its own task
         self.IS_MOCK = self.CORRESPONDING_EPHYS_SETTINGS_DATA["IS_MOCK"]
-        # Get pregenerated session num (the num in the filename! from corresponding ephys sesison)
+        # Get pregenerated session num (the num in the filename! from corresponding ephys session)
         self.SESSION_ORDER = self.CORRESPONDING_EPHYS_SETTINGS_DATA["SESSION_ORDER"]
         self.SESSION_IDX = self.CORRESPONDING_EPHYS_SETTINGS_DATA["SESSION_IDX"]
         self.PREGENERATED_SESSION_NUM = self.CORRESPONDING_EPHYS_SETTINGS_DATA[
@@ -232,8 +232,6 @@ class SessionParamHandler(object):
             "Please start recording in spikeglx then press OK\n"
             + "Behavior task will run after you start the bonsai workflow"
         )
-        # from ibllib.graphic import popup
-        # popup(title, msg)
         root = tk.Tk()
         root.withdraw()
         messagebox.showinfo(title, msg)
@@ -321,9 +319,11 @@ if __name__ == "__main__":
         calling bonsai
         turning off lights of bpod board
     """
-    import task_settings as _task_settings
-    import iblrig.fake_user_settings as _user_settings
     import datetime
+
+    import iblrig.fake_user_settings as _user_settings
+
+    import task_settings as _task_settings
 
     dt = datetime.datetime.now()
     dt = [

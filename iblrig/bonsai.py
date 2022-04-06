@@ -40,6 +40,12 @@ if platform == "linux":
     def start_visual_stim(*args, **kwargs):
         return
 
+    def start_screen_color(*args, **kwargs):
+        return
+
+    def start_camera_setup(*args, **kwargs):
+        return
+
 
 else:
     # =====================================================================
@@ -71,6 +77,7 @@ else:
 
             com = "-p:Stim.REPortName=" + sph.PARAMS["COM_ROTARY_ENCODER"]
 
+            display_idx = "-p:Stim.DisplayIndex=" + str(sph.PARAMS["DISPLAY_IDX"])
             sync_x = "-p:Stim.sync_x=" + str(sph.SYNC_SQUARE_X)
             sync_y = "-p:Stim.sync_y=" + str(sph.SYNC_SQUARE_Y)
             dist = 7 if "ephys" in sph.PYBPOD_BOARD else 8
@@ -93,6 +100,7 @@ else:
                         wkfl,
                         editor,
                         noboot,
+                        display_idx,
                         screen_pos,
                         sync_square,
                         pos,
@@ -107,7 +115,7 @@ else:
             os.chdir(here)
         else:
             sph.USE_VISUAL_STIMULUS = False
-        time.sleep(6)
+        # time.sleep(6)
         return
 
     def start_mic_recording(sph):
@@ -141,19 +149,6 @@ else:
         fd = "-p:FileNameLeftData=" + os.path.join(
             sph.SESSION_RAW_VIDEO_DATA_FOLDER, "_iblrig_leftCamera.frameData.bin"
         )
-        # ts = "-p:TimestampsFileName=" + os.path.join(
-        #     sph.SESSION_RAW_VIDEO_DATA_FOLDER, "_iblrig_leftCamera.timestamps.ssv"
-        # )
-        # vid = "-p:VideoFileName=" + os.path.join(
-        #     sph.SESSION_RAW_VIDEO_DATA_FOLDER, "_iblrig_leftCamera.raw.avi"
-        # )
-        # fc = "-p:FrameCounterFileName=" + os.path.join(
-        #     sph.SESSION_RAW_VIDEO_DATA_FOLDER, "_iblrig_leftCamera.frame_counter.bin"
-        # )
-        # gpio = "-p:GPIOFileName=" + os.path.join(
-        #     sph.SESSION_RAW_VIDEO_DATA_FOLDER, "_iblrig_leftCamera.GPIO.bin"
-        # )
-
         mic = "-p:FileNameMic=" + os.path.join(
             sph.SESSION_RAW_DATA_FOLDER, "_iblrig_micData.raw.wav"
         )
@@ -162,7 +157,6 @@ else:
         start = "--start"
         noboot = "--no-boot"
 
-        # subprocess.Popen([bns, wkfl, start, ts, vid, fc, gpio, mic, srec, noboot])
         subprocess.Popen([bns, wkfl, start, vid, fd, mic, srec, noboot])
         os.chdir(here)
         return
@@ -173,6 +167,7 @@ else:
         fname="_iblrig_RFMapStim.raw.bin",
         rate=0.1,
         sa_time="00:10:00",
+        display_idx=1,
     ):
         here = os.getcwd()
         bns = ph.get_bonsai_path()
@@ -190,11 +185,13 @@ else:
         RFM_MappingTime = "-p:Stim.ReceptiveFieldMappingStim.MappingTime=" + map_time
         RFM_StimRate = "-p:Stim.ReceptiveFieldMappingStim.Rate=" + str(rate)
 
+        display_idx = "-p:Stim.DisplayIndex=" + str(display_idx)
         cmd = [
             bns,
             wkfl,
             noboot,
             noedit,
+            display_idx,
             SA0_DueTime,
             RFM_FileName,
             RFM_MappingTime,
@@ -272,7 +269,7 @@ else:
         osc_client.send_message("/s", sigma)
         osc_client.send_message("/r", reverse)
 
-    def start_frame2ttl_test(data_file, lengths_file, harp=False):
+    def start_frame2ttl_test(data_file, lengths_file, harp=False, display_idx=1):
         here = os.getcwd()
         bns = ph.get_bonsai_path()
         stim_folder = str(Path(ph.get_iblrig_folder()) / "visual_stim" / "f2ttl_calibration")
@@ -280,6 +277,7 @@ else:
         # Flags
         noedit = "--no-editor"  # implies start and no-debug?
         noboot = "--no-boot"
+        display_idx = "-p:DisplayIndex=" + str(display_idx)
         data_file_name = "-p:FileNameData=" + str(data_file)
         lengths_file_name = "-p:FileNameDataLengths=" + str(lengths_file)
         if harp:
@@ -293,11 +291,11 @@ else:
                 [bns, wkfl, noboot, noedit, data_file_name, lengths_file_name, harp_file_name, ]
             )
         else:
-            s = subprocess.Popen([bns, wkfl, noboot, noedit, data_file_name, lengths_file_name])
+            s = subprocess.Popen([bns, wkfl, noboot, noedit, display_idx, data_file_name, lengths_file_name])
         os.chdir(here)
         return s
 
-    def start_screen_color():
+    def start_screen_color(display_idx=1):
         here = os.getcwd()
         iblrig_folder_path = Path(ph.get_iblrig_folder())
         os.chdir(str(iblrig_folder_path / "visual_stim" / "f2ttl_calibration"))
@@ -310,8 +308,23 @@ else:
         # start = '--start'
         noboot = "--no-boot"
         editor = noedit
-        subprocess.Popen([bns, wrkfl, editor, noboot])
+        display_idx = "-p:DisplayIndex=" + str(display_idx)
+        subprocess.Popen([bns, wrkfl, editor, noboot, display_idx])
         time.sleep(3)
+        os.chdir(here)
+
+    def start_camera_setup():
+        here = os.getcwd()
+        iblrig_folder_path = Path(ph.get_iblrig_folder())
+        os.chdir(str(iblrig_folder_path / "devices" / "camera_setup"))
+
+        bns = ph.get_bonsai_path()
+        wrkfl = ph.get_camera_setup_wrkfl()
+
+        noedit = "--no-editor"  # implies start
+        noboot = "--no-boot"
+        editor = "--start-no-debug"
+        subprocess.call([bns, wrkfl, editor, noboot])  # locks until Bonsai closes
         os.chdir(here)
 
 

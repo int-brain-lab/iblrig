@@ -1,12 +1,12 @@
 #!/usr/bin/env python
-# -*- coding:utf-8 -*-
-# @File: iblrig/update.py
-# @Author: Niccolo' Bonacchi (@nbonacchi)
-# @Date: Saturday, August 10th 2019, 10:31:02 am
+# @Author: Niccolò Bonacchi
+# @Creation_Date: 2018-06-08 11:04:05
+# @Editor: Michele Fabbri
+# @Edit_Date: 2022-01-28
 import argparse
 from pathlib import Path
-import iblrig.git as git
 
+import iblrig.git as git
 
 if __name__ == "__main__":
     IBLRIG_ROOT_PATH = Path.cwd()
@@ -43,7 +43,7 @@ if __name__ == "__main__":
         help="Disply information on branches and versions",
     )
     parser.add_argument(
-        "--iblenv", required=False, default=False, action="store_true", help="Update iblenv only",
+        "--iblrig", required=False, default=False, action="store_true", help="Update iblrig only",
     )
     parser.add_argument(
         "--setup-pybpod",

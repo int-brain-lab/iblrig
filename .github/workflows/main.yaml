@@ -5,6 +5,7 @@ name: CI
 # Controls when the action will run. Triggers the workflow on push or pull request
 # events but only for the master branch
 on:
+  workflow_dispatch:  # For manual triggering
   push:
     branches: [develop, rc]
   pull_request:
@@ -31,7 +32,7 @@ jobs:
       - uses: conda-incubator/setup-miniconda@v2
         with:
           python-version: ${{ matrix.python-version }}
-          activate-environment: iblenv
+          activate-environment: iblrig
           environment-file: environment.yaml
       - name: Commands
         shell: bash -l {0}
@@ -41,6 +42,7 @@ jobs:
           which pip
           pip install setuptools wheel packaging
           python install.py --reinstall-response y --config-response y --bonsai-response y --ONE-response n
-          conda activate iblenv
+          conda activate ibllib
           python -c "from one.api import ONE; ONE(base_url='https://test.alyx.internationalbrainlab.org', username='test_user', password='TapetesBloc18', silent=True)"
+          conda activate iblrig
           python -m unittest discover

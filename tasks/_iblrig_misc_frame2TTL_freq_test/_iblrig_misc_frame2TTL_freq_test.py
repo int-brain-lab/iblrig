@@ -1,21 +1,26 @@
-#!/usr/bin/env python  # noqa
-# -*- coding:utf-8 -*-
+#!/usr/bin/env python
 # @Author: Niccolò Bonacchi
-# @Date: Friday, January 4th 2019, 11:52:41 am
+# @Creation_Date: Friday, January 4th 2019, 11:52:41 am
+# @Editor: Michele Fabbri
+# @Edit_Date: 2022-02-01
 import json
 import logging
 import sys
 from pathlib import Path
 
 import dateutil.parser as parser
-import ibllib.io.raw_data_loaders as raw
-from pybpodapi.protocol import Bpod, StateMachine
-
 import iblrig.bonsai as bonsai
 import iblrig.frame2TTL
 import iblrig.params as params
 import iblrig.path_helper as ph
-import user_settings  # noqa
+import iblrig.raw_data_loaders as raw
+from iblrig.misc import get_port_events
+from pybpodapi.protocol import Bpod, StateMachine
+
+try:
+    import user_settings  # noqa
+except:
+    import iblrig.fake_user_settings as user_settings  # noqa
 
 sys.stdout.flush()
 
@@ -24,10 +29,13 @@ log.setLevel(logging.INFO)
 
 PARAMS = params.load_params_file()
 subj = "_iblrig_test_mouse"
-datetime = parser.parse(user_settings.PYBPOD_SESSION).isoformat().replace(":", "_")
-folder = Path(ph.get_iblrig_data_folder()) / subj / datetime
-folder.mkdir()
+date = parser.parse(user_settings.PYBPOD_SESSION).date().isoformat()
+datefolder = Path(ph.get_iblrig_data_folder()) / subj / date
+number = ph.get_session_number(datefolder)
+folder = datefolder.joinpath(number)
+folder.mkdir(parents=True, exist_ok=True)
 bpod_data_file = folder / "bpod_ts_data.jsonable"
+bpod_data_file_full = folder / "bpod_ts_data_full.jsonable"
 bpod_data_lengths_file = folder / "bpod_ts_data_lengths.jsonable"
 bonsai_data_file = folder / "bonsai_ts_data.jsonable"
 bonsai_data_lengths_file = folder / "bonsai_ts_data_lengths.jsonable"
@@ -78,7 +86,7 @@ for i in range(NITER):
 
     data = bpod.session.current_trial.export()
 
-    BNC1 = raw.get_port_events(data["Events timestamps"], name="BNC1")
+    BNC1 = get_port_events(data["Events timestamps"], name="BNC1")
     # print(BNC1, flush=True)
     # print(BNC1, flush=True)
     # print(len(BNC1), flush=True)

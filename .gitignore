@@ -1,5 +1,6 @@
 __pycache__/
 \.vscode/
+\.idea/
 \.sonarlint/
 \.pytest*
 .pytest*
@@ -18,3 +19,4 @@ run.bat
 
 XDG_CACHE_HOME/
 app.log
+/.idea/*
