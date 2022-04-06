@@ -17,7 +17,7 @@ sph = SessionParamHandler()
 f2ttl = Frame2TTL(sph.PARAMS["COM_F2TTL"])
 white = [175, 175, 175] if f2ttl.hw_version == 2 else [255, 255, 255]
 
-sph.start_screen_color()
+sph.start_screen_color(display_idx=sph.PARAMS["DISPLAY_IDX"])
 time.sleep(3)
 sph.set_screen(rgb=white)
 time.sleep(1)
