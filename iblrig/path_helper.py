@@ -242,7 +242,7 @@ def get_previous_session_folders(subject_name: str, session_folder: str,
             esplit = e.split(os.sep)
             date = esplit[-1]
             if '_' in date:
-                date = date.replace('_',':')
+                date = date.replace('_', ':')
             return parser.parse(date)
 
         # generate list of all subject folders with date

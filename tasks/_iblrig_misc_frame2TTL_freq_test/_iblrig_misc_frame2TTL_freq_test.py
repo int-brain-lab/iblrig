@@ -29,9 +29,11 @@ log.setLevel(logging.INFO)
 
 PARAMS = params.load_params_file()
 subj = "_iblrig_test_mouse"
-datetime = parser.parse(user_settings.PYBPOD_SESSION).isoformat().replace(":", "_")
-folder = Path(ph.get_iblrig_data_folder()) / subj / datetime
-folder.mkdir(exist_ok=True)
+date = parser.parse(user_settings.PYBPOD_SESSION).date().isoformat()
+datefolder = Path(ph.get_iblrig_data_folder()) / subj / date
+number = ph.get_session_number(datefolder)
+folder = datefolder.joinpath(number)
+folder.mkdir(parents=True, exist_ok=True)
 bpod_data_file = folder / "bpod_ts_data.jsonable"
 bpod_data_file_full = folder / "bpod_ts_data_full.jsonable"
 bpod_data_lengths_file = folder / "bpod_ts_data_lengths.jsonable"
