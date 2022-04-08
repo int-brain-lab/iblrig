@@ -19,61 +19,6 @@ log = logging.getLogger("iblrig")
 log.setLevel(logging.INFO)
 
 
-def get_task_protocol(session_path):
-    try:
-        settings = load_settings(get_session_path(session_path))
-    except json.decoder.JSONDecodeError:
-        log.error(f"Can't read settings for {session_path}")
-        return
-    if settings:
-        return settings.get("PYBPOD_PROTOCOL", None)
-    else:
-        return
-
-
-def _get_task_types_json_config():
-    with open(Path(__file__).parent.joinpath("extractor_types.json")) as fp:
-        task_types = json.load(fp)
-    return task_types
-
-
-def get_task_extractor_type(task_name):
-    """
-    Returns the task type string from the full pybpod task name:
-    _iblrig_tasks_biasedChoiceWorld3.7.0 returns "biased"
-    _iblrig_tasks_trainingChoiceWorld3.6.0 returns "training'
-    :param task_name:
-    :return: one of ['biased', 'habituation', 'training', 'ephys', 'mock_ephys', 'sync_ephys']
-    """
-    if isinstance(task_name, Path):
-        task_name = get_task_protocol(task_name)
-        if task_name is None:
-            return
-    task_types = _get_task_types_json_config()
-    task_type = next((task_types[tt] for tt in task_types if tt in task_name), None)
-    if task_type is None:
-        log.warning(f"No extractor type found for {task_name}")
-    return task_type
-
-
-def get_session_extractor_type(session_path):
-    """
-    From a session path, loads the settings file, finds the task and checks if extractors exist
-    task names examples:
-    :param session_path:
-    :return: bool
-    """
-    settings = load_settings(session_path)
-    if settings is None:
-        log.error(f'ABORT: No data found in "raw_behavior_data" folder {session_path}')
-        return False
-    extractor_type = get_task_extractor_type(settings["PYBPOD_PROTOCOL"])
-    if extractor_type:
-        return extractor_type
-    else:
-        return False
-
-
 def main(local_folder: str, remote_folder: str, force: bool = False) -> None:
     local_folder = Path(local_folder)
     remote_folder = Path(remote_folder)
@@ -101,12 +46,11 @@ def main(local_folder: str, remote_folder: str, force: bool = False) -> None:
         shutil.copytree(src, dst, ignore=ig(str(src_flag_file.name)))
         # finally if folder was created delete the src flag_file and create compress_me.flag
         if dst.exists():
-            task_type = get_session_extractor_type(Path(src))
-            if task_type not in ["ephys", "ephys_sync", "ephys_mock"]:
-                dst.joinpath("raw_session.flag").touch()
-                settings = raw.load_settings(dst)
-                if "ephys" in settings["PYBPOD_BOARD"]:  # Any traing task on an ephys rig
-                    dst.joinpath("raw_session.flag").unlink()
+            settings = raw.load_settings(dst)
+            dst.joinpath("raw_session.flag").touch()
+            if "ephys" in settings["PYBPOD_BOARD"]:  # Any traing task on an ephys rig
+                log.info(f"Removing raw_session.flag file; ephys behavior rig detected")
+                dst.joinpath("raw_session.flag").unlink()
             log.info(f"Copied to {remote_folder}: Session {src_flag_file.parent}")
             src_flag_file.unlink()
 
