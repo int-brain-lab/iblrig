@@ -19,7 +19,7 @@ import iblrig.misc as misc
 from iblrig.check_sync_pulses import sync_check
 from iblrig.iotasks import ComplexEncoder
 
-log = logging.getLogger("iblrig")
+log = logging.getLogger('iblrig')
 
 
 class AdaptiveContrast(object):

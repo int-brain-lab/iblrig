@@ -9,7 +9,7 @@ import numpy as np
 from pybpod_soundcard_module.module_api import DataType, SampleRate, SoundCardModule
 from scipy.signal import chirp
 
-log = logging.getLogger("iblrig")
+log = logging.getLogger('iblrig')
 
 
 def configure_sounddevice(sd=None, output="sysdefault", samplerate=44100):

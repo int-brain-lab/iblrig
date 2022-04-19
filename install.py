@@ -18,7 +18,6 @@ from iblrig import envs
 # BEGIN CONSTANT DEFINITION
 IBLRIG_ROOT_PATH = Path.cwd()
 INSTALL_LOG_PATH = ''
-log = logging.getLogger("iblrig")
 
 # Check on platform and configure logging
 if sys.platform not in ["Windows", "windows", "win32"]:
@@ -31,8 +30,8 @@ else:
     with open(INSTALL_LOG_PATH, 'w'):
         pass
 
-logging.basicConfig(filename=INSTALL_LOG_PATH, level=logging.DEBUG)
-log = logging.getLogger("iblrig")
+log = logging.getLogger('iblrig')
+logging.basicConfig(filename=INSTALL_LOG_PATH)
 
 try:
     print("\n\n--->Cleaning up conda cache")

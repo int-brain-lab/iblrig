@@ -14,7 +14,7 @@ import iblrig.user_input as user_input
 from iblrig.misc import make_square_dvamat, checkerboard
 from iblrig.path_helper import SessionPathCreator
 
-log = logging.getLogger("iblrig")
+log = logging.getLogger('iblrig')
 
 
 class SessionParamHandler(object):

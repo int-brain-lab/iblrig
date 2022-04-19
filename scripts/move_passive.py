@@ -10,7 +10,7 @@ import iblrig.misc as misc
 import iblrig.path_helper as ph
 import iblrig.raw_data_loaders as raw
 
-log = logging.getLogger("iblrig")
+log = logging.getLogger('iblrig')
 
 IBLRIG_DATA_PATH = Path(ph.get_iblrig_data_folder())
 

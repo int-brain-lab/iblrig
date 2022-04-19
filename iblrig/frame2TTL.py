@@ -12,7 +12,7 @@ import serial
 
 import iblrig.params
 
-log = logging.getLogger("iblrig")
+log = logging.getLogger('iblrig')
 
 
 def Frame2TTL(serial_port: str, version: int = 2) -> object:

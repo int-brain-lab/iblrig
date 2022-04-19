@@ -12,7 +12,7 @@ import zipfile
 from iblrig.iotasks import ComplexEncoder
 from iblrig.path_helper import SessionPathCreator
 
-logger = logging.getLogger("iblrig")
+log = logging.getLogger('iblrig')
 
 
 class SessionParamHandler(object):

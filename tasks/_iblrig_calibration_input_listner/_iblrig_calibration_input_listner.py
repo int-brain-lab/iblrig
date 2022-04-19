@@ -5,18 +5,16 @@
 import json
 import logging
 
+import user_settings
 from pybpodapi.protocol import Bpod, StateMachine
 
 import task_settings
-import user_settings
 from session_params import SessionParamHandler
 
-log = logging.getLogger("iblrig")
-log.setLevel(logging.INFO)
+log = logging.getLogger('iblrig')
 
 global sph
 sph = SessionParamHandler(task_settings, user_settings)
-
 
 # =============================================================================
 # CONNECT TO BPOD

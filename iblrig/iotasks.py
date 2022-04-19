@@ -19,7 +19,7 @@ import iblrig.misc as misc
 import iblrig.path_helper as ph
 import iblrig.raw_data_loaders as raw
 
-log = logging.getLogger("iblrig")
+log = logging.getLogger('iblrig')
 
 
 class ComplexEncoder(json.JSONEncoder):

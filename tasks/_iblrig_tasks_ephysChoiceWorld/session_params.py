@@ -10,6 +10,8 @@ from pathlib import Path
 from sys import platform
 from tkinter import messagebox
 
+from pythonosc import udp_client
+
 import iblrig.adaptive as adaptive
 import iblrig.ambient_sensor as ambient_sensor
 import iblrig.bonsai as bonsai
@@ -20,9 +22,8 @@ import iblrig.sound as sound
 import iblrig.user_input as user_input
 from iblrig.path_helper import SessionPathCreator
 from iblrig.rotary_encoder import MyRotaryEncoder
-from pythonosc import udp_client
 
-log = logging.getLogger("iblrig")
+log = logging.getLogger('iblrig')
 
 
 class SessionParamHandler(object):

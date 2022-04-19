@@ -15,7 +15,7 @@ import scipy.interpolate
 import iblrig.params as params
 from iblrig.raw_data_loaders import load_data
 
-log = logging.getLogger("iblrig")
+log = logging.getLogger('iblrig')
 
 
 def init_reward_amount(sph: object) -> float:

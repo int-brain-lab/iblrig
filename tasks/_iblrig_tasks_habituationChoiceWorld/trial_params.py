@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date:   2018-02-02 14:06:34
-import datetime
 import json
 import logging
 import math
@@ -15,7 +14,7 @@ import iblrig.bonsai as bonsai
 import iblrig.misc as misc
 from iblrig.iotasks import ComplexEncoder
 
-log = logging.getLogger("iblrig")
+log = logging.getLogger('iblrig')
 
 
 class TrialParamHandler(object):

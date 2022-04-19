@@ -3,28 +3,27 @@
 # @Creation_Date: Friday, November 15th 2019, 12:05:29 pm
 # @Editor: Michele Fabbri
 # @Edit_Date: 2022-02-01
-import logging
 import sys
 import time
+
+import numpy as np
+import usb
+import user_settings
+from pybpodapi.protocol import Bpod, StateMachine
 
 import iblrig.bonsai as bonsai
 import iblrig.frame2TTL as frame2TTL
 import iblrig.iotasks as iotasks
+import logging
 import iblrig.misc as misc
 import iblrig.params as params
-import numpy as np
-import usb
+import task_settings
 from iblrig.bpod_helper import BpodMessageCreator, bpod_lights
 from iblrig.graphic import popup
 from iblrig.rotary_encoder import MyRotaryEncoder
-from pybpodapi.protocol import Bpod, StateMachine
-
-import task_settings
-import user_settings
 from session_params import SessionParamHandler
 
-log = logging.getLogger("iblrig")
-log.setLevel(logging.INFO)
+log = logging.getLogger('iblrig')
 
 PARAMS = params.load_params_file()
 # start sph

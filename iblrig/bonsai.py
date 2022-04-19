@@ -14,7 +14,7 @@ from pythonosc import udp_client
 
 import iblrig.path_helper as ph
 
-log = logging.getLogger("iblrig")
+log = logging.getLogger('iblrig')
 
 
 if platform == "linux":

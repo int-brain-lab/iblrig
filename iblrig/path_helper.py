@@ -17,11 +17,10 @@ from pathlib import Path
 
 from dateutil import parser
 
-import iblrig.logging_  # noqa
 import iblrig.params as params
 import iblrig.raw_data_loaders as raw
 
-log = logging.getLogger("iblrig")
+log = logging.getLogger('iblrig')
 
 
 def get_network_drives():

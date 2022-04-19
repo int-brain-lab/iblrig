@@ -28,7 +28,7 @@ FLAG_FILE_NAMES = [
     "passive_data_for_ephys.flag",
 ]
 
-log = logging.getLogger("iblrig")
+log = logging.getLogger('iblrig')
 
 
 def _isdatetime(x: str) -> Optional[bool]:

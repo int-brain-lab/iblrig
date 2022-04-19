@@ -8,7 +8,7 @@ from sys import platform
 import iblrig.iotasks as iotasks
 from iblrig.path_helper import SessionPathCreator
 
-log = logging.getLogger("iblrig")
+log = logging.getLogger('iblrig')
 
 
 class SessionParamHandler(object):

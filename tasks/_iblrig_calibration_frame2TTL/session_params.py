@@ -5,15 +5,16 @@
 import logging
 
 import iblrig.bonsai as bonsai
+
 try:
     import user_settings
-except:
+except ImportError:
     import iblrig.fake_user_settings as user_settings
 import iblrig.iotasks as iotasks
 from iblrig.path_helper import SessionPathCreator
 from pythonosc import udp_client
 
-log = logging.getLogger("iblrig")
+log = logging.getLogger('iblrig')
 
 
 class SessionParamHandler(object):
