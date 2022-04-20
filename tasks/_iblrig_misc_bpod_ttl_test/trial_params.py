@@ -11,7 +11,7 @@ from dateutil import parser
 import iblrig.bonsai as bonsai
 from iblrig.iotasks import ComplexEncoder
 
-log = logging.getLogger('iblrig')
+log = logging.getLogger("iblrig")
 
 
 class TrialParamHandler(object):

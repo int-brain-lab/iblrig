@@ -3,7 +3,7 @@ import os
 import subprocess
 from pathlib import Path
 
-log = logging.getLogger('iblrig')
+log = logging.getLogger("iblrig")
 
 IBLRIG_FOLDER = r"C:\iblrig"
 CWD = os.getcwd()

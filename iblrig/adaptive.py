@@ -15,7 +15,7 @@ import scipy.interpolate
 import iblrig.params as params
 from iblrig.raw_data_loaders import load_data
 
-log = logging.getLogger('iblrig')
+log = logging.getLogger("iblrig")
 
 
 def init_reward_amount(sph: object) -> float:
@@ -54,7 +54,8 @@ def init_calib_func() -> scipy.interpolate.pchip:
         raise ValueError("Rig not calibrated")
 
     time2vol = scipy.interpolate.pchip(
-        PARAMS["WATER_CALIBRATION_OPEN_TIMES"], PARAMS["WATER_CALIBRATION_WEIGHT_PERDROP"],
+        PARAMS["WATER_CALIBRATION_OPEN_TIMES"],
+        PARAMS["WATER_CALIBRATION_WEIGHT_PERDROP"],
     )
 
     return time2vol

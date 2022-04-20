@@ -9,7 +9,7 @@ import numpy as np
 from pybpod_soundcard_module.module_api import DataType, SampleRate, SoundCardModule
 from scipy.signal import chirp
 
-log = logging.getLogger('iblrig')
+log = logging.getLogger("iblrig")
 
 
 def configure_sounddevice(sd=None, output="sysdefault", samplerate=44100):
@@ -140,7 +140,7 @@ def format_sound(sound, file_path=None, flat=False):
     :param file_path: full path of file. [default: None]
     :type file_path: str
     """
-    bin_sound = (sound * ((2 ** 31) - 1)).astype(np.int32)
+    bin_sound = (sound * ((2**31) - 1)).astype(np.int32)
 
     if bin_sound.flags.f_contiguous:
         bin_sound = np.ascontiguousarray(bin_sound)

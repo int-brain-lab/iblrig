@@ -14,7 +14,7 @@ import iblrig.user_input as user_input
 from iblrig.misc import make_square_dvamat, checkerboard
 from iblrig.path_helper import SessionPathCreator
 
-log = logging.getLogger('iblrig')
+log = logging.getLogger("iblrig")
 
 
 class SessionParamHandler(object):
@@ -163,7 +163,7 @@ class SessionParamHandler(object):
         self.VISUAL_STIM_4 = {
             "ttl_num": 400,
             "stim_spatial_freq": 0.1,  # cyc/º
-            "sigma": 7 ** 2,  # dva
+            "sigma": 7**2,  # dva
             "elevation": 0,
             "orientation": 0,
             "phase": 0,

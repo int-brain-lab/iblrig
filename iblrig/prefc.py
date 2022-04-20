@@ -39,7 +39,7 @@ import iblrig.path_helper as ph
 from iblrig import envs
 from iblrig.frame2TTL import Frame2TTL
 
-log = logging.getLogger('iblrig')
+log = logging.getLogger("iblrig")
 log.setLevel(logging.DEBUG)
 
 

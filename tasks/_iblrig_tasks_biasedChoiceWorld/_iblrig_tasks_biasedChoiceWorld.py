@@ -16,7 +16,7 @@ from iblrig.user_input import ask_session_delay
 from session_params import SessionParamHandler
 from trial_params import TrialParamHandler
 
-log = logging.getLogger('iblrig')
+log = logging.getLogger("iblrig")
 
 global sph
 sph = SessionParamHandler(task_settings, user_settings)

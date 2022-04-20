@@ -7,11 +7,10 @@ import unittest
 
 # TODO: Flesh out script testing in the future
 class TestScripts(unittest.TestCase):
-
     def test_transfer_rig_data(self):
         # Ensure transfer_rig_data.py exists in the location we expect it
         current_path = pathlib.Path(__file__).parent.absolute()
-        transfer_rig_data_script_loc = current_path.parent / 'scripts' / 'transfer_rig_data.py'
+        transfer_rig_data_script_loc = current_path.parent / "scripts" / "transfer_rig_data.py"
         self.assertTrue(os.path.exists(transfer_rig_data_script_loc))
 
         # Tests below will only pass if the call to 'move_ephys.py' script is commented out in

@@ -17,20 +17,20 @@ from iblrig import envs
 
 # BEGIN CONSTANT DEFINITION
 IBLRIG_ROOT_PATH = Path.cwd()
-INSTALL_LOG_PATH = ''
+INSTALL_LOG_PATH = ""
 
 # Check on platform and configure logging
 if sys.platform not in ["Windows", "windows", "win32"]:
     print("\nWARNING: Unsupported OS\nInstallation might not work!")
-    INSTALL_LOG_PATH = '/tmp/iblrig_install.log'
+    INSTALL_LOG_PATH = "/tmp/iblrig_install.log"
 else:
-    if not os.path.isdir('C:\\Temp'):
-        os.mkdir('C:\\Temp')
-    INSTALL_LOG_PATH = 'C:\\Temp\\iblrig_install.log'
-    with open(INSTALL_LOG_PATH, 'w'):
+    if not os.path.isdir("C:\\Temp"):
+        os.mkdir("C:\\Temp")
+    INSTALL_LOG_PATH = "C:\\Temp\\iblrig_install.log"
+    with open(INSTALL_LOG_PATH, "w"):
         pass
 
-log = logging.getLogger('iblrig')
+log = logging.getLogger("iblrig")
 logging.basicConfig(filename=INSTALL_LOG_PATH)
 
 try:
@@ -299,8 +299,7 @@ def install_bonsai(resp=False):
 
 
 def setup_one(resp=False):
-    """
-    """
+    """ """
     print("\n\nINFO: ONE setup")
     print("N" * 79)
     print("\n\nDo you want to install ONE now? (y/n):")
@@ -312,7 +311,8 @@ def setup_one(resp=False):
             os.system(f'{python} -c "from one.api import ONE; ONE()"')
         except BaseException as e:
             print(
-                e, "\n\nONE setup incomplete please set up ONE manually",
+                e,
+                "\n\nONE setup incomplete please set up ONE manually",
             )
             log.exception(e)
     elif user_input != "n" and user_input != "y":
@@ -327,17 +327,23 @@ def setup_one(resp=False):
 def main(main_args):
     try:
         check_update_dependencies()
-        create_environment(env_name=main_args.env_name, use_conda_yaml=main_args.use_conda,
-                           resp=main_args.reinstall_response)
+        create_environment(
+            env_name=main_args.env_name,
+            use_conda_yaml=main_args.use_conda,
+            resp=main_args.reinstall_response,
+        )
         create_ibllib_env()
         install_iblrig(env_name=main_args.env_name)
         configure_iblrig_params(env_name=main_args.env_name, resp=main_args.config_response)
         setup_one(resp=main_args.ONE_response)
         install_bonsai(resp=main_args.bonsai_response)
     except BaseException as e:
-        print(e, "\n\nSomething went wrong during the installation. Please refer to the following "
-                 "log file for a full traceback of the error. Please also forward the entire file,"
-                 " or the relevant content of, this file when seeking support: "+INSTALL_LOG_PATH)
+        print(
+            e,
+            "\n\nSomething went wrong during the installation. Please refer to the following "
+            "log file for a full traceback of the error. Please also forward the entire file,"
+            " or the relevant content of, this file when seeking support: " + INSTALL_LOG_PATH,
+        )
         log.exception(e)
     return
 

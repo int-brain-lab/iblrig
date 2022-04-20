@@ -12,7 +12,7 @@ import iblrig.path_helper as ph
 from iblrig import envs
 from iblrig.poop_count import poop
 
-log = logging.getLogger('iblrig')
+log = logging.getLogger("iblrig")
 
 
 if __name__ == "__main__":

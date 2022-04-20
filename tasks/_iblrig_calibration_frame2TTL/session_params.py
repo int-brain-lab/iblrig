@@ -14,7 +14,7 @@ import iblrig.iotasks as iotasks
 from iblrig.path_helper import SessionPathCreator
 from pythonosc import udp_client
 
-log = logging.getLogger('iblrig')
+log = logging.getLogger("iblrig")
 
 
 class SessionParamHandler(object):
@@ -31,14 +31,16 @@ class SessionParamHandler(object):
         # }
         # self.__dict__.update(ts)
         if "fake" in user_settings.__dict__["PYBPOD_CREATOR"]:
-             msg = "No user settings found!\nUsing fake mouse!\n"
-             log.warning(msg * 5)
+            msg = "No user settings found!\nUsing fake mouse!\n"
+            log.warning(msg * 5)
         us = {
             i: user_settings.__dict__[i] for i in [x for x in dir(user_settings) if "__" not in x]
         }
         self.__dict__.update(us)
         self = iotasks.deserialize_pybpod_user_settings(self)
-        spc = SessionPathCreator(self.PYBPOD_SUBJECTS[0], protocol=self.PYBPOD_PROTOCOL, make=make_folders)
+        spc = SessionPathCreator(
+            self.PYBPOD_SUBJECTS[0], protocol=self.PYBPOD_PROTOCOL, make=make_folders
+        )
         self.__dict__.update(spc.__dict__)
         # =====================================================================
         # OSC CLIENT

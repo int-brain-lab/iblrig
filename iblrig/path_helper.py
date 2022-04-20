@@ -20,7 +20,7 @@ from dateutil import parser
 import iblrig.params as params
 import iblrig.raw_data_loaders as raw
 
-log = logging.getLogger('iblrig')
+log = logging.getLogger("iblrig")
 
 
 def get_network_drives():
@@ -182,9 +182,10 @@ def make_folder(str1: str or Path) -> None:
     log.debug(f"Created folder {path}")
 
 
-def get_previous_session_folders(subject_name: str, session_folder: str,
-                                 remote_subject_folder: str = None) -> list:
-    """ Function to find the all previous session folders, evaluates the local and remote storage.
+def get_previous_session_folders(
+    subject_name: str, session_folder: str, remote_subject_folder: str = None
+) -> list:
+    """Function to find the all previous session folders, evaluates the local and remote storage.
     Returned list will be sorted by date/number, this list will include duplicates if the same
     date is found on both remote and local. Returned list will be empty if no previous sessions
     are found on either the remote or local storage.
@@ -218,18 +219,24 @@ def get_previous_session_folders(subject_name: str, session_folder: str,
     previous_session_folders, date_folder_list = [], []
 
     if (not local_subject_folder_exists) & (not remote_subject_folder_exists):
-        log.debug(f"NOT FOUND: No previous sessions for subject {local_subject_folder.name} on "
-                  f"lab server or rig computer")
+        log.debug(
+            f"NOT FOUND: No previous sessions for subject {local_subject_folder.name} on "
+            f"lab server or rig computer"
+        )
         # Return empty list
         return previous_session_folders
     elif local_subject_folder_exists & (not remote_subject_folder_exists):
-        log.debug(f"NOT FOUND: No previous sessions for subject {local_subject_folder.name} on "
-                  f"lab server")
+        log.debug(
+            f"NOT FOUND: No previous sessions for subject {local_subject_folder.name} on "
+            f"lab server"
+        )
         # Build out date path for local
         date_folder_list.extend(get_subfolder_paths(local_subject_folder))
     elif remote_subject_folder_exists & (not local_subject_folder_exists):
-        log.debug(f"NOT FOUND: No previous sessions for subject {local_subject_folder.name} on "
-                  f"rig computer; setting to remote")
+        log.debug(
+            f"NOT FOUND: No previous sessions for subject {local_subject_folder.name} on "
+            f"rig computer; setting to remote"
+        )
         # Build out date path for remote
         date_folder_list.extend(get_subfolder_paths(remote_subject_folder))
 
@@ -240,8 +247,8 @@ def get_previous_session_folders(subject_name: str, session_folder: str,
             # parser.parse(e.split(os.sep)[-1].replace('_',':'))
             esplit = e.split(os.sep)
             date = esplit[-1]
-            if '_' in date:
-                date = date.replace('_', ':')
+            if "_" in date:
+                date = date.replace("_", ":")
             return parser.parse(date)
 
         # generate list of all subject folders with date
@@ -258,8 +265,9 @@ def get_previous_session_folders(subject_name: str, session_folder: str,
             previous_session_folders.append(sess_folder)
 
     # Check if session_folder is contained in previous_session_folders
-    previous_session_folders = \
-        [x for x in sorted(previous_session_folders) if session_folder not in x]
+    previous_session_folders = [
+        x for x in sorted(previous_session_folders) if session_folder not in x
+    ]
     if not previous_session_folders:
         log.debug(f"NOT FOUND: No previous sessions for subject {subject_name}")
         return previous_session_folders

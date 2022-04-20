@@ -12,7 +12,7 @@ import serial
 
 import iblrig.params
 
-log = logging.getLogger('iblrig')
+log = logging.getLogger("iblrig")
 
 
 def Frame2TTL(serial_port: str, version: int = 2) -> object:
@@ -46,7 +46,7 @@ def Frame2TTL(serial_port: str, version: int = 2) -> object:
     elif version == 0:
         return None
 
-    return Frame2TTL(serial_port, version=version-1)
+    return Frame2TTL(serial_port, version=version - 1)
 
 
 class Frame2TTLv1(object):
@@ -248,7 +248,11 @@ class Frame2TTLv2(object):
         Command: 5 bytes | [b"T" (uint8), (light_threshold (int16), dark_threshold (int16))]
         Response: None
         """
-        self.ser.write(b"T" + int.to_bytes(value, 2, byteorder="little", signed=True) + int.to_bytes(self._dark_threshold, 2, byteorder="little", signed=True))
+        self.ser.write(
+            b"T"
+            + int.to_bytes(value, 2, byteorder="little", signed=True)
+            + int.to_bytes(self._dark_threshold, 2, byteorder="little", signed=True)
+        )
         self._light_threshold = value
 
     @property
@@ -261,7 +265,11 @@ class Frame2TTLv2(object):
         Command: 5 bytes | [b"T" (uint8), (light_threshold (int16), dark_threshold (int16))]
         Response: None
         """
-        self.ser.write(b"T" + int.to_bytes(self._light_threshold, 2, byteorder="little", signed=True) + int.to_bytes(value, 2, byteorder="little", signed=True))
+        self.ser.write(
+            b"T"
+            + int.to_bytes(self._light_threshold, 2, byteorder="little", signed=True)
+            + int.to_bytes(value, 2, byteorder="little", signed=True)
+        )
         self._dark_threshold = value
 
     def connect(self) -> serial.Serial:

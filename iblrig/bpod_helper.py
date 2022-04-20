@@ -11,7 +11,7 @@ from pybpod_rotaryencoder_module.module import RotaryEncoder
 
 import iblrig.params as params
 
-log = logging.getLogger('iblrig')
+log = logging.getLogger("iblrig")
 
 
 class BpodMessageCreator(object):

@@ -23,7 +23,7 @@ from iblrig.graphic import popup
 from iblrig.rotary_encoder import MyRotaryEncoder
 from session_params import SessionParamHandler
 
-log = logging.getLogger('iblrig')
+log = logging.getLogger("iblrig")
 
 PARAMS = params.load_params_file()
 # start sph
@@ -112,7 +112,9 @@ msg = (
 popup("WARNING!", msg)  # Locks
 
 # Run the passive part i.e. spontaneous activity and RFMapping stim
-bonsai.start_passive_visual_stim(sph.SESSION_RAW_DATA_FOLDER, display_idx=sph.PARAMS["DISPLAY_IDX"])  # Locks
+bonsai.start_passive_visual_stim(
+    sph.SESSION_RAW_DATA_FOLDER, display_idx=sph.PARAMS["DISPLAY_IDX"]
+)  # Locks
 
 # start Bonsai stim workflow
 bonsai.start_visual_stim(sph)

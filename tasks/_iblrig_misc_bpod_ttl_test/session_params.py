@@ -17,7 +17,7 @@ from iblrig.path_helper import SessionPathCreator
 from iblrig.raw_data_loaders import load_data
 from iblrig.rotary_encoder import MyRotaryEncoder
 
-log = logging.getLogger('iblrig')
+log = logging.getLogger("iblrig")
 
 
 class SessionParamHandler(object):

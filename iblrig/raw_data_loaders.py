@@ -22,7 +22,7 @@ import pandas as pd
 
 from iblrig.time import uncycle_pgts, convert_pgts
 
-log = logging.getLogger('iblrig')
+log = logging.getLogger("iblrig")
 
 
 # class definition with no init is used as a namespace
@@ -142,7 +142,7 @@ def load_data(session_path: Union[str, Path], time="absolute"):
 
 
 def load_camera_frame_data(session_path, camera: str = "left", raw: bool = False) -> pd.DataFrame:
-    """ Loads binary frame data from Bonsai camera recording workflow.
+    """Loads binary frame data from Bonsai camera recording workflow.
 
     Args:
         session_path (StrPath): Path to session folder
@@ -313,7 +313,7 @@ def load_camera_gpio(session_path, label: str, as_dicts=False):
         # This deals with missing and empty files the same
         gpio = np.fromfile(GPIO_file, dtype=np.float64).astype(np.uint32) if GPIO_file else []
         # Check values make sense (4 pins = 16 possible values)
-        if not np.isin(gpio, np.left_shift(np.arange(2 ** 4, dtype=np.uint32), 32 - 4)).all():
+        if not np.isin(gpio, np.left_shift(np.arange(2**4, dtype=np.uint32), 32 - 4)).all():
             log.warning("Unexpected GPIO values; decoding may fail")
         if len(gpio) == 0:
             return [None] * 4 if as_dicts else None
@@ -659,7 +659,7 @@ def _clean_wheel_dataframe(data, label, path):
                 )
             # if it's an uint32 wraparound, the diff should be close to 2 ** 32
             elif 32 - np.log2(data["re_ts"][i] - data["re_ts"][i + 1]) < 0.2:
-                data.loc[i + 1 :, "re_ts"] = data.loc[i + 1 :, "re_ts"] + 2 ** 32
+                data.loc[i + 1 :, "re_ts"] = data.loc[i + 1 :, "re_ts"] + 2**32
             # there is also the case where 2 positions are swapped and need to be swapped back
 
             elif data["re_ts"][i] > data["re_ts"][i + 1] > data["re_ts"][i - 1]:

@@ -14,7 +14,7 @@ from iblrig.bpod_helper import BpodMessageCreator
 from session_params import SessionParamHandler
 from trial_params import TrialParamHandler
 
-log = logging.getLogger('iblrig')
+log = logging.getLogger("iblrig")
 
 global sph
 sph = SessionParamHandler(task_settings, user_settings)

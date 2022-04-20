@@ -12,7 +12,7 @@ from shutil import ignore_patterns as ig
 
 import iblrig.raw_data_loaders as raw
 
-log = logging.getLogger('iblrig')
+log = logging.getLogger("iblrig")
 
 
 def main(local_folder: str, remote_folder: str, force: bool = False) -> None:
@@ -42,7 +42,7 @@ def main(local_folder: str, remote_folder: str, force: bool = False) -> None:
         try:
             shutil.copytree(src, dst, ignore=ig(str(src_flag_file.name)))
         except OSError:
-            log.info('An OS error occurred when attempting ot copy the subdirectories.')
+            log.info("An OS error occurred when attempting ot copy the subdirectories.")
         # if folder was created, delete the src flag_file and create compress_me.flag
         if dst.exists():
             settings = raw.load_settings(dst)
@@ -56,8 +56,10 @@ def main(local_folder: str, remote_folder: str, force: bool = False) -> None:
             try:
                 src_flag_file.unlink()
             except FileNotFoundError:
-                log.info('When attempting to delete the following file, it could not be found: ' +
-                         str(src_flag_file))
+                log.info(
+                    "When attempting to delete the following file, it could not be found: "
+                    + str(src_flag_file)
+                )
 
         # Cleanup
         src_video_file = src / "raw_video_data" / "_iblrig_leftCamera.raw.avi"
@@ -65,21 +67,29 @@ def main(local_folder: str, remote_folder: str, force: bool = False) -> None:
         src_audio_file = src / "raw_behavior_data" / "_iblrig_micData.raw.wav"
         dst_audio_file = dst / "raw_behavior_data" / "_iblrig_micData.raw.wav"
 
-        if (src_audio_file.exists() and
-                src_audio_file.stat().st_size == dst_audio_file.stat().st_size):
+        if (
+            src_audio_file.exists()
+            and src_audio_file.stat().st_size == dst_audio_file.stat().st_size
+        ):
             try:
                 src_audio_file.unlink()
             except FileNotFoundError:
-                log.info('When attempting to delete the following file, it could not be found: ' +
-                         str(src_audio_file))
+                log.info(
+                    "When attempting to delete the following file, it could not be found: "
+                    + str(src_audio_file)
+                )
 
-        if (src_video_file.exists() and
-                src_video_file.stat().st_size == dst_video_file.stat().st_size):
+        if (
+            src_video_file.exists()
+            and src_video_file.stat().st_size == dst_video_file.stat().st_size
+        ):
             try:
                 src_video_file.unlink()
             except FileNotFoundError:
-                log.info('When attempting to delete the following file, it could not be found: ' +
-                         str(src_video_file))
+                log.info(
+                    "When attempting to delete the following file, it could not be found: "
+                    + str(src_video_file)
+                )
 
 
 if __name__ == "__main__":

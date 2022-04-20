@@ -19,8 +19,9 @@ import iblrig.misc as misc
 import iblrig.path_helper as ph
 import iblrig.sound as sound
 
-log = logging.getLogger('iblrig')
+log = logging.getLogger("iblrig")
 log.setLevel(logging.DEBUG)
+
 
 class SessionParamHandler(object):
     """Session object imports user_settings and task_settings

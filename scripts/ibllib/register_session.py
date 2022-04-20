@@ -9,7 +9,7 @@ import traceback
 
 from ibllib.oneibl.registration import RegistrationClient
 
-log = logging.getLogger('iblrig')
+log = logging.getLogger("iblrig")
 
 
 if __name__ == "__main__":

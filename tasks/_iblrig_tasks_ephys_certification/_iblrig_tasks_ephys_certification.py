@@ -10,7 +10,7 @@ import iblrig.misc as misc
 import task_settings
 from session_params import SessionParamHandler
 
-log = logging.getLogger('iblrig')
+log = logging.getLogger("iblrig")
 
 sph = SessionParamHandler(task_settings, user_settings)
 

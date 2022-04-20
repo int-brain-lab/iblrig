@@ -24,7 +24,7 @@ except ImportError:
 
 sys.stdout.flush()
 
-log = logging.getLogger('iblrig')
+log = logging.getLogger("iblrig")
 
 PARAMS = params.load_params_file()
 subj = "_iblrig_test_mouse"

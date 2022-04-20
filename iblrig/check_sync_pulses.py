@@ -16,7 +16,7 @@ import numpy as np
 import iblrig.raw_data_loaders as raw
 from iblrig.misc import get_port_events
 
-log = logging.getLogger('iblrig')
+log = logging.getLogger("iblrig")
 
 
 def sync_check(tph):

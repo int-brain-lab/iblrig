@@ -18,7 +18,7 @@ from pathlib import Path
 from one.alf.files import get_session_path
 from one.api import ONE
 
-log = logging.getLogger('iblrig')
+log = logging.getLogger("iblrig")
 
 
 def session_name(path) -> str:

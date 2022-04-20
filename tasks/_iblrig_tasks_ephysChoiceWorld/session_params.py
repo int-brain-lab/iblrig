@@ -23,7 +23,7 @@ import iblrig.user_input as user_input
 from iblrig.path_helper import SessionPathCreator
 from iblrig.rotary_encoder import MyRotaryEncoder
 
-log = logging.getLogger('iblrig')
+log = logging.getLogger("iblrig")
 
 
 class SessionParamHandler(object):
