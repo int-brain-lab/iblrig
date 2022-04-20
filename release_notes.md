@@ -2,6 +2,7 @@
 
 ## **Release Notes develop**
 
+- Reduced dependencies for logging, simplified implementation, logging bug fix for 'transfer_rig_data.py' script 
 - Externalized DisplayIndex to PARAM file, refactored tasks and created DEFAULT_PARAMS dictionary for easier customization.
 - Added camera setup workflow launch, before training tasks (habituation/training/biased)
 - Rearranged loading order of devices for tasks to account for the Bonsai load time, ensuring the first trial has stimulus

@@ -1,4 +1,4 @@
-__version__ = "6.6.0rc0"
+__version__ = "6.6.0rc1"
 # !/usr/bin/env python
 # @Author: Niccolò Bonacchi
 # @Creation_Date: Friday, January 11th 2019, 2:04:42 pm
