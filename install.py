@@ -11,9 +11,16 @@ import subprocess
 import sys
 from pathlib import Path
 
-from packaging.version import parse as version
+print("Performing a 'pip install' for the base environment")
+subprocess.check_call([sys.executable, "-m", "pip", "install", "setuptools", "wheel", "packaging", "colorlog"])
 
-from iblrig import envs
+try:
+    from packaging.version import parse as version
+    from iblrig import envs
+except ImportError:
+    print("Something likely went wrong with the previous pip install, please check error:\n" +
+          str(ImportError))
+    exit(1)
 
 # BEGIN CONSTANT DEFINITION
 IBLRIG_ROOT_PATH = Path.cwd()

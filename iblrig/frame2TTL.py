@@ -42,7 +42,8 @@ def Frame2TTL(serial_port: str, version: int = 2) -> object:
                 iblrig.params.update_params_file(data={"F2TTL_HW_VERSION": 1})
             return f2ttl
         except BaseException as e:
-            log.error(f"Couldn't connect to F2TTLv1: {str(e)}")
+            log.error(f"Couldn't connect to F2TTLv1: {str(e)}\nDisconnecting and then "
+                      f"reconnecting the Frame2TTL cable may resolve this issue.")
     elif version == 0:
         return None
 
