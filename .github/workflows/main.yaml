@@ -40,7 +40,7 @@ jobs:
           conda activate base
           python -V
           which pip
-          pip install setuptools wheel packaging
+          pip install setuptools wheel packaging colorlog
           python install.py --reinstall-response y --config-response y --bonsai-response y --ONE-response n
           conda activate ibllib
           python -c "from one.api import ONE; ONE(base_url='https://test.alyx.internationalbrainlab.org', username='test_user', password='TapetesBloc18', silent=True)"

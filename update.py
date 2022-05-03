@@ -17,16 +17,30 @@ if __name__ == "__main__":
     VERSION = git.get_current_version()
     parser = argparse.ArgumentParser(description="Update iblrig")
     parser.add_argument(
-        "-v", required=False, default=False, help="Available versions: " + str(ALL_VERSIONS),
+        "-v",
+        required=False,
+        default=False,
+        help="Available versions: " + str(ALL_VERSIONS),
     )
     parser.add_argument(
-        "-b", required=False, default=False, help="Available branches: " + str(ALL_BRANCHES),
+        "-b",
+        required=False,
+        default=False,
+        help="Available branches: " + str(ALL_BRANCHES),
     )
     parser.add_argument(
-        "--reinstall", required=False, default=False, action="store_true", help="Reinstall iblrig",
+        "--reinstall",
+        required=False,
+        default=False,
+        action="store_true",
+        help="Reinstall iblrig",
     )
     parser.add_argument(
-        "--ibllib", required=False, default=False, action="store_true", help="Update ibllib only",
+        "--ibllib",
+        required=False,
+        default=False,
+        action="store_true",
+        help="Update ibllib only",
     )
     parser.add_argument(
         "--update",
@@ -43,7 +57,11 @@ if __name__ == "__main__":
         help="Disply information on branches and versions",
     )
     parser.add_argument(
-        "--iblrig", required=False, default=False, action="store_true", help="Update iblrig only",
+        "--iblrig",
+        required=False,
+        default=False,
+        action="store_true",
+        help="Update iblrig only",
     )
     parser.add_argument(
         "--setup-pybpod",
@@ -53,7 +71,11 @@ if __name__ == "__main__":
         help="Reset pybpod to default config",
     )
     parser.add_argument(
-        "--conda", required=False, default=False, action="store_true", help="Update conda",
+        "--conda",
+        required=False,
+        default=False,
+        action="store_true",
+        help="Update conda",
     )
     parser.add_argument(
         "--pip",

@@ -4,19 +4,18 @@
 # @Date:   2018-02-02 12:31:13
 import logging
 
-import iblrig.bonsai as bonsai
 import matplotlib.pyplot as plt
 import user_settings
-from iblrig.bpod_helper import BpodMessageCreator
 from pybpodapi.protocol import Bpod, StateMachine
 
+import iblrig.bonsai as bonsai
 import online_plots as op
 import task_settings
+from iblrig.bpod_helper import BpodMessageCreator
 from session_params import SessionParamHandler
 from trial_params import TrialParamHandler
 
 log = logging.getLogger("iblrig")
-log.setLevel(logging.INFO)
 
 global sph
 sph = SessionParamHandler(task_settings, user_settings)

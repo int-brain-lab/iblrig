@@ -34,7 +34,6 @@ from pybpod_rotaryencoder_module.module_api import RotaryEncoderModule
 from pybpod_soundcard_module.module_api import SoundCardModule
 from pybpodapi.protocol import Bpod
 
-import iblrig.logging_  # noqa
 import iblrig.params as params
 import iblrig.path_helper as ph
 from iblrig import envs

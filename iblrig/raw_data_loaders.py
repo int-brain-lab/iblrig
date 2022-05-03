@@ -22,7 +22,7 @@ import pandas as pd
 
 from iblrig.time import uncycle_pgts, convert_pgts
 
-_logger = logging.getLogger("iblrig")
+log = logging.getLogger("iblrig")
 
 
 # class definition with no init is used as a namespace
@@ -128,12 +128,12 @@ def load_data(session_path: Union[str, Path], time="absolute"):
     :rtype: list of dicts
     """
     if session_path is None:
-        _logger.warning("No data loaded: session_path is None")
+        log.warning("No data loaded: session_path is None")
         return
     path = Path(session_path).joinpath("raw_behavior_data")
     path = next(path.glob("_iblrig_taskData.raw*.jsonable"), None)
     if not path:
-        _logger.warning("No data loaded: could not find raw data file")
+        log.warning("No data loaded: could not find raw data file")
         return None
     data = jsonable.read(path)
     if time == "absolute":
@@ -142,7 +142,7 @@ def load_data(session_path: Union[str, Path], time="absolute"):
 
 
 def load_camera_frame_data(session_path, camera: str = "left", raw: bool = False) -> pd.DataFrame:
-    """ Loads binary frame data from Bonsai camera recording workflow.
+    """Loads binary frame data from Bonsai camera recording workflow.
 
     Args:
         session_path (StrPath): Path to session folder
@@ -313,8 +313,8 @@ def load_camera_gpio(session_path, label: str, as_dicts=False):
         # This deals with missing and empty files the same
         gpio = np.fromfile(GPIO_file, dtype=np.float64).astype(np.uint32) if GPIO_file else []
         # Check values make sense (4 pins = 16 possible values)
-        if not np.isin(gpio, np.left_shift(np.arange(2 ** 4, dtype=np.uint32), 32 - 4)).all():
-            _logger.warning("Unexpected GPIO values; decoding may fail")
+        if not np.isin(gpio, np.left_shift(np.arange(2**4, dtype=np.uint32), 32 - 4)).all():
+            log.warning("Unexpected GPIO values; decoding may fail")
         if len(gpio) == 0:
             return [None] * 4 if as_dicts else None
         # 4 pins represented as uint32
@@ -323,7 +323,7 @@ def load_camera_gpio(session_path, label: str, as_dicts=False):
 
     if as_dicts:
         if not gpio.any():
-            _logger.error("No GPIO changes")
+            log.error("No GPIO changes")
             return [None] * 4
         # Find state changes for each pin and construct a dict of indices and polarities for each
         edges = np.vstack((gpio[0, :], np.diff(gpio.astype(int), axis=0)))
@@ -351,12 +351,12 @@ def load_settings(session_path: Union[str, Path]):
     :rtype: dict
     """
     if session_path is None:
-        _logger.warning("No data loaded: session_path is None")
+        log.warning("No data loaded: session_path is None")
         return
     path = Path(session_path).joinpath("raw_behavior_data")
     path = next(path.glob("_iblrig_taskSettings.raw*.json"), None)
     if not path:
-        _logger.warning("No data loaded: could not find raw settings file")
+        log.warning("No data loaded: could not find raw settings file")
         return None
     with open(path, "r") as f:
         settings = json.load(f)
@@ -422,7 +422,7 @@ def load_encoder_events(session_path, settings=False):
 def _load_encoder_ssv_file(file_path, **kwargs):
     file_path = Path(file_path)
     if file_path.stat().st_size == 0:
-        _logger.error(f"{file_path.name} is an empty file. ")
+        log.error(f"{file_path.name} is an empty file. ")
         raise ValueError(f"{file_path.name} is an empty file. ABORT EXTRACTION. ")
     return pd.read_csv(file_path, sep=" ", header=None, error_bad_lines=False, **kwargs)
 
@@ -520,7 +520,7 @@ def load_encoder_positions(session_path, settings=False):
         if line.startswith("Position"):
             settings = {"IBLRIG_VERSION_TAG": "0.0.0"}
     if not path:
-        _logger.warning("No data loaded: could not find raw encoderPositions file")
+        log.warning("No data loaded: could not find raw encoderPositions file")
         return None
     if version.parse(settings["IBLRIG_VERSION_TAG"]) > version.parse("5.0.0"):
         return _load_encoder_positions_file_ge5(path)
@@ -635,7 +635,7 @@ def load_mic(session_path):
 
 def _clean_wheel_dataframe(data, label, path):
     if np.any(data.isna()):
-        _logger.warning(label + " has missing/incomplete records \n %s", path)
+        log.warning(label + " has missing/incomplete records \n %s", path)
     # first step is to re-interpret as numeric objects if not already done
     for col in data.columns:
         if data[col].dtype == object and col not in ["bns_ts"]:
@@ -653,17 +653,17 @@ def _clean_wheel_dataframe(data, label, path):
             # the first sample may be corrupt, in this case throw away
             if i <= 1:
                 drop_first = i
-                _logger.warning(
+                log.warning(
                     label + " rotary encoder positions timestamps"
                     " first sample corrupt " + str(path)
                 )
             # if it's an uint32 wraparound, the diff should be close to 2 ** 32
             elif 32 - np.log2(data["re_ts"][i] - data["re_ts"][i + 1]) < 0.2:
-                data.loc[i + 1 :, "re_ts"] = data.loc[i + 1 :, "re_ts"] + 2 ** 32
+                data.loc[i + 1 :, "re_ts"] = data.loc[i + 1 :, "re_ts"] + 2**32
             # there is also the case where 2 positions are swapped and need to be swapped back
 
             elif data["re_ts"][i] > data["re_ts"][i + 1] > data["re_ts"][i - 1]:
-                _logger.warning(
+                log.warning(
                     label
                     + " rotary encoder timestamps swapped at index: "
                     + str(i)
@@ -674,7 +674,7 @@ def _clean_wheel_dataframe(data, label, path):
                 data.iloc[i], data.iloc[i + 1] = b, a
             # if none of those 3 cases apply, raise an error
             else:
-                _logger.error(label + " Rotary encoder timestamps are not sorted." + str(path))
+                log.error(label + " Rotary encoder timestamps are not sorted." + str(path))
                 data.sort_values("re_ts", inplace=True)
                 data.reset_index(inplace=True)
     if drop_first is not False:
@@ -697,7 +697,7 @@ def _groom_wheel_data_lt5(data, label="file ", path=""):
         - datetime.strptime(data["bns_ts"].iloc[0][:25], "%Y-%m-%dT%H:%M:%S.%f")
     ).seconds
     if data["re_ts"].iloc[-1] / (sess_len_sec + 1e-6) < 1e5:  # should be 1e6 normally
-        _logger.warning(
+        log.warning(
             "Rotary encoder reset logs events in ms instead of us: "
             + "RE firmware needs upgrading and wheel velocity is potentially inaccurate"
         )
@@ -714,7 +714,7 @@ def _groom_wheel_data_ge5(data, label="file ", path=""):
     data = _clean_wheel_dataframe(data, label, path)
     # check if the time scale is in ms
     if (data["re_ts"].iloc[-1] - data["re_ts"].iloc[0]) / 1e6 < 20:
-        _logger.warning(
+        log.warning(
             "Rotary encoder reset logs events in ms instead of us: "
             + "RE firmware needs upgrading and wheel velocity is potentially inaccurate"
         )
@@ -728,7 +728,7 @@ def save_bool(save, dataset_type):
     elif isinstance(save, list):
         out = (dataset_type in save) or (Path(dataset_type).stem in save)
     if out:
-        _logger.debug("extracting" + dataset_type)
+        log.debug("extracting" + dataset_type)
     return out
 
 

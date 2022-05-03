@@ -54,7 +54,8 @@ def init_calib_func() -> scipy.interpolate.pchip:
         raise ValueError("Rig not calibrated")
 
     time2vol = scipy.interpolate.pchip(
-        PARAMS["WATER_CALIBRATION_OPEN_TIMES"], PARAMS["WATER_CALIBRATION_WEIGHT_PERDROP"],
+        PARAMS["WATER_CALIBRATION_OPEN_TIMES"],
+        PARAMS["WATER_CALIBRATION_WEIGHT_PERDROP"],
     )
 
     return time2vol

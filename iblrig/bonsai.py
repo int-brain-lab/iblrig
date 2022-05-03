@@ -46,7 +46,6 @@ if platform == "linux":
     def start_camera_setup(*args, **kwargs):
         return
 
-
 else:
     # =====================================================================
     # SESSION PARAM HANDLER OBJECT METHODS
@@ -288,10 +287,20 @@ else:
         os.chdir(stim_folder)
         if harp:
             s = subprocess.Popen(
-                [bns, wkfl, noboot, noedit, data_file_name, lengths_file_name, harp_file_name, ]
+                [
+                    bns,
+                    wkfl,
+                    noboot,
+                    noedit,
+                    data_file_name,
+                    lengths_file_name,
+                    harp_file_name,
+                ]
             )
         else:
-            s = subprocess.Popen([bns, wkfl, noboot, noedit, display_idx, data_file_name, lengths_file_name])
+            s = subprocess.Popen(
+                [bns, wkfl, noboot, noedit, display_idx, data_file_name, lengths_file_name]
+            )
         os.chdir(here)
         return s
 

@@ -19,7 +19,6 @@ from one.alf.files import get_session_path
 from one.api import ONE
 
 log = logging.getLogger("iblrig")
-log.setLevel(logging.INFO)
 
 
 def session_name(path) -> str:

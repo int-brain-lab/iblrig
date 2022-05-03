@@ -8,14 +8,12 @@ Getting and loading parameters
 """
 import json
 import logging
-import re
 import shutil
 from pathlib import Path
 
 from pybpodgui_api.models.project import Project
 
 import iblrig
-import iblrig.logging_  # noqa
 import iblrig.path_helper as ph
 from iblrig.graphic import strinput
 

@@ -71,7 +71,7 @@ def update_bonsai_config():
     broot = IBLRIG_ROOT_PATH / "Bonsai"
     bonsai_exe = broot / "Bonsai64.exe"
     if bonsai_exe.exists():
-        subprocess.call([str(bonsai_exe), '--no-editor', str(broot / 'empty.bonsai')])
+        subprocess.call([str(bonsai_exe), "--no-editor", str(broot / "empty.bonsai")])
     else:
         bonsai_exe = broot / "Bonsai.exe"
         subprocess.call([str(bonsai_exe), "--no-editor"])
@@ -101,7 +101,7 @@ def upgrade_bonsai(version, branch):
     broot = IBLRIG_ROOT_PATH / "Bonsai"
     bonsai_exe = broot / "Bonsai64.exe"
     if bonsai_exe.exists():
-        subprocess.call([str(bonsai_exe), '--no-editor', str(broot / 'empty.bonsai')])
+        subprocess.call([str(bonsai_exe), "--no-editor", str(broot / "empty.bonsai")])
     else:
         subprocess.call("setup.bat")
     os.chdir(here)

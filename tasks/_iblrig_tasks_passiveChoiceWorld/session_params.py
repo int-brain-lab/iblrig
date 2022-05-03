@@ -10,13 +10,14 @@ from pathlib import Path
 from sys import platform
 from tkinter import messagebox
 
+from pythonosc import udp_client
+
 import iblrig.adaptive as adaptive
 import iblrig.ambient_sensor as ambient_sensor
 import iblrig.iotasks as iotasks
 import iblrig.misc as misc
 import iblrig.path_helper as ph
 import iblrig.sound as sound
-from pythonosc import udp_client
 
 log = logging.getLogger("iblrig")
 log.setLevel(logging.DEBUG)

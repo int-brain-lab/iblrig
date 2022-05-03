@@ -127,7 +127,13 @@ def scale_read(COMport_string):
 
 # initialize a dataframe with the results
 df1 = pd.DataFrame(
-    columns=["time", "open_time", "ndrops", "mean_measured_weight", "std_measured_weight",],
+    columns=[
+        "time",
+        "open_time",
+        "ndrops",
+        "mean_measured_weight",
+        "std_measured_weight",
+    ],
     dtype=object,
 )
 ntrials = sph.NTRIALS
@@ -157,7 +163,8 @@ for open_time in open_times:
         stopweight = scale_read(sph.OAHUS_SCALE_PORT)
     else:
         stopweight = numinput(
-            f"{open_time}ms pass {pass_}", "Enter the weight diplayed on the scale (gr):",
+            f"{open_time}ms pass {pass_}",
+            "Enter the weight diplayed on the scale (gr):",
         )
     # get the value of the amout of water delivered
     measured_weight = stopweight - startweight
@@ -192,7 +199,8 @@ for open_time in open_times:
     progress += 1
 
     print(
-        f"{progress / max_prog * 100}%", f"- Pass {pass_}/{sph.PASSES} @ {open_time}ms done.",
+        f"{progress / max_prog * 100}%",
+        f"- Pass {pass_}/{sph.PASSES} @ {open_time}ms done.",
     )
 
 # SAVE
@@ -213,7 +221,9 @@ ax[0].plot(xp, time2vol(xp), "-k")
 # CALIBRATION CURVE
 sns.scatterplot(x="open_time", y="weight_perdrop", data=df1, ax=ax[0])
 ax[0].set(
-    xlabel="Open time (ms)", ylabel="Measured volume (ul per drop)", title="Calibration curve",
+    xlabel="Open time (ms)",
+    ylabel="Measured volume (ul per drop)",
+    title="Calibration curve",
 )
 title = f.suptitle(f"Water calibration {now}")
 f.savefig(sph.CALIBRATION_CURVE_FILE_PATH)

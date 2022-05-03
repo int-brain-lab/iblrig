@@ -8,7 +8,6 @@ import time
 
 import iblrig.params as params
 from iblrig.frame2TTL import Frame2TTL
-
 from session_params import SessionParamHandler
 
 log = logging.getLogger("iblrig")

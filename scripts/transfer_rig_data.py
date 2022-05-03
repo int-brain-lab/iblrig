@@ -4,7 +4,6 @@
 # @Editor: Michele Fabbri
 # @Edit_Date: 2022-02-01
 import argparse
-import json
 import logging
 import os
 import shutil
@@ -12,11 +11,8 @@ from pathlib import Path
 from shutil import ignore_patterns as ig
 
 import iblrig.raw_data_loaders as raw
-from iblrig.misc import get_session_path
-from iblrig.raw_data_loaders import load_settings
 
 log = logging.getLogger("iblrig")
-log.setLevel(logging.INFO)
 
 
 def main(local_folder: str, remote_folder: str, force: bool = False) -> None:
@@ -42,17 +38,28 @@ def main(local_folder: str, remote_folder: str, force: bool = False) -> None:
         src_flag_file = src / "transfer_me.flag"
         if force:
             shutil.rmtree(dst, ignore_errors=True)
-        log.info(f"Copying {src}...")
-        shutil.copytree(src, dst, ignore=ig(str(src_flag_file.name)))
-        # finally if folder was created delete the src flag_file and create compress_me.flag
+        log.info(f"Copying subdirectories from {src} to {dst} ...")
+        try:
+            shutil.copytree(src, dst, ignore=ig(str(src_flag_file.name)))
+        except OSError:
+            log.info("An OS error occurred when attempting ot copy the subdirectories.")
+        # if folder was created, delete the src flag_file and create compress_me.flag
         if dst.exists():
             settings = raw.load_settings(dst)
+            if not settings:
+                log.info("A _iblrig_taskSettings.raw*.json was not found.")
             dst.joinpath("raw_session.flag").touch()
-            if "ephys" in settings["PYBPOD_BOARD"]:  # Any traing task on an ephys rig
+            if "ephys" in settings["PYBPOD_BOARD"]:  # Any training task on an ephys rig
                 log.info(f"Removing raw_session.flag file; ephys behavior rig detected")
                 dst.joinpath("raw_session.flag").unlink()
             log.info(f"Copied to {remote_folder}: Session {src_flag_file.parent}")
-            src_flag_file.unlink()
+            try:
+                src_flag_file.unlink()
+            except FileNotFoundError:
+                log.info(
+                    "When attempting to delete the following file, it could not be found: "
+                    + str(src_flag_file)
+                )
 
         # Cleanup
         src_video_file = src / "raw_video_data" / "_iblrig_leftCamera.raw.avi"
@@ -64,13 +71,25 @@ def main(local_folder: str, remote_folder: str, force: bool = False) -> None:
             src_audio_file.exists()
             and src_audio_file.stat().st_size == dst_audio_file.stat().st_size
         ):
-            src_audio_file.unlink()
+            try:
+                src_audio_file.unlink()
+            except FileNotFoundError:
+                log.info(
+                    "When attempting to delete the following file, it could not be found: "
+                    + str(src_audio_file)
+                )
 
         if (
             src_video_file.exists()
             and src_video_file.stat().st_size == dst_video_file.stat().st_size
         ):
-            src_video_file.unlink()
+            try:
+                src_video_file.unlink()
+            except FileNotFoundError:
+                log.info(
+                    "When attempting to delete the following file, it could not be found: "
+                    + str(src_video_file)
+                )
 
 
 if __name__ == "__main__":

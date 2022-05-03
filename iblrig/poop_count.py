@@ -19,7 +19,8 @@ IBLRIG_DATA = Path().cwd().parent.parent.parent.parent / "iblrig_data" / "Subjec
 def poop() -> None:
     poop_flags = list(IBLRIG_DATA.rglob("poop_count.flag"))
     poop_flags = sorted(
-        poop_flags, key=lambda x: (parser.parse(x.parent.parent.name), int(x.parent.name)),
+        poop_flags,
+        key=lambda x: (parser.parse(x.parent.parent.name), int(x.parent.name)),
     )
     if not poop_flags:
         return
