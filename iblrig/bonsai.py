@@ -322,7 +322,9 @@ else:
         time.sleep(3)
         os.chdir(here)
 
-    def start_camera_setup():
+    def start_camera_setup(modality):
+        if modality == "ephys":
+            return
         here = os.getcwd()
         iblrig_folder_path = Path(ph.get_iblrig_folder())
         os.chdir(str(iblrig_folder_path / "devices" / "camera_setup"))

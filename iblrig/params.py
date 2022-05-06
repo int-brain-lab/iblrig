@@ -271,6 +271,24 @@ def ask_params_comports(data: dict) -> dict:
     return data
 
 
+def get_modality_from_board(board_name):
+    """Logic from board name is:
+    - ephys behavior PC calls its Bpod board something_ephys_something
+    - training rig behavior PC calls it's Bpod board something_behavior_something
+    Launching behavior tasks on an ephys rig should not launch the cameras
+
+    after rigcore integration use modality and device lists to decide whether to
+    e.g. launch video or not on session start.
+    """
+    if "ephys" in board_name:
+        mod = "ephys"
+    elif "behavior" in board_name:
+        mod = "training"
+    else:
+        raise NotImplementedError("Unknown modality from board name: {board_name}")
+    return mod
+
+
 if __name__ == "__main__":
     params = load_params_file()
     print(".")

@@ -2,13 +2,15 @@
 # -*- coding: utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date:   2018-02-02 12:31:13
-import user_settings
-from pybpodapi.protocol import Bpod, StateMachine
+import logging
 
 import iblrig.bonsai as bonsai
-import logging
-import task_settings
+import user_settings
 from iblrig.bpod_helper import BpodMessageCreator
+from iblrig.params import get_modality_from_board
+from pybpodapi.protocol import Bpod, StateMachine
+
+import task_settings
 from session_params import SessionParamHandler
 from trial_params import TrialParamHandler
 
@@ -58,7 +60,7 @@ tph = TrialParamHandler(sph)
 # =====================================================================
 # RUN CAMERA SETUP
 # =====================================================================
-bonsai.start_camera_setup()
+bonsai.start_camera_setup(get_modality_from_board(sph.PYBPOD_BOARD))
 for i in range(sph.NTRIALS):  # Main loop
     tph.next_trial()
     log.info(f"Starting trial: {i + 1}")
