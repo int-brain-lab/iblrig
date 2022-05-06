@@ -6,7 +6,9 @@
 import logging
 import struct
 
+import numpy as np
 import serial
+from pybpodapi.protocol import Bpod, StateMachine
 from pybpod_rotaryencoder_module.module import RotaryEncoder
 
 import iblrig.params as params
@@ -99,3 +101,25 @@ def bpod_lights(comport: str, command: int):
     ser.close()
     log.debug(f"Sent <:{command}> to {comport}")
     return
+
+
+def send_behavior_init_pulses():
+    bpod_start = Bpod()
+    delays = np.array([1, 2, 4, 8, 16, 32, 64, 64, 32, 16, 8, 4, 2, 1])
+    delays = delays * 0.016  # unit seconds
+    for d in delays:
+        sma = StateMachine(bpod_start)
+
+        sma.add_state(
+            state_name="high",
+            state_timer=0.005,
+            output_actions=[("BNC1", 255)],
+            state_change_conditions={"Tup": "low"},
+        )
+        sma.add_state(
+            state_name="low",
+            state_timer=d,
+            output_actions=[],  # The same as [("BNC1",0)],
+            state_change_conditions={"Tup": "exit"},
+        )
+    bpod_start.close()
