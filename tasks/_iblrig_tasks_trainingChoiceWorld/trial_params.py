@@ -466,8 +466,7 @@ RELATIVE HUMIDITY:    {self.as_data['RelativeHumidity']} %
             log.debug(f"Next trial: RepeatContrast, biased position: {_position}")
         else:
             _position = np.random.choice(
-                self.position_set,
-                p=[self.stim_probability_left, 1 - self.stim_probability_left],
+                self.position_set, p=[self.stim_probability_left, 1 - self.stim_probability_left],
             )
         log.debug(f"stim_probability_left: {str(1-right_proportion)}")
         return (int(_position), 1 - right_proportion)
@@ -915,13 +914,7 @@ if __name__ == "__main__":
                 3010.791699,
                 3012.791699,
             ],
-            "RotaryEncoder1_3": [
-                2950.120499,
-                2950.139099,
-                2950.161899,
-                2950.194099,
-                2981.703499,
-            ],
+            "RotaryEncoder1_3": [2950.120499, 2950.139099, 2950.161899, 2950.194099, 2981.703499,],
             "BNC1Low": [
                 2950.181299,
                 2950.8635990000002,
@@ -1010,8 +1003,7 @@ if __name__ == "__main__":
 
     print("Average next_trial times:", sum(next_trial_times) / len(next_trial_times))
     print(
-        "Average trial_completed times:",
-        sum(trial_completed_times) / len(trial_completed_times),
+        "Average trial_completed times:", sum(trial_completed_times) / len(trial_completed_times),
     )
 
     print(tph.ac.contrast_set)

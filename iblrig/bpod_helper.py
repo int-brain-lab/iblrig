@@ -37,10 +37,7 @@ class BpodMessageCreator(object):
         self.bpod.load_serial_message(
             self.rotary_encoder,
             re_reset,
-            [
-                RotaryEncoder.COM_SETZEROPOS,  # ord('Z')
-                RotaryEncoder.COM_ENABLE_ALLTHRESHOLDS,
-            ],
+            [RotaryEncoder.COM_SETZEROPOS, RotaryEncoder.COM_ENABLE_ALLTHRESHOLDS,],  # ord('Z')
         )  # ord('E')
         self.default_message_idx += 1
         return re_reset

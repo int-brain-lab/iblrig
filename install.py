@@ -12,14 +12,18 @@ import sys
 from pathlib import Path
 
 print("Performing a 'pip install' for the base environment")
-subprocess.check_call([sys.executable, "-m", "pip", "install", "setuptools", "wheel", "packaging", "colorlog"])
+subprocess.check_call(
+    [sys.executable, "-m", "pip", "install", "setuptools", "wheel", "packaging", "colorlog",]
+)
 
 try:
     from packaging.version import parse as version
     from iblrig import envs
 except ImportError:
-    print("Something likely went wrong with the previous pip install, please check error:\n" +
-          str(ImportError))
+    print(
+        "Something likely went wrong with the previous pip install, please check error:\n"
+        + str(ImportError)
+    )
     exit(1)
 
 # BEGIN CONSTANT DEFINITION
@@ -318,8 +322,7 @@ def setup_one(resp=False):
             os.system(f'{python} -c "from one.api import ONE; ONE()"')
         except BaseException as e:
             print(
-                e,
-                "\n\nONE setup incomplete please set up ONE manually",
+                e, "\n\nONE setup incomplete please set up ONE manually",
             )
             log.exception(e)
     elif user_input != "n" and user_input != "y":

@@ -136,9 +136,7 @@ def create_user(project_name, username="_iblrig_test_user", force=False):
         print(f"  Created user: [{user.name}] in project [{project_name}]")
     else:
         user = p.find_user(username)
-        print(
-            f"  Skipping creation: User [{user.name}] already exists in project [{project_name}]"
-        )
+        print(f"  Skipping creation: User [{user.name}] already exists in project [{project_name}]")
 
     if p.find_user("_iblrig_test_user") is None:
         create_user(project_name, username="_iblrig_test_user", force=True)
@@ -174,9 +172,7 @@ def create_board_from_main_project_to(project_name, force=False):
         p.save(project_path)
         print(f"  Created board: [{board.name}] in project [{project_name}]")
     elif len(p.boards) > 1:
-        print(
-            f"  Skipping creation: project [{project_name}] already has [{len(p.boards)}] boards"
-        )
+        print(f"  Skipping creation: project [{project_name}] already has [{len(p.boards)}] boards")
     elif len(p.boards) == 1:
         bname = p.boards[0].name
         print(f"  Skipping creation: Board [{bname}] already exists in project [{project_name}]")

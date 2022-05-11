@@ -75,7 +75,7 @@ def get_alyx_project_info(project_name: str = None, one: object = None):
     users_filepath = ROOT_FOLDER.joinpath("users.json")
     subjects_filepath = ROOT_FOLDER.joinpath(f"{project_name}_subjects.json")
     for fpath, data in zip(
-        [projects_filepath, users_filepath, subjects_filepath], [projects, users, subjects]
+        [projects_filepath, users_filepath, subjects_filepath], [projects, users, subjects],
     ):
         if fpath.exists():
             shutil.move(fpath, fpath.parent.joinpath(fpath.name + ".bak"))
@@ -98,10 +98,7 @@ if __name__ == "__main__":
         help="Syncronize params file with Alyx",
     )
     parser.add_argument(
-        "--get-project",
-        required=False,
-        default=False,
-        help="Download project data from Alyx",
+        "--get-project", required=False, default=False, help="Download project data from Alyx",
     )
     parser.add_argument(
         "--one-test",

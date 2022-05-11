@@ -45,9 +45,7 @@ class SessionParamHandler(object):
         self = iotasks.deserialize_pybpod_user_settings(self)
         # Pretend to run a new ephys session
         spc = ph.SessionPathCreator(
-            self.PYBPOD_SUBJECTS[0],
-            protocol="_iblrig_tasks_ephysChoiceWorld",
-            make=False,
+            self.PYBPOD_SUBJECTS[0], protocol="_iblrig_tasks_ephysChoiceWorld", make=False,
         )  # don't make any folders
         # Get previous session folder i.e. the ephys session that just ran
         self.CORRESPONDING_EPHYS_SESSION = spc.PREVIOUS_SESSION_PATH
@@ -116,17 +114,14 @@ class SessionParamHandler(object):
             "PREGENERATED_SESSION_NUM"
         ]
         # Load session from file
-        (
-            self.STIM_DELAYS,
-            self.STIM_IDS,
-        ) = iotasks.load_passive_session_delays_ids(self.PREGENERATED_SESSION_NUM)
+        (self.STIM_DELAYS, self.STIM_IDS,) = iotasks.load_passive_session_delays_ids(
+            self.PREGENERATED_SESSION_NUM
+        )
         self.QUIESCENT_PERIOD = None
         self.LEN_BLOCKS = None
-        (
-            self.POSITIONS,
-            self.CONTRASTS,
-            self.STIM_PHASE,
-        ) = iotasks.load_passive_session_pcs(self.PREGENERATED_SESSION_NUM)
+        (self.POSITIONS, self.CONTRASTS, self.STIM_PHASE,) = iotasks.load_passive_session_pcs(
+            self.PREGENERATED_SESSION_NUM
+        )
         # =====================================================================
         # ADAPTIVE STUFF
         # =====================================================================

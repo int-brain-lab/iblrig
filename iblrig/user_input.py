@@ -34,14 +34,10 @@ class SessionForm(BaseWidget):
             "X [M/L] (µm):", default="0", helptext="Right = Positive, Left = Negative"
         )
         self._probe00Y = ControlText(
-            "Y [A/P] (µm):",
-            default="0",
-            helptext="Anterior = Positive, Posterior = Negative",
+            "Y [A/P] (µm):", default="0", helptext="Anterior = Positive, Posterior = Negative",
         )
         self._probe00Z = ControlText(
-            "Z [D/V] (µm):",
-            default="0",
-            helptext="Dorsal = Positive, Ventral = Negative",
+            "Z [D/V] (µm):", default="0", helptext="Dorsal = Positive, Ventral = Negative",
         )
         self._probe00P = ControlText(
             "θ [polar angle] (deg):",
@@ -58,9 +54,7 @@ class SessionForm(BaseWidget):
             default="0",
             helptext="0º flat facing vertical axis [Z], Range(-180º, 180º)",
         )
-        self._probe00D = ControlText(
-            "D [deρth] (µm):", default="0", helptext="D value of the tip."
-        )
+        self._probe00D = ControlText("D [deρth] (µm):", default="0", helptext="D value of the tip.")
         self._probe00BregmaLabel = ControlLabel("Origin:")
         self._probe00Bregma = ControlCheckBox("bregma", True)
         self._probe00Bregma.value = True
@@ -74,14 +68,10 @@ class SessionForm(BaseWidget):
             "X [M/L] (µm):", default="0", helptext="Right = Positive, Left = Negative"
         )
         self._probe01Y = ControlText(
-            "Y [A/P] (µm):",
-            default="0",
-            helptext="Anterior = Positive, Posterior = Negative",
+            "Y [A/P] (µm):", default="0", helptext="Anterior = Positive, Posterior = Negative",
         )
         self._probe01Z = ControlText(
-            "Z [D/V] (µm):",
-            default="0",
-            helptext="Dorsal = Positive, Ventral = Negative",
+            "Z [D/V] (µm):", default="0", helptext="Dorsal = Positive, Ventral = Negative",
         )
         self._probe01P = ControlText(
             "θ [polar angle] (deg):",
@@ -98,9 +88,7 @@ class SessionForm(BaseWidget):
             default="0",
             helptext="0º flat facing vertical axis [Z], Range(-180º, 180º)",
         )
-        self._probe01D = ControlText(
-            "D [deρth] (µm):", default="0", helptext="D value of the tip."
-        )
+        self._probe01D = ControlText("D [deρth] (µm):", default="0", helptext="D value of the tip.")
         self._probe01BregmaLabel = ControlLabel("Origin:")
         self._probe01Bregma = ControlCheckBox("bregma", True)
         self._probe01Bregma.value = True
@@ -164,9 +152,7 @@ class SessionForm(BaseWidget):
     def __buttonAction(self):
         """Button action event"""
         self.form_data = {
-            k.strip("_"): v.value
-            for k, v in self.__dict__.items()
-            if "probe" in k or "Weight" in k
+            k.strip("_"): v.value for k, v in self.__dict__.items() if "probe" in k or "Weight" in k
         }
         self.validate_form_data_types()
         self.close()
@@ -215,16 +201,13 @@ class EphysSessionForm(BaseWidget):
             label=f"Current weight for {self.session_dict['mouse_name']}:"
         )
         self._session_is_mock = ControlText(
-            label="Is this a MOCK session?",
-            default=self.session_dict["session_is_mock"],
+            label="Is this a MOCK session?", default=self.session_dict["session_is_mock"],
         )
         self._session_index = ControlText(
-            label="Session number:",
-            default=str(int(self.session_dict["session_index"]) + 1),
+            label="Session number:", default=str(int(self.session_dict["session_index"]) + 1),
         )
         self._session_delay = ControlText(
-            label="Delay session initiation by (min):",
-            default=self.session_dict["session_delay"],
+            label="Delay session initiation by (min):", default=self.session_dict["session_delay"],
         )
 
         self._button = ControlButton("Submit")
@@ -374,10 +357,7 @@ def ask_session_delay(settings_file_path: str = None) -> int:
 def ask_is_mock(settings_file_path: str = None) -> bool:
     out = None
     resp = graph.strinput(
-        "Session type",
-        "IS this a MOCK recording? (yes/NO)",
-        default="NO",
-        nullable=True,
+        "Session type", "IS this a MOCK recording? (yes/NO)", default="NO", nullable=True,
     )
     if resp is None:
         return ask_is_mock(settings_file_path)

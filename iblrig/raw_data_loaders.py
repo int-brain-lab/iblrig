@@ -177,7 +177,7 @@ def load_camera_frame_data(session_path, camera: str = "left", raw: bool = False
     rows = int(rdata.size / 4)
     data = np.reshape(rdata.astype(np.int64), (rows, 4))
     df_dict = dict.fromkeys(
-        ["Timestamp", "embeddedTimeStamp", "embeddedFrameCounter", "embeddedGPIOPinState"]
+        ["Timestamp", "embeddedTimeStamp", "embeddedFrameCounter", "embeddedGPIOPinState",]
     )
     df = pd.DataFrame(data, columns=df_dict.keys())
     if raw:
@@ -313,7 +313,7 @@ def load_camera_gpio(session_path, label: str, as_dicts=False):
         # This deals with missing and empty files the same
         gpio = np.fromfile(GPIO_file, dtype=np.float64).astype(np.uint32) if GPIO_file else []
         # Check values make sense (4 pins = 16 possible values)
-        if not np.isin(gpio, np.left_shift(np.arange(2**4, dtype=np.uint32), 32 - 4)).all():
+        if not np.isin(gpio, np.left_shift(np.arange(2 ** 4, dtype=np.uint32), 32 - 4)).all():
             log.warning("Unexpected GPIO values; decoding may fail")
         if len(gpio) == 0:
             return [None] * 4 if as_dicts else None
@@ -330,7 +330,7 @@ def load_camera_gpio(session_path, label: str, as_dicts=False):
         # gpio = [(ind := np.where(edges[:, i])[0], edges[ind, i]) for i in range(4)]
         # gpio = [dict(zip(('indices', 'polarities'), x)) for x in gpio_]  # py3.8
         gpio = [
-            {"indices": np.where(edges[:, i])[0], "polarities": edges[edges[:, i] != 0, i]}
+            {"indices": np.where(edges[:, i])[0], "polarities": edges[edges[:, i] != 0, i],}
             for i in range(4)
         ]
         # Replace empty dicts with None
@@ -659,7 +659,7 @@ def _clean_wheel_dataframe(data, label, path):
                 )
             # if it's an uint32 wraparound, the diff should be close to 2 ** 32
             elif 32 - np.log2(data["re_ts"][i] - data["re_ts"][i + 1]) < 0.2:
-                data.loc[i + 1 :, "re_ts"] = data.loc[i + 1 :, "re_ts"] + 2**32
+                data.loc[i + 1 :, "re_ts"] = data.loc[i + 1 :, "re_ts"] + 2 ** 32
             # there is also the case where 2 positions are swapped and need to be swapped back
 
             elif data["re_ts"][i] > data["re_ts"][i + 1] > data["re_ts"][i - 1]:
@@ -733,7 +733,7 @@ def save_bool(save, dataset_type):
 
 
 def sync_trials_robust(
-    t0, t1, diff_threshold=0.001, drift_threshold_ppm=200, max_shift=5, return_index=False
+    t0, t1, diff_threshold=0.001, drift_threshold_ppm=200, max_shift=5, return_index=False,
 ):
     """
     Attempts to find matching timestamps in 2 time-series that have an offset, are drifting,
@@ -800,40 +800,28 @@ def load_bpod_fronts(session_path: str, data: list = False) -> list:
         BNC1_fronts = np.append(
             BNC1_fronts,
             np.array(
-                [
-                    [x, 1]
-                    for x in tr["behavior_data"]["Events timestamps"].get("BNC1High", [np.nan])
-                ]
+                [[x, 1] for x in tr["behavior_data"]["Events timestamps"].get("BNC1High", [np.nan])]
             ),
             axis=0,
         )
         BNC1_fronts = np.append(
             BNC1_fronts,
             np.array(
-                [
-                    [x, -1]
-                    for x in tr["behavior_data"]["Events timestamps"].get("BNC1Low", [np.nan])
-                ]
+                [[x, -1] for x in tr["behavior_data"]["Events timestamps"].get("BNC1Low", [np.nan])]
             ),
             axis=0,
         )
         BNC2_fronts = np.append(
             BNC2_fronts,
             np.array(
-                [
-                    [x, 1]
-                    for x in tr["behavior_data"]["Events timestamps"].get("BNC2High", [np.nan])
-                ]
+                [[x, 1] for x in tr["behavior_data"]["Events timestamps"].get("BNC2High", [np.nan])]
             ),
             axis=0,
         )
         BNC2_fronts = np.append(
             BNC2_fronts,
             np.array(
-                [
-                    [x, -1]
-                    for x in tr["behavior_data"]["Events timestamps"].get("BNC2Low", [np.nan])
-                ]
+                [[x, -1] for x in tr["behavior_data"]["Events timestamps"].get("BNC2Low", [np.nan])]
             ),
             axis=0,
         )

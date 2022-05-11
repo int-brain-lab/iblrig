@@ -52,15 +52,7 @@ card_play_noise = bytes(np.array([2, 6, 32, 255, 2, 3, 0, 44], dtype=np.int8))
 def do_gabor(osc_client, pcs_idx, pos, cont, phase):
     # send pcs to Bonsai
     bonsai.send_stim_info(
-        osc_client,
-        pcs_idx,
-        int(pos),
-        cont,
-        phase,
-        freq=0.10,
-        angle=0.0,
-        gain=4.0,
-        sigma=7.0,
+        osc_client, pcs_idx, int(pos), cont, phase, freq=0.10, angle=0.0, gain=4.0, sigma=7.0,
     )
 
     osc_client.send_message("/re", 2)  # show_stim 2
