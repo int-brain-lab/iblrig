@@ -288,10 +288,12 @@ else:
         os.chdir(stim_folder)
         if harp:
             s = subprocess.Popen(
-                [bns, wkfl, noboot, noedit, data_file_name, lengths_file_name, harp_file_name, ]
+                [bns, wkfl, noboot, noedit, data_file_name, lengths_file_name, harp_file_name,]
             )
         else:
-            s = subprocess.Popen([bns, wkfl, noboot, noedit, display_idx, data_file_name, lengths_file_name])
+            s = subprocess.Popen(
+                [bns, wkfl, noboot, noedit, display_idx, data_file_name, lengths_file_name,]
+            )
         os.chdir(here)
         return s
 
@@ -313,7 +315,9 @@ else:
         time.sleep(3)
         os.chdir(here)
 
-    def start_camera_setup():
+    def start_camera_setup(modality):
+        if modality == "ephys":
+            return
         here = os.getcwd()
         iblrig_folder_path = Path(ph.get_iblrig_folder())
         os.chdir(str(iblrig_folder_path / "devices" / "camera_setup"))

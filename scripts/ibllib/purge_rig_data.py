@@ -19,7 +19,6 @@ from one.alf.files import get_session_path
 from one.api import ONE
 
 log = logging.getLogger("iblrig")
-log.setLevel(logging.INFO)
 
 
 def session_name(path) -> str:
@@ -78,17 +77,10 @@ if __name__ == "__main__":
     parser.add_argument("folder", help="Local iblrig_data folder")
     parser.add_argument("file", help="File name to search and destroy for every session")
     parser.add_argument(
-        "-lab",
-        required=False,
-        default=None,
-        help="Lab name, search on Alyx faster. default: None",
+        "-lab", required=False, default=None, help="Lab name, search on Alyx faster. default: None",
     )
     parser.add_argument(
-        "--dry",
-        required=False,
-        default=False,
-        action="store_true",
-        help="Dry run? default: False",
+        "--dry", required=False, default=False, action="store_true", help="Dry run? default: False",
     )
     args = parser.parse_args()
     purge_local_data(args.folder, args.file, lab=args.lab, dry=args.dry)

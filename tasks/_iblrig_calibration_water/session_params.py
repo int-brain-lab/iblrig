@@ -12,7 +12,7 @@ import zipfile
 from iblrig.iotasks import ComplexEncoder
 from iblrig.path_helper import SessionPathCreator
 
-logger = logging.getLogger("iblrig")
+log = logging.getLogger("iblrig")
 
 
 class SessionParamHandler(object):
@@ -110,8 +110,7 @@ class SessionParamHandler(object):
             if os.path.isdir(os.path.join(self.SESSION_RAW_DATA_FOLDER, x))
         ]
         SessionParamHandler.zipit(
-            folders_to_zip,
-            os.path.join(self.SESSION_RAW_DATA_FOLDER, "_iblrig_codeFiles.raw.zip"),
+            folders_to_zip, os.path.join(self.SESSION_RAW_DATA_FOLDER, "_iblrig_codeFiles.raw.zip"),
         )
 
         [shutil.rmtree(x) for x in folders_to_zip]

@@ -9,23 +9,22 @@ import sys
 from pathlib import Path
 
 import dateutil.parser as parser
+from pybpodapi.protocol import Bpod, StateMachine
+
 import iblrig.bonsai as bonsai
 import iblrig.frame2TTL
 import iblrig.params as params
 import iblrig.path_helper as ph
-import iblrig.raw_data_loaders as raw
 from iblrig.misc import get_port_events
-from pybpodapi.protocol import Bpod, StateMachine
 
 try:
     import user_settings  # noqa
-except:
+except ImportError:
     import iblrig.fake_user_settings as user_settings  # noqa
 
 sys.stdout.flush()
 
 log = logging.getLogger("iblrig")
-log.setLevel(logging.INFO)
 
 PARAMS = params.load_params_file()
 subj = "_iblrig_test_mouse"

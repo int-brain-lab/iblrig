@@ -8,6 +8,7 @@ dependencies:
   - wheel>=0.36.1
   - pip:
     - asn1crypto==0.24.0
+    - colorlog
     - colorama==0.4.1
     - cython==0.29.6
     - globus-sdk==1.7.1

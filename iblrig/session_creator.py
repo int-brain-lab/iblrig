@@ -112,7 +112,7 @@ def plot_pcqs(session_num, folder="./tasks/_iblrig_tasks_ephysChoiceWorld/sessio
         ax.set_ylabel(l)
         for ax, l in zip(
             f.axes,
-            ["Position (º)", "Contrasts (%)", "Quiescent period (s)", "Stimulus phase (rad)", ],
+            ["Position (º)", "Contrasts (%)", "Quiescent period (s)", "Stimulus phase (rad)",],
         )
     ]
     [ax.axvline(x, alpha=0.5) for x in np.cumsum(len_block) for ax in f.axes]
@@ -261,9 +261,11 @@ def pre_generate_stim_phase(nsessions, path="./tasks/_iblrig_tasks_ephysChoiceWo
         sphase = np.array([np.random.uniform(0, 2 * math.pi) for x in range(length)])
         np.save(path / "session_mock_stim_phase.npy", sphase)
 
+
 # Variables thatchange every trial:
 # contrast, position, phase, quiescence_duration, probability_left,
 # reverse_contingecy, laser_on, block_id, trial_id
+
 
 def create_session_contrasts(seed=None):
     if seed is not None:

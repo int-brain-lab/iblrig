@@ -7,6 +7,7 @@ import logging
 import iblrig.bonsai as bonsai
 import user_settings
 from iblrig.bpod_helper import BpodMessageCreator
+from iblrig.params import get_modality_from_board
 from pybpodapi.protocol import Bpod, StateMachine
 
 import task_settings
@@ -14,7 +15,6 @@ from session_params import SessionParamHandler
 from trial_params import TrialParamHandler
 
 log = logging.getLogger("iblrig")
-log.setLevel(logging.INFO)
 
 global sph
 sph = SessionParamHandler(task_settings, user_settings)
@@ -60,7 +60,7 @@ tph = TrialParamHandler(sph)
 # =====================================================================
 # RUN CAMERA SETUP
 # =====================================================================
-bonsai.start_camera_setup()
+bonsai.start_camera_setup(get_modality_from_board(sph.PYBPOD_BOARD))
 for i in range(sph.NTRIALS):  # Main loop
     tph.next_trial()
     log.info(f"Starting trial: {i + 1}")

@@ -16,7 +16,6 @@ from pyforms.basewidget import BaseWidget
 from pyforms.controls import ControlButton, ControlCheckBox, ControlLabel, ControlText
 
 import iblrig.graphic as graph
-import iblrig.logging_  # noqa
 from iblrig.misc import patch_settings_file
 
 log = logging.getLogger("iblrig")
@@ -55,9 +54,7 @@ class SessionForm(BaseWidget):
             default="0",
             helptext="0º flat facing vertical axis [Z], Range(-180º, 180º)",
         )
-        self._probe00D = ControlText(
-            "D [deρth] (µm):", default="0", helptext="D value of the tip."
-        )
+        self._probe00D = ControlText("D [deρth] (µm):", default="0", helptext="D value of the tip.")
         self._probe00BregmaLabel = ControlLabel("Origin:")
         self._probe00Bregma = ControlCheckBox("bregma", True)
         self._probe00Bregma.value = True
@@ -91,9 +88,7 @@ class SessionForm(BaseWidget):
             default="0",
             helptext="0º flat facing vertical axis [Z], Range(-180º, 180º)",
         )
-        self._probe01D = ControlText(
-            "D [deρth] (µm):", default="0", helptext="D value of the tip."
-        )
+        self._probe01D = ControlText("D [deρth] (µm):", default="0", helptext="D value of the tip.")
         self._probe01BregmaLabel = ControlLabel("Origin:")
         self._probe01Bregma = ControlCheckBox("bregma", True)
         self._probe01Bregma.value = True
@@ -157,15 +152,14 @@ class SessionForm(BaseWidget):
     def __buttonAction(self):
         """Button action event"""
         self.form_data = {
-            k.strip("_"): v.value
-            for k, v in self.__dict__.items()
-            if "probe" in k or "Weight" in k
+            k.strip("_"): v.value for k, v in self.__dict__.items() if "probe" in k or "Weight" in k
         }
         self.validate_form_data_types()
         self.close()
         log.info(self.form_data)
         self.app_main_window.close()
         return
+
 
 # TODO: Finish consolidating user input for ephys sessions and use this!
 class EphysSessionForm(BaseWidget):

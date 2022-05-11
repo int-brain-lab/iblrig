@@ -5,16 +5,15 @@
 import logging
 
 import numpy as np
+import user_settings
 from pybpodapi.protocol import Bpod, StateMachine
 
 import task_settings
-import user_settings
 from iblrig.bpod_helper import BpodMessageCreator
 from session_params import SessionParamHandler
 from trial_params import TrialParamHandler
 
 log = logging.getLogger("iblrig")
-log.setLevel(logging.INFO)
 
 global sph
 sph = SessionParamHandler(task_settings, user_settings)
@@ -113,11 +112,7 @@ for i in range(sph.NTRIALS):  # Main loop
     sma.add_state(
         state_name="play_tone",
         state_timer=1,
-        state_change_conditions={
-            "Tup": "bad_tone",
-            "BNC2High": "exit",
-            "BNC2Low": "exit",
-        },
+        state_change_conditions={"Tup": "bad_tone", "BNC2High": "exit", "BNC2Low": "exit",},
         output_actions=[tph.out_tone],
     )
 

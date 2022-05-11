@@ -8,14 +8,12 @@ Getting and loading parameters
 """
 import json
 import logging
-import re
 import shutil
 from pathlib import Path
 
 from pybpodgui_api.models.project import Project
 
 import iblrig
-import iblrig.logging_  # noqa
 import iblrig.path_helper as ph
 from iblrig.graphic import strinput
 
@@ -51,13 +49,7 @@ EMPTY_BOARD_PARAMS = {
 
 global AUTO_UPDATABLE_PARAMS
 AUTO_UPDATABLE_PARAMS = dict.fromkeys(
-    [
-        "NAME",
-        "IBLRIG_VERSION",
-        "COM_BPOD",
-        "DATA_FOLDER_LOCAL",
-        "DATA_FOLDER_REMOTE",
-    ]
+    ["NAME", "IBLRIG_VERSION", "COM_BPOD", "DATA_FOLDER_LOCAL", "DATA_FOLDER_REMOTE",]
 )
 
 DEFAULT_PARAMS = {
@@ -271,6 +263,24 @@ def ask_params_comports(data: dict) -> dict:
         log.debug(f"Updating params file with: {patch}")
 
     return data
+
+
+def get_modality_from_board(board_name):
+    """Logic from board name is:
+    - ephys behavior PC calls its Bpod board something_ephys_something
+    - training rig behavior PC calls it's Bpod board something_behavior_something
+    Launching behavior tasks on an ephys rig should not launch the cameras
+
+    after rigcore integration use modality and device lists to decide whether to
+    e.g. launch video or not on session start.
+    """
+    if "ephys" in board_name:
+        mod = "ephys"
+    elif "behavior" in board_name:
+        mod = "training"
+    else:
+        raise NotImplementedError("Unknown modality from board name: {board_name}")
+    return mod
 
 
 if __name__ == "__main__":

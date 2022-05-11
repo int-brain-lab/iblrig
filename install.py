@@ -11,28 +11,38 @@ import subprocess
 import sys
 from pathlib import Path
 
-from packaging.version import parse as version
+print("Performing a 'pip install' for the base environment")
+subprocess.check_call(
+    [sys.executable, "-m", "pip", "install", "setuptools", "wheel", "packaging", "colorlog",]
+)
 
-from iblrig import envs
+try:
+    from packaging.version import parse as version
+    from iblrig import envs
+except ImportError:
+    print(
+        "Something likely went wrong with the previous pip install, please check error:\n"
+        + str(ImportError)
+    )
+    exit(1)
 
 # BEGIN CONSTANT DEFINITION
 IBLRIG_ROOT_PATH = Path.cwd()
-INSTALL_LOG_PATH = ''
-log = logging.getLogger("iblrig")
+INSTALL_LOG_PATH = ""
 
 # Check on platform and configure logging
 if sys.platform not in ["Windows", "windows", "win32"]:
     print("\nWARNING: Unsupported OS\nInstallation might not work!")
-    INSTALL_LOG_PATH = '/tmp/iblrig_install.log'
+    INSTALL_LOG_PATH = "/tmp/iblrig_install.log"
 else:
-    if not os.path.isdir('C:\\Temp'):
-        os.mkdir('C:\\Temp')
-    INSTALL_LOG_PATH = 'C:\\Temp\\iblrig_install.log'
-    with open(INSTALL_LOG_PATH, 'w'):
+    if not os.path.isdir("C:\\Temp"):
+        os.mkdir("C:\\Temp")
+    INSTALL_LOG_PATH = "C:\\Temp\\iblrig_install.log"
+    with open(INSTALL_LOG_PATH, "w"):
         pass
 
-logging.basicConfig(filename=INSTALL_LOG_PATH, level=logging.DEBUG)
 log = logging.getLogger("iblrig")
+logging.basicConfig(filename=INSTALL_LOG_PATH)
 
 try:
     print("\n\n--->Cleaning up conda cache")
@@ -300,8 +310,7 @@ def install_bonsai(resp=False):
 
 
 def setup_one(resp=False):
-    """
-    """
+    """ """
     print("\n\nINFO: ONE setup")
     print("N" * 79)
     print("\n\nDo you want to install ONE now? (y/n):")
@@ -328,17 +337,23 @@ def setup_one(resp=False):
 def main(main_args):
     try:
         check_update_dependencies()
-        create_environment(env_name=main_args.env_name, use_conda_yaml=main_args.use_conda,
-                           resp=main_args.reinstall_response)
+        create_environment(
+            env_name=main_args.env_name,
+            use_conda_yaml=main_args.use_conda,
+            resp=main_args.reinstall_response,
+        )
         create_ibllib_env()
         install_iblrig(env_name=main_args.env_name)
         configure_iblrig_params(env_name=main_args.env_name, resp=main_args.config_response)
         setup_one(resp=main_args.ONE_response)
         install_bonsai(resp=main_args.bonsai_response)
     except BaseException as e:
-        print(e, "\n\nSomething went wrong during the installation. Please refer to the following "
-                 "log file for a full traceback of the error. Please also forward the entire file,"
-                 " or the relevant content of, this file when seeking support: "+INSTALL_LOG_PATH)
+        print(
+            e,
+            "\n\nSomething went wrong during the installation. Please refer to the following "
+            "log file for a full traceback of the error. Please also forward the entire file,"
+            " or the relevant content of, this file when seeking support: " + INSTALL_LOG_PATH,
+        )
         log.exception(e)
     return
 

@@ -42,11 +42,14 @@ def Frame2TTL(serial_port: str, version: int = 2) -> object:
                 iblrig.params.update_params_file(data={"F2TTL_HW_VERSION": 1})
             return f2ttl
         except BaseException as e:
-            log.error(f"Couldn't connect to F2TTLv1: {str(e)}")
+            log.error(
+                f"Couldn't connect to F2TTLv1: {str(e)}\nDisconnecting and then "
+                f"reconnecting the Frame2TTL cable may resolve this issue."
+            )
     elif version == 0:
         return None
 
-    return Frame2TTL(serial_port, version=version-1)
+    return Frame2TTL(serial_port, version=version - 1)
 
 
 class Frame2TTLv1(object):
@@ -168,8 +171,7 @@ class Frame2TTLv1(object):
             self.recomend_dark = self.recomend_light + 40
         else:
             self.recomend_dark = round(
-                self.recomend_light
-                + ((self.measured_black["min_value"] - self.recomend_light) / 3)
+                self.recomend_light + ((self.measured_black["min_value"] - self.recomend_light) / 3)
             )
         if self.recomend_dark - self.recomend_light < 5:
             log.error("Cannot recommend thresholds:"),
@@ -248,7 +250,11 @@ class Frame2TTLv2(object):
         Command: 5 bytes | [b"T" (uint8), (light_threshold (int16), dark_threshold (int16))]
         Response: None
         """
-        self.ser.write(b"T" + int.to_bytes(value, 2, byteorder="little", signed=True) + int.to_bytes(self._dark_threshold, 2, byteorder="little", signed=True))
+        self.ser.write(
+            b"T"
+            + int.to_bytes(value, 2, byteorder="little", signed=True)
+            + int.to_bytes(self._dark_threshold, 2, byteorder="little", signed=True)
+        )
         self._light_threshold = value
 
     @property
@@ -261,7 +267,11 @@ class Frame2TTLv2(object):
         Command: 5 bytes | [b"T" (uint8), (light_threshold (int16), dark_threshold (int16))]
         Response: None
         """
-        self.ser.write(b"T" + int.to_bytes(self._light_threshold, 2, byteorder="little", signed=True) + int.to_bytes(value, 2, byteorder="little", signed=True))
+        self.ser.write(
+            b"T"
+            + int.to_bytes(self._light_threshold, 2, byteorder="little", signed=True)
+            + int.to_bytes(value, 2, byteorder="little", signed=True)
+        )
         self._dark_threshold = value
 
     def connect(self) -> serial.Serial:
