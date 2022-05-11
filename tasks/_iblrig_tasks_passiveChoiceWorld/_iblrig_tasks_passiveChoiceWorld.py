@@ -1,29 +1,29 @@
 #!/usr/bin/env python
-# -*- coding:utf-8 -*-
 # @Author: Niccolò Bonacchi
-# @Date: Friday, November 15th 2019, 12:05:29 pm
-import logging
+# @Creation_Date: Friday, November 15th 2019, 12:05:29 pm
+# @Editor: Michele Fabbri
+# @Edit_Date: 2022-02-01
 import sys
 import time
 
 import numpy as np
 import usb
-from ibllib.graphic import popup
+import user_settings
 from pybpodapi.protocol import Bpod, StateMachine
 
 import iblrig.bonsai as bonsai
 import iblrig.frame2TTL as frame2TTL
 import iblrig.iotasks as iotasks
+import logging
 import iblrig.misc as misc
 import iblrig.params as params
 import task_settings
-import user_settings
 from iblrig.bpod_helper import BpodMessageCreator, bpod_lights
+from iblrig.graphic import popup
 from iblrig.rotary_encoder import MyRotaryEncoder
 from session_params import SessionParamHandler
 
 log = logging.getLogger("iblrig")
-log.setLevel(logging.INFO)
 
 PARAMS = params.load_params_file()
 # start sph
@@ -52,15 +52,7 @@ card_play_noise = bytes(np.array([2, 6, 32, 255, 2, 3, 0, 44], dtype=np.int8))
 def do_gabor(osc_client, pcs_idx, pos, cont, phase):
     # send pcs to Bonsai
     bonsai.send_stim_info(
-        osc_client,
-        pcs_idx,
-        int(pos),
-        cont,
-        phase,
-        freq=0.10,
-        angle=0.0,
-        gain=4.0,
-        sigma=7.0,
+        osc_client, pcs_idx, int(pos), cont, phase, freq=0.10, angle=0.0, gain=4.0, sigma=7.0,
     )
 
     osc_client.send_message("/re", 2)  # show_stim 2
@@ -112,7 +104,9 @@ msg = (
 popup("WARNING!", msg)  # Locks
 
 # Run the passive part i.e. spontaneous activity and RFMapping stim
-bonsai.start_passive_visual_stim(sph.SESSION_RAW_DATA_FOLDER)  # Locks
+bonsai.start_passive_visual_stim(
+    sph.SESSION_RAW_DATA_FOLDER, display_idx=sph.PARAMS["DISPLAY_IDX"]
+)  # Locks
 
 # start Bonsai stim workflow
 bonsai.start_visual_stim(sph)

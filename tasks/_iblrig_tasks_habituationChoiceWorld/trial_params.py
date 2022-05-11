@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date:   2018-02-02 14:06:34
-import datetime
 import json
 import logging
 import math
@@ -565,13 +564,7 @@ if __name__ == "__main__":
                 3010.791699,
                 3012.791699,
             ],
-            "RotaryEncoder1_3": [
-                2950.120499,
-                2950.139099,
-                2950.161899,
-                2950.194099,
-                2981.703499,
-            ],
+            "RotaryEncoder1_3": [2950.120499, 2950.139099, 2950.161899, 2950.194099, 2981.703499,],
             "BNC1Low": [
                 2950.181299,
                 2950.8635990000002,
@@ -647,8 +640,7 @@ if __name__ == "__main__":
 
     print("Average next_trial times:", sum(next_trial_times) / len(next_trial_times))
     print(
-        "Average trial_completed times:",
-        sum(trial_completed_times) / len(trial_completed_times),
+        "Average trial_completed times:", sum(trial_completed_times) / len(trial_completed_times),
     )
 
     print(tph.contrast_set)

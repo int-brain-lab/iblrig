@@ -1,12 +1,16 @@
 #!/usr/bin/env python
-# -*- coding:utf-8 -*-
 # @Author: Niccolò Bonacchi
-# @Date: Thursday, January 31st 2019, 4:12:19 pm
+# @Creation_Date: Thursday, January 31st 2019, 4:12:19 pm
+# @Editor: Michele Fabbri
+# @Edit_Date: 2022-02-01
+"""
+Find the number of poop pellets recorded by user
+"""
 from pathlib import Path
 
 from dateutil import parser
-from ibllib.graphic import numinput
 
+from iblrig.graphic import numinput
 from iblrig.misc import patch_settings_file
 
 IBLRIG_DATA = Path().cwd().parent.parent.parent.parent / "iblrig_data" / "Subjects"  # noqa
@@ -15,8 +19,7 @@ IBLRIG_DATA = Path().cwd().parent.parent.parent.parent / "iblrig_data" / "Subjec
 def poop() -> None:
     poop_flags = list(IBLRIG_DATA.rglob("poop_count.flag"))
     poop_flags = sorted(
-        poop_flags,
-        key=lambda x: (parser.parse(x.parent.parent.name), int(x.parent.name)),
+        poop_flags, key=lambda x: (parser.parse(x.parent.parent.name), int(x.parent.name)),
     )
     if not poop_flags:
         return

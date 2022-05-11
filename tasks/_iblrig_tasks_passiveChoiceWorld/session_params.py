@@ -1,7 +1,8 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 # @Author: Niccolò Bonacchi
-# @Date:   2018-02-02 17:19:09
+# @Creation_Date: 2018-02-02 17:19:09
+# @Editor: Michele Fabbri
+# @Edit_Date: 2022-02-01
 import logging
 import os
 import tkinter as tk
@@ -15,8 +16,8 @@ import iblrig.adaptive as adaptive
 import iblrig.ambient_sensor as ambient_sensor
 import iblrig.iotasks as iotasks
 import iblrig.misc as misc
-import iblrig.sound as sound
 import iblrig.path_helper as ph
+import iblrig.sound as sound
 
 log = logging.getLogger("iblrig")
 log.setLevel(logging.DEBUG)
@@ -44,9 +45,7 @@ class SessionParamHandler(object):
         self = iotasks.deserialize_pybpod_user_settings(self)
         # Pretend to run a new ephys session
         spc = ph.SessionPathCreator(
-            self.PYBPOD_SUBJECTS[0],
-            protocol="_iblrig_tasks_ephysChoiceWorld",
-            make=False,
+            self.PYBPOD_SUBJECTS[0], protocol="_iblrig_tasks_ephysChoiceWorld", make=False,
         )  # don't make any folders
         # Get previous session folder i.e. the ephys session that just ran
         self.CORRESPONDING_EPHYS_SESSION = spc.PREVIOUS_SESSION_PATH
@@ -108,24 +107,21 @@ class SessionParamHandler(object):
         self.LAST_SETTINGS_DATA = None  # iotasks.load_settings(self.PREVIOUS_SESSION_PATH)
         # Change to False if mock has its own task
         self.IS_MOCK = self.CORRESPONDING_EPHYS_SETTINGS_DATA["IS_MOCK"]
-        # Get pregenerated session num (the num in the filename! from corresponding ephys sesison)
+        # Get pregenerated session num (the num in the filename! from corresponding ephys session)
         self.SESSION_ORDER = self.CORRESPONDING_EPHYS_SETTINGS_DATA["SESSION_ORDER"]
         self.SESSION_IDX = self.CORRESPONDING_EPHYS_SETTINGS_DATA["SESSION_IDX"]
         self.PREGENERATED_SESSION_NUM = self.CORRESPONDING_EPHYS_SETTINGS_DATA[
             "PREGENERATED_SESSION_NUM"
         ]
         # Load session from file
-        (
-            self.STIM_DELAYS,
-            self.STIM_IDS,
-        ) = iotasks.load_passive_session_delays_ids(self.PREGENERATED_SESSION_NUM)
+        (self.STIM_DELAYS, self.STIM_IDS,) = iotasks.load_passive_session_delays_ids(
+            self.PREGENERATED_SESSION_NUM
+        )
         self.QUIESCENT_PERIOD = None
         self.LEN_BLOCKS = None
-        (
-            self.POSITIONS,
-            self.CONTRASTS,
-            self.STIM_PHASE,
-        ) = iotasks.load_passive_session_pcs(self.PREGENERATED_SESSION_NUM)
+        (self.POSITIONS, self.CONTRASTS, self.STIM_PHASE,) = iotasks.load_passive_session_pcs(
+            self.PREGENERATED_SESSION_NUM
+        )
         # =====================================================================
         # ADAPTIVE STUFF
         # =====================================================================
@@ -232,8 +228,6 @@ class SessionParamHandler(object):
             "Please start recording in spikeglx then press OK\n"
             + "Behavior task will run after you start the bonsai workflow"
         )
-        # from ibllib.graphic import popup
-        # popup(title, msg)
         root = tk.Tk()
         root.withdraw()
         messagebox.showinfo(title, msg)
@@ -321,9 +315,11 @@ if __name__ == "__main__":
         calling bonsai
         turning off lights of bpod board
     """
-    import task_settings as _task_settings
-    import iblrig.fake_user_settings as _user_settings
     import datetime
+
+    import iblrig.fake_user_settings as _user_settings
+
+    import task_settings as _task_settings
 
     dt = datetime.datetime.now()
     dt = [

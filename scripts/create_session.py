@@ -1,19 +1,17 @@
 #!/usr/bin/env python
-# -*- coding:utf-8 -*-
 # @Author: Niccolò Bonacchi
-# @Date: Thursday, January 31st 2019, 1:15:46 pm
+# @Creation_Date: Thursday, January 31st 2019, 1:15:46 pm
+# @Editor: Michele Fabbri
+# @Edit_Date: 2022-02-01
 import argparse
 import logging
 import os
 import traceback
-from pathlib import Path
 
+import iblrig.path_helper as ph
 from iblrig import envs
 from iblrig.poop_count import poop
 
-IBLRIG_FOLDER = Path(__file__).absolute().parent.parent
-IBLRIG_DATA = IBLRIG_FOLDER.parent / "iblrig_data" / "Subjects"  # noqa
-IBLRIG_PARAMS_FOLDER = IBLRIG_FOLDER.parent / "iblrig_params"
 log = logging.getLogger("iblrig")
 
 
@@ -34,8 +32,8 @@ if __name__ == "__main__":
         print("Creating session from ibllib environment...")
         python = envs.get_env_python(env_name="ibllib")
         here = os.getcwd()
-        os.chdir(os.path.join(IBLRIG_FOLDER, "scripts"))
-        os.system(f"{python} register_session.py {IBLRIG_DATA}")
+        os.chdir(os.path.join(ph.get_iblrig_folder(), "scripts", "ibllib"))
+        os.system(f"{python} register_session.py {ph.get_iblrig_data_folder()}")
         os.chdir(here)
 
     except BaseException:

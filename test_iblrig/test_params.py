@@ -9,7 +9,7 @@ class TestParams(unittest.TestCase):
         self.incomplete_params_dict = {"NAME": None}
 
     def test_ensure_all_keys_present(self):
-        out = params.ensure_all_keys_present(self.incomplete_params_dict, upload=False)
+        out = params.ensure_all_keys_present(self.incomplete_params_dict)
         self.assertTrue(out is not None)
         for k in params.EMPTY_BOARD_PARAMS:
             self.assertTrue(k in out)
@@ -29,7 +29,7 @@ class TestParams(unittest.TestCase):
         from pkg_resources import parse_version
 
         out = params.get_iblrig_version()
-        if 'canary' in out:
+        if "canary" in out:
             return
         self.assertTrue(parse_version(out) >= parse_version("6.4.2"))
 

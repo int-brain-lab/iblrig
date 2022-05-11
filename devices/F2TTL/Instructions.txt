@@ -6,8 +6,8 @@ This function returns the current light measurement value of the Frame2TTL senso
 4. run the following:
 
 python
->>>from F2TTL import frame2TTL
->>>f = frame2TTL('COM6')
+>>>from F2TTL import Frame2TTL
+>>>f = Frame2TTL('COM6')
 >>>f.measure_light()
 
 This will take 250 light measurements and return a dict e.g.:

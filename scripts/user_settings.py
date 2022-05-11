@@ -39,7 +39,6 @@ GENERIC_EDITOR_PLUGINS_LIST = [
     "pybpodgui_plugin_trial_timeline",
     "pybpodgui_plugin_session_history",
     "pybpod_rotaryencoder_module",
-    "pybpod_alyx_module",
     "pybpod_gui_plugin_emulator",
     "pybpod_soundcard_module",
 ]
@@ -49,7 +48,4 @@ PYBPODGUI_API_AUTO_SAVE_PROJECT_ON_RUN = True
 TARGET_BPOD_FIRMWARE_VERSION = "22"
 
 DEFAULT_PROJECT_PATH = "./IBL"
-ALYX_PLUGIN_ADDRESS = "https://alyx.internationalbrainlab.org"
-ALYX_PLUGIN_USERNAME = None
-ALYX_PLUGIN_PASSWORD = None
 PYBPOD_EXTRA_INFO = {"Users", "Subjects"}

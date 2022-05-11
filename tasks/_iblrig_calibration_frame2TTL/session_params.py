@@ -1,14 +1,18 @@
 #!/usr/bin/env python
-# -*- coding:utf-8 -*-
-# @Author: Niccolò Bonacchi
+# @File: _iblrig_calibration_frame2TTL\session_params.py
+# @Author: Niccolo' Bonacchi (@nbonacchi)
 # @Date: Thursday, June 6th 2019, 11:42:40 am
 import logging
 
-from pythonosc import udp_client
-
 import iblrig.bonsai as bonsai
+
+try:
+    import user_settings
+except ImportError:
+    import iblrig.fake_user_settings as user_settings
 import iblrig.iotasks as iotasks
 from iblrig.path_helper import SessionPathCreator
+from pythonosc import udp_client
 
 log = logging.getLogger("iblrig")
 
@@ -18,20 +22,25 @@ class SessionParamHandler(object):
     will and calculates other secondary session parameters,
     runs Bonsai and saves all params in a settings file.json"""
 
-    def __init__(self, task_settings, user_settings):
+    def __init__(self, make_folders=True):
         # =====================================================================
         # IMPORT task_settings, user_settings, and SessionPathCreator params
         # =====================================================================
-        ts = {
-            i: task_settings.__dict__[i] for i in [x for x in dir(task_settings) if "__" not in x]
-        }
-        self.__dict__.update(ts)
+        # ts = {
+        #     i: task_settings.__dict__[i] for i in [x for x in dir(task_settings) if "__" not in x]
+        # }
+        # self.__dict__.update(ts)
+        if "fake" in user_settings.__dict__["PYBPOD_CREATOR"]:
+            msg = "No user settings found!\nUsing fake mouse!\n"
+            log.warning(msg * 5)
         us = {
             i: user_settings.__dict__[i] for i in [x for x in dir(user_settings) if "__" not in x]
         }
         self.__dict__.update(us)
         self = iotasks.deserialize_pybpod_user_settings(self)
-        spc = SessionPathCreator(self.PYBPOD_SUBJECTS[0], protocol=self.PYBPOD_PROTOCOL, make=True)
+        spc = SessionPathCreator(
+            self.PYBPOD_SUBJECTS[0], protocol=self.PYBPOD_PROTOCOL, make=make_folders
+        )
         self.__dict__.update(spc.__dict__)
         # =====================================================================
         # OSC CLIENT
@@ -49,9 +58,9 @@ class SessionParamHandler(object):
     # =========================================================================
     # METHODS
     # =========================================================================
-    def start_screen_color(self):
-        bonsai.start_screen_color()
-        self.set_screen(rgb=[255, 255, 255])
+    def start_screen_color(self, display_idx):
+        bonsai.start_screen_color(display_idx=display_idx)
+        self.set_screen(rgb=[128, 128, 128])
 
     def stop_screen_color(self):
         self.OSC_CLIENT.send_message("/x", 1)

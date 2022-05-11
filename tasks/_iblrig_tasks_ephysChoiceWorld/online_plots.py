@@ -84,8 +84,7 @@ def get_psych_data(tph):
         ntrials = np.array(
             [
                 sum(
-                    (signed_contrast_buffer == x)
-                    & (stim_probability_left_buffer == stim_prob_left)
+                    (signed_contrast_buffer == x) & (stim_probability_left_buffer == stim_prob_left)
                 )
                 for x in sig_contrasts_all
             ]
@@ -113,8 +112,7 @@ def get_chron_data(tph):
         rts = [
             np.median(
                 resopnse_time_buffer[
-                    (signed_contrast_buffer == x)
-                    & (stim_probability_left_buffer == stim_prob_left)
+                    (signed_contrast_buffer == x) & (stim_probability_left_buffer == stim_prob_left)
                 ]
             )
             for x in sig_contrasts_all
@@ -158,12 +156,7 @@ def plot_bars(bar_data, ax=None):
     ax.barh(3, 0, width, color="black")
     # ax.barh(0, bar_data['trial_num'], width, color="gray")
     ax.text(
-        1,
-        3,
-        str(bar_data["time_from_start"]),
-        color="black",
-        fontweight="bold",
-        size="x-large",
+        1, 3, str(bar_data["time_from_start"]), color="black", fontweight="bold", size="x-large",
     )
     #############################################################
     if bar_data["stim_pl"] == 0.2:
@@ -174,11 +167,7 @@ def plot_bars(bar_data, ax=None):
         clr = "blue"
     ax.barh(2, bar_data["block_len"], width, color=clr, label="Block Length")
     ax.barh(
-        2,
-        bar_data["block_trial_num"],
-        width,
-        color="gray",
-        label="Trials in current block",
+        2, bar_data["block_trial_num"], width, color="gray", label="Trials in current block",
     )
     ax.barh(
         2,

@@ -1,7 +1,8 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 # @Author: Niccolò Bonacchi
-# @Date:   2018-02-02 17:19:09
+# @Creation_Date: 2018-02-02 17:19:09
+# @Editor: Michele Fabbri
+# @Edit_Date: 2022-02-01
 import logging
 import os
 import tkinter as tk
@@ -134,6 +135,14 @@ class SessionParamHandler(object):
             self.ALL_THRESHOLDS, self.STIM_GAIN, self.PARAMS["COM_ROTARY_ENCODER"]
         )
         # =====================================================================
+        # VISUAL STIM
+        # =====================================================================
+        self.SYNC_SQUARE_X = 1.33
+        self.SYNC_SQUARE_Y = -1.03
+        self.USE_VISUAL_STIMULUS = True  # Run the visual stim in bonsai
+        self.BONSAI_EDITOR = False  # Open the Bonsai editor of visual stim
+        bonsai.start_visual_stim(self)
+        # =====================================================================
         # frame2TTL
         # =====================================================================
         # XXX: device
@@ -190,14 +199,6 @@ class SessionParamHandler(object):
         self.PROBE_DATA = user_input.get_form_probe_data(form_data)
         self.SUBJECT_PROJECT = None  # user_input.ask_project(self.PYBPOD_SUBJECTS[0])
         # =====================================================================
-        # VISUAL STIM
-        # =====================================================================
-        self.SYNC_SQUARE_X = 1.33
-        self.SYNC_SQUARE_Y = -1.03
-        self.USE_VISUAL_STIMULUS = True  # Run the visual stim in bonsai
-        self.BONSAI_EDITOR = False  # Open the Bonsai editor of visual stim
-        bonsai.start_visual_stim(self)
-        # =====================================================================
         # SAVE SETTINGS FILE AND TASK CODE
         # =====================================================================
         if not self.DEBUG:
@@ -221,8 +222,6 @@ class SessionParamHandler(object):
             "Please start recording in spikeglx then press OK\n"
             + "Behavior task will run after you start the bonsai workflow"
         )
-        # from ibllib.graphic import popup
-        # popup(title, msg)
         root = tk.Tk()
         root.withdraw()
         messagebox.showinfo(title, msg)
@@ -321,9 +320,10 @@ if __name__ == "__main__":
         calling bonsai
         turning off lights of bpod board
     """
+    import datetime
+
     import iblrig.fake_task_settings as _task_settings
     import iblrig.fake_user_settings as _user_settings
-    import datetime
 
     dt = datetime.datetime.now()
     dt = [

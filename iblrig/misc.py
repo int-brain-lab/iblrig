@@ -1,14 +1,25 @@
 #!/usr/bin/env python
-# -*- coding:utf-8 -*-
 # @Author: Niccolò Bonacchi
-# @Date: Friday, February 8th 2019, 12:51:51 pm
+# @Creation_Date: Friday, February 8th 2019, 12:51:51 pm
+# @Editor: Michele Fabbri
+# @Edit_Date: 2022-02-01
+"""
+Provides collection of functionality used throughout the iblrig repository.
+
+Assortment of functions, frequently used, but without a great deal of commonality. Functions can,
+and should, be broken out into their own files and/or classes as the organizational needs of this
+repo change over time.
+"""
 import datetime
 import json
 import logging
+import shutil
 from pathlib import Path
+from typing import Optional, Union
 
 import numpy as np
-from ibllib.io import raw_data_loaders as raw
+
+from iblrig.raw_data_loaders import load_settings
 
 FLAG_FILE_NAMES = [
     "transfer_me.flag",
@@ -20,17 +31,129 @@ FLAG_FILE_NAMES = [
 log = logging.getLogger("iblrig")
 
 
+def _isdatetime(x: str) -> Optional[bool]:
+    """
+    Check if string is a date in the format YYYY-MM-DD.
+
+    :param x: The string to check
+    :return: True if the string matches the date format, False otherwise.
+    :rtype: Optional[bool]
+    """
+    try:
+        datetime.strptime(x, "%Y-%m-%d")
+        return True
+    except ValueError:
+        return False
+
+
+def get_session_path(path: Union[str, Path]) -> Optional[Path]:
+    """Returns the session path from any filepath if the date/number
+    pattern is found"""
+    if path is None:
+        return
+    if isinstance(path, str):
+        path = Path(path)
+    sess = None
+    for i, p in enumerate(path.parts):
+        if p.isdigit() and _isdatetime(path.parts[i - 1]):
+            sess = Path().joinpath(*path.parts[: i + 1])
+
+    return sess
+
+
+def check_transfer(src_session_path: str, dst_session_path: str):
+    """
+    Check all the files in the source directory match those in the destination directory.
+    :param src_session_path: The source directory that was copied
+    :param dst_session_path: The copy target directory
+    :return:
+    """
+    src_files = sorted([x for x in Path(src_session_path).rglob("*") if x.is_file()])
+    dst_files = sorted([x for x in Path(dst_session_path).rglob("*") if x.is_file()])
+    assert len(src_files) == len(dst_files), "Not all files transferred"
+    for s, d in zip(src_files, dst_files):
+        assert s.name == d.name, "file name mismatch"
+        assert s.stat().st_size == d.stat().st_size, "file size mismatch"
+
+
+def transfer_folder(src: Path, dst: Path, force: bool = False) -> None:
+    print(f"Attempting to copy:\n{src}\n--> {dst}")
+    if force:
+        print(f"Removing {dst}")
+        shutil.rmtree(dst, ignore_errors=True)
+    print(f"Copying all files:\n{src}\n--> {dst}")
+    shutil.copytree(src, dst)
+    # If folder was created delete the src_flag_file
+    if check_transfer(src, dst) is None:
+        print("All files copied")
+
+
+def smooth_rolling_window(x, window_len=11, window="blackman"):
+    """
+    Smooth the data using a window with requested size.
+
+    This method is based on the convolution of a scaled window with the signal.
+    The signal is prepared by introducing reflected copies of the signal
+    (with the window size) in both ends so that transient parts are minimized
+    in the beginning and end part of the output signal.
+
+    :param x: The input signal
+    :type x: list or numpy.array
+    :param window_len: The dimension of the smoothing window,
+                       should be an **odd** integer, defaults to 11
+    :type window_len: int, optional
+    :param window: The type of window from ['flat', 'hanning', 'hamming',
+                   'bartlett', 'blackman']
+                   flat window will produce a moving average smoothing,
+                   defaults to 'blackman'
+    :type window: str, optional
+    :raises ValueError: Smooth only accepts 1 dimension arrays.
+    :raises ValueError: Input vector needs to be bigger than window size.
+    :raises ValueError: Window is not one of 'flat', 'hanning', 'hamming',
+                        'bartlett', 'blackman'
+    :return: Smoothed array
+    :rtype: numpy.array
+    """
+    # **NOTE:** length(output) != length(input), to correct this:
+    # return y[(window_len/2-1):-(window_len/2)] instead of just y.
+    if isinstance(x, list):
+        x = np.array(x)
+
+    if x.ndim != 1:
+        raise ValueError("smooth only accepts 1 dimension arrays.")
+
+    if x.size < window_len:
+        raise ValueError("Input vector needs to be bigger than window size.")
+
+    if window_len < 3:
+        return x
+
+    if window not in ["flat", "hanning", "hamming", "bartlett", "blackman"]:
+        raise ValueError(
+            "Window is not one of 'flat', 'hanning', 'hamming',\
+'bartlett', 'blackman'"
+        )
+
+    s = np.r_[x[window_len - 1 : 0 : -1], x, x[-1:-window_len:-1]]
+    # print(len(s))
+    if window == "flat":  # moving average
+        w = np.ones(window_len, "d")
+    else:
+        w = eval("np." + window + "(window_len)")
+
+    y = np.convolve(w / w.sum(), s, mode="valid")
+    return y[round((window_len / 2 - 1)) : round(-(window_len / 2))]
+
+
 def checkerboard(shape):
     return np.indices(shape).sum(axis=0) % 2
 
 
 def make_square_dvamat(size, dva):
-    import numpy as np
-
     c = np.arange(size) - int(size / 2)
     x = np.array([c] * 15)
     y = np.rot90(x)
-    dvamat = np.array(list(zip(y.ravel() * dva, x.ravel() * dva)), dtype=("int, int")).reshape(
+    dvamat = np.array(list(zip(y.ravel() * dva, x.ravel() * dva)), dtype="int, int").reshape(
         x.shape
     )
     return dvamat
@@ -184,7 +307,7 @@ def patch_settings_file(sess_or_file: str, patch: dict) -> None:
         print("not a settings file or a session folder")
         return
 
-    settings = raw.load_settings(session)
+    settings = load_settings(session)
     settings.update(patch)
     # Rename file on disk keeps pathlib ref to "file" intact
     file.rename(file.with_suffix(".json_bk"))
@@ -193,7 +316,7 @@ def patch_settings_file(sess_or_file: str, patch: dict) -> None:
         f.write("\n")
         f.flush()
     # Check if properly saved
-    saved_settings = raw.load_settings(session)
+    saved_settings = load_settings(session)
     if settings == saved_settings:
         file.with_suffix(".json_bk").unlink()
     return

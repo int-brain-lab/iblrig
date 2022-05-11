@@ -1,11 +1,11 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 # @Author: Niccolò Bonacchi
-# @Date:   2018-02-02 17:19:09
+# @Creation_Date: 2018-02-02 17:19:09
+# @Editor: Michele Fabbri
+# @Edit_Date: 2022-02-01
 import logging
 from sys import platform
 
-import ibllib.io.raw_data_loaders as raw
 import numpy as np
 from pythonosc import udp_client
 
@@ -14,6 +14,7 @@ import iblrig.frame2TTL as frame2TTL
 import iblrig.iotasks as iotasks
 import iblrig.sound as sound
 from iblrig.path_helper import SessionPathCreator
+from iblrig.raw_data_loaders import load_data
 from iblrig.rotary_encoder import MyRotaryEncoder
 
 log = logging.getLogger("iblrig")
@@ -113,7 +114,7 @@ class SessionParamHandler(object):
 
     def check_data(self):
         log.info("Checking...")
-        data = raw.load_data(self.SESSION_FOLDER)
+        data = load_data(self.SESSION_FOLDER)
         for t in data:
             bad_tone_state = t["behavior_data"]["States timestamps"]["bad_tone"]
             bad_stim_state = t["behavior_data"]["States timestamps"]["bad_stim"]
