@@ -2,16 +2,16 @@
 # -*- coding: utf-8 -*-
 # @Author: Niccolò Bonacchi
 # @Date:   2018-02-02 14:06:34
+import datetime
 import json
 import logging
 import math
 import random
 
-import numpy as np
-from dateutil import parser
-
 import iblrig.bonsai as bonsai
 import iblrig.misc as misc
+import numpy as np
+from dateutil import parser
 from iblrig.iotasks import ComplexEncoder
 
 log = logging.getLogger("iblrig")
@@ -112,12 +112,13 @@ class TrialParamHandler(object):
 
 
 if __name__ == "__main__":
-    from session_params import SessionParamHandler
-    from sys import platform
     import time
-    import task_settings as _task_settings
+    from sys import platform
+
     import scratch._user_settings as _user_settings
-    import datetime  # noqa
+
+    import task_settings as _task_settings
+    from session_params import SessionParamHandler
 
     dt = datetime.datetime.now()
     dt = [
