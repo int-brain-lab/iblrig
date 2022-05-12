@@ -1,5 +1,8 @@
 # **Release notes**
 
+## **Release Notes 6.6.1**
+- bugfix missing import in habituationCW
+
 ## **Release Notes 6.6.0**
 
 - Reduced dependencies for logging, simplified implementation, logging bug fix for 'transfer_rig_data.py' script
