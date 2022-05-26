@@ -10,6 +10,7 @@ import datetime
 import logging
 import os
 import platform
+import re
 import subprocess
 from os import listdir
 from os.path import join
@@ -167,7 +168,12 @@ def load_water_calibraition_range_file(fpath: str or Path) -> dict:
     if df1.empty:
         return {"WATER_CALIBRATION_RANGE": [None, None]}
 
-    return {"WATER_CALIBRATION_RANGE": [df1.min_open_time.iloc[0], df1.max_open_time.iloc[0],]}
+    return {
+        "WATER_CALIBRATION_RANGE": [
+            df1.min_open_time.iloc[0],
+            df1.max_open_time.iloc[0],
+        ]
+    }
 
 
 def make_folder(str1: str or Path) -> None:
@@ -237,22 +243,23 @@ def get_previous_session_folders(
 
     # Previous sessions found on both local rig and remote lab server
     else:
-        # find the key that we want to sort the date_folder_list
-        def date_folder_list_sort_key(e):
-            # parser.parse(e.split(os.sep)[-1].replace('_',':'))
-            esplit = e.split(os.sep)
-            date = esplit[-1]
-            if "_" in date:
-                date = date.replace("_", ":")
-            return parser.parse(date)
-
         # generate list of all subject folders with date
         # NOTE: this includes duplicate dates if data is on both local and remote
         date_folder_list.extend(get_subfolder_paths(local_subject_folder))
         date_folder_list.extend(get_subfolder_paths(remote_subject_folder))
 
-        # sort list of folders for subject_folder with dates
-        date_folder_list.sort(key=date_folder_list_sort_key)
+    # find the key that we want to sort the date_folder_list
+    def date_folder_list_sort_key(e):
+        # parser.parse(e.split(os.sep)[-1].replace('_',':'))
+        esplit = e.split(os.sep)
+        date = esplit[-1]
+        if "_" in date:
+            date = date.replace("_", ":")
+        return parser.parse(date)
+    # Add filter for only dates
+    date_folder_list = [x for x in date_folder_list if re.match(r".*\d{4}-\d{2}-\d{2}", x)]
+    # sort list of folders for subject_folder with dates
+    date_folder_list.sort(key=date_folder_list_sort_key)
 
     # Build out previous_session_folders paths
     for date_folders in date_folder_list:
@@ -490,8 +497,12 @@ class SessionPathCreator(object):
         self.SESSION_RAW_DATA_FOLDER = os.path.join(self.SESSION_FOLDER, "raw_behavior_data")
         self.SESSION_RAW_VIDEO_DATA_FOLDER = os.path.join(self.SESSION_FOLDER, "raw_video_data")
         self.SESSION_RAW_EPHYS_DATA_FOLDER = os.path.join(self.SESSION_FOLDER, "raw_ephys_data")
-        self.SESSION_RAW_IMAGING_DATA_FOLDER = os.path.join(self.SESSION_FOLDER, "raw_imaging_data")
-        self.SESSION_RAW_PASSIVE_DATA_FOLDER = os.path.join(self.SESSION_FOLDER, "raw_passive_data")
+        self.SESSION_RAW_IMAGING_DATA_FOLDER = os.path.join(
+            self.SESSION_FOLDER, "raw_imaging_data"
+        )
+        self.SESSION_RAW_PASSIVE_DATA_FOLDER = os.path.join(
+            self.SESSION_FOLDER, "raw_passive_data"
+        )
 
         self.SESSION_NAME = "{}".format(os.path.sep).join(
             [self.SUBJECT_NAME, self.SESSION_DATE, self.SESSION_NUMBER]
