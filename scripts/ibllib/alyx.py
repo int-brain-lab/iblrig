@@ -69,7 +69,10 @@ def get_alyx_project_info(project_name: str = None, lab: str = None, one: object
 
     projects = one.alyx.rest("projects", "list")
     users = one.alyx.rest("users", "list")
-    subjects = one.alyx.rest("subjects", "list", project=project_name, lab=lab)
+    if lab is None:
+        subjects = one.alyx.rest("subjects", "list", project=project_name)
+    else:
+        subjects = one.alyx.rest("subjects", "list", project=project_name, lab=lab)
     # Save to disk
     projects_filepath = ROOT_FOLDER.joinpath("projects.json")
     users_filepath = ROOT_FOLDER.joinpath("users.json")
@@ -130,8 +133,6 @@ if __name__ == "__main__":
 
     if args.sync_params:
         sync_local_params_to_alyx(one=one)
-    elif args.get_project and args.lab is None:
-        get_alyx_project_info(one=one, project_name=args.get_project)
-    elif args.get_project and args.lab:
+    else:
         get_alyx_project_info(one=one, project_name=args.get_project, lab=args.lab)
     print(args)
