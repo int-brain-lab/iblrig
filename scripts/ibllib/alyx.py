@@ -54,7 +54,7 @@ def _write_alyx_params(data: dict, one: object = None) -> dict:
     return data
 
 
-def get_alyx_project_info(project_name: str = None, one: object = None):
+def get_alyx_project_info(project_name: str = None, lab: str = None, one: object = None):
     """
     Returns the alyx project info for a given project name
     get all projects (has project users)
@@ -63,19 +63,20 @@ def get_alyx_project_info(project_name: str = None, one: object = None):
     """
     one = one or ONE()
     if not one.alyx.user:
-        one.authenticate()
+        one.alyx.authenticate()
 
     ROOT_FOLDER.joinpath(one.alyx.user + ".oneuser").touch()
 
     projects = one.alyx.rest("projects", "list")
     users = one.alyx.rest("users", "list")
-    subjects = one.alyx.rest("subjects", "list", project=project_name)
+    subjects = one.alyx.rest("subjects", "list", project=project_name, lab=lab)
     # Save to disk
     projects_filepath = ROOT_FOLDER.joinpath("projects.json")
     users_filepath = ROOT_FOLDER.joinpath("users.json")
     subjects_filepath = ROOT_FOLDER.joinpath(f"{project_name}_subjects.json")
     for fpath, data in zip(
-        [projects_filepath, users_filepath, subjects_filepath], [projects, users, subjects],
+        [projects_filepath, users_filepath, subjects_filepath],
+        [projects, users, subjects],
     ):
         if fpath.exists():
             shutil.move(fpath, fpath.parent.joinpath(fpath.name + ".bak"))
@@ -98,7 +99,16 @@ if __name__ == "__main__":
         help="Syncronize params file with Alyx",
     )
     parser.add_argument(
-        "--get-project", required=False, default=False, help="Download project data from Alyx",
+        "--get-project",
+        required=False,
+        default=False,
+        help="Download project data from Alyx",
+    )
+    parser.add_argument(
+        "--lab",
+        required=False,
+        default=None,
+        help="Lab name to restrict subjects for platform projects",
     )
     parser.add_argument(
         "--one-test",
@@ -120,7 +130,8 @@ if __name__ == "__main__":
 
     if args.sync_params:
         sync_local_params_to_alyx(one=one)
-    elif args.get_project:
+    elif args.get_project and args.lab is None:
         get_alyx_project_info(one=one, project_name=args.get_project)
-
+    elif args.get_project and args.lab:
+        get_alyx_project_info(one=one, project_name=args.get_project, lab=args.lab)
     print(args)
