@@ -82,7 +82,11 @@ tph = TrialParamHandler(sph)
 f, axes = op.make_fig(sph)
 plt.pause(1)
 
-bonsai.start_camera_setup()
+# =====================================================================
+# RUN CAMERA SETUP
+# =====================================================================
+if bonsai.launch_cameras():
+    bonsai.start_camera_setup()
 
 for i in range(sph.NTRIALS):  # Main loop
     tph.next_trial()

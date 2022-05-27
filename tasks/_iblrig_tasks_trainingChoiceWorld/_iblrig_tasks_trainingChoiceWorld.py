@@ -75,7 +75,8 @@ plt.pause(1)
 # =====================================================================
 # RUN CAMERA SETUP
 # =====================================================================
-bonsai.start_camera_setup()
+if bonsai.launch_cameras():
+    bonsai.start_camera_setup()
 
 for i in range(sph.NTRIALS):  # Main loop
     tph.next_trial()

@@ -317,9 +317,6 @@ else:
         os.chdir(here)
 
     def start_camera_setup():
-        if not launch_cameras():
-            return
-
         here = os.getcwd()
         iblrig_folder_path = Path(ph.get_iblrig_folder())
         os.chdir(str(iblrig_folder_path / "devices" / "camera_setup"))
