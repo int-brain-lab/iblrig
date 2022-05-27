@@ -8,7 +8,6 @@ import iblrig.bonsai as bonsai
 import matplotlib.pyplot as plt
 import user_settings
 from iblrig.bpod_helper import BpodMessageCreator
-from iblrig.params import get_modality_from_board
 from iblrig.user_input import ask_session_delay
 from pybpodapi.protocol import Bpod, StateMachine
 
@@ -83,7 +82,7 @@ tph = TrialParamHandler(sph)
 f, axes = op.make_fig(sph)
 plt.pause(1)
 
-bonsai.start_camera_setup(get_modality_from_board(sph.PYBPOD_BOARD))
+bonsai.start_camera_setup()
 
 for i in range(sph.NTRIALS):  # Main loop
     tph.next_trial()
