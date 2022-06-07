@@ -1,5 +1,16 @@
 # **Release notes**
 
+## **Release Notes 6.6.2**
+
+- Bugfix: ONE authenticate call of ibllib missing .alyx.
+- Added a script to run the same functionality of SyncToAlyx command from GUI (in scripts/sync_to_alyx.py command from CLI)
+- Bugfix: path_helper return only date folders under subject glob. 
+- Created bonsai.launch_cameras() camera workflows now will be skipped if not on training or photometry rig.
+
+## **Release Notes 6.6.1**
+
+- bugfix missing import in habituationCW
+
 ## **Release Notes 6.6.0**
 
 - Reduced dependencies for logging, simplified implementation, logging bug fix for 'transfer_rig_data.py' script

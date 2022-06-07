@@ -70,7 +70,7 @@ def get_one_user():
         return user_file.stem
 
 
-def call_one_get_project_data(project_name: str, one_test: bool = False):
+def call_one_get_project_data(project_name: str, lab: str = None, one_test: bool = False):
     if one_test:
         one_test = " --one-test "
     else:
@@ -80,14 +80,22 @@ def call_one_get_project_data(project_name: str, one_test: bool = False):
     os.chdir(Path(iblrig.__file__).parent.parent.joinpath("scripts", "ibllib"))
     ibllib_env_str = envs.get_env_python(env_name="ibllib")
     ibllib_env = Path(ibllib_env_str).parent
-    resp = subprocess.run(
-        f"python alyx.py{one_test}--get-project {project_name}",
-        shell=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        env=dict(os.environ.copy(), PATH=str(ibllib_env)),
-    )
-
+    if lab is None:
+        resp = subprocess.run(
+            f"python alyx.py{one_test}--get-project {project_name}",
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            env=dict(os.environ.copy(), PATH=str(ibllib_env)),
+        )
+    else:
+        resp = subprocess.run(
+            f"python alyx.py{one_test}--get-project {project_name} --lab {lab}",
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            env=dict(os.environ.copy(), PATH=str(ibllib_env)),
+        )
     print(resp)
     os.chdir(here)
     return

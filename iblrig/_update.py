@@ -9,11 +9,11 @@ import subprocess
 import sys
 from pathlib import Path
 
+from packaging.version import parse
 from setup_pybpod import main as setup_pybpod
 
 import iblrig.envs as envs
 import iblrig.git as git
-
 
 IBLRIG_ROOT_PATH = Path.cwd()
 git.fetch()
@@ -23,7 +23,23 @@ BRANCH = git.get_current_branch()
 VERSION = git.get_current_version()
 
 
+def is_patch_version() -> bool:
+    """Checks if the latest version on server is a patch of the currently installed version
+
+    Returns:
+        bool: True if latest is patch, False if not
+    """
+    if parse(VERSION).major == parse(ALL_VERSIONS[0]).major:
+        if parse(VERSION).minor == parse(ALL_VERSIONS[0]).minor:
+            return True
+    return False
+
+
 def check_reinstall_required():
+    # if versions are the same skip checking for file else check for file
+    if is_patch_version():
+        return
+    # if flag file exists reinstall
     REINSTALL = True if list(Path(IBLRIG_ROOT_PATH).glob("reinstall")) else False
     if REINSTALL:
         print("\nPlease deactivate iblrig and reinstall from the base environment")
