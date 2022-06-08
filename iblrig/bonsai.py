@@ -12,6 +12,7 @@ from sys import platform
 
 from pythonosc import udp_client
 
+import iblrig.params as params
 import iblrig.path_helper as ph
 
 log = logging.getLogger("iblrig")
@@ -315,9 +316,7 @@ else:
         time.sleep(3)
         os.chdir(here)
 
-    def start_camera_setup(modality):
-        if modality == "ephys":
-            return
+    def start_camera_setup():
         here = os.getcwd()
         iblrig_folder_path = Path(ph.get_iblrig_folder())
         os.chdir(str(iblrig_folder_path / "devices" / "camera_setup"))
@@ -330,6 +329,25 @@ else:
         editor = "--start-no-debug"
         subprocess.call([bns, wrkfl, editor, noboot])  # locks until Bonsai closes
         os.chdir(here)
+
+
+def launch_cameras() -> bool:
+    """Decie whether to launch camera workflows or not from the board name.
+    Logic from board name is:
+    - ephys behavior PC calls its Bpod board something_ephys_something
+    - training rig behavior PC calls it's Bpod board something_behavior_something
+    Launching behavior tasks on an ephys rig should not launch the cameras
+
+    TODO: this ought to be decided at the paramfile level once the modality param exists
+    after rigcore integration use camera existance to decide whether to
+    e.g. launch video or not on session start.
+    """
+    board_name = params.load_params_file()['NAME']
+    launch_cam = False
+    if ("behavior" in board_name) or ("photometry" in board_name):
+        launch_cam = True
+        log.info("Launching camera on " + board_name)
+    return launch_cam
 
 
 def osc_client(workflow):
