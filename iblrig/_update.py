@@ -29,6 +29,8 @@ def is_patch_version() -> bool:
     Returns:
         bool: True if latest is patch, False if not
     """
+    if not VERSION:
+        return
     if parse(VERSION).major == parse(ALL_VERSIONS[0]).major:
         if parse(VERSION).minor == parse(ALL_VERSIONS[0]).minor:
             return True
