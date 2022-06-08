@@ -332,7 +332,7 @@ else:
 
 
 def launch_cameras() -> bool:
-    """Decie whether to launch camera workflows or not from the oard name.
+    """Decie whether to launch camera workflows or not from the board name.
     Logic from board name is:
     - ephys behavior PC calls its Bpod board something_ephys_something
     - training rig behavior PC calls it's Bpod board something_behavior_something
