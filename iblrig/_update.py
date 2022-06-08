@@ -30,7 +30,13 @@ def is_patch_version() -> bool:
         bool: True if latest is patch, False if not
     """
     if not VERSION:
-        return
+        msg = """You are on an untagged release/branch\n
+        Choose 'y' to pretend this is a patch release
+        Choose 'n' to pretend this is a major or minor release
+        (y/n): """
+        userin = input(msg)
+        return True if userin.lower() == 'y' else False
+
     if parse(VERSION).major == parse(ALL_VERSIONS[0]).major:
         if parse(VERSION).minor == parse(ALL_VERSIONS[0]).minor:
             return True
