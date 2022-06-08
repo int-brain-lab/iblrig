@@ -3,6 +3,7 @@
 ## **Release Notes 6.6.2**
 
 - Update procedure will now ignore the reinstall flag if version increments only micro/patch version
+  - If on an untagged version will ask user what to do.
 - Bugfix: ONE authenticate call of ibllib missing .alyx.
 - Added a script to run the same functionality of SyncToAlyx command from GUI (in scripts/sync_to_alyx.py command from CLI)
 - Bugfix: path_helper return only date folders under subject glob. 
