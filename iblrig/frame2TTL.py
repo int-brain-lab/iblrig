@@ -25,6 +25,7 @@ def Frame2TTL(serial_port: str, version: int = 2) -> object:
         object: Instance of the v1/v2 class
     """
     f2ttl = None
+    log.debug(f"serial_port from Frame2TTL: {serial_port}")
     if version == 2:
         try:
             f2ttl = Frame2TTLv2(serial_port)
@@ -32,7 +33,7 @@ def Frame2TTL(serial_port: str, version: int = 2) -> object:
             if iblrig.params.load_params_file().get("F2TTL_HW_VERSION", None) != 2:
                 iblrig.params.update_params_file(data={"F2TTL_HW_VERSION": 2})
             return f2ttl
-        except BaseException as e:
+        except (serial.SerialException, AssertionError) as e:
             log.warning(f"Cannot connect assuming F2TTLv2 device, continuing with v1: {e}")
     elif version == 1:
         try:
@@ -41,13 +42,16 @@ def Frame2TTL(serial_port: str, version: int = 2) -> object:
             if iblrig.params.load_params_file().get("F2TTL_HW_VERSION", None) != 1:
                 iblrig.params.update_params_file(data={"F2TTL_HW_VERSION": 1})
             return f2ttl
-        except BaseException as e:
+        except AssertionError as e:
             log.error(
                 f"Couldn't connect to F2TTLv1: {str(e)}\nDisconnecting and then "
                 f"reconnecting the Frame2TTL cable may resolve this issue."
             )
-    elif version == 0:
-        return None
+            raise e
+        except FileNotFoundError as e:
+            raise e
+    else:
+        raise ValueError("Unsupported version " + str(version))
 
     return Frame2TTL(serial_port, version=version - 1)
 
@@ -296,7 +300,7 @@ class Frame2TTLv2(object):
         # 1 byte response expected (unsigned)
         self.hw_version = int.from_bytes(ser.read(1), byteorder="little", signed=False)
         if self.hw_version != 2:
-            self.ser.close()
+            ser.close()
             raise serial.SerialException("Error: Frame2TTLv2 requires hardware version 2.")
         return ser
 

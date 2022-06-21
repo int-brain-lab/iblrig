@@ -194,6 +194,7 @@ def load_params_file(silent=True) -> dict:
     """
     iblrig_params = Path(ph.get_iblrig_params_folder())
     fpath = iblrig_params / ".iblrig_params.json"
+    log.debug(f"fpath from load_params_file: {fpath}")
     if fpath.exists():
         with open(fpath, "r") as f:
             out = json.load(f)
