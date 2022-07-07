@@ -1,8 +1,3 @@
-#!/usr/bin/env python
-# @Author: Niccolò Bonacchi
-# @Creation_Date: Thursday, March 28th 2019, 7:53:44 pm
-# @Editor: Michele Fabbri, Miles Wells
-# @Edit_Date: 2022-07-01
 """
 Purge data from RIG
 - looks for datasets matching filename pattern

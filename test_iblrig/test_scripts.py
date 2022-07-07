@@ -3,11 +3,11 @@ import tempfile
 import unittest
 
 from one.api import ONE
+from test_iblrig import OPENALYX_PARAMETERS
 
 from scripts.ibllib.purge_rig_data import purge_local_data, session_name
 
 
-# TODO: Flesh out script testing in the future
 class TestScripts(unittest.TestCase):
     def setUp(self) -> None:
         self.tempdir = tempfile.TemporaryDirectory()
@@ -18,7 +18,8 @@ class TestScripts(unittest.TestCase):
         root = Path(self.tempdir.name)
         local_data = root.joinpath('iblrig_data', 'Subjects')
         local_data.mkdir(parents=True)
-        one = ONE(base_url='https://openalyx.internationalbrainlab.org', silent=True)
+        # Need to add a username/password to the ONE call for the test to function
+        one = ONE(**OPENALYX_PARAMETERS)
         # Find a session with at least 5 or so datasets and touch those files
         sessions = one.search(lab='cortex')
         session = next(x for x in sessions if len(one.list_datasets(x, collection='raw*')) > 5)
