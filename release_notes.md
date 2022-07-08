@@ -1,5 +1,11 @@
 # **Release notes**
 
+## **Release Notes 6.6.3**
+
+- additional f2ttl error catching and messaging
+- purge_rig_data.py script now functional
+- manual installation and update instructions added to README.md to simplify troubleshooting efforts
+
 ## **Release Notes 6.6.2**
 
 - Update procedure will now ignore the reinstall flag if version increments only micro/patch version
