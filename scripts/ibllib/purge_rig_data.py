@@ -41,7 +41,8 @@ def purge_local_data(local_folder, filename='*', lab=None, dry=False, one=None):
     one = one or ONE()
     for session_path, dataset in local_alf_paths(local_folder, filename):
         session = session_name(session_path, lab=lab)
-        if not (eid := one.to_eid(session)):
+        eid = one.to_eid(session)
+        if not eid:
             continue
         matching = one.list_datasets(eid, dataset.as_posix())
         if not matching:
