@@ -1,11 +1,15 @@
-from pathlib import Path
 import tempfile
 import unittest
+from pathlib import Path
 
 from one.api import ONE
+
 from test_iblrig import OPENALYX_PARAMETERS
 
-from scripts.ibllib.purge_rig_data import purge_local_data, session_name
+try:  # If an AssertionError is thrown on import, ONE-api is less than v1.13.0
+    from scripts.ibllib.purge_rig_data import purge_local_data, session_name
+except AssertionError:
+    SKIP_PURGE_TEST = True
 
 
 class TestScripts(unittest.TestCase):
@@ -13,6 +17,7 @@ class TestScripts(unittest.TestCase):
         self.tempdir = tempfile.TemporaryDirectory()
         self.addCleanup(self.tempdir.cleanup)
 
+    @unittest.skipIf(SKIP_PURGE_TEST, "Skipping test_purge_rig_data, ONE-api is lower than v1.13.0")
     def test_purge_rig_data(self):
         # Setup out test
         root = Path(self.tempdir.name)

@@ -5,14 +5,23 @@ Purge data from RIG
 """
 import argparse
 import logging
-from pathlib import Path
 from fnmatch import fnmatch
+from pathlib import Path
 
+import one
 from one.alf.files import get_session_path
 from one.api import ONE
-from one.alf.cache import iter_datasets, iter_sessions
 
 log = logging.getLogger('iblrig')
+
+try:  # Verify ONE-api is at v1.13.0 or greater
+    assert(tuple(map(int, one.__version__.split('.'))) >= (1, 13, 0))
+    from one.alf.cache import iter_datasets, iter_sessions
+except (AssertionError, ImportError) as e:
+    if e is AssertionError:
+        log.error("The found version of ONE needs to be updated to run this script, please run a 'pip install -U ONE-api' from "
+                  "the appropriate anaconda environment")
+    raise
 
 
 def session_name(path, lab=None) -> str:
