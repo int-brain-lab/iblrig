@@ -11,6 +11,13 @@ import subprocess
 import sys
 from pathlib import Path
 
+# Before anything, check that os.system command can be run with returncode 0
+# # (the command is not important, just that it runs)
+check = os.system(f"{sys.executable} --version")
+if check != 0:
+    raise SystemError("os.system command exited with non-zero status. This might mean something is wrong with "
+                      "your command prompt. Make sure you are not using Powershell.")
+
 print("Performing a 'pip install' for the base environment")
 subprocess.check_call(
     [sys.executable, "-m", "pip", "install", "setuptools", "wheel", "packaging", "colorlog",]
@@ -36,7 +43,9 @@ if sys.platform not in ["Windows", "windows", "win32"]:
     INSTALL_LOG_PATH = "/tmp/iblrig_install.log"
 else:
     if not os.path.isdir("C:\\Temp"):
-        os.mkdir("C:\\Temp")
+        check = os.mkdir("C:\\Temp")
+        if check != 0:
+            raise SystemError("os.mkdir command exited with non-zero status")
     INSTALL_LOG_PATH = "C:\\Temp\\iblrig_install.log"
     with open(INSTALL_LOG_PATH, "w"):
         pass
@@ -46,25 +55,30 @@ logging.basicConfig(filename=INSTALL_LOG_PATH)
 
 try:
     print("\n\n--->Cleaning up conda cache")
-    os.system("conda clean -q -y --all")
+    check = os.system("conda clean -q -y --all")
+    if check != 0:
+        raise SystemError("os.system command exited with non-zero status")
     print("\n--->conda cache... OK")
 except BaseException as exception:
     print(exception)
     log.exception(exception)
     raise SystemError("Could not clean conda cache, check on the state of conda, aborting...")
 
-MC = (
-    "conda"
-    if "mamba"
-    not in str(subprocess.check_output([os.environ["CONDA_EXE"], "list", "-n", "base", "--json"]))
-    else "mamba"
-)
-
-if MC == "conda":
-    print("\n\n--->mamba not found")
+# Check if mamba is installed
+check = subprocess.call('mamba --version')
+if check == 0:
+    MC = 'mamba'
+else:
+    # Try to install mamba
     try:
         print("\n\n--->Installing mamba")
-        os.system("conda install mamba -q -y -n base -c conda-forge")
+        check = os.system("conda install mamba -q -y -n base -c conda-forge")
+        if check != 0:
+            raise SystemError("os.system command exited with non-zero status")
+        mamba_check = subprocess.call('mamba --version')
+        if mamba_check != 0:
+            raise SystemError("--->mamba installed but not functional."
+                              "\nCheck if you are using conda version 4.13, if so, downgrade to 4.12")
         print("\n--->mamba installed... OK")
         MC = "mamba"
     except BaseException as exception:
@@ -81,7 +95,9 @@ def check_update_dependencies():
     if "packaging" not in str(subprocess.check_output([f"{MC}", "list", "--json"])):
         try:
             print("\n\n--->Installing packaging")  # In case of miniconda install packaging
-            os.system(f"{MC} install packaging -q -y -n base -c defaults")
+            check = os.system(f"{MC} install packaging -q -y -n base -c defaults")
+            if check != 0:
+                raise SystemError("os.system command exited with non-zero status")
         except BaseException as e:
             print(e)
             log.exception(e)
@@ -96,7 +112,9 @@ def check_update_dependencies():
     if version(conda_version) < version("4.10.3"):
         try:
             print("\n\n--->Updating base conda")
-            os.system(f"{MC} update -q -y -n base -c defaults conda")
+            check = os.system(f"{MC} update -q -y -n base -c defaults conda")
+            if check != 0:
+                raise SystemError("os.system command exited with non-zero status")
             print("\n--->conda update... OK")
         except BaseException as e:
             print(e)
@@ -106,7 +124,9 @@ def check_update_dependencies():
     if version(python_version) < version("3.7.11"):
         try:
             print("\n\n--->Updating base environment python")
-            os.system(f"{MC} update -q -y -n base -c defaults python>=3.8")
+            check = os.system(f"{MC} update -q -y -n base -c defaults python>=3.8")
+            if check != 0:
+                raise SystemError("os.system command exited with non-zero status")
             print("\n--->python update... OK")
         except BaseException as e:
             print(e)
@@ -116,8 +136,12 @@ def check_update_dependencies():
     if version(pip_version) < version("20.2.4"):
         try:
             print("\n\n--->Reinstalling pip, setuptools, wheel...")
-            os.system(f"{MC} install -q -y -n base -c defaults pip>=20.2.4 --force-reinstall")
-            os.system(f"{MC} update -q -y -n base -c defaults setuptools wheel")
+            check = os.system(f"{MC} install -q -y -n base -c defaults pip>=20.2.4 --force-reinstall")
+            if check != 0:
+                raise SystemError("os.system command exited with non-zero status")
+            check = os.system(f"{MC} update -q -y -n base -c defaults setuptools wheel")
+            if check != 0:
+                raise SystemError("os.system command exited with non-zero status")
             print("\n--->pip, setuptools, wheel upgrade... OK")
         except BaseException as e:
             print(e)
@@ -130,7 +154,9 @@ def check_update_dependencies():
         print(e, "\ngit not found trying to install...")
         try:
             print("\n\n--->Installing git")
-            os.system(f"{MC} install -q -y git")
+            check = os.system(f"{MC} install -q -y git")
+            if check != 0:
+                raise SystemError("os.system command exited with non-zero status")
             print("\n\n--->git... OK")
         except BaseException as e:
             print(e)
@@ -160,13 +186,17 @@ def create_ibllib_env(env_name: str = "ibllib"):
     """
     print(f"\n\nINFO: Creating environment {env_name}...")
     print("N" * 79)
-    env = envs.get_env_folder(env_name=env_name)
+    env = envs.get_env_folder(env_name=env_name, MC=MC)
     if not env:
         try:
             print("\n\n--->Creating environment")
-            os.system(f"{MC} create -q -y -n {env_name} -c defaults python=3.8")
-            pip = envs.get_env_pip(env_name)
-            os.system(f"{pip} install --no-warn-script-location ibllib")
+            check = os.system(f"{MC} create -q -y -n {env_name} -c defaults python=3.8")
+            if check != 0:
+                raise SystemError("os.system command exited with non-zero status")
+            pip = envs.get_env_pip(env_name, MC=MC)
+            check = os.system(f"{pip} install --no-warn-script-location ibllib")
+            if check != 0:
+                raise SystemError("os.system command exited with non-zero status")
             print("\n--->Environment created... OK")
         except BaseException as e:
             print(e)
@@ -175,7 +205,9 @@ def create_ibllib_env(env_name: str = "ibllib"):
     else:
         print(f"\n\nINFO: Environment {env_name} already exists, reinstalling.")
         remove_command = f"{MC} env remove -q -y -n {env_name}"
-        os.system(remove_command)
+        check = os.system(remove_command)
+        if check != 0:
+            raise SystemError("os.system command exited with non-zero status")
         shutil.rmtree(env, ignore_errors=True)
         return create_ibllib_env(env_name=env_name)
     print("N" * 79)
@@ -185,12 +217,14 @@ def create_ibllib_env(env_name: str = "ibllib"):
 def create_environment(env_name="iblrig", use_conda_yaml=False, resp=False):
     try:
         if use_conda_yaml:
-            os.system(f"{MC} env create -f environment.yaml")
+            check = os.system(f"{MC} env create -f environment.yaml")
+            if check != 0:
+                raise SystemError("os.system command exited with non-zero status")
             return
         print(f"\n\nINFO: Creating {env_name}:")
         print("N" * 79)
         # Checks if env is already installed
-        env = envs.get_env_folder(env_name=env_name)
+        env = envs.get_env_folder(env_name=env_name, MC=MC)
         print(env)
         # Create commands
         create_command = f"{MC} create -q -y -n {env_name} python==3.7.11"
@@ -204,7 +238,9 @@ def create_environment(env_name="iblrig", use_conda_yaml=False, resp=False):
             user_input = input() if not resp else resp
             print(user_input)
             if user_input == "y":
-                os.system(remove_command)
+                check = os.system(remove_command)
+                if check != 0:
+                    raise SystemError("os.system command exited with non-zero status")
                 shutil.rmtree(env, ignore_errors=True)
                 return create_environment(env_name=env_name)
             elif user_input != "n" and user_input != "y":
@@ -213,11 +249,17 @@ def create_environment(env_name="iblrig", use_conda_yaml=False, resp=False):
             elif user_input == "n":
                 return
         else:
-            os.system(create_command)
-            python = envs.get_env_python(env_name=env_name)
+            check = os.system(create_command)
+            if check != 0:
+                raise SystemError("os.system command exited with non-zero status")
+            python = envs.get_env_python(env_name=env_name, MC=MC)
             update_pip_command = f"{python} -m pip install --upgrade pip setuptools wheel"
-            os.system(update_pip_command)
-            os.system(f"{MC} install -q -y -n {env_name} git")
+            check = os.system(update_pip_command)
+            if check != 0:
+                raise SystemError("os.system command exited with non-zero status")
+            check = os.system(f"{MC} install -q -y -n {env_name} git")
+            if check != 0:
+                raise SystemError("os.system command exited with non-zero status")
         print("N" * 79)
         print(f"{env_name} installed.")
     except BaseException as e:
@@ -229,26 +271,28 @@ def create_environment(env_name="iblrig", use_conda_yaml=False, resp=False):
 def install_iblrig(env_name: str = "iblrig") -> None:
     print(f"\n\nINFO: Installing iblrig in {env_name}:")
     print("N" * 79)
-    pip = envs.get_env_pip(env_name=env_name)
+    pip = envs.get_env_pip(env_name=env_name, MC=MC)
     try:
-        os.system(f"{pip} install --no-warn-script-location -e .")
+        check = os.system(f"{pip} install --no-warn-script-location -e .")
+        if check != 0:
+            raise SystemError("os.system command exited with non-zero status")
+        print("N" * 79)
+        print(f"iblrig installed in {env_name}.")
     except BaseException as e:
         print(e)
         log.exception(e)
         raise SystemError(f"Could install iblrig, aborting...")
-    print("N" * 79)
-    print(f"iblrig installed in {env_name}.")
 
 
 def configure_iblrig_params(env_name: str = "iblrig", resp=False):
     try:
         print("\n\nINFO: Setting up default project config in ../iblrig_params:")
         print("N" * 79)
-        iblrig = envs.get_env_folder(env_name=env_name)
+        iblrig = envs.get_env_folder(env_name=env_name, MC=MC)
         if iblrig is None:
             msg = f"Can't configure iblrig_params, {env_name} not found"
             raise ValueError(msg)
-        python = envs.get_env_python(env_name=env_name)
+        python = envs.get_env_python(env_name=env_name, MC=MC)
         iblrig_params_path = IBLRIG_ROOT_PATH.parent / "iblrig_params"
         if iblrig_params_path.exists():
             print(
@@ -318,8 +362,10 @@ def setup_one(resp=False):
     print(user_input)
     if user_input == "y":
         try:
-            python = envs.get_env_python(env_name="ibllib")
-            os.system(f'{python} -c "from one.api import ONE; ONE()"')
+            python = envs.get_env_python(env_name="ibllib", MC=MC)
+            check = os.system(f'{python} -c "from one.api import ONE; ONE()"')
+            if check != 0:
+                raise SystemError("os.system command exited with non-zero status")
         except BaseException as e:
             print(
                 e, "\n\nONE setup incomplete please set up ONE manually",

@@ -10,14 +10,14 @@ import subprocess
 import sys
 from pathlib import Path
 
-MC = "mamba"
 
-
-def get_env_folder(env_name: str = "iblrig") -> str:
+def get_env_folder(env_name: str = "iblrig", MC: str = "mamba") -> str:
     """get_env_folder Return conda folder of [env_name] environment
 
     :param env_name: name of conda environment to look for, defaults to 'iblrig'
     :type env_name: str, optional
+    :param MC: {'mamba' or 'conda'} what to use for package management, defaults to 'mamba'
+    :type MC: str, optional
     :return: folder path of conda environment
     :rtype: str
     """
@@ -36,8 +36,8 @@ def get_env_folder(env_name: str = "iblrig") -> str:
     return env
 
 
-def _get_env_python_ou_pip(env_name: str = "iblrig", rpip=False):
-    env = get_env_folder(env_name=env_name)
+def _get_env_python_ou_pip(env_name: str = "iblrig", MC: str = "mamba", rpip=False):
+    env = get_env_folder(env_name=env_name, MC=MC)
     if sys.platform in ["Windows", "windows", "win32"]:
         pip = os.path.join(env, "Scripts", "pip.exe")
         python = os.path.join(env, "python.exe")
@@ -48,12 +48,12 @@ def _get_env_python_ou_pip(env_name: str = "iblrig", rpip=False):
     return python if not rpip else pip
 
 
-def get_env_python(env_name: str = "iblrig"):
-    return _get_env_python_ou_pip(env_name=env_name, rpip=False)
+def get_env_python(env_name: str = "iblrig", MC: str = "mamba"):
+    return _get_env_python_ou_pip(env_name=env_name, MC=MC, rpip=False)
 
 
-def get_env_pip(env_name: str = "iblrig"):
-    return _get_env_python_ou_pip(env_name=env_name, rpip=True)
+def get_env_pip(env_name: str = "iblrig", MC: str = "mamba"):
+    return _get_env_python_ou_pip(env_name=env_name, MC=MC, rpip=True)
 
 
 def get_base_python():
