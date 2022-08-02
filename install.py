@@ -65,10 +65,12 @@ except BaseException as exception:
     raise SystemError("Could not clean conda cache, check on the state of conda, aborting...")
 
 # Check if mamba is installed
-check = subprocess.call('mamba --version')
-if check == 0:
+try:
+    check = subprocess.call('mamba --version')
+    if check != 0:
+        raise SystemError("subprocess.call command exited with non-zero status")
     MC = 'mamba'
-else:
+except BaseException as exception:
     # Try to install mamba
     try:
         print("\n\n--->Installing mamba")
