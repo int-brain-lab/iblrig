@@ -1,6 +1,10 @@
 # iblrig
 
-iblrig is using gitflow and semantic versioning conventions. Click on the following links for more information on [gitflow](https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow) or [semantic versioning](https://semver.org/).
+This repository is using [semantic versioning](https://semver.org/) and [gitflow](https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow) conventions:
+![](README_semver.png)
+![](README_gitflow_workflow.png)
+
+Please review these conventions to more easily contribute to the project.
 
 ---
 ## How to work with this repository
@@ -17,7 +21,7 @@ iblrig is using gitflow and semantic versioning conventions. Click on the follow
 
 ### Hotfix branches:
 - a `hotfix` or `maintenance` branch is forked from `master`
-- once the fix has been thoroughly tested, it will get merged back into `master`, `develop`, `rc`
+- once the fix has been thoroughly tested, it will get merged back into `master` and `develop`
 - the `hotfix` branch will eventually be deleted
 
 ---

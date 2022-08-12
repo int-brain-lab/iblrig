@@ -4,6 +4,7 @@
 
 - additional f2ttl error catching and messaging
 - purge_rig_data.py script now functional
+- corrected datetime import for `tasks/_iblrig_misc_bpod_ttl_test/trial_params.py` 
 - manual installation and update instructions added to README.md to simplify troubleshooting efforts
 
 ## **Release Notes 6.6.2**
