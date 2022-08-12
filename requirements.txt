@@ -5,8 +5,9 @@ Cython==0.29.6
 globus-sdk==1.7.1
 numpy<1.21,>=1.17
 opencv-python==3.4.5.20
+ONE-api
 packaging==20.8
-pandas==0.25.3
+pandas
 pybpod==1.8.2
 pyOpenSSL==19.0.0
 PySocks==1.6.8

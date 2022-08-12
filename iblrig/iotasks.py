@@ -20,6 +20,7 @@ import iblrig.path_helper as ph
 import iblrig.raw_data_loaders as raw
 
 log = logging.getLogger("iblrig")
+N_PREGENERATED_SESSIONS = 12
 
 
 class ComplexEncoder(json.JSONEncoder):
@@ -145,7 +146,7 @@ def load_session_order_idx(last_settings_data: dict) -> tuple:
         session_idx = 0
     elif "SESSION_ORDER" in last_settings_data.keys():
         session_order = last_settings_data["SESSION_ORDER"]
-        session_idx = last_settings_data["SESSION_IDX"] + 1
+        session_idx = (last_settings_data["SESSION_IDX"] + 1) % N_PREGENERATED_SESSIONS
 
     return session_order, session_idx
 
