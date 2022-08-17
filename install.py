@@ -1,8 +1,3 @@
-#!/usr/bin/env python
-# @Author: Niccolò Bonacchi
-# @Date: 2018-06-08 11:04:05
-# @Editor: Michele Fabbri
-# @Edit_Date: 2022-02-01
 import argparse
 import logging
 import os
@@ -52,25 +47,6 @@ except BaseException as exception:
     print(exception)
     log.exception(exception)
     raise SystemError("Could not clean conda cache, check on the state of conda, aborting...")
-
-MC = (
-    "conda"
-    if "mamba"
-    not in str(subprocess.check_output([os.environ["CONDA_EXE"], "list", "-n", "base", "--json"]))
-    else "mamba"
-)
-
-if MC == "conda":
-    print("\n\n--->mamba not found")
-    try:
-        print("\n\n--->Installing mamba")
-        os.system("conda install mamba -q -y -n base -c conda-forge")
-        print("\n--->mamba installed... OK")
-        MC = "mamba"
-    except BaseException as exception:
-        print(exception)
-        print("Could not install mamba, using conda...")
-        MC = "conda"
 # END CONSTANT DEFINITION
 
 
@@ -78,16 +54,16 @@ def check_update_dependencies():
     # Check if git and conda are installed
     print("\n\nINFO: Checking for dependencies:")
     print("N" * 79)
-    if "packaging" not in str(subprocess.check_output([f"{MC}", "list", "--json"])):
+    if "packaging" not in str(subprocess.check_output(["conda", "list", "--json"])):
         try:
             print("\n\n--->Installing packaging")  # In case of miniconda install packaging
-            os.system(f"{MC} install packaging -q -y -n base -c defaults")
+            os.system("conda install packaging -q -y -n base -c defaults")
         except BaseException as e:
             print(e)
             log.exception(e)
             raise SystemError("Could not install packaging, aborting...")
 
-    conda_version = str(subprocess.check_output([f"{MC}", "-V"])).split(" ")[1].split("\\n")[0]
+    conda_version = str(subprocess.check_output(["conda", "-V"])).split(" ")[1].split("\\n")[0]
     python_version = (
         str(subprocess.check_output(["python", "-V"])).split(" ")[1].split("\\n")[0]
     ).strip("\\r")
@@ -96,7 +72,7 @@ def check_update_dependencies():
     if version(conda_version) < version("4.10.3"):
         try:
             print("\n\n--->Updating base conda")
-            os.system(f"{MC} update -q -y -n base -c defaults conda")
+            os.system("conda update -q -y -n base -c defaults conda")
             print("\n--->conda update... OK")
         except BaseException as e:
             print(e)
@@ -106,7 +82,7 @@ def check_update_dependencies():
     if version(python_version) < version("3.7.11"):
         try:
             print("\n\n--->Updating base environment python")
-            os.system(f"{MC} update -q -y -n base -c defaults python>=3.8")
+            os.system("conda update -q -y -n base -c defaults python>=3.8")
             print("\n--->python update... OK")
         except BaseException as e:
             print(e)
@@ -116,8 +92,8 @@ def check_update_dependencies():
     if version(pip_version) < version("20.2.4"):
         try:
             print("\n\n--->Reinstalling pip, setuptools, wheel...")
-            os.system(f"{MC} install -q -y -n base -c defaults pip>=20.2.4 --force-reinstall")
-            os.system(f"{MC} update -q -y -n base -c defaults setuptools wheel")
+            os.system("conda install -q -y -n base -c defaults pip>=20.2.4 --force-reinstall")
+            os.system("conda update -q -y -n base -c defaults setuptools wheel")
             print("\n--->pip, setuptools, wheel upgrade... OK")
         except BaseException as e:
             print(e)
@@ -130,20 +106,12 @@ def check_update_dependencies():
         print(e, "\ngit not found trying to install...")
         try:
             print("\n\n--->Installing git")
-            os.system(f"{MC} install -q -y git")
+            os.system("conda install -q -y git")
             print("\n\n--->git... OK")
         except BaseException as e:
             print(e)
             log.exception(e)
             raise SystemError("Could not install git, aborting install...")
-
-    # try:
-    #     print("\n\n--->Updating remaning base packages...")
-    #     os.system(f"{MC} update -q -y -n base -c defaults --all")
-    #     print("\n--->Update of remaining packages... OK")
-    # except BaseException as e:
-    #     print(e)
-    #     print("Could not update remaining packages, trying to continue install...")
 
     print("N" * 79)
     print("All dependencies OK.")
@@ -164,7 +132,7 @@ def create_ibllib_env(env_name: str = "ibllib"):
     if not env:
         try:
             print("\n\n--->Creating environment")
-            os.system(f"{MC} create -q -y -n {env_name} -c defaults python=3.8")
+            os.system(f"conda create -q -y -n {env_name} -c defaults python=3.8")
             pip = envs.get_env_pip(env_name)
             os.system(f"{pip} install --no-warn-script-location ibllib")
             print("\n--->Environment created... OK")
@@ -174,7 +142,7 @@ def create_ibllib_env(env_name: str = "ibllib"):
             raise SystemError(f"Could not create {env_name} environment, aborting...")
     else:
         print(f"\n\nINFO: Environment {env_name} already exists, reinstalling.")
-        remove_command = f"{MC} env remove -q -y -n {env_name}"
+        remove_command = f"conda env remove -q -y -n {env_name}"
         os.system(remove_command)
         shutil.rmtree(env, ignore_errors=True)
         return create_ibllib_env(env_name=env_name)
@@ -185,7 +153,7 @@ def create_ibllib_env(env_name: str = "ibllib"):
 def create_environment(env_name="iblrig", use_conda_yaml=False, resp=False):
     try:
         if use_conda_yaml:
-            os.system(f"{MC} env create -f environment.yaml")
+            os.system("conda env create -f environment.yaml")
             return
         print(f"\n\nINFO: Creating {env_name}:")
         print("N" * 79)
@@ -193,8 +161,8 @@ def create_environment(env_name="iblrig", use_conda_yaml=False, resp=False):
         env = envs.get_env_folder(env_name=env_name)
         print(env)
         # Create commands
-        create_command = f"{MC} create -q -y -n {env_name} python==3.7.11"
-        remove_command = f"{MC} env remove -q -y -n {env_name}"
+        create_command = f"conda create -q -y -n {env_name} python==3.7.11"
+        remove_command = f"conda env remove -q -y -n {env_name}"
         # Installs the env
         if env:
             print(
@@ -217,7 +185,7 @@ def create_environment(env_name="iblrig", use_conda_yaml=False, resp=False):
             python = envs.get_env_python(env_name=env_name)
             update_pip_command = f"{python} -m pip install --upgrade pip setuptools wheel"
             os.system(update_pip_command)
-            os.system(f"{MC} install -q -y -n {env_name} git")
+            os.system(f"conda install -q -y -n {env_name} git")
         print("N" * 79)
         print(f"{env_name} installed.")
     except BaseException as e:
