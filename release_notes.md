@@ -1,5 +1,12 @@
 # **Release notes**
 
+## **Release Notes 7.0.0**
+
+- python 3.8 support
+- removal of mamba dependencies
+- improved CI to more closely resemble a typical install
+- flake8 standardizations
+
 ## **Release Notes 6.6.3**
 
 - additional f2ttl error catching and messaging

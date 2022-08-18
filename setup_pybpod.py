@@ -1,7 +1,4 @@
-#!/usr/bin/env python
-# -*- coding:utf-8 -*-
-# @Author: Niccolò Bonacchi
-# @Date: Tuesday, November 20th 2018, 9:21:15 am
+import os
 import shutil
 import sys
 from pathlib import Path
@@ -12,7 +9,6 @@ IBLRIG_FOLDER = Path(__file__).absolute().parent
 IBLRIG_PARAMS_FOLDER = IBLRIG_FOLDER.parent / "iblrig_params"
 
 
-################################################################################
 def delete_untracked_files(iblrig_params_path):
     print("Deleting untracked files")
     iblrig_params_tasks_path = iblrig_params_path / "IBL" / "tasks"
@@ -21,16 +17,12 @@ def delete_untracked_files(iblrig_params_path):
     task_paths = [iblrig_params_tasks_path / x for x in task_names]
     # Delete old files from all task folders
     for x in task_paths:
-        if (x / "path_helper.py").exists():
-            (x / "path_helper.py").unlink()
-        if (x / "_user_settings.py").exists():
-            (x / "_user_settings.py").unlink()
-        if (x / "user_settings.py").exists():
-            (x / "user_settings.py").unlink()
-        if (x / "sound.py").exists():
-            (x / "sound.py").unlink()
-        if (x / "ambient_sensor.py").exists():
-            (x / "ambient_sensor.py").unlink()
+        (x / "path_helper.py").unlink() if (x / "path_helper.py").exists() else None
+        (x / "_user_settings.py").unlink() if (x / "_user_settings.py").exists() else None
+        (x / "user_settings.py").unlink() if (x / "user_settings.py").exists() else None
+        (x / "sound.py").unlink() if (x / "sound.py").exists() else None
+        (x / "ambient_sensor.py").unlink() if (x / "ambient_sensor.py").exists() else None
+
     # Remove python files that are in iblrig/scripts from root of params folder
     for f in IBLRIG_PARAMS_FOLDER.glob("*.py"):
         f.unlink()
@@ -39,10 +31,9 @@ def delete_untracked_files(iblrig_params_path):
     packages = IBLRIG_FOLDER / "Bonsai" / "Packages"
     vid = packages / "Bonsai.Video.2.4.0-preview"
     viddes = packages / "Bonsai.Video.Design.2.4.0-preview"
-    if vid.exists():
-        shutil.rmtree(vid)
-    if viddes.exists():
-        shutil.rmtree(viddes)
+    shutil.rmtree(vid) if vid.exists() else None
+    shutil.rmtree(viddes) if viddes.exists() else None
+
     # Remove whole task from iblrig_params
     task = [x for x in task_paths if "_iblrig_misc_sync_test" in x.name]
     if task:
@@ -51,16 +42,14 @@ def delete_untracked_files(iblrig_params_path):
         shutil.rmtree(task)
 
 
-################################################################################
 def copy_pybpod_user_settings():
     print("Copying general PyBpod IBL project settings")
     src_file = IBLRIG_FOLDER / "scripts" / "user_settings.py"
     dst_file = IBLRIG_PARAMS_FOLDER / "user_settings.py"
     shutil.copy(str(src_file), str(dst_file))
-    print("  Copied: {src_file} to {dst_file}")
+    print(f" Copied: {src_file} to {dst_file}")
 
 
-################################################################################
 def create_ibl_project(iblproject_path):
     p = Project()
     print("Creating IBL project")
@@ -73,7 +62,6 @@ def create_ibl_project(iblproject_path):
         print("  Created: IBL project")
 
 
-################################################################################
 def create_ibl_board(iblproject_path):
     print("Creating: Bpod board")
     p = Project()
@@ -89,18 +77,13 @@ def create_ibl_board(iblproject_path):
         print(f"  Skipping creation: Board found with name <{p.boards[0].name}>")
 
 
-################################################################################
 def create_subject(iblproject_path, subject_name: str):
     p = Project()
     p.load(iblproject_path)
-    # if p.find_subject(subject_name) is None:
     subject = p.create_subject()
     subject.name = subject_name
     p.save(iblproject_path)
     print(f"  Created subject: {subject_name}")
-    # else:
-    #     subject = p.find_subject(subject_name)
-    #     print(f"Skipping creation: Subject <{subject.name}> already exists")
 
 
 def create_ibl_subjects(iblproject_path):
@@ -109,7 +92,6 @@ def create_ibl_subjects(iblproject_path):
     create_subject(iblproject_path, subject_name="_iblrig_test_mouse")
 
 
-################################################################################
 def create_ibl_users(iblproject_path):
     print("Creating default user")
     p = Project()
@@ -124,18 +106,13 @@ def create_ibl_users(iblproject_path):
         print(f"  Skipping creation: User <{user.name}> already exists")
 
 
-################################################################################
 def create_task(iblproject_path, task_name: str):
     p = Project()
     p.load(iblproject_path)
-    task = p.find_task(task_name)
-    # if task is None:
     task = p.create_task()
     task.name = task_name
     p.save(iblproject_path)
     print(f"Created task: {task_name}")
-    # else:
-    #     print(f"Skipping creation: Task {task.name} already exists")
 
 
 def create_task_cleanup_command(task):
@@ -299,19 +276,13 @@ def create_ibl_tasks(iblproject_path):  # XXX: THIS!
         config_task(iblproject_path, task_name=task_name)
 
 
-################################################################################
 def create_experiment(iblproject_path, exp_name: str):
     p = Project()
     p.load(iblproject_path)
-    exp = [e for e in p.experiments if e.name == exp_name]
-    # if not exp:
     exp = p.create_experiment()
     exp.name = exp_name
     p.save(iblproject_path)
     print(f"Created experiment: {exp.name}")
-    # else:
-    #     exp = exp[0]
-    #     print(f"Skipping creation: Experiment {exp.name} already exists")
 
 
 def create_ibl_experiments(iblproject_path):
@@ -324,15 +295,10 @@ def create_ibl_experiments(iblproject_path):
         create_experiment(iblproject_path, exp_name=exp_name)
 
 
-################################################################################
 def create_setup(exp, setup_name: str, board: str, subj: object, task: str = None):
     # task name is defined as the experiment_name + '_' + setup_name
     # Create or get preexisting setup
-    setup = [s for s in exp.setups if s.name == setup_name]
-    # if not setup:
     setup = exp.create_setup()
-    # else:
-    #     setup = setup[0]
 
     setup.name = setup_name
     setup.task = task if isinstance(task, str) else exp.name + "_" + setup_name
@@ -409,7 +375,6 @@ def create_ibl_setups(iblproject_path):
     print("Done")
 
 
-################################################################################
 def copy_task_files(iblrig_params_path, exclude_filename=None):
     """Copy all files in root tasks folder to iblrig_params_path
     Copy all *.py files in iblrig_path to iblrig_params/IBL/tasks/<task_name>/*
@@ -443,7 +408,6 @@ def copy_task_files(iblrig_params_path, exclude_filename=None):
     print("Done")
 
 
-################################################################################
 def setups_to_remove(iblproject_path):
     p = Project()
     p.load(iblproject_path)
@@ -462,16 +426,15 @@ def setups_to_remove(iblproject_path):
             p.save(iblproject_path)
 
 
-################################################################################
 def main(iblrig_params_path):
     """for update to 5.1.0+
     Change location of all post scripts to iblrig/scripts
     and removeall files in iblrig_params except user_settings.
     """
-    print(IBLRIG_FOLDER, "\n", IBLRIG_PARAMS_FOLDER)
-
+    # Set pathes and create dir
     iblrig_params_path = Path(iblrig_params_path)
     iblproject_path = iblrig_params_path / "IBL"
+    os.makedirs(iblrig_params_path, exist_ok=True)
 
     delete_untracked_files(iblrig_params_path)
     copy_pybpod_user_settings()
@@ -491,10 +454,11 @@ def main(iblrig_params_path):
 
 
 if __name__ == "__main__":
-    # setups_to_remove(IBLRIG_PARAMS_FOLDER / 'IBL')
-    # delete_untracked_files(IBLRIG_PARAMS_FOLDER)
     if len(sys.argv) == 1:
-        print("Please select a path for iblrig_params folder")
+        print(f"No argument given, setting default values...\nIBLRIG_FOLDER - {IBLRIG_FOLDER}\nIBLRIG_PARAMS_FOLDER - "
+              f"{IBLRIG_PARAMS_FOLDER}")
+        main(IBLRIG_PARAMS_FOLDER)
     elif len(sys.argv) == 2:
         print(f"\nSetting up PyBpod IBL project to folder: {sys.argv[1]}")
         main(sys.argv[1])
+    print("setup_pybpod.py completed")

@@ -23,9 +23,10 @@ jobs:
 
       - uses: conda-incubator/setup-miniconda@v2
         with:
+          activate-environment: iblrig
           auto-update-conda: true
           python-version: ${{ matrix.python-version }}
-          activate-environment: iblrig
+          auto-activate-base: false
 
       - name: Flake8
         shell: bash -l {0}
@@ -33,15 +34,24 @@ jobs:
           pip install flake8 --quiet
           python -m flake8
 
-      - name: Commands
-        shell: bash -l {0}
+      - name: IBLRIG Installation
+        shell: cmd -l {0}
         run: |
-          conda activate base
+          conda info
+          conda list
           python --version
-          pip install setuptools wheel packaging colorlog --quiet
-          python install.py --reinstall-response y --config-response y --bonsai-response y --ONE-response n
+          pwd
+          pip install --editable .
+          python setup_pybpod.py
+          pwd
+          cd Bonsai
+          pwd
+          setup.bat
+          cd ..
+          conda create --name ibllib python==3.8.13 --yes
           conda activate ibllib
-          python -c "from one.api import ONE; ONE(base_url='https://test.alyx.internationalbrainlab.org', username='test_user', password='TapetesBloc18', silent=True)"
+          pip install ibllib
+          python -c "from one.api import ONE; ONE(password='international')"
           conda activate iblrig
           python -m unittest discover
 
