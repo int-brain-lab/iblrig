@@ -41,10 +41,10 @@ In order to install iblrig on a Windows machine please ensure that the following
 - Installation complete
 
 ### Installation Notes for manual fresh installation on Python 3.8:
-The following commands to be run from the Windows command prompt (not tested in powershell) 
+The following commands are to be run from the Anaconda Powershell Prompt. 
 ```commandline
 cd \
-conda deactivate
+conda activate base
 conda install git --yes
 git clone https://github.com/int-brain-lab/iblrig
 cd iblrig
@@ -55,7 +55,7 @@ conda activate iblrig
 pip install --editable .
 python setup_pybpod.py
 cd Bonsai
-setup.bat
+install.ps1
 cd ..
 conda create --name ibllib python==3.8.13 --yes
 conda activate ibllib

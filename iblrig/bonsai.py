@@ -332,14 +332,14 @@ else:
 
 
 def launch_cameras() -> bool:
-    """Decie whether to launch camera workflows or not from the board name.
+    """Decide whether to launch camera workflows or not from the board name.
     Logic from board name is:
     - ephys behavior PC calls its Bpod board something_ephys_something
     - training rig behavior PC calls it's Bpod board something_behavior_something
     Launching behavior tasks on an ephys rig should not launch the cameras
 
     TODO: this ought to be decided at the paramfile level once the modality param exists
-    after rigcore integration use camera existance to decide whether to
+    after rigcore integration use camera existence to decide whether to
     e.g. launch video or not on session start.
     """
     board_name = params.load_params_file()['NAME']

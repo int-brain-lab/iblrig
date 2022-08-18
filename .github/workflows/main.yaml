@@ -35,7 +35,7 @@ jobs:
           python -m flake8
 
       - name: IBLRIG Installation
-        shell: cmd -l {0}
+        shell: pwsh -l {0}
         run: |
           conda info
           conda list
@@ -43,10 +43,8 @@ jobs:
           pwd
           pip install --editable .
           python setup_pybpod.py
-          pwd
           cd Bonsai
-          pwd
-          setup.bat
+          powershell.exe .\install.ps1
           cd ..
           conda create --name ibllib python==3.8.13 --yes
           conda activate ibllib
@@ -56,7 +54,7 @@ jobs:
           python -m unittest discover
 
       - name: Generate requirements_frozen.txt
-        shell: bash -l {0}
+        shell: pwsh -l {0}
         run: |
           conda activate iblrig
           pip freeze > "$IBLRIG_REQS"
