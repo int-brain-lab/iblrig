@@ -1,10 +1,4 @@
-#!/usr/bin/env python
-# -*- coding:utf-8 -*-
-# @File: F2TTL\Frame2TTLv2_Demo.py
-# @Author: Niccolo' Bonacchi (@nbonacchi)
-# @Date: Tuesday, December 7th 2021, 12:02:24 pm
 from Frame2TTLv2 import Frame2TTLv2
-import numpy as np
 
 F = Frame2TTLv2("/dev/ttyACM3")
 F.lightThreshold = 150  # See note about threshold units in Frame2TTLv2.py

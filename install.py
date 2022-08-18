@@ -8,7 +8,7 @@ from pathlib import Path
 
 print("Performing a 'pip install' for the base environment")
 subprocess.check_call(
-    [sys.executable, "-m", "pip", "install", "setuptools", "wheel", "packaging", "colorlog",]
+    [sys.executable, "-m", "pip", "install", "setuptools", "wheel", "packaging", "colorlog"]
 )
 
 try:
@@ -47,7 +47,6 @@ except BaseException as exception:
     print(exception)
     log.exception(exception)
     raise SystemError("Could not clean conda cache, check on the state of conda, aborting...")
-# END CONSTANT DEFINITION
 
 
 def check_update_dependencies():
@@ -203,7 +202,7 @@ def install_iblrig(env_name: str = "iblrig") -> None:
     except BaseException as e:
         print(e)
         log.exception(e)
-        raise SystemError(f"Could install iblrig, aborting...")
+        raise SystemError("Could install iblrig, aborting...")
     print("N" * 79)
     print(f"iblrig installed in {env_name}.")
 
@@ -239,7 +238,7 @@ def configure_iblrig_params(env_name: str = "iblrig", resp=False):
     except BaseException as e:
         print(e)
         log.exception(e)
-        raise SystemError(f"Could not call setup_pybpod.py, aborting...")
+        raise SystemError("Could not call setup_pybpod.py, aborting...")
 
 
 def install_bonsai(resp=False):
@@ -274,7 +273,7 @@ def install_bonsai(resp=False):
     except BaseException as e:
         print(e)
         log.exception(e)
-        raise SystemError(f"Could not install bonsai, aborting...")
+        raise SystemError("Could not install bonsai, aborting...")
 
 
 def setup_one(resp=False):

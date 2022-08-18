@@ -289,11 +289,11 @@ else:
         os.chdir(stim_folder)
         if harp:
             s = subprocess.Popen(
-                [bns, wkfl, noboot, noedit, data_file_name, lengths_file_name, harp_file_name,]
+                [bns, wkfl, noboot, noedit, data_file_name, lengths_file_name, harp_file_name]
             )
         else:
             s = subprocess.Popen(
-                [bns, wkfl, noboot, noedit, display_idx, data_file_name, lengths_file_name,]
+                [bns, wkfl, noboot, noedit, display_idx, data_file_name, lengths_file_name]
             )
         os.chdir(here)
         return s
@@ -324,7 +324,7 @@ else:
         bns = ph.get_bonsai_path()
         wrkfl = ph.get_camera_setup_wrkfl()
 
-        noedit = "--no-editor"  # implies start
+        # noedit = "--no-editor"  # implies start
         noboot = "--no-boot"
         editor = "--start-no-debug"
         subprocess.call([bns, wrkfl, editor, noboot])  # locks until Bonsai closes

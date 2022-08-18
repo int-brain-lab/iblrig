@@ -127,7 +127,7 @@ def scale_read(COMport_string):
 
 # initialize a dataframe with the results
 df1 = pd.DataFrame(
-    columns=["time", "open_time", "ndrops", "mean_measured_weight", "std_measured_weight",],
+    columns=["time", "open_time", "ndrops", "mean_measured_weight", "std_measured_weight"],
     dtype=object,
 )
 ntrials = sph.NTRIALS
