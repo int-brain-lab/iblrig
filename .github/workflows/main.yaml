@@ -46,7 +46,7 @@ jobs:
           cd Bonsai
           powershell.exe .\install.ps1
           cd ..
-          conda create --name ibllib python==3.8.13 --yes
+          conda create --name ibllib python=3.8.13 --yes
           conda activate ibllib
           pip install ibllib
           python -c "from one.api import ONE; ONE(password='international')"

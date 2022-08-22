@@ -1,7 +1,3 @@
-#!/usr/bin/env python
-# -*- coding:utf-8 -*-
-# @Author: Niccolò Bonacchi
-# @Date: Tuesday, February 5th 2019, 5:56:17 pm
 import logging
 import os
 import subprocess

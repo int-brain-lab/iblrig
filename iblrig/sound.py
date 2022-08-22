@@ -1,7 +1,3 @@
-#!/usr/bin/env python
-# -*- coding:utf-8 -*-
-# @Author: Niccolò Bonacchi
-# @Date: Thursday, September 27th 2018, 6:32:28 pm
 import logging
 import sys
 

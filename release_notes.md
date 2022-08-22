@@ -6,7 +6,8 @@
 - removal of mamba dependencies
 - improved CI to more closely resemble a typical install
 - flake8 standardizations
-- Windows Powershell support 
+- Windows Powershell support
+- updates to README.md for clearer installation instructions 
 
 ## **Release Notes 6.6.3**
 

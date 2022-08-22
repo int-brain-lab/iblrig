@@ -1,8 +1,3 @@
-#!/usr/bin/env python
-# @Author: Niccolò Bonacchi
-# @Creation_Date: Wednesday, November 14th 2018, 10:40:43 am
-# @Editor: Michele Fabbri
-# @Edit_Date: 2022-02-01
 """
 Various get functions to return paths of folders and network drives
 """
