@@ -28,38 +28,62 @@ jobs:
           python-version: ${{ matrix.python-version }}
           auto-activate-base: false
 
-      - name: Flake8
+      - name: flake8
         shell: bash -l {0}
         run: |
           pip install flake8 --quiet
           python -m flake8
 
-      - name: IBLRIG Installation
+      - name: iblrig installation
         shell: pwsh -l {0}
         run: |
+          echo "------ start info ------"
           conda info
-          conda list
+          conda env list
           python --version
-          pwd
+          echo "------ end info ------"
           pip install --editable .
           python setup_pybpod.py
           cd Bonsai
           powershell.exe .\install.ps1
-          cd ..
-          conda create --name ibllib python=3.8.13 --yes
+          cd ..\..
+          conda create --name ibllib python=3.8 --yes
           conda activate ibllib
           pip install ibllib
-          python -c "from one.api import ONE; ONE(password='international')"
+          python -c "from one.api import ONE; ONE(base_url='https://test.alyx.internationalbrainlab.org', username='test_user', password='TapetesBloc18', silent=True)"
+
+      - name: iblrig unit tests
+        shell: pwsh -l {0}
+        run: |
+          echo "------ start info ------"
+          conda info
+          conda env list
+          python --version
+          echo "------ end info ------"
           conda activate iblrig
-          python -m unittest discover
+          cd test_iblrig
+          echo "------ test_adaptive.py ------"
+          python -m unittest test_adaptive.py
+          echo "------ test_alyx.py ------"
+          python -m unittest test_alyx.py
+          echo "------ test_ibllib_imports.py ------"
+          python -m unittest test_ibllib_imports.py
+          echo "------ test_params.py ------"
+          python -m unittest test_params.py
+          # cd ..\..
 
       - name: Generate requirements_frozen.txt
         shell: pwsh -l {0}
         run: |
+          echo "------ start info ------"
+          conda info
+          conda env list
+          python --version
+          echo "------ end info ------"
           conda activate iblrig
-          pip freeze > "$IBLRIG_REQS"
+          pip freeze > iblrig_requirements_frozen.txt
           conda activate ibllib
-          pip freeze > "$IBLLIB_REQS"
+          pip freeze > ibllib_requirements_frozen.txt
 
       - name: Store frozen requirements as artifacts
         uses: actions/upload-artifact@v3

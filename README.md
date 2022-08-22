@@ -37,22 +37,21 @@ In order to install iblrig on a Windows machine please ensure that the following
 - The commands given below are assumed to be run on a 'clean' system
 
 The following commands are to be run from the Anaconda Powershell Prompt.
-```commandline
+```powershell
 cd \
-conda activate base
+conda create --name iblrig python=3.8 --yes
+conda activate iblrig
 conda install git --yes
 git clone https://github.com/int-brain-lab/iblrig
 cd iblrig
 git checkout feature/7.0.0
-- TODO: remove once moved to production
-conda create --name iblrig python==3.8 --yes
-conda activate iblrig
+# TODO: remove once moved to production
 pip install --editable .
 python setup_pybpod.py
 cd Bonsai
 powershell.exe .\install.ps1
 cd ..
-conda create --name ibllib python==3.8 --yes
+conda create --name ibllib python=3.8 --yes
 conda activate ibllib
 pip install ibllib
 ```
@@ -61,11 +60,8 @@ NOTE: ONE will need to be configured for your use case. Please review the ONE [d
 
 ### Running pybpod
 To run pybpod and begin acquisitions:
-```commandline
-cd C:\iblrig
+```powershell
 conda activate iblrig
+cd C:\iblrig
 .\pybpod.bat
 ```
-- Navigate your Anaconda Prompt to `C:\iblrig`
-- At the prompt, run: `.\pybpod.bat`
-- _TODO: More instruction on how to work with the software? Other options?_
