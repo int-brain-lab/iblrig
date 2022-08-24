@@ -1,5 +1,9 @@
 # **Release notes**
 
+## **Release Notes 6.6.4**
+
+- additional mamba subprocess call removals
+
 ## **Release Notes 6.6.3**
 
 - additional f2ttl error catching and messaging
