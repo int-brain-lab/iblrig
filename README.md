@@ -54,15 +54,16 @@ pybpod.bat
 ```
 
 ### Instructions for manual update from 6.6.x to 6.6.4:
-The following commands to be run from the Anaconda Powershell Prompt. Please ensure that your git and
-  anaconda environment are up-to-date. **Backup any custom tasks or modifications before performing the following**
+The following commands to be run from the Anaconda Powershell Prompt. Please ensure that your git and anaconda environment are 
+up-to-date. **Backup any custom tasks or modifications before performing the following**
 ```powershell
 conda activate iblrig
 cd C:\iblrig
-git reset —-hard
-git fetch
-git pull  
+git fetch origin
+git reset --hard origin/master
+git clean --dry-run --force
 ```
+Run the last command without the `--dry-run` to actually remove the listed files.
 
 ### Running pybpod
 - Navigate your Anaconda Prompt to the iblrig folder: `cd C:\iblrig`
