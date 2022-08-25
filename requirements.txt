@@ -1,6 +1,5 @@
 asn1crypto
 colorlog
-colorama
 cython
 globus-sdk
 numpy
