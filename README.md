@@ -48,9 +48,11 @@ cd C:\iblrig
 conda create --name ibllib python=3.8.13 --yes
 conda activate ibllib
 pip install ibllib
-python -c "from one.api import ONE; ONE()"  # several prompts will require interaction to configure ONE
-conda activate iblrig
-pybpod.bat
+```
+Verify that ibllib can call ONE with the following command. If the credentials in the `C:\Users\username\AppData\Roaming\.one` 
+directory do not exist, the command will prompt for setup information.
+```powershell
+python -c "from one.api import ONE; ONE()"  # several prompts will require interaction to configure ONE if this is a new install
 ```
 
 ### Instructions for manual update from 6.6.x to 6.6.4:
@@ -64,8 +66,19 @@ git reset --hard origin/master
 git clean --dry-run --force
 ```
 Run the last command without the `--dry-run` to actually remove the listed files.
+```powershell
+cd C:\iblrig\Bonsai
+setup.bat
+```
 
 ### Running pybpod
-- Navigate your Anaconda Prompt to the iblrig folder: `cd C:\iblrig`
+- Navigate your Anaconda Powershell Prompt to the iblrig folder: `cd C:\iblrig`
 - Ensure the `iblrig` anaconda environment is activated: `conda activate iblrig`
-- At the prompt, run: `.\pybpod.bat`
+- At the prompt, run: `pybpod.bat`
+
+#### For easier launching of pybpod
+Within the `C:\iblrig` folder there is a `pybpod-Anaconda_Powershell_Prompt.lnk` file that can be copied to the desktop of the 
+user for ease of use.
+```powershell
+Copy-Item "C:\iblrig\pybpod-Anaconda_Powershell_Prompt.lnk -Destination "$Env:HOMEPATH\Desktop"
+```
