@@ -60,17 +60,7 @@ jobs:
           conda env list
           python --version
           echo "------ end info ------"
-          conda activate iblrig
-          cd test_iblrig
-          echo "------ test_adaptive.py ------"
-          python -m unittest test_adaptive.py
-          echo "------ test_alyx.py ------"
-          python -m unittest test_alyx.py
-          echo "------ test_ibllib_imports.py ------"
-          python -m unittest test_ibllib_imports.py
-          echo "------ test_params.py ------"
-          python -m unittest test_params.py
-          # cd ..\..
+          python -m unittest discover
 
       - name: Generate requirements_frozen.txt
         shell: pwsh -l {0}
@@ -80,7 +70,6 @@ jobs:
           conda env list
           python --version
           echo "------ end info ------"
-          conda activate iblrig
           pip freeze > iblrig_requirements_frozen.txt
           conda activate ibllib
           pip freeze > ibllib_requirements_frozen.txt
