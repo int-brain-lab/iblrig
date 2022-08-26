@@ -76,14 +76,14 @@ for i in range(sph.NTRIALS):  # Main loop
             state_name="trial_start",
             state_timer=3600,
             state_change_conditions={"Port1In": "stim_on"},
-            output_actions=[("Serial1", bonsai_hide_stim), ("SoftCode", 3)],
+            output_actions=[("Serial1", bonsai_hide_stim), ("SoftCode", 3), ("BNC1", 255)],
         )  # sart camera
     else:
         sma.add_state(
             state_name="trial_start",
             state_timer=1,  # Stim off for 1 sec
             state_change_conditions={"Tup": "stim_on"},
-            output_actions=[("Serial1", bonsai_hide_stim)],
+            output_actions=[("Serial1", bonsai_hide_stim), ("BNC1", 255)],
         )
 
     sma.add_state(
@@ -104,14 +104,14 @@ for i in range(sph.NTRIALS):  # Main loop
         state_name="reward",
         state_timer=tph.reward_valve_time,
         state_change_conditions={"Tup": "iti"},
-        output_actions=[("Valve1", 255)],
+        output_actions=[("Valve1", 255), ("BNC1", 255)],
     )
 
     sma.add_state(
         state_name="iti",
         state_timer=tph.iti,
         state_change_conditions={"Tup": "exit"},
-        output_actions=[],
+        output_actions=[],  # TODO check if we need ("BNC1", 255) here too
     )
 
     # Send state machine description to Bpod device

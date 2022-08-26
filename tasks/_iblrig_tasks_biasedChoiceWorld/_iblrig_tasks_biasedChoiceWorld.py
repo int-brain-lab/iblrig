@@ -104,14 +104,14 @@ for i in range(sph.NTRIALS):  # Main loop
             state_name="trial_start",
             state_timer=0,
             state_change_conditions={"Port1In": "delay_initiation"},
-            output_actions=[("SoftCode", 3)],
+            output_actions=[("SoftCode", 3), ("BNC1", 255)],
         )  # start camera
     else:
         sma.add_state(
             state_name="trial_start",
             state_timer=0,  # ~100µs hardware irreducible delay
             state_change_conditions={"Tup": "reset_rotary_encoder"},
-            output_actions=[tph.out_stop_sound],
+            output_actions=[tph.out_stop_sound, ("BNC1", 255)],
         )  # stop all sounds
         # TODO: remove out things from tph put in sph
     sma.add_state(
@@ -216,7 +216,7 @@ for i in range(sph.NTRIALS):  # Main loop
     sma.add_state(
         state_name="reward",
         state_timer=tph.reward_valve_time,
-        output_actions=[("Valve1", 255)],
+        output_actions=[("Valve1", 255), ("BNC1", 255)],
         state_change_conditions={"Tup": "correct"},
     )
 
@@ -241,7 +241,7 @@ for i in range(sph.NTRIALS):  # Main loop
     sma.add_state(
         state_name="exit_state",
         state_timer=0.5,
-        output_actions=[],
+        output_actions=[("BNC1", 255)],
         state_change_conditions={"Tup": "exit"},
     )
 

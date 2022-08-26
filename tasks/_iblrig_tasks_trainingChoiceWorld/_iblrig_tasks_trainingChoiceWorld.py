@@ -92,14 +92,14 @@ for i in range(sph.NTRIALS):  # Main loop
             state_name="trial_start",
             state_timer=0,
             state_change_conditions={"Port1In": "reset_rotary_encoder"},
-            output_actions=[("SoftCode", 3)],
+            output_actions=[("SoftCode", 3), ("BNC1", 255)],
         )  # start camera
     else:
         sma.add_state(
             state_name="trial_start",
             state_timer=0,  # ~100µs hardware irreducible delay
             state_change_conditions={"Tup": "reset_rotary_encoder"},
-            output_actions=[tph.out_stop_sound],
+            output_actions=[tph.out_stop_sound, ("BNC1", 255)],
         )  # stop all sounds
 
     sma.add_state(
@@ -198,7 +198,7 @@ for i in range(sph.NTRIALS):  # Main loop
         state_name="reward",
         state_timer=tph.reward_valve_time,
         state_change_conditions={"Tup": "correct"},
-        output_actions=[("Valve1", 255)],
+        output_actions=[("Valve1", 255), ("BNC1", 255)],
     )
 
     sma.add_state(
@@ -223,7 +223,7 @@ for i in range(sph.NTRIALS):  # Main loop
         state_name="exit_state",
         state_timer=0.5,
         state_change_conditions={"Tup": "exit"},
-        output_actions=[],
+        output_actions=[("BNC1", 255)],
     )
 
     # Send state machine description to Bpod device
