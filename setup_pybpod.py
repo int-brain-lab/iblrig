@@ -435,6 +435,7 @@ def main(iblrig_params_path):
     iblrig_params_path = Path(iblrig_params_path)
     iblproject_path = iblrig_params_path / "IBL"
     os.makedirs(iblrig_params_path, exist_ok=True)
+    os.makedirs(Path(iblrig_params_path / "plugins"), exist_ok=True)
 
     delete_untracked_files(iblrig_params_path)
     copy_pybpod_user_settings()
