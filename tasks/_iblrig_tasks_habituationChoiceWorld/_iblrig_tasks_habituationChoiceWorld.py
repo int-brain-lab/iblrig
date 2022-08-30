@@ -111,7 +111,7 @@ for i in range(sph.NTRIALS):  # Main loop
         state_name="iti",
         state_timer=tph.iti,
         state_change_conditions={"Tup": "exit"},
-        output_actions=[],  # TODO check if we need ("BNC1", 255) here too
+        output_actions=[("BNC1", 255)],
     )
 
     # Send state machine description to Bpod device
