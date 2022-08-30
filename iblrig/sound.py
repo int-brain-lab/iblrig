@@ -1,4 +1,5 @@
 import logging
+import socket
 import sys
 
 import numpy as np
@@ -10,18 +11,25 @@ log = logging.getLogger("iblrig")
 
 def configure_sounddevice(sd=None, output="sysdefault", samplerate=44100):
     """
-    Will import, configure, and return sounddevice module to
-    play sounds using onboard sound card.
+    Will import, configure, and return sounddevice module to play sounds using onboard sound card.
 
-    :param sd: sounddevice module to be configured,
-            defaults to None, will import new module if absent.
-    :type sd: module, optional
-    :return: configured sounddevice module
-    :rtype: sounddevice module
+    Parameters
+    ----------
+    sd
+        sounddevice module to be configured, defaults to None, will import new module if absent.
+    output
+        defaults to "sysdefault"
+    samplerate
+        audio sample rate, defaults to 44100
+
+    Returns
+    -------
+    configured sounddevice module
+
     """
     if output is None:
         return
-    if sys.platform == "linux":  # or platform.node() == 'IBLRIG000':
+    if sys.platform == "linux" or socket.gethostname() == "IBLRIG000":
         output = "sysdefault"
     if sd is None:
         import sounddevice as sd
