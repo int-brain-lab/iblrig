@@ -45,7 +45,7 @@ def init_reward_amount(sph: object) -> float:
 
 def init_calib_func() -> scipy.interpolate.pchip:
     PARAMS = params.load_params_file()
-    if PARAMS["WATER_CALIBRATION_DATE"] == "":
+    if PARAMS["WATER_CALIBRATION_DATE"] == "" or PARAMS["WATER_CALIBRATION_DATE"] is None:
         msg = """
     ##########################################
          Water calibration date is emtpy!
