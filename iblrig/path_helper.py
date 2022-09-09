@@ -1,8 +1,3 @@
-#!/usr/bin/env python
-# @Author: Niccolò Bonacchi
-# @Creation_Date: Wednesday, November 14th 2018, 10:40:43 am
-# @Editor: Michele Fabbri
-# @Edit_Date: 2022-02-01
 """
 Various get functions to return paths of folders and network drives
 """
@@ -582,9 +577,10 @@ class SessionPathCreator(object):
         ##########################################
             NOT FOUND: IBLRIG_VERSION_TAG
         ##########################################
-        You appear to be on an uncommitted version
-        of iblrig. Please run iblrig/update.py to
-        check which is the latest version.
+        You appear to be on an uncommitted and
+        unsupported version of iblrig. Please
+        check the latest documentation to install
+        a supported version of iblrig.
         ##########################################"""
                     log.warning(msg)
 

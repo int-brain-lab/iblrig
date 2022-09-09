@@ -6,7 +6,6 @@ __pycache__/
 .pytest*
 *.pyc
 Bonsai/*
-#Bonsai/Packages
 Bonsai/Bonsai.exe.settings
 docs/_build
 scratch/

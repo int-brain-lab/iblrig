@@ -35,6 +35,7 @@ if __name__ == "__main__":
         os.chdir(os.path.join(ph.get_iblrig_folder(), "scripts", "ibllib"))
         os.system(f"{python} register_session.py {ph.get_iblrig_data_folder()}")
         os.chdir(here)
+        print("Completed registering session on Alyx.")
 
     except BaseException:
         log.error(traceback.format_exc())

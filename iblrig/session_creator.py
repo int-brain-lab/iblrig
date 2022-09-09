@@ -114,7 +114,7 @@ def plot_pcqs(session_num, folder="./tasks/_iblrig_tasks_ephysChoiceWorld/sessio
         ax.set_ylabel(l)
         for ax, l in zip(
             f.axes,
-            ["Position (º)", "Contrasts (%)", "Quiescent period (s)", "Stimulus phase (rad)",],
+            ["Position (º)", "Contrasts (%)", "Quiescent period (s)", "Stimulus phase (rad)"],
         )
     ]
     [ax.axvline(x, alpha=0.5) for x in np.cumsum(len_block) for ax in f.axes]

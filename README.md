@@ -27,58 +27,43 @@ Please review these conventions to more easily contribute to the project.
 ---
 ## Installation of this software suite on Windows
 ### Prerequisite Software:
-In order to install iblrig on a Windows machine please ensure that the following prerequisite software is first installed:
+In order to install iblrig on a Windows machine please ensure that the following prerequisite is first installed:
 - [Anaconda](https://anaconda.com)
 
-### Instructions for installation from scratch:
-The following commands should be run in the Anaconda Powershell Prompt:
+### Installation Instructions for v7:
+- Ensure Anaconda and your favorite text editor are already installed
+- Ensure a stable internet connection is present as several commands will require software to be downloaded
+- There is no supported upgrade path from v6 to v7
+- The commands given below are assumed to be run on a 'clean' system
+
+The following commands are to be run from the Anaconda Powershell Prompt.
 ```powershell
-conda create --name iblrig python==3.7.13 --yes
+cd \
+conda create --name iblrig python=3.8 --yes
 conda activate iblrig
 conda install git --yes
-cd \
 git clone https://github.com/int-brain-lab/iblrig
-cd C:\iblrig
+cd iblrig
+git checkout feature/7.0.0
+# TODO: remove once moved to production
 pip install --editable .
-mkdir C:\iblrig_params
-python setup_pybpod.py C:\iblrig_params
-cd C:\iblrig\Bonsai
+pip install pybpod-gui-api==1.8.3b1 pybpod-gui-plugin-alyx==1.1.3b1
+pip uninstall ibllib --yes
+python setup_pybpod.py
+cd Bonsai
 setup.bat
-cd C:\iblrig
-conda create --name ibllib python=3.8.13 --yes
+cd ..
+conda create --name ibllib python=3.8 --yes
 conda activate ibllib
 pip install ibllib
 ```
-Verify that ibllib can call ONE with the following command. If the credentials in the `C:\Users\username\AppData\Roaming\.one` 
-directory do not exist, the command will prompt for setup information.
-```powershell
-python -c "from one.api import ONE; ONE()"  # several prompts will require interaction to configure ONE if this is a new install
-```
 
-### Instructions for manual update from 6.6.x to 6.6.4:
-The following commands to be run from the Anaconda Powershell Prompt. Please ensure that your git and anaconda environment are 
-up-to-date. **Backup any custom tasks or modifications before performing the following**
+NOTE: ONE will need to be configured for your use case. Please review the ONE [documentation](https://int-brain-lab.github.io/ONE/) for specifics on how to accomplish this. Then run the following command or something similar for your specific setup: `python -c "from one.api import ONE; ONE()"`
+
+### Running pybpod
+To run pybpod and begin acquisitions:
 ```powershell
 conda activate iblrig
 cd C:\iblrig
-git fetch origin
-git reset --hard origin/master
-git clean --dry-run --force
-```
-Run the last command without the `--dry-run` to actually remove the listed files.
-```powershell
-cd C:\iblrig\Bonsai
-setup.bat
-```
-
-### Running pybpod
-- Navigate your Anaconda Powershell Prompt to the iblrig folder: `cd C:\iblrig`
-- Ensure the `iblrig` anaconda environment is activated: `conda activate iblrig`
-- At the prompt, run: `pybpod.bat`
-
-#### For easier launching of pybpod
-Within the `C:\iblrig` folder there is a `pybpod-Anaconda_Powershell_Prompt.lnk` file that can be copied to the desktop of the 
-user for ease of use.
-```powershell
-Copy-Item "C:\iblrig\pybpod-Anaconda_Powershell_Prompt.lnk -Destination "$Env:HOMEPATH\Desktop"
+.\pybpod.bat
 ```

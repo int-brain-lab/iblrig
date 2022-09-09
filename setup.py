@@ -3,16 +3,15 @@ import sys
 from pathlib import Path
 
 CURRENT_DIRECTORY = Path(__file__).parent.absolute()
-
+REQUIRED_PYTHON = (3, 8)
 CURRENT_PYTHON = sys.version_info[:2]
-REQUIRED_PYTHON = (3, 7)
 VER_ERR_MSG = """
 ==========================
 Unsupported Python version
 ==========================
-This version of iblrig requires Python {}.{}, but you're trying to install it on Python {}.{}.
+Python {}.{} was found, but this version of iblrig requires Python {}.{} or greater.
 """
-if CURRENT_PYTHON < REQUIRED_PYTHON:
+if CURRENT_PYTHON != REQUIRED_PYTHON:
     sys.stderr.write(VER_ERR_MSG.format(*REQUIRED_PYTHON + CURRENT_PYTHON))
     sys.exit(1)
 

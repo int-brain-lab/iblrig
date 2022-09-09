@@ -39,6 +39,7 @@ print(ph.get_iblrig_folder(), "\n", IBLRIG_PARAMS_FOLDER)
 local2alyx_names = {"IBL": "ibl_neuropixel_brainwide_01"}
 alyx2local_names = {"ibl_neuropixel_brainwide_01": "IBL"}
 
+
 # UTILS
 def _load_pybpod_obj_json(obj):
     objpath = Path(obj.path).joinpath(obj.name + ".json")

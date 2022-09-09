@@ -15,7 +15,7 @@ from one.api import ONE
 log = logging.getLogger('iblrig')
 
 try:  # Verify ONE-api is at v1.13.0 or greater
-    assert(tuple(map(int, one.__version__.split('.'))) >= (1, 13, 0))
+    assert tuple(map(int, one.__version__.split('.'))) >= (1, 13, 0)
     from one.alf.cache import iter_datasets, iter_sessions
 except (AssertionError, ImportError) as e:
     if e is AssertionError:

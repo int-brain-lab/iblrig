@@ -1,7 +1,3 @@
-#!/usr/bin/env python
-# -*- coding:utf-8 -*-
-# @Author: Niccolò Bonacchi
-# @Date: Tuesday, February 5th 2019, 5:56:17 pm
 import logging
 import os
 import subprocess
@@ -289,11 +285,11 @@ else:
         os.chdir(stim_folder)
         if harp:
             s = subprocess.Popen(
-                [bns, wkfl, noboot, noedit, data_file_name, lengths_file_name, harp_file_name,]
+                [bns, wkfl, noboot, noedit, data_file_name, lengths_file_name, harp_file_name]
             )
         else:
             s = subprocess.Popen(
-                [bns, wkfl, noboot, noedit, display_idx, data_file_name, lengths_file_name,]
+                [bns, wkfl, noboot, noedit, display_idx, data_file_name, lengths_file_name]
             )
         os.chdir(here)
         return s
@@ -324,7 +320,7 @@ else:
         bns = ph.get_bonsai_path()
         wrkfl = ph.get_camera_setup_wrkfl()
 
-        noedit = "--no-editor"  # implies start
+        # noedit = "--no-editor"  # implies start
         noboot = "--no-boot"
         editor = "--start-no-debug"
         subprocess.call([bns, wrkfl, editor, noboot])  # locks until Bonsai closes
@@ -332,14 +328,14 @@ else:
 
 
 def launch_cameras() -> bool:
-    """Decie whether to launch camera workflows or not from the board name.
+    """Decide whether to launch camera workflows or not from the board name.
     Logic from board name is:
     - ephys behavior PC calls its Bpod board something_ephys_something
     - training rig behavior PC calls it's Bpod board something_behavior_something
     Launching behavior tasks on an ephys rig should not launch the cameras
 
     TODO: this ought to be decided at the paramfile level once the modality param exists
-    after rigcore integration use camera existance to decide whether to
+    after rigcore integration use camera existence to decide whether to
     e.g. launch video or not on session start.
     """
     board_name = params.load_params_file()['NAME']

@@ -1,48 +1,83 @@
-# This is a basic workflow to help you get started with Actions
-
 name: CI
 
-# Controls when the action will run. Triggers the workflow on push or pull request
-# events but only for the master branch
 on:
-  workflow_dispatch:  # For manual triggering
   push:
-    branches: [develop, rc]
+    branches: [master, develop, rc]
   pull_request:
-    branches: [develop, rc]
+    branches: [master, develop, rc]
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  incubator:
+  build_reqs:
     name: build (${{ matrix.python-version }}, ${{ matrix.os }})
     runs-on: ${{ matrix.os }}
+    env:
+      IBLRIG_REQS: iblrig_requirements_frozen.txt
+      IBLLIB_REQS: ibllib_requirements_frozen.txt
     strategy:
-      fail-fast: false
-      max-parallel: 3
       matrix:
-        os: ["ubuntu-latest", "windows-latest"] # "macos-latest",
-        python-version: ["3.7"]
+        os: [ "windows-latest" ]
+        python-version: ["3.8"]
     steps:
       - name: Clone iblrig repo
-        uses: actions/checkout@v2
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python-version }}
+        uses: actions/checkout@v3
+
       - uses: conda-incubator/setup-miniconda@v2
         with:
-          python-version: ${{ matrix.python-version }}
           activate-environment: iblrig
-          environment-file: environment.yaml
-      - name: Commands
+          auto-update-conda: true
+          python-version: ${{ matrix.python-version }}
+          auto-activate-base: false
+
+      - name: flake8
         shell: bash -l {0}
         run: |
-          conda activate base
-          python -V
-          which pip
-          pip install setuptools wheel packaging colorlog
-          python install.py --reinstall-response y --config-response y --bonsai-response y --ONE-response n
+          pip install flake8 --quiet
+          python -m flake8
+
+      - name: iblrig installation
+        shell: pwsh -l {0}
+        run: |
+          echo "------ start info ------"
+          conda info
+          conda env list
+          python --version
+          echo "------ end info ------"
+          pip install --editable .
+          python setup_pybpod.py
+          cd Bonsai
+          powershell.exe .\install.ps1
+          cd ..\..
+          conda create --name ibllib python=3.8 --yes
           conda activate ibllib
+          pip install ibllib
           python -c "from one.api import ONE; ONE(base_url='https://test.alyx.internationalbrainlab.org', username='test_user', password='TapetesBloc18', silent=True)"
-          conda activate iblrig
+
+      - name: iblrig unit tests
+        shell: pwsh -l {0}
+        run: |
+          echo "------ start info ------"
+          conda info
+          conda env list
+          python --version
+          echo "------ end info ------"
           python -m unittest discover
+
+      - name: Generate requirements_frozen.txt
+        shell: pwsh -l {0}
+        run: |
+          echo "------ start info ------"
+          conda info
+          conda env list
+          python --version
+          echo "------ end info ------"
+          pip freeze > iblrig_requirements_frozen.txt
+          conda activate ibllib
+          pip freeze > ibllib_requirements_frozen.txt
+
+      - name: Store frozen requirements as artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: requirements_frozen
+          path: |
+            iblrig_requirements_frozen.txt
+            ibllib_requirements_frozen.txt

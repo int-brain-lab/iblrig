@@ -44,16 +44,14 @@ def is_patch_version() -> bool:
 
 
 def check_reinstall_required():
+    # TODO: Update this function to look at tag version instead of a flag files
     # if versions are the same skip checking for file else check for file
     if is_patch_version():
         return
     # if flag file exists reinstall
     REINSTALL = True if list(Path(IBLRIG_ROOT_PATH).glob("reinstall")) else False
     if REINSTALL:
-        print("\nPlease deactivate iblrig and reinstall from the base environment")
-        print("\n-------------------------------------")
-        print("\nconda deactivate && python install.py")
-        print("\n-------------------------------------\n")
+        print("\nPlease deactivate iblrig and reinstall following the latest installation instructions")
 
         raise SystemError("This rig version needs to be reinstalled from base environment\n")
 
@@ -137,11 +135,8 @@ def check_update_exists():
         print("The version you have checked out is the latest version\n")
         return False
     else:
-        print(
-            "Newer version available |{}| type:\n\npython update.py -v {}\n".format(
-                sorted(ALL_VERSIONS)[-1], sorted(ALL_VERSIONS)[-1]
-            )
-        )
+        print("A newer version of iblrig is available. Please refer to the latest installation documentation to install {}."
+              "\n".format(sorted(ALL_VERSIONS[-1])))
         return True
 
 

@@ -360,7 +360,7 @@ class Frame2TTLv2(object):
         elif mode == "manual":
             arr = self.read_sensor(20000)
             if len(arr) != 20000:
-                log.warning(f"Manual LIGHT threshold value could not be determined.")
+                log.warning("Manual LIGHT threshold value could not be determined.")
                 threshold = None
             else:
                 threshold = self._calc_threshold(arr, light=True)
@@ -384,7 +384,7 @@ class Frame2TTLv2(object):
         elif mode == "manual":
             arr = self.read_sensor(20000)
             if len(arr) != 20000:
-                log.warning(f"Manual DARK threshold value could not be determined.")
+                log.warning("Manual DARK threshold value could not be determined.")
                 threshold = None
             else:
                 threshold = self._calc_threshold(arr, dark=True)
@@ -404,7 +404,7 @@ class Frame2TTLv2(object):
         mean_diffs = []
         for i, _ in enumerate(arr):
             if i + 20 <= len(arr):
-                mean_diffs.append(np.diff(arr[i : i + 20]).mean())
+                mean_diffs.append(np.diff(arr[i: i + 20]).mean())
         if dark:
             out = np.min(mean_diffs) * 2
         if light:

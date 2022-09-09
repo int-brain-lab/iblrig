@@ -1,6 +1,6 @@
 import unittest
 
-from brainbox.core import Bunch
+from iblutil.util import Bunch
 
 import iblrig.adaptive as adaptive
 

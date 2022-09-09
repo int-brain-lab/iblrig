@@ -71,6 +71,7 @@ except KeyboardInterrupt:
 except Exception as e:
     parser.exit(type(e).__name__ + ": " + str(e))
 
+
 # %%
 # A function that tries to list serial ports on most common platforms
 def list_serial_ports():
