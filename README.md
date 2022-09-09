@@ -51,7 +51,7 @@ pip install pybpod-gui-api==1.8.3b1 pybpod-gui-plugin-alyx==1.1.3b1
 pip uninstall ibllib --yes
 python setup_pybpod.py
 cd Bonsai
-powershell.exe .\install.ps1
+setup.bat
 cd ..
 conda create --name ibllib python=3.8 --yes
 conda activate ibllib

@@ -4,10 +4,11 @@
 
 - python 3.8 support
 - removal of mamba dependencies
-- improved CI to more closely resemble a typical install
+- improved CI to more closely resemble a typical rig install
 - flake8 standardizations
 - Windows Powershell support
 - updates to README.md for clearer installation instructions 
+- inclusion of pybpod custom pip packages for alyx and modern pandas support
 
 ## **Release Notes 6.6.3**
 
