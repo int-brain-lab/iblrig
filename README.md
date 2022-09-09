@@ -48,6 +48,7 @@ git checkout feature/7.0.0
 # TODO: remove once moved to production
 pip install --editable .
 pip install pybpod-gui-api==1.8.3b1 pybpod-gui-plugin-alyx==1.1.3b1
+pip uninstall ibllib --yes
 python setup_pybpod.py
 cd Bonsai
 powershell.exe .\install.ps1

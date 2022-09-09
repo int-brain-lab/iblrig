@@ -577,9 +577,10 @@ class SessionPathCreator(object):
         ##########################################
             NOT FOUND: IBLRIG_VERSION_TAG
         ##########################################
-        You appear to be on an uncommitted version
-        of iblrig. Please run iblrig/update.py to
-        check which is the latest version.
+        You appear to be on an uncommitted and
+        unsupported version of iblrig. Please
+        check the latest documentation to install
+        a supported version of iblrig.
         ##########################################"""
                     log.warning(msg)
 
