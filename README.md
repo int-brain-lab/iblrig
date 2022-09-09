@@ -44,8 +44,7 @@ conda activate iblrig
 conda install git --yes
 git clone https://github.com/int-brain-lab/iblrig
 cd iblrig
-git checkout feature/7.0.0
-# TODO: remove once moved to production
+git checkout develop  # TODO: remove once moved to production
 pip install --editable .
 pip install pybpod-gui-api==1.8.3b1 pybpod-gui-plugin-alyx==1.1.3b1
 pip uninstall ibllib --yes
@@ -66,4 +65,11 @@ To run pybpod and begin acquisitions:
 conda activate iblrig
 cd C:\iblrig
 .\pybpod.bat
+```
+
+#### For easier launching of pybpod
+Within the `C:\iblrig` folder there is a `pybpod-Anaconda_Powershell_Prompt.lnk` file that can be copied to the desktop of the 
+user for ease of use.
+```powershell
+Copy-Item "C:\iblrig\pybpod-Anaconda_Powershell_Prompt.lnk -Destination "$Env:HOMEPATH\Desktop"
 ```
