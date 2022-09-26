@@ -50,7 +50,7 @@ jobs:
           conda create --name ibllib python=3.8 --yes
           conda activate ibllib
           pip install ibllib
-          python -c "from one.api import ONE; ONE(base_url='https://test.alyx.internationalbrainlab.org', username='test_user', password='TapetesBloc18', silent=True)"
+          python -c "from one.api import ONE; ONE(base_url='https://test.alyx.internationalbrainlab.org', username='test_user', password='TapetesBloc18', silent=True, cache_rest=None)"
 
       - name: iblrig unit tests
         shell: pwsh -l {0}

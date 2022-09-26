@@ -9,6 +9,7 @@
 - Windows Powershell support
 - updates to README.md for clearer installation instructions 
 - inclusion of pybpod custom pip packages for alyx and modern pandas support
+- disable ONE caching from CI
 
 ## **Release Notes 6.6.4**
 
