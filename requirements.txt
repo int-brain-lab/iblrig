@@ -1,10 +1,8 @@
 asn1crypto
 colorlog
 cython
-globus-sdk
 numpy
 ONE-api
-opencv-python
 packaging
 pandas
 pybpod
