@@ -73,3 +73,16 @@ user for ease of use.
 ```powershell
 Copy-Item "C:\iblrig\pybpod-Anaconda_Powershell_Prompt.lnk -Destination "$Env:HOMEPATH\Desktop"
 ```
+
+#### Setup instructions for launching the 'Experiment Description GUI' prior to task launch
+
+The 'Experiment Description GUI' is currently being housed on the iblscripts repo. This GUI is intended to simplify the 
+categorization of an experiment and cleanly define what projects and procedures an experiment is for. In order to add the GUI to 
+a custom task:
+
+* clone the iblscripts repo: `git clone https://github.com/int-brain-lab/iblscripts`
+* launch pybpod
+* select the custom task protocol to modify
+* click on the plus button to add a "pre command"
+* use the drop-down box to select `Execute an external command`
+* enter into the available text box something like the following: `python C:\iblscripts\deploy\project_procedure_gui\experiment_form.py`

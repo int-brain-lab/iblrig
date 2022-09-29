@@ -270,6 +270,7 @@ def create_ibl_tasks(iblproject_path):  # XXX: THIS!
         "_iblrig_tasks_ephysChoiceWorld",
         "_iblrig_tasks_ephys_certification",
         "_iblrig_tasks_passiveChoiceWorld",
+        "_iblrig_tasks_passiveChoiceWorldIndependent"
     ]
     for task_name in task_names:
         create_task(iblproject_path, task_name=task_name)
