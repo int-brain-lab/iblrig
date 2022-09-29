@@ -177,7 +177,7 @@ def create_task_create_command(task, when: str = "POST", poop: bool = True):
     return task
 
 
-def create_task_move_passive_command(task, when: str = "POST"):
+def create_task_move_passive_command(task, when: str = "POST"):  # TODO: Ensure that this is desired behavior
     command = task.create_execcmd()
     fil = str(IBLRIG_FOLDER / "scripts" / "move_passive.py")
     command.cmd = f"python {fil}"
@@ -242,7 +242,7 @@ def config_task(iblproject_path, task_name: str):  # XXX: THIS!
         task = create_task_cleanup_command(task)
         task = create_task_bpod_lights_command(task, 0, when="PRE")
         task = create_task_bpod_lights_command(task, 1, when="POST")
-    if task.name == "_iblrig_tasks_passiveChoiceWorld":
+    if task.name == "_iblrig_tasks_passiveChoiceWorld" or task.name == "_iblrig_tasks_passiveChoiceWorldIndependent":
         task = create_task_cleanup_command(task)
         task = create_task_poop_command(task, when="POST")
         task = create_task_bonsai_stop_command(task, port=7110)  # stim
@@ -359,6 +359,13 @@ def create_experiment_setups(iblproject_path, exp_name: str):  # XXX:THIS!
             p.boards[0].name,
             test_subj,
             task="_iblrig_tasks_passiveChoiceWorld",
+        )
+        passiveChoiceWorldIndependent = create_setup(  # noqa
+            exp,
+            "passiveChoiceWorldIndependent",
+            p.boards[0].name,
+            test_subj,
+            task="_iblrig_tasks_passiveChoiceWorldIndependent",
         )
 
     p.save(iblproject_path)

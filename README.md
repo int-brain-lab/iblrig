@@ -38,13 +38,13 @@ In order to install iblrig on a Windows machine please ensure that the following
 
 The following commands are to be run from the Anaconda Powershell Prompt.
 ```powershell
-cd \
+conda update --name base --channel defaults conda --yes
 conda create --name iblrig python=3.8 --yes
 conda activate iblrig
 conda install git --yes
-git clone https://github.com/int-brain-lab/iblrig
-cd iblrig
-git checkout develop  # TODO: remove once moved to production
+git clone https://github.com/int-brain-lab/iblrig C:\iblrig
+cd C:\iblrig
+git checkout rc  # TODO: remove once moved to production
 pip install --editable .
 pip install pybpod-gui-api==1.8.3b1 pybpod-gui-plugin-alyx==1.1.3b1
 pip uninstall ibllib --yes
@@ -71,7 +71,7 @@ cd C:\iblrig
 Within the `C:\iblrig` folder there is a `pybpod-Anaconda_Powershell_Prompt.lnk` file that can be copied to the desktop of the 
 user for ease of use.
 ```powershell
-Copy-Item "C:\iblrig\pybpod-Anaconda_Powershell_Prompt.lnk -Destination "$Env:HOMEPATH\Desktop"
+Copy-Item "C:\iblrig\pybpod-Anaconda_Powershell_Prompt.lnk" -Destination "$Env:HOMEPATH\Desktop"
 ```
 
 #### Setup instructions for launching the 'Experiment Description GUI' prior to task launch
