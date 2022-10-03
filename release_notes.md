@@ -8,10 +8,10 @@
 - flake8 standardizations
 - Windows Powershell support
 - updates to README.md for clearer installation instructions 
-- inclusion of pybpod custom pip packages for alyx and modern pandas support
+- inclusion of pybpod custom pip packages for alyx communication and modern pandas support
 - disable ONE caching from CI
 - added passiveChoiceWorldIndependent to core tasks
-- instructions for adding the 'Experiment Description GUI' to a custom task added to the readme.md   
+- instructions for adding the 'Experiment Description GUI' to a custom task added to the readme.md
 
 ## **Release Notes 6.6.4**
 
