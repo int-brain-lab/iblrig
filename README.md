@@ -25,7 +25,7 @@ conda activate iblrig
 conda install git --yes
 git clone https://github.com/int-brain-lab/iblrig C:\iblrig
 cd C:\iblrig
-git checkout tags/7.0.0
+git checkout tags/7.0.1
 pip install --editable .
 pip install pybpod-gui-api==1.8.3b1 pybpod-gui-plugin-alyx==1.1.3b1
 pip uninstall ibllib --yes
@@ -74,7 +74,7 @@ a custom task:
 This repository is adhering to the following conventions:
 * [semantic versioning](https://semver.org/) for consistent version numbering logic
 * [gitflow](https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow) for managing branches 
-* [Flake8](https://flake8.pycqa.org/) for style guide enforcement 
+* [flake8](https://flake8.pycqa.org/) for style guide enforcement 
 
 ![](README_semver.png)
 ![](README_gitflow_workflow.png)

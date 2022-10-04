@@ -1,5 +1,9 @@
 # **Release notes**
 
+## **Release Notes 7.0.1**
+
+- removal of the move_passive.py script from the post commands run during the passiveChoiceWorldIndependent task
+
 ## **Release Notes 7.0.0**
 
 - python 3.8 support
