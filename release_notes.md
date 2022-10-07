@@ -3,6 +3,8 @@
 ## **Release Notes 7.0.2**
 
 - removal of the unsupported pybpod package, integration of iblpybpod
+- Specifying pywin32 for only Windows
+- Modify CI for venv (anaconda removal)
 
 ## **Release Notes 7.0.1**
 

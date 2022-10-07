@@ -1,0 +1,20 @@
+{
+    "__CREATED-ON__": "2022-06-15 18:32:56.489134",
+    "__DEF-TEXT__": "This file contains information about a PyBpod experiment setup.",
+    "__DEF-URL__": "http://pybpod.readthedocs.org",
+    "__EXTERNAL-REF__": [
+        "47e87031-e70d-453e-b5a1-6f19d76ee85f",
+        "2b9edda5-8b8f-4634-95d9-858f81312df9"
+    ],
+    "__SOFTWARE__": "PyBpod GUI API v1.8.2",
+    "__UPDATED-ON__": "2022-06-15 18:40:45.264923",
+    "__UUID4__": "62ce84cc-b9d3-40ad-907a-3b1b8d269271",
+    "board": "_iblrig_mainenlab_photometry_3",
+    "detached": true,
+    "subjects": [
+        "_iblrig_test_mouse"
+    ],
+    "task": "_iblrig_tasks_habituationChoiceWorld",
+    "update-variables": false,
+    "variables": []
+}

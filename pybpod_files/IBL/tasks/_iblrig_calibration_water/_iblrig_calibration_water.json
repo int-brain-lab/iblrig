@@ -1,0 +1,11 @@
+{
+    "commands": [
+        {
+            "cmd": "python C:\\iblrig\\scripts\\cleanup.py",
+            "type": "create_execcmd",
+            "when": 1
+        }
+    ],
+    "name": "_iblrig_calibration_water",
+    "trigger-softcodes": false
+}

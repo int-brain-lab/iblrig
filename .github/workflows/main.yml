@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [master, develop, rc]
+    branches: [master, develop, rc, feature/iblpybpod_integrated]
   pull_request:
     branches: [master, develop, rc]
 
@@ -10,23 +10,18 @@ jobs:
   build_reqs:
     name: build (${{ matrix.python-version }}, ${{ matrix.os }})
     runs-on: ${{ matrix.os }}
-    env:
-      IBLRIG_REQS: iblrig_requirements_frozen.txt
-      IBLLIB_REQS: ibllib_requirements_frozen.txt
     strategy:
       matrix:
         os: [ "windows-latest" ]
-        python-version: ["3.8"]
+        python-version: ["3.8", "3.9"]
     steps:
       - name: Clone iblrig repo
         uses: actions/checkout@v3
 
-      - uses: conda-incubator/setup-miniconda@v2
+      - name: Setup Python
+        uses: actions/setup-python@v4
         with:
-          activate-environment: iblrig
-          auto-update-conda: true
           python-version: ${{ matrix.python-version }}
-          auto-activate-base: false
 
       - name: flake8
         shell: bash -l {0}
@@ -37,47 +32,27 @@ jobs:
       - name: iblrig installation
         shell: pwsh -l {0}
         run: |
-          echo "------ start info ------"
-          conda info
-          conda env list
           python --version
-          echo "------ end info ------"
           pip install --editable .
-          python setup_pybpod.py
+#          python setup_pybpod.py
           cd Bonsai
           powershell.exe .\install.ps1
-          cd ..\..
-          conda create --name ibllib python=3.8 --yes
-          conda activate ibllib
-          pip install ibllib
-          python -c "from one.api import ONE; ONE(base_url='https://test.alyx.internationalbrainlab.org', username='test_user', password='TapetesBloc18', silent=True, mode='remote')"
 
-      - name: iblrig unit tests
-        shell: pwsh -l {0}
-        run: |
-          echo "------ start info ------"
-          conda info
-          conda env list
-          python --version
-          echo "------ end info ------"
-          python -m unittest discover
+#      - name: iblrig unit tests
+#        shell: pwsh -l {0}
+#        run: |
+#          python --version
+#          python -m unittest discover
 
       - name: Generate requirements_frozen.txt
         shell: pwsh -l {0}
         run: |
-          echo "------ start info ------"
-          conda info
-          conda env list
           python --version
-          echo "------ end info ------"
-          pip freeze > iblrig_requirements_frozen.txt
-          conda activate ibllib
-          pip freeze > ibllib_requirements_frozen.txt
+          pip freeze > requirements_frozen.txt
 
       - name: Store frozen requirements as artifacts
         uses: actions/upload-artifact@v3
         with:
           name: requirements_frozen
           path: |
-            iblrig_requirements_frozen.txt
-            ibllib_requirements_frozen.txt
+            requirements_frozen.txt

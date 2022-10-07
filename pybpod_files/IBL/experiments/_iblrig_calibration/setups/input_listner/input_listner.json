@@ -1,0 +1,20 @@
+{
+    "__CREATED-ON__": "2022-06-15 18:32:56.410997",
+    "__DEF-TEXT__": "This file contains information about a PyBpod experiment setup.",
+    "__DEF-URL__": "http://pybpod.readthedocs.org",
+    "__EXTERNAL-REF__": [
+        "47e87031-e70d-453e-b5a1-6f19d76ee85f",
+        "2a862044-e8b6-4fde-ba83-0c05a983e90a"
+    ],
+    "__SOFTWARE__": "PyBpod GUI API v1.8.2",
+    "__UPDATED-ON__": "2022-06-15 18:40:22.551628",
+    "__UUID4__": "d8021ec9-e46c-42ac-8449-0cda34a6285d",
+    "board": "_iblrig_mainenlab_photometry_3",
+    "detached": true,
+    "subjects": [
+        "_iblrig_calibration"
+    ],
+    "task": "_iblrig_calibration_input_listner",
+    "update-variables": false,
+    "variables": []
+}
