@@ -25,8 +25,10 @@ conda activate iblrig
 conda install git --yes
 git clone https://github.com/int-brain-lab/iblrig C:\iblrig
 cd C:\iblrig
-git checkout tags/7.0.2
+git checkout tags/7.0.1
 pip install --editable .
+pip install pybpod-gui-api==1.8.3b1 pybpod-gui-plugin-alyx==1.1.3b1
+pip uninstall ibllib --yes
 python setup_pybpod.py
 cd Bonsai
 setup.bat

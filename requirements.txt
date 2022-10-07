@@ -1,11 +1,11 @@
 asn1crypto
 colorlog
 cython
-iblpybpod
 numpy
 ONE-api
 packaging
 pandas
+pybpod
 pyOpenSSL
 PySocks
 python-dateutil

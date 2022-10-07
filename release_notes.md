@@ -1,9 +1,5 @@
 # **Release notes**
 
-## **Release Notes 7.0.2**
-
-- removal of the unsupported pybpod package, integration of iblpybpod
-
 ## **Release Notes 7.0.1**
 
 - removal of the move_passive.py script from the post commands run during the passiveChoiceWorldIndependent task
