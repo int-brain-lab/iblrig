@@ -1,0 +1,20 @@
+{
+    "__CREATED-ON__": "2022-10-10 10:56:33.338517",
+    "__DEF-TEXT__": "This file contains information about a PyBpod experiment setup.",
+    "__DEF-URL__": "http://pybpod.readthedocs.org",
+    "__EXTERNAL-REF__": [
+        "f6708198-9ec1-4750-bb9d-215d2b6bad4a",
+        "dcb676f0-ce8c-4be8-a501-804169c7416b"
+    ],
+    "__SOFTWARE__": "PyBpod GUI API v1.8.2",
+    "__UPDATED-ON__": "2022-10-10 10:56:33.338517",
+    "__UUID4__": "c3a51690-d431-436d-9538-bc73b90b171a",
+    "board": "_iblrig_hausserlab_behavior_2",
+    "detached": true,
+    "subjects": [
+        "_iblrig_test_mouse"
+    ],
+    "task": "_iblrig_tasks_passiveChoiceWorld",
+    "update-variables": false,
+    "variables": []
+}

@@ -34,6 +34,7 @@ Run the following commands from the non-administrative **Windows Powershell** pr
 Set-ExecutionPolicy -Scope CurrentUser Unrestricted -Force
 cd \
 git clone https://github.com/int-brain-lab/iblrig
+git clone https://github.com/int-brain-lab/iblpybpod
 cd iblrig
 New-Item -ItemType Directory -Force -Path C:\Temp
 Invoke-WebRequest -Uri https://www.python.org/ftp/python/3.8.10/python-3.8.10-amd64.exe -OutFile C:\Temp\python-3.8.10-amd64.exe
@@ -41,7 +42,8 @@ Start-Process -NoNewWindow -Wait -FilePath C:\Temp\python-3.8.10-amd64.exe -Argu
 C:\Users\User\AppData\Local\Programs\Python\Python38\.\python.exe -m venv C:\iblrig\venv
 C:\iblrig\venv\Scripts\.\Activate.ps1
 C:\iblrig\venv\scripts\python.exe -m pip install --upgrade pip wheel
-pip install --editable .
+pip install --editable . 
+pip install --editable ..\iblpybpod
 python setup_pybpod.py
 cd Bonsai
 powershell.exe .\install.ps1
@@ -53,11 +55,11 @@ the ONE [documentation](https://int-brain-lab.github.io/ONE/) for specifics on h
 command or something similar for your specific setup to test: `python -c "from one.api import ONE; ONE()"`
 
 ### Running pybpod
-To run pybpod and begin data acquisition:
+To run pybpod and begin data acquisition run the following commands from a non-administrative **Windows Powershell** prompt:
 ```powershell
 C:\iblrig\venv\Scripts\.\Activate.ps1
-cd C:\iblrig
-.\pybpod.bat
+cd C:\iblrig_params
+start-pybpod
 ```
 
 #### For easier launching of pybpod
@@ -68,7 +70,6 @@ Copy-Item "C:\iblrig\pybpod-Anaconda_Powershell_Prompt.lnk" -Destination "$Env:H
 ```
 
 #### Setup instructions for launching the 'Experiment Description GUI' prior to task launch
-
 The 'Experiment Description GUI' is currently being housed on the iblscripts repo. This GUI is intended to simplify the 
 categorization of an experiment and cleanly define what projects and procedures an experiment is for. In order to add the GUI to 
 a custom task:

@@ -2,7 +2,6 @@ asn1crypto
 colorlog
 cython
 ibllib
-iblpybpod
 numpy
 ONE-api
 packaging

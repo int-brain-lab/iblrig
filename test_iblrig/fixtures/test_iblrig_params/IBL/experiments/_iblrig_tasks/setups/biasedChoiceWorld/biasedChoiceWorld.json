@@ -1,0 +1,17 @@
+{
+    "__CREATED-ON__": "2022-10-10 10:56:33.335526",
+    "__DEF-TEXT__": "This file contains information about a PyBpod experiment setup.",
+    "__DEF-URL__": "http://pybpod.readthedocs.org",
+    "__EXTERNAL-REF__": [
+        "f6708198-9ec1-4750-bb9d-215d2b6bad4a"
+    ],
+    "__SOFTWARE__": "PyBpod GUI API v1.8.2",
+    "__UPDATED-ON__": "2022-10-10 10:56:33.335526",
+    "__UUID4__": "5328299d-fdd2-46ec-8b8e-558b2ff4ee21",
+    "board": "_iblrig_hausserlab_behavior_2",
+    "detached": true,
+    "subjects": [],
+    "task": "_iblrig_tasks_biasedChoiceWorld",
+    "update-variables": false,
+    "variables": []
+}
