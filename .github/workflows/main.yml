@@ -32,18 +32,19 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: flake8
-        shell: bash -l {0}
+        shell: pwsh -l {0}
         run: |
           pwd
-          ls -l
+          ls
           pip install flake8 --quiet
           cd iblrig
-          python -m flake8 iblrig
+          python -m flake8
 
       - name: iblrig installation
         shell: pwsh -l {0}
         run: |
-          python --version
+          pwd
+          ls
           pip install --editable iblrig
           pip install --editable iblpybpod
           cd iblrig
@@ -54,7 +55,8 @@ jobs:
       - name: iblrig unit tests
         shell: pwsh -l {0}
         run: |
-          python --version
+          pwd
+          ls
           cd iblrig
           python -m unittest test_iblrig.test_adaptive --verbose
           python -m unittest test_iblrig.test_ibllib_imports --verbose
@@ -66,7 +68,8 @@ jobs:
       - name: Generate requirements_frozen.txt
         shell: pwsh -l {0}
         run: |
-          python --version
+          pwd
+          ls
           pip freeze > requirements_frozen.txt
 
       - name: Store frozen requirements as artifacts

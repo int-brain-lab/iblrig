@@ -1,19 +1,8 @@
 from setuptools import setup, find_packages
-import sys
 from pathlib import Path
 
+PYTHON_VERSION_REQ = ">3.8.0"
 CURRENT_DIRECTORY = Path(__file__).parent.absolute()
-REQUIRED_PYTHON = (3, 8)
-CURRENT_PYTHON = sys.version_info[:2]
-VER_ERR_MSG = """
-==========================
-Unsupported Python version
-==========================
-Python {}.{} was found, but this version of iblrig requires Python {}.{} or greater.
-"""
-if CURRENT_PYTHON != REQUIRED_PYTHON:
-    sys.stderr.write(VER_ERR_MSG.format(*REQUIRED_PYTHON + CURRENT_PYTHON))
-    sys.exit(1)
 
 with open("README.md", "r") as f:
     long_description = f.read()
@@ -40,7 +29,7 @@ def get_version(rel_path):
 setup(
     name="iblrig",
     version=get_version(Path("iblrig").joinpath("__init__.py")),
-    python_requires=">={}.{}".format(*REQUIRED_PYTHON),
+    python_requires=PYTHON_VERSION_REQ,
     description="IBL libraries",
     license="MIT",
     long_description=long_description,
