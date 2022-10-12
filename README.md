@@ -96,3 +96,37 @@ Please review these conventions to more easily contribute to the project.
 - a `hotfix` or `maintenance` branch is forked from `master`
 - once the fix has been thoroughly tested, it will get merged back into `master` and `develop`
 - the `hotfix` branch will eventually be deleted
+
+---
+
+### Troubleshooting Notes
+
+#### Windows
+Disable Microsoft Store associations with `python` command
+* Open the Settings or Start menu and search for “App execution aliases” or “Manage app execution aliases” 
+* Disable any python entries listed
+
+#### Anaconda
+##### Broken Uninstall
+* After uninstalling, navigate the file browser to the user home directory (C:\Users\username) and remove all `Anaconda`, 
+`.anaconda`, `.conda`, `.condarc`, etc files and folders
+  * search the hidden AppData folders as well (different versions of Anaconda stored data in different locations)
+* If running the command prompt is no longer functional, run the following command in Powershell:
+> Reg Delete "HKCU\Software\Microsoft\Command Processor" /v AutoRun /f
+* If Powershell is throwing a warning about an `Activate.ps1` file, remove the profile file from `%userhome%\Documents\Powershell`
+
+##### llvmlite error on ibllib install
+While performing a `pip install ibllib` command in a fresh conda environment, an occasional error may occur; `Error: Cannot 
+uninstall llvmlite...`. A simple workaround: 
+* close all Anaconda Prompts
+* open an **Anaconda Powershell Prompt**
+* reactivate the ibllib conda environment, `conda activate ibllib`
+* run `pip install ibllib`
+
+### Stim display on wrong screen
+If the visual stimulus appears on the wrong screen:
+* short term, pressing `F11` on the keyboard will unmaximize the window; allowing movement of the stimulus to the correct screen 
+* longer term, take note of a file called `C:\iblrig_params\.iblrig_params.json`; within that file is a variable called 
+`DISPLAY_IDX`, its value will be set to 0 or 1. If the stimulus screen initially launches on the wrong monitor (PC screen instead 
+of iPad screen), then change the value of `DISPLAY_IDX`. Change it to 0 if it was on 1, change it to 1 if it was on 0.
+  * Please note, the display index value is something assigned by OS and could potentially change between reboots
