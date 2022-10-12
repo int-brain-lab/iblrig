@@ -202,7 +202,7 @@ RELATIVE HUMIDITY:    {self.as_data['RelativeHumidity']} %
             self.behavior_data['States timestamps']['error'][0][0])
         no_go = ~np.isnan(
             self.behavior_data['States timestamps']['no_go'][0][0])
-        #assert correct or error or no_go
+        # assert correct or error or no_go
         # Add trial's response time to the buffer
         self.response_time = misc.get_trial_rt(self.behavior_data)
         self.response_time_buffer.append(self.response_time)

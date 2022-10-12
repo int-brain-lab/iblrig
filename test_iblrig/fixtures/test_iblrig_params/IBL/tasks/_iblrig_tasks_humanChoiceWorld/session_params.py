@@ -15,8 +15,6 @@ import iblrig.bonsai as bonsai
 import iblrig.frame2TTL as frame2TTL
 import iblrig.iotasks as iotasks
 import iblrig.misc as misc
-import iblrig.sound as sound
-import iblrig.user_input as user
 from iblrig.path_helper import SessionPathCreator
 from iblrig.rotary_encoder import MyRotaryEncoder
 import iblrig.sound as sound
@@ -176,7 +174,7 @@ class SessionParamHandler(object):
     # =========================================================================
     def play_tone(self):
         self.SD.play(self.GO_TONE, self.SOUND_SAMPLE_FREQ)
-    
+
     def play_tone_correct(self):
         self.SD.play(self.GO_TONE_CORRECT, self.SOUND_SAMPLE_FREQ)
 

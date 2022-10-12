@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [master, develop, rc, feature/iblpybpod_integrated]
+    branches: [master, develop, rc, hotfix/iblpybpod_integrated]
   pull_request:
     branches: [master, develop, rc]
 
@@ -15,8 +15,16 @@ jobs:
         os: [ "windows-latest" ]
         python-version: ["3.8", "3.9"]
     steps:
-      - name: Clone iblrig repo
+      - name: Checkout iblrig repo
         uses: actions/checkout@v3
+        with:
+          path: iblrig
+
+      - name: Checkout iblpybpod repo
+        uses: actions/checkout@v3
+        with:
+          repository: int-brain-lab/iblpybpod
+          path: iblpybpod
 
       - name: Setup Python
         uses: actions/setup-python@v4
@@ -26,14 +34,19 @@ jobs:
       - name: flake8
         shell: bash -l {0}
         run: |
+          pwd
+          ls -l
           pip install flake8 --quiet
-          python -m flake8
+          cd iblrig
+          python -m flake8 iblrig
 
       - name: iblrig installation
         shell: pwsh -l {0}
         run: |
           python --version
-          pip install --editable .
+          pip install --editable iblrig
+          pip install --editable iblpybpod
+          cd iblrig
           # python setup_pybpod.py
           cd Bonsai
           powershell.exe .\install.ps1
@@ -42,6 +55,7 @@ jobs:
         shell: pwsh -l {0}
         run: |
           python --version
+          cd iblrig
           python -m unittest test_iblrig.test_adaptive --verbose
           python -m unittest test_iblrig.test_ibllib_imports --verbose
           python -m unittest test_iblrig.test_path_helper --verbose

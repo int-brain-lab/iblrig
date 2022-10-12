@@ -12,7 +12,6 @@ from pybpodapi.protocol import Bpod, StateMachine
 import online_plots as op
 import task_settings
 import user_settings
-from iblrig.user_input import ask_session_delay
 from session_params import SessionParamHandler
 from trial_params import TrialParamHandler
 import numpy as np
@@ -112,7 +111,7 @@ for i in range(sph.NTRIALS):  # Main loop
     sma = StateMachine(bpod)
 
     if i == 0:  # First trial exception start camera
-        log.info(f'Waiting for camera pulses...')
+        log.info("Waiting for camera pulses...")
         sma.add_state(
             state_name='trial_start',
             state_timer=1,
