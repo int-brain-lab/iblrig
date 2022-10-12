@@ -26,8 +26,6 @@ if __name__ == "__main__":
         dst_file = iblrig_params_path / "user_settings.py"
         shutil.copy(src_file, dst_file) if not dst_file.exists() else None
 
-    # Setup iblpybpod and start  TODO: Flesh out setup
-    # setup_iblpybpod_for_iblrig_params(iblrig_path, iblrig_params_path)
+    # start pybpod
     from pybpodgui_plugin.__main__ import start as start_pybpod
-
     start_pybpod()

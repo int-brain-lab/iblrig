@@ -149,5 +149,5 @@ rm -rf test_venv
 - setup_pybpod by creating/copying json files
   - pybpod_setup.py to create dir structure
   - copy the files
-  - verify uuid's are not needed
+  - verify if uuid's are not needed in pybpod json files 
 - change pybpod user_settings.py ingest to an actual parameter file

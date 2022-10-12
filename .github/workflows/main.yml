@@ -38,11 +38,16 @@ jobs:
           cd Bonsai
           powershell.exe .\install.ps1
 
-#      - name: iblrig unit tests
-#        shell: pwsh -l {0}
-#        run: |
-#          python --version
-#          python -m unittest discover
+      - name: iblrig unit tests
+        shell: pwsh -l {0}
+        run: |
+          python --version
+          python -m unittest test_iblrig.test_adaptive --verbose
+          python -m unittest test_iblrig.test_ibllib_imports --verbose
+          python -m unittest test_iblrig.test_path_helper --verbose
+          python -m unittest test_iblrig.test_scripts --verbose
+          python -m unittest test_iblrig.test_task --verbose
+          # python -m unittest discover
 
       - name: Generate requirements_frozen.txt
         shell: pwsh -l {0}
