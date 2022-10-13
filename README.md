@@ -25,7 +25,7 @@ conda activate iblrig
 conda install git --yes
 git clone https://github.com/int-brain-lab/iblrig C:\iblrig
 cd C:\iblrig
-git checkout tags/7.0.2
+git checkout tags/7.0.3
 pip install --editable .
 pip install pybpod-gui-api==1.8.3b1 pybpod-gui-plugin-alyx==1.1.3b1
 pip uninstall ibllib --yes
@@ -55,19 +55,17 @@ of use.
 Copy-Item "C:\iblrig\pybpod-Anaconda_Powershell_Prompt.lnk" -Destination "$Env:HOMEPATH\Desktop"
 ```
 
-#### Setup instructions for launching the 'Experiment Description GUI' prior to task launch
-
-The 'Experiment Description GUI' is currently being housed on the iblscripts repo. This GUI is intended to simplify the 
+#### Setup instructions for launching the 'Experiment Description GUI' prior to task launch (DEVELOP)
+The 'Experiment Description GUI' is currently being developed in the iblscripts repo. This GUI is intended to simplify the 
 categorization of an experiment and cleanly define what projects and procedures an experiment is for. In order to add the GUI to 
-a custom task:
-
-* clone the iblscripts repo: `git clone https://github.com/int-brain-lab/iblscripts`
-* launch pybpod
-* select the custom task protocol to modify
-* click on the plus button to add a "pre command"
-* use the drop-down box to select `Execute an external command`
-* depending on where the iblscripts repo was clones, enter into the text box something like the following:
-  * `python C:\iblscripts\deploy\project_procedure_gui\experiment_form.py`
+the tasks listed in the `add_ex_desc_gui_to_tasks` script, run the following commands from the **Anaconda Powershell Prompt**:
+```powershell
+conda activate iblrig
+git clone -b develop https://github.com/int-brain-lab/iblscripts C:\iblscripts
+pip install -r C:\iblscripts\deploy\project_procedure_gui\pp_requirements.txt
+python C:\iblrig\scripts\add_ex_desc_gui_to_tasks.py
+```
+  - Note: Any custom tasks will need to have this pre-task command manually configured
 
 ---
 ## How to develop on this repository 

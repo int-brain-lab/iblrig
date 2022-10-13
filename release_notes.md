@@ -1,5 +1,9 @@
 # **Release notes**
 
+## **Release Notes 7.0.3**
+
+- added instructions and deployment script for experiment description gui
+
 ## **Release Notes 7.0.2**
 
 - removal of the move_passive.py script call from the passiveChoiceWorldIndependent json task configuration file
