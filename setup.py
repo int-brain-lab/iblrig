@@ -9,7 +9,7 @@ VER_ERR_MSG = """
 ==========================
 Unsupported Python version
 ==========================
-Python {}.{} was found, but this version of iblrig requires Python {}.{} or greater.
+Python {}.{} was found, but this version of iblrig requires Python {}.{}.
 """
 if CURRENT_PYTHON != REQUIRED_PYTHON:
     sys.stderr.write(VER_ERR_MSG.format(*REQUIRED_PYTHON + CURRENT_PYTHON))
