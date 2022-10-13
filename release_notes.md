@@ -1,5 +1,9 @@
 # **Release notes**
 
+## **Release Notes 7.0.2**
+
+- removal of the move_passive.py script call from the passiveChoiceWorldIndependent json task configuration file
+
 ## **Release Notes 7.0.1**
 
 - removal of the move_passive.py script from the post commands run during the passiveChoiceWorldIndependent task
