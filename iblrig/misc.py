@@ -14,7 +14,9 @@ import datetime
 import json
 import logging
 import shutil
+import subprocess
 from pathlib import Path
+from sys import platform
 from typing import Optional, Union
 
 import numpy as np
@@ -29,6 +31,19 @@ FLAG_FILE_NAMES = [
 ]
 
 log = logging.getLogger("iblrig")
+
+
+def call_exp_desc_gui(username:str):
+    # set experiment_form.py from iblscripts path
+    if platform == "win32":  # Set path for platform
+        experiment_form_path = Path("C:\\iblscripts\\deploy\\project_procedure_gui\\experiment_form.py")
+    else:
+        experiment_form_path = Path.home() / "Documents/repos/iblscripts/deploy/project_procedure_gui/experiment_form.py"
+
+    if experiment_form_path.exists() and username:  # verify iblscripts dir exists in the expected location, valid username
+        log.info(f"Logging in as alyx user: {username}")
+        cmd = [ "python", experiment_form_path, "SW_023", username ]  # set subprocess command
+        subprocess.run(cmd)
 
 
 def _isdatetime(x: str) -> Optional[bool]:

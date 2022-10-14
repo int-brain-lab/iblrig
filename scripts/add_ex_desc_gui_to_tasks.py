@@ -14,8 +14,7 @@ TASK_LIST = ['_iblrig_tasks_biasedChoiceWorld',
              '_iblrig_tasks_passiveChoiceWorldIndependent',
              '_iblrig_tasks_habituationChoiceWorld']
 
-TASKS_PATH = ""  # Set path for platform
-if platform == "win32":
+if platform == "win32":  # Set path for platform
     TASKS_PATH = Path("C:\\iblrig_params\\IBL\\tasks")
 else:
     TASKS_PATH = Path.home() / "Documents" / "iblrig_params" / "IBL" / "tasks"
