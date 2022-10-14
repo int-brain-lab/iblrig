@@ -3,6 +3,7 @@ Script used to test that pybpod launches with the given test data in the fixture
 iblrig_params dir already exists and that the script is executed from that dir (required for pybpod functionality)
 """
 import argparse
+import os
 import shutil
 from pathlib import Path
 from sys import platform
@@ -15,9 +16,13 @@ if __name__ == "__main__":
     parser.add_argument("-t", "--test", action="store_true", help="Removes local iblrig_params dir and copies test data")
     args = parser.parse_args()
 
-    iblrig_path = Path(__file__).parents[1]
-    if args.test:  # Set vars for testing mode and copy files to appropriate dirs
-        shutil.rmtree(IBLRIG_PARAMS_PATH)
+    if args.test:
+        for name in os.listdir(IBLRIG_PARAMS_PATH):  # delete the contents of the IBLRIG_PARAMS_PATH dir
+            full_path = IBLRIG_PARAMS_PATH / str(name)
+            shutil.rmtree(full_path) if Path(full_path).is_dir() else os.unlink(full_path)
+
+        # Copies test data content to IBLRIG_PARAMS_PATH dir
+        iblrig_path = Path(__file__).parents[1]
         shutil.copytree(iblrig_path / "test_iblrig" / "fixtures" / "test_iblrig_params", IBLRIG_PARAMS_PATH, dirs_exist_ok=True)
 
     # start pybpod
