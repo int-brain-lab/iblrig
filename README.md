@@ -1,4 +1,6 @@
 # iblrig v7
+Software used to interact with various pieces of specialized hardware for neuroscience data acquisition.
+
 ## Installation on Windows
 Software has only been tested on Windows 10. No other version of Windows is supported at this time. The test user account has 
 administrative rights.
