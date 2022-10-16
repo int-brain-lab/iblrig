@@ -60,7 +60,16 @@ jobs:
           conda env list
           python --version
           echo "------ end info ------"
-          python -m unittest discover
+          python -m unittest test_iblrig/test_adaptive.py
+          python -m unittest test_iblrig/test_alyx.py
+          python -m unittest test_iblrig/test_ibllib_imports.py
+          python -m unittest test_iblrig/test_params.py 
+          python -m unittest test_iblrig/test_path_helper.py
+          python -m unittest test_iblrig/test_pybpod_config.py
+          python -m unittest test_iblrig/test_scripts.py
+          python -m unittest test_iblrig/test_start_pybpod.py
+          python -m unittest test_iblrig/test_task.py
+          # python -m unittest discover
 
       - name: Generate requirements_frozen.txt
         shell: pwsh -l {0}
