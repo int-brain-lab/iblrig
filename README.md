@@ -63,9 +63,15 @@ the tasks listed in the `add_ex_desc_gui_to_tasks` script, run the following com
 conda activate iblrig
 git clone -b develop https://github.com/int-brain-lab/iblscripts C:\iblscripts
 pip install -r C:\iblscripts\deploy\project_procedure_gui\pp_requirements.txt
-python C:\iblrig\scripts\add_ex_desc_gui_to_tasks.py
 ```
-  - Note: Any custom tasks will need to have this pre-task command manually configured
+
+Within whichever custom task you would like to test this gui, simply add the following lines to `_iblrig_tasks_customTask.py`
+* i.e. `C:\iblrig_params\IBL\tasks\_iblrig_tasks_customTask\_iblrig_tasks_customTask.py`
+
+```python
+from iblrig.misc import call_exp_desc_gui
+call_exp_desc_gui()
+```
 
 ---
 ## How to develop on this repository 
