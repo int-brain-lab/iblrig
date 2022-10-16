@@ -39,7 +39,7 @@ def call_exp_desc_gui():
 
     Better implementation is desired.
     """
-    log.info(f"Attempting to launch experiment description form...")
+    log.info("Attempting to launch experiment description form...")
 
     # determine alyx_username
     alyx_prod_config_path = Path.home() / ".one" / ".alyx.internationalbrainlab.org"
@@ -66,7 +66,7 @@ def call_exp_desc_gui():
         else:
             experiment_form_path = Path.home() / "Documents/repos/iblscripts/deploy/project_procedure_gui/experiment_form.py"
         if experiment_form_path.exists():  # verify iblscripts dir exists in the expected location
-            cmd = [ "python", experiment_form_path, subject_name, alyx_username ]  # set subprocess command
+            cmd = ["python", experiment_form_path, subject_name, alyx_username]  # set subprocess command
             subprocess.run(cmd)
 
 
