@@ -7,6 +7,7 @@ ONE-api
 packaging
 pandas
 pyOpenSSL
+PySocks
 python-dateutil
 python-osc
 pywin32; sys_platform == "win32"

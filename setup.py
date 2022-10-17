@@ -1,11 +1,9 @@
-from setuptools import setup, find_packages
 from pathlib import Path
 
-PYTHON_VERSION_REQ = ">3.8.0"
-CURRENT_DIRECTORY = Path(__file__).parent.absolute()
+from setuptools import setup, find_packages
 
-with open("README.md", "r") as f:
-    long_description = f.read()
+PYTHON_REQUIRES = "==3.8.*"  # python version requirement
+LONG_DESCRIPTION = "Software used to interact with various pieces of specialized hardware for neuroscience data acquisition."
 
 with open("requirements.txt") as f:
     require = [x.strip() for x in f.readlines()]
@@ -29,10 +27,10 @@ def get_version(rel_path):
 setup(
     name="iblrig",
     version=get_version(Path("iblrig").joinpath("__init__.py")),
-    python_requires=PYTHON_VERSION_REQ,
+    python_requires=PYTHON_REQUIRES,
     description="IBL libraries",
     license="MIT",
-    long_description=long_description,
+    long_description=LONG_DESCRIPTION,
     author="IBL Staff",
     url="https://www.internationalbrainlab.com/",
     packages=find_packages(exclude=["scratch"]),  # same as name

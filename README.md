@@ -1,4 +1,6 @@
 # iblrig v7
+Software used to interact with various pieces of specialized hardware for neuroscience data acquisition.
+
 ## Installation on Windows
 Software has only been tested on Windows 10. No other version of Windows is supported at this time. The test user account has 
 administrative rights.
@@ -36,6 +38,7 @@ cd \
 git clone https://github.com/int-brain-lab/iblrig
 git clone https://github.com/int-brain-lab/iblpybpod
 cd iblrig
+git checkout tags/7.0.4
 New-Item -ItemType Directory -Force -Path C:\Temp
 Invoke-WebRequest -Uri https://www.python.org/ftp/python/3.8.10/python-3.8.10-amd64.exe -OutFile C:\Temp\python-3.8.10-amd64.exe
 Start-Process -NoNewWindow -Wait -FilePath C:\Temp\python-3.8.10-amd64.exe -ArgumentList "/passive", "InstallAllUsers=0", "Include_launcher=0", "Include_test=0"
@@ -69,18 +72,23 @@ of use.
 Copy-Item "C:\iblrig\pybpod-Anaconda_Powershell_Prompt.lnk" -Destination "$Env:HOMEPATH\Desktop"
 ```
 
-#### Setup instructions for launching the 'Experiment Description GUI' prior to task launch
-The 'Experiment Description GUI' is currently being housed on the iblscripts repo. This GUI is intended to simplify the 
+#### Setup instructions for launching the 'Experiment Description GUI' prior to task launch (DEVELOP)
+The 'Experiment Description GUI' is currently being developed in the iblscripts repo. This GUI is intended to simplify the 
 categorization of an experiment and cleanly define what projects and procedures an experiment is for. In order to add the GUI to 
-a custom task:
+the tasks listed in the `add_ex_desc_gui_to_tasks` script, run the following commands from the **Anaconda Powershell Prompt**:
+```powershell
+conda activate iblrig
+git clone -b develop https://github.com/int-brain-lab/iblscripts C:\iblscripts
+pip install -r C:\iblscripts\deploy\project_procedure_gui\pp_requirements.txt
+```
 
-* clone the iblscripts repo: `git clone https://github.com/int-brain-lab/iblscripts`
-* launch pybpod
-* select the custom task protocol to modify
-* click on the plus button to add a "pre command"
-* use the drop-down box to select `Execute an external command`
-* depending on where the iblscripts repo was clones, enter into the text box something like the following:
-  * `python C:\iblscripts\deploy\project_procedure_gui\experiment_form.py`
+Within whichever custom task you would like to test this gui, simply add the following lines to `_iblrig_tasks_customTask.py`
+* i.e. `C:\iblrig_params\IBL\tasks\_iblrig_tasks_customTask\_iblrig_tasks_customTask.py`
+
+```python
+from iblrig.misc import call_exp_desc_gui
+call_exp_desc_gui()
+```
 
 ---
 ## How to develop on this repository 
@@ -151,3 +159,36 @@ rm -rf test_venv
   - copy the files
   - verify if uuid's are not needed in pybpod json files 
 - change pybpod user_settings.py ingest to an actual parameter file
+---
+
+### Troubleshooting Notes
+
+#### Windows
+Disable Microsoft Store associations with `python` command
+* Open the Settings or Start menu and search for “App execution aliases” or “Manage app execution aliases” 
+* Disable any python entries listed
+
+#### Anaconda
+##### Broken Uninstall
+* After uninstalling, navigate the file browser to the user home directory (C:\Users\username) and remove all `Anaconda`, 
+`.anaconda`, `.conda`, `.condarc`, etc files and folders
+  * search the hidden AppData folders as well (different versions of Anaconda stored data in different locations)
+* If running the command prompt is no longer functional, run the following command in Powershell:
+> Reg Delete "HKCU\Software\Microsoft\Command Processor" /v AutoRun /f
+* If Powershell is throwing a warning about an `Activate.ps1` file, remove the profile file from `%userhome%\Documents\Powershell`
+
+##### llvmlite error on ibllib install
+While performing a `pip install ibllib` command in a fresh conda environment, an occasional error may occur; `Error: Cannot 
+uninstall llvmlite...`. A simple workaround: 
+* close all Anaconda Prompts
+* open an **Anaconda Powershell Prompt**
+* reactivate the ibllib conda environment, `conda activate ibllib`
+* run `pip install ibllib`
+
+### Stim display on wrong screen
+If the visual stimulus appears on the wrong screen:
+* short term, pressing `F11` on the keyboard will unmaximize the window; allowing movement of the stimulus to the correct screen 
+* longer term, take note of a file called `C:\iblrig_params\.iblrig_params.json`; within that file is a variable called 
+`DISPLAY_IDX`, its value will be set to 0 or 1. If the stimulus screen initially launches on the wrong monitor (PC screen instead 
+of iPad screen), then change the value of `DISPLAY_IDX`. Change it to 0 if it was on 1, change it to 1 if it was on 0.
+  * Please note, the display index value is something assigned by OS and could potentially change between reboots
