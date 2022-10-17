@@ -1,0 +1,42 @@
+{
+    "__CREATED-ON__": "2022-10-10 10:56:30.120161",
+    "__DEF-TEXT__": "This file contains information about a PyBpod protocol.",
+    "__DEF-URL__": "http://pybpod.readthedocs.org",
+    "__SOFTWARE__": "PyBpod GUI API v1.8.2",
+    "__UPDATED-ON__": "2022-10-10 10:56:30.168033",
+    "__UUID4__": "eacae538-7d4d-48bc-86a9-b55ad4da3ebd",
+    "commands": [
+        {
+            "cmd": "python C:\\iblrig\\scripts\\bonsai_stop.py 7110",
+            "type": "create_execcmd",
+            "when": 1
+        },
+        {
+            "cmd": "python C:\\iblrig\\scripts\\bonsai_stop.py 7111",
+            "type": "create_execcmd",
+            "when": 1
+        },
+        {
+            "cmd": "python C:\\iblrig\\scripts\\cleanup.py",
+            "type": "create_execcmd",
+            "when": 1
+        },
+        {
+            "cmd": "python C:\\iblrig\\scripts\\bpod_lights.py 0",
+            "type": "create_execcmd",
+            "when": 0
+        },
+        {
+            "cmd": "python C:\\iblrig\\scripts\\bpod_lights.py 1",
+            "type": "create_execcmd",
+            "when": 1
+        },
+        {
+            "cmd": "python C:\\iblrig\\scripts\\create_session.py --poop=False",
+            "type": "create_execcmd",
+            "when": 1
+        }
+    ],
+    "name": "_iblrig_tasks_ephysChoiceWorld",
+    "trigger-softcodes": false
+}

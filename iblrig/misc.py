@@ -1,8 +1,3 @@
-#!/usr/bin/env python
-# @Author: Niccolò Bonacchi
-# @Creation_Date: Friday, February 8th 2019, 12:51:51 pm
-# @Editor: Michele Fabbri
-# @Edit_Date: 2022-02-01
 """
 Provides collection of functionality used throughout the iblrig repository.
 
@@ -13,8 +8,11 @@ repo change over time.
 import datetime
 import json
 import logging
+import os
 import shutil
+import subprocess
 from pathlib import Path
+from sys import platform
 from typing import Optional, Union
 
 import numpy as np
@@ -29,6 +27,47 @@ FLAG_FILE_NAMES = [
 ]
 
 log = logging.getLogger("iblrig")
+
+
+def call_exp_desc_gui():
+    """
+    Used to call the 'Experiment Description GUI' in the iblscripts repo from a task. Attempts to perform the following:
+    * parse alyx username from home directory alyx config file (production alyx)
+    * parses the subject name from pybpod's session user_settings file,
+        i.e. ../iblrig_params/IBL/experiments/_iblrig_tasks/setups/task_name/sessions/date_dir/user_settings.py
+    * uses subprocess to call the gui, i.e. iblscripts/deploy/project_procedure_gui/experiment_form.py
+
+    Better implementation is desired.
+    """
+    log.info("Attempting to launch experiment description form...")
+
+    # determine alyx_username
+    alyx_prod_config_path = Path.home() / ".one" / ".alyx.internationalbrainlab.org"
+    with open(alyx_prod_config_path, "r") as f:
+        data = json.load(f)
+    alyx_username = data["ALYX_LOGIN"]
+    log.info(f"Alyx username set: {alyx_username}")
+
+    # determine currently selected subject in pybpod, hope that the user did not select multiple subjects
+    subject_name = None
+    if "user_settings.py" in os.listdir():
+        with open("user_settings.py", "r") as f:
+            lines = f.readlines()
+        for row in lines:
+            if "PYBPOD_SUBJECT_EXTRA" in row:
+                name_index = row.split().index('"name":')
+                subject_name = row.split()[name_index+1].strip(",\"")
+                break
+    log.info(f"Subject name: {subject_name}")
+
+    if alyx_username and subject_name:
+        if platform == "win32":  # Set path for platform
+            experiment_form_path = Path("C:\\iblscripts\\deploy\\project_procedure_gui\\experiment_form.py")
+        else:
+            experiment_form_path = Path.home() / "Documents/repos/iblscripts/deploy/project_procedure_gui/experiment_form.py"
+        if experiment_form_path.exists():  # verify iblscripts dir exists in the expected location
+            cmd = ["python", experiment_form_path, subject_name, alyx_username]  # set subprocess command
+            subprocess.run(cmd)
 
 
 def _isdatetime(x: str) -> Optional[bool]:

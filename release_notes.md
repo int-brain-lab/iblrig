@@ -1,5 +1,11 @@
 # **Release notes**
 
+## **Release Notes 7.0.4**
+
+- modified call to experiment description gui to pass alyx username and subject information
+- addition of test fixtures
+- corrections to setup.py to prevent readme markdown from breaking builds
+
 ## **Release Notes 7.0.3**
 
 - added instructions and deployment script for experiment description gui
