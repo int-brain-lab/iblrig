@@ -59,6 +59,7 @@ jobs:
           ls
           cd iblrig
           python -m unittest test_iblrig.test_adaptive --verbose
+          python -m unittest test_iblrig.test_alyx --verbose
           python -m unittest test_iblrig.test_ibllib_imports --verbose
           python -m unittest test_iblrig.test_path_helper --verbose
           python -m unittest test_iblrig.test_scripts --verbose

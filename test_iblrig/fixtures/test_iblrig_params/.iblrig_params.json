@@ -1,4 +1,5 @@
 {
+  "NAME": "_iblrig_testrig_0",
   "IBLRIG_VERSION": "",
   "COM_BPOD": "",
   "COM_ROTARY_ENCODER": "",
@@ -7,7 +8,7 @@
   "F2TTL_DARK_THRESH": "",
   "F2TTL_LIGHT_THRESH": "",
   "F2TTL_CALIBRATION_DATE": "",
-  "SCREEN_FREQ_TARGET": "",
+  "SCREEN_FREQ_TARGET": 60,
   "SCREEN_FREQ_TEST_STATUS": "",
   "SCREEN_FREQ_TEST_DATE": "",
   "SCREEN_LUX_VALUE": "",
@@ -20,5 +21,5 @@
   "BPOD_TTL_TEST_DATE": "",
   "DATA_FOLDER_LOCAL": "",
   "DATA_FOLDER_REMOTE": "",
-  "DISPLAY_IDX": ""
+  "DISPLAY_IDX": 1
 }

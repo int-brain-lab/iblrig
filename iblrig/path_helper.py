@@ -22,7 +22,7 @@ log = logging.getLogger("iblrig")
 
 # Determine if we are working on a development machine by the existence of a ".../iblrig/iblrig_params_dev.yml" file
 if (Path(iblrig.__file__).parents[1] / "iblrig_params_dev.yml").exists():
-    log.info("iblrig_params_dev.yml file exists, assuming we are on a development machine and pulling parameters from this file.")
+    log.info("iblrig_params_dev.yml file exists, assuming development machine, and pulling parameters from this file.")
     iblrig_params_file_path = Path(iblrig.__file__).parents[1] / "iblrig_params_dev.yml"
 else:
     iblrig_params_file_path = Path(iblrig.__file__).parents[1] / "iblrig_params.yml"
@@ -70,6 +70,8 @@ def get_iblserver_data_folder(subjects: bool = True):
             log.warning("Something is not right... ignoring local server configuration.")
             return None
     else:
+        if subjects:
+            return str(Path(IBLRIG_PARAMS["iblrig_remote_data_path"]) / "Subjects")
         return IBLRIG_PARAMS["iblrig_remote_data_path"]
 
 
@@ -82,6 +84,8 @@ def get_iblrig_params_folder() -> str:
 
 
 def get_iblrig_data_folder(subjects: bool = True) -> str:
+    if subjects:
+        return str(Path(IBLRIG_PARAMS["iblrig_local_data_path"]) / "Subjects")
     return IBLRIG_PARAMS["iblrig_local_data_path"]
 
 
