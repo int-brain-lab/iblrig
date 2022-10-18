@@ -6,10 +6,8 @@ import argparse
 import os
 import shutil
 from pathlib import Path
-from sys import platform
+import iblrig.path_helper as ph
 
-# Set iblrig_params path based on platform
-IBLRIG_PARAMS_PATH = Path("C:\\iblrig_params") if platform == "win32" else Path.home() / "Documents" / "iblrig_params"
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Setup iblpybpod")
@@ -17,13 +15,13 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.test:
-        for name in os.listdir(IBLRIG_PARAMS_PATH):  # delete the contents of the IBLRIG_PARAMS_PATH dir
-            full_path = IBLRIG_PARAMS_PATH / str(name)
+        for name in os.listdir(ph.get_iblrig_params_folder()):  # delete the contents of the ibl_params dir (pybpod dir)
+            full_path = Path(ph.get_iblrig_params_folder()) / name
             shutil.rmtree(full_path) if Path(full_path).is_dir() else os.unlink(full_path)
 
-        # Copies test data content to IBLRIG_PARAMS_PATH dir
-        iblrig_path = Path(__file__).parents[1]
-        shutil.copytree(iblrig_path / "test_iblrig" / "fixtures" / "test_iblrig_params", IBLRIG_PARAMS_PATH, dirs_exist_ok=True)
+        # Copy test data content to ibl_params dir (pybpod dir)
+        shutil.copytree(Path(ph.get_iblrig_folder()) / "test_iblrig" / "fixtures" / "test_iblrig_params",
+                        ph.get_iblrig_params_folder(), dirs_exist_ok=True)
 
     # start pybpod
     from pybpodgui_plugin.__main__ import start as start_pybpod

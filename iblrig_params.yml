@@ -1,0 +1,5 @@
+iblrig_local_data_path: "C:\\iblrig_data\\Subjects"
+iblrig_remote_data_path: "\\\\lab_server_ip_or_dns\\Subjects"
+iblrig_remote_server_path: "\\\\lab_server_ip_or_dns"
+iblrig_path: "C:\\iblrig"
+iblrig_params_path: "C:\\iblrig_params"

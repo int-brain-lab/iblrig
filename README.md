@@ -118,6 +118,13 @@ Please review these conventions to more easily contribute to the project.
 - once the fix has been thoroughly tested, it will get merged back into `master` and `develop`
 - the `hotfix` branch will eventually be deleted
 
+### Dev parameter file
+In the root of the repository is a file called `iblrig_params.yml`. To more easily develop on this repository, perform the 
+following:
+* create a new file in the root called `iblrig_params_dev.yml`
+* copy the contents of the `iblrig_params.yml` into this new file
+* make changes to the entries appropriate for your system 
+
 #### Install Python v3.8 and set up venv for iblrig in Ubuntu 22.04
 
 Instructions are for the assumption that this is for development and that the desired directory to work out of is 
