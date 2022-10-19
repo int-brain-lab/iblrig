@@ -48,7 +48,7 @@ jobs:
           pip install --editable iblrig
           pip install --editable iblpybpod
           cd iblrig
-          # python setup_pybpod.py
+          python setup_pybpod.py
           cd Bonsai
           powershell.exe .\install.ps1
 

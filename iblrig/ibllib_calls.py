@@ -71,7 +71,7 @@ def call_one_get_project_data(project_name: str, lab: str = None, one_test: bool
         )
     else:
         one = ONE()
-    alyx.get_alyx_project_info(project_name=project_name, one=one)
+    alyx.get_alyx_project_info(project_name=project_name, lab=lab, one=one)
 
 
 def call_one_sync_params(one_test: bool = False):
