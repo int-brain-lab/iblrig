@@ -20,18 +20,24 @@ from iblrig import raw_data_loaders
 
 log = logging.getLogger("iblrig")
 
-# Determine if we are working on a development machine by the existence of a ".../iblrig/iblrig_params_dev.yml" file
+# Determine paths for special use cases based on existence of a file:
+#   - development machine - ".../iblrig/iblrig_params_dev.yml"
+#   - github actions ci - ".../iblrig/iblrig_params_ci.yml"
 if (Path(iblrig.__file__).parents[1] / "iblrig_params_dev.yml").exists():
     log.info("iblrig_params_dev.yml file exists, assuming development machine, and pulling parameters from this file.")
     iblrig_params_file_path = Path(iblrig.__file__).parents[1] / "iblrig_params_dev.yml"
+elif (Path(iblrig.__file__).parents[1] / "iblrig_params_ci.yml").exists():
+    log.info("iblrig_params_ci.yml file exists, assuming github actions ci, and pulling parameters from this file.")
+    iblrig_params_file_path = Path(iblrig.__file__).parents[1] / "iblrig_params_ci.yml"
 else:
     iblrig_params_file_path = Path(iblrig.__file__).parents[1] / "iblrig_params.yml"
 with open(iblrig_params_file_path, "r") as f:
     IBLRIG_PARAMS = yaml.safe_load(f)
+    print(f.read())
 
 
 def get_network_drives():
-    if platform == "win32":
+    if platform == "win32" and not IBLRIG_PARAMS["iblrig_remote_server_path"]:
         import win32api
         import win32com.client
         from win32com.shell import shell, shellcon
@@ -56,7 +62,7 @@ def get_network_drives():
 
 
 def get_iblserver_data_folder(subjects: bool = True):
-    if platform == "win32":
+    if platform == "win32" and not IBLRIG_PARAMS["iblrig_remote_server_path"]:
         drives = get_network_drives()
 
         log.debug("Looking for Y:\\ drive")
@@ -72,7 +78,11 @@ def get_iblserver_data_folder(subjects: bool = True):
     else:
         if subjects:
             return str(Path(IBLRIG_PARAMS["iblrig_remote_data_path"]) / "Subjects")
-        return IBLRIG_PARAMS["iblrig_remote_data_path"]
+        return str(IBLRIG_PARAMS["iblrig_remote_data_path"])
+
+
+def get_iblrig_temp_alyx_proj_folder() -> str:
+    return IBLRIG_PARAMS["iblrig_temp_alyx"]
 
 
 def get_iblrig_folder() -> str:

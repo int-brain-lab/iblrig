@@ -1,5 +1,5 @@
 """
-Alyx interface functions (must run in ibllib env)
+Alyx interface functions
 Can do 2 things:
 1. Sync params file from local to alyx
 2. Download data from alyx for creating local projects from alyx projects
@@ -13,8 +13,7 @@ from one.api import ONE
 
 from iblrig import path_helper
 
-ROOT_FOLDER = Path().home().joinpath("TempAlyxProjectData")
-ROOT_FOLDER.mkdir(parents=True, exist_ok=True)
+ROOT_FOLDER = Path(path_helper.get_iblrig_temp_alyx_proj_folder())
 
 
 def sync_local_params_to_alyx(one: object = None) -> None:
@@ -28,7 +27,6 @@ def sync_local_params_to_alyx(one: object = None) -> None:
 def _load_iblrig_params() -> dict:
     """
     Loads iblrig params from default location
-    Once iblrigcore is deployed, this should be removed and ParamFile.read_params_file()
     """
     params_filepath = Path(path_helper.get_iblrig_params_folder()) / ".iblrig_params.json"
     if not params_filepath.exists():
@@ -37,17 +35,6 @@ def _load_iblrig_params() -> dict:
     with open(params_filepath, "r") as f:
         pars = json.load(f)
     return pars
-    # filepath = Path(__file__).absolute()
-    # params_filepath = filepath.parent.parent.parent.parent.joinpath(
-    #     "iblrig_params", ".iblrig_params.json"
-    # )
-    # if not params_filepath.exists():
-    #     print(f"ERROR: Can't find params file: {params_filepath}")
-    #     return
-    #
-    # with open(params_filepath, "r") as f:
-    #     pars = json.load(f)
-    # return pars
 
 
 def _write_alyx_params(data: dict, one: object = None) -> dict:
@@ -69,6 +56,7 @@ def get_alyx_project_info(project_name: str = None, lab: str = None, one: object
     if not one.alyx.user:
         one.alyx.authenticate()
 
+    ROOT_FOLDER.mkdir(parents=True, exist_ok=True)
     ROOT_FOLDER.joinpath(one.alyx.user + ".oneuser").touch()
 
     projects = one.alyx.rest("projects", "list")

@@ -11,7 +11,7 @@ from pathlib import Path
 import iblrig.path_helper as path_helper
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Setup iblpybpod")
+    parser = argparse.ArgumentParser(description="Test Start pybpod")
     parser.add_argument("-t", "--test", action="store_true", help="Removes local iblrig_params dir and copies test data")
     args = parser.parse_args()
 

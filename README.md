@@ -78,7 +78,7 @@ categorization of an experiment and cleanly define what projects and procedures 
 the tasks listed in the `add_ex_desc_gui_to_tasks` script, run the following commands from the **Anaconda Powershell Prompt**:
 ```powershell
 C:\iblrig\venv\Scripts\.\Activate.ps1
-git clone -b develop https://github.com/int-brain-lab/iblscripts C:\iblscripts
+git clone https://github.com/int-brain-lab/iblscripts C:\iblscripts
 pip install -r C:\iblscripts\deploy\project_procedure_gui\pp_requirements.txt
 ```
 
@@ -118,12 +118,15 @@ Please review these conventions to more easily contribute to the project.
 - once the fix has been thoroughly tested, it will get merged back into `master` and `develop`
 - the `hotfix` branch will eventually be deleted
 
-### Dev parameter file
+#### The dev parameter file
 In the root of the repository is a file called `iblrig_params.yml`. To more easily develop on this repository, perform the 
 following:
-* create a copy of the `iblrig_params.yml` file in the same root folder, but called `iblrig_params_dev.yml`
+* create a copy of the `iblrig_params.yml` file in the same root directory, but called `iblrig_params_dev.yml`
 * make changes to the entries in the file appropriate for your system
   * i.e. `iblrig_local_data_path: "C:\\iblrig_data"` could become `iblrig_local_data_path: "/home/username/my_iblrig_local_data"`
+
+Note: during the ci tests of GitHub Actions, a similar file is created called `iblrig_params_ci.yml`; this is used to accommodate 
+the difference in directory structure that this system uses
 
 #### Install Python v3.8 and set up venv for iblrig in Ubuntu 22.04
 

@@ -2,10 +2,10 @@ import json
 from pathlib import Path
 
 from one.api import ONE
-
+from iblrig import path_helper
 from scripts.ibllib import alyx
 
-ROOT_FOLDER = Path().home().joinpath("TempAlyxProjectData")
+ROOT_FOLDER = Path(path_helper.get_iblrig_temp_alyx_proj_folder())
 ROOT_FOLDER.mkdir(parents=True, exist_ok=True)
 
 
@@ -68,6 +68,7 @@ def call_one_get_project_data(project_name: str, lab: str = None, one_test: bool
             base_url="https://test.alyx.internationalbrainlab.org",
             username="test_user",
             password="TapetesBloc18",
+            silent=True
         )
     else:
         one = ONE()
@@ -80,6 +81,7 @@ def call_one_sync_params(one_test: bool = False):
             base_url="https://test.alyx.internationalbrainlab.org",
             username="test_user",
             password="TapetesBloc18",
+            silent=True
         )
     else:
         one = ONE()

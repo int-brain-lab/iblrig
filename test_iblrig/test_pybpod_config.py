@@ -1,22 +1,22 @@
-#!/usr/bin/env python
-# -*- coding:utf-8 -*-
-# @File: tests/test_pybpod_config.py
-# @Author: Niccolo' Bonacchi (@nbonacchi)
-# @Date: Friday, July 9th 2021, 1:13:04 pm
 import shutil
 import unittest
 from pathlib import Path
 
-import iblrig.path_helper as ph
-import iblrig.pybpod_config as config
 import iblrig.ibllib_calls as libcalls
+import iblrig.params as params
+import iblrig.pybpod_config as config
+from iblrig import path_helper
 
 
 class TestsPybpodConfig(unittest.TestCase):
     def setUp(self):
         self.project_name = "ibl_mainenlab"
         self.project_name_nok = "bla"
-        self.project_path = Path(ph.get_iblrig_params_folder()) / self.project_name
+        params.write_params_file(force=True)
+        pars = params.load_params_file()
+        pars["NAME"] = "_iblrig_mainenlab_ephys_0"
+        params.write_params_file(pars, force=True)
+        self.project_path = Path(path_helper.get_iblrig_params_folder()) / self.project_name
         libcalls.call_one_get_project_data(self.project_name, one_test=True)
 
     def test_create_alyx(self):

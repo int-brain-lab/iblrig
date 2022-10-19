@@ -40,6 +40,40 @@ jobs:
           cd iblrig
           python -m flake8
 
+      - name: iblrig_params.yml generation for ci
+        shell: pwsh -l {0}
+        run: |
+          Get-ChildItem
+          Get-ChildItem "iblrig"
+          $root_loc = Get-Location
+          $iblrig_loc = [IO.Path]::Combine($root_loc, "iblrig")
+          $iblrig_local_data_loc = [IO.Path]::Combine($root_loc, "iblrig_data")
+          $iblrig_remote_data_loc = [IO.Path]::Combine($root_loc, "iblrig_remote_data")
+          $iblrig_params_loc = [IO.Path]::Combine($root_loc, "iblrig_params")
+          $iblrig_temp_alyx = [IO.Path]::Combine($root_loc, "alyx_proj_data")
+
+          Write-Output "root_loc - $root_loc"
+          Write-Output "iblrig_loc - $iblrig_loc"
+          Write-Output "iblrig_local_data_loc - $iblrig_local_data_loc"
+          Write-Output "iblrig_remote_data_loc - $iblrig_remote_data_loc"
+          Write-Output "iblrig_params_loc - $iblrig_params_loc"
+          Write-Output "iblrig_temp_alyx - $iblrig_temp_alyx"
+
+          New-Item $iblrig_local_data_loc -ItemType Directory
+          New-Item $iblrig_remote_data_loc -ItemType Directory
+          New-Item $iblrig_temp_alyx -ItemType Directory
+
+          cd iblrig
+          $filename = "iblrig_params_ci.yml" 
+          New-Item $filename -ItemType File -Value ("# parameter file generated for github actions ci" + [Environment]::NewLine)
+          Add-Content $filename "iblrig_local_data_path: '$iblrig_local_data_loc'"
+          Add-Content $filename "iblrig_remote_data_path: '$iblrig_remote_data_loc'"
+          Add-Content $filename "iblrig_remote_server_path: '$iblrig_remote_data_loc'"
+          Add-Content $filename "iblrig_path: '$iblrig_loc'"
+          Add-Content $filename "iblrig_params_path: '$iblrig_params_loc'"
+          Add-Content $filename "iblrig_temp_alyx: '$iblrig_temp_alyx'"
+          Get-Content $filename
+
       - name: iblrig installation
         shell: pwsh -l {0}
         run: |
@@ -48,15 +82,16 @@ jobs:
           pip install --editable iblrig
           pip install --editable iblpybpod
           cd iblrig
-          python setup_pybpod.py
+          python setup_pybpod.py --github_actions
           cd Bonsai
           powershell.exe .\install.ps1
 
       - name: iblrig unit tests
         shell: pwsh -l {0}
         run: |
-          pwd
-          ls
+          Get-Location
+          Get-ChildItem
+          Get-ChildItem "iblrig"
           cd iblrig
           python -m unittest discover
 
@@ -73,3 +108,4 @@ jobs:
           name: requirements_frozen
           path: |
             requirements_frozen.txt
+            iblrig/iblrig_params_ci.yml

@@ -2,9 +2,12 @@
 Unit tests for task logic functions
 """
 import unittest
-from iblrig import session_creator
-import pandas as pd
+
 import numpy as np
+import pandas as pd
+
+from iblrig import session_creator
+
 pc, lb = session_creator.make_ephysCW_pc()
 
 
