@@ -66,10 +66,10 @@ start-pybpod
 ```
 
 #### For easier launching of pybpod
-Within the `C:\iblrig` folder there is a `pybpod-Anaconda_Powershell_Prompt.lnk` file that can be copied to the desktop for ease 
-of use.
+Within the `C:\iblrig` folder there is a `start-pybpod-venv_Shortcut.lnk` file that can be copied to the desktop for ease of use. 
+Running the following powershell command from a non-administrative **Windows Powershell** prompt will perform this copy operation:
 ```powershell
-Copy-Item "C:\iblrig\pybpod-Anaconda_Powershell_Prompt.lnk" -Destination "$Env:HOMEPATH\Desktop"
+Copy-Item "C:\iblrig\start-pybpod-venv_Shortcut.lnk" -Destination "$Env:HOMEPATH\Desktop"
 ```
 
 #### Setup instructions for launching the 'Experiment Description GUI' prior to task launch (DEVELOP)
@@ -77,7 +77,7 @@ The 'Experiment Description GUI' is currently being developed in the iblscripts 
 categorization of an experiment and cleanly define what projects and procedures an experiment is for. In order to add the GUI to 
 the tasks listed in the `add_ex_desc_gui_to_tasks` script, run the following commands from the **Anaconda Powershell Prompt**:
 ```powershell
-conda activate iblrig
+C:\iblrig\venv\Scripts\.\Activate.ps1
 git clone -b develop https://github.com/int-brain-lab/iblscripts C:\iblscripts
 pip install -r C:\iblscripts\deploy\project_procedure_gui\pp_requirements.txt
 ```
@@ -121,9 +121,9 @@ Please review these conventions to more easily contribute to the project.
 ### Dev parameter file
 In the root of the repository is a file called `iblrig_params.yml`. To more easily develop on this repository, perform the 
 following:
-* create a new file in the root called `iblrig_params_dev.yml`
-* copy the contents of the `iblrig_params.yml` into this new file
-* make changes to the entries appropriate for your system 
+* create a copy of the `iblrig_params.yml` file in the same root folder, but called `iblrig_params_dev.yml`
+* make changes to the entries in the file appropriate for your system
+  * i.e. `iblrig_local_data_path: "C:\\iblrig_data"` could become `iblrig_local_data_path: "/home/username/my_iblrig_local_data"`
 
 #### Install Python v3.8 and set up venv for iblrig in Ubuntu 22.04
 
@@ -151,21 +151,6 @@ deactivate
 rm -rf test_venv
 ```
 
----
-###### v7.0.2 TODO:
-- Modify subprocess calls to remove conda
-- Correct win32 anaconda/pip issue
-- Modify desktop shortcut to powershell script
-  - change execution permissions if necessary 
-  - change dir
-  - .\venv\Scripts\Activate.ps1
-  - start-pybpod
-- Modify CI
-- setup_pybpod by creating/copying json files
-  - pybpod_setup.py to create dir structure
-  - copy the files
-  - verify if uuid's are not needed in pybpod json files 
-- change pybpod user_settings.py ingest to an actual parameter file
 ---
 
 ### Troubleshooting Notes

@@ -13,6 +13,7 @@ if __name__ == "__main__":
     try:
         shutil.copytree(Path(path_helper.get_iblrig_folder()) / "pybpod_fixtures", path_helper.get_iblrig_params_folder(),
                         dirs_exist_ok=False)
+        print("Files copied successfully.")
     except FileExistsError as msg:
         print(msg)
         print(f"The {iblrig_params_path} directory already exists. Please backup this directory if any custom tasks or "

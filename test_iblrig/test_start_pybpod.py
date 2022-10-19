@@ -1,6 +1,7 @@
 """
 Script used to test that pybpod launches with the given test data in the pybpod_fixtures dir; ensure when running this script
 that the iblrig_params dir already exists and that the script is executed from within that dir (required for pybpod functionality)
+Script is not intended to be run in the CI.
 """
 import argparse
 import os
