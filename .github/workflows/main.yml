@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [master, develop, rc, hotfix/iblpybpod_integrated]
+    branches: [master, develop, rc]
   pull_request:
     branches: [master, develop, rc]
 
@@ -12,7 +12,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ "windows-latest" ]
+        os: ["windows-latest"]
         python-version: ["3.8"]
     steps:
       - name: Checkout iblrig repo
@@ -58,14 +58,7 @@ jobs:
           pwd
           ls
           cd iblrig
-          python -m unittest test_iblrig.test_adaptive --verbose
-          python -m unittest test_iblrig.test_alyx --verbose
-          python -m unittest test_iblrig.test_ibllib_imports --verbose
-          python -m unittest test_iblrig.test_path_helper --verbose
-          python -m unittest test_iblrig.test_pybpod_config --verbose
-          python -m unittest test_iblrig.test_scripts --verbose
-          python -m unittest test_iblrig.test_task --verbose
-          # python -m unittest discover
+          python -m unittest discover
 
       - name: Generate requirements_frozen.txt
         shell: pwsh -l {0}

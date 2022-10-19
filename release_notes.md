@@ -1,10 +1,14 @@
 # **Release notes**
 
-## **Dev**
+## **Release Notes 7.0.5**
 
-- Specifying pywin32 for only Windows
-- Modify CI for venv (anaconda removal)
-- removal of the unsupported pybpod package, integration of iblpybpod
+- specifying pywin32 package for only Windows platform
+- removal of all conda requirements, a single python venv is now used
+- modify CI for python venv
+- pybpod fixtures
+- removal of the unsupported pybpod packages
+- integration of iblpybpod
+- addition of separate iblrig parameter file for ease of directory configs
 
 ## **Release Notes 7.0.4**
 

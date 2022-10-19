@@ -1,4 +1,4 @@
-__version__ = "7.0.4"
+__version__ = "7.0.5rc"
 import logging
 
 import colorlog
