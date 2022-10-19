@@ -19,3 +19,4 @@ run.bat
 XDG_CACHE_HOME/
 app.log
 /.idea/*
+/venv/

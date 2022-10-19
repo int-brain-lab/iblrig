@@ -1,5 +1,11 @@
 # **Release notes**
 
+## **Dev**
+
+- Specifying pywin32 for only Windows
+- Modify CI for venv (anaconda removal)
+- removal of the unsupported pybpod package, integration of iblpybpod
+
 ## **Release Notes 7.0.4**
 
 - modified call to experiment description gui to pass alyx username and subject information

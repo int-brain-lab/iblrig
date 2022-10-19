@@ -4,84 +4,89 @@ Various get functions to return paths of folders and network drives
 import datetime
 import logging
 import os
-import platform
 import re
 import subprocess
 from os import listdir
 from os.path import join
 from pathlib import Path
+from sys import platform
 
+import yaml
 from dateutil import parser
 
-import iblrig.params as params
-import iblrig.raw_data_loaders as raw
+import iblrig
+from iblrig import params as pybpod_params
+from iblrig import raw_data_loaders
 
 log = logging.getLogger("iblrig")
 
+# Determine if we are working on a development machine by the existence of a ".../iblrig/iblrig_params_dev.yml" file
+if (Path(iblrig.__file__).parents[1] / "iblrig_params_dev.yml").exists():
+    log.info("iblrig_params_dev.yml file exists, assuming development machine, and pulling parameters from this file.")
+    iblrig_params_file_path = Path(iblrig.__file__).parents[1] / "iblrig_params_dev.yml"
+else:
+    iblrig_params_file_path = Path(iblrig.__file__).parents[1] / "iblrig_params.yml"
+with open(iblrig_params_file_path, "r") as f:
+    IBLRIG_PARAMS = yaml.safe_load(f)
+
 
 def get_network_drives():
-    if platform.system() not in ["Windows", "windows", "win32"]:
-        return "~/Projects/IBL/int-brain-lab/iblserver"  # XXX: This is a quick hack
-    import win32api
-    import win32com.client
-    from win32com.shell import shell, shellcon
+    if platform == "win32":
+        import win32api
+        import win32com.client
+        from win32com.shell import shell, shellcon
 
-    NETWORK_SHORTCUTS_FOLDER_PATH = shell.SHGetFolderPath(0, shellcon.CSIDL_NETHOOD, None, 0)
-    # Add Logical Drives
-    drives = win32api.GetLogicalDriveStrings()
-    drives = drives.split("\000")[:-1]
-    # Add Network Locations
-    network_shortcuts = [
-        join(NETWORK_SHORTCUTS_FOLDER_PATH, f) + "\\target.lnk"
-        for f in listdir(NETWORK_SHORTCUTS_FOLDER_PATH)
-    ]
-    shell = win32com.client.Dispatch("WScript.Shell")
-    for network_shortcut in network_shortcuts:
-        shortcut = shell.CreateShortCut(network_shortcut)
-        drives.append(shortcut.Targetpath)
+        NETWORK_SHORTCUTS_FOLDER_PATH = shell.SHGetFolderPath(0, shellcon.CSIDL_NETHOOD, None, 0)
+        # Add Logical Drives
+        drives = win32api.GetLogicalDriveStrings()
+        drives = drives.split("\000")[:-1]
+        # Add Network Locations
+        network_shortcuts = [
+            join(NETWORK_SHORTCUTS_FOLDER_PATH, f) + "\\target.lnk"
+            for f in listdir(NETWORK_SHORTCUTS_FOLDER_PATH)
+        ]
+        shell = win32com.client.Dispatch("WScript.Shell")
+        for network_shortcut in network_shortcuts:
+            shortcut = shell.CreateShortCut(network_shortcut)
+            drives.append(shortcut.Targetpath)
 
-    return drives
+        return drives
+    else:
+        return IBLRIG_PARAMS["iblrig_remote_server_path"]
 
 
 def get_iblserver_data_folder(subjects: bool = True):
-    drives = get_network_drives()
-    if platform.system() == "Linux":
-        path = "~/Projects/IBL/github/iblserver"
-        return path if not subjects else path + "/Subjects"
-    log.debug("Looking for Y:\\ drive")
-    drives = [x for x in drives if x == "Y:\\"]
-    if len(drives) == 0:
-        log.warning(
-            "Y:\\ drive not found please map your local server data folder to the Y:\\ drive."
-        )
-        return None
-    elif len(drives) == 1:
-        return drives[0] if not subjects else drives[0] + "Subjects"
+    if platform == "win32":
+        drives = get_network_drives()
+
+        log.debug("Looking for Y:\\ drive")
+        drives = [x for x in drives if x == "Y:\\"]
+        if len(drives) == 0:
+            log.warning("Y:\\ drive not found please map your local server data folder to the Y:\\ drive.")
+            return None
+        elif len(drives) == 1:
+            return drives[0] if not subjects else drives[0] + "Subjects"
+        else:
+            log.warning("Something is not right... ignoring local server configuration.")
+            return None
     else:
-        log.warning("Something is not right... ignoring local server configuration.")
-        return None
+        if subjects:
+            return str(Path(IBLRIG_PARAMS["iblrig_remote_data_path"]) / "Subjects")
+        return IBLRIG_PARAMS["iblrig_remote_data_path"]
 
 
 def get_iblrig_folder() -> str:
-    import iblrig
-
-    return str(Path(iblrig.__file__).parent.parent)
+    return IBLRIG_PARAMS["iblrig_path"]
 
 
 def get_iblrig_params_folder() -> str:
-    iblrig_ = Path(get_iblrig_folder())
-    return str(iblrig_.parent / "iblrig_params")
+    return IBLRIG_PARAMS["iblrig_params_path"]
 
 
 def get_iblrig_data_folder(subjects: bool = True) -> str:
-    iblrig_ = Path(get_iblrig_folder())
-    out = iblrig_.parent / "iblrig_data"
-    sout = iblrig_.parent / "iblrig_data" / "Subjects"
-    if not out.exists():
-        make_folder(out)
-    if not sout.exists():
-        make_folder(sout)
-    return str(sout) if subjects else str(out)
+    if subjects:
+        return str(Path(IBLRIG_PARAMS["iblrig_local_data_path"]) / "Subjects")
+    return IBLRIG_PARAMS["iblrig_local_data_path"]
 
 
 def get_commit_hash(folder: str):
@@ -178,9 +183,7 @@ def make_folder(str1: str or Path) -> None:
     log.debug(f"Created folder {path}")
 
 
-def get_previous_session_folders(
-    subject_name: str, session_folder: str, remote_subject_folder: str = None
-) -> list:
+def get_previous_session_folders(subject_name: str, session_folder: str, remote_subject_folder: str = None) -> list:
     """Function to find the all previous session folders, evaluates the local and remote storage.
     Returned list will be sorted by date/number, this list will include duplicates if the same
     date is found on both remote and local. Returned list will be empty if no previous sessions
@@ -277,9 +280,7 @@ def get_previous_session_folders(
     return previous_session_folders
 
 
-def get_previous_data_files(
-    protocol: str, subject_name: str, session_folder: str, typ: str = "data"
-) -> list:
+def get_previous_data_files(protocol: str, subject_name: str, session_folder: str, typ: str = "data") -> list:
     log.debug(f"Looking for previous files of type: {typ}")
     prev_data_files = []
     prev_session_files = []
@@ -304,7 +305,7 @@ def get_previous_data_files(
     ds_out = [
         (d, s)
         for d, s in ds_out
-        if protocol in raw.load_settings(str(s.parent.parent))["PYBPOD_PROTOCOL"]
+        if protocol in raw_data_loaders.load_settings(str(s.parent.parent))["PYBPOD_PROTOCOL"]
     ]
     log.debug(f"Found {len(ds_out)} file pairs for protocol {protocol}")
     data_out = [str(d) for d, s in ds_out]
@@ -365,8 +366,7 @@ def get_subfolder_paths(folder: str) -> str:
 
 
 def get_bonsai_path(use_iblrig_bonsai: bool = True) -> str:
-    """Checks for Bonsai folder in iblrig.
-    Returns string with bonsai executable path."""
+    """Checks for Bonsai folder in iblrig. Returns string with bonsai executable path."""
     iblrig_folder = get_iblrig_folder()
     folders = get_subfolder_paths(iblrig_folder)
     bonsai_folder = [x for x in folders if "Bonsai" in x][0]
@@ -444,7 +444,7 @@ class SessionPathCreator(object):
 
         self.IBLRIG_FOLDER = get_iblrig_folder()
         self.IBLRIG_EPHYS_SESSION_FOLDER = get_pregen_session_folder()
-        self._BOARD = params.get_board_name()
+        self._BOARD = pybpod_params.get_board_name()
 
         self._PROTOCOL = protocol
 
@@ -454,7 +454,7 @@ class SessionPathCreator(object):
         self.IBLRIG_DATA_FOLDER = get_iblrig_data_folder(subjects=False)
         self.IBLRIG_DATA_SUBJECTS_FOLDER = get_iblrig_data_folder(subjects=True)
 
-        self.PARAMS = params.load_params_file()
+        self.PARAMS = pybpod_params.load_params_file()
         self.SUBJECT_NAME = subject_name
         self.SUBJECT_FOLDER = os.path.join(self.IBLRIG_DATA_SUBJECTS_FOLDER, self.SUBJECT_NAME)
 

@@ -16,17 +16,12 @@ class TestPathHelper(unittest.TestCase):
         # self.assertTrue(all([x in outs for x in nd]))
 
     def test_get_iblserver_data_folder(self):
-        outs = [
-            "Y:\\",
-            "Y:\\Subjects",
-            None,
-            "~/Projects/IBL/github/iblserver",
-            "~/Projects/IBL/github/iblserver/Subjects",
-        ]
         df = ph.get_iblserver_data_folder(subjects=True)
-        self.assertTrue(df in outs)
+        self.assertTrue(isinstance(df, str))
+        self.assertTrue("Subjects" in df)
         df = ph.get_iblserver_data_folder(subjects=False)
-        self.assertTrue(df in outs)
+        self.assertTrue(isinstance(df, str))
+        self.assertTrue("Subjects" not in df)
 
     def test_get_iblrig_folder(self):
         f = ph.get_iblrig_folder()
@@ -37,8 +32,6 @@ class TestPathHelper(unittest.TestCase):
         f = ph.get_iblrig_params_folder()
         self.assertTrue(isinstance(f, str))
         self.assertTrue("iblrig_params" in f)
-        fp = Path(f)
-        self.assertTrue(str(fp.parent) == str(Path(ph.get_iblrig_folder()).parent))
 
     def test_get_iblrig_data_folder(self):
         df = ph.get_iblrig_data_folder(subjects=False)
@@ -129,12 +122,8 @@ class TestPathHelper(unittest.TestCase):
 
         # Test for a new subject
         test_new_subject_name = "_new_iblrig_test_mouse"
-        test_new_session_folder = (
-            Path(self.local_dir.name) / "Subjects" / test_new_subject_name / "1900-01-01" / "001"
-        )
-        test_previous_session_folders = ph.get_previous_session_folders(
-            test_new_subject_name, str(test_new_session_folder)
-        )
+        test_new_session_folder = (Path(self.local_dir.name) / "Subjects" / test_new_subject_name / "1970-01-01" / "001")
+        test_previous_session_folders = ph.get_previous_session_folders(test_new_subject_name, str(test_new_session_folder))
         self.assertTrue(isinstance(test_previous_session_folders, list))
         self.assertTrue(not test_previous_session_folders)  # returned list should be empty
 

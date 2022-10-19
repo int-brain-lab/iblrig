@@ -1,10 +1,5 @@
-#!/usr/bin/env python
-# @Author: Niccolò Bonacchi
-# @Creation_Date: Friday, September 13th 2019, 2:57:40 pm
-# @Editor: Michele Fabbri
-# @Edit_Date: 2022-02-01
 """
-Getting and loading parameters
+Getting and loading parameters for pybpod
 """
 import json
 import logging
@@ -47,11 +42,7 @@ EMPTY_BOARD_PARAMS = {
     "DISPLAY_IDX": None,  # int
 }
 
-global AUTO_UPDATABLE_PARAMS
-AUTO_UPDATABLE_PARAMS = dict.fromkeys(
-    ["NAME", "IBLRIG_VERSION", "COM_BPOD", "DATA_FOLDER_LOCAL", "DATA_FOLDER_REMOTE"]
-)
-
+AUTO_UPDATABLE_PARAMS = dict.fromkeys(["NAME", "IBLRIG_VERSION", "COM_BPOD", "DATA_FOLDER_LOCAL", "DATA_FOLDER_REMOTE"])
 DEFAULT_PARAMS = {
     "SCREEN_FREQ_TARGET": 60,
     "DISPLAY_IDX": 1,
