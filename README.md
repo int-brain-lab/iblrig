@@ -50,12 +50,19 @@ pip install --editable ..\iblpybpod
 python setup_pybpod.py
 cd Bonsai
 powershell.exe .\install.ps1
-cd ..
-.\pybpod.bat
 ```
   - NOTE: ONE is installed as part of the iblrig requirement. ONE will need to be configured for your use case. Please review 
 the ONE [documentation](https://int-brain-lab.github.io/ONE/) for specifics on how to accomplish this. Then run the following 
-command or something similar for your specific setup to test: `python -c "from one.api import ONE; ONE()"`
+command or something similar for your specific setup to test it is working: `python -c "from one.api import ONE; ONE()"`
+
+### Configuring the iblrig_params.yml file for your setup
+Open the `C:\iblrig\iblrig_params.yml` configuration file in your favorite text editor and change whatever the values to match 
+your system. If following these instructions, the only two values that need to be updated should be: 
+- iblrig_remote_data_path: "\\\\lab_server_ip_or_dns\\data_folder"
+- iblrig_remote_server_path: "\\\\lab_server_ip_or_dns"
+  - NOTE: When altering these values, be sure to keep in mind that the backslash character is also used as an escape character. 
+This means that even though the `Windows File Explorer` may prefix the local lab server address with only two backslashes, we 
+will need four backslashes in our `iblrig_params.yml` entry.
 
 ### Running pybpod
 To run pybpod and begin data acquisition run the following commands from a non-administrative **Windows Powershell** prompt:

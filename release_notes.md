@@ -5,10 +5,12 @@
 - specifying pywin32 package for only Windows platform
 - removal of all conda requirements, a single python venv is now used
 - modify CI for python venv
-- pybpod fixtures
+- pybpod fixtures added for ease of testing and initial setup
 - removal of the unsupported pybpod packages
 - integration of iblpybpod
-- addition of separate iblrig parameter file for ease of directory configs
+- addition of separate iblrig_params.yml file for directory configs and instructions for setup
+- removal of automated update scripts
+- removal of environment switching logic 
 
 ## **Release Notes 7.0.4**
 
