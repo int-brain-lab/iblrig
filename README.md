@@ -29,7 +29,8 @@ prompt
 - There is no supported upgrade path from v6 to v7
 - User account name is assumed to be `User`, please modify commands where appropriate
 - The commands given below are assumed to be run on a 'clean' system
-  - The `C:\iblrig` and `C:\iblrig_params` directories are assumed not to exist
+  - These instructions assume that `C:\iblrig` and `C:\iblrig_params` directories DO NOT exist; if these directories do 
+    exist, it is recommended to back them up to something like `C:\iblrig_bkup` and `C:\iblrig_params_bkup`
 
 Run the following commands from the non-administrative **Windows Powershell** prompt
 ```powershell
@@ -78,6 +79,12 @@ Running the following powershell command from a non-administrative **Windows Pow
 ```powershell
 Copy-Item "C:\iblrig\start-pybpod-venv_Shortcut.lnk" -Destination "$Env:HOMEPATH\Desktop"
 ```
+
+### Configuring bpod boards
+When first running pybpod, ensure that the Bpod boards are configured for your current setup. If this was an 'upgrade' 
+from a previous version of iblrig, and the recommended backup operation was performed; take special note of the values within 
+the `C:\iblrig_params\.iblrig_params.json` file. These parameters will contain the values like board name and COM ports relevant 
+to your system.    
 
 #### Setup instructions for launching the 'Experiment Description GUI' prior to task launch (DEVELOP)
 The 'Experiment Description GUI' is currently being developed in the iblscripts repo. This GUI is intended to simplify the 
