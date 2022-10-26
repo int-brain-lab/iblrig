@@ -7,17 +7,17 @@
     "__UUID4__": "a35e09b9-9edb-471c-9865-cd69c31ae8f5",
     "commands": [
         {
-            "cmd": "python C:\\iblrig\\scripts\\cleanup.py",
+            "cmd": "C:\\iblrig\\venv\\Scripts\\python C:\\iblrig\\scripts\\cleanup.py",
             "type": "create_execcmd",
             "when": 1
         },
         {
-            "cmd": "python C:\\iblrig\\scripts\\bpod_lights.py 0",
+            "cmd": "C:\\iblrig\\venv\\Scripts\\python C:\\iblrig\\scripts\\bpod_lights.py 0",
             "type": "create_execcmd",
             "when": 0
         },
         {
-            "cmd": "python C:\\iblrig\\scripts\\bpod_lights.py 1",
+            "cmd": "C:\\iblrig\\venv\\Scripts\\python C:\\iblrig\\scripts\\bpod_lights.py 1",
             "type": "create_execcmd",
             "when": 1
         }

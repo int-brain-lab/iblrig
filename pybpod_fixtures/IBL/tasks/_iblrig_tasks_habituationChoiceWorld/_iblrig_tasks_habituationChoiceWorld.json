@@ -7,37 +7,37 @@
     "__UUID4__": "87267541-895a-42c0-bdc7-d82725dca480",
     "commands": [
         {
-            "cmd": "python C:\\iblrig\\scripts\\bonsai_stop.py 7110",
+            "cmd": "C:\\iblrig\\venv\\Scripts\\python C:\\iblrig\\scripts\\bonsai_stop.py 7110",
             "type": "create_execcmd",
             "when": 1
         },
         {
-            "cmd": "python C:\\iblrig\\scripts\\bonsai_stop.py 7111",
+            "cmd": "C:\\iblrig\\venv\\Scripts\\python C:\\iblrig\\scripts\\bonsai_stop.py 7111",
             "type": "create_execcmd",
             "when": 1
         },
         {
-            "cmd": "python C:\\iblrig\\scripts\\cleanup.py",
+            "cmd": "C:\\iblrig\\venv\\Scripts\\python C:\\iblrig\\scripts\\cleanup.py",
             "type": "create_execcmd",
             "when": 1
         },
         {
-            "cmd": "python C:\\iblrig\\scripts\\bpod_lights.py 0",
+            "cmd": "C:\\iblrig\\venv\\Scripts\\python C:\\iblrig\\scripts\\bpod_lights.py 0",
             "type": "create_execcmd",
             "when": 0
         },
         {
-            "cmd": "python C:\\iblrig\\scripts\\bpod_lights.py 1",
+            "cmd": "C:\\iblrig\\venv\\Scripts\\python C:\\iblrig\\scripts\\bpod_lights.py 1",
             "type": "create_execcmd",
             "when": 1
         },
         {
-            "cmd": "python C:\\iblrig\\scripts\\create_session.py --poop=True",
+            "cmd": "C:\\iblrig\\venv\\Scripts\\python C:\\iblrig\\scripts\\create_session.py --poop=True",
             "type": "create_execcmd",
             "when": 1
         },
         {
-            "cmd": "python C:\\iblrig\\scripts\\bonsai_stop.py 7112",
+            "cmd": "C:\\iblrig\\venv\\Scripts\\python C:\\iblrig\\scripts\\bonsai_stop.py 7112",
             "type": "create_execcmd",
             "when": 1
         }

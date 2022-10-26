@@ -7,12 +7,12 @@
     "__UUID4__": "c6a43a03-7f26-453b-a448-e80fc6f99ab8",
     "commands": [
         {
-            "cmd": "python C:\\iblrig\\scripts\\bonsai_stop.py 7110",
+            "cmd": "C:\\iblrig\\venv\\Scripts\\python C:\\iblrig\\scripts\\bonsai_stop.py 7110",
             "type": "create_execcmd",
             "when": 1
         },
         {
-            "cmd": "python C:\\iblrig\\scripts\\cleanup.py",
+            "cmd": "C:\\iblrig\\venv\\Scripts\\python C:\\iblrig\\scripts\\cleanup.py",
             "type": "create_execcmd",
             "when": 1
         }

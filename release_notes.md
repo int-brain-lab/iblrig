@@ -10,7 +10,8 @@
 - integration of iblpybpod
 - addition of separate iblrig_params.yml file for directory configs and instructions for setup
 - removal of automated update scripts
-- removal of environment switching logic 
+- removal of environment switching logic
+- updated pre/post python commands from tasks to explicitly call venv
 
 ## **Release Notes 7.0.4**
 

@@ -7,7 +7,7 @@
     "__UUID4__": "c99d6ecb-9504-4675-8f53-495f05369a8d",
     "commands": [
         {
-            "cmd": "python C:\\iblrig\\scripts\\cleanup.py",
+            "cmd": "C:\\iblrig\\venv\\Scripts\\python C:\\iblrig\\scripts\\cleanup.py",
             "type": "create_execcmd",
             "when": 1
         }
