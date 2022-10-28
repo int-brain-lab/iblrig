@@ -78,9 +78,9 @@ class Spacer(object):
         assert next_state is not None
         t = self.times
         for i, time in enumerate(t):
-            next_loop = f"spacer_low_{i:02d}" if i < len(t) - 1 else next_state
+            next_loop = f"spacer_high_{i + 1:02d}" if i < len(t) - 1 else next_state
             sma.add_state(
-                state_name=f"spacer_up_{i:02d}",
+                state_name=f"spacer_high_{i:02d}",
                 state_timer=self.tup,
                 state_change_conditions={"Tup": f"spacer_low_{i:02d}"},
                 output_actions=[("BNC1", 255)],  # To FPGA
