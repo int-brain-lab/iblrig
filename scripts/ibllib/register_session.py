@@ -1,8 +1,3 @@
-#!/usr/bin/env python
-# @Author: Niccolò Bonacchi
-# @Creation_Date: Tuesday, September 28th 2021, 3:03:38 pm
-# @Editor: Michele Fabbri
-# @Edit_Date: 2022-02-01
 import logging
 import sys
 import traceback
@@ -20,6 +15,4 @@ if __name__ == "__main__":
         log.info("Done")
     except Exception:
         log.error(traceback.format_exc())
-        log.warning(
-            "Failed to register session on Alyx, will try again from local server after transfer",
-        )
+        log.warning("Failed to register session on Alyx, will try again from local server after transfer")

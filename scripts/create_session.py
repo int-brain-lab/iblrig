@@ -23,12 +23,12 @@ if __name__ == "__main__":
     if args.poop:
         poop()
     try:
-        print("Creating session from ibllib environment...")
+        log.info("Creating Alyx session...")
         here = os.getcwd()
         os.chdir(os.path.join(path_helper.get_iblrig_folder(), "scripts", "ibllib"))
         os.system(f"python register_session.py {path_helper.get_iblrig_data_folder()}")
         os.chdir(here)
-        print("Completed registering session on Alyx.")
+        log.info("Completed registering session on Alyx.")
 
     except BaseException:
         log.error(traceback.format_exc())
