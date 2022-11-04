@@ -89,11 +89,17 @@ jobs:
       - name: iblrig unit tests
         shell: pwsh -l {0}
         run: |
-          Get-Location
-          Get-ChildItem
-          Get-ChildItem "iblrig"
-          cd iblrig
-          python -m unittest discover
+          cd iblrig\test_iblrig
+          python -m unittest test_adaptive.py
+          python -m unittest test_alyx.py
+          python -m unittest test_ibllib_imports.py
+          python -m unittest test_params.py
+          python -m unittest test_path_helper.py
+          python -m unittest test_pybpod_config.py
+          # python -m unittest test_scripts.py
+          python -m unittest test_start_pybpod.py
+          python -m unittest test_task.py
+          # python -m unittest discover
 
       - name: Generate requirements_frozen.txt
         shell: pwsh -l {0}
