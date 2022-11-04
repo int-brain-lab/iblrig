@@ -1,4 +1,4 @@
-# iblrig v7
+# iblrig v8
 Software used to interact with various pieces of specialized hardware for neuroscience data acquisition.
 
 ## Installation on Windows

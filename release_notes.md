@@ -1,7 +1,6 @@
 # **Release notes**
 
-## **Release Notes 7.0.5**
-
+## **Release Notes 8.0.0**
 - specifying pywin32 package for only Windows platform
 - removal of all conda requirements, a single python venv is now used
 - modify CI for python venv
@@ -13,26 +12,26 @@
 - removal of environment switching logic
 - updated pre/post python commands from tasks to explicitly call venv
 
-## **Release Notes 7.0.4**
+## **Release Notes 7.0.5**
+  - minor fix to windows pathing for experiment description gui to grab alyx username
+  - removal of unnecessary ONE version check in purge_rig_data script
+  - added bpod BNC1 output to several training tasks
 
+## **Release Notes 7.0.4**
 - modified call to experiment description gui to pass alyx username and subject information
 - addition of test fixtures
 - corrections to setup.py to prevent readme markdown from breaking builds
 
 ## **Release Notes 7.0.3**
-
 - added instructions and deployment script for experiment description gui
 
 ## **Release Notes 7.0.2**
-
 - removal of the move_passive.py script call from the passiveChoiceWorldIndependent json task configuration file
 
 ## **Release Notes 7.0.1**
-
 - removal of the move_passive.py script from the post commands run during the passiveChoiceWorldIndependent task
 
 ## **Release Notes 7.0.0**
-
 - python 3.8 support
 - removal of mamba dependencies
 - improved CI to more closely resemble a typical rig install
@@ -45,11 +44,9 @@
 - instructions for adding the 'Experiment Description GUI' to a custom task added to the readme.md
 
 ## **Release Notes 6.6.4**
-
 - additional mamba subprocess call removals
 
 ## **Release Notes 6.6.3**
-
 - additional f2ttl error catching and messaging
 - purge_rig_data.py script now functional
 - corrected datetime import for `tasks/_iblrig_misc_bpod_ttl_test/trial_params.py` 
@@ -65,11 +62,9 @@
 - Created bonsai.launch_cameras() camera workflows now will be skipped if not on training or photometry rig.
 
 ## **Release Notes 6.6.1**
-
 - bugfix missing import in habituationCW
 
 ## **Release Notes 6.6.0**
-
 - Reduced dependencies for logging, simplified implementation, logging bug fix for 'transfer_rig_data.py' script
 - Externalized DisplayIndex to PARAM file, refactored tasks and created DEFAULT_PARAMS dictionary for easier customization.
 - Added camera setup workflow launch, before training tasks (habituation/training/biased)
@@ -86,7 +81,6 @@
 - Increased required python version to 3.7
 
 ## **Release Notes 6.5.3**
-
 - Removed botched releases and patched release notes accordingly.
 - RECAP: New bootstrapper and OLD stimulus file i.e.:
   - Bonvision 0.9.0
@@ -97,12 +91,10 @@
   - Changed Last to Take 1 node at top level workflow of main stim file
 
 ## **Release Notes ~~6.5.2~~**
-
 - Bugfix: avoid code copy in HabituationCW and TrainingCW on ephys rig
 - Bugfix: avoid shader window freezing Bonsai processing: Keep latest bootstrapper, downgraded shader package/Bonvision
 
 ## **Release Notes ~~6.5.1~~**
-
 - Exposed Spontaneous activity timer to task code so users can change it if they want.
 - Small Bugfix in copy task code routine for personal projects, now consideres the project folder
 - Bugfix introduced by pandas syntax change in water calibration
@@ -117,7 +109,6 @@
 - Fixed a move_passive bug
 
 ## **Release Notes ~~6.5.0~~**
-
 - Added camera config script == videopc
 - Added CI builds for windows/ubuntu install
 - Optimized and fixed broken install procedure
@@ -158,7 +149,6 @@
 - ONE/ibllib still installed in iblenv but ready to be removed for next release
 
 ## **Release Notes 6.4.2**
-
 Patch update (bugfixes)
 
 - Increased stim_off state timer to 150ms
@@ -170,7 +160,6 @@ Patch update (bugfixes)
 - Added tests for path_helper, adaptive module (for trainingCW) , and init alyx module tests
 
 ## **Release Notes 6.4.1**
-
 Patch update (bugfixes)
 
 - Increased stim_on state timer to 150ms
@@ -179,7 +168,6 @@ Patch update (bugfixes)
 - Fixed bug in passive ChoiceWorld
 
 ## **Release Notes 6.4.0**
-
 Minor update (added features)
 
 - Added saving of \_iblrig_syncSquareUpdate.raw.csv from bonsai visual stim
@@ -190,20 +178,17 @@ Minor update (added features)
 - Stop microphone recordings after passive protocol
 
 ## **Release Notes 6.3.1**
-
 Patch update (bugfixes)
 
 - Saving now data from Bonsai for frame2TL freq test
 
 ## **Release Notes 6.3.0**
-
 Minor update (added functionality)
 
 - Created \_iblrig_misc_frame2TTL_freq_test / test task for screen/frame2TTL
 - Added sound recording in ephys rig for both biased and ephysCW tasks (was missing)
 
 ## **Release Notes 6.2.5**
-
 _THIS: State Machine changed_
 Patch update (bugfixes)
 
@@ -212,7 +197,6 @@ Patch update (bugfixes)
 - Under the hood refactorings
 
 ## **Release Notes 6.2.4**
-
 Patch update (bugfixes)
 
 - Fixed missing underscore in move passive
@@ -222,20 +206,17 @@ Patch update (bugfixes)
 - Updated ibllib to 1.3.10
 
 ## **Release Notes 6.2.3**
-
 Patch update (bugfixes)
 
 - Minor optimization to path_helper
 - Rename of session at end of passive now includes corresponding ephys session
 
 ## **Release Notes 6.2.2**
-
 Patch update (bugfixes)
 
 - SESSION_ORDER bugfix
 
 ## **Release Notes 6.2.1**
-
 Patch update (bugfixes)
 Mainly in **ephysCW** and **passiveCW**
 
@@ -245,7 +226,6 @@ Mainly in **ephysCW** and **passiveCW**
 - Removed confirmation of session number to load on passive Launch
 
 ## **Release Notes 6.2.0**
-
 Minor update (added functionality)
 
 - Updated ibllib
