@@ -55,12 +55,17 @@ jobs:
       - name: iblrig unit tests
         shell: pwsh -l {0}
         run: |
-          echo "------ start info ------"
-          conda info
-          conda env list
-          python --version
-          echo "------ end info ------"
-          python -m unittest discover
+          cd test_iblrig
+          python -m unittest test_adaptive.py
+          python -m unittest test_alyx.py
+          python -m unittest test_ibllib_imports.py
+          python -m unittest test_params.py
+          python -m unittest test_path_helper.py
+          python -m unittest test_pybpod_config.py
+          # python -m unittest test_scripts.py
+          python -m unittest test_start_pybpod.py
+          python -m unittest test_task.py
+          # python -m unittest discover
 
       - name: Generate requirements_frozen.txt
         shell: pwsh -l {0}

@@ -40,7 +40,9 @@ conda activate ibllib
 pip install ibllib
 ```
 
-NOTE: ONE will need to be configured for your use case. Please review the ONE [documentation](https://int-brain-lab.github.io/ONE/) for specifics on how to accomplish this. Then run the following command or something similar for your specific setup: `python -c "from one.api import ONE; ONE()"`
+NOTE: ONE will need to be configured for your use case. Please review the ONE 
+[documentation](https://int-brain-lab.github.io/ONE/) for specifics on how to accomplish this. Then run the following command or 
+something similar for your specific setup: `python -c "from one.api import ONE; ONE()"`
 
 ### Running pybpod
 To run pybpod and begin data acquisition:
@@ -63,7 +65,7 @@ categorization of an experiment and cleanly define what projects and procedures 
 the tasks listed in the `add_ex_desc_gui_to_tasks` script, run the following commands from the **Anaconda Powershell Prompt**:
 ```powershell
 conda activate iblrig
-git clone -b develop https://github.com/int-brain-lab/iblscripts C:\iblscripts
+git clone https://github.com/int-brain-lab/iblscripts C:\iblscripts
 pip install -r C:\iblscripts\deploy\project_procedure_gui\pp_requirements.txt
 ```
 
