@@ -42,7 +42,10 @@ def call_exp_desc_gui():
     log.info("Attempting to launch experiment description form...")
 
     # determine alyx_username
-    alyx_prod_config_path = Path.home() / ".one" / ".alyx.internationalbrainlab.org"
+    if platform == "win32":
+        alyx_prod_config_path = Path.home() / "AppData" / "Roaming" / ".one" / ".alyx.internationalbrainlab.org"
+    else:
+        alyx_prod_config_path = Path.home() / ".one" / ".alyx.internationalbrainlab.org"
     with open(alyx_prod_config_path, "r") as f:
         data = json.load(f)
     alyx_username = data["ALYX_LOGIN"]
