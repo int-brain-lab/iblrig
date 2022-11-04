@@ -8,20 +8,11 @@ import logging
 from fnmatch import fnmatch
 from pathlib import Path
 
-import one
+from one.alf.cache import iter_datasets, iter_sessions
 from one.alf.files import get_session_path
 from one.api import ONE
 
 log = logging.getLogger('iblrig')
-
-try:  # Verify ONE-api is at v1.13.0 or greater
-    assert tuple(map(int, one.__version__.split('.'))) >= (1, 13, 0)
-    from one.alf.cache import iter_datasets, iter_sessions
-except (AssertionError, ImportError) as e:
-    if e is AssertionError:
-        log.error("The found version of ONE needs to be updated to run this script, please run a 'pip install -U ONE-api' from "
-                  "the appropriate anaconda environment")
-    raise
 
 
 def session_name(path, lab=None) -> str:
@@ -62,8 +53,7 @@ def purge_local_data(local_folder, filename='*', lab=None, dry=False, one=None):
     log.info(f'Local files to remove: {len(to_remove)}')
     for f in to_remove:
         log.info(f'DELETE: {f}')
-        if not dry:
-            f.unlink()
+        f.unlink() if not dry else None
     return to_remove
 
 
@@ -74,9 +64,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '-lab', required=False, default=None, help='Lab name, in case sessions conflict between labs. default: None',
     )
-    parser.add_argument(
-        '--dry', required=False, default=False, action='store_true', help='Dry run? default: False',
-    )
+    parser.add_argument('--dry', required=False, default=False, action='store_true', help='Dry run? default: False')
     args = parser.parse_args()
     purge_local_data(args.folder, args.file, lab=args.lab, dry=args.dry)
-    print('Done\n')
+    print('purge_rig_data script done\n')
