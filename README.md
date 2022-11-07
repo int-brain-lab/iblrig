@@ -57,8 +57,8 @@ the ONE [documentation](https://int-brain-lab.github.io/ONE/) for specifics on h
 command or something similar for your specific setup to test it is working: `python -c "from one.api import ONE; ONE()"`
 
 ### Configuring the iblrig_params.yml file for your setup
-Open the `C:\iblrig\iblrig_params.yml` configuration file in your favorite text editor and change whatever the values to match 
-your system. If following these instructions, the only two values that need to be updated should be: 
+Open the `C:\iblrig\iblrig_params.yml` configuration file in your favorite text editor and change the values to match your setup. 
+If following these instructions, the only two values that need to be updated should be: 
 - iblrig_remote_data_path: "\\\\lab_server_ip_or_dns\\data_folder"
 - iblrig_remote_server_path: "\\\\lab_server_ip_or_dns"
   - NOTE: When altering these values, be sure to keep in mind that the backslash character is also used as an escape character. 

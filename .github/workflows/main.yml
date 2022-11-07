@@ -50,18 +50,18 @@ jobs:
           $iblrig_local_data_loc = [IO.Path]::Combine($root_loc, "iblrig_data")
           $iblrig_remote_data_loc = [IO.Path]::Combine($root_loc, "iblrig_remote_data")
           $iblrig_params_loc = [IO.Path]::Combine($root_loc, "iblrig_params")
-          $iblrig_temp_alyx = [IO.Path]::Combine($root_loc, "alyx_proj_data")
+          $iblrig_temp_alyx_loc = [IO.Path]::Combine($root_loc, "alyx_proj_data")
 
           Write-Output "root_loc - $root_loc"
           Write-Output "iblrig_loc - $iblrig_loc"
           Write-Output "iblrig_local_data_loc - $iblrig_local_data_loc"
           Write-Output "iblrig_remote_data_loc - $iblrig_remote_data_loc"
           Write-Output "iblrig_params_loc - $iblrig_params_loc"
-          Write-Output "iblrig_temp_alyx - $iblrig_temp_alyx"
+          Write-Output "iblrig_temp_alyx_loc - $iblrig_temp_alyx_loc"
 
           New-Item $iblrig_local_data_loc -ItemType Directory
           New-Item $iblrig_remote_data_loc -ItemType Directory
-          New-Item $iblrig_temp_alyx -ItemType Directory
+          New-Item $iblrig_temp_alyx_loc -ItemType Directory
 
           cd iblrig
           $filename = "iblrig_params_ci.yml" 
@@ -71,7 +71,7 @@ jobs:
           Add-Content $filename "iblrig_remote_server_path: '$iblrig_remote_data_loc'"
           Add-Content $filename "iblrig_path: '$iblrig_loc'"
           Add-Content $filename "iblrig_params_path: '$iblrig_params_loc'"
-          Add-Content $filename "iblrig_temp_alyx: '$iblrig_temp_alyx'"
+          Add-Content $filename "iblrig_temp_alyx_path: '$iblrig_temp_alyx_loc'"
           Get-Content $filename
 
       - name: iblrig installation

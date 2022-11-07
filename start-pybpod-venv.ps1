@@ -1,3 +1,4 @@
+# Set the execution policy for powershell
 Set-ExecutionPolicy -Scope CurrentUser Bypass -Force
 
 # Activates the python venv environment

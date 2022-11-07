@@ -36,6 +36,84 @@ with open(iblrig_params_file_path, "r") as f:
     print(f.read())
 
 
+def get_remote_server_path() -> Path or None:
+    """ Get the iblrig_remote_server_path configured in the iblrig_params.yml file, expecting something like
+    "\\lab_server_ip_or_dns" """
+    try:
+        return Path(IBLRIG_PARAMS["iblrig_remote_server_path"])
+    except KeyError:
+        log.error("The iblrig_remote_server_path key is missing from the iblrig_params yml file, typically found in the root "
+                  "directory of this repository.")
+        return None
+
+
+def get_iblrig_local_data_path() -> Path or None:
+    """ Get the iblrig_local_data_path configured in the iblrig_params.yml file, expecting something like
+    "C:\\iblrig_data" """
+    try:
+        return Path(IBLRIG_PARAMS["iblrig_local_data_path"])
+    except KeyError:
+        log.error("The iblrig_local_data_path key is missing from the iblrig_params yml file, typically found in the root "
+                  "directory of this repository.")
+        return None
+
+
+def get_remote_server_data_path(subjects: bool = True) -> Path or None:
+    """
+    Get the iblrig_remote_data_path configured in the iblrig_params.yml file, expecting something like
+    "\\\\lab_server_ip_or_dns\\data_folder" or "\\\\lab_server_ip_or_dns\\data_folder\\Subjects"
+
+    Parameters
+    ----------
+    subjects
+        determines whether to include the Subjects subdirectory; defaults to True
+
+    Returns
+    -------
+    Path or None
+    """
+    try:
+        data_path = Path(IBLRIG_PARAMS["iblrig_remote_data_path"])
+    except KeyError:
+        log.error("The iblrig_remote_data_path key is missing from the iblrig_params yml file, typically found in the root "
+                  "directory of this repository.")
+        return None
+
+    # Return the "Subjects" subdirectory by default
+    return data_path / "Subjects" if subjects else data_path
+
+
+def get_iblrig_path() -> Path or None:
+    """ Get the iblrig_path configured in the iblrig_params.yml file, expecting something like "C:\\iblrig" """
+    try:
+        return Path(IBLRIG_PARAMS["iblrig_path"])
+    except KeyError:
+        log.error("The iblrig_path key is missing from the iblrig_params yml file, typically found in the root directory of this "
+                  "repository.")
+        return None
+
+
+def get_iblrig_params_path() -> Path or None:
+    """ Get the iblrig_params_path configured in the iblrig_params.yml file, expecting something like "C:\\iblrig_params" """
+    try:
+        return Path(IBLRIG_PARAMS["iblrig_params_path"])
+    except KeyError:
+        log.error("The iblrig_params_path key is missing from the iblrig_params yml file, typically found in the root directory "
+                  "of this repository.")
+        return None
+
+
+def get_iblrig_temp_alyx_path() -> Path or None:
+    """ Get the iblrig_temp_alyx_path configured in the iblrig_params.yml file, expecting something like
+    "C:\\Temp\\alyx_proj_data" """
+    try:
+        return Path(IBLRIG_PARAMS["iblrig_temp_alyx_path"])
+    except KeyError:
+        log.error("The iblrig_temp_alyx_path key is missing from the iblrig_params yml file, typically found in the root "
+                  "directory of this repository.")
+        return None
+
+
 def get_network_drives():
     if platform == "win32" and not IBLRIG_PARAMS["iblrig_remote_server_path"]:
         import win32api
@@ -82,7 +160,7 @@ def get_iblserver_data_folder(subjects: bool = True):
 
 
 def get_iblrig_temp_alyx_proj_folder() -> str:
-    return IBLRIG_PARAMS["iblrig_temp_alyx"]
+    return IBLRIG_PARAMS["iblrig_temp_alyx_path"]
 
 
 def get_iblrig_folder() -> str:
@@ -147,7 +225,7 @@ def get_water_calibration_range_file(latest=True) -> Path or list:
     return range_files[-1] if latest else range_files
 
 
-def load_water_calibraition_func_file(fpath: str or Path) -> dict:
+def load_water_calibraition_func_file(fpath: str or Path) -> dict or None:
     if not Path(fpath).exists():
         return
 
