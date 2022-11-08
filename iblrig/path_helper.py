@@ -47,18 +47,32 @@ def get_remote_server_path() -> Path or None:
         return None
 
 
-def get_iblrig_local_data_path() -> Path or None:
-    """ Get the iblrig_local_data_path configured in the iblrig_params.yml file, expecting something like
-    "C:\\iblrig_data" """
+def get_iblrig_local_data_path(subjects: bool = True) -> Path or None:
+    """
+    Get the iblrig_local_data_path configured in the iblrig_params.yml file, expecting something like
+    "C:\\iblrig_data" or "C:\\iblrig_data\\Subjects"
+
+    Parameters
+    ----------
+    subjects
+        determines whether to include the Subjects subdirectory; defaults to True
+
+    Returns
+    -------
+    Path or None
+    """
     try:
-        return Path(IBLRIG_PARAMS["iblrig_local_data_path"])
+        data_path = Path(IBLRIG_PARAMS["iblrig_local_data_path"])
     except KeyError:
         log.error("The iblrig_local_data_path key is missing from the iblrig_params yml file, typically found in the root "
                   "directory of this repository.")
         return None
 
+    # Return the "Subjects" subdirectory by default
+    return data_path / "Subjects" if subjects else data_path
 
-def get_remote_server_data_path(subjects: bool = True) -> Path or None:
+
+def get_iblrig_remote_server_data_path(subjects: bool = True) -> Path or None:
     """
     Get the iblrig_remote_data_path configured in the iblrig_params.yml file, expecting something like
     "\\\\lab_server_ip_or_dns\\data_folder" or "\\\\lab_server_ip_or_dns\\data_folder\\Subjects"

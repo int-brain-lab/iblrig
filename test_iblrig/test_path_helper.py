@@ -15,25 +15,39 @@ class TestPathHelper(unittest.TestCase):
         self.assertIsInstance(p, Path)
 
     def test_get_iblrig_local_data_path(self):
-        p = path_helper.get_iblrig_local_data_path()
-        self.assertIsNotNone(p)
-        self.assertIsInstance(p, Path)
-
-    def test_get_remote_server_data_path(self):
         # test without specifying subject arg
-        p = path_helper.get_remote_server_data_path()
+        p = path_helper.get_iblrig_local_data_path()
         self.assertIsNotNone(p)
         self.assertIsInstance(p, Path)
         self.assertTrue(p.parts[-1] == "Subjects")
 
         # test specifying subject=True
-        p = path_helper.get_remote_server_data_path(subjects=True)
+        p = path_helper.get_iblrig_local_data_path(subjects=True)
         self.assertIsNotNone(p)
         self.assertIsInstance(p, Path)
         self.assertTrue(p.parts[-1] == "Subjects")
 
         # test specifying subject=False
-        p = path_helper.get_remote_server_data_path(subjects=False)
+        p = path_helper.get_iblrig_local_data_path(subjects=False)
+        self.assertIsNotNone(p)
+        self.assertIsInstance(p, Path)
+        self.assertTrue(p.parts[-1] != "Subjects")
+
+    def test_get_remote_server_data_path(self):
+        # test without specifying subject arg
+        p = path_helper.get_iblrig_remote_server_data_path()
+        self.assertIsNotNone(p)
+        self.assertIsInstance(p, Path)
+        self.assertTrue(p.parts[-1] == "Subjects")
+
+        # test specifying subject=True
+        p = path_helper.get_iblrig_remote_server_data_path(subjects=True)
+        self.assertIsNotNone(p)
+        self.assertIsInstance(p, Path)
+        self.assertTrue(p.parts[-1] == "Subjects")
+
+        # test specifying subject=False
+        p = path_helper.get_iblrig_remote_server_data_path(subjects=False)
         self.assertIsNotNone(p)
         self.assertIsInstance(p, Path)
         self.assertTrue(p.parts[-1] != "Subjects")
