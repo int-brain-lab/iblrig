@@ -95,3 +95,23 @@ class Spacer(object):
                 state_change_conditions={"Tup": next_loop},
                 output_actions=[],
             )
+
+    def find_spacers(self, signal, threshold=0.9, fs=1000):
+        """
+        Find spacers in a voltage time serie. Assumes that the signal is a digital signal between 0 and 1
+        :param signal:
+        :param threshold:
+        :param fs:
+        :return:
+        """
+        template = self.generate_template(fs=fs)
+        xcor = np.correlate(signal, template, mode="full") / np.sum(template)
+        idetect = np.where(xcor > threshold)[0]
+        iidetect = np.cumsum(np.diff(idetect, prepend=0) > 1)
+        nspacers = iidetect[-1]
+        tspacer = np.zeros(nspacers)
+        for i in range(nspacers):
+            ispacer = idetect[iidetect == i + 1]
+            imax = np.argmax(xcor[ispacer])
+            tspacer[i] = (ispacer[imax] - template.size + 1) / fs
+        return tspacer
