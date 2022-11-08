@@ -67,20 +67,6 @@ class TestPathHelper(unittest.TestCase):
         self.assertIsNotNone(p)
         self.assertIsInstance(p, Path)
 
-    def test_get_network_drives(self):
-        nd = path_helper.get_network_drives()
-        print(nd)
-        # outs = ["C:\\", "Y:\\", "~/Projects/IBL/github/iblserver"]
-        # self.assertTrue(all([x in outs for x in nd]))
-
-    def test_get_iblserver_data_folder(self):
-        df = path_helper.get_iblserver_data_folder(subjects=True)
-        self.assertTrue(isinstance(df, str))
-        self.assertTrue("Subjects" in df)
-        df = path_helper.get_iblserver_data_folder(subjects=False)
-        self.assertTrue(isinstance(df, str))
-        self.assertTrue("Subjects" not in df)
-
     def test_get_iblrig_folder(self):
         f = path_helper.get_iblrig_folder()
         self.assertTrue(isinstance(f, str))

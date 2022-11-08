@@ -6,10 +6,7 @@ import logging
 import os
 import re
 import subprocess
-from os import listdir
-from os.path import join
 from pathlib import Path
-from sys import platform
 
 import yaml
 from dateutil import parser
@@ -126,51 +123,6 @@ def get_iblrig_temp_alyx_path() -> Path or None:
         log.error("The iblrig_temp_alyx_path key is missing from the iblrig_params yml file, typically found in the root "
                   "directory of this repository.")
         return None
-
-
-def get_network_drives():
-    if platform == "win32" and not IBLRIG_PARAMS["iblrig_remote_server_path"]:
-        import win32api
-        import win32com.client
-        from win32com.shell import shell, shellcon
-
-        NETWORK_SHORTCUTS_FOLDER_PATH = shell.SHGetFolderPath(0, shellcon.CSIDL_NETHOOD, None, 0)
-        # Add Logical Drives
-        drives = win32api.GetLogicalDriveStrings()
-        drives = drives.split("\000")[:-1]
-        # Add Network Locations
-        network_shortcuts = [
-            join(NETWORK_SHORTCUTS_FOLDER_PATH, f) + "\\target.lnk"
-            for f in listdir(NETWORK_SHORTCUTS_FOLDER_PATH)
-        ]
-        shell = win32com.client.Dispatch("WScript.Shell")
-        for network_shortcut in network_shortcuts:
-            shortcut = shell.CreateShortCut(network_shortcut)
-            drives.append(shortcut.Targetpath)
-
-        return drives
-    else:
-        return IBLRIG_PARAMS["iblrig_remote_server_path"]
-
-
-def get_iblserver_data_folder(subjects: bool = True):
-    if platform == "win32" and not IBLRIG_PARAMS["iblrig_remote_server_path"]:
-        drives = get_network_drives()
-
-        log.debug("Looking for Y:\\ drive")
-        drives = [x for x in drives if x == "Y:\\"]
-        if len(drives) == 0:
-            log.warning("Y:\\ drive not found please map your local server data folder to the Y:\\ drive.")
-            return None
-        elif len(drives) == 1:
-            return drives[0] if not subjects else drives[0] + "Subjects"
-        else:
-            log.warning("Something is not right... ignoring local server configuration.")
-            return None
-    else:
-        if subjects:
-            return str(Path(IBLRIG_PARAMS["iblrig_remote_data_path"]) / "Subjects")
-        return str(IBLRIG_PARAMS["iblrig_remote_data_path"])
 
 
 def get_iblrig_temp_alyx_proj_folder() -> str:
@@ -309,7 +261,7 @@ def get_previous_session_folders(subject_name: str, session_folder: str, remote_
 
     # Set remote folder Path and verify it exists
     # Ensure returned value is not None for remote drive, important before using Path()
-    remote_subject_folder = remote_subject_folder or get_iblserver_data_folder(subjects=True)
+    remote_subject_folder = remote_subject_folder or str(get_iblrig_remote_server_data_path(subjects=True))
     if remote_subject_folder is not None:
         remote_subject_folder = Path(remote_subject_folder) / subject_name
         remote_subject_folder_exists = remote_subject_folder.exists()
