@@ -1,9 +1,12 @@
 # **Release notes**
 
+## **Release Notes 7.1.0**
+- spacer utility feature added for chaining multiple tasks 
+
 ## **Release Notes 7.0.5**
-  - minor fix to windows pathing for experiment description gui to grab alyx username
-  - removal of unnecessary ONE version check in purge_rig_data script
-  - added bpod BNC1 output to several training tasks
+- minor fix to windows pathing for experiment description gui to grab alyx username
+- removal of unnecessary ONE version check in purge_rig_data script
+- added bpod BNC1 output to several training tasks
 
 ## **Release Notes 7.0.4**
 - modified call to experiment description gui to pass alyx username and subject information

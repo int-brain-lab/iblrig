@@ -10,6 +10,7 @@ import iblrig.bonsai as bonsai
 import iblrig.frame2TTL as frame2TTL
 import iblrig.misc as misc
 import iblrig.params as params
+import iblrig.spacer
 import task_settings
 import user_settings
 from iblrig.bpod_helper import BpodMessageCreator, bpod_lights
@@ -97,7 +98,16 @@ msg = (
 )
 popup("WARNING!", msg)  # Locks
 
+# Start task by sending a spacer signal on BNC1
+log.info("Starting task by sending a spacer signal on BNC1")
+sma = StateMachine(bpod)
+spacer = iblrig.spacer.Spacer()
+spacer.add_spacer_states(sma, next_state="exit")
+bpod.send_state_machine(sma)
+bpod.run_state_machine(sma)  # Locks until state machine 'exit' is reached
+
 # Run the passive part i.e. spontaneous activity and RFMapping stim
+log.info("Run the passive part ie. spontaneous activity and RFMapping stim")
 bonsai.start_passive_visual_stim(
     sph.SESSION_RAW_DATA_FOLDER,
     display_idx=sph.PARAMS["DISPLAY_IDX"],
@@ -107,6 +117,7 @@ bonsai.start_passive_visual_stim(
 )  # Locks
 
 # start Bonsai stim workflow
+log.info("Run the visual stimulus mapping")
 bonsai.start_visual_stim(sph)
 time.sleep(5)
 log.info("Starting replay of task stims")
