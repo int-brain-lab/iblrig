@@ -8,7 +8,7 @@ class TestSpacer(unittest.TestCase):
 
     def test_spacer(self):
         spacer = Spacer(dt_start=.02, dt_end=.4, n_pulses=8, tup=.05)
-        self.AssertEqual(spacer.times.size, 15)
+        np.testing.assert_equal(spacer.times.size, 15)
         sig = spacer.generate_template(fs=1000)
         ac = np.correlate(sig, sig, 'full') / np.sum(sig**2)
         # import matplotlib.pyplot as plt

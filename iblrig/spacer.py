@@ -49,7 +49,7 @@ class Spacer(object):
         # upsweep
         t = np.linspace(self.dt_start, self.dt_end, self.n_pulses) + self.tup
         # downsweep
-        t = np.r_[t[:-1], np.flipud(t)]
+        t = np.r_[t, np.flipud(t[1:])]
         t = np.cumsum(t)
         return t
 
@@ -68,7 +68,7 @@ class Spacer(object):
         sig = np.cumsum(sig)
         return sig
 
-    def add_spacer_states(self, sma, next_state="exit"):
+    def add_spacer_states(self, sma=None, next_state="exit"):
         """
         Add spacer states to a state machine
         :param sma: pybpodapi.state_machine.StateMachine object
@@ -77,7 +77,11 @@ class Spacer(object):
         """
         assert next_state is not None
         t = self.times
+        dt = np.diff(t, append=t[-1] + self.tup)
         for i, time in enumerate(t):
+            if sma is None:
+                print(i, time, dt[i])
+                continue
             next_loop = f"spacer_high_{i + 1:02d}" if i < len(t) - 1 else next_state
             sma.add_state(
                 state_name=f"spacer_high_{i:02d}",
@@ -87,7 +91,7 @@ class Spacer(object):
             )
             sma.add_state(
                 state_name=f"spacer_low_{i:02d}",
-                state_timer=time,
+                state_timer=dt[i],
                 state_change_conditions={"Tup": next_loop},
                 output_actions=[],
             )
