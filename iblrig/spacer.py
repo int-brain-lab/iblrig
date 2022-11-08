@@ -36,12 +36,13 @@ class Spacer(object):
         self.dt_end = dt_end
         self.n_pulses = n_pulses
         self.tup = tup
+        assert np.all(np.diff(self.times) > self.tup), 'Spacers are overlapping'
 
     def __repr__(self):
         return f"Spacer(dt_start={self.dt_start}, dt_end={self.dt_end}, n_pulses={self.n_pulses}, tup={self.tup})"
 
     @property
-    def times(self):
+    def times(self, latency=0):
         """
         Computes spacer up times using a chirp up and down pattern
         :return: numpy arrays of times
@@ -61,7 +62,6 @@ class Spacer(object):
         """
         t = self.times
         ns = int((t[-1] + self.tup * 10) * fs)
-        np.cumsum(np.linspace(self.dt_start, self.dt_end, self.n_pulses) + self.tup)
         sig = np.zeros(ns, )
         sig[(t * fs).astype(np.int32)] = 1
         sig[((t + self.tup) * fs).astype(np.int32)] = -1
@@ -77,7 +77,7 @@ class Spacer(object):
         """
         assert next_state is not None
         t = self.times
-        dt = np.diff(t, append=t[-1] + self.tup)
+        dt = np.diff(t, append=t[-1] + self.tup * 2)
         for i, time in enumerate(t):
             if sma is None:
                 print(i, time, dt[i])
@@ -91,7 +91,7 @@ class Spacer(object):
             )
             sma.add_state(
                 state_name=f"spacer_low_{i:02d}",
-                state_timer=dt[i],
+                state_timer=dt[i] - self.tup,
                 state_change_conditions={"Tup": next_loop},
                 output_actions=[],
             )
