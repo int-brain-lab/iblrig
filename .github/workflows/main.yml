@@ -97,6 +97,7 @@ jobs:
           python -m unittest test_path_helper.py
           python -m unittest test_pybpod_config.py
           # python -m unittest test_scripts.py
+          python -m unittest test_spacers.py
           python -m unittest test_start_pybpod.py
           python -m unittest test_task.py
           # python -m unittest discover

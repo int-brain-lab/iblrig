@@ -1,3 +1,7 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# @Author: Niccolò Bonacchi
+# @Date:   2018-02-02 12:31:13
 import logging
 
 import iblrig.bonsai as bonsai
@@ -88,7 +92,7 @@ for i in range(sph.NTRIALS):  # Main loop
             state_name="trial_start",
             state_timer=0,
             state_change_conditions={"Port1In": "reset_rotary_encoder"},
-            output_actions=[("Valve1", 255), ("BNC1", 255)],
+            output_actions=[("SoftCode", 3), ("BNC1", 255)],
         )  # start camera
     else:
         sma.add_state(
