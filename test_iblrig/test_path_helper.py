@@ -67,16 +67,6 @@ class TestPathHelper(unittest.TestCase):
         self.assertIsNotNone(p)
         self.assertIsInstance(p, Path)
 
-    def test_get_iblrig_folder(self):
-        f = path_helper.get_iblrig_folder()
-        self.assertTrue(isinstance(f, str))
-        self.assertTrue("iblrig" in f)
-
-    def test_get_iblrig_params_folder(self):
-        f = path_helper.get_iblrig_params_folder()
-        self.assertTrue(isinstance(f, str))
-        self.assertTrue("iblrig_params" in f)
-
     def test_get_iblrig_data_folder(self):
         df = path_helper.get_iblrig_data_folder(subjects=False)
         self.assertTrue(isinstance(df, str))
@@ -92,7 +82,7 @@ class TestPathHelper(unittest.TestCase):
 
         out = subprocess.check_output(["git", "rev-parse", "HEAD"]).decode().strip()
         # Run it
-        ch = path_helper.get_commit_hash(path_helper.get_iblrig_folder())
+        ch = path_helper.get_commit_hash(str(path_helper.get_iblrig_path()))
         self.assertTrue(out == ch)
 
     def test_get_previous_session_folders(self):

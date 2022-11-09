@@ -5,16 +5,16 @@ from pathlib import Path
 from sys import platform
 from tkinter import messagebox
 
+import numpy as np
 from pythonosc import udp_client
 
 import iblrig.adaptive as adaptive
 import iblrig.ambient_sensor as ambient_sensor
 import iblrig.iotasks as iotasks
 import iblrig.misc as misc
-import iblrig.path_helper as ph
 import iblrig.sound as sound
 import iblrig.user_input as user_input
-import numpy as np
+from iblrig import path_helper
 
 log = logging.getLogger("iblrig")
 log.setLevel(logging.DEBUG)
@@ -41,7 +41,7 @@ class SessionParamHandler(object):
         self.__dict__.update(us)
         self = iotasks.deserialize_pybpod_user_settings(self)
 
-        spc = ph.SessionPathCreator(
+        spc = path_helper.SessionPathCreator(
             self.PYBPOD_SUBJECTS[0], protocol=self.PYBPOD_PROTOCOL, make=make
         )
         self.__dict__.update(spc.__dict__)
@@ -199,7 +199,7 @@ class SessionParamHandler(object):
     # =========================================================================
     def load_passive_session_delays_ids(self) -> tuple:
         pregenerated_session_num = self.PREGENERATED_SESSION_NUM
-        base = Path(ph.get_iblrig_params_folder())
+        base = path_helper.get_iblrig_params_path()
         passive_session_folder = base.joinpath(self.PYBPOD_PROJECT, "tasks", self.PYBPOD_PROTOCOL,
                                                "sessions")
         stimDelays = np.load(
@@ -210,9 +210,8 @@ class SessionParamHandler(object):
 
     def load_passive_session_pcs(self) -> tuple:
         pregenerated_session_num = self.PREGENERATED_SESSION_NUM
-        base = Path(ph.get_iblrig_params_folder())
-        passive_session_folder = base.joinpath(self.PYBPOD_PROJECT, "tasks", self.PYBPOD_PROTOCOL,
-                                               "sessions")
+        base = path_helper.get_iblrig_params_path()
+        passive_session_folder = base.joinpath(self.PYBPOD_PROJECT, "tasks", self.PYBPOD_PROTOCOL, "sessions")
         pcs = np.load(
             passive_session_folder / f"session_{pregenerated_session_num}_passive_pcs.npy")
         pos = pcs[:, 0].tolist()

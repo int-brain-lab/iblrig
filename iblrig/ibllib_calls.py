@@ -1,11 +1,11 @@
 import json
-from pathlib import Path
 
 from one.api import ONE
+
 from iblrig import path_helper
 from scripts.ibllib import alyx
 
-ROOT_FOLDER = Path(path_helper.get_iblrig_temp_alyx_proj_folder())
+ROOT_FOLDER = path_helper.get_iblrig_temp_alyx_path()
 ROOT_FOLDER.mkdir(parents=True, exist_ok=True)
 
 

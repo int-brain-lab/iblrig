@@ -1,6 +1,5 @@
 import shutil
 import unittest
-from pathlib import Path
 
 import iblrig.ibllib_calls as libcalls
 import iblrig.params as params
@@ -16,7 +15,7 @@ class TestsPybpodConfig(unittest.TestCase):
         pars = params.load_params_file()
         pars["NAME"] = "_iblrig_mainenlab_ephys_0"
         params.write_params_file(pars, force=True)
-        self.project_path = Path(path_helper.get_iblrig_params_folder()) / self.project_name
+        self.project_path = path_helper.get_iblrig_params_path() / self.project_name
         libcalls.call_one_get_project_data(self.project_name, one_test=True)
 
     def test_create_alyx(self):

@@ -125,18 +125,6 @@ def get_iblrig_temp_alyx_path() -> Path or None:
         return None
 
 
-def get_iblrig_temp_alyx_proj_folder() -> str:
-    return IBLRIG_PARAMS["iblrig_temp_alyx_path"]
-
-
-def get_iblrig_folder() -> str:
-    return IBLRIG_PARAMS["iblrig_path"]
-
-
-def get_iblrig_params_folder() -> str:
-    return IBLRIG_PARAMS["iblrig_params_path"]
-
-
 def get_iblrig_data_folder(subjects: bool = True) -> str:
     if subjects:
         return str(Path(IBLRIG_PARAMS["iblrig_local_data_path"]) / "Subjects")
@@ -421,7 +409,7 @@ def get_subfolder_paths(folder: str) -> str:
 
 def get_bonsai_path(use_iblrig_bonsai: bool = True) -> str:
     """Checks for Bonsai folder in iblrig. Returns string with bonsai executable path."""
-    iblrig_folder = get_iblrig_folder()
+    iblrig_folder = str(get_iblrig_path())
     folders = get_subfolder_paths(iblrig_folder)
     bonsai_folder = [x for x in folders if "Bonsai" in x][0]
     ibl_bonsai = os.path.join(bonsai_folder, "Bonsai64.exe")
@@ -483,12 +471,12 @@ def get_session_number(session_date_folder: str) -> str:
 
 
 def get_pregen_session_folder() -> str:
-    iblrig_path = Path(get_iblrig_folder())
+    iblrig_path = get_iblrig_path()
     return str(iblrig_path / "tasks" / "_iblrig_tasks_ephysChoiceWorld" / "sessions")
 
 
 def get_camera_setup_wrkfl() -> str:
-    iblrig_path = Path(get_iblrig_folder())
+    iblrig_path = get_iblrig_path()
     return str(iblrig_path / "devices" / "camera_setup" / "setup_video.bonsai")
 
 
@@ -496,7 +484,7 @@ class SessionPathCreator(object):
     # add subject name and protocol (maybe have a metadata struct)
     def __init__(self, subject_name, protocol=False, make=False):
 
-        self.IBLRIG_FOLDER = get_iblrig_folder()
+        self.IBLRIG_FOLDER = str(get_iblrig_path())
         self.IBLRIG_EPHYS_SESSION_FOLDER = get_pregen_session_folder()
         self._BOARD = pybpod_params.get_board_name()
 
@@ -504,7 +492,7 @@ class SessionPathCreator(object):
 
         self.IBLRIG_COMMIT_HASH = get_commit_hash(self.IBLRIG_FOLDER)
         self.IBLRIG_VERSION_TAG = get_version_tag(self.IBLRIG_FOLDER)
-        self.IBLRIG_PARAMS_FOLDER = get_iblrig_params_folder()
+        self.IBLRIG_PARAMS_FOLDER = str(get_iblrig_params_path())
         self.IBLRIG_DATA_FOLDER = get_iblrig_data_folder(subjects=False)
         self.IBLRIG_DATA_SUBJECTS_FOLDER = get_iblrig_data_folder(subjects=True)
 

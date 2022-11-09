@@ -21,7 +21,7 @@ class TestIbllibCalls(unittest.TestCase):
 
     def test_call_one_get_project_data(self):
         calls.call_one_get_project_data(self.project_name, one_test=self.one_test)
-        alyx_temp_path = Path(path_helper.get_iblrig_temp_alyx_proj_folder())
+        alyx_temp_path = path_helper.get_iblrig_temp_alyx_path()
         self.assertTrue(alyx_temp_path.exists())
         alyx_temp_subjects_path = alyx_temp_path / Path(f"{self.project_name}_subjects.json")
         self.assertTrue(alyx_temp_subjects_path.exists())

@@ -17,8 +17,8 @@ if __name__ == "__main__":
         iblrig_params_path = Path().absolute().parent / "iblrig_params"
         pybpod_fixtures_path = Path().absolute() / "pybpod_fixtures"
     else:
-        iblrig_params_path = Path(path_helper.get_iblrig_params_folder())
-        pybpod_fixtures_path = Path(path_helper.get_iblrig_folder()) / "pybpod_fixtures"
+        iblrig_params_path = path_helper.get_iblrig_params_path()
+        pybpod_fixtures_path = path_helper.get_iblrig_path() / "pybpod_fixtures"
 
     print(f"Trying to copy pybpod files to {iblrig_params_path} ... ")
     try:

@@ -9,7 +9,7 @@ from sys import platform
 from pythonosc import udp_client
 
 import iblrig.params as params
-import iblrig.path_helper as ph
+from iblrig import path_helper
 
 log = logging.getLogger("iblrig")
 
@@ -167,8 +167,8 @@ else:
         display_idx=1,
     ):
         here = os.getcwd()
-        bns = ph.get_bonsai_path()
-        stim_folder = str(Path(ph.get_iblrig_folder()) / "visual_stim" / "passiveChoiceWorld")
+        bns = path_helper.get_bonsai_path()
+        stim_folder = str(path_helper.get_iblrig_path() / "visual_stim" / "passiveChoiceWorld")
         wkfl = os.path.join(stim_folder, "passiveChoiceWorld_passive.bonsai")
         os.chdir(stim_folder)
         # Flags
@@ -268,8 +268,8 @@ else:
 
     def start_frame2ttl_test(data_file, lengths_file, harp=False, display_idx=1):
         here = os.getcwd()
-        bns = ph.get_bonsai_path()
-        stim_folder = str(Path(ph.get_iblrig_folder()) / "visual_stim" / "f2ttl_calibration")
+        bns = path_helper.get_bonsai_path()
+        stim_folder = str(path_helper.get_iblrig_path() / "visual_stim" / "f2ttl_calibration")
         wkfl = os.path.join(stim_folder, "screen_60Hz.bonsai")
         # Flags
         noedit = "--no-editor"  # implies start and no-debug?
@@ -296,12 +296,10 @@ else:
 
     def start_screen_color(display_idx=1):
         here = os.getcwd()
-        iblrig_folder_path = Path(ph.get_iblrig_folder())
+        iblrig_folder_path = path_helper.get_iblrig_path()
         os.chdir(str(iblrig_folder_path / "visual_stim" / "f2ttl_calibration"))
-        bns = ph.get_bonsai_path()
-        wrkfl = str(
-            iblrig_folder_path / "visual_stim" / "f2ttl_calibration" / "screen_color.bonsai"
-        )
+        bns = path_helper.get_bonsai_path()
+        wrkfl = str(iblrig_folder_path / "visual_stim" / "f2ttl_calibration" / "screen_color.bonsai")
         noedit = "--no-editor"  # implies start
         # nodebug = '--start-no-debug'
         # start = '--start'
@@ -314,11 +312,11 @@ else:
 
     def start_camera_setup():
         here = os.getcwd()
-        iblrig_folder_path = Path(ph.get_iblrig_folder())
+        iblrig_folder_path = path_helper.get_iblrig_path()
         os.chdir(str(iblrig_folder_path / "devices" / "camera_setup"))
 
-        bns = ph.get_bonsai_path()
-        wrkfl = ph.get_camera_setup_wrkfl()
+        bns = path_helper.get_bonsai_path()
+        wrkfl = path_helper.get_camera_setup_wrkfl()
 
         # noedit = "--no-editor"  # implies start
         noboot = "--no-boot"

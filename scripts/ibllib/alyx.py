@@ -7,13 +7,12 @@ Can do 2 things:
 import argparse
 import json
 import shutil
-from pathlib import Path
 
 from one.api import ONE
 
 from iblrig import path_helper
 
-ROOT_FOLDER = Path(path_helper.get_iblrig_temp_alyx_proj_folder())
+ROOT_FOLDER = path_helper.get_iblrig_temp_alyx_path()
 
 
 def sync_local_params_to_alyx(one: object = None) -> None:
@@ -28,7 +27,7 @@ def _load_iblrig_params() -> dict:
     """
     Loads iblrig params from default location
     """
-    params_filepath = Path(path_helper.get_iblrig_params_folder()) / ".iblrig_params.json"
+    params_filepath = path_helper.get_iblrig_params_path() / ".iblrig_params.json"
     if not params_filepath.exists():
         print(f"ERROR: Can't find params file: {params_filepath}")
         return {}
