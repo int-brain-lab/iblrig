@@ -67,16 +67,6 @@ class TestPathHelper(unittest.TestCase):
         self.assertIsNotNone(p)
         self.assertIsInstance(p, Path)
 
-    def test_get_iblrig_data_folder(self):
-        df = path_helper.get_iblrig_data_folder(subjects=False)
-        self.assertTrue(isinstance(df, str))
-        self.assertTrue("iblrig_data" in df)
-        self.assertTrue("Subjects" not in df)
-        dfs = path_helper.get_iblrig_data_folder(subjects=True)
-        self.assertTrue(isinstance(dfs, str))
-        self.assertTrue("iblrig_data" in dfs)
-        self.assertTrue("Subjects" in dfs)
-
     def test_get_commit_hash(self):
         import subprocess
 

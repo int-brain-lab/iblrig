@@ -26,7 +26,7 @@ if __name__ == "__main__":
         log.info("Creating Alyx session...")
         here = os.getcwd()
         os.chdir(path_helper.get_iblrig_path() / "scripts" / "ibllib")
-        os.system(f"python register_session.py {path_helper.get_iblrig_data_folder()}")
+        os.system(f"python register_session.py {str(path_helper.get_iblrig_local_data_path())}")
         os.chdir(here)
         log.info("Completed registering session on Alyx.")
 

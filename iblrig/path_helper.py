@@ -125,12 +125,6 @@ def get_iblrig_temp_alyx_path() -> Path or None:
         return None
 
 
-def get_iblrig_data_folder(subjects: bool = True) -> str:
-    if subjects:
-        return str(Path(IBLRIG_PARAMS["iblrig_local_data_path"]) / "Subjects")
-    return IBLRIG_PARAMS["iblrig_local_data_path"]
-
-
 def get_commit_hash(folder: str):
     here = os.getcwd()
     os.chdir(folder)
@@ -164,7 +158,7 @@ def get_visual_stim_folder_name(protocol: str) -> str:
 
 
 def get_water_calibration_func_file(latest: bool = True) -> Path or list:
-    data_folder = Path(get_iblrig_data_folder())
+    data_folder = get_iblrig_local_data_path()
     func_files = sorted(data_folder.rglob("_iblrig_calibration_water_function.csv"))
     if not func_files:
         return Path()
@@ -172,7 +166,7 @@ def get_water_calibration_func_file(latest: bool = True) -> Path or list:
 
 
 def get_water_calibration_range_file(latest=True) -> Path or list:
-    data_folder = Path(get_iblrig_data_folder())
+    data_folder = get_iblrig_local_data_path()
     range_files = sorted(data_folder.rglob("_iblrig_calibration_water_range.csv"))
     if not range_files:
         return Path()
@@ -244,7 +238,7 @@ def get_previous_session_folders(subject_name: str, session_folder: str, remote_
     log.debug("Looking for previous session folders")
 
     # Set local folder Path and verify it exists
-    local_subject_folder = Path(get_iblrig_data_folder(subjects=True)) / subject_name
+    local_subject_folder = get_iblrig_local_data_path(subjects=True) / subject_name
     local_subject_folder_exists = local_subject_folder.exists()
 
     # Set remote folder Path and verify it exists
@@ -493,8 +487,8 @@ class SessionPathCreator(object):
         self.IBLRIG_COMMIT_HASH = get_commit_hash(self.IBLRIG_FOLDER)
         self.IBLRIG_VERSION_TAG = get_version_tag(self.IBLRIG_FOLDER)
         self.IBLRIG_PARAMS_FOLDER = str(get_iblrig_params_path())
-        self.IBLRIG_DATA_FOLDER = get_iblrig_data_folder(subjects=False)
-        self.IBLRIG_DATA_SUBJECTS_FOLDER = get_iblrig_data_folder(subjects=True)
+        self.IBLRIG_DATA_FOLDER = str(get_iblrig_local_data_path(subjects=False))
+        self.IBLRIG_DATA_SUBJECTS_FOLDER = str(get_iblrig_local_data_path(subjects=True))
 
         self.PARAMS = pybpod_params.load_params_file()
         self.SUBJECT_NAME = subject_name

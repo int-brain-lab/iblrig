@@ -1,25 +1,20 @@
-#!/usr/bin/env python
-# @Author: Niccolò Bonacchi
-# @Creation_Date: Monday, December 2nd 2019, 4:52:40 pm
-# @Editor: Michele Fabbri
-# @Edit_Date: 2022-02-01
 import logging
 from pathlib import Path
 
 import iblrig.misc as misc
-import iblrig.path_helper as ph
 import iblrig.raw_data_loaders as raw
+from iblrig import path_helper
 
 log = logging.getLogger("iblrig")
 
-IBLRIG_DATA_PATH = Path(ph.get_iblrig_data_folder())
+IBLRIG_DATA_PATH = path_helper.get_iblrig_local_data_path()
 
 
 def main():
     passive_sessions = list(IBLRIG_DATA_PATH.rglob("passive_data_for_ephys.flag"))
 
     # For each passive session found look into passiveSettings to find ephysSession name
-    # search for the ephys session session in the rglobbed ephys sessions
+    # search for the ephys session in the rglobbed ephys sessions
     # If you find it just rename and move the folder raw_behavior_data -> raw_passive_data,
     # If no find search specifically for that session from the metadata and try to copy the folder
     # If folder exists throw an error

@@ -1,12 +1,12 @@
 from pathlib import Path
 
-import iblrig.path_helper as ph
 import iblrig.raw_data_loaders as raw
+from iblrig import path_helper
 
 
 # Remove empty folders
 def check_delete_empty_folders(path, rglob_pattern="*", dry=True):
-    data_path = Path(ph.get_iblrig_data_folder())
+    data_path = path_helper.get_iblrig_local_data_path()
     all_dirs = {p for p in data_path.rglob(rglob_pattern) if p.is_dir()}
     empty_dirs = {p for p in all_dirs if not list(p.glob("*"))}
     for d in empty_dirs:
@@ -79,7 +79,7 @@ def load_session_settings(path_list):
 
 
 if __name__ == "__main__":
-    data_path = Path(ph.get_iblrig_data_folder())
+    data_path = path_helper.get_iblrig_local_data_path()
     check_delete_empty_files(data_path, "taskSettings")
     check_delete_empty_folders(data_path)
     sessions_with_settings = find_sessions(data_path, rglob_pattern="*taskSettings*")
