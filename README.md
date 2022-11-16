@@ -73,6 +73,18 @@ cd C:\iblrig_params
 start-pybpod
 ```
 
+### Performing a manual upgrade (not recommended)
+If attempting to perform a manual upgrade from a previous installation of iblrig, be sure to take special note of the following 
+files and directories:
+- `C:\iblrig_params_bkup\.iblrig_params.json`
+- `C:\iblrig_params_bkup\IBL\boards`
+- `C:\iblrig_params_bkup\IBL\subjects`
+- `C:\iblrig_params_bkup\IBL\users`
+- `C:\iblrig_params_bkup\IBL\tasks\someCustomTask`
+
+The files themselves or some of the file content can be copied back over to the `C:\iblrig_params` directory to ease 
+configuration time.  
+
 #### For easier launching of pybpod
 Within the `C:\iblrig` folder there is a `start-pybpod-venv_Shortcut.lnk` file that can be copied to the desktop for ease of use. 
 Running the following powershell command from a non-administrative **Windows Powershell** prompt will perform this copy operation:
