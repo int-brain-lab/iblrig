@@ -1,4 +1,4 @@
-# iblrig v8
+# iblrig v7
 Software used to interact with various pieces of specialized hardware for neuroscience data acquisition.
 
 ## Installation on Windows
@@ -20,13 +20,15 @@ Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManage
 choco install notepadplusplus --yes
 choco install git --params "/Editor:Notepad++ /NoShellIntegration" --yes
 ```
-  - git commands will be unavailable until a new session is started; close the current **Administrator: Windows Powershell** 
-prompt
+  - Note: git commands will be unavailable until a new session is started; close the current **Administrator: Windows Powershell** 
+prompt in order to use git
 
 ### Installation Instructions:
 - Ensure git and your favorite text editor are already installed by whatever method is desired
 - Ensure a stable internet connection is present as several commands will require software to be downloaded
-- There is no supported upgrade path from v6 to v7
+
+Several important notes:
+- There are no supported upgrade paths from previous installations
 - User account name is assumed to be `User`, please modify commands where appropriate
 - The commands given below are assumed to be run on a 'clean' system
   - These instructions assume that `C:\iblrig` and `C:\iblrig_params` directories DO NOT exist; if these directories do 
@@ -52,7 +54,7 @@ python setup_pybpod.py
 cd Bonsai
 powershell.exe .\install.ps1
 ```
-  - NOTE: ONE is installed as part of the iblrig requirement. ONE will need to be configured for your use case. Please review 
+  - Note: ONE is installed as part of the iblrig requirement. ONE will need to be configured for your use case. Please review 
 the ONE [documentation](https://int-brain-lab.github.io/ONE/) for specifics on how to accomplish this. Then run the following 
 command or something similar for your specific setup to test it is working: `python -c "from one.api import ONE; ONE()"`
 
@@ -73,7 +75,7 @@ cd C:\iblrig_params
 start-pybpod
 ```
 
-### Performing a manual upgrade (not recommended)
+### Performing a manual upgrade (not recommended and not supported)
 If attempting to perform a manual upgrade from a previous installation of iblrig, be sure to take special note of the following 
 files and directories:
 - `C:\iblrig_params_bkup\.iblrig_params.json`
@@ -83,7 +85,7 @@ files and directories:
 - `C:\iblrig_params_bkup\IBL\tasks\someCustomTask`
 
 The files themselves or some of the file content can be copied back over to the `C:\iblrig_params` directory to ease 
-configuration time.  
+configuration time.
 
 #### For easier launching of pybpod
 Within the `C:\iblrig` folder there is a `start-pybpod-venv_Shortcut.lnk` file that can be copied to the desktop for ease of use. 
@@ -188,23 +190,6 @@ rm -rf test_venv
 Disable Microsoft Store associations with `python` command
 * Open the Settings or Start menu and search for “App execution aliases” or “Manage app execution aliases” 
 * Disable any python entries listed
-
-#### Anaconda
-##### Broken Uninstall
-* After uninstalling, navigate the file browser to the user home directory (C:\Users\username) and remove all `Anaconda`, 
-`.anaconda`, `.conda`, `.condarc`, etc files and folders
-  * search the hidden AppData folders as well (different versions of Anaconda stored data in different locations)
-* If running the command prompt is no longer functional, run the following command in Powershell:
-> Reg Delete "HKCU\Software\Microsoft\Command Processor" /v AutoRun /f
-* If Powershell is throwing a warning about an `Activate.ps1` file, remove the profile file from `%userhome%\Documents\Powershell`
-
-##### llvmlite error on ibllib install
-While performing a `pip install ibllib` command in a fresh conda environment, an occasional error may occur; `Error: Cannot 
-uninstall llvmlite...`. A simple workaround: 
-* close all Anaconda Prompts
-* open an **Anaconda Powershell Prompt**
-* reactivate the ibllib conda environment, `conda activate ibllib`
-* run `pip install ibllib`
 
 ### Stim display on wrong screen
 If the visual stimulus appears on the wrong screen:

@@ -1,6 +1,6 @@
 # **Release notes**
 
-## **Release Notes 8.0.0**
+## **Release Notes 7.2.0**
 - specifying pywin32 package for only Windows platform
 - removal of all conda requirements, a single python venv is now used
 - modify CI for python venv
@@ -9,8 +9,8 @@
 - integration of iblpybpod
 - addition of separate iblrig_params.yml file for directory configs and instructions for setup
 - removal of automated update scripts
-- removal of environment switching logic
-- updated pre/post python commands from tasks to explicitly call venv
+- removal of anaconda environment switching logic
+- updated some pre/post python commands from tasks to explicitly call venv
 
 ## **Release Notes 7.1.0**
 - spacer utility feature added for chaining multiple tasks 
