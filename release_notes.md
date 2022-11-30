@@ -1,11 +1,23 @@
 # **Release notes**
 
+## **Release Notes 7.2.0**
+- specifying pywin32 package for only Windows platform
+- removal of all conda requirements, a single python venv is now used
+- modify CI for python venv
+- pybpod fixtures added for ease of testing and initial setup
+- removal of the unsupported pybpod packages
+- integration of iblpybpod
+- addition of separate iblrig_params.yml file for directory configs and instructions for setup
+- removal of automated update scripts
+- removal of anaconda environment switching logic
+- updated some pre/post python commands from tasks to explicitly call venv
+
 ## **Release Notes 7.1.0**
 - spacer utility feature added for chaining multiple tasks 
 
 ## **Release Notes 7.0.5**
 - minor fix to windows pathing for experiment description gui to grab alyx username
-- removal of unnecessary ONE version check in purge_rig_data script
+- removal of no longer necessary ONE version check in purge_rig_data script
 - added bpod BNC1 output to several training tasks
 
 ## **Release Notes 7.0.4**

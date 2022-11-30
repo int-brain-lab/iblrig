@@ -28,13 +28,12 @@ from pathlib import Path
 
 from pybpodgui_api.models.project import Project
 
-import iblrig.path_helper as ph
 import iblrig.ibllib_calls as libcalls
+from iblrig import path_helper
 
+IBLRIG_PARAMS_PATH = path_helper.get_iblrig_params_path()
 
-IBLRIG_PARAMS_FOLDER = Path(ph.get_iblrig_params_folder())
-
-print(ph.get_iblrig_folder(), "\n", IBLRIG_PARAMS_FOLDER)
+print(path_helper.get_iblrig_path(), "\n", IBLRIG_PARAMS_PATH)
 
 local2alyx_names = {"IBL": "ibl_neuropixel_brainwide_01"}
 alyx2local_names = {"ibl_neuropixel_brainwide_01": "IBL"}
@@ -69,7 +68,7 @@ def _update_pybpod_obj_json(obj, patch: dict):
 # PROJECT
 def pybpod_project_exists(project_name):
     project_name = alyx2local_names.get(project_name, project_name)
-    project_path = IBLRIG_PARAMS_FOLDER / project_name
+    project_path = IBLRIG_PARAMS_PATH / project_name
     p = Project()
     project_exists = None
     try:
@@ -85,7 +84,7 @@ def pybpod_project_exists(project_name):
 
 def create_project(project_name, force=False):
     project_name = alyx2local_names.get(project_name, project_name)
-    project_path = IBLRIG_PARAMS_FOLDER / project_name
+    project_path = IBLRIG_PARAMS_PATH / project_name
     p = Project()
     if force or not pybpod_project_exists(project_name):
         p.name = project_name
@@ -101,7 +100,7 @@ def create_project(project_name, force=False):
 # SUBJECTS
 def create_subject(project_name, subject_name: str = "_iblrig_test_mouse", force=False):
     project_name = alyx2local_names.get(project_name, project_name)
-    project_path = IBLRIG_PARAMS_FOLDER / project_name
+    project_path = IBLRIG_PARAMS_PATH / project_name
     p = Project()
     print(f"Loading [{project_path}]")
     p.load(project_path)
@@ -123,7 +122,7 @@ def create_subject(project_name, subject_name: str = "_iblrig_test_mouse", force
 # USERS
 def create_user(project_name, username="_iblrig_test_user", force=False):
     project_name = alyx2local_names.get(project_name, project_name)
-    project_path = IBLRIG_PARAMS_FOLDER / project_name
+    project_path = IBLRIG_PARAMS_PATH / project_name
     p = Project()
     print(f"Loading [{project_path}]")
     if not pybpod_project_exists(project_name):
@@ -151,9 +150,9 @@ def create_board_from_main_project_to(project_name, force=False):
     if project_name == "IBL":
         print("Can't create board of main project")
         return
-    project_path = IBLRIG_PARAMS_FOLDER / project_name
+    project_path = IBLRIG_PARAMS_PATH / project_name
     iblproj = Project()
-    iblproj.load(IBLRIG_PARAMS_FOLDER / "IBL")
+    iblproj.load(IBLRIG_PARAMS_PATH / "IBL")
     print("Looking for boards in default project")
     if not iblproj.boards or len(iblproj.boards) > 1:
         print(f"0 or 2+ boards found in main project: {[x.name for x in iblproj.boards]}")

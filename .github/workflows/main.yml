@@ -10,80 +10,99 @@ jobs:
   build_reqs:
     name: build (${{ matrix.python-version }}, ${{ matrix.os }})
     runs-on: ${{ matrix.os }}
-    env:
-      IBLRIG_REQS: iblrig_requirements_frozen.txt
-      IBLLIB_REQS: ibllib_requirements_frozen.txt
     strategy:
       matrix:
-        os: [ "windows-latest" ]
+        os: ["windows-latest"]
         python-version: ["3.8"]
     steps:
-      - name: Clone iblrig repo
+      - name: Checkout iblrig repo
         uses: actions/checkout@v3
-
-      - uses: conda-incubator/setup-miniconda@v2
         with:
-          activate-environment: iblrig
-          auto-update-conda: true
+          path: iblrig
+
+      - name: Checkout iblpybpod repo
+        uses: actions/checkout@v3
+        with:
+          repository: int-brain-lab/iblpybpod
+          path: iblpybpod
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
           python-version: ${{ matrix.python-version }}
-          auto-activate-base: false
 
       - name: flake8
-        shell: bash -l {0}
+        shell: pwsh -l {0}
         run: |
+          pwd
+          ls
           pip install flake8 --quiet
+          cd iblrig
           python -m flake8
+
+      - name: iblrig_params.yml generation for ci
+        shell: pwsh -l {0}
+        run: |
+          Get-ChildItem
+          Get-ChildItem "iblrig"
+          $root_loc = Get-Location
+          $iblrig_loc = [IO.Path]::Combine($root_loc, "iblrig")
+          $iblrig_local_data_loc = [IO.Path]::Combine($root_loc, "iblrig_data")
+          $iblrig_remote_data_loc = [IO.Path]::Combine($root_loc, "iblrig_remote_data")
+          $iblrig_params_loc = [IO.Path]::Combine($root_loc, "iblrig_params")
+          $iblrig_temp_alyx_loc = [IO.Path]::Combine($root_loc, "alyx_proj_data")
+
+          Write-Output "root_loc - $root_loc"
+          Write-Output "iblrig_loc - $iblrig_loc"
+          Write-Output "iblrig_local_data_loc - $iblrig_local_data_loc"
+          Write-Output "iblrig_remote_data_loc - $iblrig_remote_data_loc"
+          Write-Output "iblrig_params_loc - $iblrig_params_loc"
+          Write-Output "iblrig_temp_alyx_loc - $iblrig_temp_alyx_loc"
+
+          New-Item $iblrig_local_data_loc -ItemType Directory
+          New-Item $iblrig_remote_data_loc -ItemType Directory
+          New-Item $iblrig_temp_alyx_loc -ItemType Directory
+
+          cd iblrig
+          $filename = "iblrig_params_ci.yml" 
+          New-Item $filename -ItemType File -Value ("# parameter file generated for github actions ci" + [Environment]::NewLine)
+          Add-Content $filename "iblrig_local_data_path: '$iblrig_local_data_loc'"
+          Add-Content $filename "iblrig_remote_data_path: '$iblrig_remote_data_loc'"
+          Add-Content $filename "iblrig_remote_server_path: '$iblrig_remote_data_loc'"
+          Add-Content $filename "iblrig_path: '$iblrig_loc'"
+          Add-Content $filename "iblrig_params_path: '$iblrig_params_loc'"
+          Add-Content $filename "iblrig_temp_alyx_path: '$iblrig_temp_alyx_loc'"
+          Get-Content $filename
 
       - name: iblrig installation
         shell: pwsh -l {0}
         run: |
-          echo "------ start info ------"
-          conda info
-          conda env list
-          python --version
-          echo "------ end info ------"
-          pip install --editable .
-          python setup_pybpod.py
+          pwd
+          ls
+          pip install --editable iblrig
+          pip install --editable iblpybpod
+          cd iblrig
+          python setup_pybpod.py --github_actions
           cd Bonsai
           powershell.exe .\install.ps1
-          cd ..\..
-          conda create --name ibllib python=3.8 --yes
-          conda activate ibllib
-          pip install ibllib
-          python -c "from one.api import ONE; ONE(base_url='https://test.alyx.internationalbrainlab.org', username='test_user', password='TapetesBloc18', silent=True)"
 
       - name: iblrig unit tests
         shell: pwsh -l {0}
         run: |
-          cd test_iblrig
-          python -m unittest test_adaptive.py
-          python -m unittest test_alyx.py
-          python -m unittest test_ibllib_imports.py
-          python -m unittest test_params.py
-          python -m unittest test_path_helper.py
-          python -m unittest test_pybpod_config.py
-          # python -m unittest test_scripts.py
-          python -m unittest test_start_pybpod.py
-          python -m unittest test_spacers.py
-          python -m unittest test_task.py
-          # python -m unittest discover
+          cd iblrig\test_iblrig
+          python -m unittest discover
 
       - name: Generate requirements_frozen.txt
         shell: pwsh -l {0}
         run: |
-          echo "------ start info ------"
-          conda info
-          conda env list
-          python --version
-          echo "------ end info ------"
-          pip freeze > iblrig_requirements_frozen.txt
-          conda activate ibllib
-          pip freeze > ibllib_requirements_frozen.txt
+          pwd
+          ls
+          pip freeze > requirements_frozen.txt
 
       - name: Store frozen requirements as artifacts
         uses: actions/upload-artifact@v3
         with:
           name: requirements_frozen
           path: |
-            iblrig_requirements_frozen.txt
-            ibllib_requirements_frozen.txt
+            requirements_frozen.txt
+            iblrig/iblrig_params_ci.yml

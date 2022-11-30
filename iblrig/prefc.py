@@ -1,8 +1,3 @@
-#!/usr/bin/env python
-# @Author: Niccolò Bonacchi
-# @Creation_Date: Wednesday, September 4th 2019, 4:24:59 pm
-# @Editor: Michele Fabbri
-# @Edit_Date: 2022-02-01
 """Pre flight checklist
 Define task, user, subject and board
 Check Alyx connection
@@ -23,20 +18,18 @@ end with user input
 """
 import datetime
 import logging
-import os
 import struct
 from pathlib import Path
 
 import serial
 import serial.tools.list_ports
 from dateutil.relativedelta import relativedelta
+from one.api import ONE
 from pybpod_rotaryencoder_module.module_api import RotaryEncoderModule
 from pybpod_soundcard_module.module_api import SoundCardModule
 from pybpodapi.protocol import Bpod
 
 import iblrig.params as params
-import iblrig.path_helper as ph
-from iblrig import envs
 from iblrig.frame2TTL import Frame2TTL
 
 log = logging.getLogger("iblrig")
@@ -98,20 +91,6 @@ def calibration_dates_ok() -> bool:
     return all(out.values())
 
 
-def alyx_ok() -> bool:
-    out = False
-    try:
-        python = envs.get_env_python(env_name="ibllib")
-        here = os.getcwd()
-        os.chdir(os.path.join(ph.get_iblrig_folder(), "scripts"))
-        os.system(f'{python} -c "from one.api import ONE; ONE()"')
-        os.chdir(here)
-        out = True
-    except BaseException as e:
-        log.warning(f"{e}\nCan't connect to Alyx.")
-    return out
-
-
 def local_server_ok() -> bool:
     pars = _grep_param_dict()
     out = Path(pars["DATA_FOLDER_REMOTE"]).exists()
@@ -133,11 +112,10 @@ def alyx_server_rig_ok() -> bin:
     Try Alyx, try local server, try data folder
     """
     alyx_server_rig = 0b000
-    if alyx_ok():
-        alyx_server_rig += 0b100
+    if ONE().offline:
+        log.warning("ONE is in offline mode, can not connect to Alyx.")
     else:
-        log.warning("Can't connect to Alyx.")
-
+        alyx_server_rig += 0b100
     pars = _grep_param_dict()
     try:
         list(Path(pars["DATA_FOLDER_REMOTE"]).glob("*"))

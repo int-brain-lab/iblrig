@@ -2,60 +2,77 @@ import tempfile
 import unittest
 from pathlib import Path
 
-import iblrig.path_helper as ph
+from iblrig import path_helper
 
 
 class TestPathHelper(unittest.TestCase):
     def setUp(self):
         pass
 
-    def test_get_network_drives(self):
-        nd = ph.get_network_drives()
-        print(nd)
-        # outs = ["C:\\", "Y:\\", "~/Projects/IBL/github/iblserver"]
-        # self.assertTrue(all([x in outs for x in nd]))
+    def test_get_remote_server_path(self):
+        p = path_helper.get_remote_server_path()
+        self.assertIsNotNone(p)
+        self.assertIsInstance(p, Path)
 
-    def test_get_iblserver_data_folder(self):
-        outs = [
-            "Y:\\",
-            "Y:\\Subjects",
-            None,
-            "~/Projects/IBL/github/iblserver",
-            "~/Projects/IBL/github/iblserver/Subjects",
-        ]
-        df = ph.get_iblserver_data_folder(subjects=True)
-        self.assertTrue(df in outs)
-        df = ph.get_iblserver_data_folder(subjects=False)
-        self.assertTrue(df in outs)
+    def test_get_iblrig_local_data_path(self):
+        # test without specifying subject arg
+        p = path_helper.get_iblrig_local_data_path()
+        self.assertIsNotNone(p)
+        self.assertIsInstance(p, Path)
+        self.assertTrue(p.parts[-1] == "Subjects")
 
-    def test_get_iblrig_folder(self):
-        f = ph.get_iblrig_folder()
-        self.assertTrue(isinstance(f, str))
-        self.assertTrue("iblrig" in f)
+        # test specifying subject=True
+        p = path_helper.get_iblrig_local_data_path(subjects=True)
+        self.assertIsNotNone(p)
+        self.assertIsInstance(p, Path)
+        self.assertTrue(p.parts[-1] == "Subjects")
 
-    def test_get_iblrig_params_folder(self):
-        f = ph.get_iblrig_params_folder()
-        self.assertTrue(isinstance(f, str))
-        self.assertTrue("iblrig_params" in f)
-        fp = Path(f)
-        self.assertTrue(str(fp.parent) == str(Path(ph.get_iblrig_folder()).parent))
+        # test specifying subject=False
+        p = path_helper.get_iblrig_local_data_path(subjects=False)
+        self.assertIsNotNone(p)
+        self.assertIsInstance(p, Path)
+        self.assertTrue(p.parts[-1] != "Subjects")
 
-    def test_get_iblrig_data_folder(self):
-        df = ph.get_iblrig_data_folder(subjects=False)
-        self.assertTrue(isinstance(df, str))
-        self.assertTrue("iblrig_data" in df)
-        self.assertTrue("Subjects" not in df)
-        dfs = ph.get_iblrig_data_folder(subjects=True)
-        self.assertTrue(isinstance(dfs, str))
-        self.assertTrue("iblrig_data" in dfs)
-        self.assertTrue("Subjects" in dfs)
+    def test_get_remote_server_data_path(self):
+        # test without specifying subject arg
+        p = path_helper.get_iblrig_remote_server_data_path()
+        self.assertIsNotNone(p)
+        self.assertIsInstance(p, Path)
+        self.assertTrue(p.parts[-1] == "Subjects")
+
+        # test specifying subject=True
+        p = path_helper.get_iblrig_remote_server_data_path(subjects=True)
+        self.assertIsNotNone(p)
+        self.assertIsInstance(p, Path)
+        self.assertTrue(p.parts[-1] == "Subjects")
+
+        # test specifying subject=False
+        p = path_helper.get_iblrig_remote_server_data_path(subjects=False)
+        self.assertIsNotNone(p)
+        self.assertIsInstance(p, Path)
+        self.assertTrue(p.parts[-1] != "Subjects")
+
+    def test_get_iblrig_path(self):
+        p = path_helper.get_iblrig_path()
+        self.assertIsNotNone(p)
+        self.assertIsInstance(p, Path)
+
+    def test_get_iblrig_params_path(self):
+        p = path_helper.get_iblrig_params_path()
+        self.assertIsNotNone(p)
+        self.assertIsInstance(p, Path)
+
+    def test_get_iblrig_temp_alyx_path(self):
+        p = path_helper.get_iblrig_temp_alyx_path()
+        self.assertIsNotNone(p)
+        self.assertIsInstance(p, Path)
 
     def test_get_commit_hash(self):
         import subprocess
 
         out = subprocess.check_output(["git", "rev-parse", "HEAD"]).decode().strip()
         # Run it
-        ch = ph.get_commit_hash(ph.get_iblrig_folder())
+        ch = path_helper.get_commit_hash(str(path_helper.get_iblrig_path()))
         self.assertTrue(out == ch)
 
     def test_get_previous_session_folders(self):
@@ -88,7 +105,7 @@ class TestPathHelper(unittest.TestCase):
         test_remote_subject_folder = create_remote_subject()
 
         # Call the function
-        test_previous_session_folders = ph.get_previous_session_folders(
+        test_previous_session_folders = path_helper.get_previous_session_folders(
             test_subject_name,
             test_local_session_folder,
             remote_subject_folder=test_remote_subject_folder,
@@ -98,7 +115,7 @@ class TestPathHelper(unittest.TestCase):
         # Test for an existing subject, local does exist and remote does NOT exist
         self.remote_dir.cleanup()
         # Call the function
-        test_previous_session_folders = ph.get_previous_session_folders(
+        test_previous_session_folders = path_helper.get_previous_session_folders(
             test_subject_name,
             test_local_session_folder,
             remote_subject_folder=test_remote_subject_folder,
@@ -109,7 +126,7 @@ class TestPathHelper(unittest.TestCase):
         self.local_dir.cleanup()
         test_remote_subject_folder = create_remote_subject()
         # Call the function
-        test_previous_session_folders = ph.get_previous_session_folders(
+        test_previous_session_folders = path_helper.get_previous_session_folders(
             test_subject_name,
             test_local_session_folder,
             remote_subject_folder=test_remote_subject_folder,
@@ -120,7 +137,7 @@ class TestPathHelper(unittest.TestCase):
         self.local_dir.cleanup()
         self.remote_dir.cleanup()
         # Call the function
-        test_previous_session_folders = ph.get_previous_session_folders(
+        test_previous_session_folders = path_helper.get_previous_session_folders(
             test_subject_name,
             test_local_session_folder,
             remote_subject_folder=test_remote_subject_folder,
@@ -129,12 +146,9 @@ class TestPathHelper(unittest.TestCase):
 
         # Test for a new subject
         test_new_subject_name = "_new_iblrig_test_mouse"
-        test_new_session_folder = (
-            Path(self.local_dir.name) / "Subjects" / test_new_subject_name / "1900-01-01" / "001"
-        )
-        test_previous_session_folders = ph.get_previous_session_folders(
-            test_new_subject_name, str(test_new_session_folder)
-        )
+        test_new_session_folder = (Path(self.local_dir.name) / "Subjects" / test_new_subject_name / "1970-01-01" / "001")
+        test_previous_session_folders = path_helper.get_previous_session_folders(test_new_subject_name,
+                                                                                 str(test_new_session_folder))
         self.assertTrue(isinstance(test_previous_session_folders, list))
         self.assertTrue(not test_previous_session_folders)  # returned list should be empty
 

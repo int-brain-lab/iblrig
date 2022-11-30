@@ -4,84 +4,125 @@ Various get functions to return paths of folders and network drives
 import datetime
 import logging
 import os
-import platform
 import re
 import subprocess
-from os import listdir
-from os.path import join
 from pathlib import Path
 
+import yaml
 from dateutil import parser
 
-import iblrig.params as params
-import iblrig.raw_data_loaders as raw
+import iblrig
+from iblrig import params as pybpod_params
+from iblrig import raw_data_loaders
 
 log = logging.getLogger("iblrig")
 
-
-def get_network_drives():
-    if platform.system() not in ["Windows", "windows", "win32"]:
-        return "~/Projects/IBL/int-brain-lab/iblserver"  # XXX: This is a quick hack
-    import win32api
-    import win32com.client
-    from win32com.shell import shell, shellcon
-
-    NETWORK_SHORTCUTS_FOLDER_PATH = shell.SHGetFolderPath(0, shellcon.CSIDL_NETHOOD, None, 0)
-    # Add Logical Drives
-    drives = win32api.GetLogicalDriveStrings()
-    drives = drives.split("\000")[:-1]
-    # Add Network Locations
-    network_shortcuts = [
-        join(NETWORK_SHORTCUTS_FOLDER_PATH, f) + "\\target.lnk"
-        for f in listdir(NETWORK_SHORTCUTS_FOLDER_PATH)
-    ]
-    shell = win32com.client.Dispatch("WScript.Shell")
-    for network_shortcut in network_shortcuts:
-        shortcut = shell.CreateShortCut(network_shortcut)
-        drives.append(shortcut.Targetpath)
-
-    return drives
+# Determine paths for special use cases based on existence of a file:
+#   - development machine - ".../iblrig/iblrig_params_dev.yml"
+#   - github actions ci - ".../iblrig/iblrig_params_ci.yml"
+if (Path(iblrig.__file__).parents[1] / "iblrig_params_dev.yml").exists():
+    log.info("iblrig_params_dev.yml file exists, assuming development machine, and pulling parameters from this file.")
+    iblrig_params_file_path = Path(iblrig.__file__).parents[1] / "iblrig_params_dev.yml"
+elif (Path(iblrig.__file__).parents[1] / "iblrig_params_ci.yml").exists():
+    log.info("iblrig_params_ci.yml file exists, assuming github actions ci, and pulling parameters from this file.")
+    iblrig_params_file_path = Path(iblrig.__file__).parents[1] / "iblrig_params_ci.yml"
+else:
+    iblrig_params_file_path = Path(iblrig.__file__).parents[1] / "iblrig_params.yml"
+with open(iblrig_params_file_path, "r") as f:
+    IBLRIG_PARAMS = yaml.safe_load(f)
+    print(f.read())
 
 
-def get_iblserver_data_folder(subjects: bool = True):
-    drives = get_network_drives()
-    if platform.system() == "Linux":
-        path = "~/Projects/IBL/github/iblserver"
-        return path if not subjects else path + "/Subjects"
-    log.debug("Looking for Y:\\ drive")
-    drives = [x for x in drives if x == "Y:\\"]
-    if len(drives) == 0:
-        log.warning(
-            "Y:\\ drive not found please map your local server data folder to the Y:\\ drive."
-        )
-        return None
-    elif len(drives) == 1:
-        return drives[0] if not subjects else drives[0] + "Subjects"
-    else:
-        log.warning("Something is not right... ignoring local server configuration.")
+def get_remote_server_path() -> Path or None:
+    """ Get the iblrig_remote_server_path configured in the iblrig_params.yml file, expecting something like
+    "\\lab_server_ip_or_dns" """
+    try:
+        return Path(IBLRIG_PARAMS["iblrig_remote_server_path"])
+    except KeyError:
+        log.error("The iblrig_remote_server_path key is missing from the iblrig_params yml file, typically found in the root "
+                  "directory of this repository.")
         return None
 
 
-def get_iblrig_folder() -> str:
-    import iblrig
+def get_iblrig_local_data_path(subjects: bool = True) -> Path or None:
+    """
+    Get the iblrig_local_data_path configured in the iblrig_params.yml file, expecting something like
+    "C:\\iblrig_data" or "C:\\iblrig_data\\Subjects"
 
-    return str(Path(iblrig.__file__).parent.parent)
+    Parameters
+    ----------
+    subjects
+        determines whether to include the Subjects subdirectory; defaults to True
+
+    Returns
+    -------
+    Path or None
+    """
+    try:
+        data_path = Path(IBLRIG_PARAMS["iblrig_local_data_path"])
+    except KeyError:
+        log.error("The iblrig_local_data_path key is missing from the iblrig_params yml file, typically found in the root "
+                  "directory of this repository.")
+        return None
+
+    # Return the "Subjects" subdirectory by default
+    return data_path / "Subjects" if subjects else data_path
 
 
-def get_iblrig_params_folder() -> str:
-    iblrig_ = Path(get_iblrig_folder())
-    return str(iblrig_.parent / "iblrig_params")
+def get_iblrig_remote_server_data_path(subjects: bool = True) -> Path or None:
+    """
+    Get the iblrig_remote_data_path configured in the iblrig_params.yml file, expecting something like
+    "\\\\lab_server_ip_or_dns\\data_folder" or "\\\\lab_server_ip_or_dns\\data_folder\\Subjects"
+
+    Parameters
+    ----------
+    subjects
+        determines whether to include the Subjects subdirectory; defaults to True
+
+    Returns
+    -------
+    Path or None
+    """
+    try:
+        data_path = Path(IBLRIG_PARAMS["iblrig_remote_data_path"])
+    except KeyError:
+        log.error("The iblrig_remote_data_path key is missing from the iblrig_params yml file, typically found in the root "
+                  "directory of this repository.")
+        return None
+
+    # Return the "Subjects" subdirectory by default
+    return data_path / "Subjects" if subjects else data_path
 
 
-def get_iblrig_data_folder(subjects: bool = True) -> str:
-    iblrig_ = Path(get_iblrig_folder())
-    out = iblrig_.parent / "iblrig_data"
-    sout = iblrig_.parent / "iblrig_data" / "Subjects"
-    if not out.exists():
-        make_folder(out)
-    if not sout.exists():
-        make_folder(sout)
-    return str(sout) if subjects else str(out)
+def get_iblrig_path() -> Path or None:
+    """ Get the iblrig_path configured in the iblrig_params.yml file, expecting something like "C:\\iblrig" """
+    try:
+        return Path(IBLRIG_PARAMS["iblrig_path"])
+    except KeyError:
+        log.error("The iblrig_path key is missing from the iblrig_params yml file, typically found in the root directory of this "
+                  "repository.")
+        return None
+
+
+def get_iblrig_params_path() -> Path or None:
+    """ Get the iblrig_params_path configured in the iblrig_params.yml file, expecting something like "C:\\iblrig_params" """
+    try:
+        return Path(IBLRIG_PARAMS["iblrig_params_path"])
+    except KeyError:
+        log.error("The iblrig_params_path key is missing from the iblrig_params yml file, typically found in the root directory "
+                  "of this repository.")
+        return None
+
+
+def get_iblrig_temp_alyx_path() -> Path or None:
+    """ Get the iblrig_temp_alyx_path configured in the iblrig_params.yml file, expecting something like
+    "C:\\Temp\\alyx_proj_data" """
+    try:
+        return Path(IBLRIG_PARAMS["iblrig_temp_alyx_path"])
+    except KeyError:
+        log.error("The iblrig_temp_alyx_path key is missing from the iblrig_params yml file, typically found in the root "
+                  "directory of this repository.")
+        return None
 
 
 def get_commit_hash(folder: str):
@@ -117,7 +158,7 @@ def get_visual_stim_folder_name(protocol: str) -> str:
 
 
 def get_water_calibration_func_file(latest: bool = True) -> Path or list:
-    data_folder = Path(get_iblrig_data_folder())
+    data_folder = get_iblrig_local_data_path()
     func_files = sorted(data_folder.rglob("_iblrig_calibration_water_function.csv"))
     if not func_files:
         return Path()
@@ -125,14 +166,14 @@ def get_water_calibration_func_file(latest: bool = True) -> Path or list:
 
 
 def get_water_calibration_range_file(latest=True) -> Path or list:
-    data_folder = Path(get_iblrig_data_folder())
+    data_folder = get_iblrig_local_data_path()
     range_files = sorted(data_folder.rglob("_iblrig_calibration_water_range.csv"))
     if not range_files:
         return Path()
     return range_files[-1] if latest else range_files
 
 
-def load_water_calibraition_func_file(fpath: str or Path) -> dict:
+def load_water_calibraition_func_file(fpath: str or Path) -> dict or None:
     if not Path(fpath).exists():
         return
 
@@ -178,9 +219,7 @@ def make_folder(str1: str or Path) -> None:
     log.debug(f"Created folder {path}")
 
 
-def get_previous_session_folders(
-    subject_name: str, session_folder: str, remote_subject_folder: str = None
-) -> list:
+def get_previous_session_folders(subject_name: str, session_folder: str, remote_subject_folder: str = None) -> list:
     """Function to find the all previous session folders, evaluates the local and remote storage.
     Returned list will be sorted by date/number, this list will include duplicates if the same
     date is found on both remote and local. Returned list will be empty if no previous sessions
@@ -199,12 +238,12 @@ def get_previous_session_folders(
     log.debug("Looking for previous session folders")
 
     # Set local folder Path and verify it exists
-    local_subject_folder = Path(get_iblrig_data_folder(subjects=True)) / subject_name
+    local_subject_folder = get_iblrig_local_data_path(subjects=True) / subject_name
     local_subject_folder_exists = local_subject_folder.exists()
 
     # Set remote folder Path and verify it exists
     # Ensure returned value is not None for remote drive, important before using Path()
-    remote_subject_folder = remote_subject_folder or get_iblserver_data_folder(subjects=True)
+    remote_subject_folder = remote_subject_folder or str(get_iblrig_remote_server_data_path(subjects=True))
     if remote_subject_folder is not None:
         remote_subject_folder = Path(remote_subject_folder) / subject_name
         remote_subject_folder_exists = remote_subject_folder.exists()
@@ -277,9 +316,7 @@ def get_previous_session_folders(
     return previous_session_folders
 
 
-def get_previous_data_files(
-    protocol: str, subject_name: str, session_folder: str, typ: str = "data"
-) -> list:
+def get_previous_data_files(protocol: str, subject_name: str, session_folder: str, typ: str = "data") -> list:
     log.debug(f"Looking for previous files of type: {typ}")
     prev_data_files = []
     prev_session_files = []
@@ -304,7 +341,7 @@ def get_previous_data_files(
     ds_out = [
         (d, s)
         for d, s in ds_out
-        if protocol in raw.load_settings(str(s.parent.parent))["PYBPOD_PROTOCOL"]
+        if protocol in raw_data_loaders.load_settings(str(s.parent.parent))["PYBPOD_PROTOCOL"]
     ]
     log.debug(f"Found {len(ds_out)} file pairs for protocol {protocol}")
     data_out = [str(d) for d, s in ds_out]
@@ -365,9 +402,8 @@ def get_subfolder_paths(folder: str) -> str:
 
 
 def get_bonsai_path(use_iblrig_bonsai: bool = True) -> str:
-    """Checks for Bonsai folder in iblrig.
-    Returns string with bonsai executable path."""
-    iblrig_folder = get_iblrig_folder()
+    """Checks for Bonsai folder in iblrig. Returns string with bonsai executable path."""
+    iblrig_folder = str(get_iblrig_path())
     folders = get_subfolder_paths(iblrig_folder)
     bonsai_folder = [x for x in folders if "Bonsai" in x][0]
     ibl_bonsai = os.path.join(bonsai_folder, "Bonsai64.exe")
@@ -429,12 +465,12 @@ def get_session_number(session_date_folder: str) -> str:
 
 
 def get_pregen_session_folder() -> str:
-    iblrig_path = Path(get_iblrig_folder())
+    iblrig_path = get_iblrig_path()
     return str(iblrig_path / "tasks" / "_iblrig_tasks_ephysChoiceWorld" / "sessions")
 
 
 def get_camera_setup_wrkfl() -> str:
-    iblrig_path = Path(get_iblrig_folder())
+    iblrig_path = get_iblrig_path()
     return str(iblrig_path / "devices" / "camera_setup" / "setup_video.bonsai")
 
 
@@ -442,19 +478,19 @@ class SessionPathCreator(object):
     # add subject name and protocol (maybe have a metadata struct)
     def __init__(self, subject_name, protocol=False, make=False):
 
-        self.IBLRIG_FOLDER = get_iblrig_folder()
+        self.IBLRIG_FOLDER = str(get_iblrig_path())
         self.IBLRIG_EPHYS_SESSION_FOLDER = get_pregen_session_folder()
-        self._BOARD = params.get_board_name()
+        self._BOARD = pybpod_params.get_board_name()
 
         self._PROTOCOL = protocol
 
         self.IBLRIG_COMMIT_HASH = get_commit_hash(self.IBLRIG_FOLDER)
         self.IBLRIG_VERSION_TAG = get_version_tag(self.IBLRIG_FOLDER)
-        self.IBLRIG_PARAMS_FOLDER = get_iblrig_params_folder()
-        self.IBLRIG_DATA_FOLDER = get_iblrig_data_folder(subjects=False)
-        self.IBLRIG_DATA_SUBJECTS_FOLDER = get_iblrig_data_folder(subjects=True)
+        self.IBLRIG_PARAMS_FOLDER = str(get_iblrig_params_path())
+        self.IBLRIG_DATA_FOLDER = str(get_iblrig_local_data_path(subjects=False))
+        self.IBLRIG_DATA_SUBJECTS_FOLDER = str(get_iblrig_local_data_path(subjects=True))
 
-        self.PARAMS = params.load_params_file()
+        self.PARAMS = pybpod_params.load_params_file()
         self.SUBJECT_NAME = subject_name
         self.SUBJECT_FOLDER = os.path.join(self.IBLRIG_DATA_SUBJECTS_FOLDER, self.SUBJECT_NAME)
 

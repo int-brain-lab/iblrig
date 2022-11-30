@@ -1,14 +1,9 @@
-#!/usr/bin/env python
-# -*- coding:utf-8 -*-
-# @File: iblrig/postfc.py
-# @Author: Niccolo' Bonacchi (@nbonacchi)
-# @Date: Thursday, August 26th 2021, 5:02:19 pm
+import os
+
 import iblrig.bonsai as bonsai
-import iblrig.path_helper as ph
+from iblrig import path_helper
 from iblrig.bpod_helper import bpod_lights
 from iblrig.poop_count import poop
-from pathlib import Path
-import os
 
 
 def bonsai_close_all() -> None:
@@ -31,7 +26,7 @@ def bonsai_close_all() -> None:
 
 
 def cleanup_pybpod_data() -> None:
-    experiments_folder = Path(ph.get_iblrig_params_folder()) / "IBL" / "experiments"
+    experiments_folder = path_helper.get_iblrig_params_path() / "IBL" / "experiments"
     sess_folders = experiments_folder.rglob("sessions")
     for s in sess_folders:
         if "setups" in str(s):

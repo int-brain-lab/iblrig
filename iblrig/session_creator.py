@@ -1,8 +1,3 @@
-#!/usr/bin/env python
-# @Author: Niccolò Bonacchi
-# @Creation_Date: Thursday, March 28th 2019, 7:19:15 pm
-# @Editor: Michele Fabbri
-# @Edit_Date: 2022-02-01
 """
 Creates sessions, pre-generates stim and ephys sessions
 """
@@ -14,7 +9,7 @@ import numpy as np
 
 import iblrig.blocks as blocks
 import iblrig.misc as misc
-import iblrig.path_helper as ph
+from iblrig import path_helper
 from iblrig.misc import smooth_rolling_window as smooth
 
 
@@ -69,7 +64,7 @@ def make_ephysCW_pcqs(pc):
 def pre_generate_ephysCW_session_files(
     nsessions, path="./tasks/_iblrig_tasks_ephysChoiceWorld/sessions"
 ):
-    iblrig_path = Path(ph.get_iblrig_folder())
+    iblrig_path = path_helper.get_iblrig_path()
     path = iblrig_path / Path(path)
     path.mkdir(parents=True, exist_ok=True)
     for i in range(nsessions):
@@ -80,7 +75,7 @@ def pre_generate_ephysCW_session_files(
 
 
 def plot_pcqs(session_num, folder="./tasks/_iblrig_tasks_ephysChoiceWorld/sessions"):
-    iblrig_path = Path(ph.get_iblrig_folder())
+    iblrig_path = path_helper.get_iblrig_path()
     folder_path = Path(folder)
     folder = str(iblrig_path / folder_path)
     num = session_num
@@ -126,7 +121,7 @@ def plot_pcqs(session_num, folder="./tasks/_iblrig_tasks_ephysChoiceWorld/sessio
 def make_stims_for_certification_pcs(seed_num=None, save=False):
     if seed_num is not None:
         np.random.seed(seed_num)
-    iblrig_path = Path(ph.get_iblrig_folder())
+    iblrig_path = path_helper.get_iblrig_path()
     # Generate the position and contrast for the replayed stims
     contrasts = [1.0, 0.5, 0.25, 0.125, 0.0625]
 

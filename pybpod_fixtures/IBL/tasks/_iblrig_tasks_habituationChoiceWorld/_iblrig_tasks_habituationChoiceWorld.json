@@ -1,0 +1,47 @@
+{
+    "__CREATED-ON__": "2022-10-10 10:56:29.929673",
+    "__DEF-TEXT__": "This file contains information about a PyBpod protocol.",
+    "__DEF-URL__": "http://pybpod.readthedocs.org",
+    "__SOFTWARE__": "PyBpod GUI API v1.8.2",
+    "__UPDATED-ON__": "2022-10-10 10:56:29.977517",
+    "__UUID4__": "87267541-895a-42c0-bdc7-d82725dca480",
+    "commands": [
+        {
+            "cmd": "C:\\iblrig\\venv\\Scripts\\python C:\\iblrig\\scripts\\bonsai_stop.py 7110",
+            "type": "create_execcmd",
+            "when": 1
+        },
+        {
+            "cmd": "C:\\iblrig\\venv\\Scripts\\python C:\\iblrig\\scripts\\bonsai_stop.py 7111",
+            "type": "create_execcmd",
+            "when": 1
+        },
+        {
+            "cmd": "C:\\iblrig\\venv\\Scripts\\python C:\\iblrig\\scripts\\cleanup.py",
+            "type": "create_execcmd",
+            "when": 1
+        },
+        {
+            "cmd": "C:\\iblrig\\venv\\Scripts\\python C:\\iblrig\\scripts\\bpod_lights.py 0",
+            "type": "create_execcmd",
+            "when": 0
+        },
+        {
+            "cmd": "C:\\iblrig\\venv\\Scripts\\python C:\\iblrig\\scripts\\bpod_lights.py 1",
+            "type": "create_execcmd",
+            "when": 1
+        },
+        {
+            "cmd": "C:\\iblrig\\venv\\Scripts\\python C:\\iblrig\\scripts\\create_session.py --poop=True",
+            "type": "create_execcmd",
+            "when": 1
+        },
+        {
+            "cmd": "C:\\iblrig\\venv\\Scripts\\python C:\\iblrig\\scripts\\bonsai_stop.py 7112",
+            "type": "create_execcmd",
+            "when": 1
+        }
+    ],
+    "name": "_iblrig_tasks_habituationChoiceWorld",
+    "trigger-softcodes": false
+}

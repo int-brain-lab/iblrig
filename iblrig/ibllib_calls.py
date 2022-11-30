@@ -1,17 +1,11 @@
-#!/usr/bin/env python
-# @File: one/ibllib_calls.py
-# @Author: Niccolo' Bonacchi (@nbonacchi)
-# @Date: Tuesday, March 22nd 2022, 9:54:59 am
-import os
-import subprocess
-
-import iblrig
-from iblrig import envs
-from pathlib import Path
 import json
 
+from one.api import ONE
 
-ROOT_FOLDER = Path().home().joinpath("TempAlyxProjectData")
+from iblrig import path_helper
+from scripts.ibllib import alyx
+
+ROOT_FOLDER = path_helper.get_iblrig_temp_alyx_path()
 ROOT_FOLDER.mkdir(parents=True, exist_ok=True)
 
 
@@ -48,9 +42,7 @@ def get_project_users(project_name: str) -> list:
 
 
 def get_all_subjects_from_project(project_name: str) -> list:
-    subjects_path = [
-        x for x in ROOT_FOLDER.glob("*") if project_name in x.name and "json" in x.suffix
-    ]
+    subjects_path = [x for x in ROOT_FOLDER.glob("*") if project_name in x.name and "json" in x.suffix]
 
     if not subjects_path:
         print(f"Project {project_name} not found")
@@ -72,52 +64,25 @@ def get_one_user():
 
 def call_one_get_project_data(project_name: str, lab: str = None, one_test: bool = False):
     if one_test:
-        one_test = " --one-test "
-    else:
-        one_test = " "
-
-    here = os.getcwd()
-    os.chdir(Path(iblrig.__file__).parent.parent.joinpath("scripts", "ibllib"))
-    ibllib_env_str = envs.get_env_python(env_name="ibllib")
-    ibllib_env = Path(ibllib_env_str).parent
-    if lab is None:
-        resp = subprocess.run(
-            f"python alyx.py{one_test}--get-project {project_name}",
-            shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            env=dict(os.environ.copy(), PATH=str(ibllib_env)),
+        one = ONE(
+            base_url="https://test.alyx.internationalbrainlab.org",
+            username="test_user",
+            password="TapetesBloc18",
+            silent=True
         )
     else:
-        resp = subprocess.run(
-            f"python alyx.py{one_test}--get-project {project_name} --lab {lab}",
-            shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            env=dict(os.environ.copy(), PATH=str(ibllib_env)),
-        )
-    print(resp)
-    os.chdir(here)
-    return
+        one = ONE()
+    alyx.get_alyx_project_info(project_name=project_name, lab=lab, one=one)
 
 
 def call_one_sync_params(one_test: bool = False):
     if one_test:
-        one_test = " --one-test "
+        one = ONE(
+            base_url="https://test.alyx.internationalbrainlab.org",
+            username="test_user",
+            password="TapetesBloc18",
+            silent=True
+        )
     else:
-        one_test = " "
-
-    here = os.getcwd()
-    os.chdir(Path(iblrig.__file__).parent.parent.joinpath("scripts", "ibllib"))
-    ibllib_env_str = envs.get_env_python(env_name="ibllib")
-    ibllib_env = Path(ibllib_env_str).parent
-    resp = subprocess.run(
-        f"python alyx.py{one_test}--sync-params",
-        shell=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        env=dict(os.environ.copy(), PATH=str(ibllib_env)),
-    )
-    print(resp)
-    os.chdir(here)
-    return resp
+        one = ONE()
+    alyx.sync_local_params_to_alyx(one=one)

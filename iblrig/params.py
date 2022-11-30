@@ -1,20 +1,14 @@
-#!/usr/bin/env python
-# @Author: Niccolò Bonacchi
-# @Creation_Date: Friday, September 13th 2019, 2:57:40 pm
-# @Editor: Michele Fabbri
-# @Edit_Date: 2022-02-01
 """
-Getting and loading parameters
+Getting and loading parameters for pybpod
 """
 import json
 import logging
 import shutil
-from pathlib import Path
 
 from pybpodgui_api.models.project import Project
 
 import iblrig
-import iblrig.path_helper as ph
+from iblrig import path_helper
 from iblrig.graphic import strinput
 
 log = logging.getLogger("iblrig")
@@ -47,11 +41,7 @@ EMPTY_BOARD_PARAMS = {
     "DISPLAY_IDX": None,  # int
 }
 
-global AUTO_UPDATABLE_PARAMS
-AUTO_UPDATABLE_PARAMS = dict.fromkeys(
-    ["NAME", "IBLRIG_VERSION", "COM_BPOD", "DATA_FOLDER_LOCAL", "DATA_FOLDER_REMOTE"]
-)
-
+AUTO_UPDATABLE_PARAMS = dict.fromkeys(["NAME", "IBLRIG_VERSION", "COM_BPOD", "DATA_FOLDER_LOCAL", "DATA_FOLDER_REMOTE"])
 DEFAULT_PARAMS = {
     "SCREEN_FREQ_TARGET": 60,
     "DISPLAY_IDX": 1,
@@ -100,9 +90,9 @@ def update_param_key_values(param_key):
     elif param_key == "COM_BPOD":
         return get_pybpod_board_comport()
     elif param_key == "DATA_FOLDER_LOCAL":
-        return ph.get_iblrig_data_folder(subjects=False)
+        return str(path_helper.get_iblrig_local_data_path(subjects=False))
     elif param_key == "DATA_FOLDER_REMOTE":
-        return ph.get_iblserver_data_folder(subjects=False)
+        return str(path_helper.get_iblrig_remote_server_data_path(subjects=False))
     else:
         return None
 
@@ -112,14 +102,14 @@ def get_iblrig_version():
 
 
 def get_pybpod_board_name():
-    iblproject_path = Path(ph.get_iblrig_params_folder()) / "IBL"
+    iblproject_path = path_helper.get_iblrig_params_path() / "IBL"
     p = Project()
     p.load(str(iblproject_path))
     return p.boards[0].name
 
 
 def get_board_name():
-    params_file = Path(ph.get_iblrig_params_folder()) / ".iblrig_params.json"
+    params_file = path_helper.get_iblrig_params_path() / ".iblrig_params.json"
     pybpod_board_name = get_pybpod_board_name()
     if not params_file.exists():
         return pybpod_board_name
@@ -132,14 +122,14 @@ def get_board_name():
 
 
 def get_pybpod_board_comport():
-    iblproject_path = Path(ph.get_iblrig_params_folder()) / "IBL"
+    iblproject_path = path_helper.get_iblrig_params_path() / "IBL"
     p = Project()
     p.load(str(iblproject_path))
     return p.boards[0].serial_port
 
 
 def get_board_comport():
-    params_file = Path(ph.get_iblrig_params_folder()) / ".iblrig_params.json"
+    params_file = path_helper.get_iblrig_params_path() / ".iblrig_params.json"
     pybpod_board_comport = get_pybpod_board_comport()
     if not params_file.exists():
         return pybpod_board_comport
@@ -166,7 +156,7 @@ def write_params_file(data: dict = None, force: bool = False) -> dict:
     :return: params written to file, creates file on disk
     :rtype: dict
     """
-    iblrig_params = Path(ph.get_iblrig_params_folder())
+    iblrig_params = path_helper.get_iblrig_params_path()
     fpath = iblrig_params / ".iblrig_params.json"
     fpath_bckp = iblrig_params / ".iblrig_params_bckp.json"
     if data is None:
@@ -192,7 +182,7 @@ def load_params_file(silent=True) -> dict:
     :return: .iblrig_params.json contents
     :rtype: dict
     """
-    iblrig_params = Path(ph.get_iblrig_params_folder())
+    iblrig_params = path_helper.get_iblrig_params_path()
     fpath = iblrig_params / ".iblrig_params.json"
     log.debug(f"fpath from load_params_file: {fpath}")
     if fpath.exists():
