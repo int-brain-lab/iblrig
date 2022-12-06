@@ -191,10 +191,16 @@ Disable Microsoft Store associations with `python` command
 * Open the Settings or Start menu and search for “App execution aliases” or “Manage app execution aliases” 
 * Disable any python entries listed
 
-### Stim display on wrong screen
+#### Stim display on wrong screen
 If the visual stimulus appears on the wrong screen:
 * short term, pressing `F11` on the keyboard will unmaximize the window; allowing movement of the stimulus to the correct screen 
 * longer term, take note of a file called `C:\iblrig_params\.iblrig_params.json`; within that file is a variable called 
 `DISPLAY_IDX`, its value will be set to 0 or 1. If the stimulus screen initially launches on the wrong monitor (PC screen instead 
 of iPad screen), then change the value of `DISPLAY_IDX`. Change it to 0 if it was on 1, change it to 1 if it was on 0.
   * Please note, the display index value is something assigned by OS and could potentially change between reboots
+
+#### pybpod custom tasks from v6 not running after migrating to v7
+After migrating to v7 of the iblrig software, some may encounter a `ModuleNotFoundError: No module named 'iblrig'` error when 
+attempting to run their custom tasks. This has to do with the way that pybpod calls python in the pre and post commands. Within 
+the `C:\iblrig_params\custom_path\tasks\my_custom_task\` directory, there should be a `my_custom_task.json` file. If this file 
+contains any calls to a specific python executable, they must be updated to `C:\iblrig\venv\Scripts\python`.
