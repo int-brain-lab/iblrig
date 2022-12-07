@@ -204,3 +204,8 @@ After migrating to v7 of the iblrig software, some may encounter a `ModuleNotFou
 attempting to run their custom tasks. This has to do with the way that pybpod calls python in the pre and post commands. Within 
 the `C:\iblrig_params\custom_path\tasks\my_custom_task\` directory, there should be a `my_custom_task.json` file. If this file 
 contains any calls to a specific python executable, they must be updated to `C:\iblrig\venv\Scripts\python`.
+
+#### matplotlib missing DLL error
+Depending on the system configuration, some may encounter a `ImportError: DLL load failed: The specified module could not be 
+found.` when importing matplotlib. To resolve this issue, install `Visual C++ Redistributable for Visual Studio 2015` - 
+https://www.microsoft.com/en-us/download/details.aspx?id=48145
