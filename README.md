@@ -9,14 +9,18 @@ administrative rights.
 In order to install iblrig on a Windows machine please ensure that the following prerequisite is installed first.
 - A fully featured text editor is recommended, something like [Notepad++](https://notepad-plus-plus.org/)
 - [Git](https://git-scm.com); it is recommended to set notepad++ as your default editor for git
+- [Visual C++ Redistributable for Visual Studio 2015](https://www.microsoft.com/en-us/download/details.aspx?id=48145), this is a 
+requirement for the matplotlib python package
 
-Manually download and install the software by following the links above. The other option is to follow the instructions below.
+Manually download and install the software by following the links above. The other option is to follow the instructions below 
+utilizing Chocolatey for a quick command line installation.
 
-#### (Optional) Use chocolatey to install prerequisite software
+#### (Optional) Use Chocolatey to install prerequisite software
 [Chocolatey](https://chocolatey.org/) is a command line approach to bring package management to Window. Run the following 
 commands from the **Administrator: Windows Powershell** prompt to install prerequisite software by this method:
 ```powershell
 Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+choco install vcredist140 --yes
 choco install notepadplusplus --yes
 choco install git --params "/Editor:Notepad++ /NoShellIntegration" --yes
 ```
@@ -29,7 +33,7 @@ prompt in order to use git
 
 Several important notes:
 - There are no supported upgrade paths from previous installations
-- User account name is assumed to be `User`, please modify commands where appropriate
+- User account name is assumed to be `Username`, please modify commands where appropriate
 - The commands given below are assumed to be run on a 'clean' system
   - These instructions assume that `C:\iblrig` and `C:\iblrig_params` directories DO NOT exist; if these directories do 
     exist, it is recommended to back them up to something like `C:\iblrig_bkup` and `C:\iblrig_params_bkup`
@@ -45,7 +49,7 @@ git checkout tags/7.2.0
 New-Item -ItemType Directory -Force -Path C:\Temp
 Invoke-WebRequest -Uri https://www.python.org/ftp/python/3.8.10/python-3.8.10-amd64.exe -OutFile C:\Temp\python-3.8.10-amd64.exe
 Start-Process -NoNewWindow -Wait -FilePath C:\Temp\python-3.8.10-amd64.exe -ArgumentList "/passive", "InstallAllUsers=0", "Include_launcher=0", "Include_test=0"
-C:\Users\User\AppData\Local\Programs\Python\Python38\.\python.exe -m venv C:\iblrig\venv
+C:\Users\<Username>\AppData\Local\Programs\Python\Python38\.\python.exe -m venv C:\iblrig\venv
 C:\iblrig\venv\Scripts\.\Activate.ps1
 C:\iblrig\venv\scripts\python.exe -m pip install --upgrade pip wheel
 pip install --editable . 
@@ -204,8 +208,3 @@ After migrating to v7 of the iblrig software, some may encounter a `ModuleNotFou
 attempting to run their custom tasks. This has to do with the way that pybpod calls python in the pre and post commands. Within 
 the `C:\iblrig_params\custom_path\tasks\my_custom_task\` directory, there should be a `my_custom_task.json` file. If this file 
 contains any calls to a specific python executable, they must be updated to `C:\iblrig\venv\Scripts\python`.
-
-#### matplotlib missing DLL error
-Depending on the system configuration, some may encounter a `ImportError: DLL load failed: The specified module could not be 
-found.` when importing matplotlib. To resolve this issue, install `Visual C++ Redistributable for Visual Studio 2015` - 
-https://www.microsoft.com/en-us/download/details.aspx?id=48145
