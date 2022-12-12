@@ -1,6 +1,9 @@
 # **Release notes**
 
 ## **Release Notes 7.2.0**
+- Updated get_pregen_session_folder function to correctly point to correct directory
+
+## **Release Notes 7.2.0**
 - specifying pywin32 package for only Windows platform
 - removal of all conda requirements, a single python venv is now used
 - modify CI for python venv
