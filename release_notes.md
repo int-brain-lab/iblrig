@@ -1,6 +1,6 @@
 # **Release notes**
 
-## **Release Notes 7.2.0**
+## **Release Notes 7.2.1**
 - Updated get_pregen_session_folder function to correctly point to correct directory
 
 ## **Release Notes 7.2.0**
