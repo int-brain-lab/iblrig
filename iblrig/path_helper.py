@@ -466,7 +466,7 @@ def get_session_number(session_date_folder: str) -> str:
 
 def get_pregen_session_folder() -> str:
     iblrig_path = get_iblrig_path()
-    return str(iblrig_path / "tasks" / "_iblrig_tasks_ephysChoiceWorld" / "sessions")
+    return str(iblrig_path / "pybpod_fixtures" / "IBL" / "tasks" / "_iblrig_tasks_ephysChoiceWorld" / "sessions")
 
 
 def get_camera_setup_wrkfl() -> str:
