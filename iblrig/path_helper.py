@@ -482,7 +482,6 @@ class SessionPathCreator(object):
         self.IBLRIG_DATA_FOLDER = str(get_iblrig_local_data_path(subjects=False))
         self.IBLRIG_DATA_SUBJECTS_FOLDER = str(get_iblrig_local_data_path(subjects=True))
 
-        self.PARAMS = pybpod_params.load_params_file()
         self.SUBJECT_NAME = subject_name
         self.SUBJECT_FOLDER = os.path.join(self.IBLRIG_DATA_SUBJECTS_FOLDER, self.SUBJECT_NAME)
 

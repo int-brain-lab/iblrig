@@ -4,21 +4,31 @@ Base classes for trial parameters and session parameters.
 """
 from pathlib import Path
 from abc import ABC
+import inspect
+import logging
 import sys
 import os
+
+
+import numpy as np
 import yaml
 
 from pythonosc import udp_client
 
+from iblrig import params as pybpod_params
+from iblrig.path_helper import SessionPathCreator
+from iblrig.rotary_encoder import MyRotaryEncoder
 from iblutil.util import Bunch
+import iblrig.ambient_sensor as ambient_sensor
 import iblrig.bonsai as bonsai
 import iblrig.frame2TTL as frame2TTL
 import iblrig.iotasks as iotasks
-from iblrig.path_helper import SessionPathCreator
-from iblrig.rotary_encoder import MyRotaryEncoder
 import iblrig.misc as misc
-import iblrig.ambient_sensor as ambient_sensor
 import iblrig.sound as sound
+import iblrig.user_input as user
+
+
+log = logging.getLogger("iblrig")
 
 OSC_CLIENT_IP = "127.0.0.1"
 OSC_CLIENT_PORT = 7110
@@ -150,10 +160,14 @@ class ChoiceWorldSessionParamHandler(SessionParamHandlerSoundMixin,
                                      SessionParamHandlerAmbientSensorMixin,
                                      BaseSessionParamHandler):
 
-    def __init__(self, *args,  rig_settings_yaml=None, fmake=True, **kwargs):
+    def __init__(self, *args,  rig_settings_yaml=None, fmake=True, interactive=True, **kwargs):
         super(ChoiceWorldSessionParamHandler, self).__init__(*args, **kwargs)
         # Load rig settings
         self.rig = iotasks.load_rig_settings_yaml(rig_settings_yaml)
+        # Load the tasks settings
+        with open(Path(inspect.getfile(self.__class__)).parent.joinpath('task_settings.yml')) as fp:
+            self.task = Bunch(yaml.safe_load(fp))
+        # Create the folder architecture and get the paths property updated
         # Path handling
         if not fmake:
             make = False
@@ -163,6 +177,61 @@ class ChoiceWorldSessionParamHandler(SessionParamHandlerSoundMixin,
             make = ["video"]  # besides behavior which folders to creae
         spc = SessionPathCreator(self.rig.PYBPOD_SUBJECTS[0], protocol=self.rig.PYBPOD_PROTOCOL, make=make)
         self.paths = Bunch(spc.__dict__)
-
+        # get another set of parameters from .iblrig_params.json
+        self.PARAMS = pybpod_params.load_params_file()
         # OSC client
-        self.OSC_CLIENT = udp_client.SimpleUDPClient(OSC_CLIENT_IP, OSC_CLIENT_PORT)
+        self.osc_client = udp_client.SimpleUDPClient(OSC_CLIENT_IP, OSC_CLIENT_PORT)
+        # Session data
+        if interactive:
+            self.SUBJECT_WEIGHT = user.ask_subject_weight(self.rig.PYBPOD_SUBJECTS[0])
+        else:
+            self.SUBJECT_WEIGHT = np.NaN
+        self.display_logs()
+
+    def reprJSON(self):
+        """
+        JSON representation of the session parameters - one way street
+        :return:
+        """
+        def remove_from_dict(sx):
+            if "weighings" in sx.keys():
+                sx["weighings"] = None
+            if "water_administration" in sx.keys():
+                sx["water_administration"] = None
+            return sx
+
+        d = self.__dict__.copy()
+        d["GO_TONE"] = "go_tone(freq={}, dur={}, amp={})".format(
+            self.GO_TONE_FREQUENCY, self.GO_TONE_DURATION, self.GO_TONE_AMPLITUDE
+        )
+        d["WHITE_NOISE"] = "white_noise(freq=-1, dur={}, amp={})".format(
+            self.WHITE_NOISE_DURATION, self.WHITE_NOISE_AMPLITUDE
+        )
+        d["SD"] = str(d["SD"])
+        d["OSC_CLIENT"] = str(d["OSC_CLIENT"])
+        d["CALIB_FUNC"] = str(d["CALIB_FUNC"])
+        if isinstance(d["PYBPOD_SUBJECT_EXTRA"], list):
+            sub = []
+            for sx in d["PYBPOD_SUBJECT_EXTRA"]:
+                sub.append(remove_from_dict(sx))
+            d["PYBPOD_SUBJECT_EXTRA"] = sub
+        elif isinstance(d["PYBPOD_SUBJECT_EXTRA"], dict):
+            d["PYBPOD_SUBJECT_EXTRA"] = remove_from_dict(d["PYBPOD_SUBJECT_EXTRA"])
+        d["LAST_TRIAL_DATA"] = None
+        d["LAST_SETTINGS_DATA"] = None
+        return d
+
+    def display_logs(self):
+        if self.paths.PREVIOUS_DATA_FILE:
+            msg = f"""
+##########################################
+PREVIOUS SESSION FOUND
+LOADING PARAMETERS FROM:       {self.PREVIOUS_DATA_FILE}
+PREVIOUS NTRIALS:              {self.LAST_TRIAL_DATA["trial_num"]}
+PREVIOUS WATER DRANK:          {self.LAST_TRIAL_DATA["water_delivered"]}
+LAST REWARD:                   {self.LAST_TRIAL_DATA["reward_amount"]}
+LAST GAIN:                     {self.LAST_TRIAL_DATA["stim_gain"]}
+PREVIOUS WEIGHT:               {self.LAST_SETTINGS_DATA["SUBJECT_WEIGHT"]}
+##########################################"""
+            log.info(msg)
+

@@ -6,6 +6,7 @@ import logging
 import shutil
 
 from pybpodgui_api.models.project import Project
+from iblutil.util import Bunch
 
 import iblrig
 from iblrig import path_helper
@@ -191,11 +192,11 @@ def load_params_file(silent=True) -> dict:
         out = ensure_all_keys_present(out)
         if not silent:
             log.info(out)
-        return out
+        return Bunch(out)
     elif not fpath.exists():
         log.warning("Could not load params file does not exist. Creating...")
         out = ask_params_comports(write_params_file())
-        return out
+        return Bunch(out)
 
 
 def update_params_file(data: dict = None, force: bool = False) -> None:
