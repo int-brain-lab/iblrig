@@ -12,9 +12,12 @@ import os
 import shutil
 import zipfile
 from pathlib import Path
+import yaml
 
 import numpy as np
+from iblutil.util import Bunch
 
+import iblrig
 import iblrig.misc as misc
 import iblrig.path_helper as ph
 import iblrig.raw_data_loaders as raw
@@ -31,22 +34,21 @@ class ComplexEncoder(json.JSONEncoder):
             return json.JSONEncoder.default(self, obj)
 
 
-def deserialize_pybpod_user_settings(sph: object) -> object:
-    sph.PYBPOD_CREATOR = json.loads(sph.PYBPOD_CREATOR)
-    sph.PYBPOD_USER_EXTRA = json.loads(sph.PYBPOD_USER_EXTRA)
-
-    sph.PYBPOD_SUBJECTS = [json.loads(x.replace("'", '"')) for x in sph.PYBPOD_SUBJECTS]
-    if len(sph.PYBPOD_SUBJECTS) == 1:
-        sph.PYBPOD_SUBJECTS = sph.PYBPOD_SUBJECTS[0]
-    else:
-        log.error("Multiple subjects found in PYBPOD_SUBJECTS")
-        raise IOError
-
-    sph.PYBPOD_SUBJECT_EXTRA = [json.loads(x) for x in sph.PYBPOD_SUBJECT_EXTRA[1:-1].split('","')]
-    if len(sph.PYBPOD_SUBJECT_EXTRA) == 1:
-        sph.PYBPOD_SUBJECT_EXTRA = sph.PYBPOD_SUBJECT_EXTRA[0]
-
-    return sph
+def load_rig_settings_yaml(rig_settings_yaml=None) -> dict:
+    """
+    Load user settings from yaml file, and deserialize some of the PYBPOD parameters written in json format
+    :param user_settings_yaml:
+    :return:
+    """
+    rig_settings_yaml = rig_settings_yaml or Path(iblrig.__file__).parent.joinpath('rig_settings_template.yaml')
+    with open(rig_settings_yaml) as fp:
+        rs = yaml.safe_load(fp)
+    # deserialize some of the PYBPOD parameters written in json format
+    rs['PYBPOD_CREATOR'] = json.loads(rs['PYBPOD_CREATOR'])
+    rs['PYBPOD_USER_EXTRA'] = json.loads(rs['PYBPOD_USER_EXTRA'])
+    rs['PYBPOD_SUBJECTS'] = [json.loads(x.replace("'", '"')) for x in rs.pop('PYBPOD_SUBJECTS')][0]
+    rs['PYBPOD_SUBJECT_EXTRA'] = [json.loads(x.replace("'", '"')) for x in rs['PYBPOD_SUBJECT_EXTRA'][1:-1].split('","')][0]
+    return Bunch(rs)
 
 
 def save_session_settings(sph: object) -> None:

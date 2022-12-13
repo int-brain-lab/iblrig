@@ -10,6 +10,7 @@ import yaml
 
 from pythonosc import udp_client
 
+from iblutil.util import Bunch
 import iblrig.bonsai as bonsai
 import iblrig.frame2TTL as frame2TTL
 import iblrig.iotasks as iotasks
@@ -62,6 +63,9 @@ class SessionParamHandlerFrame2TTLMixin:
     Frame 2 TTL interface for state machine
     """
     def __init__(self, *args, **kwargs):
+        pass
+
+    def start(self):
         self.F2TTL_GET_AND_SET_THRESHOLDS = frame2TTL.get_and_set_thresholds()
 
 
@@ -146,18 +150,19 @@ class ChoiceWorldSessionParamHandler(SessionParamHandlerSoundMixin,
                                      SessionParamHandlerAmbientSensorMixin,
                                      BaseSessionParamHandler):
 
-    def __init__(self, *args, fmake=True, **kwargs):
+    def __init__(self, *args,  rig_settings_yaml=None, fmake=True, **kwargs):
         super(ChoiceWorldSessionParamHandler, self).__init__(*args, **kwargs)
+        # Load rig settings
+        self.rig = iotasks.load_rig_settings_yaml(rig_settings_yaml)
         # Path handling
-        self = iotasks.deserialize_pybpod_user_settings(self)
         if not fmake:
             make = False
-        elif fmake and "ephys" in self.PYBPOD_BOARD:
+        elif fmake and "ephys" in self.rig.PYBPOD_BOARD:
             make = True  # True makes only raw_behavior_data folder
         else:
             make = ["video"]  # besides behavior which folders to creae
-        spc = SessionPathCreator(self.PYBPOD_SUBJECTS[0], protocol=self.PYBPOD_PROTOCOL, make=make)
-        self.__dict__.update(spc.__dict__)
+        spc = SessionPathCreator(self.rig.PYBPOD_SUBJECTS[0], protocol=self.rig.PYBPOD_PROTOCOL, make=make)
+        self.paths = Bunch(spc.__dict__)
 
         # OSC client
         self.OSC_CLIENT = udp_client.SimpleUDPClient(OSC_CLIENT_IP, OSC_CLIENT_PORT)

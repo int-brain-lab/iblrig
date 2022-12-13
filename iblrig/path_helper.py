@@ -97,7 +97,7 @@ def get_iblrig_remote_server_data_path(subjects: bool = True) -> Path or None:
 def get_iblrig_path() -> Path or None:
     """ Get the iblrig_path configured in the iblrig_params.yml file, expecting something like "C:\\iblrig" """
     try:
-        return Path(IBLRIG_PARAMS["iblrig_path"])
+        return Path(iblrig.__file__).parent
     except KeyError:
         log.error("The iblrig_path key is missing from the iblrig_params yml file, typically found in the root directory of this "
                   "repository.")
@@ -219,6 +219,11 @@ def make_folder(str1: str or Path) -> None:
     log.debug(f"Created folder {path}")
 
 
+def get_subfolder_paths(path: Path) -> list:
+    """Get a list of all subfolders in a given folder."""
+    return [x for x in path.iterdir() if x.is_dir()]
+
+
 def get_previous_session_folders(subject_name: str, session_folder: str, remote_subject_folder: str = None) -> list:
     """Function to find the all previous session folders, evaluates the local and remote storage.
     Returned list will be sorted by date/number, this list will include duplicates if the same
@@ -283,15 +288,12 @@ def get_previous_session_folders(subject_name: str, session_folder: str, remote_
         date_folder_list.extend(get_subfolder_paths(remote_subject_folder))
 
     # find the key that we want to sort the date_folder_list
-    def date_folder_list_sort_key(e):
-        # parser.parse(e.split(os.sep)[-1].replace('_',':'))
-        esplit = e.split(os.sep)
-        date = esplit[-1]
-        if "_" in date:
-            date = date.replace("_", ":")
-        return parser.parse(date)
+    def date_folder_list_sort_key(e: Path) -> datetime.datetime:
+        # parses the date from the folder name, .../subject/yyyy-mm-dd to datetime object
+        return parser.parse(e.parts[-1].replace('_', ':'))
+
     # Add filter for only dates
-    date_folder_list = [x for x in date_folder_list if re.match(r".*\d{4}-\d{2}-\d{2}", x)]
+    date_folder_list = [x for x in date_folder_list if re.match(r".*\d{4}-\d{2}-\d{2}", str(x))]
     # sort list of folders for subject_folder with dates
     date_folder_list.sort(key=date_folder_list_sort_key)
 
@@ -302,7 +304,7 @@ def get_previous_session_folders(subject_name: str, session_folder: str, remote_
 
     # Check if session_folder is contained in previous_session_folders
     previous_session_folders = [
-        x for x in sorted(previous_session_folders) if session_folder not in x
+        x for x in sorted(previous_session_folders) if session_folder not in str(x)
     ]
     if not previous_session_folders:
         log.debug(f"NOT FOUND: No previous sessions for subject {subject_name}")
@@ -390,22 +392,12 @@ def get_previous_session_path(protocol: str, subject_name: str, session_folder: 
     return out
 
 
-def get_subfolder_paths(folder: str) -> str:
-    out = [
-        os.path.join(folder, x)
-        for x in os.listdir(folder)
-        if os.path.isdir(os.path.join(folder, x))
-    ]
-    log.debug(f"Found {len(out)} subfolders for folder {folder}")
-
-    return out
-
-
 def get_bonsai_path(use_iblrig_bonsai: bool = True) -> str:
     """Checks for Bonsai folder in iblrig. Returns string with bonsai executable path."""
-    iblrig_folder = str(get_iblrig_path())
-    folders = get_subfolder_paths(iblrig_folder)
-    bonsai_folder = [x for x in folders if "Bonsai" in x][0]
+    iblrig_folder = get_iblrig_path()
+    bonsai_folder = next((folder for folder in Path(iblrig_folder).glob('*') if folder.is_dir() and 'Bonsain' in folder.name), None)
+    if bonsai_folder is None:
+        return
     ibl_bonsai = os.path.join(bonsai_folder, "Bonsai64.exe")
     if not Path(ibl_bonsai).exists():  # if Bonsai64 does not exist Bonsai v >2.5.0
         ibl_bonsai = os.path.join(bonsai_folder, "Bonsai.exe")
@@ -478,7 +470,7 @@ class SessionPathCreator(object):
     # add subject name and protocol (maybe have a metadata struct)
     def __init__(self, subject_name, protocol=False, make=False):
 
-        self.IBLRIG_FOLDER = str(get_iblrig_path())
+        self.IBLRIG_FOLDER = get_iblrig_path()
         self.IBLRIG_EPHYS_SESSION_FOLDER = get_pregen_session_folder()
         self._BOARD = pybpod_params.get_board_name()
 
