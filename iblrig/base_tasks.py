@@ -15,6 +15,7 @@ import yaml
 
 from pythonosc import udp_client
 
+import iblrig.adaptive as adaptive
 from iblrig import params as pybpod_params
 from iblrig.path_helper import SessionPathCreator
 from iblrig.rotary_encoder import MyRotaryEncoder
@@ -32,6 +33,19 @@ log = logging.getLogger("iblrig")
 
 OSC_CLIENT_IP = "127.0.0.1"
 OSC_CLIENT_PORT = 7110
+
+
+class BaseTrialParamHandler(ABC):
+
+    def __init__(self):
+        pass
+
+    def next_trial(self):
+        pass
+
+    def trial_completed(self):
+        pass
+
 
 
 class BaseSessionParamHandler(ABC):
@@ -160,10 +174,10 @@ class ChoiceWorldSessionParamHandler(SessionParamHandlerSoundMixin,
                                      SessionParamHandlerAmbientSensorMixin,
                                      BaseSessionParamHandler):
 
-    def __init__(self, *args,  rig_settings_yaml=None, fmake=True, interactive=True, **kwargs):
+    def __init__(self, *args,  pybpod_settings_yaml=None, fmake=True, interactive=True, **kwargs):
         super(ChoiceWorldSessionParamHandler, self).__init__(*args, **kwargs)
         # Load rig settings
-        self.rig = iotasks.load_rig_settings_yaml(rig_settings_yaml)
+        self.rig = iotasks.load_pybpod_settings_yaml(pybpod_settings_yaml)
         # Load the tasks settings
         with open(Path(inspect.getfile(self.__class__)).parent.joinpath('task_settings.yml')) as fp:
             self.task = Bunch(yaml.safe_load(fp))
@@ -178,7 +192,7 @@ class ChoiceWorldSessionParamHandler(SessionParamHandlerSoundMixin,
         spc = SessionPathCreator(self.rig.PYBPOD_SUBJECTS[0], protocol=self.rig.PYBPOD_PROTOCOL, make=make)
         self.paths = Bunch(spc.__dict__)
         # get another set of parameters from .iblrig_params.json
-        self.PARAMS = pybpod_params.load_params_file()
+        self.settings = Bunch(pybpod_params.load_params_file())
         # OSC client
         self.osc_client = udp_client.SimpleUDPClient(OSC_CLIENT_IP, OSC_CLIENT_PORT)
         # Session data
@@ -234,3 +248,47 @@ LAST GAIN:                     {self.LAST_TRIAL_DATA["stim_gain"]}
 PREVIOUS WEIGHT:               {self.LAST_SETTINGS_DATA["SUBJECT_WEIGHT"]}
 ##########################################"""
             log.info(msg)
+
+    def checklist(self):
+        """
+        Before starting the task, this goes throught a checklist making sure that the rig
+        has calibration values and the hardware is connected
+        :return:
+        """
+        # =====================================================================
+        # ADAPTIVE STUFF - CALIBRATION OF THE WATER REWARD
+        # =====================================================================
+        self.CALIB_FUNC = None
+        if self.task.AUTOMATIC_CALIBRATION:
+            self.CALIB_FUNC = adaptive.init_calib_func()
+        self.CALIB_FUNC_RANGE = adaptive.init_calib_func_range()
+        self.REWARD_VALVE_TIME = adaptive.init_reward_valve_time(self)
+        # =====================================================================
+
+    def start(self):
+        # SUBJECT
+        # =====================================================================
+        self.SUBJECT_DISENGAGED_TRIGGERED = False
+        self.SUBJECT_DISENGAGED_TRIALNUM = None
+        self.SUBJECT_PROJECT = None  # user.ask_project(self.PYBPOD_SUBJECTS[0])
+        # =====================================================================
+        # PREVIOUS DATA FILES
+        # =====================================================================
+        self.LAST_TRIAL_DATA = iotasks.load_data(self.paths.PREVIOUS_SESSION_PATH)
+        self.LAST_SETTINGS_DATA = iotasks.load_settings(self.paths.PREVIOUS_SESSION_PATH)
+        # SAVE SETTINGS FILE AND TASK CODE
+        # =====================================================================
+        if not self.DEBUG:
+            iotasks.save_session_settings(self)
+            iotasks.copy_task_code(self)
+            iotasks.save_task_code(self)
+            if "ephys" not in self.PYBPOD_BOARD:
+                iotasks.copy_video_code(self)
+                iotasks.save_video_code(self)
+            self.bpod_lights(0)
+
+
+class ChoiceWorldTrialParamHandler(BaseTrialParamHandler):
+
+    def __init__(self, *args, **kwargs):
+        super(ChoiceWorldTrialParamHandler, self).__init__(*args, **kwargs)

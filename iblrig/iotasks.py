@@ -34,14 +34,14 @@ class ComplexEncoder(json.JSONEncoder):
             return json.JSONEncoder.default(self, obj)
 
 
-def load_rig_settings_yaml(rig_settings_yaml=None) -> dict:
+def load_pybpod_settings_yaml(pybpod_settings_yaml=None) -> dict:
     """
-    Load user settings from yaml file, and deserialize some of the PYBPOD parameters written in json format
+    Load pbpod settings from yaml file, and deserialize some of the PYBPOD parameters written in json format
     :param user_settings_yaml:
     :return:
     """
-    rig_settings_yaml = rig_settings_yaml or Path(iblrig.__file__).parent.joinpath('rig_settings_template.yaml')
-    with open(rig_settings_yaml) as fp:
+    pybpod_settings_yaml = pybpod_settings_yaml or Path(iblrig.__file__).parent.joinpath('pybpod_settings_template.yaml')
+    with open(pybpod_settings_yaml) as fp:
         rs = yaml.safe_load(fp)
     # deserialize some of the PYBPOD parameters written in json format
     rs['PYBPOD_CREATOR'] = json.loads(rs['PYBPOD_CREATOR'])
