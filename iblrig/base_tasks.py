@@ -234,4 +234,3 @@ LAST GAIN:                     {self.LAST_TRIAL_DATA["stim_gain"]}
 PREVIOUS WEIGHT:               {self.LAST_SETTINGS_DATA["SUBJECT_WEIGHT"]}
 ##########################################"""
             log.info(msg)
-

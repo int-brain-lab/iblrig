@@ -395,7 +395,8 @@ def get_previous_session_path(protocol: str, subject_name: str, session_folder: 
 def get_bonsai_path(use_iblrig_bonsai: bool = True) -> str:
     """Checks for Bonsai folder in iblrig. Returns string with bonsai executable path."""
     iblrig_folder = get_iblrig_path()
-    bonsai_folder = next((folder for folder in Path(iblrig_folder).glob('*') if folder.is_dir() and 'Bonsain' in folder.name), None)
+    bonsai_folder = next((folder for folder in Path(
+        iblrig_folder).glob('*') if folder.is_dir() and 'Bonsain' in folder.name), None)
     if bonsai_folder is None:
         return
     ibl_bonsai = os.path.join(bonsai_folder, "Bonsai64.exe")

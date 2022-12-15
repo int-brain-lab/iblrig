@@ -3,7 +3,6 @@
 # @Author: Niccolò Bonacchi
 # @Date:   2018-02-02 17:19:09
 import logging
-from sys import platform
 import iblrig.adaptive as adaptive
 import iblrig.iotasks as iotasks
 from iblrig.base_tasks import ChoiceWorldSessionParamHandler
@@ -45,4 +44,3 @@ class SessionParamHandler(ChoiceWorldSessionParamHandler):
         #         iotasks.copy_video_code(self)
         #         iotasks.save_video_code(self)
         #     self.bpod_lights(0)
-
