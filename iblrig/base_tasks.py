@@ -176,8 +176,8 @@ class ChoiceWorldSessionParamHandler(SessionParamHandlerSoundMixin,
 
     def __init__(self, *args,  pybpod_settings_yaml=None, fmake=True, interactive=True, **kwargs):
         super(ChoiceWorldSessionParamHandler, self).__init__(*args, **kwargs)
-        # Load rig settings
-        self.rig = iotasks.load_pybpod_settings_yaml(pybpod_settings_yaml)
+        # Load pybpod settings
+        self.pybpod = iotasks.load_pybpod_settings_yaml(pybpod_settings_yaml)
         # Load the tasks settings
         with open(Path(inspect.getfile(self.__class__)).parent.joinpath('task_settings.yml')) as fp:
             self.task = Bunch(yaml.safe_load(fp))
@@ -185,11 +185,11 @@ class ChoiceWorldSessionParamHandler(SessionParamHandlerSoundMixin,
         # Path handling
         if not fmake:
             make = False
-        elif fmake and "ephys" in self.rig.PYBPOD_BOARD:
+        elif fmake and "ephys" in self.pybpod.PYBPOD_BOARD:
             make = True  # True makes only raw_behavior_data folder
         else:
             make = ["video"]  # besides behavior which folders to creae
-        spc = SessionPathCreator(self.rig.PYBPOD_SUBJECTS[0], protocol=self.rig.PYBPOD_PROTOCOL, make=make)
+        spc = SessionPathCreator(self.pybpod.PYBPOD_SUBJECTS[0], protocol=self.pybpod.PYBPOD_PROTOCOL, make=make)
         self.paths = Bunch(spc.__dict__)
         # get another set of parameters from .iblrig_params.json
         self.settings = Bunch(pybpod_params.load_params_file())
@@ -197,7 +197,7 @@ class ChoiceWorldSessionParamHandler(SessionParamHandlerSoundMixin,
         self.osc_client = udp_client.SimpleUDPClient(OSC_CLIENT_IP, OSC_CLIENT_PORT)
         # Session data
         if interactive:
-            self.SUBJECT_WEIGHT = user.ask_subject_weight(self.rig.PYBPOD_SUBJECTS[0])
+            self.SUBJECT_WEIGHT = user.ask_subject_weight(self.pybpod.PYBPOD_SUBJECTS[0])
         else:
             self.SUBJECT_WEIGHT = np.NaN
         self.display_logs()

@@ -18,23 +18,23 @@ from iblrig import raw_data_loaders
 log = logging.getLogger("iblrig")
 
 # Determine paths for special use cases based on existence of a file:
-#   - development machine - ".../iblrig/iblrig_params_dev.yml"
-#   - github actions ci - ".../iblrig/iblrig_params_ci.yml"
-if (Path(iblrig.__file__).parents[1] / "iblrig_params_dev.yml").exists():
-    log.info("iblrig_params_dev.yml file exists, assuming development machine, and pulling parameters from this file.")
-    iblrig_params_file_path = Path(iblrig.__file__).parents[1] / "iblrig_params_dev.yml"
-elif (Path(iblrig.__file__).parents[1] / "iblrig_params_ci.yml").exists():
-    log.info("iblrig_params_ci.yml file exists, assuming github actions ci, and pulling parameters from this file.")
-    iblrig_params_file_path = Path(iblrig.__file__).parents[1] / "iblrig_params_ci.yml"
+#   - development machine - ".../iblrig/iblrig_params_dev.yaml"
+#   - github actions ci - ".../iblrig/iblrig_params_ci.yaml"
+if (Path(iblrig.__file__).parents[1] / "iblrig_params_dev.yaml").exists():
+    log.info("iblrig_params_dev.yaml file exists, assuming development machine, and pulling parameters from this file.")
+    iblrig_params_file_path = Path(iblrig.__file__).parents[1] / "iblrig_params_dev.yaml"
+elif (Path(iblrig.__file__).parents[1] / "iblrig_params_ci.yaml").exists():
+    log.info("iblrig_params_ci.yaml file exists, assuming github actions ci, and pulling parameters from this file.")
+    iblrig_params_file_path = Path(iblrig.__file__).parents[1] / "iblrig_params_ci.yaml"
 else:
-    iblrig_params_file_path = Path(iblrig.__file__).parents[1] / "iblrig_params.yml"
+    iblrig_params_file_path = Path(iblrig.__file__).parents[1] / "iblrig_params.yaml"
 with open(iblrig_params_file_path, "r") as f:
     IBLRIG_PARAMS = yaml.safe_load(f)
     print(f.read())
 
 
 def get_remote_server_path() -> Path or None:
-    """ Get the iblrig_remote_server_path configured in the iblrig_params.yml file, expecting something like
+    """ Get the iblrig_remote_server_path configured in the iblrig_params_template.yaml file, expecting something like
     "\\lab_server_ip_or_dns" """
     try:
         return Path(IBLRIG_PARAMS["iblrig_remote_server_path"])
@@ -46,7 +46,7 @@ def get_remote_server_path() -> Path or None:
 
 def get_iblrig_local_data_path(subjects: bool = True) -> Path or None:
     """
-    Get the iblrig_local_data_path configured in the iblrig_params.yml file, expecting something like
+    Get the iblrig_local_data_path configured in the iblrig_params_template.yaml file, expecting something like
     "C:\\iblrig_data" or "C:\\iblrig_data\\Subjects"
 
     Parameters
@@ -71,7 +71,7 @@ def get_iblrig_local_data_path(subjects: bool = True) -> Path or None:
 
 def get_iblrig_remote_server_data_path(subjects: bool = True) -> Path or None:
     """
-    Get the iblrig_remote_data_path configured in the iblrig_params.yml file, expecting something like
+    Get the iblrig_remote_data_path configured in the iblrig_params_template.yaml file, expecting something like
     "\\\\lab_server_ip_or_dns\\data_folder" or "\\\\lab_server_ip_or_dns\\data_folder\\Subjects"
 
     Parameters
@@ -95,7 +95,7 @@ def get_iblrig_remote_server_data_path(subjects: bool = True) -> Path or None:
 
 
 def get_iblrig_path() -> Path or None:
-    """ Get the iblrig_path configured in the iblrig_params.yml file, expecting something like "C:\\iblrig" """
+    """ Get the iblrig_path configured in the iblrig_params_template.yaml file, expecting something like "C:\\iblrig" """
     try:
         return Path(iblrig.__file__).parent
     except KeyError:
@@ -105,7 +105,7 @@ def get_iblrig_path() -> Path or None:
 
 
 def get_iblrig_params_path() -> Path or None:
-    """ Get the iblrig_params_path configured in the iblrig_params.yml file, expecting something like "C:\\iblrig_params" """
+    """ Get the iblrig_params_path configured in the iblrig_params_template.yaml file, expecting something like "C:\\iblrig_params" """
     try:
         return Path(IBLRIG_PARAMS["iblrig_params_path"])
     except KeyError:
@@ -115,7 +115,7 @@ def get_iblrig_params_path() -> Path or None:
 
 
 def get_iblrig_temp_alyx_path() -> Path or None:
-    """ Get the iblrig_temp_alyx_path configured in the iblrig_params.yml file, expecting something like
+    """ Get the iblrig_temp_alyx_path configured in the iblrig_params_template.yaml file, expecting something like
     "C:\\Temp\\alyx_proj_data" """
     try:
         return Path(IBLRIG_PARAMS["iblrig_temp_alyx_path"])

@@ -40,7 +40,7 @@ jobs:
           cd iblrig
           python -m flake8
 
-      - name: iblrig_params.yml generation for ci
+      - name: iblrig_params_ci.yaml generation for ci
         shell: pwsh -l {0}
         run: |
           Get-ChildItem
@@ -64,7 +64,7 @@ jobs:
           New-Item $iblrig_temp_alyx_loc -ItemType Directory
 
           cd iblrig
-          $filename = "iblrig_params_ci.yml" 
+          $filename = "iblrig_params_ci.yaml" 
           New-Item $filename -ItemType File -Value ("# parameter file generated for github actions ci" + [Environment]::NewLine)
           Add-Content $filename "iblrig_local_data_path: '$iblrig_local_data_loc'"
           Add-Content $filename "iblrig_remote_data_path: '$iblrig_remote_data_loc'"
@@ -105,4 +105,4 @@ jobs:
           name: requirements_frozen
           path: |
             requirements_frozen.txt
-            iblrig/iblrig_params_ci.yml
+            iblrig/iblrig_params_ci.yaml
