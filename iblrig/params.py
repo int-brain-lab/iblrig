@@ -37,12 +37,10 @@ EMPTY_BOARD_PARAMS = {
     "WATER_CALIBRATION_DATE": None,  # str
     "BPOD_TTL_TEST_STATUS": None,  # str
     "BPOD_TTL_TEST_DATE": None,  # str
-    "DATA_FOLDER_LOCAL": None,  # str
-    "DATA_FOLDER_REMOTE": None,  # str
     "DISPLAY_IDX": None,  # int
 }
 
-AUTO_UPDATABLE_PARAMS = dict.fromkeys(["NAME", "IBLRIG_VERSION", "COM_BPOD", "DATA_FOLDER_LOCAL", "DATA_FOLDER_REMOTE"])
+AUTO_UPDATABLE_PARAMS = dict.fromkeys(["NAME", "IBLRIG_VERSION", "COM_BPOD"])
 DEFAULT_PARAMS = {
     "SCREEN_FREQ_TARGET": 60,
     "DISPLAY_IDX": 1,
@@ -90,10 +88,6 @@ def update_param_key_values(param_key):
         return get_iblrig_version()
     elif param_key == "COM_BPOD":
         return get_pybpod_board_comport()
-    elif param_key == "DATA_FOLDER_LOCAL":
-        return str(path_helper.get_iblrig_local_data_path(subjects=False))
-    elif param_key == "DATA_FOLDER_REMOTE":
-        return str(path_helper.get_iblrig_remote_server_data_path(subjects=False))
     else:
         return None
 

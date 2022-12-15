@@ -125,29 +125,6 @@ def get_iblrig_temp_alyx_path() -> Path or None:
         return None
 
 
-def get_commit_hash(folder: str):
-    here = os.getcwd()
-    os.chdir(folder)
-    out = subprocess.check_output(["git", "rev-parse", "HEAD"]).decode().strip()
-    os.chdir(here)
-    if not out:
-        log.debug("Commit hash is empty string")
-    log.debug(f"Found commit hash {out}")
-    return out
-
-
-def get_version_tag(folder: str) -> str:
-    here = os.getcwd()
-    os.chdir(folder)
-    tag = subprocess.check_output(["git", "tag", "--points-at", "HEAD"]).decode().strip()
-    os.chdir(here)
-    if not tag:
-        log.debug(f"NOT FOUND: Version TAG for {folder}")
-    else:
-        log.debug(f"Found version tag {tag}")
-    return tag
-
-
 def get_visual_stim_folder_name(protocol: str) -> str:
     if "habituation" in protocol or "sync_test" in protocol:
         return "GaborHabituationTask"
@@ -477,8 +454,6 @@ class SessionPathCreator(object):
 
         self._PROTOCOL = protocol
 
-        self.IBLRIG_COMMIT_HASH = get_commit_hash(self.IBLRIG_FOLDER)
-        self.IBLRIG_VERSION_TAG = get_version_tag(self.IBLRIG_FOLDER)
         self.IBLRIG_PARAMS_FOLDER = str(get_iblrig_params_path())
         self.IBLRIG_DATA_FOLDER = str(get_iblrig_local_data_path(subjects=False))
         self.IBLRIG_DATA_SUBJECTS_FOLDER = str(get_iblrig_local_data_path(subjects=True))
@@ -600,18 +575,6 @@ class SessionPathCreator(object):
         for k in self.__dict__:
             if not self.__dict__[k]:
                 log.info(f"NOT FOUND: {k}")
-                if k == "IBLRIG_VERSION_TAG":
-                    msg = """
-        ##########################################
-            NOT FOUND: IBLRIG_VERSION_TAG
-        ##########################################
-        You appear to be on an uncommitted and
-        unsupported version of iblrig. Please
-        check the latest documentation to install
-        a supported version of iblrig.
-        ##########################################"""
-                    log.warning(msg)
-
                 if k == "PREVIOUS_DATA_FILE" and "training" in self._PROTOCOL:
                     msg = """
         ##########################################

@@ -20,8 +20,6 @@ class TestParams(unittest.TestCase):
 
     def test_update_param_key_values(self):
         for k in params.AUTO_UPDATABLE_PARAMS:
-            if k == "DATA_FOLDER_REMOTE" and platform.system() == "Windows":
-                continue
             v = params.update_param_key_values(k)
             self.assertTrue(v is not None)
 
