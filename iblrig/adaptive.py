@@ -12,7 +12,7 @@ import numpy as np
 import scipy as sp
 import scipy.interpolate
 
-import iblrig.params as params
+import iblrig.params
 from iblrig.raw_data_loaders import load_data
 
 log = logging.getLogger("iblrig")
@@ -43,9 +43,10 @@ def init_reward_amount(sph: object) -> float:
     return out
 
 
-def init_calib_func() -> scipy.interpolate.pchip:
-    PARAMS = params.load_params_file()
-    if PARAMS["WATER_CALIBRATION_DATE"] == "" or PARAMS["WATER_CALIBRATION_DATE"] is None:
+def init_calib_func(params=None) -> scipy.interpolate.pchip:
+    if params is None:
+        params = iblrig.params.load_params_file()
+    if params["WATER_CALIBRATION_DATE"] == "" or params["WATER_CALIBRATION_DATE"] is None:
         msg = """
     ##########################################
          Water calibration date is emtpy!
@@ -54,15 +55,16 @@ def init_calib_func() -> scipy.interpolate.pchip:
         raise ValueError("Rig not calibrated")
 
     time2vol = scipy.interpolate.pchip(
-        PARAMS["WATER_CALIBRATION_OPEN_TIMES"], PARAMS["WATER_CALIBRATION_WEIGHT_PERDROP"],
+        params["WATER_CALIBRATION_OPEN_TIMES"], params["WATER_CALIBRATION_WEIGHT_PERDROP"],
     )
 
     return time2vol
 
 
-def init_calib_func_range() -> tuple:
-    PARAMS = params.load_params_file()
-    if PARAMS["WATER_CALIBRATION_RANGE"] == "":
+def init_calib_func_range(params=None) -> tuple:
+    if params is None:
+        params = iblrig.params.load_params_file()
+    if params["WATER_CALIBRATION_RANGE"] == "":
         min_open_time = 0
         max_open_time = 1000
         msg = """
@@ -73,8 +75,8 @@ def init_calib_func_range() -> tuple:
             ##########################################"""
         log.warning(msg)
     else:
-        min_open_time = PARAMS["WATER_CALIBRATION_RANGE"][0]
-        max_open_time = PARAMS["WATER_CALIBRATION_RANGE"][1]
+        min_open_time = params["WATER_CALIBRATION_RANGE"][0]
+        max_open_time = params["WATER_CALIBRATION_RANGE"][1]
 
     return min_open_time, max_open_time
 
