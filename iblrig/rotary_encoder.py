@@ -7,7 +7,7 @@ from pybpod_rotaryencoder_module.module_api import RotaryEncoderModule
 
 
 class MyRotaryEncoder(object):
-    def __init__(self, all_thresholds, gain, com):
+    def __init__(self, all_thresholds, gain, com, connect=False):
         self.RE_PORT = com
         self.WHEEL_PERIM = 31 * 2 * np.pi  # = 194,778744523
         self.deg_mm = 360 / self.WHEEL_PERIM
@@ -25,13 +25,14 @@ class MyRotaryEncoder(object):
         ]
         # Dict mapping threshold crossings with name ov RE event
         self.THRESHOLD_EVENTS = dict(zip(all_thresholds, self.ENCODER_EVENTS))
-        self.configure()
+        if connect:
+            self.connect()
 
     def reprJSON(self):
         d = self.__dict__
         return d
 
-    def configure(self):
+    def connect(self):
         if self.RE_PORT == "COM#":
             return
         m = RotaryEncoderModule(self.RE_PORT)

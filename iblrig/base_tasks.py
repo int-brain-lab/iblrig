@@ -4,6 +4,7 @@ Base classes for trial parameters and session parameters.
 """
 from pathlib import Path
 from abc import ABC
+import datetime
 import inspect
 import logging
 import sys
@@ -35,34 +36,19 @@ OSC_CLIENT_IP = "127.0.0.1"
 OSC_CLIENT_PORT = 7110
 
 
-class BaseTrialParamHandler(ABC):
-
-    def __init__(self):
-        pass
-
-    def next_trial(self):
-        pass
-
-    def trial_completed(self):
-        pass
-
-
-
 class BaseSessionParamHandler(ABC):
-    SESSION_START_DELAY_SEC = 0
 
-    def __init__(self, debug=False):
+    def __init__(self, debug=False, pybpod_settings_yaml=None):
         self.DEBUG = debug
-        # =====================================================================
-        # Load task_settings and user_settings
-        # =====================================================================
-        path_task = Path(sys.modules[self.__module__].__file__).parent
-        with open(path_task.joinpath('task_settings.yaml')) as fp:
-            ts = yaml.safe_load(fp) or {}
-        with open(path_task.joinpath('user_settings.yaml')) as fp:
-            us = yaml.safe_load(fp) or {}
-        self.__dict__.update(ts)
-        self.__dict__.update(us)
+        self.calibration = Bunch({})
+        # Load pybpod settings
+        self.pybpod_settings = iotasks.load_pybpod_settings_yaml(pybpod_settings_yaml)
+        # get another set of parameters from .iblrig_params.json
+        self.settings = Bunch(pybpod_params.load_params_file())
+        # Load the tasks settings
+        with open(Path(inspect.getfile(self.__class__)).parent.joinpath('task_settings.yaml')) as fp:
+            self.task_params = Bunch(yaml.safe_load(fp))
+
 
     def bpod_lights(self, command: int):
         fpath = Path(self.IBLRIG_FOLDER) / "scripts" / "bpod_lights.py"
@@ -76,38 +62,38 @@ class BaseSessionParamHandler(ABC):
         misc.patch_settings_file(self.SETTINGS_FILE_PATH, patch)
 
 
-class SessionParamHandlerAmbientSensorMixin:
+class AmbientSensorMixin:
 
     def save_ambient_sensor_reading(self, bpod_instance):
         return ambient_sensor.get_reading(bpod_instance, save_to=self.SESSION_RAW_DATA_FOLDER)
 
 
-class SessionParamHandlerFrame2TTLMixin:
+class Frame2TTLMixin:
     """
     Frame 2 TTL interface for state machine
     """
-    def __init__(self, *args, **kwargs):
-        pass
-
     def start(self):
         self.F2TTL_GET_AND_SET_THRESHOLDS = frame2TTL.get_and_set_thresholds()
 
 
-class SessionParamHandlerRotaryEncoderMixin:
+class RotaryEncoderMixin:
     """
-    Sound interface methods for state machine
+    Rotary encoder interface for state machine
     """
     def __init__(self, *args, **kwargs):
-        self.ALL_THRESHOLDS = self.STIM_POSITIONS + self.QUIESCENCE_THRESHOLDS
-        self.ROTARY_ENCODER = MyRotaryEncoder(
-            self.ALL_THRESHOLDS, self.STIM_GAIN, self.PARAMS["COM_ROTARY_ENCODER"]
+        super(RotaryEncoderMixin, self).__init__()
+        self.device_rotary_encoder = MyRotaryEncoder(
+            all_thresholds=self.task_params.STIM_POSITIONS + self.task_params.QUIESCENCE_THRESHOLDS,
+            gain=self.task_params.STIM_GAIN,
+            com=self.settings.COM_ROTARY_ENCODER,
+            connect=False
         )
-
     def start(self):
+        self.device_rotary_encoder.connect()
         bonsai.start_visual_stim(self)
 
 
-class SessionParamHandlerCameraMixin:
+class CameraMixin:
     """
     Camera recording interface for state machine via bonsai
     """
@@ -118,7 +104,7 @@ class SessionParamHandlerCameraMixin:
             return bonsai.start_mic_recording(self)
 
 
-class SessionParamHandlerSoundMixin:
+class SoundMixin:
     """
     Sound interface methods for state machine
     """
@@ -167,40 +153,42 @@ class SessionParamHandlerSoundMixin:
         self.OUT_STOP_SOUND = ("SoftCode", 0) if self.SOFT_SOUND else ("Serial3", ord("X"))
 
 
-class ChoiceWorldSessionParamHandler(SessionParamHandlerSoundMixin,
-                                     SessionParamHandlerFrame2TTLMixin,
-                                     SessionParamHandlerRotaryEncoderMixin,
-                                     SessionParamHandlerCameraMixin,
-                                     SessionParamHandlerAmbientSensorMixin,
+class ChoiceWorldSessionParamHandler(SoundMixin,
+                                     Frame2TTLMixin,
+                                     RotaryEncoderMixin,
+                                     CameraMixin,
+                                     AmbientSensorMixin,
                                      BaseSessionParamHandler):
 
-    def __init__(self, *args,  pybpod_settings_yaml=None, fmake=True, interactive=True, **kwargs):
+    def __init__(self, *args,  fmake=True, interactive=True, **kwargs):
         super(ChoiceWorldSessionParamHandler, self).__init__(*args, **kwargs)
-        # Load pybpod settings
-        self.pybpod = iotasks.load_pybpod_settings_yaml(pybpod_settings_yaml)
-        # Load the tasks settings
-        with open(Path(inspect.getfile(self.__class__)).parent.joinpath('task_settings.yml')) as fp:
-            self.task = Bunch(yaml.safe_load(fp))
         # Create the folder architecture and get the paths property updated
-        # Path handling
         if not fmake:
             make = False
-        elif fmake and "ephys" in self.pybpod.PYBPOD_BOARD:
+        elif fmake and "ephys" in self.pybpod_settings.PYBPOD_BOARD:
             make = True  # True makes only raw_behavior_data folder
         else:
             make = ["video"]  # besides behavior which folders to creae
-        spc = SessionPathCreator(self.pybpod.PYBPOD_SUBJECTS[0], protocol=self.pybpod.PYBPOD_PROTOCOL, make=make)
+        spc = SessionPathCreator(self.pybpod_settings.PYBPOD_SUBJECTS[0], protocol=self.pybpod_settings.PYBPOD_PROTOCOL, make=make)
         self.paths = Bunch(spc.__dict__)
-        # get another set of parameters from .iblrig_params.json
-        self.settings = Bunch(pybpod_params.load_params_file())
         # OSC client
         self.osc_client = udp_client.SimpleUDPClient(OSC_CLIENT_IP, OSC_CLIENT_PORT)
         # Session data
         if interactive:
-            self.SUBJECT_WEIGHT = user.ask_subject_weight(self.pybpod.PYBPOD_SUBJECTS[0])
+            self.SUBJECT_WEIGHT = user.ask_subject_weight(self.pybpod_settings.PYBPOD_SUBJECTS[0])
         else:
             self.SUBJECT_WEIGHT = np.NaN
         self.display_logs()
+
+    @property
+    def iti_reward(self, assert_calibration=True):
+        """
+        Returns the ITI time that needs to be set in order to achieve the desired ITI,
+        by subtracting the time it takes to give a reward from the desired ITI.
+        """
+        if assert_calibration:
+            assert 'REWARD_VALVE_TIME' in self.calibration.keys(), 'Reward valve time not calibrated'
+        return self.task_params.ITI_CORRECT - self.calibration.get('REWARD_VALVE_TIME', None)
 
     def reprJSON(self):
         """
@@ -259,7 +247,7 @@ PREVIOUS WEIGHT:               {self.LAST_SETTINGS_DATA["SUBJECT_WEIGHT"]}
         # ADAPTIVE STUFF - CALIBRATION OF THE WATER REWARD
         # =====================================================================
         self.CALIB_FUNC = None
-        if self.task.AUTOMATIC_CALIBRATION:
+        if self.task_params.AUTOMATIC_CALIBRATION:
             self.CALIB_FUNC = adaptive.init_calib_func()
         self.CALIB_FUNC_RANGE = adaptive.init_calib_func_range()
         self.REWARD_VALVE_TIME = adaptive.init_reward_valve_time(self)
@@ -286,9 +274,3 @@ PREVIOUS WEIGHT:               {self.LAST_SETTINGS_DATA["SUBJECT_WEIGHT"]}
                 iotasks.copy_video_code(self)
                 iotasks.save_video_code(self)
             self.bpod_lights(0)
-
-
-class ChoiceWorldTrialParamHandler(BaseTrialParamHandler):
-
-    def __init__(self, *args, **kwargs):
-        super(ChoiceWorldTrialParamHandler, self).__init__(*args, **kwargs)

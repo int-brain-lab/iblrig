@@ -76,7 +76,6 @@ sph.SESSION_START_DELAY_SEC = ask_session_delay(sph.SETTINGS_FILE_PATH)
 # =============================================================================
 # TRIAL PARAMETERS AND STATE MACHINE
 # =============================================================================
-global tph
 tph = TrialParamHandler(sph)
 
 f, axes = op.make_fig(sph)

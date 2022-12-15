@@ -5,10 +5,8 @@ import math
 import random
 
 import numpy as np
-from dateutil import parser
 
 import iblrig.ambient_sensor as ambient_sensor
-import iblrig.blocks as blocks
 import iblrig.bonsai as bonsai
 import iblrig.misc as misc
 from iblrig.check_sync_pulses import sync_check
@@ -27,7 +25,7 @@ class SessionParamHandler(ChoiceWorldSessionParamHandler):
         super(SessionParamHandler, self).__init__(debug=debug, fmake=fmake, **kwargs)
 
 
-class TrialParamHandler(object):
+class Task():
     """All trial parameters for the current trial.
     On self.trial_completed a JSON serializable string containing state/event
     data and all the parameters is returned to be printed out and saved by
@@ -35,45 +33,18 @@ class TrialParamHandler(object):
     self.next_trial calls the update functions of all related objects
     """
 
-    def __init__(self, sph):
-        # Constants from settings
-        self.session_start_delay_sec = sph.SESSION_START_DELAY_SEC
-        self.init_datetime = parser.parse(sph.PYBPOD_SESSION) + datetime.timedelta(
-            0, self.session_start_delay_sec
-        )
-        self.task_protocol = sph.PYBPOD_PROTOCOL
-        self.data_file_path = sph.DATA_FILE_PATH
-        self.data_file = open(self.data_file_path, "a")
-        self.position_set = sph.STIM_POSITIONS
-        self.contrast_set = sph.CONTRAST_SET
-        self.contrast_set_probability_type = sph.CONTRAST_SET_PROBABILITY_TYPE
-        self.repeat_on_error = sph.REPEAT_ON_ERROR
-        self.threshold_events_dict = sph.ROTARY_ENCODER.THRESHOLD_EVENTS
-        self.quiescent_period_base = sph.QUIESCENT_PERIOD
-        self.quiescent_period = self.quiescent_period_base + misc.texp()
-        self.response_window = sph.RESPONSE_WINDOW
-        self.interactive_delay = sph.INTERACTIVE_DELAY
-        self.iti_error = sph.ITI_ERROR
-        self.iti_correct_target = sph.ITI_CORRECT
-        self.osc_client = sph.OSC_CLIENT
-        self.stim_freq = sph.STIM_FREQ
-        self.stim_angle = sph.STIM_ANGLE
-        self.stim_gain = sph.STIM_GAIN
-        self.stim_sigma = sph.STIM_SIGMA
-        self.out_tone = sph.OUT_TONE
-        self.out_noise = sph.OUT_NOISE
-        self.out_stop_sound = sph.OUT_STOP_SOUND
-        self.poop_count = sph.POOP_COUNT
-        self.save_ambient_data = sph.RECORD_AMBIENT_SENSOR_DATA
+    def __init__(self, *args, interactive=True, **kwargs):
+
+        self.init_datetime = datetime.datetime.now()
+        self.sph = SessionParamHandler(rig_settings_yaml=None, interactive=interactive)
+
+        self.quiescent_period = np.NaN  # the quiescence period is a baseline plus a random drawn number
         self.as_data = {
             "Temperature_C": -1,
             "AirPressure_mb": -1,
             "RelativeHumidity": -1,
         }
         # Reward amount
-        self.reward_amount = sph.REWARD_AMOUNT
-        self.reward_valve_time = sph.REWARD_VALVE_TIME
-        self.iti_correct = self.iti_correct_target - self.reward_valve_time
         # Initialize parameters that may change every trial
         self.trial_num = 0
         self.stim_phase = 0.0
@@ -81,29 +52,24 @@ class TrialParamHandler(object):
 
         self.block_num = 0
         self.block_trial_num = 0
-        self.block_len_factor = sph.BLOCK_LEN_FACTOR
-        self.block_len_min = sph.BLOCK_LEN_MIN
-        self.block_len_max = sph.BLOCK_LEN_MAX
-        self.block_probability_set = sph.BLOCK_PROBABILITY_SET
-        self.block_init_5050 = sph.BLOCK_INIT_5050
-        self.block_len = blocks.init_block_len(self)
+
+        if self.sph.task_params.BLOCK_INIT_5050:
+            self.block_len = 90
+        else:
+            self.block_len = self.get_block_len()
+
         # Position
-        self.stim_probability_left = blocks.init_probability_left(self)
-        self.stim_probability_left_buffer = [self.stim_probability_left]
-        self.position = blocks.draw_position(self.position_set, self.stim_probability_left)
-        self.position_buffer = [self.position]
+        self.stim_probability_left = self.init_probability_left()
+        self.position = self.draw_position(pleft=self.stim_probability_left)
         # Contrast
-        self.contrast = misc.draw_contrast(self.contrast_set)
-        self.contrast_buffer = [self.contrast]
-        self.signed_contrast = self.contrast * np.sign(self.position)
-        self.signed_contrast_buffer = [self.signed_contrast]
+        self.contrast = misc.draw_contrast(self.sph.task_params.CONTRAST_SET)
         # RE event names
-        self.event_error = self.threshold_events_dict[self.position]
-        self.event_reward = self.threshold_events_dict[-self.position]
-        self.movement_left = self.threshold_events_dict[sph.QUIESCENCE_THRESHOLDS[0]]
-        self.movement_right = self.threshold_events_dict[sph.QUIESCENCE_THRESHOLDS[1]]
+
+        # self.event_error = self.sph.re.ROTARY_ENCODER.THRESHOLD_EVENTS[self.position]
+        # self.event_reward = self.sph.re.ROTARY_ENCODER.THRESHOLD_EVENTS[-self.position]
+        # self.movement_left = self.sph.re.ROTARY_ENCODER.THRESHOLD_EVENTS[self.sph.task_params.QUIESCENCE_THRESHOLDS[0]]
+        # self.movement_right = self.sph.re.ROTARY_ENCODER.THRESHOLD_EVENTS[self.sph.task_params.QUIESCENCE_THRESHOLDS[1]]
         # Trial Completed params
-        self.elapsed_time = 0
         self.behavior_data = []
         self.response_time = None
         self.response_time_buffer = []
@@ -113,6 +79,14 @@ class TrialParamHandler(object):
         self.ntrials_correct = 0
         self.water_delivered = 0
 
+    @property
+    def elapsed_time(self):
+        # elapsed time from init datetime in seconds
+        return (datetime.datetime.now() - self.init_datetime).total_seconds()
+
+    @property
+    def signed_contrast(self):
+        return self.contrast * np.sign(self.position)
     def check_stop_criterions(self):
         return misc.check_stop_criterions(
             self.init_datetime, self.response_time_buffer, self.trial_num
@@ -178,12 +152,12 @@ RELATIVE HUMIDITY:    {self.as_data['RelativeHumidity']} %
         # Update stimulus phase
         self.stim_phase = random.uniform(0, 2 * math.pi)
         # Update block
-        self = blocks.update_block_params(self)
+        self = self.update_block_params(self)
         # Update stim probability left + buffer
-        self.stim_probability_left = blocks.update_probability_left(self)
+        self.stim_probability_left = self.update_probability_left(self)
         self.stim_probability_left_buffer.append(self.stim_probability_left)
         # Update position + buffer
-        self.position = blocks.draw_position(self.position_set, self.stim_probability_left)
+        self.position = self.draw_position(self.position_set, self.stim_probability_left)
         self.position_buffer.append(self.position)
         # Update contrast + buffer
         self.contrast = misc.draw_contrast(
@@ -260,11 +234,57 @@ RELATIVE HUMIDITY:    {self.as_data['RelativeHumidity']} %
 
         return self
 
+    def get_block_len(self, factor=None, min_=None, max_=None):
+        factor = factor or self.sph.task_params.BLOCK_LEN_FACTOR
+        min_ = min_ or self.sph.task_params.BLOCK_LEN_MIN
+        max_ = max_ or self.sph.task_params.BLOCK_LEN_MAX
+        return int(misc.texp(factor=factor, min_=min_, max_=max_))
 
-class Task():
-    """
+    def update_block_params(self):
+        self.block_trial_num += 1
+        if self.block_trial_num > self.block_len:
+            self.block_num += 1
+            self.block_trial_num = 1
+            self.block_len = self.get_block_len(
+                factor=self.block_len_factor, min_=self.block_len_min, max_=self.block_len_max
+            )
+        return self
 
-    """
+    def update_probability_left(tph):
+        if tph.block_trial_num != 1:
+            return tph.stim_probability_left
 
-    def __init__(self, *args, interactive=True, **kwargs):
-        self.sph = SessionParamHandler(rig_settings_yaml=None, interactive=interactive)
+        if tph.block_num == 1 and tph.block_init_5050:
+            return 0.5
+        elif tph.block_num == 1 and not tph.block_init_5050:
+            return np.random.choice(tph.block_probability_set)
+        elif tph.block_num == 2 and tph.block_init_5050:
+            return np.random.choice(tph.block_probability_set)
+        else:
+            return round(abs(1 - tph.stim_probability_left), 1)
+
+    def draw_position(self, position_set=None, pleft=None):
+        position_set = position_set or self.sph.task_params.STIM_POSITIONS
+        pleft = pleft or self.stim_probability_left
+        return int(np.random.choice(position_set, p=[pleft, 1 - pleft]))
+
+    def init_probability_left(self):
+        if self.sph.task_params.BLOCK_INIT_5050:
+            return 0.5
+        else:
+            return np.random.choice(self.sph.task_params.BLOCK_PROBABILITY_SET)
+
+    def calc_probability_left(tph):
+        if tph.block_num == 1:
+            out = 0.5
+        elif tph.block_num == 2:
+            spos = np.sign(tph.position_buffer)
+            low = tph.len_blocks_buffer[0]
+            high = tph.len_blocks_buffer[0] + tph.len_blocks_buffer[1]
+            if np.sum(spos[low:high]) / tph.len_blocks_buffer[1] > 0:
+                out = 0.2
+            else:
+                out = 0.8
+        else:
+            out = np.round(np.abs(1 - tph.stim_probability_left), 1)
+        return out
