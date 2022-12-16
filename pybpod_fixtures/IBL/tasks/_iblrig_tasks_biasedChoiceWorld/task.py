@@ -87,6 +87,7 @@ class Task():
     @property
     def signed_contrast(self):
         return self.contrast * np.sign(self.position)
+
     def check_stop_criterions(self):
         return misc.check_stop_criterions(
             self.init_datetime, self.response_time_buffer, self.trial_num
@@ -173,8 +174,6 @@ RELATIVE HUMIDITY:    {self.as_data['RelativeHumidity']} %
         # Update contrast + buffer
         self.contrast = self.draw_contrast()
         # Update state machine events
-
-
         self.event_error = self.sph.device_rotary_encoder.THRESHOLD_EVENTS[self.position]
         self.event_reward = self.sph.device_rotary_encoder.THRESHOLD_EVENTS[-self.position]
 
@@ -187,7 +186,6 @@ RELATIVE HUMIDITY:    {self.as_data['RelativeHumidity']} %
         """Update outcome variables using bpod.session.current_trial
         Check trial for state entries, first value of first tuple"""
         # Update elapsed_time
-        self.elapsed_time = datetime.datetime.now() - self.init_datetime
         self.behavior_data = behavior_data
         correct = ~np.isnan(self.behavior_data["States timestamps"]["correct"][0][0])
         error = ~np.isnan(self.behavior_data["States timestamps"]["error"][0][0])
@@ -209,17 +207,18 @@ RELATIVE HUMIDITY:    {self.as_data['RelativeHumidity']} %
         # Increment the trial correct counter
         self.ntrials_correct += self.trial_correct
         # Update the water delivered
+        self.sph.task_params
         if self.trial_correct:
-            self.water_delivered += self.reward_amount
+            self.water_delivered += self.sph.task_params.REWARD_AMOUNT
 
         # SAVE TRIAL DATA
         params = self.__dict__.copy()
         params.update({"behavior_data": behavior_data})
         # Convert to str all non serializable params
-        params["data_file"] = str(params["data_file"])
+        # params["data_file"] = str(params["data_file"])
         params["osc_client"] = "osc_client_pointer"
         params["init_datetime"] = params["init_datetime"].isoformat()
-        params["elapsed_time"] = str(params["elapsed_time"])
+        params["elapsed_time"] = str(self.elapsed_time)
         params["position"] = int(params["position"])
         # Delete buffered data
         params["stim_probability_left_buffer"] = ""
@@ -237,8 +236,6 @@ RELATIVE HUMIDITY:    {self.as_data['RelativeHumidity']} %
         # If more than 42 trials save transfer_me.flag
         if self.trial_num == 42:
             misc.create_flags(self.data_file_path, self.poop_count)
-
-        return self
 
     def get_block_len(self, factor=None, min_=None, max_=None):
         factor = factor or self.sph.task_params.BLOCK_LEN_FACTOR

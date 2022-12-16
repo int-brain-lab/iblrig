@@ -484,23 +484,17 @@ no_go_trial = {
     },
 }  # noqa
 
-
-
 task = Task(interactive=False)
-
 task.next_trial()
-task.next_trial()
-task.trial_completed()
-
-
-for x in range(90):
-    # print('next_trial took: ', next_trial_times[-1], '(s)')
-    tph = tph.trial_completed(
-        np.random.choice([correct_trial, error_trial, no_go_trial], p=[0.9, 0.05, 0.05])
-    )
-
-    tph.show_trial_log()
-    print("\nBLOCK NUM: {:>16}".format(tph.block_num))
-    print("BLOCK TRIAL NUM: {:>10s}".format(f"{tph.block_trial_num}/{tph.block_len}"))
-    print("PROBABILITY_LEFT: {:>9}".format(tph.stim_probability_left))
-    print("SIGNED CONTRAST: {:>10}".format(tph.signed_contrast))
+# task.next_trial()
+#
+#
+# for x in range(90):
+#     # print('next_trial took: ', next_trial_times[-1], '(s)')
+#     task.trial_completed(np.random.choice([correct_trial, error_trial, no_go_trial], p=[0.9, 0.05, 0.05]))
+#
+#
+#     print("\nBLOCK NUM: {:>16}".format(task.block_num))
+#     print("BLOCK TRIAL NUM: {:>10s}".format(f"{task.block_trial_num}/{task.block_len}"))
+#     print("PROBABILITY_LEFT: {:>9}".format(task.stim_probability_left))
+#     print("SIGNED CONTRAST: {:>10}".format(task.signed_contrast))

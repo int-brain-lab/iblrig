@@ -19,7 +19,6 @@ end with user input
 import datetime
 import logging
 import struct
-from pathlib import Path
 
 import serial
 import serial.tools.list_ports
@@ -115,7 +114,6 @@ def alyx_server_rig_ok() -> bin:
         log.warning("ONE is in offline mode, can not connect to Alyx.")
     else:
         alyx_server_rig += 0b100
-    pars = _grep_param_dict()
     try:
         list(path_helper.get_iblrig_remote_server_data_path().glob("*"))
         alyx_server_rig += 0b010

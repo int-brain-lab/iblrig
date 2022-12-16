@@ -4,12 +4,9 @@ Base classes for trial parameters and session parameters.
 """
 from pathlib import Path
 from abc import ABC
-import datetime
 import inspect
 import logging
-import sys
 import os
-
 
 import numpy as np
 import yaml
@@ -17,7 +14,6 @@ import yaml
 from pythonosc import udp_client
 
 import iblrig.adaptive as adaptive
-from iblrig import params as pybpod_params
 from iblrig.path_helper import SessionPathCreator
 from iblrig.rotary_encoder import MyRotaryEncoder
 from iblutil.util import Bunch
@@ -38,17 +34,16 @@ OSC_CLIENT_PORT = 7110
 
 class BaseSessionParamHandler(ABC):
 
-    def __init__(self, debug=False, pybpod_settings_yaml=None):
+    def __init__(self, debug=False):
         self.DEBUG = debug
         self.calibration = Bunch({})
         # Load pybpod settings
-        self.pybpod_settings = iotasks.load_pybpod_settings_yaml(pybpod_settings_yaml)
+        self.pybpod_settings = iotasks.load_settings_yaml('pybpod_settings.yaml')
         # get another set of parameters from .iblrig_params.json
-        self.settings = Bunch(pybpod_params.load_params_file())
+        self.hardware_settings = iotasks.load_settings_yaml('hardware_settings.yaml')
         # Load the tasks settings
-        with open(Path(inspect.getfile(self.__class__)).parent.joinpath('task_settings.yaml')) as fp:
+        with open(Path(inspect.getfile(self.__class__)).parent.joinpath('task_parameters.yaml')) as fp:
             self.task_params = Bunch(yaml.safe_load(fp))
-
 
     def bpod_lights(self, command: int):
         fpath = Path(self.IBLRIG_FOLDER) / "scripts" / "bpod_lights.py"
@@ -85,9 +80,10 @@ class RotaryEncoderMixin:
         self.device_rotary_encoder = MyRotaryEncoder(
             all_thresholds=self.task_params.STIM_POSITIONS + self.task_params.QUIESCENCE_THRESHOLDS,
             gain=self.task_params.STIM_GAIN,
-            com=self.settings.COM_ROTARY_ENCODER,
+            com=self.hardware_settings.device_rotary_encoder['COM_ROTARY_ENCODER'],
             connect=False
         )
+
     def start(self):
         self.device_rotary_encoder.connect()
         bonsai.start_visual_stim(self)
@@ -121,7 +117,10 @@ class SoundMixin:
         # =====================================================================
         # SOUNDS
         # =====================================================================
-        self.SOFT_SOUND = None if "ephys" in self.PYBPOD_BOARD else self.SOFT_SOUND
+        self.device_sound = Bunch({})
+        # TODO: this is task specific
+        # self.device_sound.SOFT_SOUND = None if "ephys" in self.PYBPOD_BOARD else self.SOFT_SOUND
+
         self.SOUND_SAMPLE_FREQ = sound.sound_sample_freq(self.SOFT_SOUND)
 
         self.WHITE_NOISE_DURATION = float(self.WHITE_NOISE_DURATION)
@@ -169,7 +168,10 @@ class ChoiceWorldSessionParamHandler(SoundMixin,
             make = True  # True makes only raw_behavior_data folder
         else:
             make = ["video"]  # besides behavior which folders to creae
-        spc = SessionPathCreator(self.pybpod_settings.PYBPOD_SUBJECTS[0], protocol=self.pybpod_settings.PYBPOD_PROTOCOL, make=make)
+        spc = SessionPathCreator(
+            self.pybpod_settings.PYBPOD_SUBJECTS[0],
+            protocol=self.pybpod_settings.PYBPOD_PROTOCOL,
+            make=make)
         self.paths = Bunch(spc.__dict__)
         # OSC client
         self.osc_client = udp_client.SimpleUDPClient(OSC_CLIENT_IP, OSC_CLIENT_PORT)
@@ -204,21 +206,18 @@ class ChoiceWorldSessionParamHandler(SoundMixin,
 
         d = self.__dict__.copy()
         d["GO_TONE"] = "go_tone(freq={}, dur={}, amp={})".format(
-            self.GO_TONE_FREQUENCY, self.GO_TONE_DURATION, self.GO_TONE_AMPLITUDE
+            self.task_params.GO_TONE_FREQUENCY,
+            self.task_params.GO_TONE_DURATION,
+            self.task_params.GO_TONE_AMPLITUDE
         )
         d["WHITE_NOISE"] = "white_noise(freq=-1, dur={}, amp={})".format(
-            self.WHITE_NOISE_DURATION, self.WHITE_NOISE_AMPLITUDE
+            self.task_params.WHITE_NOISE_DURATION,
+            self.task_params.WHITE_NOISE_AMPLITUDE
         )
+
         d["SD"] = str(d["SD"])
-        d["OSC_CLIENT"] = str(d["OSC_CLIENT"])
         d["CALIB_FUNC"] = str(d["CALIB_FUNC"])
-        if isinstance(d["PYBPOD_SUBJECT_EXTRA"], list):
-            sub = []
-            for sx in d["PYBPOD_SUBJECT_EXTRA"]:
-                sub.append(remove_from_dict(sx))
-            d["PYBPOD_SUBJECT_EXTRA"] = sub
-        elif isinstance(d["PYBPOD_SUBJECT_EXTRA"], dict):
-            d["PYBPOD_SUBJECT_EXTRA"] = remove_from_dict(d["PYBPOD_SUBJECT_EXTRA"])
+
         d["LAST_TRIAL_DATA"] = None
         d["LAST_SETTINGS_DATA"] = None
         return d

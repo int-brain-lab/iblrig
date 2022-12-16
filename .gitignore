@@ -1,4 +1,6 @@
-iblrig_params.yaml
+hardware_settings.yaml
+iblrig_settings.yaml
+pybpod_settings.yaml
 Bonsai/*
 Bonsai/Bonsai.exe.settings
 pybpod-api.log

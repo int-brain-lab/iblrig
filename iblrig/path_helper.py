@@ -5,10 +5,9 @@ import datetime
 import logging
 import os
 import re
-import subprocess
 from pathlib import Path
+from iblrig import iotasks
 
-import yaml
 from dateutil import parser
 
 import iblrig
@@ -17,27 +16,15 @@ from iblrig import raw_data_loaders
 
 log = logging.getLogger("iblrig")
 
-# Determine paths for special use cases based on existence of a file:
-#   - development machine - ".../iblrig/iblrig_params_dev.yaml"
-#   - github actions ci - ".../iblrig/iblrig_params_ci.yaml"
-if (Path(iblrig.__file__).parents[1] / "iblrig_params_dev.yaml").exists():
-    log.info("iblrig_params_dev.yaml file exists, assuming development machine, and pulling parameters from this file.")
-    iblrig_params_file_path = Path(iblrig.__file__).parents[1] / "iblrig_params_dev.yaml"
-elif (Path(iblrig.__file__).parents[1] / "iblrig_params_ci.yaml").exists():
-    log.info("iblrig_params_ci.yaml file exists, assuming github actions ci, and pulling parameters from this file.")
-    iblrig_params_file_path = Path(iblrig.__file__).parents[1] / "iblrig_params_ci.yaml"
-else:
-    iblrig_params_file_path = Path(iblrig.__file__).parents[1] / "iblrig_params.yaml"
-with open(iblrig_params_file_path, "r") as f:
-    IBLRIG_PARAMS = yaml.safe_load(f)
-    print(f.read())
+IBLRIG_SETTINGS = iotasks.load_settings_yaml('iblrig_settings.yaml')
 
 
-def get_remote_server_path() -> Path or None:
+def get_remote_server_path(params=None) -> Path or None:
     """ Get the iblrig_remote_server_path configured in the iblrig_params_template.yaml file, expecting something like
     "\\lab_server_ip_or_dns" """
+
     try:
-        return Path(IBLRIG_PARAMS["iblrig_remote_server_path"])
+        return Path(IBLRIG_SETTINGS["iblrig_remote_server_path"])
     except KeyError:
         log.error("The iblrig_remote_server_path key is missing from the iblrig_params yml file, typically found in the root "
                   "directory of this repository.")
@@ -59,7 +46,7 @@ def get_iblrig_local_data_path(subjects: bool = True) -> Path or None:
     Path or None
     """
     try:
-        data_path = Path(IBLRIG_PARAMS["iblrig_local_data_path"])
+        data_path = Path(IBLRIG_SETTINGS["iblrig_local_data_path"])
     except KeyError:
         log.error("The iblrig_local_data_path key is missing from the iblrig_params yml file, typically found in the root "
                   "directory of this repository.")
@@ -84,7 +71,7 @@ def get_iblrig_remote_server_data_path(subjects: bool = True) -> Path or None:
     Path or None
     """
     try:
-        data_path = Path(IBLRIG_PARAMS["iblrig_remote_data_path"])
+        data_path = Path(IBLRIG_SETTINGS["iblrig_remote_data_path"])
     except KeyError:
         log.error("The iblrig_remote_data_path key is missing from the iblrig_params yml file, typically found in the root "
                   "directory of this repository.")
@@ -105,9 +92,12 @@ def get_iblrig_path() -> Path or None:
 
 
 def get_iblrig_params_path() -> Path or None:
-    """ Get the iblrig_params_path configured in the iblrig_params_template.yaml file, expecting something like "C:\\iblrig_params" """
+    """
+    Get the iblrig_params_path configured in the iblrig_params_template.yaml file,
+    expecting something like "C:\\iblrig_params"
+    """
     try:
-        return Path(IBLRIG_PARAMS["iblrig_params_path"])
+        return Path(IBLRIG_SETTINGS["iblrig_params_path"])
     except KeyError:
         log.error("The iblrig_params_path key is missing from the iblrig_params yml file, typically found in the root directory "
                   "of this repository.")
@@ -118,7 +108,7 @@ def get_iblrig_temp_alyx_path() -> Path or None:
     """ Get the iblrig_temp_alyx_path configured in the iblrig_params_template.yaml file, expecting something like
     "C:\\Temp\\alyx_proj_data" """
     try:
-        return Path(IBLRIG_PARAMS["iblrig_temp_alyx_path"])
+        return Path(IBLRIG_SETTINGS["iblrig_temp_alyx_path"])
     except KeyError:
         log.error("The iblrig_temp_alyx_path key is missing from the iblrig_params yml file, typically found in the root "
                   "directory of this repository.")
@@ -454,7 +444,7 @@ class SessionPathCreator(object):
 
         self._PROTOCOL = protocol
 
-        self.IBLRIG_PARAMS_FOLDER = str(get_iblrig_params_path())
+        self.IBLRIG_SETTINGS_FOLDER = str(get_iblrig_params_path())
         self.IBLRIG_DATA_FOLDER = str(get_iblrig_local_data_path(subjects=False))
         self.IBLRIG_DATA_SUBJECTS_FOLDER = str(get_iblrig_local_data_path(subjects=True))
 

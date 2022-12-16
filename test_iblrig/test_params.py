@@ -1,4 +1,3 @@
-import platform
 import unittest
 
 import iblrig.params as params
