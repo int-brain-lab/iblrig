@@ -38,7 +38,7 @@ class Task():
         self.init_datetime = datetime.datetime.now()
         self.sph = SessionParamHandler(rig_settings_yaml=None, interactive=interactive)
 
-        self.quiescent_period = np.NaN  # the quiescence period is a baseline plus a random drawn number
+        self.quiescent_period = self.draw_quiescent_period()
         self.as_data = {
             "Temperature_C": -1,
             "AirPressure_mb": -1,
@@ -62,13 +62,13 @@ class Task():
         self.stim_probability_left = self.init_probability_left()
         self.position = self.draw_position(pleft=self.stim_probability_left)
         # Contrast
-        self.contrast = misc.draw_contrast(self.sph.task_params.CONTRAST_SET)
+        self.contrast = self.draw_contrast()
         # RE event names
 
-        # self.event_error = self.sph.re.ROTARY_ENCODER.THRESHOLD_EVENTS[self.position]
-        # self.event_reward = self.sph.re.ROTARY_ENCODER.THRESHOLD_EVENTS[-self.position]
-        # self.movement_left = self.sph.re.ROTARY_ENCODER.THRESHOLD_EVENTS[self.sph.task_params.QUIESCENCE_THRESHOLDS[0]]
-        # self.movement_right = self.sph.re.ROTARY_ENCODER.THRESHOLD_EVENTS[self.sph.task_params.QUIESCENCE_THRESHOLDS[1]]
+        self.event_error = self.sph.device_rotary_encoder.THRESHOLD_EVENTS[self.position]
+        self.event_reward = self.sph.device_rotary_encoder.THRESHOLD_EVENTS[-self.position]
+        self.movement_left = self.sph.device_rotary_encoder.THRESHOLD_EVENTS[self.sph.task_params.QUIESCENCE_THRESHOLDS[0]]
+        self.movement_right = self.sph.device_rotary_encoder.THRESHOLD_EVENTS[self.sph.task_params.QUIESCENCE_THRESHOLDS[1]]
         # Trial Completed params
         self.behavior_data = []
         self.response_time = None
@@ -91,6 +91,16 @@ class Task():
         return misc.check_stop_criterions(
             self.init_datetime, self.response_time_buffer, self.trial_num
         )
+
+    def draw_quiescent_period(self):
+        """
+        The quiescent period is drawn from a truncated exponential distribution
+        """
+        return self.sph.task_params.QUIESCENT_PERIOD + misc.texp()
+
+    def draw_contrast(self):
+        return misc.draw_contrast(self.sph.task_params.CONTRAST_SET,
+                                  self.sph.task_params.CONTRAST_SET_PROBABILITY_TYPE)
 
     def check_sync_pulses(self):
         return sync_check(self)
@@ -135,45 +145,41 @@ RELATIVE HUMIDITY:    {self.as_data['RelativeHumidity']} %
 ##########################################"""
         log.info(msg)
 
+    def first_trial(self):
+        self.trial_num += 1
+        self.block_num += 1
+        self.block_trial_num += 1
+        # Send next trial info to Bonsai
+        bonsai.send_current_trial_info(self)
+
     def next_trial(self):
         # First trial exception
         if self.trial_num == 0:
-            self.trial_num += 1
-            self.block_num += 1
-            self.block_trial_num += 1
-            # Send next trial info to Bonsai
-            bonsai.send_current_trial_info(self)
+            self.first_trial()
             return
-        self.data_file = str(self.data_file)
         # Increment trial number
         self.trial_num += 1
         # Update quiescent period
-        self.quiescent_period = self.quiescent_period_base + misc.texp()
+        self.quiescent_period = self.draw_quiescent_period()
         # Update stimulus phase
         self.stim_phase = random.uniform(0, 2 * math.pi)
         # Update block
-        self = self.update_block_params(self)
+        self = self.update_block_params()
         # Update stim probability left + buffer
-        self.stim_probability_left = self.update_probability_left(self)
-        self.stim_probability_left_buffer.append(self.stim_probability_left)
+        self.stim_probability_left = self.update_probability_left()
+
         # Update position + buffer
-        self.position = self.draw_position(self.position_set, self.stim_probability_left)
-        self.position_buffer.append(self.position)
+        self.position = self.draw_position()
         # Update contrast + buffer
-        self.contrast = misc.draw_contrast(
-            self.contrast_set, prob_type=self.contrast_set_probability_type
-        )
-        self.contrast_buffer.append(self.contrast)
-        # Update signed_contrast + buffer (AFTER position update)
-        self.signed_contrast = self.contrast * np.sign(self.position)
-        self.signed_contrast_buffer.append(self.signed_contrast)
+        self.contrast = self.draw_contrast()
         # Update state machine events
-        self.event_error = self.threshold_events_dict[self.position]
-        self.event_reward = self.threshold_events_dict[-self.position]
+
+
+        self.event_error = self.sph.device_rotary_encoder.THRESHOLD_EVENTS[self.position]
+        self.event_reward = self.sph.device_rotary_encoder.THRESHOLD_EVENTS[-self.position]
+
         # Reset outcome variables for next trial
         self.trial_correct = None
-        # Open the data file to append the next trial
-        self.data_file = open(self.data_file_path, "a")
         # Send next trial info to Bonsai
         bonsai.send_current_trial_info(self)
 
