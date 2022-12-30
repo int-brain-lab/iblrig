@@ -1,5 +1,8 @@
 # **Release notes**
 
+## **Release Notes 7.2.2**
+- Corrected session naming for ephysChoiceWorld task
+
 ## **Release Notes 7.2.1**
 - Updated get_pregen_session_folder function to correctly point to correct directory
 
