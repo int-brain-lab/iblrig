@@ -486,6 +486,10 @@ no_go_trial = {
 
 task = Task(interactive=False)
 task.next_trial()
+
+
+task.trial_completed(np.random.choice([correct_trial, error_trial, no_go_trial], p=[0.9, 0.05, 0.05]))
+#
 # task.next_trial()
 #
 #

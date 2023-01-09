@@ -214,6 +214,7 @@ RELATIVE HUMIDITY:    {self.as_data['RelativeHumidity']} %
         # SAVE TRIAL DATA
         params = self.__dict__.copy()
         params.update({"behavior_data": behavior_data})
+        params.pop('sph')
         # Convert to str all non serializable params
         # params["data_file"] = str(params["data_file"])
         params["osc_client"] = "osc_client_pointer"
@@ -229,10 +230,8 @@ RELATIVE HUMIDITY:    {self.as_data['RelativeHumidity']} %
         params["response_side_buffer"] = ""
         params["trial_correct_buffer"] = ""
         # Dump and save
-        out = json.dumps(params, cls=ComplexEncoder)
-        self.data_file.write(out)
-        self.data_file.write("\n")
-        self.data_file.close()
+        with open(self.sph.paths['DATA_FILE_PATH'], 'a') as fp:
+            fp.write(json.dumps(params, cls=ComplexEncoder) + '\n')
         # If more than 42 trials save transfer_me.flag
         if self.trial_num == 42:
             misc.create_flags(self.data_file_path, self.poop_count)

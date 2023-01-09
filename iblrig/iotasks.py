@@ -40,13 +40,13 @@ def load_settings_yaml(file_name):
     return Bunch(rs)
 
 
-def load_pybpod_settings_yaml() -> Bunch:
+def load_pybpod_settings_yaml(file_name) -> Bunch:
     """
     Load pbpod settings from yaml file, and deserialize some of the PYBPOD parameters written in json format
     :param user_settings_yaml:
     :return:
     """
-    rs = load_settings_yaml('pybpod_settings.yaml')
+    rs = load_settings_yaml(file_name)
     # deserialize some of the PYBPOD parameters written in json format
     rs['PYBPOD_CREATOR'] = json.loads(rs['PYBPOD_CREATOR'])
     rs['PYBPOD_USER_EXTRA'] = json.loads(rs['PYBPOD_USER_EXTRA'])

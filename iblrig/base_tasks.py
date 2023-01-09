@@ -38,7 +38,7 @@ class BaseSessionParamHandler(ABC):
         self.DEBUG = debug
         self.calibration = Bunch({})
         # Load pybpod settings
-        self.pybpod_settings = iotasks.load_settings_yaml('pybpod_settings.yaml')
+        self.pybpod_settings = iotasks.load_pybpod_settings_yaml('pybpod_settings.yaml')
         # get another set of parameters from .iblrig_params.json
         self.hardware_settings = iotasks.load_settings_yaml('hardware_settings.yaml')
         # Load the tasks settings
@@ -215,8 +215,8 @@ class ChoiceWorldSessionParamHandler(SoundMixin,
             self.task_params.WHITE_NOISE_AMPLITUDE
         )
 
-        d["SD"] = str(d["SD"])
-        d["CALIB_FUNC"] = str(d["CALIB_FUNC"])
+        d["SD"] = str(d.get('SD', None))
+        d["CALIB_FUNC"] = str(d.get('CALIB_FUNC', None))
 
         d["LAST_TRIAL_DATA"] = None
         d["LAST_SETTINGS_DATA"] = None
