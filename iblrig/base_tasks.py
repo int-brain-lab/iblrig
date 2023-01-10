@@ -4,6 +4,7 @@ Base classes for trial parameters and session parameters.
 """
 from pathlib import Path
 from abc import ABC
+import datetime
 import inspect
 import logging
 import os
@@ -14,6 +15,7 @@ import yaml
 from pythonosc import udp_client
 
 import iblrig.adaptive as adaptive
+import iblrig.path_helper
 from iblrig.path_helper import SessionPathCreator
 from iblrig.rotary_encoder import MyRotaryEncoder
 from iblutil.util import Bunch
@@ -32,15 +34,26 @@ OSC_CLIENT_IP = "127.0.0.1"
 OSC_CLIENT_PORT = 7110
 
 
+class ChoiceWorldTask(object):
+    @property
+    def elapsed_time(self):
+        # elapsed time from init datetime in seconds
+        return (datetime.datetime.now() - self.init_datetime).total_seconds()
+
+    @property
+    def signed_contrast(self):
+        return self.contrast * np.sign(self.position)
+
+
 class BaseSessionParamHandler(ABC):
 
     def __init__(self, debug=False):
         self.DEBUG = debug
         self.calibration = Bunch({})
         # Load pybpod settings
-        self.pybpod_settings = iotasks.load_pybpod_settings_yaml('pybpod_settings.yaml')
+        self.pybpod_settings = iblrig.path_helper.load_pybpod_settings_yaml('pybpod_settings.yaml')
         # get another set of parameters from .iblrig_params.json
-        self.hardware_settings = iotasks.load_settings_yaml('hardware_settings.yaml')
+        self.hardware_settings = iblrig.path_helper.load_settings_yaml('hardware_settings.yaml')
         # Load the tasks settings
         with open(Path(inspect.getfile(self.__class__)).parent.joinpath('task_parameters.yaml')) as fp:
             self.task_params = Bunch(yaml.safe_load(fp))
@@ -55,6 +68,51 @@ class BaseSessionParamHandler(ABC):
     def patch_settings_file(self, patch):
         self.__dict__.update(patch)
         misc.patch_settings_file(self.SETTINGS_FILE_PATH, patch)
+
+
+class OSCClient(udp_client.SimpleUDPClient):
+    """
+    Handles communication to Bonsai using an UDP Client
+    OSC channels:
+        USED:
+        /t  -> (int)    trial number current
+        /p  -> (int)    position of stimulus init for current trial
+        /h  -> (float)  phase of gabor for current trial
+        /c  -> (float)  contrast of stimulus for current trial
+        /f  -> (float)  frequency of gabor patch for current trial
+        /a  -> (float)  angle of gabor patch for current trial
+        /g  -> (float)  gain of RE to visual stim displacement
+        /s  -> (float)  sigma of the 2D gaussian of gabor
+        /e  -> (int)    events transitions  USED BY SOFTCODE HANDLER FUNC
+        /r  -> (int)    wheter to reverse the side contingencies (0, 1)
+    """
+
+    OSC_PROTOCOL = {
+        'trial_num': '/t',
+        'position': '/p',
+        'stim_phase': '/h',
+        'contrast': '/c',
+        'stim_freq': '/f',
+        'stim_angle': '/a',
+        'stim_gain': '/g',
+        'stim_sigma': '/s',
+        'stim_reverse': '/r',
+    }
+
+    def __init__(self, ip=OSC_CLIENT_IP, port=OSC_CLIENT_PORT):
+        super(OSCClient, self).__init__(ip, port)
+
+    def send2bonsai(self, **kwargs):
+        """
+        :param see list of keys in OSC_PROTOCOL
+        :return:
+        """
+        for k in kwargs:
+            if k in self.OSC_PROTOCOL:
+                # need to convert basic numpy types to low-level python type for
+                # punch card generation OSC module, I might as well have written C code
+                value = kwargs[k].item() if isinstance(kwargs[k], np.generic) else kwargs[k]
+                self.send_message(self.OSC_PROTOCOL[k], value)
 
 
 class AmbientSensorMixin:
@@ -122,7 +180,6 @@ class SoundMixin:
         # self.device_sound.SOFT_SOUND = None if "ephys" in self.PYBPOD_BOARD else self.SOFT_SOUND
 
         self.SOUND_SAMPLE_FREQ = sound.sound_sample_freq(self.SOFT_SOUND)
-
         self.WHITE_NOISE_DURATION = float(self.WHITE_NOISE_DURATION)
         self.WHITE_NOISE_AMPLITUDE = float(self.WHITE_NOISE_AMPLITUDE)
         self.GO_TONE_DURATION = float(self.GO_TONE_DURATION)
@@ -152,15 +209,15 @@ class SoundMixin:
         self.OUT_STOP_SOUND = ("SoftCode", 0) if self.SOFT_SOUND else ("Serial3", ord("X"))
 
 
-class ChoiceWorldSessionParamHandler(SoundMixin,
-                                     Frame2TTLMixin,
-                                     RotaryEncoderMixin,
-                                     CameraMixin,
-                                     AmbientSensorMixin,
-                                     BaseSessionParamHandler):
+class ChoiceWorldSession(SoundMixin,
+                         Frame2TTLMixin,
+                         RotaryEncoderMixin,
+                         CameraMixin,
+                         AmbientSensorMixin,
+                         BaseSessionParamHandler):
 
     def __init__(self, *args,  fmake=True, interactive=True, **kwargs):
-        super(ChoiceWorldSessionParamHandler, self).__init__(*args, **kwargs)
+        super(ChoiceWorldSession, self).__init__(*args, **kwargs)
         # Create the folder architecture and get the paths property updated
         if not fmake:
             make = False
@@ -174,7 +231,7 @@ class ChoiceWorldSessionParamHandler(SoundMixin,
             make=make)
         self.paths = Bunch(spc.__dict__)
         # OSC client
-        self.osc_client = udp_client.SimpleUDPClient(OSC_CLIENT_IP, OSC_CLIENT_PORT)
+        self.osc_client = OSCClient()
         # Session data
         if interactive:
             self.SUBJECT_WEIGHT = user.ask_subject_weight(self.pybpod_settings.PYBPOD_SUBJECTS[0])
@@ -238,7 +295,7 @@ PREVIOUS WEIGHT:               {self.LAST_SETTINGS_DATA["SUBJECT_WEIGHT"]}
 
     def checklist(self):
         """
-        Before starting the task, this goes throught a checklist making sure that the rig
+        Before starting the task, this goes through a checklist making sure that the rig
         has calibration values and the hardware is connected
         :return:
         """

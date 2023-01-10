@@ -2,16 +2,17 @@ import unittest
 
 import iblrig.params as params
 import iblrig.iotasks
+import iblrig.path_helper
 
 
 class TestParamLoading(unittest.TestCase):
     def test_load_pybpod_settings(self):
-        settings = iblrig.iotasks.load_pybpod_settings_yaml('pybpod_settings_template.yaml')
+        settings = iblrig.path_helper.load_pybpod_settings_yaml('pybpod_settings_template.yaml')
         assert len(settings.keys()) == 21
         assert settings['PYBPOD_SUBJECTS'][0] == '_iblrig_fake_mouse'
 
     def test_load_hardware_settings(self):
-        settings = iblrig.iotasks.load_settings_yaml('hardware_settings_template.yaml')
+        settings = iblrig.path_helper.load_settings_yaml('hardware_settings_template.yaml')
         assert len(settings.keys()) == 6
 
 

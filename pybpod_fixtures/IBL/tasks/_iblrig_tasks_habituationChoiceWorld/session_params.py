@@ -180,9 +180,9 @@ class SessionParamHandler(object):
 
 if __name__ == "__main__":
     """
-    SessionParamHandler fmake flag=False disables:
+    Session fmake flag=False disables:
         making folders/files;
-    SessionParamHandler debug flag disables:
+    Session debug flag disables:
         running auto calib;
         calling bonsai
         turning off lights of bpod board

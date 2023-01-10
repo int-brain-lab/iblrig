@@ -12,12 +12,9 @@ import os
 import shutil
 import zipfile
 from pathlib import Path
-import yaml
 
 import numpy as np
-from iblutil.util import Bunch
 
-import iblrig
 import iblrig.misc as misc
 import iblrig.path_helper as ph
 import iblrig.raw_data_loaders as raw
@@ -32,27 +29,6 @@ class ComplexEncoder(json.JSONEncoder):
             return obj.reprJSON()
         else:
             return json.JSONEncoder.default(self, obj)
-
-
-def load_settings_yaml(file_name):
-    with open(Path(iblrig.__file__).parents[1].joinpath('settings', file_name)) as fp:
-        rs = yaml.safe_load(fp)
-    return Bunch(rs)
-
-
-def load_pybpod_settings_yaml(file_name) -> Bunch:
-    """
-    Load pbpod settings from yaml file, and deserialize some of the PYBPOD parameters written in json format
-    :param user_settings_yaml:
-    :return:
-    """
-    rs = load_settings_yaml(file_name)
-    # deserialize some of the PYBPOD parameters written in json format
-    rs['PYBPOD_CREATOR'] = json.loads(rs['PYBPOD_CREATOR'])
-    rs['PYBPOD_USER_EXTRA'] = json.loads(rs['PYBPOD_USER_EXTRA'])
-    rs['PYBPOD_SUBJECTS'] = [json.loads(x.replace("'", '"')) for x in rs.pop('PYBPOD_SUBJECTS')][0]
-    rs['PYBPOD_SUBJECT_EXTRA'] = [json.loads(x.replace("'", '"')) for x in rs['PYBPOD_SUBJECT_EXTRA'][1:-1].split('","')][0]
-    return Bunch(rs)
 
 
 def save_session_settings(sph: object) -> None:

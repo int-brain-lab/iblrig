@@ -1,6 +1,6 @@
 import numpy as np
 
-from pybpod_fixtures.IBL.tasks._iblrig_tasks_biasedChoiceWorld.task import Task
+from pybpod_fixtures.IBL.tasks._iblrig_tasks_biasedChoiceWorld.task import Session
 
 correct_trial = {
     "Bpod start timestamp": 0.0,
@@ -484,11 +484,12 @@ no_go_trial = {
     },
 }  # noqa
 
-task = Task(interactive=False)
+task = Session(interactive=False)
 task.next_trial()
 
 
-task.trial_completed(np.random.choice([correct_trial, error_trial, no_go_trial], p=[0.9, 0.05, 0.05]))
+# task.trial_completed(np.random.choice([correct_trial, error_trial, no_go_trial], p=[0.9, 0.05, 0.05]))
+
 #
 # task.next_trial()
 #
