@@ -100,12 +100,12 @@ class Session(ChoiceWorldSession):
         self.trial_correct = None
         if self.block_trial_num > (self.block_len - 1):
             self.new_block()
-        self.trials_table['quiescent_period'][self.trial_num] = self.draw_quiescent_period()
-        self.trials_table['contrast'][self.trial_num] = self.draw_contrast()
-        self.trials_table['stim_phase'][self.trial_num] = random.uniform(0, 2 * math.pi)
-        self.trials_table['stim_probability_left'][self.trial_num] = self.block_probability_left
+        self.trials_table.at[self.trial_num, 'quiescent_period'] = self.draw_quiescent_period()
+        self.trials_table.at[self.trial_num, 'contrast'] = self.draw_contrast()
+        self.trials_table.at[self.trial_num, 'stim_phase'] = random.uniform(0, 2 * math.pi)
+        self.trials_table.at[self.trial_num, 'stim_probability_left'] = self.block_probability_left
         pos = self.draw_position()
-        self.trials_table['position'][self.trial_num] = pos
+        self.trials_table.at[self.trial_num, 'position'] = pos
         self.event_error = self.device_rotary_encoder.THRESHOLD_EVENTS[pos]
         self.event_reward = self.device_rotary_encoder.THRESHOLD_EVENTS[-pos]
         self.send_trial_info_to_bonsai()

@@ -91,26 +91,11 @@ def get_iblrig_remote_server_data_path(subjects: bool = True) -> Path or None:
 
 
 def get_iblrig_path() -> Path or None:
-    """ Get the iblrig_path configured in the iblrig_params_template.yaml file, expecting something like "C:\\iblrig" """
-    try:
-        return Path(iblrig.__file__).parent
-    except KeyError:
-        log.error("The iblrig_path key is missing from the iblrig_params yml file, typically found in the root directory of this "
-                  "repository.")
-        return None
+    return Path(iblrig.__file__).parents[1]
 
 
 def get_iblrig_params_path() -> Path or None:
-    """
-    Get the iblrig_params_path configured in the iblrig_params_template.yaml file,
-    expecting something like "C:\\iblrig_params"
-    """
-    try:
-        return Path(IBLRIG_SETTINGS["iblrig_params_path"])
-    except KeyError:
-        log.error("The iblrig_params_path key is missing from the iblrig_params yml file, typically found in the root directory "
-                  "of this repository.")
-        return None
+    return get_iblrig_path().joinpath("pybpod_fixtures")
 
 
 def get_iblrig_temp_alyx_path() -> Path or None:
