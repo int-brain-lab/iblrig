@@ -2,6 +2,7 @@ hardware_settings.yaml
 iblrig_settings.yaml
 pybpod_settings.yaml
 Bonsai/*
+Subjects/*
 Bonsai/Bonsai.exe.settings
 pybpod-api.log
 iblrig.egg-info/

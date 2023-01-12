@@ -1,5 +1,5 @@
 import numpy as np
-
+import matplotlib.pyplot as plt
 from pybpod_fixtures.IBL.tasks._iblrig_tasks_biasedChoiceWorld.task import Session
 
 correct_trial = {
@@ -488,18 +488,20 @@ task = Session(interactive=False)
 task.next_trial()
 
 
-# task.trial_completed(np.random.choice([correct_trial, error_trial, no_go_trial], p=[0.9, 0.05, 0.05]))
+task.trial_completed(np.random.choice([correct_trial, error_trial, no_go_trial], p=[0.9, 0.05, 0.05]))
 
-#
-# task.next_trial()
-#
-#
-# for x in range(90):
-#     # print('next_trial took: ', next_trial_times[-1], '(s)')
-#     task.trial_completed(np.random.choice([correct_trial, error_trial, no_go_trial], p=[0.9, 0.05, 0.05]))
-#
-#
-#     print("\nBLOCK NUM: {:>16}".format(task.block_num))
-#     print("BLOCK TRIAL NUM: {:>10s}".format(f"{task.block_trial_num}/{task.block_len}"))
-#     print("PROBABILITY_LEFT: {:>9}".format(task.stim_probability_left))
-#     print("SIGNED CONTRAST: {:>10}".format(task.signed_contrast))
+
+task.next_trial()
+
+import time
+nt = 900
+
+t = np.zeros(nt)
+for i in np.arange(nt):
+    t[i] = time.time()
+    task.next_trial()
+    task.trial_completed(np.random.choice([correct_trial, error_trial, no_go_trial], p=[0.9, 0.05, 0.05]))
+    pc = task.psychometric_curve()
+
+t = t - t[0]
+# latency is less than 15ms for psychometric curve computation

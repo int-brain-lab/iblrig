@@ -7,7 +7,6 @@ import random
 import numpy as np
 import pandas as pd
 
-import iblrig.ambient_sensor as ambient_sensor
 import iblrig.misc as misc
 from iblrig.check_sync_pulses import sync_check
 from iblrig.iotasks import ComplexEncoder
@@ -22,9 +21,8 @@ class Session(ChoiceWorldSession):
     """"Session object imports user_settings and task_settings
     will and calculates other secondary session parameters,
     runs Bonsai and saves all params in a settings file.json"""
-    def __init__(self, debug=False, fmake=True, **kwargs):
-        super(Session, self).__init__(debug=debug, fmake=fmake, **kwargs)
-
+    def __init__(self, *args, **kwargs):
+        super(Session, self).__init__(*args, **kwargs)
         self.init_datetime = datetime.datetime.now()
         self.trial_num = -1
         self.block_trial_num = -1
@@ -40,21 +38,22 @@ class Session(ChoiceWorldSession):
         self.trials_table = pd.DataFrame({
             'block_num': np.zeros(NTRIALS_INIT, dtype=np.int16),
             'block_trial_num': np.zeros(NTRIALS_INIT, dtype=np.int16),
-            'contrast': np.zeros(NTRIALS_INIT),
-            'position': np.zeros(NTRIALS_INIT),
-            'quiescent_period': np.zeros(NTRIALS_INIT),
-            'response_time': np.zeros(NTRIALS_INIT),
-            'stim_angle': np.zeros(NTRIALS_INIT),
-            'stim_freq': np.zeros(NTRIALS_INIT),
-            'stim_gain': np.zeros(NTRIALS_INIT),
-            'stim_sigma': np.zeros(NTRIALS_INIT),
-            'stim_reverse': np.zeros(NTRIALS_INIT),
-            'stim_phase': np.zeros(NTRIALS_INIT),
+            'contrast': np.zeros(NTRIALS_INIT) * np.NaN,
+            'position': np.zeros(NTRIALS_INIT) * np.NaN,
+            'quiescent_period': np.zeros(NTRIALS_INIT) * np.NaN,
+            'response_side': np.zeros(NTRIALS_INIT, dtype=np.int8),
+            'response_time': np.zeros(NTRIALS_INIT) * np.NaN,
+            'reward_amount': np.zeros(NTRIALS_INIT) * np.NaN,
+            'reward_valve_time': np.zeros(NTRIALS_INIT) * np.NaN,
+            'stim_angle': np.zeros(NTRIALS_INIT) * np.NaN,
+            'stim_freq': np.zeros(NTRIALS_INIT) * np.NaN,
+            'stim_gain': np.zeros(NTRIALS_INIT) * np.NaN,
+            'stim_phase': np.zeros(NTRIALS_INIT) * np.NaN,
             'stim_probability_left': np.zeros(NTRIALS_INIT),
-            'trial_num': np.zeros(NTRIALS_INIT, dtype=np.int32),
-            'trial_correct': np.zeros(NTRIALS_INIT),
-            'reward_amount': np.zeros(NTRIALS_INIT),
-            'reward_valve_time': np.zeros(NTRIALS_INIT),
+            'stim_reverse': np.zeros(NTRIALS_INIT) * np.NaN,
+            'stim_sigma': np.zeros(NTRIALS_INIT) * np.NaN,
+            'trial_correct': np.zeros(NTRIALS_INIT, dtype=bool),
+            'trial_num': np.zeros(NTRIALS_INIT, dtype=np.int16),
         })
 
         self.as_data = {
@@ -86,9 +85,9 @@ class Session(ChoiceWorldSession):
             if self.task_params.BLOCK_INIT_5050:
                 self.block_probability_left = 0.5
             else:
-                self.block_probability_left = np.random.choice(self.block_probability_set)
+                self.block_probability_left = np.random.choice(self.task_params.BLOCK_PROBABILITY_SET)
         elif self.block_num == 1 and self.task_params.BLOCK_INIT_5050:
-            self.block_probability_left = np.random.choice(self.block_probability_set)
+            self.block_probability_left = np.random.choice(self.task_params.BLOCK_PROBABILITY_SET)
         else:
             # this switches the probability of leftward stim for the next block
             self.block_probability_left = round(abs(1 - self.block_probability_left), 1)
@@ -103,6 +102,9 @@ class Session(ChoiceWorldSession):
         self.trials_table.at[self.trial_num, 'quiescent_period'] = self.draw_quiescent_period()
         self.trials_table.at[self.trial_num, 'contrast'] = self.draw_contrast()
         self.trials_table.at[self.trial_num, 'stim_phase'] = random.uniform(0, 2 * math.pi)
+        self.trials_table.at[self.trial_num, 'stim_sigma'] = self.task_params.STIM_SIGMA
+        self.trials_table.at[self.trial_num, 'stim_angle'] = self.task_params.STIM_ANGLE
+        self.trials_table.at[self.trial_num, 'stim_freq'] = self.task_params.STIM_FREQ
         self.trials_table.at[self.trial_num, 'stim_probability_left'] = self.block_probability_left
         pos = self.draw_position()
         self.trials_table.at[self.trial_num, 'position'] = pos
@@ -125,52 +127,33 @@ class Session(ChoiceWorldSession):
         no_go = ~np.isnan(self.behavior_data["States timestamps"]["no_go"][0][0])
         assert correct or error or no_go
         # Add trial's response time to the buffer
-        self.response_time = misc.get_trial_rt(self.behavior_data)
-        self.response_time_buffer.append(self.response_time)
+        self.trials_table.at[self.trial_num, 'response_time'] = misc.get_trial_rt(self.behavior_data)
+        self.trials_table.at[self.trial_num, 'trial_correct'] = bool(correct)
+        self.trials_table.at[self.trial_num, 'reward_amount'] = self.task_params.REWARD_AMOUNT
+
         # Update response buffer -1 for left, 0 for nogo, and 1 for rightward
-        if (correct and self.position < 0) or (error and self.position > 0):
-            self.response_side_buffer.append(1)
-        elif (correct and self.position > 0) or (error and self.position < 0):
-            self.response_side_buffer.append(-1)
+        # what happens if position is 0?
+        position = self.trials_table.at[self.trial_num, 'position']
+        if (correct and position < 0) or (error and position > 0):
+            response_side = 1
+        elif (correct and position > 0) or (error and position < 0):
+            response_side = -1
         elif no_go:
-            self.response_side_buffer.append(0)
-        # Update the trial_correct variable + buffer
-        self.trial_correct = bool(correct)
-        self.trial_correct_buffer.append(self.trial_correct)
-        # Increment the trial correct counter
-        self.ntrials_correct += self.trial_correct
-        # Update the water delivered
-        if self.trial_correct:
-            self.water_delivered += self.sph.task_params.REWARD_AMOUNT
+            response_side = 0
+        self.trials_table.at[self.trial_num, 'response_side'] = response_side
 
         # SAVE TRIAL DATA
-        params = self.__dict__.copy()
-        params.update({"behavior_data": behavior_data})
-        params.pop('sph')
-        # Convert to str all non serializable params
-        # params["data_file"] = str(params["data_file"])
-        params["osc_client"] = "osc_client_pointer"
-        params["init_datetime"] = params["init_datetime"].isoformat()
-        params["elapsed_time"] = str(self.elapsed_time)
-        params["position"] = int(params["position"])
-        # Delete buffered data
-        params["stim_probability_left_buffer"] = ""
-        params["position_buffer"] = ""
-        params["contrast_buffer"] = ""
-        params["signed_contrast_buffer"] = ""
-        params["response_time_buffer"] = ""
-        params["response_side_buffer"] = ""
-        params["trial_correct_buffer"] = ""
+        save_dict = {"behavior_data": behavior_data}
         # Dump and save
-        with open(self.sph.paths['DATA_FILE_PATH'], 'a') as fp:
-            fp.write(json.dumps(params, cls=ComplexEncoder) + '\n')
+        with open(self.paths['DATA_FILE_PATH'], 'a') as fp:
+            fp.write(json.dumps(save_dict, cls=ComplexEncoder) + '\n')
         # If more than 42 trials save transfer_me.flag
         if self.trial_num == 42:
-            misc.create_flags(self.data_file_path, self.poop_count)
+            misc.create_flags(self.paths.DATA_FILE_PATH, self.task_params.POOP_COUNT)
 
     def check_stop_criterions(self):
         return misc.check_stop_criterions(
-            self.init_datetime, self.response_time_buffer, self.trial_num
+            self.init_datetime, self.trials_table['response_time'].values(), self.trial_num
         )
 
     def draw_quiescent_period(self):
@@ -185,20 +168,6 @@ class Session(ChoiceWorldSession):
 
     def check_sync_pulses(self):
         return sync_check(self)
-
-    def save_ambient_sensor_data(self, bpod_instance, destination):
-        if self.save_ambient_data:
-            self.as_data = ambient_sensor.get_reading(bpod_instance, save_to=destination)
-            return self.as_data
-        else:
-            log.info("Ambient Sensor data disabled in task settings")
-            null_measures = {
-                "Temperature_C": -1,
-                "AirPressure_mb": -1,
-                "RelativeHumidity": -1,
-            }
-            self.as_data = null_measures
-            return self.as_data
 
     def show_trial_log(self):
         msg = f"""
@@ -233,3 +202,14 @@ RELATIVE HUMIDITY:    {self.as_data['RelativeHumidity']} %
         position_set = position_set or self.task_params.STIM_POSITIONS
         pleft = pleft or self.block_probability_left
         return int(np.random.choice(position_set, p=[pleft, 1 - pleft]))
+
+    def psychometric_curve(self):
+        pd_table = self.trials_table.iloc[:self.trial_num, :].copy()
+        pd_table['signed_contrast'] = np.sign(pd_table['position']) * pd_table['contrast']
+
+        psychometric_curves = pd_table.groupby('signed_contrast').agg(
+            count=pd.NamedAgg(column="signed_contrast", aggfunc="count"),
+            response_time=pd.NamedAgg(column="response_time", aggfunc="mean"),
+            performance=pd.NamedAgg(column="trial_correct", aggfunc="mean"),
+        )
+        return psychometric_curves

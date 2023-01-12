@@ -17,9 +17,8 @@ from pythonosc import udp_client
 import iblrig.adaptive as adaptive
 import iblrig.path_helper
 from iblrig.path_helper import SessionPathCreator
-from iblrig.rotary_encoder import MyRotaryEncoder
 from iblutil.util import Bunch
-import iblrig.ambient_sensor as ambient_sensor
+from iblrig.hardware import Bpod, MyRotaryEncoder
 import iblrig.bonsai as bonsai
 import iblrig.frame2TTL as frame2TTL
 import iblrig.iotasks as iotasks
@@ -55,8 +54,12 @@ class BaseSessionParamHandler(ABC):
         # get another set of parameters from .iblrig_params.json
         self.hardware_settings = iblrig.path_helper.load_settings_yaml('hardware_settings.yaml')
         # Load the tasks settings
-        with open(Path(inspect.getfile(self.__class__)).parent.joinpath('task_parameters.yaml')) as fp:
-            self.task_params = Bunch(yaml.safe_load(fp))
+        task_settings_file = Path(inspect.getfile(self.__class__)).parent.joinpath('task_parameters.yaml')
+        if task_settings_file.exists():
+            with open(task_settings_file) as fp:
+                self.task_params = Bunch(yaml.safe_load(fp))
+        else:
+            self.task_params = None
 
     def bpod_lights(self, command: int):
         fpath = Path(self.IBLRIG_FOLDER) / "scripts" / "bpod_lights.py"
@@ -115,10 +118,10 @@ class OSCClient(udp_client.SimpleUDPClient):
                 self.send_message(self.OSC_PROTOCOL[k], value)
 
 
-class AmbientSensorMixin:
+class BpodMixin(object):
 
-    def save_ambient_sensor_reading(self, bpod_instance):
-        return ambient_sensor.get_reading(bpod_instance, save_to=self.SESSION_RAW_DATA_FOLDER)
+    def __init__(self, *args, **kwargs):
+        self.bpod = Bpod()
 
 
 class Frame2TTLMixin:
@@ -134,7 +137,6 @@ class RotaryEncoderMixin:
     Rotary encoder interface for state machine
     """
     def __init__(self, *args, **kwargs):
-        super(RotaryEncoderMixin, self).__init__()
         self.device_rotary_encoder = MyRotaryEncoder(
             all_thresholds=self.task_params.STIM_POSITIONS + self.task_params.QUIESCENCE_THRESHOLDS,
             gain=self.task_params.STIM_GAIN,
@@ -209,15 +211,18 @@ class SoundMixin:
         self.OUT_STOP_SOUND = ("SoftCode", 0) if self.SOFT_SOUND else ("Serial3", ord("X"))
 
 
-class ChoiceWorldSession(SoundMixin,
-                         Frame2TTLMixin,
-                         RotaryEncoderMixin,
-                         CameraMixin,
-                         AmbientSensorMixin,
-                         BaseSessionParamHandler):
+class ChoiceWorldSession(BaseSessionParamHandler,
+                         RotaryEncoderMixin):
+                         # BpodMixin,
+                         # SoundMixin,
+                         # Frame2TTLMixin,
+                         # RotaryEncoderMixin,
+                         # CameraMixin,
 
-    def __init__(self, *args,  fmake=True, interactive=True, **kwargs):
+    def __init__(self, fmake=True, interactive=False, *args,  **kwargs):
         super(ChoiceWorldSession, self).__init__(*args, **kwargs)
+        # BpodMixin.__init__(self, *args, **kwargs)
+        RotaryEncoderMixin.__init__(self, *args, **kwargs)
         # Create the folder architecture and get the paths property updated
         if not fmake:
             make = False

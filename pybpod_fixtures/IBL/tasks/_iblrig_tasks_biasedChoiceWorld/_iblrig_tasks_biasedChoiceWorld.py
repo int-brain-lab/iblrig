@@ -6,19 +6,14 @@ import logging
 
 import iblrig.bonsai as bonsai
 import matplotlib.pyplot as plt
-import user_settings
 from iblrig.bpod_helper import BpodMessageCreator
 from iblrig.user_input import ask_session_delay
-from pybpodapi.protocol import Bpod, StateMachine
+from pybpodapi.protocol import StateMachine
 
 import online_plots as op
-import task_settings
-from session_params import SessionParamHandler
-from trial_params import TrialParamHandler
 
 log = logging.getLogger("iblrig")
 
-global sph
 sph = SessionParamHandler(task_settings, user_settings)
 
 
@@ -76,7 +71,6 @@ sph.SESSION_START_DELAY_SEC = ask_session_delay(sph.SETTINGS_FILE_PATH)
 # =============================================================================
 # TRIAL PARAMETERS AND STATE MACHINE
 # =============================================================================
-tph = TrialParamHandler(sph)
 
 f, axes = op.make_fig(sph)
 plt.pause(1)

@@ -1,9 +1,38 @@
-#!/usr/bin/env python
-# -*- coding:utf-8 -*-
-# @Author: Niccolò Bonacchi
-# @Date: Tuesday, February 5th 2019, 1:40:37 pm
+"""
+This modules contains hardware classes used to interact with modules.
+"""
+from pathlib import Path
+import json
+
 import numpy as np
+
 from pybpod_rotaryencoder_module.module_api import RotaryEncoderModule
+from pybpodapi.bpod.bpod_io import BpodIO
+
+
+class Bpod(BpodIO):
+
+    def get_ambient_sensor_reading(self, save_to=None):
+        ambient_module = [x for x in self.modules if x.name == "AmbientModule1"][0]
+        ambient_module.start_module_relay()
+        self.bpod_modules.module_write(ambient_module, "R")
+        reply = self.bpod_modules.module_read(ambient_module, 12)
+        ambient_module.stop_module_relay()
+
+        Measures = {
+            "Temperature_C": np.frombuffer(bytes(reply[:4]), np.float32),
+            "AirPressure_mb": np.frombuffer(bytes(reply[4:8]), np.float32) / 100,
+            "RelativeHumidity": np.frombuffer(bytes(reply[8:]), np.float32),
+        }
+
+        if save_to is not None:
+            data = {k: v.tolist() for k, v in Measures.items()}
+            with open(Path(save_to).joinpath("_iblrig_ambientSensorData.raw.jsonable"), "a") as f:
+                f.write(json.dumps(data))
+                f.write("\n")
+                f.flush()
+
+        return {k: v.tolist()[0] for k, v in Measures.items()}
 
 
 class MyRotaryEncoder(object):
