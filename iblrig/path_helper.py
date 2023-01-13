@@ -7,6 +7,7 @@ import logging
 import os
 import re
 from pathlib import Path
+import subprocess
 
 import yaml
 from iblutil.util import Bunch
@@ -107,6 +108,17 @@ def get_iblrig_temp_alyx_path() -> Path or None:
         log.error("The iblrig_temp_alyx_path key is missing from the iblrig_params yml file, typically found in the root "
                   "directory of this repository.")
         return None
+
+
+def get_commit_hash(folder: str):
+    here = os.getcwd()
+    os.chdir(folder)
+    out = subprocess.check_output(["git", "rev-parse", "HEAD"]).decode().strip()
+    os.chdir(here)
+    if not out:
+        log.debug("Commit hash is empty string")
+    log.debug(f"Found commit hash {out}")
+    return out
 
 
 def get_visual_stim_folder_name(protocol: str) -> str:

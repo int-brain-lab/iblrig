@@ -3,6 +3,7 @@ This modules contains hardware classes used to interact with modules.
 """
 from pathlib import Path
 import json
+import os
 
 import numpy as np
 
@@ -33,6 +34,10 @@ class Bpod(BpodIO):
                 f.flush()
 
         return {k: v.tolist()[0] for k, v in Measures.items()}
+
+    def bpod_lights(self, command: int):
+        fpath = Path(self.IBLRIG_FOLDER) / "scripts" / "bpod_lights.py"
+        os.system(f"python {fpath} {command}")
 
 
 class MyRotaryEncoder(object):

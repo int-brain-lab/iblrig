@@ -1,3 +1,4 @@
+import time
 import numpy as np
 import matplotlib.pyplot as plt
 from pybpod_fixtures.IBL.tasks._iblrig_tasks_biasedChoiceWorld.task import Session
@@ -489,19 +490,17 @@ task.next_trial()
 
 
 task.trial_completed(np.random.choice([correct_trial, error_trial, no_go_trial], p=[0.9, 0.05, 0.05]))
-
-
 task.next_trial()
 
-import time
 nt = 900
 
 t = np.zeros(nt)
 for i in np.arange(nt):
     t[i] = time.time()
     task.next_trial()
-    task.trial_completed(np.random.choice([correct_trial, error_trial, no_go_trial], p=[0.9, 0.05, 0.05]))
     pc = task.psychometric_curve()
+    task.trial_completed(np.random.choice([correct_trial, error_trial, no_go_trial], p=[0.9, 0.05, 0.05]))
 
 t = t - t[0]
 # latency is less than 15ms for psychometric curve computation
+

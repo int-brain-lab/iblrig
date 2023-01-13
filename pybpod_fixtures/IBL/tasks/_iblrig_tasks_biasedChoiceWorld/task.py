@@ -1,4 +1,3 @@
-import datetime
 import json
 import logging
 import math
@@ -23,7 +22,6 @@ class Session(ChoiceWorldSession):
     runs Bonsai and saves all params in a settings file.json"""
     def __init__(self, *args, **kwargs):
         super(Session, self).__init__(*args, **kwargs)
-        self.init_datetime = datetime.datetime.now()
         self.trial_num = -1
         self.block_trial_num = -1
         self.block_num = -1

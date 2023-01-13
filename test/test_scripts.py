@@ -9,7 +9,13 @@ from one.api import ONE
 
 import scripts.transfer_rig_data as transfer_rig_data
 from scripts.ibllib.purge_rig_data import purge_local_data, session_name
-from test_iblrig import OPENALYX_PARAMETERS
+
+OPENALYX_PARAMETERS = {
+    "base_url": "https://openalyx.internationalbrainlab.org",
+    "username": "intbrainlab",
+    "password": "international",
+    "silent": True
+}
 
 
 class TestScripts(unittest.TestCase):

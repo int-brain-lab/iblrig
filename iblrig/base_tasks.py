@@ -7,7 +7,6 @@ from abc import ABC
 import datetime
 import inspect
 import logging
-import os
 
 import numpy as np
 import yaml
@@ -47,6 +46,7 @@ class ChoiceWorldTask(object):
 class BaseSessionParamHandler(ABC):
 
     def __init__(self, debug=False):
+        self.init_datetime = datetime.datetime.now()
         self.DEBUG = debug
         self.calibration = Bunch({})
         # Load pybpod settings
@@ -60,10 +60,6 @@ class BaseSessionParamHandler(ABC):
                 self.task_params = Bunch(yaml.safe_load(fp))
         else:
             self.task_params = None
-
-    def bpod_lights(self, command: int):
-        fpath = Path(self.IBLRIG_FOLDER) / "scripts" / "bpod_lights.py"
-        os.system(f"python {fpath} {command}")
 
     def get_port_events(self, events, name=""):
         return misc.get_port_events(events, name=name)
@@ -335,3 +331,23 @@ PREVIOUS WEIGHT:               {self.LAST_SETTINGS_DATA["SUBJECT_WEIGHT"]}
                 iotasks.copy_video_code(self)
                 iotasks.save_video_code(self)
             self.bpod_lights(0)
+
+    def time_elapsed(self):
+        return datetime.datetime.now - self.init_datetime
+
+    def softcode_handler(self, code):
+        """
+         Soft codes should work with resasonable latency considering our limiting
+         factor is the refresh rate of the screen which should be 16.667ms @ a frame
+         rate of 60Hz
+         1 : go_tone
+         2 : white_noise
+         """
+        if code == 0:
+            self.stop_sound()
+        elif code == 1:
+            self.play_tone()
+        elif code == 2:
+            self.play_noise()
+        elif code == 3:
+            self.start_camera_recording()
