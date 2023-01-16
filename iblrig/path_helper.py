@@ -80,16 +80,13 @@ def get_iblrig_remote_server_data_path(subjects: bool = True) -> Path or None:
     -------
     Path or None
     """
-    try:
-        data_path = Path(IBLRIG_SETTINGS["iblrig_remote_data_path"])
-    except KeyError:
-        log.error("The iblrig_remote_data_path key is missing from the iblrig_params yml file, typically found in the root "
-                  "directory of this repository.")
-        return None
-
-    # Return the "Subjects" subdirectory by default
-    return data_path / "Subjects" if subjects else data_path
-
+    datapath = IBLRIG_SETTINGS.get("iblrig_remote_data_path", None)
+    if datapath is None:
+        return
+    elif subjects:
+        return Path(datapath) / "Subjects"
+    else:
+        return Path(datapath)
 
 def get_iblrig_path() -> Path or None:
     return Path(iblrig.__file__).parents[1]

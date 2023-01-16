@@ -503,4 +503,3 @@ for i in np.arange(nt):
 
 t = t - t[0]
 # latency is less than 15ms for psychometric curve computation
-
