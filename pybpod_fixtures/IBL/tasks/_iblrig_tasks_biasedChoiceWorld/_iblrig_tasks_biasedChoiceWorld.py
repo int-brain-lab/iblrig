@@ -11,18 +11,13 @@ from iblrig.user_input import ask_session_delay
 from pybpodapi.protocol import StateMachine
 
 from task import Session
-import online_plots as op
 
 log = logging.getLogger("iblrig")
 
 sess = Session(interactive=False)
 
-def bpod_loop_handler():
-    f.canvas.flush_events()  # 100µs
-
 # Bpod message creator
 msg = BpodMessageCreator(sess.bpod)
-
 
 # Delay initiation
 sess.task_params.SESSION_START_DELAY_SEC = ask_session_delay(sess.task_params.SETTINGS_FILE_PATH)
@@ -40,12 +35,12 @@ if bonsai.launch_cameras():
     bonsai.start_camera_setup()
 
 for i in range(sess.task_params.NTRIALS):  # Main loop
-    tph.next_trial()
+    sess.next_trial()
     log.info(f"Starting trial: {i + 1}")
     # =============================================================================
     #     Start state machine definition
     # =============================================================================
-    sma = StateMachine(bpod)
+    sma = StateMachine(sess.bpod)
 
     if i == 0:  # First trial exception start camera
         log.info("First trial initializing, will move to next trial only if:")
@@ -62,12 +57,12 @@ for i in range(sess.task_params.NTRIALS):  # Main loop
             state_name="trial_start",
             state_timer=0,  # ~100µs hardware irreducible delay
             state_change_conditions={"Tup": "reset_rotary_encoder"},
-            output_actions=[tph.out_stop_sound, ("BNC1", 255)],
+            output_actions=[sess.sound.OUT_STOP_SOUND, ("BNC1", 255)],
         )  # stop all sounds
         # TODO: remove out things from tph put in sph
     sma.add_state(
         state_name="delay_initiation",
-        state_timer=tph.session_start_delay_sec,
+        state_timer=sess.task_params.SESSION_START_DELAY_SEC,
         output_actions=[],
         state_change_conditions={"Tup": "reset_rotary_encoder"},
     )
@@ -85,8 +80,8 @@ for i in range(sess.task_params.NTRIALS):  # Main loop
         output_actions=[],
         state_change_conditions={
             "Tup": "stim_on",
-            tph.movement_left: "reset_rotary_encoder",
-            tph.movement_right: "reset_rotary_encoder",
+            sess.movement_left: "reset_rotary_encoder",
+            sess.movement_right: "reset_rotary_encoder",
         },
     )
 
@@ -103,7 +98,7 @@ for i in range(sess.task_params.NTRIALS):  # Main loop
 
     sma.add_state(
         state_name="interactive_delay",
-        state_timer=tph.interactive_delay,
+        state_timer=sess.task_params.INTERACTIVE_DELAY,
         output_actions=[],
         state_change_conditions={"Tup": "play_tone"},
     )
@@ -111,7 +106,7 @@ for i in range(sess.task_params.NTRIALS):  # Main loop
     sma.add_state(
         state_name="play_tone",
         state_timer=0.1,
-        output_actions=[tph.out_tone],
+        output_actions=[sess.sound.OUT_TONE],
         state_change_conditions={
             "Tup": "reset2_rotary_encoder",
             "BNC2High": "reset2_rotary_encoder",
@@ -127,19 +122,19 @@ for i in range(sess.task_params.NTRIALS):  # Main loop
 
     sma.add_state(
         state_name="closed_loop",
-        state_timer=tph.response_window,
+        state_timer=sess.task_params.RESPONSE_WINDOW,
         output_actions=[("Serial1", msg.bonsai_close_loop())],
         state_change_conditions={
             "Tup": "no_go",
-            tph.event_error: "freeze_error",
-            tph.event_reward: "freeze_reward",
+            sess.event_error: "freeze_error",
+            sess.event_reward: "freeze_reward",
         },
     )
 
     sma.add_state(
         state_name="no_go",
-        state_timer=tph.iti_error,
-        output_actions=[("Serial1", msg.bonsai_hide_stim()), tph.out_noise],
+        state_timer=sess.task_params.ITI_ERROR,
+        output_actions=[("Serial1", msg.bonsai_hide_stim()), sess.sound.OUT_NOISE],
         state_change_conditions={"Tup": "exit_state"},
     )
 
@@ -152,8 +147,8 @@ for i in range(sess.task_params.NTRIALS):  # Main loop
 
     sma.add_state(
         state_name="error",
-        state_timer=tph.iti_error,
-        output_actions=[tph.out_noise],
+        state_timer=sess.task_params.ITI_ERROR,
+        output_actions=[sess.sound.OUT_NOISE],
         state_change_conditions={"Tup": "hide_stim"},
     )
 
@@ -173,7 +168,7 @@ for i in range(sess.task_params.NTRIALS):  # Main loop
 
     sma.add_state(
         state_name="correct",
-        state_timer=tph.iti_correct,
+        state_timer=sess.task_params.ITI_CORRECT,
         output_actions=[],
         state_change_conditions={"Tup": "hide_stim"},
     )
@@ -197,39 +192,13 @@ for i in range(sess.task_params.NTRIALS):  # Main loop
     )
 
     # Send state machine description to Bpod device
-    bpod.send_state_machine(sma)
+    sess.send_state_machine(sma)
     # Run state machine
-    if not bpod.run_state_machine(sma):  # Locks until state machine 'exit' is reached
+    if not sess.bpod.run_state_machine(sma):  # Locks until state machine 'exit' is reached
         break
 
-    sess.trial_completed(bpod.session.current_trial.export())
-
-
+    sess.trial_completed(sess.bpod.session.current_trial.export())
     sess.show_trial_log()
-
     sess.check_sync_pulses()
-    stop_crit = sess.check_stop_criterions()
-    # clean this up and remove display from logic
-    if stop_crit and sess.task_params.USE_AUTOMATIC_STOPPING_CRITERIONS:
-        if stop_crit == 1:
-            msg = "STOPPING CRITERIA Nº1: PLEASE STOP TASK AND REMOVE MOUSE\
-            \n < 400 trials in 45min"
-            f.patch.set_facecolor("xkcd:mint green")
-        elif stop_crit == 2:
-            msg = "STOPPING CRITERIA Nº2: PLEASE STOP TASK AND REMOVE MOUSE\
-            \nMouse seems to be inactive"
-            f.patch.set_facecolor("xkcd:yellow")
-        elif stop_crit == 3:
-            msg = "STOPPING CRITERIA Nº3: PLEASE STOP TASK AND REMOVE MOUSE\
-            \n> 90 minutes have passed since session start"
-            f.patch.set_facecolor("xkcd:red")
 
-        if not sess.task_params.SUBJECT_DISENGAGED_TRIGGERED and stop_crit:
-            patch = {
-                "SUBJECT_DISENGAGED_TRIGGERED": stop_crit,
-                "SUBJECT_DISENGAGED_TRIALNUM": i + 1,
-            }
-            sess.paths.patch_settings_file(patch)
-        [log.warning(msg) for x in range(5)]
-
-bpod.close()
+sess.bpod.close()

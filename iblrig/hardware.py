@@ -4,11 +4,17 @@ This modules contains hardware classes used to interact with modules.
 from pathlib import Path
 import json
 import os
+import logging
 
 import numpy as np
 
+import sounddevice as sd
 from pybpod_rotaryencoder_module.module_api import RotaryEncoderModule
+from pybpod_soundcard_module.module_api import SoundCardModule
+
 from pybpodapi.bpod.bpod_io import BpodIO
+
+log = logging.getLogger(__name__)
 
 
 class Bpod(BpodIO):
@@ -75,3 +81,43 @@ class MyRotaryEncoder(object):
         m.enable_thresholds(self.ENABLE_THRESHOLDS)
         m.enable_evt_transmission()
         m.close()
+
+
+class SoundDevice(object):
+    def __init__(self, output="sysdefault", samplerate=None):
+        """
+        Will import, configure, and return sounddevice module to play sounds using onboard sound card.
+        Parameters
+        ----------
+        output
+            defaults to "sysdefault", should be 'xonar' or None
+        samplerate
+            audio sample rate, defaults to 44100
+        """
+        # FIXME: wait what ?!? is the None option for the HARP sound card ?
+        if output is None:
+            return
+        self.output = output
+        self.card = SoundCardModule()
+        self.samplerate = samplerate
+        if self.samplerate is None:
+            if self.output == "sysdefault":
+                self.samplerate = 44100
+            elif self.output == "xonar":
+                self.samplerate = 192000
+            elif self.output is None:
+                self.samplerate = 96000
+            else:
+                log.error("SOFT_SOUND in not: 'sysdefault', 'xonar' or 'None'")
+                raise (NotImplementedError)
+
+        if self.output == "xonar":
+            devices = sd.query_devices()
+            self.device = next(((i, d) for i, d in enumerate(devices) if "XONAR SOUND CARD(64)" in d["name"]), None)
+            self.latency = "low"
+            self.n_channels = 2
+            self.channels = 'L+TTL'
+        elif self.output == "sysdefault":
+            self.latency = "low"
+            self.n_channels = 2
+            self.channels = 'stereo'

@@ -88,6 +88,7 @@ def get_iblrig_remote_server_data_path(subjects: bool = True) -> Path or None:
     else:
         return Path(datapath)
 
+
 def get_iblrig_path() -> Path or None:
     return Path(iblrig.__file__).parents[1]
 
@@ -97,14 +98,9 @@ def get_iblrig_params_path() -> Path or None:
 
 
 def get_iblrig_temp_alyx_path() -> Path or None:
-    """ Get the iblrig_temp_alyx_path configured in the iblrig_params_template.yaml file, expecting something like
-    "C:\\Temp\\alyx_proj_data" """
-    try:
-        return Path(IBLRIG_SETTINGS["iblrig_temp_alyx_path"])
-    except KeyError:
-        log.error("The iblrig_temp_alyx_path key is missing from the iblrig_params yml file, typically found in the root "
-                  "directory of this repository.")
-        return None
+    alyx_path = IBLRIG_SETTINGS.get("iblrig_temp_alyx_path", None)
+    if alyx_path:
+        return Path(alyx_path)
 
 
 def get_commit_hash(folder: str):

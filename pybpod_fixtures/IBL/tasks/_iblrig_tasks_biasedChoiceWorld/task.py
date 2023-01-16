@@ -214,3 +214,33 @@ RELATIVE HUMIDITY:    {self.as_data['RelativeHumidity']} %
             performance=pd.NamedAgg(column="trial_correct", aggfunc="mean"),
         )
         return psychometric_curves
+
+
+class OnlineGraphsMixin(object):
+
+    def update_plots(self):
+        pass
+        # todo sess update plots
+        # stop_crit = self.check_stop_criterions()
+        # # clean this up and remove display from logic
+        # if stop_crit and self.task_params.USE_AUTOMATIC_STOPPING_CRITERIONS:
+        #     if stop_crit == 1:
+        #         msg = "STOPPING CRITERIA Nº1: PLEASE STOP TASK AND REMOVE MOUSE\
+        #         \n < 400 trials in 45min"
+        #         f.patch.set_facecolor("xkcd:mint green")
+        #     elif stop_crit == 2:
+        #         msg = "STOPPING CRITERIA Nº2: PLEASE STOP TASK AND REMOVE MOUSE\
+        #         \nMouse seems to be inactive"
+        #         f.patch.set_facecolor("xkcd:yellow")
+        #     elif stop_crit == 3:
+        #         msg = "STOPPING CRITERIA Nº3: PLEASE STOP TASK AND REMOVE MOUSE\
+        #         \n> 90 minutes have passed since session start"
+        #         f.patch.set_facecolor("xkcd:red")
+        #
+        #     if not self.task_params.SUBJECT_DISENGAGED_TRIGGERED and stop_crit:
+        #         patch = {
+        #             "SUBJECT_DISENGAGED_TRIGGERED": stop_crit,
+        #             "SUBJECT_DISENGAGED_TRIALNUM": i + 1,
+        #         }
+        #         self.paths.patch_settings_file(patch)
+        #     [log.warning(msg) for x in range(5)]

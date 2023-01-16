@@ -17,7 +17,7 @@ import iblrig.adaptive as adaptive
 import iblrig.path_helper
 from iblrig.path_helper import SessionPathCreator
 from iblutil.util import Bunch
-from iblrig.hardware import Bpod, MyRotaryEncoder
+from iblrig.hardware import Bpod, MyRotaryEncoder, SoundDevice
 import iblrig.bonsai as bonsai
 import iblrig.frame2TTL as frame2TTL
 import iblrig.iotasks as iotasks
@@ -32,20 +32,9 @@ OSC_CLIENT_IP = "127.0.0.1"
 OSC_CLIENT_PORT = 7110
 
 
-class ChoiceWorldTask(object):
-    @property
-    def elapsed_time(self):
-        # elapsed time from init datetime in seconds
-        return (datetime.datetime.now() - self.init_datetime).total_seconds()
-
-    @property
-    def signed_contrast(self):
-        return self.contrast * np.sign(self.position)
-
-
 class BaseSessionParamHandler(ABC):
 
-    def __init__(self, debug=False):
+    def __init__(self, debug=False, task_settings_file=None):
         self.init_datetime = datetime.datetime.now()
         self.DEBUG = debug
         self.calibration = Bunch({})
@@ -54,7 +43,7 @@ class BaseSessionParamHandler(ABC):
         # get another set of parameters from .iblrig_params.json
         self.hardware_settings = iblrig.path_helper.load_settings_yaml('hardware_settings.yaml')
         # Load the tasks settings
-        task_settings_file = Path(inspect.getfile(self.__class__)).parent.joinpath('task_parameters.yaml')
+        task_settings_file = task_settings_file or Path(inspect.getfile(self.__class__)).parent.joinpath('task_parameters.yaml')
         if task_settings_file.exists():
             with open(task_settings_file) as fp:
                 self.task_params = Bunch(yaml.safe_load(fp))
@@ -160,60 +149,57 @@ class SoundMixin:
     """
     Sound interface methods for state machine
     """
-    def play_tone(self):
-        self.SD.play(self.GO_TONE, self.SOUND_SAMPLE_FREQ)
-
-    def play_noise(self):
-        self.SD.play(self.WHITE_NOISE, self.SOUND_SAMPLE_FREQ)
-
-    def stop_sound(self):
-        self.SD.stop()
-
-    def init_sound_device(self):
-        # =====================================================================
-        # SOUNDS
-        # =====================================================================
-        self.device_sound = Bunch({})
-        # TODO: this is task specific
-        # self.device_sound.SOFT_SOUND = None if "ephys" in self.PYBPOD_BOARD else self.SOFT_SOUND
-
-        self.SOUND_SAMPLE_FREQ = sound.sound_sample_freq(self.SOFT_SOUND)
-        self.WHITE_NOISE_DURATION = float(self.WHITE_NOISE_DURATION)
-        self.WHITE_NOISE_AMPLITUDE = float(self.WHITE_NOISE_AMPLITUDE)
-        self.GO_TONE_DURATION = float(self.GO_TONE_DURATION)
-        self.GO_TONE_FREQUENCY = int(self.GO_TONE_FREQUENCY)
-        self.GO_TONE_AMPLITUDE = float(self.GO_TONE_AMPLITUDE)
-
-        self.SD = sound.configure_sounddevice(
-            output=self.SOFT_SOUND, samplerate=self.SOUND_SAMPLE_FREQ
-        )
+    def __init__(self):
+        self.sound = Bunch({})
+        self.sound['device'] = SoundDevice(output=self.task_params.SOFT_SOUND)
         # Create sounds and output actions of state machine
-        self.GO_TONE = None
-        self.WHITE_NOISE = None
-        self = sound.init_sounds(self)  # sets GO_TONE and WHITE_NOISE
+        self.sound['GO_TONE'] = iblrig.sound.make_sound(
+            rate=self.sound.device.samplerate,
+            frequency=self.task_params.GO_TONE_FREQUENCY,
+            duration=self.task_params.GO_TONE_DURATION,
+            amplitude=self.task_params.GO_TONE_AMPLITUDE,
+            fade=0.01,
+            chans=self.sound.device.channels)
+
+        self.sound['WHITE_NOISE'] = iblrig.sound.make_sound(
+            rate=self.sound.device.samplerate,
+            frequency=-1,
+            duration=self.task_params.WHITE_NOISE_DURATION,
+            amplitude=self.task_params.WHITE_NOISE_AMPLITUDE,
+            fade=0.01,
+            chans=self.sound.device.channels)
+
         # SoundCard config params
-        self.SOUND_BOARD_BPOD_PORT = "Serial3"
-        self.GO_TONE_IDX = 2
-        self.WHITE_NOISE_IDX = 3
-        if self.SOFT_SOUND is None:
+        #
+        if self.task_params.SOFT_SOUND is None:
             sound.configure_sound_card(
-                sounds=[self.GO_TONE, self.WHITE_NOISE],
-                indexes=[self.GO_TONE_IDX, self.WHITE_NOISE_IDX],
-                sample_rate=self.SOUND_SAMPLE_FREQ,
+                sounds=[self.sound.GO_TONE, self.sound.WHITE_NOISE],
+                indexes=[self.task_params.GO_TONE_IDX, self.task_params.WHITE_NOISE_IDX],
+                sample_rate=self.sound.device.samplerate,
             )
 
-        self.OUT_TONE = ("SoftCode", 1) if self.SOFT_SOUND else ("Serial3", 6)
-        self.OUT_NOISE = ("SoftCode", 2) if self.SOFT_SOUND else ("Serial3", 7)
-        self.OUT_STOP_SOUND = ("SoftCode", 0) if self.SOFT_SOUND else ("Serial3", ord("X"))
+        self.sound['OUT_TONE'] = ("SoftCode", 1) if self.task_params.SOFT_SOUND else ("Serial3", 6)
+        self.sound['OUT_NOISE'] = ("SoftCode", 2) if self.task_params.SOFT_SOUND else ("Serial3", 7)
+        self.sound['OUT_STOP_SOUND'] = ("SoftCode", 0) if self.task_params.SOFT_SOUND else ("Serial3", ord("X"))
+
+    def play_tone(self):
+        self.sound.device.play(self.sound.GO_TONE, self.sound.SOUND_SAMPLE_FREQ)
+
+    def play_noise(self):
+        self.sound.device.play(self.sound.WHITE_NOISE, self.sound.SOUND_SAMPLE_FREQ)
+
+    def stop_sound(self):
+        self.sound.device.stop()
+
+    def send_sounds_to_harp(self):
+        # self.card.send_sound(wave_int, GO_TONE_IDX, SampleRate._96000HZ, DataType.INT32)
+        # self.card.send_sound(noise_int, WHITE_NOISE_IDX, SampleRate._96000HZ, DataType.INT32)
+        pass
 
 
 class ChoiceWorldSession(BaseSessionParamHandler,
-                         RotaryEncoderMixin):
-                         # BpodMixin,
-                         # SoundMixin,
-                         # Frame2TTLMixin,
-                         # RotaryEncoderMixin,
-                         # CameraMixin,
+                         RotaryEncoderMixin,
+                         SoundMixin):  # BpodMixin, Frame2TTLMixin, CameraMixin
 
     def __init__(self, fmake=True, interactive=False, *args,  **kwargs):
         super(ChoiceWorldSession, self).__init__(*args, **kwargs)
