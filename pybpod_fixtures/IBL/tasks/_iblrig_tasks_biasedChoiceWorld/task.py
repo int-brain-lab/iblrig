@@ -25,6 +25,7 @@ class Session(ChoiceWorldSession):
         self.trial_num = -1
         self.block_trial_num = -1
         self.block_num = -1
+        self.block_len = -1
         self.ntrials_correct = 0
         self.water_delivered = 0
         self.behavior_data = []
@@ -59,7 +60,6 @@ class Session(ChoiceWorldSession):
             "AirPressure_mb": -1,
             "RelativeHumidity": -1,
         }
-        self.new_block()
 
     def new_block(self):
         """
@@ -102,8 +102,11 @@ class Session(ChoiceWorldSession):
         self.trials_table.at[self.trial_num, 'stim_phase'] = random.uniform(0, 2 * math.pi)
         self.trials_table.at[self.trial_num, 'stim_sigma'] = self.task_params.STIM_SIGMA
         self.trials_table.at[self.trial_num, 'stim_angle'] = self.task_params.STIM_ANGLE
+        self.trials_table.at[self.trial_num, 'block_num'] = self.block_num
+        self.trials_table.at[self.trial_num, 'block_trial_num'] = self.block_trial_num
         self.trials_table.at[self.trial_num, 'stim_freq'] = self.task_params.STIM_FREQ
         self.trials_table.at[self.trial_num, 'stim_probability_left'] = self.block_probability_left
+        self.trials_table.at[self.trial_num, 'trial_num'] = self.trial_num
         pos = self.draw_position()
         self.trials_table.at[self.trial_num, 'position'] = pos
         self.event_error = self.device_rotary_encoder.THRESHOLD_EVENTS[pos]

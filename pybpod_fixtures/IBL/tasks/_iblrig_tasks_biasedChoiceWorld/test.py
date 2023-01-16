@@ -486,11 +486,6 @@ no_go_trial = {
 }  # noqa
 
 task = Session(interactive=False)
-task.next_trial()
-
-
-task.trial_completed(np.random.choice([correct_trial, error_trial, no_go_trial], p=[0.9, 0.05, 0.05]))
-task.next_trial()
 
 nt = 900
 
@@ -503,3 +498,48 @@ for i in np.arange(nt):
 
 t = t - t[0]
 # latency is less than 15ms for psychometric curve computation
+
+# test
+task.trials_table = task.trials_table[:task.trial_num]  # todo add this to wrap-up
+import pandas as pd
+
+
+
+import matplotlib.pyplot as plt
+plt.switch_backend('Qt5Agg')
+plt.plot(task.trials_table['block_num'].values)
+# Index(['block_num', 'block_trial_num', 'contrast', 'position',
+#        'quiescent_period', 'response_side', 'response_time', 'reward_amount',
+#        'reward_valve_time', 'stim_angle', 'stim_freq', 'stim_gain',
+#        'stim_phase', 'stim_probability_left', 'stim_reverse', 'stim_sigma',
+#        'trial_correct', 'trial_num'],
+
+task.trials_table['stim_freq']
+
+np.testing.assert_array_equal(task.trials_table['trial_num'].values, np.arange(task.trial_num))
+
+## Test the blocks task logic
+df_blocks = task.trials_table.groupby('block_num').agg(
+    count=pd.NamedAgg(column="stim_angle", aggfunc="count"),
+    n_stim_probability_left=pd.NamedAgg(column="stim_probability_left", aggfunc="nunique"),
+    stim_probability_left=pd.NamedAgg(column="stim_probability_left", aggfunc="first"),
+    position=pd.NamedAgg(column="position", aggfunc=lambda x: 1 - (np.mean(np.sign(x)) + 1) / 2),
+    first_trial=pd.NamedAgg(column="block_trial_num", aggfunc='first'),
+)
+
+# test that the first block is 90 trials
+assert df_blocks['count'].values[0] == 90
+# make all first block trials were reset to 0
+assert np.all(df_blocks['first_trial'] == 0)
+# test that the first block has 50/50 probability
+assert df_blocks['stim_probability_left'].values[0] == 0.5
+# make sure that all subsequent blocks alternate between 0.2 and 0.8 left probability
+assert np.all(np.isclose(np.abs(np.diff(df_blocks['stim_probability_left'].values[1:])), 0.6))
+# assert the the trial outcomes are within 0.3 of the generating probability
+assert np.all(np.abs(df_blocks['position'] - df_blocks['stim_probability_left']) < 0.3)
+
+
+## test the overall trials distribution
+pc = task.psychometric_curve()
+# the biased choice world task has a 0 contrast that is twice as probable as the other signed contrasts
+assert np.all(np.abs((pc['count'].values / task.trial_num) - np.array([1, 1, 1, 1, 2, 1, 1, 1, 1]) / 10) < .05)
