@@ -7,9 +7,10 @@ from abc import ABC
 import datetime
 import inspect
 import logging
+import yaml
 
 import numpy as np
-import yaml
+import scipy.interpolate
 
 from pythonosc import udp_client
 
@@ -34,14 +35,14 @@ OSC_CLIENT_PORT = 7110
 
 class BaseSessionParamHandler(ABC):
 
-    def __init__(self, debug=False, task_settings_file=None):
+    def __init__(self, debug=False, task_settings_file=None, hardware_settings_name='hardware_settings.yaml'):
         self.init_datetime = datetime.datetime.now()
         self.DEBUG = debug
         self.calibration = Bunch({})
         # Load pybpod settings
         self.pybpod_settings = iblrig.path_helper.load_pybpod_settings_yaml('pybpod_settings.yaml')
         # get another set of parameters from .iblrig_params.json
-        self.hardware_settings = iblrig.path_helper.load_settings_yaml('hardware_settings.yaml')
+        self.hardware_settings = iblrig.path_helper.load_settings_yaml(hardware_settings_name)
         # Load the tasks settings
         task_settings_file = task_settings_file or Path(inspect.getfile(self.__class__)).parent.joinpath('task_parameters.yaml')
         if task_settings_file.exists():
@@ -143,6 +144,68 @@ class CameraMixin:
             return bonsai.start_camera_recording(self)
         else:
             return bonsai.start_mic_recording(self)
+
+
+class ValveMixin:
+    def init_reward_amount(sph: object) -> float:
+        if not sph.ADAPTIVE_REWARD:
+            return sph.REWARD_AMOUNT
+
+        if sph.LAST_TRIAL_DATA is None:
+            return sph.AR_INIT_VALUE
+        elif sph.LAST_TRIAL_DATA and sph.LAST_TRIAL_DATA["trial_num"] < 200:
+            out = sph.LAST_TRIAL_DATA["reward_amount"]
+        elif sph.LAST_TRIAL_DATA and sph.LAST_TRIAL_DATA["trial_num"] >= 200:
+            out = sph.LAST_TRIAL_DATA["reward_amount"] - sph.AR_STEP
+            out = sph.AR_MIN_VALUE if out <= sph.AR_MIN_VALUE else out
+
+        if "SUBJECT_WEIGHT" not in sph.LAST_SETTINGS_DATA.keys():
+            return out
+
+        previous_weight_factor = sph.LAST_SETTINGS_DATA["SUBJECT_WEIGHT"] / 25
+        previous_water = sph.LAST_TRIAL_DATA["water_delivered"] / 1000
+
+        if previous_water < previous_weight_factor:
+            out = sph.LAST_TRIAL_DATA["reward_amount"] + sph.AR_STEP
+
+        out = sph.AR_MAX_VALUE if out > sph.AR_MAX_VALUE else out
+        return out
+
+    def __init__(self: object):
+        self.valve = Bunch({})
+        # the template settings files have a date in 2099, so assume that the rig is not calibrated if that is the case
+        # the assertion on calibration is thrown when starting the device
+        self.valve['is_calibrated'] = datetime.date.today() > self.hardware_settings['device_valve']['WATER_CALIBRATION_DATE']
+        self.valve['fcn_vol2time'] = scipy.interpolate.pchip(
+            self.hardware_settings['device_valve']["WATER_CALIBRATION_WEIGHT_PERDROP"],
+            self.hardware_settings['device_valve']["WATER_CALIBRATION_OPEN_TIMES"],
+        )
+        if self.task_params.AUTOMATIC_CALIBRATION:
+            self.valve['reward_time'] = self.valve['fcn_vol2time'](self.task_params.REWARD_AMOUNT) / 1e3
+        else:  # this is the manual manual calibration value
+            self.valve['reward_time'] = self.task_params.CALIBRATION_VALUE / 3 * self.task_params.REWARD_AMOUNT
+
+    def start(self):
+        # if the rig is not on manual settings, then the reward valve has to be calibrated to run the experiment
+        assert self.task_params.AUTOMATIC_CALIBRATION is False or self.valve['is_calibrated'], """
+            ##########################################
+            NO CALIBRATION INFORMATION FOUND IN HARDWARE SETTINGS:
+            Calibrate the rig or use a manual calibration
+            PLEASE GO TO the task settings yaml file and set:
+                'AUTOMATIC_CALIBRATION': false
+                'CALIBRATION_VALUE' = <MANUAL_CALIBRATION>
+            ##########################################"""
+        # regardless of the calibration method, the reward valve time has to be lower than 1 second
+        assert self.valve['reward_time'] < 1,\
+            """
+            ##########################################
+                REWARD VALVE TIME IS TOO HIGH!
+            Probably because of a BAD calibration file
+            Calibrate the rig or use a manual calibration
+            PLEASE GO TO the task settings yaml file and set:
+                AUTOMATIC_CALIBRATION = False
+                CALIBRATION_VALUE = <MANUAL_CALIBRATION>
+            ##########################################"""
 
 
 class SoundMixin:

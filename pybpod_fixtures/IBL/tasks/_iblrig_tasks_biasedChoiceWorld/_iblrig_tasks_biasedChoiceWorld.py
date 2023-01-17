@@ -161,7 +161,7 @@ for i in range(sess.task_params.NTRIALS):  # Main loop
 
     sma.add_state(
         state_name="reward",
-        state_timer=tph.reward_valve_time,
+        state_timer=sess.valve.reward_time,
         output_actions=[("Valve1", 255), ("BNC1", 255)],
         state_change_conditions={"Tup": "correct"},
     )
