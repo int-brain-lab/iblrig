@@ -483,33 +483,3 @@ class Frame2TTLv2(object):
     def reset_thresholds(self):
         self.dark_threshold = -150
         self.light_threshold = 150
-
-
-def get_and_set_thresholds():
-    params = iblrig.params.load_params_file()
-
-    for k in params:
-        if "F2TTL" in k and params[k] is None:
-            log.error(f"Missing parameter {k}, please calibrate the device.")
-            raise (KeyError)
-
-    dev = Frame2TTL(params["COM_F2TTL"])
-    dev.set_thresholds(dark=params["F2TTL_DARK_THRESH"], light=params["F2TTL_LIGHT_THRESH"])
-    log.info("Frame2TTL: Thresholds set.")
-    return 0
-
-
-if __name__ == "__main__":
-    com_port_v1 = "COM3"  # v1
-    com_port_v2 = "COM4"  # v2
-    f1 = Frame2TTL(com_port_v1)
-    f2 = Frame2TTL(com_port_v2)
-    ferr = Frame2TTL("COM1")
-    # print(f.read_value())
-    # print(f.measure_photons())
-    # f.set_thresholds()
-    # f.set_thresholds(light=41, dark=81)
-    # f.set_thresholds(light=41)
-    # f.set_thresholds(dark=81)
-    # f.suggest_thresholds()
-    print(".")

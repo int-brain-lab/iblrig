@@ -14,18 +14,14 @@ import scipy.interpolate
 
 from pythonosc import udp_client
 
-import iblrig.adaptive as adaptive
 import iblrig.path_helper
-from iblrig.path_helper import SessionPathCreator
 from iblutil.util import Bunch
 from iblrig.hardware import Bpod, MyRotaryEncoder, SoundDevice
 import iblrig.bonsai as bonsai
 import iblrig.frame2TTL as frame2TTL
-import iblrig.iotasks as iotasks
+
 import iblrig.misc as misc
 import iblrig.sound as sound
-import iblrig.user_input as user
-
 
 log = logging.getLogger("iblrig")
 
@@ -38,7 +34,6 @@ class BaseSessionParamHandler(ABC):
     def __init__(self, debug=False, task_settings_file=None, hardware_settings_name='hardware_settings.yaml'):
         self.init_datetime = datetime.datetime.now()
         self.DEBUG = debug
-        self.calibration = Bunch({})
         # Load pybpod settings
         self.pybpod_settings = iblrig.path_helper.load_pybpod_settings_yaml('pybpod_settings.yaml')
         # get another set of parameters from .iblrig_params.json
@@ -114,8 +109,15 @@ class Frame2TTLMixin:
     """
     Frame 2 TTL interface for state machine
     """
+    def __init__(self, *args, **kwargs):
+        self.frame2ttl = None
+
     def start(self):
-        self.F2TTL_GET_AND_SET_THRESHOLDS = frame2TTL.get_and_set_thresholds()
+        self.frame2ttl = frame2TTL(self.hardware_settings['device_frame2ttl']['COM_F2TTL'])
+        self.frame2ttl.set_thresholds(
+            dark=self.hardware_settings['device_frame2ttl']["F2TTL_DARK_THRESH"],
+            light=self.hardware_settings['device_frame2ttl']["F2TTL_DARK_THRESH"])
+        log.info("Frame2TTL: Thresholds set.")
 
 
 class RotaryEncoderMixin:
@@ -147,29 +149,24 @@ class CameraMixin:
 
 
 class ValveMixin:
-    def init_reward_amount(sph: object) -> float:
-        if not sph.ADAPTIVE_REWARD:
-            return sph.REWARD_AMOUNT
+    def get_reward_amount(self: object) -> float:
+        # simply returns the reward amount if no adaptive rewared is used
+        if not self.task_params.ADAPTIVE_REWARD:
+            return self.task_params.REWARD_AMOUNT
+        # simply returns the reward amount if no adaptive rewared is used
+        if not self.task_params.ADAPTIVE_REWARD:
+            return self.task_params.REWARD_AMOUNT
+        else:
+            raise NotImplementedError
+        # first session : AR_INIT_VALUE, return
+        # if total_water_session < (subject_weight / 25):
+        #   minimum(last_reward + AR_STEP, AR_MAX_VALUE)  3 microliters AR_MAX_VALUE
+        # last ntrials strictly below 200:
+        #   keep the same reward
+        # trial between 200 and above:
+        #   maximum(last_reward - AR_STEP, AR_MIN_VALUE)  1.5 microliters AR_MIN_VALUE
 
-        if sph.LAST_TRIAL_DATA is None:
-            return sph.AR_INIT_VALUE
-        elif sph.LAST_TRIAL_DATA and sph.LAST_TRIAL_DATA["trial_num"] < 200:
-            out = sph.LAST_TRIAL_DATA["reward_amount"]
-        elif sph.LAST_TRIAL_DATA and sph.LAST_TRIAL_DATA["trial_num"] >= 200:
-            out = sph.LAST_TRIAL_DATA["reward_amount"] - sph.AR_STEP
-            out = sph.AR_MIN_VALUE if out <= sph.AR_MIN_VALUE else out
-
-        if "SUBJECT_WEIGHT" not in sph.LAST_SETTINGS_DATA.keys():
-            return out
-
-        previous_weight_factor = sph.LAST_SETTINGS_DATA["SUBJECT_WEIGHT"] / 25
-        previous_water = sph.LAST_TRIAL_DATA["water_delivered"] / 1000
-
-        if previous_water < previous_weight_factor:
-            out = sph.LAST_TRIAL_DATA["reward_amount"] + sph.AR_STEP
-
-        out = sph.AR_MAX_VALUE if out > sph.AR_MAX_VALUE else out
-        return out
+        # when implementing this make sure the test is solid
 
     def __init__(self: object):
         self.valve = Bunch({})
@@ -258,145 +255,3 @@ class SoundMixin:
         # self.card.send_sound(wave_int, GO_TONE_IDX, SampleRate._96000HZ, DataType.INT32)
         # self.card.send_sound(noise_int, WHITE_NOISE_IDX, SampleRate._96000HZ, DataType.INT32)
         pass
-
-
-class ChoiceWorldSession(BaseSessionParamHandler,
-                         RotaryEncoderMixin,
-                         SoundMixin):  # BpodMixin, Frame2TTLMixin, CameraMixin
-
-    def __init__(self, fmake=True, interactive=False, *args,  **kwargs):
-        super(ChoiceWorldSession, self).__init__(*args, **kwargs)
-        # BpodMixin.__init__(self, *args, **kwargs)
-        RotaryEncoderMixin.__init__(self, *args, **kwargs)
-        # Create the folder architecture and get the paths property updated
-        if not fmake:
-            make = False
-        elif fmake and "ephys" in self.pybpod_settings.PYBPOD_BOARD:
-            make = True  # True makes only raw_behavior_data folder
-        else:
-            make = ["video"]  # besides behavior which folders to creae
-        spc = SessionPathCreator(
-            self.pybpod_settings.PYBPOD_SUBJECTS[0],
-            protocol=self.pybpod_settings.PYBPOD_PROTOCOL,
-            make=make)
-        self.paths = Bunch(spc.__dict__)
-        # OSC client
-        self.osc_client = OSCClient()
-        # Session data
-        if interactive:
-            self.SUBJECT_WEIGHT = user.ask_subject_weight(self.pybpod_settings.PYBPOD_SUBJECTS[0])
-        else:
-            self.SUBJECT_WEIGHT = np.NaN
-        self.display_logs()
-
-    @property
-    def iti_reward(self, assert_calibration=True):
-        """
-        Returns the ITI time that needs to be set in order to achieve the desired ITI,
-        by subtracting the time it takes to give a reward from the desired ITI.
-        """
-        if assert_calibration:
-            assert 'REWARD_VALVE_TIME' in self.calibration.keys(), 'Reward valve time not calibrated'
-        return self.task_params.ITI_CORRECT - self.calibration.get('REWARD_VALVE_TIME', None)
-
-    def reprJSON(self):
-        """
-        JSON representation of the session parameters - one way street
-        :return:
-        """
-        def remove_from_dict(sx):
-            if "weighings" in sx.keys():
-                sx["weighings"] = None
-            if "water_administration" in sx.keys():
-                sx["water_administration"] = None
-            return sx
-
-        d = self.__dict__.copy()
-        d["GO_TONE"] = "go_tone(freq={}, dur={}, amp={})".format(
-            self.task_params.GO_TONE_FREQUENCY,
-            self.task_params.GO_TONE_DURATION,
-            self.task_params.GO_TONE_AMPLITUDE
-        )
-        d["WHITE_NOISE"] = "white_noise(freq=-1, dur={}, amp={})".format(
-            self.task_params.WHITE_NOISE_DURATION,
-            self.task_params.WHITE_NOISE_AMPLITUDE
-        )
-
-        d["SD"] = str(d.get('SD', None))
-        d["CALIB_FUNC"] = str(d.get('CALIB_FUNC', None))
-
-        d["LAST_TRIAL_DATA"] = None
-        d["LAST_SETTINGS_DATA"] = None
-        return d
-
-    def display_logs(self):
-        if self.paths.PREVIOUS_DATA_FILE:
-            msg = f"""
-##########################################
-PREVIOUS SESSION FOUND
-LOADING PARAMETERS FROM:       {self.PREVIOUS_DATA_FILE}
-PREVIOUS NTRIALS:              {self.LAST_TRIAL_DATA["trial_num"]}
-PREVIOUS WATER DRANK:          {self.LAST_TRIAL_DATA["water_delivered"]}
-LAST REWARD:                   {self.LAST_TRIAL_DATA["reward_amount"]}
-LAST GAIN:                     {self.LAST_TRIAL_DATA["stim_gain"]}
-PREVIOUS WEIGHT:               {self.LAST_SETTINGS_DATA["SUBJECT_WEIGHT"]}
-##########################################"""
-            log.info(msg)
-
-    def checklist(self):
-        """
-        Before starting the task, this goes through a checklist making sure that the rig
-        has calibration values and the hardware is connected
-        :return:
-        """
-        # =====================================================================
-        # ADAPTIVE STUFF - CALIBRATION OF THE WATER REWARD
-        # =====================================================================
-        self.CALIB_FUNC = None
-        if self.task_params.AUTOMATIC_CALIBRATION:
-            self.CALIB_FUNC = adaptive.init_calib_func()
-        self.CALIB_FUNC_RANGE = adaptive.init_calib_func_range()
-        self.REWARD_VALVE_TIME = adaptive.init_reward_valve_time(self)
-        # =====================================================================
-
-    def start(self):
-        # SUBJECT
-        # =====================================================================
-        self.SUBJECT_DISENGAGED_TRIGGERED = False
-        self.SUBJECT_DISENGAGED_TRIALNUM = None
-        self.SUBJECT_PROJECT = None  # user.ask_project(self.PYBPOD_SUBJECTS[0])
-        # =====================================================================
-        # PREVIOUS DATA FILES
-        # =====================================================================
-        self.LAST_TRIAL_DATA = iotasks.load_data(self.paths.PREVIOUS_SESSION_PATH)
-        self.LAST_SETTINGS_DATA = iotasks.load_settings(self.paths.PREVIOUS_SESSION_PATH)
-        # SAVE SETTINGS FILE AND TASK CODE
-        # =====================================================================
-        if not self.DEBUG:
-            iotasks.save_session_settings(self)
-            iotasks.copy_task_code(self)
-            iotasks.save_task_code(self)
-            if "ephys" not in self.PYBPOD_BOARD:
-                iotasks.copy_video_code(self)
-                iotasks.save_video_code(self)
-            self.bpod_lights(0)
-
-    def time_elapsed(self):
-        return datetime.datetime.now - self.init_datetime
-
-    def softcode_handler(self, code):
-        """
-         Soft codes should work with resasonable latency considering our limiting
-         factor is the refresh rate of the screen which should be 16.667ms @ a frame
-         rate of 60Hz
-         1 : go_tone
-         2 : white_noise
-         """
-        if code == 0:
-            self.stop_sound()
-        elif code == 1:
-            self.play_tone()
-        elif code == 2:
-            self.play_noise()
-        elif code == 3:
-            self.start_camera_recording()

@@ -1,6 +1,10 @@
 hardware_settings.yaml
 iblrig_settings.yaml
 pybpod_settings.yaml
+.iblrig_params.json
+.iblrig_params_bckp.json
+settings/alyx
+
 Bonsai/*
 Subjects/*
 Bonsai/Bonsai.exe.settings

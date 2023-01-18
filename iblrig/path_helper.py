@@ -29,64 +29,37 @@ def load_settings_yaml(file_name):
 IBLRIG_SETTINGS = load_settings_yaml('iblrig_settings.yaml')
 
 
-def get_remote_server_path(params=None) -> Path or None:
-    """ Get the iblrig_remote_server_path configured in the iblrig_params_template.yaml file, expecting something like
-    "\\lab_server_ip_or_dns" """
-
-    try:
-        return Path(IBLRIG_SETTINGS["iblrig_remote_server_path"])
-    except KeyError:
-        log.error("The iblrig_remote_server_path key is missing from the iblrig_params yml file, typically found in the root "
-                  "directory of this repository.")
-        return None
+def get_remote_server_path(params=None, subjects: bool=True) -> Path or None:
+    """
+    Get the iblrig server path configured in the settings/iblrig_params.yaml file
+    If none is found returns ~/iblrig_data/server
+    """
+    data_path = IBLRIG_SETTINGS.get("iblrig_local_server_path")
+    data_path = data_path or Path.home().joinpath("iblrig_data", "remote_server")
+    # Return the "Subjects" subdirectory by default
+    return Path(data_path) / "Subjects" if subjects else data_path
 
 
 def get_iblrig_local_data_path(subjects: bool = True) -> Path or None:
     """
-    Get the iblrig_local_data_path configured in the iblrig_params_template.yaml file, expecting something like
-    "C:\\iblrig_data" or "C:\\iblrig_data\\Subjects"
-
-    Parameters
-    ----------
-    subjects
-        determines whether to include the Subjects subdirectory; defaults to True
-
-    Returns
-    -------
-    Path or None
+    Get the iblrig_local_data_path configured in the settings/iblrig_params.yaml file
+    If none is found returns ~/iblrig_data/local
     """
-    try:
-        data_path = Path(IBLRIG_SETTINGS["iblrig_local_data_path"])
-    except KeyError:
-        log.error("The iblrig_local_data_path key is missing from the iblrig_params yml file, typically found in the root "
-                  "directory of this repository.")
-        return None
-
+    data_path = IBLRIG_SETTINGS.get("iblrig_local_data_path")
+    data_path = data_path or Path.home().joinpath("iblrig_data", "local")
     # Return the "Subjects" subdirectory by default
-    return data_path / "Subjects" if subjects else data_path
+    return Path(data_path) / "Subjects" if subjects else data_path
 
 
 def get_iblrig_remote_server_data_path(subjects: bool = True) -> Path or None:
     """
-    Get the iblrig_remote_data_path configured in the iblrig_params_template.yaml file, expecting something like
-    "\\\\lab_server_ip_or_dns\\data_folder" or "\\\\lab_server_ip_or_dns\\data_folder\\Subjects"
-
-    Parameters
-    ----------
-    subjects
-        determines whether to include the Subjects subdirectory; defaults to True
-
-    Returns
-    -------
-    Path or None
+    Get the remote_server_data configured in the settings/iblrig_params.yaml file
+    If none is found returns ~/iblrig_data/remote
     """
-    datapath = IBLRIG_SETTINGS.get("iblrig_remote_data_path", None)
-    if datapath is None:
-        return
-    elif subjects:
-        return Path(datapath) / "Subjects"
-    else:
-        return Path(datapath)
+    data_path = IBLRIG_SETTINGS.get("iblrig_local_data_path")
+    data_path = data_path or Path.home().joinpath("iblrig_data", "remote_data")
+    # Return the "Subjects" subdirectory by default
+    return Path(data_path) / "Subjects" if subjects else data_path
 
 
 def get_iblrig_path() -> Path or None:
@@ -98,9 +71,13 @@ def get_iblrig_params_path() -> Path or None:
 
 
 def get_iblrig_temp_alyx_path() -> Path or None:
-    alyx_path = IBLRIG_SETTINGS.get("iblrig_temp_alyx_path", None)
-    if alyx_path:
-        return Path(alyx_path)
+    """
+    Get the iblrig_local_data_path configured in the settings/iblrig_params.yaml file
+    If none is found returns ~/iblrig_data/local
+    """
+    alyx_path = IBLRIG_SETTINGS.get("iblrig_temp_alyx_path")
+    alyx_path = alyx_path or Path(iblrig.__file__).parents[1].joinpath('settings', 'alyx')
+    return Path(alyx_path)
 
 
 def get_commit_hash(folder: str):
