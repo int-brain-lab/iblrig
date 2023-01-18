@@ -10,7 +10,7 @@ from iblrig.bpod_helper import BpodMessageCreator
 from iblrig.user_input import ask_session_delay
 from pybpodapi.protocol import StateMachine
 
-from task import Session
+from .task import Session
 
 log = logging.getLogger("iblrig")
 
