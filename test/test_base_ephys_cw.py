@@ -14,7 +14,7 @@ from iblrig.base_tasks import SoundMixin, RotaryEncoderMixin, BaseSessionParamHa
 class TestHardwareMixins(unittest.TestCase):
     def setUp(self):
         task_settings_file = Path(iblrig.__file__).parents[1].joinpath(
-            'pybpod_fixtures/IBL/tasks/_iblrig_tasks_biasedChoiceWorld/task_parameters.yaml')
+            'iblrig_tasks/_iblrig_tasks_biasedChoiceWorld/task_parameters.yaml')
         self.session = BaseSessionParamHandler(task_settings_file=task_settings_file,
                                                hardware_settings_name='hardware_settings_template.yaml')
 

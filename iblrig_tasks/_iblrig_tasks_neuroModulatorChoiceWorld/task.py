@@ -1,9 +1,9 @@
 import logging
 
+import numpy as np
 from pybpodapi.protocol import StateMachine
 
 from iblrig.base_choice_world import BiasedChoiceWorldSession
-
 
 NTRIALS_INIT = 1000
 log = logging.getLogger("iblrig")
@@ -12,16 +12,31 @@ log = logging.getLogger("iblrig")
 class Session(BiasedChoiceWorldSession):
     def __init__(self, *args, **kwargs):
         super(Session, self).__init__(*args, **kwargs)
+        self.choice_to_feedback_delay = 0
+        self.trials_table['null_feedback'] = np.zeros(self.trials_table.shape[0], dtype=bool)
+
+    def next_trial(self):
+        super(Session, self).next_trial()
+        # first there is a delay chosen from choice to feedback delay with a associated probabilities
+        i = np.searchsorted(np.cumsum(self.task_params.CHOICE_TO_FEEDBACK_DELAY_PROBABILITY_SET), np.random.rand())
+        self.choice_to_feedback_delay = self.task_params.CHOICE_TO_FEEDBACK_DELAY_SECS[i]
+        # then there is a probability of a null feedback regardless of the choice
+        self.trials_table.at[self.trial_num, 'null_feedback'] = np.random.random() < self.task_params.NULL_FEEDBACK_PROBABILITY
+
+    @property
+    def null_feedback(self):
+        return self.trials_table.at[self.trial_num, 'null_feedback']
 
 
 def run():
-
     sess = Session(interactive=False)
 
     for i in range(sess.task_params.NTRIALS):  # Main loop
         sess.next_trial()
         log.info(f"Starting trial: {i + 1}")
-
+        # =============================================================================
+        #     Start state machine definition
+        # =============================================================================
         sma = StateMachine(sess.bpod)
 
         if i == 0:  # First trial exception start camera
@@ -102,51 +117,92 @@ def run():
             state_change_conditions={"Tup": "closed_loop"},
         )
 
-        sma.add_state(
-            state_name="closed_loop",
-            state_timer=sess.task_params.RESPONSE_WINDOW,
-            output_actions=[("Serial1", sess.bpod.bonsai_close_loop())],
-            state_change_conditions={
-                "Tup": "no_go",
-                sess.event_error: "freeze_error",
-                sess.event_reward: "freeze_reward",
-            },
-        )
+        if sess.null_feedback:
+            sma.add_state(
+                state_name="closed_loop",
+                state_timer=sess.task_params.RESPONSE_WINDOW,
+                output_actions=[("Serial1", sess.bpod.bonsai_close_loop())],
+                state_change_conditions={
+                    "Tup": "null_feedback",
+                    sess.event_error: "null_feedback",
+                    sess.event_reward: "null_feedback",
+                },
+            )
 
-        sma.add_state(
-            state_name="no_go",
-            state_timer=sess.task_params.ITI_ERROR,
-            output_actions=[("Serial1", sess.bpod.bonsai_hide_stim()), sess.sound.OUT_NOISE],
-            state_change_conditions={"Tup": "exit_state"},
-        )
+            sma.add_state(
+                state_name="null_feedback",
+                state_timer=sess.valve.reward_time + sess.choice_to_feedback_delay,
+                output_actions=[("Valve1", 255), ("BNC1", 255)],
+                state_change_conditions={"Tup": "correct"},
+            )
 
-        sma.add_state(
-            state_name="freeze_error",
-            state_timer=0,
-            output_actions=[("Serial1", sess.bpod.bonsai_freeze_stim())],
-            state_change_conditions={"Tup": "error"},
-        )
+        else:
+            sma.add_state(
+                state_name="closed_loop",
+                state_timer=sess.task_params.RESPONSE_WINDOW,
+                output_actions=[("Serial1", sess.bpod.bonsai_close_loop())],
+                state_change_conditions={
+                    "Tup": "delay_no_go",
+                    sess.event_error: "delay_error",
+                    sess.event_reward: "freeze_reward",
+                },
+            )
 
-        sma.add_state(
-            state_name="error",
-            state_timer=sess.task_params.ITI_ERROR,
-            output_actions=[sess.sound.OUT_NOISE],
-            state_change_conditions={"Tup": "hide_stim"},
-        )
+            sma.add_state(
+                state_name="delay_no_go",
+                state_timer=sess.choice_to_feedback_delay,
+                state_change_conditions={"Tup": "no_go"},
+                output_actions=[],
+            )
 
-        sma.add_state(
-            state_name="freeze_reward",
-            state_timer=0,
-            output_actions=[("Serial1", sess.bpod.bonsai_freeze_stim())],
-            state_change_conditions={"Tup": "reward"},
-        )
+            sma.add_state(
+                state_name="no_go",
+                state_timer=sess.task_params.ITI_ERROR,
+                output_actions=[("Serial1", sess.bpod.bonsai_hide_stim()), sess.sound.OUT_NOISE],
+                state_change_conditions={"Tup": "exit_state"},
+            )
 
-        sma.add_state(
-            state_name="reward",
-            state_timer=sess.valve.reward_time,
-            output_actions=[("Valve1", 255), ("BNC1", 255)],
-            state_change_conditions={"Tup": "correct"},
-        )
+            sma.add_state(
+                state_name="delay_error",
+                state_timer=sess.choice_to_feedback_delay,
+                state_change_conditions={"Tup": "freeze_error"},
+                output_actions=[],
+            )
+
+            sma.add_state(
+                state_name="freeze_error",
+                state_timer=0,
+                output_actions=[("Serial1", sess.bpod.bonsai_freeze_stim())],
+                state_change_conditions={"Tup": "error"},
+            )
+
+            sma.add_state(
+                state_name="error",
+                state_timer=sess.task_params.ITI_ERROR,
+                output_actions=[sess.sound.OUT_NOISE],
+                state_change_conditions={"Tup": "hide_stim"},
+            )
+
+            sma.add_state(
+                state_name="delay_reward",
+                state_timer=sess.choice_to_feedback_delay,
+                state_change_conditions={"Tup": "freeze_reward"},
+                output_actions=[],
+            )
+
+            sma.add_state(
+                state_name="freeze_reward",
+                state_timer=0,
+                output_actions=[("Serial1", sess.bpod.bonsai_freeze_stim())],
+                state_change_conditions={"Tup": "reward"},
+            )
+
+            sma.add_state(
+                state_name="reward",
+                state_timer=sess.valve.reward_time,
+                output_actions=[("Valve1", 255), ("BNC1", 255)],
+                state_change_conditions={"Tup": "correct"},
+            )
 
         sma.add_state(
             state_name="correct",
@@ -174,7 +230,7 @@ def run():
         )
 
         # Send state machine description to Bpod device
-        sess.send_state_machine(sma)
+        sess.bpod.send_state_machine(sma)
         # Run state machine
         if not sess.bpod.run_state_machine(sma):  # Locks until state machine 'exit' is reached
             break
@@ -184,3 +240,7 @@ def run():
         sess.check_sync_pulses()
 
     sess.bpod.close()
+
+
+if __name__ == "__main__":
+    run()

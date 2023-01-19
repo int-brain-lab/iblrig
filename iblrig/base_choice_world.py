@@ -1,7 +1,7 @@
 """
 This modules extends the base_tasks modules by providing task logic around the Choice World protocol
 """
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 import json
 import math
 import random
@@ -25,13 +25,14 @@ log = logging.getLogger(__name__)
 
 NTRIALS_INIT = 1000
 
+# todo sess update plots
+# todo camera mixin: choose modality
 
 
 class OnlineGraphsMixin(object):
 
     def update_plots(self):
         pass
-        # todo sess update plots
         # stop_crit = self.check_stop_criterions()
         # # clean this up and remove display from logic
         # if stop_crit and self.task_params.USE_AUTOMATIC_STOPPING_CRITERIONS:
@@ -57,7 +58,6 @@ class OnlineGraphsMixin(object):
         #     [log.warning(msg) for x in range(5)]
 
 
-
 class ChoiceWorldSession(BaseSessionParamHandler,
                          RotaryEncoderMixin,
                          SoundMixin,
@@ -67,8 +67,14 @@ class ChoiceWorldSession(BaseSessionParamHandler,
 
     def __init__(self, fmake=True, interactive=False, *args,  **kwargs):
         super(ChoiceWorldSession, self).__init__(*args, **kwargs)
+        self.interactive = interactive
         RotaryEncoderMixin.__init__(self, *args, **kwargs)
+        SoundMixin.__init__(self, *args, **kwargs)
+        ValveMixin.__init__(self, *args, **kwargs)
+        Frame2TTLMixin.__init__(self, *args, **kwargs)
+        BpodMixin.__init__(self, *args, **kwargs)
         # Create the folder architecture and get the paths property updated
+
         if not fmake:
             make = False
         elif fmake and "ephys" in self.pybpod_settings.PYBPOD_BOARD:
@@ -83,8 +89,9 @@ class ChoiceWorldSession(BaseSessionParamHandler,
         # OSC client
         self.osc_client = OSCClient()
         # Session data
-        if interactive:
+        if self.interactive:
             self.SUBJECT_WEIGHT = user.ask_subject_weight(self.pybpod_settings.PYBPOD_SUBJECTS[0])
+            self.task_params.SESSION_START_DELAY_SEC = user.ask_session_delay(self.paths.SETTINGS_FILE_PATH)
         else:
             self.SUBJECT_WEIGHT = np.NaN
         self.display_logs()
@@ -127,7 +134,9 @@ class ChoiceWorldSession(BaseSessionParamHandler,
             "AirPressure_mb": -1,
             "RelativeHumidity": -1,
         }
-
+    """
+    Those are the methods that need to be implemented for a new task
+    """
     @abstractmethod
     def new_block(self):
         pass
@@ -135,6 +144,29 @@ class ChoiceWorldSession(BaseSessionParamHandler,
     @abstractmethod
     def next_trial(self):
         pass
+
+    """
+    Those are the properties that are used in the state machine code
+    """
+    @property
+    def reward_time(self):
+        return self.valve.reward_time
+
+    @property
+    def quiescent_period(self):
+        return self.trials_table.at[self.trial_num, 'quiescent_period']
+
+    @property
+    def position(self):
+        return self.trials_table.at[self.trial_num, 'position']
+
+    @property
+    def event_error(self):
+        return self.device_rotary_encoder.THRESHOLD_EVENTS[self.position]
+
+    @property
+    def event_reward(self):
+        return self.device_rotary_encoder.THRESHOLD_EVENTS[-self.position]
 
     def send_trial_info_to_bonsai(self):
         bonsai_dict = {k: self.trials_table[k][self.trial_num] for k in
@@ -373,6 +405,7 @@ class BiasedChoiceWorldSession(ChoiceWorldSession):
         self.trial_correct = None
         if self.block_trial_num > (self.block_len - 1):
             self.new_block()
+        pos = self.draw_position()
         self.trials_table.at[self.trial_num, 'quiescent_period'] = self.draw_quiescent_period()
         self.trials_table.at[self.trial_num, 'contrast'] = self.draw_contrast()
         self.trials_table.at[self.trial_num, 'stim_phase'] = random.uniform(0, 2 * math.pi)
@@ -383,8 +416,5 @@ class BiasedChoiceWorldSession(ChoiceWorldSession):
         self.trials_table.at[self.trial_num, 'stim_freq'] = self.task_params.STIM_FREQ
         self.trials_table.at[self.trial_num, 'stim_probability_left'] = self.block_probability_left
         self.trials_table.at[self.trial_num, 'trial_num'] = self.trial_num
-        pos = self.draw_position()
         self.trials_table.at[self.trial_num, 'position'] = pos
-        self.event_error = self.device_rotary_encoder.THRESHOLD_EVENTS[pos]
-        self.event_reward = self.device_rotary_encoder.THRESHOLD_EVENTS[-pos]
         self.send_trial_info_to_bonsai()

@@ -4,31 +4,18 @@ import unittest
 import numpy as np
 import pandas as pd
 
-from iblrig_tasks._iblrig_tasks_biasedChoiceWorld.task import Session
-
-# import matplotlib.pyplot as plt
-# plt.switch_backend('Qt5Agg')
-# plt.plot(task.trials_table['block_num'].values)
-# # Index(['block_num', 'block_trial_num', 'contrast', 'position',
-# #        'quiescent_period', 'response_side', 'response_time', 'reward_amount',
-# #        'reward_valve_time', 'stim_angle', 'stim_freq', 'stim_gain',
-# #        'stim_phase', 'stim_probability_left', 'stim_reverse', 'stim_sigma',
-# #        'trial_correct', 'trial_num'],
-#
-# task.trials_table['stim_freq']
-#
-#
-# ## test the overall trials distribution
-# pc = task.psychometric_curve()
-# # the biased choice world task has a 0 contrast that is twice as probable as the other signed contrasts
-# assert np.all(np.abs((pc['count'].values / task.trial_num) - np.array([1, 1, 1, 1, 2, 1, 1, 1, 1]) / 10) < .05)
+from iblrig_tasks._iblrig_tasks_biasedChoiceWorld.task import Session as BiasedChoiceWorldSession
+from iblrig_tasks._iblrig_tasks_neuroModulatorChoiceWorld.task import Session as NeuroModulatorChoiceWorldSession
 
 
-class TestIbllibCalls(unittest.TestCase):
+class TestBiasedChoiceWorld(unittest.TestCase):
+
+    def setUp(self) -> None:
+        self.task = BiasedChoiceWorldSession(interactive=False)
 
     def test_task(self):
+        task = self.task
         correct_trial, error_trial, no_go_trial = get_fixtures()
-        task = Session(interactive=False)
         nt = 900
         t = np.zeros(nt)
         for i in np.arange(nt):
@@ -40,7 +27,7 @@ class TestIbllibCalls(unittest.TestCase):
         task.trials_table = task.trials_table[:task.trial_num]
         np.testing.assert_array_equal(task.trials_table['trial_num'].values, np.arange(task.trial_num))
 
-        ## Test the blocks task logic
+        # Test the blocks task logic
         df_blocks = task.trials_table.groupby('block_num').agg(
             count=pd.NamedAgg(column="stim_angle", aggfunc="count"),
             n_stim_probability_left=pd.NamedAgg(column="stim_probability_left", aggfunc="nunique"),
@@ -59,6 +46,16 @@ class TestIbllibCalls(unittest.TestCase):
         assert np.all(np.isclose(np.abs(np.diff(df_blocks['stim_probability_left'].values[1:])), 0.6))
         # assert the the trial outcomes are within 0.3 of the generating probability
         assert np.all(np.abs(df_blocks['position'] - df_blocks['stim_probability_left']) < 0.3)
+
+
+class TestNeuroModulatorBiasedChoiceWorld(TestBiasedChoiceWorld):
+    def setUp(self) -> None:
+        self.task = NeuroModulatorChoiceWorldSession(interactive=False)
+
+    def test_task(self):
+        super(TestNeuroModulatorBiasedChoiceWorld, self).test_task()
+        # we expect 10% of null feedback trials
+        assert np.abs(.1 - np.mean(self.task.trials_table['null_feedback'])) < .05
 
 
 def get_fixtures():

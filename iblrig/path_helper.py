@@ -29,7 +29,7 @@ def load_settings_yaml(file_name):
 IBLRIG_SETTINGS = load_settings_yaml('iblrig_settings.yaml')
 
 
-def get_remote_server_path(params=None, subjects: bool=True) -> Path or None:
+def get_remote_server_path(params=None, subjects: bool = True) -> Path or None:
     """
     Get the iblrig server path configured in the settings/iblrig_params.yaml file
     If none is found returns ~/iblrig_data/server
