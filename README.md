@@ -1,4 +1,4 @@
-# iblrig v7
+# iblrig v8
 Software used to interact with various pieces of specialized hardware for neuroscience data acquisition.
 
 ## Installation on Windows
@@ -71,58 +71,6 @@ If following these instructions, the only two values that need to be updated sho
 This means that even though the `Windows File Explorer` may prefix the local lab server address with only two backslashes, we 
 will need four backslashes in our `iblrig_params.yml` entry.
 
-### Running pybpod
-To run pybpod and begin data acquisition run the following commands from a non-administrative **Windows Powershell** prompt:
-```powershell
-C:\iblrig\venv\Scripts\.\Activate.ps1
-cd C:\iblrig_params
-start-pybpod
-```
-
-### Performing a manual upgrade (not recommended and not supported)
-If attempting to perform a manual upgrade from a previous installation of iblrig, be sure to take special note of the following 
-files and directories:
-- `C:\iblrig_params_bkup\.iblrig_params.json`
-- `C:\iblrig_params_bkup\IBL\boards`
-- `C:\iblrig_params_bkup\IBL\subjects`
-- `C:\iblrig_params_bkup\IBL\users`
-- `C:\iblrig_params_bkup\IBL\tasks\someCustomTask`
-
-The files themselves or some of the file content can be copied back over to the `C:\iblrig_params` directory to ease 
-configuration time.
-
-#### For easier launching of pybpod
-Within the `C:\iblrig` folder there is a `start-pybpod-venv_Shortcut.lnk` file that can be copied to the desktop for ease of use. 
-Running the following powershell command from a non-administrative **Windows Powershell** prompt will perform this copy operation:
-```powershell
-Copy-Item "C:\iblrig\start-pybpod-venv_Shortcut.lnk" -Destination "$Env:HOMEPATH\Desktop"
-```
-
-### Configuring bpod boards
-When first running pybpod, ensure that the Bpod boards are configured for your current setup. If this was an 'upgrade' 
-from a previous version of iblrig, and the recommended backup operation was performed; take special note of the values within 
-the `C:\iblrig_params\.iblrig_params.json` file. These parameters will contain the values like board name and COM ports relevant 
-to your system.    
-
-#### Setup instructions for launching the 'Experiment Description GUI' prior to task launch (DEVELOP)
-The 'Experiment Description GUI' is currently being developed in the iblscripts repo. This GUI is intended to simplify the 
-categorization of an experiment and cleanly define what projects and procedures an experiment is for. In order to add the GUI to 
-the tasks listed in the `add_ex_desc_gui_to_tasks` script, run the following commands from the **Anaconda Powershell Prompt**:
-```powershell
-C:\iblrig\venv\Scripts\.\Activate.ps1
-git clone https://github.com/int-brain-lab/iblscripts C:\iblscripts
-pip install -r C:\iblscripts\deploy\project_procedure_gui\pp_requirements.txt
-```
-
-Within whichever custom task you would like to test this gui, simply add the following lines to `_iblrig_tasks_customTask.py`
-* i.e. `C:\iblrig_params\IBL\tasks\_iblrig_tasks_customTask\_iblrig_tasks_customTask.py`
-
-```python
-from iblrig.misc import call_exp_desc_gui
-call_exp_desc_gui()
-```
-
----
 ## How to develop on this repository 
 This repository is adhering to the following conventions:
 * [semantic versioning](https://semver.org/) for consistent version numbering logic

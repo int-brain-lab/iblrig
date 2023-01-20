@@ -12,7 +12,6 @@ log = logging.getLogger("iblrig")
 class Session(BiasedChoiceWorldSession):
     def __init__(self, *args, **kwargs):
         super(Session, self).__init__(*args, **kwargs)
-        self.choice_to_feedback_delay = np.NaN
         self.trials_table['omit_feedback'] = np.zeros(self.trials_table.shape[0], dtype=bool)
         self.trials_table['choice_delay'] = np.zeros(self.trials_table.shape[0], dtype=np.float32)
 
@@ -38,6 +37,8 @@ class Session(BiasedChoiceWorldSession):
 
 
 def run():
+    # todo get subject
+    # todo get user from alyx - but add argument
     sess = Session(interactive=False)
 
     for i in range(sess.task_params.NTRIALS):  # Main loop

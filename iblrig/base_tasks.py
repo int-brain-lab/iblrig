@@ -102,7 +102,10 @@ class OSCClient(udp_client.SimpleUDPClient):
 class BpodMixin(object):
 
     def __init__(self, *args, **kwargs):
-        self.bpod = Bpod()
+        self.bpod = Bpod(self.hardware_settings['device_bpod']['COM_BPOD'])
+
+    def check_bpod(self):
+        assert self.bpod.modules is not None
 
 
 class Frame2TTLMixin:

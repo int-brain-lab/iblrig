@@ -20,8 +20,8 @@ log = logging.getLogger(__name__)
 
 class Bpod(BpodIO):
 
-    def __init__(self):
-        super(Bpod, self).__init__()
+    def __init__(self, *args, **kwargs):
+        super(Bpod, self).__init__(*args, **kwargs)
         self.default_message_idx = 0
 
     @property
