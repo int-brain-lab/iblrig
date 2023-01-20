@@ -115,12 +115,13 @@ class Frame2TTLMixin:
     def __init__(self, *args, **kwargs):
         self.frame2ttl = None
 
-    def start(self):
-        self.frame2ttl = frame2TTL(self.hardware_settings['device_frame2ttl']['COM_F2TTL'])
+    def start_frame2ttl(self):
+        self.frame2ttl = frame2TTL.Frame2TTL(self.hardware_settings['device_frame2ttl']['COM_F2TTL'])
         self.frame2ttl.set_thresholds(
             dark=self.hardware_settings['device_frame2ttl']["F2TTL_DARK_THRESH"],
             light=self.hardware_settings['device_frame2ttl']["F2TTL_DARK_THRESH"])
         log.info("Frame2TTL: Thresholds set.")
+        assert self.frame2ttl.connected
 
 
 class RotaryEncoderMixin:
@@ -135,7 +136,7 @@ class RotaryEncoderMixin:
             connect=False
         )
 
-    def start(self):
+    def start_rotary_encoder(self):
         self.device_rotary_encoder.connect()
         bonsai.start_visual_stim(self)
 
