@@ -12,20 +12,29 @@ log = logging.getLogger("iblrig")
 class Session(BiasedChoiceWorldSession):
     def __init__(self, *args, **kwargs):
         super(Session, self).__init__(*args, **kwargs)
-        self.choice_to_feedback_delay = 0
-        self.trials_table['null_feedback'] = np.zeros(self.trials_table.shape[0], dtype=bool)
+        self.choice_to_feedback_delay = np.NaN
+        self.trials_table['omit_feedback'] = np.zeros(self.trials_table.shape[0], dtype=bool)
+        self.trials_table['choice_delay'] = np.zeros(self.trials_table.shape[0], dtype=np.float32)
 
     def next_trial(self):
         super(Session, self).next_trial()
         # first there is a delay chosen from choice to feedback delay with a associated probabilities
-        i = np.searchsorted(np.cumsum(self.task_params.CHOICE_TO_FEEDBACK_DELAY_PROBABILITY_SET), np.random.rand())
-        self.choice_to_feedback_delay = self.task_params.CHOICE_TO_FEEDBACK_DELAY_SECS[i]
-        # then there is a probability of a null feedback regardless of the choice
-        self.trials_table.at[self.trial_num, 'null_feedback'] = np.random.random() < self.task_params.NULL_FEEDBACK_PROBABILITY
+        CHOICE_DELAY_SECS = np.array([1.5, 3.0])
+        CHOICE_DELAY_PROBABILITY_SET = np.cumsum(np.array([2, 1]) / 2)
+        self.trials_table.at[self.trial_num, 'omit_feedback'] = np.random.random() < self.task_params.OMIT_FEEDBACK_PROBABILITY
+        # then there is a probability of omitting feedback regardless of the choice
+        self.trials_table['choice_delay'] = CHOICE_DELAY_SECS[np.searchsorted(CHOICE_DELAY_PROBABILITY_SET, np.random.rand())]
 
     @property
-    def null_feedback(self):
-        return self.trials_table.at[self.trial_num, 'null_feedback']
+    def omit_feedback(self):
+        return self.trials_table.at[self.trial_num, 'omit_feedback']
+
+    @property
+    def choice_to_feedback_delay(self):
+        return self.trials_table.at[self.trial_num, 'choice_delay']
+    #
+    # def draw_reward_amount(self):
+    #     return np.random.choice([4.5, 1.5], p=[.5, .5])
 
 
 def run():

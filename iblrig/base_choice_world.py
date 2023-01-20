@@ -185,7 +185,7 @@ class ChoiceWorldSession(BaseSessionParamHandler,
         # Add trial's response time to the buffer
         self.trials_table.at[self.trial_num, 'response_time'] = misc.get_trial_rt(self.behavior_data)
         self.trials_table.at[self.trial_num, 'trial_correct'] = bool(correct)
-        self.trials_table.at[self.trial_num, 'reward_amount'] = self.task_params.REWARD_AMOUNT
+        self.trials_table.at[self.trial_num, 'reward_amount'] = self.draw_reward_amount()
 
         # Update response buffer -1 for left, 0 for nogo, and 1 for rightward
         # what happens if position is 0?
@@ -211,6 +211,9 @@ class ChoiceWorldSession(BaseSessionParamHandler,
         return misc.check_stop_criterions(
             self.init_datetime, self.trials_table['response_time'].values(), self.trial_num
         )
+
+    def draw_reward_amount(self):
+        return self.task_params.REWARD_AMOUNT
 
     def draw_quiescent_period(self):
         """
