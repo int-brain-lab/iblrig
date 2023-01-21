@@ -33,10 +33,11 @@
 'STIM_GAIN': 4.0
 'STIM_POSITIONS': [-35, 35]
 'STIM_SIGMA': 7.0
+'STIM_TRANSLATION_Z': 7  # 7 for ephys, 8 otherwise. -p:Stim.TranslationZ-{STIM_TRANSLATION_Z} bonsai parameter
 'SYNC_SQUARE_X': 1.33
 'SYNC_SQUARE_Y': -1.03
 'USE_AUTOMATIC_STOPPING_CRITERIONS': true
-'USE_VISUAL_STIMULUS': true
+'VISUAL_STIMULUS': GaborIBLTask/Gabor2D.bonsai  # null / passiveChoiceWorld_passive.bonsai
 'WHITE_NOISE_AMPLITUDE': 0.05
 'WHITE_NOISE_DURATION': 0.5
 'WHITE_NOISE_IDX': 3

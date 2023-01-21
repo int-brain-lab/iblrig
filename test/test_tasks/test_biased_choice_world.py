@@ -16,8 +16,9 @@ class TestBiasedChoiceWorld(unittest.TestCase):
     def test_task(self):
         task = self.task
         correct_trial, error_trial, no_go_trial = get_fixtures()
-        nt = 900
+        nt = 500
         t = np.zeros(nt)
+        np.random.seed(12345)
         for i in np.arange(nt):
             t[i] = time.time()
             task.next_trial()

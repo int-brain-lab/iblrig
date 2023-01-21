@@ -7,6 +7,8 @@ from abc import ABC
 import datetime
 import inspect
 import logging
+import os
+import subprocess
 import yaml
 
 import numpy as np
@@ -26,7 +28,6 @@ import iblrig.sound as sound
 log = logging.getLogger("iblrig")
 
 OSC_CLIENT_IP = "127.0.0.1"
-OSC_CLIENT_PORT = 7110
 
 
 class BaseSessionParamHandler(ABC):
@@ -45,9 +46,6 @@ class BaseSessionParamHandler(ABC):
                 self.task_params = Bunch(yaml.safe_load(fp))
         else:
             self.task_params = None
-
-    def get_port_events(self, events, name=""):
-        return misc.get_port_events(events, name=name)
 
     def patch_settings_file(self, patch):
         self.__dict__.update(patch)
@@ -83,7 +81,7 @@ class OSCClient(udp_client.SimpleUDPClient):
         'stim_reverse': '/r',
     }
 
-    def __init__(self, ip=OSC_CLIENT_IP, port=OSC_CLIENT_PORT):
+    def __init__(self, port, ip="127.0.0.1"):
         super(OSCClient, self).__init__(ip, port)
 
     def send2bonsai(self, **kwargs):
@@ -97,6 +95,75 @@ class OSCClient(udp_client.SimpleUDPClient):
                 # punch card generation OSC module, I might as well have written C code
                 value = kwargs[k].item() if isinstance(kwargs[k], np.generic) else kwargs[k]
                 self.send_message(self.OSC_PROTOCOL[k], value)
+
+    def exit(self):
+        self.send_message("/x", 1)
+
+
+class BonsaiMixin(object):
+
+    def __init__(self, *args, **kwargs):
+        self.bonsai = Bunch({})
+        self.bonsai['udp_clients'] = {
+            'visual': OSCClient(port=7110),
+            'camera': OSCClient(port=7111),
+            'microphone': OSCClient(port=7112),
+        }
+
+    def start_bonsai(self):
+        if self.task_params.VISUAL_STIMULUS is None:
+            return
+        # Run Bonsai workflow, switch to the folder containing the gnagnagna.bonsai viusal stimulus file
+
+        visual_stim_file = self.paths.VISUAL_STIM_FOLDER.joinpath(self.task_params.VISUAL_STIMULUS)
+
+        evt = "-p:Stim.FileNameEvents=" + os.path.join(
+            self.paths.SESSION_RAW_DATA_FOLDER, "_iblrig_encoderEvents.raw.ssv"
+        )
+        pos = "-p:Stim.FileNamePositions=" + os.path.join(
+            self.paths.SESSION_RAW_DATA_FOLDER, "_iblrig_encoderPositions.raw.ssv"
+        )
+        itr = "-p:Stim.FileNameTrialInfo=" + os.path.join(
+            self.paths.SESSION_RAW_DATA_FOLDER, "_iblrig_encoderTrialInfo.raw.ssv"
+        )
+        screen_pos = "-p:Stim.FileNameStimPositionScreen=" + os.path.join(
+            self.paths.SESSION_RAW_DATA_FOLDER, "_iblrig_stimPositionScreen.raw.csv"
+        )
+        sync_square = "-p:Stim.FileNameSyncSquareUpdate=" + os.path.join(
+            self.paths.SESSION_RAW_DATA_FOLDER, "_iblrig_syncSquareUpdate.raw.csv"
+        )
+
+        com = "-p:Stim.REPortName=" + self.hardware_settings.device_rotary_encoder['COM_ROTARY_ENCODER']
+        display_idx = "-p:Stim.DisplayIndex=" + str(self.hardware_settings.device_screen['DISPLAY_IDX'])
+        sync_x = "-p:Stim.sync_x=" + str(self.task_params.SYNC_SQUARE_X)
+        sync_y = "-p:Stim.sync_y=" + str(self.task_params.SYNC_SQUARE_Y)
+        translationz = f"-p:Stim.TranslationZ=-{self.task_params.STIM_TRANSLATION_Z}"
+        noboot = "--no-boot"
+        editor = "--start" if self.task_params.BONSAI_EDITOR else "--no-editor"
+
+        here = Path.cwd()
+        os.chdir(visual_stim_file.parent)
+
+        subprocess.Popen(
+            [
+                self.paths.BONSAI,
+                visual_stim_file,
+                editor,
+                noboot,
+                display_idx,
+                screen_pos,
+                sync_square,
+                pos,
+                evt,
+                itr,
+                com,
+                sync_x,
+                sync_y,
+                translationz,
+            ]
+        )
+        os.chdir(here)
+        return
 
 
 class BpodMixin(object):
@@ -138,7 +205,6 @@ class RotaryEncoderMixin:
 
     def start_rotary_encoder(self):
         self.device_rotary_encoder.connect()
-        bonsai.start_visual_stim(self)
 
 
 class CameraMixin:
@@ -186,7 +252,7 @@ class ValveMixin:
         else:  # this is the manual manual calibration value
             self.valve['reward_time'] = self.task_params.CALIBRATION_VALUE / 3 * self.task_params.REWARD_AMOUNT
 
-    def start(self):
+    def start_valve(self):
         # if the rig is not on manual settings, then the reward valve has to be calibrated to run the experiment
         assert self.task_params.AUTOMATIC_CALIBRATION is False or self.valve['is_calibrated'], """
             ##########################################
@@ -214,7 +280,15 @@ class SoundMixin:
     Sound interface methods for state machine
     """
     def __init__(self):
-        self.sound = Bunch({})
+        self.sound = Bunch({
+            'GO_TONE': None,
+            'WHITE_NOISE': None,
+            'OUT_TONE': None,
+            'OUT_NOISE': None,
+            'OUT_STOP_SOUND': None,
+        })
+
+    def start_sound(self):
         self.sound['device'] = SoundDevice(output=self.task_params.SOFT_SOUND)
         # Create sounds and output actions of state machine
         self.sound['GO_TONE'] = iblrig.sound.make_sound(
@@ -235,7 +309,7 @@ class SoundMixin:
 
         # SoundCard config params
         #
-        if self.task_params.SOFT_SOUND is None:
+        if self.hardware_settings.SOFT_SOUND is None:
             sound.configure_sound_card(
                 sounds=[self.sound.GO_TONE, self.sound.WHITE_NOISE],
                 indexes=[self.task_params.GO_TONE_IDX, self.task_params.WHITE_NOISE_IDX],

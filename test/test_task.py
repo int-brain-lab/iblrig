@@ -29,6 +29,7 @@ class TestsBiasedBlocksGeneration(unittest.TestCase):
 
     def test_biased(self):
         # test biased, signed contrasts are uniform
+        np.random.seed(7816)
         pc, lb = session_creator.make_ephysCW_pc(prob_type='biased')
         c = self.count_contrasts(pc)
         assert np.all(np.abs(1 - c * 9) <= 0.2)

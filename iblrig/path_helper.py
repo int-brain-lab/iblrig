@@ -362,26 +362,6 @@ def get_bonsai_path(use_iblrig_bonsai: bool = True) -> str:
     return BONSAI
 
 
-def get_visual_stim_type(protocol: str) -> str:
-    if "bpod_ttl_test" in protocol:
-        return "GaborTestStimuli"
-    elif "ephys_certification" in protocol:
-        return "ephys_certification"
-    else:
-        return "GaborIBLTask"
-
-
-def get_visual_stim_file_name(visual_stimulus_type: str) -> str:
-    if "GaborTestStimuli" in visual_stimulus_type:
-        return "Gabor2D_TTLTest.bonsai"
-    elif "ephys_certification" in visual_stimulus_type:
-        return "ephys_certification.bonsai"
-    elif "GaborIBLTask" in visual_stimulus_type:
-        return "Gabor2D.bonsai"
-    elif "passiveChoiceWorld" in visual_stimulus_type:  # Never called?
-        return "passiveChoiceWorld_passive.bonsai"
-
-
 def get_session_number(session_date_folder: str) -> str:
     log.debug("Initializing session number")
     if not Path(session_date_folder).exists():
@@ -428,14 +408,7 @@ class SessionPathCreator(object):
         self.SUBJECT_FOLDER = os.path.join(self.IBLRIG_DATA_SUBJECTS_FOLDER, self.SUBJECT_NAME)
 
         self.BONSAI = get_bonsai_path(use_iblrig_bonsai=True)
-        self.VISUAL_STIM_FOLDER = str(Path(self.IBLRIG_FOLDER) / "visual_stim")
-        self.VISUAL_STIMULUS_TYPE = get_visual_stim_type(self._PROTOCOL)
-        self.VISUAL_STIMULUS_FILE_NAME = get_visual_stim_file_name(self.VISUAL_STIMULUS_TYPE)
-        self.VISUAL_STIMULUS_FILE = str(
-            Path(self.VISUAL_STIM_FOLDER)
-            / self.VISUAL_STIMULUS_TYPE
-            / self.VISUAL_STIMULUS_FILE_NAME
-        )
+        self.VISUAL_STIM_FOLDER = Path(self.IBLRIG_FOLDER) / "visual_stim"
 
         self.VIDEO_RECORDING_FOLDER = os.path.join(
             self.IBLRIG_FOLDER, "devices", "camera_recordings"

@@ -14,7 +14,7 @@ import pandas as pd
 from iblutil.util import Bunch
 
 from iblrig.base_tasks import (BaseSessionParamHandler, RotaryEncoderMixin, SoundMixin, BpodMixin,
-                               ValveMixin, Frame2TTLMixin, OSCClient)
+                               ValveMixin, Frame2TTLMixin, BonsaiMixin)
 from iblrig.path_helper import SessionPathCreator
 import iblrig.iotasks as iotasks
 import iblrig.user_input as user
@@ -73,6 +73,7 @@ class ChoiceWorldSession(BaseSessionParamHandler,
         ValveMixin.__init__(self, *args, **kwargs)
         Frame2TTLMixin.__init__(self, *args, **kwargs)
         BpodMixin.__init__(self, *args, **kwargs)
+        BonsaiMixin.__init__(self, *args, **kwargs)
         # Create the folder architecture and get the paths property updated
 
         if not fmake:
@@ -86,8 +87,6 @@ class ChoiceWorldSession(BaseSessionParamHandler,
             protocol=self.pybpod_settings.PYBPOD_PROTOCOL,
             make=make)
         self.paths = Bunch(spc.__dict__)
-        # OSC client
-        self.osc_client = OSCClient()
         # Session data
         if self.interactive:
             self.SUBJECT_WEIGHT = user.ask_subject_weight(self.pybpod_settings.PYBPOD_SUBJECTS[0])
@@ -134,6 +133,19 @@ class ChoiceWorldSession(BaseSessionParamHandler,
             "AirPressure_mb": -1,
             "RelativeHumidity": -1,
         }
+
+    def start_experiment(self):
+        """
+        Unlike the constructor that can be instantiated without any hardware,
+        this connects to all and starts acquisition.
+        :return:
+        """
+        self.start_sound()
+        self.start_valve()
+        self.start_frame2ttl()
+        self.start_rotary_encoder()
+        self.start_bonsai()  # needs to be right after rotary encoder
+
     """
     Those are the methods that need to be implemented for a new task
     """
@@ -170,8 +182,9 @@ class ChoiceWorldSession(BaseSessionParamHandler,
 
     def send_trial_info_to_bonsai(self):
         bonsai_dict = {k: self.trials_table[k][self.trial_num] for k in
-                       self.osc_client.OSC_PROTOCOL.keys() if k in self.trials_table.columns}
-        self.osc_client.send2bonsai(**bonsai_dict)
+                       self.bonsai.udp_clients['visual'].OSC_PROTOCOL.keys()
+                       if k in self.trials_table.columns}
+        self.bonsai.udp_clients['visual'].send2bonsai(**bonsai_dict)
 
     def trial_completed(self, behavior_data):
         """Update outcome variables using bpod.session.current_trial
@@ -326,28 +339,6 @@ LAST GAIN:                     {self.LAST_TRIAL_DATA["stim_gain"]}
 PREVIOUS WEIGHT:               {self.LAST_SETTINGS_DATA["SUBJECT_WEIGHT"]}
 ##########################################"""
             log.info(msg)
-
-    def start(self):
-        # SUBJECT
-        # =====================================================================
-        self.SUBJECT_DISENGAGED_TRIGGERED = False
-        self.SUBJECT_DISENGAGED_TRIALNUM = None
-        self.SUBJECT_PROJECT = None  # user.ask_project(self.PYBPOD_SUBJECTS[0])
-        # =====================================================================
-        # PREVIOUS DATA FILES
-        # =====================================================================
-        self.LAST_TRIAL_DATA = iotasks.load_data(self.paths.PREVIOUS_SESSION_PATH)
-        self.LAST_SETTINGS_DATA = iotasks.load_settings(self.paths.PREVIOUS_SESSION_PATH)
-        # SAVE SETTINGS FILE AND TASK CODE
-        # =====================================================================
-        if not self.DEBUG:
-            iotasks.save_session_settings(self)
-            iotasks.copy_task_code(self)
-            iotasks.save_task_code(self)
-            if "ephys" not in self.PYBPOD_BOARD:
-                iotasks.copy_video_code(self)
-                iotasks.save_video_code(self)
-            self.bpod_lights(0)
 
     def time_elapsed(self):
         return datetime.datetime.now - self.init_datetime
