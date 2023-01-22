@@ -13,8 +13,7 @@ import pandas as pd
 
 from iblutil.util import Bunch
 
-from iblrig.base_tasks import (BaseSessionParamHandler, RotaryEncoderMixin, SoundMixin, BpodMixin,
-                               ValveMixin, Frame2TTLMixin, BonsaiMixin)
+import iblrig.base_tasks
 from iblrig.path_helper import SessionPathCreator
 import iblrig.iotasks as iotasks
 import iblrig.user_input as user
@@ -58,32 +57,39 @@ class OnlineGraphsMixin(object):
         #     [log.warning(msg) for x in range(5)]
 
 
-class ChoiceWorldSession(BaseSessionParamHandler,
-                         RotaryEncoderMixin,
-                         SoundMixin,
-                         BpodMixin,
-                         ValveMixin,
-                         Frame2TTLMixin):  # , Frame2TTLMixin, CameraMixin
+class ChoiceWorldSession(
+    iblrig.base_tasks.BaseSessionParamHandler,
+    iblrig.base_tasks.BonsaiRecordingMixin,
+    iblrig.base_tasks.BonsaiVisualStimulusMixin,
+    iblrig.base_tasks.BpodMixin,
+    iblrig.base_tasks.Frame2TTLMixin,
+    iblrig.base_tasks.RotaryEncoderMixin,
+    iblrig.base_tasks.SoundMixin,
+    iblrig.base_tasks.ValveMixin,
+):
 
     def __init__(self, fmake=True, interactive=False, *args,  **kwargs):
         super(ChoiceWorldSession, self).__init__(*args, **kwargs)
         self.interactive = interactive
-        RotaryEncoderMixin.__init__(self, *args, **kwargs)
-        SoundMixin.__init__(self, *args, **kwargs)
-        ValveMixin.__init__(self, *args, **kwargs)
-        Frame2TTLMixin.__init__(self, *args, **kwargs)
-        BpodMixin.__init__(self, *args, **kwargs)
-        BonsaiMixin.__init__(self, *args, **kwargs)
-        # Create the folder architecture and get the paths property updated
+        iblrig.base_tasks.BonsaiRecordingMixin.__init__(self, *args, **kwargs)
+        iblrig.base_tasks.BonsaiVisualStimulusMixin.__init__(self, *args, **kwargs)
+        iblrig.base_tasks.BpodMixin.__init__(self, *args, **kwargs)
+        iblrig.base_tasks.Frame2TTLMixin.__init__(self, *args, **kwargs)
+        iblrig.base_tasks.RotaryEncoderMixin.__init__(self, *args, **kwargs)
+        iblrig.base_tasks.SoundMixin.__init__(self, *args, **kwargs)
+        iblrig.base_tasks.ValveMixin.__init__(self, *args, **kwargs)
 
+        # Create the folder architecture and get the paths property updated
         if not fmake:
             make = False
         elif fmake and "ephys" in self.pybpod_settings.PYBPOD_BOARD:
             make = True  # True makes only raw_behavior_data folder
         else:
             make = ["video"]  # besides behavior which folders to creae
+            # todo move the paths creation to the abstract class so mixins can be instantiated
         spc = SessionPathCreator(
-            self.pybpod_settings.PYBPOD_SUBJECTS[0],
+            self.pybpod_settings.PYBPOD_SUBJECTS[0],  #
+            # fixme subject needed here
             protocol=self.pybpod_settings.PYBPOD_PROTOCOL,
             make=make)
         self.paths = Bunch(spc.__dict__)
@@ -134,18 +140,6 @@ class ChoiceWorldSession(BaseSessionParamHandler,
             "RelativeHumidity": -1,
         }
 
-    def start_experiment(self):
-        """
-        Unlike the constructor that can be instantiated without any hardware,
-        this connects to all and starts acquisition.
-        :return:
-        """
-        self.start_sound()
-        self.start_valve()
-        self.start_frame2ttl()
-        self.start_rotary_encoder()
-        self.start_bonsai()  # needs to be right after rotary encoder
-
     """
     Those are the methods that need to be implemented for a new task
     """
@@ -181,10 +175,15 @@ class ChoiceWorldSession(BaseSessionParamHandler,
         return self.device_rotary_encoder.THRESHOLD_EVENTS[-self.position]
 
     def send_trial_info_to_bonsai(self):
+        """
+        This sends the trial information to the Bonsai UDP port for the stimulus
+        The OSC protocol is documented in iblrig.base_tasks.BonsaiVisualStimulusMixin
+        """
+        bonsai_viz_client = self.bonsai_stimulus['udp_client']
         bonsai_dict = {k: self.trials_table[k][self.trial_num] for k in
-                       self.bonsai.udp_clients['visual'].OSC_PROTOCOL.keys()
+                       bonsai_viz_client.OSC_PROTOCOL
                        if k in self.trials_table.columns}
-        self.bonsai.udp_clients['visual'].send2bonsai(**bonsai_dict)
+        bonsai_viz_client.send2bonsai(**bonsai_dict)
 
     def trial_completed(self, behavior_data):
         """Update outcome variables using bpod.session.current_trial
@@ -358,7 +357,7 @@ PREVIOUS WEIGHT:               {self.LAST_SETTINGS_DATA["SUBJECT_WEIGHT"]}
         elif code == 2:
             self.play_noise()
         elif code == 3:
-            self.start_camera_recording()
+            self.trigger_bonsai_cameras()
 
 
 class BiasedChoiceWorldSession(ChoiceWorldSession):

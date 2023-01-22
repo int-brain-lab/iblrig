@@ -246,9 +246,7 @@ def get_previous_session_folders(subject_name: str, session_folder: str, remote_
             previous_session_folders.append(sess_folder)
 
     # Check if session_folder is contained in previous_session_folders
-    previous_session_folders = [
-        x for x in sorted(previous_session_folders) if session_folder not in str(x)
-    ]
+    previous_session_folders = [x for x in sorted(previous_session_folders) if session_folder != x]
     if not previous_session_folders:
         log.debug(f"NOT FOUND: No previous sessions for subject {subject_name}")
         return previous_session_folders
@@ -385,11 +383,6 @@ def get_pregen_session_folder() -> str:
     return str(iblrig_path / "pybpod_fixtures" / "IBL" / "tasks" / "_iblrig_tasks_ephysChoiceWorld" / "sessions")
 
 
-def get_camera_setup_wrkfl() -> str:
-    iblrig_path = get_iblrig_path()
-    return str(iblrig_path / "devices" / "camera_setup" / "setup_video.bonsai")
-
-
 class SessionPathCreator(object):
     # add subject name and protocol (maybe have a metadata struct)
     def __init__(self, subject_name, protocol=False, make=False):
@@ -410,16 +403,6 @@ class SessionPathCreator(object):
         self.BONSAI = get_bonsai_path(use_iblrig_bonsai=True)
         self.VISUAL_STIM_FOLDER = Path(self.IBLRIG_FOLDER) / "visual_stim"
 
-        self.VIDEO_RECORDING_FOLDER = os.path.join(
-            self.IBLRIG_FOLDER, "devices", "camera_recordings"
-        )
-        self.VIDEO_RECORDING_FILE = os.path.join(
-            self.VIDEO_RECORDING_FOLDER, "TrainingRig_SaveVideo_TrainingTasks.bonsai"
-        )
-
-        self.MIC_RECORDING_FOLDER = os.path.join(self.IBLRIG_FOLDER, "devices", "microphone")
-        self.MIC_RECORDING_FILE = os.path.join(self.MIC_RECORDING_FOLDER, "record_mic.bonsai")
-
         self.SESSION_DATETIME = datetime.datetime.now().isoformat()
         self.SESSION_DATE = datetime.datetime.now().date().isoformat()
 
@@ -430,16 +413,12 @@ class SessionPathCreator(object):
         #  function (will likely be a separate issue/branch)
         self.SESSION_NUMBER = get_session_number(self.SESSION_DATE_FOLDER)
 
-        self.SESSION_FOLDER = str(Path(self.SESSION_DATE_FOLDER) / self.SESSION_NUMBER)
-        self.SESSION_RAW_DATA_FOLDER = os.path.join(self.SESSION_FOLDER, "raw_behavior_data")
-        self.SESSION_RAW_VIDEO_DATA_FOLDER = os.path.join(self.SESSION_FOLDER, "raw_video_data")
-        self.SESSION_RAW_EPHYS_DATA_FOLDER = os.path.join(self.SESSION_FOLDER, "raw_ephys_data")
-        self.SESSION_RAW_IMAGING_DATA_FOLDER = os.path.join(
-            self.SESSION_FOLDER, "raw_imaging_data"
-        )
-        self.SESSION_RAW_PASSIVE_DATA_FOLDER = os.path.join(
-            self.SESSION_FOLDER, "raw_passive_data"
-        )
+        self.SESSION_FOLDER = Path(self.SESSION_DATE_FOLDER) / self.SESSION_NUMBER
+        self.SESSION_RAW_DATA_FOLDER = self.SESSION_FOLDER / "raw_behavior_data"
+        self.SESSION_RAW_VIDEO_DATA_FOLDER = self.SESSION_FOLDER / "raw_video_data"
+        self.SESSION_RAW_EPHYS_DATA_FOLDER = self.SESSION_FOLDER / "raw_ephys_data"
+        self.SESSION_RAW_IMAGING_DATA_FOLDER = self.SESSION_FOLDER / "raw_imaging_data"
+        self.SESSION_RAW_PASSIVE_DATA_FOLDER = self.SESSION_FOLDER / "raw_passive_data"
 
         self.SESSION_NAME = "{}".format(os.path.sep).join(
             [self.SUBJECT_NAME, self.SESSION_DATE, self.SESSION_NUMBER]

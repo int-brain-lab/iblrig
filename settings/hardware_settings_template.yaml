@@ -23,3 +23,7 @@ device_valve:
   WATER_CALIBRATION_OPEN_TIMES: [50, 100]
   WATER_CALIBRATION_RANGE: [40, 140]
   WATER_CALIBRATION_WEIGHT_PERDROP: [1.25, 2.75]
+device_camera:
+  BONSAI_WORKFLOW: devices/camera_recordings/TrainingRig_SaveVideo_TrainingTasks.bonsai
+device_microphone:
+  BONSAI_WORKFLOW: devices/microphone/record_mic.bonsai

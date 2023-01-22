@@ -13,7 +13,7 @@ class TestParamLoading(unittest.TestCase):
 
     def test_load_hardware_settings(self):
         settings = iblrig.path_helper.load_settings_yaml('hardware_settings_template.yaml')
-        assert len(settings.keys()) == 6
+        assert len(settings.keys()) == 8
 
 
 class TestParams(unittest.TestCase):

@@ -19,10 +19,8 @@ from pythonosc import udp_client
 import iblrig.path_helper
 from iblutil.util import Bunch
 from iblrig.hardware import Bpod, MyRotaryEncoder, SoundDevice
-import iblrig.bonsai as bonsai
 import iblrig.frame2TTL as frame2TTL
 
-import iblrig.misc as misc
 import iblrig.sound as sound
 
 log = logging.getLogger("iblrig")
@@ -47,9 +45,16 @@ class BaseSessionParamHandler(ABC):
         else:
             self.task_params = None
 
-    def patch_settings_file(self, patch):
-        self.__dict__.update(patch)
-        misc.patch_settings_file(self.SETTINGS_FILE_PATH, patch)
+    def start(self):
+        """
+        Executes all of the methods of the class that start with start_
+        The Mixins are supposed to implement a start method when the task
+        needs to connect to hardware
+        """
+        method_names = [method for method in dir(self) if method.startswith('start_')]
+        start_methods = [getattr(self, method) for method in method_names if inspect.ismethod(getattr(self, method))]
+        for start_method in start_methods:
+            start_method()
 
 
 class OSCClient(udp_client.SimpleUDPClient):
@@ -100,17 +105,79 @@ class OSCClient(udp_client.SimpleUDPClient):
         self.send_message("/x", 1)
 
 
-class BonsaiMixin(object):
+class BonsaiRecordingMixin(object):
+    # todo: handle single local camera versus off computer multiple camera
+    def __init__(self, *args, **kwargs):
+        self.bonsai_camera = Bunch({
+            'udp_client': OSCClient(port=7111)
+        })
+        self.bonsai_microphone = Bunch({
+            'udp_client': OSCClient(port=7112)
+        })
+
+    def start_bonsai_microphone(self):
+        # the camera workflow on the behaviour computer already contains the microphone recording
+        # so the device camera workflow and the microphone one are exclusive
+        if self.hardware_settings.device_camera['BONSAI_WORKFLOW'] is not None:
+            return
+        if not self.task_params.RECORD_SOUND:
+            return
+        workflow_file = self.paths.IBLRIG_FOLDER.joinpath(
+            *self.hardware_settings.device_microphone['BONSAI_WORKFLOW'].split('/'))
+        here = os.getcwd()
+        os.chdir(workflow_file.parent)
+        subprocess.Popen([
+            self.paths.BONSAI,
+            str(workflow_file),
+            "--start",
+            f"-p:FileNameMic={self.paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_micData.raw.wav')}",
+            f"-p:RecordSound={self.task_params.RECORD_SOUND}",
+            "--no-boot"]
+        )
+        os.chdir(here)
+
+    def start_bonsai_cameras(self):
+        """
+        This prepares the cameras, the actual triggering of the cameras is done
+        in the trigger_bonsai_cameras method.
+        """
+        if self.hardware_settings.device_camera['BONSAI_WORKFLOW'] is None:
+            return
+        here = os.getcwd()
+        bonsai_camera_file = self.paths.IBLRIG_FOLDER.joinpath('devices', 'camera_setup', 'setup_video.bonsai')
+        os.chdir(str(bonsai_camera_file.parent))
+        # this locks until Bonsai closes
+        subprocess.call([self.paths.BONSAI, str(bonsai_camera_file), "--start-no-debug", "--no-boot"])
+        os.chdir(here)
+
+    def trigger_bonsai_cameras(self):
+        if self.hardware_settings.device_camera['BONSAI_WORKFLOW'] is None:
+            return
+        workflow_file = self.paths.IBLRIG_FOLDER.joinpath(
+            *self.hardware_settings.device_camera['BONSAI_WORKFLOW'].split('/'))
+        here = os.getcwd()
+        os.chdir(workflow_file.parent)
+        subprocess.Popen([
+            self.paths.BONSAI,
+            str(workflow_file),
+            "--start",
+            f"-p:FileNameLeft={self.paths.SESSION_RAW_VIDEO_DATA_FOLDER / '_iblrig_leftCamera.raw.avi'}",
+            f"-p:FileNameLeftData={self.paths.SESSION_RAW_VIDEO_DATA_FOLDER / '_iblrig_leftCamera.frameData.bin'}",
+            f"-p:FileNameMic={self.paths.SESSION_RAW_VIDEO_DATA_FOLDER / '_iblrig_micData.raw.wav'}",
+            f"-p:RecordSound={self.task_params.RECORD_SOUND}",
+            "--no-boot",
+        ])
+        os.chdir(here)
+
+
+class BonsaiVisualStimulusMixin(object):
 
     def __init__(self, *args, **kwargs):
-        self.bonsai = Bunch({})
-        self.bonsai['udp_clients'] = {
-            'visual': OSCClient(port=7110),
-            'camera': OSCClient(port=7111),
-            'microphone': OSCClient(port=7112),
-        }
+        self.bonsai_stimulus = Bunch({
+            'udp_client': OSCClient(port=7110)  # camera 7111, microphone 7112
+        })
 
-    def start_bonsai(self):
+    def start_bonsai_visual_stimulus(self):
         if self.task_params.VISUAL_STIMULUS is None:
             return
         # Run Bonsai workflow, switch to the folder containing the gnagnagna.bonsai viusal stimulus file
@@ -171,7 +238,7 @@ class BpodMixin(object):
     def __init__(self, *args, **kwargs):
         self.bpod = Bpod(self.hardware_settings['device_bpod']['COM_BPOD'])
 
-    def check_bpod(self):
+    def start_bpod(self):
         assert self.bpod.modules is not None
 
 
@@ -207,17 +274,6 @@ class RotaryEncoderMixin:
         self.device_rotary_encoder.connect()
 
 
-class CameraMixin:
-    """
-    Camera recording interface for state machine via bonsai
-    """
-    def start_camera_recording(self):
-        if bonsai.launch_cameras():
-            return bonsai.start_camera_recording(self)
-        else:
-            return bonsai.start_mic_recording(self)
-
-
 class ValveMixin:
     def get_reward_amount(self: object) -> float:
         # simply returns the reward amount if no adaptive rewared is used
@@ -228,6 +284,7 @@ class ValveMixin:
             return self.task_params.REWARD_AMOUNT
         else:
             raise NotImplementedError
+        # todo: training choice world reward from session to session
         # first session : AR_INIT_VALUE, return
         # if total_water_session < (subject_weight / 25):
         #   minimum(last_reward + AR_STEP, AR_MAX_VALUE)  3 microliters AR_MAX_VALUE
@@ -330,6 +387,7 @@ class SoundMixin:
         self.sound.device.stop()
 
     def send_sounds_to_harp(self):
+        # todo
         # self.card.send_sound(wave_int, GO_TONE_IDX, SampleRate._96000HZ, DataType.INT32)
         # self.card.send_sound(noise_int, WHITE_NOISE_IDX, SampleRate._96000HZ, DataType.INT32)
         pass

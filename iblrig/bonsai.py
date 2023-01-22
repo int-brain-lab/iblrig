@@ -4,56 +4,11 @@ import subprocess
 import sys
 import time
 from pathlib import Path
-from sys import platform
-
-from pythonosc import udp_client
 
 from iblrig import path_helper
 
 log = logging.getLogger("iblrig")
 
-def start_mic_recording(sph):
-    here = os.getcwd()
-    os.chdir(sph.MIC_RECORDING_FOLDER)
-    bns = sph.BONSAI
-    wkfl = sph.MIC_RECORDING_FILE
-    srec = "-p:RecordSound=" + str(sph.RECORD_SOUND)
-    mic = "-p:FileNameMic=" + os.path.join(
-        sph.SESSION_RAW_DATA_FOLDER, "_iblrig_micData.raw.wav"
-    )
-
-    start = "--start"
-    noboot = "--no-boot"
-
-    subprocess.Popen([bns, wkfl, start, mic, srec, noboot])
-    os.chdir(here)
-    return
-
-def start_camera_recording(sph):
-    # Run Workflow
-    here = os.getcwd()
-    os.chdir(sph.VIDEO_RECORDING_FOLDER)
-
-    bns = sph.BONSAI
-    wkfl = sph.VIDEO_RECORDING_FILE
-
-    vid = "-p:FileNameLeft=" + os.path.join(
-        sph.SESSION_RAW_VIDEO_DATA_FOLDER, "_iblrig_leftCamera.raw.avi"
-    )
-    fd = "-p:FileNameLeftData=" + os.path.join(
-        sph.SESSION_RAW_VIDEO_DATA_FOLDER, "_iblrig_leftCamera.frameData.bin"
-    )
-    mic = "-p:FileNameMic=" + os.path.join(
-        sph.SESSION_RAW_DATA_FOLDER, "_iblrig_micData.raw.wav"
-    )
-    srec = "-p:RecordSound=" + str(sph.RECORD_SOUND)
-
-    start = "--start"
-    noboot = "--no-boot"
-
-    subprocess.Popen([bns, wkfl, start, vid, fd, mic, srec, noboot])
-    os.chdir(here)
-    return
 
 def start_passive_visual_stim(
     save2folder,
@@ -100,35 +55,6 @@ def start_passive_visual_stim(
     sys.stdout.flush()
     return s
 
-# =====================================================================
-# TRIAL PARAM HANDLER OBJECT METHODS
-# =====================================================================
-def send_stim_info(
-    osc_client,
-    trial_num,
-    position,
-    contrast,
-    phase,
-    freq=0.10,
-    angle=0.0,
-    gain=4.0,
-    sigma=7.0,
-    reverse=0,
-):
-    """For passive stim"""
-    if osc_client is None:
-        log.error("Can't send trial info to Bonsai osc_client = None")
-        raise UnboundLocalError("Can't send trial info to Bonsai osc_client = None")
-    osc_client.send_message("/t", trial_num)
-    osc_client.send_message("/p", position)
-    osc_client.send_message("/h", phase)
-    osc_client.send_message("/c", contrast)
-    # Consatants
-    osc_client.send_message("/f", freq)
-    osc_client.send_message("/a", angle)
-    osc_client.send_message("/g", gain)
-    osc_client.send_message("/s", sigma)
-    osc_client.send_message("/r", reverse)
 
 def start_frame2ttl_test(data_file, lengths_file, harp=False, display_idx=1):
     here = os.getcwd()
@@ -158,6 +84,7 @@ def start_frame2ttl_test(data_file, lengths_file, harp=False, display_idx=1):
     os.chdir(here)
     return s
 
+
 def start_screen_color(display_idx=1):
     here = os.getcwd()
     iblrig_folder_path = path_helper.get_iblrig_path()
@@ -174,6 +101,7 @@ def start_screen_color(display_idx=1):
     time.sleep(3)
     os.chdir(here)
 
+
 def start_camera_setup():
     here = os.getcwd()
     iblrig_folder_path = path_helper.get_iblrig_path()
@@ -187,50 +115,3 @@ def start_camera_setup():
     editor = "--start-no-debug"
     subprocess.call([bns, wrkfl, editor, noboot])  # locks until Bonsai closes
     os.chdir(here)
-
-
-def osc_client(workflow):
-    ip = "127.0.0.1"
-    if "stim" in workflow:
-        port = 7110
-    elif "camera" in workflow:
-        port = 7111
-    elif "mic" in workflow:
-        port = 7112
-    return udp_client.SimpleUDPClient(ip, port)
-
-
-def close_all_workflows():
-    """Close all possible bonsai workflows that have a /x switch
-    Closing a workflow that is not running returns no error"""
-    # Close stimulus, camera, and mic workflows
-    stim_client = osc_client("stim")
-    camera_client = osc_client("camera")
-    mic_client = osc_client("mic")
-    if stim_client is not None:
-        stim_client.send_message("/x", 1)
-        print("Closed: stim workflow")
-    if camera_client is not None:
-        camera_client.send_message("/x", 1)
-        print("Closed: camera workflow")
-    if mic_client is not None:
-        mic_client.send_message("/x", 1)
-        print("Closed: mic workflow")
-    return
-
-
-def stop_wrkfl(name):
-    ports = {
-        "stim": 7110,
-        "camera": 7111,
-        "mic": 7112,
-    }
-    if name in ports:
-        osc_port = ports[name]
-    else:
-        log.warning(f"Unknown name: {name}")
-        osc_port = 0
-    OSC_CLIENT_IP = "127.0.0.1"
-    OSC_CLIENT_PORT = int(osc_port)
-    osc_client = udp_client.SimpleUDPClient(OSC_CLIENT_IP, OSC_CLIENT_PORT)
-    osc_client.send_message("/x", 1)
