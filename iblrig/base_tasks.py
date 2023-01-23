@@ -1,6 +1,7 @@
 """
 This module is intended to provide commonalities for all tasks.
-Base classes for trial parameters and session parameters.
+It provides hardware mixins that can be used together with BaseSession to compose tasks
+This module is exclusive of any task related logic
 """
 from pathlib import Path
 from abc import ABC
@@ -28,9 +29,15 @@ log = logging.getLogger("iblrig")
 OSC_CLIENT_IP = "127.0.0.1"
 
 
-class BaseSessionParamHandler(ABC):
+class BaseSession(ABC):
 
-    def __init__(self, debug=False, task_settings_file=None, hardware_settings_name='hardware_settings.yaml'):
+    def __init__(self, debug=False, task_parameter_file=None, hardware_settings_name='hardware_settings.yaml'):
+        """
+        This only handles gathering the parameters and settings for the current session
+        :param debug:
+        :param task_parameter_file:
+        :param hardware_settings_name:
+        """
         self.init_datetime = datetime.datetime.now()
         self.DEBUG = debug
         # Load pybpod settings
@@ -38,23 +45,35 @@ class BaseSessionParamHandler(ABC):
         # get another set of parameters from .iblrig_params.json
         self.hardware_settings = iblrig.path_helper.load_settings_yaml(hardware_settings_name)
         # Load the tasks settings
-        task_settings_file = task_settings_file or Path(inspect.getfile(self.__class__)).parent.joinpath('task_parameters.yaml')
-        if task_settings_file.exists():
-            with open(task_settings_file) as fp:
+        task_parameter_file = task_parameter_file or Path(inspect.getfile(self.__class__)).parent.joinpath('task_parameters.yaml')
+        if task_parameter_file.exists():
+            with open(task_parameter_file) as fp:
                 self.task_params = Bunch(yaml.safe_load(fp))
         else:
             self.task_params = None
+        self._execute_mixins_shared_function('init_mixin')
+
+    def _execute_mixins_shared_function(self, pattern):
+        method_names = [method for method in dir(self) if method.startswith(pattern)]
+        methods = [getattr(self, method) for method in method_names if inspect.ismethod(getattr(self, method))]
+        # todo add logging error catching with traceback
+        for meth in methods:
+            meth()
 
     def start(self):
         """
-        Executes all of the methods of the class that start with start_
-        The Mixins are supposed to implement a start method when the task
-        needs to connect to hardware
+        Executes all start_mixin* methods
         """
-        method_names = [method for method in dir(self) if method.startswith('start_')]
-        start_methods = [getattr(self, method) for method in method_names if inspect.ismethod(getattr(self, method))]
-        for start_method in start_methods:
-            start_method()
+        self._execute_mixins_shared_function('start_mixin')
+
+    def stop(self):
+        """
+        Executes all stop_mixin* methods
+        """
+        self._execute_mixins_shared_function('stop_mixin')
+
+    def time_elapsed(self):
+        return datetime.datetime.now - self.init_datetime
 
 
 class OSCClient(udp_client.SimpleUDPClient):
@@ -92,11 +111,12 @@ class OSCClient(udp_client.SimpleUDPClient):
     def send2bonsai(self, **kwargs):
         """
         :param see list of keys in OSC_PROTOCOL
+        :example: client.send2bonsai(trial_num=6, sim_freq=50)
         :return:
         """
         for k in kwargs:
             if k in self.OSC_PROTOCOL:
-                # need to convert basic numpy types to low-level python type for
+                # need to convert basic numpy types to low-level python types for
                 # punch card generation OSC module, I might as well have written C code
                 value = kwargs[k].item() if isinstance(kwargs[k], np.generic) else kwargs[k]
                 self.send_message(self.OSC_PROTOCOL[k], value)
@@ -106,8 +126,8 @@ class OSCClient(udp_client.SimpleUDPClient):
 
 
 class BonsaiRecordingMixin(object):
-    # todo: handle single local camera versus off computer multiple camera
-    def __init__(self, *args, **kwargs):
+
+    def init_mixin_bonsai_recordings(self, *args, **kwargs):
         self.bonsai_camera = Bunch({
             'udp_client': OSCClient(port=7111)
         })
@@ -115,7 +135,11 @@ class BonsaiRecordingMixin(object):
             'udp_client': OSCClient(port=7112)
         })
 
-    def start_bonsai_microphone(self):
+    def stop_mixin_bonsai_recordings(self):
+        self.bonsai_camera.udp_client.exit()
+        self.bonsai_microphone.udp_client.exit()
+
+    def start_mixin_bonsai_microphone(self):
         # the camera workflow on the behaviour computer already contains the microphone recording
         # so the device camera workflow and the microphone one are exclusive
         if self.hardware_settings.device_camera['BONSAI_WORKFLOW'] is not None:
@@ -127,7 +151,7 @@ class BonsaiRecordingMixin(object):
         here = os.getcwd()
         os.chdir(workflow_file.parent)
         subprocess.Popen([
-            self.paths.BONSAI,
+            str(self.paths.BONSAI),
             str(workflow_file),
             "--start",
             f"-p:FileNameMic={self.paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_micData.raw.wav')}",
@@ -136,10 +160,10 @@ class BonsaiRecordingMixin(object):
         )
         os.chdir(here)
 
-    def start_bonsai_cameras(self):
+    def start_mixin_bonsai_cameras(self):
         """
-        This prepares the cameras, the actual triggering of the cameras is done
-        in the trigger_bonsai_cameras method.
+        This prepares the cameras by starting the pipeline that aligns the camera focus with the
+        desired borders of rig features, the actual triggering of the  cameras is done in the trigger_bonsai_cameras method.
         """
         if self.hardware_settings.device_camera['BONSAI_WORKFLOW'] is None:
             return
@@ -147,7 +171,7 @@ class BonsaiRecordingMixin(object):
         bonsai_camera_file = self.paths.IBLRIG_FOLDER.joinpath('devices', 'camera_setup', 'setup_video.bonsai')
         os.chdir(str(bonsai_camera_file.parent))
         # this locks until Bonsai closes
-        subprocess.call([self.paths.BONSAI, str(bonsai_camera_file), "--start-no-debug", "--no-boot"])
+        subprocess.call([str(self.paths.BONSAI), str(bonsai_camera_file), "--start-no-debug", "--no-boot"])
         os.chdir(here)
 
     def trigger_bonsai_cameras(self):
@@ -158,7 +182,7 @@ class BonsaiRecordingMixin(object):
         here = os.getcwd()
         os.chdir(workflow_file.parent)
         subprocess.Popen([
-            self.paths.BONSAI,
+            str(self.paths.BONSAI),
             str(workflow_file),
             "--start",
             f"-p:FileNameLeft={self.paths.SESSION_RAW_VIDEO_DATA_FOLDER / '_iblrig_leftCamera.raw.avi'}",
@@ -172,12 +196,12 @@ class BonsaiRecordingMixin(object):
 
 class BonsaiVisualStimulusMixin(object):
 
-    def __init__(self, *args, **kwargs):
+    def init_mixin_bonsai_visual_stimulus(self, *args, **kwargs):
         self.bonsai_stimulus = Bunch({
             'udp_client': OSCClient(port=7110)  # camera 7111, microphone 7112
         })
 
-    def start_bonsai_visual_stimulus(self):
+    def start_mixin_bonsai_visual_stimulus(self):
         if self.task_params.VISUAL_STIMULUS is None:
             return
         # Run Bonsai workflow, switch to the folder containing the gnagnagna.bonsai viusal stimulus file
@@ -213,7 +237,7 @@ class BonsaiVisualStimulusMixin(object):
 
         subprocess.Popen(
             [
-                self.paths.BONSAI,
+                str(self.paths.BONSAI),
                 visual_stim_file,
                 editor,
                 noboot,
@@ -235,10 +259,11 @@ class BonsaiVisualStimulusMixin(object):
 
 class BpodMixin(object):
 
-    def __init__(self, *args, **kwargs):
-        self.bpod = Bpod(self.hardware_settings['device_bpod']['COM_BPOD'])
+    def init_mixin_bpod(self, *args, **kwargs):
+        self.bpod = Bpod()
 
-    def start_bpod(self):
+    def start_mixin_bpod(self):
+        self.bpod = Bpod(self.hardware_settings['device_bpod']['COM_BPOD'])
         assert self.bpod.modules is not None
 
 
@@ -246,10 +271,11 @@ class Frame2TTLMixin:
     """
     Frame 2 TTL interface for state machine
     """
-    def __init__(self, *args, **kwargs):
+    def init_mixin_frame2ttl(self, *args, **kwargs):
         self.frame2ttl = None
 
-    def start_frame2ttl(self):
+    def start_mixin_frame2ttl(self):
+        # todo assert calibration
         self.frame2ttl = frame2TTL.Frame2TTL(self.hardware_settings['device_frame2ttl']['COM_F2TTL'])
         self.frame2ttl.set_thresholds(
             dark=self.hardware_settings['device_frame2ttl']["F2TTL_DARK_THRESH"],
@@ -262,7 +288,7 @@ class RotaryEncoderMixin:
     """
     Rotary encoder interface for state machine
     """
-    def __init__(self, *args, **kwargs):
+    def init_mixin_rotary_encoder(self, *args, **kwargs):
         self.device_rotary_encoder = MyRotaryEncoder(
             all_thresholds=self.task_params.STIM_POSITIONS + self.task_params.QUIESCENCE_THRESHOLDS,
             gain=self.task_params.STIM_GAIN,
@@ -270,7 +296,7 @@ class RotaryEncoderMixin:
             connect=False
         )
 
-    def start_rotary_encoder(self):
+    def start_mixin_rotary_encoder(self):
         self.device_rotary_encoder.connect()
 
 
@@ -295,7 +321,7 @@ class ValveMixin:
 
         # when implementing this make sure the test is solid
 
-    def __init__(self: object):
+    def init_mixin_valve(self: object):
         self.valve = Bunch({})
         # the template settings files have a date in 2099, so assume that the rig is not calibrated if that is the case
         # the assertion on calibration is thrown when starting the device
@@ -309,7 +335,7 @@ class ValveMixin:
         else:  # this is the manual manual calibration value
             self.valve['reward_time'] = self.task_params.CALIBRATION_VALUE / 3 * self.task_params.REWARD_AMOUNT
 
-    def start_valve(self):
+    def start_mixin_valve(self):
         # if the rig is not on manual settings, then the reward valve has to be calibrated to run the experiment
         assert self.task_params.AUTOMATIC_CALIBRATION is False or self.valve['is_calibrated'], """
             ##########################################
@@ -336,7 +362,7 @@ class SoundMixin:
     """
     Sound interface methods for state machine
     """
-    def __init__(self):
+    def init_mixin_sound(self):
         self.sound = Bunch({
             'GO_TONE': None,
             'WHITE_NOISE': None,
@@ -345,8 +371,9 @@ class SoundMixin:
             'OUT_STOP_SOUND': None,
         })
 
-    def start_sound(self):
-        self.sound['device'] = SoundDevice(output=self.task_params.SOFT_SOUND)
+    def start_mixin_sound(self):
+        sound_output = self.hardware_settings.device_sound['OUTPUT']
+        self.sound['device'] = SoundDevice(output=sound_output)
         # Create sounds and output actions of state machine
         self.sound['GO_TONE'] = iblrig.sound.make_sound(
             rate=self.sound.device.samplerate,
@@ -366,16 +393,19 @@ class SoundMixin:
 
         # SoundCard config params
         #
-        if self.hardware_settings.SOFT_SOUND is None:
+        if self.hardware_settings.device_sound['OUTPUT'] == 'harp':
             sound.configure_sound_card(
                 sounds=[self.sound.GO_TONE, self.sound.WHITE_NOISE],
                 indexes=[self.task_params.GO_TONE_IDX, self.task_params.WHITE_NOISE_IDX],
                 sample_rate=self.sound.device.samplerate,
             )
-
-        self.sound['OUT_TONE'] = ("SoftCode", 1) if self.task_params.SOFT_SOUND else ("Serial3", 6)
-        self.sound['OUT_NOISE'] = ("SoftCode", 2) if self.task_params.SOFT_SOUND else ("Serial3", 7)
-        self.sound['OUT_STOP_SOUND'] = ("SoftCode", 0) if self.task_params.SOFT_SOUND else ("Serial3", ord("X"))
+            self.sound['OUT_TONE'] = ("Serial3", 6)
+            self.sound['OUT_NOISE'] = ("Serial3", 7)
+            self.sound['OUT_STOP_SOUND'] = ("Serial3", ord("X"))
+        else:  # xonar or system default
+            self.sound['OUT_TONE'] = ("SoftCode", 1)
+            self.sound['OUT_NOISE'] = ("SoftCode", 2)
+            self.sound['OUT_STOP_SOUND'] = ("SoftCode", 0)
 
     def play_tone(self):
         self.sound.device.play(self.sound.GO_TONE, self.sound.SOUND_SAMPLE_FREQ)

@@ -8,22 +8,22 @@ from pathlib import Path
 import unittest
 
 import iblrig
-from iblrig.base_tasks import SoundMixin, RotaryEncoderMixin, BaseSessionParamHandler, BpodMixin, ValveMixin
+from iblrig.base_tasks import SoundMixin, RotaryEncoderMixin, BaseSession, BpodMixin, ValveMixin
 
 
 class TestHardwareMixins(unittest.TestCase):
     def setUp(self):
         task_settings_file = Path(iblrig.__file__).parents[1].joinpath(
             'iblrig_tasks/_iblrig_tasks_biasedChoiceWorld/task_parameters.yaml')
-        self.session = BaseSessionParamHandler(task_settings_file=task_settings_file,
-                                               hardware_settings_name='hardware_settings_template.yaml')
+        self.session = BaseSession(task_parameter_file=task_settings_file,
+                                   hardware_settings_name='hardware_settings_template.yaml')
 
     def test_rotary_encoder_mixin(self):
         """
         Instantiates a bare session with the rotary encoder mixin
         """
         session = self.session
-        RotaryEncoderMixin.__init__(session)
+        RotaryEncoderMixin.init_mixin_rotary_encoder(session)
         assert session.device_rotary_encoder.ENCODER_EVENTS == [
             'RotaryEncoder1_1', 'RotaryEncoder1_2', 'RotaryEncoder1_3', 'RotaryEncoder1_4']
         assert session.device_rotary_encoder.THRESHOLD_EVENTS == {
@@ -38,18 +38,18 @@ class TestHardwareMixins(unittest.TestCase):
         Instantiates a bare session with the sound card mixin
         """
         session = self.session
-        SoundMixin.__init__(session)
+        SoundMixin.init_mixin_sound(session)
         session.sound.OUT_TONE == ('SoftCode', 1)
         session.sound.OUT_NOISE == ('SoftCode', 2)
         session.sound.OUT_STOP_SOUND == ('SoftCode', 0)
 
     def test_bpod_mixin(self):
         session = self.session
-        BpodMixin.__init__(session)
+        BpodMixin.init_mixin_bpod(session)
         assert hasattr(session, 'bpod')
 
     def test_valve_mixin(self):
         session = self.session
-        ValveMixin.__init__(session)
+        ValveMixin.init_mixin_valve(session)
         assert session.valve.reward_time < 1
         assert not session.valve.is_calibrated

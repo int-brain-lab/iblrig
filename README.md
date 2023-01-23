@@ -1,6 +1,16 @@
 # iblrig v8
 Software used to interact with various pieces of specialized hardware for neuroscience data acquisition.
 
+## Code organisation manifesto
+
+### settings and parameters
+- settings are relative to the local machine and located in the [settings](settings) directory. 
+- task parameters are independent of the hardwware settings and located in the task folders. For example, for biasedCW this is 
+  found in this [task_parameters.yaml](iblrig_tasks/_iblrig_tasks_biasedChoiceWorld/task_parameters.yaml)
+
+### task logic code
+- 
+
 ## Installation on Windows
 Software has only been tested on Windows 10. No other version of Windows is supported at this time. The test user account has 
 administrative rights.

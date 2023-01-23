@@ -38,3 +38,4 @@ setup(
     install_requires=require,
     scripts=[],
 )
+# todo: copy the settings_templates files to actual settings if they don' t already exist

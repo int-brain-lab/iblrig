@@ -11,8 +11,6 @@ import numpy as np
 import sounddevice as sd
 from pybpod_rotaryencoder_module.module import RotaryEncoder
 from pybpod_rotaryencoder_module.module_api import RotaryEncoderModule
-from pybpod_soundcard_module.module_api import SoundCardModule
-
 from pybpodapi.bpod.bpod_io import BpodIO
 
 log = logging.getLogger(__name__)
@@ -167,25 +165,22 @@ class SoundDevice(object):
         Parameters
         ----------
         output
-            defaults to "sysdefault", should be 'xonar' or None
+            defaults to "sysdefault", should be 'xonar' or 'harp'
         samplerate
             audio sample rate, defaults to 44100
         """
-        # FIXME: wait what ?!? is the None option for the HARP sound card ?
-        if output is None:
-            return
         self.output = output
-        self.card = SoundCardModule()
+        # self.card = SoundCardModule()
         self.samplerate = samplerate
         if self.samplerate is None:
             if self.output == "sysdefault":
                 self.samplerate = 44100
             elif self.output == "xonar":
                 self.samplerate = 192000
-            elif self.output is None:
+            elif self.output == "harp":
                 self.samplerate = 96000
             else:
-                log.error("SOFT_SOUND in not: 'sysdefault', 'xonar' or 'None'")
+                log.error("SOFT_SOUND in not: 'sysdefault', 'xonar' or 'harp'")
                 raise (NotImplementedError)
 
         if self.output == "xonar":

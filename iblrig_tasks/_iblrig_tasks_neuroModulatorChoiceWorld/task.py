@@ -17,7 +17,8 @@ class Session(BiasedChoiceWorldSession):
 
     def next_trial(self):
         super(Session, self).next_trial()
-        # first there is a delay chosen from choice to feedback delay with a associated probabilities
+        # first there is a delay chosen from choice to feedback, in this case we pick 1.5secs 2 times out of 3 and 3secs 1 time
+        # out of three
         CHOICE_DELAY_SECS = np.array([1.5, 3.0])
         CHOICE_DELAY_PROBABILITY_SET = np.cumsum(np.array([2, 1]) / 2)
         self.trials_table.at[self.trial_num, 'omit_feedback'] = np.random.random() < self.task_params.OMIT_FEEDBACK_PROBABILITY

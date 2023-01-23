@@ -10,8 +10,7 @@ log = logging.getLogger("iblrig")
 
 
 class Session(BiasedChoiceWorldSession):
-    def __init__(self, *args, **kwargs):
-        super(Session, self).__init__(*args, **kwargs)
+    pass
 
 
 def run():

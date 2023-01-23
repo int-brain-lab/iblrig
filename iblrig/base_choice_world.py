@@ -5,7 +5,6 @@ from abc import abstractmethod
 import json
 import math
 import random
-import datetime
 import logging
 
 import numpy as np
@@ -58,7 +57,7 @@ class OnlineGraphsMixin(object):
 
 
 class ChoiceWorldSession(
-    iblrig.base_tasks.BaseSessionParamHandler,
+    iblrig.base_tasks.BaseSession,
     iblrig.base_tasks.BonsaiRecordingMixin,
     iblrig.base_tasks.BonsaiVisualStimulusMixin,
     iblrig.base_tasks.BpodMixin,
@@ -71,14 +70,6 @@ class ChoiceWorldSession(
     def __init__(self, fmake=True, interactive=False, *args,  **kwargs):
         super(ChoiceWorldSession, self).__init__(*args, **kwargs)
         self.interactive = interactive
-        iblrig.base_tasks.BonsaiRecordingMixin.__init__(self, *args, **kwargs)
-        iblrig.base_tasks.BonsaiVisualStimulusMixin.__init__(self, *args, **kwargs)
-        iblrig.base_tasks.BpodMixin.__init__(self, *args, **kwargs)
-        iblrig.base_tasks.Frame2TTLMixin.__init__(self, *args, **kwargs)
-        iblrig.base_tasks.RotaryEncoderMixin.__init__(self, *args, **kwargs)
-        iblrig.base_tasks.SoundMixin.__init__(self, *args, **kwargs)
-        iblrig.base_tasks.ValveMixin.__init__(self, *args, **kwargs)
-
         # Create the folder architecture and get the paths property updated
         if not fmake:
             make = False
@@ -139,6 +130,20 @@ class ChoiceWorldSession(
             "AirPressure_mb": -1,
             "RelativeHumidity": -1,
         }
+
+    def start(self):
+        """
+        In this step we explicitely run the start methods of the various mixins.
+        The super class start method is overloaded because we need to start the different hardware pieces in order
+        """
+        self.start_mixin_frame2ttl()
+        self.start_mixin_bpod()
+        self.start_mixin_valve()
+        self.start_mixin_sound()
+        self.start_mixin_rotary_encoder()
+        self.start_mixin_bonsai_cameras()
+        self.start_mixin_bonsai_microphone()
+        self.start_mixin_bonsai_visual_stimulus()
 
     """
     Those are the methods that need to be implemented for a new task
@@ -211,6 +216,7 @@ class ChoiceWorldSession(
         self.trials_table.at[self.trial_num, 'response_side'] = response_side
 
         # SAVE TRIAL DATA
+        # todo add the table current record
         save_dict = {"behavior_data": behavior_data}
         # Dump and save
         with open(self.paths['DATA_FILE_PATH'], 'a') as fp:
@@ -225,6 +231,11 @@ class ChoiceWorldSession(
         )
 
     def draw_reward_amount(self):
+        """
+        This method is to be overloaded if the task has a variable reward
+        :return:
+        """
+        # fixme: correlation with valve reward time ?!?
         return self.task_params.REWARD_AMOUNT
 
     def draw_quiescent_period(self):
@@ -265,9 +276,6 @@ AIR PRESSURE:         {self.as_data['AirPressure_mb']} mb
 RELATIVE HUMIDITY:    {self.as_data['RelativeHumidity']} %
 ##########################################"""
         log.info(msg)
-
-    def update_probability_left(self):
-        return self.block_probability_left
 
     def draw_position(self, position_set=None, pleft=None):
         position_set = position_set or self.task_params.STIM_POSITIONS
@@ -338,9 +346,6 @@ LAST GAIN:                     {self.LAST_TRIAL_DATA["stim_gain"]}
 PREVIOUS WEIGHT:               {self.LAST_SETTINGS_DATA["SUBJECT_WEIGHT"]}
 ##########################################"""
             log.info(msg)
-
-    def time_elapsed(self):
-        return datetime.datetime.now - self.init_datetime
 
     def softcode_handler(self, code):
         """
