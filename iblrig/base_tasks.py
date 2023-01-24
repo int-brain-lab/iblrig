@@ -9,6 +9,7 @@ import datetime
 import inspect
 import logging
 import os
+import serial
 import subprocess
 import yaml
 
@@ -276,11 +277,16 @@ class Frame2TTLMixin:
 
     def start_mixin_frame2ttl(self):
         # todo assert calibration
-        self.frame2ttl = frame2TTL.Frame2TTL(self.hardware_settings['device_frame2ttl']['COM_F2TTL'])
-        self.frame2ttl.set_thresholds(
-            dark=self.hardware_settings['device_frame2ttl']["F2TTL_DARK_THRESH"],
-            light=self.hardware_settings['device_frame2ttl']["F2TTL_DARK_THRESH"])
-        log.info("Frame2TTL: Thresholds set.")
+        # todo release port on failure
+        self.frame2ttl = frame2TTL.frame2ttl_factory(self.hardware_settings['device_frame2ttl']['COM_F2TTL'])
+        try:
+            self.frame2ttl.set_thresholds(
+                dark=self.hardware_settings['device_frame2ttl']["F2TTL_DARK_THRESH"],
+                light=self.hardware_settings['device_frame2ttl']["F2TTL_DARK_THRESH"])
+            log.info("Frame2TTL: Thresholds set.")
+        except serial.serialutil.SerialTimeoutException as e:
+            self.frame2ttl.close()
+            raise e
         assert self.frame2ttl.connected
 
 
@@ -374,6 +380,7 @@ class SoundMixin:
     def start_mixin_sound(self):
         sound_output = self.hardware_settings.device_sound['OUTPUT']
         self.sound['device'] = SoundDevice(output=sound_output)
+
         # Create sounds and output actions of state machine
         self.sound['GO_TONE'] = iblrig.sound.make_sound(
             rate=self.sound.device.samplerate,
@@ -392,7 +399,6 @@ class SoundMixin:
             chans=self.sound.device.channels)
 
         # SoundCard config params
-        #
         if self.hardware_settings.device_sound['OUTPUT'] == 'harp':
             sound.configure_sound_card(
                 sounds=[self.sound.GO_TONE, self.sound.WHITE_NOISE],

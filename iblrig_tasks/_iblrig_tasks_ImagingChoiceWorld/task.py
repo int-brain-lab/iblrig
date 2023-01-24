@@ -2,7 +2,6 @@ import logging
 import iblrig.misc
 from iblrig.base_choice_world import BiasedChoiceWorldSession
 from iblrig_tasks._iblrig_tasks_biasedChoiceWorld.task import run as run_biased
-NTRIALS_INIT = 1000
 log = logging.getLogger("iblrig")
 
 

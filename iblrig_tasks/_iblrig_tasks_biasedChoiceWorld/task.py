@@ -16,14 +16,14 @@ class Session(BiasedChoiceWorldSession):
 def run(sess=None):
 
     sess = sess or Session(interactive=False)
-
+    sess.start()
     for i in range(sess.task_params.NTRIALS):  # Main loop
         sess.next_trial()
-        log.info(f"Starting trial: {i + 1}")
+        log.info(f"Starting trial: {i}")
 
         sma = StateMachine(sess.bpod)
 
-        if i == 0:  # First trial exception start camera
+        if i == -1:  # First trial exception start camera
             session_delay_start = sess.task_params.get("SESSION_DELAY_START", 0)
             log.info("First trial initializing, will move to next trial only if:")
             log.info("1. camera is detected")
@@ -173,7 +173,7 @@ def run(sess=None):
         )
 
         # Send state machine description to Bpod device
-        sess.send_state_machine(sma)
+        sess.bpod.send_state_machine(sma)
         # Run state machine
         if not sess.bpod.run_state_machine(sma):  # Locks until state machine 'exit' is reached
             break

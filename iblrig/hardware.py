@@ -37,7 +37,7 @@ class Bpod(BpodIO):
             mod_name = "RotaryEncoder1"
         elif module in ["sc", "sound_card", "SoundCard"]:
             mod_name = "SoundCard1"
-        mod = [x for x in self.bpod.modules if x.name == mod_name]
+        mod = [x for x in self.modules if x.name == mod_name]
         if mod:
             return mod[0]
 
@@ -170,26 +170,19 @@ class SoundDevice(object):
             audio sample rate, defaults to 44100
         """
         self.output = output
-        # self.card = SoundCardModule()
-        self.samplerate = samplerate
-        if self.samplerate is None:
-            if self.output == "sysdefault":
-                self.samplerate = 44100
-            elif self.output == "xonar":
-                self.samplerate = 192000
-            elif self.output == "harp":
-                self.samplerate = 96000
-            else:
-                log.error("SOFT_SOUND in not: 'sysdefault', 'xonar' or 'harp'")
-                raise (NotImplementedError)
-
         if self.output == "xonar":
             devices = sd.query_devices()
             self.device = next(((i, d) for i, d in enumerate(devices) if "XONAR SOUND CARD(64)" in d["name"]), None)
             self.latency = "low"
             self.n_channels = 2
             self.channels = 'L+TTL'
+            self.samplerate = samplerate or 192000
+        elif self.output == "harp":
+            self.samplerate = samplerate or 96000
+            self.channels = 'stereo'
+            self.n_channels = 2
         elif self.output == "sysdefault":
             self.latency = "low"
             self.n_channels = 2
             self.channels = 'stereo'
+            self.samplerate = samplerate or 44100
