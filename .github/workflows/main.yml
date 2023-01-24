@@ -37,6 +37,16 @@ jobs:
           cd iblrig
           python -m flake8
 
+      - name: Generate setting files
+        shell: bash -l {0}
+        run: |
+          cd iblrig
+          cd settings
+          mv hardware_settings_template.yaml hardware_settings.yaml
+          mv iblrig_settings_template.yaml iblrig_settings.yaml
+          mv pybpod_settings_template.yaml pybpod_settings.yaml
+          ls -l
+
 #      - name: iblrig_params_ci.yaml generation for ci
 #        shell: pwsh -l {0}
 #        run: |
