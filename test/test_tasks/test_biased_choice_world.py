@@ -24,10 +24,15 @@ class TestBiasedChoiceWorld(unittest.TestCase):
             task.next_trial()
             # pc = task.psychometric_curve()
             task.trial_completed(np.random.choice([correct_trial, error_trial, no_go_trial], p=[0.9, 0.05, 0.05]))
-        # latency is less than 15ms for psychometric curve computation
+            if i == 245:
+                task.show_trial_log()
+
+        # test the trial table results
         task.trials_table = task.trials_table[:task.trial_num]
         np.testing.assert_array_equal(task.trials_table['trial_num'].values, np.arange(task.trial_num))
-
+        # makes sure the water reward counts check out
+        assert task.trials_table['reward_amount'].sum() == task.aggregates.water_delivered
+        assert np.sum(task.trials_table['reward_amount'] == 0) == task.trial_num - task.aggregates.ntrials_correct
         # Test the blocks task logic
         df_blocks = task.trials_table.groupby('block_num').agg(
             count=pd.NamedAgg(column="stim_angle", aggfunc="count"),

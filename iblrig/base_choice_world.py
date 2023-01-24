@@ -96,8 +96,6 @@ class ChoiceWorldSession(
         self.block_trial_num = -1
         self.block_num = -1
         self.block_len = -1
-        self.ntrials_correct = 0
-        self.water_delivered = 0
         self.behavior_data = []
         self.movement_left = self.device_rotary_encoder.THRESHOLD_EVENTS[
             self.task_params.QUIESCENCE_THRESHOLDS[0]]
@@ -130,6 +128,10 @@ class ChoiceWorldSession(
             "AirPressure_mb": -1,
             "RelativeHumidity": -1,
         }
+        self.aggregates = Bunch({
+            'ntrials_correct': 0,
+            'water_delivered': 0,
+        })
 
     def start(self):
         """
@@ -191,8 +193,12 @@ class ChoiceWorldSession(
         bonsai_viz_client.send2bonsai(**bonsai_dict)
 
     def trial_completed(self, behavior_data):
-        """Update outcome variables using bpod.session.current_trial
-        Check trial for state entries, first value of first tuple"""
+        """
+        The purpose of this method is to
+        -   update the trials table with information about the behaviour coming from the bpod
+        :param behavior_data:
+        :return:
+        """
         # Update elapsed_time
         self.behavior_data = behavior_data
         correct = ~np.isnan(self.behavior_data["States timestamps"]["correct"][0][0])
@@ -202,7 +208,8 @@ class ChoiceWorldSession(
         # Add trial's response time to the buffer
         self.trials_table.at[self.trial_num, 'response_time'] = misc.get_trial_rt(self.behavior_data)
         self.trials_table.at[self.trial_num, 'trial_correct'] = bool(correct)
-        self.trials_table.at[self.trial_num, 'reward_amount'] = self.draw_reward_amount()
+        if not correct:
+            self.trials_table.at[self.trial_num, 'reward_amount'] = 0
 
         # Update response buffer -1 for left, 0 for nogo, and 1 for rightward
         # what happens if position is 0?
@@ -224,6 +231,9 @@ class ChoiceWorldSession(
         # If more than 42 trials save transfer_me.flag
         if self.trial_num == 42:
             misc.create_flags(self.paths.DATA_FILE_PATH, self.task_params.POOP_COUNT)
+        # update cumulative aggregates
+        self.aggregates.ntrials_correct += correct
+        self.aggregates.water_delivered += self.trials_table.at[self.trial_num, 'reward_amount']
 
     def check_stop_criterions(self):
         return misc.check_stop_criterions(
@@ -252,25 +262,26 @@ class ChoiceWorldSession(
         return sync_check(self)
 
     def show_trial_log(self):
+        trial_info = self.trials_table.iloc[self.trial_num]
         msg = f"""
 ##########################################
-TRIAL NUM:            {self.trial_num}
-STIM POSITION:        {self.position}
-STIM CONTRAST:        {self.contrast}
-STIM PHASE:           {self.stim_phase}
+TRIAL NUM:            {trial_info.trial_num}
+STIM POSITION:        {trial_info.position}
+STIM CONTRAST:        {trial_info.contrast}
+STIM PHASE:           {trial_info.stim_phase}
 
-BLOCK NUMBER:         {self.block_num}
+BLOCK NUMBER:         {trial_info.block_num}
 BLOCK LENGTH:         {self.block_len}
-TRIALS IN BLOCK:      {self.block_trial_num}
-STIM PROB LEFT:       {self.stim_probability_left}
+TRIALS IN BLOCK:      {trial_info.block_trial_num}
+STIM PROB LEFT:       {trial_info.stim_probability_left}
 
-RESPONSE TIME:        {self.response_time_buffer[-1]}
-TRIAL CORRECT:        {self.trial_correct}
+RESPONSE TIME:        {trial_info.response_time}
+TRIAL CORRECT:        {trial_info.trial_correct}
 
-NTRIALS CORRECT:      {self.ntrials_correct}
-NTRIALS ERROR:        {self.trial_num - self.ntrials_correct}
-WATER DELIVERED:      {np.round(self.water_delivered, 3)} µl
-TIME FROM START:      {self.elapsed_time}
+NTRIALS CORRECT:      {self.aggregates.ntrials_correct}
+NTRIALS ERROR:        {self.trial_num - self.aggregates.ntrials_correct}
+WATER DELIVERED:      {np.round(self.aggregates.water_delivered, 3)} µl
+TIME FROM START:      {self.time_elapsed}
 TEMPERATURE:          {self.as_data['Temperature_C']} ºC
 AIR PRESSURE:         {self.as_data['AirPressure_mb']} mb
 RELATIVE HUMIDITY:    {self.as_data['RelativeHumidity']} %
@@ -302,36 +313,6 @@ RELATIVE HUMIDITY:    {self.as_data['RelativeHumidity']} %
         if assert_calibration:
             assert 'REWARD_VALVE_TIME' in self.calibration.keys(), 'Reward valve time not calibrated'
         return self.task_params.ITI_CORRECT - self.calibration.get('REWARD_VALVE_TIME', None)
-
-    def reprJSON(self):
-        """
-        JSON representation of the session parameters - one way street
-        :return:
-        """
-        def remove_from_dict(sx):
-            if "weighings" in sx.keys():
-                sx["weighings"] = None
-            if "water_administration" in sx.keys():
-                sx["water_administration"] = None
-            return sx
-
-        d = self.__dict__.copy()
-        d["GO_TONE"] = "go_tone(freq={}, dur={}, amp={})".format(
-            self.task_params.GO_TONE_FREQUENCY,
-            self.task_params.GO_TONE_DURATION,
-            self.task_params.GO_TONE_AMPLITUDE
-        )
-        d["WHITE_NOISE"] = "white_noise(freq=-1, dur={}, amp={})".format(
-            self.task_params.WHITE_NOISE_DURATION,
-            self.task_params.WHITE_NOISE_AMPLITUDE
-        )
-
-        d["SD"] = str(d.get('SD', None))
-        d["CALIB_FUNC"] = str(d.get('CALIB_FUNC', None))
-
-        d["LAST_TRIAL_DATA"] = None
-        d["LAST_SETTINGS_DATA"] = None
-        return d
 
     def display_logs(self):
         if self.paths.PREVIOUS_DATA_FILE:
@@ -415,4 +396,5 @@ class BiasedChoiceWorldSession(ChoiceWorldSession):
         self.trials_table.at[self.trial_num, 'stim_probability_left'] = self.block_probability_left
         self.trials_table.at[self.trial_num, 'trial_num'] = self.trial_num
         self.trials_table.at[self.trial_num, 'position'] = pos
+        self.trials_table.at[self.trial_num, 'reward_amount'] = self.draw_reward_amount()
         self.send_trial_info_to_bonsai()
