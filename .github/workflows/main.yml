@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [master, develop, rc]
+    branches: [master, develop, rc, iblrigv8_ci]
   pull_request:
     branches: [master, develop, rc]
 
@@ -12,7 +12,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: ["windows-latest"]
+        os: ["ubuntu-latest", "macos-latest", "windows-latest"]
         python-version: ["3.8"]
     steps:
       - name: Checkout iblrig repo
@@ -32,77 +32,74 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: flake8
-        shell: pwsh -l {0}
         run: |
-          pwd
-          ls
           pip install flake8 --quiet
           cd iblrig
           python -m flake8
 
-      - name: iblrig_params_ci.yaml generation for ci
-        shell: pwsh -l {0}
-        run: |
-          Get-ChildItem
-          Get-ChildItem "iblrig"
-          $root_loc = Get-Location
-          $iblrig_loc = [IO.Path]::Combine($root_loc, "iblrig")
-          $iblrig_local_data_loc = [IO.Path]::Combine($root_loc, "iblrig_data")
-          $iblrig_remote_data_loc = [IO.Path]::Combine($root_loc, "iblrig_remote_data")
-          $iblrig_params_loc = [IO.Path]::Combine($root_loc, "iblrig_params")
-          $iblrig_temp_alyx_loc = [IO.Path]::Combine($root_loc, "alyx_proj_data")
-
-          Write-Output "root_loc - $root_loc"
-          Write-Output "iblrig_loc - $iblrig_loc"
-          Write-Output "iblrig_local_data_loc - $iblrig_local_data_loc"
-          Write-Output "iblrig_remote_data_loc - $iblrig_remote_data_loc"
-          Write-Output "iblrig_params_loc - $iblrig_params_loc"
-          Write-Output "iblrig_temp_alyx_loc - $iblrig_temp_alyx_loc"
-
-          New-Item $iblrig_local_data_loc -ItemType Directory
-          New-Item $iblrig_remote_data_loc -ItemType Directory
-          New-Item $iblrig_temp_alyx_loc -ItemType Directory
-
-          cd iblrig
-          $filename = "iblrig_params_ci.yaml" 
-          New-Item $filename -ItemType File -Value ("# parameter file generated for github actions ci" + [Environment]::NewLine)
-          Add-Content $filename "iblrig_local_data_path: '$iblrig_local_data_loc'"
-          Add-Content $filename "iblrig_remote_data_path: '$iblrig_remote_data_loc'"
-          Add-Content $filename "iblrig_remote_server_path: '$iblrig_remote_data_loc'"
-          Add-Content $filename "iblrig_path: '$iblrig_loc'"
-          Add-Content $filename "iblrig_params_path: '$iblrig_params_loc'"
-          Add-Content $filename "iblrig_temp_alyx_path: '$iblrig_temp_alyx_loc'"
-          Get-Content $filename
-
-      - name: iblrig installation
-        shell: pwsh -l {0}
-        run: |
-          pwd
-          ls
-          pip install --editable iblrig
-          pip install --editable iblpybpod
-          cd iblrig
-          python setup_pybpod.py --github_actions
-          cd Bonsai
-          powershell.exe .\install.ps1
-
-      - name: iblrig unit tests
-        shell: pwsh -l {0}
-        run: |
-          cd iblrig\test_iblrig
-          python -m unittest discover
-
-      - name: Generate requirements_frozen.txt
-        shell: pwsh -l {0}
-        run: |
-          pwd
-          ls
-          pip freeze > requirements_frozen.txt
-
-      - name: Store frozen requirements as artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: requirements_frozen
-          path: |
-            requirements_frozen.txt
-            iblrig/iblrig_params_ci.yaml
+#      - name: iblrig_params_ci.yaml generation for ci
+#        shell: pwsh -l {0}
+#        run: |
+#          Get-ChildItem
+#          Get-ChildItem "iblrig"
+#          $root_loc = Get-Location
+#          $iblrig_loc = [IO.Path]::Combine($root_loc, "iblrig")
+#          $iblrig_local_data_loc = [IO.Path]::Combine($root_loc, "iblrig_data")
+#          $iblrig_remote_data_loc = [IO.Path]::Combine($root_loc, "iblrig_remote_data")
+#          $iblrig_params_loc = [IO.Path]::Combine($root_loc, "iblrig_params")
+#          $iblrig_temp_alyx_loc = [IO.Path]::Combine($root_loc, "alyx_proj_data")
+#
+#          Write-Output "root_loc - $root_loc"
+#          Write-Output "iblrig_loc - $iblrig_loc"
+#          Write-Output "iblrig_local_data_loc - $iblrig_local_data_loc"
+#          Write-Output "iblrig_remote_data_loc - $iblrig_remote_data_loc"
+#          Write-Output "iblrig_params_loc - $iblrig_params_loc"
+#          Write-Output "iblrig_temp_alyx_loc - $iblrig_temp_alyx_loc"
+#
+#          New-Item $iblrig_local_data_loc -ItemType Directory
+#          New-Item $iblrig_remote_data_loc -ItemType Directory
+#          New-Item $iblrig_temp_alyx_loc -ItemType Directory
+#
+#          cd iblrig
+#          $filename = "iblrig_params_ci.yaml"
+#          New-Item $filename -ItemType File -Value ("# parameter file generated for github actions ci" + [Environment]::NewLine)
+#          Add-Content $filename "iblrig_local_data_path: '$iblrig_local_data_loc'"
+#          Add-Content $filename "iblrig_remote_data_path: '$iblrig_remote_data_loc'"
+#          Add-Content $filename "iblrig_remote_server_path: '$iblrig_remote_data_loc'"
+#          Add-Content $filename "iblrig_path: '$iblrig_loc'"
+#          Add-Content $filename "iblrig_params_path: '$iblrig_params_loc'"
+#          Add-Content $filename "iblrig_temp_alyx_path: '$iblrig_temp_alyx_loc'"
+#          Get-Content $filename
+#
+#      - name: iblrig installation
+#        shell: pwsh -l {0}
+#        run: |
+#          pwd
+#          ls
+#          pip install --editable iblrig
+#          pip install --editable iblpybpod
+#          cd iblrig
+#          python setup_pybpod.py --github_actions
+#          cd Bonsai
+#          powershell.exe .\install.ps1
+#
+#      - name: iblrig unit tests
+#        shell: pwsh -l {0}
+#        run: |
+#          cd iblrig\test_iblrig
+#          python -m unittest discover
+#
+#      - name: Generate requirements_frozen.txt
+#        shell: pwsh -l {0}
+#        run: |
+#          pwd
+#          ls
+#          pip freeze > requirements_frozen.txt
+#
+#      - name: Store frozen requirements as artifacts
+#        uses: actions/upload-artifact@v3
+#        with:
+#          name: requirements_frozen
+#          path: |
+#            requirements_frozen.txt
+#            iblrig/iblrig_params_ci.yaml
