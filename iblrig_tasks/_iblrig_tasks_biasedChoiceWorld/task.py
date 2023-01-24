@@ -13,9 +13,9 @@ class Session(BiasedChoiceWorldSession):
     pass
 
 
-def run():
+def run(sess=None):
 
-    sess = Session(interactive=False)
+    sess = sess or Session(interactive=False)
 
     for i in range(sess.task_params.NTRIALS):  # Main loop
         sess.next_trial()

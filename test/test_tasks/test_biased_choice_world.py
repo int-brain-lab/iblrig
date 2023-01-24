@@ -48,6 +48,14 @@ class TestBiasedChoiceWorld(unittest.TestCase):
         # assert the the trial outcomes are within 0.3 of the generating probability
         assert np.all(np.abs(df_blocks['position'] - df_blocks['stim_probability_left']) < 0.3)
 
+    def check_quiescent_period(self):
+        """
+        Check that the quiescence period is between 0.4 and 0.8
+        Overload this method for a change in quiescent period
+        """
+        self.assertTrue(np.all(self.task.trials_table['quiescent_period'] > 0.4))
+        self.assertTrue(np.all(self.task.trials_table['quiescent_period'] < 0.8))
+
 
 class TestNeuroModulatorBiasedChoiceWorld(TestBiasedChoiceWorld):
     def setUp(self) -> None:

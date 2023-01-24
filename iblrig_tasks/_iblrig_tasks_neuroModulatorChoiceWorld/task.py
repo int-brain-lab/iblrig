@@ -240,7 +240,6 @@ def run():
             state_change_conditions={"Tup": "exit"},
         )
 
-
         # Send state machine description to Bpod device
         sess.bpod.send_state_machine(sma)
         # Run state machine

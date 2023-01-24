@@ -242,7 +242,7 @@ class ChoiceWorldSession(
         """
         The quiescent period is drawn from a truncated exponential distribution
         """
-        return self.task_params.QUIESCENT_PERIOD + misc.texp()
+        return self.task_params.QUIESCENT_PERIOD + misc.texp(factor=0.35, min_=0.2, max_=0.5)
 
     def draw_contrast(self):
         return misc.draw_contrast(self.task_params.CONTRAST_SET,
