@@ -168,7 +168,7 @@ def run():
 
             sma.add_state(
                 state_name="no_go",
-                state_timer=sess.task_params.ITI_ERROR,
+                state_timer=sess.task_params.FEEDBACK_NOGO_DELAY_SECS,
                 output_actions=[("Serial1", sess.bpod.bonsai_hide_stim()), sess.sound.OUT_NOISE],
                 state_change_conditions={"Tup": "exit_state"},
             )
@@ -189,7 +189,7 @@ def run():
 
             sma.add_state(
                 state_name="error",
-                state_timer=sess.task_params.ITI_ERROR,
+                state_timer=sess.task_params.FEEDBACK_ERROR_DELAY_SECS,
                 output_actions=[sess.sound.OUT_NOISE],
                 state_change_conditions={"Tup": "hide_stim"},
             )
@@ -217,7 +217,7 @@ def run():
 
         sma.add_state(
             state_name="correct",
-            state_timer=sess.task_params.ITI_CORRECT,
+            state_timer=sess.task_params.FEEDBACK_CORRECT_DELAY_SECS,
             output_actions=[],
             state_change_conditions={"Tup": "hide_stim"},
         )
@@ -235,10 +235,11 @@ def run():
 
         sma.add_state(
             state_name="exit_state",
-            state_timer=0.5,
+            state_timer=sess.task_params.ITI_DELAY_SECS,
             output_actions=[("BNC1", 255)],
             state_change_conditions={"Tup": "exit"},
         )
+
 
         # Send state machine description to Bpod device
         sess.bpod.send_state_machine(sma)
