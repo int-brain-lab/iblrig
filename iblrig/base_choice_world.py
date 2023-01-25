@@ -21,8 +21,8 @@ from iblrig.check_sync_pulses import sync_check
 
 log = logging.getLogger(__name__)
 
-NTRIALS_INIT = 1000
-
+NTRIALS_INIT = 2000
+NBLOCKS_INIT = 100
 # todo sess update plots
 # todo camera mixin: choose modality
 
@@ -91,17 +91,21 @@ class ChoiceWorldSession(
         else:
             self.SUBJECT_WEIGHT = np.NaN
         self.display_logs()
-        # init the trials table
-        self.trial_num = -1
-        self.block_trial_num = -1
-        self.block_num = -1
-        self.block_len = -1
+        # init behaviour data
         self.behavior_data = []
         self.movement_left = self.device_rotary_encoder.THRESHOLD_EVENTS[
             self.task_params.QUIESCENCE_THRESHOLDS[0]]
         self.movement_right = self.device_rotary_encoder.THRESHOLD_EVENTS[
             self.task_params.QUIESCENCE_THRESHOLDS[1]]
-
+        # init counter variables
+        self.trial_num = -1
+        self.block_num = -1
+        self.block_trial_num = -1
+        # init the tables, there are 3 of them: a block table, a trials table and a ambient sensor data table
+        self.blocks_table = pd.DataFrame({
+            'probability_left': np.zeros(NBLOCKS_INIT) * np.NaN,
+            'block_length': np.zeros(NBLOCKS_INIT, dtype=np.int16) * -1,
+        })
         self.trials_table = pd.DataFrame({
             'block_num': np.zeros(NTRIALS_INIT, dtype=np.int16),
             'block_trial_num': np.zeros(NTRIALS_INIT, dtype=np.int16),
@@ -123,10 +127,10 @@ class ChoiceWorldSession(
             'trial_num': np.zeros(NTRIALS_INIT, dtype=np.int16),
         })
 
-        self.as_data = {
-            "Temperature_C": -1,
-            "AirPressure_mb": -1,
-            "RelativeHumidity": -1,
+        self.ambient_sensor_table = {
+            "Temperature_C": np.zeros(NTRIALS_INIT) * np.NaN,
+            "AirPressure_mb": np.zeros(NTRIALS_INIT) * np.NaN,
+            "RelativeHumidity": np.zeros(NTRIALS_INIT) * np.NaN,
         }
         self.aggregates = Bunch({
             'ntrials_correct': 0,
@@ -356,26 +360,28 @@ class BiasedChoiceWorldSession(ChoiceWorldSession):
         """
         self.block_num += 1  # the block number is zero based
         self.block_trial_num = 0
+
         # handles the block length logic
         if self.task_params.BLOCK_INIT_5050 and self.block_num == 0:
-            self.block_len = 90
+            self.blocks_table.at[self.block_num, 'block_length'] = 90
         else:
-            self.block_len = int(misc.texp(
+            block_len = int(misc.texp(
                 factor=self.task_params.BLOCK_LEN_FACTOR,
                 min_=self.task_params.BLOCK_LEN_MIN,
                 max_=self.task_params.BLOCK_LEN_MAX
             ))
-
         if self.block_num == 0:
             if self.task_params.BLOCK_INIT_5050:
-                self.block_probability_left = 0.5
+                pleft = 0.5
             else:
-                self.block_probability_left = np.random.choice(self.task_params.BLOCK_PROBABILITY_SET)
+                pleft = np.random.choice(self.task_params.BLOCK_PROBABILITY_SET)
         elif self.block_num == 1 and self.task_params.BLOCK_INIT_5050:
-            self.block_probability_left = np.random.choice(self.task_params.BLOCK_PROBABILITY_SET)
+            pleft = np.random.choice(self.task_params.BLOCK_PROBABILITY_SET)
         else:
             # this switches the probability of leftward stim for the next block
-            self.block_probability_left = round(abs(1 - self.block_probability_left), 1)
+            pleft = round(abs(1 - self.block_probability_left), 1)
+        self.blocks_table.at[self.block_num, 'block_length'] = block_len
+        self.blocks_table.at[self.block_num, 'probability_left'] = pleft
 
     def next_trial(self):
         # First trial exception
