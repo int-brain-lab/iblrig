@@ -127,11 +127,11 @@ class ChoiceWorldSession(
             'trial_num': np.zeros(NTRIALS_INIT, dtype=np.int16),
         })
 
-        self.ambient_sensor_table = {
+        self.ambient_sensor_table = pd.DataFrame({
             "Temperature_C": np.zeros(NTRIALS_INIT) * np.NaN,
             "AirPressure_mb": np.zeros(NTRIALS_INIT) * np.NaN,
             "RelativeHumidity": np.zeros(NTRIALS_INIT) * np.NaN,
-        }
+        })
         self.aggregates = Bunch({
             'ntrials_correct': 0,
             'water_delivered': 0,
@@ -167,7 +167,7 @@ class ChoiceWorldSession(
     """
     @property
     def reward_time(self):
-        return self.valve.reward_time
+        self.compute_reward_time(amount_ul=self.task_params.REWARD_AMOUNT_UL)
 
     @property
     def quiescent_period(self):
@@ -249,8 +249,7 @@ class ChoiceWorldSession(
         This method is to be overloaded if the task has a variable reward
         :return:
         """
-        # fixme: correlation with valve reward time ?!?
-        return self.task_params.REWARD_AMOUNT
+        return self.task_params.REWARD_AMOUNT_UL
 
     def draw_quiescent_period(self):
         """
@@ -275,7 +274,7 @@ STIM CONTRAST:        {trial_info.contrast}
 STIM PHASE:           {trial_info.stim_phase}
 
 BLOCK NUMBER:         {trial_info.block_num}
-BLOCK LENGTH:         {self.block_len}
+BLOCK LENGTH:         {self.blocks_table.loc[self.block_num, 'block_length']}
 TRIALS IN BLOCK:      {trial_info.block_trial_num}
 STIM PROB LEFT:       {trial_info.stim_probability_left}
 
@@ -286,15 +285,15 @@ NTRIALS CORRECT:      {self.aggregates.ntrials_correct}
 NTRIALS ERROR:        {self.trial_num - self.aggregates.ntrials_correct}
 WATER DELIVERED:      {np.round(self.aggregates.water_delivered, 3)} µl
 TIME FROM START:      {self.time_elapsed}
-TEMPERATURE:          {self.as_data['Temperature_C']} ºC
-AIR PRESSURE:         {self.as_data['AirPressure_mb']} mb
-RELATIVE HUMIDITY:    {self.as_data['RelativeHumidity']} %
+TEMPERATURE:          {self.ambient_sensor_table.loc[self.trial_num, 'Temperature_C']} ºC
+AIR PRESSURE:         {self.ambient_sensor_table.loc[self.trial_num, 'AirPressure_mb']} mb
+RELATIVE HUMIDITY:    {self.ambient_sensor_table.loc[self.trial_num, 'RelativeHumidity']} %
 ##########################################"""
         log.info(msg)
 
     def draw_position(self, position_set=None, pleft=None):
         position_set = position_set or self.task_params.STIM_POSITIONS
-        pleft = pleft or self.block_probability_left
+        pleft = pleft or self.blocks_table.loc[self.block_num, 'probability_left']
         return int(np.random.choice(position_set, p=[pleft, 1 - pleft]))
 
     def psychometric_curve(self):
@@ -363,7 +362,7 @@ class BiasedChoiceWorldSession(ChoiceWorldSession):
 
         # handles the block length logic
         if self.task_params.BLOCK_INIT_5050 and self.block_num == 0:
-            self.blocks_table.at[self.block_num, 'block_length'] = 90
+            block_len = 90
         else:
             block_len = int(misc.texp(
                 factor=self.task_params.BLOCK_LEN_FACTOR,
@@ -379,7 +378,7 @@ class BiasedChoiceWorldSession(ChoiceWorldSession):
             pleft = np.random.choice(self.task_params.BLOCK_PROBABILITY_SET)
         else:
             # this switches the probability of leftward stim for the next block
-            pleft = round(abs(1 - self.block_probability_left), 1)
+            pleft = round(abs(1 - self.blocks_table.loc[self.block_num - 1, 'probability_left']), 1)
         self.blocks_table.at[self.block_num, 'block_length'] = block_len
         self.blocks_table.at[self.block_num, 'probability_left'] = pleft
 
@@ -388,7 +387,7 @@ class BiasedChoiceWorldSession(ChoiceWorldSession):
         self.trial_num += 1
         self.block_trial_num += 1
         self.trial_correct = None
-        if self.block_trial_num > (self.block_len - 1):
+        if self.block_num < 0 or self.block_trial_num > (self.blocks_table.loc[self.block_num, 'block_length'] - 1):
             self.new_block()
         pos = self.draw_position()
         self.trials_table.at[self.trial_num, 'quiescent_period'] = self.draw_quiescent_period()
@@ -399,7 +398,7 @@ class BiasedChoiceWorldSession(ChoiceWorldSession):
         self.trials_table.at[self.trial_num, 'block_num'] = self.block_num
         self.trials_table.at[self.trial_num, 'block_trial_num'] = self.block_trial_num
         self.trials_table.at[self.trial_num, 'stim_freq'] = self.task_params.STIM_FREQ
-        self.trials_table.at[self.trial_num, 'stim_probability_left'] = self.block_probability_left
+        self.trials_table.at[self.trial_num, 'stim_probability_left'] = self.blocks_table.loc[self.block_num, 'probability_left']
         self.trials_table.at[self.trial_num, 'trial_num'] = self.trial_num
         self.trials_table.at[self.trial_num, 'position'] = pos
         self.trials_table.at[self.trial_num, 'reward_amount'] = self.draw_reward_amount()

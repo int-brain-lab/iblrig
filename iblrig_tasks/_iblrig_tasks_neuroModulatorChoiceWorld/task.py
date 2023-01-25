@@ -5,7 +5,7 @@ from pybpodapi.protocol import StateMachine
 
 from iblrig.base_choice_world import BiasedChoiceWorldSession
 
-NTRIALS_INIT = 1000
+
 log = logging.getLogger("iblrig")
 
 
@@ -32,15 +32,58 @@ class Session(BiasedChoiceWorldSession):
     @property
     def choice_to_feedback_delay(self):
         return self.trials_table.at[self.trial_num, 'choice_delay']
-    #
-    # def draw_reward_amount(self):
-    #     return np.random.choice([4.5, 1.5], p=[.5, .5])
+
+
+class SessionRelatedBlocks(Session):
+    """
+    IN this scenario, the blocks define a poor and a rich side.
+    The probability blocks and reward blocks structure is staggered so that we explore all configurations every 4 blocks
+    P0 P1 P2 P1 P2 P1 P2 P1 P2
+    R0 R1 R1 R2 R2 R1 R1 R2 R2
+    """
+    # from iblrig_tasks._iblrig_tasks_neuroModulatorChoiceWorld.task import SessionRelatedBlocks
+    # sess = SessionRelatedBlocks()
+    def __init__(self, *args, **kwargs):
+        super(SessionRelatedBlocks, self).__init__(*args, **kwargs)
+        self.trials_table['omit_feedback'] = np.zeros(self.trials_table.shape[0], dtype=bool)
+        self.trials_table['choice_delay'] = np.zeros(self.trials_table.shape[0], dtype=np.float32)
+        self.blocks_table['reward_amount_right'] = np.zeros(self.blocks_table.shape[0], dtype=np.float32)
+        self.blocks_table['reward_amount_left'] = np.zeros(self.blocks_table.shape[0], dtype=np.float32)
+        self.BLOCK_REWARD_STAGGER = np.random.randint(0, 2)
+
+    def new_block(self):
+        super(Session, self).new_block()
+        REWARD_AMOUNT_POOR = 1
+        REWARD_AMOUNT_RICH = 3
+        if self.block_num == 0:
+            left_amount = right_amount = self.task_params.REWARD_AMOUNT_UL
+        else:
+            if int((self.block_num + self.BLOCK_REWARD_STAGGER) / 2 % 2):
+                left_amount, right_amount = (REWARD_AMOUNT_RICH, REWARD_AMOUNT_POOR)
+            else:
+                right_amount, left_amount = (REWARD_AMOUNT_RICH, REWARD_AMOUNT_POOR)
+        self.blocks_table.at[self.block_num, 'reward_amount_right'] = right_amount
+        self.blocks_table.at[self.block_num, 'reward_amount_left'] = left_amount
+
+    def next_trial(self):
+        super(SessionRelatedBlocks, self).next_trial()
+        self.trials_table.at[self.trial_num, 'reward_amount'] = self.draw_reward_amount()
+
+    def draw_reward_amount(self):
+        # FIXME check: this has 0.5 probability of being correct !!!
+        if np.sign(self.position):
+            return self.blocks_table.at[self.block_num, 'reward_amount_right']
+        else:
+            return self.blocks_table.at[self.block_num, 'reward_amount_right']
+
+    @property
+    def reward_time(self):
+        # self.position gives me the current location on the screen - makes sure the reward sign is correct
+        return self.compute_reward_time()
 
 
 def run():
-    # todo get subject
-    # todo get user from alyx - but add argument
-    sess = Session(interactive=False)
+    sess = SessionRelatedBlocks(interactive=False)
 
     for i in range(sess.task_params.NTRIALS):  # Main loop
         sess.next_trial()
@@ -142,8 +185,10 @@ def run():
 
             sma.add_state(
                 state_name="null_feedback",
-                state_timer=sess.valve.reward_time + sess.choice_to_feedback_delay,
-                output_actions=[("Valve1", 255), ("BNC1", 255)],
+                state_timer=(sess.task_params.FEEDBACK_NOGO_DELAY_SECS
+                             + sess.task_params.FEEDBACK_ERROR_DELAY_SECS
+                             + sess.task_params.FEEDBACK_CORRECT_DELAY_SECS) / 3,
+                output_actions=[],
                 state_change_conditions={"Tup": "correct"},
             )
 
@@ -210,7 +255,7 @@ def run():
 
             sma.add_state(
                 state_name="reward",
-                state_timer=sess.valve.reward_time,
+                state_timer=sess.reward_time,
                 output_actions=[("Valve1", 255), ("BNC1", 255)],
                 state_change_conditions={"Tup": "correct"},
             )

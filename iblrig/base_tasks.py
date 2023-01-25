@@ -307,7 +307,7 @@ class RotaryEncoderMixin:
 
 
 class ValveMixin:
-    def get_reward_amount(self: object) -> float:
+    def get_session_reward_amount(self: object) -> float:
         # simply returns the reward amount if no adaptive rewared is used
         if not self.task_params.ADAPTIVE_REWARD:
             return self.task_params.REWARD_AMOUNT
@@ -336,10 +336,6 @@ class ValveMixin:
             self.hardware_settings['device_valve']["WATER_CALIBRATION_WEIGHT_PERDROP"],
             self.hardware_settings['device_valve']["WATER_CALIBRATION_OPEN_TIMES"],
         )
-        if self.task_params.AUTOMATIC_CALIBRATION:
-            self.valve['reward_time'] = self.valve['fcn_vol2time'](self.task_params.REWARD_AMOUNT) / 1e3
-        else:  # this is the manual manual calibration value
-            self.valve['reward_time'] = self.task_params.CALIBRATION_VALUE / 3 * self.task_params.REWARD_AMOUNT
 
     def start_mixin_valve(self):
         # if the rig is not on manual settings, then the reward valve has to be calibrated to run the experiment
@@ -362,6 +358,14 @@ class ValveMixin:
                 AUTOMATIC_CALIBRATION = False
                 CALIBRATION_VALUE = <MANUAL_CALIBRATION>
             ##########################################"""
+
+    @property
+    def compute_reward_time(self, amount_ul=None):
+        amount_ul = amount_ul or self.task_params.REWARD_AMOUNT_UL
+        if self.task_params.AUTOMATIC_CALIBRATION:
+            return self.valve['fcn_vol2time'](amount_ul) / 1e3
+        else:  # this is the manual manual calibration value
+            return self.task_params.CALIBRATION_VALUE / 3 * amount_ul
 
 
 class SoundMixin:

@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 from iblrig_tasks._iblrig_tasks_biasedChoiceWorld.task import Session as BiasedChoiceWorldSession
-from iblrig_tasks._iblrig_tasks_neuroModulatorChoiceWorld.task import Session as NeuroModulatorChoiceWorldSession
+from iblrig_tasks._iblrig_tasks_neuroModulatorChoiceWorld.task import SessionRelatedBlocks as NeuroModulatorChoiceWorldSession
 
 
 class TestBiasedChoiceWorld(unittest.TestCase):
@@ -69,6 +69,7 @@ class TestNeuroModulatorBiasedChoiceWorld(TestBiasedChoiceWorld):
     def test_task(self):
         super(TestNeuroModulatorBiasedChoiceWorld, self).test_task()
         # we expect 10% of null feedback trials
+        # todo check that omissions are reflected on the reward amount !!
         assert np.abs(.1 - np.mean(self.task.trials_table['omit_feedback'])) < .05
 
 
