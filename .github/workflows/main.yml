@@ -46,11 +46,15 @@ jobs:
           cp iblrig_settings_template.yaml iblrig_settings.yaml
           cp pybpod_settings_template.yaml pybpod_settings.yaml
 
-      - name: iblrig and iblpybpod package requirements
+      - name: iblrig and iblpybpod requirements
         shell: bash -l {0}
         run: |
           pip install --editable iblrig
           pip install --editable iblpybpod
+
+      - name: Install audio library (Ubuntu only)
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo apt-get install -y libportaudio2
 
       - name: Install Bonsai (Windows only)
         if: matrix.os == 'windows-latest'
@@ -59,23 +63,20 @@ jobs:
           cd iblrig\Bonsai
           powershell.exe .\install.ps1
 
-#      - name: iblrig unit tests
-#        shell: pwsh -l {0}
-#        run: |
-#          cd iblrig\test_iblrig
-#          python -m unittest discover
-#
-#      - name: Generate requirements_frozen.txt
-#        shell: pwsh -l {0}
-#        run: |
-#          pwd
-#          ls
-#          pip freeze > requirements_frozen.txt
-#
-#      - name: Store frozen requirements as artifacts
-#        uses: actions/upload-artifact@v3
-#        with:
-#          name: requirements_frozen
-#          path: |
-#            requirements_frozen.txt
-#            iblrig/iblrig_params_ci.yaml
+      - name: iblrig unit tests
+        shell: bash -l {0}
+        run: |
+          cd iblrig
+          cd test
+          python -m unittest discover
+          cd test_tasks
+          python -m unittest discover
+
+      - name: Generate requirements_frozen.txt
+        run: pip freeze > requirements_frozen.txt
+
+      - name: Store frozen requirements as artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: requirements_frozen
+          path: requirements_frozen.txt

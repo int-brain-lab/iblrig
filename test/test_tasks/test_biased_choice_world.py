@@ -11,8 +11,6 @@ from iblrig_tasks._iblrig_tasks_neuroModulatorChoiceWorld.task import Session as
 class TestBiasedChoiceWorld(unittest.TestCase):
 
     def setUp(self) -> None:
-        # TODO: point to setting/blah_template files here
-        # TODO: sounddevice python package required 'sudo apt install libportaudio2' on ubuntu 22.04
         self.task = BiasedChoiceWorldSession(interactive=False)
 
     def test_task(self):
