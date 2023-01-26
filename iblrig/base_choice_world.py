@@ -121,7 +121,7 @@ class ChoiceWorldSession(
             'stim_gain': np.zeros(NTRIALS_INIT) * np.NaN,
             'stim_phase': np.zeros(NTRIALS_INIT) * np.NaN,
             'stim_probability_left': np.zeros(NTRIALS_INIT),
-            'stim_reverse': np.zeros(NTRIALS_INIT) * np.NaN,
+            'stim_reverse': np.zeros(NTRIALS_INIT, dtype=np.bool),
             'stim_sigma': np.zeros(NTRIALS_INIT) * np.NaN,
             'trial_correct': np.zeros(NTRIALS_INIT, dtype=bool),
             'trial_num': np.zeros(NTRIALS_INIT, dtype=np.int16),

@@ -20,9 +20,8 @@ from pythonosc import udp_client
 
 import iblrig.path_helper
 from iblutil.util import Bunch
-from iblrig.hardware import Bpod, MyRotaryEncoder, SoundDevice
+from iblrig.hardware import Bpod, MyRotaryEncoder, sound_device_factory
 import iblrig.frame2TTL as frame2TTL
-
 import iblrig.sound as sound
 
 log = logging.getLogger("iblrig")
@@ -95,15 +94,15 @@ class OSCClient(udp_client.SimpleUDPClient):
     """
 
     OSC_PROTOCOL = {
-        'trial_num': '/t',
-        'position': '/p',
-        'stim_phase': '/h',
-        'contrast': '/c',
-        'stim_freq': '/f',
-        'stim_angle': '/a',
-        'stim_gain': '/g',
-        'stim_sigma': '/s',
-        'stim_reverse': '/r',
+        'trial_num': dict(mess='/t', type=int),
+        'position': dict(mess='/p', type=int),
+        'stim_phase': dict(mess='/h', type=float),
+        'contrast': dict(mess='/c', type=float),
+        'stim_freq': dict(mess='/f', type=float),
+        'stim_angle': dict(mess='/a', type=float),
+        'stim_gain': dict(mess='/g', type=float),
+        'stim_sigma': dict(mess='/s', type=float),
+        'stim_reverse': dict(mess='/r', type=int),
     }
 
     def __init__(self, port, ip="127.0.0.1"):
@@ -120,7 +119,7 @@ class OSCClient(udp_client.SimpleUDPClient):
                 # need to convert basic numpy types to low-level python types for
                 # punch card generation OSC module, I might as well have written C code
                 value = kwargs[k].item() if isinstance(kwargs[k], np.generic) else kwargs[k]
-                self.send_message(self.OSC_PROTOCOL[k], value)
+                self.send_message(self.OSC_PROTOCOL[k]['mess'], self.OSC_PROTOCOL[k]['type'](value))
 
     def exit(self):
         self.send_message("/x", 1)
@@ -383,7 +382,7 @@ class SoundMixin:
 
     def start_mixin_sound(self):
         sound_output = self.hardware_settings.device_sound['OUTPUT']
-        self.sound['device'] = SoundDevice(output=sound_output)
+        self.sound['device'] = sound_device_factory(output=sound_output)
 
         # Create sounds and output actions of state machine
         self.sound['GO_TONE'] = iblrig.sound.make_sound(
