@@ -17,13 +17,12 @@ class Session(BiasedChoiceWorldSession):
 
     def next_trial(self):
         super(Session, self).next_trial()
-        # first there is a delay chosen from choice to feedback, in this case we pick 1.5secs 2 times out of 3 and 3secs 1 time
-        # out of three
-        CHOICE_DELAY_SECS = np.array([1.5, 3.0])
-        CHOICE_DELAY_PROBABILITY_SET = np.cumsum(np.array([2, 1]) / 3)
-        self.trials_table.at[self.trial_num, 'omit_feedback'] = np.random.random() < self.task_params.OMIT_FEEDBACK_PROBABILITY
         # then there is a probability of omitting feedback regardless of the choice
-        self.trials_table['choice_delay'] = CHOICE_DELAY_SECS[np.searchsorted(CHOICE_DELAY_PROBABILITY_SET, np.random.rand())]
+        self.trials_table.at[self.trial_num, 'omit_feedback'] = np.random.random() < self.task_params.OMIT_FEEDBACK_PROBABILITY
+        # then drawing the the delay for the choice
+        self.trials_table.at[self.trial_num, 'choice_delay'] = np.random.choice([1.5, 3.0], p=[2 / 3, 1 / 3])
+        # the reward is a draw within an uniform distribution between 3 and 1
+        self.trials_table.at[self.trial_num, 'reward_amount'] = np.random.choice([1, 3], p=[.6, .4])
 
     @property
     def omit_feedback(self):
@@ -32,11 +31,6 @@ class Session(BiasedChoiceWorldSession):
     @property
     def choice_to_feedback_delay(self):
         return self.trials_table.at[self.trial_num, 'choice_delay']
-
-    @property
-    def reward_time(self):
-        # self.position gives me the current location on the screen - makes sure the reward sign is correct
-        return self.compute_reward_time()
 
 
 class SessionRelatedBlocks(Session):
@@ -80,11 +74,6 @@ class SessionRelatedBlocks(Session):
             return self.blocks_table.at[self.block_num, 'reward_amount_right']
         else:
             return self.blocks_table.at[self.block_num, 'reward_amount_right']
-
-    @property
-    def reward_time(self):
-        # self.position gives me the current location on the screen - makes sure the reward sign is correct
-        return self.compute_reward_time()
 
 
 def run():

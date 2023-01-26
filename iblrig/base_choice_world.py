@@ -167,7 +167,7 @@ class ChoiceWorldSession(
     """
     @property
     def reward_time(self):
-        self.compute_reward_time(amount_ul=self.task_params.REWARD_AMOUNT_UL)
+        self.compute_reward_time(amount_ul=self.trials_table.at[self.trial_num, 'reward_amount'])
 
     @property
     def quiescent_period(self):
