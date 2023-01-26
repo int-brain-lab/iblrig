@@ -28,11 +28,11 @@ class TestBiasedChoiceWorld(unittest.TestCase):
                 task.show_trial_log()
 
         # test the trial table results
-        task.trials_table = task.trials_table[:task.trial_num]
-        np.testing.assert_array_equal(task.trials_table['trial_num'].values, np.arange(task.trial_num))
+        task.trials_table = task.trials_table[:task.trial_num + 1]
+        np.testing.assert_array_equal(task.trials_table['trial_num'].values, np.arange(task.trial_num + 1))
         # makes sure the water reward counts check out
         assert task.trials_table['reward_amount'].sum() == task.aggregates.water_delivered
-        assert np.sum(task.trials_table['reward_amount'] == 0) == task.trial_num - task.aggregates.ntrials_correct
+        assert np.sum(task.trials_table['reward_amount'] == 0) == task.trial_num + 1 - task.aggregates.ntrials_correct
         # Test the blocks task logic
         df_blocks = task.trials_table.groupby('block_num').agg(
             count=pd.NamedAgg(column="stim_angle", aggfunc="count"),

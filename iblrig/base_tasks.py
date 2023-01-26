@@ -72,8 +72,9 @@ class BaseSession(ABC):
         """
         self._execute_mixins_shared_function('stop_mixin')
 
+    @property
     def time_elapsed(self):
-        return datetime.datetime.now - self.init_datetime
+        return datetime.datetime.now() - self.init_datetime
 
 
 class OSCClient(udp_client.SimpleUDPClient):
@@ -382,11 +383,13 @@ class SoundMixin:
 
     def start_mixin_sound(self):
         sound_output = self.hardware_settings.device_sound['OUTPUT']
-        self.sound['device'] = sound_device_factory(output=sound_output)
+        # sound device sd is actually the module soundevice imported above.
+        # not sure how this plays out when referenced outside of this python file
+        self.sound['sd'] = sound_device_factory(output=sound_output)
 
         # Create sounds and output actions of state machine
         self.sound['GO_TONE'] = iblrig.sound.make_sound(
-            rate=self.sound.device.samplerate,
+            rate=self.sound.sd.samplerate,
             frequency=self.task_params.GO_TONE_FREQUENCY,
             duration=self.task_params.GO_TONE_DURATION,
             amplitude=self.task_params.GO_TONE_AMPLITUDE,
@@ -394,7 +397,7 @@ class SoundMixin:
             chans=self.sound.device.channels)
 
         self.sound['WHITE_NOISE'] = iblrig.sound.make_sound(
-            rate=self.sound.device.samplerate,
+            rate=self.sound.sd.samplerate,
             frequency=-1,
             duration=self.task_params.WHITE_NOISE_DURATION,
             amplitude=self.task_params.WHITE_NOISE_AMPLITUDE,
@@ -406,7 +409,7 @@ class SoundMixin:
             sound.configure_sound_card(
                 sounds=[self.sound.GO_TONE, self.sound.WHITE_NOISE],
                 indexes=[self.task_params.GO_TONE_IDX, self.task_params.WHITE_NOISE_IDX],
-                sample_rate=self.sound.device.samplerate,
+                sample_rate=self.sound.sd.samplerate,
             )
             self.sound['OUT_TONE'] = ("Serial3", 6)
             self.sound['OUT_NOISE'] = ("Serial3", 7)
@@ -417,13 +420,13 @@ class SoundMixin:
             self.sound['OUT_STOP_SOUND'] = ("SoftCode", 0)
 
     def play_tone(self):
-        self.sound.device.play(self.sound.GO_TONE, self.sound.SOUND_SAMPLE_FREQ)
+        self.sound.sd.play(self.sound.GO_TONE, self.sound.SOUND_SAMPLE_FREQ)
 
     def play_noise(self):
-        self.sound.device.play(self.sound.WHITE_NOISE, self.sound.SOUND_SAMPLE_FREQ)
+        self.sound.sd.play(self.sound.WHITE_NOISE, self.sound.SOUND_SAMPLE_FREQ)
 
     def stop_sound(self):
-        self.sound.device.stop()
+        self.sound.sd.stop()
 
     def send_sounds_to_harp(self):
         # todo

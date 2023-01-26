@@ -168,7 +168,6 @@ def sound_device_factory(self, output="sysdefault", samplerate=None):
     samplerate
         audio sample rate, defaults to 44100
     """
-    import sounddevice as sd
     if output == "xonar":
         devices = sd.query_devices()
         sd.default.device = next(((i, d) for i, d in enumerate(devices) if "XONAR SOUND CARD(64)" in d["name"]), None)

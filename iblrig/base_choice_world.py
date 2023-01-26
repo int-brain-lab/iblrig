@@ -121,7 +121,7 @@ class ChoiceWorldSession(
             'stim_gain': np.zeros(NTRIALS_INIT) * np.NaN,
             'stim_phase': np.zeros(NTRIALS_INIT) * np.NaN,
             'stim_probability_left': np.zeros(NTRIALS_INIT),
-            'stim_reverse': np.zeros(NTRIALS_INIT, dtype=np.bool),
+            'stim_reverse': np.zeros(NTRIALS_INIT, dtype=bool),
             'stim_sigma': np.zeros(NTRIALS_INIT) * np.NaN,
             'trial_correct': np.zeros(NTRIALS_INIT, dtype=bool),
             'trial_num': np.zeros(NTRIALS_INIT, dtype=np.int16),
@@ -244,23 +244,6 @@ class ChoiceWorldSession(
             self.init_datetime, self.trials_table['response_time'].values(), self.trial_num
         )
 
-    def draw_reward_amount(self):
-        """
-        This method is to be overloaded if the task has a variable reward
-        :return:
-        """
-        return self.task_params.REWARD_AMOUNT_UL
-
-    def draw_quiescent_period(self):
-        """
-        The quiescent period is drawn from a truncated exponential distribution
-        """
-        return self.task_params.QUIESCENT_PERIOD + misc.texp(factor=0.35, min_=0.2, max_=0.5)
-
-    def draw_contrast(self):
-        return misc.draw_contrast(self.task_params.CONTRAST_SET,
-                                  self.task_params.CONTRAST_SET_PROBABILITY_TYPE)
-
     def check_sync_pulses(self):
         return sync_check(self)
 
@@ -290,11 +273,6 @@ AIR PRESSURE:         {self.ambient_sensor_table.loc[self.trial_num, 'AirPressur
 RELATIVE HUMIDITY:    {self.ambient_sensor_table.loc[self.trial_num, 'RelativeHumidity']} %
 ##########################################"""
         log.info(msg)
-
-    def draw_position(self, position_set=None, pleft=None):
-        position_set = position_set or self.task_params.STIM_POSITIONS
-        pleft = pleft or self.blocks_table.loc[self.block_num, 'probability_left']
-        return int(np.random.choice(position_set, p=[pleft, 1 - pleft]))
 
     def psychometric_curve(self):
         pd_table = self.trials_table.iloc[:self.trial_num, :].copy()
@@ -389,17 +367,20 @@ class BiasedChoiceWorldSession(ChoiceWorldSession):
         self.trial_correct = None
         if self.block_num < 0 or self.block_trial_num > (self.blocks_table.loc[self.block_num, 'block_length'] - 1):
             self.new_block()
-        pos = self.draw_position()
-        self.trials_table.at[self.trial_num, 'quiescent_period'] = self.draw_quiescent_period()
-        self.trials_table.at[self.trial_num, 'contrast'] = self.draw_contrast()
+        pleft = self.blocks_table.loc[self.block_num, 'probability_left']
+        contrast = misc.draw_contrast(self.task_params.CONTRAST_SET, self.task_params.CONTRAST_SET_PROBABILITY_TYPE)
+        position = int(np.random.choice(self.task_params.STIM_POSITIONS, p=[pleft, 1 - pleft]))
+        quiescent_period = self.task_params.QUIESCENT_PERIOD + misc.texp(factor=0.35, min_=0.2, max_=0.5)
+        self.trials_table.at[self.trial_num, 'quiescent_period'] = quiescent_period
+        self.trials_table.at[self.trial_num, 'contrast'] = contrast
         self.trials_table.at[self.trial_num, 'stim_phase'] = random.uniform(0, 2 * math.pi)
         self.trials_table.at[self.trial_num, 'stim_sigma'] = self.task_params.STIM_SIGMA
         self.trials_table.at[self.trial_num, 'stim_angle'] = self.task_params.STIM_ANGLE
         self.trials_table.at[self.trial_num, 'block_num'] = self.block_num
         self.trials_table.at[self.trial_num, 'block_trial_num'] = self.block_trial_num
         self.trials_table.at[self.trial_num, 'stim_freq'] = self.task_params.STIM_FREQ
-        self.trials_table.at[self.trial_num, 'stim_probability_left'] = self.blocks_table.loc[self.block_num, 'probability_left']
+        self.trials_table.at[self.trial_num, 'stim_probability_left'] = pleft
         self.trials_table.at[self.trial_num, 'trial_num'] = self.trial_num
-        self.trials_table.at[self.trial_num, 'position'] = pos
-        self.trials_table.at[self.trial_num, 'reward_amount'] = self.draw_reward_amount()
+        self.trials_table.at[self.trial_num, 'position'] = position
+        self.trials_table.at[self.trial_num, 'reward_amount'] = self.task_params.REWARD_AMOUNT_UL
         self.send_trial_info_to_bonsai()

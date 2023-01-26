@@ -20,7 +20,7 @@ class Session(BiasedChoiceWorldSession):
         # first there is a delay chosen from choice to feedback, in this case we pick 1.5secs 2 times out of 3 and 3secs 1 time
         # out of three
         CHOICE_DELAY_SECS = np.array([1.5, 3.0])
-        CHOICE_DELAY_PROBABILITY_SET = np.cumsum(np.array([2, 1]) / 2)
+        CHOICE_DELAY_PROBABILITY_SET = np.cumsum(np.array([2, 1]) / 3)
         self.trials_table.at[self.trial_num, 'omit_feedback'] = np.random.random() < self.task_params.OMIT_FEEDBACK_PROBABILITY
         # then there is a probability of omitting feedback regardless of the choice
         self.trials_table['choice_delay'] = CHOICE_DELAY_SECS[np.searchsorted(CHOICE_DELAY_PROBABILITY_SET, np.random.rand())]
@@ -32,6 +32,11 @@ class Session(BiasedChoiceWorldSession):
     @property
     def choice_to_feedback_delay(self):
         return self.trials_table.at[self.trial_num, 'choice_delay']
+
+    @property
+    def reward_time(self):
+        # self.position gives me the current location on the screen - makes sure the reward sign is correct
+        return self.compute_reward_time()
 
 
 class SessionRelatedBlocks(Session):
