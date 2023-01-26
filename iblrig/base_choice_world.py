@@ -167,7 +167,7 @@ class ChoiceWorldSession(
     """
     @property
     def reward_time(self):
-        self.compute_reward_time(amount_ul=self.trials_table.at[self.trial_num, 'reward_amount'])
+        return self.compute_reward_time(amount_ul=self.trials_table.at[self.trial_num, 'reward_amount'])
 
     @property
     def quiescent_period(self):
@@ -376,6 +376,7 @@ class BiasedChoiceWorldSession(ChoiceWorldSession):
         self.trials_table.at[self.trial_num, 'stim_phase'] = random.uniform(0, 2 * math.pi)
         self.trials_table.at[self.trial_num, 'stim_sigma'] = self.task_params.STIM_SIGMA
         self.trials_table.at[self.trial_num, 'stim_angle'] = self.task_params.STIM_ANGLE
+        self.trials_table.at[self.trial_num, 'stim_gain'] = self.task_params.STIM_GAIN
         self.trials_table.at[self.trial_num, 'block_num'] = self.block_num
         self.trials_table.at[self.trial_num, 'block_trial_num'] = self.block_trial_num
         self.trials_table.at[self.trial_num, 'stim_freq'] = self.task_params.STIM_FREQ

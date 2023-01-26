@@ -158,7 +158,7 @@ class MyRotaryEncoder(object):
         m.close()
 
 
-def sound_device_factory(self, output="sysdefault", samplerate=None):
+def sound_device_factory(output="sysdefault", samplerate=None):
     """
     Will import, configure, and return sounddevice module to play sounds using onboard sound card.
     Parameters
@@ -172,16 +172,13 @@ def sound_device_factory(self, output="sysdefault", samplerate=None):
         devices = sd.query_devices()
         sd.default.device = next(((i, d) for i, d in enumerate(devices) if "XONAR SOUND CARD(64)" in d["name"]), None)
         sd.default.latency = "low"
-        sd.default.n_channels = 2
         sd.default.channels = 'L+TTL'
         sd.default.samplerate = samplerate or 192000
-    elif self.output == "harp":
+    elif output == "harp":
         sd.default.samplerate = samplerate or 96000
         sd.default.channels = 'stereo'
-        sd.default.n_channels = 2
-    elif self.output == "sysdefault":
+    elif output == "sysdefault":
         sd.default.latency = "low"
-        sd.default.n_channels = 2
         sd.default.channels = 'stereo'
         sd.default.samplerate = samplerate or 44100
     return sd

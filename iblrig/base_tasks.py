@@ -348,7 +348,7 @@ class ValveMixin:
                 'CALIBRATION_VALUE' = <MANUAL_CALIBRATION>
             ##########################################"""
         # regardless of the calibration method, the reward valve time has to be lower than 1 second
-        assert self.valve['reward_time'] < 1,\
+        assert self.compute_reward_time(amount_ul=1.5) < 1,\
             """
             ##########################################
                 REWARD VALVE TIME IS TOO HIGH!
@@ -359,7 +359,6 @@ class ValveMixin:
                 CALIBRATION_VALUE = <MANUAL_CALIBRATION>
             ##########################################"""
 
-    @property
     def compute_reward_time(self, amount_ul=None):
         amount_ul = amount_ul or self.task_params.REWARD_AMOUNT_UL
         if self.task_params.AUTOMATIC_CALIBRATION:
@@ -389,27 +388,27 @@ class SoundMixin:
 
         # Create sounds and output actions of state machine
         self.sound['GO_TONE'] = iblrig.sound.make_sound(
-            rate=self.sound.sd.samplerate,
+            rate=self.sound.sd.default.samplerate,
             frequency=self.task_params.GO_TONE_FREQUENCY,
             duration=self.task_params.GO_TONE_DURATION,
             amplitude=self.task_params.GO_TONE_AMPLITUDE,
             fade=0.01,
-            chans=self.sound.device.channels)
+            chans=self.sound.sd.default.channels)
 
         self.sound['WHITE_NOISE'] = iblrig.sound.make_sound(
-            rate=self.sound.sd.samplerate,
+            rate=self.sound.sd.default.samplerate,
             frequency=-1,
             duration=self.task_params.WHITE_NOISE_DURATION,
             amplitude=self.task_params.WHITE_NOISE_AMPLITUDE,
             fade=0.01,
-            chans=self.sound.device.channels)
+            chans=self.sound.sd.default.channels)
 
         # SoundCard config params
         if self.hardware_settings.device_sound['OUTPUT'] == 'harp':
             sound.configure_sound_card(
                 sounds=[self.sound.GO_TONE, self.sound.WHITE_NOISE],
                 indexes=[self.task_params.GO_TONE_IDX, self.task_params.WHITE_NOISE_IDX],
-                sample_rate=self.sound.sd.samplerate,
+                sample_rate=self.sound.sd.default.samplerate,
             )
             self.sound['OUT_TONE'] = ("Serial3", 6)
             self.sound['OUT_NOISE'] = ("Serial3", 7)
@@ -420,10 +419,10 @@ class SoundMixin:
             self.sound['OUT_STOP_SOUND'] = ("SoftCode", 0)
 
     def play_tone(self):
-        self.sound.sd.play(self.sound.GO_TONE, self.sound.SOUND_SAMPLE_FREQ)
+        self.sound.sd.play(self.sound.GO_TONE, self.sound.sd.default.samplerate)
 
     def play_noise(self):
-        self.sound.sd.play(self.sound.WHITE_NOISE, self.sound.SOUND_SAMPLE_FREQ)
+        self.sound.sd.play(self.sound.WHITE_NOISE, self.sound.sd.default.samplerate)
 
     def stop_sound(self):
         self.sound.sd.stop()

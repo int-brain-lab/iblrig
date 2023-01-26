@@ -33,7 +33,7 @@ def make_sound(rate=44100, frequency=5000, duration=0.1, amplitude=1, fade=0.01,
     sample_rate = rate  # Sound card dependent,
     tone_duration = duration  # sec
     fade_duration = fade  # sec
-
+    chans = chans if isinstance(chans, str) else chans[0]
     tvec = np.linspace(0, tone_duration, int(tone_duration * sample_rate))
     tone = amplitude * np.sin(2 * np.pi * frequency * tvec)  # tone vec
 

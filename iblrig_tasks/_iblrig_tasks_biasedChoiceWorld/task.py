@@ -142,7 +142,7 @@ def run(sess=None):
 
         sma.add_state(
             state_name="reward",
-            state_timer=sess.self.reward_time,
+            state_timer=sess.reward_time,
             output_actions=[("Valve1", 255), ("BNC1", 255)],
             state_change_conditions={"Tup": "correct"},
         )
