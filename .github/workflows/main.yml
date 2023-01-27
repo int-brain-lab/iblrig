@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [master, develop, rc, iblrigv8_ci]
+    branches: [master, develop, rc, iblrigv8]
   pull_request:
     branches: [master, develop, rc]
 
