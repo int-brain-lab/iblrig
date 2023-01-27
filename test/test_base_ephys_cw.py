@@ -6,15 +6,29 @@ The start() methods of those mixins require the hardware to be connected.
 """
 from pathlib import Path
 import unittest
+import tempfile
+import yaml
 
-import iblrig
 from iblrig.base_tasks import SoundMixin, RotaryEncoderMixin, BaseSession, BpodMixin, ValveMixin
+from iblrig.base_choice_world import BiasedChoiceWorldSession
+
+
+class TestHierarchicalParameters(unittest.TestCase):
+
+    def test_default_params(self):
+        sess = BiasedChoiceWorldSession()
+        with tempfile.NamedTemporaryFile() as tf:
+            with open(tf.name, 'w+') as fp:
+                yaml.safe_dump(data={'TITI': 1, 'REWARD_AMOUNT_UL': -2}, stream=fp)
+            sess2 = BiasedChoiceWorldSession(task_parameter_file=Path(tf.name))
+        assert len(sess2.task_params.keys()) == len(sess.task_params.keys()) + 1
+        assert sess2.task_params['TITI'] == 1
+        assert sess2.task_params['REWARD_AMOUNT_UL'] == -2
 
 
 class TestHardwareMixins(unittest.TestCase):
     def setUp(self):
-        task_settings_file = Path(iblrig.__file__).parents[1].joinpath(
-            'iblrig_tasks/_iblrig_tasks_biasedChoiceWorld/task_parameters.yaml')
+        task_settings_file = BiasedChoiceWorldSession.base_parameters_file
         self.session = BaseSession(task_parameter_file=task_settings_file,
                                    hardware_settings_name='hardware_settings_template.yaml')
 

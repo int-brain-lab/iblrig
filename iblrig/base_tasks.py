@@ -30,6 +30,7 @@ OSC_CLIENT_IP = "127.0.0.1"
 
 
 class BaseSession(ABC):
+    base_parameters_file = None
 
     def __init__(self, debug=False, task_parameter_file=None, hardware_settings_name='hardware_settings.yaml'):
         """
@@ -46,11 +47,13 @@ class BaseSession(ABC):
         self.hardware_settings = iblrig.path_helper.load_settings_yaml(hardware_settings_name)
         # Load the tasks settings
         task_parameter_file = task_parameter_file or Path(inspect.getfile(self.__class__)).parent.joinpath('task_parameters.yaml')
+        self.task_params = Bunch({})
+        if self.base_parameters_file is not None and self.base_parameters_file.exists():
+            with open(self.base_parameters_file) as fp:
+                self.task_params = Bunch(yaml.safe_load(fp))
         if task_parameter_file.exists():
             with open(task_parameter_file) as fp:
-                self.task_params = Bunch(yaml.safe_load(fp))
-        else:
-            self.task_params = None
+                self.task_params.update(Bunch(yaml.safe_load(fp)))
         self._execute_mixins_shared_function('init_mixin')
 
     def _execute_mixins_shared_function(self, pattern):

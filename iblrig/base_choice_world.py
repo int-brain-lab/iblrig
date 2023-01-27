@@ -6,6 +6,7 @@ import json
 import math
 import random
 import logging
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -66,6 +67,7 @@ class ChoiceWorldSession(
     iblrig.base_tasks.SoundMixin,
     iblrig.base_tasks.ValveMixin,
 ):
+    base_parameters_file = Path(__file__).parent.joinpath('base_choice_world_params.yaml')
 
     def __init__(self, fmake=True, interactive=False, *args,  **kwargs):
         super(ChoiceWorldSession, self).__init__(*args, **kwargs)
