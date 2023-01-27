@@ -225,8 +225,8 @@ class ChoiceWorldSession(
         self.trials_table.at[self.trial_num, 'response_side'] = response_side
 
         # SAVE TRIAL DATA
-        # todo add the table current record
-        save_dict = {"behavior_data": behavior_data}
+        save_dict = self.trials_table.iloc[self.trial_num].to_dict()
+        save_dict["behavior_data"] = behavior_data
         # Dump and save
         with open(self.paths['DATA_FILE_PATH'], 'a') as fp:
             fp.write(json.dumps(save_dict, cls=iotasks.ComplexEncoder) + '\n')

@@ -167,7 +167,7 @@ def run(*args, interactive=False, **kwargs):
             state_change_conditions={"Tup": "closed_loop"},
         )
 
-        if sess.null_feedback:
+        if sess.omit_feedback:
             sma.add_state(
                 state_name="closed_loop",
                 state_timer=sess.task_params.RESPONSE_WINDOW,
@@ -248,7 +248,7 @@ def run(*args, interactive=False, **kwargs):
                 output_actions=[sess.bpod.actions.bonsai_freeze_stim],
                 state_change_conditions={"Tup": "reward"},
             )
-
+            print(sess.reward_time)
             sma.add_state(
                 state_name="reward",
                 state_timer=sess.reward_time,

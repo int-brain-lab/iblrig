@@ -26,7 +26,7 @@ class TestBiasedChoiceWorld(unittest.TestCase):
             task.trial_completed(np.random.choice([correct_trial, error_trial, no_go_trial], p=[0.9, 0.05, 0.05]))
             if i == 245:
                 task.show_trial_log()
-
+            assert not np.isnan(task.reward_time)
         # test the trial table results
         task.trials_table = task.trials_table[:task.trial_num + 1]
         np.testing.assert_array_equal(task.trials_table['trial_num'].values, np.arange(task.trial_num + 1))
