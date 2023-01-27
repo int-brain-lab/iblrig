@@ -268,7 +268,7 @@ def run(*args, interactive=False, **kwargs):
         sma.add_state(
             state_name="hide_stim",
             state_timer=0.1,
-            output_actions=[[sess.bpod.actions.bonsai_hide_stim]],
+            output_actions=[sess.bpod.actions.bonsai_hide_stim],
             state_change_conditions={
                 "Tup": "exit_state",
                 "BNC1High": "exit_state",
