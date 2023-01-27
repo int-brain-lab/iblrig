@@ -79,6 +79,7 @@ class SessionRelatedBlocks(Session):
 
 def run(*args, interactive=False, **kwargs):
     sess = Session(*args, interactive=interactive, **kwargs)
+    sess.start()
 
     for i in range(sess.task_params.NTRIALS):  # Main loop
         sess.next_trial()

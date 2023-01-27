@@ -16,12 +16,12 @@ from iblrig.base_choice_world import BiasedChoiceWorldSession
 class TestHierarchicalParameters(unittest.TestCase):
 
     def test_default_params(self):
-        sess = BiasedChoiceWorldSession()
+        sess = BiasedChoiceWorldSession(subject='unittest')
         with tempfile.TemporaryDirectory() as td:
             file_params = Path(td).joinpath('params.yaml')
             with open(file_params, 'w+') as fp:
                 yaml.safe_dump(data={'TITI': 1, 'REWARD_AMOUNT_UL': -2}, stream=fp)
-            sess2 = BiasedChoiceWorldSession(task_parameter_file=file_params)
+            sess2 = BiasedChoiceWorldSession(task_parameter_file=file_params, subject='unittest')
         assert len(sess2.task_params.keys()) == len(sess.task_params.keys()) + 1
         assert sess2.task_params['TITI'] == 1
         assert sess2.task_params['REWARD_AMOUNT_UL'] == -2
