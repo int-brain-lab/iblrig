@@ -309,23 +309,6 @@ PREVIOUS WEIGHT:               {self.LAST_SETTINGS_DATA["SUBJECT_WEIGHT"]}
 ##########################################"""
             log.info(msg)
 
-    def softcode_handler(self, code):
-        """
-         Soft codes should work with resasonable latency considering our limiting
-         factor is the refresh rate of the screen which should be 16.667ms @ a frame
-         rate of 60Hz
-         1 : go_tone
-         2 : white_noise
-         """
-        if code == 0:
-            self.stop_sound()
-        elif code == 1:
-            self.play_tone()
-        elif code == 2:
-            self.play_noise()
-        elif code == 3:
-            self.trigger_bonsai_cameras()
-
 
 class BiasedChoiceWorldSession(ChoiceWorldSession):
 

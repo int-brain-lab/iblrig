@@ -17,6 +17,7 @@ def run(sess=None):
 
     sess = sess or Session(interactive=False)
     sess.start()
+
     for i in range(sess.task_params.NTRIALS):  # Main loop
         sess.next_trial()
         log.info(f"Starting trial: {i}")

@@ -39,9 +39,7 @@ class TestHardwareMixins(unittest.TestCase):
         """
         session = self.session
         SoundMixin.init_mixin_sound(session)
-        session.sound.OUT_TONE == ('SoftCode', 1)
-        session.sound.OUT_NOISE == ('SoftCode', 2)
-        session.sound.OUT_STOP_SOUND == ('SoftCode', 0)
+        assert session.sound.OUT_TONE is None
 
     def test_bpod_mixin(self):
         session = self.session

@@ -21,6 +21,7 @@ class Bpod(BpodIO):
     def __init__(self, *args, **kwargs):
         super(Bpod, self).__init__(*args, **kwargs)
         self.default_message_idx = 0
+        self.actions = {}
 
     @property
     def rotary_encoder(self):
@@ -41,58 +42,46 @@ class Bpod(BpodIO):
         if mod:
             return mod[0]
 
-    def rotary_encoder_reset(self):
-        re_reset = self.default_message_idx + 1
-        self.load_serial_message(
-            self.rotary_encoder,
-            re_reset,
-            [RotaryEncoder.COM_SETZEROPOS, RotaryEncoder.COM_ENABLE_ALLTHRESHOLDS],  # ord('Z')
-        )  # ord('E')
-        self.default_message_idx += 1
-        return re_reset
-
-    def bonsai_hide_stim(self):
-        # Stop the stim
-        bonsai_hide_stim = self.default_message_idx + 1
-        self.load_serial_message(self.rotary_encoder, bonsai_hide_stim, [ord("#"), 1])
-        self.default_message_idx += 1
-        return bonsai_hide_stim
-
-    def bonsai_show_stim(self):
-        # Stop the stim
-        bonsai_show_stim = self.default_message_idx + 1
-        self.load_serial_message(self.rotary_encoder, bonsai_show_stim, [ord("#"), 2])
-        self.default_message_idx += 1
-        return bonsai_show_stim
-
-    def bonsai_close_loop(self):
-        # Stop the stim
-        bonsai_close_loop = self.default_message_idx + 1
-        self.load_serial_message(self.rotary_encoder, bonsai_close_loop, [ord("#"), 3])
-        self.default_message_idx += 1
-        return bonsai_close_loop
-
-    def bonsai_freeze_stim(self):
-        # Freeze the stim
-        bonsai_freeze_stim = self.default_message_idx + 1
-        self.load_serial_message(self.rotary_encoder, bonsai_freeze_stim, [ord("#"), 4])
-        self.default_message_idx += 1
-        return bonsai_freeze_stim
-
-    def bonsai_show_center(self):
-        # Freeze the stim
-        bonsai_freeze_stim = self.default_message_idx + 1
-        self.load_serial_message(self.rotary_encoder, bonsai_freeze_stim, [ord("#"), 5])
-        self.default_message_idx += 1
-        return bonsai_freeze_stim
-
-    def sound_card_play_idx(self, tone_idx):
-        if self.sound_card is None:
+    def _define_message(self, module, message):
+        """
+        This loads a message in the bpod interface and can then be defined as an output
+        state in the state machine
+        example
+        >>> id_msg_bonsai_show_stim = self._define_message(self.rotary_encoder,[ord("#"), 2])
+        will then be used as such in StateMachine:
+        >>> output_actions=[("Serial1", id_msg_bonsai_show_stim)]
+        :param message:
+        :return:
+        """
+        if module is None:
             return
-        sc_play_idx = self.default_message_idx + 1
-        self.load_serial_message(self.sound_card, sc_play_idx, [ord("P"), tone_idx])
+        self.load_serial_message(module, self.default_message_idx + 1, message)
         self.default_message_idx += 1
-        return sc_play_idx
+        return self.default_message_idx
+
+    def define_harp_sounds_actions(self, go_tone_index, noise_index, sound_port='Serial3'):
+        self.actions.update = {
+            'play_tone': (sound_port, self._define_message(self.sound_card, [ord("P"), go_tone_index])),
+            'play_noise': (sound_port, self._define_message(self.sound_card, [ord("P"), noise_index])),
+            'stop_sound': (sound_port, ord("X")),
+        }
+
+    def define_rotary_encoder_actions(self, re_port='Serial1'):
+        """
+        Each output action is a tuple with the port and the message id
+        :param go_tone_index:
+        :param noise_index:
+        :return:
+        """
+        self.actions.update = {
+            're_reset': (re_port, self._define_message(
+                self.rotary_encoder, [RotaryEncoder.COM_SETZEROPOS, RotaryEncoder.COM_ENABLE_ALLTHRESHOLDS])),
+            'bonsai_hide_stim': (re_port, self._define_message(self.rotary_encoder, [ord("#"), 1])),
+            'bonsai_show_stim': (re_port, self._define_message(self.rotary_encoder, [ord("#"), 2])),
+            'bonsai_close_loop': (re_port, self._define_message(self.rotary_encoder, [ord("#"), 3])),
+            'bonsai_freeze_stim': (re_port, self._define_message(self.rotary_encoder, [ord("#"), 4])),
+            'bonsai_show_center': (re_port, self._define_message(self.rotary_encoder, [ord("#"), 5])),
+        }
 
     def get_ambient_sensor_reading(self, save_to=None):
         ambient_module = [x for x in self.modules if x.name == "AmbientModule1"][0]

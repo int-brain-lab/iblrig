@@ -262,9 +262,29 @@ class BpodMixin(object):
 
     def init_mixin_bpod(self, *args, **kwargs):
         self.bpod = Bpod()
+        self.bpod_actions = None
 
     def start_mixin_bpod(self):
         self.bpod = Bpod(self.hardware_settings['device_bpod']['COM_BPOD'])
+        # todo add ports as hardware settings
+        self.bpod.define_rotary_encoder_actions()
+
+        def softcode_handler(code):
+            """
+             Soft codes should work with resasonable latency considering our limiting
+             factor is the refresh rate of the screen which should be 16.667ms @ a framerate of 60Hz
+             """
+            if code == 0:
+                self.stop_sound()
+            elif code == 1:
+                self.play_tone()
+            elif code == 2:
+                self.play_noise()
+            elif code == 3:
+                self.trigger_bonsai_cameras()
+        self.bpod.softcode_handler_function = softcode_handler
+
+        assert len(self.bpod.output_actions.keys()) == 6
         assert self.bpod.modules is not None
 
 
@@ -381,6 +401,10 @@ class SoundMixin:
         })
 
     def start_mixin_sound(self):
+        """
+        Depends on bpod mixin start for hard sound card
+        :return:
+        """
         sound_output = self.hardware_settings.device_sound['OUTPUT']
         # sound device sd is actually the module soundevice imported above.
         # not sure how this plays out when referenced outside of this python file
@@ -410,9 +434,12 @@ class SoundMixin:
                 indexes=[self.task_params.GO_TONE_IDX, self.task_params.WHITE_NOISE_IDX],
                 sample_rate=self.sound.sd.default.samplerate,
             )
-            self.sound['OUT_TONE'] = ("Serial3", 6)
-            self.sound['OUT_NOISE'] = ("Serial3", 7)
-            self.sound['OUT_STOP_SOUND'] = ("Serial3", ord("X"))
+            self.bpod.define_harp_sounds_actions(
+                self.task_params.GO_TONE_IDX,
+                self.task_params.WHITE_NOISE_IDX)
+            self.sound['OUT_TONE'] = self.bpod.actions['play_tone']
+            self.sound['OUT_NOISE'] = self.bpod.actions['play_noise']
+            self.sound['OUT_STOP_SOUND'] = self.bpod.actions['stop_sound']
         else:  # xonar or system default
             self.sound['OUT_TONE'] = ("SoftCode", 1)
             self.sound['OUT_NOISE'] = ("SoftCode", 2)
