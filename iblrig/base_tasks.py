@@ -54,7 +54,9 @@ class BaseSession(ABC):
                 self.task_params = Bunch(yaml.safe_load(fp))
         if task_parameter_file.exists():
             with open(task_parameter_file) as fp:
-                self.task_params.update(Bunch(yaml.safe_load(fp)))
+                task_params = yaml.safe_load(fp)
+            if task_params is not None:
+                self.task_params.update(Bunch(task_params))
         self.session_info = Bunch({
             'subject': subject or self.pybpod_settings.PYBPOD_SUBJECTS[0],
             'project': project,

@@ -75,7 +75,7 @@ class SessionRelatedBlocks(Session):
             probas = [plr, (1 - plr)]  # right
         else:
             probas = [(1 - plr), plr]  # left
-        return np.random.choice(REWARD_AMOUNTS, probas)
+        return np.random.choice(REWARD_AMOUNTS, p=probas)
 
 
 def run():

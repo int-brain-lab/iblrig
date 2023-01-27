@@ -69,7 +69,7 @@ class ChoiceWorldSession(
 ):
     base_parameters_file = Path(__file__).parent.joinpath('base_choice_world_params.yaml')
 
-    def __init__(self, fmake=False, interactive=False, *args,  **kwargs):
+    def __init__(self, fmake=True, interactive=False, *args,  **kwargs):
         super(ChoiceWorldSession, self).__init__(*args, **kwargs)
         self.interactive = interactive
         # Create the folder architecture and get the paths property updated
