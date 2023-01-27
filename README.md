@@ -118,7 +118,7 @@ following:
 Note: during the ci tests of GitHub Actions, a similar file is created called `iblrig_params_ci.yml`; this is used to accommodate 
 the difference in directory structure that this system uses
 
-#### Install Python v3.8 and set up venv for iblrig in Ubuntu 22.04
+#### Install Python v3.8 and set up venv for iblrig on Ubuntu 22.04
 
 Instructions are for the assumption that this is for development and that the desired directory to work out of is 
 `~/Documents/repos/iblrig`
@@ -142,6 +142,13 @@ which python
 python -m pip install --upgrade pip wheel
 deactivate
 rm -rf test_venv
+```
+
+#### Install required library for running tests on Ubuntu 22.04
+
+PortAudio library is required for the `sounddevice` python package. It can be installed with the following commands
+```bash
+sudo apt update && sudo apt install -y libportaudio2
 ```
 
 ---

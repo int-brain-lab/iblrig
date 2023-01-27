@@ -1,8 +1,5 @@
-from pathlib import Path
-from ibllib.io.raw_data_loaders import load_data
 import matplotlib.pyplot as plt
 import numpy as np
-import time
 import pandas as pd
 
 
@@ -28,6 +25,7 @@ class ParameterHandler():
             "reward_amount": np.zeros(NTRIALS_INIT),
             "reward_valve_time": np.zeros(NTRIALS_INIT),
         })
+
 
 if __name__ == "__main__":
     subject_name = "ZFM-05233"
