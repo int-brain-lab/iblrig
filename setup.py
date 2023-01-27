@@ -8,6 +8,7 @@ LONG_DESCRIPTION = "Software used to interact with various pieces of specialized
 with open("requirements.txt") as f:
     require = [x.strip() for x in f.readlines() if not x.startswith("git+")]
 
+
 def read(rel_path):
     here = Path(__file__).parent.absolute()
     with open(here.joinpath(rel_path), "r") as fp:

@@ -17,10 +17,11 @@ class TestHierarchicalParameters(unittest.TestCase):
 
     def test_default_params(self):
         sess = BiasedChoiceWorldSession()
-        with tempfile.NamedTemporaryFile() as tf:
-            with open(tf.name, 'w+') as fp:
+        with tempfile.TemporaryDirectory() as td:
+            file_params = Path(td).joinpath('params.yaml')
+            with open(file_params, 'w+') as fp:
                 yaml.safe_dump(data={'TITI': 1, 'REWARD_AMOUNT_UL': -2}, stream=fp)
-            sess2 = BiasedChoiceWorldSession(task_parameter_file=Path(tf.name))
+            sess2 = BiasedChoiceWorldSession(task_parameter_file=file_params)
         assert len(sess2.task_params.keys()) == len(sess.task_params.keys()) + 1
         assert sess2.task_params['TITI'] == 1
         assert sess2.task_params['REWARD_AMOUNT_UL'] == -2

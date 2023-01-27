@@ -62,7 +62,6 @@ class SessionRelatedBlocks(Session):
                 probability_left_rich = 0.2
         self.blocks_table.at[self.block_num, 'probability_left_rich'] = probability_left_rich
 
-
     def next_trial(self):
         super(SessionRelatedBlocks, self).next_trial()
         self.trials_table.at[self.trial_num, 'reward_amount'] = self.draw_reward_amount()
