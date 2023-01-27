@@ -419,11 +419,10 @@ class SoundMixin:
         sound_output = self.hardware_settings.device_sound['OUTPUT']
         # sound device sd is actually the module soundevice imported above.
         # not sure how this plays out when referenced outside of this python file
-        self.sound['sd'] = sound_device_factory(output=sound_output)
-
+        self.sound['sd'], self.sound['samplerate'] = sound_device_factory(output=sound_output)
         # Create sounds and output actions of state machine
         self.sound['GO_TONE'] = iblrig.sound.make_sound(
-            rate=self.sound.sd.default.samplerate,
+            rate=self.sound['samplerate'],
             frequency=self.task_params.GO_TONE_FREQUENCY,
             duration=self.task_params.GO_TONE_DURATION,
             amplitude=self.task_params.GO_TONE_AMPLITUDE,
@@ -431,7 +430,7 @@ class SoundMixin:
             chans=self.sound.sd.default.channels)
 
         self.sound['WHITE_NOISE'] = iblrig.sound.make_sound(
-            rate=self.sound.sd.default.samplerate,
+            rate=self.sound['samplerate'],
             frequency=-1,
             duration=self.task_params.WHITE_NOISE_DURATION,
             amplitude=self.task_params.WHITE_NOISE_AMPLITUDE,
@@ -443,7 +442,7 @@ class SoundMixin:
             sound.configure_sound_card(
                 sounds=[self.sound.GO_TONE, self.sound.WHITE_NOISE],
                 indexes=[self.task_params.GO_TONE_IDX, self.task_params.WHITE_NOISE_IDX],
-                sample_rate=self.sound.sd.default.samplerate,
+                sample_rate=self.sound['samplerate'],
             )
             self.bpod.define_harp_sounds_actions(
                 self.task_params.GO_TONE_IDX,
@@ -457,10 +456,10 @@ class SoundMixin:
             self.sound['OUT_STOP_SOUND'] = ("SoftCode", 0)
 
     def play_tone(self):
-        self.sound.sd.play(self.sound.GO_TONE, self.sound.sd.default.samplerate)
+        self.sound.sd.play(self.sound.GO_TONE, self.sound['samplerate'])
 
     def play_noise(self):
-        self.sound.sd.play(self.sound.WHITE_NOISE, self.sound.sd.default.samplerate)
+        self.sound.sd.play(self.sound.WHITE_NOISE, self.sound['samplerate'])
 
     def stop_sound(self):
         self.sound.sd.stop()

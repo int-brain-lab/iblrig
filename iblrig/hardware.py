@@ -171,4 +171,4 @@ def sound_device_factory(output="sysdefault", samplerate=None):
         sd.default.latency = "low"
         sd.default.channels = 'stereo'
         sd.default.samplerate = samplerate or 44100
-    return sd
+    return sd, samplerate
