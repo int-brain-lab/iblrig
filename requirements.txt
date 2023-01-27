@@ -13,3 +13,4 @@ PySocks
 PyYAML
 scipy
 sounddevice
+git+https://github.com/int-brain-lab/iblpybpod.git@iblrigv8
