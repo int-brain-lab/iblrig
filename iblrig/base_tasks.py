@@ -32,7 +32,8 @@ OSC_CLIENT_IP = "127.0.0.1"
 class BaseSession(ABC):
     base_parameters_file = None
 
-    def __init__(self, debug=False, task_parameter_file=None, hardware_settings_name='hardware_settings.yaml'):
+    def __init__(self, debug=False, task_parameter_file=None, hardware_settings_name='hardware_settings.yaml',
+                 subject=None, project=''):
         """
         This only handles gathering the parameters and settings for the current session
         :param debug:
@@ -54,6 +55,11 @@ class BaseSession(ABC):
         if task_parameter_file.exists():
             with open(task_parameter_file) as fp:
                 self.task_params.update(Bunch(yaml.safe_load(fp)))
+        self.session_info = Bunch({
+            'subject': subject or self.pybpod_settings.PYBPOD_SUBJECTS[0],
+            'project': project,
+        })
+        # Executes mixins init methods
         self._execute_mixins_shared_function('init_mixin')
 
     def _execute_mixins_shared_function(self, pattern):

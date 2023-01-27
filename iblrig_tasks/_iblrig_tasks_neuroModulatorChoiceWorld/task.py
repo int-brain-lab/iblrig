@@ -8,6 +8,8 @@ from iblrig.base_choice_world import BiasedChoiceWorldSession
 
 log = logging.getLogger("iblrig")
 
+REWARD_AMOUNTS = (1, 3)
+
 
 class Session(BiasedChoiceWorldSession):
     def __init__(self, *args, **kwargs):
@@ -22,7 +24,7 @@ class Session(BiasedChoiceWorldSession):
         # then drawing the the delay for the choice
         self.trials_table.at[self.trial_num, 'choice_delay'] = np.random.choice([1.5, 3.0], p=[2 / 3, 1 / 3])
         # the reward is a draw within an uniform distribution between 3 and 1
-        self.trials_table.at[self.trial_num, 'reward_amount'] = np.random.choice([1, 3], p=[.6, .4])
+        self.trials_table.at[self.trial_num, 'reward_amount'] = np.random.choice(REWARD_AMOUNTS, p=[.6, .4])
 
     @property
     def omit_feedback(self):
@@ -46,23 +48,20 @@ class SessionRelatedBlocks(Session):
         super(SessionRelatedBlocks, self).__init__(*args, **kwargs)
         self.trials_table['omit_feedback'] = np.zeros(self.trials_table.shape[0], dtype=bool)
         self.trials_table['choice_delay'] = np.zeros(self.trials_table.shape[0], dtype=np.float32)
-        self.blocks_table['reward_amount_right'] = np.zeros(self.blocks_table.shape[0], dtype=np.float32)
-        self.blocks_table['reward_amount_left'] = np.zeros(self.blocks_table.shape[0], dtype=np.float32)
+        self.blocks_table['probability_left_rich'] = np.zeros(self.blocks_table.shape[0], dtype=np.float32)
         self.BLOCK_REWARD_STAGGER = np.random.randint(0, 2)
 
     def new_block(self):
         super(Session, self).new_block()
-        REWARD_AMOUNT_POOR = 1
-        REWARD_AMOUNT_RICH = 3
         if self.block_num == 0:
-            left_amount = right_amount = self.task_params.REWARD_AMOUNT_UL
+            probability_left_rich = 0.5
         else:
             if int((self.block_num + self.BLOCK_REWARD_STAGGER) / 2 % 2):
-                left_amount, right_amount = (REWARD_AMOUNT_RICH, REWARD_AMOUNT_POOR)
+                probability_left_rich = 0.8
             else:
-                right_amount, left_amount = (REWARD_AMOUNT_RICH, REWARD_AMOUNT_POOR)
-        self.blocks_table.at[self.block_num, 'reward_amount_right'] = right_amount
-        self.blocks_table.at[self.block_num, 'reward_amount_left'] = left_amount
+                probability_left_rich = 0.2
+        self.blocks_table.at[self.block_num, 'probability_left_rich'] = probability_left_rich
+
 
     def next_trial(self):
         super(SessionRelatedBlocks, self).next_trial()
@@ -70,10 +69,13 @@ class SessionRelatedBlocks(Session):
 
     def draw_reward_amount(self):
         # FIXME check: this has 0.5 probability of being correct !!!
+        REWARD_AMOUNTS = (1, 3)  # poor and rich
+        plr = self.blocks_table.at[self.block_num, 'probability_left_rich']
         if np.sign(self.position):
-            return self.blocks_table.at[self.block_num, 'reward_amount_right']
+            probas = [plr, (1 - plr)]  # right
         else:
-            return self.blocks_table.at[self.block_num, 'reward_amount_right']
+            probas = [(1 - plr), plr]  # left
+        return np.random.choice(REWARD_AMOUNTS, probas)
 
 
 def run():

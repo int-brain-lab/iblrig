@@ -69,7 +69,7 @@ class ChoiceWorldSession(
 ):
     base_parameters_file = Path(__file__).parent.joinpath('base_choice_world_params.yaml')
 
-    def __init__(self, fmake=True, interactive=False, *args,  **kwargs):
+    def __init__(self, fmake=False, interactive=False, *args,  **kwargs):
         super(ChoiceWorldSession, self).__init__(*args, **kwargs)
         self.interactive = interactive
         # Create the folder architecture and get the paths property updated
@@ -79,13 +79,9 @@ class ChoiceWorldSession(
             make = True  # True makes only raw_behavior_data folder
         else:
             make = ["video"]  # besides behavior which folders to creae
-            # todo move the paths creation to the abstract class so mixins can be instantiated
-        spc = SessionPathCreator(
-            self.pybpod_settings.PYBPOD_SUBJECTS[0],  #
-            # fixme subject needed here
-            protocol=self.pybpod_settings.PYBPOD_PROTOCOL,
-            make=make)
+        spc = SessionPathCreator(self.session_info.subject, protocol=self.pybpod_settings.PYBPOD_PROTOCOL, make=make)
         self.paths = Bunch(spc.__dict__)
+
         # Session data
         if self.interactive:
             self.SUBJECT_WEIGHT = user.ask_subject_weight(self.pybpod_settings.PYBPOD_SUBJECTS[0])
