@@ -77,8 +77,8 @@ class SessionRelatedBlocks(Session):
         return np.random.choice(REWARD_AMOUNTS, p=probas)
 
 
-def run():
-    sess = SessionRelatedBlocks(interactive=False)
+def run(*args, interactive=False, **kwargs):
+    sess = Session(*args, interactive=interactive, **kwargs)
 
     for i in range(sess.task_params.NTRIALS):  # Main loop
         sess.next_trial()
@@ -294,4 +294,4 @@ def run():
 
 
 if __name__ == "__main__":
-    run()
+    run(interactive=True, subject='subject_test_iblrigv8')
