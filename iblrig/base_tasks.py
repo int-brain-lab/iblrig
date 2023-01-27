@@ -419,7 +419,7 @@ class SoundMixin:
         sound_output = self.hardware_settings.device_sound['OUTPUT']
         # sound device sd is actually the module soundevice imported above.
         # not sure how this plays out when referenced outside of this python file
-        self.sound['sd'], self.sound['samplerate'] = sound_device_factory(output=sound_output)
+        self.sound['sd'], self.sound['samplerate'], self.sound['channels'] = sound_device_factory(output=sound_output)
         # Create sounds and output actions of state machine
         self.sound['GO_TONE'] = iblrig.sound.make_sound(
             rate=self.sound['samplerate'],
@@ -427,7 +427,7 @@ class SoundMixin:
             duration=self.task_params.GO_TONE_DURATION,
             amplitude=self.task_params.GO_TONE_AMPLITUDE,
             fade=0.01,
-            chans=self.sound.sd.default.channels)
+            chans=self.sound['channels'])
 
         self.sound['WHITE_NOISE'] = iblrig.sound.make_sound(
             rate=self.sound['samplerate'],
@@ -435,7 +435,7 @@ class SoundMixin:
             duration=self.task_params.WHITE_NOISE_DURATION,
             amplitude=self.task_params.WHITE_NOISE_AMPLITUDE,
             fade=0.01,
-            chans=self.sound.sd.default.channels)
+            chans=self.sound['channels'])
 
         # SoundCard config params
         if self.hardware_settings.device_sound['OUTPUT'] == 'harp':

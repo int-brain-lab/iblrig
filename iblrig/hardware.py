@@ -161,17 +161,20 @@ def sound_device_factory(output="sysdefault", samplerate=None):
     if output == "xonar":
         samplerate = samplerate or 192000
         devices = sd.query_devices()
-        sd.default.device = next(((i, d) for i, d in enumerate(devices) if "XONAR SOUND CARD(64)" in d["name"]), None)
+        sd.default.device = next((i for i, d in enumerate(devices) if "XONAR SOUND CARD(64)" in d["name"]), None)
         sd.default.latency = "low"
-        sd.default.channels = 'L+TTL'
+        sd.default.channels = 2
+        channels = 'L+TTL'
         sd.default.samplerate = samplerate
     elif output == "harp":
         samplerate = samplerate or 96000
         sd.default.samplerate = samplerate
-        sd.default.channels = 'stereo'
+        sd.default.channels = 2
+        channels = 'stereo'
     elif output == "sysdefault":
         samplerate = samplerate or 44100
         sd.default.latency = "low"
-        sd.default.channels = 'stereo'
+        sd.default.channels = 2
         sd.default.samplerate = samplerate
-    return sd, samplerate
+        channels = 'stereo'
+    return sd, samplerate, channels
