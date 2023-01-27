@@ -284,7 +284,7 @@ class BpodMixin(object):
                 self.trigger_bonsai_cameras()
         self.bpod.softcode_handler_function = softcode_handler
 
-        assert len(self.bpod.output_actions.keys()) == 6
+        assert len(self.bpod.actions.keys()) == 6
         assert self.bpod.modules is not None
 
 

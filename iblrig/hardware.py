@@ -7,6 +7,7 @@ import os
 import logging
 
 import numpy as np
+from iblutil.util import Bunch
 
 import sounddevice as sd
 from pybpod_rotaryencoder_module.module import RotaryEncoder
@@ -21,7 +22,7 @@ class Bpod(BpodIO):
     def __init__(self, *args, **kwargs):
         super(Bpod, self).__init__(*args, **kwargs)
         self.default_message_idx = 0
-        self.actions = {}
+        self.actions = Bunch({})
 
     @property
     def rotary_encoder(self):
@@ -60,11 +61,11 @@ class Bpod(BpodIO):
         return self.default_message_idx
 
     def define_harp_sounds_actions(self, go_tone_index, noise_index, sound_port='Serial3'):
-        self.actions.update = {
+        self.actions.update({
             'play_tone': (sound_port, self._define_message(self.sound_card, [ord("P"), go_tone_index])),
             'play_noise': (sound_port, self._define_message(self.sound_card, [ord("P"), noise_index])),
             'stop_sound': (sound_port, ord("X")),
-        }
+        })
 
     def define_rotary_encoder_actions(self, re_port='Serial1'):
         """
@@ -73,15 +74,15 @@ class Bpod(BpodIO):
         :param noise_index:
         :return:
         """
-        self.actions.update = {
-            're_reset': (re_port, self._define_message(
+        self.actions.update({
+            'rotary_encoder_reset': (re_port, self._define_message(
                 self.rotary_encoder, [RotaryEncoder.COM_SETZEROPOS, RotaryEncoder.COM_ENABLE_ALLTHRESHOLDS])),
             'bonsai_hide_stim': (re_port, self._define_message(self.rotary_encoder, [ord("#"), 1])),
             'bonsai_show_stim': (re_port, self._define_message(self.rotary_encoder, [ord("#"), 2])),
             'bonsai_close_loop': (re_port, self._define_message(self.rotary_encoder, [ord("#"), 3])),
             'bonsai_freeze_stim': (re_port, self._define_message(self.rotary_encoder, [ord("#"), 4])),
             'bonsai_show_center': (re_port, self._define_message(self.rotary_encoder, [ord("#"), 5])),
-        }
+        })
 
     def get_ambient_sensor_reading(self, save_to=None):
         ambient_module = [x for x in self.modules if x.name == "AmbientModule1"][0]
