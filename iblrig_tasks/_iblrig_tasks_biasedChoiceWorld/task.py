@@ -105,7 +105,7 @@ def run(sess=None):
         sma.add_state(
             state_name="closed_loop",
             state_timer=sess.task_params.RESPONSE_WINDOW,
-            output_actions=[sess.bpod.actions.bonsai_close_loop],
+            output_actions=[sess.bpod.actions.bonsai_closed_loop],
             state_change_conditions={
                 "Tup": "no_go",
                 sess.event_error: "freeze_error",

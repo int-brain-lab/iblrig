@@ -115,7 +115,7 @@ def run():
         sma.add_state(
             state_name="reset_rotary_encoder",
             state_timer=0,
-            output_actions=[("Serial1", sess.bpod.rotary_encoder_reset())],
+            output_actions=[sess.bpod.actions.rotary_encoder_reset],
             state_change_conditions={"Tup": "quiescent_period"},
         )
 
@@ -133,7 +133,7 @@ def run():
         sma.add_state(
             state_name="stim_on",
             state_timer=0.1,
-            output_actions=[("Serial1",  sess.bpod.bonsai_show_stim())],
+            output_actions=[sess.bpod.actions.bonsai_show_stim],
             state_change_conditions={
                 "Tup": "interactive_delay",
                 "BNC1High": "interactive_delay",
@@ -161,7 +161,7 @@ def run():
         sma.add_state(
             state_name="reset2_rotary_encoder",
             state_timer=0,
-            output_actions=[("Serial1", sess.bpod.rotary_encoder_reset())],
+            output_actions=[sess.bpod.actions.rotary_encoder_reset],
             state_change_conditions={"Tup": "closed_loop"},
         )
 
@@ -169,7 +169,7 @@ def run():
             sma.add_state(
                 state_name="closed_loop",
                 state_timer=sess.task_params.RESPONSE_WINDOW,
-                output_actions=[("Serial1", sess.bpod.bonsai_close_loop())],
+                output_actions=[sess.bpod.actions.bonsai_closed_loop],
                 state_change_conditions={
                     "Tup": "null_feedback",
                     sess.event_error: "null_feedback",
@@ -190,7 +190,7 @@ def run():
             sma.add_state(
                 state_name="closed_loop",
                 state_timer=sess.task_params.RESPONSE_WINDOW,
-                output_actions=[("Serial1", sess.bpod.bonsai_close_loop())],
+                output_actions=[sess.bpod.actions.bonsai_closed_loop],
                 state_change_conditions={
                     "Tup": "delay_no_go",
                     sess.event_error: "delay_error",
@@ -208,7 +208,7 @@ def run():
             sma.add_state(
                 state_name="no_go",
                 state_timer=sess.task_params.FEEDBACK_NOGO_DELAY_SECS,
-                output_actions=[("Serial1", sess.bpod.bonsai_hide_stim()), sess.sound.OUT_NOISE],
+                output_actions=[sess.bpod.actions.bonsai_hide_stim, sess.sound.OUT_NOISE],
                 state_change_conditions={"Tup": "exit_state"},
             )
 
@@ -222,7 +222,7 @@ def run():
             sma.add_state(
                 state_name="freeze_error",
                 state_timer=0,
-                output_actions=[("Serial1", sess.bpod.bonsai_freeze_stim())],
+                output_actions=[sess.bpod.actions.bonsai_freeze_stim],
                 state_change_conditions={"Tup": "error"},
             )
 
@@ -243,7 +243,7 @@ def run():
             sma.add_state(
                 state_name="freeze_reward",
                 state_timer=0,
-                output_actions=[("Serial1", sess.bpod.bonsai_freeze_stim())],
+                output_actions=[sess.bpod.actions.bonsai_freeze_stim],
                 state_change_conditions={"Tup": "reward"},
             )
 
@@ -264,7 +264,7 @@ def run():
         sma.add_state(
             state_name="hide_stim",
             state_timer=0.1,
-            output_actions=[("Serial1", sess.bpod.bonsai_hide_stim())],
+            output_actions=[[sess.bpod.actions.bonsai_hide_stim]],
             state_change_conditions={
                 "Tup": "exit_state",
                 "BNC1High": "exit_state",

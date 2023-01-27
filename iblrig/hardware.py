@@ -79,7 +79,7 @@ class Bpod(BpodIO):
                 self.rotary_encoder, [RotaryEncoder.COM_SETZEROPOS, RotaryEncoder.COM_ENABLE_ALLTHRESHOLDS])),
             'bonsai_hide_stim': (re_port, self._define_message(self.rotary_encoder, [ord("#"), 1])),
             'bonsai_show_stim': (re_port, self._define_message(self.rotary_encoder, [ord("#"), 2])),
-            'bonsai_close_loop': (re_port, self._define_message(self.rotary_encoder, [ord("#"), 3])),
+            'bonsai_closed_loop': (re_port, self._define_message(self.rotary_encoder, [ord("#"), 3])),
             'bonsai_freeze_stim': (re_port, self._define_message(self.rotary_encoder, [ord("#"), 4])),
             'bonsai_show_center': (re_port, self._define_message(self.rotary_encoder, [ord("#"), 5])),
         })
