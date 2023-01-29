@@ -198,7 +198,7 @@ def run(*args, interactive=False, **kwargs):
                 state_change_conditions={
                     "Tup": "delay_no_go",
                     sess.event_error: "delay_error",
-                    sess.event_reward: "freeze_reward",
+                    sess.event_reward: "delay_reward",
                 },
             )
 
