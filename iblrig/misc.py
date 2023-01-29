@@ -59,7 +59,7 @@ def call_exp_desc_gui():
         for row in lines:
             if "PYBPOD_SUBJECT_EXTRA" in row:
                 name_index = row.split().index('"name":')
-                subject_name = row.split()[name_index+1].strip(",\"")
+                subject_name = row.split()[name_index + 1].strip(",\"")
                 break
     log.info(f"Subject name: {subject_name}")
 

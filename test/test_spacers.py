@@ -14,7 +14,7 @@ class TestSpacer(unittest.TestCase):
         # import matplotlib.pyplot as plt
         # plt.plot(ac)
         # plt.show()
-        ac[sig.size-100: sig.size + 100] = 0  # remove the main peak
+        ac[sig.size - 100: sig.size + 100] = 0  # remove the main peak
         # the autocorrelation side lobes should be less than 30%
         assert np.max(ac) < .3
 

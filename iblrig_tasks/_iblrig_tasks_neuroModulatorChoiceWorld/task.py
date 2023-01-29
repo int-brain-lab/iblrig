@@ -50,6 +50,7 @@ class SessionRelatedBlocks(Session):
         super(SessionRelatedBlocks, self).__init__(*args, **kwargs)
         self.trials_table['omit_feedback'] = np.zeros(self.trials_table.shape[0], dtype=bool)
         self.trials_table['choice_delay'] = np.zeros(self.trials_table.shape[0], dtype=np.float32)
+        self.trials_table['probability_left_rich'] = np.zeros(self.trials_table.shape[0], dtype=np.float32)
         self.blocks_table['probability_left_rich'] = np.zeros(self.blocks_table.shape[0], dtype=np.float32)
         self.BLOCK_REWARD_STAGGER = np.random.randint(0, 2)
 
@@ -67,6 +68,8 @@ class SessionRelatedBlocks(Session):
     def next_trial(self):
         super(SessionRelatedBlocks, self).next_trial()
         self.trials_table.at[self.trial_num, 'reward_amount'] = self.draw_reward_amount()
+        prich = self.blocks_table.loc[self.block_num, 'probability_left_rich']
+        self.trials_table.at[self.trial_num, 'probability_left_rich'] = prich
 
     def draw_reward_amount(self):
         # FIXME check: this has 0.5 probability of being correct !!!
