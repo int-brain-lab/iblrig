@@ -24,7 +24,7 @@ def run(sess=None):
 
         sma = StateMachine(sess.bpod)
 
-        if i == -1:  # First trial exception start camera
+        if i == 0:  # First trial exception start camera
             session_delay_start = sess.task_params.get("SESSION_DELAY_START", 0)
             log.info("First trial initializing, will move to next trial only if:")
             log.info("1. camera is detected")
