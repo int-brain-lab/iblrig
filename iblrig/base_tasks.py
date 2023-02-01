@@ -33,17 +33,30 @@ class BaseSession(ABC):
     base_parameters_file = None
 
     def __init__(self, debug=False, task_parameter_file=None, hardware_settings_name='hardware_settings.yaml',
-                 subject=None, project=''):
+                 subject=None, project='', fmake=True):
         """
         This only handles gathering the parameters and settings for the current session
         :param debug:
         :param task_parameter_file:
         :param hardware_settings_name:
+        :param fmake: (DEPRECATED) if True, only create the raw_behavior_data folder.
         """
         self.init_datetime = datetime.datetime.now()
         self.DEBUG = debug
         # Load pybpod settings
         self.pybpod_settings = iblrig.path_helper.load_pybpod_settings_yaml('pybpod_settings.yaml')
+        # Create the folder architecture and get the paths property updated
+        # TODO Base collections on experiment description and remove 'fmake' param.
+        if not fmake:
+            make = False
+        elif fmake and "ephys" in self.pybpod_settings.PYBPOD_BOARD:
+            make = True  # True makes only raw_behavior_data folder
+        else:
+            make = ["video"]  # besides behavior which folders to create
+        spc = iblrig.path_helper.SessionPathCreator(
+            subject, protocol=self.pybpod_settings.PYBPOD_PROTOCOL, make=make)
+        self.paths = Bunch(spc.__dict__)
+
         # get another set of parameters from .iblrig_params.json
         self.hardware_settings = iblrig.path_helper.load_settings_yaml(hardware_settings_name)
         # Load the tasks settings
@@ -102,7 +115,7 @@ class OSCClient(udp_client.SimpleUDPClient):
         /g  -> (float)  gain of RE to visual stim displacement
         /s  -> (float)  sigma of the 2D gaussian of gabor
         /e  -> (int)    events transitions  USED BY SOFTCODE HANDLER FUNC
-        /r  -> (int)    wheter to reverse the side contingencies (0, 1)
+        /r  -> (int)    whether to reverse the side contingencies (0, 1)
     """
 
     OSC_PROTOCOL = {

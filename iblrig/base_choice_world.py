@@ -14,7 +14,6 @@ import pandas as pd
 from iblutil.util import Bunch
 
 import iblrig.base_tasks
-from iblrig.path_helper import SessionPathCreator
 import iblrig.iotasks as iotasks
 import iblrig.user_input as user
 import iblrig.misc as misc
@@ -69,18 +68,9 @@ class ChoiceWorldSession(
 ):
     base_parameters_file = Path(__file__).parent.joinpath('base_choice_world_params.yaml')
 
-    def __init__(self, fmake=True, interactive=False, *args, **kwargs):
+    def __init__(self, interactive=False, *args, **kwargs):
         super(ChoiceWorldSession, self).__init__(*args, **kwargs)
         self.interactive = interactive
-        # Create the folder architecture and get the paths property updated
-        if not fmake:
-            make = False
-        elif fmake and "ephys" in self.pybpod_settings.PYBPOD_BOARD:
-            make = True  # True makes only raw_behavior_data folder
-        else:
-            make = ["video"]  # besides behavior which folders to creae
-        spc = SessionPathCreator(self.session_info.subject, protocol=self.pybpod_settings.PYBPOD_PROTOCOL, make=make)
-        self.paths = Bunch(spc.__dict__)
 
         # Session data
         if self.interactive:
@@ -137,7 +127,7 @@ class ChoiceWorldSession(
 
     def start(self):
         """
-        In this step we explicitely run the start methods of the various mixins.
+        In this step we explicitly run the start methods of the various mixins.
         The super class start method is overloaded because we need to start the different hardware pieces in order
         """
         self.start_mixin_frame2ttl()
