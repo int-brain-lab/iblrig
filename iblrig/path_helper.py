@@ -384,15 +384,15 @@ class SessionPathCreator(object):
 
         self._PROTOCOL = protocol
 
-        self.IBLRIG_SETTINGS_FOLDER = str(get_iblrig_params_path())
-        self.IBLRIG_DATA_FOLDER = str(get_iblrig_local_data_path(subjects=False))
-        self.IBLRIG_DATA_SUBJECTS_FOLDER = str(get_iblrig_local_data_path(subjects=True))
+        self.IBLRIG_SETTINGS_FOLDER = get_iblrig_params_path()
+        self.IBLRIG_DATA_FOLDER = get_iblrig_local_data_path(subjects=False)
+        self.IBLRIG_DATA_SUBJECTS_FOLDER = get_iblrig_local_data_path(subjects=True)
 
         self.SUBJECT_NAME = subject_name
-        self.SUBJECT_FOLDER = os.path.join(self.IBLRIG_DATA_SUBJECTS_FOLDER, self.SUBJECT_NAME)
+        self.SUBJECT_FOLDER = self.IBLRIG_DATA_SUBJECTS_FOLDER.joinpath(self.SUBJECT_NAME)
 
         self.BONSAI = get_bonsai_path(use_iblrig_bonsai=True)
-        self.VISUAL_STIM_FOLDER = Path(self.IBLRIG_FOLDER) / "visual_stim"
+        self.VISUAL_STIM_FOLDER = self.IBLRIG_FOLDER / "visual_stim"
 
         self.SESSION_DATETIME = datetime.datetime.now().isoformat()
         self.SESSION_DATE = datetime.datetime.now().date().isoformat()

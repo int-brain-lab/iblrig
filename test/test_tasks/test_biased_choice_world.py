@@ -11,7 +11,7 @@ from iblrig_tasks._iblrig_tasks_neuroModulatorChoiceWorld.task import SessionRel
 class TestBiasedChoiceWorld(unittest.TestCase):
 
     def setUp(self) -> None:
-        self.task = BiasedChoiceWorldSession(interactive=False, subject='unittest')
+        self.task = BiasedChoiceWorldSession(interactive=False, subject='unittest_subject')
 
     def test_task(self):
         task = self.task
@@ -64,7 +64,7 @@ class TestBiasedChoiceWorld(unittest.TestCase):
 
 class TestNeuroModulatorBiasedChoiceWorld(TestBiasedChoiceWorld):
     def setUp(self) -> None:
-        self.task = NeuroModulatorChoiceWorldSession(interactive=False)
+        self.task = NeuroModulatorChoiceWorldSession(interactive=False, subject='unittest_subject')
 
     def test_task(self):
         super(TestNeuroModulatorBiasedChoiceWorld, self).test_task()
