@@ -15,7 +15,7 @@ class TestBiasedChoiceWorld(unittest.TestCase):
 
     def test_task(self):
         task = self.task
-        correct_trial, error_trial, no_go_trial = get_fixtures()
+        trial_fixtures = get_fixtures()
         nt = 500
         t = np.zeros(nt)
         np.random.seed(12345)
@@ -23,7 +23,13 @@ class TestBiasedChoiceWorld(unittest.TestCase):
             t[i] = time.time()
             task.next_trial()
             # pc = task.psychometric_curve()
-            task.trial_completed(np.random.choice([correct_trial, error_trial, no_go_trial], p=[0.9, 0.05, 0.05]))
+            trial_type = np.random.choice(['correct', 'error', 'no_go'], p=[.9, .05, .05])
+            task.trial_completed(trial_fixtures[trial_type])
+            if trial_type == 'correct':
+                assert task.trials_table['trial_correct'][task.trial_num]
+            else:
+                assert not task.trials_table['trial_correct'][task.trial_num]
+
             if i == 245:
                 task.show_trial_log()
             assert not np.isnan(task.reward_time)
@@ -70,8 +76,7 @@ class TestNeuroModulatorBiasedChoiceWorld(TestBiasedChoiceWorld):
         super(TestNeuroModulatorBiasedChoiceWorld, self).test_task()
         # we expect 10% of null feedback trials
         # todo check that omissions are reflected on the reward amount !!
-        pass
-        # assert np.abs(.1 - np.mean(self.task.trials_table['omit_feedback'])) < .05
+        assert np.abs(.1 - np.mean(self.task.trials_table['omit_feedback'])) < .05
 
 
 def get_fixtures():
@@ -556,4 +561,4 @@ def get_fixtures():
             "RotaryEncoder1_1": [3011.1679990000002],
         },
     }  # noqa
-    return correct_trial, error_trial, no_go_trial
+    return dict(correct=correct_trial, error=error_trial, no_go=no_go_trial)

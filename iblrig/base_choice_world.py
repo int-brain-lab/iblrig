@@ -184,48 +184,51 @@ class ChoiceWorldSession(
                        if k in self.trials_table.columns}
         bonsai_viz_client.send2bonsai(**bonsai_dict)
 
-    def trial_completed(self, behavior_data):
+    def trial_completed(self, bpod_data):
         """
         The purpose of this method is to
         -   update the trials table with information about the behaviour coming from the bpod
-        :param behavior_data:
+        Constraints on the state machine data:
+        - mandatory states: ['correct', 'error', 'no_go', 'reward']
+        - optional states : ['omit_correct', 'omit_error', 'omit_no_go']
+        :param bpod_data:
         :return:
         """
-        # Update elapsed_time
-        self.behavior_data = behavior_data
-        correct = ~np.isnan(self.behavior_data["States timestamps"]["correct"][0][0])
-        error = ~np.isnan(self.behavior_data["States timestamps"]["error"][0][0])
-        no_go = ~np.isnan(self.behavior_data["States timestamps"]["no_go"][0][0])
-        assert correct or error or no_go
+        # get the response time from the behaviour data
+        self.trials_table.at[self.trial_num, 'response_time'] = misc.get_trial_rt(bpod_data)
+        # get the trial outcome
+        state_names = ['correct', 'error', 'no_go', 'omit_correct', 'omit_error', 'omit_no_go']
+        outcome = {sn: ~np.isnan(bpod_data['States timestamps'].get(sn, [[np.NaN]])[0][0]) for sn in state_names}
         # Add trial's response time to the buffer
-        self.trials_table.at[self.trial_num, 'response_time'] = misc.get_trial_rt(self.behavior_data)
-        self.trials_table.at[self.trial_num, 'trial_correct'] = bool(correct)
-        if not correct:
+        assert np.sum(list(outcome.values())) == 1
+        outcome = next(k for k in outcome if outcome[k])
+        # if the reward state has not been triggered, null the reward
+        if np.isnan(bpod_data['States timestamps']['reward'][0][0]):
             self.trials_table.at[self.trial_num, 'reward_amount'] = 0
-
+        # update cumulative reward value
+        self.aggregates.water_delivered += self.trials_table.at[self.trial_num, 'reward_amount']
         # Update response buffer -1 for left, 0 for nogo, and 1 for rightward
-        # what happens if position is 0?
         position = self.trials_table.at[self.trial_num, 'position']
-        if (correct and position < 0) or (error and position > 0):
-            response_side = 1
-        elif (correct and position > 0) or (error and position < 0):
-            response_side = -1
-        elif no_go:
-            response_side = 0
-        self.trials_table.at[self.trial_num, 'response_side'] = response_side
-
+        if 'correct' in outcome:
+            self.trials_table.at[self.trial_num, 'trial_correct'] = True
+            self.aggregates.ntrials_correct += 1
+            self.trials_table.at[self.trial_num, 'response_side'] = -np.sign(position)
+        elif 'error' in outcome:
+            self.trials_table.at[self.trial_num, 'response_side'] = np.sign(position)
+        elif 'no_go' in outcome:
+            self.trials_table.at[self.trial_num, 'response_side'] = 0
+        else:
+            ValueError("The task outcome doesn't contain no_go, error or correct")
+        assert position != 0, "the position value should be either 35 or -35"
         # SAVE TRIAL DATA
         save_dict = self.trials_table.iloc[self.trial_num].to_dict()
-        save_dict["behavior_data"] = behavior_data
+        save_dict["behavior_data"] = bpod_data
         # Dump and save
         with open(self.paths['DATA_FILE_PATH'], 'a') as fp:
             fp.write(json.dumps(save_dict, cls=iotasks.ComplexEncoder) + '\n')
         # If more than 42 trials save transfer_me.flag
         if self.trial_num == 42:
             misc.create_flags(self.paths.DATA_FILE_PATH, self.task_params.POOP_COUNT)
-        # update cumulative aggregates
-        self.aggregates.ntrials_correct += correct
-        self.aggregates.water_delivered += self.trials_table.at[self.trial_num, 'reward_amount']
 
     def check_stop_criterions(self):
         return misc.check_stop_criterions(

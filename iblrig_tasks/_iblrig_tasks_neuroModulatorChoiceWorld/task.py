@@ -20,7 +20,7 @@ class Session(BiasedChoiceWorldSession):
     def next_trial(self):
         super(Session, self).next_trial()
         # then there is a probability of omitting feedback regardless of the choice
-        # self.trials_table.at[self.trial_num, 'omit_feedback'] = np.random.random() < self.task_params.OMIT_FEEDBACK_PROBABILITY
+        self.trials_table.at[self.trial_num, 'omit_feedback'] = np.random.random() < self.task_params.OMIT_FEEDBACK_PROBABILITY
         # then drawing the the delay for the choice
         # self.trials_table.at[self.trial_num, 'choice_delay'] = np.random.choice([1.5, 3.0], p=[2 / 3, 1 / 3])
         # self.trials_table.at[self.trial_num, 'choice_delay'] = np.random.random() * 1.5 + 1.5
@@ -179,21 +179,11 @@ def run(*args, interactive=False, **kwargs):
                 state_timer=sess.task_params.RESPONSE_WINDOW,
                 output_actions=[sess.bpod.actions.bonsai_closed_loop],
                 state_change_conditions={
-                    "Tup": "null_feedback",
-                    sess.event_error: "null_feedback",
-                    sess.event_reward: "null_feedback",
+                    "Tup": "omit_nogo",
+                    sess.event_error: "omit_error",
+                    sess.event_reward: "omit_correct",
                 },
             )
-
-            sma.add_state(
-                state_name="null_feedback",
-                state_timer=(sess.task_params.FEEDBACK_NOGO_DELAY_SECS
-                             + sess.task_params.FEEDBACK_ERROR_DELAY_SECS
-                             + sess.task_params.FEEDBACK_CORRECT_DELAY_SECS) / 3,
-                output_actions=[],
-                state_change_conditions={"Tup": "correct"},
-            )
-
         else:
             sma.add_state(
                 state_name="closed_loop",
@@ -206,61 +196,73 @@ def run(*args, interactive=False, **kwargs):
                 },
             )
 
+        # here we create 3 separates states to disambiguate the choice of the mouse
+        # in the output data - apart from the name they are exactly the same state
+        for state_name in ['omit_error', 'omit_correct', 'omit_nogo']:
             sma.add_state(
-                state_name="delay_no_go",
-                state_timer=sess.choice_to_feedback_delay,
-                state_change_conditions={"Tup": "no_go"},
+                state_name=state_name,
+                state_timer=(sess.task_params.FEEDBACK_NOGO_DELAY_SECS
+                             + sess.task_params.FEEDBACK_ERROR_DELAY_SECS
+                             + sess.task_params.FEEDBACK_CORRECT_DELAY_SECS) / 3,
                 output_actions=[],
-            )
-
-            sma.add_state(
-                state_name="no_go",
-                state_timer=sess.task_params.FEEDBACK_NOGO_DELAY_SECS,
-                output_actions=[sess.bpod.actions.bonsai_hide_stim, sess.sound.OUT_NOISE],
-                state_change_conditions={"Tup": "exit_state"},
-            )
-
-            sma.add_state(
-                state_name="delay_error",
-                state_timer=sess.choice_to_feedback_delay,
-                state_change_conditions={"Tup": "freeze_error"},
-                output_actions=[],
-            )
-
-            sma.add_state(
-                state_name="freeze_error",
-                state_timer=0,
-                output_actions=[sess.bpod.actions.bonsai_freeze_stim],
-                state_change_conditions={"Tup": "error"},
-            )
-
-            sma.add_state(
-                state_name="error",
-                state_timer=sess.task_params.FEEDBACK_ERROR_DELAY_SECS,
-                output_actions=[sess.sound.OUT_NOISE],
                 state_change_conditions={"Tup": "hide_stim"},
             )
 
-            sma.add_state(
-                state_name="delay_reward",
-                state_timer=sess.choice_to_feedback_delay,
-                state_change_conditions={"Tup": "freeze_reward"},
-                output_actions=[],
-            )
+        sma.add_state(
+            state_name="delay_no_go",
+            state_timer=sess.choice_to_feedback_delay,
+            state_change_conditions={"Tup": "no_go"},
+            output_actions=[],
+        )
 
-            sma.add_state(
-                state_name="freeze_reward",
-                state_timer=0,
-                output_actions=[sess.bpod.actions.bonsai_freeze_stim],
-                state_change_conditions={"Tup": "reward"},
-            )
-            print(sess.reward_time)
-            sma.add_state(
-                state_name="reward",
-                state_timer=sess.reward_time,
-                output_actions=[("Valve1", 255), ("BNC1", 255)],
-                state_change_conditions={"Tup": "correct"},
-            )
+        sma.add_state(
+            state_name="no_go",
+            state_timer=sess.task_params.FEEDBACK_NOGO_DELAY_SECS,
+            output_actions=[sess.bpod.actions.bonsai_hide_stim, sess.sound.OUT_NOISE],
+            state_change_conditions={"Tup": "exit_state"},
+        )
+
+        sma.add_state(
+            state_name="delay_error",
+            state_timer=sess.choice_to_feedback_delay,
+            state_change_conditions={"Tup": "freeze_error"},
+            output_actions=[],
+        )
+
+        sma.add_state(
+            state_name="freeze_error",
+            state_timer=0,
+            output_actions=[sess.bpod.actions.bonsai_freeze_stim],
+            state_change_conditions={"Tup": "error"},
+        )
+
+        sma.add_state(
+            state_name="error",
+            state_timer=sess.task_params.FEEDBACK_ERROR_DELAY_SECS,
+            output_actions=[sess.sound.OUT_NOISE],
+            state_change_conditions={"Tup": "hide_stim"},
+        )
+
+        sma.add_state(
+            state_name="delay_reward",
+            state_timer=sess.choice_to_feedback_delay,
+            state_change_conditions={"Tup": "freeze_reward"},
+            output_actions=[],
+        )
+
+        sma.add_state(
+            state_name="freeze_reward",
+            state_timer=0,
+            output_actions=[sess.bpod.actions.bonsai_freeze_stim],
+            state_change_conditions={"Tup": "reward"},
+        )
+
+        sma.add_state(
+            state_name="reward",
+            state_timer=sess.reward_time,
+            output_actions=[("Valve1", 255), ("BNC1", 255)],
+            state_change_conditions={"Tup": "correct"},
+        )
 
         sma.add_state(
             state_name="correct",
