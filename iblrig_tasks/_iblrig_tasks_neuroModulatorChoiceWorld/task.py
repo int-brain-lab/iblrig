@@ -26,7 +26,8 @@ class Session(BiasedChoiceWorldSession):
         # self.trials_table.at[self.trial_num, 'choice_delay'] = np.random.random() * 1.5 + 1.5
         self.trials_table.at[self.trial_num, 'choice_delay'] = np.random.choice(np.linspace(1.5, 3, 11))
         # the reward is a draw within an uniform distribution between 3 and 1
-        self.trials_table.at[self.trial_num, 'reward_amount'] = np.random.choice(REWARD_AMOUNTS, p=[.6, .4])
+        reward_amount = 1.5 if self.trial_num < 50 else np.random.choice(REWARD_AMOUNTS, p=[.6, .4])
+        self.trials_table.at[self.trial_num, 'reward_amount'] = reward_amount
 
     @property
     def omit_feedback(self):
