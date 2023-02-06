@@ -17,7 +17,6 @@ import iblrig.base_tasks
 import iblrig.iotasks as iotasks
 import iblrig.user_input as user
 import iblrig.misc as misc
-from iblrig.check_sync_pulses import sync_check
 
 log = logging.getLogger(__name__)
 
@@ -80,7 +79,6 @@ class ChoiceWorldSession(
             self.SUBJECT_WEIGHT = np.NaN
         self.display_logs()
         # init behaviour data
-        self.behavior_data = []
         self.movement_left = self.device_rotary_encoder.THRESHOLD_EVENTS[
             self.task_params.QUIESCENCE_THRESHOLDS[0]]
         self.movement_right = self.device_rotary_encoder.THRESHOLD_EVENTS[
@@ -228,14 +226,32 @@ class ChoiceWorldSession(
         # If more than 42 trials save transfer_me.flag
         if self.trial_num == 42:
             misc.create_flags(self.paths.DATA_FILE_PATH, self.task_params.POOP_COUNT)
+        self.check_sync_pulses(bpod_data=bpod_data)
 
     def check_stop_criterions(self):
         return misc.check_stop_criterions(
             self.init_datetime, self.trials_table['response_time'].values(), self.trial_num
         )
 
-    def check_sync_pulses(self):
-        return sync_check(self)
+    def check_sync_pulses(self, bpod_data):
+        events = bpod_data["Events timestamps"]
+        ev_bnc1 = misc.get_port_events(events, name="BNC1")
+        ev_bnc2 = misc.get_port_events(events, name="BNC2")
+        ev_port1 = misc.get_port_events(events, name="Port1")
+        NOT_FOUND = "COULD NOT FIND DATA ON {}"
+        bnc1_msg = NOT_FOUND.format("BNC1") if not ev_bnc1 else "OK"
+        bnc2_msg = NOT_FOUND.format("BNC2") if not ev_bnc2 else "OK"
+        port1_msg = NOT_FOUND.format("Port1") if not ev_port1 else "OK"
+        warn_msg = f"""
+            ##########################################
+                    NOT FOUND: SYNC PULSES
+            ##########################################
+            VISUAL STIMULUS SYNC: {bnc1_msg}
+            SOUND SYNC: {bnc2_msg}
+            CAMERA SYNC: {port1_msg}
+            ##########################################"""
+        if not ev_bnc1 or not ev_bnc2 or not ev_port1:
+            log.warning(warn_msg)
 
     def show_trial_log(self):
         trial_info = self.trials_table.iloc[self.trial_num]

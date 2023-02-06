@@ -304,7 +304,6 @@ def run(*args, interactive=False, **kwargs):
 
         sess.trial_completed(sess.bpod.session.current_trial.export())
         sess.show_trial_log()
-        sess.check_sync_pulses()
 
     sess.bpod.close()
 

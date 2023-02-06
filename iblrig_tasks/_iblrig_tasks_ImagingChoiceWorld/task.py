@@ -14,5 +14,5 @@ class Session(BiasedChoiceWorldSession):
         return iblrig.misc.texp(factor=0.35 * 2, min_=0.2 * 2, max_=0.5 * 2)
 
 
-def run():
-    run_biased(sess=Session())
+def run(*args, **kwargs):
+    run_biased(sess=Session(*args, **kwargs))

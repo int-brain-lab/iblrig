@@ -448,7 +448,7 @@ class SoundMixin:
             amplitude=self.task_params.WHITE_NOISE_AMPLITUDE,
             fade=0.01,
             chans=self.sound['channels'])
-
+        print(" toto")
         # SoundCard config params
         if self.hardware_settings.device_sound['OUTPUT'] == 'harp':
             sound.configure_sound_card(
