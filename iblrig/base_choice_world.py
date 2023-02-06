@@ -199,7 +199,6 @@ class ChoiceWorldSession(
         # get the trial outcome
         state_names = ['correct', 'error', 'no_go', 'omit_correct', 'omit_error', 'omit_no_go']
         outcome = {sn: ~np.isnan(bpod_data['States timestamps'].get(sn, [[np.NaN]])[0][0]) for sn in state_names}
-        # Add trial's response time to the buffer
         assert np.sum(list(outcome.values())) == 1
         outcome = next(k for k in outcome if outcome[k])
         # if the reward state has not been triggered, null the reward

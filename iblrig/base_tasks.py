@@ -286,7 +286,6 @@ class BpodMixin(object):
 
     def init_mixin_bpod(self, *args, **kwargs):
         self.bpod = Bpod()
-        self.bpod_actions = None
 
     def start_mixin_bpod(self):
         self.bpod = Bpod(self.hardware_settings['device_bpod']['COM_BPOD'])

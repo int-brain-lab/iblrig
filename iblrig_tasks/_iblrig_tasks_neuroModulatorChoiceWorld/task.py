@@ -8,7 +8,7 @@ from iblrig.base_choice_world import BiasedChoiceWorldSession
 
 log = logging.getLogger("iblrig")
 
-REWARD_AMOUNTS = (1, 3)
+REWARD_AMOUNTS_UL = (1, 3)
 
 
 class Session(BiasedChoiceWorldSession):
@@ -21,13 +21,20 @@ class Session(BiasedChoiceWorldSession):
         super(Session, self).next_trial()
         # then there is a probability of omitting feedback regardless of the choice
         self.trials_table.at[self.trial_num, 'omit_feedback'] = np.random.random() < self.task_params.OMIT_FEEDBACK_PROBABILITY
+
         # then drawing the the delay for the choice
-        # self.trials_table.at[self.trial_num, 'choice_delay'] = np.random.choice([1.5, 3.0], p=[2 / 3, 1 / 3])
-        # self.trials_table.at[self.trial_num, 'choice_delay'] = np.random.random() * 1.5 + 1.5
-        self.trials_table.at[self.trial_num, 'choice_delay'] = np.random.choice(np.linspace(1.5, 3, 11))
-        # the reward is a draw within an uniform distribution between 3 and 1
-        reward_amount = 1.5 if self.trial_num < 50 else np.random.choice(REWARD_AMOUNTS, p=[.6, .4])
-        self.trials_table.at[self.trial_num, 'reward_amount'] = reward_amount
+        choice_delay_strategy = 'binned'
+        if choice_delay_strategy == 'binary':  # this is a choice with probabilities 1/3 2/3
+            self.trials_table.at[self.trial_num, 'choice_delay'] = np.random.choice([1.5, 3.0], p=[2 / 3, 1 / 3])
+        elif choice_delay_strategy == 'uniform':  # uniform probability draw between 1.5s and 3s
+            self.trials_table.at[self.trial_num, 'choice_delay'] = np.random.random() * 1.5 + 1.5
+        elif choice_delay_strategy == 'binned':  # 10 bins of 150ms between 1.5 and 3 secs. The "Charline Way"
+            self.trials_table.at[self.trial_num, 'choice_delay'] = np.random.choice(np.linspace(1.5, 3, 11))
+
+        if self.task_params.VARIABLE_REWARDS:
+            # the reward is a draw within an uniform distribution between 3 and 1
+            reward_amount = 1.5 if self.block_num == 0 else np.random.choice(REWARD_AMOUNTS_UL, p=[.6, .4])
+            self.trials_table.at[self.trial_num, 'reward_amount'] = reward_amount
 
     @property
     def omit_feedback(self):
@@ -159,7 +166,7 @@ def run(*args, interactive=False, **kwargs):
         sma.add_state(
             state_name="play_tone",
             state_timer=0.1,
-            output_actions=[sess.sound.OUT_TONE],
+            output_actions=[sess.sound.OUT_TONE, ("BNC1", 255)],
             state_change_conditions={
                 "Tup": "reset2_rotary_encoder",
                 "BNC2High": "reset2_rotary_encoder",
@@ -260,7 +267,7 @@ def run(*args, interactive=False, **kwargs):
         sma.add_state(
             state_name="reward",
             state_timer=sess.reward_time,
-            output_actions=[("Valve1", 255), ("BNC1", 255)],
+            output_actions=[("Valve1", 255)],
             state_change_conditions={"Tup": "correct"},
         )
 
