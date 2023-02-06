@@ -572,6 +572,23 @@ class SessionPathCreator(object):
 
         if make:
             self.make_missing_folders(make)
+        # Connects to the widefield computer.
+        extrasettings = load_extrasettings()
+        if 'labcams_addresses' in extrasettings.keys():
+            for dval in extrasettings['labcams_addresses']:
+                address = (dval['address'],dval['port'])
+                import socket
+                import time
+                sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                sock.sendto('acquire=0'.encode(), 0, address)
+                sock.sendto('softtrigger=0'.encode(), 0, address)
+                tmp = os.path.dirname(self.SESSION_RAW_VIDEO_DATA_FOLDER)
+                if 'replace' in dval:  # ideally we pass just the filename but i don't know where to get that.
+                    tmp = tmp.replace(*dval['replace'])
+                sock.sendto('expname={0}'.format(tmp).encode(), 0, address)
+                sock.sendto('acquire=1'.encode(), 0, address)
+                time.sleep(0.5)
+                sock.sendto('softtrigger=1'.encode(), 0, address)
         self.display_logs()
 
     def make_missing_folders(self, makelist):
@@ -629,6 +646,17 @@ class SessionPathCreator(object):
         ##########################################"""
                     log.warning(msg)
 
+def load_extrasettings():
+    extra_settings_file = os.path.join(os.path.expanduser('~'),'extra_iblrig_settings.json')
+    # just a simple text file that we can see and edit easily
+    if os.path.exists(extra_settings_file):
+        import json
+        with open(extra_settings_file,'r') as fd:
+            extrasettings = json.load(fd)
+        print("Loaded extra settings file [{0}].".format(extra_settings_file))
+    else:
+        extrasettings = dict()
+    return extrasettings
 
 if __name__ == "__main__":
     # spc = SessionPathCreator('C:\\iblrig', None, '_iblrig_test_mouse',
