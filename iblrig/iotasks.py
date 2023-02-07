@@ -1,19 +1,13 @@
-#!/usr/bin/env python
-# @Author: Niccolò Bonacchi
-# @Creation_Date: Tuesday, February 5th 2019, 3:13:18 pm
-# Editor: Michele Fabbri
-# @Edit_Date: 2022-02-01
 """
 Saving, loading, and zip functionality
 """
 import json
 import logging
+import numpy as np
 import os
 import shutil
 import zipfile
 from pathlib import Path
-
-import numpy as np
 
 import iblrig.misc as misc
 import iblrig.path_helper as ph
@@ -29,6 +23,28 @@ class ComplexEncoder(json.JSONEncoder):
             return obj.reprJSON()
         else:
             return json.JSONEncoder.default(self, obj)
+
+
+def output_task_parameters_to_json_file(session: object) -> Path:
+    """
+    Given a session object, collects the various settings and parameters of the session and outputs them to a JSON file
+
+    Parameters
+    ----------
+    session - session object, i.e. neuroModulatorChoiceWorld
+
+    Returns
+    -------
+    Path to the resultant JSON file
+    """
+    output_dict = dict(session.task_params)  # Grab parameters from task_params session
+    output_dict.update(dict(session.hardware_settings))  # Update dict with hardware settings from session
+
+    # Output dict to json file
+    json_file = session.paths.SESSION_FOLDER / "output_task_parameters.json"
+    with open(json_file, "w") as outfile:
+        json.dump(output_dict, outfile, indent=4, sort_keys=True, default=str)  # converts datetime objects to string
+    return json_file  # PosixPath
 
 
 def save_session_settings(sph: object) -> None:
