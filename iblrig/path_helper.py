@@ -48,7 +48,7 @@ def get_iblrig_local_data_path(subjects: bool = True) -> Path or None:
     data_path = IBLRIG_SETTINGS.get("iblrig_local_data_path")
     data_path = data_path or Path.home().joinpath("iblrig_data", "local")
     # Return the "Subjects" subdirectory by default
-    return Path(data_path) / "Subjects" if subjects else data_path
+    return Path(data_path) / "Subjects" if subjects else Path(data_path)
 
 
 def get_iblrig_remote_server_data_path(subjects: bool = True) -> Path or None:
