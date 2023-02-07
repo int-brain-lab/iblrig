@@ -97,7 +97,7 @@ class TestPathHelper(unittest.TestCase):
             if previous_session_folders:
                 # returned list is not empty and should contain strings
                 for session_folder in previous_session_folders:
-                    self.assertTrue(isinstance(session_folder, str))
+                    self.assertTrue(isinstance(session_folder, Path))
 
         # Test for an existing subject, local does exist and remote does exist
         # Create local session and remote subject temp directories
