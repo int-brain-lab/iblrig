@@ -42,7 +42,7 @@ def main(local_folder: str, remote_folder: str, force: bool = False) -> None:
         try:
             shutil.copytree(src, dst, ignore=ig(str(src_flag_file.name)))
         except OSError:
-            log.info("An OS error occurred when attempting ot copy the subdirectories.")
+            log.info("An OS error occurred when attempting to copy the subdirectories.")
         # if folder was created, delete the src flag_file and create compress_me.flag
         if dst.exists():
             settings = raw.load_settings(dst)
