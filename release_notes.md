@@ -1,5 +1,8 @@
 # **Release notes**
 
+## **Release Notes 7.2.3**
+- Refactored transfer_rig_data script to utilize rdiff/rsync functionality
+
 ## **Release Notes 7.2.2**
 - Corrected session naming for ephysChoiceWorld task
 
