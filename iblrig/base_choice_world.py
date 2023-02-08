@@ -137,6 +137,9 @@ class ChoiceWorldSession(
         self.start_mixin_bonsai_microphone()
         self.start_mixin_bonsai_visual_stimulus()
 
+        # create the task parameter file in the raw_behavior dir
+        self.output_task_parameters_to_json_file()
+
     """
     Those are the methods that need to be implemented for a new task
     """
