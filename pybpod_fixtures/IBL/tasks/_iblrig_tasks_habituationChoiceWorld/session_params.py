@@ -44,7 +44,7 @@ class SessionParamHandler(object):
         self = iotasks.deserialize_pybpod_user_settings(self)
         if not fmake:
             make = False
-        elif fmake and "ephys" in self.PYBPOD_BOARD:
+        elif fmake and ("ephys" in self.PYBPOD_BOARD or 'wfield' in self.PYBPOD_BOARD):
             make = True  # True makes only raw_behavior_data folder
         else:
             make = ["video"]  # besides behavior which folders to create
