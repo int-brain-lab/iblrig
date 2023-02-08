@@ -4,13 +4,24 @@ Those can be instantiated lazily, ie. on any computer.
 The start() methods of those mixins require the hardware to be connected.
 
 """
-from pathlib import Path
+from pathlib import Path, PosixPath
 import unittest
 import tempfile
 import yaml
 
 from iblrig.base_tasks import SoundMixin, RotaryEncoderMixin, BaseSession, BpodMixin, ValveMixin
 from iblrig.base_choice_world import BiasedChoiceWorldSession
+
+
+class TestFileOutput(unittest.TestCase):
+    def test_output_task_parameters_to_json_file(self):
+        bcws = BiasedChoiceWorldSession(interactive=False, subject='unittest_subject')  # Create false session
+
+        # Create json file and test
+        json_file = bcws.output_task_parameters_to_json_file()
+        # json_file = BaseSession.output_task_parameters_to_json_file(bcws)
+        self.assertTrue(type(json_file) is PosixPath)
+        self.assertTrue(Path.exists(json_file))
 
 
 class TestHierarchicalParameters(unittest.TestCase):

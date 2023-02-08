@@ -3,6 +3,8 @@ This module is intended to provide commonalities for all tasks.
 It provides hardware mixins that can be used together with BaseSession to compose tasks
 This module is exclusive of any task related logic
 """
+import json
+
 from pathlib import Path
 from abc import ABC
 import datetime
@@ -76,6 +78,24 @@ class BaseSession(ABC):
         })
         # Executes mixins init methods
         self._execute_mixins_shared_function('init_mixin')
+
+    def output_task_parameters_to_json_file(self) -> Path:
+        """
+        Given a session object, collects the various settings and parameters of the session and outputs them to a JSON file
+
+        Returns
+        -------
+        Path to the resultant JSON file
+        """
+        output_dict = dict(self.task_params)  # Grab parameters from task_params session
+        output_dict.update(dict(self.hardware_settings))  # Update dict with hardware settings from session
+        # TODO: add subject, project, and task protocol to output
+
+        # Output dict to json file
+        json_file = self.paths.SESSION_FOLDER / "raw_behavior_data" / "_iblrig_taskSettings.raw.json"
+        with open(json_file, "w") as outfile:
+            json.dump(output_dict, outfile, indent=4, sort_keys=True, default=str)  # converts datetime objects to string
+        return json_file  # PosixPath
 
     def _execute_mixins_shared_function(self, pattern):
         method_names = [method for method in dir(self) if method.startswith(pattern)]

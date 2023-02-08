@@ -25,28 +25,6 @@ class ComplexEncoder(json.JSONEncoder):
             return json.JSONEncoder.default(self, obj)
 
 
-def output_task_parameters_to_json_file(session: object) -> Path:
-    """
-    Given a session object, collects the various settings and parameters of the session and outputs them to a JSON file
-
-    Parameters
-    ----------
-    session - session object, i.e. neuroModulatorChoiceWorld
-
-    Returns
-    -------
-    Path to the resultant JSON file
-    """
-    output_dict = dict(session.task_params)  # Grab parameters from task_params session
-    output_dict.update(dict(session.hardware_settings))  # Update dict with hardware settings from session
-
-    # Output dict to json file
-    json_file = session.paths.SESSION_FOLDER / "output_task_parameters.json"
-    with open(json_file, "w") as outfile:
-        json.dump(output_dict, outfile, indent=4, sort_keys=True, default=str)  # converts datetime objects to string
-    return json_file  # PosixPath
-
-
 def save_session_settings(sph: object) -> None:
     save_this = json.dumps(sph, cls=ComplexEncoder, indent=1)
     with open(sph.SETTINGS_FILE_PATH, "a") as f:
