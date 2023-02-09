@@ -328,7 +328,7 @@ class BpodMixin(object):
         self.bpod.softcode_handler_function = softcode_handler
 
         assert len(self.bpod.actions.keys()) == 6
-        assert self.bpod.modules is not None
+        assert self.bpod.is_connected
 
 
 class Frame2TTLMixin:

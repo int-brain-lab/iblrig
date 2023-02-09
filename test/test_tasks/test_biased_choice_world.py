@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 from iblrig_tasks._iblrig_tasks_biasedChoiceWorld.task import Session as BiasedChoiceWorldSession
-from iblrig_tasks._iblrig_tasks_neuroModulatorChoiceWorld.task import SessionRelatedBlocks as NeuroModulatorChoiceWorldSession
+from iblrig_tasks._iblrig_tasks_neuroModulatorChoiceWorld.task import Session as NeuroModulatorChoiceWorldSession
 
 
 class TestBiasedChoiceWorld(unittest.TestCase):
@@ -39,6 +39,7 @@ class TestBiasedChoiceWorld(unittest.TestCase):
         # makes sure the water reward counts check out
         assert task.trials_table['reward_amount'].sum() == task.aggregates.water_delivered
         assert np.sum(task.trials_table['reward_amount'] == 0) == task.trial_num + 1 - task.aggregates.ntrials_correct
+        assert np.all(~np.isnan(task.trials_table['reward_valve_time']))
         # Test the blocks task logic
         df_blocks = task.trials_table.groupby('block_num').agg(
             count=pd.NamedAgg(column="stim_angle", aggfunc="count"),

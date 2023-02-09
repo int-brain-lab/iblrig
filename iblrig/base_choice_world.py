@@ -205,6 +205,7 @@ class ChoiceWorldSession(
         # if the reward state has not been triggered, null the reward
         if np.isnan(bpod_data['States timestamps']['reward'][0][0]):
             self.trials_table.at[self.trial_num, 'reward_amount'] = 0
+        self.trials_table.at[self.trial_num, 'reward_valve_time'] = self.reward_time
         # update cumulative reward value
         self.aggregates.water_delivered += self.trials_table.at[self.trial_num, 'reward_amount']
         # Update response buffer -1 for left, 0 for nogo, and 1 for rightward
@@ -237,6 +238,9 @@ class ChoiceWorldSession(
         )
 
     def check_sync_pulses(self, bpod_data):
+        # todo move this in the post trial when we have a task flow
+        if not self.bpod.is_connected:
+            return
         events = bpod_data["Events timestamps"]
         ev_bnc1 = misc.get_port_events(events, name="BNC1")
         ev_bnc2 = misc.get_port_events(events, name="BNC2")

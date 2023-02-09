@@ -25,6 +25,10 @@ class Bpod(BpodIO):
         self.actions = Bunch({})
 
     @property
+    def is_connected(self):
+        return self.modules is not None
+
+    @property
     def rotary_encoder(self):
         return self.get_module("rotary_encoder")
 
