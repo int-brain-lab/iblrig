@@ -5,7 +5,6 @@ import datetime
 import json
 import logging
 import os
-import re
 from pathlib import Path
 import subprocess
 
@@ -13,9 +12,7 @@ import yaml
 from iblutil.util import Bunch
 
 import iblrig
-from dateutil import parser
 from iblrig import params as pybpod_params
-from iblrig import raw_data_loaders
 
 log = logging.getLogger("iblrig")
 
@@ -153,177 +150,6 @@ def make_folder(str1: str or Path) -> None:
     log.debug(f"Created folder {path}")
 
 
-def get_subfolder_paths(path: Path) -> list:
-    """Get a list of all subfolders in a given folder."""
-    return [x for x in path.iterdir() if x.is_dir()]
-
-
-def get_previous_session_folders(subject_name: str, session_folder: str, remote_subject_folder: str = None) -> list:
-    """Function to find the all previous session folders, evaluates the local and remote storage.
-    Returned list will be sorted by date/number, this list will include duplicates if the same
-    date is found on both remote and local. Returned list will be empty if no previous sessions
-    are found on either the remote or local storage.
-
-    :param subject_name: name of the subject, ex: 'ZM_1098' or '_iblrig_test_mouse'
-    :type subject_name: str
-    :param session_folder: session folder to be created, ex:
-        'C:\\iblrig_data\\Subjects\\_iblrig_test_mouse\\2022-02-11\\001'
-    :type session_folder: str
-    :param remote_subject_folder: override target folder for testing
-    :type remote_subject_folder: str
-    :return: list of strings or an empty list
-    :rtype: list
-    """
-    log.debug("Looking for previous session folders")
-
-    # Set local folder Path and verify it exists
-    local_subject_folder = get_iblrig_local_data_path(subjects=True) / subject_name
-    local_subject_folder_exists = local_subject_folder.exists()
-
-    # Set remote folder Path and verify it exists
-    # Ensure returned value is not None for remote drive, important before using Path()
-    remote_subject_folder = remote_subject_folder or str(get_iblrig_remote_server_data_path(subjects=True))
-    if remote_subject_folder is not None:
-        remote_subject_folder = Path(remote_subject_folder) / subject_name
-        remote_subject_folder_exists = remote_subject_folder.exists()
-    else:
-        remote_subject_folder_exists = False
-
-    # Set return list and date_folder_list variables
-    previous_session_folders, date_folder_list = [], []
-
-    if (not local_subject_folder_exists) & (not remote_subject_folder_exists):
-        log.debug(
-            f"NOT FOUND: No previous sessions for subject {local_subject_folder.name} on "
-            f"lab server or rig computer"
-        )
-        # Return empty list
-        return previous_session_folders
-    elif local_subject_folder_exists & (not remote_subject_folder_exists):
-        log.debug(
-            f"NOT FOUND: No previous sessions for subject {local_subject_folder.name} on "
-            f"lab server"
-        )
-        # Build out date path for local
-        date_folder_list.extend(get_subfolder_paths(local_subject_folder))
-    elif remote_subject_folder_exists & (not local_subject_folder_exists):
-        log.debug(
-            f"NOT FOUND: No previous sessions for subject {local_subject_folder.name} on "
-            f"rig computer; setting to remote"
-        )
-        # Build out date path for remote
-        date_folder_list.extend(get_subfolder_paths(remote_subject_folder))
-
-    # Previous sessions found on both local rig and remote lab server
-    else:
-        # generate list of all subject folders with date
-        # NOTE: this includes duplicate dates if data is on both local and remote
-        date_folder_list.extend(get_subfolder_paths(local_subject_folder))
-        date_folder_list.extend(get_subfolder_paths(remote_subject_folder))
-
-    # find the key that we want to sort the date_folder_list
-    def date_folder_list_sort_key(e: Path) -> datetime.datetime:
-        # parses the date from the folder name, .../subject/yyyy-mm-dd to datetime object
-        return parser.parse(e.parts[-1].replace('_', ':'))
-
-    # Add filter for only dates
-    date_folder_list = [x for x in date_folder_list if re.match(r".*\d{4}-\d{2}-\d{2}", str(x))]
-    # sort list of folders for subject_folder with dates
-    date_folder_list.sort(key=date_folder_list_sort_key)
-
-    # Build out previous_session_folders paths
-    for date_folders in date_folder_list:
-        for sess_folder in get_subfolder_paths(date_folders):
-            previous_session_folders.append(sess_folder)
-
-    # Check if session_folder is contained in previous_session_folders
-    previous_session_folders = [x for x in sorted(previous_session_folders) if session_folder != x]
-    if not previous_session_folders:
-        log.debug(f"NOT FOUND: No previous sessions for subject {subject_name}")
-        return previous_session_folders
-
-    # No errors encountered
-    log.debug(f"Found {len(previous_session_folders)} session folders for mouse {subject_name}")
-
-    # list of all previous session folders on both remote and local, sorted by date/number
-    #   NOTE: this includes duplicates if the same date is found on both remote and local
-    return previous_session_folders
-
-
-def get_previous_data_files(protocol: str, subject_name: str, session_folder: str, typ: str = "data") -> list:
-    log.debug(f"Looking for previous files of type: {typ}")
-    prev_data_files = []
-    prev_session_files = []
-    data_fname = "_iblrig_taskData.raw.jsonable"
-    settings_fname = "_iblrig_taskSettings.raw.json"
-    log.debug(f"Looking for files:{data_fname} AND {settings_fname}")
-    for prev_sess_path in get_previous_session_folders(subject_name, session_folder):
-        prev_sess_path = Path(prev_sess_path) / "raw_behavior_data"
-        # Get all data and settings file if they both exist
-        if (prev_sess_path / data_fname).exists() and (prev_sess_path / settings_fname).exists():
-            prev_data_files.append(prev_sess_path / data_fname)
-            prev_session_files.append(prev_sess_path / settings_fname)
-    log.debug(f"Found {len(prev_data_files)} file pairs")
-    # Remove empty files
-    ds_out = [
-        (d, s)
-        for d, s in zip(prev_data_files, prev_session_files)
-        if d.stat().st_size != 0 and s.stat().st_size != 0
-    ]
-    log.debug(f"Found {len(ds_out)} non empty file pairs")
-    # Remove sessions of different task protocols
-    ds_out = [
-        (d, s)
-        for d, s in ds_out
-        if protocol in raw_data_loaders.load_settings(str(s.parent.parent))["PYBPOD_PROTOCOL"]
-    ]
-    log.debug(f"Found {len(ds_out)} file pairs for protocol {protocol}")
-    data_out = [str(d) for d, s in ds_out]
-    settings_out = [str(s) for d, s in ds_out]
-    if not data_out:
-        log.debug(f"NOT FOUND: Previous data files for task {protocol}")
-    if not settings_out:
-        log.debug(f"NOT FOUND: Previous settings files for task {protocol}")
-    log.debug(f"Returning {typ} files")
-
-    return data_out if typ == "data" else settings_out
-
-
-def get_previous_data_file(protocol: str, subject_name: str, session_folder: str):
-    log.debug("Getting previous data file")
-    out = sorted(get_previous_data_files(protocol, subject_name, session_folder))
-    if out:
-        log.debug(f"Previous data file: {out[-1]}")
-        return out[-1]
-    else:
-        log.debug("NOT FOUND: Previous data file")
-        return None
-
-
-def get_previous_settings_file(protocol: str, subject_name: str, session_folder: str):
-    log.debug("Getting previous settings file")
-    out = sorted(get_previous_data_files(protocol, subject_name, session_folder, typ="settings"))
-    if out:
-        log.debug(f"Previous settings file: {out[-1]}")
-        return out[-1]
-    else:
-        log.debug("NOT FOUND: Previous settings file")
-        return None
-
-
-def get_previous_session_path(protocol: str, subject_name: str, session_folder: str):
-    log.debug("Getting previous session path")
-    previous_data_file = get_previous_data_file(protocol, subject_name, session_folder)
-    if previous_data_file is not None:
-        out = str(Path(previous_data_file).parent.parent)
-        log.debug(f"Previous session path: {out}")
-    else:
-        out = None
-        log.debug("NOT FOUND: Previous session path")
-
-    return out
-
-
 def get_bonsai_path(use_iblrig_bonsai: bool = True) -> str:
     """Checks for Bonsai folder in iblrig. Returns string with bonsai executable path."""
     iblrig_folder = get_iblrig_path()
@@ -434,21 +260,10 @@ class SessionPathCreator(object):
         if str(self.LATEST_WATER_CALIBRATION_FILE) == ".":
             self.LATEST_WATER_CALIBRATION_FILE = None
             self.LATEST_WATER_CALIB_RANGE_FILE = None
-        # Previous session files
-        # TODO: next 3 functions accept
-        self.PREVIOUS_DATA_FILE = get_previous_data_file(
-            self._PROTOCOL, self.SUBJECT_NAME, self.SESSION_FOLDER
-        )
-        self.PREVIOUS_SETTINGS_FILE = get_previous_settings_file(
-            self._PROTOCOL, self.SUBJECT_NAME, self.SESSION_FOLDER
-        )
-        self.PREVIOUS_SESSION_PATH = get_previous_session_path(
-            self._PROTOCOL, self.SUBJECT_NAME, self.SESSION_FOLDER
-        )
-
         if make:
             self.make_missing_folders(make)
         self.display_logs()
+        self.PREVIOUS_DATA_FILE = None
 
     def make_missing_folders(self, makelist):
         """
