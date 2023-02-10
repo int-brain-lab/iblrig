@@ -186,7 +186,7 @@ def run(*args, interactive=False, **kwargs):
                 state_timer=sess.task_params.RESPONSE_WINDOW,
                 output_actions=[sess.bpod.actions.bonsai_closed_loop],
                 state_change_conditions={
-                    "Tup": "omit_nogo",
+                    "Tup": "omit_no_go",
                     sess.event_error: "omit_error",
                     sess.event_reward: "omit_correct",
                 },
@@ -205,7 +205,7 @@ def run(*args, interactive=False, **kwargs):
 
         # here we create 3 separates states to disambiguate the choice of the mouse
         # in the output data - apart from the name they are exactly the same state
-        for state_name in ['omit_error', 'omit_correct', 'omit_nogo']:
+        for state_name in ['omit_error', 'omit_correct', 'omit_no_go']:
             sma.add_state(
                 state_name=state_name,
                 state_timer=(sess.task_params.FEEDBACK_NOGO_DELAY_SECS
