@@ -1,5 +1,5 @@
 import logging
-import argparse
+import time
 
 import numpy as np
 from pybpodapi.protocol import StateMachine
@@ -95,6 +95,7 @@ def run(*args, interactive=False, **kwargs):
     sess = Session(*args, interactive=interactive, **kwargs)
     sess.start()
 
+    time_last_trial_end = time.time()
     for i in range(sess.task_params.NTRIALS):  # Main loop
         sess.next_trial()
         log.info(f"Starting trial: {i + 1}")
@@ -292,7 +293,7 @@ def run(*args, interactive=False, **kwargs):
 
         sma.add_state(
             state_name="exit_state",
-            state_timer=sess.task_params.ITI_DELAY_SECS,
+            state_timer=0.5,
             output_actions=[("BNC1", 255)],
             state_change_conditions={"Tup": "exit"},
         )
@@ -300,9 +301,12 @@ def run(*args, interactive=False, **kwargs):
         # Send state machine description to Bpod device
         sess.bpod.send_state_machine(sma)
         # Run state machine
-        if not sess.bpod.run_state_machine(sma):  # Locks until state machine 'exit' is reached
-            break
-
+        dt = sess.task_params.ITI_DELAY_SECS - .5 - (time.time() - time_last_trial_end)
+        # wait to achieve the desired ITI duration
+        if dt > 0:
+            time.sleep(dt)
+        sess.bpod.run_state_machine(sma)  # Locks until state machine 'exit' is reached
+        time_last_trial_end = time.time()
         sess.trial_completed(sess.bpod.session.current_trial.export())
         sess.show_trial_log()
 
