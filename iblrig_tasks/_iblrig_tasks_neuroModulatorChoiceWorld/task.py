@@ -1,5 +1,4 @@
 import logging
-import time
 
 import numpy as np
 from pybpodapi.protocol import StateMachine
@@ -44,6 +43,204 @@ class Session(BiasedChoiceWorldSession):
     @property
     def choice_to_feedback_delay(self):
         return self.trials_table.at[self.trial_num, 'choice_delay']
+
+    def get_state_machine_trial(self, i):
+        sma = StateMachine(self.bpod)
+
+        if i == 0:  # First trial exception start camera
+            session_delay_start = self.task_params.get("SESSION_DELAY_START", 0)
+            log.info("First trial initializing, will move to next trial only if:")
+            log.info("1. camera is detected")
+            log.info(f"2. {session_delay_start} sec have elapsed")
+            sma.add_state(
+                state_name="trial_start",
+                state_timer=0,
+                state_change_conditions={"Port1In": "delay_initiation"},
+                output_actions=[("SoftCode", 3), ("BNC1", 255)],
+            )  # start camera
+            sma.add_state(
+                state_name="delay_initiation",
+                state_timer=session_delay_start,
+                output_actions=[],
+                state_change_conditions={"Tup": "reset_rotary_encoder"},
+            )
+        else:
+            sma.add_state(
+                state_name="trial_start",
+                state_timer=0,  # ~100µs hardware irreducible delay
+                state_change_conditions={"Tup": "reset_rotary_encoder"},
+                output_actions=[self.sound.OUT_STOP_SOUND, ("BNC1", 255)],
+            )  # stop all sounds
+
+        sma.add_state(
+            state_name="reset_rotary_encoder",
+            state_timer=0,
+            output_actions=[self.bpod.actions.rotary_encoder_reset],
+            state_change_conditions={"Tup": "quiescent_period"},
+        )
+
+        sma.add_state(  # '>back' | '>reset_timer'
+            state_name="quiescent_period",
+            state_timer=self.quiescent_period,
+            output_actions=[],
+            state_change_conditions={
+                "Tup": "stim_on",
+                self.movement_left: "reset_rotary_encoder",
+                self.movement_right: "reset_rotary_encoder",
+            },
+        )
+
+        sma.add_state(
+            state_name="stim_on",
+            state_timer=0.1,
+            output_actions=[self.bpod.actions.bonsai_show_stim],
+            state_change_conditions={
+                "Tup": "interactive_delay",
+                "BNC1High": "interactive_delay",
+                "BNC1Low": "interactive_delay",
+            },
+        )
+
+        sma.add_state(
+            state_name="interactive_delay",
+            state_timer=self.task_params.INTERACTIVE_DELAY,
+            output_actions=[],
+            state_change_conditions={"Tup": "play_tone"},
+        )
+
+        sma.add_state(
+            state_name="play_tone",
+            state_timer=0.1,
+            output_actions=[self.sound.OUT_TONE, ("BNC1", 255)],
+            state_change_conditions={
+                "Tup": "reset2_rotary_encoder",
+                "BNC2High": "reset2_rotary_encoder",
+            },
+        )
+
+        sma.add_state(
+            state_name="reset2_rotary_encoder",
+            state_timer=0,
+            output_actions=[self.bpod.actions.rotary_encoder_reset],
+            state_change_conditions={"Tup": "closed_loop"},
+        )
+
+        if self.omit_feedback:
+            sma.add_state(
+                state_name="closed_loop",
+                state_timer=self.task_params.RESPONSE_WINDOW,
+                output_actions=[self.bpod.actions.bonsai_closed_loop],
+                state_change_conditions={
+                    "Tup": "omit_no_go",
+                    self.event_error: "omit_error",
+                    self.event_reward: "omit_correct",
+                },
+            )
+        else:
+            sma.add_state(
+                state_name="closed_loop",
+                state_timer=self.task_params.RESPONSE_WINDOW,
+                output_actions=[self.bpod.actions.bonsai_closed_loop],
+                state_change_conditions={
+                    "Tup": "delay_no_go",
+                    self.event_error: "delay_error",
+                    self.event_reward: "delay_reward",
+                },
+            )
+
+        # here we create 3 separates states to disambiguate the choice of the mouse
+        # in the output data - apart from the name they are exactly the same state
+        for state_name in ['omit_error', 'omit_correct', 'omit_no_go']:
+            sma.add_state(
+                state_name=state_name,
+                state_timer=(self.task_params.FEEDBACK_NOGO_DELAY_SECS
+                             + self.task_params.FEEDBACK_ERROR_DELAY_SECS
+                             + self.task_params.FEEDBACK_CORRECT_DELAY_SECS) / 3,
+                output_actions=[],
+                state_change_conditions={"Tup": "hide_stim"},
+            )
+
+        sma.add_state(
+            state_name="delay_no_go",
+            state_timer=self.choice_to_feedback_delay,
+            state_change_conditions={"Tup": "no_go"},
+            output_actions=[],
+        )
+
+        sma.add_state(
+            state_name="no_go",
+            state_timer=self.task_params.FEEDBACK_NOGO_DELAY_SECS,
+            output_actions=[self.bpod.actions.bonsai_hide_stim, self.sound.OUT_NOISE],
+            state_change_conditions={"Tup": "exit_state"},
+        )
+
+        sma.add_state(
+            state_name="delay_error",
+            state_timer=self.choice_to_feedback_delay,
+            state_change_conditions={"Tup": "freeze_error"},
+            output_actions=[],
+        )
+
+        sma.add_state(
+            state_name="freeze_error",
+            state_timer=0,
+            output_actions=[self.bpod.actions.bonsai_freeze_stim],
+            state_change_conditions={"Tup": "error"},
+        )
+
+        sma.add_state(
+            state_name="error",
+            state_timer=self.task_params.FEEDBACK_ERROR_DELAY_SECS,
+            output_actions=[self.sound.OUT_NOISE],
+            state_change_conditions={"Tup": "hide_stim"},
+        )
+
+        sma.add_state(
+            state_name="delay_reward",
+            state_timer=self.choice_to_feedback_delay,
+            state_change_conditions={"Tup": "freeze_reward"},
+            output_actions=[],
+        )
+
+        sma.add_state(
+            state_name="freeze_reward",
+            state_timer=0,
+            output_actions=[self.bpod.actions.bonsai_freeze_stim],
+            state_change_conditions={"Tup": "reward"},
+        )
+
+        sma.add_state(
+            state_name="reward",
+            state_timer=self.reward_time,
+            output_actions=[("Valve1", 255)],
+            state_change_conditions={"Tup": "correct"},
+        )
+
+        sma.add_state(
+            state_name="correct",
+            state_timer=self.task_params.FEEDBACK_CORRECT_DELAY_SECS,
+            output_actions=[],
+            state_change_conditions={"Tup": "hide_stim"},
+        )
+
+        sma.add_state(
+            state_name="hide_stim",
+            state_timer=0.1,
+            output_actions=[self.bpod.actions.bonsai_hide_stim],
+            state_change_conditions={
+                "Tup": "exit_state",
+                "BNC1High": "exit_state",
+                "BNC1Low": "exit_state",
+            },
+        )
+
+        sma.add_state(
+            state_name="exit_state",
+            state_timer=0.5,
+            output_actions=[("BNC1", 255)],
+            state_change_conditions={"Tup": "exit"},
+        )
+        return sma
 
 
 class SessionRelatedBlocks(Session):
@@ -91,236 +288,9 @@ class SessionRelatedBlocks(Session):
         return np.random.choice(REWARD_AMOUNTS, p=probas)
 
 
-def run(*args, interactive=False, **kwargs):
-    sess = Session(*args, interactive=interactive, **kwargs)
-    sess.start()
-
-    time_last_trial_end = time.time()
-    for i in range(sess.task_params.NTRIALS):  # Main loop
-        sess.next_trial()
-        log.info(f"Starting trial: {i + 1}")
-        # =============================================================================
-        #     Start state machine definition
-        # =============================================================================
-        sma = StateMachine(sess.bpod)
-
-        if i == 0:  # First trial exception start camera
-            session_delay_start = sess.task_params.get("SESSION_DELAY_START", 0)
-            log.info("First trial initializing, will move to next trial only if:")
-            log.info("1. camera is detected")
-            log.info(f"2. {session_delay_start} sec have elapsed")
-            sma.add_state(
-                state_name="trial_start",
-                state_timer=0,
-                state_change_conditions={"Port1In": "delay_initiation"},
-                output_actions=[("SoftCode", 3), ("BNC1", 255)],
-            )  # start camera
-            sma.add_state(
-                state_name="delay_initiation",
-                state_timer=session_delay_start,
-                output_actions=[],
-                state_change_conditions={"Tup": "reset_rotary_encoder"},
-            )
-        else:
-            sma.add_state(
-                state_name="trial_start",
-                state_timer=0,  # ~100µs hardware irreducible delay
-                state_change_conditions={"Tup": "reset_rotary_encoder"},
-                output_actions=[sess.sound.OUT_STOP_SOUND, ("BNC1", 255)],
-            )  # stop all sounds
-
-        sma.add_state(
-            state_name="reset_rotary_encoder",
-            state_timer=0,
-            output_actions=[sess.bpod.actions.rotary_encoder_reset],
-            state_change_conditions={"Tup": "quiescent_period"},
-        )
-
-        sma.add_state(  # '>back' | '>reset_timer'
-            state_name="quiescent_period",
-            state_timer=sess.quiescent_period,
-            output_actions=[],
-            state_change_conditions={
-                "Tup": "stim_on",
-                sess.movement_left: "reset_rotary_encoder",
-                sess.movement_right: "reset_rotary_encoder",
-            },
-        )
-
-        sma.add_state(
-            state_name="stim_on",
-            state_timer=0.1,
-            output_actions=[sess.bpod.actions.bonsai_show_stim],
-            state_change_conditions={
-                "Tup": "interactive_delay",
-                "BNC1High": "interactive_delay",
-                "BNC1Low": "interactive_delay",
-            },
-        )
-
-        sma.add_state(
-            state_name="interactive_delay",
-            state_timer=sess.task_params.INTERACTIVE_DELAY,
-            output_actions=[],
-            state_change_conditions={"Tup": "play_tone"},
-        )
-
-        sma.add_state(
-            state_name="play_tone",
-            state_timer=0.1,
-            output_actions=[sess.sound.OUT_TONE, ("BNC1", 255)],
-            state_change_conditions={
-                "Tup": "reset2_rotary_encoder",
-                "BNC2High": "reset2_rotary_encoder",
-            },
-        )
-
-        sma.add_state(
-            state_name="reset2_rotary_encoder",
-            state_timer=0,
-            output_actions=[sess.bpod.actions.rotary_encoder_reset],
-            state_change_conditions={"Tup": "closed_loop"},
-        )
-
-        if sess.omit_feedback:
-            sma.add_state(
-                state_name="closed_loop",
-                state_timer=sess.task_params.RESPONSE_WINDOW,
-                output_actions=[sess.bpod.actions.bonsai_closed_loop],
-                state_change_conditions={
-                    "Tup": "omit_no_go",
-                    sess.event_error: "omit_error",
-                    sess.event_reward: "omit_correct",
-                },
-            )
-        else:
-            sma.add_state(
-                state_name="closed_loop",
-                state_timer=sess.task_params.RESPONSE_WINDOW,
-                output_actions=[sess.bpod.actions.bonsai_closed_loop],
-                state_change_conditions={
-                    "Tup": "delay_no_go",
-                    sess.event_error: "delay_error",
-                    sess.event_reward: "delay_reward",
-                },
-            )
-
-        # here we create 3 separates states to disambiguate the choice of the mouse
-        # in the output data - apart from the name they are exactly the same state
-        for state_name in ['omit_error', 'omit_correct', 'omit_no_go']:
-            sma.add_state(
-                state_name=state_name,
-                state_timer=(sess.task_params.FEEDBACK_NOGO_DELAY_SECS
-                             + sess.task_params.FEEDBACK_ERROR_DELAY_SECS
-                             + sess.task_params.FEEDBACK_CORRECT_DELAY_SECS) / 3,
-                output_actions=[],
-                state_change_conditions={"Tup": "hide_stim"},
-            )
-
-        sma.add_state(
-            state_name="delay_no_go",
-            state_timer=sess.choice_to_feedback_delay,
-            state_change_conditions={"Tup": "no_go"},
-            output_actions=[],
-        )
-
-        sma.add_state(
-            state_name="no_go",
-            state_timer=sess.task_params.FEEDBACK_NOGO_DELAY_SECS,
-            output_actions=[sess.bpod.actions.bonsai_hide_stim, sess.sound.OUT_NOISE],
-            state_change_conditions={"Tup": "exit_state"},
-        )
-
-        sma.add_state(
-            state_name="delay_error",
-            state_timer=sess.choice_to_feedback_delay,
-            state_change_conditions={"Tup": "freeze_error"},
-            output_actions=[],
-        )
-
-        sma.add_state(
-            state_name="freeze_error",
-            state_timer=0,
-            output_actions=[sess.bpod.actions.bonsai_freeze_stim],
-            state_change_conditions={"Tup": "error"},
-        )
-
-        sma.add_state(
-            state_name="error",
-            state_timer=sess.task_params.FEEDBACK_ERROR_DELAY_SECS,
-            output_actions=[sess.sound.OUT_NOISE],
-            state_change_conditions={"Tup": "hide_stim"},
-        )
-
-        sma.add_state(
-            state_name="delay_reward",
-            state_timer=sess.choice_to_feedback_delay,
-            state_change_conditions={"Tup": "freeze_reward"},
-            output_actions=[],
-        )
-
-        sma.add_state(
-            state_name="freeze_reward",
-            state_timer=0,
-            output_actions=[sess.bpod.actions.bonsai_freeze_stim],
-            state_change_conditions={"Tup": "reward"},
-        )
-
-        sma.add_state(
-            state_name="reward",
-            state_timer=sess.reward_time,
-            output_actions=[("Valve1", 255)],
-            state_change_conditions={"Tup": "correct"},
-        )
-
-        sma.add_state(
-            state_name="correct",
-            state_timer=sess.task_params.FEEDBACK_CORRECT_DELAY_SECS,
-            output_actions=[],
-            state_change_conditions={"Tup": "hide_stim"},
-        )
-
-        sma.add_state(
-            state_name="hide_stim",
-            state_timer=0.1,
-            output_actions=[sess.bpod.actions.bonsai_hide_stim],
-            state_change_conditions={
-                "Tup": "exit_state",
-                "BNC1High": "exit_state",
-                "BNC1Low": "exit_state",
-            },
-        )
-
-        sma.add_state(
-            state_name="exit_state",
-            state_timer=0.5,
-            output_actions=[("BNC1", 255)],
-            state_change_conditions={"Tup": "exit"},
-        )
-
-        # Send state machine description to Bpod device
-        sess.bpod.send_state_machine(sma)
-        # Run state machine
-        dt = sess.task_params.ITI_DELAY_SECS - .5 - (time.time() - time_last_trial_end)
-        # wait to achieve the desired ITI duration
-        if dt > 0:
-            time.sleep(dt)
-        sess.bpod.run_state_machine(sma)  # Locks until state machine 'exit' is reached
-        time_last_trial_end = time.time()
-        sess.trial_completed(sess.bpod.session.current_trial.export())
-        sess.show_trial_log()
-
-    sess.bpod.close()
-
-
 if __name__ == "__main__":
-    # parse the given arguments
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-s", "--subject", help="subject name, something like 'ZFM-05725' or 'UCLA067'")
-    parser.add_argument("-p", "--project", help="project name, something like 'psychedelics' or 'ibl_neuropixel_brainwide_01'")
-    parser.add_argument(
-        "-c", "--procedure", help="longer description of what is occuring, something like 'Ephys recording with acute probe(s)'")
-    args = parser.parse_args()
+    sess = Session(interactive=True, subject='subject_test_iblrigv8')
+    sess.run()
 
     # run the task
     run(subject=args.subject, project=args.project, procedure=args.procedure)

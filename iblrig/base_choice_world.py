@@ -7,9 +7,12 @@ import math
 import random
 import logging
 from pathlib import Path
+import time
 
 import numpy as np
 import pandas as pd
+
+from pybpodapi.protocol import StateMachine
 
 from iblutil.util import Bunch
 
@@ -140,6 +143,34 @@ class ChoiceWorldSession(
         # create the task parameter file in the raw_behavior dir
         self.output_task_parameters_to_json_file()
 
+    def run(self):
+        """
+        This is the method that runs the task with the actual state machine
+        :return:
+        """
+        self.start()
+        time_last_trial_end = time.time()
+        for i in range(self.task_params.NTRIALS):  # Main loop
+            self.next_trial()
+            log.info(f"Starting trial: {i + 1}")
+            # =============================================================================
+            #     Start state machine definition
+            # =============================================================================
+            sma = self.get_state_machine_trial(i)
+            # Send state machine description to Bpod device
+            self.bpod.send_state_machine(sma)
+            # Run state machine
+            dt = self.task_params.ITI_DELAY_SECS - .5 - (time.time() - time_last_trial_end)
+            # wait to achieve the desired ITI duration
+            if dt > 0:
+                time.sleep(dt)
+            self.bpod.run_state_machine(sma)  # Locks until state machine 'exit' is reached
+            time_last_trial_end = time.time()
+            self.trial_completed(self.bpod.session.current_trial.export())
+            self.show_trial_log()
+        # todo close mixins
+        self.bpod.close()
+
     """
     Those are the methods that need to be implemented for a new task
     """
@@ -173,6 +204,159 @@ class ChoiceWorldSession(
     @property
     def event_reward(self):
         return self.device_rotary_encoder.THRESHOLD_EVENTS[-self.position]
+
+    def get_state_machine_trial(self, i):
+        sma = StateMachine(self.bpod)
+
+        if i == 0:  # First trial exception start camera
+            session_delay_start = self.task_params.get("SESSION_DELAY_START", 0)
+            log.info("First trial initializing, will move to next trial only if:")
+            log.info("1. camera is detected")
+            log.info(f"2. {session_delay_start} sec have elapsed")
+            sma.add_state(
+                state_name="trial_start",
+                state_timer=0,
+                state_change_conditions={"Port1In": "delay_initiation"},
+                output_actions=[("SoftCode", 3), ("BNC1", 255)],
+            )  # start camera
+            sma.add_state(
+                state_name="delay_initiation",
+                state_timer=session_delay_start,
+                output_actions=[],
+                state_change_conditions={"Tup": "reset_rotary_encoder"},
+            )
+        else:
+            sma.add_state(
+                state_name="trial_start",
+                state_timer=0,  # ~100µs hardware irreducible delay
+                state_change_conditions={"Tup": "reset_rotary_encoder"},
+                output_actions=[self.sound.OUT_STOP_SOUND, ("BNC1", 255)],
+            )  # stop all sounds
+
+        sma.add_state(
+            state_name="reset_rotary_encoder",
+            state_timer=0,
+            output_actions=[self.bpod.actions.rotary_encoder_reset],
+            state_change_conditions={"Tup": "quiescent_period"},
+        )
+
+        sma.add_state(  # '>back' | '>reset_timer'
+            state_name="quiescent_period",
+            state_timer=self.quiescent_period,
+            output_actions=[],
+            state_change_conditions={
+                "Tup": "stim_on",
+                self.movement_left: "reset_rotary_encoder",
+                self.movement_right: "reset_rotary_encoder",
+            },
+        )
+
+        sma.add_state(
+            state_name="stim_on",
+            state_timer=0.1,
+            output_actions=[self.bpod.actions.bonsai_show_stim],
+            state_change_conditions={
+                "Tup": "interactive_delay",
+                "BNC1High": "interactive_delay",
+                "BNC1Low": "interactive_delay",
+            },
+        )
+
+        sma.add_state(
+            state_name="interactive_delay",
+            state_timer=self.task_params.INTERACTIVE_DELAY,
+            output_actions=[],
+            state_change_conditions={"Tup": "play_tone"},
+        )
+
+        sma.add_state(
+            state_name="play_tone",
+            state_timer=0.1,
+            output_actions=[self.sound.OUT_TONE],
+            state_change_conditions={
+                "Tup": "reset2_rotary_encoder",
+                "BNC2High": "reset2_rotary_encoder",
+            },
+        )
+
+        sma.add_state(
+            state_name="reset2_rotary_encoder",
+            state_timer=0,
+            output_actions=[self.bpod.actions.rotary_encoder_reset],
+            state_change_conditions={"Tup": "closed_loop"},
+        )
+
+        sma.add_state(
+            state_name="closed_loop",
+            state_timer=self.task_params.RESPONSE_WINDOW,
+            output_actions=[self.bpod.actions.bonsai_closed_loop],
+            state_change_conditions={
+                "Tup": "no_go",
+                self.event_error: "freeze_error",
+                self.event_reward: "freeze_reward",
+            },
+        )
+
+        sma.add_state(
+            state_name="no_go",
+            state_timer=self.task_params.FEEDBACK_NOGO_DELAY_SECS,
+            output_actions=[self.bpod.actions.bonsai_hide_stim, self.sound.OUT_NOISE],
+            state_change_conditions={"Tup": "exit_state"},
+        )
+
+        sma.add_state(
+            state_name="freeze_error",
+            state_timer=0,
+            output_actions=[self.bpod.actions.bonsai_freeze_stim],
+            state_change_conditions={"Tup": "error"},
+        )
+
+        sma.add_state(
+            state_name="error",
+            state_timer=self.task_params.FEEDBACK_ERROR_DELAY_SECS,
+            output_actions=[self.sound.OUT_NOISE],
+            state_change_conditions={"Tup": "hide_stim"},
+        )
+
+        sma.add_state(
+            state_name="freeze_reward",
+            state_timer=0,
+            output_actions=[self.bpod.actions.bonsai_freeze_stim],
+            state_change_conditions={"Tup": "reward"},
+        )
+
+        sma.add_state(
+            state_name="reward",
+            state_timer=self.reward_time,
+            output_actions=[("Valve1", 255), ("BNC1", 255)],
+            state_change_conditions={"Tup": "correct"},
+        )
+
+        sma.add_state(
+            state_name="correct",
+            state_timer=self.task_params.FEEDBACK_CORRECT_DELAY_SECS,
+            output_actions=[],
+            state_change_conditions={"Tup": "hide_stim"},
+        )
+
+        sma.add_state(
+            state_name="hide_stim",
+            state_timer=0.1,
+            output_actions=[self.bpod.actions.bonsai_hide_stim],
+            state_change_conditions={
+                "Tup": "exit_state",
+                "BNC1High": "exit_state",
+                "BNC1Low": "exit_state",
+            },
+        )
+
+        sma.add_state(
+            state_name="exit_state",
+            state_timer=self.task_params.ITI_DELAY_SECS,
+            output_actions=[("BNC1", 255)],
+            state_change_conditions={"Tup": "exit"},
+        )
+        return sma
 
     def send_trial_info_to_bonsai(self):
         """

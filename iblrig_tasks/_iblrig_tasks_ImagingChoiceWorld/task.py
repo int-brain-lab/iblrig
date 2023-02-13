@@ -1,7 +1,6 @@
 import logging
 import iblrig.misc
 from iblrig.base_choice_world import BiasedChoiceWorldSession
-from iblrig_tasks._iblrig_tasks_biasedChoiceWorld.task import run as run_biased
 log = logging.getLogger("iblrig")
 
 
@@ -15,4 +14,5 @@ class Session(BiasedChoiceWorldSession):
 
 
 def run(*args, **kwargs):
-    run_biased(sess=Session(*args, **kwargs))
+    sess = Session(*args, **kwargs)
+    sess.run()
