@@ -71,6 +71,13 @@ powershell.exe .\install.ps1
 the ONE [documentation](https://int-brain-lab.github.io/ONE/) for specifics on how to accomplish this. Then run the following 
 command or something similar for your specific setup to test it is working: `python -c "from one.api import ONE; ONE()"`
 
+### Setup instructions for launching the 'Experiment Description GUI'
+The 'Experiment Description GUI' is currently being developed in the 
+[iblscripts repo](https://github.com/int-brain-lab/iblscripts/tree/master/deploy/project_procedure_gui). 
+This GUI is intended to simplify the categorization of an experiment and cleanly define what projects and procedures an 
+experiment is for. Please refer to the iblscripts repository for instructions on how to create the separate virtual environment 
+and run the GUI.
+
 ## How to develop on this repository 
 This repository is adhering to the following conventions:
 * [semantic versioning](https://semver.org/) for consistent version numbering logic
