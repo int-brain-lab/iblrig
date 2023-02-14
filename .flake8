@@ -5,4 +5,4 @@ exclude =
     .git,
     scratch_*.py,
     Bonsai,
-    venv
+    venv*
