@@ -149,6 +149,13 @@ class ChoiceWorldSession(
         This is the method that runs the task with the actual state machine
         :return:
         """
+        import signal
+        def sigint_handler(*args, **kwargs):
+            self.paths.SESSION_FOLDER.joinpath('.stop').touch()
+            log.info(f"SIGINT signal detected, will exit at the end of the trial")
+
+        signal.signal(signal.SIGINT, sigint_handler)
+
         self.start(mock=mock)
         time_last_trial_end = time.time()
         for i in range(self.task_params.NTRIALS):  # Main loop
@@ -169,9 +176,12 @@ class ChoiceWorldSession(
             time_last_trial_end = time.time()
             self.trial_completed(self.bpod.session.current_trial.export())
             self.show_trial_log()
-        # todo close mixins
+            if self.paths.SESSION_FOLDER.joinpath('.stop').exists():
+                self.paths.SESSION_FOLDER.joinpath('.stop').unlink()
+                break
+        log.info(f"Graceful exit")
         self.bpod.close()
-
+        self.stop_mixin_bonsai_recordings()
     """
     Those are the methods that need to be implemented for a new task
     """

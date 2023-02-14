@@ -14,6 +14,7 @@ class Session(BiasedChoiceWorldSession):
 
 
 if __name__ == "__main__":
+    # python .\iblrig_tasks\_iblrig_tasks_biasedChoiceWorld\task.py --subject mysubject
     kwargs = iblrig.misc.get_task_runner_argument_parser()
     sess = Session(**kwargs)
     sess.run()

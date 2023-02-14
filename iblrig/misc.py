@@ -36,7 +36,7 @@ def get_task_runner_argument_parser():
     :return:
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument("-s", "--subject", default=None,
+    parser.add_argument("-s", "--subject", required=True,
                         help="--subject ZFM-05725")
     parser.add_argument("-p", "--project", default='',
                         help="project name, something like 'psychedelics' or 'ibl_neuropixel_brainwide_01'")
