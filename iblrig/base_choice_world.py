@@ -179,7 +179,7 @@ class ChoiceWorldSession(
             if self.paths.SESSION_FOLDER.joinpath('.stop').exists():
                 self.paths.SESSION_FOLDER.joinpath('.stop').unlink()
                 break
-        log.info(f"Graceful exit")
+        log.critical(f"Graceful exit")
         self.bpod.close()
         self.stop_mixin_bonsai_recordings()
     """

@@ -293,6 +293,3 @@ if __name__ == "__main__":
     kwargs = iblrig.misc.get_task_runner_argument_parser()
     sess = Session(**kwargs)
     sess.run()
-
-    # run the task
-    run(subject=args.subject, project=args.project, procedure=args.procedure)
