@@ -152,7 +152,7 @@ class ChoiceWorldSession(
         """
         def sigint_handler(*args, **kwargs):
             self.paths.SESSION_FOLDER.joinpath('.stop').touch()
-            log.critical(f"SIGINT signal detected, will exit at the end of the trial")
+            log.critical("SIGINT signal detected, will exit at the end of the trial")
 
         signal.signal(signal.SIGINT, sigint_handler)
 
@@ -179,7 +179,7 @@ class ChoiceWorldSession(
             if self.paths.SESSION_FOLDER.joinpath('.stop').exists():
                 self.paths.SESSION_FOLDER.joinpath('.stop').unlink()
                 break
-        log.critical(f"Graceful exit")
+        log.critical("Graceful exit")
         self.bpod.close()
         self.stop_mixin_bonsai_recordings()
     """

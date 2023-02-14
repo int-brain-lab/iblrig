@@ -2,12 +2,11 @@ import logging
 
 from iblrig import path_helper
 from iblrig.base_choice_world import BiasedChoiceWorldSession
-from iblrig.hardware import Bpod
 
 log = logging.getLogger("iblrig")
 
 
-# get hardware settings from 'settings/hardware_settings.yaml file
+# get hardware settings from 'settings/hardware_settings.yaml' file
 hardware_settings = path_helper.load_settings_yaml("hardware_settings.yaml")
 
 # check if bpod has had a COM port defined
@@ -16,16 +15,17 @@ if hardware_settings["device_bpod"]["COM_BPOD"] is None:
              "harp validation.")
     exit()
 
-# check if harp is specified as the output device
-bpod = Bpod(hardware_settings["device_sound"]["OUTPUT"])
-if bpod.sound_card != "harp":
+# verify harp is set in the 'settings/hardware_settings.yaml' file
+if hardware_settings["device_sound"]["OUTPUT"] != "harp":
     log.info(f"The sound device specified in 'settings/hardware_settings.yaml' is not 'harp', edit the settings file to change "
-             f"this.\nCurrently assigned soundcard: {bpod.sound_card}")
+             f"this.\nCurrently assigned soundcard: {hardware_settings['device_sound']['OUTPUT']}")
     exit()
 
 # connect to bpod and attempt to produce audio on harp
-bpod = Bpod()
 cw = BiasedChoiceWorldSession(interactive=False, subject='harp_validator_subject')
 cw.start_mixin_bpod()
+log.info("Successfully initialized to bpod.")
 cw.start_mixin_sound()
-# TODO: Flesh out validation
+log.info("Successuflly initialized to harp audio device")
+
+# TODO: produce audio without creating state machine?
