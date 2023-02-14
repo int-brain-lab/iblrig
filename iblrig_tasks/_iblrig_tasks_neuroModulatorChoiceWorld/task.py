@@ -3,6 +3,7 @@ import logging
 import numpy as np
 from pybpodapi.protocol import StateMachine
 
+import iblrig.misc
 from iblrig.base_choice_world import BiasedChoiceWorldSession
 
 
@@ -289,7 +290,8 @@ class SessionRelatedBlocks(Session):
 
 
 if __name__ == "__main__":
-    sess = Session(interactive=True, subject='subject_test_iblrigv8')
+    kwargs = iblrig.misc.get_task_runner_argument_parser()
+    sess = Session(**kwargs)
     sess.run()
 
     # run the task

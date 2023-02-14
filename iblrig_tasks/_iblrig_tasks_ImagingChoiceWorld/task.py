@@ -13,6 +13,7 @@ class Session(BiasedChoiceWorldSession):
         return iblrig.misc.texp(factor=0.35 * 2, min_=0.2 * 2, max_=0.5 * 2)
 
 
-def run(*args, **kwargs):
-    sess = Session(*args, **kwargs)
+if __name__ == "__main__":
+    kwargs = iblrig.misc.get_task_runner_argument_parser()
+    sess = Session(**kwargs)
     sess.run()

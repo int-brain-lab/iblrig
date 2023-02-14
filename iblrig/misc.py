@@ -5,6 +5,7 @@ Assortment of functions, frequently used, but without a great deal of commonalit
 and should, be broken out into their own files and/or classes as the organizational needs of this
 repo change over time.
 """
+import argparse
 import datetime
 import json
 import logging
@@ -27,6 +28,23 @@ FLAG_FILE_NAMES = [
 ]
 
 log = logging.getLogger("iblrig")
+
+
+def get_task_runner_argument_parser():
+    """
+    This function parses input to run the tasks. All of the variables are fed to the Session instance
+    :return:
+    """
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-s", "--subject", default=None,
+                        help="--subject ZFM-05725")
+    parser.add_argument("-p", "--project", default='',
+                        help="project name, something like 'psychedelics' or 'ibl_neuropixel_brainwide_01'")
+    parser.add_argument("-c", "--procedures", default=None,
+                        help="longer description of what is occuring, something like 'Ephys recording with acute probe(s)'")
+    kwargs = vars(parser.parse_args())
+    kwargs['interactive'] = True
+    return kwargs
 
 
 def call_exp_desc_gui():

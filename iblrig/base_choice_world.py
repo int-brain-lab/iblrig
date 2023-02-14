@@ -126,29 +126,30 @@ class ChoiceWorldSession(
             'water_delivered': 0,
         })
 
-    def start(self):
+    def start(self, mock=False):
         """
         In this step we explicitly run the start methods of the various mixins.
         The super class start method is overloaded because we need to start the different hardware pieces in order
         """
-        self.start_mixin_frame2ttl()
-        self.start_mixin_bpod()
-        self.start_mixin_valve()
-        self.start_mixin_sound()
-        self.start_mixin_rotary_encoder()
-        self.start_mixin_bonsai_cameras()
-        self.start_mixin_bonsai_microphone()
-        self.start_mixin_bonsai_visual_stimulus()
+        if not mock:
+            self.start_mixin_frame2ttl()
+            self.start_mixin_bpod()
+            self.start_mixin_valve()
+            self.start_mixin_sound()
+            self.start_mixin_rotary_encoder()
+            self.start_mixin_bonsai_cameras()
+            self.start_mixin_bonsai_microphone()
+            self.start_mixin_bonsai_visual_stimulus()
 
         # create the task parameter file in the raw_behavior dir
         self.output_task_parameters_to_json_file()
 
-    def run(self):
+    def run(self, mock=False):
         """
         This is the method that runs the task with the actual state machine
         :return:
         """
-        self.start()
+        self.start(mock=mock)
         time_last_trial_end = time.time()
         for i in range(self.task_params.NTRIALS):  # Main loop
             self.next_trial()

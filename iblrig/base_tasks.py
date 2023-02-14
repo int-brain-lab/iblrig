@@ -35,7 +35,7 @@ class BaseSession(ABC):
     base_parameters_file = None
 
     def __init__(self, debug=False, task_parameter_file=None, hardware_settings_name='hardware_settings.yaml',
-                 subject=None, project='', fmake=True):
+                 subject=None, project='', fmake=True, procedures=None):
         """
         This only handles gathering the parameters and settings for the current session
         :param debug:
