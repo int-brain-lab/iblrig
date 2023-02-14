@@ -7,6 +7,7 @@ import math
 import random
 import logging
 from pathlib import Path
+import signal
 import time
 
 import numpy as np
@@ -149,10 +150,9 @@ class ChoiceWorldSession(
         This is the method that runs the task with the actual state machine
         :return:
         """
-        import signal
         def sigint_handler(*args, **kwargs):
             self.paths.SESSION_FOLDER.joinpath('.stop').touch()
-            log.info(f"SIGINT signal detected, will exit at the end of the trial")
+            log.critical(f"SIGINT signal detected, will exit at the end of the trial")
 
         signal.signal(signal.SIGINT, sigint_handler)
 
