@@ -8,14 +8,17 @@ import random
 import logging
 from pathlib import Path
 import signal
+from string import ascii_letters
 import time
 
 import numpy as np
 import pandas as pd
 
 from pybpodapi.protocol import StateMachine
+from pybpodapi.com.messaging.trial import Trial
 
 from iblutil.util import Bunch
+from iblutil.io import jsonable
 
 import iblrig.base_tasks
 import iblrig.iotasks as iotasks
@@ -127,12 +130,12 @@ class ChoiceWorldSession(
             'water_delivered': 0,
         })
 
-    def start(self, mock=False):
+    def start(self):
         """
         In this step we explicitly run the start methods of the various mixins.
         The super class start method is overloaded because we need to start the different hardware pieces in order
         """
-        if not mock:
+        if not self.is_mock:
             self.start_mixin_frame2ttl()
             self.start_mixin_bpod()
             self.start_mixin_valve()
@@ -145,7 +148,7 @@ class ChoiceWorldSession(
         # create the task parameter file in the raw_behavior dir
         self.output_task_parameters_to_json_file()
 
-    def run(self, mock=False):
+    def run(self):
         """
         This is the method that runs the task with the actual state machine
         :return:
@@ -156,9 +159,10 @@ class ChoiceWorldSession(
 
         signal.signal(signal.SIGINT, sigint_handler)
 
-        self.start(mock=mock)
+        self.start()
         time_last_trial_end = time.time()
         for i in range(self.task_params.NTRIALS):  # Main loop
+            # t_overhead = time.time()
             self.next_trial()
             log.info(f"Starting trial: {i + 1}")
             # =============================================================================
@@ -167,6 +171,7 @@ class ChoiceWorldSession(
             sma = self.get_state_machine_trial(i)
             # Send state machine description to Bpod device
             self.bpod.send_state_machine(sma)
+            # t_overhead = time.time() - t_overhead
             # Run state machine
             dt = self.task_params.ITI_DELAY_SECS - .5 - (time.time() - time_last_trial_end)
             # wait to achieve the desired ITI duration
@@ -182,42 +187,86 @@ class ChoiceWorldSession(
         log.critical("Graceful exit")
         self.bpod.close()
         self.stop_mixin_bonsai_recordings()
-    """
-    Those are the methods that need to be implemented for a new task
-    """
-    @abstractmethod
-    def new_block(self):
-        pass
 
-    @abstractmethod
-    def next_trial(self):
-        pass
+    def mock(self, file_jsonable_fixture):
+        """
+        This methods serves to instantiate a state machine and bpod object to simulate a taks run.
+        This is useful to test or display the state machine flow
+        """
+        super(ChoiceWorldSession, self).mock()
 
-    """
-    Those are the properties that are used in the state machine code
-    """
-    @property
-    def reward_time(self):
-        return self.compute_reward_time(amount_ul=self.trials_table.at[self.trial_num, 'reward_amount'])
+        if file_jsonable_fixture is not None:
+            task_data = jsonable.read(file_jsonable_fixture)
+            # pop-out the bpod data from the table
+            bpod_data = []
+            for td in task_data:
+                bpod_data.append(td.pop('behavior_data'))
 
-    @property
-    def quiescent_period(self):
-        return self.trials_table.at[self.trial_num, 'quiescent_period']
+            class MockTrial(Trial):
+                def export(self):
+                    return np.random.choice(bpod_data)
+        else:
+            class MockTrial(Trial):
+                def export(self):
+                    return {}
 
-    @property
-    def position(self):
-        return self.trials_table.at[self.trial_num, 'position']
+        self.bpod.session.trials = [MockTrial()]
+        self.bpod.send_state_machine = lambda k: None
+        self.bpod.run_state_machine = lambda k: time.sleep(1.2)
 
-    @property
-    def event_error(self):
-        return self.device_rotary_encoder.THRESHOLD_EVENTS[self.position]
+        daction = ('dummy', 'action')
+        self.sound = Bunch({
+            'GO_TONE': daction,
+            'WHITE_NOISE': daction,
+            'OUT_TONE': daction,
+            'OUT_NOISE': daction,
+            'OUT_STOP_SOUND': daction,
+        })
 
-    @property
-    def event_reward(self):
-        return self.device_rotary_encoder.THRESHOLD_EVENTS[-self.position]
+        self.bpod.actions.update({
+            'play_tone': daction,
+            'play_noise': daction,
+            'stop_sound': daction,
+            'rotary_encoder_reset': daction,
+            'bonsai_hide_stim': daction,
+            'bonsai_show_stim': daction,
+            'bonsai_closed_loop': daction,
+            'bonsai_freeze_stim': daction,
+            'bonsai_show_center': daction,
+        })
+
+    def get_graphviz_task(self, output_file=None):
+        """
+        For a given task, outputs the state machine states diagram in Digraph format
+        :param output_file:
+        :return:
+        """
+        import graphviz
+        self.next_trial()
+        sma = self.get_state_machine_trial(0)
+        states_indices = {i: k for i, k in enumerate(sma.state_names)}
+        states_indices.update({(i + 10000): k for i, k in enumerate(sma.undeclared)})
+        states_letters = {k: ascii_letters[i] for i, k in enumerate(sma.state_names)}
+        dot = graphviz.Digraph(comment='The Great IBL Task')
+        edges = []
+
+        for i in range(len(sma.state_names)):
+            letter = states_letters[sma.state_names[i]]
+            dot.node(letter, sma.state_names[i])
+            if ~np.isnan(sma.state_timer_matrix[i]):
+                out_state = states_indices[sma.state_timer_matrix[i]]
+                edges.append(f"{letter}{states_letters[out_state]}")
+            for input in sma.input_matrix[i]:
+                if input[0] == 0:
+                    edges.append(f"{letter}{states_letters[states_indices[input[1]]]}")
+        dot.edges(edges)
+        if output_file is not None:
+            dot.render(output_file, view=True)
+        return dot
 
     def get_state_machine_trial(self, i):
-        sma = StateMachine(self.bpod)
+
+        sma = StateMachine(self.bpod)  # TODO try instantiate only once for each trial type
 
         if i == 0:  # First trial exception start camera
             session_delay_start = self.task_params.get("SESSION_DELAY_START", 0)
@@ -516,6 +565,40 @@ LAST GAIN:                     {self.LAST_TRIAL_DATA["stim_gain"]}
 PREVIOUS WEIGHT:               {self.LAST_SETTINGS_DATA["SUBJECT_WEIGHT"]}
 ##########################################"""
             log.info(msg)
+
+    """
+    Those are the methods that need to be implemented for a new task
+    """
+    @abstractmethod
+    def new_block(self):
+        pass
+
+    @abstractmethod
+    def next_trial(self):
+        pass
+
+    """
+    Those are the properties that are used in the state machine code
+    """
+    @property
+    def reward_time(self):
+        return self.compute_reward_time(amount_ul=self.trials_table.at[self.trial_num, 'reward_amount'])
+
+    @property
+    def quiescent_period(self):
+        return self.trials_table.at[self.trial_num, 'quiescent_period']
+
+    @property
+    def position(self):
+        return self.trials_table.at[self.trial_num, 'position']
+
+    @property
+    def event_error(self):
+        return self.device_rotary_encoder.THRESHOLD_EVENTS[self.position]
+
+    @property
+    def event_reward(self):
+        return self.device_rotary_encoder.THRESHOLD_EVENTS[-self.position]
 
 
 class BiasedChoiceWorldSession(ChoiceWorldSession):

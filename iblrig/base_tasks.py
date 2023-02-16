@@ -33,6 +33,7 @@ OSC_CLIENT_IP = "127.0.0.1"
 
 class BaseSession(ABC):
     base_parameters_file = None
+    is_mock = False
 
     def __init__(self, debug=False, task_parameter_file=None, hardware_settings_name='hardware_settings.yaml',
                  subject=None, project='', fmake=True, procedures=None):
@@ -119,6 +120,9 @@ class BaseSession(ABC):
     @property
     def time_elapsed(self):
         return datetime.datetime.now() - self.init_datetime
+
+    def mock(self):
+        self.is_mock = True
 
 
 class OSCClient(udp_client.SimpleUDPClient):
