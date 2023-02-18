@@ -90,7 +90,8 @@ class BaseSession(ABC):
         """
         output_dict = dict(self.task_params)  # Grab parameters from task_params session
         output_dict.update(dict(self.hardware_settings))  # Update dict with hardware settings from session
-        # TODO: add subject, project, and task protocol to output
+        output_dict.update(dict(self.session_info))  # Update dict with session_info (subject, procedure, projects)
+        output_dict.update({"PYBPOD_PROTOCOL": self.pybpod_settings["PYBPOD_PROTOCOL"]})
 
         # Output dict to json file
         json_file = self.paths.SESSION_FOLDER / "raw_behavior_data" / "_iblrig_taskSettings.raw.json"
@@ -472,7 +473,7 @@ class SoundMixin:
             amplitude=self.task_params.WHITE_NOISE_AMPLITUDE,
             fade=0.01,
             chans=self.sound['channels'])
-        print(" toto")
+
         # SoundCard config params
         if self.hardware_settings.device_sound['OUTPUT'] == 'harp':
             sound.configure_sound_card(
