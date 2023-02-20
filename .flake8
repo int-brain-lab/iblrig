@@ -1,7 +1,8 @@
 [flake8]
 max-line-length = 130
+ignore = E266, W503, W504
 exclude =
     .git,
     scratch_*.py,
     Bonsai,
-    venv
+    venv*

@@ -1,19 +1,13 @@
-#!/usr/bin/env python
-# @Author: Niccolò Bonacchi
-# @Creation_Date: Tuesday, February 5th 2019, 3:13:18 pm
-# Editor: Michele Fabbri
-# @Edit_Date: 2022-02-01
 """
 Saving, loading, and zip functionality
 """
 import json
 import logging
+import numpy as np
 import os
 import shutil
 import zipfile
 from pathlib import Path
-
-import numpy as np
 
 import iblrig.misc as misc
 import iblrig.path_helper as ph
@@ -29,24 +23,6 @@ class ComplexEncoder(json.JSONEncoder):
             return obj.reprJSON()
         else:
             return json.JSONEncoder.default(self, obj)
-
-
-def deserialize_pybpod_user_settings(sph: object) -> object:
-    sph.PYBPOD_CREATOR = json.loads(sph.PYBPOD_CREATOR)
-    sph.PYBPOD_USER_EXTRA = json.loads(sph.PYBPOD_USER_EXTRA)
-
-    sph.PYBPOD_SUBJECTS = [json.loads(x.replace("'", '"')) for x in sph.PYBPOD_SUBJECTS]
-    if len(sph.PYBPOD_SUBJECTS) == 1:
-        sph.PYBPOD_SUBJECTS = sph.PYBPOD_SUBJECTS[0]
-    else:
-        log.error("Multiple subjects found in PYBPOD_SUBJECTS")
-        raise IOError
-
-    sph.PYBPOD_SUBJECT_EXTRA = [json.loads(x) for x in sph.PYBPOD_SUBJECT_EXTRA[1:-1].split('","')]
-    if len(sph.PYBPOD_SUBJECT_EXTRA) == 1:
-        sph.PYBPOD_SUBJECT_EXTRA = sph.PYBPOD_SUBJECT_EXTRA[0]
-
-    return sph
 
 
 def save_session_settings(sph: object) -> None:

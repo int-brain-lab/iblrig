@@ -7,10 +7,17 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 
-import iblrig.blocks as blocks
 import iblrig.misc as misc
 from iblrig import path_helper
 from iblrig.misc import smooth_rolling_window as smooth
+
+
+def draw_position(position_set, stim_probability_left):
+    return int(np.random.choice(position_set, p=[stim_probability_left, 1 - stim_probability_left]))
+
+
+def draw_block_len(factor, min_=20, max_=100):
+    return int(misc.texp(factor=factor, min_=min_, max_=max_))
 
 
 # EPHYS CHOICE WORLD
@@ -30,11 +37,11 @@ def make_ephysCW_pc(prob_type='biased'):
     pc = np.array([pos, cont + cont, prob]).T
     np.random.shuffle(pc)  # only shuffles on the first dimension
 
-    prob_left = 0.8 if blocks.draw_position([-35, 35], 0.5) < 0 else 0.2
+    prob_left = 0.8 if draw_position([-35, 35], 0.5) < 0 else 0.2
     while len(pc) < 2001:
-        len_block.append(blocks.get_block_len(60, min_=20, max_=100))
+        len_block.append(draw_block_len(60, min_=20, max_=100))
         for x in range(len_block[-1]):
-            p = blocks.draw_position([-35, 35], prob_left)
+            p = draw_position([-35, 35], prob_left)
             c = misc.draw_contrast(contrasts, prob_type=prob_type)
             pc = np.append(pc, np.array([[p, c, prob_left]]), axis=0)
             # do this in PC space
@@ -269,22 +276,3 @@ def create_session_contrasts(seed=None):
         np.random.seed(seed)
 
     return np.random.uniform(0.1, 0.9, 180)
-
-
-if __name__ == "__main__":
-    # np.random.seed(42)
-    # pre_generate_stim_phase(12)
-    # import seaborn as sns
-    # plt.ion()
-    # pcqs3, len_block3 = plot_pcqs(3)
-    # pcqs9, len_block9 = plot_pcqs(9)
-    # sns.distplot(pcqs3[:, 2], vertical=True)
-    # sns.jointplot(x=range(len(pcqs9)), y=pcqs9[:, 1])
-    # qp = sns.jointplot(x=range(len(pcqs9)),
-    #                    y=pcqs9[:, 2], kind='kde', figsize=(16, 12), dpi=80)
-    # qp.set_axis_labels(xlabel='Trials', ylabel='Quiescent period (s)')
-    # pre_generate_ephysCW_session_filess(1, path='sess')
-    # plot_pcqs(0, folder='sess')
-    # gabors = make_stims_for_passiveCW_pcs(save=True)
-    # pre_generate_passiveCW_session_files(12)
-    print(".")

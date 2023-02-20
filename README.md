@@ -1,5 +1,14 @@
-# iblrig v7
+# iblrig v8
 Software used to interact with various pieces of specialized hardware for neuroscience data acquisition.
+
+## Code organisation manifesto
+
+### settings and parameters
+- settings are relative to the local machine and located in the [settings](settings) directory. 
+- task parameters are independent of the hardwware settings and located in the task folders. For example, for biasedCW this is 
+  found in this [task_parameters.yaml](iblrig_tasks/_iblrig_tasks_biasedChoiceWorld/task_parameters.yaml)
+
+### task logic code (TODO: Flesh out section)
 
 ## Installation on Windows
 Software has only been tested on Windows 10. No other version of Windows is supported at this time. The test user account has 
@@ -27,7 +36,7 @@ choco install git --params "/Editor:Notepad++ /NoShellIntegration" --yes
   - Note: git commands will be unavailable until a new session is started; close the current **Administrator: Windows Powershell** 
 prompt in order to use git
 
-### Installation Instructions:
+### Installation Instructions: (Update for v8 once finalized)
 - Ensure git and your favorite text editor are already installed by whatever method is desired
 - Ensure a stable internet connection is present as several commands will require software to be downloaded
 
@@ -62,67 +71,13 @@ powershell.exe .\install.ps1
 the ONE [documentation](https://int-brain-lab.github.io/ONE/) for specifics on how to accomplish this. Then run the following 
 command or something similar for your specific setup to test it is working: `python -c "from one.api import ONE; ONE()"`
 
-### Configuring the iblrig_params.yml file for your setup
-Open the `C:\iblrig\iblrig_params.yml` configuration file in your favorite text editor and change the values to match your setup. 
-If following these instructions, the only two values that need to be updated should be: 
-- iblrig_remote_data_path: "\\\\lab_server_ip_or_dns\\data_folder"
-- iblrig_remote_server_path: "\\\\lab_server_ip_or_dns"
-  - NOTE: When altering these values, be sure to keep in mind that the backslash character is also used as an escape character. 
-This means that even though the `Windows File Explorer` may prefix the local lab server address with only two backslashes, we 
-will need four backslashes in our `iblrig_params.yml` entry.
+### Setup instructions for launching the 'Experiment Description GUI'
+The 'Experiment Description GUI' is currently being developed in the 
+[iblscripts repo](https://github.com/int-brain-lab/iblscripts/tree/master/deploy/project_procedure_gui). 
+This GUI is intended to simplify the categorization of an experiment and cleanly define what projects and procedures an 
+experiment is for. Please refer to the iblscripts repository for instructions on how to create the separate virtual environment 
+and run the GUI.
 
-### Running pybpod
-To run pybpod and begin data acquisition run the following commands from a non-administrative **Windows Powershell** prompt:
-```powershell
-C:\iblrig\venv\Scripts\.\Activate.ps1
-cd C:\iblrig_params
-start-pybpod
-```
-
-### Performing a manual upgrade (not recommended and not supported)
-If attempting to perform a manual upgrade from a previous installation of iblrig, be sure to take special note of the following 
-files and directories:
-- `C:\iblrig_params_bkup\.iblrig_params.json`
-- `C:\iblrig_params_bkup\IBL\boards`
-- `C:\iblrig_params_bkup\IBL\subjects`
-- `C:\iblrig_params_bkup\IBL\users`
-- `C:\iblrig_params_bkup\IBL\tasks\someCustomTask`
-
-The files themselves or some of the file content can be copied back over to the `C:\iblrig_params` directory to ease 
-configuration time.
-
-#### For easier launching of pybpod
-Within the `C:\iblrig` folder there is a `start-pybpod-venv_Shortcut.lnk` file that can be copied to the desktop for ease of use. 
-Running the following powershell command from a non-administrative **Windows Powershell** prompt will perform this copy operation:
-```powershell
-Copy-Item "C:\iblrig\start-pybpod-venv_Shortcut.lnk" -Destination "$Env:HOMEPATH\Desktop"
-```
-
-### Configuring bpod boards
-When first running pybpod, ensure that the Bpod boards are configured for your current setup. If this was an 'upgrade' 
-from a previous version of iblrig, and the recommended backup operation was performed; take special note of the values within 
-the `C:\iblrig_params\.iblrig_params.json` file. These parameters will contain the values like board name and COM ports relevant 
-to your system.    
-
-#### Setup instructions for launching the 'Experiment Description GUI' prior to task launch (DEVELOP)
-The 'Experiment Description GUI' is currently being developed in the iblscripts repo. This GUI is intended to simplify the 
-categorization of an experiment and cleanly define what projects and procedures an experiment is for. In order to add the GUI to 
-the tasks listed in the `add_ex_desc_gui_to_tasks` script, run the following commands from the **Anaconda Powershell Prompt**:
-```powershell
-C:\iblrig\venv\Scripts\.\Activate.ps1
-git clone https://github.com/int-brain-lab/iblscripts C:\iblscripts
-pip install -r C:\iblscripts\deploy\project_procedure_gui\pp_requirements.txt
-```
-
-Within whichever custom task you would like to test this gui, simply add the following lines to `_iblrig_tasks_customTask.py`
-* i.e. `C:\iblrig_params\IBL\tasks\_iblrig_tasks_customTask\_iblrig_tasks_customTask.py`
-
-```python
-from iblrig.misc import call_exp_desc_gui
-call_exp_desc_gui()
-```
-
----
 ## How to develop on this repository 
 This repository is adhering to the following conventions:
 * [semantic versioning](https://semver.org/) for consistent version numbering logic
@@ -150,17 +105,7 @@ Please review these conventions to more easily contribute to the project.
 - once the fix has been thoroughly tested, it will get merged back into `master` and `develop`
 - the `hotfix` branch will eventually be deleted
 
-#### The dev parameter file
-In the root of the repository is a file called `iblrig_params.yml`. To more easily develop on this repository, perform the 
-following:
-* create a copy of the `iblrig_params.yml` file in the same root directory, but called `iblrig_params_dev.yml`
-* make changes to the entries in the file appropriate for your system
-  * i.e. `iblrig_local_data_path: "C:\\iblrig_data"` could become `iblrig_local_data_path: "/home/username/my_iblrig_local_data"`
-
-Note: during the ci tests of GitHub Actions, a similar file is created called `iblrig_params_ci.yml`; this is used to accommodate 
-the difference in directory structure that this system uses
-
-#### Install Python v3.8 and set up venv for iblrig in Ubuntu 22.04
+#### Install Python v3.8 and set up venv for iblrig on Ubuntu 22.04
 
 Instructions are for the assumption that this is for development and that the desired directory to work out of is 
 `~/Documents/repos/iblrig`
@@ -186,9 +131,24 @@ deactivate
 rm -rf test_venv
 ```
 
+#### Install required library for running unit tests on Ubuntu 22.04
+
+PortAudio library is required for the `sounddevice` python package. It can be installed with the following commands
+```bash
+sudo apt update && sudo apt install -y libportaudio2
+```
+
 ---
 
 ### Troubleshooting Notes
+
+#### Anaconda (base) environment in Powershell
+When launching powershell to run any rig code, it is not recommended to have the anaconda base environment active. Run the 
+following commands to deactivate the base environment and disable it from auto-activating in the future:    
+```powershell
+conda deactivate
+conda config --set auto_activate_base false
+```
 
 #### Windows
 Disable Microsoft Store associations with `python` command

@@ -6,6 +6,7 @@ import logging
 import shutil
 
 from pybpodgui_api.models.project import Project
+from iblutil.util import Bunch
 
 import iblrig
 from iblrig import path_helper
@@ -36,12 +37,10 @@ EMPTY_BOARD_PARAMS = {
     "WATER_CALIBRATION_DATE": None,  # str
     "BPOD_TTL_TEST_STATUS": None,  # str
     "BPOD_TTL_TEST_DATE": None,  # str
-    "DATA_FOLDER_LOCAL": None,  # str
-    "DATA_FOLDER_REMOTE": None,  # str
     "DISPLAY_IDX": None,  # int
 }
 
-AUTO_UPDATABLE_PARAMS = dict.fromkeys(["NAME", "IBLRIG_VERSION", "COM_BPOD", "DATA_FOLDER_LOCAL", "DATA_FOLDER_REMOTE"])
+AUTO_UPDATABLE_PARAMS = dict.fromkeys(["NAME", "IBLRIG_VERSION", "COM_BPOD"])
 DEFAULT_PARAMS = {
     "SCREEN_FREQ_TARGET": 60,
     "DISPLAY_IDX": 1,
@@ -89,10 +88,6 @@ def update_param_key_values(param_key):
         return get_iblrig_version()
     elif param_key == "COM_BPOD":
         return get_pybpod_board_comport()
-    elif param_key == "DATA_FOLDER_LOCAL":
-        return str(path_helper.get_iblrig_local_data_path(subjects=False))
-    elif param_key == "DATA_FOLDER_REMOTE":
-        return str(path_helper.get_iblrig_remote_server_data_path(subjects=False))
     else:
         return None
 
@@ -191,11 +186,11 @@ def load_params_file(silent=True) -> dict:
         out = ensure_all_keys_present(out)
         if not silent:
             log.info(out)
-        return out
+        return Bunch(out)
     elif not fpath.exists():
         log.warning("Could not load params file does not exist. Creating...")
         out = ask_params_comports(write_params_file())
-        return out
+        return Bunch(out)
 
 
 def update_params_file(data: dict = None, force: bool = False) -> None:

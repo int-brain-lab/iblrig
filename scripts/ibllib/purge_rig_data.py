@@ -7,8 +7,7 @@ import argparse
 import logging
 from fnmatch import fnmatch
 from pathlib import Path
-
-from one.alf.cache import iter_datasets, iter_sessions
+from one.alf.io import iter_sessions, iter_datasets
 from one.alf.files import get_session_path
 from one.api import ONE
 

@@ -1,0 +1,34 @@
+NAME: _iblrig_testlab_behavior_1
+device_bpod:
+  COM_BPOD: null
+  BPOD_TTL_TEST_DATE: null
+  BPOD_TTL_TEST_STATUS: null
+  SOUND_BOARD_BPOD_PORT: Serial3
+  ROTARY_ENCODER_BPOD_PORT: Serial1
+device_frame2ttl:
+  COM_F2TTL: null
+  F2TTL_CALIBRATION_DATE: 2099-12-31
+  F2TTL_DARK_THRESH: 91.0
+  F2TTL_HW_VERSION: null
+  F2TTL_LIGHT_THRESH: 51.0
+device_rotary_encoder:
+  COM_ROTARY_ENCODER: null
+device_screen:
+  DISPLAY_IDX: 1
+  SCREEN_FREQ_TARGET: 60
+  SCREEN_FREQ_TEST_DATE: null
+  SCREEN_FREQ_TEST_STATUS: null
+  SCREEN_LUX_DATE: null
+  SCREEN_LUX_VALUE: null
+device_sound:
+  OUTPUT: sysdefault  # harp or xonar or sysdefault
+device_valve:
+  WATER_CALIBRATION_DATE: 2099-12-31
+  WATER_CALIBRATION_OPEN_TIMES: [50, 100]
+  WATER_CALIBRATION_RANGE: [40, 140]
+  WATER_CALIBRATION_WEIGHT_PERDROP: [1.25, 2.75]
+device_camera:
+  # set to null if a dedicated computer runs bonsai video acquisition
+  BONSAI_WORKFLOW: devices/camera_recordings/TrainingRig_SaveVideo_TrainingTasks.bonsai
+device_microphone:
+  BONSAI_WORKFLOW: devices/microphone/record_mic.bonsai

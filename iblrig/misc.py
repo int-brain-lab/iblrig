@@ -5,6 +5,7 @@ Assortment of functions, frequently used, but without a great deal of commonalit
 and should, be broken out into their own files and/or classes as the organizational needs of this
 repo change over time.
 """
+import argparse
 import datetime
 import json
 import logging
@@ -27,6 +28,26 @@ FLAG_FILE_NAMES = [
 ]
 
 log = logging.getLogger("iblrig")
+
+
+def get_task_runner_argument_parser():
+    """
+    This function parses input to run the tasks. All the variables are fed to the Session instance
+    :return:
+    """
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-s", "--subject", required=True,
+                        help="--subject ZFM-05725")
+    parser.add_argument("-p", "--projects", nargs="+", default=[],
+                        help="project name(s), something like 'psychedelics' or 'ibl_neuropixel_brainwide_01'; if specify "
+                             "multiple projects, use a space to separate them")
+    parser.add_argument("-c", "--procedures", nargs="+", default=[],
+                        help="long description of what is occurring, something like 'Ephys recording with acute probe(s)'; "
+                             "be sure to use the double quote characters to encapsulate the description and a space to separate "
+                             "multiple procedures")
+    kwargs = vars(parser.parse_args())
+    kwargs['interactive'] = True
+    return kwargs
 
 
 def call_exp_desc_gui():
@@ -59,7 +80,7 @@ def call_exp_desc_gui():
         for row in lines:
             if "PYBPOD_SUBJECT_EXTRA" in row:
                 name_index = row.split().index('"name":')
-                subject_name = row.split()[name_index+1].strip(",\"")
+                subject_name = row.split()[name_index + 1].strip(",\"")
                 break
     log.info(f"Subject name: {subject_name}")
 

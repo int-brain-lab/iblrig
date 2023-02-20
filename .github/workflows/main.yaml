@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  push:
+    branches: [master, develop, rc, iblrigv8]
+  pull_request:
+    branches: [master, develop, rc]
+
+jobs:
+  build_reqs:
+    name: build (${{ matrix.python-version }}, ${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: ["ubuntu-latest", "windows-latest"]
+        python-version: ["3.8"]
+    steps:
+      - name: Checkout iblrig repo
+        uses: actions/checkout@v3
+        with:
+          path: iblrig
+
+      - name: Checkout iblpybpod repo
+        uses: actions/checkout@v3
+        with:
+          repository: int-brain-lab/iblpybpod
+          path: iblpybpod
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: flake8
+        run: |
+          pip install flake8 --quiet
+          cd iblrig
+          python -m flake8
+
+      - name: Generate setting files
+        shell: bash -l {0}
+        run: |
+          cd iblrig
+          cd settings
+          cp hardware_settings_template.yaml hardware_settings.yaml
+          cp iblrig_settings_template.yaml iblrig_settings.yaml
+          cp pybpod_settings_template.yaml pybpod_settings.yaml
+
+      - name: iblrig and iblpybpod requirements
+        shell: bash -l {0}
+        run: |
+          pip install --editable iblrig
+          pip install --editable iblpybpod
+
+      - name: Install audio library (Ubuntu only)
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo apt-get install -y libportaudio2
+
+      - name: Install Bonsai (Windows only)
+        if: matrix.os == 'windows-latest'
+        shell: pwsh -l {0}
+        run: |
+          cd iblrig\Bonsai
+          powershell.exe .\install.ps1
+
+      - name: iblrig unit tests
+        shell: bash -l {0}
+        run: |
+          cd iblrig
+          cd test
+          python -m unittest discover
+          cd test_tasks
+          python -m unittest discover
+
+      - name: Generate requirements_frozen.txt
+        run: pip freeze > requirements_frozen.txt
+
+      - name: Store frozen requirements as artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: requirements_frozen
+          path: requirements_frozen.txt

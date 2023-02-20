@@ -1,51 +1,10 @@
 import logging
-import socket
-import sys
 
 import numpy as np
 from pybpod_soundcard_module.module_api import DataType, SampleRate, SoundCardModule
 from scipy.signal import chirp
 
 log = logging.getLogger("iblrig")
-
-
-def configure_sounddevice(sd=None, output="sysdefault", samplerate=44100):
-    """
-    Will import, configure, and return sounddevice module to play sounds using onboard sound card.
-
-    Parameters
-    ----------
-    sd
-        sounddevice module to be configured, defaults to None, will import new module if absent.
-    output
-        defaults to "sysdefault"
-    samplerate
-        audio sample rate, defaults to 44100
-
-    Returns
-    -------
-    configured sounddevice module
-
-    """
-    if output is None:
-        return
-    if sys.platform == "linux" or socket.gethostname() == "IBLRIG000":
-        output = "sysdefault"
-    if sd is None:
-        import sounddevice as sd
-    if output == "xonar":
-        devices = sd.query_devices()
-        sd.default.device = [
-            (i, d) for i, d in enumerate(devices) if "XONAR SOUND CARD(64)" in d["name"]
-        ][0][0]
-        sd.default.latency = "low"
-        sd.default.channels = 2
-        sd.default.samplerate = samplerate
-    elif output == "sysdefault":
-        sd.default.latency = "low"
-        sd.default.channels = 2
-        sd.default.samplerate = samplerate
-    return sd
 
 
 def make_sound(rate=44100, frequency=5000, duration=0.1, amplitude=1, fade=0.01, chans="L+TTL"):
@@ -74,7 +33,7 @@ def make_sound(rate=44100, frequency=5000, duration=0.1, amplitude=1, fade=0.01,
     sample_rate = rate  # Sound card dependent,
     tone_duration = duration  # sec
     fade_duration = fade  # sec
-
+    chans = chans if isinstance(chans, str) else chans[0]
     tvec = np.linspace(0, tone_duration, int(tone_duration * sample_rate))
     tone = amplitude * np.sin(2 * np.pi * frequency * tvec)  # tone vec
 
@@ -186,59 +145,6 @@ def configure_sound_card(card=None, sounds=[], indexes=[], sample_rate=96):
     return
 
 
-def sound_sample_freq(soft_sound):
-    if soft_sound == "sysdefault":
-        return 44100
-    elif soft_sound == "xonar":
-        return 192000
-    elif soft_sound is None:
-        return 96000
-    else:
-        log.error("SOFT_SOUND in not: 'sysdefault', 'xonar' or 'None'")
-        raise (NotImplementedError)
-
-
-def init_sounds(sph, tone=True, noise=True):
-    # TODO: remove creation of card objec when checks are implemented
-    if sph.SOFT_SOUND is None:
-        msg = f"""
-    ##########################################
-    SOUND BOARD NOT FOUND ON SYSTEM!!",
-    PLEASE GO TO:
-    iblrig_params/IBL/tasks/{sph.PYBPOD_PROTOCOL}/task_settings.py
-    and set
-        SOFT_SOUND = 'sysdefault' or 'xonar'
-    ##########################################"""
-        card = SoundCardModule()
-        if not card.connected:
-            log.error(msg)
-            raise (NameError)
-
-        chans = "stereo"
-    else:
-        chans = "L+TTL"
-
-    if tone:
-        sph.GO_TONE = make_sound(
-            rate=sph.SOUND_SAMPLE_FREQ,
-            frequency=sph.GO_TONE_FREQUENCY,
-            duration=sph.GO_TONE_DURATION,
-            amplitude=sph.GO_TONE_AMPLITUDE,
-            fade=0.01,
-            chans=chans,
-        )
-    if noise:
-        sph.WHITE_NOISE = make_sound(
-            rate=sph.SOUND_SAMPLE_FREQ,
-            frequency=-1,
-            duration=sph.WHITE_NOISE_DURATION,
-            amplitude=sph.WHITE_NOISE_AMPLITUDE,
-            fade=0.01,
-            chans=chans,
-        )
-    return sph
-
-
 # FIXME: in _passiveCW use SoundCardModule to give to this v instead of finding device yourself
 def trigger_sc_sound(sound_idx, card=None):
     if card is None:
@@ -264,60 +170,3 @@ def trigger_sc_sound(sound_idx, card=None):
 
     if close_card:
         card.close()
-
-
-if __name__ == "__main__":
-    # # Generate sounds
-    # device = 'xonar'
-    # samplerate = sound_sample_freq(device)
-    # sd = configure_sounddevice(output=device, samplerate=samplerate)
-    # sd.stop()
-    # rig_tone = make_sound(rate=samplerate, frequency=5000,
-    #                       duration=10, amplitude=0.1)
-    # rig_noise = make_sound(rate=samplerate, frequency=-
-    #                        1, duration=10, amplitude=0.1)
-    # N_TTL = make_sound(chans='L+TTL', amplitude=-1)
-    # import matplotlib.pyplot as plt
-    # # sd.play(rig_tone, samplerate, mapping=[1, 2])
-    # bla = 0.5
-    # c = make_chirp(f0=80, f1=160, length=bla, amp=0.1, fade=0.05, sf=192000)
-    # plt.plot(np.linspace(0, bla, 192000), c[:, 0])
-    # plt.show()
-
-    # TEST SOUNDCARD MODULE
-    card = SoundCardModule()
-    SOFT_SOUND = None
-    SOUND_SAMPLE_FREQ = sound_sample_freq(SOFT_SOUND)
-    SOUND_BOARD_BPOD_PORT = "Serial3"
-    WHITE_NOISE_DURATION = float(0.5)
-    WHITE_NOISE_AMPLITUDE = float(0.05)
-    GO_TONE_DURATION = float(0.1)
-    GO_TONE_FREQUENCY = int(5000)
-    GO_TONE_AMPLITUDE = float(0.0151)  # 0.0151 for 70.0 dB SPL CCU | 0.0272 for 70.0 dB SPL Xonar
-    GO_TONE = make_sound(
-        rate=SOUND_SAMPLE_FREQ,
-        frequency=GO_TONE_FREQUENCY,
-        duration=GO_TONE_DURATION,
-        amplitude=GO_TONE_AMPLITUDE,
-        fade=0.01,
-        chans="stereo",
-    )
-    WHITE_NOISE = make_sound(
-        rate=SOUND_SAMPLE_FREQ,
-        frequency=-1,
-        duration=WHITE_NOISE_DURATION,
-        amplitude=WHITE_NOISE_AMPLITUDE,
-        fade=0.01,
-        chans="stereo",
-    )
-    GO_TONE_IDX = 2
-    WHITE_NOISE_IDX = 4
-
-    wave_int = format_sound(GO_TONE, flat=True)
-    noise_int = format_sound(WHITE_NOISE, flat=True)
-
-    card = SoundCardModule()
-    card.send_sound(wave_int, GO_TONE_IDX, SampleRate._96000HZ, DataType.INT32)
-    card.send_sound(noise_int, WHITE_NOISE_IDX, SampleRate._96000HZ, DataType.INT32)
-
-    print("i")

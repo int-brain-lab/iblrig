@@ -6,7 +6,7 @@ PYTHON_REQUIRES = "==3.8.*"  # python version requirement
 LONG_DESCRIPTION = "Software used to interact with various pieces of specialized hardware for neuroscience data acquisition."
 
 with open("requirements.txt") as f:
-    require = [x.strip() for x in f.readlines()]
+    require = [x.strip() for x in f.readlines() if not x.startswith("git+")]
 
 
 def read(rel_path):
@@ -38,3 +38,4 @@ setup(
     install_requires=require,
     scripts=[],
 )
+# todo: copy the settings_templates files to actual settings if they don' t already exist

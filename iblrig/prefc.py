@@ -19,18 +19,18 @@ end with user input
 import datetime
 import logging
 import struct
-from pathlib import Path
 
 import serial
 import serial.tools.list_ports
 from dateutil.relativedelta import relativedelta
 from one.api import ONE
+
+import iblrig.params as params
+from iblrig import path_helper
+from iblrig.frame2TTL import Frame2TTL
 from pybpod_rotaryencoder_module.module_api import RotaryEncoderModule
 from pybpod_soundcard_module.module_api import SoundCardModule
 from pybpodapi.protocol import Bpod
-
-import iblrig.params as params
-from iblrig.frame2TTL import Frame2TTL
 
 log = logging.getLogger("iblrig")
 log.setLevel(logging.DEBUG)
@@ -92,16 +92,14 @@ def calibration_dates_ok() -> bool:
 
 
 def local_server_ok() -> bool:
-    pars = _grep_param_dict()
-    out = Path(pars["DATA_FOLDER_REMOTE"]).exists()
+    out = path_helper.get_iblrig_remote_server_data_path().exists()
     if not out:
         log.warning("Can't connect to local_server.")
     return out
 
 
 def rig_data_folder_ok() -> bool:
-    pars = _grep_param_dict()
-    out = Path(pars["DATA_FOLDER_LOCAL"]).exists()
+    out = path_helper.get_iblrig_local_data_path().exists()
     if not out:
         log.warning("Can't connect to local_server.")
     return out
@@ -116,15 +114,14 @@ def alyx_server_rig_ok() -> bin:
         log.warning("ONE is in offline mode, can not connect to Alyx.")
     else:
         alyx_server_rig += 0b100
-    pars = _grep_param_dict()
     try:
-        list(Path(pars["DATA_FOLDER_REMOTE"]).glob("*"))
+        list(path_helper.get_iblrig_remote_server_data_path().glob("*"))
         alyx_server_rig += 0b010
     except BaseException as e:
         log.warning(f"{e} \nCan't connect to local_server.")
 
     try:
-        list(Path(pars["DATA_FOLDER_LOCAL"]).glob("*"))
+        list(path_helper.get_iblrig_local_data_path().glob("*"))
         alyx_server_rig += 0b001
     except BaseException as e:
         log.warning(f"{e} \nCan't find rig data folder.")
