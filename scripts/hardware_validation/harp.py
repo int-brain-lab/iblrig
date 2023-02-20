@@ -1,3 +1,6 @@
+"""
+Validation script intended to aid in troubleshooting harp soundcard issues
+"""
 import logging
 
 from iblrig import path_helper
@@ -21,11 +24,13 @@ if hardware_settings["device_sound"]["OUTPUT"] != "harp":
              f"this.\nCurrently assigned soundcard: {hardware_settings['device_sound']['OUTPUT']}")
     exit()
 
+# TODO: check device manager for lib-usb32 entries if on Windows system
+
 # connect to bpod and attempt to produce audio on harp
 cw = BiasedChoiceWorldSession(interactive=False, subject='harp_validator_subject')
 cw.start_mixin_bpod()
 log.info("Successfully initialized to bpod.")
 cw.start_mixin_sound()
-log.info("Successuflly initialized to harp audio device")
+log.info("Successfully initialized to harp audio device")
 
 # TODO: produce audio without creating state machine?

@@ -32,16 +32,19 @@ log = logging.getLogger("iblrig")
 
 def get_task_runner_argument_parser():
     """
-    This function parses input to run the tasks. All of the variables are fed to the Session instance
+    This function parses input to run the tasks. All the variables are fed to the Session instance
     :return:
     """
     parser = argparse.ArgumentParser()
     parser.add_argument("-s", "--subject", required=True,
                         help="--subject ZFM-05725")
-    parser.add_argument("-p", "--project", default='',
-                        help="project name, something like 'psychedelics' or 'ibl_neuropixel_brainwide_01'")
-    parser.add_argument("-c", "--procedures", default=None,
-                        help="longer description of what is occuring, something like 'Ephys recording with acute probe(s)'")
+    parser.add_argument("-p", "--projects", nargs="+", default=[],
+                        help="project name(s), something like 'psychedelics' or 'ibl_neuropixel_brainwide_01'; if specify "
+                             "multiple projects, use a space to separate them")
+    parser.add_argument("-c", "--procedures", nargs="+", default=[],
+                        help="long description of what is occurring, something like 'Ephys recording with acute probe(s)'; "
+                             "be sure to use the double quote characters to encapsulate the description and a space to separate "
+                             "multiple procedures")
     kwargs = vars(parser.parse_args())
     kwargs['interactive'] = True
     return kwargs

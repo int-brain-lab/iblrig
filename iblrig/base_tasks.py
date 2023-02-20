@@ -36,7 +36,7 @@ class BaseSession(ABC):
     is_mock = False
 
     def __init__(self, debug=False, task_parameter_file=None, hardware_settings_name='hardware_settings.yaml',
-                 subject=None, project='', fmake=True, procedures=None):
+                 subject=None, projects='', fmake=True, procedures=None):
         """
         This only handles gathering the parameters and settings for the current session
         :param debug:
@@ -75,7 +75,8 @@ class BaseSession(ABC):
                 self.task_params.update(Bunch(task_params))
         self.session_info = Bunch({
             'subject': subject or self.pybpod_settings.PYBPOD_SUBJECTS[0],
-            'project': project,
+            'projects': projects,
+            'procedures': procedures,
         })
         # Executes mixins init methods
         self._execute_mixins_shared_function('init_mixin')
