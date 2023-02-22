@@ -45,7 +45,7 @@ cd \
 git clone https://github.com/int-brain-lab/iblrig
 git clone https://github.com/int-brain-lab/iblpybpod
 cd iblrig
-git checkout tags/7.2.3
+git checkout tags/7.2.4
 New-Item -ItemType Directory -Force -Path C:\Temp
 Invoke-WebRequest -Uri https://www.python.org/ftp/python/3.8.10/python-3.8.10-amd64.exe -OutFile C:\Temp\python-3.8.10-amd64.exe
 Start-Process -NoNewWindow -Wait -FilePath C:\Temp\python-3.8.10-amd64.exe -ArgumentList "/passive", "InstallAllUsers=0", "Include_launcher=0", "Include_test=0"

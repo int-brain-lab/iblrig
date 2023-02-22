@@ -1,5 +1,8 @@
 # **Release notes**
 
+## **Release Notes 7.2.4**
+- try/except to handle missing CORRESPONDING_EPHYS_SESSION, ease transition from iblrigv7 to iblrigv8
+
 ## **Release Notes 7.2.3**
 - Refactored transfer_rig_data script to utilize rdiff/rsync functionality
 
