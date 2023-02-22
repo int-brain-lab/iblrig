@@ -306,7 +306,7 @@ class SessionParamHandler(object):
 LOADING PARAMETERS FROM: {self.CORRESPONDING_EPHYS_SESSION}
 ##########################################"""
             except AttributeError:
-                msg = f"""
+                msg = """
 ##########################################
 CORRESPONDING EPHYS SESSION NOT FOUND
 PARAMETERS WILL NOT BE LOADED
