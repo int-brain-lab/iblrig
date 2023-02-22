@@ -299,11 +299,19 @@ class SessionParamHandler(object):
 
     def display_logs(self):
         if self.PREVIOUS_DATA_FILE:
-            msg = f"""
+            try:  # This try/except is only here to
+                msg = f"""
 ##########################################
     CORRESPONDING EPHYS SESSION FOUND
 LOADING PARAMETERS FROM: {self.CORRESPONDING_EPHYS_SESSION}
 ##########################################"""
+            except AttributeError:
+                msg = f"""
+##########################################
+CORRESPONDING EPHYS SESSION NOT FOUND
+PARAMETERS WILL NOT BE LOADED
+##########################################
+"""
             log.info(msg)
 
 
