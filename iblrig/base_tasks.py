@@ -92,7 +92,13 @@ class BaseSession(ABC):
         output_dict = dict(self.task_params)  # Grab parameters from task_params session
         output_dict.update(dict(self.hardware_settings))  # Update dict with hardware settings from session
         output_dict.update(dict(self.session_info))  # Update dict with session_info (subject, procedure, projects)
-        output_dict.update({"PYBPOD_PROTOCOL": self.pybpod_settings["PYBPOD_PROTOCOL"]})
+        patch_dict = {  # Various values added to ease transition from iblrig v7 to v8, different home may be desired
+            "PYBPOD_PROTOCOL": self.pybpod_settings["PYBPOD_PROTOCOL"],
+            "REWARD_TYPE": self.task_params["REWARD_TYPE"],
+            "REWARD_AMOUNT_UL": self.task_params["REWARD_AMOUNT_UL"],
+            "SUBJECT_WEIGHT": self.SUBJECT_WEIGHT
+        }
+        output_dict.update(patch_dict)
 
         # Output dict to json file
         json_file = self.paths.SESSION_FOLDER / "raw_behavior_data" / "_iblrig_taskSettings.raw.json"
