@@ -294,10 +294,8 @@ class OnlinePlots(object):
             if flag_file.exists():
                 trial_data, bpod_data = load_task_jsonable(task_file, offset=self.real_time.fseek)
                 new_size = task_file.stat().st_size
-                print('flag file ', self.real_time.fseek, new_size)
                 for i in np.arange(len(bpod_data)):
                     self.update_trial(trial_data.iloc[i], bpod_data[i])
-                    print('update ', trial_data['trial_num'])
                 self.real_time.fseek = new_size
                 self.real_time.time_last_check = time.time()
                 flag_file.unlink()

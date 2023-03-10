@@ -9,6 +9,7 @@ import logging
 from pathlib import Path
 import signal
 from string import ascii_letters
+import subprocess
 import time
 
 import numpy as np
@@ -113,6 +114,10 @@ class ChoiceWorldSession(
 
         # create the task parameter file in the raw_behavior dir
         self.output_task_parameters_to_json_file()
+
+        # starts the online plotting
+        proc = subprocess.Popen(f"viewsession {str(self.paths['DATA_FILE_PATH'])}")
+
 
     def run(self):
         """
@@ -438,7 +443,7 @@ class ChoiceWorldSession(
         with open(self.paths['DATA_FILE_PATH'], 'a') as fp:
             fp.write(json.dumps(save_dict, cls=iotasks.ComplexEncoder) + '\n')
         # this is a flag for the online plots. If online plots were in pyqt5, there is a file watcher functionality
-        self.paths['DATA_FILE_PATH'].parent.joinpath('new_trial.flag').touch()
+        Path(self.paths['DATA_FILE_PATH']).parent.joinpath('new_trial.flag').touch()
         # If more than 42 trials save transfer_me.flag
         if self.trial_num == 42:
             misc.create_flags(self.paths.DATA_FILE_PATH, self.task_params.POOP_COUNT)
