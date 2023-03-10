@@ -27,9 +27,11 @@ log = logging.getLogger("iblrig")
 
 # class definition with no init is used as a namespace
 class jsonable(object):
-    def read(file):
+    def read(file, offset=None):
         data = []
         with open(file, "r") as f:
+            if offset is not None:
+                f.seek(offset, 0)
             for line in f:
                 data.append(json.loads(line))
         return data
@@ -104,7 +106,7 @@ def trial_times_to_times(raw_trial):
     return raw_trial
 
 
-def load_task_jsonable(jsonable_file):
+def load_task_jsonable(jsonable_file, offset=0):
     """
     Reads in a task data jsonable file and returns a trials dataframe and a bpod data list
     :param jsonable_file: a full-path to the jsonable file
@@ -112,7 +114,7 @@ def load_task_jsonable(jsonable_file):
         trials_table: a pandas Dataframe with the trial info in the same format as the Session trials table
         bpod_data: a list [n_trials] for each of the
     """
-    trials_table = jsonable.read(jsonable_file)
+    trials_table = jsonable.read(jsonable_file, offset=offset)
     # pop-out the bpod data from the table
     bpod_data = []
     for td in trials_table:

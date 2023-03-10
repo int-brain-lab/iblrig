@@ -1,6 +1,5 @@
-__version__ = "7.2.2"
+__version__ = "8.0.0a"
 import logging
-
 import colorlog
 
 # Configurations for colorlog formatting

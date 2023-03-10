@@ -37,5 +37,8 @@ setup(
     # external packages as dependencies
     install_requires=require,
     scripts=[],
+    entry_points={
+        'console_scripts': ['viewsession=iblrig.online_plots:viewsession'],
+    }
 )
 # todo: copy the settings_templates files to actual settings if they don' t already exist

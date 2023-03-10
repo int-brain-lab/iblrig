@@ -29,37 +29,6 @@ log = logging.getLogger(__name__)
 
 NTRIALS_INIT = 2000
 NBLOCKS_INIT = 100
-# todo sess update plots
-# todo camera mixin: choose modality
-
-
-class OnlineGraphsMixin(object):
-
-    def update_plots(self):
-        pass
-        # stop_crit = self.check_stop_criterions()
-        # # clean this up and remove display from logic
-        # if stop_crit and self.task_params.USE_AUTOMATIC_STOPPING_CRITERIONS:
-        #     if stop_crit == 1:
-        #         msg = "STOPPING CRITERIA Nº1: PLEASE STOP TASK AND REMOVE MOUSE\
-        #         \n < 400 trials in 45min"
-        #         f.patch.set_facecolor("xkcd:mint green")
-        #     elif stop_crit == 2:
-        #         msg = "STOPPING CRITERIA Nº2: PLEASE STOP TASK AND REMOVE MOUSE\
-        #         \nMouse seems to be inactive"
-        #         f.patch.set_facecolor("xkcd:yellow")
-        #     elif stop_crit == 3:
-        #         msg = "STOPPING CRITERIA Nº3: PLEASE STOP TASK AND REMOVE MOUSE\
-        #         \n> 90 minutes have passed since session start"
-        #         f.patch.set_facecolor("xkcd:red")
-        #
-        #     if not self.task_params.SUBJECT_DISENGAGED_TRIGGERED and stop_crit:
-        #         patch = {
-        #             "SUBJECT_DISENGAGED_TRIGGERED": stop_crit,
-        #             "SUBJECT_DISENGAGED_TRIALNUM": i + 1,
-        #         }
-        #         self.paths.patch_settings_file(patch)
-        #     [log.warning(msg) for x in range(5)]
 
 
 class ChoiceWorldSession(
@@ -77,13 +46,10 @@ class ChoiceWorldSession(
     def __init__(self, interactive=False, *args, **kwargs):
         super(ChoiceWorldSession, self).__init__(*args, **kwargs)
         self.interactive = interactive
-
         # Session data
         if self.interactive:
-            self.SUBJECT_WEIGHT = user.ask_subject_weight(self.pybpod_settings.PYBPOD_SUBJECTS[0])
+            self.session_info.SUBJECT_WEIGHT = user.ask_subject_weight(self.pybpod_settings.PYBPOD_SUBJECTS[0])
             self.task_params.SESSION_START_DELAY_SEC = user.ask_session_delay(self.paths.SETTINGS_FILE_PATH)
-        else:
-            self.SUBJECT_WEIGHT = np.NaN
         self.display_logs()
         # init behaviour data
         self.movement_left = self.device_rotary_encoder.THRESHOLD_EVENTS[
@@ -471,6 +437,8 @@ class ChoiceWorldSession(
         # Dump and save
         with open(self.paths['DATA_FILE_PATH'], 'a') as fp:
             fp.write(json.dumps(save_dict, cls=iotasks.ComplexEncoder) + '\n')
+        # this is a flag for the online plots. If online plots were in pyqt5, there is a file watcher functionality
+        self.paths['DATA_FILE_PATH'].parent.joinpath('new_trial.flag').touch()
         # If more than 42 trials save transfer_me.flag
         if self.trial_num == 42:
             misc.create_flags(self.paths.DATA_FILE_PATH, self.task_params.POOP_COUNT)

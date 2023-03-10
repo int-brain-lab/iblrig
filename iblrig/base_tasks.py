@@ -74,9 +74,10 @@ class BaseSession(ABC):
             if task_params is not None:
                 self.task_params.update(Bunch(task_params))
         self.session_info = Bunch({
-            'subject': subject or self.pybpod_settings.PYBPOD_SUBJECTS[0],
-            'projects': projects,
-            'procedures': procedures,
+            'SUBJECT_NAME': subject or self.pybpod_settings.PYBPOD_SUBJECTS[0],
+            'PROJECTS': projects,
+            'PROCEDURES': procedures,
+            'SUBJECT_WEIGHT': None,
         })
         # Executes mixins init methods
         self._execute_mixins_shared_function('init_mixin')
@@ -94,9 +95,6 @@ class BaseSession(ABC):
         output_dict.update(dict(self.session_info))  # Update dict with session_info (subject, procedure, projects)
         patch_dict = {  # Various values added to ease transition from iblrig v7 to v8, different home may be desired
             "PYBPOD_PROTOCOL": self.pybpod_settings["PYBPOD_PROTOCOL"],
-            "REWARD_TYPE": self.task_params["REWARD_TYPE"],
-            "REWARD_AMOUNT_UL": self.task_params["REWARD_AMOUNT_UL"],
-            "SUBJECT_WEIGHT": self.SUBJECT_WEIGHT
         }
         output_dict.update(patch_dict)
 
