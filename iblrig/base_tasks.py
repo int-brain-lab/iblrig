@@ -354,7 +354,7 @@ class Frame2TTLMixin:
         self.frame2ttl = frame2TTL.frame2ttl_factory(self.hardware_settings['device_frame2ttl']['COM_F2TTL'])
         try:
             self.frame2ttl.set_thresholds(
-                dark=self.hardware_settings['device_frame2ttl']["F2TTL_DARK_THRESH"],
+                dark=self.hardware_settings['device_frame2ttl']["F2TTL_LIGHT_THRESH"],
                 light=self.hardware_settings['device_frame2ttl']["F2TTL_DARK_THRESH"])
             log.info("Frame2TTL: Thresholds set.")
         except serial.serialutil.SerialTimeoutException as e:
