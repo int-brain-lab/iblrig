@@ -116,8 +116,7 @@ class ChoiceWorldSession(
         self.output_task_parameters_to_json_file()
 
         # starts the online plotting
-        proc = subprocess.Popen(f"viewsession {str(self.paths['DATA_FILE_PATH'])}")
-
+        subprocess.Popen(f"viewsession {str(self.paths['DATA_FILE_PATH'])}")
 
     def run(self):
         """
