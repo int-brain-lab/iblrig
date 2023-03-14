@@ -61,6 +61,11 @@ class TestPathHelper(unittest.TestCase):
         self.assertIsNotNone(p)
         self.assertIsInstance(p, Path)
 
+    def test_get_iblrig_test_fixtures(self):
+        p = path_helper.get_iblrig_test_fixtures()
+        self.assertIsNotNone(p)
+        self.assertIsInstance(p, Path)
+
     def test_get_iblrig_temp_alyx_path(self):
         p = path_helper.get_iblrig_temp_alyx_path()
         self.assertIsNotNone(p)

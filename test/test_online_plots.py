@@ -1,9 +1,13 @@
 import unittest
+
 import numpy as np
+
 import iblrig.online_plots as op
 from iblrig.raw_data_loaders import load_task_jsonable
-# task_file = "/Users/olivier/Library/CloudStorage/GoogleDrive-olivier.winter@internationalbrainlab.org/My Drive/2023/02_Neuromodulators/ZFM-04022/2023-02-15/001/raw_behavior_data/_iblrig_taskData.raw.jsonable" # noqa
-task_file = "/datadisk/FlatIron/hausserlab/Subjects/PL037/2023-02-24/001/raw_behavior_data/_iblrig_taskData.raw.jsonable"
+from iblrig.path_helper import get_iblrig_test_fixtures
+
+# task_file = "/datadisk/FlatIron/hausserlab/Subjects/PL037/2023-02-24/001/raw_behavior_data/_iblrig_taskData.raw.jsonable"
+task_file = get_iblrig_test_fixtures().joinpath("task_data.jsonable")
 
 
 class TestOnlinePlots(unittest.TestCase):
