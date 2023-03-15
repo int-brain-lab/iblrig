@@ -42,6 +42,7 @@ Run the following commands from the non-administrative **Windows Powershell** pr
 ```powershell
 Set-ExecutionPolicy -Scope CurrentUser Unrestricted -Force
 cd \
+git config --global advice.detachedHead false
 git clone https://github.com/int-brain-lab/iblrig
 git clone https://github.com/int-brain-lab/iblpybpod
 cd iblrig
