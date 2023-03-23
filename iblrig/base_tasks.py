@@ -19,6 +19,7 @@ import numpy as np
 import scipy.interpolate
 
 from pythonosc import udp_client
+from pybpodapi.protocol import StateMachine
 
 import iblrig.path_helper
 from iblutil.util import Bunch
@@ -439,6 +440,18 @@ class ValveMixin:
         else:  # this is the manual manual calibration value
             return self.task_params.CALIBRATION_VALUE / 3 * amount_ul
 
+    def valve_open(self, reward_valve_time):
+        sma = StateMachine(self.bpod)
+        sma.add_state(
+            state_name="valve_open",
+            state_timer=reward_valve_time,
+            output_actions=[("Valve1", 255), ("BNC1", 255)],  # To FPGA
+            state_change_conditions={"Tup": "exit"},
+        )
+        self.bpod.send_state_machine(sma)
+        self.run_state_machine(sma)  # Locks until state machine 'exit' is reached
+        return self.bpod.session.current_trial.export()
+
 
 class SoundMixin:
     """
@@ -505,9 +518,3 @@ class SoundMixin:
 
     def stop_sound(self):
         self.sound.sd.stop()
-
-    def send_sounds_to_harp(self):
-        # todo
-        # self.card.send_sound(wave_int, GO_TONE_IDX, SampleRate._96000HZ, DataType.INT32)
-        # self.card.send_sound(noise_int, WHITE_NOISE_IDX, SampleRate._96000HZ, DataType.INT32)
-        pass
