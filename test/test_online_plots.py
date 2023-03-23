@@ -1,16 +1,15 @@
 import unittest
-
 import numpy as np
+from pathlib import Path
+import zipfile
 
 import iblrig.online_plots as op
 from iblrig.raw_data_loaders import load_task_jsonable
-from iblrig.path_helper import get_iblrig_test_fixtures
 
-# task_file = "/datadisk/FlatIron/hausserlab/Subjects/PL037/2023-02-24/001/raw_behavior_data/_iblrig_taskData.raw.jsonable"
-task_file = get_iblrig_test_fixtures().joinpath("task_data.jsonable")
+zip_jsonable = Path(__file__).parent.joinpath('fixtures', 'online_plots_biased_iblrigv7.zip')
 
 
-class TestOnlinePlots(unittest.TestCase):
+class TestOnlineStd(unittest.TestCase):
 
     def test_online_std(self):
         n = 41
@@ -20,11 +19,22 @@ class TestOnlinePlots(unittest.TestCase):
         np.testing.assert_almost_equal(std, np.std(b))
         np.testing.assert_almost_equal(mu, np.mean(b))
 
+
+class TestOnlinePlots(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        with zipfile.ZipFile(zip_jsonable, 'r') as zip:
+            cls.task_file = Path(zip.extract('online_plots.jsonable', path=zip_jsonable.parent))
+
     def test_during_task(self):
-        self = op.OnlinePlots()
-        trials_table, bpod_data = load_task_jsonable(task_file)
+        myop = op.OnlinePlots()
+        trials_table, bpod_data = load_task_jsonable(self.task_file)
         for i in np.arange(trials_table.shape[0]):
-            self.update_trial(trials_table.iloc[i], bpod_data[i])
+            myop.update_trial(trials_table.iloc[i], bpod_data[i])
 
     def test_from_existing_file(self):
-        op.OnlinePlots(task_file=task_file)
+        op.OnlinePlots(task_file=self.task_file)
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        cls.task_file.unlink()

@@ -52,7 +52,7 @@ class DataModel(object):
         Can be instantiated empty or from an existing jsonable file from any rig version
         :param task_file:
         """
-        self.session_path = one.alf.files.get_session_path(task_file) if task_file is not None else ""
+        self.session_path = one.alf.files.get_session_path(task_file) or ""
         if task_file is None or not Path(task_file).exists():
             self.psychometrics = pd.DataFrame(
                 columns=['count', 'response_time', 'choice', 'response_time_std', 'choice_std'],

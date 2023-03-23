@@ -63,10 +63,6 @@ def get_iblrig_path() -> Path or None:
     return Path(iblrig.__file__).parents[1]
 
 
-def get_iblrig_test_fixtures() -> Path or None:
-    return get_iblrig_path().joinpath("test", "fixtures")
-
-
 def get_iblrig_params_path() -> Path or None:
     return get_iblrig_path().joinpath("pybpod_fixtures")
 
