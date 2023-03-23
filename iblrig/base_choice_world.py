@@ -47,9 +47,6 @@ class ChoiceWorldSession(
         super(ChoiceWorldSession, self).__init__(*args, **kwargs)
         self.interactive = interactive
         # Session data
-        if self.interactive:
-            self.session_info.SUBJECT_WEIGHT = user.ask_subject_weight(self.pybpod_settings.PYBPOD_SUBJECTS[0])
-            self.task_params.SESSION_START_DELAY_SEC = user.ask_session_delay(self.paths.SETTINGS_FILE_PATH)
         self.display_logs()
         # init behaviour data
         self.movement_left = self.device_rotary_encoder.THRESHOLD_EVENTS[
@@ -110,6 +107,10 @@ class ChoiceWorldSession(
             self.start_mixin_bonsai_cameras()
             self.start_mixin_bonsai_microphone()
             self.start_mixin_bonsai_visual_stimulus()
+
+        if self.interactive:
+            self.session_info.SUBJECT_WEIGHT = user.ask_subject_weight(self.pybpod_settings.PYBPOD_SUBJECTS[0])
+            self.task_params.SESSION_START_DELAY_SEC = user.ask_session_delay(self.paths.SETTINGS_FILE_PATH)
 
         # create the task parameter file in the raw_behavior dir
         self.output_task_parameters_to_json_file()

@@ -298,7 +298,6 @@ class SessionPathCreator(object):
         # User info and warnings
         for k in self.__dict__:
             if not self.__dict__[k]:
-                log.info(f"NOT FOUND: {k}")
                 if k == "PREVIOUS_DATA_FILE" and "training" in self._PROTOCOL:
                     msg = """
         ##########################################
