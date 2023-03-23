@@ -14,6 +14,7 @@ import os
 import serial
 import subprocess
 import yaml
+import signal
 
 import numpy as np
 import scipy.interpolate
@@ -26,6 +27,7 @@ from iblutil.util import Bunch
 from iblrig.hardware import Bpod, MyRotaryEncoder, sound_device_factory
 import iblrig.frame2TTL as frame2TTL
 import iblrig.sound as sound
+import iblrig.spacer
 
 log = logging.getLogger("iblrig")
 
@@ -130,6 +132,21 @@ class BaseSession(ABC):
 
     def mock(self):
         self.is_mock = True
+
+    def run(self):
+        """
+        Common pre-run instructions for all tasks: singint handler for a graceful exit
+        And send spacers to the bpod
+        :return:
+        """
+        def sigint_handler(*args, **kwargs):
+            self.paths.SESSION_FOLDER.joinpath('.stop').touch()
+            log.critical("SIGINT signal detected, will exit at the end of the trial")
+
+        signal.signal(signal.SIGINT, sigint_handler)
+
+        self.start()
+        self.send_spacers()
 
 
 class OSCClient(udp_client.SimpleUDPClient):
@@ -320,7 +337,6 @@ class BpodMixin(object):
 
     def start_mixin_bpod(self):
         self.bpod = Bpod(self.hardware_settings['device_bpod']['COM_BPOD'])
-        # todo add ports as hardware settings
         self.bpod.define_rotary_encoder_actions()
 
         def softcode_handler(code):
@@ -340,6 +356,15 @@ class BpodMixin(object):
 
         assert len(self.bpod.actions.keys()) == 6
         assert self.bpod.is_connected
+
+    def send_spacers(self):
+        log.info("Starting task by sending a spacer signal on BNC1")
+        sma = StateMachine(self.bpod)
+        spacer = iblrig.spacer.Spacer()
+        spacer.add_spacer_states(sma, next_state="exit")
+        self.bpod.send_state_machine(sma)
+        self.bpod.run_state_machine(sma)  # Locks until state machine 'exit' is reached
+        return self.bpod.session.current_trial.export()
 
 
 class Frame2TTLMixin:
