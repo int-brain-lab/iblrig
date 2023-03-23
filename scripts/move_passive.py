@@ -1,6 +1,9 @@
 import logging
 from pathlib import Path
 
+from one.alf.files import session_path_parts
+from ibllib.io.raw_data_loaders import patch_settings
+
 import iblrig.misc as misc
 import iblrig.raw_data_loaders as raw
 from iblrig import path_helper
@@ -35,6 +38,10 @@ def main():
                 str(Path(esess) / "raw_passive_data"),
                 force=False,
             )
+            parts = session_path_parts(esess, as_dict=True, assert_valid=True)
+            parts.pop('lab')
+            patch_settings(
+                esess, collection='raw_passive_data', new_collection='raw_passive_data', **parts)
             log.info(f"Moved passive data to {esess}")
             ps.unlink()
         except BaseException as e:
