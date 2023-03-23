@@ -7,7 +7,6 @@ import math
 import random
 import logging
 from pathlib import Path
-import signal
 from string import ascii_letters
 import subprocess
 import time
@@ -123,13 +122,7 @@ class ChoiceWorldSession(
         This is the method that runs the task with the actual state machine
         :return:
         """
-        def sigint_handler(*args, **kwargs):
-            self.paths.SESSION_FOLDER.joinpath('.stop').touch()
-            log.critical("SIGINT signal detected, will exit at the end of the trial")
-
-        signal.signal(signal.SIGINT, sigint_handler)
-
-        self.start()
+        super(ChoiceWorldSession, self).run()
         time_last_trial_end = time.time()
         for i in range(self.task_params.NTRIALS):  # Main loop
             # t_overhead = time.time()
