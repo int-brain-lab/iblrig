@@ -148,16 +148,6 @@ class Frame2TTLv1(Frame2TTL):
         self.dark_threshold = dark
         self.light_threshold = light
 
-    def measure_white(self):
-        log.info("Measuring white...")
-        self.measured_white = self.measure_photons(1000)
-        return self.measured_white
-
-    def measure_black(self):
-        log.info("Measuring black...")
-        self.measured_black = self.measure_photons(1000)
-        return self.measured_black
-
     def calc_recomend_thresholds(self):
         if (self.measured_black is None) or (self.measured_white is None):
             log.error("No mesures exist")
@@ -223,31 +213,7 @@ class Frame2TTLv2(Frame2TTL):
     def __init__(self, serial_port: str):
         super(Frame2TTLv2, self).__init__(serial_port)
         self.dark_threshold = -150
-        self.light_threshold = 150
-
-    def set_light_threshold(self, value: int) -> None:
-        """Set the light threshold
-        Command: 5 bytes | [b"T" (uint8), (light_threshold (int16), dark_threshold (int16))]
-        Response: None
-        """
-        self.serial.write(
-            b"T"
-            + int.to_bytes(value, 2, byteorder="little", signed=True)
-            + int.to_bytes(self.dark_threshold, 2, byteorder="little", signed=True)
-        )
-        self.light_threshold = value
-
-    def set_dark_threshold(self, value: int) -> None:
-        """Set the dark threshold
-        Command: 5 bytes | [b"T" (uint8), (light_threshold (int16), dark_threshold (int16))]
-        Response: None
-        """
-        self.serial.write(
-            b"T"
-            + int.to_bytes(self.light_threshold, 2, byteorder="little", signed=True)
-            + int.to_bytes(value, 2, byteorder="little", signed=True)
-        )
-        self.dark_threshold = value
+        self.light_threshold = 100
 
     def connect(self):
         """Create connection to serial_port
@@ -411,22 +377,20 @@ class Frame2TTLv2(Frame2TTL):
             log.warning("Recommended thresholds not set yet. Please call set_recommendations()")
             return self.recomend_dark, self.recomend_light
 
-    def set_thresholds(self, dark=None, light=None) -> None:
-        """Set light, dark, or both thresholds for the device"""
-        if dark is None:
-            dark = self.recomend_dark
-        if light is None:
-            light = self.recomend_light
-
-        # Device wants light threshold before dark
-        if dark != self.dark_threshold:
-            log.info(f"Setting dark threshold to {dark}")
-        if light != self.light_threshold:
-            log.info(f"Setting light threshold to {light}")
-        if dark == -150 and light == 150:
-            log.info(f"Resetting to default values: light={light} - dark={dark}")
-        self.dark_threshold = dark
+    def set_thresholds(self, light, dark):
+        """Set both thresholds
+        Command: 5 bytes | [b"T" (uint8), (light_threshold (int16), dark_threshold (int16))]
+        Response: None
+        """
+        log.info(f"Setting dark threshold to {dark}")
+        log.info(f"Setting light threshold to {light}")
+        self.serial.write(
+            b"T"
+            + int.to_bytes(int(light), 2, byteorder="little", signed=True)
+            + int.to_bytes(int(dark), 2, byteorder="little", signed=True)
+        )
         self.light_threshold = light
+        self.dark_threshold = dark
 
     def set_recommendations(self):
         log.info("Sending thresholds to device...")
