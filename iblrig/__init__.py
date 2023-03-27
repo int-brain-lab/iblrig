@@ -1,4 +1,4 @@
-__version__ = "8.0.0a"
+__version__ = "8.0.0b"
 import logging
 import colorlog
 
