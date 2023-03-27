@@ -115,8 +115,9 @@ class ChoiceWorldSession(
         # create the task parameter file in the raw_behavior dir
         self.save_task_parameters_to_json_file()
 
-        # starts the online plotting
-        subprocess.Popen(f"viewsession {str(self.paths['DATA_FILE_PATH'])}", stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+        # starts online plotting
+        subprocess.Popen(["viewsession", str(self.paths['DATA_FILE_PATH'])],
+                         stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
 
     def run(self):
         """

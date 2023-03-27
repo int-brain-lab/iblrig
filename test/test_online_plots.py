@@ -2,11 +2,13 @@ import unittest
 import numpy as np
 from pathlib import Path
 import zipfile
+import matplotlib
 
 import iblrig.online_plots as op
 from iblrig.raw_data_loaders import load_task_jsonable
 
 zip_jsonable = Path(__file__).parent.joinpath('fixtures', 'online_plots_biased_iblrigv7.zip')
+matplotlib.use('Agg')  # avoid pyqt testing issues
 
 
 class TestOnlineStd(unittest.TestCase):
