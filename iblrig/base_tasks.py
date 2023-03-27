@@ -35,6 +35,7 @@ OSC_CLIENT_IP = "127.0.0.1"
 
 
 class BaseSession(ABC):
+    protocol_name = None
     base_parameters_file = None
     is_mock = False
 
@@ -60,7 +61,7 @@ class BaseSession(ABC):
         else:
             make = ["video"]  # besides behavior which folders to create
         spc = iblrig.path_helper.SessionPathCreator(
-            subject, protocol=self.pybpod_settings.PYBPOD_PROTOCOL, make=make)
+            subject, protocol=self.protocol_name, make=make)
         self.paths = Bunch(spc.__dict__)
 
         # get another set of parameters from .iblrig_params.json
@@ -84,8 +85,9 @@ class BaseSession(ABC):
         })
         # Executes mixins init methods
         self._execute_mixins_shared_function('init_mixin')
+        self.save_task_parameters_to_json_file()
 
-    def output_task_parameters_to_json_file(self) -> Path:
+    def save_task_parameters_to_json_file(self) -> Path:
         """
         Given a session object, collects the various settings and parameters of the session and outputs them to a JSON file
 
@@ -97,7 +99,8 @@ class BaseSession(ABC):
         output_dict.update(dict(self.hardware_settings))  # Update dict with hardware settings from session
         output_dict.update(dict(self.session_info))  # Update dict with session_info (subject, procedure, projects)
         patch_dict = {  # Various values added to ease transition from iblrig v7 to v8, different home may be desired
-            "PYBPOD_PROTOCOL": self.pybpod_settings["PYBPOD_PROTOCOL"],
+            "PYBPOD_PROTOCOL": self.protocol_name,
+            "PYBPOD_CREATOR": self.pybpod_settings["PYBPOD_CREATOR"],
         }
         output_dict.update(patch_dict)
 

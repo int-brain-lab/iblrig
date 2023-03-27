@@ -5,6 +5,8 @@ log = logging.getLogger("iblrig")
 
 
 class Session(BiasedChoiceWorldSession):
+    protocol_name = "_iblrig_tasks_imagingChoiceWorld"
+
     def draw_quiescent_period(self):
         """
         For this task we double the quiescence period texp draw and remove the absolute
