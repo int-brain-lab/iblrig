@@ -113,7 +113,7 @@ class ChoiceWorldSession(
             self.task_params.SESSION_START_DELAY_SEC = user.ask_session_delay(self.paths.SETTINGS_FILE_PATH)
 
         # create the task parameter file in the raw_behavior dir
-        self.output_task_parameters_to_json_file()
+        self.save_task_parameters_to_json_file()
 
         # starts the online plotting
         subprocess.Popen(f"viewsession {str(self.paths['DATA_FILE_PATH'])}", stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)

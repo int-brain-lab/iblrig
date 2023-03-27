@@ -84,8 +84,9 @@ class BaseSession(ABC):
         })
         # Executes mixins init methods
         self._execute_mixins_shared_function('init_mixin')
+        self.save_task_parameters_to_json_file()
 
-    def output_task_parameters_to_json_file(self) -> Path:
+    def save_task_parameters_to_json_file(self) -> Path:
         """
         Given a session object, collects the various settings and parameters of the session and outputs them to a JSON file
 
