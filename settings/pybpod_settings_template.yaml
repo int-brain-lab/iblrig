@@ -5,11 +5,10 @@ PYBPOD_API_LOG_FILE: null
 PYBPOD_API_LOG_LEVEL: null
 PYBPOD_API_STREAM2STDOUT: false
 PYBPOD_BOARD: _iblrig_mainenlab_ephys_0
-PYBPOD_CREATOR: '["_iblrig_fake_user", "f092c2d5-c98a-45a1-be7c-df05f129a93c", "local"]'
+PYBPOD_CREATOR: olivier
 PYBPOD_EXPERIMENT: _iblrig_tasks
 PYBPOD_NET_PORT: 36000
 PYBPOD_PROJECT: IBL
-PYBPOD_PROTOCOL: _iblrig_tasks_biasedChoiceWorld
 PYBPOD_SERIAL_PORT: COM#
 PYBPOD_SESSION: "00010131-000001"
 PYBPOD_SESSION_PATH: "C:\\iblrig_params\\IBL\\experiments\\_iblrig_tasks\\setups\\passiveChoiceWorld_testing\\sessions\\00010131-000001"

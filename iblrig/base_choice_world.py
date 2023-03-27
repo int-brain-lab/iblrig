@@ -569,6 +569,7 @@ PREVIOUS WEIGHT:               {self.LAST_SETTINGS_DATA["SUBJECT_WEIGHT"]}
 
 
 class BiasedChoiceWorldSession(ChoiceWorldSession):
+    protocol_name = "_iblrig_tasks_biasedChoiceWorld"
 
     def new_block(self):
         """

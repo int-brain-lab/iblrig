@@ -329,7 +329,6 @@ def load_pybpod_settings_yaml(file_name) -> Bunch:
     """
     rs = load_settings_yaml(file_name)
     # deserialize some of the PYBPOD parameters written in json format
-    rs['PYBPOD_CREATOR'] = json.loads(rs['PYBPOD_CREATOR'])
     rs['PYBPOD_USER_EXTRA'] = json.loads(rs['PYBPOD_USER_EXTRA'])
     rs['PYBPOD_SUBJECTS'] = [json.loads(x.replace("'", '"')) for x in rs.pop('PYBPOD_SUBJECTS')][0]
     rs['PYBPOD_SUBJECT_EXTRA'] = [json.loads(x.replace("'", '"')) for x in rs['PYBPOD_SUBJECT_EXTRA'][1:-1].split('","')][0]

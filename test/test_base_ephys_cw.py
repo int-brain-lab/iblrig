@@ -23,6 +23,8 @@ class TestFileOutput(unittest.TestCase):
             settings = json.load(fp)
         # test a subset of keys useful for extraction
         self.assertEqual(settings['SUBJECT_WEIGHT'], None)
+        self.assertIn('PYBPOD_CREATOR', settings)
+        self.assertIn('PYBPOD_PROTOCOL', settings)
 
 
 class TestHierarchicalParameters(unittest.TestCase):

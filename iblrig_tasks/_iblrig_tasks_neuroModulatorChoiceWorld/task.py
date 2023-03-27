@@ -13,6 +13,8 @@ REWARD_AMOUNTS_UL = (1, 3)
 
 
 class Session(BiasedChoiceWorldSession):
+    protocol_name = "_iblrig_tasks_neuromodulatorChoiceWorld"
+
     def __init__(self, *args, **kwargs):
         super(Session, self).__init__(*args, **kwargs)
         self.trials_table['omit_feedback'] = np.zeros(self.trials_table.shape[0], dtype=bool)
