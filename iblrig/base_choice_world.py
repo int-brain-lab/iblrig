@@ -2,6 +2,7 @@
 This modules extends the base_tasks modules by providing task logic around the Choice World protocol
 """
 from abc import abstractmethod
+import datetime
 import json
 import math
 import random
@@ -150,6 +151,8 @@ class ChoiceWorldSession(
                 self.paths.SESSION_FOLDER.joinpath('.stop').unlink()
                 break
         log.critical("Graceful exit")
+        self.session_info.SESSION_END_TIME = datetime.datetime.now().isoformat()
+        self.save_task_parameters_to_json_file()
         self.bpod.close()
         self.stop_mixin_bonsai_recordings()
 

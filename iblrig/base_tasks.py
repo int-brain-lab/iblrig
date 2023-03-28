@@ -22,6 +22,7 @@ import scipy.interpolate
 from pythonosc import udp_client
 from pybpodapi.protocol import StateMachine
 
+import iblrig
 import iblrig.path_helper
 from iblutil.util import Bunch
 from iblrig.hardware import Bpod, MyRotaryEncoder, sound_device_factory
@@ -78,9 +79,11 @@ class BaseSession(ABC):
             if task_params is not None:
                 self.task_params.update(Bunch(task_params))
         self.session_info = Bunch({
-            'SUBJECT_NAME': subject or self.pybpod_settings.PYBPOD_SUBJECTS[0],
-            'PROJECTS': projects,
             'PROCEDURES': procedures,
+            'PROJECTS': projects,
+            'SESSION_START_TIME': self.init_datetime.isoformat(),
+            'SESSION_END_TIME': None,
+            'SUBJECT_NAME': subject or self.pybpod_settings.PYBPOD_SUBJECTS[0],
             'SUBJECT_WEIGHT': None,
         })
         # Executes mixins init methods
@@ -99,6 +102,7 @@ class BaseSession(ABC):
         output_dict.update(dict(self.hardware_settings))  # Update dict with hardware settings from session
         output_dict.update(dict(self.session_info))  # Update dict with session_info (subject, procedure, projects)
         patch_dict = {  # Various values added to ease transition from iblrig v7 to v8, different home may be desired
+            "IBLRIG_VERSION": iblrig.__version__,
             "PYBPOD_PROTOCOL": self.protocol_name,
             "PYBPOD_CREATOR": self.pybpod_settings["PYBPOD_CREATOR"],
         }

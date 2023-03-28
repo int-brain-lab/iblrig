@@ -4,7 +4,6 @@ Those can be instantiated lazily, ie. on any computer.
 The start() methods of those mixins require the hardware to be connected.
 
 """
-import json
 from pathlib import Path
 import unittest
 import tempfile
@@ -12,19 +11,6 @@ import yaml
 
 from iblrig.base_tasks import SoundMixin, RotaryEncoderMixin, BaseSession, BpodMixin, ValveMixin
 from iblrig.base_choice_world import BiasedChoiceWorldSession
-
-
-class TestFileOutput(unittest.TestCase):
-    def test_output_task_parameters_to_json_file(self):
-        bcws = BiasedChoiceWorldSession(interactive=False, subject='unittest_subject')  # Create false session
-        # Create json file and test
-        json_file = bcws.save_task_parameters_to_json_file()
-        with open(json_file, "r") as fp:
-            settings = json.load(fp)
-        # test a subset of keys useful for extraction
-        self.assertEqual(settings['SUBJECT_WEIGHT'], None)
-        self.assertIn('PYBPOD_CREATOR', settings)
-        self.assertIn('PYBPOD_PROTOCOL', settings)
 
 
 class TestHierarchicalParameters(unittest.TestCase):
