@@ -54,6 +54,7 @@ class BaseSession(ABC):
         # Create the folder architecture and get the paths property updated
         # the template for this file is in settings/hardware_settings.yaml
         self.hardware_settings = iblrig.path_helper.load_settings_yaml(hardware_settings_name)
+        self.iblrig_settings = iblrig.path_helper.load_settings_yaml('iblrig_settings.yaml')
         # TODO Base collections on experiment description and remove 'fmake' param.
         if not fmake:
             make = False
@@ -64,12 +65,14 @@ class BaseSession(ABC):
         spc = iblrig.path_helper.SessionPathCreator(
             subject, protocol=self.protocol_name, make=make)
         self.paths = Bunch(spc.__dict__)
-        # Load the tasks settings
+        # Load the tasks settings, from the task folder or override with the input argument
         task_parameter_file = task_parameter_file or Path(inspect.getfile(self.__class__)).parent.joinpath('task_parameters.yaml')
         self.task_params = Bunch({})
+        # first loads the base parameters for a given task
         if self.base_parameters_file is not None and self.base_parameters_file.exists():
             with open(self.base_parameters_file) as fp:
                 self.task_params = Bunch(yaml.safe_load(fp))
+        # then updates the dictionary with the child task parameters
         if task_parameter_file.exists():
             with open(task_parameter_file) as fp:
                 task_params = yaml.safe_load(fp)
@@ -104,6 +107,7 @@ class BaseSession(ABC):
         patch_dict = {  # Various values added to ease transition from iblrig v7 to v8, different home may be desired
             "IBLRIG_VERSION": iblrig.__version__,
             "PYBPOD_PROTOCOL": self.protocol_name,
+            "ALYX_USER": self.iblrig_settings.ALYX_USER,
         }
         output_dict.update(patch_dict)
 

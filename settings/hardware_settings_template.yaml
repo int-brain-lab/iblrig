@@ -1,5 +1,4 @@
 RIG_NAME: _iblrig_testlab_behavior_1
-ALYX_USER: algernon
 device_bpod:
   COM_BPOD: null
   BPOD_TTL_TEST_DATE: null
