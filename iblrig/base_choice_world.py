@@ -89,10 +89,6 @@ class ChoiceWorldSession(
             "AirPressure_mb": np.zeros(NTRIALS_INIT) * np.NaN,
             "RelativeHumidity": np.zeros(NTRIALS_INIT) * np.NaN,
         })
-        self.aggregates = Bunch({
-            'ntrials_correct': 0,
-            'water_delivered': 0,
-        })
 
     def start(self):
         """
@@ -419,12 +415,12 @@ class ChoiceWorldSession(
             self.trials_table.at[self.trial_num, 'reward_amount'] = 0
         self.trials_table.at[self.trial_num, 'reward_valve_time'] = self.reward_time
         # update cumulative reward value
-        self.aggregates.water_delivered += self.trials_table.at[self.trial_num, 'reward_amount']
+        self.session_info.TOTAL_WATER_DELIVERED += self.trials_table.at[self.trial_num, 'reward_amount']
         # Update response buffer -1 for left, 0 for nogo, and 1 for rightward
         position = self.trials_table.at[self.trial_num, 'position']
         if 'correct' in outcome:
             self.trials_table.at[self.trial_num, 'trial_correct'] = True
-            self.aggregates.ntrials_correct += 1
+            self.session_info.NTRIALS_CORRECT += 1
             self.trials_table.at[self.trial_num, 'response_side'] = -np.sign(position)
         elif 'error' in outcome:
             self.trials_table.at[self.trial_num, 'response_side'] = np.sign(position)
@@ -491,9 +487,9 @@ STIM PROB LEFT:       {trial_info.stim_probability_left}
 RESPONSE TIME:        {trial_info.response_time}
 TRIAL CORRECT:        {trial_info.trial_correct}
 
-NTRIALS CORRECT:      {self.aggregates.ntrials_correct}
-NTRIALS ERROR:        {self.trial_num - self.aggregates.ntrials_correct}
-WATER DELIVERED:      {np.round(self.aggregates.water_delivered, 3)} µl
+NTRIALS CORRECT:      {self.session_info.NTRIALS_CORRECT}
+NTRIALS ERROR:        {self.trial_num - self.session_info.NTRIALS_CORRECT}
+WATER DELIVERED:      {np.round(self.session_info.TOTAL_WATER_DELIVERED, 3)} µl
 TIME FROM START:      {self.time_elapsed}
 TEMPERATURE:          {self.ambient_sensor_table.loc[self.trial_num, 'Temperature_C']} ºC
 AIR PRESSURE:         {self.ambient_sensor_table.loc[self.trial_num, 'AirPressure_mb']} mb

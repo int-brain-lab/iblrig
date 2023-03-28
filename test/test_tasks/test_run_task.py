@@ -17,12 +17,14 @@ class JsonSettingsMixin(abc.ABC):
         with open(json_file, "r") as fp:
             settings = json.load(fp)
         # test a subset of keys useful for extraction
+        self.assertIn('ALYX_USER', settings)
         self.assertEqual(settings['IBLRIG_VERSION'], iblrig.__version__)
+        self.assertIn('PYBPOD_PROTOCOL', settings)
+        self.assertIn('RIG_NAME', settings)
+        self.assertIn('SESSION_END_TIME', settings)
+        self.assertIn('SESSION_NUMBER', settings)
         dt = datetime.datetime.now() - datetime.datetime.fromisoformat(settings['SESSION_START_TIME'])
         self.assertLess(dt.seconds, 600)  # leaves some time for debugging
-        self.assertIn('SESSION_END_TIME', settings)
-        self.assertIn('PYBPOD_CREATOR', settings)
-        self.assertIn('PYBPOD_PROTOCOL', settings)
         self.assertEqual(settings['SUBJECT_WEIGHT'], None)
         return settings
 

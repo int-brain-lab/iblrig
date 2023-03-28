@@ -37,8 +37,8 @@ class TestBiasedChoiceWorld(unittest.TestCase):
         task.trials_table = task.trials_table[:task.trial_num + 1]
         np.testing.assert_array_equal(task.trials_table['trial_num'].values, np.arange(task.trial_num + 1))
         # makes sure the water reward counts check out
-        assert task.trials_table['reward_amount'].sum() == task.aggregates.water_delivered
-        assert np.sum(task.trials_table['reward_amount'] == 0) == task.trial_num + 1 - task.aggregates.ntrials_correct
+        assert task.trials_table['reward_amount'].sum() == task.session_info.TOTAL_WATER_DELIVERED
+        assert np.sum(task.trials_table['reward_amount'] == 0) == task.trial_num + 1 - task.session_info.NTRIALS_CORRECT
         assert np.all(~np.isnan(task.trials_table['reward_valve_time']))
         # Test the blocks task logic
         df_blocks = task.trials_table.groupby('block_num').agg(

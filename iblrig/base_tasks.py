@@ -51,22 +51,19 @@ class BaseSession(ABC):
         """
         self.init_datetime = datetime.datetime.now()
         self.DEBUG = debug
-        # Load pybpod settings
-        self.pybpod_settings = iblrig.path_helper.load_pybpod_settings_yaml('pybpod_settings.yaml')
         # Create the folder architecture and get the paths property updated
+        # the template for this file is in settings/hardware_settings.yaml
+        self.hardware_settings = iblrig.path_helper.load_settings_yaml(hardware_settings_name)
         # TODO Base collections on experiment description and remove 'fmake' param.
         if not fmake:
             make = False
-        elif fmake and "ephys" in self.pybpod_settings.PYBPOD_BOARD:
+        elif fmake and "ephys" in self.hardware_settings['RIG_NAME']:
             make = True  # True makes only raw_behavior_data folder
         else:
             make = ["video"]  # besides behavior which folders to create
         spc = iblrig.path_helper.SessionPathCreator(
             subject, protocol=self.protocol_name, make=make)
         self.paths = Bunch(spc.__dict__)
-
-        # get another set of parameters from .iblrig_params.json
-        self.hardware_settings = iblrig.path_helper.load_settings_yaml(hardware_settings_name)
         # Load the tasks settings
         task_parameter_file = task_parameter_file or Path(inspect.getfile(self.__class__)).parent.joinpath('task_parameters.yaml')
         self.task_params = Bunch({})
@@ -79,12 +76,15 @@ class BaseSession(ABC):
             if task_params is not None:
                 self.task_params.update(Bunch(task_params))
         self.session_info = Bunch({
+            'NTRIALS_CORRECT': 0,
             'PROCEDURES': procedures,
             'PROJECTS': projects,
             'SESSION_START_TIME': self.init_datetime.isoformat(),
             'SESSION_END_TIME': None,
+            'SESSION_NUMBER': int(self.paths.SESSION_NUMBER),
             'SUBJECT_NAME': subject or self.pybpod_settings.PYBPOD_SUBJECTS[0],
             'SUBJECT_WEIGHT': None,
+            'TOTAL_WATER_DELIVERED': 0,
         })
         # Executes mixins init methods
         self._execute_mixins_shared_function('init_mixin')
@@ -104,7 +104,6 @@ class BaseSession(ABC):
         patch_dict = {  # Various values added to ease transition from iblrig v7 to v8, different home may be desired
             "IBLRIG_VERSION": iblrig.__version__,
             "PYBPOD_PROTOCOL": self.protocol_name,
-            "PYBPOD_CREATOR": self.pybpod_settings["PYBPOD_CREATOR"],
         }
         output_dict.update(patch_dict)
 

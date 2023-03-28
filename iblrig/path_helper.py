@@ -2,7 +2,6 @@
 Various get functions to return paths of folders and network drives
 """
 import datetime
-import json
 import logging
 import os
 from pathlib import Path
@@ -319,17 +318,3 @@ if __name__ == "__main__":
         print(f"{k}: {spc.__dict__[k]}")
 
     print(".")
-
-
-def load_pybpod_settings_yaml(file_name) -> Bunch:
-    """
-    Load pbpod settings from yaml file, and deserialize some of the PYBPOD parameters written in json format
-    :param user_settings_yaml:
-    :return:
-    """
-    rs = load_settings_yaml(file_name)
-    # deserialize some of the PYBPOD parameters written in json format
-    rs['PYBPOD_USER_EXTRA'] = json.loads(rs['PYBPOD_USER_EXTRA'])
-    rs['PYBPOD_SUBJECTS'] = [json.loads(x.replace("'", '"')) for x in rs.pop('PYBPOD_SUBJECTS')][0]
-    rs['PYBPOD_SUBJECT_EXTRA'] = [json.loads(x.replace("'", '"')) for x in rs['PYBPOD_SUBJECT_EXTRA'][1:-1].split('","')][0]
-    return Bunch(rs)
