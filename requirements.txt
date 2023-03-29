@@ -2,7 +2,7 @@ asn1crypto
 colorlog
 cython
 ibllib
-iblpybpod
+git+https://github.com/int-brain-lab/iblpybpod.git@main
 numpy
 ONE-api
 packaging

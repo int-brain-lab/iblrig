@@ -1,3 +1,7 @@
+# In this setting file, you will find a list of each device (i.e. harware apparatus) you can control.
+# Each device is named in the list below by the "device_" word beforehand, e.g. "device_frame2ttl".
+# Each device has settings parameters, written below the device name, e.g. its COM port or code workflow to run it.
+# To set these parameters, go to TODO DOCUMENTATION APPENDIX 3
 RIG_NAME: _iblrig_testlab_behavior_1
 device_bpod:
   COM_BPOD: null
@@ -22,6 +26,8 @@ device_screen:
   SCREEN_LUX_VALUE: null
 device_sound:
   OUTPUT: sysdefault  # harp or xonar or sysdefault
+device_microphone:
+  BONSAI_WORKFLOW: devices/microphone/record_mic.bonsai
 device_valve:
   WATER_CALIBRATION_DATE: 2099-12-31
   WATER_CALIBRATION_OPEN_TIMES: [50, 100]
@@ -30,5 +36,3 @@ device_valve:
 device_camera:
   # set to null if a dedicated computer runs bonsai video acquisition
   BONSAI_WORKFLOW: devices/camera_recordings/TrainingRig_SaveVideo_TrainingTasks.bonsai
-device_microphone:
-  BONSAI_WORKFLOW: devices/microphone/record_mic.bonsai
