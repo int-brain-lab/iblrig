@@ -412,7 +412,13 @@ class RotaryEncoderMixin:
         )
 
     def start_mixin_rotary_encoder(self):
-        self.device_rotary_encoder.connect()
+        try:
+            self.device_rotary_encoder.connect()
+        except serial.serialutil.SerialException as e:
+            raise serial.serialutil.SerialException(
+                "The rotary encoder COM port is already in use. This is usually due to a Bonsai process "
+                "currently running on the computer. Make sure all Bonsai windows are closed prior to "
+                "running the task") from e
 
 
 class ValveMixin:

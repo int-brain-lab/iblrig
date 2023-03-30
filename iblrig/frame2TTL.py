@@ -6,7 +6,6 @@
 import logging
 import struct
 import time
-import traceback
 
 import numpy as np
 import serial
@@ -234,9 +233,13 @@ class Frame2TTLv2(Frame2TTL):
             self.hw_version = int.from_bytes(self.serial.read(1), byteorder="little", signed=False)
             if self.hw_version != 2:
                 self.close()
-        except serial.SerialException:
+        except serial.SerialException as e:
             self.close()
-            log.error(traceback.format_exc())
+            raise serial.SerialException(
+                "Could not connect to the Frame2ttl device, please power cycle the device by "
+                "disconnecting / reconnecting the USB cable and try again. "
+                "If after a power cycle the error remains, make sure the correct COM port is "
+                "defined in the ./settings/hardware_settings.yaml file") from e
 
     def start_stream(self) -> None:
         """Enable streaming to USB (stream rate 100Hz? sensor samples at 20kHz)
