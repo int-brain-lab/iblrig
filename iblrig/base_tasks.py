@@ -242,6 +242,7 @@ class BonsaiRecordingMixin(object):
             "--no-boot"]
         )
         os.chdir(here)
+        log.info("Bonsai microphone recording module loaded: OK")
 
     def start_mixin_bonsai_cameras(self):
         """
@@ -256,6 +257,7 @@ class BonsaiRecordingMixin(object):
         # this locks until Bonsai closes
         subprocess.call([str(self.paths.BONSAI), str(bonsai_camera_file), "--start-no-debug", "--no-boot"])
         os.chdir(here)
+        log.info("Bonsai cameras setup module loaded: OK")
 
     def trigger_bonsai_cameras(self):
         if self.hardware_settings.device_camera['BONSAI_WORKFLOW'] is None:
@@ -337,7 +339,7 @@ class BonsaiVisualStimulusMixin(object):
             ]
         )
         os.chdir(here)
-        return
+        log.info("Bonsai visual stimulus module loaded: OK")
 
 
 class BpodMixin(object):
@@ -366,6 +368,7 @@ class BpodMixin(object):
 
         assert len(self.bpod.actions.keys()) == 6
         assert self.bpod.is_connected
+        log.info("Bpod hardware module loaded: OK")
 
     def send_spacers(self):
         log.info("Starting task by sending a spacer signal on BNC1")
@@ -397,6 +400,7 @@ class Frame2TTLMixin:
             self.frame2ttl.close()
             raise e
         assert self.frame2ttl.connected
+        log.info("Frame2TTL module loaded: OK")
 
 
 class RotaryEncoderMixin:
@@ -419,6 +423,7 @@ class RotaryEncoderMixin:
                 "The rotary encoder COM port is already in use. This is usually due to a Bonsai process "
                 "currently running on the computer. Make sure all Bonsai windows are closed prior to "
                 "running the task") from e
+        log.info("Rotary encoder module loaded: OK")
 
 
 class ValveMixin:
@@ -473,6 +478,7 @@ class ValveMixin:
                 AUTOMATIC_CALIBRATION = False
                 CALIBRATION_VALUE = <MANUAL_CALIBRATION>
             ##########################################"""
+        log.info("Water valve module loaded: OK")
 
     def compute_reward_time(self, amount_ul=None):
         amount_ul = amount_ul or self.task_params.REWARD_AMOUNT_UL
@@ -550,6 +556,7 @@ class SoundMixin:
             self.sound['OUT_TONE'] = ("SoftCode", 1)
             self.sound['OUT_NOISE'] = ("SoftCode", 2)
             self.sound['OUT_STOP_SOUND'] = ("SoftCode", 0)
+        log.info(f"Sound module loaded: OK: {sound_output}")
 
     def play_tone(self):
         self.sound.sd.play(self.sound.GO_TONE, self.sound['samplerate'])
