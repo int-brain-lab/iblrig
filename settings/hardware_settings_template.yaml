@@ -2,7 +2,7 @@
 # Each device is named in the list below by the "device_" word beforehand, e.g. "device_frame2ttl".
 # Each device has settings parameters, written below the device name, e.g. its COM port or code workflow to run it.
 # To set these parameters, go to TODO DOCUMENTATION APPENDIX 3
-RIG_NAME: _iblrig_testlab_behavior_1
+RIG_NAME: _iblrig_cortexlab_behavior_3
 device_bpod:
   COM_BPOD: null
   BPOD_TTL_TEST_DATE: null

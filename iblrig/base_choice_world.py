@@ -44,11 +44,8 @@ class ChoiceWorldSession(
 ):
     base_parameters_file = Path(__file__).parent.joinpath('base_choice_world_params.yaml')
 
-    def __init__(self, interactive=False, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super(ChoiceWorldSession, self).__init__(**kwargs)
-        self.interactive = interactive
-        # Session data
-        self.display_logs()
         # init behaviour data
         self.movement_left = self.device_rotary_encoder.THRESHOLD_EVENTS[
             self.task_params.QUIESCENCE_THRESHOLDS[0]]
@@ -107,7 +104,7 @@ class ChoiceWorldSession(
 
         if self.interactive:
             self.session_info.SUBJECT_WEIGHT = user.ask_subject_weight(self.session_info.SUBJECT_NAME)
-            self.task_params.SESSION_START_DELAY_SEC = user.ask_session_delay(self.paths.SETTINGS_FILE_PATH)
+            self.task_params.SESSION_START_DELAY_SEC = user.ask_session_delay()
 
         # create the task parameter file in the raw_behavior dir
         self.save_task_parameters_to_json_file()
@@ -520,20 +517,6 @@ RELATIVE HUMIDITY:    {self.ambient_sensor_table.loc[self.trial_num, 'RelativeHu
         if assert_calibration:
             assert 'REWARD_VALVE_TIME' in self.calibration.keys(), 'Reward valve time not calibrated'
         return self.task_params.ITI_CORRECT - self.calibration.get('REWARD_VALVE_TIME', None)
-
-    def display_logs(self):
-        if self.paths.PREVIOUS_DATA_FILE:
-            msg = f"""
-##########################################
-PREVIOUS SESSION FOUND
-LOADING PARAMETERS FROM:       {self.PREVIOUS_DATA_FILE}
-PREVIOUS NTRIALS:              {self.LAST_TRIAL_DATA["trial_num"]}
-PREVIOUS WATER DRANK:          {self.LAST_TRIAL_DATA["water_delivered"]}
-LAST REWARD:                   {self.LAST_TRIAL_DATA["reward_amount"]}
-LAST GAIN:                     {self.LAST_TRIAL_DATA["stim_gain"]}
-PREVIOUS WEIGHT:               {self.LAST_SETTINGS_DATA["SUBJECT_WEIGHT"]}
-##########################################"""
-            log.info(msg)
 
     """
     Those are the methods that need to be implemented for a new task

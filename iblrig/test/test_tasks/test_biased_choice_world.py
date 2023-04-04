@@ -4,6 +4,7 @@ import unittest
 import numpy as np
 import pandas as pd
 
+import iblrig.test
 from iblrig_tasks._iblrig_tasks_biasedChoiceWorld.task import Session as BiasedChoiceWorldSession
 from iblrig_tasks._iblrig_tasks_neuroModulatorChoiceWorld.task import Session as NeuroModulatorChoiceWorldSession
 
@@ -11,7 +12,7 @@ from iblrig_tasks._iblrig_tasks_neuroModulatorChoiceWorld.task import Session as
 class TestBiasedChoiceWorld(unittest.TestCase):
 
     def setUp(self) -> None:
-        self.task = BiasedChoiceWorldSession(interactive=False, subject='unittest_subject')
+        self.task = BiasedChoiceWorldSession(**iblrig.test.TASK_KWARGS)
 
     def test_task(self):
         task = self.task
@@ -71,7 +72,7 @@ class TestBiasedChoiceWorld(unittest.TestCase):
 
 class TestNeuroModulatorBiasedChoiceWorld(TestBiasedChoiceWorld):
     def setUp(self) -> None:
-        self.task = NeuroModulatorChoiceWorldSession(interactive=False, subject='unittest_subject')
+        self.task = NeuroModulatorChoiceWorldSession(**iblrig.test.TASK_KWARGS)
 
     def test_task(self):
         super(TestNeuroModulatorBiasedChoiceWorld, self).test_task()

@@ -16,4 +16,4 @@ iblrig_local_data_path: null  # C:\iblrigv8_data
 iblrig_remote_data_path: null  # Y:\
 ALYX_USER: null  # your Alyx username
 ALYX_URL: null  # https://alyx.internationalbrainlab.org
-ALYX_LAB: null  # the lab name as registered on the database
+ALYX_LAB: cortexlab  # the lab name as registered on the database

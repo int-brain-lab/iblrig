@@ -42,34 +42,28 @@ class BaseSession(ABC):
     protocol_name = None
     base_parameters_file = None
     is_mock = False
-    _one = None
 
-    def __init__(self, debug=False, task_parameter_file=None, hardware_settings='hardware_settings.yaml',
-                 iblrig_settings='iblrig_settings.yaml', subject=None, projects='', fmake=True, procedures=None):
+    def __init__(self, task_parameter_file=None, hardware_settings=None, iblrig_settings=None,
+                 one=None, interactive=True, subject=None, projects=None, procedures=None):
         """
-        This only handles gathering the parameters and settings for the current session
-        :param debug:
         :param task_parameter_file:
         :param hardware_settings: name of the hardware file in the settings folder, or full file path
         :param iblrig_settings: name of the iblrig file in the settings folder, or full file path
+        :param one: an instance of ONE if any
+        :param interactive:
+        :param subject:
+        :param projects:
+        :param procedures:
         :param fmake: (DEPRECATED) if True, only create the raw_behavior_data folder.
         """
+        self.interactive = interactive
+        self._one = one
         self.init_datetime = datetime.datetime.now()
-        self.DEBUG = debug
         # Create the folder architecture and get the paths property updated
         # the template for this file is in settings/hardware_settings.yaml
-        self.hardware_settings = iblrig.path_helper.load_settings_yaml(hardware_settings)
-        self.iblrig_settings = iblrig.path_helper.load_settings_yaml(iblrig_settings)
+        self.hardware_settings = iblrig.path_helper.load_settings_yaml(hardware_settings or 'hardware_settings.yaml')
+        self.iblrig_settings = iblrig.path_helper.load_settings_yaml(iblrig_settings or 'iblrig_settings.yaml')
         # TODO Base collections on experiment description and remove 'fmake' param.
-        if not fmake:
-            make = False
-        elif fmake and "ephys" in self.hardware_settings['RIG_NAME']:
-            make = True  # True makes only raw_behavior_data folder
-        else:
-            make = ["video"]  # besides behavior which folders to create
-        spc = iblrig.path_helper.SessionPathCreator(
-            subject, protocol=self.protocol_name, make=make)
-        self.paths = Bunch(spc.__dict__)
         # Load the tasks settings, from the task folder or override with the input argument
         task_parameter_file = task_parameter_file or Path(inspect.getfile(self.__class__)).parent.joinpath('task_parameters.yaml')
         self.task_params = Bunch({})
@@ -89,11 +83,30 @@ class BaseSession(ABC):
             'PROJECTS': projects,
             'SESSION_START_TIME': self.init_datetime.isoformat(),
             'SESSION_END_TIME': None,
-            'SESSION_NUMBER': int(self.paths.SESSION_NUMBER),
+            'SESSION_NUMBER': 0,
             'SUBJECT_NAME': subject or self.pybpod_settings.PYBPOD_SUBJECTS[0],
             'SUBJECT_WEIGHT': None,
             'TOTAL_WATER_DELIVERED': 0,
         })
+
+        root_data_path = self.iblrig_settings['iblrig_local_data_path'] or Path.home().joinpath('iblrig_data')
+        date_folder = root_data_path.joinpath(
+            self.iblrig_settings['ALYX_LAB'] or '',
+            'Subjects',
+            self.session_info.SUBJECT_NAME,
+            self.session_info.SESSION_START_TIME[:10],
+        )
+        numbers_folders = [int(f.name) for f in date_folder.rglob('*') if len(f.name) == 3 and f.name.isdigit()]
+        self.session_info.SESSION_NUMBER = 1 if len(numbers_folders) == 0 else max(numbers_folders) + 1
+        self.paths = Bunch({
+            'SESSION_FOLDER': date_folder.joinpath(f"{self.session_info.SESSION_NUMBER:03d}"),
+            'IBLRIG_FOLDER': Path(iblrig.__file__).parents[1],
+        })
+        self.paths.BONSAI = self.paths.IBLRIG_FOLDER.joinpath('Bonsai', 'Bonsai.exe')
+        # Create the session folder, this is currently hard coded but should be changed for chained protocols
+        self.paths.SESSION_RAW_DATA_FOLDER = self.paths.SESSION_FOLDER.joinpath('raw_behavior_data')
+        self.paths.DATA_FILE_PATH = self.paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_taskData.raw.jsonable')
+        self.paths.VISUAL_STIM_FOLDER = self.paths.IBLRIG_FOLDER.joinpath('visual_stim')
         # Executes mixins init methods
         self._execute_mixins_shared_function('init_mixin')
         self.save_task_parameters_to_json_file()
@@ -126,6 +139,7 @@ class BaseSession(ABC):
         output_dict = self._make_task_parameters_dict()
         # Output dict to json file
         json_file = self.paths.SESSION_FOLDER / "raw_behavior_data" / "_iblrig_taskSettings.raw.json"
+        json_file.parent.mkdir(parents=True, exist_ok=True)
         with open(json_file, "w") as outfile:
             json.dump(output_dict, outfile, indent=4, sort_keys=True, default=str)  # converts datetime objects to string
         return json_file  # PosixPath
@@ -136,9 +150,9 @@ class BaseSession(ABC):
         One getter
         :return:
         """
-        if self.iblrig_settings['ALYX_URL'] is None:
-            return
         if self._one is None:
+            if self.iblrig_settings['ALYX_URL'] is None:
+                return
             info_str = f"alyx client with user name {self.iblrig_settings['ALYX_USER']} " + \
                        f"and url: {self.iblrig_settings['ALYX_URL']}"
             try:

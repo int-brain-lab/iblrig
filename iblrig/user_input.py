@@ -337,7 +337,7 @@ def ask_subject_weight(subject: str, settings_file_path: str = None) -> float:
     return out
 
 
-def ask_session_delay(settings_file_path: str = None) -> int:
+def ask_session_delay() -> int:
     out = graph.numinput(
         "Session delay",
         "Delay session initiation by (min):",
@@ -348,9 +348,6 @@ def ask_session_delay(settings_file_path: str = None) -> int:
         askint=True,
     )
     out = out * 60
-    if settings_file_path is not None:
-        patch = {"SESSION_START_DELAY_SEC": out}
-        patch_settings_file(settings_file_path, patch)
     return out
 
 
