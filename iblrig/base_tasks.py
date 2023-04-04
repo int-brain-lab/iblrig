@@ -15,12 +15,14 @@ import serial
 import subprocess
 import yaml
 import signal
+import traceback
 
 import numpy as np
 import scipy.interpolate
 
 from pythonosc import udp_client
 from pybpodapi.protocol import StateMachine
+from one.api import ONE
 
 import iblrig
 import iblrig.path_helper
@@ -29,6 +31,7 @@ from iblrig.hardware import Bpod, MyRotaryEncoder, sound_device_factory
 import iblrig.frame2TTL as frame2TTL
 import iblrig.sound as sound
 import iblrig.spacer
+import iblrig.alyx
 
 log = logging.getLogger("iblrig")
 
@@ -40,36 +43,35 @@ class BaseSession(ABC):
     base_parameters_file = None
     is_mock = False
 
-    def __init__(self, debug=False, task_parameter_file=None, hardware_settings_name='hardware_settings.yaml',
-                 subject=None, projects='', fmake=True, procedures=None):
+    def __init__(self, task_parameter_file=None, hardware_settings=None, iblrig_settings=None,
+                 one=None, interactive=True, subject=None, projects=None, procedures=None):
         """
-        This only handles gathering the parameters and settings for the current session
-        :param debug:
         :param task_parameter_file:
-        :param hardware_settings_name:
+        :param hardware_settings: name of the hardware file in the settings folder, or full file path
+        :param iblrig_settings: name of the iblrig file in the settings folder, or full file path
+        :param one: an instance of ONE if any
+        :param interactive:
+        :param subject:
+        :param projects:
+        :param procedures:
         :param fmake: (DEPRECATED) if True, only create the raw_behavior_data folder.
         """
+        self.interactive = interactive
+        self._one = one
         self.init_datetime = datetime.datetime.now()
-        self.DEBUG = debug
         # Create the folder architecture and get the paths property updated
         # the template for this file is in settings/hardware_settings.yaml
-        self.hardware_settings = iblrig.path_helper.load_settings_yaml(hardware_settings_name)
+        self.hardware_settings = iblrig.path_helper.load_settings_yaml(hardware_settings or 'hardware_settings.yaml')
+        self.iblrig_settings = iblrig.path_helper.load_settings_yaml(iblrig_settings or 'iblrig_settings.yaml')
         # TODO Base collections on experiment description and remove 'fmake' param.
-        if not fmake:
-            make = False
-        elif fmake and "ephys" in self.hardware_settings['RIG_NAME']:
-            make = True  # True makes only raw_behavior_data folder
-        else:
-            make = ["video"]  # besides behavior which folders to create
-        spc = iblrig.path_helper.SessionPathCreator(
-            subject, protocol=self.protocol_name, make=make)
-        self.paths = Bunch(spc.__dict__)
-        # Load the tasks settings
+        # Load the tasks settings, from the task folder or override with the input argument
         task_parameter_file = task_parameter_file or Path(inspect.getfile(self.__class__)).parent.joinpath('task_parameters.yaml')
         self.task_params = Bunch({})
+        # first loads the base parameters for a given task
         if self.base_parameters_file is not None and self.base_parameters_file.exists():
             with open(self.base_parameters_file) as fp:
                 self.task_params = Bunch(yaml.safe_load(fp))
+        # then updates the dictionary with the child task parameters
         if task_parameter_file.exists():
             with open(task_parameter_file) as fp:
                 task_params = yaml.safe_load(fp)
@@ -81,14 +83,51 @@ class BaseSession(ABC):
             'PROJECTS': projects,
             'SESSION_START_TIME': self.init_datetime.isoformat(),
             'SESSION_END_TIME': None,
-            'SESSION_NUMBER': int(self.paths.SESSION_NUMBER),
+            'SESSION_NUMBER': 0,
             'SUBJECT_NAME': subject or self.pybpod_settings.PYBPOD_SUBJECTS[0],
             'SUBJECT_WEIGHT': None,
             'TOTAL_WATER_DELIVERED': 0,
         })
+
+        root_data_path = self.iblrig_settings['iblrig_local_data_path'] or Path.home().joinpath('iblrig_data')
+        root_data_path = Path(root_data_path)
+        date_folder = root_data_path.joinpath(
+            self.iblrig_settings['ALYX_LAB'] or '',
+            'Subjects',
+            self.session_info.SUBJECT_NAME,
+            self.session_info.SESSION_START_TIME[:10],
+        )
+        numbers_folders = [int(f.name) for f in date_folder.rglob('*') if len(f.name) == 3 and f.name.isdigit()]
+        self.session_info.SESSION_NUMBER = 1 if len(numbers_folders) == 0 else max(numbers_folders) + 1
+        self.paths = Bunch({
+            'SESSION_FOLDER': date_folder.joinpath(f"{self.session_info.SESSION_NUMBER:03d}"),
+            'IBLRIG_FOLDER': Path(iblrig.__file__).parents[1],
+        })
+        self.paths.BONSAI = self.paths.IBLRIG_FOLDER.joinpath('Bonsai', 'Bonsai.exe')
+        # Create the session folder, this is currently hard coded but should be changed for chained protocols
+        self.paths.SESSION_RAW_DATA_FOLDER = self.paths.SESSION_FOLDER.joinpath('raw_behavior_data')
+        self.paths.DATA_FILE_PATH = self.paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_taskData.raw.jsonable')
+        self.paths.VISUAL_STIM_FOLDER = self.paths.IBLRIG_FOLDER.joinpath('visual_stim')
         # Executes mixins init methods
         self._execute_mixins_shared_function('init_mixin')
         self.save_task_parameters_to_json_file()
+
+    def _make_task_parameters_dict(self):
+        """
+        This makes the dictionary that will be saved to the settings json file for extraction
+        :return:
+        """
+        output_dict = dict(self.task_params)  # Grab parameters from task_params session
+        output_dict.update(dict(self.hardware_settings))  # Update dict with hardware settings from session
+        output_dict.update(dict(self.session_info))  # Update dict with session_info (subject, procedure, projects)
+        patch_dict = {  # Various values added to ease transition from iblrig v7 to v8, different home may be desired
+            "IBLRIG_VERSION": iblrig.__version__,
+            "PYBPOD_PROTOCOL": self.protocol_name,
+            "ALYX_USER": self.iblrig_settings.ALYX_USER,
+            'ALYX_LAB': self.iblrig_settings.ALYX_LAB,
+        }
+        output_dict.update(patch_dict)
+        return output_dict
 
     def save_task_parameters_to_json_file(self) -> Path:
         """
@@ -98,20 +137,51 @@ class BaseSession(ABC):
         -------
         Path to the resultant JSON file
         """
-        output_dict = dict(self.task_params)  # Grab parameters from task_params session
-        output_dict.update(dict(self.hardware_settings))  # Update dict with hardware settings from session
-        output_dict.update(dict(self.session_info))  # Update dict with session_info (subject, procedure, projects)
-        patch_dict = {  # Various values added to ease transition from iblrig v7 to v8, different home may be desired
-            "IBLRIG_VERSION": iblrig.__version__,
-            "PYBPOD_PROTOCOL": self.protocol_name,
-        }
-        output_dict.update(patch_dict)
-
+        output_dict = self._make_task_parameters_dict()
         # Output dict to json file
         json_file = self.paths.SESSION_FOLDER / "raw_behavior_data" / "_iblrig_taskSettings.raw.json"
+        json_file.parent.mkdir(parents=True, exist_ok=True)
         with open(json_file, "w") as outfile:
             json.dump(output_dict, outfile, indent=4, sort_keys=True, default=str)  # converts datetime objects to string
         return json_file  # PosixPath
+
+    @property
+    def one(self):
+        """
+        One getter
+        :return:
+        """
+        if self._one is None:
+            if self.iblrig_settings['ALYX_URL'] is None:
+                return
+            info_str = f"alyx client with user name {self.iblrig_settings['ALYX_USER']} " + \
+                       f"and url: {self.iblrig_settings['ALYX_URL']}"
+            try:
+                self._one = ONE(
+                    base_url=self.iblrig_settings['ALYX_URL'],
+                    username=self.iblrig_settings['ALYX_USER'],
+                    mode='remote'
+                )
+                log.info("instantiated " + info_str)
+            except Exception:
+                log.error(traceback.format_exc())
+                log.error("could not connect to " + info_str)
+        return self._one
+
+    def register_to_alyx(self):
+        """
+        Registers the session to Alyx.
+        To make sure the registration is the same from the settings files and from the instantiated class
+        we output the settings dictionary and register from this format directly.
+        Alternatively, this function
+        :return:
+        """
+        settings_dictionary = self._make_task_parameters_dict()
+        try:
+            iblrig.alyx.register_session(self.paths.SESSION_FOLDER, settings_dictionary, one=self.one)
+        except Exception:
+            log.error(traceback.format_exc())
+            log.error("Could not register session to Alyx")
 
     def _execute_mixins_shared_function(self, pattern):
         method_names = [method for method in dir(self) if method.startswith(pattern)]
@@ -238,6 +308,7 @@ class BonsaiRecordingMixin(object):
             "--no-boot"]
         )
         os.chdir(here)
+        log.info("Bonsai microphone recording module loaded: OK")
 
     def start_mixin_bonsai_cameras(self):
         """
@@ -252,6 +323,7 @@ class BonsaiRecordingMixin(object):
         # this locks until Bonsai closes
         subprocess.call([str(self.paths.BONSAI), str(bonsai_camera_file), "--start-no-debug", "--no-boot"])
         os.chdir(here)
+        log.info("Bonsai cameras setup module loaded: OK")
 
     def trigger_bonsai_cameras(self):
         if self.hardware_settings.device_camera['BONSAI_WORKFLOW'] is None:
@@ -264,9 +336,9 @@ class BonsaiRecordingMixin(object):
             str(self.paths.BONSAI),
             str(workflow_file),
             "--start",
-            f"-p:FileNameLeft={self.paths.SESSION_RAW_VIDEO_DATA_FOLDER / '_iblrig_leftCamera.raw.avi'}",
-            f"-p:FileNameLeftData={self.paths.SESSION_RAW_VIDEO_DATA_FOLDER / '_iblrig_leftCamera.frameData.bin'}",
-            f"-p:FileNameMic={self.paths.SESSION_RAW_VIDEO_DATA_FOLDER / '_iblrig_micData.raw.wav'}",
+            f"-p:FileNameLeft={self.paths.SESSION_FOLDER / 'raw_video_data' / '_iblrig_leftCamera.raw.avi'}",
+            f"-p:FileNameLeftData={self.paths.SESSION_FOLDER / 'raw_video_data' / '_iblrig_leftCamera.frameData.bin'}",
+            f"-p:FileNameMic={self.paths.SESSION_FOLDER / 'raw_video_data' / '_iblrig_micData.raw.wav'}",
             f"-p:RecordSound={self.task_params.RECORD_SOUND}",
             "--no-boot",
         ])
@@ -333,7 +405,7 @@ class BonsaiVisualStimulusMixin(object):
             ]
         )
         os.chdir(here)
-        return
+        log.info("Bonsai visual stimulus module loaded: OK")
 
 
 class BpodMixin(object):
@@ -362,6 +434,7 @@ class BpodMixin(object):
 
         assert len(self.bpod.actions.keys()) == 6
         assert self.bpod.is_connected
+        log.info("Bpod hardware module loaded: OK")
 
     def send_spacers(self):
         log.info("Starting task by sending a spacer signal on BNC1")
@@ -393,6 +466,7 @@ class Frame2TTLMixin:
             self.frame2ttl.close()
             raise e
         assert self.frame2ttl.connected
+        log.info("Frame2TTL module loaded: OK")
 
 
 class RotaryEncoderMixin:
@@ -408,7 +482,17 @@ class RotaryEncoderMixin:
         )
 
     def start_mixin_rotary_encoder(self):
-        self.device_rotary_encoder.connect()
+        try:
+            self.device_rotary_encoder.connect()
+        except serial.serialutil.SerialException as e:
+            raise serial.serialutil.SerialException(
+                "The rotary encoder COM port is already in use. This is usually due to a Bonsai process "
+                "currently running on the computer. Make sure all Bonsai windows are closed prior to "
+                "running the task") from e
+        except Exception as e:
+            raise Exception("The rotary encoder couldn't connect. If the bpod is glowing in green,"
+                            "disconnect and reconnect bpod from the computer") from e
+        log.info("Rotary encoder module loaded: OK")
 
 
 class ValveMixin:
@@ -463,6 +547,7 @@ class ValveMixin:
                 AUTOMATIC_CALIBRATION = False
                 CALIBRATION_VALUE = <MANUAL_CALIBRATION>
             ##########################################"""
+        log.info("Water valve module loaded: OK")
 
     def compute_reward_time(self, amount_ul=None):
         amount_ul = amount_ul or self.task_params.REWARD_AMOUNT_UL
@@ -540,6 +625,7 @@ class SoundMixin:
             self.sound['OUT_TONE'] = ("SoftCode", 1)
             self.sound['OUT_NOISE'] = ("SoftCode", 2)
             self.sound['OUT_STOP_SOUND'] = ("SoftCode", 0)
+        log.info(f"Sound module loaded: OK: {sound_output}")
 
     def play_tone(self):
         self.sound.sd.play(self.sound.GO_TONE, self.sound['samplerate'])

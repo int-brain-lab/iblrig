@@ -1,8 +1,7 @@
 from iblrig.frame2TTL import Frame2TTLv2
 import numpy as np
 
-com = "/dev/serial/by-id/usb-Teensyduino_USB_Serial_11384300-if00"
-
+COM_PORT = "COM"
 f2ttl = Frame2TTLv2("/dev/ttyACM0")
 
 light_thresh = 24.8

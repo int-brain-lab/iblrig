@@ -1,4 +1,19 @@
-iblrig_local_data_path: null
-iblrig_remote_data_path: null
-iblrig_remote_server_path: null
-iblrig_temp_alyx_path: null
+# The local_data_path is the path on the computer where the Subject folder containing the raw data will be saved.
+# This folder can be anywhere on a writable drive, preferably not no a removable USB drive.
+# If this folder does not exist, it will be created automatically upon running the first session ever.
+# Example input :
+# iblrig_local_data_path: C:\myfolder
+#
+# The remote_data_path is the optional location of a remote computer acting as a server to gather all the data in case several
+# data streams are acquired on different PCs. If not needed, leave as null.
+# If you are in the IBL, see TODO THESE INSTRUCTIONS on how to mount the server onto this behavior PC.
+# In the IBL case, the server will look like an external drive mount point, e.g. Y:\
+#
+# The ALYX_*** parameters can be set as null if data is not registered on the database.
+#
+# For IBL, the default parameters are given in the comments below.
+iblrig_local_data_path: null  # C:\iblrigv8_data
+iblrig_remote_data_path: null  # Y:\
+ALYX_USER: null  # your Alyx username
+ALYX_URL: null  # https://alyx.internationalbrainlab.org
+ALYX_LAB: cortexlab  # the lab name as registered on the database

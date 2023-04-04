@@ -1,23 +1,28 @@
 """
 Various get functions to return paths of folders and network drives
 """
-import datetime
 import logging
 import os
 from pathlib import Path
 import subprocess
-
 import yaml
-from iblutil.util import Bunch
 
+from iblutil.util import Bunch
 import iblrig
-from iblrig import params as pybpod_params
 
 log = logging.getLogger("iblrig")
 
 
 def load_settings_yaml(file_name):
-    with open(Path(iblrig.__file__).parents[1].joinpath('settings', file_name)) as fp:
+    """
+    Load a yaml file from the settings folder.
+    If the file_name is not absolute, it will be searched in the settings folder
+    :param file_name: Path or str
+    :return:
+    """
+    if not Path(file_name).is_absolute():
+        file_name = Path(iblrig.__file__).parents[1].joinpath('settings', file_name)
+    with open(file_name) as fp:
         rs = yaml.safe_load(fp)
     return Bunch(rs)
 
@@ -197,124 +202,3 @@ def get_session_number(session_date_folder: str) -> str:
 def get_pregen_session_folder() -> str:
     iblrig_path = get_iblrig_path()
     return str(iblrig_path / "pybpod_fixtures" / "IBL" / "tasks" / "_iblrig_tasks_ephysChoiceWorld" / "sessions")
-
-
-class SessionPathCreator(object):
-    # add subject name and protocol (maybe have a metadata struct)
-    def __init__(self, subject_name, protocol=False, make=False):
-
-        self.IBLRIG_FOLDER = get_iblrig_path()
-        self.IBLRIG_EPHYS_SESSION_FOLDER = get_pregen_session_folder()
-        self._BOARD = pybpod_params.get_board_name()
-
-        self._PROTOCOL = protocol
-
-        self.IBLRIG_SETTINGS_FOLDER = get_iblrig_params_path()
-        self.IBLRIG_DATA_FOLDER = get_iblrig_local_data_path(subjects=False)
-        self.IBLRIG_DATA_SUBJECTS_FOLDER = get_iblrig_local_data_path(subjects=True)
-
-        self.SUBJECT_NAME = subject_name
-        self.SUBJECT_FOLDER = self.IBLRIG_DATA_SUBJECTS_FOLDER.joinpath(self.SUBJECT_NAME)
-
-        self.BONSAI = get_bonsai_path(use_iblrig_bonsai=True)
-        self.VISUAL_STIM_FOLDER = self.IBLRIG_FOLDER / "visual_stim"
-
-        self.SESSION_DATETIME = datetime.datetime.now().isoformat()
-        self.SESSION_DATE = datetime.datetime.now().date().isoformat()
-
-        self.SESSION_DATE_FOLDER = os.path.join(self.SUBJECT_FOLDER, self.SESSION_DATE)
-
-        # TODO: check server to see if a session has already run today, intention is to decide
-        #  what the next session number will be; this will occur in the get_session_number
-        #  function (will likely be a separate issue/branch)
-        self.SESSION_NUMBER = get_session_number(self.SESSION_DATE_FOLDER)
-
-        self.SESSION_FOLDER = Path(self.SESSION_DATE_FOLDER) / self.SESSION_NUMBER
-        self.SESSION_RAW_DATA_FOLDER = self.SESSION_FOLDER / "raw_behavior_data"
-        self.SESSION_RAW_VIDEO_DATA_FOLDER = self.SESSION_FOLDER / "raw_video_data"
-        self.SESSION_RAW_EPHYS_DATA_FOLDER = self.SESSION_FOLDER / "raw_ephys_data"
-        self.SESSION_RAW_IMAGING_DATA_FOLDER = self.SESSION_FOLDER / "raw_imaging_data"
-        self.SESSION_RAW_PASSIVE_DATA_FOLDER = self.SESSION_FOLDER / "raw_passive_data"
-
-        self.SESSION_NAME = "{}".format(os.path.sep).join(
-            [self.SUBJECT_NAME, self.SESSION_DATE, self.SESSION_NUMBER]
-        )
-
-        self.BASE_FILENAME = "_iblrig_task"
-        self.SETTINGS_FILE_PATH = os.path.join(
-            self.SESSION_RAW_DATA_FOLDER, self.BASE_FILENAME + "Settings.raw.json"
-        )
-        self.DATA_FILE_PATH = os.path.join(
-            self.SESSION_RAW_DATA_FOLDER, self.BASE_FILENAME + "Data.raw.jsonable"
-        )
-        # Water calibration files
-        self.LATEST_WATER_CALIBRATION_FILE = get_water_calibration_func_file(latest=True)
-        self.LATEST_WATER_CALIB_RANGE_FILE = get_water_calibration_range_file(latest=True)
-        if self.LATEST_WATER_CALIBRATION_FILE.parent != self.LATEST_WATER_CALIB_RANGE_FILE.parent:
-            self.LATEST_WATER_CALIBRATION_FILE = str(self.LATEST_WATER_CALIBRATION_FILE)
-            self.LATEST_WATER_CALIB_RANGE_FILE = None
-        else:
-            self.LATEST_WATER_CALIBRATION_FILE = str(self.LATEST_WATER_CALIBRATION_FILE)
-            self.LATEST_WATER_CALIB_RANGE_FILE = str(self.LATEST_WATER_CALIB_RANGE_FILE)
-        if str(self.LATEST_WATER_CALIBRATION_FILE) == ".":
-            self.LATEST_WATER_CALIBRATION_FILE = None
-            self.LATEST_WATER_CALIB_RANGE_FILE = None
-        if make:
-            self.make_missing_folders(make)
-        self.display_logs()
-        self.PREVIOUS_DATA_FILE = None
-
-    def make_missing_folders(self, makelist):
-        """
-        makelist = True will make default folders with only raw_behavior_data
-        makelist = False will not make any folders
-        makelist = [list] will make the default folders and the raw_folders
-        that are specific in the list
-        """
-        if isinstance(makelist, bool) and makelist is True:
-            log.debug("Making default folders")
-            make_folder(self.IBLRIG_DATA_FOLDER)
-            make_folder(self.IBLRIG_DATA_SUBJECTS_FOLDER)
-            make_folder(self.SUBJECT_FOLDER)
-            make_folder(self.SESSION_DATE_FOLDER)
-            make_folder(self.SESSION_FOLDER)
-            make_folder(self.SESSION_RAW_DATA_FOLDER)
-        elif isinstance(makelist, list):
-            log.debug(f"Making extra folders for {makelist}")
-            self.make_missing_folders(True)
-            if "video" in makelist:
-                make_folder(self.SESSION_RAW_VIDEO_DATA_FOLDER)
-            if "ephys" in makelist:
-                make_folder(self.SESSION_RAW_EPHYS_DATA_FOLDER)
-            if "imag" in makelist:
-                make_folder(self.SESSION_RAW_IMAGING_DATA_FOLDER)
-            if "passive" in makelist:
-                make_folder(self.SESSION_RAW_PASSIVE_DATA_FOLDER)
-
-        return
-
-    def display_logs(self):
-        # User info and warnings
-        for k in self.__dict__:
-            if not self.__dict__[k]:
-                if k == "PREVIOUS_DATA_FILE" and "training" in self._PROTOCOL:
-                    msg = """
-        ##########################################
-            NOT FOUND: PREVIOUS_DATA_FILE
-        ##########################################
-                    USING INIT VALUES
-        ##########################################"""
-                    log.warning(msg)
-
-
-if __name__ == "__main__":
-    # spc = SessionPathCreator('C:\\iblrig', None, '_iblrig_test_mouse',
-    # 'trainingChoiceWorld')
-    # '/coder/mnt/nbonacchi/iblrig', None,
-    spc = SessionPathCreator("_iblrig_test_mouse", protocol="passiveChoiceWorld", make=False)
-
-    print("")
-    for k in spc.__dict__:
-        print(f"{k}: {spc.__dict__[k]}")
-
-    print(".")
