@@ -17,7 +17,15 @@ log = logging.getLogger("iblrig")
 
 
 def load_settings_yaml(file_name):
-    with open(Path(iblrig.__file__).parents[1].joinpath('settings', file_name)) as fp:
+    """
+    Load a yaml file from the settings folder.
+    If the file_name is not absolute, it will be searched in the settings folder
+    :param file_name: Path or str
+    :return:
+    """
+    if not Path(file_name).is_absolute():
+        file_name = Path(iblrig.__file__).parents[1].joinpath('settings', file_name)
+    with open(file_name) as fp:
         rs = yaml.safe_load(fp)
     return Bunch(rs)
 

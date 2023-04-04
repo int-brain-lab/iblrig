@@ -30,11 +30,8 @@ class TestHierarchicalParameters(unittest.TestCase):
 class TestHardwareMixins(unittest.TestCase):
     def setUp(self):
         task_settings_file = BiasedChoiceWorldSession.base_parameters_file
-        self.session = BaseSession(
-            task_parameter_file=task_settings_file,
-            hardware_settings_name='hardware_settings_template.yaml',
-            subject='unittest_subject',
-        )
+        self.session = BaseSession(task_parameter_file=task_settings_file,
+                                   hardware_settings='hardware_settings_template.yaml', subject='unittest_subject')
 
     def test_rotary_encoder_mixin(self):
         """

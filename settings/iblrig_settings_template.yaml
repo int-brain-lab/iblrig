@@ -9,10 +9,11 @@
 # If you are in the IBL, see TODO THESE INSTRUCTIONS on how to mount the server onto this behavior PC.
 # In the IBL case, the server will look like an external drive mount point, e.g. Y:\
 #
-# The ALYX_USER  and ALYX_URL can be set as null if there is no Alyx database available.
+# The ALYX_*** parameters can be set as null if data is not registered on the database.
 #
 # For IBL, the default parameters are given in the comments below.
 iblrig_local_data_path: null  # C:\iblrigv8_data
 iblrig_remote_data_path: null  # Y:\
 ALYX_USER: null  # your Alyx username
 ALYX_URL: null  # https://alyx.internationalbrainlab.org
+ALYX_LAB: null  # the lab name as registered on the database

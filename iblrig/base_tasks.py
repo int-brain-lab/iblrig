@@ -15,12 +15,14 @@ import serial
 import subprocess
 import yaml
 import signal
+import traceback
 
 import numpy as np
 import scipy.interpolate
 
 from pythonosc import udp_client
 from pybpodapi.protocol import StateMachine
+from one.api import ONE
 
 import iblrig
 import iblrig.path_helper
@@ -29,6 +31,7 @@ from iblrig.hardware import Bpod, MyRotaryEncoder, sound_device_factory
 import iblrig.frame2TTL as frame2TTL
 import iblrig.sound as sound
 import iblrig.spacer
+import iblrig.alyx
 
 log = logging.getLogger("iblrig")
 
@@ -39,22 +42,24 @@ class BaseSession(ABC):
     protocol_name = None
     base_parameters_file = None
     is_mock = False
+    _one = None
 
-    def __init__(self, debug=False, task_parameter_file=None, hardware_settings_name='hardware_settings.yaml',
-                 subject=None, projects='', fmake=True, procedures=None):
+    def __init__(self, debug=False, task_parameter_file=None, hardware_settings='hardware_settings.yaml',
+                 iblrig_settings='iblrig_settings.yaml', subject=None, projects='', fmake=True, procedures=None):
         """
         This only handles gathering the parameters and settings for the current session
         :param debug:
         :param task_parameter_file:
-        :param hardware_settings_name:
+        :param hardware_settings: name of the hardware file in the settings folder, or full file path
+        :param iblrig_settings: name of the iblrig file in the settings folder, or full file path
         :param fmake: (DEPRECATED) if True, only create the raw_behavior_data folder.
         """
         self.init_datetime = datetime.datetime.now()
         self.DEBUG = debug
         # Create the folder architecture and get the paths property updated
         # the template for this file is in settings/hardware_settings.yaml
-        self.hardware_settings = iblrig.path_helper.load_settings_yaml(hardware_settings_name)
-        self.iblrig_settings = iblrig.path_helper.load_settings_yaml('iblrig_settings.yaml')
+        self.hardware_settings = iblrig.path_helper.load_settings_yaml(hardware_settings)
+        self.iblrig_settings = iblrig.path_helper.load_settings_yaml(iblrig_settings)
         # TODO Base collections on experiment description and remove 'fmake' param.
         if not fmake:
             make = False
@@ -93,13 +98,10 @@ class BaseSession(ABC):
         self._execute_mixins_shared_function('init_mixin')
         self.save_task_parameters_to_json_file()
 
-    def save_task_parameters_to_json_file(self) -> Path:
+    def _make_task_parameters_dict(self):
         """
-        Given a session object, collects the various settings and parameters of the session and outputs them to a JSON file
-
-        Returns
-        -------
-        Path to the resultant JSON file
+        This makes the dictionary that will be saved to the settings json file for extraction
+        :return:
         """
         output_dict = dict(self.task_params)  # Grab parameters from task_params session
         output_dict.update(dict(self.hardware_settings))  # Update dict with hardware settings from session
@@ -108,14 +110,59 @@ class BaseSession(ABC):
             "IBLRIG_VERSION": iblrig.__version__,
             "PYBPOD_PROTOCOL": self.protocol_name,
             "ALYX_USER": self.iblrig_settings.ALYX_USER,
+            'ALYX_LAB': self.iblrig_settings.ALYX_LAB,
         }
         output_dict.update(patch_dict)
+        return output_dict
 
+    def save_task_parameters_to_json_file(self) -> Path:
+        """
+        Given a session object, collects the various settings and parameters of the session and outputs them to a JSON file
+
+        Returns
+        -------
+        Path to the resultant JSON file
+        """
+        output_dict = self._make_task_parameters_dict()
         # Output dict to json file
         json_file = self.paths.SESSION_FOLDER / "raw_behavior_data" / "_iblrig_taskSettings.raw.json"
         with open(json_file, "w") as outfile:
             json.dump(output_dict, outfile, indent=4, sort_keys=True, default=str)  # converts datetime objects to string
         return json_file  # PosixPath
+
+    @property
+    def one(self):
+        """
+        One getter
+        :return:
+        """
+        if self.iblrig_settings['ALYX_URL'] is None:
+            return
+        if self._one is None:
+            info_str = f"alyx client with user name {self.iblrig_settings['ALYX_USER']} " + \
+                       f"and url: {self.iblrig_settings['ALYX_URL']}"
+            try:
+                self._one = ONE(
+                    base_url=self.iblrig_settings['ALYX_URL'],
+                    username=self.iblrig_settings['ALYX_USER'],
+                    mode='remote'
+                )
+                log.info("instantiated " + info_str)
+            except Exception:
+                log.error(traceback.format_exc())
+                log.error("could not connect to " + info_str)
+        return self._one
+
+    def register_to_alyx(self):
+        """
+        Registers the session to Alyx.
+        To make sure the registration is the same from the settings files and from the instantiated class
+        we output the settings dictionary and register from this format directly.
+        Alternatively, this function
+        :return:
+        """
+        settings_dictionary = self._make_task_parameters_dict()
+        iblrig.alyx.register_session(self.paths.SESSION_FOLDER, settings_dictionary, one=self.one)
 
     def _execute_mixins_shared_function(self, pattern):
         method_names = [method for method in dir(self) if method.startswith(pattern)]

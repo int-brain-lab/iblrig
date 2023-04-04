@@ -5,12 +5,13 @@ import logging
 from pathlib import Path
 import unittest
 
+from one.api import ONE
 import iblrig
 from iblrig.raw_data_loaders import load_task_jsonable
 from iblrig_tasks._iblrig_tasks_biasedChoiceWorld.task import Session as BiasedChoiceWorldSession
 
 log = logging.getLogger("iblrig")
-
+path_fixtures = Path(__file__).parents[1].joinpath('fixtures')
 
 class JsonSettingsMixin(abc.ABC):
     def read_and_assert_json_settings(self, json_file):
@@ -29,15 +30,17 @@ class JsonSettingsMixin(abc.ABC):
         return settings
 
 
-class TestTaskRun(unittest.TestCase, JsonSettingsMixin):
+class TestIntegrationBiasedTaskRun(unittest.TestCase, JsonSettingsMixin):
 
     def test_task(self):
         """
         Run mocked task for 3 trials
+        Registers sessions on Alyx at startup, and post-hoc registers number of trials
         :return:
         """
-        jsonable_file = Path(__file__).parents[1].joinpath('fixtures', 'task_data.jsonable')
-        task = BiasedChoiceWorldSession(interactive=False, subject='subject_test_iblrigv8')
+        jsonable_file = path_fixtures.joinpath('task_data.jsonable')
+        file_iblrig_settings = path_fixtures.joinpath('iblrig_settings_test.yaml')
+        task = BiasedChoiceWorldSession(interactive=False, subject='KS005', iblrig_settings=file_iblrig_settings)
         task.mock(file_jsonable_fixture=jsonable_file)
         task.task_params.NTRIALS = 3
         task.run()

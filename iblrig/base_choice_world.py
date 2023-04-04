@@ -45,7 +45,7 @@ class ChoiceWorldSession(
     base_parameters_file = Path(__file__).parent.joinpath('base_choice_world_params.yaml')
 
     def __init__(self, interactive=False, *args, **kwargs):
-        super(ChoiceWorldSession, self).__init__(*args, **kwargs)
+        super(ChoiceWorldSession, self).__init__(**kwargs)
         self.interactive = interactive
         # Session data
         self.display_logs()
@@ -111,10 +111,12 @@ class ChoiceWorldSession(
 
         # create the task parameter file in the raw_behavior dir
         self.save_task_parameters_to_json_file()
+        self.register_to_alyx()
 
         # starts online plotting
-        subprocess.Popen(["viewsession", str(self.paths['DATA_FILE_PATH'])],
-                         stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+        if self.interactive:
+            subprocess.Popen(["viewsession", str(self.paths['DATA_FILE_PATH'])],
+                             stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
 
     def run(self):
         """
@@ -149,6 +151,7 @@ class ChoiceWorldSession(
         log.critical("Graceful exit")
         self.session_info.SESSION_END_TIME = datetime.datetime.now().isoformat()
         self.save_task_parameters_to_json_file()
+        self.register_to_alyx()
         self.bpod.close()
         self.stop_mixin_bonsai_recordings()
 
