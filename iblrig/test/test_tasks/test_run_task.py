@@ -63,7 +63,7 @@ class TestIntegrationBiasedTaskRun(unittest.TestCase, JsonSettingsMixin):
         self.assertLess(dt.seconds, 600)  # leaves some time for debugging
         trials_table, bpod_data = load_task_jsonable(task.paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_taskData.raw.jsonable'))
         assert trials_table.shape[0] == task.task_params.NTRIALS
-        assert len(bpod_data) == task.task_params.NTRIAL
+        assert len(bpod_data) == task.task_params.NTRIALS
         # test that Alyx registration went well, we should find the session
         ses = self.one.alyx.rest('sessions', 'list', subject=self.kwargs['subject'],
                                  date=task.session_info['SESSION_START_TIME'][:10], number=task.session_info['SESSION_NUMBER'])

@@ -89,7 +89,7 @@ class BaseSession(ABC):
             'TOTAL_WATER_DELIVERED': 0,
         })
 
-        root_data_path = self.iblrig_settings['iblrig_local_data_path'] or Path.home().joinpath('iblrig_data')
+        root_data_path = Path(self.iblrig_settings['iblrig_local_data_path']) or Path.home().joinpath('iblrig_data')
         date_folder = root_data_path.joinpath(
             self.iblrig_settings['ALYX_LAB'] or '',
             'Subjects',
@@ -176,7 +176,11 @@ class BaseSession(ABC):
         :return:
         """
         settings_dictionary = self._make_task_parameters_dict()
-        iblrig.alyx.register_session(self.paths.SESSION_FOLDER, settings_dictionary, one=self.one)
+        try:
+            iblrig.alyx.register_session(self.paths.SESSION_FOLDER, settings_dictionary, one=self.one)
+        except Exception:
+            log.error(traceback.format_exc())
+            log.error("Could not register session to Alyx")
 
     def _execute_mixins_shared_function(self, pattern):
         method_names = [method for method in dir(self) if method.startswith(pattern)]
@@ -331,9 +335,9 @@ class BonsaiRecordingMixin(object):
             str(self.paths.BONSAI),
             str(workflow_file),
             "--start",
-            f"-p:FileNameLeft={self.paths.SESSION_RAW_VIDEO_DATA_FOLDER / '_iblrig_leftCamera.raw.avi'}",
-            f"-p:FileNameLeftData={self.paths.SESSION_RAW_VIDEO_DATA_FOLDER / '_iblrig_leftCamera.frameData.bin'}",
-            f"-p:FileNameMic={self.paths.SESSION_RAW_VIDEO_DATA_FOLDER / '_iblrig_micData.raw.wav'}",
+            f"-p:FileNameLeft={self.paths.SESSION_FOLDER / 'raw_video_data' / '_iblrig_leftCamera.raw.avi'}",
+            f"-p:FileNameLeftData={self.paths.SESSION_FOLDER / 'raw_video_data' / '_iblrig_leftCamera.frameData.bin'}",
+            f"-p:FileNameMic={self.paths.SESSION_FOLDER / 'raw_video_data' / '_iblrig_micData.raw.wav'}",
             f"-p:RecordSound={self.task_params.RECORD_SOUND}",
             "--no-boot",
         ])
@@ -484,6 +488,9 @@ class RotaryEncoderMixin:
                 "The rotary encoder COM port is already in use. This is usually due to a Bonsai process "
                 "currently running on the computer. Make sure all Bonsai windows are closed prior to "
                 "running the task") from e
+        except Exception as e:
+            raise Exception("The rotary encoder couldn't connect. If the bpod is glowing in green,"
+                            "disconnect and reconnect bpod from the computer") from e
         log.info("Rotary encoder module loaded: OK")
 
 
