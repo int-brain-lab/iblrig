@@ -89,7 +89,8 @@ class BaseSession(ABC):
             'TOTAL_WATER_DELIVERED': 0,
         })
 
-        root_data_path = Path(self.iblrig_settings['iblrig_local_data_path']) or Path.home().joinpath('iblrig_data')
+        root_data_path = self.iblrig_settings['iblrig_local_data_path'] or Path.home().joinpath('iblrig_data')
+        root_data_path = Path(root_data_path)
         date_folder = root_data_path.joinpath(
             self.iblrig_settings['ALYX_LAB'] or '',
             'Subjects',
