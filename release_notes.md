@@ -1,5 +1,9 @@
 # **Release notes**
 
+## **Release Notes 7.2.5**
+- patch settings file in move_passive script
+- freeze pandas below 2.0.0 for now
+
 ## **Release Notes 7.2.4**
 - try/except to handle missing CORRESPONDING_EPHYS_SESSION, ease transition from iblrigv7 to iblrigv8
 
