@@ -8,7 +8,7 @@ from pathlib import Path
 from one.api import ONE
 
 import scripts.transfer_rig_data as transfer_rig_data
-from scripts.ibllib.purge_rig_data import purge_local_data, session_name
+from scripts.ibllib_utils.purge_rig_data import purge_local_data, session_name
 from test_iblrig import OPENALYX_PARAMETERS
 
 

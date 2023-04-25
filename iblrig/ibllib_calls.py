@@ -3,7 +3,7 @@ import json
 from one.api import ONE
 
 from iblrig import path_helper
-from scripts.ibllib import alyx
+from scripts.ibllib_utils import alyx
 
 ROOT_FOLDER = path_helper.get_iblrig_temp_alyx_path()
 ROOT_FOLDER.mkdir(parents=True, exist_ok=True)
