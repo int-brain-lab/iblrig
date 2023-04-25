@@ -83,7 +83,7 @@ def get_alyx_project_info(project_name: str = None, lab: str = None, one: object
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Alyx interface functions (must run in ibllib env)"
+        description="Alyx interface functions (must run in ibllib_utils env)"
     )
     parser.add_argument(
         "--sync-params",
