@@ -55,14 +55,8 @@ class ChoiceWorldSession(
         self.trial_num = -1
         self.block_num = -1
         self.block_trial_num = -1
-        # init the tables, there are 3 of them: a block table, a trials table and a ambient sensor data table
-        self.blocks_table = pd.DataFrame({
-            'probability_left': np.zeros(NBLOCKS_INIT) * np.NaN,
-            'block_length': np.zeros(NBLOCKS_INIT, dtype=np.int16) * -1,
-        })
+        # init the tables, there are 2 of them: a trials table and a ambient sensor data table
         self.trials_table = pd.DataFrame({
-            'block_num': np.zeros(NTRIALS_INIT, dtype=np.int16),
-            'block_trial_num': np.zeros(NTRIALS_INIT, dtype=np.int16),
             'contrast': np.zeros(NTRIALS_INIT) * np.NaN,
             'position': np.zeros(NTRIALS_INIT) * np.NaN,
             'quiescent_period': np.zeros(NTRIALS_INIT) * np.NaN,
@@ -393,6 +387,24 @@ class ChoiceWorldSession(
                        if k in self.trials_table.columns}
         bonsai_viz_client.send2bonsai(**bonsai_dict)
 
+    def update_next_trial_info(self, contrast=None, pleft=0.5):
+        contrast = contrast or misc.draw_contrast(self.task_params.CONTRAST_SET, self.task_params.CONTRAST_SET_PROBABILITY_TYPE)
+        assert len(self.task_params.STIM_POSITIONS) == 2, "Only two positions are supported"
+        position = int(np.random.choice(self.task_params.STIM_POSITIONS, p=[pleft, 1 - pleft]))
+        quiescent_period = self.task_params.QUIESCENT_PERIOD + misc.texp(factor=0.35, min_=0.2, max_=0.5)
+        self.trials_table.at[self.trial_num, 'quiescent_period'] = quiescent_period
+        self.trials_table.at[self.trial_num, 'contrast'] = contrast
+        self.trials_table.at[self.trial_num, 'stim_phase'] = random.uniform(0, 2 * math.pi)
+        self.trials_table.at[self.trial_num, 'stim_sigma'] = self.task_params.STIM_SIGMA
+        self.trials_table.at[self.trial_num, 'stim_angle'] = self.task_params.STIM_ANGLE
+        self.trials_table.at[self.trial_num, 'stim_gain'] = self.task_params.STIM_GAIN
+        self.trials_table.at[self.trial_num, 'stim_freq'] = self.task_params.STIM_FREQ
+        self.trials_table.at[self.trial_num, 'trial_num'] = self.trial_num
+        self.trials_table.at[self.trial_num, 'position'] = position
+        self.trials_table.at[self.trial_num, 'reward_amount'] = self.task_params.REWARD_AMOUNT_UL
+        self.trials_table.at[self.trial_num, 'stim_probability_left'] = pleft
+        self.send_trial_info_to_bonsai()
+
     def trial_completed(self, bpod_data):
         """
         The purpose of this method is to
@@ -556,6 +568,15 @@ RELATIVE HUMIDITY:    {self.ambient_sensor_table.loc[self.trial_num, 'RelativeHu
 class BiasedChoiceWorldSession(ChoiceWorldSession):
     protocol_name = "_iblrig_tasks_biasedChoiceWorld"
 
+    def __init__(self, **kwargs):
+        super(BiasedChoiceWorldSession, self).__init__(**kwargs)
+        self.blocks_table = pd.DataFrame({
+            'probability_left': np.zeros(NBLOCKS_INIT) * np.NaN,
+            'block_length': np.zeros(NBLOCKS_INIT, dtype=np.int16) * -1,
+        })
+        self.trials_table['block_num'] = np.zeros(NTRIALS_INIT, dtype=np.int16)
+        self.trials_table['block_trial_num'] = np.zeros(NTRIALS_INIT, dtype=np.int16)
+
     def new_block(self):
         """
         if block_init_5050
@@ -588,27 +609,77 @@ class BiasedChoiceWorldSession(ChoiceWorldSession):
         self.blocks_table.at[self.block_num, 'probability_left'] = pleft
 
     def next_trial(self):
-        # First trial exception
         self.trial_num += 1
+        # if necessary update the block number
         self.block_trial_num += 1
         self.trial_correct = None
         if self.block_num < 0 or self.block_trial_num > (self.blocks_table.loc[self.block_num, 'block_length'] - 1):
             self.new_block()
+        # get and store probability left
         pleft = self.blocks_table.loc[self.block_num, 'probability_left']
-        contrast = misc.draw_contrast(self.task_params.CONTRAST_SET, self.task_params.CONTRAST_SET_PROBABILITY_TYPE)
-        position = int(np.random.choice(self.task_params.STIM_POSITIONS, p=[pleft, 1 - pleft]))
-        quiescent_period = self.task_params.QUIESCENT_PERIOD + misc.texp(factor=0.35, min_=0.2, max_=0.5)
-        self.trials_table.at[self.trial_num, 'quiescent_period'] = quiescent_period
-        self.trials_table.at[self.trial_num, 'contrast'] = contrast
-        self.trials_table.at[self.trial_num, 'stim_phase'] = random.uniform(0, 2 * math.pi)
-        self.trials_table.at[self.trial_num, 'stim_sigma'] = self.task_params.STIM_SIGMA
-        self.trials_table.at[self.trial_num, 'stim_angle'] = self.task_params.STIM_ANGLE
-        self.trials_table.at[self.trial_num, 'stim_gain'] = self.task_params.STIM_GAIN
+        # update trial table fields specific to biased choice world task
         self.trials_table.at[self.trial_num, 'block_num'] = self.block_num
         self.trials_table.at[self.trial_num, 'block_trial_num'] = self.block_trial_num
-        self.trials_table.at[self.trial_num, 'stim_freq'] = self.task_params.STIM_FREQ
-        self.trials_table.at[self.trial_num, 'stim_probability_left'] = pleft
-        self.trials_table.at[self.trial_num, 'trial_num'] = self.trial_num
-        self.trials_table.at[self.trial_num, 'position'] = position
-        self.trials_table.at[self.trial_num, 'reward_amount'] = self.task_params.REWARD_AMOUNT_UL
-        self.send_trial_info_to_bonsai()
+        # save and send trial info to bonsai
+        self.update_next_trial_info(pleft=pleft)
+
+
+class HabituationChoiceWorldSession(ChoiceWorldSession):
+
+    def __init__(self, **kwargs):
+        super(HabituationChoiceWorldSession, self).__init__(**kwargs)
+        self.trials_table['delay_to_stim_center'] = np.zeros(NTRIALS_INIT)
+
+    def next_trial(self):
+        self.trial_num += 1
+        # update trial table fields specific to habituation choice world
+        self.trials_table['delay_to_stim_center'] = np.random.normal(self.delay_to_stim_center_mean, 2)
+        # save and send trial info to bonsai
+        self.update_next_trial_info()
+
+    def get_state_machine_trial(self, i):
+        sma = StateMachine(self.bpod)
+
+        if i == 0:  # First trial exception start camera
+            log.info("Waiting for camera pulses...")
+            sma.add_state(
+                state_name="trial_start",
+                state_timer=3600,
+                state_change_conditions={"Port1In": "stim_on"},
+                output_actions=[("Serial1", self.bpod.actions.bonsai_hide_stim), ("SoftCode", 3), ("BNC1", 255)],
+            )  # sart camera
+        else:
+            sma.add_state(
+                state_name="trial_start",
+                state_timer=1,  # Stim off for 1 sec
+                state_change_conditions={"Tup": "stim_on"},
+                output_actions=[("Serial1", self.bpod.actions.bonsai_hide_stim), ("BNC1", 255)],
+            )
+
+        sma.add_state(
+            state_name="stim_on",
+            state_timer=self.trials_table.at[self.trial_num, 'delay_to_stim_center'],
+            state_change_conditions={"Tup": "stim_center"},
+            output_actions=[("Serial1", self.bpod.actions.bonsai_show_stim), self.sound.OUT_TONE],
+        )
+
+        sma.add_state(
+            state_name="stim_center",
+            state_timer=0.5,
+            state_change_conditions={"Tup": "reward"},
+            output_actions=[("Serial1", self.bpod.actions.bonsai_show_center)],
+        )
+
+        sma.add_state(
+            state_name="reward",
+            state_timer=self.reward_time,
+            state_change_conditions={"Tup": "iti"},
+            output_actions=[("Valve1", 255), ("BNC1", 255)],
+        )
+
+        sma.add_state(
+            state_name="iti",
+            state_timer=self.task_params.ITI_DELAY_SECS,
+            state_change_conditions={"Tup": "exit"},
+            output_actions=[],
+        )

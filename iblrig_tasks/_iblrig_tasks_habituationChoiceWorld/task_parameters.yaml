@@ -1,0 +1,4 @@
+'CONTRAST_SET': [1.0]
+'DELAY_TO_STIM_CENTER': 10  # mean of normal dist with sd of 2
+'REWARD_AMOUNT_UL': 3.0
+'VISUAL_STIMULUS': GaborIBLTask/Gabor2D.bonsai  # null / passiveChoiceWorld_passive.bonsai
