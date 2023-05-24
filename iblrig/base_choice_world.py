@@ -95,7 +95,6 @@ class ChoiceWorldSession(
             self.start_mixin_bonsai_cameras()
             self.start_mixin_bonsai_microphone()
             self.start_mixin_bonsai_visual_stimulus()
-
         if self.interactive:
             self.session_info.SUBJECT_WEIGHT = user.ask_subject_weight(self.session_info.SUBJECT_NAME)
             self.task_params.SESSION_START_DELAY_SEC = user.ask_session_delay()
@@ -103,6 +102,9 @@ class ChoiceWorldSession(
         # create the task parameter file in the raw_behavior dir
         self.save_task_parameters_to_json_file()
         self.register_to_alyx()
+
+        # make the bpod send spacer signals to the main sync clock for protocol discovery
+        self.send_spacers()
 
         # starts online plotting
         if self.interactive:

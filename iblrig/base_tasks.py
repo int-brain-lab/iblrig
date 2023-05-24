@@ -417,7 +417,6 @@ class BpodMixin(object):
     def start_mixin_bpod(self):
         self.bpod = Bpod(self.hardware_settings['device_bpod']['COM_BPOD'])
         self.bpod.define_rotary_encoder_actions()
-        self.send_spacers()
 
         def softcode_handler(code):
             """
@@ -488,9 +487,9 @@ class RotaryEncoderMixin:
             self.device_rotary_encoder.connect()
         except serial.serialutil.SerialException as e:
             raise serial.serialutil.SerialException(
-                "The rotary encoder COM port is already in use. This is usually due to a Bonsai process "
-                "currently running on the computer. Make sure all Bonsai windows are closed prior to "
-                "running the task") from e
+                f"The rotary encoder COM port {self.device_rotary_encoder.RE_PORT} is already in use. This is usually"
+                f" due to a Bonsai process currently running on the computer. Make sure all Bonsai windows are"
+                f" closed prior to running the task") from e
         except Exception as e:
             raise Exception("The rotary encoder couldn't connect. If the bpod is glowing in green,"
                             "disconnect and reconnect bpod from the computer") from e
