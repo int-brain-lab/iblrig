@@ -3,16 +3,17 @@ This module is intended to provide commonalities for all tasks.
 It provides hardware mixins that can be used together with BaseSession to compose tasks
 This module is exclusive of any task related logic
 """
-import json
 
 from pathlib import Path
 from abc import ABC
 import datetime
 import inspect
+import json
 import logging
 import os
 import serial
 import subprocess
+import time
 import yaml
 import signal
 import traceback
@@ -78,6 +79,7 @@ class BaseSession(ABC):
             if task_params is not None:
                 self.task_params.update(Bunch(task_params))
         self.session_info = Bunch({
+            'NTRIALS': 0,
             'NTRIALS_CORRECT': 0,
             'PROCEDURES': procedures,
             'PROJECTS': projects,
@@ -222,7 +224,6 @@ class BaseSession(ABC):
         signal.signal(signal.SIGINT, sigint_handler)
 
         self.start()
-        self.send_spacers()
 
 
 class OSCClient(udp_client.SimpleUDPClient):
@@ -416,6 +417,7 @@ class BpodMixin(object):
     def start_mixin_bpod(self):
         self.bpod = Bpod(self.hardware_settings['device_bpod']['COM_BPOD'])
         self.bpod.define_rotary_encoder_actions()
+        self.send_spacers()
 
         def softcode_handler(code):
             """
@@ -635,3 +637,32 @@ class SoundMixin:
 
     def stop_sound(self):
         self.sound.sd.stop()
+
+
+class SpontaneousSession(BaseSession):
+    """
+    A Spontaneous task doesn't have trials, it just runs until the user stops it
+    It is used to get extraction structure for data streams
+    """
+    def __init__(self, duration_secs=None, **kwargs):
+        super(SpontaneousSession, self).__init__(**kwargs)
+        self.duration_secs = duration_secs
+
+    def run(self):
+        """
+        This is the method that runs the task with the actual state machine
+        :return:
+        """
+        super(SpontaneousSession, self).run()
+        log.info("Starting spontaneous acquisition")
+        while True:
+            time.sleep(1.5)
+            if self.duration_secs is not None and self.time_elapsed.seconds > self.duration_secs:
+                break
+            if self.paths.SESSION_FOLDER.joinpath('.stop').exists():
+                self.paths.SESSION_FOLDER.joinpath('.stop').unlink()
+                break
+        log.critical("Graceful exit")
+        self.session_info.SESSION_END_TIME = datetime.datetime.now().isoformat()
+        self.save_task_parameters_to_json_file()
+        self.register_to_alyx()

@@ -10,6 +10,7 @@ from one.api import ONE
 import iblrig.test
 from iblrig.raw_data_loaders import load_task_jsonable
 from iblrig_tasks._iblrig_tasks_biasedChoiceWorld.task import Session as BiasedChoiceWorldSession
+from iblrig_tasks._iblrig_tasks_spontaneous.task import Session as SpontaneousSession
 
 log = logging.getLogger("iblrig")
 
@@ -44,7 +45,13 @@ class TestIntegrationBiasedTaskRun(unittest.TestCase, JsonSettingsMixin):
         self.kwargs['subject'] = 'iblrig_unit_test_' + ''.join(random.choices(string.ascii_letters, k=8))
         self.one.alyx.rest('subjects', 'create', data=dict(nickname=self.kwargs['subject'], lab='cortexlab'))
 
-    def test_task(self):
+    def test_task_spontaneous(self):
+        task = SpontaneousSession(one=self.one, duration_secs=2, **self.kwargs)
+        task.run()
+        file_settings = task.paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_taskSettings.raw.json')
+        self.read_and_assert_json_settings(file_settings)
+
+    def test_task_biased(self):
         """
         Run mocked task for 3 trials
         Registers sessions on Alyx at startup, and post-hoc registers number of trials
