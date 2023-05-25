@@ -40,6 +40,7 @@ OSC_CLIENT_IP = "127.0.0.1"
 
 
 class BaseSession(ABC):
+    version = None
     protocol_name = None
     base_parameters_file = None
     is_mock = False

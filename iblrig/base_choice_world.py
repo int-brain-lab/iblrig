@@ -627,6 +627,7 @@ class BiasedChoiceWorldSession(ChoiceWorldSession):
 
 
 class HabituationChoiceWorldSession(ChoiceWorldSession):
+    protocol_name = "_iblrig_tasks_habituationChoiceWorld"
 
     def __init__(self, **kwargs):
         super(HabituationChoiceWorldSession, self).__init__(**kwargs)
