@@ -32,7 +32,7 @@ class JsonSettingsMixin(abc.ABC):
         return settings
 
 
-class TestIntegrationBiasedTaskRun(unittest.TestCase, JsonSettingsMixin):
+class TestIntegrationFullRuns(unittest.TestCase, JsonSettingsMixin):
 
     def setUp(self) -> None:
         """

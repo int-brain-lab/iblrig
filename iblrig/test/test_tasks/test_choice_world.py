@@ -7,19 +7,37 @@ import pandas as pd
 import iblrig.test
 from iblrig_tasks._iblrig_tasks_biasedChoiceWorld.task import Session as BiasedChoiceWorldSession
 from iblrig_tasks._iblrig_tasks_neuroModulatorChoiceWorld.task import Session as NeuroModulatorChoiceWorldSession
+from iblrig_tasks._iblrig_tasks_habituationChoiceWorld.task import Session as HabituationChoiceWorldSession
+
+
+class TestHabituationChoiceWorld(unittest.TestCase):
+
+    def setUp(self) -> None:
+        self.task = HabituationChoiceWorldSession(**iblrig.test.TASK_KWARGS)
+        np.random.seed(12345)
+
+    def test_task(self):
+        task = self.task
+        nt = 500
+        t = np.zeros(nt)
+        for i in np.arange(nt):
+            t[i] = time.time()
+            task.next_trial()
+            if i == 245:
+                task.show_trial_log()
 
 
 class TestBiasedChoiceWorld(unittest.TestCase):
 
     def setUp(self) -> None:
         self.task = BiasedChoiceWorldSession(**iblrig.test.TASK_KWARGS)
+        np.random.seed(12345)
 
     def test_task(self):
         task = self.task
         trial_fixtures = get_fixtures()
         nt = 500
         t = np.zeros(nt)
-        np.random.seed(12345)
         for i in np.arange(nt):
             t[i] = time.time()
             task.next_trial()

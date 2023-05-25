@@ -225,7 +225,6 @@ class ChoiceWorldSession(
         return dot
 
     def get_state_machine_trial(self, i):
-
         sma = StateMachine(self.bpod)  # TODO try instantiate only once for each trial type
 
         if i == 0:  # First trial exception start camera
@@ -408,41 +407,12 @@ class ChoiceWorldSession(
         self.send_trial_info_to_bonsai()
 
     def trial_completed(self, bpod_data):
-        """
-        The purpose of this method is to
-        -   update the trials table with information about the behaviour coming from the bpod
-        Constraints on the state machine data:
-        - mandatory states: ['correct', 'error', 'no_go', 'reward']
-        - optional states : ['omit_correct', 'omit_error', 'omit_no_go']
-        :param bpod_data:
-        :return:
-        """
-        # get the response time from the behaviour data
-        self.trials_table.at[self.trial_num, 'response_time'] = misc.get_trial_rt(bpod_data)
-        # get the trial outcome
-        state_names = ['correct', 'error', 'no_go', 'omit_correct', 'omit_error', 'omit_no_go']
-        outcome = {sn: ~np.isnan(bpod_data['States timestamps'].get(sn, [[np.NaN]])[0][0]) for sn in state_names}
-        assert np.sum(list(outcome.values())) == 1
-        outcome = next(k for k in outcome if outcome[k])
         # if the reward state has not been triggered, null the reward
         if np.isnan(bpod_data['States timestamps']['reward'][0][0]):
             self.trials_table.at[self.trial_num, 'reward_amount'] = 0
         self.trials_table.at[self.trial_num, 'reward_valve_time'] = self.reward_time
         # update cumulative reward value
         self.session_info.TOTAL_WATER_DELIVERED += self.trials_table.at[self.trial_num, 'reward_amount']
-        # Update response buffer -1 for left, 0 for nogo, and 1 for rightward
-        position = self.trials_table.at[self.trial_num, 'position']
-        if 'correct' in outcome:
-            self.trials_table.at[self.trial_num, 'trial_correct'] = True
-            self.session_info.NTRIALS_CORRECT += 1
-            self.trials_table.at[self.trial_num, 'response_side'] = -np.sign(position)
-        elif 'error' in outcome:
-            self.trials_table.at[self.trial_num, 'response_side'] = np.sign(position)
-        elif 'no_go' in outcome:
-            self.trials_table.at[self.trial_num, 'response_side'] = 0
-        else:
-            ValueError("The task outcome doesn't contain no_go, error or correct")
-        assert position != 0, "the position value should be either 35 or -35"
         # SAVE TRIAL DATA
         save_dict = self.trials_table.iloc[self.trial_num].to_dict()
         save_dict["behavior_data"] = bpod_data
@@ -455,11 +425,6 @@ class ChoiceWorldSession(
         if self.trial_num == 42:
             misc.create_flags(self.paths.DATA_FILE_PATH, self.task_params.POOP_COUNT)
         self.check_sync_pulses(bpod_data=bpod_data)
-
-    def check_stop_criterions(self):
-        return misc.check_stop_criterions(
-            self.init_datetime, self.trials_table['response_time'].values(), self.trial_num
-        )
 
     def check_sync_pulses(self, bpod_data):
         # todo move this in the post trial when we have a task flow
@@ -484,30 +449,22 @@ class ChoiceWorldSession(
         if not ev_bnc1 or not ev_bnc2 or not ev_port1:
             log.warning(warn_msg)
 
-    def show_trial_log(self):
+    def show_trial_log(self, extra_info=""):
         trial_info = self.trials_table.iloc[self.trial_num]
         msg = f"""
 ##########################################
 TRIAL NUM:            {trial_info.trial_num}
-STIM POSITION:        {trial_info.position}
-STIM CONTRAST:        {trial_info.contrast}
-STIM PHASE:           {trial_info.stim_phase}
-
-BLOCK NUMBER:         {trial_info.block_num}
-BLOCK LENGTH:         {self.blocks_table.loc[self.block_num, 'block_length']}
-TRIALS IN BLOCK:      {trial_info.block_trial_num}
-STIM PROB LEFT:       {trial_info.stim_probability_left}
-
-RESPONSE TIME:        {trial_info.response_time}
-TRIAL CORRECT:        {trial_info.trial_correct}
-
-NTRIALS CORRECT:      {self.session_info.NTRIALS_CORRECT}
-NTRIALS ERROR:        {self.trial_num - self.session_info.NTRIALS_CORRECT}
-WATER DELIVERED:      {np.round(self.session_info.TOTAL_WATER_DELIVERED, 3)} µl
-TIME FROM START:      {self.time_elapsed}
 TEMPERATURE:          {self.ambient_sensor_table.loc[self.trial_num, 'Temperature_C']} ºC
 AIR PRESSURE:         {self.ambient_sensor_table.loc[self.trial_num, 'AirPressure_mb']} mb
 RELATIVE HUMIDITY:    {self.ambient_sensor_table.loc[self.trial_num, 'RelativeHumidity']} %
+
+STIM POSITION:        {trial_info.position}
+STIM CONTRAST:        {trial_info.contrast}
+STIM PHASE:           {trial_info.stim_phase}
+STIM PROB LEFT:       {trial_info.stim_probability_left}
+{extra_info}
+WATER DELIVERED:      {np.round(self.session_info.TOTAL_WATER_DELIVERED, 3)} µl
+TIME FROM START:      {self.time_elapsed}
 ##########################################"""
         log.info(msg)
 
@@ -535,10 +492,6 @@ RELATIVE HUMIDITY:    {self.ambient_sensor_table.loc[self.trial_num, 'RelativeHu
     """
     Those are the methods that need to be implemented for a new task
     """
-    @abstractmethod
-    def new_block(self):
-        pass
-
     @abstractmethod
     def next_trial(self):
         pass
@@ -625,6 +578,55 @@ class BiasedChoiceWorldSession(ChoiceWorldSession):
         # save and send trial info to bonsai
         self.update_next_trial_info(pleft=pleft)
 
+    def show_trial_log(self):
+        trial_info = self.trials_table.iloc[self.trial_num]
+        extra_info = f"""
+BLOCK NUMBER:         {trial_info.block_num}
+BLOCK LENGTH:         {self.blocks_table.loc[self.block_num, 'block_length']}
+TRIALS IN BLOCK:      {trial_info.block_trial_num}
+RESPONSE TIME:        {trial_info.response_time}
+
+TRIAL CORRECT:        {trial_info.trial_correct}
+NTRIALS CORRECT:      {self.session_info.NTRIALS_CORRECT}
+NTRIALS ERROR:        {self.trial_num - self.session_info.NTRIALS_CORRECT}
+        """
+        super(BiasedChoiceWorldSession, self).show_trial_log(extra_info=extra_info)
+
+    def trial_completed(self, bpod_data):
+        """
+        The purpose of this method is to
+        -   update the trials table with information about the behaviour coming from the bpod
+        Constraints on the state machine data:
+        - mandatory states: ['correct', 'error', 'no_go', 'reward']
+        - optional states : ['omit_correct', 'omit_error', 'omit_no_go']
+        :param bpod_data:
+        :return:
+        """
+
+        # get the response time from the behaviour data
+        response_time = (bpod_data["States timestamps"]["closed_loop"][0][1]
+                         - bpod_data["States timestamps"]["stim_on"][0][0])
+        self.trials_table.at[self.trial_num, 'response_time'] = response_time
+        # get the trial outcome
+        state_names = ['correct', 'error', 'no_go', 'omit_correct', 'omit_error', 'omit_no_go']
+        outcome = {sn: ~np.isnan(bpod_data['States timestamps'].get(sn, [[np.NaN]])[0][0]) for sn in state_names}
+        assert np.sum(list(outcome.values())) == 1
+        outcome = next(k for k in outcome if outcome[k])
+        # Update response buffer -1 for left, 0 for nogo, and 1 for rightward
+        position = self.trials_table.at[self.trial_num, 'position']
+        if 'correct' in outcome:
+            self.trials_table.at[self.trial_num, 'trial_correct'] = True
+            self.session_info.NTRIALS_CORRECT += 1
+            self.trials_table.at[self.trial_num, 'response_side'] = -np.sign(position)
+        elif 'error' in outcome:
+            self.trials_table.at[self.trial_num, 'response_side'] = np.sign(position)
+        elif 'no_go' in outcome:
+            self.trials_table.at[self.trial_num, 'response_side'] = 0
+        else:
+            ValueError("The task outcome doesn't contain no_go, error or correct")
+        assert position != 0, "the position value should be either 35 or -35"
+        super(BiasedChoiceWorldSession, self).trial_completed(bpod_data)
+
 
 class HabituationChoiceWorldSession(ChoiceWorldSession):
     protocol_name = "_iblrig_tasks_habituationChoiceWorld"
@@ -636,7 +638,7 @@ class HabituationChoiceWorldSession(ChoiceWorldSession):
     def next_trial(self):
         self.trial_num += 1
         # update trial table fields specific to habituation choice world
-        self.trials_table['delay_to_stim_center'] = np.random.normal(self.delay_to_stim_center_mean, 2)
+        self.trials_table.at[self.trial_num, 'delay_to_stim_center'] = np.random.normal(self.task_params.DELAY_TO_STIM_CENTER, 2)
         # save and send trial info to bonsai
         self.update_next_trial_info()
 
@@ -649,28 +651,28 @@ class HabituationChoiceWorldSession(ChoiceWorldSession):
                 state_name="trial_start",
                 state_timer=3600,
                 state_change_conditions={"Port1In": "stim_on"},
-                output_actions=[("Serial1", self.bpod.actions.bonsai_hide_stim), ("SoftCode", 3), ("BNC1", 255)],
+                output_actions=[self.bpod.actions.bonsai_hide_stim, ("SoftCode", 3), ("BNC1", 255)],
             )  # sart camera
         else:
             sma.add_state(
                 state_name="trial_start",
                 state_timer=1,  # Stim off for 1 sec
                 state_change_conditions={"Tup": "stim_on"},
-                output_actions=[("Serial1", self.bpod.actions.bonsai_hide_stim), ("BNC1", 255)],
+                output_actions=[self.bpod.actions.bonsai_hide_stim, ("BNC1", 255)],
             )
 
         sma.add_state(
             state_name="stim_on",
             state_timer=self.trials_table.at[self.trial_num, 'delay_to_stim_center'],
             state_change_conditions={"Tup": "stim_center"},
-            output_actions=[("Serial1", self.bpod.actions.bonsai_show_stim), self.sound.OUT_TONE],
+            output_actions=[self.bpod.actions.bonsai_show_stim, self.sound.OUT_TONE],
         )
 
         sma.add_state(
             state_name="stim_center",
             state_timer=0.5,
             state_change_conditions={"Tup": "reward"},
-            output_actions=[("Serial1", self.bpod.actions.bonsai_show_center)],
+            output_actions=[self.bpod.actions.bonsai_show_center],
         )
 
         sma.add_state(
@@ -686,3 +688,4 @@ class HabituationChoiceWorldSession(ChoiceWorldSession):
             state_change_conditions={"Tup": "exit"},
             output_actions=[],
         )
+        return sma

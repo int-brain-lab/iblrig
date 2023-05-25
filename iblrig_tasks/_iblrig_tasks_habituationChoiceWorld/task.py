@@ -1,8 +1,12 @@
 import logging
-from iblrig.base_choice_world import HabituationChoiceWorldSession as Session
+from iblrig.base_choice_world import HabituationChoiceWorldSession
 import iblrig.misc
 
 log = logging.getLogger("iblrig")
+
+
+class Session(HabituationChoiceWorldSession):
+    pass
 
 
 if __name__ == "__main__":
