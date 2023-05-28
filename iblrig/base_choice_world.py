@@ -106,11 +106,6 @@ class ChoiceWorldSession(
         # make the bpod send spacer signals to the main sync clock for protocol discovery
         self.send_spacers()
 
-        # starts online plotting
-        if self.interactive:
-            subprocess.Popen(["viewsession", str(self.paths['DATA_FILE_PATH'])],
-                             stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
-
     def run(self):
         """
         This is the method that runs the task with the actual state machine
@@ -531,6 +526,13 @@ class BiasedChoiceWorldSession(ChoiceWorldSession):
         })
         self.trials_table['block_num'] = np.zeros(NTRIALS_INIT, dtype=np.int16)
         self.trials_table['block_trial_num'] = np.zeros(NTRIALS_INIT, dtype=np.int16)
+
+    def start(self):
+        super(BiasedChoiceWorldSession, self).start()
+        # starts online plotting
+        if self.interactive:
+            subprocess.Popen(["viewsession", str(self.paths['DATA_FILE_PATH'])],
+                             stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
 
     def new_block(self):
         """
