@@ -372,17 +372,6 @@ class ChoiceWorldSession(
         )
         return sma
 
-    def send_trial_info_to_bonsai(self):
-        """
-        This sends the trial information to the Bonsai UDP port for the stimulus
-        The OSC protocol is documented in iblrig.base_tasks.BonsaiVisualStimulusMixin
-        """
-        bonsai_viz_client = self.bonsai_stimulus['udp_client']
-        bonsai_dict = {k: self.trials_table[k][self.trial_num] for k in
-                       bonsai_viz_client.OSC_PROTOCOL
-                       if k in self.trials_table.columns}
-        bonsai_viz_client.send2bonsai(**bonsai_dict)
-
     def update_next_trial_info(self, contrast=None, pleft=0.5):
         contrast = contrast or misc.draw_contrast(self.task_params.CONTRAST_SET, self.task_params.CONTRAST_SET_PROBABILITY_TYPE)
         assert len(self.task_params.STIM_POSITIONS) == 2, "Only two positions are supported"

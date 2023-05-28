@@ -350,14 +350,46 @@ class BonsaiRecordingMixin(object):
 class BonsaiVisualStimulusMixin(object):
 
     def init_mixin_bonsai_visual_stimulus(self, *args, **kwargs):
-        self.bonsai_stimulus = Bunch({
-            'udp_client': OSCClient(port=7110)  # camera 7111, microphone 7112
-        })
+        # camera 7111, microphone 7112
+        self.bonsai_visual_udp_client = OSCClient(port=7110)
 
     def start_mixin_bonsai_visual_stimulus(self):
+        self.choice_world_visual_stimulus()
+
+    def send_trial_info_to_bonsai(self):
+        """
+        This sends the trial information to the Bonsai UDP port for the stimulus
+        The OSC protocol is documented in iblrig.base_tasks.BonsaiVisualStimulusMixin
+        """
+        bonsai_dict = {k: self.trials_table[k][self.trial_num] for k in
+                       self.bonsai_visual_udp_client.OSC_PROTOCOL
+                       if k in self.trials_table.columns}
+        self.bonsai_visual_udp_client.send2bonsai(**bonsai_dict)
+
+    def run_passive_visual_stim(self, map_time="00:05:00", rate=0.1, sa_time="00:05:00"):
+        file_bonsai_workflow = self.paths.VISUAL_STIM_FOLDER.joinpath(
+            "passiveChoiceWorld", "passiveChoiceWorld_passive.bonsai")
+        file_output_rfm = self.paths.SESSION_RAW_DATA_FOLDER.joinpath("_iblrig_RFMapStim.raw.bin")
+        cmd = [
+            str(self.paths.BONSAI),
+            str(file_bonsai_workflow),
+            "--no-boot",
+            "--no-editor",
+            f"-p:Stim.DisplayIndex={self.hardware_settings.device_screen['DISPLAY_IDX']}",
+            f"-p:Stim.SpontaneousActivity0.DueTime={sa_time}",
+            f"-p:Stim.ReceptiveFieldMappingStim.FileNameRFMapStim={file_output_rfm}",
+            f"-p:Stim.ReceptiveFieldMappingStim.MappingTime={map_time}",
+            f"-p:Stim.ReceptiveFieldMappingStim.Rate={rate}",
+        ]
+        log.info("Starting spontaneous activity and RF mapping stims")
+        s = subprocess.run(cmd, stdout=subprocess.PIPE)  # locking call
+        log.info("Spontaneous activity and RF mapping stims finished")
+        return s
+
+    def choice_world_visual_stimulus(self):
         if self.task_params.VISUAL_STIMULUS is None:
             return
-        # Run Bonsai workflow, switch to the folder containing the gnagnagna.bonsai viusal stimulus file
+        # Run Bonsai workflow, switch to the folder containing the bonsai visual stimulus file and switch back
 
         visual_stim_file = self.paths.VISUAL_STIM_FOLDER.joinpath(self.task_params.VISUAL_STIMULUS)
 
@@ -376,34 +408,24 @@ class BonsaiVisualStimulusMixin(object):
         sync_square = "-p:Stim.FileNameSyncSquareUpdate=" + os.path.join(
             self.paths.SESSION_RAW_DATA_FOLDER, "_iblrig_syncSquareUpdate.raw.csv"
         )
-
-        com = "-p:Stim.REPortName=" + self.hardware_settings.device_rotary_encoder['COM_ROTARY_ENCODER']
-        display_idx = "-p:Stim.DisplayIndex=" + str(self.hardware_settings.device_screen['DISPLAY_IDX'])
-        sync_x = "-p:Stim.sync_x=" + str(self.task_params.SYNC_SQUARE_X)
-        sync_y = "-p:Stim.sync_y=" + str(self.task_params.SYNC_SQUARE_Y)
-        translationz = f"-p:Stim.TranslationZ=-{self.task_params.STIM_TRANSLATION_Z}"
-        noboot = "--no-boot"
-        editor = "--start" if self.task_params.BONSAI_EDITOR else "--no-editor"
-
         here = Path.cwd()
         os.chdir(visual_stim_file.parent)
-
         subprocess.Popen(
             [
                 str(self.paths.BONSAI),
                 visual_stim_file,
-                editor,
-                noboot,
-                display_idx,
+                "--start" if self.task_params.BONSAI_EDITOR else "--no-editor",
+                "--no-boot",
+                f"-p:Stim.DisplayIndex={self.hardware_settings.device_screen['DISPLAY_IDX']}",
                 screen_pos,
                 sync_square,
                 pos,
                 evt,
                 itr,
-                com,
-                sync_x,
-                sync_y,
-                translationz,
+                f"-p:Stim.REPortName={self.hardware_settings.device_rotary_encoder['COM_ROTARY_ENCODER']}",
+                f"-p:Stim.sync_x={self.task_params.SYNC_SQUARE_X}",
+                f"-p:Stim.sync_y={self.task_params.SYNC_SQUARE_Y}",
+                f"-p:Stim.TranslationZ=-{self.task_params.STIM_TRANSLATION_Z}",
             ]
         )
         os.chdir(here)
