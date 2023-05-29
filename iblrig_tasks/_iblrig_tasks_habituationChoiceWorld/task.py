@@ -9,7 +9,7 @@ class Session(HabituationChoiceWorldSession):
     pass
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     kwargs = iblrig.misc.get_task_runner_argument_parser()
     sess = Session(**kwargs)
     sess.run()

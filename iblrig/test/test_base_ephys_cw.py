@@ -9,7 +9,7 @@ import unittest
 import tempfile
 import yaml
 
-import iblrig.test
+from iblrig.test.base import TASK_KWARGS
 from iblrig.base_tasks import SoundMixin, RotaryEncoderMixin, BaseSession, BpodMixin, ValveMixin
 from iblrig.base_choice_world import BiasedChoiceWorldSession
 
@@ -17,12 +17,12 @@ from iblrig.base_choice_world import BiasedChoiceWorldSession
 class TestHierarchicalParameters(unittest.TestCase):
 
     def test_default_params(self):
-        sess = BiasedChoiceWorldSession(**iblrig.test.TASK_KWARGS)
+        sess = BiasedChoiceWorldSession(**TASK_KWARGS)
         with tempfile.TemporaryDirectory() as td:
             file_params = Path(td).joinpath('params.yaml')
             with open(file_params, 'w+') as fp:
                 yaml.safe_dump(data={'TITI': 1, 'REWARD_AMOUNT_UL': -2}, stream=fp)
-            sess2 = BiasedChoiceWorldSession(task_parameter_file=file_params, **iblrig.test.TASK_KWARGS)
+            sess2 = BiasedChoiceWorldSession(task_parameter_file=file_params, **TASK_KWARGS)
         assert len(sess2.task_params.keys()) == len(sess.task_params.keys()) + 1
         assert sess2.task_params['TITI'] == 1
         assert sess2.task_params['REWARD_AMOUNT_UL'] == -2
@@ -31,7 +31,7 @@ class TestHierarchicalParameters(unittest.TestCase):
 class TestHardwareMixins(unittest.TestCase):
     def setUp(self):
         task_settings_file = BiasedChoiceWorldSession.base_parameters_file
-        self.session = BaseSession(task_parameter_file=task_settings_file, **iblrig.test.TASK_KWARGS)
+        self.session = BaseSession(task_parameter_file=task_settings_file, **TASK_KWARGS)
 
     def test_rotary_encoder_mixin(self):
         """

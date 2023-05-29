@@ -1,0 +1,5 @@
+[run]
+include = ./iblrig/*, ./iblrig_tasks/*
+
+[report]
+include = ./iblrig/*, ./iblrig_tasks/*

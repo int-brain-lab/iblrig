@@ -574,13 +574,18 @@ class ValveMixin:
         log.info("Water valve module loaded: OK")
 
     def compute_reward_time(self, amount_ul=None):
-        amount_ul = amount_ul or self.task_params.REWARD_AMOUNT_UL
+        amount_ul = self.task_params.REWARD_AMOUNT_UL if amount_ul is None else amount_ul
         if self.task_params.AUTOMATIC_CALIBRATION:
             return self.valve['fcn_vol2time'](amount_ul) / 1e3
         else:  # this is the manual manual calibration value
             return self.task_params.CALIBRATION_VALUE / 3 * amount_ul
 
     def valve_open(self, reward_valve_time):
+        """
+        Opens the reward valve for a given amount of time and return bpod data
+        :param reward_valve_time:
+        :return:
+        """
         sma = StateMachine(self.bpod)
         sma.add_state(
             state_name="valve_open",
@@ -651,14 +656,36 @@ class SoundMixin:
             self.sound['OUT_STOP_SOUND'] = ("SoftCode", 0)
         log.info(f"Sound module loaded: OK: {sound_output}")
 
-    def play_tone(self):
-        self.sound.sd.play(self.sound.GO_TONE, self.sound['samplerate'])
+    def sound_play_noise(self, state_timer=0.510, state_name='play_noise'):
+        """
+        Plays the noise sound for the error feedback using bpod state machine
+        :return: bpod current trial export
+        """
+        return self._sound_play(state_name=state_name, output_actions=[self.sound.OUT_TONE], state_timer=state_timer)
 
-    def play_noise(self):
-        self.sound.sd.play(self.sound.WHITE_NOISE, self.sound['samplerate'])
+    def sound_play_tone(self, state_timer=0.102, state_name='play_tone'):
+        """
+        Plays the ready tone beep using bpod state machine
+        :return: bpod current trial export
+        """
+        return self._sound_play(state_name=state_name, output_actions=[self.sound.OUT_TONE], state_timer=state_timer)
 
-    def stop_sound(self):
-        self.sound.sd.stop()
+    def _sound_play(self, state_timer=None, output_actions=None, state_name='play_sound'):
+        """
+        Plays a sound using bpod state machine - the sound must be defined in the init_mixin_sound method
+        """
+        assert state_timer is not None, "state_timer must be defined"
+        assert output_actions is not None, "output_actions must be defined"
+        sma = StateMachine(self.bpod)
+        sma.add_state(
+            state_name=state_name,
+            state_timer=state_timer,
+            output_actions=[self.sound.OUT_TONE],
+            state_change_conditions={"BNC2Low": "exit", "Tup": "exit"},
+        )
+        self.bpod.send_state_machine(sma)
+        self.bpod.run_state_machine(sma)  # Locks until state machine 'exit' is reached
+        return self.bpod.session.current_trial.export()
 
 
 class SpontaneousSession(BaseSession):

@@ -15,7 +15,7 @@ class Session(BiasedChoiceWorldSession):
         return iblrig.misc.texp(factor=0.35 * 2, min_=0.2 * 2, max_=0.5 * 2)
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     # python .\iblrig_tasks\_iblrig_tasks_biasedChoiceWorld\task.py --subject mysubject
     kwargs = iblrig.misc.get_task_runner_argument_parser()
     sess = Session(**kwargs)

@@ -1,7 +1,6 @@
 """
 This modules extends the base_tasks modules by providing task logic around the Choice World protocol
 """
-from abc import abstractmethod
 import datetime
 import json
 import math
@@ -22,7 +21,6 @@ from iblutil.util import Bunch
 from iblutil.io import jsonable
 
 import iblrig.base_tasks
-import iblrig.iotasks as iotasks
 import iblrig.user_input as user
 import iblrig.misc as misc
 
@@ -143,7 +141,7 @@ class ChoiceWorldSession(
         self.bpod.close()
         self.stop_mixin_bonsai_recordings()
 
-    def mock(self, file_jsonable_fixture):
+    def mock(self, file_jsonable_fixture=None):
         """
         This methods serves to instantiate a state machine and bpod object to simulate a taks run.
         This is useful to test or display the state machine flow
@@ -190,7 +188,7 @@ class ChoiceWorldSession(
             'bonsai_show_center': daction,
         })
 
-    def get_graphviz_task(self, output_file=None):
+    def get_graphviz_task(self, output_file=None, view=True):
         """
         For a given task, outputs the state machine states diagram in Digraph format
         :param output_file:
@@ -199,6 +197,8 @@ class ChoiceWorldSession(
         import graphviz
         self.next_trial()
         sma = self.get_state_machine_trial(0)
+        if sma is None:
+            return
         states_indices = {i: k for i, k in enumerate(sma.state_names)}
         states_indices.update({(i + 10000): k for i, k in enumerate(sma.undeclared)})
         states_letters = {k: ascii_letters[i] for i, k in enumerate(sma.state_names)}
@@ -216,7 +216,7 @@ class ChoiceWorldSession(
                     edges.append(f"{letter}{states_letters[states_indices[input[1]]]}")
         dot.edges(edges)
         if output_file is not None:
-            dot.render(output_file, view=True)
+            dot.render(output_file, view=view)
         return dot
 
     def get_state_machine_trial(self, i):
@@ -372,7 +372,7 @@ class ChoiceWorldSession(
         )
         return sma
 
-    def update_next_trial_info(self, contrast=None, pleft=0.5):
+    def draw_next_trial_info(self, contrast=None, pleft=0.5):
         contrast = contrast or misc.draw_contrast(self.task_params.CONTRAST_SET, self.task_params.CONTRAST_SET_PROBABILITY_TYPE)
         assert len(self.task_params.STIM_POSITIONS) == 2, "Only two positions are supported"
         position = int(np.random.choice(self.task_params.STIM_POSITIONS, p=[pleft, 1 - pleft]))
@@ -402,7 +402,7 @@ class ChoiceWorldSession(
         save_dict["behavior_data"] = bpod_data
         # Dump and save
         with open(self.paths['DATA_FILE_PATH'], 'a') as fp:
-            fp.write(json.dumps(save_dict, cls=iotasks.ComplexEncoder) + '\n')
+            fp.write(json.dumps(save_dict) + '\n')
         # this is a flag for the online plots. If online plots were in pyqt5, there is a file watcher functionality
         Path(self.paths['DATA_FILE_PATH']).parent.joinpath('new_trial.flag').touch()
         # If more than 42 trials save transfer_me.flag
@@ -452,17 +452,6 @@ TIME FROM START:      {self.time_elapsed}
 ##########################################"""
         log.info(msg)
 
-    def psychometric_curve(self):
-        pd_table = self.trials_table.iloc[:self.trial_num, :].copy()
-        pd_table['signed_contrast'] = np.sign(pd_table['position']) * pd_table['contrast']
-
-        psychometric_curves = pd_table.groupby('signed_contrast').agg(
-            count=pd.NamedAgg(column="signed_contrast", aggfunc="count"),
-            response_time=pd.NamedAgg(column="response_time", aggfunc="mean"),
-            performance=pd.NamedAgg(column="trial_correct", aggfunc="mean"),
-        )
-        return psychometric_curves
-
     @property
     def iti_reward(self, assert_calibration=True):
         """
@@ -473,10 +462,6 @@ TIME FROM START:      {self.time_elapsed}
             assert 'REWARD_VALVE_TIME' in self.calibration.keys(), 'Reward valve time not calibrated'
         return self.task_params.ITI_CORRECT - self.calibration.get('REWARD_VALVE_TIME', None)
 
-    """
-    Those are the methods that need to be implemented for a new task
-    """
-    @abstractmethod
     def next_trial(self):
         pass
 
@@ -567,7 +552,7 @@ class BiasedChoiceWorldSession(ChoiceWorldSession):
         self.trials_table.at[self.trial_num, 'block_num'] = self.block_num
         self.trials_table.at[self.trial_num, 'block_trial_num'] = self.block_trial_num
         # save and send trial info to bonsai
-        self.update_next_trial_info(pleft=pleft)
+        self.draw_next_trial_info(pleft=pleft)
 
     def show_trial_log(self):
         trial_info = self.trials_table.iloc[self.trial_num]
@@ -624,14 +609,17 @@ class HabituationChoiceWorldSession(ChoiceWorldSession):
 
     def __init__(self, **kwargs):
         super(HabituationChoiceWorldSession, self).__init__(**kwargs)
-        self.trials_table['delay_to_stim_center'] = np.zeros(NTRIALS_INIT)
+        self.trials_table['delay_to_stim_center'] = np.zeros(NTRIALS_INIT) * np.NaN
 
     def next_trial(self):
         self.trial_num += 1
+        self.draw_next_trial_info()
+
+    def draw_next_trial_info(self, *args, **kwargs):
         # update trial table fields specific to habituation choice world
-        self.trials_table.at[self.trial_num, 'delay_to_stim_center'] = np.random.normal(self.task_params.DELAY_TO_STIM_CENTER, 2)
-        # save and send trial info to bonsai
-        self.update_next_trial_info()
+        self.trials_table.at[self.trial_num, 'delay_to_stim_center'] = np.random.normal(
+            self.task_params.DELAY_TO_STIM_CENTER, 2)
+        super(HabituationChoiceWorldSession, self).draw_next_trial_info(*args, **kwargs)
 
     def get_state_machine_trial(self, i):
         sma = StateMachine(self.bpod)

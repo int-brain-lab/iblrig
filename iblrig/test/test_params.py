@@ -1,7 +1,6 @@
 import unittest
 
 import iblrig.params as params
-import iblrig.iotasks
 import iblrig.path_helper
 
 

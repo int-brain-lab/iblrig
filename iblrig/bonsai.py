@@ -3,57 +3,10 @@ import os
 import subprocess
 import sys
 import time
-from pathlib import Path
 
 from iblrig import path_helper
 
 log = logging.getLogger("iblrig")
-
-
-def start_passive_visual_stim(
-    save2folder,
-    map_time="00:05:00",
-    fname="_iblrig_RFMapStim.raw.bin",
-    rate=0.1,
-    sa_time="00:10:00",
-    display_idx=1,
-):
-    here = os.getcwd()
-    bns = path_helper.get_bonsai_path()
-    stim_folder = str(path_helper.get_iblrig_path() / "visual_stim" / "passiveChoiceWorld")
-    wkfl = os.path.join(stim_folder, "passiveChoiceWorld_passive.bonsai")
-    os.chdir(stim_folder)
-    # Flags
-    noedit = "--no-editor"  # implies start and no-debug?
-    noboot = "--no-boot"
-    # Properties
-    SA0_DueTime = "-p:Stim.SpontaneousActivity0.DueTime=" + sa_time
-    RFM_FileName = "-p:Stim.ReceptiveFieldMappingStim.FileNameRFMapStim=" + str(
-        Path(save2folder) / fname
-    )
-    RFM_MappingTime = "-p:Stim.ReceptiveFieldMappingStim.MappingTime=" + map_time
-    RFM_StimRate = "-p:Stim.ReceptiveFieldMappingStim.Rate=" + str(rate)
-
-    display_idx = "-p:Stim.DisplayIndex=" + str(display_idx)
-    cmd = [
-        bns,
-        wkfl,
-        noboot,
-        noedit,
-        display_idx,
-        SA0_DueTime,
-        RFM_FileName,
-        RFM_MappingTime,
-        RFM_StimRate,
-    ]
-
-    log.info("Starting spontaneous activity and RF mapping stims")
-    os.chdir(stim_folder)
-    s = subprocess.run(cmd, stdout=subprocess.PIPE)  # locking call
-    os.chdir(here)
-    log.info("Done")
-    sys.stdout.flush()
-    return s
 
 
 def start_frame2ttl_test(data_file, lengths_file, harp=False, display_idx=1):
