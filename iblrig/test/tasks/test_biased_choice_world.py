@@ -9,7 +9,7 @@ from iblrig.test.base import TASK_KWARGS, BaseTestCases, TestIntegrationFullRuns
 from iblrig_tasks._iblrig_tasks_biasedChoiceWorld.task import Session as BiasedChoiceWorldSession
 
 
-class TestInstantationBiased(BaseTestCases.CommonTestInstantiateTask):
+class TestInstantiationBiased(BaseTestCases.CommonTestInstantiateTask):
 
     def setUp(self) -> None:
         self.task = BiasedChoiceWorldSession(**TASK_KWARGS)

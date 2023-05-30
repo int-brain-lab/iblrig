@@ -113,6 +113,7 @@ class BaseSession(ABC):
         self.paths.VISUAL_STIM_FOLDER = self.paths.IBLRIG_FOLDER.joinpath('visual_stim')
         # Executes mixins init methods
         self._execute_mixins_shared_function('init_mixin')
+        log.info(f'Session {self.paths.SESSION_RAW_DATA_FOLDER}')
         self.save_task_parameters_to_json_file()
 
     def _make_task_parameters_dict(self):

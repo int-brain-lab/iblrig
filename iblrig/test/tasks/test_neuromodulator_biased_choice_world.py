@@ -1,10 +1,10 @@
 import numpy as np
 from iblrig.test.base import TASK_KWARGS
-from iblrig.test.tasks.test_biased_choice_world import TestInstantationBiased
+from iblrig.test.tasks.test_biased_choice_world import TestInstantiationBiased
 from iblrig_tasks._iblrig_tasks_neuroModulatorChoiceWorld.task import Session as NeuroModulatorChoiceWorldSession
 
 
-class TestNeuroModulatorBiasedChoiceWorld(TestInstantationBiased):
+class TestNeuroModulatorBiasedChoiceWorld(TestInstantiationBiased):
     def setUp(self) -> None:
         self.task = NeuroModulatorChoiceWorldSession(**TASK_KWARGS)
 

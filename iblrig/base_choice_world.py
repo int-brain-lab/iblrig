@@ -436,6 +436,7 @@ class ChoiceWorldSession(
     def show_trial_log(self, extra_info=""):
         trial_info = self.trials_table.iloc[self.trial_num]
         msg = f"""
+Session {self.paths.SESSION_RAW_DATA_FOLDER}
 ##########################################
 TRIAL NUM:            {trial_info.trial_num}
 TEMPERATURE:          {self.ambient_sensor_table.loc[self.trial_num, 'Temperature_C']} ºC
