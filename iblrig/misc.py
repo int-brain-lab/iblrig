@@ -33,11 +33,11 @@ log = logging.getLogger("iblrig")
 def get_task_runner_argument_parser():
     """
     This function parses input to run the tasks. All the variables are fed to the Session instance
+    task.py -s subject_name -p projects_name -c procedures_name --no-interactive
     :return:
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument("-s", "--subject", required=True,
-                        help="--subject ZFM-05725")
+    parser.add_argument("-s", "--subject", required=True, help="--subject ZFM-05725")
     parser.add_argument("-p", "--projects", nargs="+", default=[],
                         help="project name(s), something like 'psychedelics' or 'ibl_neuropixel_brainwide_01'; if specify "
                              "multiple projects, use a space to separate them")
@@ -45,6 +45,7 @@ def get_task_runner_argument_parser():
                         help="long description of what is occurring, something like 'Ephys recording with acute probe(s)'; "
                              "be sure to use the double quote characters to encapsulate the description and a space to separate "
                              "multiple procedures")
+    parser.add_argument('--no-interactive', dest='interactive', action='store_false', default=True)
     kwargs = vars(parser.parse_args())
     kwargs['interactive'] = True
     return kwargs
@@ -319,13 +320,6 @@ def check_stop_criterions(init_datetime, rt_buffer, trial_num) -> int:
         return 3
 
     return False
-
-
-def get_trial_rt(behavior_data: dict) -> float:
-    return (
-        behavior_data["States timestamps"]["closed_loop"][0][1]
-        - behavior_data["States timestamps"]["stim_on"][0][0]
-    )
 
 
 def create_flag(session_folder_path: str, flag: str) -> None:

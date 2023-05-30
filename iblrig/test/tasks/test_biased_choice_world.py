@@ -1,25 +1,25 @@
 import time
-import unittest
+import datetime
 
 import numpy as np
 import pandas as pd
 
-import iblrig.test
+from iblrig.raw_data_loaders import load_task_jsonable
+from iblrig.test.base import TASK_KWARGS, BaseTestCases, TestIntegrationFullRuns, PATH_FIXTURES
 from iblrig_tasks._iblrig_tasks_biasedChoiceWorld.task import Session as BiasedChoiceWorldSession
-from iblrig_tasks._iblrig_tasks_neuroModulatorChoiceWorld.task import Session as NeuroModulatorChoiceWorldSession
 
 
-class TestBiasedChoiceWorld(unittest.TestCase):
+class TestInstantiationBiased(BaseTestCases.CommonTestInstantiateTask):
 
     def setUp(self) -> None:
-        self.task = BiasedChoiceWorldSession(**iblrig.test.TASK_KWARGS)
+        self.task = BiasedChoiceWorldSession(**TASK_KWARGS)
+        np.random.seed(12345)
 
     def test_task(self):
         task = self.task
         trial_fixtures = get_fixtures()
         nt = 500
         t = np.zeros(nt)
-        np.random.seed(12345)
         for i in np.arange(nt):
             t[i] = time.time()
             task.next_trial()
@@ -70,15 +70,40 @@ class TestBiasedChoiceWorld(unittest.TestCase):
         self.assertTrue(np.all(self.task.trials_table['quiescent_period'] < 0.8))
 
 
-class TestNeuroModulatorBiasedChoiceWorld(TestBiasedChoiceWorld):
+class TestIntegrationFullRun(TestIntegrationFullRuns):
     def setUp(self) -> None:
-        self.task = NeuroModulatorChoiceWorldSession(**iblrig.test.TASK_KWARGS)
+        super(TestIntegrationFullRun, self).setUp()
+        self.task = BiasedChoiceWorldSession(one=self.one, **self.kwargs)
 
-    def test_task(self):
-        super(TestNeuroModulatorBiasedChoiceWorld, self).test_task()
-        # we expect 10% of null feedback trials
-        # todo check that omissions are reflected on the reward amount !!
-        assert np.abs(.1 - np.mean(self.task.trials_table['omit_feedback'])) < .05
+    def test_task_biased(self):
+        """
+        Run mocked task for 3 trials
+        Registers sessions on Alyx at startup, and post-hoc registers number of trials
+        :return:
+        """
+        task = self.task
+        task.mock(file_jsonable_fixture=PATH_FIXTURES.joinpath('task_data_short.jsonable'),)
+        task.task_params.NTRIALS = 3
+        task.session_info['SUBJECT_WEIGHT'] = 24.2  # manually add a weighing
+        task.run()
+        file_settings = task.paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_taskSettings.raw.json')
+        settings = self.read_and_assert_json_settings(file_settings)
+        # makes sure the session end time is labeled
+        dt = datetime.datetime.now() - datetime.datetime.fromisoformat(settings['SESSION_END_TIME'])
+        self.assertLess(dt.seconds, 600)  # leaves some time for debugging
+        trials_table, bpod_data = load_task_jsonable(task.paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_taskData.raw.jsonable'))
+        assert trials_table.shape[0] == task.task_params.NTRIALS
+        assert len(bpod_data) == task.task_params.NTRIALS
+        # test that Alyx registration went well, we should find the session
+        ses = self.one.alyx.rest('sessions', 'list', subject=self.kwargs['subject'],
+                                 date=task.session_info['SESSION_START_TIME'][:10], number=task.session_info['SESSION_NUMBER'])
+        full_session = self.one.alyx.rest('sessions', 'read', id=ses[0]['id'])
+        # and the water administered
+        assert full_session['wateradmin_session_related'][0]['water_administered'] == task.session_info['TOTAL_WATER_DELIVERED']
+        # and the related weighing
+        wei = self.one.alyx.rest('weighings', 'list', nickname=self.kwargs['subject'],
+                                 date=task.session_info['SESSION_START_TIME'][:10])
+        assert wei[0]['weight'] == task.session_info['SUBJECT_WEIGHT']
 
 
 def get_fixtures():

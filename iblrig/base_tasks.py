@@ -3,16 +3,17 @@ This module is intended to provide commonalities for all tasks.
 It provides hardware mixins that can be used together with BaseSession to compose tasks
 This module is exclusive of any task related logic
 """
-import json
 
 from pathlib import Path
 from abc import ABC
 import datetime
 import inspect
+import json
 import logging
 import os
 import serial
 import subprocess
+import time
 import yaml
 import signal
 import traceback
@@ -39,6 +40,7 @@ OSC_CLIENT_IP = "127.0.0.1"
 
 
 class BaseSession(ABC):
+    version = None
     protocol_name = None
     base_parameters_file = None
     is_mock = False
@@ -78,6 +80,7 @@ class BaseSession(ABC):
             if task_params is not None:
                 self.task_params.update(Bunch(task_params))
         self.session_info = Bunch({
+            'NTRIALS': 0,
             'NTRIALS_CORRECT': 0,
             'PROCEDURES': procedures,
             'PROJECTS': projects,
@@ -110,6 +113,7 @@ class BaseSession(ABC):
         self.paths.VISUAL_STIM_FOLDER = self.paths.IBLRIG_FOLDER.joinpath('visual_stim')
         # Executes mixins init methods
         self._execute_mixins_shared_function('init_mixin')
+        log.info(f'Session {self.paths.SESSION_RAW_DATA_FOLDER}')
         self.save_task_parameters_to_json_file()
 
     def _make_task_parameters_dict(self):
@@ -222,7 +226,6 @@ class BaseSession(ABC):
         signal.signal(signal.SIGINT, sigint_handler)
 
         self.start()
-        self.send_spacers()
 
 
 class OSCClient(udp_client.SimpleUDPClient):
@@ -348,14 +351,46 @@ class BonsaiRecordingMixin(object):
 class BonsaiVisualStimulusMixin(object):
 
     def init_mixin_bonsai_visual_stimulus(self, *args, **kwargs):
-        self.bonsai_stimulus = Bunch({
-            'udp_client': OSCClient(port=7110)  # camera 7111, microphone 7112
-        })
+        # camera 7111, microphone 7112
+        self.bonsai_visual_udp_client = OSCClient(port=7110)
 
     def start_mixin_bonsai_visual_stimulus(self):
+        self.choice_world_visual_stimulus()
+
+    def send_trial_info_to_bonsai(self):
+        """
+        This sends the trial information to the Bonsai UDP port for the stimulus
+        The OSC protocol is documented in iblrig.base_tasks.BonsaiVisualStimulusMixin
+        """
+        bonsai_dict = {k: self.trials_table[k][self.trial_num] for k in
+                       self.bonsai_visual_udp_client.OSC_PROTOCOL
+                       if k in self.trials_table.columns}
+        self.bonsai_visual_udp_client.send2bonsai(**bonsai_dict)
+
+    def run_passive_visual_stim(self, map_time="00:05:00", rate=0.1, sa_time="00:05:00"):
+        file_bonsai_workflow = self.paths.VISUAL_STIM_FOLDER.joinpath(
+            "passiveChoiceWorld", "passiveChoiceWorld_passive.bonsai")
+        file_output_rfm = self.paths.SESSION_RAW_DATA_FOLDER.joinpath("_iblrig_RFMapStim.raw.bin")
+        cmd = [
+            str(self.paths.BONSAI),
+            str(file_bonsai_workflow),
+            "--no-boot",
+            "--no-editor",
+            f"-p:Stim.DisplayIndex={self.hardware_settings.device_screen['DISPLAY_IDX']}",
+            f"-p:Stim.SpontaneousActivity0.DueTime={sa_time}",
+            f"-p:Stim.ReceptiveFieldMappingStim.FileNameRFMapStim={file_output_rfm}",
+            f"-p:Stim.ReceptiveFieldMappingStim.MappingTime={map_time}",
+            f"-p:Stim.ReceptiveFieldMappingStim.Rate={rate}",
+        ]
+        log.info("Starting spontaneous activity and RF mapping stims")
+        s = subprocess.run(cmd, stdout=subprocess.PIPE)  # locking call
+        log.info("Spontaneous activity and RF mapping stims finished")
+        return s
+
+    def choice_world_visual_stimulus(self):
         if self.task_params.VISUAL_STIMULUS is None:
             return
-        # Run Bonsai workflow, switch to the folder containing the gnagnagna.bonsai viusal stimulus file
+        # Run Bonsai workflow, switch to the folder containing the bonsai visual stimulus file and switch back
 
         visual_stim_file = self.paths.VISUAL_STIM_FOLDER.joinpath(self.task_params.VISUAL_STIMULUS)
 
@@ -374,34 +409,24 @@ class BonsaiVisualStimulusMixin(object):
         sync_square = "-p:Stim.FileNameSyncSquareUpdate=" + os.path.join(
             self.paths.SESSION_RAW_DATA_FOLDER, "_iblrig_syncSquareUpdate.raw.csv"
         )
-
-        com = "-p:Stim.REPortName=" + self.hardware_settings.device_rotary_encoder['COM_ROTARY_ENCODER']
-        display_idx = "-p:Stim.DisplayIndex=" + str(self.hardware_settings.device_screen['DISPLAY_IDX'])
-        sync_x = "-p:Stim.sync_x=" + str(self.task_params.SYNC_SQUARE_X)
-        sync_y = "-p:Stim.sync_y=" + str(self.task_params.SYNC_SQUARE_Y)
-        translationz = f"-p:Stim.TranslationZ=-{self.task_params.STIM_TRANSLATION_Z}"
-        noboot = "--no-boot"
-        editor = "--start" if self.task_params.BONSAI_EDITOR else "--no-editor"
-
         here = Path.cwd()
         os.chdir(visual_stim_file.parent)
-
         subprocess.Popen(
             [
                 str(self.paths.BONSAI),
                 visual_stim_file,
-                editor,
-                noboot,
-                display_idx,
+                "--start" if self.task_params.BONSAI_EDITOR else "--no-editor",
+                "--no-boot",
+                f"-p:Stim.DisplayIndex={self.hardware_settings.device_screen['DISPLAY_IDX']}",
                 screen_pos,
                 sync_square,
                 pos,
                 evt,
                 itr,
-                com,
-                sync_x,
-                sync_y,
-                translationz,
+                f"-p:Stim.REPortName={self.hardware_settings.device_rotary_encoder['COM_ROTARY_ENCODER']}",
+                f"-p:Stim.sync_x={self.task_params.SYNC_SQUARE_X}",
+                f"-p:Stim.sync_y={self.task_params.SYNC_SQUARE_Y}",
+                f"-p:Stim.TranslationZ=-{self.task_params.STIM_TRANSLATION_Z}",
             ]
         )
         os.chdir(here)
@@ -486,9 +511,9 @@ class RotaryEncoderMixin:
             self.device_rotary_encoder.connect()
         except serial.serialutil.SerialException as e:
             raise serial.serialutil.SerialException(
-                "The rotary encoder COM port is already in use. This is usually due to a Bonsai process "
-                "currently running on the computer. Make sure all Bonsai windows are closed prior to "
-                "running the task") from e
+                f"The rotary encoder COM port {self.device_rotary_encoder.RE_PORT} is already in use. This is usually"
+                f" due to a Bonsai process currently running on the computer. Make sure all Bonsai windows are"
+                f" closed prior to running the task") from e
         except Exception as e:
             raise Exception("The rotary encoder couldn't connect. If the bpod is glowing in green,"
                             "disconnect and reconnect bpod from the computer") from e
@@ -550,13 +575,18 @@ class ValveMixin:
         log.info("Water valve module loaded: OK")
 
     def compute_reward_time(self, amount_ul=None):
-        amount_ul = amount_ul or self.task_params.REWARD_AMOUNT_UL
+        amount_ul = self.task_params.REWARD_AMOUNT_UL if amount_ul is None else amount_ul
         if self.task_params.AUTOMATIC_CALIBRATION:
             return self.valve['fcn_vol2time'](amount_ul) / 1e3
         else:  # this is the manual manual calibration value
             return self.task_params.CALIBRATION_VALUE / 3 * amount_ul
 
     def valve_open(self, reward_valve_time):
+        """
+        Opens the reward valve for a given amount of time and return bpod data
+        :param reward_valve_time:
+        :return:
+        """
         sma = StateMachine(self.bpod)
         sma.add_state(
             state_name="valve_open",
@@ -627,11 +657,62 @@ class SoundMixin:
             self.sound['OUT_STOP_SOUND'] = ("SoftCode", 0)
         log.info(f"Sound module loaded: OK: {sound_output}")
 
-    def play_tone(self):
-        self.sound.sd.play(self.sound.GO_TONE, self.sound['samplerate'])
+    def sound_play_noise(self, state_timer=0.510, state_name='play_noise'):
+        """
+        Plays the noise sound for the error feedback using bpod state machine
+        :return: bpod current trial export
+        """
+        return self._sound_play(state_name=state_name, output_actions=[self.sound.OUT_TONE], state_timer=state_timer)
 
-    def play_noise(self):
-        self.sound.sd.play(self.sound.WHITE_NOISE, self.sound['samplerate'])
+    def sound_play_tone(self, state_timer=0.102, state_name='play_tone'):
+        """
+        Plays the ready tone beep using bpod state machine
+        :return: bpod current trial export
+        """
+        return self._sound_play(state_name=state_name, output_actions=[self.sound.OUT_TONE], state_timer=state_timer)
 
-    def stop_sound(self):
-        self.sound.sd.stop()
+    def _sound_play(self, state_timer=None, output_actions=None, state_name='play_sound'):
+        """
+        Plays a sound using bpod state machine - the sound must be defined in the init_mixin_sound method
+        """
+        assert state_timer is not None, "state_timer must be defined"
+        assert output_actions is not None, "output_actions must be defined"
+        sma = StateMachine(self.bpod)
+        sma.add_state(
+            state_name=state_name,
+            state_timer=state_timer,
+            output_actions=[self.sound.OUT_TONE],
+            state_change_conditions={"BNC2Low": "exit", "Tup": "exit"},
+        )
+        self.bpod.send_state_machine(sma)
+        self.bpod.run_state_machine(sma)  # Locks until state machine 'exit' is reached
+        return self.bpod.session.current_trial.export()
+
+
+class SpontaneousSession(BaseSession):
+    """
+    A Spontaneous task doesn't have trials, it just runs until the user stops it
+    It is used to get extraction structure for data streams
+    """
+    def __init__(self, duration_secs=None, **kwargs):
+        super(SpontaneousSession, self).__init__(**kwargs)
+        self.duration_secs = duration_secs
+
+    def run(self):
+        """
+        This is the method that runs the task with the actual state machine
+        :return:
+        """
+        super(SpontaneousSession, self).run()
+        log.info("Starting spontaneous acquisition")
+        while True:
+            time.sleep(1.5)
+            if self.duration_secs is not None and self.time_elapsed.seconds > self.duration_secs:
+                break
+            if self.paths.SESSION_FOLDER.joinpath('.stop').exists():
+                self.paths.SESSION_FOLDER.joinpath('.stop').unlink()
+                break
+        log.critical("Graceful exit")
+        self.session_info.SESSION_END_TIME = datetime.datetime.now().isoformat()
+        self.save_task_parameters_to_json_file()
+        self.register_to_alyx()

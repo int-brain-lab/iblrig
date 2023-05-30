@@ -1,11 +1,11 @@
 import logging
-from iblrig.base_choice_world import BiasedChoiceWorldSession
+from iblrig.base_choice_world import HabituationChoiceWorldSession
 import iblrig.misc
 
 log = logging.getLogger("iblrig")
 
 
-class Session(BiasedChoiceWorldSession):
+class Session(HabituationChoiceWorldSession):
     pass
 
 

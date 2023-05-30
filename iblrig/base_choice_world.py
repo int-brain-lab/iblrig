@@ -1,7 +1,6 @@
 """
 This modules extends the base_tasks modules by providing task logic around the Choice World protocol
 """
-from abc import abstractmethod
 import datetime
 import json
 import math
@@ -22,7 +21,6 @@ from iblutil.util import Bunch
 from iblutil.io import jsonable
 
 import iblrig.base_tasks
-import iblrig.iotasks as iotasks
 import iblrig.user_input as user
 import iblrig.misc as misc
 
@@ -55,14 +53,8 @@ class ChoiceWorldSession(
         self.trial_num = -1
         self.block_num = -1
         self.block_trial_num = -1
-        # init the tables, there are 3 of them: a block table, a trials table and a ambient sensor data table
-        self.blocks_table = pd.DataFrame({
-            'probability_left': np.zeros(NBLOCKS_INIT) * np.NaN,
-            'block_length': np.zeros(NBLOCKS_INIT, dtype=np.int16) * -1,
-        })
+        # init the tables, there are 2 of them: a trials table and a ambient sensor data table
         self.trials_table = pd.DataFrame({
-            'block_num': np.zeros(NTRIALS_INIT, dtype=np.int16),
-            'block_trial_num': np.zeros(NTRIALS_INIT, dtype=np.int16),
             'contrast': np.zeros(NTRIALS_INIT) * np.NaN,
             'position': np.zeros(NTRIALS_INIT) * np.NaN,
             'quiescent_period': np.zeros(NTRIALS_INIT) * np.NaN,
@@ -101,7 +93,6 @@ class ChoiceWorldSession(
             self.start_mixin_bonsai_cameras()
             self.start_mixin_bonsai_microphone()
             self.start_mixin_bonsai_visual_stimulus()
-
         if self.interactive:
             self.session_info.SUBJECT_WEIGHT = user.ask_subject_weight(self.session_info.SUBJECT_NAME)
             self.task_params.SESSION_START_DELAY_SEC = user.ask_session_delay()
@@ -110,10 +101,8 @@ class ChoiceWorldSession(
         self.save_task_parameters_to_json_file()
         self.register_to_alyx()
 
-        # starts online plotting
-        if self.interactive:
-            subprocess.Popen(["viewsession", str(self.paths['DATA_FILE_PATH'])],
-                             stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+        # make the bpod send spacer signals to the main sync clock for protocol discovery
+        self.send_spacers()
 
     def run(self):
         """
@@ -152,7 +141,7 @@ class ChoiceWorldSession(
         self.bpod.close()
         self.stop_mixin_bonsai_recordings()
 
-    def mock(self, file_jsonable_fixture):
+    def mock(self, file_jsonable_fixture=None):
         """
         This methods serves to instantiate a state machine and bpod object to simulate a taks run.
         This is useful to test or display the state machine flow
@@ -199,7 +188,7 @@ class ChoiceWorldSession(
             'bonsai_show_center': daction,
         })
 
-    def get_graphviz_task(self, output_file=None):
+    def get_graphviz_task(self, output_file=None, view=True):
         """
         For a given task, outputs the state machine states diagram in Digraph format
         :param output_file:
@@ -208,6 +197,8 @@ class ChoiceWorldSession(
         import graphviz
         self.next_trial()
         sma = self.get_state_machine_trial(0)
+        if sma is None:
+            return
         states_indices = {i: k for i, k in enumerate(sma.state_names)}
         states_indices.update({(i + 10000): k for i, k in enumerate(sma.undeclared)})
         states_letters = {k: ascii_letters[i] for i, k in enumerate(sma.state_names)}
@@ -225,11 +216,10 @@ class ChoiceWorldSession(
                     edges.append(f"{letter}{states_letters[states_indices[input[1]]]}")
         dot.edges(edges)
         if output_file is not None:
-            dot.render(output_file, view=True)
+            dot.render(output_file, view=view)
         return dot
 
     def get_state_machine_trial(self, i):
-
         sma = StateMachine(self.bpod)  # TODO try instantiate only once for each trial type
 
         if i == 0:  # First trial exception start camera
@@ -382,70 +372,43 @@ class ChoiceWorldSession(
         )
         return sma
 
-    def send_trial_info_to_bonsai(self):
-        """
-        This sends the trial information to the Bonsai UDP port for the stimulus
-        The OSC protocol is documented in iblrig.base_tasks.BonsaiVisualStimulusMixin
-        """
-        bonsai_viz_client = self.bonsai_stimulus['udp_client']
-        bonsai_dict = {k: self.trials_table[k][self.trial_num] for k in
-                       bonsai_viz_client.OSC_PROTOCOL
-                       if k in self.trials_table.columns}
-        bonsai_viz_client.send2bonsai(**bonsai_dict)
+    def draw_next_trial_info(self, contrast=None, pleft=0.5):
+        contrast = contrast or misc.draw_contrast(self.task_params.CONTRAST_SET, self.task_params.CONTRAST_SET_PROBABILITY_TYPE)
+        assert len(self.task_params.STIM_POSITIONS) == 2, "Only two positions are supported"
+        position = int(np.random.choice(self.task_params.STIM_POSITIONS, p=[pleft, 1 - pleft]))
+        quiescent_period = self.task_params.QUIESCENT_PERIOD + misc.texp(factor=0.35, min_=0.2, max_=0.5)
+        self.trials_table.at[self.trial_num, 'quiescent_period'] = quiescent_period
+        self.trials_table.at[self.trial_num, 'contrast'] = contrast
+        self.trials_table.at[self.trial_num, 'stim_phase'] = random.uniform(0, 2 * math.pi)
+        self.trials_table.at[self.trial_num, 'stim_sigma'] = self.task_params.STIM_SIGMA
+        self.trials_table.at[self.trial_num, 'stim_angle'] = self.task_params.STIM_ANGLE
+        self.trials_table.at[self.trial_num, 'stim_gain'] = self.task_params.STIM_GAIN
+        self.trials_table.at[self.trial_num, 'stim_freq'] = self.task_params.STIM_FREQ
+        self.trials_table.at[self.trial_num, 'trial_num'] = self.trial_num
+        self.trials_table.at[self.trial_num, 'position'] = position
+        self.trials_table.at[self.trial_num, 'reward_amount'] = self.task_params.REWARD_AMOUNT_UL
+        self.trials_table.at[self.trial_num, 'stim_probability_left'] = pleft
+        self.send_trial_info_to_bonsai()
 
     def trial_completed(self, bpod_data):
-        """
-        The purpose of this method is to
-        -   update the trials table with information about the behaviour coming from the bpod
-        Constraints on the state machine data:
-        - mandatory states: ['correct', 'error', 'no_go', 'reward']
-        - optional states : ['omit_correct', 'omit_error', 'omit_no_go']
-        :param bpod_data:
-        :return:
-        """
-        # get the response time from the behaviour data
-        self.trials_table.at[self.trial_num, 'response_time'] = misc.get_trial_rt(bpod_data)
-        # get the trial outcome
-        state_names = ['correct', 'error', 'no_go', 'omit_correct', 'omit_error', 'omit_no_go']
-        outcome = {sn: ~np.isnan(bpod_data['States timestamps'].get(sn, [[np.NaN]])[0][0]) for sn in state_names}
-        assert np.sum(list(outcome.values())) == 1
-        outcome = next(k for k in outcome if outcome[k])
         # if the reward state has not been triggered, null the reward
         if np.isnan(bpod_data['States timestamps']['reward'][0][0]):
             self.trials_table.at[self.trial_num, 'reward_amount'] = 0
         self.trials_table.at[self.trial_num, 'reward_valve_time'] = self.reward_time
         # update cumulative reward value
         self.session_info.TOTAL_WATER_DELIVERED += self.trials_table.at[self.trial_num, 'reward_amount']
-        # Update response buffer -1 for left, 0 for nogo, and 1 for rightward
-        position = self.trials_table.at[self.trial_num, 'position']
-        if 'correct' in outcome:
-            self.trials_table.at[self.trial_num, 'trial_correct'] = True
-            self.session_info.NTRIALS_CORRECT += 1
-            self.trials_table.at[self.trial_num, 'response_side'] = -np.sign(position)
-        elif 'error' in outcome:
-            self.trials_table.at[self.trial_num, 'response_side'] = np.sign(position)
-        elif 'no_go' in outcome:
-            self.trials_table.at[self.trial_num, 'response_side'] = 0
-        else:
-            ValueError("The task outcome doesn't contain no_go, error or correct")
-        assert position != 0, "the position value should be either 35 or -35"
         # SAVE TRIAL DATA
         save_dict = self.trials_table.iloc[self.trial_num].to_dict()
         save_dict["behavior_data"] = bpod_data
         # Dump and save
         with open(self.paths['DATA_FILE_PATH'], 'a') as fp:
-            fp.write(json.dumps(save_dict, cls=iotasks.ComplexEncoder) + '\n')
+            fp.write(json.dumps(save_dict) + '\n')
         # this is a flag for the online plots. If online plots were in pyqt5, there is a file watcher functionality
         Path(self.paths['DATA_FILE_PATH']).parent.joinpath('new_trial.flag').touch()
         # If more than 42 trials save transfer_me.flag
         if self.trial_num == 42:
             misc.create_flags(self.paths.DATA_FILE_PATH, self.task_params.POOP_COUNT)
         self.check_sync_pulses(bpod_data=bpod_data)
-
-    def check_stop_criterions(self):
-        return misc.check_stop_criterions(
-            self.init_datetime, self.trials_table['response_time'].values(), self.trial_num
-        )
 
     def check_sync_pulses(self, bpod_data):
         # todo move this in the post trial when we have a task flow
@@ -470,43 +433,25 @@ class ChoiceWorldSession(
         if not ev_bnc1 or not ev_bnc2 or not ev_port1:
             log.warning(warn_msg)
 
-    def show_trial_log(self):
+    def show_trial_log(self, extra_info=""):
         trial_info = self.trials_table.iloc[self.trial_num]
         msg = f"""
+Session {self.paths.SESSION_RAW_DATA_FOLDER}
 ##########################################
 TRIAL NUM:            {trial_info.trial_num}
-STIM POSITION:        {trial_info.position}
-STIM CONTRAST:        {trial_info.contrast}
-STIM PHASE:           {trial_info.stim_phase}
-
-BLOCK NUMBER:         {trial_info.block_num}
-BLOCK LENGTH:         {self.blocks_table.loc[self.block_num, 'block_length']}
-TRIALS IN BLOCK:      {trial_info.block_trial_num}
-STIM PROB LEFT:       {trial_info.stim_probability_left}
-
-RESPONSE TIME:        {trial_info.response_time}
-TRIAL CORRECT:        {trial_info.trial_correct}
-
-NTRIALS CORRECT:      {self.session_info.NTRIALS_CORRECT}
-NTRIALS ERROR:        {self.trial_num - self.session_info.NTRIALS_CORRECT}
-WATER DELIVERED:      {np.round(self.session_info.TOTAL_WATER_DELIVERED, 3)} µl
-TIME FROM START:      {self.time_elapsed}
 TEMPERATURE:          {self.ambient_sensor_table.loc[self.trial_num, 'Temperature_C']} ºC
 AIR PRESSURE:         {self.ambient_sensor_table.loc[self.trial_num, 'AirPressure_mb']} mb
 RELATIVE HUMIDITY:    {self.ambient_sensor_table.loc[self.trial_num, 'RelativeHumidity']} %
+
+STIM POSITION:        {trial_info.position}
+STIM CONTRAST:        {trial_info.contrast}
+STIM PHASE:           {trial_info.stim_phase}
+STIM PROB LEFT:       {trial_info.stim_probability_left}
+{extra_info}
+WATER DELIVERED:      {np.round(self.session_info.TOTAL_WATER_DELIVERED, 3)} µl
+TIME FROM START:      {self.time_elapsed}
 ##########################################"""
         log.info(msg)
-
-    def psychometric_curve(self):
-        pd_table = self.trials_table.iloc[:self.trial_num, :].copy()
-        pd_table['signed_contrast'] = np.sign(pd_table['position']) * pd_table['contrast']
-
-        psychometric_curves = pd_table.groupby('signed_contrast').agg(
-            count=pd.NamedAgg(column="signed_contrast", aggfunc="count"),
-            response_time=pd.NamedAgg(column="response_time", aggfunc="mean"),
-            performance=pd.NamedAgg(column="trial_correct", aggfunc="mean"),
-        )
-        return psychometric_curves
 
     @property
     def iti_reward(self, assert_calibration=True):
@@ -518,14 +463,6 @@ RELATIVE HUMIDITY:    {self.ambient_sensor_table.loc[self.trial_num, 'RelativeHu
             assert 'REWARD_VALVE_TIME' in self.calibration.keys(), 'Reward valve time not calibrated'
         return self.task_params.ITI_CORRECT - self.calibration.get('REWARD_VALVE_TIME', None)
 
-    """
-    Those are the methods that need to be implemented for a new task
-    """
-    @abstractmethod
-    def new_block(self):
-        pass
-
-    @abstractmethod
     def next_trial(self):
         pass
 
@@ -555,6 +492,22 @@ RELATIVE HUMIDITY:    {self.ambient_sensor_table.loc[self.trial_num, 'RelativeHu
 
 class BiasedChoiceWorldSession(ChoiceWorldSession):
     protocol_name = "_iblrig_tasks_biasedChoiceWorld"
+
+    def __init__(self, **kwargs):
+        super(BiasedChoiceWorldSession, self).__init__(**kwargs)
+        self.blocks_table = pd.DataFrame({
+            'probability_left': np.zeros(NBLOCKS_INIT) * np.NaN,
+            'block_length': np.zeros(NBLOCKS_INIT, dtype=np.int16) * -1,
+        })
+        self.trials_table['block_num'] = np.zeros(NTRIALS_INIT, dtype=np.int16)
+        self.trials_table['block_trial_num'] = np.zeros(NTRIALS_INIT, dtype=np.int16)
+
+    def start(self):
+        super(BiasedChoiceWorldSession, self).start()
+        # starts online plotting
+        if self.interactive:
+            subprocess.Popen(["viewsession", str(self.paths['DATA_FILE_PATH'])],
+                             stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
 
     def new_block(self):
         """
@@ -588,27 +541,131 @@ class BiasedChoiceWorldSession(ChoiceWorldSession):
         self.blocks_table.at[self.block_num, 'probability_left'] = pleft
 
     def next_trial(self):
-        # First trial exception
         self.trial_num += 1
+        # if necessary update the block number
         self.block_trial_num += 1
         self.trial_correct = None
         if self.block_num < 0 or self.block_trial_num > (self.blocks_table.loc[self.block_num, 'block_length'] - 1):
             self.new_block()
+        # get and store probability left
         pleft = self.blocks_table.loc[self.block_num, 'probability_left']
-        contrast = misc.draw_contrast(self.task_params.CONTRAST_SET, self.task_params.CONTRAST_SET_PROBABILITY_TYPE)
-        position = int(np.random.choice(self.task_params.STIM_POSITIONS, p=[pleft, 1 - pleft]))
-        quiescent_period = self.task_params.QUIESCENT_PERIOD + misc.texp(factor=0.35, min_=0.2, max_=0.5)
-        self.trials_table.at[self.trial_num, 'quiescent_period'] = quiescent_period
-        self.trials_table.at[self.trial_num, 'contrast'] = contrast
-        self.trials_table.at[self.trial_num, 'stim_phase'] = random.uniform(0, 2 * math.pi)
-        self.trials_table.at[self.trial_num, 'stim_sigma'] = self.task_params.STIM_SIGMA
-        self.trials_table.at[self.trial_num, 'stim_angle'] = self.task_params.STIM_ANGLE
-        self.trials_table.at[self.trial_num, 'stim_gain'] = self.task_params.STIM_GAIN
+        # update trial table fields specific to biased choice world task
         self.trials_table.at[self.trial_num, 'block_num'] = self.block_num
         self.trials_table.at[self.trial_num, 'block_trial_num'] = self.block_trial_num
-        self.trials_table.at[self.trial_num, 'stim_freq'] = self.task_params.STIM_FREQ
-        self.trials_table.at[self.trial_num, 'stim_probability_left'] = pleft
-        self.trials_table.at[self.trial_num, 'trial_num'] = self.trial_num
-        self.trials_table.at[self.trial_num, 'position'] = position
-        self.trials_table.at[self.trial_num, 'reward_amount'] = self.task_params.REWARD_AMOUNT_UL
-        self.send_trial_info_to_bonsai()
+        # save and send trial info to bonsai
+        self.draw_next_trial_info(pleft=pleft)
+
+    def show_trial_log(self):
+        trial_info = self.trials_table.iloc[self.trial_num]
+        extra_info = f"""
+BLOCK NUMBER:         {trial_info.block_num}
+BLOCK LENGTH:         {self.blocks_table.loc[self.block_num, 'block_length']}
+TRIALS IN BLOCK:      {trial_info.block_trial_num}
+RESPONSE TIME:        {trial_info.response_time}
+
+TRIAL CORRECT:        {trial_info.trial_correct}
+NTRIALS CORRECT:      {self.session_info.NTRIALS_CORRECT}
+NTRIALS ERROR:        {self.trial_num - self.session_info.NTRIALS_CORRECT}
+        """
+        super(BiasedChoiceWorldSession, self).show_trial_log(extra_info=extra_info)
+
+    def trial_completed(self, bpod_data):
+        """
+        The purpose of this method is to
+        -   update the trials table with information about the behaviour coming from the bpod
+        Constraints on the state machine data:
+        - mandatory states: ['correct', 'error', 'no_go', 'reward']
+        - optional states : ['omit_correct', 'omit_error', 'omit_no_go']
+        :param bpod_data:
+        :return:
+        """
+
+        # get the response time from the behaviour data
+        response_time = (bpod_data["States timestamps"]["closed_loop"][0][1]
+                         - bpod_data["States timestamps"]["stim_on"][0][0])
+        self.trials_table.at[self.trial_num, 'response_time'] = response_time
+        # get the trial outcome
+        state_names = ['correct', 'error', 'no_go', 'omit_correct', 'omit_error', 'omit_no_go']
+        outcome = {sn: ~np.isnan(bpod_data['States timestamps'].get(sn, [[np.NaN]])[0][0]) for sn in state_names}
+        assert np.sum(list(outcome.values())) == 1
+        outcome = next(k for k in outcome if outcome[k])
+        # Update response buffer -1 for left, 0 for nogo, and 1 for rightward
+        position = self.trials_table.at[self.trial_num, 'position']
+        if 'correct' in outcome:
+            self.trials_table.at[self.trial_num, 'trial_correct'] = True
+            self.session_info.NTRIALS_CORRECT += 1
+            self.trials_table.at[self.trial_num, 'response_side'] = -np.sign(position)
+        elif 'error' in outcome:
+            self.trials_table.at[self.trial_num, 'response_side'] = np.sign(position)
+        elif 'no_go' in outcome:
+            self.trials_table.at[self.trial_num, 'response_side'] = 0
+        else:
+            ValueError("The task outcome doesn't contain no_go, error or correct")
+        assert position != 0, "the position value should be either 35 or -35"
+        super(BiasedChoiceWorldSession, self).trial_completed(bpod_data)
+
+
+class HabituationChoiceWorldSession(ChoiceWorldSession):
+    protocol_name = "_iblrig_tasks_habituationChoiceWorld"
+
+    def __init__(self, **kwargs):
+        super(HabituationChoiceWorldSession, self).__init__(**kwargs)
+        self.trials_table['delay_to_stim_center'] = np.zeros(NTRIALS_INIT) * np.NaN
+
+    def next_trial(self):
+        self.trial_num += 1
+        self.draw_next_trial_info()
+
+    def draw_next_trial_info(self, *args, **kwargs):
+        # update trial table fields specific to habituation choice world
+        self.trials_table.at[self.trial_num, 'delay_to_stim_center'] = np.random.normal(
+            self.task_params.DELAY_TO_STIM_CENTER, 2)
+        super(HabituationChoiceWorldSession, self).draw_next_trial_info(*args, **kwargs)
+
+    def get_state_machine_trial(self, i):
+        sma = StateMachine(self.bpod)
+
+        if i == 0:  # First trial exception start camera
+            log.info("Waiting for camera pulses...")
+            sma.add_state(
+                state_name="trial_start",
+                state_timer=3600,
+                state_change_conditions={"Port1In": "stim_on"},
+                output_actions=[self.bpod.actions.bonsai_hide_stim, ("SoftCode", 3), ("BNC1", 255)],
+            )  # sart camera
+        else:
+            sma.add_state(
+                state_name="trial_start",
+                state_timer=1,  # Stim off for 1 sec
+                state_change_conditions={"Tup": "stim_on"},
+                output_actions=[self.bpod.actions.bonsai_hide_stim, ("BNC1", 255)],
+            )
+
+        sma.add_state(
+            state_name="stim_on",
+            state_timer=self.trials_table.at[self.trial_num, 'delay_to_stim_center'],
+            state_change_conditions={"Tup": "stim_center"},
+            output_actions=[self.bpod.actions.bonsai_show_stim, self.sound.OUT_TONE],
+        )
+
+        sma.add_state(
+            state_name="stim_center",
+            state_timer=0.5,
+            state_change_conditions={"Tup": "reward"},
+            output_actions=[self.bpod.actions.bonsai_show_center],
+        )
+
+        sma.add_state(
+            state_name="reward",
+            state_timer=self.reward_time,
+            state_change_conditions={"Tup": "iti"},
+            output_actions=[("Valve1", 255), ("BNC1", 255)],
+        )
+
+        sma.add_state(
+            state_name="iti",
+            state_timer=self.task_params.ITI_DELAY_SECS,
+            state_change_conditions={"Tup": "exit"},
+            output_actions=[],
+        )
+        return sma
