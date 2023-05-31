@@ -1,6 +1,8 @@
 asn1crypto
 colorlog
+coverage
 cython
+graphviz
 ibllib
 git+https://github.com/int-brain-lab/iblpybpod.git@main
 numpy
