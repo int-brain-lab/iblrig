@@ -7,6 +7,8 @@ from pathlib import Path
 import subprocess
 import yaml
 
+import pandas as pd
+
 from iblutil.util import Bunch
 import iblrig
 
@@ -27,58 +29,12 @@ def load_settings_yaml(file_name):
     return Bunch(rs)
 
 
-IBLRIG_SETTINGS = load_settings_yaml('iblrig_settings.yaml')
-
-
-def get_remote_server_path(params=None, subjects: bool = True) -> Path or None:
-    """
-    Get the iblrig server path configured in the settings/iblrig_params.yaml file
-    If none is found returns ~/iblrig_data/server
-    """
-    data_path = IBLRIG_SETTINGS.get("iblrig_local_server_path")
-    data_path = data_path or Path.home().joinpath("iblrig_data", "remote_server")
-    # Return the "Subjects" subdirectory by default
-    return Path(data_path) / "Subjects" if subjects else data_path
-
-
-def get_iblrig_local_data_path(subjects: bool = True) -> Path or None:
-    """
-    Get the iblrig_local_data_path configured in the settings/iblrig_params.yaml file
-    If none is found returns ~/iblrig_data/local
-    """
-    data_path = IBLRIG_SETTINGS.get("iblrig_local_data_path")
-    data_path = data_path or Path.home().joinpath("iblrig_data", "local")
-    # Return the "Subjects" subdirectory by default
-    return Path(data_path) / "Subjects" if subjects else Path(data_path)
-
-
-def get_iblrig_remote_server_data_path(subjects: bool = True) -> Path or None:
-    """
-    Get the remote_server_data configured in the settings/iblrig_params.yaml file
-    If none is found returns ~/iblrig_data/remote
-    """
-    data_path = IBLRIG_SETTINGS.get("iblrig_local_data_path")
-    data_path = data_path or Path.home().joinpath("iblrig_data", "remote_data")
-    # Return the "Subjects" subdirectory by default
-    return Path(data_path) / "Subjects" if subjects else Path(data_path)
-
-
 def get_iblrig_path() -> Path or None:
     return Path(iblrig.__file__).parents[1]
 
 
 def get_iblrig_params_path() -> Path or None:
     return get_iblrig_path().joinpath("pybpod_fixtures")
-
-
-def get_iblrig_temp_alyx_path() -> Path or None:
-    """
-    Get the iblrig_local_data_path configured in the settings/iblrig_params.yaml file
-    If none is found returns ~/iblrig_data/local
-    """
-    alyx_path = IBLRIG_SETTINGS.get("iblrig_temp_alyx_path")
-    alyx_path = alyx_path or Path(iblrig.__file__).parents[1].joinpath('settings', 'alyx')
-    return Path(alyx_path)
 
 
 def get_commit_hash(folder: str):
@@ -92,29 +48,9 @@ def get_commit_hash(folder: str):
     return out
 
 
-def get_water_calibration_func_file(latest: bool = True) -> Path or list:
-    data_folder = get_iblrig_local_data_path()
-    func_files = sorted(data_folder.rglob("_iblrig_calibration_water_function.csv"))
-    if not func_files:
-        return Path()
-    return func_files[-1] if latest else func_files
-
-
-def get_water_calibration_range_file(latest=True) -> Path or list:
-    data_folder = get_iblrig_local_data_path()
-    range_files = sorted(data_folder.rglob("_iblrig_calibration_water_range.csv"))
-    if not range_files:
-        return Path()
-    return range_files[-1] if latest else range_files
-
-
 def load_water_calibraition_func_file(fpath: str or Path) -> dict or None:
     if not Path(fpath).exists():
         return
-
-    import pandas as pd
-
-    # TODO: remove pandas dependency
     df1 = pd.read_csv(fpath)
     if df1.empty:
         return {

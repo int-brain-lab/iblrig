@@ -5,10 +5,10 @@
 RIG_NAME: _iblrig_cortexlab_behavior_3
 device_bpod:
   COM_BPOD: null
-  BPOD_TTL_TEST_DATE: null
-  BPOD_TTL_TEST_STATUS: null
-  SOUND_BOARD_BPOD_PORT: COMX
-  ROTARY_ENCODER_BPOD_PORT: COMY
+  BPOD_TTL_TEST_DATE: null  # optional
+  BPOD_TTL_TEST_STATUS: null  # optional
+  SOUND_BOARD_BPOD_PORT: null  # optional
+  ROTARY_ENCODER_BPOD_PORT: null  # optional
 device_frame2ttl:
   COM_F2TTL: null
   F2TTL_CALIBRATION_DATE: 2099-12-31
@@ -20,10 +20,10 @@ device_rotary_encoder:
 device_screen:
   DISPLAY_IDX: 1
   SCREEN_FREQ_TARGET: 60
-  SCREEN_FREQ_TEST_DATE: null
-  SCREEN_FREQ_TEST_STATUS: null
-  SCREEN_LUX_DATE: null
-  SCREEN_LUX_VALUE: null
+  SCREEN_FREQ_TEST_DATE: null  # optional
+  SCREEN_FREQ_TEST_STATUS: null  # optional
+  SCREEN_LUX_DATE: null  # optional
+  SCREEN_LUX_VALUE: null  # optional
 device_sound:
   OUTPUT: sysdefault  # harp or xonar or sysdefault
 device_microphone:
