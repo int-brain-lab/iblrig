@@ -41,4 +41,3 @@ setup(
         'console_scripts': ['viewsession=iblrig.online_plots:viewsession'],
     },
 )
-# todo: copy the settings_templates files to actual settings if they don' t already exist
