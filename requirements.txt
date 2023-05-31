@@ -4,6 +4,7 @@ coverage
 cython
 graphviz
 ibllib
+ipython
 git+https://github.com/int-brain-lab/iblpybpod.git@no-gui
 numpy
 ONE-api

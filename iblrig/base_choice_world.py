@@ -216,7 +216,10 @@ class ChoiceWorldSession(
                     edges.append(f"{letter}{states_letters[states_indices[input[1]]]}")
         dot.edges(edges)
         if output_file is not None:
-            dot.render(output_file, view=view)
+            try:
+                dot.render(output_file, view=view)
+            except graphviz.exceptions.ExecutableNotFound:
+                log.info("Graphviz system executable not found, cannot render the graph")
         return dot
 
     def get_state_machine_trial(self, i):
