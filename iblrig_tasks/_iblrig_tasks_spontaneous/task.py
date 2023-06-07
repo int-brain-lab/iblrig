@@ -6,7 +6,7 @@ The task does nothing, only creates the architecture for the data streams to be 
 import logging
 
 from iblrig.base_tasks import SpontaneousSession
-import iblrig.test
+import iblrig.misc
 
 log = logging.getLogger("iblrig")
 

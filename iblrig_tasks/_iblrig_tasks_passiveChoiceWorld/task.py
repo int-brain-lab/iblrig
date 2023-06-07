@@ -7,7 +7,7 @@ from pathlib import Path
 import pandas as pd
 
 from iblrig.base_choice_world import ChoiceWorldSession
-import iblrig.test
+import iblrig.misc
 
 log = logging.getLogger("iblrig")
 
