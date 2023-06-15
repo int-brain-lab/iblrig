@@ -7,7 +7,9 @@ The start() methods of those mixins require the hardware to be connected.
 from pathlib import Path
 import unittest
 import tempfile
+
 import yaml
+import ibllib.io.session_params as ses_params
 
 from iblrig.test.base import TASK_KWARGS
 from iblrig.base_tasks import SoundMixin, RotaryEncoderMixin, BaseSession, BpodMixin, ValveMixin
@@ -66,3 +68,56 @@ class TestHardwareMixins(unittest.TestCase):
         ValveMixin.init_mixin_valve(session)
         # assert session.valve.compute < 1
         assert not session.valve.is_calibrated
+
+
+class TestExperimentDescription(unittest.TestCase):
+    """Test creation of experiment description dictionary."""
+
+    def setUp(self) -> None:
+        self.stub = {
+            'version': '1.0.0',
+            'tasks': [{'choiceWorld': {'collection': 'raw_behavior_data', 'sync': 'bpod'}}],
+            'procedures': ['Imaging'],
+            'projects': ['foo'],
+            'devices': {
+                'bpod': {'bpod': {'foo': 10, 'bar': 20}},
+                'cameras': {'left': {'baz': 0}}}
+        }
+        tempdir = tempfile.TemporaryDirectory()
+        self.addCleanup(tempdir.cleanup)
+        self.stub_path = ses_params.write_params(tempdir.name, self.stub)
+
+    def test_new_description(self):
+        """Test creation of a brand new experiment description (no stub)"""
+        hardware_settings = {
+            'RIG_NAME': '_iblrig_cortexlab_behavior_3',
+            'device_bpod': {'FOO': 10, 'BAR': 20},
+            'device_camera': {'BAZ': 0}
+        }
+        description = BaseSession.make_experiment_description(
+            'choiceWorld', 'raw_behavior_data', procedures=['Imaging'], projects=['foo'], hardware_settings=hardware_settings)
+        expected = {k: v for k, v in self.stub.items() if k != 'version'}
+        self.assertDictEqual(expected, description)
+
+        # Test with sub keys
+        hardware_settings['device_cameras'] = {'left': {'BAZ': 0}}
+        description = BaseSession.make_experiment_description(
+            'choiceWorld', 'raw_behavior_data', procedures=['Imaging'], projects=['foo'], hardware_settings=hardware_settings)
+        self.assertDictEqual(expected, description)
+
+    def test_stub(self):
+        """Test merging of experiment description with a stub"""
+        hardware_settings = {
+            'RIG_NAME': '_iblrig_cortexlab_behavior_3',
+            'device_bpod': {'FOO': 20, 'BAR': 30},
+            'device_foo': {'one': {'BAR': 'baz'}}
+        }
+        description = BaseSession.make_experiment_description(
+            'passiveWorld', 'raw_task_data_00', projects=['foo', 'bar'], hardware_settings=hardware_settings, stub=self.stub_path)
+        self.assertCountEqual(['Imaging'], description['procedures'])
+        self.assertCountEqual(['bar', 'foo'], description['projects'])
+        self.assertCountEqual(['cameras', 'bpod', 'foo'], description.get('devices', {}).keys())
+        bpod_device = description.get('devices', {}).get('bpod', {})
+        self.assertDictEqual({'bpod': {'foo': 20, 'bar': 30}}, bpod_device)
+        expected = self.stub['tasks'] + [{'passiveWorld': {'collection': 'raw_task_data_00', 'sync': 'bpod'}}]
+        self.assertCountEqual(expected, description.get('tasks', []))

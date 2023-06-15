@@ -3,6 +3,7 @@ Various get functions to return paths of folders and network drives
 """
 import logging
 import os
+import re
 from pathlib import Path
 import subprocess
 import yaml
@@ -133,6 +134,35 @@ def get_session_number(session_date_folder: str) -> str:
     log.debug(f"Setting session number to: {out}")
 
     return out
+
+
+def iterate_collection(session_path: str, collection_name='raw_task_data') -> str:
+    """
+    Given a session path returns the next numbered collection name.
+
+    Parameters
+    ----------
+    session_path : str
+        The session path containing zero or more numbered collections.
+    collection_name : str
+        The collection name without the _NN suffix.
+
+    Returns
+    -------
+    str
+        The next numbered collection name.
+
+    TODO This may be useful for use on other acquisition computers and therefore could move out of
+     iblrig.
+    """
+    if not Path(session_path).exists():
+        return f'{collection_name}_00'
+    collections = filter(Path.is_dir, Path(session_path).iterdir())
+    collection_names = map(lambda x: x.name, collections)
+    tasks = sorted(filter(re.compile(f'{collection_name}' + '_[0-9]{2}').match, collection_names))
+    if len(tasks) == 0:
+        return f'{collection_name}_00'
+    return f'{collection_name}_{int(tasks[-1][-2:]) + 1:02}'
 
 
 def get_pregen_session_folder() -> str:

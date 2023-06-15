@@ -17,6 +17,7 @@ import time
 import yaml
 import signal
 import traceback
+import re
 
 import numpy as np
 import scipy.interpolate
@@ -33,6 +34,7 @@ import iblrig.frame2TTL as frame2TTL
 import iblrig.sound as sound
 import iblrig.spacer
 import iblrig.alyx
+import ibllib.io.session_params as ses_params
 
 log = logging.getLogger("iblrig")
 
@@ -46,16 +48,17 @@ class BaseSession(ABC):
     is_mock = False
 
     def __init__(self, task_parameter_file=None, hardware_settings=None, iblrig_settings=None,
-                 one=None, interactive=True, subject=None, projects=None, procedures=None):
+                 one=None, interactive=True, subject=None, projects=None, procedures=None, stub=None):
         """
-        :param task_parameter_file:
+        :param task_parameter_file: an optional path to the task_parameters.yaml file
         :param hardware_settings: name of the hardware file in the settings folder, or full file path
         :param iblrig_settings: name of the iblrig file in the settings folder, or full file path
-        :param one: an instance of ONE if any
+        :param one: an optional instance of ONE
         :param interactive:
-        :param subject:
-        :param projects:
-        :param procedures:
+        :param subject: The subject nickname.
+        :param projects: An optional list of Alyx protocols.
+        :param procedures: An optional list of Alyx procedures.
+        :param stub: A full path to an experiment description file containing experiment information.
         :param fmake: (DEPRECATED) if True, only create the raw_behavior_data folder.
         """
         self.interactive = interactive
@@ -107,14 +110,88 @@ class BaseSession(ABC):
             'IBLRIG_FOLDER': Path(iblrig.__file__).parents[1],
         })
         self.paths.BONSAI = self.paths.IBLRIG_FOLDER.joinpath('Bonsai', 'Bonsai.exe')
-        # Create the session folder, this is currently hard coded but should be changed for chained protocols
-        self.paths.SESSION_RAW_DATA_FOLDER = self.paths.SESSION_FOLDER.joinpath('raw_behavior_data')
+        # Create the session folder
+        task_collection = iblrig.path_helper.iterate_collection(self.paths.SESSION_FOLDER)
+        self.paths.SESSION_RAW_DATA_FOLDER = self.paths.SESSION_FOLDER.joinpath(task_collection)
         self.paths.DATA_FILE_PATH = self.paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_taskData.raw.jsonable')
         self.paths.VISUAL_STIM_FOLDER = self.paths.IBLRIG_FOLDER.joinpath('visual_stim')
         # Executes mixins init methods
         self._execute_mixins_shared_function('init_mixin')
         log.info(f'Session {self.paths.SESSION_RAW_DATA_FOLDER}')
         self.save_task_parameters_to_json_file()
+        # Save experiment description file
+        # This can be moved or separated from the save part.
+        # FIXME sync key missing; its presence/absence depends on extra acquisition computers
+        description = self.make_experiment_description(
+            self.pybpod_settings.PBPOD_PROTOCOL, task_collection,
+            procedures, projects, self.hardware_settings, stub)
+        # FIXME This function insists on a remote path
+        ses_params.prepare_experiment(self.paths.SESSION_FOLDER, description,
+                                      local=root_data_path, remote=self.iblrig_settings['iblrig_remote_data_path'])
+
+    @staticmethod
+    def make_experiment_description(task_protocol: str, task_collection: str, procedures: list = None, projects: list = None,
+                                    hardware_settings: dict = None, stub: Path = None):
+        """
+        Construct an experiment description dictionary.
+
+        Parameters
+        ----------
+        task_protocol : str
+            The task protocol name, e.g. _ibl_trainingChoiceWorld2.0.0.
+        task_collection : str
+            The task collection name, e.g. raw_task_data_00.
+        procedures : list
+            An optional list of Alyx procedures.
+        projects : list
+            An optional list of Alyx protocols.
+        hardware_settings : dict
+            An optional dict of hardware devices, loaded from the hardware_settings.yaml file.
+        stub : dict
+            An optional experiment description stub to update.
+
+        Returns
+        -------
+        dict
+            The experiment description.
+        """
+        description = ses_params.read_params(stub) if stub else {}
+        task = {task_protocol: {'collection': task_collection, 'sync': 'bpod'}}
+        if 'tasks' not in description:
+            description['tasks'] = [task]
+        else:
+            description['tasks'].append(task)
+        description['procedures'] = list(set(description.get('procedures', []) + (procedures or [])))
+        description['projects'] = list(set(description.get('projects', []) + (projects or [])))
+        # Add hardware devices
+        if hardware_settings:
+            if 'devices' not in description:
+                description['devices'] = {}
+            for label in filter(None, map(re.compile(r'device_(\w+)').match, hardware_settings.keys())):
+                dev = hardware_settings[label.group()]  # The device dictionary
+                name, = label.groups()
+                # If any of the value keys are uppercase strings, assume a single sub-device of the same name
+                if all(map(str.isupper, dev.keys())):
+                    # FIXME Change hardware settings so we don't have to hardcode this if-else statement
+                    if name.startswith('camera'):
+                        name = 'cameras'
+                        subkey = 'left'
+                    else:
+                        subkey = name
+                    dev = {k.lower(): v for k, v in dev.items()}  # Ensure keys lower case
+                    if name in description['devices']:
+                        description['devices'][name].update({subkey: dev})
+                    else:
+                        description['devices'][name] = {subkey: dev}
+                # Otherwise assume there are sub device keys
+                else:
+                    # Ensure keys lower case
+                    dev = {k: {kk.lower(): vv for kk, vv in v.items()} for k, v in dev.items()}
+                    if name in description['devices']:
+                        description['devices'][name].update(dev)
+                    else:
+                        description['devices'][name] = dev
+        return description
 
     def _make_task_parameters_dict(self):
         """

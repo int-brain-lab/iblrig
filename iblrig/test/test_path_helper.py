@@ -1,5 +1,7 @@
+"""Tests for iblrig.path_helper module."""
 import unittest
 from pathlib import Path
+import tempfile
 
 from iblrig import path_helper
 
@@ -28,6 +30,26 @@ class TestPathHelper(unittest.TestCase):
 
     def tearDown(self):
         pass
+
+
+class TestIterateCollection(unittest.TestCase):
+    """Test for iblrig.path_helper.iterate_collection"""
+    def setUp(self) -> None:
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        self.session_path = Path(tmp.name)
+        for collection in ('raw_task_data_foo', 'raw_task_data_00', 'raw_task_data_01', 'raw_foo_data_03'):
+            self.session_path.joinpath(collection).mkdir()
+
+    def test_iterate_collection(self):
+        next_collection = path_helper.iterate_collection(str(self.session_path))
+        self.assertEqual('raw_task_data_02', next_collection)
+        next_collection = path_helper.iterate_collection('/non_existing_session')
+        self.assertEqual('raw_task_data_00', next_collection)
+        next_collection = path_helper.iterate_collection(str(self.session_path), 'raw_foo_data')
+        self.assertEqual('raw_foo_data_04', next_collection)
+        next_collection = path_helper.iterate_collection(str(self.session_path), 'raw_bar_data')
+        self.assertEqual('raw_bar_data_00', next_collection)
 
 
 if __name__ == "__main__":
