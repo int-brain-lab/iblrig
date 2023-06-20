@@ -696,6 +696,8 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
             "training_phase_trial_counts": np.zeros(6),
             "last_10_responses_sides": np.zeros(10),
         }
+        self.trials_table['training_phase'] = np.zeros(NTRIALS_INIT, dtype=np.int8)
+        self.trials_table['debias_trial'] = np.zeros(NTRIALS_INIT, dtype=bool)
 
     def compute_performance(self):
         """
@@ -746,8 +748,9 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
         # debiasing: if the previous trial was incorrect and easy repeat the trial
         if self.task_params.DEBIAS and self.trial_num >= 1:
             last_contrast = self.trials_table.loc[self.trial_num - 1, 'contrast']
-            debias_trial = (self.trials_table.loc[self.trial_num - 1, 'trial_correct'] != 1) and last_contrast >= 0.5
-            if debias_trial:
+            do_debias_trial = (self.trials_table.loc[self.trial_num - 1, 'trial_correct'] != 1) and last_contrast >= 0.5
+            self.trials_table.at[self.trial_num, 'debias_trial'] = do_debias_trial
+            if do_debias_trial:
                 iresponse = self.trials_table['response_side'] != 0  # trials that had a response
                 # takes the average of right responses over last 10 response trials
                 average_right = np.mean(self.trials_table['response_side'][iresponse[-np.maximum(10, iresponse.size):]] == 1)
@@ -758,6 +761,8 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
                 contrast = last_contrast
         # save and send trial info to bonsai
         self.draw_next_trial_info(pleft=0.5, position=position, contrast=contrast)
+        self.trials_table.at[self.trial_num, 'training_phase'] = self.training_phase
+
 
     def show_trial_log(self):
         extra_info = f"""
