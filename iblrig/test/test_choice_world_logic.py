@@ -8,8 +8,6 @@ import pandas as pd
 
 from iblrig import session_creator
 
-pc, lb = session_creator.make_ephysCW_pc()
-
 
 class TestsBiasedBlocksGeneration(unittest.TestCase):
 

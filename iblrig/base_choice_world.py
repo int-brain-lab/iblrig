@@ -5,7 +5,6 @@ import datetime
 import json
 import math
 import random
-import logging
 from pathlib import Path
 from string import ascii_letters
 import subprocess
@@ -19,12 +18,14 @@ from pybpodapi.com.messaging.trial import Trial
 
 from iblutil.util import Bunch
 from iblutil.io import jsonable
+from iblutil.util import setup_logger
 
+from iblrig import choiceworld
 import iblrig.base_tasks
 import iblrig.user_input as user
 import iblrig.misc as misc
 
-log = logging.getLogger(__name__)
+log = setup_logger('iblrig', level="INFO")
 
 NTRIALS_INIT = 2000
 NBLOCKS_INIT = 100
@@ -374,10 +375,10 @@ class ChoiceWorldSession(
         )
         return sma
 
-    def draw_next_trial_info(self, contrast=None, pleft=0.5):
+    def draw_next_trial_info(self, pleft=0.5, contrast=None, position=None):
         contrast = contrast or misc.draw_contrast(self.task_params.CONTRAST_SET, self.task_params.CONTRAST_SET_PROBABILITY_TYPE)
         assert len(self.task_params.STIM_POSITIONS) == 2, "Only two positions are supported"
-        position = int(np.random.choice(self.task_params.STIM_POSITIONS, p=[pleft, 1 - pleft]))
+        position = position or int(np.random.choice(self.task_params.STIM_POSITIONS, p=[pleft, 1 - pleft]))
         quiescent_period = self.task_params.QUIESCENT_PERIOD + misc.texp(factor=0.35, min_=0.2, max_=0.5)
         self.trials_table.at[self.trial_num, 'quiescent_period'] = quiescent_period
         self.trials_table.at[self.trial_num, 'contrast'] = contrast
@@ -665,7 +666,6 @@ class BiasedChoiceWorldSession(ActiveChoiceWorldSession):
         self.trial_num += 1
         # if necessary update the block number
         self.block_trial_num += 1
-        self.trial_correct = None
         if self.block_num < 0 or self.block_trial_num > (self.blocks_table.loc[self.block_num, 'block_length'] - 1):
             self.new_block()
         # get and store probability left
@@ -691,21 +691,77 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
 
     def __init__(self, **kwargs):
         super(TrainingChoiceWorldSession, self).__init__(**kwargs)
-        cs = np.array(self.task_params['CONTRAST_SET'])
+        self.training_phase = 0
+        self.var = {
+            "training_phase_trial_counts": np.zeros(6),
+            "last_10_responses_sides": np.zeros(10),
+        }
+
+    def compute_performance(self):
+        """
+        Aggregates the trials table to compute the performance of the mouse on each contrast
+        :return: None
+        """
+        self.trials_table['signed_contrast'] = self.trials_table['contrast'] * np.sign(self.trials_table['position'])
+        performance = self.trials_table.groupby(['signed_contrast']).agg(
+            last_50_perf=pd.NamedAgg(column='trial_correct',
+                                     aggfunc=lambda x: np.sum(x[np.maximum(-50, -x.size):]) / 50),
+            ntrials=pd.NamedAgg(column='trial_correct', aggfunc='count'),
+        )
+        return performance
+
+    def check_training_phase(self):
+        """
+        Checks if the mouse is ready to move to the next training phase
+        :return: None
+        """
+        move_on = False
+        if self.training_phase == 0:  # each of the -1, -.5, .5, 1 contrast should be above 80% perf to switch
+            performance = self.compute_performance()
+            passing = performance[np.abs(performance.index) >= 0.5]['last_50_perf']
+            if np.all(passing > 0.8) and passing.size == 4:
+                move_on = True
+        elif self.training_phase == 1:  # each of the -.25, .25 should be above 80% perf to switch
+            performance = self.compute_performance()
+            passing = performance[np.abs(performance.index) == 0.25]['last_50_perf']
+            if np.all(passing > 0.8) and passing.size == 2:
+                move_on = True
+        elif self.training_phase >= 2:  # for the next phases, always switch after 200 trials
+            if self.var['training_phase_trial_counts'][self.training_phase] >= 200:
+                move_on = True
+        if move_on:
+            self.training_phase += 1
+            log.warning(f"Moving on to training phase {self.training_phase}, {self.trial_num}")
 
     def next_trial(self):
+        # update counters
         self.trial_num += 1
-        # if necessary update the block number
-        self.trial_correct = None
+        self.var['training_phase_trial_counts'][self.training_phase] += 1
+        # check if the subject graduates to a new training phase
+        self.check_training_phase()
+        # draw the next trial
+        signed_contrast = choiceworld.draw_training_contrast(self.training_phase)
+        position = self.task_params.STIM_POSITIONS[int(np.sign(signed_contrast) == 1)]
+        contrast = np.abs(signed_contrast)
+        # debiasing: if the previous trial was incorrect and easy repeat the trial
+        if self.task_params.DEBIAS and self.trial_num >= 1:
+            last_contrast = self.trials_table.loc[self.trial_num - 1, 'contrast']
+            debias_trial = (self.trials_table.loc[self.trial_num - 1, 'trial_correct'] != 1) and last_contrast >= 0.5
+            if debias_trial:
+                iresponse = self.trials_table['response_side'] != 0  # trials that had a response
+                # takes the average of right responses over last 10 response trials
+                average_right = np.mean(self.trials_table['response_side'][iresponse[-np.maximum(10, iresponse.size):]] == 1)
+                # the next probability of next stimulus being on the left is a draw from a normal distribution
+                # centered on average right with sigma 0.5. If it is less than 0.5 the next stimulus will be on the left
+                position = self.task_params.STIM_POSITIONS[int(np.random.normal(average_right, 0.5) >= 0.5)]
+                # contrast is the last contrast
+                contrast = last_contrast
         # save and send trial info to bonsai
-        self.draw_next_trial_info(pleft=0.5)
+        self.draw_next_trial_info(pleft=0.5, position=position, contrast=contrast)
 
     def show_trial_log(self):
-        trial_info = self.trials_table.iloc[self.trial_num]
-        # todo
         extra_info = f"""
-    CONTRAST SET:         {""}
-    SUBJECT TRAINING EPOCH:         {""}
-    TRIALS IN BLOCK:      {trial_info.block_trial_num}
+CONTRAST SET:         {np.unique(np.abs(choiceworld.contrasts_set(self.training_phase)))}
+SUBJECT TRAINING PHASE (0-5):         {self.training_phase}
             """
         super(TrainingChoiceWorldSession, self).show_trial_log(extra_info=extra_info)

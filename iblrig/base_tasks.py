@@ -1,7 +1,7 @@
 """
 This module is intended to provide commonalities for all tasks.
 It provides hardware mixins that can be used together with BaseSession to compose tasks
-This module is exclusive of any task related logic
+This module tries to be exclude task related logic
 """
 
 from pathlib import Path

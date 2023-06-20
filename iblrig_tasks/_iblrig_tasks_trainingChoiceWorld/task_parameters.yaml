@@ -11,3 +11,4 @@
 'AG_MIN_VALUE': 4.0  # (azimuth_degree/mm)
 'CONTRAST_SET': [1.0, 0.5, 0.25, 0.125, 0.0625, 0.0]
 'CONTRAST_SET_PROBABILITY_TYPE': skew_zero  # uniform, skew_zero
+'DEBIAS': True  # Whether to use debiasing rule or not by repeating error trials

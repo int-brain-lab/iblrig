@@ -2,7 +2,7 @@ from pathlib import Path
 
 from setuptools import setup, find_packages
 
-PYTHON_REQUIRES = ">=3.8"  # python version requirement
+PYTHON_REQUIRES = ">=3.10"  # python version requirement
 LONG_DESCRIPTION = "Software used to interact with various pieces of specialized hardware for neuroscience data acquisition."
 
 with open("requirements.txt") as f:
