@@ -66,7 +66,6 @@ class ChoiceWorldSession(
             'stim_freq': np.zeros(NTRIALS_INIT) * np.NaN,
             'stim_gain': np.zeros(NTRIALS_INIT) * np.NaN,
             'stim_phase': np.zeros(NTRIALS_INIT) * np.NaN,
-            'stim_probability_left': np.zeros(NTRIALS_INIT),
             'stim_reverse': np.zeros(NTRIALS_INIT, dtype=bool),
             'stim_sigma': np.zeros(NTRIALS_INIT) * np.NaN,
             'trial_correct': np.zeros(NTRIALS_INIT, dtype=bool),
@@ -493,121 +492,6 @@ TIME FROM START:      {self.time_elapsed}
         return self.device_rotary_encoder.THRESHOLD_EVENTS[-self.position]
 
 
-class BiasedChoiceWorldSession(ChoiceWorldSession):
-    protocol_name = "_iblrig_tasks_biasedChoiceWorld"
-
-    def __init__(self, **kwargs):
-        super(BiasedChoiceWorldSession, self).__init__(**kwargs)
-        self.blocks_table = pd.DataFrame({
-            'probability_left': np.zeros(NBLOCKS_INIT) * np.NaN,
-            'block_length': np.zeros(NBLOCKS_INIT, dtype=np.int16) * -1,
-        })
-        self.trials_table['block_num'] = np.zeros(NTRIALS_INIT, dtype=np.int16)
-        self.trials_table['block_trial_num'] = np.zeros(NTRIALS_INIT, dtype=np.int16)
-
-    def start(self):
-        super(BiasedChoiceWorldSession, self).start()
-        # starts online plotting
-        if self.interactive:
-            subprocess.Popen(["viewsession", str(self.paths['DATA_FILE_PATH'])],
-                             stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
-
-    def new_block(self):
-        """
-        if block_init_5050
-            First block has 50/50 probability of leftward stim
-            is 90 trials long
-        """
-        self.block_num += 1  # the block number is zero based
-        self.block_trial_num = 0
-
-        # handles the block length logic
-        if self.task_params.BLOCK_INIT_5050 and self.block_num == 0:
-            block_len = 90
-        else:
-            block_len = int(misc.texp(
-                factor=self.task_params.BLOCK_LEN_FACTOR,
-                min_=self.task_params.BLOCK_LEN_MIN,
-                max_=self.task_params.BLOCK_LEN_MAX
-            ))
-        if self.block_num == 0:
-            if self.task_params.BLOCK_INIT_5050:
-                pleft = 0.5
-            else:
-                pleft = np.random.choice(self.task_params.BLOCK_PROBABILITY_SET)
-        elif self.block_num == 1 and self.task_params.BLOCK_INIT_5050:
-            pleft = np.random.choice(self.task_params.BLOCK_PROBABILITY_SET)
-        else:
-            # this switches the probability of leftward stim for the next block
-            pleft = round(abs(1 - self.blocks_table.loc[self.block_num - 1, 'probability_left']), 1)
-        self.blocks_table.at[self.block_num, 'block_length'] = block_len
-        self.blocks_table.at[self.block_num, 'probability_left'] = pleft
-
-    def next_trial(self):
-        self.trial_num += 1
-        # if necessary update the block number
-        self.block_trial_num += 1
-        self.trial_correct = None
-        if self.block_num < 0 or self.block_trial_num > (self.blocks_table.loc[self.block_num, 'block_length'] - 1):
-            self.new_block()
-        # get and store probability left
-        pleft = self.blocks_table.loc[self.block_num, 'probability_left']
-        # update trial table fields specific to biased choice world task
-        self.trials_table.at[self.trial_num, 'block_num'] = self.block_num
-        self.trials_table.at[self.trial_num, 'block_trial_num'] = self.block_trial_num
-        # save and send trial info to bonsai
-        self.draw_next_trial_info(pleft=pleft)
-
-    def show_trial_log(self):
-        trial_info = self.trials_table.iloc[self.trial_num]
-        extra_info = f"""
-BLOCK NUMBER:         {trial_info.block_num}
-BLOCK LENGTH:         {self.blocks_table.loc[self.block_num, 'block_length']}
-TRIALS IN BLOCK:      {trial_info.block_trial_num}
-RESPONSE TIME:        {trial_info.response_time}
-
-TRIAL CORRECT:        {trial_info.trial_correct}
-NTRIALS CORRECT:      {self.session_info.NTRIALS_CORRECT}
-NTRIALS ERROR:        {self.trial_num - self.session_info.NTRIALS_CORRECT}
-        """
-        super(BiasedChoiceWorldSession, self).show_trial_log(extra_info=extra_info)
-
-    def trial_completed(self, bpod_data):
-        """
-        The purpose of this method is to
-        -   update the trials table with information about the behaviour coming from the bpod
-        Constraints on the state machine data:
-        - mandatory states: ['correct', 'error', 'no_go', 'reward']
-        - optional states : ['omit_correct', 'omit_error', 'omit_no_go']
-        :param bpod_data:
-        :return:
-        """
-
-        # get the response time from the behaviour data
-        response_time = (bpod_data["States timestamps"]["closed_loop"][0][1]
-                         - bpod_data["States timestamps"]["stim_on"][0][0])
-        self.trials_table.at[self.trial_num, 'response_time'] = response_time
-        # get the trial outcome
-        state_names = ['correct', 'error', 'no_go', 'omit_correct', 'omit_error', 'omit_no_go']
-        outcome = {sn: ~np.isnan(bpod_data['States timestamps'].get(sn, [[np.NaN]])[0][0]) for sn in state_names}
-        assert np.sum(list(outcome.values())) == 1
-        outcome = next(k for k in outcome if outcome[k])
-        # Update response buffer -1 for left, 0 for nogo, and 1 for rightward
-        position = self.trials_table.at[self.trial_num, 'position']
-        if 'correct' in outcome:
-            self.trials_table.at[self.trial_num, 'trial_correct'] = True
-            self.session_info.NTRIALS_CORRECT += 1
-            self.trials_table.at[self.trial_num, 'response_side'] = -np.sign(position)
-        elif 'error' in outcome:
-            self.trials_table.at[self.trial_num, 'response_side'] = np.sign(position)
-        elif 'no_go' in outcome:
-            self.trials_table.at[self.trial_num, 'response_side'] = 0
-        else:
-            ValueError("The task outcome doesn't contain no_go, error or correct")
-        assert position != 0, "the position value should be either 35 or -35"
-        super(BiasedChoiceWorldSession, self).trial_completed(bpod_data)
-
-
 class HabituationChoiceWorldSession(ChoiceWorldSession):
     protocol_name = "_iblrig_tasks_habituationChoiceWorld"
 
@@ -672,3 +556,156 @@ class HabituationChoiceWorldSession(ChoiceWorldSession):
             output_actions=[],
         )
         return sma
+
+
+class ActiveChoiceWorldSession(ChoiceWorldSession):
+
+    def __init__(self, **kwargs):
+        super(ActiveChoiceWorldSession, self).__init__(**kwargs)
+        self.trials_table['stim_probability_left'] = np.zeros(NTRIALS_INIT, dtype=np.float32)
+
+    def start(self):
+        super(ActiveChoiceWorldSession, self).start()
+        # starts online plotting
+        if self.interactive:
+            subprocess.Popen(["viewsession", str(self.paths['DATA_FILE_PATH'])],
+                             stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+
+    def show_trial_log(self, extra_info=""):
+        trial_info = self.trials_table.iloc[self.trial_num]
+        extra_info = f"""
+RESPONSE TIME:        {trial_info.response_time}
+{extra_info}
+
+TRIAL CORRECT:        {trial_info.trial_correct}
+NTRIALS CORRECT:      {self.session_info.NTRIALS_CORRECT}
+NTRIALS ERROR:        {self.trial_num - self.session_info.NTRIALS_CORRECT}
+        """
+        super(ActiveChoiceWorldSession, self).show_trial_log(extra_info=extra_info)
+
+    def trial_completed(self, bpod_data):
+        """
+        The purpose of this method is to
+        -   update the trials table with information about the behaviour coming from the bpod
+        Constraints on the state machine data:
+        - mandatory states: ['correct', 'error', 'no_go', 'reward']
+        - optional states : ['omit_correct', 'omit_error', 'omit_no_go']
+        :param bpod_data:
+        :return:
+        """
+        # get the response time from the behaviour data
+        response_time = (bpod_data["States timestamps"]["closed_loop"][0][1]
+                         - bpod_data["States timestamps"]["stim_on"][0][0])
+        self.trials_table.at[self.trial_num, 'response_time'] = response_time
+        # get the trial outcome
+        state_names = ['correct', 'error', 'no_go', 'omit_correct', 'omit_error', 'omit_no_go']
+        outcome = {sn: ~np.isnan(bpod_data['States timestamps'].get(sn, [[np.NaN]])[0][0]) for sn in state_names}
+        assert np.sum(list(outcome.values())) == 1
+        outcome = next(k for k in outcome if outcome[k])
+        # Update response buffer -1 for left, 0 for nogo, and 1 for rightward
+        position = self.trials_table.at[self.trial_num, 'position']
+        if 'correct' in outcome:
+            self.trials_table.at[self.trial_num, 'trial_correct'] = True
+            self.session_info.NTRIALS_CORRECT += 1
+            self.trials_table.at[self.trial_num, 'response_side'] = -np.sign(position)
+        elif 'error' in outcome:
+            self.trials_table.at[self.trial_num, 'response_side'] = np.sign(position)
+        elif 'no_go' in outcome:
+            self.trials_table.at[self.trial_num, 'response_side'] = 0
+        else:
+            ValueError("The task outcome doesn't contain no_go, error or correct")
+        assert position != 0, "the position value should be either 35 or -35"
+        super(ActiveChoiceWorldSession, self).trial_completed(bpod_data)
+
+
+class BiasedChoiceWorldSession(ActiveChoiceWorldSession):
+    protocol_name = "_iblrig_tasks_biasedChoiceWorld"
+
+    def __init__(self, **kwargs):
+        super(BiasedChoiceWorldSession, self).__init__(**kwargs)
+        self.blocks_table = pd.DataFrame({
+            'probability_left': np.zeros(NBLOCKS_INIT) * np.NaN,
+            'block_length': np.zeros(NBLOCKS_INIT, dtype=np.int16) * -1,
+        })
+        self.trials_table['block_num'] = np.zeros(NTRIALS_INIT, dtype=np.int16)
+        self.trials_table['block_trial_num'] = np.zeros(NTRIALS_INIT, dtype=np.int16)
+
+    def new_block(self):
+        """
+        if block_init_5050
+            First block has 50/50 probability of leftward stim
+            is 90 trials long
+        """
+        self.block_num += 1  # the block number is zero based
+        self.block_trial_num = 0
+
+        # handles the block length logic
+        if self.task_params.BLOCK_INIT_5050 and self.block_num == 0:
+            block_len = 90
+        else:
+            block_len = int(misc.texp(
+                factor=self.task_params.BLOCK_LEN_FACTOR,
+                min_=self.task_params.BLOCK_LEN_MIN,
+                max_=self.task_params.BLOCK_LEN_MAX
+            ))
+        if self.block_num == 0:
+            if self.task_params.BLOCK_INIT_5050:
+                pleft = 0.5
+            else:
+                pleft = np.random.choice(self.task_params.BLOCK_PROBABILITY_SET)
+        elif self.block_num == 1 and self.task_params.BLOCK_INIT_5050:
+            pleft = np.random.choice(self.task_params.BLOCK_PROBABILITY_SET)
+        else:
+            # this switches the probability of leftward stim for the next block
+            pleft = round(abs(1 - self.blocks_table.loc[self.block_num - 1, 'probability_left']), 1)
+        self.blocks_table.at[self.block_num, 'block_length'] = block_len
+        self.blocks_table.at[self.block_num, 'probability_left'] = pleft
+
+    def next_trial(self):
+        self.trial_num += 1
+        # if necessary update the block number
+        self.block_trial_num += 1
+        self.trial_correct = None
+        if self.block_num < 0 or self.block_trial_num > (self.blocks_table.loc[self.block_num, 'block_length'] - 1):
+            self.new_block()
+        # get and store probability left
+        pleft = self.blocks_table.loc[self.block_num, 'probability_left']
+        # update trial table fields specific to biased choice world task
+        self.trials_table.at[self.trial_num, 'block_num'] = self.block_num
+        self.trials_table.at[self.trial_num, 'block_trial_num'] = self.block_trial_num
+        # save and send trial info to bonsai
+        self.draw_next_trial_info(pleft=pleft)
+
+    def show_trial_log(self):
+        trial_info = self.trials_table.iloc[self.trial_num]
+        extra_info = f"""
+BLOCK NUMBER:         {trial_info.block_num}
+BLOCK LENGTH:         {self.blocks_table.loc[self.block_num, 'block_length']}
+TRIALS IN BLOCK:      {trial_info.block_trial_num}
+        """
+        super(BiasedChoiceWorldSession, self).show_trial_log(extra_info=extra_info)
+
+
+class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
+    protocol_name = "_iblrig_tasks_trainingChoiceWorld"
+
+    def __init__(self, **kwargs):
+        super(TrainingChoiceWorldSession, self).__init__(**kwargs)
+        cs = np.array(self.task_params['CONTRAST_SET'])
+
+    def next_trial(self):
+        self.trial_num += 1
+        # if necessary update the block number
+        self.trial_correct = None
+        # save and send trial info to bonsai
+        self.draw_next_trial_info(pleft=0.5)
+
+    def show_trial_log(self):
+        trial_info = self.trials_table.iloc[self.trial_num]
+        # todo
+        extra_info = f"""
+    CONTRAST SET:         {""}
+    SUBJECT TRAINING EPOCH:         {""}
+    TRIALS IN BLOCK:      {trial_info.block_trial_num}
+            """
+        super(TrainingChoiceWorldSession, self).show_trial_log(extra_info=extra_info)

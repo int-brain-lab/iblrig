@@ -291,7 +291,7 @@ def get_biased_probs(n: int, idx: int = -1, prob: float = 0.5) -> list:
 def draw_contrast(
     contrast_set: list, prob_type: str = "biased", idx: int = -1, idx_prob: float = 0.5
 ) -> float:
-    if prob_type == "biased":
+    if prob_type == "skew_zero":
         p = get_biased_probs(len(contrast_set), idx=idx, prob=idx_prob)
         return np.random.choice(contrast_set, p=p)
     elif prob_type == "uniform":
