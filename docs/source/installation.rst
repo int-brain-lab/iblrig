@@ -19,7 +19,7 @@ Open an Administrator: Windows Powershell prompt and run the following:
     Start-Process -NoNewWindow -Wait -FilePath C:\Temp\python-3.10.11-amd64.exe -ArgumentList "/passive", "InstallAllUsers=0", "Include_launcher=0", "Include_test=0"
 
 
-.. note:: You can check that everything worked by running the following command:
+.. exercise:: You can check that everything worked by running the following command:
 
     .. code-block:: powershell
 
@@ -68,7 +68,7 @@ Install Bonsai in portable mode
     cd ..
 
 
-.. note:: You can check that everything went fine by running the test suite:
+.. exercise:: You can check that everything went fine by running the test suite:
 
     .. code-block:: powershell
 
@@ -103,7 +103,7 @@ Setup ONE to connect to https://alyx.internationalbrainlab.org, you will need yo
 See instructions for that here: https://int-brain-lab.github.io/iblenv/notebooks_external/one_quickstart.html
 
 
-.. note:: Make sure you can connect to Alyx !
+.. exercise:: Make sure you can connect to Alyx !
     Open a Python shell in the environment and connect to Alyx (you may have to setup ONE)
 
     .. code-block::
