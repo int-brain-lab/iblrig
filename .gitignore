@@ -6,6 +6,7 @@ pybpod_settings.yaml
 .iblrig_params_bckp.json
 settings/alyx
 settings/visvis/
+docs/build
 
 Bonsai/*
 Subjects/*

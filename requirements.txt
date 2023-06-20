@@ -1,6 +1,5 @@
 asn1crypto
 colorlog
-coverage
 cython
 graphviz
 ibllib
