@@ -152,6 +152,18 @@ def iterate_collection(session_path: str, collection_name='raw_task_data') -> st
     str
         The next numbered collection name.
 
+    Examples
+    --------
+    In a folder where there are no raw task data folders
+
+    >>> iterate_collection('./subject/2020-01-01/001')
+    'raw_task_data_00'
+
+    In a folder where there is one raw_imaging_data_00 folder
+
+    >>> iterate_collection('./subject/2020-01-01/001', collection_name='raw_imaging_data')
+    'raw_imaging_data_01'
+
     TODO This may be useful for use on other acquisition computers and therefore could move out of
      iblrig.
     """
