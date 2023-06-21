@@ -11,3 +11,4 @@ Welcome to iblrig's documentation!
    :caption: Contents:
 
    installation
+   description_file
