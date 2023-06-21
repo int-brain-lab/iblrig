@@ -1,4 +1,4 @@
-name: CI
+name: iblrigv8 CI
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     branches: [iblrigv8]
 
 jobs:
-  build_reqs:
+  tests:
     name: build (${{ matrix.python-version }}, ${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     strategy:
@@ -35,7 +35,7 @@ jobs:
         shell: bash -l {0}
         run: |
           pip install --editable iblrig
-          pip install -r requirements.txt
+          pip install -r iblrig/requirements.txt
 
       - name: Install audio library (Ubuntu only)
         if: matrix.os == 'ubuntu-latest'
