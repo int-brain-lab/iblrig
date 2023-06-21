@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [master, develop, rc, iblrigv8]
+    branches: [iblrigv8]
   pull_request:
-    branches: [master, develop, rc]
+    branches: [iblrigv8]
 
 jobs:
   build_reqs:
@@ -13,18 +13,12 @@ jobs:
     strategy:
       matrix:
         os: ["ubuntu-latest", "windows-latest"]
-        python-version: ["3.8"]
+        python-version: ["3.10"]
     steps:
       - name: Checkout iblrig repo
         uses: actions/checkout@v3
         with:
           path: iblrig
-
-      - name: Checkout iblpybpod repo
-        uses: actions/checkout@v3
-        with:
-          repository: int-brain-lab/iblpybpod
-          path: iblpybpod
 
       - name: Setup Python
         uses: actions/setup-python@v4
@@ -37,20 +31,11 @@ jobs:
           cd iblrig
           python -m flake8
 
-      - name: Generate setting files
-        shell: bash -l {0}
-        run: |
-          cd iblrig
-          cd settings
-          cp hardware_settings_template.yaml hardware_settings.yaml
-          cp iblrig_settings_template.yaml iblrig_settings.yaml
-          cp pybpod_settings_template.yaml pybpod_settings.yaml
-
       - name: iblrig and iblpybpod requirements
         shell: bash -l {0}
         run: |
           pip install --editable iblrig
-          pip install --editable iblpybpod
+          pip install -r requirements.txt
 
       - name: Install audio library (Ubuntu only)
         if: matrix.os == 'ubuntu-latest'
