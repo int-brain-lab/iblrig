@@ -12,3 +12,4 @@ Welcome to iblrig's documentation!
 
    installation
    description_file
+   copying_data

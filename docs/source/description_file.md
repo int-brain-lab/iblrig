@@ -3,8 +3,10 @@
 ## Experiment description file
 All experiments are described by a file with the name `_ibl_experiment.description.yaml`. 
 This description file contains details about the experiment such as, information about the devices used to collect data,
-or the behavior tasks run during the experiment. The content of this file determines the task pipeline that will be 
-used to extract the data on the local servers.
+or the behavior tasks run during the experiment. The content of this file is used to copy data from 
+the acquisition computer to the lab server and also determines the task pipeline that will be 
+used to extract the data on the lab servers. It's accuracy in fully describing the experiment
+is, therefore, very important!
 
 Here is an example of a complete experiment description file for a mesoscope experiment running
 two consecutive tasks, `biasedChoiceWorld` followed by `passiveChoiceWorld`. 
