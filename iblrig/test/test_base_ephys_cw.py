@@ -105,6 +105,13 @@ class TestExperimentDescription(unittest.TestCase):
             'choiceWorld', 'raw_behavior_data', procedures=['Imaging'], projects=['foo'], hardware_settings=hardware_settings)
         self.assertDictEqual(expected, description)
 
+        # Test sync
+        hardware_settings['MAIN_SYNC'] = True
+        description = BaseSession.make_experiment_description(
+            'choiceWorld', 'raw_behavior_data', hardware_settings=hardware_settings)
+        expected = {'bpod': {'collection': 'raw_behavior_data', 'sync': 'bpod'}}
+        self.assertDictEqual(expected, description.get('sync', {}))
+
     def test_stub(self):
         """Test merging of experiment description with a stub"""
         hardware_settings = {

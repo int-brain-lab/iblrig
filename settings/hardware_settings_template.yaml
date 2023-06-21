@@ -1,8 +1,11 @@
-# In this setting file, you will find a list of each device (i.e. harware apparatus) you can control.
+# In this setting file, you will find a list of each device (i.e. hardware apparatus) you can control.
 # Each device is named in the list below by the "device_" word beforehand, e.g. "device_frame2ttl".
 # Each device has settings parameters, written below the device name, e.g. its COM port or code workflow to run it.
 # To set these parameters, go to TODO DOCUMENTATION APPENDIX 3
 RIG_NAME: _iblrig_cortexlab_behavior_3
+# If your Bpod signals are recorded to a DAQ device running on a separate computer, set to False.
+# NB: When MAIN_SYNC is True, chained protocols are not supported.
+MAIN_SYNC: True
 device_bpod:
   COM_BPOD: null
   BPOD_TTL_TEST_DATE: null  # optional

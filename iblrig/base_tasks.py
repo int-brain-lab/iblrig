@@ -112,6 +112,11 @@ class BaseSession(ABC):
         self.paths.BONSAI = self.paths.IBLRIG_FOLDER.joinpath('Bonsai', 'Bonsai.exe')
         # Create the session folder
         task_collection = iblrig.path_helper.iterate_collection(self.paths.SESSION_FOLDER)
+        if self.hardware_settings.get('MAIN_SYNC', False) and not task_collection.endswith('00'):
+            """Chained protocols make little sense when Bpod is the main sync as there is no
+            continuous acquisition between protocols.  Only one sync collection can be defined in
+            the experiment description file.  This assertion should also occur upstream."""
+            raise RuntimeError('Chained protocols not supported for bpod-only sessions')
         self.paths.SESSION_RAW_DATA_FOLDER = self.paths.SESSION_FOLDER.joinpath(task_collection)
         self.paths.DATA_FILE_PATH = self.paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_taskData.raw.jsonable')
         self.paths.VISUAL_STIM_FOLDER = self.paths.IBLRIG_FOLDER.joinpath('visual_stim')
@@ -156,13 +161,6 @@ class BaseSession(ABC):
             The experiment description.
         """
         description = ses_params.read_params(stub) if stub else {}
-        task = {task_protocol: {'collection': task_collection, 'sync': 'bpod'}}
-        if 'tasks' not in description:
-            description['tasks'] = [task]
-        else:
-            description['tasks'].append(task)
-        description['procedures'] = list(set(description.get('procedures', []) + (procedures or [])))
-        description['projects'] = list(set(description.get('projects', []) + (projects or [])))
         # Add hardware devices
         if hardware_settings:
             if 'devices' not in description:
@@ -191,6 +189,18 @@ class BaseSession(ABC):
                         description['devices'][name].update(dev)
                     else:
                         description['devices'][name] = dev
+        # Add projects and procedures
+        description['procedures'] = list(set(description.get('procedures', []) + (procedures or [])))
+        description['projects'] = list(set(description.get('projects', []) + (projects or [])))
+        # Add sync key if required
+        if (hardware_settings or {}).get('MAIN_SYNC', False) and 'sync' not in description:
+            description['sync'] = {'bpod': {'collection': task_collection, 'sync': 'bpod'}}
+        # Add task
+        task = {task_protocol: {'collection': task_collection, 'sync': 'bpod'}}
+        if 'tasks' not in description:
+            description['tasks'] = [task]
+        else:
+            description['tasks'].append(task)
         return description
 
     def _make_task_parameters_dict(self):
