@@ -746,7 +746,7 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
         position = self.task_params.STIM_POSITIONS[int(np.sign(signed_contrast) == 1)]
         contrast = np.abs(signed_contrast)
         # debiasing: if the previous trial was incorrect and easy repeat the trial
-        if self.task_params.DEBIAS and self.trial_num >= 1:
+        if self.task_params.DEBIAS and self.trial_num >= 1 and self.training_phase < 5:
             last_contrast = self.trials_table.loc[self.trial_num - 1, 'contrast']
             do_debias_trial = (self.trials_table.loc[self.trial_num - 1, 'trial_correct'] != 1) and last_contrast >= 0.5
             self.trials_table.at[self.trial_num, 'debias_trial'] = do_debias_trial
