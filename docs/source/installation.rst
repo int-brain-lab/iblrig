@@ -1,10 +1,11 @@
 Install iblrig
 ==============
 
-Pre-requisistes:
-*   Windows OS
-*   git installation.
-*   Python 3.10 installation.
+.. prerequisites::
+
+    *   Windows OS
+    *   git installation.
+    *   Recommended: Notepad++ or a decent text file editor
 
 
 Install Python 3.10
@@ -27,7 +28,7 @@ Open an Administrator: Windows Powershell prompt and run the following:
 
     Should return `Python 3.10.11`
 
-**Make sure you exit the Administrator Powershell prompt before going to the next steps**
+.. warning:: Make sure you exit the Administrator Powershell prompt before going to the next steps.
 
 
 Install iblrigv8
@@ -80,9 +81,13 @@ Install Bonsai in portable mode
 
 
 Configuration instructions
-__________________________
+--------------------------
 
-Create configuration files from template files
+
+Rig configuration files
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Copy template settings files.
 
 .. code-block::
 
@@ -92,10 +97,14 @@ Create configuration files from template files
     explorer C:\iblrigv8\settings
 
 
-Update the 2 settings files, these values can likely be found in the ‘C:\iblrig_params\.iblrig_params.json’ file if working with a existing rig
+Update the 2 settings files, these values can likely be found in the `C:\iblrig_params\.iblrig_params.json` file if working with a existing rig
 
 *   iblrig_settings.yaml
 *   hardware_settings.yaml
+
+
+Setup ONE
+~~~~~~~~~
 
 
 Setup ONE to connect to https://alyx.internationalbrainlab.org, you will need your Alyx username and password.
@@ -104,6 +113,7 @@ See instructions for that here: https://int-brain-lab.github.io/iblenv/notebooks
 
 
 .. exercise:: Make sure you can connect to Alyx !
+
     Open a Python shell in the environment and connect to Alyx (you may have to setup ONE)
 
     .. code-block::

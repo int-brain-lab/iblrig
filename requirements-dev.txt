@@ -1,5 +1,6 @@
 coverage
 myst-parser
-renku-sphinx-theme
 sphinx
 sphinx-autobuild
+sphinx_lesson
+sphinx_rtd_theme

@@ -1,4 +1,3 @@
-asn1crypto
 colorlog
 cython
 graphviz
