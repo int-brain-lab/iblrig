@@ -8,6 +8,7 @@ from pathlib import Path
 import subprocess
 import yaml
 
+from packaging import version
 import pandas as pd
 
 from iblutil.util import Bunch
@@ -27,7 +28,33 @@ def load_settings_yaml(file_name):
         file_name = Path(iblrig.__file__).parents[1].joinpath('settings', file_name)
     with open(file_name) as fp:
         rs = yaml.safe_load(fp)
+    rs = patch_settings(rs, Path(file_name).stem)
     return Bunch(rs)
+
+
+def patch_settings(rs: dict, name: str) -> dict:
+    """
+    Update loaded settings files to ensure compatibility with latest version.
+
+    Parameters
+    ----------
+    rs : dict
+        A loaded settings file.
+    name : str
+        The name of the settings file, e.g. 'hardware_settings'.
+
+    Returns
+    -------
+    dict
+        The updated settings.
+    """
+    if name.startswith('hardware'):
+        if version.parse(rs.get('VERSION', '0.0.0')) < version.Version('1.0.0'):
+            if 'device_camera' in rs:
+                log.info('Patching hardware settings; assuming left camera label')
+                rs['device_cameras'] = {'left': rs.pop('device_camera')}
+            rs['VERSION'] = '1.0.0'
+    return rs
 
 
 def get_iblrig_path() -> Path or None:

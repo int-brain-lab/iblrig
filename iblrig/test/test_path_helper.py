@@ -52,5 +52,17 @@ class TestIterateCollection(unittest.TestCase):
         self.assertEqual('raw_bar_data_00', next_collection)
 
 
+class TestPatchSettings(unittest.TestCase):
+    """Test for iblrig.path_helper.patch_settings"""
+
+    def test_patch_hardware_settings(self):
+        rs = {'RIG_NAME': 'foo_rig', 'MAIN_SYNC': True, 'device_camera': {'BONSAI_WORKFLOW': 'path/to/Workflow.bonsai'}}
+        updated = path_helper.patch_settings(rs.copy(), 'hardware_settings')
+        self.assertEqual('1.0.0', updated.get('VERSION'))
+        self.assertNotIn('device_camera', updated)
+        self.assertEqual(rs['device_camera'], updated.get('device_cameras', {}).get('left'))
+        self.assertDictEqual(path_helper.patch_settings(updated.copy(), 'hardware_settings'), updated)
+
+
 if __name__ == "__main__":
     unittest.main(exit=False)

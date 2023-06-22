@@ -126,11 +126,9 @@ class BaseSession(ABC):
         self.save_task_parameters_to_json_file()
         # Save experiment description file
         # This can be moved or separated from the save part.
-        # FIXME sync key missing; its presence/absence depends on extra acquisition computers
         description = self.make_experiment_description(
             self.pybpod_settings.PBPOD_PROTOCOL, task_collection,
             procedures, projects, self.hardware_settings, stub)
-        # FIXME This function insists on a remote path
         ses_params.prepare_experiment(self.paths.SESSION_FOLDER, description,
                                       local=root_data_path, remote=self.iblrig_settings['iblrig_remote_data_path'])
 
@@ -170,12 +168,7 @@ class BaseSession(ABC):
                 name, = label.groups()
                 # If any of the value keys are uppercase strings, assume a single sub-device of the same name
                 if all(map(str.isupper, dev.keys())):
-                    # FIXME Change hardware settings so we don't have to hardcode this if-else statement
-                    if name.startswith('camera'):
-                        name = 'cameras'
-                        subkey = 'left'
-                    else:
-                        subkey = name
+                    subkey = name
                     dev = {k.lower(): v for k, v in dev.items()}  # Ensure keys lower case
                     if name in description['devices']:
                         description['devices'][name].update({subkey: dev})

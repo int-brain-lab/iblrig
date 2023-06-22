@@ -763,7 +763,6 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
         self.draw_next_trial_info(pleft=0.5, position=position, contrast=contrast)
         self.trials_table.at[self.trial_num, 'training_phase'] = self.training_phase
 
-
     def show_trial_log(self):
         extra_info = f"""
 CONTRAST SET:         {np.unique(np.abs(choiceworld.contrasts_set(self.training_phase)))}
