@@ -126,5 +126,5 @@ class TestExperimentDescription(unittest.TestCase):
         self.assertCountEqual(['cameras', 'bpod', 'foo'], description.get('devices', {}).keys())
         bpod_device = description.get('devices', {}).get('bpod', {})
         self.assertDictEqual({'bpod': {'foo': 20, 'bar': 30}}, bpod_device)
-        expected = self.stub['tasks'] + [{'passiveWorld': {'collection': 'raw_task_data_00', 'sync': 'bpod'}}]
+        expected = self.stub['tasks'] + [{'passiveWorld': {'collection': 'raw_task_data_00', 'sync_label': 'bpod'}}]
         self.assertCountEqual(expected, description.get('tasks', []))

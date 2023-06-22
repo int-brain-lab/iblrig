@@ -68,7 +68,6 @@ class BaseSession(ABC):
         # the template for this file is in settings/hardware_settings.yaml
         self.hardware_settings = iblrig.path_helper.load_settings_yaml(hardware_settings or 'hardware_settings.yaml')
         self.iblrig_settings = iblrig.path_helper.load_settings_yaml(iblrig_settings or 'iblrig_settings.yaml')
-        # TODO Base collections on experiment description and remove 'fmake' param.
         # Load the tasks settings, from the task folder or override with the input argument
         task_parameter_file = task_parameter_file or Path(inspect.getfile(self.__class__)).parent.joinpath('task_parameters.yaml')
         self.task_params = Bunch({})
@@ -127,10 +126,10 @@ class BaseSession(ABC):
         # Save experiment description file
         # This can be moved or separated from the save part.
         description = self.make_experiment_description(
-            self.pybpod_settings.PBPOD_PROTOCOL, task_collection,
+            self.protocol_name, task_collection,
             procedures, projects, self.hardware_settings, stub)
-        ses_params.prepare_experiment(self.paths.SESSION_FOLDER, description,
-                                      local=root_data_path, remote=self.iblrig_settings['iblrig_remote_data_path'])
+        # ses_params.prepare_experiment(self.paths.SESSION_FOLDER, description,
+        #                               local=root_data_path, remote=self.iblrig_settings['iblrig_remote_data_path'])
 
     @staticmethod
     def make_experiment_description(task_protocol: str, task_collection: str, procedures: list = None, projects: list = None,
@@ -223,7 +222,7 @@ class BaseSession(ABC):
         """
         output_dict = self._make_task_parameters_dict()
         # Output dict to json file
-        json_file = self.paths.SESSION_FOLDER / "raw_behavior_data" / "_iblrig_taskSettings.raw.json"
+        json_file = self.paths.SESSION_RAW_DATA_FOLDER.joinpath("_iblrig_taskSettings.raw.json")
         json_file.parent.mkdir(parents=True, exist_ok=True)
         with open(json_file, "w") as outfile:
             json.dump(output_dict, outfile, indent=4, sort_keys=True, default=str)  # converts datetime objects to string
@@ -528,11 +527,11 @@ class BpodMixin(object):
              factor is the refresh rate of the screen which should be 16.667ms @ a framerate of 60Hz
              """
             if code == 0:
-                self.stop_sound()
+                self.sound['sd'].stop()
             elif code == 1:
-                self.play_tone()
+                self.sound['sd'].play(self.sound['GO_TONE'], self.sound['samplerate'])
             elif code == 2:
-                self.play_noise()
+                self.sound['sd'].play(self.sound['WHITE_NOISE'], self.sound['samplerate'])
             elif code == 3:
                 self.trigger_bonsai_cameras()
         self.bpod.softcode_handler_function = softcode_handler
@@ -691,12 +690,6 @@ class SoundMixin:
             'OUT_NOISE': None,
             'OUT_STOP_SOUND': None,
         })
-
-    def start_mixin_sound(self):
-        """
-        Depends on bpod mixin start for hard sound card
-        :return:
-        """
         sound_output = self.hardware_settings.device_sound['OUTPUT']
         # sound device sd is actually the module soundevice imported above.
         # not sure how this plays out when referenced outside of this python file
@@ -718,6 +711,12 @@ class SoundMixin:
             fade=0.01,
             chans=self.sound['channels'])
 
+    def start_mixin_sound(self):
+        """
+        Depends on bpod mixin start for hard sound card
+        :return:
+        """
+
         # SoundCard config params
         if self.hardware_settings.device_sound['OUTPUT'] == 'harp':
             sound.configure_sound_card(
@@ -735,7 +734,7 @@ class SoundMixin:
             self.sound['OUT_TONE'] = ("SoftCode", 1)
             self.sound['OUT_NOISE'] = ("SoftCode", 2)
             self.sound['OUT_STOP_SOUND'] = ("SoftCode", 0)
-        log.info(f"Sound module loaded: OK: {sound_output}")
+        log.info(f"Sound module loaded: OK: {self.hardware_settings.device_sound['OUTPUT']}")
 
     def sound_play_noise(self, state_timer=0.510, state_name='play_noise'):
         """
