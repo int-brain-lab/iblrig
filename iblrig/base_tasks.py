@@ -128,8 +128,8 @@ class BaseSession(ABC):
         description = self.make_experiment_description(
             self.protocol_name, task_collection,
             procedures, projects, self.hardware_settings, stub)
-        # ses_params.prepare_experiment(self.paths.SESSION_FOLDER, description,
-        #                               local=root_data_path, remote=self.iblrig_settings['iblrig_remote_data_path'])
+        ses_params.prepare_experiment(self.paths.SESSION_FOLDER, description,
+                                      local=root_data_path, remote=self.iblrig_settings['iblrig_remote_data_path'])
 
     @staticmethod
     def make_experiment_description(task_protocol: str, task_collection: str, procedures: list = None, projects: list = None,

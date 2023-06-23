@@ -85,6 +85,7 @@ class TestIntegrationFullRun(TestIntegrationFullRuns):
         task.mock(file_jsonable_fixture=PATH_FIXTURES.joinpath('task_data_short.jsonable'),)
         task.task_params.NTRIALS = 3
         task.session_info['SUBJECT_WEIGHT'] = 24.2  # manually add a weighing
+        task.session_info['TOTAL_WATER_DELIVERED'] = 12.2  # manually add water delivered in case all trials error
         task.run()
         file_settings = task.paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_taskSettings.raw.json')
         settings = self.read_and_assert_json_settings(file_settings)

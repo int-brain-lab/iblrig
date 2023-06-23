@@ -400,6 +400,7 @@ class ChoiceWorldSession(
         self.trials_table.at[self.trial_num, 'reward_valve_time'] = self.reward_time
         # update cumulative reward value
         self.session_info.TOTAL_WATER_DELIVERED += self.trials_table.at[self.trial_num, 'reward_amount']
+        self.session_info.NTRIALS += 1
         # SAVE TRIAL DATA
         save_dict = self.trials_table.iloc[self.trial_num].to_dict()
         save_dict["behavior_data"] = bpod_data
@@ -616,6 +617,7 @@ NTRIALS ERROR:        {self.trial_num - self.session_info.NTRIALS_CORRECT}
         else:
             ValueError("The task outcome doesn't contain no_go, error or correct")
         assert position != 0, "the position value should be either 35 or -35"
+
         super(ActiveChoiceWorldSession, self).trial_completed(bpod_data)
 
 
