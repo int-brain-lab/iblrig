@@ -12,6 +12,7 @@ class TestInstantiationTraining(BaseTestCases.CommonTestInstantiateTask):
 
     def test_task(self):
         task = self.task
+        task.create_session()
         trial_fixtures = get_fixtures()
         nt = 800
         for i in np.arange(nt):

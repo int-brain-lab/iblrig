@@ -17,6 +17,7 @@ class TestInstantiationBiased(BaseTestCases.CommonTestInstantiateTask):
 
     def test_task(self):
         task = self.task
+        task.create_session()
         trial_fixtures = get_fixtures()
         nt = 500
         t = np.zeros(nt)
@@ -85,7 +86,11 @@ class TestIntegrationFullRun(TestIntegrationFullRuns):
         task.mock(file_jsonable_fixture=PATH_FIXTURES.joinpath('task_data_short.jsonable'),)
         task.task_params.NTRIALS = 3
         task.session_info['SUBJECT_WEIGHT'] = 24.2  # manually add a weighing
-        task.session_info['TOTAL_WATER_DELIVERED'] = 12.2  # manually add water delivered in case all trials error
+        # manually add water delivered since we test with few trials, there is a chance that this
+        # value ends up being zero, in which case the water administration is not registered and test fails
+        # if one trial gets rewarded, then water delivered will be more than the amount below
+        init_water = 12.2
+        task.session_info['TOTAL_WATER_DELIVERED'] = init_water
         task.run()
         file_settings = task.paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_taskSettings.raw.json')
         settings = self.read_and_assert_json_settings(file_settings)
@@ -100,7 +105,7 @@ class TestIntegrationFullRun(TestIntegrationFullRuns):
                                  date=task.session_info['SESSION_START_TIME'][:10], number=task.session_info['SESSION_NUMBER'])
         full_session = self.one.alyx.rest('sessions', 'read', id=ses[0]['id'])
         # and the water administered
-        assert full_session['wateradmin_session_related'][0]['water_administered'] == task.session_info['TOTAL_WATER_DELIVERED']
+        assert full_session['wateradmin_session_related'][0]['water_administered'] == init_water
         # and the related weighing
         wei = self.one.alyx.rest('weighings', 'list', nickname=self.kwargs['subject'],
                                  date=task.session_info['SESSION_START_TIME'][:10])

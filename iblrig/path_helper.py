@@ -17,7 +17,7 @@ import iblrig
 log = logging.getLogger("iblrig")
 
 
-def load_settings_yaml(file_name):
+def load_settings_yaml(file_name='iblrig_settings.yaml'):
     """
     Load a yaml file from the settings folder.
     If the file_name is not absolute, it will be searched in the settings folder

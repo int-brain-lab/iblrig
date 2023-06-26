@@ -3,7 +3,7 @@ This module is intended to provide commonalities for all tasks.
 It provides hardware mixins that can be used together with BaseSession to compose tasks
 This module tries to be exclude task related logic
 """
-
+import abc
 from pathlib import Path
 from abc import ABC
 import datetime
@@ -68,6 +68,10 @@ class BaseSession(ABC):
         # the template for this file is in settings/hardware_settings.yaml
         self.hardware_settings = iblrig.path_helper.load_settings_yaml(hardware_settings or 'hardware_settings.yaml')
         self.iblrig_settings = iblrig.path_helper.load_settings_yaml(iblrig_settings or 'iblrig_settings.yaml')
+        if self.iblrig_settings['iblrig_local_data_path'] is None:
+            self.iblrig_settings['iblrig_local_data_path'] = Path.home().joinpath('iblrig_data')
+        else:
+            self.iblrig_settings['iblrig_local_data_path'] = Path(self.iblrig_settings['iblrig_local_data_path'])
         # Load the tasks settings, from the task folder or override with the input argument
         task_parameter_file = task_parameter_file or Path(inspect.getfile(self.__class__)).parent.joinpath('task_parameters.yaml')
         self.task_params = Bunch({})
@@ -93,47 +97,54 @@ class BaseSession(ABC):
             'SUBJECT_WEIGHT': None,
             'TOTAL_WATER_DELIVERED': 0,
         })
-
-        root_data_path = self.iblrig_settings['iblrig_local_data_path'] or Path.home().joinpath('iblrig_data')
-        root_data_path = Path(root_data_path)
-        date_folder = root_data_path.joinpath(
-            self.iblrig_settings['ALYX_LAB'] or '',
-            'Subjects',
-            self.session_info.SUBJECT_NAME,
-            self.session_info.SESSION_START_TIME[:10],
-        )
-        numbers_folders = [int(f.name) for f in date_folder.rglob('*') if len(f.name) == 3 and f.name.isdigit()]
-        self.session_info.SESSION_NUMBER = 1 if len(numbers_folders) == 0 else max(numbers_folders) + 1
-        self.paths = Bunch({
-            'SESSION_FOLDER': date_folder.joinpath(f"{self.session_info.SESSION_NUMBER:03d}"),
-            'IBLRIG_FOLDER': Path(iblrig.__file__).parents[1],
-        })
-        self.paths.BONSAI = self.paths.IBLRIG_FOLDER.joinpath('Bonsai', 'Bonsai.exe')
-        # Create the session folder
-        task_collection = iblrig.path_helper.iterate_collection(self.paths.SESSION_FOLDER)
-        if self.hardware_settings.get('MAIN_SYNC', False) and not task_collection.endswith('00'):
-            """Chained protocols make little sense when Bpod is the main sync as there is no
-            continuous acquisition between protocols.  Only one sync collection can be defined in
-            the experiment description file.  This assertion should also occur upstream."""
-            raise RuntimeError('Chained protocols not supported for bpod-only sessions')
-        self.paths.SESSION_RAW_DATA_FOLDER = self.paths.SESSION_FOLDER.joinpath(task_collection)
-        self.paths.DATA_FILE_PATH = self.paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_taskData.raw.jsonable')
-        self.paths.VISUAL_STIM_FOLDER = self.paths.IBLRIG_FOLDER.joinpath('visual_stim')
         # Executes mixins init methods
         self._execute_mixins_shared_function('init_mixin')
+        self.paths = self._init_paths()
         log.info(f'Session {self.paths.SESSION_RAW_DATA_FOLDER}')
-        self.save_task_parameters_to_json_file()
-        # Save experiment description file
-        # This can be moved or separated from the save part.
-        description = self.make_experiment_description(
-            self.protocol_name, task_collection,
+        # Prepare the experiment description dictionary
+        self.experiment_description = self.make_experiment_description_dict(
+            self.protocol_name, self.paths.TASK_COLLECTION,
             procedures, projects, self.hardware_settings, stub)
-        ses_params.prepare_experiment(self.paths.SESSION_FOLDER, description,
-                                      local=root_data_path, remote=self.iblrig_settings['iblrig_remote_data_path'])
+
+    def _init_paths(self, existing_session_path: Path = None):
+        """
+        :param existing_session_path:
+        :return:
+        """
+        paths = Bunch({
+            'IBLRIG_FOLDER': Path(iblrig.__file__).parents[1]
+        })
+        paths.BONSAI = paths.IBLRIG_FOLDER.joinpath('Bonsai', 'Bonsai.exe')
+        paths.VISUAL_STIM_FOLDER = paths.IBLRIG_FOLDER.joinpath('visual_stim')
+        # initialize the session path
+        if existing_session_path is not None:
+            # this is the case where we append a new protocol to an existing session
+            paths.SESSION_FOLDER = existing_session_path
+            if self.hardware_settings.get('MAIN_SYNC', False) and not paths.TASK_COLLECTION.endswith('00'):
+                """Chained protocols make little sense when Bpod is the main sync as there is no
+                continuous acquisition between protocols.  Only one sync collection can be defined in
+                the experiment description file.  This assertion should also occur upstream."""
+                raise RuntimeError('Chained protocols not supported for bpod-only sessions')
+        else:
+            # in this case the session path is created from scratch
+            date_folder = self.iblrig_settings['iblrig_local_data_path'].joinpath(
+                self.iblrig_settings['ALYX_LAB'] or '',
+                'Subjects',
+                self.session_info.SUBJECT_NAME,
+                self.session_info.SESSION_START_TIME[:10],
+            )
+            numbers_folders = [int(f.name) for f in date_folder.rglob('*') if len(f.name) == 3 and f.name.isdigit()]
+            self.session_info.SESSION_NUMBER = 1 if len(numbers_folders) == 0 else max(numbers_folders) + 1
+            paths.SESSION_FOLDER = date_folder.joinpath(f"{self.session_info.SESSION_NUMBER:03d}")
+
+        paths.TASK_COLLECTION = iblrig.path_helper.iterate_collection(paths.SESSION_FOLDER)
+        paths.SESSION_RAW_DATA_FOLDER = paths.SESSION_FOLDER.joinpath(paths.TASK_COLLECTION)
+        paths.DATA_FILE_PATH = paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_taskData.raw.jsonable')
+        return paths
 
     @staticmethod
-    def make_experiment_description(task_protocol: str, task_collection: str, procedures: list = None, projects: list = None,
-                                    hardware_settings: dict = None, stub: Path = None):
+    def make_experiment_description_dict(task_protocol: str, task_collection: str, procedures: list = None, projects: list = None,
+                                         hardware_settings: dict = None, stub: Path = None):
         """
         Construct an experiment description dictionary.
 
@@ -212,7 +223,7 @@ class BaseSession(ABC):
         output_dict.update(patch_dict)
         return output_dict
 
-    def save_task_parameters_to_json_file(self) -> Path:
+    def save_task_parameters_to_json_file(self, destination_folder=None) -> Path:
         """
         Given a session object, collects the various settings and parameters of the session and outputs them to a JSON file
 
@@ -221,8 +232,9 @@ class BaseSession(ABC):
         Path to the resultant JSON file
         """
         output_dict = self._make_task_parameters_dict()
+        destination_folder = destination_folder or self.paths.SESSION_RAW_DATA_FOLDER
         # Output dict to json file
-        json_file = self.paths.SESSION_RAW_DATA_FOLDER.joinpath("_iblrig_taskSettings.raw.json")
+        json_file = destination_folder.joinpath("_iblrig_taskSettings.raw.json")
         json_file.parent.mkdir(parents=True, exist_ok=True)
         with open(json_file, "w") as outfile:
             json.dump(output_dict, outfile, indent=4, sort_keys=True, default=str)  # converts datetime objects to string
@@ -267,23 +279,15 @@ class BaseSession(ABC):
             log.error("Could not register session to Alyx")
 
     def _execute_mixins_shared_function(self, pattern):
+        """
+        Loop over all methods of the class that start with pattern and execute them
+        :param pattern:'init_mixin', 'start_mixin' or 'stop_mixin'
+        :return:
+        """
         method_names = [method for method in dir(self) if method.startswith(pattern)]
         methods = [getattr(self, method) for method in method_names if inspect.ismethod(getattr(self, method))]
-        # todo add logging error catching with traceback
         for meth in methods:
             meth()
-
-    def start(self):
-        """
-        Executes all start_mixin* methods
-        """
-        self._execute_mixins_shared_function('start_mixin')
-
-    def stop(self):
-        """
-        Executes all stop_mixin* methods
-        """
-        self._execute_mixins_shared_function('stop_mixin')
 
     @property
     def time_elapsed(self):
@@ -292,19 +296,53 @@ class BaseSession(ABC):
     def mock(self):
         self.is_mock = True
 
+    def create_session(self):
+        # create the session path and save json parameters in the task collection folder
+        self.save_task_parameters_to_json_file()
+        # copy the acquisition stub to the remote session folder
+        ses_params.prepare_experiment(
+            self.paths.SESSION_FOLDER,
+            self.experiment_description,
+            local=self.iblrig_settings['iblrig_local_data_path'],
+            remote=self.iblrig_settings['iblrig_remote_data_path']
+        )
+        self.register_to_alyx()
+
     def run(self):
         """
         Common pre-run instructions for all tasks: singint handler for a graceful exit
-        And send spacers to the bpod
         :return:
         """
+        # here we make sure we connect to the hardware before writing the session to disk
+        # this prevents from incrementing endlessly the session number if the hardware fails to connect
+        self.start_hardware()
+        self.create_session()
+
         def sigint_handler(*args, **kwargs):
+            # create a signal handler for a graceful exit: create a stop flag in the session folder
             self.paths.SESSION_FOLDER.joinpath('.stop').touch()
             log.critical("SIGINT signal detected, will exit at the end of the trial")
 
         signal.signal(signal.SIGINT, sigint_handler)
+        self._run()  # runs the specific task logic ie. trial loop etc...
+        # post task instructions
+        log.critical("Graceful exit")
+        self.session_info.SESSION_END_TIME = datetime.datetime.now().isoformat()
+        self.save_task_parameters_to_json_file()
+        self.register_to_alyx()
+        self._execute_mixins_shared_function('stop_mixin')
 
-        self.start()
+    @abc.abstractmethod
+    def start_hardware(self):
+        """
+        This methods doesn't explicitly start the mixins as the order has to be defined in the child classes
+        This needs to be implemented in the child classes, and should start and connect to all hardware pieces
+        """
+        pass
+
+    @abc.abstractmethod
+    def _run(self):
+        pass
 
 
 class OSCClient(udp_client.SimpleUDPClient):
@@ -516,6 +554,9 @@ class BpodMixin(object):
 
     def init_mixin_bpod(self, *args, **kwargs):
         self.bpod = Bpod()
+
+    def stop_mixin_bpod(self):
+        self.bpod.close()
 
     def start_mixin_bpod(self):
         self.bpod = Bpod(self.hardware_settings['device_bpod']['COM_BPOD'])
@@ -777,12 +818,14 @@ class SpontaneousSession(BaseSession):
         super(SpontaneousSession, self).__init__(**kwargs)
         self.duration_secs = duration_secs
 
-    def run(self):
+    def start_hardware(self):
+        pass  # no mixin here, life is but a dream
+
+    def _run(self):
         """
         This is the method that runs the task with the actual state machine
         :return:
         """
-        super(SpontaneousSession, self).run()
         log.info("Starting spontaneous acquisition")
         while True:
             time.sleep(1.5)
@@ -791,7 +834,3 @@ class SpontaneousSession(BaseSession):
             if self.paths.SESSION_FOLDER.joinpath('.stop').exists():
                 self.paths.SESSION_FOLDER.joinpath('.stop').unlink()
                 break
-        log.critical("Graceful exit")
-        self.session_info.SESSION_END_TIME = datetime.datetime.now().isoformat()
-        self.save_task_parameters_to_json_file()
-        self.register_to_alyx()

@@ -1,7 +1,6 @@
 """
 This modules extends the base_tasks modules by providing task logic around the Choice World protocol
 """
-import datetime
 import json
 import math
 import random
@@ -79,7 +78,7 @@ class ChoiceWorldSession(
             "RelativeHumidity": np.zeros(NTRIALS_INIT) * np.NaN,
         })
 
-    def start(self):
+    def start_hardware(self):
         """
         In this step we explicitly run the start methods of the various mixins.
         The super class start method is overloaded because we need to start the different hardware pieces in order
@@ -97,19 +96,13 @@ class ChoiceWorldSession(
             self.session_info.SUBJECT_WEIGHT = user.ask_subject_weight(self.session_info.SUBJECT_NAME)
             self.task_params.SESSION_START_DELAY_SEC = user.ask_session_delay()
 
-        # create the task parameter file in the raw_behavior dir
-        self.save_task_parameters_to_json_file()
-        self.register_to_alyx()
-
-        # make the bpod send spacer signals to the main sync clock for protocol discovery
-        self.send_spacers()
-
-    def run(self):
+    def _run(self):
         """
         This is the method that runs the task with the actual state machine
         :return:
         """
-        super(ChoiceWorldSession, self).run()
+        # make the bpod send spacer signals to the main sync clock for protocol discovery
+        self.send_spacers()
         time_last_trial_end = time.time()
         for i in range(self.task_params.NTRIALS):  # Main loop
             # t_overhead = time.time()
@@ -134,12 +127,6 @@ class ChoiceWorldSession(
             if self.paths.SESSION_FOLDER.joinpath('.stop').exists():
                 self.paths.SESSION_FOLDER.joinpath('.stop').unlink()
                 break
-        log.critical("Graceful exit")
-        self.session_info.SESSION_END_TIME = datetime.datetime.now().isoformat()
-        self.save_task_parameters_to_json_file()
-        self.register_to_alyx()
-        self.bpod.close()
-        self.stop_mixin_bonsai_recordings()
 
     def mock(self, file_jsonable_fixture=None):
         """
@@ -566,12 +553,12 @@ class ActiveChoiceWorldSession(ChoiceWorldSession):
         super(ActiveChoiceWorldSession, self).__init__(**kwargs)
         self.trials_table['stim_probability_left'] = np.zeros(NTRIALS_INIT, dtype=np.float32)
 
-    def start(self):
-        super(ActiveChoiceWorldSession, self).start()
+    def _run(self):
         # starts online plotting
         if self.interactive:
             subprocess.Popen(["viewsession", str(self.paths['DATA_FILE_PATH'])],
                              stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+        super(ActiveChoiceWorldSession, self)._run()
 
     def show_trial_log(self, extra_info=""):
         trial_info = self.trials_table.iloc[self.trial_num]
