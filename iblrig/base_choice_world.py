@@ -282,7 +282,7 @@ class ChoiceWorldSession(
 
         sma.add_state(
             state_name="reset2_rotary_encoder",
-            state_timer=0.05,
+            state_timer=0.05,  # the delay here is to avoid race conditions in the bonsai flow
             output_actions=[self.bpod.actions.rotary_encoder_reset],
             state_change_conditions={"Tup": "closed_loop"},
         )
