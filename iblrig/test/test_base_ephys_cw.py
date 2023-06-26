@@ -65,7 +65,7 @@ class TestHardwareMixins(unittest.TestCase):
         """
         session = self.session
         SoundMixin.init_mixin_sound(session)
-        assert session.sound.OUT_TONE is None
+        assert session.sound.GO_TONE is not None
 
     def test_bpod_mixin(self):
         session = self.session

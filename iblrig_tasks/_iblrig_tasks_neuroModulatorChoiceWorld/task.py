@@ -72,7 +72,7 @@ class Session(BiasedChoiceWorldSession):
                 state_name="trial_start",
                 state_timer=0,  # ~100µs hardware irreducible delay
                 state_change_conditions={"Tup": "reset_rotary_encoder"},
-                output_actions=[self.sound.OUT_STOP_SOUND, ("BNC1", 255)],
+                output_actions=[self.bpod.actions.stop_sound, ("BNC1", 255)],
             )  # stop all sounds
 
         sma.add_state(
@@ -114,7 +114,7 @@ class Session(BiasedChoiceWorldSession):
         sma.add_state(
             state_name="play_tone",
             state_timer=0.1,
-            output_actions=[self.sound.OUT_TONE, ("BNC1", 255)],
+            output_actions=[self.bpod.actions.play_tone, ("BNC1", 255)],
             state_change_conditions={
                 "Tup": "reset2_rotary_encoder",
                 "BNC2High": "reset2_rotary_encoder",
@@ -123,7 +123,7 @@ class Session(BiasedChoiceWorldSession):
 
         sma.add_state(
             state_name="reset2_rotary_encoder",
-            state_timer=0,
+            state_timer=0.05,
             output_actions=[self.bpod.actions.rotary_encoder_reset],
             state_change_conditions={"Tup": "closed_loop"},
         )
@@ -173,7 +173,7 @@ class Session(BiasedChoiceWorldSession):
         sma.add_state(
             state_name="no_go",
             state_timer=self.task_params.FEEDBACK_NOGO_DELAY_SECS,
-            output_actions=[self.bpod.actions.bonsai_hide_stim, self.sound.OUT_NOISE],
+            output_actions=[self.bpod.actions.bonsai_hide_stim, self.bpod.actions.play_noise],
             state_change_conditions={"Tup": "exit_state"},
         )
 
@@ -194,7 +194,7 @@ class Session(BiasedChoiceWorldSession):
         sma.add_state(
             state_name="error",
             state_timer=self.task_params.FEEDBACK_ERROR_DELAY_SECS,
-            output_actions=[self.sound.OUT_NOISE],
+            output_actions=[self.bpod.actions.play_noise],
             state_change_conditions={"Tup": "hide_stim"},
         )
 

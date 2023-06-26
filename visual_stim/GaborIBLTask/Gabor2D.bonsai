@@ -1075,7 +1075,7 @@
                   </Expression>
                   <Expression xsi:type="Equal">
                     <Operand xsi:type="FloatProperty">
-                      <Value>2</Value>
+                      <Value>8</Value>
                     </Operand>
                   </Expression>
                   <Expression xsi:type="WorkflowOutput" />

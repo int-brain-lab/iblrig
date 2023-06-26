@@ -327,6 +327,7 @@ class BaseSession(ABC):
         self._run()  # runs the specific task logic ie. trial loop etc...
         # post task instructions
         log.critical("Graceful exit")
+        log.info(f'Session {self.paths.SESSION_RAW_DATA_FOLDER}')
         self.session_info.SESSION_END_TIME = datetime.datetime.now().isoformat()
         self.save_task_parameters_to_json_file()
         self.register_to_alyx()
@@ -411,7 +412,7 @@ class BonsaiRecordingMixin(object):
     def start_mixin_bonsai_microphone(self):
         # the camera workflow on the behaviour computer already contains the microphone recording
         # so the device camera workflow and the microphone one are exclusive
-        if self.hardware_settings.device_camera['BONSAI_WORKFLOW'] is not None:
+        if self._camera_mixin_bonsai_get_workflow_file(self.hardware_settings.device_cameras) is not None:
             return
         if not self.task_params.RECORD_SOUND:
             return
@@ -459,10 +460,10 @@ class BonsaiRecordingMixin(object):
         log.info("Bonsai cameras setup module loaded: OK")
 
     def trigger_bonsai_cameras(self):
-        if self.hardware_settings.device_camera['BONSAI_WORKFLOW'] is None:
+        workflow_file = self._camera_mixin_bonsai_get_workflow_file(self.hardware_settings.device_cameras)
+        if workflow_file is None:
             return
-        workflow_file = self.paths.IBLRIG_FOLDER.joinpath(
-            *self.hardware_settings.device_camera['BONSAI_WORKFLOW'].split('/'))
+        workflow_file = self.paths.IBLRIG_FOLDER.joinpath(*workflow_file.split('/'))
         here = os.getcwd()
         os.chdir(workflow_file.parent)
         subprocess.Popen([
@@ -496,6 +497,7 @@ class BonsaiVisualStimulusMixin(object):
                        self.bonsai_visual_udp_client.OSC_PROTOCOL
                        if k in self.trials_table.columns}
         self.bonsai_visual_udp_client.send2bonsai(**bonsai_dict)
+        log.info(bonsai_dict)
 
     def run_passive_visual_stim(self, map_time="00:05:00", rate=0.1, sa_time="00:05:00"):
         file_bonsai_workflow = self.paths.VISUAL_STIM_FOLDER.joinpath(
@@ -740,9 +742,6 @@ class SoundMixin:
         self.sound = Bunch({
             'GO_TONE': None,
             'WHITE_NOISE': None,
-            'OUT_TONE': None,
-            'OUT_NOISE': None,
-            'OUT_STOP_SOUND': None,
         })
         sound_output = self.hardware_settings.device_sound['OUTPUT']
         # sound device sd is actually the module soundevice imported above.
@@ -770,7 +769,7 @@ class SoundMixin:
         Depends on bpod mixin start for hard sound card
         :return:
         """
-
+        assert self.bpod.is_connected, "The sound mixin depends on the bpod mixin being connected"
         # SoundCard config params
         if self.hardware_settings.device_sound['OUTPUT'] == 'harp':
             sound.configure_sound_card(
@@ -778,16 +777,9 @@ class SoundMixin:
                 indexes=[self.task_params.GO_TONE_IDX, self.task_params.WHITE_NOISE_IDX],
                 sample_rate=self.sound['samplerate'],
             )
-            self.bpod.define_harp_sounds_actions(
-                self.task_params.GO_TONE_IDX,
-                self.task_params.WHITE_NOISE_IDX)
-            self.sound['OUT_TONE'] = self.bpod.actions['play_tone']
-            self.sound['OUT_NOISE'] = self.bpod.actions['play_noise']
-            self.sound['OUT_STOP_SOUND'] = self.bpod.actions['stop_sound']
+            self.bpod.define_harp_sounds_actions(self.task_params.GO_TONE_IDX, self.task_params.WHITE_NOISE_IDX)
         else:  # xonar or system default
-            self.sound['OUT_TONE'] = ("SoftCode", 1)
-            self.sound['OUT_NOISE'] = ("SoftCode", 2)
-            self.sound['OUT_STOP_SOUND'] = ("SoftCode", 0)
+            self.bpod.define_xonar_sounds_actions()
         log.info(f"Sound module loaded: OK: {self.hardware_settings.device_sound['OUTPUT']}")
 
     def sound_play_noise(self, state_timer=0.510, state_name='play_noise'):
@@ -795,14 +787,14 @@ class SoundMixin:
         Plays the noise sound for the error feedback using bpod state machine
         :return: bpod current trial export
         """
-        return self._sound_play(state_name=state_name, output_actions=[self.sound.OUT_TONE], state_timer=state_timer)
+        return self._sound_play(state_name=state_name, output_actions=[self.bpod.actions.play_tone], state_timer=state_timer)
 
     def sound_play_tone(self, state_timer=0.102, state_name='play_tone'):
         """
         Plays the ready tone beep using bpod state machine
         :return: bpod current trial export
         """
-        return self._sound_play(state_name=state_name, output_actions=[self.sound.OUT_TONE], state_timer=state_timer)
+        return self._sound_play(state_name=state_name, output_actions=[self.bpod.actions.play_tone], state_timer=state_timer)
 
     def _sound_play(self, state_timer=None, output_actions=None, state_name='play_sound'):
         """
@@ -814,7 +806,7 @@ class SoundMixin:
         sma.add_state(
             state_name=state_name,
             state_timer=state_timer,
-            output_actions=[self.sound.OUT_TONE],
+            output_actions=[self.bpod.actions.play_tone],
             state_change_conditions={"BNC2Low": "exit", "Tup": "exit"},
         )
         self.bpod.send_state_machine(sma)

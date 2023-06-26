@@ -6,6 +6,7 @@ import json
 import os
 import logging
 
+import serial
 import numpy as np
 from iblutil.util import Bunch
 
@@ -22,9 +23,9 @@ class Bpod(BpodIO):
     def __init__(self, *args, **kwargs):
         try:
             super(Bpod, self).__init__(*args, **kwargs)
-        except UnicodeDecodeError as e:
+        except (serial.serialutil.SerialException, UnicodeDecodeError) as e:
             log.error(e)
-            raise UnicodeDecodeError(
+            raise serial.serialutil.SerialException(
                 "The communication with Bpod is established but the Bpod is not responsive. "
                 "This is usually indicated by the device with a green light. "
                 "Please unplug the Bpod USB cable from the computer and plug it back in to start the task. ") from e
@@ -71,7 +72,14 @@ class Bpod(BpodIO):
         self.default_message_idx += 1
         return self.default_message_idx
 
-    def define_harp_sounds_actions(self, go_tone_index, noise_index, sound_port='Serial3'):
+    def define_xonar_sounds_actions(self):
+        self.actions.update({
+            'play_tone': ("SoftCode", 1),
+            'play_noise': ("SoftCode", 2),
+            'stop_sound': ("SoftCode", 0),
+        })
+
+    def define_harp_sounds_actions(self, go_tone_index=2, noise_index=3, sound_port='Serial3'):
         self.actions.update({
             'play_tone': (sound_port, self._define_message(self.sound_card, [ord("P"), go_tone_index])),
             'play_noise': (sound_port, self._define_message(self.sound_card, [ord("P"), noise_index])),
@@ -89,7 +97,7 @@ class Bpod(BpodIO):
             'rotary_encoder_reset': (re_port, self._define_message(
                 self.rotary_encoder, [RotaryEncoder.COM_SETZEROPOS, RotaryEncoder.COM_ENABLE_ALLTHRESHOLDS])),
             'bonsai_hide_stim': (re_port, self._define_message(self.rotary_encoder, [ord("#"), 1])),
-            'bonsai_show_stim': (re_port, self._define_message(self.rotary_encoder, [ord("#"), 2])),
+            'bonsai_show_stim': (re_port, self._define_message(self.rotary_encoder, [ord("#"), 8])),
             'bonsai_closed_loop': (re_port, self._define_message(self.rotary_encoder, [ord("#"), 3])),
             'bonsai_freeze_stim': (re_port, self._define_message(self.rotary_encoder, [ord("#"), 4])),
             'bonsai_show_center': (re_port, self._define_message(self.rotary_encoder, [ord("#"), 5])),

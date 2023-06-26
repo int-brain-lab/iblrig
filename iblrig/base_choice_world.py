@@ -1,6 +1,7 @@
 """
 This modules extends the base_tasks modules by providing task logic around the Choice World protocol
 """
+import abc
 import json
 import math
 import random
@@ -107,7 +108,7 @@ class ChoiceWorldSession(
         for i in range(self.task_params.NTRIALS):  # Main loop
             # t_overhead = time.time()
             self.next_trial()
-            log.info(f"Starting trial: {i + 1}")
+            log.info(f"Starting trial: {i}")
             # =============================================================================
             #     Start state machine definition
             # =============================================================================
@@ -158,9 +159,6 @@ class ChoiceWorldSession(
         self.sound = Bunch({
             'GO_TONE': daction,
             'WHITE_NOISE': daction,
-            'OUT_TONE': daction,
-            'OUT_NOISE': daction,
-            'OUT_STOP_SOUND': daction,
         })
 
         self.bpod.actions.update({
@@ -211,7 +209,6 @@ class ChoiceWorldSession(
 
     def get_state_machine_trial(self, i):
         sma = StateMachine(self.bpod)  # TODO try instantiate only once for each trial type
-
         if i == 0:  # First trial exception start camera
             session_delay_start = self.task_params.get("SESSION_DELAY_START", 0)
             log.info("First trial initializing, will move to next trial only if:")
@@ -234,7 +231,7 @@ class ChoiceWorldSession(
                 state_name="trial_start",
                 state_timer=0,  # ~100µs hardware irreducible delay
                 state_change_conditions={"Tup": "reset_rotary_encoder"},
-                output_actions=[self.sound.OUT_STOP_SOUND, ("BNC1", 255)],
+                output_actions=[self.bpod.actions.stop_sound, ("BNC1", 255)],
             )  # stop all sounds
 
         sma.add_state(
@@ -254,7 +251,7 @@ class ChoiceWorldSession(
                 self.movement_right: "reset_rotary_encoder",
             },
         )
-
+        # show stimulus, move on to next state if a frame2ttl is detected, with a time-out of 0.1s
         sma.add_state(
             state_name="stim_on",
             state_timer=0.1,
@@ -265,18 +262,18 @@ class ChoiceWorldSession(
                 "BNC1Low": "interactive_delay",
             },
         )
-
+        # this is a feature that can eventually add a delay between visual and auditory cue
         sma.add_state(
             state_name="interactive_delay",
             state_timer=self.task_params.INTERACTIVE_DELAY,
             output_actions=[],
             state_change_conditions={"Tup": "play_tone"},
         )
-
+        # play tone, move on to next state if sound is detected, with a time-out of 0.1s
         sma.add_state(
             state_name="play_tone",
             state_timer=0.1,
-            output_actions=[self.sound.OUT_TONE],
+            output_actions=[self.bpod.actions.play_tone],
             state_change_conditions={
                 "Tup": "reset2_rotary_encoder",
                 "BNC2High": "reset2_rotary_encoder",
@@ -285,7 +282,7 @@ class ChoiceWorldSession(
 
         sma.add_state(
             state_name="reset2_rotary_encoder",
-            state_timer=0,
+            state_timer=0.05,
             output_actions=[self.bpod.actions.rotary_encoder_reset],
             state_change_conditions={"Tup": "closed_loop"},
         )
@@ -304,7 +301,7 @@ class ChoiceWorldSession(
         sma.add_state(
             state_name="no_go",
             state_timer=self.task_params.FEEDBACK_NOGO_DELAY_SECS,
-            output_actions=[self.bpod.actions.bonsai_hide_stim, self.sound.OUT_NOISE],
+            output_actions=[self.bpod.actions.bonsai_hide_stim, self.bpod.actions.play_noise],
             state_change_conditions={"Tup": "exit_state"},
         )
 
@@ -318,7 +315,7 @@ class ChoiceWorldSession(
         sma.add_state(
             state_name="error",
             state_timer=self.task_params.FEEDBACK_ERROR_DELAY_SECS,
-            output_actions=[self.sound.OUT_NOISE],
+            output_actions=[self.bpod.actions.play_noise],
             state_change_conditions={"Tup": "hide_stim"},
         )
 
@@ -361,6 +358,10 @@ class ChoiceWorldSession(
             state_change_conditions={"Tup": "exit"},
         )
         return sma
+
+    @abc.abstractmethod
+    def next_trial(self):
+        pass
 
     def draw_next_trial_info(self, pleft=0.5, contrast=None, position=None):
         contrast = contrast or misc.draw_contrast(self.task_params.CONTRAST_SET, self.task_params.CONTRAST_SET_PROBABILITY_TYPE)
@@ -454,9 +455,6 @@ TIME FROM START:      {self.time_elapsed}
             assert 'REWARD_VALVE_TIME' in self.calibration.keys(), 'Reward valve time not calibrated'
         return self.task_params.ITI_CORRECT - self.calibration.get('REWARD_VALVE_TIME', None)
 
-    def next_trial(self):
-        pass
-
     """
     Those are the properties that are used in the state machine code
     """
@@ -521,7 +519,7 @@ class HabituationChoiceWorldSession(ChoiceWorldSession):
             state_name="stim_on",
             state_timer=self.trials_table.at[self.trial_num, 'delay_to_stim_center'],
             state_change_conditions={"Tup": "stim_center"},
-            output_actions=[self.bpod.actions.bonsai_show_stim, self.sound.OUT_TONE],
+            output_actions=[self.bpod.actions.bonsai_show_stim, self.bpod.actions.play_tone],
         )
 
         sma.add_state(

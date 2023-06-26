@@ -1,4 +1,3 @@
-import datetime
 import logging
 import sys
 import time
@@ -25,12 +24,14 @@ class Session(ChoiceWorldSession):
     def get_state_machine_trial(self, *args, **kwargs):
         pass
 
-    def run(self):
+    def next_trial(self):
+        pass
+
+    def _run(self):
         """
         This is the method that runs the task with the actual state machine
         :return:
         """
-        # super(ChoiceWorldSession, self).run()
         log.info("Starting passive protocol")
         # Run the passive part i.e. spontaneous activity and RFMapping stim
         self.run_passive_visual_stim()
@@ -55,10 +56,6 @@ class Session(ChoiceWorldSession):
             if self.paths.SESSION_FOLDER.joinpath('.stop').exists():
                 self.paths.SESSION_FOLDER.joinpath('.stop').unlink()
                 break
-        log.critical("Graceful exit")
-        self.session_info.SESSION_END_TIME = datetime.datetime.now().isoformat()
-        self.save_task_parameters_to_json_file()
-        self.register_to_alyx()
 
 
 if __name__ == "__main__":  # pragma: no cover
