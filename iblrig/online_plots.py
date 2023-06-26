@@ -7,6 +7,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+from pandas.api.types import CategoricalDtype
 
 import one.alf.io
 from iblrig.raw_data_loaders import load_task_jsonable
@@ -15,7 +16,7 @@ from iblutil.util import Bunch
 
 NTRIALS_INIT = 2000
 NTRIALS_PLOT = 20  # do not edit - this is used also to enforce the completion criteria
-CONTRAST_SET = np.array([0, 1 / 16, 1 / 8, 1 / 4, 1])
+CONTRAST_SET = np.array([0, 1 / 16, 1 / 8, 1 / 4, 1 / 2, 1])
 PROBABILITY_SET = np.array([.2, .5, .8])
 # if the mouse does less than 400 trials in the first 45mins it's disengaged
 ENGAGED_CRITIERION = {'secs': 45 * 60, 'trial_count': 400}
@@ -53,15 +54,15 @@ class DataModel(object):
         :param task_file:
         """
         self.session_path = one.alf.files.get_session_path(task_file) or ""
+        self.last_trials = pd.DataFrame(
+            columns=['correct', 'signed_contrast', 'stim_on', 'play_tone', 'reward_time', 'error_time', 'response_time'],
+            index=np.arange(NTRIALS_PLOT))
         if task_file is None or not Path(task_file).exists():
             self.psychometrics = pd.DataFrame(
                 columns=['count', 'response_time', 'choice', 'response_time_std', 'choice_std'],
                 index=pd.MultiIndex.from_product([PROBABILITY_SET, np.r_[- np.flipud(CONTRAST_SET[1:]), CONTRAST_SET]])
             )
             self.psychometrics['count'] = 0
-            self.last_trials = pd.DataFrame(
-                columns=['correct', 'scontrast', 'stim_on', 'play_tone', 'reward_time', 'error_time', 'response_time'],
-                index=np.arange(NTRIALS_PLOT))
             self.trials_table = pd.DataFrame(columns=['response_time'], index=np.arange(NTRIALS_INIT))
             self.ntrials = 0
             self.ntrials_correct = 0
@@ -74,27 +75,34 @@ class DataModel(object):
             trials_table['signed_contrast'] = np.sign(trials_table['position']) * trials_table['contrast']
             trials_table['choice'] = trials_table['position'] > 0
             trials_table.loc[~trials_table.trial_correct, 'choice'] = ~trials_table['choice'][~trials_table.trial_correct]
-
+            trials_table['contrast'] = trials_table['contrast'].astype(
+                CategoricalDtype(categories=np.unique(np.r_[-CONTRAST_SET, CONTRAST_SET]), ordered=True))
+            trials_table['stim_probability_left'] = trials_table['stim_probability_left'].astype(
+                CategoricalDtype(categories=PROBABILITY_SET, ordered=True))
             self.psychometrics = trials_table.groupby(['stim_probability_left', 'signed_contrast']).agg(
                 count=pd.NamedAgg(column="signed_contrast", aggfunc="count"),
-                response_time=pd.NamedAgg(column="response_time", aggfunc="mean"),
+                response_time=pd.NamedAgg(column="response_time", aggfunc=np.nanmean),
                 choice=pd.NamedAgg(column="choice", aggfunc="mean"),
-                response_time_std=pd.NamedAgg(column="response_time", aggfunc="std"),
-                choice_std=pd.NamedAgg(column="choice", aggfunc="std"),
+                response_time_std=pd.NamedAgg(column="response_time", aggfunc=np.nanstd),
+                choice_std=pd.NamedAgg(column="choice", aggfunc=np.nanmean),
             )
             self.ntrials = trials_table.shape[0]
             self.ntrials_correct = np.sum(trials_table.trial_correct)
             # agg.water_delivered = trials_table.water_delivered.iloc[-1]
             self.water_delivered = trials_table.reward_amount.sum()
-            self.last_trials = pd.DataFrame({
-                'correct': trials_table.trial_correct.iloc[-NTRIALS_PLOT:].values,
-                'scontrast': trials_table.signed_contrast.iloc[-NTRIALS_PLOT:].values,
-                'stim_on': np.array([bpod_data[i]['States timestamps']['stim_on'][0][0] for i in np.arange(-NTRIALS_PLOT, 0)]), # noqa
-                'play_tone': np.array([bpod_data[i]['States timestamps']['play_tone'][0][0] for i in np.arange(-NTRIALS_PLOT, 0)]), # noqa
-                'reward_time': np.array([bpod_data[i]['States timestamps']['reward'][0][0] for i in np.arange(-NTRIALS_PLOT, 0)]), # noqa
-                'error_time': np.array([bpod_data[i]['States timestamps']['error'][0][0] for i in np.arange(-NTRIALS_PLOT, 0)]), # noqa
-                'response_time': trials_table['response_time'].values[-NTRIALS_PLOT:]
-            })
+            # init the last trials table
+            it = self.last_trials.index[-np.minimum(self.ntrials, NTRIALS_PLOT):]
+            self.last_trials.loc[it, 'correct'] = trials_table.trial_correct.iloc[-NTRIALS_PLOT:].values
+            self.last_trials.loc[it, 'signed_contrast'] = trials_table.signed_contrast.iloc[-NTRIALS_PLOT:].values
+            self.last_trials.loc[it, 'response_time'] = trials_table.response_time.iloc[-NTRIALS_PLOT:].values
+            self.last_trials.loc[it, 'stim_on'] = np.array(
+                [bpod_data[i]['States timestamps']['stim_on'][0][0] for i in np.arange(-it.size, 0)])
+            self.last_trials.loc[it, 'play_tone'] = np.array(
+                [bpod_data[i]['States timestamps']['play_tone'][0][0] for i in np.arange(-it.size, 0)])
+            self.last_trials.loc[it, 'reward_time'] = np.array(
+                [bpod_data[i]['States timestamps']['reward'][0][0] for i in np.arange(-it.size, 0)])
+            self.last_trials.loc[it, 'error_time'] = np.array(
+                [bpod_data[i]['States timestamps']['error'][0][0] for i in np.arange(-it.size, 0)])
             # we keep only a single column as buffer
             self.trials_table = trials_table[['response_time']]
         # for the trials plots this is the background image showing green if correct, red if incorrect
@@ -102,11 +110,11 @@ class DataModel(object):
         self.rgb_background[self.last_trials.correct == False, 0, 0] = 255  # noqa
         self.rgb_background[self.last_trials.correct == True, 0, 1] = 255  # noqa
         # keep the last contrasts as a 20 by 2 array
-        ileft = np.where(self.last_trials.scontrast < 0)[0]  # negative position is left
-        iright = np.where(self.last_trials.scontrast > 0)[0]
+        ileft = np.where(self.last_trials.signed_contrast < 0)[0]  # negative position is left
+        iright = np.where(self.last_trials.signed_contrast > 0)[0]
         self.last_contrasts = np.zeros((NTRIALS_PLOT, 2))
-        self.last_contrasts[ileft, 0] = np.abs(self.last_trials.scontrast[ileft])
-        self.last_contrasts[iright, 1] = np.abs(self.last_trials.scontrast[iright])
+        self.last_contrasts[ileft, 0] = np.abs(self.last_trials.signed_contrast[ileft])
+        self.last_contrasts[iright, 1] = np.abs(self.last_trials.signed_contrast[iright])
 
     def update_trial(self, trial_data, bpod_data):
         # update counters
@@ -135,12 +143,11 @@ class DataModel(object):
             mean=self.psychometrics.loc[indexer, ('choice')],
             std=self.psychometrics.loc[indexer, ('choice_std')]
         )
-
         # update last trials table
         self.last_trials = self.last_trials.shift(-1)
         i = NTRIALS_PLOT - 1
         self.last_trials.at[i, 'correct'] = trial_data.trial_correct
-        self.last_trials.at[i, 'scontrast'] = signed_contrast
+        self.last_trials.at[i, 'signed_contrast'] = signed_contrast
         self.last_trials.at[i, 'stim_on'] = bpod_data['States timestamps']['stim_on'][0][0]
         self.last_trials.at[i, 'play_tone'] = bpod_data['States timestamps']['play_tone'][0][0]
         self.last_trials.at[i, 'reward_time'] = bpod_data['States timestamps']['reward'][0][0]
@@ -152,7 +159,8 @@ class DataModel(object):
         # update contrasts
         self.last_contrasts = np.roll(self.last_contrasts, -1, axis=0)
         self.last_contrasts[-1, :] = 0
-        self.last_contrasts[-1, int(self.last_trials.scontrast.iloc[-1] > 0)] = abs(self.last_trials.scontrast.iloc[-1])
+        self.last_contrasts[-1, int(self.last_trials.signed_contrast.iloc[-1] > 0)] = abs(
+            self.last_trials.signed_contrast.iloc[-1])
 
     def compute_end_session_criteria(self):
         """
@@ -193,16 +201,16 @@ class OnlinePlots(object):
         h.ax_performance = h.fig.add_subplot(h.gs[0, nc - 1])
         h.ax_reaction = h.fig.add_subplot(h.gs[1, hc:nc - 1])
         h.ax_water = h.fig.add_subplot(h.gs[1, nc - 1])
-        h.ax_psych.set(title='psychometric curve', xlim=[-1, 1], ylim=[0, 1])
-        h.ax_reaction.set(title='reaction times', xlim=[-1, 1], ylim=[0, 4], xlabel='signed contrast')
+        h.ax_psych.set(title='psychometric curve', xlim=[-1.01, 1.01], ylim=[0, 1.01])
+        h.ax_reaction.set(title='reaction times', xlim=[-1.01, 1.01], ylim=[0, 4], xlabel='signed contrast')
         h.ax_trials.set(yticks=[], title='trials timeline', xlim=[-5, 30], xlabel='time (s)')
-        h.ax_performance.set(xticks=[], xlim=[-1, 1], title='# trials')
-        h.ax_water.set(xticks=[], xlim=[-1, 1], ylim=[0, 1000], title='water (uL)')
+        h.ax_performance.set(xticks=[], xlim=[-1.01, 1.01], title='# trials')
+        h.ax_water.set(xticks=[], xlim=[-1.01, 1.01], ylim=[0, 1000], title='water (uL)')
 
         # create psych curves
         h.curve_psych = {}
         h.curve_reaction = {}
-        for i, p in enumerate([0.5, 0.2, 0.8]):
+        for i, p in enumerate(PROBABILITY_SET):
             h.curve_psych[p] = h.ax_psych.plot(
                 self.data.psychometrics.loc[p].index, self.data.psychometrics.loc[p]['choice'], '.-')
             h.curve_reaction[p] = h.ax_reaction.plot(
@@ -251,24 +259,31 @@ class OnlinePlots(object):
         :return:
         """
         self.data.update_trial(trial_data, bpod_data)
+        self.update_graphics(pupdate=trial_data.stim_probability_left)
+
+    def update_graphics(self, pupdate=None):
         background_color = self.data.compute_end_session_criteria()
         h = self.h
         h.fig.set_facecolor(background_color)
         self.update_titles()
-        p = trial_data.stim_probability_left
-        # update psychometric curves
-        h.curve_psych[p][0].set_ydata(self.data.psychometrics.loc[p]['choice'])
-        h.curve_reaction[p][0].set_ydata(self.data.psychometrics.loc[p]['response_time'])
-        # update the last trials plot
-        self.h.im_trials.set_array(self.data.rgb_background)
-        for k in ['stim_on', 'reward_time', 'error_time', 'play_tone']:
-            h.lines_trials[k][0].set(xdata=self.data.last_trials[k])
-        self.h.scatter_contrast.set_array(self.data.last_contrasts.T.flatten())
-        # update barplots
-        self.h.bar_correct[0].set(height=self.data.ntrials_correct)
-        self.h.bar_error[0].set(height=self.data.ntrials - self.data.ntrials_correct, y=self.data.ntrials_correct)
-        self.h.bar_water[0].set(height=self.data.water_delivered)
-        h.ax_performance.set(ylim=[0, (self.data.ntrials // 50 + 1) * 50])
+        for p in PROBABILITY_SET:
+            if pupdate is not None and p != pupdate:
+                continue
+            # update psychometric curves
+            iok = ~np.isnan(self.data.psychometrics.loc[p]['choice'].values.astype(np.float32))
+            xval = self.data.psychometrics.loc[p].index[iok]
+            h.curve_psych[p][0].set(xdata=xval, ydata=self.data.psychometrics.loc[p]['choice'][iok])
+            h.curve_reaction[p][0].set(xdata=xval, ydata=self.data.psychometrics.loc[p]['response_time'][iok])
+            # update the last trials plot
+            self.h.im_trials.set_array(self.data.rgb_background)
+            for k in ['stim_on', 'reward_time', 'error_time', 'play_tone']:
+                h.lines_trials[k][0].set(xdata=self.data.last_trials[k])
+            self.h.scatter_contrast.set_array(self.data.last_contrasts.T.flatten())
+            # update barplots
+            self.h.bar_correct[0].set(height=self.data.ntrials_correct)
+            self.h.bar_error[0].set(height=self.data.ntrials - self.data.ntrials_correct, y=self.data.ntrials_correct)
+            self.h.bar_water[0].set(height=self.data.water_delivered)
+            h.ax_performance.set(ylim=[0, (self.data.ntrials // 50 + 1) * 50])
 
     @property
     def _session_string(self):
