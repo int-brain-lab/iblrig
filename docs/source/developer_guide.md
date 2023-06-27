@@ -19,35 +19,6 @@
     - initiate local server transfer
 
 ## How to write a task
-The software is hierarchically structured, with the following main classes:
-
-![image](_static/classes.png)
-
-<table><tr><td>
-<pre>
-**Hello**,
-
-_world_.
-</pre>
-</td></tr></table>
-
-okay
-
-<style>
-  .containerr {
-    overflow: scroll !important;
-    white-space: nowrap;
-    max-width: 800px;
-    max-height: 800px;
-  }
-  img {
-    max-width: 1000%;
-  }
-</style>
-
-<div class="containerr">
-  <img src="https://images.hdqwalls.com/wallpapers/talking-to-the-moon-ym.jpg" width="2000px"/>
-</div>
 
 ### iblrig.base_tasks.BaseTask
 This is the base class for all tasks. It provides abstract methods and methods to create the folder architecture and for the Alyx database registration.
