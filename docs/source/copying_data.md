@@ -2,14 +2,22 @@
 
 ## Copy commands
 
+### Usage
 Data can be copied from the acquisition PCs to the lab server by running the following command
 in a terminal
-```python
-conda activate iblenv
+```shell
+C:\iblrigv8\venv\scripts\Activate.ps1
 python iblscripts/deploy/transfer_data.py
 ```
 
-For this to work must set up transfer parameters (TODO section describing transfer parameters and how to set them up)
+### Insatllation
+If you get missing libraries, you can install the iblscripts package with
+```shell
+pip install git+https://github.com/int-brain-lab/iblscripts.git
+```
+
+
+
 
 ## FAQ
 Section here with common copy errors and how to fix them

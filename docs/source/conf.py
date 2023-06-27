@@ -9,12 +9,12 @@
 project = 'iblrig'
 copyright = '2018, International Brain Laboratory'
 author = 'International Brain Laboratory'
-release = '8.0'
+release = '8.x'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = ['sphinx_lesson', 'myst_parser']
+extensions = ['sphinx_lesson']
 source_suffix = ['.rst', '.md']
 
 templates_path = ['_templates']

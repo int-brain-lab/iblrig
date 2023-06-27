@@ -21,6 +21,7 @@ python -m unittest discover ./iblrig/test
 # make sure pre-requisites are installed
 pip install -r requirements-dev.txt   
 # create the static directory
+rm -rf ./docs/build
 mkdir -p ./docs/build/html/_static  
 # unit tests generate task diagrams
 python -m unittest discover ./iblrig/test  

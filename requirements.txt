@@ -4,6 +4,7 @@ graphviz
 ibllib
 ipython
 git+https://github.com/int-brain-lab/iblpybpod.git@no-gui
+git+https://github.com/int-brain-lab/iblscripts.git
 numpy
 ONE-api
 packaging

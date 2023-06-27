@@ -22,10 +22,12 @@
 
 ### iblrig.base_tasks.BaseTask
 This is the base class for all tasks. It provides abstract methods and methods to create the folder architecture and for the Alyx database registration.
-When subclassing BaseTask, you must override the following methods:
--   `_run()`: This is the main method of the task. It is wrapped into by the run() method that provides the folder creation and Alyx interface before and after the task run.
--  `start_hardware()`: This method starts the hardware modules and connects to each one of them.
 
+1.  When subclassing BaseTask, you must override the following methods:
+   -   `_run()`: This is the main method of the task. It is wrapped into by the run() method that provides the folder creation and Alyx interface before and after the task run.
+     -  `start_hardware()`: This method starts the hardware modules and connects to each one of them.
+
+2.  Make sure you document your protocol name with the from `protocol_name` property.
 ### Hardware modules
 Hardware mixins, in `iblrig.base_tasks` are dedicated to specific modules. These are mixin classes that provide hardware-specific functionality. To use those mixins, compose them with the `BaseClass` above.
 The mixins for hardware modules provide a way to decouple the hardware-specific code from the task code.
