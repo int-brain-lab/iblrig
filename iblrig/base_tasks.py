@@ -488,6 +488,9 @@ class BonsaiVisualStimulusMixin(object):
     def start_mixin_bonsai_visual_stimulus(self):
         self.choice_world_visual_stimulus()
 
+    def stop_mixin_bonsai_visual_stimulus(self):
+        self.bonsai_visual_udp_client.udp_client.exit()
+
     def send_trial_info_to_bonsai(self):
         """
         This sends the trial information to the Bonsai UDP port for the stimulus
