@@ -1,5 +1,5 @@
-Install iblrig
-==============
+Installation guide
+==================
 
 .. prerequisites::
 

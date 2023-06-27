@@ -1,4 +1,4 @@
-# Copying data from acquisition computers to the lab server
+# Copy data to the lab server
 
 ## Copy commands
 
