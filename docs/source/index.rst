@@ -10,7 +10,7 @@ Welcome to iblrig's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   usage
    installation
    description_file
-   usage
    developer_guide
