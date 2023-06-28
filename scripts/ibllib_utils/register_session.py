@@ -363,11 +363,6 @@ class RegistrationClient:
         if kwargs.get('projects', False):
             ses_['projects'] = ensure_list(kwargs.pop('projects'))
         assert ('subject', 'number') not in kwargs
-        if 'lab' not in kwargs and details['lab']:
-            kwargs.update({'lab': details['lab']})
-        elif details['lab'] and kwargs.get('lab', details['lab']) != details['lab']:
-            names = (kwargs['lab'], details['lab'])
-            _logger.warning('lab kwarg "%s" does not match lab name in path ("%s")' % names)
         ses_.update(kwargs)
 
         if not session:  # Create from scratch
