@@ -25,6 +25,7 @@ from one.api import ONE
 from one.util import ensure_list
 from one.webclient import no_cache
 
+import iblrig.raw_data_loaders
 import iblrig
 import one
 _logger = setup_logger('iblrig', level='INFO')
@@ -93,43 +94,6 @@ class RegistrationClient:
             dt['filename_pattern'] for dt in self.dtypes if dt['filename_pattern']]
         self.file_extensions = [df['file_extension'] for df in
                                 self.one.alyx.rest('data-formats', 'list', no_cache=True)]
-
-    def create_sessions(self, root_data_folder, glob_pattern='**/create_me.flag',
-                        register_files=False, dry=False, **kwargs):
-        """
-        Create sessions looking recursively for flag files.
-
-        Parameters
-        ----------
-        root_data_folder : str, pathlib.Path
-            Folder to look for sessions.
-        glob_pattern : str
-            Register valid sessions that contain this pattern.
-        register_files : bool
-            If true, register all valid datasets within the session folder.
-        dry : bool
-            If true returns list of sessions without creating them on Alyx.
-
-        Returns
-        -------
-        list of pathlib.Paths
-            Newly created session paths.
-        list of dicts
-            Alyx session records.
-        """
-        flag_files = list(Path(root_data_folder).glob(glob_pattern))
-        records = []
-        for flag_file in flag_files:
-            if dry:
-                records.append(print(flag_file))
-                continue
-            _logger.info('creating session for ' + str(flag_file.parent))
-            # providing a false flag stops the registration after session creation
-            session_info, _ = self.register_session(
-                flag_file.parent, file_list=register_files, **kwargs)
-            records.append(session_info)
-            flag_file.unlink()
-        return [ff.parent for ff in flag_files], records
 
     def create_new_session(self, subject, session_root=None, date=None, register=True, **kwargs):
         """Create a new local session folder and optionally create session record on Alyx.
@@ -755,9 +719,61 @@ class RegistrationClient:
 if __name__ == "__main__":
     IBLRIG_DATA_FOLDER = sys.argv[1]
     try:
-        _logger.info(f"Trying to register session in Alyx..., iblrig version {iblrig.__version__}, one version {one.__version__}")
-        RegistrationClient(one=None).create_sessions(IBLRIG_DATA_FOLDER, dry=False)
-        _logger.info("Done")
+        _logger.info(f"Registering all sessions in Alyx..., iblrig version {iblrig.__version__}, one version {one.__version__}")
+        flag_files = list(Path(IBLRIG_DATA_FOLDER).glob('**/create_me.flag'))
+        _logger.info(f"Found {len(flag_files)} sessions to register")
+        rc = RegistrationClient(one=None)
+        for flag_file in flag_files:
+            session_path = flag_file.parent
+            _logger.info(f'creating session for {session_path}')
+            settings = iblrig.raw_data_loaders.load_settings(session_path)
+            bpod_trials = iblrig.raw_data_loaders.load_data(session_path)
+
+            # convert iso timestamp to datetime
+            start_time = datetime.datetime.strptime(bpod_trials[0]['init_datetime'], '%Y-%m-%dT%H:%M:%S')
+            session_duration_secs = bpod_trials[-1]['behavior_data']['Trial end timestamp']
+            # add session duration in seconds to start time
+            end_time = start_time + datetime.timedelta(seconds=session_duration_secs)
+            # providing a false flag stops the registration after session creation
+            registration_kwargs = {
+                'ses_path': session_path,
+                'file_list': False,
+                'location': settings['PYBPOD_BOARD'],
+                'n_correct_trials': bpod_trials[-1]['ntrials_correct'],
+                'n_trials': len(bpod_trials),
+                'start_time':  start_time,
+                'end_time': end_time,
+            }
+            ses, _ = rc.register_session(**registration_kwargs)
+            _logger.info(f'session registered in Alyx database: {ses["subject"]}, {ses["start_time"]}, {ses["number"]}')
+            # add the weight if available and if there is no previous weighing registered
+            if settings['SUBJECT_WEIGHT']:
+                wd = dict(nickname=settings['SUBJECT_NAME'], date_time=rc.ensure_ISO8601(start_time))
+                previous_weighings = rc.one.alyx.rest('weighings', 'list', **wd, no_cache=True)
+                if len(previous_weighings) == 0:
+                    _logger.info(f"Registers weighing in Alyx database: {ses['subject']}, {settings['SUBJECT_WEIGHT']}g")
+                    wd = dict(subject=settings['SUBJECT_NAME'],
+                              date_time=rc.ensure_ISO8601(start_time),
+                              weight=settings['SUBJECT_WEIGHT'])
+                    rc.one.alyx.rest('weighings', 'create', data=wd)
+                else:
+                    _logger.info(
+                        f"Weighing found for {settings['SUBJECT_WEIGHT']}")
+            # add the water administration if there is no water administration registered
+            if bpod_trials[-1]['water_delivered']:
+                if len(rc.one.alyx.rest('water-administrations', 'list', session=ses['url'][-36:], no_cache=True)) == 0:
+                    wa_data = dict(
+                        session=ses['url'][-36:],
+                        subject=settings['SUBJECT_NAME'],
+                        water_type=settings.get('REWARD_TYPE', None),
+                        water_administered=bpod_trials[-1]['water_delivered'],
+                    )
+                    rc.one.alyx.rest('water-administrations', 'create', data=wa_data)
+                    _logger.info(f"Water administered registered in Alyx database: {ses['subject']},"
+                             f"{bpod_trials[-1]['water_delivered']}mL")
+
+            flag_file.unlink()
+        _logger.info("Finished registering all sessions in Alyx")
     except Exception:
         _logger.error(traceback.format_exc())
         _logger.warning("Failed to register session on Alyx, will try again from local server after transfer")
