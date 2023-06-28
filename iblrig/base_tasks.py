@@ -93,7 +93,7 @@ class BaseSession(ABC):
             'SESSION_START_TIME': self.init_datetime.isoformat(),
             'SESSION_END_TIME': None,
             'SESSION_NUMBER': 0,
-            'SUBJECT_NAME': subject or self.pybpod_settings.PYBPOD_SUBJECTS[0],
+            'SUBJECT_NAME': subject,
             'SUBJECT_WEIGHT': None,
             'TOTAL_WATER_DELIVERED': 0,
         })

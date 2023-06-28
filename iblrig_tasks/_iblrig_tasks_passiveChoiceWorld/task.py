@@ -18,7 +18,7 @@ class Session(ChoiceWorldSession):
         super(ChoiceWorldSession, self).__init__(**kwargs)
         SESSION_IDX = 0
         all_trials = pd.read_parquet(Path(__file__).parent.joinpath('passiveChoiceWorld_trials_fixtures.pqt'))
-        self.trials_table = all_trials[all_trials['session_id'] == SESSION_IDX]
+        self.trials_table = all_trials[all_trials['session_id'] == SESSION_IDX].copy()
         self.trials_table['reward_valve_time'] = self.compute_reward_time(amount_ul=self.trials_table['reward_amount'])
 
     def get_state_machine_trial(self, *args, **kwargs):
