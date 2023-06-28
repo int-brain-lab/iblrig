@@ -20,7 +20,17 @@ Copy in the following:
     cd C:\iblrig
     python C:\iblrig\scripts\transfer_rig_data.py C:\iblrig_data\Subjects Y:\Subjects
 
-## Installation on Windows
+## Update instructions
+This is only possible within minor releases, for example 7.1.0 to 7.3.1.
+If going from a major release to another, (for example 6.X.X to 7.X.X) then follow the full installation instructions for the release.
+    
+    cd C:\iblrig
+    git checkout tags/7.X.X
+    
+Where 7.X.X is the version you want to update to.
+(`python setup_pybpod.py` is needed if there are updates to the task code, but this should only impact major releases)
+
+## Installation on Windows for iblrig V7.X.X
 Software has only been tested on Windows 10. No other version of Windows is supported at this time. The test user account has 
 administrative rights.
 
