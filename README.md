@@ -1,6 +1,25 @@
 # iblrig v7
 Software used to interact with various pieces of specialized hardware for neuroscience data acquisition.
 
+## Usage instructions
+
+### Launch a task
+Open Windows Powershell (blue icon on the taskbar)
+Copy in the following:
+
+    C:\iblrig\venv\Scripts\.\Activate.ps1
+    cd C:\iblrig_params
+    start-pybpod
+
+### Transfer data
+
+Open Windows Powershell (blue icon on the taskbar)
+Copy in the following:
+
+    C:\iblrig\venv\Scripts\.\Activate.ps1
+    cd C:\iblrig
+    python C:\iblrig\scripts\transfer_rig_data.py C:\iblrig_data\Subjects Y:\Subjects
+
 ## Installation on Windows
 Software has only been tested on Windows 10. No other version of Windows is supported at this time. The test user account has 
 administrative rights.
