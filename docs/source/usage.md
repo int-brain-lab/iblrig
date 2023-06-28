@@ -1,21 +1,27 @@
-# Copy data to the lab server
+# Using IBLRIG
+
+## Run a task
+
+To run a task using command line, open a terminal and type
+
+    C:\iblrigv8\venv\scripts\Activate.ps1
+    python iblscripts/deploy/transfer_data.py
+
 
 ## Copy commands
 
 ### Usage
 Data can be copied from the acquisition PCs to the lab server by running the following command
 in a terminal
-```shell
-C:\iblrigv8\venv\scripts\Activate.ps1
-python iblscripts/deploy/transfer_data.py
-```
 
-### Insatllation
+    C:\iblrigv8\venv\scripts\Activate.ps1
+    python iblscripts/deploy/transfer_data.py
+
+
+### Installation
 If you get missing libraries, you can install the iblscripts package with
-```shell
-pip install git+https://github.com/int-brain-lab/iblscripts.git
-```
 
+    pip install git+https://github.com/int-brain-lab/iblscripts.git
 
 
 

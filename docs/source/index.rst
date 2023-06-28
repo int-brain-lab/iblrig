@@ -12,5 +12,5 @@ Welcome to iblrig's documentation!
 
    installation
    description_file
-   copying_data
+   usage
    developer_guide
