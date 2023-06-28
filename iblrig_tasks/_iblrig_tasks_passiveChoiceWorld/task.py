@@ -21,6 +21,15 @@ class Session(ChoiceWorldSession):
         self.trials_table = all_trials[all_trials['session_id'] == SESSION_IDX].copy()
         self.trials_table['reward_valve_time'] = self.compute_reward_time(amount_ul=self.trials_table['reward_amount'])
 
+    def start_hardware(self):
+        if not self.is_mock:
+            self.start_mixin_frame2ttl()
+            self.start_mixin_bpod()
+            self.start_mixin_valve()
+            self.start_mixin_sound()
+            self.start_mixin_bonsai_cameras()
+            self.start_mixin_bonsai_microphone()
+
     def get_state_machine_trial(self, *args, **kwargs):
         pass
 
@@ -38,7 +47,7 @@ class Session(ChoiceWorldSession):
         # Then run the replay of task events: V for valve, T for tone, N for noise, G for gratings
         log.info("Starting replay of task stims")
         for self.trial_num, trial in self.trials_table.iterrows():
-            log.info(f"Delay: {trial.stim_delay}; ID: {trial.type}; Count: {self.trial_num}/300")
+            log.info(f"Delay: {trial.stim_delay}; ID: {trial.stim_type}; Count: {self.trial_num}/300")
             sys.stdout.flush()
             time.sleep(trial.stim_delay)
             if trial.type == "V":

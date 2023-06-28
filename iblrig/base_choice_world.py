@@ -22,7 +22,6 @@ from iblutil.util import setup_logger
 
 from iblrig import choiceworld
 import iblrig.base_tasks
-import iblrig.user_input as user
 import iblrig.misc as misc
 
 log = setup_logger('iblrig', level="INFO")
@@ -93,9 +92,6 @@ class ChoiceWorldSession(
             self.start_mixin_bonsai_cameras()
             self.start_mixin_bonsai_microphone()
             self.start_mixin_bonsai_visual_stimulus()
-        if self.interactive:
-            self.session_info.SUBJECT_WEIGHT = user.ask_subject_weight(self.session_info.SUBJECT_NAME)
-            self.task_params.SESSION_START_DELAY_SEC = user.ask_session_delay()
 
     def _run(self):
         """

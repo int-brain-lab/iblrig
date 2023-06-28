@@ -34,6 +34,7 @@ import iblrig.frame2TTL as frame2TTL
 import iblrig.sound as sound
 import iblrig.spacer
 import iblrig.alyx
+import iblrig.user_input as user
 import ibllib.io.session_params as ses_params
 
 log = logging.getLogger("iblrig")
@@ -316,6 +317,9 @@ class BaseSession(ABC):
         # here we make sure we connect to the hardware before writing the session to disk
         # this prevents from incrementing endlessly the session number if the hardware fails to connect
         self.start_hardware()
+        if self.interactive:
+            self.session_info.SUBJECT_WEIGHT = user.ask_subject_weight(self.session_info.SUBJECT_NAME)
+            # self.task_params.SESSION_START_DELAY_SEC = user.ask_session_delay()
         self.create_session()
 
         def sigint_handler(*args, **kwargs):
@@ -324,6 +328,8 @@ class BaseSession(ABC):
             log.critical("SIGINT signal detected, will exit at the end of the trial")
 
         signal.signal(signal.SIGINT, sigint_handler)
+        if self.interactive:
+            input("Everything is ready to go, press Enter to start the task...")
         self._run()  # runs the specific task logic ie. trial loop etc...
         # post task instructions
         log.critical("Graceful exit")
@@ -418,17 +424,16 @@ class BonsaiRecordingMixin(object):
             return
         workflow_file = self.paths.IBLRIG_FOLDER.joinpath(
             *self.hardware_settings.device_microphone['BONSAI_WORKFLOW'].split('/'))
-        here = os.getcwd()
-        os.chdir(workflow_file.parent)
-        subprocess.Popen([
+        cmd = [
             str(self.paths.BONSAI),
             str(workflow_file),
             "--start",
             f"-p:FileNameMic={self.paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_micData.raw.wav')}",
             f"-p:RecordSound={self.task_params.RECORD_SOUND}",
             "--no-boot"]
-        )
-        os.chdir(here)
+        log.info('starting Bonsai microphone recording')
+        log.info(' '.join(cmd))
+        subprocess.Popen(cmd, cwd=workflow_file.parent)
         log.info("Bonsai microphone recording module loaded: OK")
 
     @staticmethod
@@ -451,12 +456,13 @@ class BonsaiRecordingMixin(object):
         """
         if self._camera_mixin_bonsai_get_workflow_file(self.hardware_settings.device_cameras) is None:
             return
-        here = os.getcwd()
+
         bonsai_camera_file = self.paths.IBLRIG_FOLDER.joinpath('devices', 'camera_setup', 'setup_video.bonsai')
-        os.chdir(str(bonsai_camera_file.parent))
         # this locks until Bonsai closes
-        subprocess.call([str(self.paths.BONSAI), str(bonsai_camera_file), "--start-no-debug", "--no-boot"])
-        os.chdir(here)
+        cmd = [str(self.paths.BONSAI), str(bonsai_camera_file), "--start-no-debug", "--no-boot"]
+        log.info('starting Bonsai microphone recording')
+        log.info(' '.join(cmd))
+        subprocess.call(cmd, cwd=bonsai_camera_file.parent)
         log.info("Bonsai cameras setup module loaded: OK")
 
     def trigger_bonsai_cameras(self):
@@ -464,9 +470,7 @@ class BonsaiRecordingMixin(object):
         if workflow_file is None:
             return
         workflow_file = self.paths.IBLRIG_FOLDER.joinpath(*workflow_file.split('/'))
-        here = os.getcwd()
-        os.chdir(workflow_file.parent)
-        subprocess.Popen([
+        cmd = [
             str(self.paths.BONSAI),
             str(workflow_file),
             "--start",
@@ -475,8 +479,10 @@ class BonsaiRecordingMixin(object):
             f"-p:FileNameMic={self.paths.SESSION_FOLDER / 'raw_video_data' / '_iblrig_micData.raw.wav'}",
             f"-p:RecordSound={self.task_params.RECORD_SOUND}",
             "--no-boot",
-        ])
-        os.chdir(here)
+        ]
+        log.info('starting Bonsai camera recording')
+        log.info(' '.join(cmd))
+        subprocess.Popen(cmd, cwd=workflow_file.parent)
 
 
 class BonsaiVisualStimulusMixin(object):
@@ -518,7 +524,8 @@ class BonsaiVisualStimulusMixin(object):
             f"-p:Stim.ReceptiveFieldMappingStim.Rate={rate}",
         ]
         log.info("Starting spontaneous activity and RF mapping stims")
-        s = subprocess.run(cmd, stdout=subprocess.PIPE)  # locking call
+        log.info(' '.join(cmd))
+        s = subprocess.run(cmd, stdout=subprocess.PIPE, cwd=file_bonsai_workflow.parent)  # locking call
         log.info("Spontaneous activity and RF mapping stims finished")
         return s
 
@@ -544,27 +551,25 @@ class BonsaiVisualStimulusMixin(object):
         sync_square = "-p:Stim.FileNameSyncSquareUpdate=" + os.path.join(
             self.paths.SESSION_RAW_DATA_FOLDER, "_iblrig_syncSquareUpdate.raw.csv"
         )
-        here = Path.cwd()
-        os.chdir(visual_stim_file.parent)
-        subprocess.Popen(
-            [
-                str(self.paths.BONSAI),
-                visual_stim_file,
-                "--start" if self.task_params.BONSAI_EDITOR else "--no-editor",
-                "--no-boot",
-                f"-p:Stim.DisplayIndex={self.hardware_settings.device_screen['DISPLAY_IDX']}",
-                screen_pos,
-                sync_square,
-                pos,
-                evt,
-                itr,
-                f"-p:Stim.REPortName={self.hardware_settings.device_rotary_encoder['COM_ROTARY_ENCODER']}",
-                f"-p:Stim.sync_x={self.task_params.SYNC_SQUARE_X}",
-                f"-p:Stim.sync_y={self.task_params.SYNC_SQUARE_Y}",
-                f"-p:Stim.TranslationZ=-{self.task_params.STIM_TRANSLATION_Z}",
-            ]
-        )
-        os.chdir(here)
+        cmd = [
+            str(self.paths.BONSAI),
+            str(visual_stim_file),
+            "--start" if self.task_params.BONSAI_EDITOR else "--no-editor",
+            "--no-boot",
+            f"-p:Stim.DisplayIndex={self.hardware_settings.device_screen['DISPLAY_IDX']}",
+            screen_pos,
+            sync_square,
+            pos,
+            evt,
+            itr,
+            f"-p:Stim.REPortName={self.hardware_settings.device_rotary_encoder['COM_ROTARY_ENCODER']}",
+            f"-p:Stim.sync_x={self.task_params.SYNC_SQUARE_X}",
+            f"-p:Stim.sync_y={self.task_params.SYNC_SQUARE_Y}",
+            f"-p:Stim.TranslationZ=-{self.task_params.STIM_TRANSLATION_Z}",
+        ]
+        log.info('starting Bonsai visual stimulus')
+        log.info(' '.join(cmd))
+        subprocess.Popen(cmd, cwd=visual_stim_file.parent)
         log.info("Bonsai visual stimulus module loaded: OK")
 
 
