@@ -25,7 +25,7 @@ This is only possible within minor releases, for example 7.1.0 to 7.3.1.
 If going from a major release to another, (for example 6.X.X to 7.X.X) then follow the full installation instructions for the release.
     
     cd C:\iblrig
-    git checkout tags/7.X.X
+    git checkout tags/7.3.0
     
 Where 7.X.X is the version you want to update to.
 (`python setup_pybpod.py` is needed if there are updates to the task code, but this should only impact major releases)
