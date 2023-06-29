@@ -21,12 +21,12 @@ Copy in the following:
     python C:\iblrig\scripts\transfer_rig_data.py C:\iblrig_data\Subjects Y:\Subjects
 
 ## Update instructions
-This is only possible within minor releases, for example 7.1.0 to 7.3.1.
+This is only possible within minor releases, for example 7.1.0 to 7.3.X.
 If going from a major release to another, (for example 6.X.X to 7.X.X) then follow the full installation instructions for the release.
     
     cd C:\iblrig
     git fetch --tags
-    git checkout tags/7.3.1
+    git checkout tags/7.3.2
 
 If you do not know the tag you want to update to, you can get the latest tag with: 
 

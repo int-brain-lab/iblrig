@@ -761,16 +761,17 @@ if __name__ == "__main__":
                         f"Weighing found for {settings['SUBJECT_WEIGHT']}")
             # add the water administration if there is no water administration registered
             if bpod_trials[-1]['water_delivered']:
+                water_administered = bpod_trials[-1]['water_delivered'] / 1000
                 if len(rc.one.alyx.rest('water-administrations', 'list', session=ses['url'][-36:], no_cache=True)) == 0:
                     wa_data = dict(
                         session=ses['url'][-36:],
                         subject=settings['SUBJECT_NAME'],
                         water_type=settings.get('REWARD_TYPE', None),
-                        water_administered=bpod_trials[-1]['water_delivered'],
+                        water_administered=water_administered,
                     )
                     rc.one.alyx.rest('water-administrations', 'create', data=wa_data)
                     _logger.info(f"Water administered registered in Alyx database: {ses['subject']},"
-                             f"{bpod_trials[-1]['water_delivered']}mL")
+                             f"{water_administered}mL")
 
             flag_file.unlink()
         _logger.info("Finished registering all sessions in Alyx")
