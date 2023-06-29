@@ -317,10 +317,10 @@ class BaseSession(ABC):
         # here we make sure we connect to the hardware before writing the session to disk
         # this prevents from incrementing endlessly the session number if the hardware fails to connect
         self.start_hardware()
+        self.create_session()
         if self.interactive:
             self.session_info.SUBJECT_WEIGHT = user.ask_subject_weight(self.session_info.SUBJECT_NAME)
             # self.task_params.SESSION_START_DELAY_SEC = user.ask_session_delay()
-        self.create_session()
 
         def sigint_handler(*args, **kwargs):
             # create a signal handler for a graceful exit: create a stop flag in the session folder
