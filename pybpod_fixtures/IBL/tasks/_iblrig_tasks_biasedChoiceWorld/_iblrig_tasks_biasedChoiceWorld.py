@@ -89,6 +89,12 @@ if bonsai.launch_cameras():
     bonsai.start_camera_setup()
 
 for i in range(sph.NTRIALS):  # Main loop
+
+    print(
+        're_reset', [("Serial1", re_reset)],
+        'show_stim', [("Serial1", bonsai_show_stim)],
+        'closed_loop', [("Serial1", bonsai_close_loop)],
+    )
     tph.next_trial()
     log.info(f"Starting trial: {i + 1}")
     # =============================================================================

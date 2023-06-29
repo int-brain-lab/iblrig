@@ -26,8 +26,12 @@ If going from a major release to another, (for example 6.X.X to 7.X.X) then foll
     
     cd C:\iblrig
     git fetch --tags
-    git checkout tags/7.3.0
-    
+    git checkout tags/7.3.1
+
+If you do not know the tag you want to update to, you can get the latest tag with: 
+
+    git tag --sort=committerdate | Select-Object -Last 1
+
 Where 7.X.X is the version you want to update to.
 (`python setup_pybpod.py` is needed if there are updates to the task code, but this should only impact major releases)
 
