@@ -6,7 +6,7 @@ log = logging.getLogger("iblrig")
 
 
 class Session(TrainingChoiceWorldSession):
-    protocol_name = "_iblrig_tasks_trainingForeverChoiceWorld"
+    protocol_name = "_iblrig_tasks_trainingPhaseChoiceWorld"
 
     def __init__(self, *args, **kwargs):
         super(Session, self).__init__(*args, **kwargs)
