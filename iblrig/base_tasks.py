@@ -506,7 +506,7 @@ class BonsaiVisualStimulusMixin(object):
                        self.bonsai_visual_udp_client.OSC_PROTOCOL
                        if k in self.trials_table.columns}
         self.bonsai_visual_udp_client.send2bonsai(**bonsai_dict)
-        log.info(bonsai_dict)
+        log.debug(bonsai_dict)
 
     def run_passive_visual_stim(self, map_time="00:05:00", rate=0.1, sa_time="00:05:00"):
         file_bonsai_workflow = self.paths.VISUAL_STIM_FOLDER.joinpath(

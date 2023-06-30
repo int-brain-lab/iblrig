@@ -11,20 +11,23 @@ class TestInstantiationTraining(BaseTestCases.CommonTestInstantiateTask):
         self.task = TrainingChoiceWorldSession(**TASK_KWARGS)
 
     def test_task(self):
-        task = self.task
-        task.create_session()
         trial_fixtures = get_fixtures()
         nt = 800
-        for i in np.arange(nt):
-            task.next_trial()
-            # pc = task.psychometric_curve()
-            trial_type = np.random.choice(['correct', 'error', 'no_go'], p=[.9, .05, .05])
-            task.trial_completed(trial_fixtures[trial_type])
-            if trial_type == 'correct':
-                assert task.trials_table['trial_correct'][task.trial_num]
-            else:
-                assert not task.trials_table['trial_correct'][task.trial_num]
+        for training_phase in np.arange(6):
+            task = TrainingChoiceWorldSession(**TASK_KWARGS)
+            task.training_phase = training_phase
+            task.create_session()
 
-            if i == 245:
-                task.show_trial_log()
-            assert not np.isnan(task.reward_time)
+            for i in np.arange(nt):
+                task.next_trial()
+                # pc = task.psychometric_curve()
+                trial_type = np.random.choice(['correct', 'error', 'no_go'], p=[.9, .05, .05])
+                task.trial_completed(trial_fixtures[trial_type])
+                if trial_type == 'correct':
+                    assert task.trials_table['trial_correct'][task.trial_num]
+                else:
+                    assert not task.trials_table['trial_correct'][task.trial_num]
+
+                if i == 245:
+                    task.show_trial_log()
+                assert not np.isnan(task.reward_time)

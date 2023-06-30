@@ -711,11 +711,11 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
             passing = performance[np.abs(performance.index) == 0.25]['last_50_perf']
             if np.all(passing > 0.8) and passing.size == 2:
                 move_on = True
-        elif self.training_phase >= 2:  # for the next phases, always switch after 200 trials
+        elif 5 > self.training_phase >= 2:  # for the next phases, always switch after 200 trials
             if self.var['training_phase_trial_counts'][self.training_phase] >= 200:
                 move_on = True
         if move_on:
-            self.training_phase += 1
+            self.training_phase = np.minimum(5, self.training_phase + 1)
             log.warning(f"Moving on to training phase {self.training_phase}, {self.trial_num}")
 
     def next_trial(self):
