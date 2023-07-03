@@ -11,11 +11,12 @@ To run a task using command line, open a terminal and type
 ## Copy commands
 
 ### Usage
-Data can be copied from the acquisition PCs to the lab server by running the following command
-in a terminal
+To run a task using command line, open a terminal and type the task path and the subject name
 
     C:\iblrigv8\venv\scripts\Activate.ps1
-    python iblscripts/deploy/transfer_data.py
+    cd C:\iblrigv8\
+    python .\iblrig_tasks\_iblrig_tasks_TrainingChoiceWorld\task.py --subject algernon
+
 
 
 ### Installation
