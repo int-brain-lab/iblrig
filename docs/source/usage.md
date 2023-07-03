@@ -2,15 +2,6 @@
 
 ## Run a task
 
-To run a task using command line, open a terminal and type
-
-    C:\iblrigv8\venv\scripts\Activate.ps1
-    python iblscripts/deploy/transfer_data.py
-
-
-## Copy commands
-
-### Usage
 To run a task using command line, open a terminal and type the task path and the subject name
 
     C:\iblrigv8\venv\scripts\Activate.ps1
@@ -18,6 +9,14 @@ To run a task using command line, open a terminal and type the task path and the
     python .\iblrig_tasks\_iblrig_tasks_TrainingChoiceWorld\task.py --subject algernon
 
 
+## Copy commands
+
+### Usage
+
+To initiate the data transfer from the local server to the remote server, open a terminal and type:
+
+    C:\iblrigv8\venv\scripts\Activate.ps1
+    python iblscripts/deploy/transfer_data.py
 
 ### Installation
 If you get missing libraries, you can install the iblscripts package with
