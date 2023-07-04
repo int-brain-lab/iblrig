@@ -9,7 +9,6 @@ from abc import ABC
 import datetime
 import inspect
 import json
-import logging
 import os
 import serial
 import subprocess
@@ -28,7 +27,7 @@ from one.api import ONE
 
 import iblrig
 import iblrig.path_helper
-from iblutil.util import Bunch
+from iblutil.util import Bunch, setup_logger
 from iblrig.hardware import Bpod, MyRotaryEncoder, sound_device_factory
 import iblrig.frame2TTL as frame2TTL
 import iblrig.sound as sound
@@ -37,7 +36,7 @@ import iblrig.alyx
 import iblrig.user_input as user
 import ibllib.io.session_params as ses_params
 
-log = logging.getLogger("iblrig")
+log = setup_logger("iblrig", level='INFO')
 
 OSC_CLIENT_IP = "127.0.0.1"
 

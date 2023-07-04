@@ -2,13 +2,8 @@
 The spontaneous protocol is used to record spontaneous activity in the mouse brain.
 The task does nothing, only creates the architecture for the data streams to be recorded.
 """
-
-import logging
-
 from iblrig.base_tasks import SpontaneousSession
 import iblrig.misc
-
-log = logging.getLogger("iblrig")
 
 
 class Session(SpontaneousSession):
