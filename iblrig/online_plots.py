@@ -1,4 +1,3 @@
-import argparse
 from pathlib import Path
 import datetime
 import time
@@ -314,16 +313,3 @@ class OnlinePlots(object):
                 self.real_time.fseek = new_size
                 self.real_time.time_last_check = time.time()
                 flag_file.unlink()
-
-
-def viewsession():
-    """
-    Entry point for command line: usage as below
-    >>> viewsession /full/path/to/jsonable/_iblrig_taskData.raw.jsonable
-    :return: None
-    """
-    parser = argparse.ArgumentParser()
-    parser.add_argument("file_jsonable", help="full file path to jsonable file")
-    args = parser.parse_args()
-    self = OnlinePlots()
-    self.run(Path(args.file_jsonable))

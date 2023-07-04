@@ -13,10 +13,17 @@ To run a task using command line, open a terminal and type the task path and the
 
 ### Usage
 
-To initiate the data transfer from the local server to the remote server, open a terminal and type:
+To initiate the data transfer from the local server to the remote server, open a terminal and type.
 
     C:\iblrigv8\venv\scripts\Activate.ps1
-    python iblscripts/deploy/transfer_data.py
+    transfer_data
+
+The transfer local and remote directories are set in the `iblrig/settings/iblrig_settings.py` file.
+You can override those by using the `--local` and `--remote` flags.
+
+    transfer_data --local C:\iblrigv8_custom_data --remote \\server\iblrig_data\Subjects
+
+
 
 ### Installation
 If you get missing libraries, you can install the iblscripts package with

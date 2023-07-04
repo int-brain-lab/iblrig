@@ -38,6 +38,8 @@ setup(
     install_requires=require,
     scripts=[],
     entry_points={
-        'console_scripts': ['viewsession=iblrig.online_plots:viewsession'],
+        'console_scripts': [
+            'viewsession=iblrig.commands:viewsession',
+            'transfer_data=iblrig.commands:transfer_data'],
     },
 )
