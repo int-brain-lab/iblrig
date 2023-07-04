@@ -8,6 +8,13 @@ To run a task using command line, open a terminal and type the task path and the
     cd C:\iblrigv8\
     python .\iblrig_tasks\_iblrig_tasks_TrainingChoiceWorld\task.py --subject algernon
 
+## Flush valve
+
+To flush valve 1 of the Bpod, enter
+
+    flush
+
+Press ENTER to close the valve.
 
 ## Copy commands
 
