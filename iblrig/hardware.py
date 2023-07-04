@@ -3,8 +3,8 @@ This modules contains hardware classes used to interact with modules.
 """
 from pathlib import Path
 import json
-import os
 import logging
+import time
 
 import serial
 import numpy as np
@@ -125,9 +125,24 @@ class Bpod(BpodIO):
 
         return {k: v.tolist()[0] for k, v in Measures.items()}
 
-    def bpod_lights(self, command: int):
-        fpath = Path(self.IBLRIG_FOLDER) / "scripts" / "bpod_lights.py"
-        os.system(f"python {fpath} {command}")
+    def flush(self):
+        """
+        Flushes valve 1
+        :return:
+        """
+        self.toggle_valve()
+
+    def toggle_valve(self, duration=None):
+        """
+        Flushes valve 1 for duration (seconds)
+        :return:
+        """
+        self.manual_override(self.ChannelTypes.OUTPUT, self.ChannelNames.VALVE, 1, 1)
+        if duration is None:
+            input("Press ENTER when done.")
+        else:
+            time.sleep(duration)
+        self.manual_override(self.ChannelTypes.OUTPUT, self.ChannelNames.VALVE, 1, 0)
 
 
 class MyRotaryEncoder(object):
