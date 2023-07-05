@@ -49,7 +49,7 @@ class BaseSession(ABC):
 
     def __init__(self, subject=None, task_parameter_file=None, file_hardware_settings=None,
                  hardware_settings=None, file_iblrig_settings=None, iblrig_settings=None,
-                 one=None, interactive=True, projects=None, procedures=None, stub=None):
+                 one=None, interactive=True, projects=None, procedures=None, stub=None, append=False):
         """
         :param subject: The subject nickname. Required.
         :param task_parameter_file: an optional path to the task_parameters.yaml file
@@ -62,8 +62,10 @@ class BaseSession(ABC):
         :param projects: An optional list of Alyx protocols.
         :param procedures: An optional list of Alyx procedures.
         :param stub: A full path to an experiment description file containing experiment information.
+        :param append: Path to an existing session to chain a new protocol to
         :param fmake: (DEPRECATED) if True, only create the raw_behavior_data folder.
         """
+        assert self.protocol_name is not None, "Protocol name must be defined by the child class"
         self.interactive = interactive
         self._one = one
         self.init_datetime = datetime.datetime.now()
@@ -107,14 +109,14 @@ class BaseSession(ABC):
         })
         # Executes mixins init methods
         self._execute_mixins_shared_function('init_mixin')
-        self.paths = self._init_paths()
+        self.paths = self._init_paths(append=append)
         log.info(f'Session {self.paths.SESSION_RAW_DATA_FOLDER}')
         # Prepare the experiment description dictionary
         self.experiment_description = self.make_experiment_description_dict(
             self.protocol_name, self.paths.TASK_COLLECTION,
             procedures, projects, self.hardware_settings, stub)
 
-    def _init_paths(self, existing_session_path: Path = None):
+    def _init_paths(self, append: bool = False):
         """
         :param existing_session_path: if we append a protocol to an existing session, this is the path
         of the session in the form of /path/to/./lab/Subjects/[subject]/[date]/[number]
@@ -145,27 +147,34 @@ class BaseSession(ABC):
         paths.REMOTE_SUBJECT_FOLDER = (Path(self.iblrig_settings['iblrig_remote_data_path']).joinpath('Subjects')
                                        if self.iblrig_settings['iblrig_remote_data_path'] else None)
         # initialize the session path
-        if existing_session_path is not None:
+        date_folder = self.iblrig_settings['iblrig_local_data_path'].joinpath(
+            self.iblrig_settings['ALYX_LAB'] or '',
+            'Subjects',
+            self.session_info.SUBJECT_NAME,
+            self.session_info.SESSION_START_TIME[:10],
+        )
+        if append:
             # this is the case where we append a new protocol to an existing session
-            paths.SESSION_FOLDER = existing_session_path
+            todays_sessions = sorted([d for d in date_folder.glob('*') if d.is_dir()], reverse=True)
+            assert len(todays_sessions) > 0, f'Trying to chain a protocol, but no session folder found in {date_folder}'
+            paths.SESSION_FOLDER = todays_sessions[0]
+            paths.TASK_COLLECTION = iblrig.path_helper.iterate_collection(paths.SESSION_FOLDER)
             if self.hardware_settings.get('MAIN_SYNC', False) and not paths.TASK_COLLECTION.endswith('00'):
-                """Chained protocols make little sense when Bpod is the main sync as there is no
+                """
+                Chained protocols make little sense when Bpod is the main sync as there is no
                 continuous acquisition between protocols.  Only one sync collection can be defined in
-                the experiment description file.  This assertion should also occur upstream."""
+                the experiment description file.
+                If you are running experiments with an ephys rig (nidq) or an external daq, you should
+                correct the MAIN_SYNC parameter in the hardware settings file in ./settings/hardware_settings.yaml
+                """
                 raise RuntimeError('Chained protocols not supported for bpod-only sessions')
         else:
             # in this case the session path is created from scratch
-            date_folder = self.iblrig_settings['iblrig_local_data_path'].joinpath(
-                self.iblrig_settings['ALYX_LAB'] or '',
-                'Subjects',
-                self.session_info.SUBJECT_NAME,
-                self.session_info.SESSION_START_TIME[:10],
-            )
             numbers_folders = [int(f.name) for f in date_folder.rglob('*') if len(f.name) == 3 and f.name.isdigit()]
             self.session_info.SESSION_NUMBER = 1 if len(numbers_folders) == 0 else max(numbers_folders) + 1
             paths.SESSION_FOLDER = date_folder.joinpath(f"{self.session_info.SESSION_NUMBER:03d}")
+            paths.TASK_COLLECTION = iblrig.path_helper.iterate_collection(paths.SESSION_FOLDER)
 
-        paths.TASK_COLLECTION = iblrig.path_helper.iterate_collection(paths.SESSION_FOLDER)
         paths.SESSION_RAW_DATA_FOLDER = paths.SESSION_FOLDER.joinpath(paths.TASK_COLLECTION)
         paths.DATA_FILE_PATH = paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_taskData.raw.jsonable')
         return paths

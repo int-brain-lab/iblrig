@@ -46,6 +46,7 @@ def get_task_runner_argument_parser():
                              "be sure to use the double quote characters to encapsulate the description and a space to separate "
                              "multiple procedures")
     parser.add_argument('--no-interactive', dest='interactive', action='store_false', default=True)
+    parser.add_argument('--append', dest='append', action='store_true', default=False)
     parser.add_argument('--stub', type=Path, help="Path to _ibl_experiment.description.yaml stub file.")
     kwargs = vars(parser.parse_args())
     kwargs['interactive'] = True

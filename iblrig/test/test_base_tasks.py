@@ -11,13 +11,14 @@ import tempfile
 import yaml
 import ibllib.io.session_params as ses_params
 
-
 from iblrig.test.base import TASK_KWARGS
 from iblrig.base_tasks import SoundMixin, RotaryEncoderMixin, BaseSession, BpodMixin, ValveMixin
 from iblrig.base_choice_world import BiasedChoiceWorldSession
+from ibllib.io.session_params import read_params
 
 
 class EmptyHardwareSession(BaseSession):
+    protocol_name = 'empty_hardware_session_for_testing'
 
     def start_hardware(self):
         pass
@@ -137,6 +138,31 @@ class TestExperimentDescription(unittest.TestCase):
 
 class TestPathCreation(unittest.TestCase):
     """Test creation of experiment description dictionary."""
+
+    def test_create_chained_protocols(self):
+        # creates a first task
+        first_task = EmptyHardwareSession(
+            iblrig_settings={'iblrig_remote_data_path': False},
+            hardware_settings={'MAIN_SYNC': False},
+            **TASK_KWARGS)
+        first_task.create_session()
+        # append a new protocol the the current task
+        second_task = EmptyHardwareSession(
+            append=True,
+            hardware_settings={'MAIN_SYNC': False},
+            iblrig_settings={'iblrig_remote_data_path': False},
+            **TASK_KWARGS)
+        # unless the task has reached the create session stage, there is only one protocol in there
+        self.assertEqual(set([d.name for d in first_task.paths.SESSION_FOLDER.iterdir() if d.is_dir()]),
+                         set(['raw_task_data_00']))
+        # this will create and add to the acquisition description file
+        second_task.create_session()
+        self.assertEqual(set([d.name for d in first_task.paths.SESSION_FOLDER.iterdir() if d.is_dir()]),
+                         set(['raw_task_data_00', 'raw_task_data_01']))
+        description = read_params(second_task.paths['SESSION_FOLDER'])
+        # we should also find the protocols in the acquisition description file
+        protocols = set([p[EmptyHardwareSession.protocol_name]['collection'] for p in description['tasks']])
+        self.assertEqual(protocols, set(['raw_task_data_00', 'raw_task_data_01']))
 
     def test_create_session_with_remote(self):
 

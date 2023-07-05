@@ -2,11 +2,24 @@
 
 ## Run a task
 
-To run a task using command line, open a terminal and type the task path and the subject name
+To run a task using command line, open a terminal and activate the environment and set current directory.
 
     C:\iblrigv8\venv\scripts\Activate.ps1
     cd C:\iblrigv8\
+
+### Running a single task
+
     python .\iblrig_tasks\_iblrig_tasks_TrainingChoiceWorld\task.py --subject algernon
+
+### Chain several tasks together
+You can feed the `append` flag to the task to chain several tasks together.  For example, to run a passive task after an ephys task, you can do:
+
+    python .\iblrig_tasks\_iblrig_tasks_ephysChoiceWorld\task.py --subject algernon
+
+Followed by:
+
+    python .\iblrig_tasks\_iblrig_tasks_passiveChoiceWorld\task.py --subject algernon --append
+
 
 ## Flush valve
 
