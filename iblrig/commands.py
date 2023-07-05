@@ -1,9 +1,11 @@
 import argparse
 from pathlib import Path
+import yaml
 
-from deploy.transfer_data import transfer_sessions
 from iblutil.util import setup_logger
 
+import iblrig
+from iblrig.hardware import Bpod
 from iblrig.path_helper import load_settings_yaml, get_iblrig_path
 from iblrig.online_plots import OnlinePlots
 
@@ -28,6 +30,7 @@ def transfer_data():
     >>> transfer_data -l /full/path/to/iblrig_data/Subjects -r /full/path/to/remote/folder/Subjects
     :return:
     """
+    from deploy.transfer_data import transfer_sessions
     help_str = ">>> transfer_data -l /full/path/to/iblrig_data/Subjects -r /full/path/to/remote/folder/Subjects"
 
     iblrig_settings = load_settings_yaml()
@@ -73,3 +76,15 @@ def transfer_data():
 
     # launch transfer after all checks
     transfer_sessions(local, remote)
+
+
+def flush():
+    """
+    Flushes the valve until the user hits enter
+    :return:
+    """
+    file_settings = Path(iblrig.__file__).parents[1].joinpath('settings', 'hardware_settings.yaml')
+    hardware_settings = yaml.safe_load(file_settings.read_text())
+    bpod = Bpod(hardware_settings['device_bpod']['COM_BPOD'])
+    bpod.flush()
+    bpod.close()

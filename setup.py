@@ -40,6 +40,7 @@ setup(
     entry_points={
         'console_scripts': [
             'viewsession=iblrig.commands:viewsession',
-            'transfer_data=iblrig.commands:transfer_data'],
+            'transfer_data=iblrig.commands:transfer_data',
+            'flush=iblrig.commands:flush'],
     },
 )
