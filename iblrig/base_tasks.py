@@ -47,15 +47,18 @@ class BaseSession(ABC):
     base_parameters_file = None
     is_mock = False
 
-    def __init__(self, task_parameter_file=None, hardware_settings=None, iblrig_settings=None,
-                 one=None, interactive=True, subject=None, projects=None, procedures=None, stub=None):
+    def __init__(self, subject=None, task_parameter_file=None, file_hardware_settings=None,
+                 hardware_settings=None, file_iblrig_settings=None, iblrig_settings=None,
+                 one=None, interactive=True, projects=None, procedures=None, stub=None):
         """
+        :param subject: The subject nickname. Required.
         :param task_parameter_file: an optional path to the task_parameters.yaml file
-        :param hardware_settings: name of the hardware file in the settings folder, or full file path
-        :param iblrig_settings: name of the iblrig file in the settings folder, or full file path
+        :param file_hardware_settings: name of the hardware file in the settings folder, or full file path
+        :param hardware_settings: an optional dictionary of hardware settings. Keys will override any keys in the file
+        :param file_iblrig_settings: name of the iblrig file in the settings folder, or full file path
+        :param iblrig_settings: an optional dictionary of iblrig settings. Keys will override any keys in the file
         :param one: an optional instance of ONE
         :param interactive:
-        :param subject: The subject nickname.
         :param projects: An optional list of Alyx protocols.
         :param procedures: An optional list of Alyx procedures.
         :param stub: A full path to an experiment description file containing experiment information.
@@ -66,8 +69,13 @@ class BaseSession(ABC):
         self.init_datetime = datetime.datetime.now()
         # Create the folder architecture and get the paths property updated
         # the template for this file is in settings/hardware_settings.yaml
-        self.hardware_settings = iblrig.path_helper.load_settings_yaml(hardware_settings or 'hardware_settings.yaml')
-        self.iblrig_settings = iblrig.path_helper.load_settings_yaml(iblrig_settings or 'iblrig_settings.yaml')
+        self.hardware_settings = iblrig.path_helper.load_settings_yaml(file_hardware_settings or 'hardware_settings.yaml')
+        # loads in the settings: first load the files, then update with the input argument if provided
+        if hardware_settings is not None:
+            self.hardware_settings.update(hardware_settings)
+        self.iblrig_settings = iblrig.path_helper.load_settings_yaml(file_iblrig_settings or 'iblrig_settings.yaml')
+        if iblrig_settings is not None:
+            self.iblrig_settings.update(iblrig_settings)
         if self.iblrig_settings['iblrig_local_data_path'] is None:
             self.iblrig_settings['iblrig_local_data_path'] = Path.home().joinpath('iblrig_data')
         else:
@@ -108,14 +116,34 @@ class BaseSession(ABC):
 
     def _init_paths(self, existing_session_path: Path = None):
         """
-        :param existing_session_path:
-        :return:
+        :param existing_session_path: if we append a protocol to an existing session, this is the path
+        of the session in the form of /path/to/./lab/Subjects/[subject]/[date]/[number]
+        :return: Bunch with keys:
+        BONSAI: full path to the bonsai executable
+            >>> C:\iblrigv8\Bonsai\Bonsai.exe  # noqa
+        VISUAL_STIM_FOLDER: full path to the visual stim
+            >>> C:\iblrigv8\visual_stim  # noqa
+        LOCAL_SUBJECT_FOLDER: full path to the local subject folder
+            >>> C:\iblrigv8_data\mainenlab\Subjects  # noqa
+        REMOTE_SUBJECT_FOLDER: full path to the remote subject folder
+            >>> Y:\Subjects  # noqa
+        SESSION_FOLDER: full path to the current session:
+            >>> C:\iblrigv8_data\mainenlab\Subjects\SWC_043\2019-01-01\001  # noqa
+        TASK_COLLECTION: folder name of the current task
+            >>> raw_task_data_00  # noqa
+        SESSION_RAW_DATA_FOLDER: concatenation of the session folder and the task collection. This is where
+        the task data gets written
+            >>> C:\iblrigv8_data\mainenlab\Subjects\SWC_043\2019-01-01\001\raw_task_data_00  # noqa
+        DATA_FILE_PATH: contains the bpod trials
+            >>> C:\iblrigv8_data\mainenlab\Subjects\SWC_043\2019-01-01\001\raw_task_data_00\_iblrig_taskData.raw.jsonable  # noqa
         """
-        paths = Bunch({
-            'IBLRIG_FOLDER': Path(iblrig.__file__).parents[1]
-        })
+        paths = Bunch({'IBLRIG_FOLDER': Path(iblrig.__file__).parents[1]})
         paths.BONSAI = paths.IBLRIG_FOLDER.joinpath('Bonsai', 'Bonsai.exe')
         paths.VISUAL_STIM_FOLDER = paths.IBLRIG_FOLDER.joinpath('visual_stim')
+        paths.LOCAL_SUBJECT_FOLDER = self.iblrig_settings['iblrig_local_data_path'].joinpath(
+            self.iblrig_settings['ALYX_LAB'] or '', 'Subjects')
+        paths.REMOTE_SUBJECT_FOLDER = (Path(self.iblrig_settings['iblrig_remote_data_path']).joinpath('Subjects')
+                                       if self.iblrig_settings['iblrig_remote_data_path'] else None)
         # initialize the session path
         if existing_session_path is not None:
             # this is the case where we append a new protocol to an existing session
@@ -301,10 +329,11 @@ class BaseSession(ABC):
         self.save_task_parameters_to_json_file()
         # copy the acquisition stub to the remote session folder
         ses_params.prepare_experiment(
-            self.paths.SESSION_FOLDER,
+            self.paths.SESSION_FOLDER.relative_to(self.paths['LOCAL_SUBJECT_FOLDER']),
             self.experiment_description,
-            local=self.iblrig_settings['iblrig_local_data_path'],
-            remote=self.iblrig_settings['iblrig_remote_data_path']
+            local=self.paths['LOCAL_SUBJECT_FOLDER'],
+            remote=self.paths['REMOTE_SUBJECT_FOLDER'] or False,  # setting this to False will not copy
+            device_id=self.hardware_settings['RIG_NAME'],
         )
         self.register_to_alyx()
 

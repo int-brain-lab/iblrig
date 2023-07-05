@@ -11,6 +11,7 @@ import tempfile
 import yaml
 import ibllib.io.session_params as ses_params
 
+
 from iblrig.test.base import TASK_KWARGS
 from iblrig.base_tasks import SoundMixin, RotaryEncoderMixin, BaseSession, BpodMixin, ValveMixin
 from iblrig.base_choice_world import BiasedChoiceWorldSession
@@ -132,3 +133,35 @@ class TestExperimentDescription(unittest.TestCase):
         self.assertDictEqual({'bpod': {'foo': 20, 'bar': 30}}, bpod_device)
         expected = self.stub['tasks'] + [{'passiveWorld': {'collection': 'raw_task_data_00', 'sync_label': 'bpod'}}]
         self.assertCountEqual(expected, description.get('tasks', []))
+
+
+class TestPathCreation(unittest.TestCase):
+    """Test creation of experiment description dictionary."""
+
+    def test_create_session_with_remote(self):
+
+        with tempfile.TemporaryDirectory() as td:
+            task = EmptyHardwareSession(iblrig_settings={'iblrig_remote_data_path': Path(td)}, **TASK_KWARGS)
+            task.create_session()
+            # when we create the session, the local session folder is created with the acquisition description file
+            description_file_local = next(task.paths['SESSION_FOLDER'].glob('_ibl_experiment.description*.yaml'), None)
+            remote_session_path = task.paths['REMOTE_SUBJECT_FOLDER'].joinpath(
+                task.paths['SESSION_FOLDER'].relative_to(task.paths['LOCAL_SUBJECT_FOLDER']))
+            # there is also the acquisition description stub in the remote folder
+            description_file_remote = next(remote_session_path.joinpath('_devices').glob('*.yaml'), None)
+            assert description_file_local is not None
+            assert description_file_remote is not None
+
+    def test_create_session_without_remote(self):
+        task = EmptyHardwareSession(iblrig_settings={'iblrig_remote_data_path': None}, **TASK_KWARGS)
+        task.create_session()
+        # when we create the session, the local session folder is created with the acquisition description file
+        description_file_local = next(task.paths['SESSION_FOLDER'].glob('_ibl_experiment.description*.yaml'), None)
+        assert description_file_local is not None
+
+    def test_create_session_unavailable_remote(self):
+        task = EmptyHardwareSession(iblrig_settings={'iblrig_remote_data_path': '/path/that/doesnt/exist'}, **TASK_KWARGS)
+        task.create_session()
+        # when we create the session, the local session folder is created with the acquisition description file
+        description_file_local = next(task.paths['SESSION_FOLDER'].glob('_ibl_experiment.description*.yaml'), None)
+        assert description_file_local is not None
