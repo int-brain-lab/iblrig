@@ -213,7 +213,8 @@ class ChoiceWorldSession(
             sma.add_state(
                 state_name="trial_start",
                 state_timer=0,
-                state_change_conditions={"Port1In": "delay_initiation"},
+                # state_change_conditions={"Port1In": "delay_initiation"},
+                state_change_conditions={"Tup": "delay_initiation"},
                 output_actions=[("SoftCode", 3), ("BNC1", 255)],
             )  # start camera
             sma.add_state(

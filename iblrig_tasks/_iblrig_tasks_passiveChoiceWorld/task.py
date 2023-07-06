@@ -41,7 +41,8 @@ class Session(ChoiceWorldSession):
         This is the method that runs the task with the actual state machine
         :return:
         """
-        log.info("Starting passive protocol")
+        self.trigger_bonsai_cameras()
+        log.info("Starting spontaneous activity followed by receptive field mapping")
         # Run the passive part i.e. spontaneous activity and RFMapping stim
         self.run_passive_visual_stim(sa_time="00:10:00")
         # Then run the replay of task events: V for valve, T for tone, N for noise, G for gratings

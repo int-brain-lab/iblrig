@@ -36,8 +36,7 @@ device_valve:
   WATER_CALIBRATION_OPEN_TIMES: [50, 100]
   WATER_CALIBRATION_RANGE: [40, 140]
   WATER_CALIBRATION_WEIGHT_PERDROP: [1.25, 2.75]
-# set to null if a dedicated computer runs bonsai video acquisition
-device_cameras:
+device_cameras:  # remove the whole section if no camera is used on the rig
   left:
     BONSAI_WORKFLOW: devices/camera_recordings/TrainingRig_SaveVideo_TrainingTasks.bonsai
 VERSION: 1.0.0

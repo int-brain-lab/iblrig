@@ -455,7 +455,7 @@ class BonsaiRecordingMixin(object):
     def start_mixin_bonsai_microphone(self):
         # the camera workflow on the behaviour computer already contains the microphone recording
         # so the device camera workflow and the microphone one are exclusive
-        if self._camera_mixin_bonsai_get_workflow_file(self.hardware_settings.device_cameras) is not None:
+        if self._camera_mixin_bonsai_get_workflow_file(self.hardware_settings.get('device_cameras', None)) is not None:
             return
         if not self.task_params.RECORD_SOUND:
             return
@@ -491,7 +491,8 @@ class BonsaiRecordingMixin(object):
         This prepares the cameras by starting the pipeline that aligns the camera focus with the
         desired borders of rig features, the actual triggering of the  cameras is done in the trigger_bonsai_cameras method.
         """
-        if self._camera_mixin_bonsai_get_workflow_file(self.hardware_settings.device_cameras) is None:
+
+        if self._camera_mixin_bonsai_get_workflow_file(self.hardware_settings.get('device_cameras', None)) is None:
             return
 
         bonsai_camera_file = self.paths.IBLRIG_FOLDER.joinpath('devices', 'camera_setup', 'setup_video.bonsai')
@@ -503,9 +504,10 @@ class BonsaiRecordingMixin(object):
         log.info("Bonsai cameras setup module loaded: OK")
 
     def trigger_bonsai_cameras(self):
-        workflow_file = self._camera_mixin_bonsai_get_workflow_file(self.hardware_settings.device_cameras)
+        workflow_file = self._camera_mixin_bonsai_get_workflow_file(self.hardware_settings.get('device_cameras', None))
         if workflow_file is None:
             return
+        log.info("attempt to launch Bonsai camera recording")
         workflow_file = self.paths.IBLRIG_FOLDER.joinpath(*workflow_file.split('/'))
         cmd = [
             str(self.paths.BONSAI),
@@ -517,7 +519,7 @@ class BonsaiRecordingMixin(object):
             f"-p:RecordSound={self.task_params.RECORD_SOUND}",
             "--no-boot",
         ]
-        log.info('starting Bonsai camera recording')
+        log.info('Bonsai camera recording process started')
         log.info(' '.join(cmd))
         subprocess.Popen(cmd, cwd=workflow_file.parent)
 
