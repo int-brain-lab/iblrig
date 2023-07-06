@@ -1,10 +1,10 @@
 colorlog
 cython
 graphviz
-ibllib
+git+https://github.com/int-brain-lab/ibllib.git@iblrigv8
 ipython
 git+https://github.com/int-brain-lab/iblpybpod.git@no-gui
-git+https://github.com/int-brain-lab/iblscripts.git
+git+https://github.com/int-brain-lab/iblscripts.git@iblrigv8
 numpy
 ONE-api
 packaging

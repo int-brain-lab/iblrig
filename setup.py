@@ -6,7 +6,7 @@ PYTHON_REQUIRES = ">=3.10"  # python version requirement
 LONG_DESCRIPTION = "Software used to interact with various pieces of specialized hardware for neuroscience data acquisition."
 
 with open("requirements.txt") as f:
-    require = [x.strip() for x in f.readlines() if not x.startswith("git+")]
+    require = [x.strip() for x in f.readlines()]
 
 
 def read(rel_path):
