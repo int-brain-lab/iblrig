@@ -62,11 +62,11 @@ class BaseSession(ABC):
         :param projects: An optional list of Alyx protocols.
         :param procedures: An optional list of Alyx procedures.
         :param stub: A full path to an experiment description file containing experiment information.
-        :param append: Path to an existing session to chain a new protocol to
+        :param append: bool, if True, append to the latest existing session of the same subject for the same day
         :param fmake: (DEPRECATED) if True, only create the raw_behavior_data folder.
         """
         assert self.protocol_name is not None, "Protocol name must be defined by the child class"
-        self.interactive = interactive
+        self.interactive = False if append else interactive
         self._one = one
         self.init_datetime = datetime.datetime.now()
         # Create the folder architecture and get the paths property updated
@@ -775,7 +775,7 @@ class ValveMixin:
             state_change_conditions={"Tup": "exit"},
         )
         self.bpod.send_state_machine(sma)
-        self.run_state_machine(sma)  # Locks until state machine 'exit' is reached
+        self.bpod.run_state_machine(sma)  # Locks until state machine 'exit' is reached
         return self.bpod.session.current_trial.export()
 
 
