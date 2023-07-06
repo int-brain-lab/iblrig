@@ -515,7 +515,7 @@ class BonsaiRecordingMixin(object):
             "--start",
             f"-p:FileNameLeft={self.paths.SESSION_FOLDER / 'raw_video_data' / '_iblrig_leftCamera.raw.avi'}",
             f"-p:FileNameLeftData={self.paths.SESSION_FOLDER / 'raw_video_data' / '_iblrig_leftCamera.frameData.bin'}",
-            f"-p:FileNameMic={self.paths.SESSION_FOLDER / 'raw_video_data' / '_iblrig_micData.raw.wav'}",
+            f"-p:FileNameMic={self.paths.SESSION_RAW_DATA_FOLDER / '_iblrig_micData.raw.wav'}",
             f"-p:RecordSound={self.task_params.RECORD_SOUND}",
             "--no-boot",
         ]
