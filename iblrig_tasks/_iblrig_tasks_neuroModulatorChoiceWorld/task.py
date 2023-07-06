@@ -5,7 +5,7 @@ from pybpodapi.protocol import StateMachine
 
 import iblrig.misc
 from iblrig.base_choice_world import BiasedChoiceWorldSession
-
+from iblrig.hardware import SOFTCODE
 
 log = logging.getLogger("iblrig")
 
@@ -59,7 +59,7 @@ class Session(BiasedChoiceWorldSession):
                 state_name="trial_start",
                 state_timer=0,
                 state_change_conditions={"Port1In": "delay_initiation"},
-                output_actions=[("SoftCode", 3), ("BNC1", 255)],
+                output_actions=[("SoftCode", SOFTCODE.TRIGGER_CAMERA), ("BNC1", 255)],
             )  # start camera
             sma.add_state(
                 state_name="delay_initiation",

@@ -28,7 +28,7 @@ from one.api import ONE
 import iblrig
 import iblrig.path_helper
 from iblutil.util import Bunch, setup_logger
-from iblrig.hardware import Bpod, MyRotaryEncoder, sound_device_factory
+from iblrig.hardware import Bpod, MyRotaryEncoder, sound_device_factory, SOFTCODE
 import iblrig.frame2TTL as frame2TTL
 import iblrig.sound as sound
 import iblrig.spacer
@@ -629,14 +629,13 @@ class BpodMixin(object):
              Soft codes should work with resasonable latency considering our limiting
              factor is the refresh rate of the screen which should be 16.667ms @ a framerate of 60Hz
              """
-            print(code)
-            if code == 0:
+            if code == SOFTCODE.STOP_SOUND:
                 self.sound['sd'].stop()
-            elif code == 1:
+            elif code == SOFTCODE.PLAY_TONE:
                 self.sound['sd'].play(self.sound['GO_TONE'], self.sound['samplerate'])
-            elif code == 2:
+            elif code == SOFTCODE.PLAY_NOISE:
                 self.sound['sd'].play(self.sound['WHITE_NOISE'], self.sound['samplerate'])
-            elif code == 3:
+            elif code == SOFTCODE.TRIGGER_CAMERA:
                 self.trigger_bonsai_cameras()
         self.bpod.softcode_handler_function = softcode_handler
 
