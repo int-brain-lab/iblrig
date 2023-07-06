@@ -673,7 +673,7 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
     protocol_name = "_iblrig_tasks_trainingChoiceWorld"
 
     def __init__(self, training_phase=0, **kwargs):
-        super(TrainingChoiceWorldSession, self).__init__(training_phase=0, **kwargs)
+        super(TrainingChoiceWorldSession, self).__init__(**kwargs)
         self.training_phase = training_phase
         self.var = {
             "training_phase_trial_counts": np.zeros(6),
