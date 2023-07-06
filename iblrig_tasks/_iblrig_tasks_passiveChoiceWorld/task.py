@@ -43,14 +43,14 @@ class Session(ChoiceWorldSession):
         """
         log.info("Starting passive protocol")
         # Run the passive part i.e. spontaneous activity and RFMapping stim
-        self.run_passive_visual_stim()
+        self.run_passive_visual_stim(sa_time="00:10:00")
         # Then run the replay of task events: V for valve, T for tone, N for noise, G for gratings
         log.info("Starting replay of task stims")
         for self.trial_num, trial in self.trials_table.iterrows():
             log.info(f"Delay: {trial.stim_delay}; ID: {trial.stim_type}; Count: {self.trial_num}/300")
             sys.stdout.flush()
             time.sleep(trial.stim_delay)
-            if trial.type == "V":
+            if trial.stim_type == "V":
                 self.valve_open(self.reward_time)
             elif trial.stim_type == "T":
                 self.sound_play_tone(state_timer=0.102)
