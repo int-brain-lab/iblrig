@@ -14,13 +14,14 @@ log = logging.getLogger("iblrig")
 
 
 class Session(BiasedChoiceWorldSession):
-    pregenerated_session_index = 0
+    pregenerated_session_index = 10
 
     def __init__(self, *args, **kwargs):
         super(Session, self).__init__(*args, **kwargs)
         trials_table = pd.read_parquet(Path(__file__).parent.joinpath('trials_fixtures.pqt'))
         self.trials_table = trials_table.loc[
             trials_table['session_id'] == self.pregenerated_session_index].reindex().drop(columns=['session_id'])
+        self.trials_table = self.trials_table.reset_index()
         # reconstruct the block dataframe from the trials table
         self.blocks_table = self.trials_table.groupby('block_num').agg(
             probability_left=pd.NamedAgg(column="stim_probability_left", aggfunc="first"),

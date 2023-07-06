@@ -204,7 +204,7 @@ class ChoiceWorldSession(
         return dot
 
     def get_state_machine_trial(self, i):
-        sma = StateMachine(self.bpod)  # TODO try instantiate only once for each trial type
+        sma = StateMachine(self.bpod)
         if i == 0:  # First trial exception start camera
             session_delay_start = self.task_params.get("SESSION_DELAY_START", 0)
             log.info("First trial initializing, will move to next trial only if:")
