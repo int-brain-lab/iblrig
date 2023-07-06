@@ -38,6 +38,8 @@ def get_task_runner_argument_parser():
     """
     parser = argparse.ArgumentParser()
     parser.add_argument("-s", "--subject", required=True, help="--subject ZFM-05725")
+    parser.add_argument("-u", "--user", required=False, default=None,
+                        help="alyx username to register the session")
     parser.add_argument("-p", "--projects", nargs="+", default=[],
                         help="project name(s), something like 'psychedelics' or 'ibl_neuropixel_brainwide_01'; if specify "
                              "multiple projects, use a space to separate them")
@@ -50,6 +52,11 @@ def get_task_runner_argument_parser():
     parser.add_argument('--stub', type=Path, help="Path to _ibl_experiment.description.yaml stub file.")
     kwargs = vars(parser.parse_args())
     kwargs['interactive'] = True
+    # if the user is specified, then override the settings file value
+    user = kwargs.pop('user')
+    if user is not None:
+        kwargs['iblrig_settings'] = {'ALYX_USER': user}
+
     return kwargs
 
 
