@@ -629,6 +629,7 @@ class BpodMixin(object):
              Soft codes should work with resasonable latency considering our limiting
              factor is the refresh rate of the screen which should be 16.667ms @ a framerate of 60Hz
              """
+            print(code)
             if code == 0:
                 self.sound['sd'].stop()
             elif code == 1:
