@@ -31,12 +31,12 @@ class Session(BiasedChoiceWorldSession):
             self.trials_table.at[self.trial_num, 'choice_delay'] = np.random.choice([1.5, 3.0], p=[2 / 3, 1 / 3])
         elif choice_delay_strategy == 'uniform':  # uniform probability draw between 1.5s and 3s
             self.trials_table.at[self.trial_num, 'choice_delay'] = np.random.random() * 1.5 + 1.5
-        elif choice_delay_strategy == 'binned':  # 10 bins of 150ms between 1.5 and 3 secs. The "Charline Way"
-            self.trials_table.at[self.trial_num, 'choice_delay'] = np.random.choice(np.linspace(1.5, 3, 11))
+        elif choice_delay_strategy == 'binned':  # 5 valures from 0 to 2.5 secs The "Charline Way"
+            self.trials_table.at[self.trial_num, 'choice_delay'] = np.random.choice(np.linspace(0, 2.5, 5))
 
         if self.task_params.VARIABLE_REWARDS:
             # the reward is a draw within an uniform distribution between 3 and 1
-            reward_amount = 1.5 if self.block_num == 0 else np.random.choice(REWARD_AMOUNTS_UL, p=[.6, .4])
+            reward_amount = 1.5 if self.block_num == 0 else np.random.choice(REWARD_AMOUNTS_UL, p=[.8, .2])
             self.trials_table.at[self.trial_num, 'reward_amount'] = reward_amount
 
     @property
