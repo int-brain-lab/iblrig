@@ -14,6 +14,7 @@ Install Python 3.10
 Open an Administrator: Windows Powershell prompt and run the following:
 
 .. code-block:: powershell
+
     Set-ExecutionPolicy RemoteSigned
     New-Item -ItemType Directory -Force -Path C:\Temp
     Invoke-WebRequest -Uri https://www.python.org/ftp/python/3.10.11/python-3.10.11-amd64.exe -OutFile C:\Temp\python-3.10.11-amd64.exe

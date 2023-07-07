@@ -5,6 +5,7 @@ from pathlib import Path
 import json
 import logging
 import time
+from enum import IntEnum
 
 import serial
 import numpy as np
@@ -14,6 +15,12 @@ import sounddevice as sd
 from pybpod_rotaryencoder_module.module import RotaryEncoder
 from pybpod_rotaryencoder_module.module_api import RotaryEncoderModule
 from pybpodapi.bpod.bpod_io import BpodIO
+
+SOFTCODE = IntEnum('SOFTCODE', [
+    'STOP_SOUND',
+    'PLAY_TONE',
+    'PLAY_NOISE',
+    'TRIGGER_CAMERA'])
 
 log = logging.getLogger(__name__)
 
@@ -74,9 +81,9 @@ class Bpod(BpodIO):
 
     def define_xonar_sounds_actions(self):
         self.actions.update({
-            'play_tone': ("SoftCode", 1),
-            'play_noise': ("SoftCode", 2),
-            'stop_sound': ("SoftCode", 0),
+            'play_tone': ("SoftCode", SOFTCODE.PLAY_TONE),
+            'play_noise': ("SoftCode", SOFTCODE.PLAY_NOISE),
+            'stop_sound': ("SoftCode", SOFTCODE.STOP_SOUND),
         })
 
     def define_harp_sounds_actions(self, go_tone_index=2, noise_index=3, sound_port='Serial3'):

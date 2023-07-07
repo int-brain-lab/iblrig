@@ -13,5 +13,10 @@ class Session(TrainingChoiceWorldSession):
 
 if __name__ == "__main__":  # pragma: no cover
     kwargs = iblrig.misc.get_task_runner_argument_parser()
-    sess = Session(**kwargs)
+    training_phase = 0
+    if kwargs['subject'] == 'ZFM-05923':
+        training_phase = 5
+    if kwargs['subject'] == 'ZFM-06440':
+        training_phase = 0
+    sess = Session(training_phase=training_phase, **kwargs)
     sess.run()

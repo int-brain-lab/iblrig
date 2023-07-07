@@ -23,6 +23,7 @@ from iblutil.util import setup_logger
 from iblrig import choiceworld
 import iblrig.base_tasks
 import iblrig.misc as misc
+from iblrig.hardware import SOFTCODE
 
 log = setup_logger('iblrig', level="INFO")
 
@@ -216,7 +217,7 @@ class ChoiceWorldSession(
                 state_name="trial_start",
                 state_timer=0,
                 state_change_conditions={"Port1In": "delay_initiation"},
-                output_actions=[("SoftCode", 3), ("BNC1", 255)],
+                output_actions=[("SoftCode", SOFTCODE.TRIGGER_CAMERA), ("BNC1", 255)],
             )  # start camera
             sma.add_state(
                 state_name="delay_initiation",
@@ -503,7 +504,7 @@ class HabituationChoiceWorldSession(ChoiceWorldSession):
                 state_name="trial_start",
                 state_timer=3600,
                 state_change_conditions={"Port1In": "stim_on"},
-                output_actions=[self.bpod.actions.bonsai_hide_stim, ("SoftCode", 3), ("BNC1", 255)],
+                output_actions=[self.bpod.actions.bonsai_hide_stim, ("SoftCode", SOFTCODE.TRIGGER_CAMERA), ("BNC1", 255)],
             )  # sart camera
         else:
             sma.add_state(
@@ -674,9 +675,9 @@ TRIALS IN BLOCK:      {trial_info.block_trial_num}
 class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
     protocol_name = "_iblrig_tasks_trainingChoiceWorld"
 
-    def __init__(self, **kwargs):
+    def __init__(self, training_phase=0, **kwargs):
         super(TrainingChoiceWorldSession, self).__init__(**kwargs)
-        self.training_phase = 0
+        self.training_phase = training_phase
         self.var = {
             "training_phase_trial_counts": np.zeros(6),
             "last_10_responses_sides": np.zeros(10),

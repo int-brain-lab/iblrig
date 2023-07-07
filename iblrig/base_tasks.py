@@ -28,7 +28,7 @@ from one.api import ONE
 import iblrig
 import iblrig.path_helper
 from iblutil.util import Bunch, setup_logger
-from iblrig.hardware import Bpod, MyRotaryEncoder, sound_device_factory
+from iblrig.hardware import Bpod, MyRotaryEncoder, sound_device_factory, SOFTCODE
 import iblrig.frame2TTL as frame2TTL
 import iblrig.sound as sound
 import iblrig.spacer
@@ -455,7 +455,7 @@ class BonsaiRecordingMixin(object):
     def start_mixin_bonsai_microphone(self):
         # the camera workflow on the behaviour computer already contains the microphone recording
         # so the device camera workflow and the microphone one are exclusive
-        if self._camera_mixin_bonsai_get_workflow_file(self.hardware_settings.device_cameras) is not None:
+        if self._camera_mixin_bonsai_get_workflow_file(self.hardware_settings.get('device_cameras', None)) is not None:
             return
         if not self.task_params.RECORD_SOUND:
             return
@@ -491,7 +491,8 @@ class BonsaiRecordingMixin(object):
         This prepares the cameras by starting the pipeline that aligns the camera focus with the
         desired borders of rig features, the actual triggering of the  cameras is done in the trigger_bonsai_cameras method.
         """
-        if self._camera_mixin_bonsai_get_workflow_file(self.hardware_settings.device_cameras) is None:
+
+        if self._camera_mixin_bonsai_get_workflow_file(self.hardware_settings.get('device_cameras', None)) is None:
             return
 
         bonsai_camera_file = self.paths.IBLRIG_FOLDER.joinpath('devices', 'camera_setup', 'setup_video.bonsai')
@@ -503,9 +504,10 @@ class BonsaiRecordingMixin(object):
         log.info("Bonsai cameras setup module loaded: OK")
 
     def trigger_bonsai_cameras(self):
-        workflow_file = self._camera_mixin_bonsai_get_workflow_file(self.hardware_settings.device_cameras)
+        workflow_file = self._camera_mixin_bonsai_get_workflow_file(self.hardware_settings.get('device_cameras', None))
         if workflow_file is None:
             return
+        log.info("attempt to launch Bonsai camera recording")
         workflow_file = self.paths.IBLRIG_FOLDER.joinpath(*workflow_file.split('/'))
         cmd = [
             str(self.paths.BONSAI),
@@ -513,11 +515,11 @@ class BonsaiRecordingMixin(object):
             "--start",
             f"-p:FileNameLeft={self.paths.SESSION_FOLDER / 'raw_video_data' / '_iblrig_leftCamera.raw.avi'}",
             f"-p:FileNameLeftData={self.paths.SESSION_FOLDER / 'raw_video_data' / '_iblrig_leftCamera.frameData.bin'}",
-            f"-p:FileNameMic={self.paths.SESSION_FOLDER / 'raw_video_data' / '_iblrig_micData.raw.wav'}",
+            f"-p:FileNameMic={self.paths.SESSION_RAW_DATA_FOLDER / '_iblrig_micData.raw.wav'}",
             f"-p:RecordSound={self.task_params.RECORD_SOUND}",
             "--no-boot",
         ]
-        log.info('starting Bonsai camera recording')
+        log.info('Bonsai camera recording process started')
         log.info(' '.join(cmd))
         subprocess.Popen(cmd, cwd=workflow_file.parent)
 
@@ -627,13 +629,13 @@ class BpodMixin(object):
              Soft codes should work with resasonable latency considering our limiting
              factor is the refresh rate of the screen which should be 16.667ms @ a framerate of 60Hz
              """
-            if code == 0:
+            if code == SOFTCODE.STOP_SOUND:
                 self.sound['sd'].stop()
-            elif code == 1:
+            elif code == SOFTCODE.PLAY_TONE:
                 self.sound['sd'].play(self.sound['GO_TONE'], self.sound['samplerate'])
-            elif code == 2:
+            elif code == SOFTCODE.PLAY_NOISE:
                 self.sound['sd'].play(self.sound['WHITE_NOISE'], self.sound['samplerate'])
-            elif code == 3:
+            elif code == SOFTCODE.TRIGGER_CAMERA:
                 self.trigger_bonsai_cameras()
         self.bpod.softcode_handler_function = softcode_handler
 
