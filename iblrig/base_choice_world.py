@@ -109,6 +109,7 @@ class ChoiceWorldSession(
             #     Start state machine definition
             # =============================================================================
             sma = self.get_state_machine_trial(i)
+            log.info("Sending state machine to bpod")
             # Send state machine description to Bpod device
             self.bpod.send_state_machine(sma)
             # t_overhead = time.time() - t_overhead
@@ -117,6 +118,7 @@ class ChoiceWorldSession(
             # wait to achieve the desired ITI duration
             if dt > 0:
                 time.sleep(dt)
+            log.info("running state machine")
             self.bpod.run_state_machine(sma)  # Locks until state machine 'exit' is reached
             time_last_trial_end = time.time()
             self.trial_completed(self.bpod.session.current_trial.export())
