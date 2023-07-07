@@ -1,3 +1,4 @@
+import argparse
 import logging
 from iblrig.base_choice_world import TrainingChoiceWorldSession
 import iblrig.misc
@@ -12,11 +13,8 @@ class Session(TrainingChoiceWorldSession):
 
 
 if __name__ == "__main__":  # pragma: no cover
-    kwargs = iblrig.misc.get_task_runner_argument_parser()
-    training_phase = 0
-    if kwargs['subject'] == 'ZFM-05923':
-        training_phase = 5
-    if kwargs['subject'] == 'ZFM-06440':
-        training_phase = 0
-    sess = Session(training_phase=training_phase, **kwargs)
+    parser = argparse.ArgumentParser(add_help=False)
+    parser.add_argument('--training_phase', option_strings=['--training_phase'], dest='training_phase', default=0, type=int)
+    kwargs = iblrig.misc.get_task_arguments(parents=[parser])
+    sess = Session(**kwargs)
     sess.run()

@@ -30,13 +30,12 @@ FLAG_FILE_NAMES = [
 log = logging.getLogger("iblrig")
 
 
-def get_task_runner_argument_parser():
+def _get_task_argument_parser(parents=None):
     """
-    This function parses input to run the tasks. All the variables are fed to the Session instance
-    task.py -s subject_name -p projects_name -c procedures_name --no-interactive
-    :return:
+    This function returns the task argument parser with extra optional parameters if provided
+    This function is kept separate from parsing for unit tests purposes.
     """
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(parents=parents or [])
     parser.add_argument("-s", "--subject", required=True, help="--subject ZFM-05725")
     parser.add_argument("-u", "--user", required=False, default=None,
                         help="alyx username to register the session")
@@ -50,14 +49,37 @@ def get_task_runner_argument_parser():
     parser.add_argument('--no-interactive', dest='interactive', action='store_false', default=True)
     parser.add_argument('--append', dest='append', action='store_true', default=False)
     parser.add_argument('--stub', type=Path, help="Path to _ibl_experiment.description.yaml stub file.")
-    kwargs = vars(parser.parse_args())
+    return parser
+
+
+def _post_parse_arguments(**kwargs):
+    """
+    This is called to post-process the arguments after parsing. It is used to force the interactive
+    mode to True (as it is a call from a user) and to override the settings file value for the user.
+    This function is split for unit-test puprposes.
+    :param kwargs:
+    :return:
+    """
     kwargs['interactive'] = True
     # if the user is specified, then override the settings file value
     user = kwargs.pop('user')
     if user is not None:
         kwargs['iblrig_settings'] = {'ALYX_USER': user}
-
     return kwargs
+
+
+def get_task_arguments(parents=None):
+    """
+    This function parses input to run the tasks. All the variables are fed to the Session instance
+    task.py -s subject_name -p projects_name -c procedures_name --no-interactive
+    :param extra_args: list of dictionaries of additional argparse arguments to add to the parser
+        For example, to add a new toto and titi arguments, use:
+        get_task_arguments({'--toto', type=str, default='toto'}, {'--titi', action='store_true', default=False})
+    :return:
+    """
+    parser = _get_task_argument_parser(parents=parents)
+    kwargs = vars(parser.parse_args())
+    return _post_parse_arguments(**kwargs)
 
 
 def call_exp_desc_gui():

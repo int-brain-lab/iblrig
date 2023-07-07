@@ -12,6 +12,6 @@ class Session(SpontaneousSession):
 
 if __name__ == "__main__":  # pragma: no cover
     # python .\iblrig_tasks\_iblrig_tasks_spontaneous\task.py --subject mysubject
-    kwargs = iblrig.misc.get_task_runner_argument_parser()
+    kwargs = iblrig.misc.get_task_arguments()
     sess = Session(**kwargs)
     sess.run()

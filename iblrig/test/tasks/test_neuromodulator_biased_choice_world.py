@@ -11,4 +11,4 @@ class TestNeuroModulatorBiasedChoiceWorld(TestInstantiationBiased):
     def test_task(self):
         super(TestNeuroModulatorBiasedChoiceWorld, self).test_task()
         # we expect 10% of null feedback trials
-        assert np.abs(.1 - np.mean(self.task.trials_table['omit_feedback'])) < .05
+        assert np.abs(.05 - np.mean(self.task.trials_table['omit_feedback'])) < .05

@@ -4,6 +4,7 @@ Those can be instantiated lazily, ie. on any computer.
 The start() methods of those mixins require the hardware to be connected.
 
 """
+import argparse
 from pathlib import Path
 import unittest
 import tempfile
@@ -15,6 +16,7 @@ from iblrig.test.base import TASK_KWARGS
 from iblrig.base_tasks import SoundMixin, RotaryEncoderMixin, BaseSession, BpodMixin, ValveMixin
 from iblrig.base_choice_world import BiasedChoiceWorldSession
 from ibllib.io.session_params import read_params
+from iblrig.misc import _get_task_argument_parser, _post_parse_arguments
 
 
 class EmptyHardwareSession(BaseSession):
@@ -191,3 +193,26 @@ class TestPathCreation(unittest.TestCase):
         # when we create the session, the local session folder is created with the acquisition description file
         description_file_local = next(task.paths['SESSION_FOLDER'].glob('_ibl_experiment.description*.yaml'), None)
         assert description_file_local is not None
+
+
+class TestTaskArguments(unittest.TestCase):
+
+    @staticmethod
+    def _parse_local(args, parents=None):
+        parser = _get_task_argument_parser(parents=parents)
+        kwargs = vars(parser.parse_args(args))
+        kwargs = _post_parse_arguments(**kwargs)
+        return kwargs
+
+    def test_arg_parser_simple(self):
+        kwargs = self._parse_local(args=['--subject', 'toto', '-u', 'john.doe'])
+        self.assertTrue(kwargs['interactive'])
+        self.assertEqual(kwargs['subject'], 'toto')
+
+    def test_arg_parser_user(self):
+        parser = argparse.ArgumentParser(add_help=False)
+        parser.add_argument('--training_phase', option_strings=['--training_phase'], dest='training_phase', default=0, type=int)
+        kwargs = self._parse_local(args=['--subject', 'toto', '--training_phase', '4'], parents=[parser])
+        self.assertTrue(kwargs['interactive'])
+        self.assertEqual(kwargs['subject'], 'toto')
+        self.assertEqual(kwargs['training_phase'], 4)

@@ -9,7 +9,7 @@ To run a task using command line, open a terminal and activate the environment a
 
 ### Running a single task
 
-    python .\iblrig_tasks\_iblrig_tasks_trainingChoiceWorld\task.py --subject algernon
+    python .\iblrig_tasks\_iblrig_tasks_trainingChoiceWorld\task.py --subject algernon --user john.doe
 
 ### Chain several tasks together
 You can feed the `append` flag to the task to chain several tasks together.  For example, to run a passive task after an ephys task, you can do:

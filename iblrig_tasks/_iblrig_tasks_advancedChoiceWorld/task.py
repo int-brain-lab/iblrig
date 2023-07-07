@@ -16,6 +16,6 @@ class Session(ActiveChoiceWorldSession):
 
 
 if __name__ == "__main__":  # pragma: no cover
-    kwargs = iblrig.misc.get_task_runner_argument_parser()
+    kwargs = iblrig.misc.get_task_arguments()
     sess = Session(**kwargs)
     sess.run()
