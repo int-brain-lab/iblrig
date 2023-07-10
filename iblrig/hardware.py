@@ -6,6 +6,7 @@ import json
 import logging
 import time
 from enum import IntEnum
+import threading
 
 import serial
 import numpy as np
@@ -26,6 +27,18 @@ log = logging.getLogger(__name__)
 
 
 class Bpod(BpodIO):
+    _instances = set()
+    _lock = threading.Lock()
+
+    def __new__(self, *args, **kwargs):
+        serial_port = kwargs.get('serial_port') or ''
+        with self._lock:
+            for instance in Bpod._instances:
+                if instance.serial_port == serial_port:
+                    return instance
+            instance = super().__new__(self)
+            Bpod._instances.add(instance)
+            return instance
 
     def __init__(self, *args, **kwargs):
         try:
@@ -38,6 +51,9 @@ class Bpod(BpodIO):
                 "Please unplug the Bpod USB cable from the computer and plug it back in to start the task. ") from e
         self.default_message_idx = 0
         self.actions = Bunch({})
+
+    def __del__(self):
+        Bpod._usedPorts.remove(self.serial_port)
 
     @property
     def is_connected(self):
