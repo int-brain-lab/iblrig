@@ -1,9 +1,9 @@
 from collections import OrderedDict
+from dataclasses import dataclass
 import importlib
 from pathlib import Path
 import shutil
 import subprocess
-import signal
 import sys
 
 from PyQt5 import QtWidgets, QtCore, uic
@@ -12,6 +12,7 @@ from one.api import ONE
 import iblrig_tasks
 import iblrig_custom_tasks
 import iblrig.path_helper
+from iblrig.base_tasks import BaseSession
 
 PROCEDURES = [
     'Behavior training/tasks',
@@ -28,10 +29,37 @@ PROJECTS = [
 ]
 
 
-class RigWizardModel():
+# this class gets called to get the path constructor utility to predict the session path
+class EmptySession(BaseSession):
+    protocol_name = 'empty'
 
-    def __init__(self):
-        self.one = None
+    def _run(self):
+        pass
+
+    def start_hardware(self):
+        pass
+
+
+def _set_list_view_from_string(uilist: QtWidgets.QListView, string_list: list):
+    """Small boiler plate util to set the selection of a list view from a list of strings"""
+    if string_list is None or len(string_list) == 0:
+        return
+    for i, s in enumerate(uilist.model().stringList()):
+        if s in string_list:
+            uilist.selectionModel().select(uilist.model().createIndex(i, 0), QtCore.QItemSelectionModel.Select)
+
+
+@dataclass
+class RigWizardModel:
+    one: ONE = None
+    procedures: list = None
+    projects: list = None
+    task_name: str = None
+    user: str = None
+    subject: str = None
+    session_folder: Path = None
+
+    def __post_init__(self):
         self.iblrig_settings = iblrig.path_helper.load_settings_yaml()
         self.all_users = [self.iblrig_settings['ALYX_USER']]
         self.all_procedures = sorted(PROCEDURES)
@@ -83,11 +111,27 @@ class RigWizard(QtWidgets.QMainWindow):
         self.running_task_process = None
 
     def model2view(self):
+        # stores the current values in the model
+        self.controller2model()
+        # set the default values
         self.uiComboUser.setModel(QtCore.QStringListModel(self.model.all_users))
         self.uiComboTask.setModel(QtCore.QStringListModel(list(self.model.all_tasks.keys())))
         self.uiComboSubject.setModel(QtCore.QStringListModel(self.model.all_subjects))
         self.uiListProcedures.setModel(QtCore.QStringListModel(self.model.all_procedures))
         self.uiListProjects.setModel(QtCore.QStringListModel(self.model.all_projects))
+        # set the selections
+        self.uiComboUser.setCurrentText(self.model.user)
+        self.uiComboTask.setCurrentText(self.model.task_name)
+        self.uiComboSubject.setCurrentText(self.model.subject)
+        _set_list_view_from_string(self.uiListProcedures, self.model.procedures)
+        _set_list_view_from_string(self.uiListProjects, self.model.projects)
+
+    def controller2model(self):
+        self.model.procedures = [i.data() for i in self.uiListProcedures.selectedIndexes()]
+        self.model.projects = [i.data() for i in self.uiListProjects.selectedIndexes()]
+        self.model.task_name = self.uiComboTask.currentText()
+        self.model.user = self.uiComboUser.currentText()
+        self.model.subject = self.uiComboSubject.currentText()
 
     def alyx_connect(self):
         self.model.connect()
@@ -96,24 +140,23 @@ class RigWizard(QtWidgets.QMainWindow):
     def startstop(self):
         match self.uiPushStart.text():
             case 'Start':
-                # getting the current state of the view is a controller2model future method
-                procedures = [i.data() for i in self.uiListProcedures.selectedIndexes()]
-                projects = [i.data() for i in self.uiListProjects.selectedIndexes()]
-                task_name = self.uiComboTask.currentText()
-                user = self.uiComboUser.currentText()
-                subject = self.uiComboSubject.currentText()
+                self.controller2model()
+                task = EmptySession(subject=self.model.subject, append=False)
+                self.model.session_folder = task.paths['SESSION_FOLDER']
                 # runs the python command
-                cmd = [shutil.which('python'), str(self.model.all_tasks[task_name]), '--user', user, '--subject', subject]
-                if procedures:
-                    cmd.extend(['--procedures', ' '.join(procedures)])
-                if projects:
-                    cmd.extend(['--projects', ' '.join(projects)])
+                cmd = [shutil.which('python'), str(self.model.all_tasks[self.model.task_name]),
+                       '--user', self.model.user, '--subject', self.model.subject]
+                if self.model.procedures:
+                    cmd.extend(['--procedures', ' '.join(self.model.procedures)])
+                if self.model.projects:
+                    cmd.extend(['--projects', ' '.join(self.model.projects)])
                 if self.running_task_process is None:
                     self.running_task_process = subprocess.Popen(cmd)
                 self.uiPushStart.setText('Stop')
             case 'Stop':
                 # ideally here I would know the session folder and stop the session by writing the stop file with no SIGINT
-                self.running_task_process.send_signal(signal.SIGINT)
+                if self.model.session_folder.exists():
+                    self.model.session_folder.joinpath('.stop').touch()
                 self.running_task_process.communicate()
                 self.running_task_process = None
                 self.uiPushStart.setText('Start')

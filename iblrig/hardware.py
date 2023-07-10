@@ -27,17 +27,18 @@ log = logging.getLogger(__name__)
 
 
 class Bpod(BpodIO):
-    _instances = set()
+    _instances = {}
     _lock = threading.Lock()
 
     def __new__(self, *args, **kwargs):
-        serial_port = kwargs.get('serial_port') or ''
+        serial_port = args[0] if len(args) > 0 else ''
+        serial_port = kwargs.get('serial_port', serial_port)
         with self._lock:
-            for instance in Bpod._instances:
-                if instance.serial_port == serial_port:
-                    return instance
+            instance = Bpod._instances.get(serial_port, None)
+            if instance is not None:
+                return instance
             instance = super().__new__(self)
-            Bpod._instances.add(instance)
+            Bpod._instances[serial_port] = instance
             return instance
 
     def __init__(self, *args, **kwargs):
@@ -53,7 +54,8 @@ class Bpod(BpodIO):
         self.actions = Bunch({})
 
     def __del__(self):
-        Bpod._usedPorts.remove(self.serial_port)
+        if self.serial_port in Bpod._instances:
+            Bpod._instances.pop(self.serial_port)
 
     @property
     def is_connected(self):
