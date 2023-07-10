@@ -9,7 +9,6 @@ import subprocess
 import yaml
 
 from packaging import version
-import pandas as pd
 
 from iblutil.util import Bunch
 import iblrig
