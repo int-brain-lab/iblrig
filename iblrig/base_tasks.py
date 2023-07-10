@@ -365,8 +365,6 @@ class BaseSession(ABC):
             log.critical("SIGINT signal detected, will exit at the end of the trial")
 
         signal.signal(signal.SIGINT, sigint_handler)
-        if self.interactive:
-            input("Everything is ready to go, press Enter to start the task...")
         self._run()  # runs the specific task logic ie. trial loop etc...
         # post task instructions
         log.critical("Graceful exit")

@@ -76,48 +76,6 @@ def get_commit_hash(folder: str):
     return out
 
 
-def load_water_calibraition_func_file(fpath: str or Path) -> dict or None:
-    if not Path(fpath).exists():
-        return
-    df1 = pd.read_csv(fpath)
-    if df1.empty:
-        return {
-            "WATER_CALIBRATION_OPEN_TIMES": None,
-            "WATER_CALIBRATION_WEIGHT_PERDROP": None,
-        }
-
-    return {
-        "WATER_CALIBRATION_OPEN_TIMES": df1["open_time"].to_list(),
-        "WATER_CALIBRATION_WEIGHT_PERDROP": df1["weight_perdrop"].to_list(),
-    }
-
-
-def load_water_calibraition_range_file(fpath: str or Path) -> dict:
-    if not Path(fpath).exists():
-        return
-
-    import pandas as pd
-
-    # TODO: remove pandas dependency
-    df1 = pd.read_csv(fpath)
-    if df1.empty:
-        return {"WATER_CALIBRATION_RANGE": [None, None]}
-
-    return {
-        "WATER_CALIBRATION_RANGE": [
-            df1.min_open_time.iloc[0],
-            df1.max_open_time.iloc[0],
-        ]
-    }
-
-
-def make_folder(str1: str or Path) -> None:
-    """Check if folder path exists and if not create it + parents."""
-    path = Path(str1)
-    path.mkdir(parents=True, exist_ok=True)
-    log.debug(f"Created folder {path}")
-
-
 def get_bonsai_path(use_iblrig_bonsai: bool = True) -> str:
     """Checks for Bonsai folder in iblrig. Returns string with bonsai executable path."""
     iblrig_folder = get_iblrig_path()
@@ -143,24 +101,6 @@ def get_bonsai_path(use_iblrig_bonsai: bool = True) -> str:
     log.debug(f"Found Bonsai executable: {BONSAI}")
 
     return BONSAI
-
-
-def get_session_number(session_date_folder: str) -> str:
-    log.debug("Initializing session number")
-    if not Path(session_date_folder).exists():
-        return "001"
-    session_nums = [
-        int(x)
-        for x in os.listdir(session_date_folder)
-        if os.path.isdir(os.path.join(session_date_folder, x))
-    ]
-    if not session_nums:
-        out = str(1).zfill(3)
-    else:
-        out = str(max(session_nums) + 1).zfill(3)
-    log.debug(f"Setting session number to: {out}")
-
-    return out
 
 
 def iterate_collection(session_path: str, collection_name='raw_task_data') -> str:
@@ -190,9 +130,6 @@ def iterate_collection(session_path: str, collection_name='raw_task_data') -> st
 
     >>> iterate_collection('./subject/2020-01-01/001', collection_name='raw_imaging_data')
     'raw_imaging_data_01'
-
-    TODO This may be useful for use on other acquisition computers and therefore could move out of
-     iblrig.
     """
     if not Path(session_path).exists():
         return f'{collection_name}_00'
@@ -202,8 +139,3 @@ def iterate_collection(session_path: str, collection_name='raw_task_data') -> st
     if len(tasks) == 0:
         return f'{collection_name}_00'
     return f'{collection_name}_{int(tasks[-1][-2:]) + 1:02}'
-
-
-def get_pregen_session_folder() -> str:
-    iblrig_path = get_iblrig_path()
-    return str(iblrig_path / "pybpod_fixtures" / "IBL" / "tasks" / "_iblrig_tasks_ephysChoiceWorld" / "sessions")
