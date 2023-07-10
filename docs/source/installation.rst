@@ -35,6 +35,14 @@ Open an Administrator: Windows Powershell prompt and run the following:
 Install iblrigv8
 ----------------
 
+Install a new virtual environment and update pip (modify the <Username> value if needed)
+
+.. code-block:: powershell
+
+    C:\Users\IBLuser\AppData\Local\Programs\Python\Python310\.\python.exe -m venv C:\iblrigv8\venv
+    C:\iblrigv8\venv\scripts\python.exe -m pip install --upgrade pip wheel
+
+
 From the Powershell command line, clone iblrig to the ‘iblrigv8’ directory, and switch to iblrigv8 branch
 
 .. code-block:: powershell
@@ -43,13 +51,6 @@ From the Powershell command line, clone iblrig to the ‘iblrigv8’ directory, 
     git clone https://github.com/int-brain-lab/iblrig.git iblrigv8
     cd iblrigv8
     git checkout iblrigv8
-
-Install a new virtual environment and update pip (modify the <Username> value if needed)
-
-.. code-block:: powershell
-
-    C:\Users\IBLuser\AppData\Local\Programs\Python\Python310\.\python.exe -m venv C:\iblrigv8\venv
-    C:\iblrigv8\venv\scripts\python.exe -m pip install --upgrade pip wheel
 
 
 Install iblrig in editable mode
@@ -69,6 +70,14 @@ Install Bonsai in portable mode
     powershell.exe .\install.ps1
     cd ..
 
+Install additional personal project tasks and extractors
+
+.. code-block:: powershell
+
+    cd C:\
+    git clone https://github.com/int-brain-lab/project_extraction.git
+    cd project_extraction
+    pip install -e .
 
 .. exercise:: You can check that everything went fine by running the test suite:
 

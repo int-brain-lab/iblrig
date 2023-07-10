@@ -4,6 +4,7 @@ It provides hardware mixins that can be used together with BaseSession to compos
 This module tries to be exclude task related logic
 """
 import abc
+import argparse
 from pathlib import Path
 from abc import ABC
 import datetime
@@ -386,6 +387,15 @@ class BaseSession(ABC):
     @abc.abstractmethod
     def _run(self):
         pass
+
+    @staticmethod
+    def extra_parser():
+        """
+        Optional method that specifies extra kwargs arguments to expose to the user prior running the task.
+        Make sure you instantiate the parser
+        :return: argparse.parser()
+        """
+        return argparse.ArgumentParser(add_help=False)
 
 
 class OSCClient(udp_client.SimpleUDPClient):
