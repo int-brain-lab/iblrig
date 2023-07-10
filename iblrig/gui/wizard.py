@@ -1,4 +1,5 @@
 from collections import OrderedDict
+import importlib
 from pathlib import Path
 import shutil
 import subprocess
@@ -7,7 +8,7 @@ import sys
 
 from PyQt5 import QtWidgets, QtCore, uic
 
-import importlib
+from one.api import ONE
 import iblrig_tasks
 import iblrig_custom_tasks
 import iblrig.path_helper
@@ -61,13 +62,13 @@ class RigWizardModel():
         spec.loader.exec_module(task)
         return [{act.option_strings[0]: act.type} for act in task.Session.extra_parser()._actions]
 
-    # def connect(self):
-    #     self.one = ONE(base_url=self.iblrig_settings['ALYX_URL'], username=self.username)
-    #     rest_subjects = self.one.alyx.rest('subjects', 'list', alive=True, lab=self.iblrig_settings['ALYX_LAB'])
-
-        # projects = np.unique(np.concatenate([s['projects'] for s in rest_subjects if s['projects']]))
-        # subjects = np.sort([s['nickname'] for s in rest_subjects])
-        # procedures = np.sort(PROCEDURES)
+    def connect(self):
+        # todo get username
+        self.one = ONE(base_url=self.iblrig_settings['ALYX_URL'], username=self.iblrig_settings['ALYX_USER'])
+        rest_subjects = self.one.alyx.rest('subjects', 'list', alive=True, lab=self.iblrig_settings['ALYX_LAB'])
+        self.all_subjects = sorted(set(self.all_subjects + [s['nickname'] for s in rest_subjects]))
+        self.all_users = sorted(set([s['responsible_user'] for s in rest_subjects] + self.all_users))
+        # self.one.alyx.rest('projects', 'list')
 
 
 class RigWizard(QtWidgets.QMainWindow):
@@ -78,6 +79,7 @@ class RigWizard(QtWidgets.QMainWindow):
         self.model = RigWizardModel()
         self.model2view()
         self.uiPushStart.clicked.connect(self.startstop)
+        self.uiPushConnect.clicked.connect(self.alyx_connect)
         self.running_task_process = None
 
     def model2view(self):
@@ -86,6 +88,10 @@ class RigWizard(QtWidgets.QMainWindow):
         self.uiComboSubject.setModel(QtCore.QStringListModel(self.model.all_subjects))
         self.uiListProcedures.setModel(QtCore.QStringListModel(self.model.all_procedures))
         self.uiListProjects.setModel(QtCore.QStringListModel(self.model.all_projects))
+
+    def alyx_connect(self):
+        self.model.connect()
+        self.model2view()
 
     def startstop(self):
         match self.uiPushStart.text():
@@ -109,11 +115,16 @@ class RigWizard(QtWidgets.QMainWindow):
                 # ideally here I would know the session folder and stop the session by writing the stop file with no SIGINT
                 self.running_task_process.send_signal(signal.SIGINT)
                 self.running_task_process.communicate()
+                self.running_task_process = None
                 self.uiPushStart.setText('Start')
 
 
-if __name__ == "__main__":
+def main():
     app = QtWidgets.QApplication([])
     w = RigWizard()
     w.show()
     app.exec_()
+
+
+if __name__ == "__main__":
+    main()
