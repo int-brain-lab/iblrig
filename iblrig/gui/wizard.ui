@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>728</width>
-    <height>447</height>
+    <width>738</width>
+    <height>445</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -30,16 +30,35 @@
        <enum>QFrame::Raised</enum>
       </property>
       <layout class="QGridLayout" name="gridLayout_4">
-       <item row="2" column="2">
-        <widget class="QGroupBox" name="uiGroupProcedures">
-         <property name="title">
-          <string>Procedures</string>
+       <item row="1" column="0">
+        <widget class="QGroupBox" name="uiGroupUser">
+         <property name="minimumSize">
+          <size>
+           <width>200</width>
+           <height>0</height>
+          </size>
          </property>
-         <layout class="QGridLayout" name="gridLayout_2">
-          <item row="0" column="0">
-           <widget class="QListView" name="uiListProcedures">
-            <property name="selectionMode">
-             <enum>QAbstractItemView::MultiSelection</enum>
+         <property name="title">
+          <string>Alyx user</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout">
+          <item>
+           <widget class="QComboBox" name="uiComboUser">
+            <property name="editable">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="uiPushConnect">
+            <property name="maximumSize">
+             <size>
+              <width>150</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>Connect</string>
             </property>
            </widget>
           </item>
@@ -87,23 +106,16 @@
          </layout>
         </widget>
        </item>
-       <item row="3" column="2">
-        <widget class="QGroupBox" name="uiGroupFlow">
+       <item row="2" column="2">
+        <widget class="QGroupBox" name="uiGroupProcedures">
          <property name="title">
-          <string>Flow</string>
+          <string>Procedures</string>
          </property>
-         <layout class="QHBoxLayout" name="horizontalLayout">
-          <item>
-           <widget class="QPushButton" name="uiPushFlush">
-            <property name="text">
-             <string>Flush</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="uiPushStart">
-            <property name="text">
-             <string>Start</string>
+         <layout class="QGridLayout" name="gridLayout_2">
+          <item row="0" column="0">
+           <widget class="QListView" name="uiListProcedures">
+            <property name="selectionMode">
+             <enum>QAbstractItemView::MultiSelection</enum>
             </property>
            </widget>
           </item>
@@ -135,31 +147,50 @@
          </layout>
         </widget>
        </item>
-       <item row="1" column="0">
-        <widget class="QGroupBox" name="uiGroupUser">
-         <property name="minimumSize">
-          <size>
-           <width>200</width>
-           <height>0</height>
-          </size>
-         </property>
+       <item row="3" column="2">
+        <widget class="QGroupBox" name="uiGroupFlow">
          <property name="title">
-          <string>Alyx user</string>
+          <string>Flow</string>
          </property>
-         <layout class="QVBoxLayout" name="verticalLayout">
-          <item>
-           <widget class="QComboBox" name="uiComboUser"/>
-          </item>
-          <item>
-           <widget class="QPushButton" name="uiPushConnect">
-            <property name="maximumSize">
-             <size>
-              <width>150</width>
-              <height>16777215</height>
-             </size>
+         <layout class="QGridLayout" name="gridLayout">
+          <item row="0" column="2">
+           <widget class="QCheckBox" name="uiCheckAppend">
+            <property name="toolTip">
+             <string>Append to existing session for the same day</string>
             </property>
             <property name="text">
-             <string>Connect</string>
+             <string>Append</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="2">
+           <widget class="QPushButton" name="uiPushStart">
+            <property name="text">
+             <string>Start</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QPushButton" name="uiPushFlush">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="text">
+             <string>Flush</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="uiLabelDevices">
+            <property name="text">
+             <string># Devices</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QSpinBox" name="uiSpinDevices">
+            <property name="toolTip">
+             <string>Number of additional computers (video +1, ephys +1, photometry +1)</string>
             </property>
            </widget>
           </item>
@@ -176,11 +207,14 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>728</width>
+     <width>738</width>
      <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="uiMenuFile">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
     <property name="title">
      <string>File</string>
     </property>

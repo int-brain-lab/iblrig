@@ -14,15 +14,6 @@ from iblrig.misc import patch_settings_file
 log = logging.getLogger("iblrig")
 
 
-def ask_subject_weight(subject: str, settings_file_path: str = None) -> float:
-    out = graph.numinput("Subject weighing (gr)", f"{subject} weight (gr):", nullable=False)
-    log.info(f"Subject weight {out}")
-    if settings_file_path is not None:
-        patch = {"SUBJECT_WEIGHT": out}
-        patch_settings_file(settings_file_path, patch)
-    return out
-
-
 def ask_session_delay() -> int:
     out = graph.numinput(
         "Session delay",

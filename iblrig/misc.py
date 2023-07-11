@@ -363,14 +363,6 @@ def create_flag(session_folder_path: str, flag: str) -> None:
     open(path, "a").close()
 
 
-def create_flags(data_file_path: str, poop_count: bool) -> None:
-    session_folder_path = Path(data_file_path).parent.parent
-    create_flag(session_folder_path, "transfer_me")
-    create_flag(session_folder_path, "create_me")
-    if poop_count:
-        create_flag(session_folder_path, "poop_count")
-
-
 def draw_session_order():
     first = list(range(0, 4))
     second = list(range(4, 8))

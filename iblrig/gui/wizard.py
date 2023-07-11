@@ -40,7 +40,7 @@ class EmptySession(BaseSession):
         pass
 
 
-def _set_list_view_from_string(uilist: QtWidgets.QListView, string_list: list):
+def _set_list_view_from_string_list(uilist: QtWidgets.QListView, string_list: list):
     """Small boiler plate util to set the selection of a list view from a list of strings"""
     if string_list is None or len(string_list) == 0:
         return
@@ -91,8 +91,8 @@ class RigWizardModel:
         return [{act.option_strings[0]: act.type} for act in task.Session.extra_parser()._actions]
 
     def connect(self):
-        # todo get username
-        self.one = ONE(base_url=self.iblrig_settings['ALYX_URL'], username=self.iblrig_settings['ALYX_USER'])
+        # todo define new username
+        self.one = ONE(base_url=self.iblrig_settings['ALYX_URL'], username=self.iblrig_settings['ALYX_USER'], mode='local')
         rest_subjects = self.one.alyx.rest('subjects', 'list', alive=True, lab=self.iblrig_settings['ALYX_LAB'])
         self.all_subjects = sorted(set(self.all_subjects + [s['nickname'] for s in rest_subjects]))
         self.all_users = sorted(set([s['responsible_user'] for s in rest_subjects] + self.all_users))
@@ -123,8 +123,8 @@ class RigWizard(QtWidgets.QMainWindow):
         self.uiComboUser.setCurrentText(self.model.user)
         self.uiComboTask.setCurrentText(self.model.task_name)
         self.uiComboSubject.setCurrentText(self.model.subject)
-        _set_list_view_from_string(self.uiListProcedures, self.model.procedures)
-        _set_list_view_from_string(self.uiListProjects, self.model.projects)
+        _set_list_view_from_string_list(self.uiListProcedures, self.model.procedures)
+        _set_list_view_from_string_list(self.uiListProjects, self.model.projects)
 
     def controller2model(self):
         self.model.procedures = [i.data() for i in self.uiListProcedures.selectedIndexes()]
@@ -141,7 +141,7 @@ class RigWizard(QtWidgets.QMainWindow):
         match self.uiPushStart.text():
             case 'Start':
                 self.controller2model()
-                task = EmptySession(subject=self.model.subject, append=False)
+                task = EmptySession(subject=self.model.subject, append=self.uiCheckAppend.isChecked())
                 self.model.session_folder = task.paths['SESSION_FOLDER']
                 # runs the python command
                 cmd = [shutil.which('python'), str(self.model.all_tasks[self.model.task_name]),
@@ -150,13 +150,16 @@ class RigWizard(QtWidgets.QMainWindow):
                     cmd.extend(['--procedures', ' '.join(self.model.procedures)])
                 if self.model.projects:
                     cmd.extend(['--projects', ' '.join(self.model.projects)])
+                if self.uiCheckAppend.isChecked():
+                    cmd.append('--append')
                 if self.running_task_process is None:
                     self.running_task_process = subprocess.Popen(cmd)
                 self.uiPushStart.setText('Stop')
             case 'Stop':
-                # ideally here I would know the session folder and stop the session by writing the stop file with no SIGINT
+                # if the process crashed catastrophically, the session folder might not exist
                 if self.model.session_folder.exists():
                     self.model.session_folder.joinpath('.stop').touch()
+                # this will wait for the process to finish, usually the time for the trial to end
                 self.running_task_process.communicate()
                 self.running_task_process = None
                 self.uiPushStart.setText('Start')
