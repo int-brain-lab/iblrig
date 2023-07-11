@@ -34,7 +34,7 @@ import iblrig.frame2TTL as frame2TTL
 import iblrig.sound as sound
 import iblrig.spacer
 import iblrig.alyx
-import iblrig.user_input as user
+import iblrig.graphic as graph
 import ibllib.io.session_params as ses_params
 
 log = setup_logger("iblrig", level='INFO')
@@ -357,7 +357,8 @@ class BaseSession(ABC):
         self.start_hardware()
         self.create_session()
         if self.interactive:
-            self.session_info.SUBJECT_WEIGHT = user.ask_subject_weight(self.session_info.SUBJECT_NAME)
+            self.session_info.SUBJECT_WEIGHT = graph.numinput(
+                "Subject weighing (gr)", f"{self.session_info.SUBJECT_NAME} weight (gr):", nullable=False)
 
         def sigint_handler(*args, **kwargs):
             # create a signal handler for a graceful exit: create a stop flag in the session folder
@@ -365,13 +366,14 @@ class BaseSession(ABC):
             log.critical("SIGINT signal detected, will exit at the end of the trial")
 
         signal.signal(signal.SIGINT, sigint_handler)
-        if self.interactive:
-            input("Everything is ready to go, press Enter to start the task...")
         self._run()  # runs the specific task logic ie. trial loop etc...
         # post task instructions
         log.critical("Graceful exit")
         log.info(f'Session {self.paths.SESSION_RAW_DATA_FOLDER}')
         self.session_info.SESSION_END_TIME = datetime.datetime.now().isoformat()
+        if self.interactive:
+            self.session_info.POOP_COUNT = graph.numinput(
+                "Poop count", f"{self.session_info.SUBJECT_NAME} droppings count:", nullable=True, askint=True)
         self.save_task_parameters_to_json_file()
         self.register_to_alyx()
         self._execute_mixins_shared_function('stop_mixin')

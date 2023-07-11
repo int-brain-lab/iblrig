@@ -1,17 +1,24 @@
 # Using IBLRIG
 
 ## Run a task
+### Through the gaphical user interface
 
+To run a task using the graphical user interface, open a terminal and type in the `iblrig command`
+
+    C:\iblrigv8\venv\scripts\Activate.ps1
+    iblrig
+
+### Command Line
 To run a task using command line, open a terminal and activate the environment and set current directory.
 
     C:\iblrigv8\venv\scripts\Activate.ps1
     cd C:\iblrigv8\
 
-### Running a single task
+#### Running a single task
 
     python .\iblrig_tasks\_iblrig_tasks_trainingChoiceWorld\task.py --subject algernon --user john.doe
 
-### Chain several tasks together
+#### Chain several tasks together
 You can feed the `append` flag to the task to chain several tasks together.  For example, to run a passive task after an ephys task, you can do:
 
     python .\iblrig_tasks\_iblrig_tasks_ephysChoiceWorld\task.py --subject algernon
@@ -21,7 +28,7 @@ Followed by:
     python .\iblrig_tasks\_iblrig_tasks_passiveChoiceWorld\task.py --subject algernon --append
 
 
-## Flush valve
+### Flush valve
 
 To flush valve 1 of the Bpod, enter
 

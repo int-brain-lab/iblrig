@@ -398,7 +398,8 @@ class ChoiceWorldSession(
         Path(self.paths['DATA_FILE_PATH']).parent.joinpath('new_trial.flag').touch()
         # If more than 42 trials save transfer_me.flag
         if self.trial_num == 42:
-            misc.create_flags(self.paths.DATA_FILE_PATH, self.task_params.POOP_COUNT)
+            self.paths.SESSION_FOLDER.joinpath('transfer_me.flag').touch()
+            # todo: add number of devices in there
         self.check_sync_pulses(bpod_data=bpod_data)
 
     def check_sync_pulses(self, bpod_data):

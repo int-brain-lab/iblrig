@@ -1,11 +1,10 @@
 """
 This modules contains hardware classes used to interact with modules.
 """
-from pathlib import Path
-import json
 import logging
 import time
 from enum import IntEnum
+import threading
 
 import serial
 import numpy as np
@@ -26,6 +25,19 @@ log = logging.getLogger(__name__)
 
 
 class Bpod(BpodIO):
+    _instances = {}
+    _lock = threading.Lock()
+
+    def __new__(self, *args, **kwargs):
+        serial_port = args[0] if len(args) > 0 else ''
+        serial_port = kwargs.get('serial_port', serial_port)
+        with self._lock:
+            instance = Bpod._instances.get(serial_port, None)
+            if instance is not None:
+                return instance
+            instance = super().__new__(self)
+            Bpod._instances[serial_port] = instance
+            return instance
 
     def __init__(self, *args, **kwargs):
         try:
@@ -38,6 +50,10 @@ class Bpod(BpodIO):
                 "Please unplug the Bpod USB cable from the computer and plug it back in to start the task. ") from e
         self.default_message_idx = 0
         self.actions = Bunch({})
+
+    def __del__(self):
+        if self.serial_port in Bpod._instances:
+            Bpod._instances.pop(self.serial_port)
 
     @property
     def is_connected(self):
@@ -110,27 +126,18 @@ class Bpod(BpodIO):
             'bonsai_show_center': (re_port, self._define_message(self.rotary_encoder, [ord("#"), 5])),
         })
 
-    def get_ambient_sensor_reading(self, save_to=None):
+    def get_ambient_sensor_reading(self):
         ambient_module = [x for x in self.modules if x.name == "AmbientModule1"][0]
         ambient_module.start_module_relay()
         self.bpod_modules.module_write(ambient_module, "R")
         reply = self.bpod_modules.module_read(ambient_module, 12)
         ambient_module.stop_module_relay()
 
-        Measures = {
-            "Temperature_C": np.frombuffer(bytes(reply[:4]), np.float32),
-            "AirPressure_mb": np.frombuffer(bytes(reply[4:8]), np.float32) / 100,
-            "RelativeHumidity": np.frombuffer(bytes(reply[8:]), np.float32),
+        return {
+            "Temperature_C": np.frombuffer(bytes(reply[:4]), np.float32)[0],
+            "AirPressure_mb": np.frombuffer(bytes(reply[4:8]), np.float32)[0] / 100,
+            "RelativeHumidity": np.frombuffer(bytes(reply[8:]), np.float32)[0],
         }
-
-        if save_to is not None:
-            data = {k: v.tolist() for k, v in Measures.items()}
-            with open(Path(save_to).joinpath("_iblrig_ambientSensorData.raw.jsonable"), "a") as f:
-                f.write(json.dumps(data))
-                f.write("\n")
-                f.flush()
-
-        return {k: v.tolist()[0] for k, v in Measures.items()}
 
     def flush(self):
         """
