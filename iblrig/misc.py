@@ -49,6 +49,7 @@ def _get_task_argument_parser(parents=None):
     parser.add_argument('--no-interactive', dest='interactive', action='store_false', default=True)
     parser.add_argument('--append', dest='append', action='store_true', default=False)
     parser.add_argument('--stub', type=Path, help="Path to _ibl_experiment.description.yaml stub file.")
+    parser.add_argument('--log-level', type=str, help="Logger level", default="INFO")
     return parser
 
 

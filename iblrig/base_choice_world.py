@@ -25,7 +25,7 @@ import iblrig.base_tasks
 import iblrig.misc as misc
 from iblrig.hardware import SOFTCODE
 
-log = setup_logger('iblrig', level="INFO")
+log = setup_logger(__name__)
 
 NTRIALS_INIT = 2000
 NBLOCKS_INIT = 100

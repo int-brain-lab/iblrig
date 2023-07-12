@@ -1,7 +1,5 @@
-import logging
 import iblrig.misc
 from iblrig.base_choice_world import BiasedChoiceWorldSession
-log = logging.getLogger("iblrig")
 
 
 class Session(BiasedChoiceWorldSession):

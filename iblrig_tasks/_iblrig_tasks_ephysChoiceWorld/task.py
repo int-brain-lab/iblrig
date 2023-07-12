@@ -3,15 +3,12 @@ The ephys choice world task is the same as the biased choice world except that
 the trials are pregenerated and saved in a fixture file.
 """
 import argparse
-import logging
 from pathlib import Path
 
 import pandas as pd
 
 from iblrig.base_choice_world import BiasedChoiceWorldSession
 import iblrig.misc
-
-log = logging.getLogger("iblrig")
 
 
 class Session(BiasedChoiceWorldSession):

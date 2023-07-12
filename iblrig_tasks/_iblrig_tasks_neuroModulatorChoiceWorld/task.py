@@ -1,5 +1,3 @@
-import logging
-
 import numpy as np
 from pybpodapi.protocol import StateMachine
 
@@ -7,7 +5,6 @@ import iblrig.misc
 from iblrig.base_choice_world import BiasedChoiceWorldSession
 from iblrig.hardware import SOFTCODE
 
-log = logging.getLogger("iblrig")
 
 REWARD_AMOUNTS_UL = (1, 3)
 
@@ -52,9 +49,9 @@ class Session(BiasedChoiceWorldSession):
 
         if i == 0:  # First trial exception start camera
             session_delay_start = self.task_params.get("SESSION_DELAY_START", 0)
-            log.info("First trial initializing, will move to next trial only if:")
-            log.info("1. camera is detected")
-            log.info(f"2. {session_delay_start} sec have elapsed")
+            self.logger.info("First trial initializing, will move to next trial only if:")
+            self.logger.info("1. camera is detected")
+            self.logger.info(f"2. {session_delay_start} sec have elapsed")
             sma.add_state(
                 state_name="trial_start",
                 state_timer=0,
