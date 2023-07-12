@@ -14,9 +14,9 @@ import iblrig.misc
 class Session(BiasedChoiceWorldSession):
     protocol_name = "_iblrig_tasks_ephysChoiceWorld"
 
-    def __init__(self, *args, session_template_id=0, delay__secs=0, **kwargs):
+    def __init__(self, *args, session_template_id=0, delay_secs=0, **kwargs):
         super(Session, self).__init__(*args, **kwargs)
-        self.task_params.SESSION_START_DELAY_SEC = delay__secs
+        self.task_params.SESSION_START_DELAY_SEC = delay_secs
         self.task_params.SESSION_TEMPLATE_ID = session_template_id
         trials_table = pd.read_parquet(Path(__file__).parent.joinpath('trials_fixtures.pqt'))
         self.trials_table = trials_table.loc[

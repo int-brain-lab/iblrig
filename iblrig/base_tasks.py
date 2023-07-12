@@ -186,8 +186,6 @@ class BaseSession(ABC):
         setup_logger('pybpodapi', level=level, file=file)
         if self.logger is None:
             self.logger = logger
-        self.logger.debug('tutu debug')
-        self.logger.info('tutu info')
 
     @staticmethod
     def make_experiment_description_dict(task_protocol: str, task_collection: str, procedures: list = None, projects: list = None,
