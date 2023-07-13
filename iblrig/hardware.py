@@ -40,6 +40,12 @@ class Bpod(BpodIO):
             return instance
 
     def __init__(self, *args, **kwargs):
+        # try to instantiate once for nothing
+        try:
+            super(Bpod, self).__init__(*args, **kwargs)
+        except Exception:
+            time.sleep(1)
+            pass
         try:
             super(Bpod, self).__init__(*args, **kwargs)
         except (serial.serialutil.SerialException, UnicodeDecodeError) as e:
