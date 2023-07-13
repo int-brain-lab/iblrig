@@ -541,9 +541,9 @@ class BonsaiRecordingMixin(object):
             f"-p:RecordSound={self.task_params.RECORD_SOUND}",
             "--no-boot",
         ]
-        self.logger.info('Bonsai camera recording process started')
         self.logger.info(' '.join(cmd))
         subprocess.Popen(cmd, cwd=workflow_file.parent)
+        self.logger.info('Bonsai camera recording process started')
 
 
 class BonsaiVisualStimulusMixin(object):
