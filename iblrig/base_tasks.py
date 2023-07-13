@@ -475,6 +475,7 @@ class BonsaiRecordingMixin(object):
         })
 
     def stop_mixin_bonsai_recordings(self):
+        self.logger.info("Stopping Bonsai recordings")
         self.bonsai_camera.udp_client.exit()
         self.bonsai_microphone.udp_client.exit()
 
@@ -560,6 +561,7 @@ class BonsaiVisualStimulusMixin(object):
         self.choice_world_visual_stimulus()
 
     def stop_mixin_bonsai_visual_stimulus(self):
+        self.logger.info("Stopping Bonsai visual stimulus")
         self.bonsai_visual_udp_client.exit()
 
     def send_trial_info_to_bonsai(self):
