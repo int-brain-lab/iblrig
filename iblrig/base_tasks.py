@@ -376,6 +376,10 @@ class BaseSession(ABC):
             self.paths.SESSION_FOLDER.joinpath('.stop').touch()
             self.logger.critical("SIGINT signal detected, will exit at the end of the trial")
 
+        # if upon starting there is a flag just remove it, this is to prevent killing a session in the egg
+        if self.paths.SESSION_FOLDER.joinpath('.stop').exists():
+            self.paths.SESSION_FOLDER.joinpath('.stop').unlink()
+
         signal.signal(signal.SIGINT, sigint_handler)
         self._run()  # runs the specific task logic ie. trial loop etc...
         # post task instructions
