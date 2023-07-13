@@ -143,6 +143,8 @@ class RigWizard(QtWidgets.QMainWindow):
                 self.controller2model()
                 task = EmptySession(subject=self.model.subject, append=self.uiCheckAppend.isChecked())
                 self.model.session_folder = task.paths['SESSION_FOLDER']
+                if self.model.session_folder.joinpath('.stop').exists():
+                    self.model.session_folder.joinpath('.stop').unlink()
                 # runs the python command
                 cmd = [shutil.which('python'), str(self.model.all_tasks[self.model.task_name]),
                        '--user', self.model.user, '--subject', self.model.subject]
