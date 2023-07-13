@@ -44,16 +44,16 @@ class Bpod(BpodIO):
         try:
             super(Bpod, self).__init__(*args, **kwargs)
         except Exception:
+            log.warning("Couldn't instantiate BPOD, retrying once...")
             time.sleep(1)
-            pass
-        try:
-            super(Bpod, self).__init__(*args, **kwargs)
-        except (serial.serialutil.SerialException, UnicodeDecodeError) as e:
-            log.error(e)
-            raise serial.serialutil.SerialException(
-                "The communication with Bpod is established but the Bpod is not responsive. "
-                "This is usually indicated by the device with a green light. "
-                "Please unplug the Bpod USB cable from the computer and plug it back in to start the task. ") from e
+            try:
+                super(Bpod, self).__init__(*args, **kwargs)
+            except (serial.serialutil.SerialException, UnicodeDecodeError) as e:
+                log.error(e)
+                raise serial.serialutil.SerialException(
+                    "The communication with Bpod is established but the Bpod is not responsive. "
+                    "This is usually indicated by the device with a green light. "
+                    "Please unplug the Bpod USB cable from the computer and plug it back in to start the task. ") from e
         self.default_message_idx = 0
         self.actions = Bunch({})
 
