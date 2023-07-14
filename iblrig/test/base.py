@@ -19,6 +19,8 @@ TASK_KWARGS = {
     'file_hardware_settings': 'hardware_settings_template.yaml',
     'subject': 'iblrig_test_subject',
     'interactive': False,
+    'projects': ['ibl_neuropixel_brainwide_01', 'ibl_mainenlab'],
+    'procedures': ['Behavior training/tasks', 'Imaging'],
 }
 
 
