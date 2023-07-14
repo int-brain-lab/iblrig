@@ -35,14 +35,6 @@ Open an Administrator: Windows Powershell prompt and run the following:
 Install iblrigv8
 ----------------
 
-Install a new virtual environment and update pip (modify the <Username> value if needed)
-
-.. code-block:: powershell
-
-    C:\Users\IBLuser\AppData\Local\Programs\Python\Python310\.\python.exe -m venv C:\iblrigv8\venv
-    C:\iblrigv8\venv\scripts\python.exe -m pip install --upgrade pip wheel
-
-
 From the Powershell command line, clone iblrig to the ‘iblrigv8’ directory, and switch to iblrigv8 branch
 
 .. code-block:: powershell
@@ -51,6 +43,14 @@ From the Powershell command line, clone iblrig to the ‘iblrigv8’ directory, 
     git clone https://github.com/int-brain-lab/iblrig.git iblrigv8
     cd iblrigv8
     git checkout iblrigv8
+
+
+Install a new virtual environment and update pip (modify the <Username> value if needed)
+
+.. code-block:: powershell
+
+    C:\Users\IBLuser\AppData\Local\Programs\Python\Python310\.\python.exe -m venv C:\iblrigv8\venv
+    C:\iblrigv8\venv\scripts\python.exe -m pip install --upgrade pip wheel
 
 
 Install iblrig in editable mode
