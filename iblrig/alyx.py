@@ -1,5 +1,6 @@
 import logging
 from one.registration import RegistrationClient
+import iblrig
 
 log = logging.getLogger("iblrig")
 
@@ -24,7 +25,7 @@ def register_session(session_path, settings_dict, one=None):
         'n_correct_trials': settings_dict['NTRIALS_CORRECT'],
         'n_trials': settings_dict['NTRIALS'],
         'projects': ensure_list(settings_dict['PROJECTS']),
-        'task_protocol': settings_dict['PYBPOD_PROTOCOL'],
+        'task_protocol': settings_dict['PYBPOD_PROTOCOL'] + iblrig.__version__,
         'lab': settings_dict['ALYX_LAB'],
         'start_time': settings_dict['SESSION_START_TIME'],
         'end_time': settings_dict['SESSION_END_TIME']
@@ -51,8 +52,8 @@ def register_session(session_path, settings_dict, one=None):
                 session=ses['url'][-36:],
                 subject=settings_dict['SUBJECT_NAME'],
                 water_type=settings_dict.get('REWARD_TYPE', None),
-                water_administered=settings_dict['TOTAL_WATER_DELIVERED'],
+                water_administered=settings_dict['TOTAL_WATER_DELIVERED'] / 1000,
             )
             one.alyx.rest('water-administrations', 'create', data=wa_data)
             log.info(f"Water administered registered in Alyx database: {ses['subject']},"
-                     f"{settings_dict['TOTAL_WATER_DELIVERED']}mL")
+                     f"{settings_dict['TOTAL_WATER_DELIVERED'] / 1000}mL")

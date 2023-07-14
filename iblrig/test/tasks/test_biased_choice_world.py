@@ -105,7 +105,7 @@ class TestIntegrationFullRun(TestIntegrationFullRuns):
                                  date=task.session_info['SESSION_START_TIME'][:10], number=task.session_info['SESSION_NUMBER'])
         full_session = self.one.alyx.rest('sessions', 'read', id=ses[0]['id'])
         # and the water administered
-        assert full_session['wateradmin_session_related'][0]['water_administered'] == init_water
+        assert full_session['wateradmin_session_related'][0]['water_administered'] == init_water / 1000
         # and the related weighing
         wei = self.one.alyx.rest('weighings', 'list', nickname=self.kwargs['subject'],
                                  date=task.session_info['SESSION_START_TIME'][:10])
