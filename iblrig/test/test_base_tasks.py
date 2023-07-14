@@ -208,6 +208,12 @@ class TestTaskArguments(unittest.TestCase):
         kwargs = self._parse_local(args=['--subject', 'toto', '-u', 'john.doe'])
         self.assertTrue(kwargs['interactive'])
         self.assertEqual(kwargs['subject'], 'toto')
+        projects = ['titi', 'tata']
+        procedures = ['tata', 'titi']
+        kwargs = self._parse_local(args=['--subject', 'toto', '-u', 'john.doe', '--projects',
+                                         *projects, '--procedures', *procedures])
+        self.assertEqual(set(kwargs['projects']), set(projects))
+        self.assertEqual(set(kwargs['procedures']), set(procedures))
 
     def test_arg_parser_user(self):
         parser = argparse.ArgumentParser(add_help=False)

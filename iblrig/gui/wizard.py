@@ -149,9 +149,9 @@ class RigWizard(QtWidgets.QMainWindow):
                 cmd = [shutil.which('python'), str(self.model.all_tasks[self.model.task_name]),
                        '--user', self.model.user, '--subject', self.model.subject]
                 if self.model.procedures:
-                    cmd.extend(['--procedures', ' '.join(self.model.procedures)])
+                    cmd.extend(['--procedures', *self.model.procedures])
                 if self.model.projects:
-                    cmd.extend(['--projects', ' '.join(self.model.projects)])
+                    cmd.extend(['--projects', *self.model.projects])
                 if self.uiCheckAppend.isChecked():
                     cmd.append('--append')
                 if self.running_task_process is None:
