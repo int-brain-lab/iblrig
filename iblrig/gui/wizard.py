@@ -90,13 +90,16 @@ class RigWizardModel:
         spec.loader.exec_module(task)
         return [{act.option_strings[0]: act.type} for act in task.Session.extra_parser()._actions]
 
-    def connect(self):
+    def connect(self, username=None):
+        username = username or self.iblrig_settings['ALYX_USER']
         # todo define new username
-        self.one = ONE(base_url=self.iblrig_settings['ALYX_URL'], username=self.iblrig_settings['ALYX_USER'], mode='local')
+        self.one = ONE(base_url=self.iblrig_settings['ALYX_URL'], username=username, mode='local')
         rest_subjects = self.one.alyx.rest('subjects', 'list', alive=True, lab=self.iblrig_settings['ALYX_LAB'])
         self.all_subjects = sorted(set(self.all_subjects + [s['nickname'] for s in rest_subjects]))
         self.all_users = sorted(set([s['responsible_user'] for s in rest_subjects] + self.all_users))
-        # self.one.alyx.rest('projects', 'list')
+        rest_projects = self.one.alyx.rest('projects', 'list')
+        projects = [p['name'] for p in rest_projects if (username in p['users'] or len(p['users']) == 0)]
+        self.all_projects = sorted(set(projects + self.all_projects))
 
 
 class RigWizard(QtWidgets.QMainWindow):

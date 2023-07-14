@@ -1,5 +1,5 @@
 import unittest
-from iblrig.gui.wizard import RigWizardModel
+from iblrig.gui.wizard import RigWizardModel, PROJECTS
 
 
 class TestRigWizardModel(unittest.TestCase):
@@ -7,10 +7,14 @@ class TestRigWizardModel(unittest.TestCase):
     def setUp(self):
         self.wizard = RigWizardModel()
 
+    def test_connect(self):
+        self.wizard.connect()
+        assert len(self.wizard.all_projects) > len(PROJECTS)
+
     def test_get_task_extra_kwargs(self):
         """
-        This is a good test as it will import all of the tasks from the iblrig_tasks package and
-        run a static method that returns the variable number of input prompts for each task.
+        This is a test that gets quite a bit of coverage as it will import all of the tasks
+        from the iblrig_tasks package and run a static method that returns the variable number of input prompts for each
         :return:
         """
         for task_name in self.wizard.all_tasks:
