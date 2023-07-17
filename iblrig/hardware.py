@@ -164,6 +164,9 @@ class Bpod(BpodIO):
             time.sleep(duration)
         self.manual_override(self.ChannelTypes.OUTPUT, self.ChannelNames.VALVE, 1, 0)
 
+    def valve(self, valve_id: int, state: bool):
+        self.manual_override(self.ChannelTypes.OUTPUT, self.ChannelNames.VALVE, valve_id, state)
+
 
 class MyRotaryEncoder(object):
     def __init__(self, all_thresholds, gain, com, connect=False):

@@ -5,6 +5,7 @@ from pathlib import Path
 import shutil
 import subprocess
 import sys
+import yaml
 
 from PyQt5 import QtWidgets, QtCore, uic
 
@@ -13,6 +14,7 @@ import iblrig_tasks
 import iblrig_custom_tasks
 import iblrig.path_helper
 from iblrig.base_tasks import BaseSession
+from iblrig.hardware import Bpod
 
 PROCEDURES = [
     'Behavior training/tasks',
@@ -58,6 +60,9 @@ class RigWizardModel:
     user: str = None
     subject: str = None
     session_folder: Path = None
+    hardware_settings: dict = None
+    bpod_found: bool = None
+
 
     def __post_init__(self):
         self.iblrig_settings = iblrig.path_helper.load_settings_yaml()
@@ -76,6 +81,10 @@ class RigWizardModel:
                 self.iblrig_settings['iblrig_local_data_path']).joinpath(
                 self.iblrig_settings['ALYX_LAB'], 'Subjects')
             self.all_subjects = sorted([f.name for f in folder_subjects.glob('*') if f.is_dir()])
+        file_settings = Path(iblrig.__file__).parents[1].joinpath('settings', 'hardware_settings.yaml')
+        self.hardware_settings = yaml.safe_load(file_settings.read_text())
+        bpod = Bpod(self.hardware_settings['device_bpod']['COM_BPOD'])
+        self.bpod_found = Bpod(self.hardware_settings['device_bpod']['COM_BPOD']).is_connected
 
     def _get_task_extra_kwargs(self, task_name=None):
         """
@@ -109,9 +118,12 @@ class RigWizard(QtWidgets.QMainWindow):
         self.settings = QtCore.QSettings('iblrig', 'wizard')
         self.model = RigWizardModel()
         self.model2view()
+        self.uiPushFlush.clicked.connect(self.flush)
         self.uiPushStart.clicked.connect(self.startstop)
         self.uiPushConnect.clicked.connect(self.alyx_connect)
         self.running_task_process = None
+        if not self.model.bpod_found:
+            self.uiPushFlush.setEnabled(False)
 
     def model2view(self):
         # stores the current values in the model
@@ -168,6 +180,11 @@ class RigWizard(QtWidgets.QMainWindow):
                 self.running_task_process.communicate()
                 self.running_task_process = None
                 self.uiPushStart.setText('Start')
+
+    def flush(self):
+        bpod = Bpod(self.model.hardware_settings['device_bpod']['COM_BPOD'])
+        bpod.manual_override(bpod.ChannelTypes.OUTPUT, bpod.ChannelNames.VALVE, 1, self.uiPushFlush.isChecked())
+
 
 
 def main():
