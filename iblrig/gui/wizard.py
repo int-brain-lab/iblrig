@@ -66,7 +66,7 @@ class RigWizardModel:
 
     def __post_init__(self):
         self.iblrig_settings = iblrig.path_helper.load_settings_yaml()
-        self.all_users = [self.iblrig_settings['ALYX_USER']]
+        self.all_users = [self.iblrig_settings['ALYX_USER']] if self.iblrig_settings['ALYX_USER'] else []
         self.all_procedures = sorted(PROCEDURES)
         # for the tasks, we build a dictionary that contains the task name as key and the path to the task.py as value
         tasks = sorted([p for p in Path(iblrig_tasks.__file__).parent.rglob('task.py')])
