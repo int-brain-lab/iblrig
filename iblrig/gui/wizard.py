@@ -63,7 +63,6 @@ class RigWizardModel:
     hardware_settings: dict = None
     bpod_found: bool = None
 
-
     def __post_init__(self):
         self.iblrig_settings = iblrig.path_helper.load_settings_yaml()
         self.all_users = [self.iblrig_settings['ALYX_USER']]
@@ -83,7 +82,6 @@ class RigWizardModel:
             self.all_subjects = sorted([f.name for f in folder_subjects.glob('*') if f.is_dir()])
         file_settings = Path(iblrig.__file__).parents[1].joinpath('settings', 'hardware_settings.yaml')
         self.hardware_settings = yaml.safe_load(file_settings.read_text())
-        bpod = Bpod(self.hardware_settings['device_bpod']['COM_BPOD'])
         self.bpod_found = Bpod(self.hardware_settings['device_bpod']['COM_BPOD']).is_connected
 
     def _get_task_extra_kwargs(self, task_name=None):
@@ -184,7 +182,6 @@ class RigWizard(QtWidgets.QMainWindow):
     def flush(self):
         bpod = Bpod(self.model.hardware_settings['device_bpod']['COM_BPOD'])
         bpod.manual_override(bpod.ChannelTypes.OUTPUT, bpod.ChannelNames.VALVE, 1, self.uiPushFlush.isChecked())
-
 
 
 def main():
