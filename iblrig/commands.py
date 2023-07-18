@@ -87,4 +87,4 @@ def flush():
     hardware_settings = yaml.safe_load(file_settings.read_text())
     bpod = Bpod(hardware_settings['device_bpod']['COM_BPOD'])
     bpod.flush()
-    bpod.close() # potentially a bad idea
+    bpod.close()
