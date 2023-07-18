@@ -97,10 +97,12 @@ class RigWizardModel:
         spec.loader.exec_module(task)
         return [{act.option_strings[0]: act.type} for act in task.Session.extra_parser()._actions]
 
-    def connect(self, username=None):
-        username = username or self.iblrig_settings['ALYX_USER']
-        # todo define new username
-        self.one = ONE(base_url=self.iblrig_settings['ALYX_URL'], username=username, mode='local')
+    def connect(self, username=None, one=None):
+        if one is None:
+            username = username or self.iblrig_settings['ALYX_USER']
+            self.one = ONE(base_url=self.iblrig_settings['ALYX_URL'], username=username, mode='local')
+        else:
+            self.one = one
         rest_subjects = self.one.alyx.rest('subjects', 'list', alive=True, lab=self.iblrig_settings['ALYX_LAB'])
         self.all_subjects = sorted(set(self.all_subjects + [s['nickname'] for s in rest_subjects]))
         self.all_users = sorted(set([s['responsible_user'] for s in rest_subjects] + self.all_users))
