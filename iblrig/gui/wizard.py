@@ -182,11 +182,10 @@ class RigWizard(QtWidgets.QMainWindow):
                 self.uiPushFlush.setEnabled(True)
 
     def flush(self):
-        bpod = Bpod(self.model.hardware_settings['device_bpod']['COM_BPOD'])  # bpod is a singleton
-
         try:
+            bpod = Bpod(self.model.hardware_settings['device_bpod']['COM_BPOD'])  # bpod is a singleton
             bpod.manual_override(bpod.ChannelTypes.OUTPUT, bpod.ChannelNames.VALVE, 1, self.uiPushFlush.isChecked())
-        except exceptions.bpod_error.BpodErrorException:
+        except (OSError, exceptions.bpod_error.BpodErrorException):
             print(traceback.format_exc())
             print("Cannot find bpod - is it connected?")
             self.uiPushFlush.setChecked(False)
