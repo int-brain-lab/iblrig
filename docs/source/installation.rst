@@ -16,6 +16,11 @@ Open an Administrator: Windows Powershell prompt and run the following:
 .. code-block:: powershell
 
     Set-ExecutionPolicy RemoteSigned
+
+Then exit the admin window and open a new Windows Powershell prompt (no admin mode) and run the following:
+
+.. code-block:: powershell
+
     New-Item -ItemType Directory -Force -Path C:\Temp
     Invoke-WebRequest -Uri https://www.python.org/ftp/python/3.10.11/python-3.10.11-amd64.exe -OutFile C:\Temp\python-3.10.11-amd64.exe
     Start-Process -NoNewWindow -Wait -FilePath C:\Temp\python-3.10.11-amd64.exe -ArgumentList "/passive", "InstallAllUsers=0", "Include_launcher=0", "Include_test=0"

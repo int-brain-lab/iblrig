@@ -349,13 +349,9 @@ class BaseSession(ABC):
         logfile = self.paths.SESSION_RAW_DATA_FOLDER.joinpath('_ibl_log.info-acquisition.log')
         self._setup_loggers(level=self.logger.level, file=logfile)
         # copy the acquisition stub to the remote session folder
-        ses_params.prepare_experiment(
-            self.paths.SESSION_FOLDER.relative_to(self.paths['LOCAL_SUBJECT_FOLDER']),
-            self.experiment_description,
-            local=self.paths['LOCAL_SUBJECT_FOLDER'],
-            remote=self.paths['REMOTE_SUBJECT_FOLDER'] or False,  # setting this to False will not copy
-            device_id=self.hardware_settings['RIG_NAME'],
-        )
+        from iblrig.transfer_experiments import SessionCopier
+        sc = SessionCopier(self.paths.SESSION_FOLDER, remote_subjects_folder=self.paths['REMOTE_SUBJECT_FOLDER'])
+        sc.initialize_experiment(self.experiment_description)
         self.register_to_alyx()
 
     def run(self):
