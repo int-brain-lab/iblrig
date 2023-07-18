@@ -6,6 +6,7 @@ import shutil
 import subprocess
 import sys
 import yaml
+import traceback
 
 from PyQt5 import QtWidgets, QtCore, uic
 
@@ -15,6 +16,7 @@ import iblrig_custom_tasks
 import iblrig.path_helper
 from iblrig.base_tasks import BaseSession
 from iblrig.hardware import Bpod
+from pybpodapi import exceptions
 
 PROCEDURES = [
     'Behavior training/tasks',
@@ -61,7 +63,6 @@ class RigWizardModel:
     subject: str = None
     session_folder: Path = None
     hardware_settings: dict = None
-    bpod_found: bool = None
 
     def __post_init__(self):
         self.iblrig_settings = iblrig.path_helper.load_settings_yaml()
@@ -82,7 +83,6 @@ class RigWizardModel:
             self.all_subjects = sorted([f.name for f in folder_subjects.glob('*') if f.is_dir()])
         file_settings = Path(iblrig.__file__).parents[1].joinpath('settings', 'hardware_settings.yaml')
         self.hardware_settings = yaml.safe_load(file_settings.read_text())
-        self.bpod_found = Bpod(self.hardware_settings['device_bpod']['COM_BPOD']).is_connected
 
     def _get_task_extra_kwargs(self, task_name=None):
         """
@@ -120,8 +120,6 @@ class RigWizard(QtWidgets.QMainWindow):
         self.uiPushStart.clicked.connect(self.startstop)
         self.uiPushConnect.clicked.connect(self.alyx_connect)
         self.running_task_process = None
-        if not self.model.bpod_found:
-            self.uiPushFlush.setEnabled(False)
 
     def model2view(self):
         # stores the current values in the model
@@ -179,17 +177,24 @@ class RigWizard(QtWidgets.QMainWindow):
                 self.running_task_process.communicate()
                 self.running_task_process = None
                 self.uiPushStart.setText('Start')
-                self.uiPushFlush.setEnabled(True    )
+                self.uiPushFlush.setEnabled(True)
 
     def flush(self):
         bpod = Bpod(self.model.hardware_settings['device_bpod']['COM_BPOD'])  # bpod is a singleton
-        bpod.manual_override(bpod.ChannelTypes.OUTPUT, bpod.ChannelNames.VALVE, 1, self.uiPushFlush.isChecked())
+
+        try:
+            bpod.manual_override(bpod.ChannelTypes.OUTPUT, bpod.ChannelNames.VALVE, 1, self.uiPushFlush.isChecked())
+        except exceptions.bpod_error.BpodErrorException:
+            print(traceback.format_exc())
+            print("Cannot find bpod - is it connected?")
+            self.uiPushFlush.setChecked(False)
+            return
+
         if self.uiPushFlush.isChecked():
             self.uiPushStart.setEnabled(False)
         else:
             bpod.close()
             self.uiPushStart.setEnabled(True)
-
 
 
 def main():
