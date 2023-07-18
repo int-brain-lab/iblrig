@@ -19,8 +19,15 @@ class TestSpacer(unittest.TestCase):
                 'iblrig_remote_data_path': Path(td).joinpath('remote'),
             }
             session = Session(iblrig_settings=iblrig_settings, **TASK_KWARGS)
-            session.create_session()
 
+            session.create_session()
+            session.paths.SESSION_FOLDER.joinpath('raw_video_data').mkdir(parents=True)
+            session.paths.SESSION_FOLDER.joinpath('raw_video_data', 'tutu.avi').touch()
+            sc = SessionCopier(session_path=session.paths.SESSION_FOLDER,
+                               remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER)
+            assert sc.get_copy_state()[0] == 1
+            sc.copy_collections()
+            assert sc.get_copy_state()[0] == 2
 
     def test_behavior_ephys_video_copy(self):
         with tempfile.TemporaryDirectory() as td:

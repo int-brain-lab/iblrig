@@ -17,7 +17,6 @@ import time
 import yaml
 import signal
 import traceback
-import re
 
 import numpy as np
 import scipy.interpolate
@@ -36,6 +35,7 @@ import iblrig.spacer
 import iblrig.alyx
 import iblrig.graphic as graph
 import ibllib.io.session_params as ses_params
+from iblrig.transfer_experiments import SessionCopier
 
 OSC_CLIENT_IP = "127.0.0.1"
 
@@ -224,7 +224,7 @@ class BaseSession(ABC):
                     if hardware_settings['device_cameras'][camera]:
                         devices['cameras'][camera] = {'collection': 'raw_video_data', 'sync_label': 'audio'}
             if hardware_settings.get('device_microphone', None):
-                devices['microphone'] = {'microphone': {'collection': 'raw_audio_data', 'sync_label': 'audio'}}
+                devices['microphone'] = {'microphone': {'collection': task_collection, 'sync_label': 'audio'}}
         ses_params.merge_params(description, {'devices': devices})
         # Add projects and procedures
         description['procedures'] = list(set(description.get('procedures', []) + (procedures or [])))
@@ -338,7 +338,6 @@ class BaseSession(ABC):
         logfile = self.paths.SESSION_RAW_DATA_FOLDER.joinpath('_ibl_log.info-acquisition.log')
         self._setup_loggers(level=self.logger.level, file=logfile)
         # copy the acquisition stub to the remote session folder
-        from iblrig.transfer_experiments import SessionCopier
         sc = SessionCopier(self.paths.SESSION_FOLDER, remote_subjects_folder=self.paths['REMOTE_SUBJECT_FOLDER'])
         sc.initialize_experiment(self.experiment_description)
         self.register_to_alyx()
