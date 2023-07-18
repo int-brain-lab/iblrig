@@ -170,6 +170,7 @@ class RigWizard(QtWidgets.QMainWindow):
                 if self.running_task_process is None:
                     self.running_task_process = subprocess.Popen(cmd)
                 self.uiPushStart.setText('Stop')
+                self.uiPushFlush.setEnabled(False)
             case 'Stop':
                 # if the process crashed catastrophically, the session folder might not exist
                 if self.model.session_folder.exists():
@@ -178,10 +179,17 @@ class RigWizard(QtWidgets.QMainWindow):
                 self.running_task_process.communicate()
                 self.running_task_process = None
                 self.uiPushStart.setText('Start')
+                self.uiPushFlush.setEnabled(True    )
 
     def flush(self):
-        bpod = Bpod(self.model.hardware_settings['device_bpod']['COM_BPOD'])
+        bpod = Bpod(self.model.hardware_settings['device_bpod']['COM_BPOD'])  # bpod is a singleton
         bpod.manual_override(bpod.ChannelTypes.OUTPUT, bpod.ChannelNames.VALVE, 1, self.uiPushFlush.isChecked())
+        if self.uiPushFlush.isChecked():
+            self.uiPushStart.setEnabled(False)
+        else:
+            bpod.close()
+            self.uiPushStart.setEnabled(True)
+
 
 
 def main():
