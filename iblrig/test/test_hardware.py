@@ -14,8 +14,8 @@ class TestHardware(unittest.TestCase):
         assert bpod0 is bpod1
         assert bpod0 is not bpod2
         assert bpod_None is not bpod1
-        self.assertEqual(Bpod._instances.keys(), {'', 'COM3', 'COM4'})
+        self.assertEqual({'', 'COM3', 'COM4'}, Bpod._instances.keys())
         bpod_None.__del__()
-        self.assertEqual(Bpod._instances.keys(), {'COM3', 'COM4'})
+        self.assertEqual({'COM3', 'COM4'}, Bpod._instances.keys())
         bpod0.__del__()
-        self.assertEqual(Bpod._instances.keys(), {'COM4'})
+        self.assertEqual({'COM4'}, Bpod._instances.keys())
