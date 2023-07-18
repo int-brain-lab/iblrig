@@ -9,6 +9,19 @@ from iblrig.transfer_experiments import SessionCopier, VideoCopier, EphysCopier
 
 class TestSpacer(unittest.TestCase):
 
+    def test_behavior_copy(self):
+        with tempfile.TemporaryDirectory() as td:
+            """
+            First create a behavior session
+            """
+            iblrig_settings = {
+                'iblrig_local_data_path': Path(td).joinpath('behavior'),
+                'iblrig_remote_data_path': Path(td).joinpath('remote'),
+            }
+            session = Session(iblrig_settings=iblrig_settings, **TASK_KWARGS)
+            session.create_session()
+
+
     def test_behavior_ephys_video_copy(self):
         with tempfile.TemporaryDirectory() as td:
             """

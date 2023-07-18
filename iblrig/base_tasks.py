@@ -216,27 +216,16 @@ class BaseSession(ABC):
         description = ses_params.read_params(stub) if stub else {}
         # Add hardware devices
         if hardware_settings:
-            if 'devices' not in description:
-                description['devices'] = {}
-            for label in filter(None, map(re.compile(r'device_(\w+)').match, hardware_settings.keys())):
-                dev = hardware_settings[label.group()]  # The device dictionary
-                name, = label.groups()
-                # If any of the value keys are uppercase strings, assume a single sub-device of the same name
-                if all(map(str.isupper, dev.keys())):
-                    subkey = name
-                    dev = {k.lower(): v for k, v in dev.items()}  # Ensure keys lower case
-                    if name in description['devices']:
-                        description['devices'][name].update({subkey: dev})
-                    else:
-                        description['devices'][name] = {subkey: dev}
-                # Otherwise assume there are sub device keys
-                else:
-                    # Ensure keys lower case
-                    dev = {k: {kk.lower(): vv for kk, vv in v.items()} for k, v in dev.items()}
-                    if name in description['devices']:
-                        description['devices'][name].update(dev)
-                    else:
-                        description['devices'][name] = dev
+            devices = {}
+            cams = hardware_settings.get('device_cameras', None)
+            if cams:
+                devices['cameras'] = {}
+                for camera in cams:
+                    if hardware_settings['device_cameras'][camera]:
+                        devices['cameras'][camera] = {'collection': 'raw_video_data', 'sync_label': 'audio'}
+            if hardware_settings.get('device_microphone', None):
+                devices['microphone'] = {'microphone': {'collection': 'raw_audio_data', 'sync_label': 'audio'}}
+        ses_params.merge_params(description, {'devices': devices})
         # Add projects and procedures
         description['procedures'] = list(set(description.get('procedures', []) + (procedures or [])))
         description['projects'] = list(set(description.get('projects', []) + (projects or [])))
