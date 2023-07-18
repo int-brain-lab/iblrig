@@ -1,4 +1,8 @@
 import unittest
+
+from one.api import ONE
+from ibllib.tests import TEST_DB
+
 from iblrig.gui.wizard import RigWizardModel, PROJECTS
 
 
@@ -8,7 +12,7 @@ class TestRigWizardModel(unittest.TestCase):
         self.wizard = RigWizardModel()
 
     def test_connect(self):
-        self.wizard.connect()
+        self.wizard.connect(one=ONE(**TEST_DB, mode='remote'))
         assert len(self.wizard.all_projects) > len(PROJECTS)
 
     def test_get_task_extra_kwargs(self):

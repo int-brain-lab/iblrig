@@ -7,7 +7,26 @@ from iblrig.test.base import TASK_KWARGS
 from iblrig.transfer_experiments import SessionCopier, VideoCopier, EphysCopier
 
 
-class TestSpacer(unittest.TestCase):
+class TestTransferExperiments(unittest.TestCase):
+
+    def test_behavior_copy(self):
+        with tempfile.TemporaryDirectory() as td:
+            """
+            First create a behavior session
+            """
+            iblrig_settings = {
+                'iblrig_local_data_path': Path(td).joinpath('behavior'),
+                'iblrig_remote_data_path': Path(td).joinpath('remote'),
+            }
+            session = Session(iblrig_settings=iblrig_settings, **TASK_KWARGS)
+            session.create_session()
+            session.paths.SESSION_FOLDER.joinpath('raw_video_data').mkdir(parents=True)
+            session.paths.SESSION_FOLDER.joinpath('raw_video_data', 'tutu.avi').touch()
+            sc = SessionCopier(session_path=session.paths.SESSION_FOLDER,
+                               remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER)
+            assert sc.get_copy_state()[0] == 1
+            sc.copy_collections()
+            assert sc.get_copy_state()[0] == 2
 
     def test_behavior_ephys_video_copy(self):
         with tempfile.TemporaryDirectory() as td:
@@ -18,7 +37,7 @@ class TestSpacer(unittest.TestCase):
                 'iblrig_local_data_path': Path(td).joinpath('behavior'),
                 'iblrig_remote_data_path': Path(td).joinpath('remote'),
             }
-            session = Session(iblrig_settings=iblrig_settings, **TASK_KWARGS)
+            session = Session(iblrig_settings=iblrig_settings, hardware_settings={'device_cameras': None}, **TASK_KWARGS)
             session.create_session()
             # SESSION_RAW_DATA_FOLDER is the one that gets copied
             folder_session_video = Path(td).joinpath('video', 'Subjects', *session.paths.SESSION_FOLDER.parts[-3:])
@@ -52,8 +71,8 @@ class TestSpacer(unittest.TestCase):
             assert sc.glob_file_remote_copy_status().suffix == '.status_pending'
             assert sc.get_copy_state()[0] == 1
             sc.copy_collections()
-            assert sc.glob_file_remote_copy_status().suffix == '.status_complete'
             assert sc.get_copy_state()[0] == 2
+            assert sc.glob_file_remote_copy_status().suffix == '.status_complete'
             sc.copy_collections()
             assert sc.get_copy_state()[0] == 2
 

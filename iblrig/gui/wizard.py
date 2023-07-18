@@ -5,6 +5,8 @@ from pathlib import Path
 import shutil
 import subprocess
 import sys
+import yaml
+import traceback
 
 from PyQt5 import QtWidgets, QtCore, uic
 
@@ -13,6 +15,8 @@ import iblrig_tasks
 import iblrig_custom_tasks
 import iblrig.path_helper
 from iblrig.base_tasks import BaseSession
+from iblrig.hardware import Bpod
+from pybpodapi import exceptions
 
 PROCEDURES = [
     'Behavior training/tasks',
@@ -58,6 +62,7 @@ class RigWizardModel:
     user: str = None
     subject: str = None
     session_folder: Path = None
+    hardware_settings: dict = None
 
     def __post_init__(self):
         self.iblrig_settings = iblrig.path_helper.load_settings_yaml()
@@ -76,6 +81,8 @@ class RigWizardModel:
                 self.iblrig_settings['iblrig_local_data_path']).joinpath(
                 self.iblrig_settings['ALYX_LAB'], 'Subjects')
             self.all_subjects = sorted([f.name for f in folder_subjects.glob('*') if f.is_dir()])
+        file_settings = Path(iblrig.__file__).parents[1].joinpath('settings', 'hardware_settings.yaml')
+        self.hardware_settings = yaml.safe_load(file_settings.read_text())
 
     def _get_task_extra_kwargs(self, task_name=None):
         """
@@ -90,10 +97,12 @@ class RigWizardModel:
         spec.loader.exec_module(task)
         return [{act.option_strings[0]: act.type} for act in task.Session.extra_parser()._actions]
 
-    def connect(self, username=None):
-        username = username or self.iblrig_settings['ALYX_USER']
-        # todo define new username
-        self.one = ONE(base_url=self.iblrig_settings['ALYX_URL'], username=username, mode='local')
+    def connect(self, username=None, one=None):
+        if one is None:
+            username = username or self.iblrig_settings['ALYX_USER']
+            self.one = ONE(base_url=self.iblrig_settings['ALYX_URL'], username=username, mode='local')
+        else:
+            self.one = one
         rest_subjects = self.one.alyx.rest('subjects', 'list', alive=True, lab=self.iblrig_settings['ALYX_LAB'])
         self.all_subjects = sorted(set(self.all_subjects + [s['nickname'] for s in rest_subjects]))
         self.all_users = sorted(set([s['responsible_user'] for s in rest_subjects] + self.all_users))
@@ -109,6 +118,7 @@ class RigWizard(QtWidgets.QMainWindow):
         self.settings = QtCore.QSettings('iblrig', 'wizard')
         self.model = RigWizardModel()
         self.model2view()
+        self.uiPushFlush.clicked.connect(self.flush)
         self.uiPushStart.clicked.connect(self.startstop)
         self.uiPushConnect.clicked.connect(self.alyx_connect)
         self.running_task_process = None
@@ -160,6 +170,7 @@ class RigWizard(QtWidgets.QMainWindow):
                 if self.running_task_process is None:
                     self.running_task_process = subprocess.Popen(cmd)
                 self.uiPushStart.setText('Stop')
+                self.uiPushFlush.setEnabled(False)
             case 'Stop':
                 # if the process crashed catastrophically, the session folder might not exist
                 if self.model.session_folder.exists():
@@ -168,6 +179,23 @@ class RigWizard(QtWidgets.QMainWindow):
                 self.running_task_process.communicate()
                 self.running_task_process = None
                 self.uiPushStart.setText('Start')
+                self.uiPushFlush.setEnabled(True)
+
+    def flush(self):
+        try:
+            bpod = Bpod(self.model.hardware_settings['device_bpod']['COM_BPOD'])  # bpod is a singleton
+            bpod.manual_override(bpod.ChannelTypes.OUTPUT, bpod.ChannelNames.VALVE, 1, self.uiPushFlush.isChecked())
+        except (OSError, exceptions.bpod_error.BpodErrorException):
+            print(traceback.format_exc())
+            print("Cannot find bpod - is it connected?")
+            self.uiPushFlush.setChecked(False)
+            return
+
+        if self.uiPushFlush.isChecked():
+            self.uiPushStart.setEnabled(False)
+        else:
+            bpod.close()
+            self.uiPushStart.setEnabled(True)
 
 
 def main():
