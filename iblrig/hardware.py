@@ -58,8 +58,9 @@ class Bpod(BpodIO):
         self.actions = Bunch({})
 
     def __del__(self):
-        if self.serial_port in Bpod._instances:
-            Bpod._instances.pop(self.serial_port)
+        with self._lock:
+            if self.serial_port in Bpod._instances:
+                Bpod._instances.pop(self.serial_port)
 
     @property
     def is_connected(self):
