@@ -179,7 +179,7 @@ class RigWizard(QtWidgets.QMainWindow):
                 self.running_task_process.communicate()
                 self.running_task_process = None
                 self.uiPushStart.setText('Start')
-                self.uiPushFlush.setEnabled(True    )
+                self.uiPushFlush.setEnabled(True)
 
     def flush(self):
         bpod = Bpod(self.model.hardware_settings['device_bpod']['COM_BPOD'])  # bpod is a singleton
@@ -189,7 +189,6 @@ class RigWizard(QtWidgets.QMainWindow):
         else:
             bpod.close()
             self.uiPushStart.setEnabled(True)
-
 
 
 def main():

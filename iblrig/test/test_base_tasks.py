@@ -94,8 +94,7 @@ class TestExperimentDescription(unittest.TestCase):
             'procedures': ['Imaging'],
             'projects': ['foo'],
             'devices': {
-                'bpod': {'bpod': {'foo': 10, 'bar': 20}},
-                'cameras': {'left': {'baz': 0}}}
+                'cameras': {'left': {'collection': 'raw_video_data', 'sync_label': 'audio'}}}
         }
         tempdir = tempfile.TemporaryDirectory()
         self.addCleanup(tempdir.cleanup)
@@ -131,9 +130,7 @@ class TestExperimentDescription(unittest.TestCase):
             'passiveWorld', 'raw_task_data_00', projects=['foo', 'bar'], hardware_settings=hardware_settings, stub=self.stub_path)
         self.assertCountEqual(['Imaging'], description['procedures'])
         self.assertCountEqual(['bar', 'foo'], description['projects'])
-        self.assertCountEqual(['cameras', 'bpod', 'foo'], description.get('devices', {}).keys())
-        bpod_device = description.get('devices', {}).get('bpod', {})
-        self.assertDictEqual({'bpod': {'foo': 20, 'bar': 30}}, bpod_device)
+        self.assertCountEqual(['cameras'], description.get('devices', {}).keys())
         expected = self.stub['tasks'] + [{'passiveWorld': {'collection': 'raw_task_data_00', 'sync_label': 'bpod'}}]
         self.assertCountEqual(expected, description.get('tasks', []))
 
