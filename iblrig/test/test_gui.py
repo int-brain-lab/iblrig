@@ -10,10 +10,9 @@ class TestRigWizardModel(unittest.TestCase):
 
     def setUp(self):
         self.wizard = RigWizardModel()
-        self.wizard.one = ONE(**TEST_DB, mode='remote')
 
     def test_connect(self):
-        self.wizard.connect()
+        self.wizard.connect(one=ONE(**TEST_DB, mode='remote'))
         assert len(self.wizard.all_projects) > len(PROJECTS)
 
     def test_get_task_extra_kwargs(self):
