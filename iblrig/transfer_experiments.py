@@ -24,7 +24,11 @@ class SessionCopier():
     def __repr__(self):
         return f"{super(SessionCopier, self).__repr__()} \n local: {self.session_path} \n remote: {self.remote_session_path}"
 
-    def get_copy_state(self):
+    @property
+    def state(self):
+        return self.get_state()[0]
+
+    def get_state(self):
         if self.remote_subjects_folder is None or not self.remote_subjects_folder.exists():
             return None, f'Remote subjects folder {self.remote_subjects_folder} set to Null or unreachable'
         if not self.file_remote_experiment_description.exists():
@@ -118,8 +122,7 @@ class SessionCopier():
         overwrite : bool
             If true, overwrite any existing file with the new one, otherwise, update the existing file.
         """
-        if not acquisition_description:
-            return
+        assert acquisition_description
 
         # First attempt to add the remote description stub to the _device folder on the remote session
         if not self.remote_subjects_folder:
