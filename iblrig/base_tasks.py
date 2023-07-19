@@ -231,7 +231,8 @@ class BaseSession(ABC):
         description['projects'] = list(set(description.get('projects', []) + (projects or [])))
         # Add sync key if required
         if (hardware_settings or {}).get('MAIN_SYNC', False) and 'sync' not in description:
-            description['sync'] = {'bpod': {'collection': task_collection, 'acquisition_software': 'bpod'}}
+            description['sync'] = {
+                'bpod': {'collection': task_collection, 'acquisition_software': 'pybpod', 'extension': '.jsonable'}}
         # Add task
         task = {task_protocol: {'collection': task_collection, 'sync_label': 'bpod'}}
         if 'tasks' not in description:

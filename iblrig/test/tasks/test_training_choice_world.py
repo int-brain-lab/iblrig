@@ -31,3 +31,19 @@ class TestInstantiationTraining(BaseTestCases.CommonTestInstantiateTask):
                 if i == 245:
                     task.show_trial_log()
                 assert not np.isnan(task.reward_time)
+
+    def test_acquisition_description(self):
+        ad = self.task.experiment_description
+        ed = {
+            'sync': {
+                'bpod': {'collection': 'raw_task_data_00', 'extension': '.jsonable', 'acquisition_software': 'pybpod'}
+            },
+            'devices': {
+                'cameras': {'left': {'collection': 'raw_video_data', 'sync_label': 'audio'}},
+                'microphone': {'microphone': {'collection': 'raw_task_data_00', 'sync_label': 'audio'}},
+            },
+            'tasks': [
+                {'_iblrig_tasks_trainingChoiceWorld': {'collection': 'raw_task_data_00', 'sync_label': 'bpod'}}],
+        }
+        for k in ed:
+            assert ad[k] == ed[k], f"Failed on {k}"
