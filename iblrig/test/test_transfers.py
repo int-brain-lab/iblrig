@@ -27,6 +27,8 @@ class TestTransferExperiments(unittest.TestCase):
             assert sc.get_copy_state()[0] == 1
             sc.copy_collections()
             assert sc.get_copy_state()[0] == 2
+            sc.finalize_copy(number_of_expected_devices=1)
+            assert sc.get_copy_state()[0] == 3   # this time it's all there and we move on
 
     def test_behavior_ephys_video_copy(self):
         with tempfile.TemporaryDirectory() as td:
@@ -75,6 +77,8 @@ class TestTransferExperiments(unittest.TestCase):
             assert sc.glob_file_remote_copy_status().suffix == '.status_complete'
             sc.copy_collections()
             assert sc.get_copy_state()[0] == 2
+            sc.finalize_copy(number_of_expected_devices=3)
+            assert sc.get_copy_state()[0] == 2  # here we still don't have all devides so this won't cut it and we stay in state 2
 
             vc = VideoCopier(session_path=folder_session_video, remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER)
             assert vc.get_copy_state()[0] == 0
@@ -82,6 +86,8 @@ class TestTransferExperiments(unittest.TestCase):
             assert vc.get_copy_state()[0] == 1
             vc.copy_collections()
             assert vc.get_copy_state()[0] == 2
+            sc.finalize_copy(number_of_expected_devices=3)
+            assert sc.get_copy_state()[0] == 2  # here we still don't have all devides so this won't cut it and we stay in state 2
 
             ec = EphysCopier(session_path=folder_session_ephys, remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER)
             assert ec.get_copy_state()[0] == 0
@@ -89,3 +95,5 @@ class TestTransferExperiments(unittest.TestCase):
             assert ec.get_copy_state()[0] == 1
             ec.copy_collections()
             assert ec.get_copy_state()[0] == 2
+            sc.finalize_copy(number_of_expected_devices=3)
+            assert sc.get_copy_state()[0] == 3   # this time it's all there and we move on

@@ -1,4 +1,5 @@
 from pathlib import Path
+import shutil
 import traceback
 
 from one.alf.files import filename_parts
@@ -37,6 +38,8 @@ class SessionCopier():
             return 1, f'Copy pending {self.file_remote_experiment_description}'
         elif status_file.name.endswith('complete'):
             return 2, f'Copy complete {self.file_remote_experiment_description}'
+        elif status_file.name.endswith('final'):
+            return 3, f'Copy finalized {self.file_remote_experiment_description}'
 
     @property
     def remote_session_path(self):
@@ -79,7 +82,13 @@ class SessionCopier():
                 status = False
                 continue
             log.info(f'transferring {self.session_path} - {collection}')
-            status &= rsync_paths(local_collection, self.remote_session_path.joinpath(collection))
+            remote_collection = self.remote_session_path.joinpath(collection)
+            if remote_collection.exists():
+                # this is far from ideal, but here rsync-diff backup is not the right tool for syncing
+                # and will error out if the remote collection already exists
+                log.warning(f'Collection {remote_collection} already exists, removing')
+                shutil.rmtree(remote_collection)
+            status &= rsync_paths(local_collection, remote_collection)
         return status
 
     def copy_collections(self):
@@ -134,6 +143,23 @@ class SessionCopier():
             self.file_experiment_description, session_params.merge_params(previous_description, acquisition_description))
         log.info(f'Written data to local session at : {self.file_experiment_description}.')
 
+    def finalize_copy(self, number_of_expected_devices=None):
+        """
+        At the end of the copy, check if all the files are there and if so, aggregate the device files
+        :return:
+        """
+        assert number_of_expected_devices
+        ready_to_finalize = 0
+        files_stub = list(self.file_remote_experiment_description.parent.glob('*.yaml'))
+        for file_stub in files_stub:
+            ready_to_finalize += int(file_stub.with_suffix('.status_complete').exists())
+        if ready_to_finalize == number_of_expected_devices:
+            for file_stub in files_stub:
+                session_params.aggregate_device(
+                    file_stub, self.remote_session_path.joinpath('_ibl_experiment.description.yaml'))
+                file_stub.with_suffix('.status_complete').rename(file_stub.with_suffix('.status_final'))
+        self.remote_session_path.joinpath('raw_session.flag').touch()
+
 
 class VideoCopier(SessionCopier):
     tag = 'video'
@@ -172,7 +198,6 @@ class EphysCopier(SessionCopier):
         probe_model = '3A'
         for file_nidq_bin in self.session_path.joinpath('raw_ephys_data').glob('*.nidq.bin'):
             probe_model = '3B'
-            import shutil
             shutil.copy(path_wiring.joinpath('nidq.wiring.json'), file_nidq_bin.with_suffix('.wiring.json'))
         for file_ap_bin in self.session_path.joinpath('raw_ephys_data').rglob('*.ap.bin'):
             shutil.copy(path_wiring.joinpath(f'{probe_model}.wiring.json'), file_ap_bin.with_suffix('.wiring.json'))
