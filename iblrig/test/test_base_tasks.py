@@ -116,7 +116,7 @@ class TestExperimentDescription(unittest.TestCase):
         hardware_settings['MAIN_SYNC'] = True
         description = BaseSession.make_experiment_description_dict(
             'choiceWorld', 'raw_behavior_data', hardware_settings=hardware_settings)
-        expected = {'bpod': {'collection': 'raw_behavior_data', 'acquisition_software': 'bpod'}}
+        expected = {'bpod': {'collection': 'raw_behavior_data', 'acquisition_software': 'pybpod', 'extension': '.jsonable'}}
         self.assertDictEqual(expected, description.get('sync', {}))
 
     def test_stub(self):
