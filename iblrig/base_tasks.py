@@ -22,7 +22,9 @@ import numpy as np
 import scipy.interpolate
 
 from pythonosc import udp_client
+import pybpodapi
 from pybpodapi.protocol import StateMachine
+
 from one.api import ONE
 
 import iblrig
@@ -68,6 +70,7 @@ class BaseSession(ABC):
         assert self.protocol_name is not None, "Protocol name must be defined by the child class"
         self.logger = None
         self._setup_loggers(level=log_level)
+        self.logger.info(f"Running iblrig {iblrig.__version__}, pybpod version {pybpodapi.__version__}")
         self.interactive = False if append else interactive
         self._one = one
         self.init_datetime = datetime.datetime.now()
