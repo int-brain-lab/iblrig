@@ -165,6 +165,7 @@ class SessionCopier():
         files_stub = list(self.file_remote_experiment_description.parent.glob('*.yaml'))
         for file_stub in files_stub:
             ready_to_finalize += int(file_stub.with_suffix('.status_complete').exists())
+        log.info(f"{ready_to_finalize}/{number_of_expected_devices} copy completion status")
         if ready_to_finalize == number_of_expected_devices:
             for file_stub in files_stub:
                 session_params.aggregate_device(
