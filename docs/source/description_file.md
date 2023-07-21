@@ -11,7 +11,7 @@ is, therefore, very important!
 Here is an example of a complete experiment description file for a mesoscope experiment running
 two consecutive tasks, `biasedChoiceWorld` followed by `passiveChoiceWorld`. 
 
-```
+```yaml
 devices:
   mesoscope:
     mesoscope:
@@ -58,7 +58,7 @@ The devices section in the experiment description file lists the set of devices 
 the experiment. Supported devices are Cameras, Microphone, Mesoscope, Neuropixel, Photometry and Widefield.
 
 The convention for this section is to have the device name followed by a list of sub-devices, e.g.
-```
+```yaml
 devices:
   cameras:
     belly:
@@ -80,7 +80,7 @@ In the above example, `cameras` is the device and the sub-devices are `belly`, `
 
 If there are no sub-devices, the sub-device is given the same name as the device, e.g.
 
-```
+```yaml
 devices:
   mesoscope:
     mesoscope:
@@ -101,7 +101,7 @@ The procedures section lists the set of procedures that apply to this experiment
 procedures can be found [here](https://alyx.internationalbrainlab.org/admin/actions/proceduretype/).
 
 As many procedure that apply to the experiment can be added e.g.
-```
+```yaml
 procedures:
 - Fiber photometry
 - Optical stimulation
@@ -127,12 +127,23 @@ description file and act as the main clock to which other timeseries are synced.
 
 An example of an experiment run with bpod as the main syncing device is, 
 
-```
+```yaml
 sync:
   bpod:
     collection: raw_behavior_data
     extension: bin
 
+```
+
+Another example for spikeglx electrophysiology recordings with Neuropixel 1B probes use the
+nidq as main synchronisation.
+
+```yaml
+sync:
+  nidq:
+    collection: raw_ephys_data
+    extension: bin
+    acquisition_software: spikeglx
 ```
 
 Each sync device must have at least the following two keys
@@ -145,7 +156,7 @@ Optional keys include, for example `acquisition_software`, the software used to 
 
 The tasks section contains a list of the behavioral protocols run during the experiment. The name of the
 protocol must be given in the list e.g.
-```
+```yaml
 tasks:
 - _biasedChoiceWorld:
     collection: raw_task_data_00

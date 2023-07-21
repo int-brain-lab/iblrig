@@ -16,11 +16,9 @@ class SessionCopier():
     assert_connect_on_init = False
 
     def __init__(self, session_path, remote_subjects_folder=None, tag=None):
-        # TODO: allow instantiate with no local path to check status from local server
         self.tag = tag or self.tag
         self.session_path = Path(session_path)
         self.remote_subjects_folder = Path(remote_subjects_folder) if remote_subjects_folder else None
-        self.experiment_description = session_params.read_params(self.session_path)
 
     def __repr__(self):
         return f"{super(SessionCopier, self).__repr__()} \n local: {self.session_path} \n remote: {self.remote_session_path}"
@@ -45,6 +43,10 @@ class SessionCopier():
             return 2, f'Copy complete {self.file_remote_experiment_description}'
         elif status_file.name.endswith('final'):
             return 3, f'Copy finalized {self.file_remote_experiment_description}'
+
+    @property
+    def experiment_description(self):
+        return session_params.read_params(self.session_path)
 
     @property
     def remote_session_path(self):
@@ -193,7 +195,9 @@ class EphysCopier(SessionCopier):
                 case 1: stub_name = 'neuropixel_single_probe.yaml'
                 case 2: stub_name = 'neuropixel_dual_probe.yaml'
             stub_file = Path(deploy.ephyspc.__file__).parent.joinpath('device_stubs', stub_name)
+            sync_file = Path(deploy.ephyspc.__file__).parent.joinpath('device_stubs', 'sync_nidq_raw_ephys_data.yaml')
             acquisition_description = session_params.read_params(stub_file)
+            acquisition_description.update(session_params.read_params(sync_file))
         super(EphysCopier, self).initialize_experiment(acquisition_description=acquisition_description, **kwargs)
 
     def _copy_collections(self):

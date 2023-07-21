@@ -93,6 +93,7 @@ class TestTransferExperiments(unittest.TestCase):
             assert ec.state == 0
             ec.initialize_experiment()
             assert ec.state == 1
+            assert 'sync' in ec.experiment_description
             ec.copy_collections()
             assert ec.state == 2
             sc.finalize_copy(number_of_expected_devices=3)
