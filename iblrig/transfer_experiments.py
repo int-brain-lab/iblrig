@@ -2,7 +2,6 @@ from pathlib import Path
 import shutil
 import traceback
 
-from one.alf.files import filename_parts
 from iblutil.util import setup_logger
 from ibllib.io import session_params
 from ibllib.pipes.misc import rsync_paths
@@ -14,12 +13,14 @@ log = setup_logger('iblrig', level='INFO')
 
 class SessionCopier():
     tag = 'behavior'
+    assert_connect_on_init = False
 
-    def __init__(self, session_path, remote_subjects_folder=None):
+    def __init__(self, session_path, remote_subjects_folder=None, tag=None):
+        # TODO: allow instantiate with no local path to check status from local server
+        self.tag = tag or self.tag
         self.session_path = Path(session_path)
         self.remote_subjects_folder = Path(remote_subjects_folder) if remote_subjects_folder else None
         self.experiment_description = session_params.read_params(self.session_path)
-        self.remote_experiment_description_stub = session_params.read_params(self.session_path)
 
     def __repr__(self):
         return f"{super(SessionCopier, self).__repr__()} \n local: {self.session_path} \n remote: {self.remote_session_path}"
@@ -69,7 +70,11 @@ class SessionCopier():
     def file_remote_experiment_description(self):
         if self.remote_subjects_folder:
             return session_params.get_remote_stub_name(
-                self.remote_session_path, filename_parts(self.file_experiment_description.name)[3])
+                self.remote_session_path, device_id=self.tag)
+
+    @property
+    def remote_experiment_description_stub(self):
+        return session_params.read_params(self.file_remote_experiment_description)
 
     def _copy_collections(self):
         """
@@ -136,8 +141,10 @@ class SessionCopier():
                 session_params.write_yaml(remote_stub_file, merged_description)
                 remote_stub_file.with_suffix('.status_pending').touch()
                 log.info(f'Written data to remote device at: {remote_stub_file}.')
-            except Exception as ex:
-                log.warning(f'Failed to write data to remote device at: {remote_stub_file}. \n {ex}')
+            except Exception as e:
+                if self.assert_connect_on_init:
+                    raise Exception(f'Failed to write data to remote device at: {remote_stub_file}. \n {e}') from e
+                log.warning(f'Failed to write data to remote device at: {remote_stub_file}. \n {e}')
 
         # then create on the local machine
         previous_description = session_params.read_params(self.file_experiment_description)\
@@ -166,6 +173,7 @@ class SessionCopier():
 
 class VideoCopier(SessionCopier):
     tag = 'video'
+    assert_connect_on_init = True
 
     def initialize_experiment(self, acquisition_description=None, **kwargs):
         if not acquisition_description:
@@ -176,6 +184,7 @@ class VideoCopier(SessionCopier):
 
 class EphysCopier(SessionCopier):
     tag = 'spikeglx'
+    assert_connect_on_init = True
 
     def initialize_experiment(self, acquisition_description=None, nprobes=None, **kwargs):
         if not acquisition_description:
