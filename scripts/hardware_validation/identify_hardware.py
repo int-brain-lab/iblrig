@@ -50,6 +50,7 @@ for port in ports:
                 pass
 
         s.flush()
+        s.close()
         print('{}: {}'.format(s.portstr, m))
     except (OSError, SerialException):
         pass
