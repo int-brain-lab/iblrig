@@ -42,8 +42,12 @@ class TestInstantiationTraining(BaseTestCases.CommonTestInstantiateTask):
                 'cameras': {'left': {'collection': 'raw_video_data', 'sync_label': 'audio'}},
                 'microphone': {'microphone': {'collection': 'raw_task_data_00', 'sync_label': 'audio'}},
             },
-            'tasks': [
-                {'_iblrig_tasks_trainingChoiceWorld': {'collection': 'raw_task_data_00', 'sync_label': 'bpod'}}],
+            'tasks': [{
+                '_iblrig_tasks_trainingChoiceWorld': {
+                    'collection': 'raw_task_data_00',
+                    'sync_label': 'bpod',
+                    'extractors': ['TrialRegisterRaw', 'TrainingTrials', 'TrainingStatus']}}
+            ],
         }
         for k in ed:
             assert ad[k] == ed[k], f"Failed on {k}"

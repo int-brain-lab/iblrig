@@ -10,6 +10,7 @@ import iblrig.misc
 
 class Session(ChoiceWorldSession):
     protocol_name = "_iblrig_tasks_passiveChoiceWorld"
+    extractor_tasks = ['PassiveRegisterRaw', 'PassiveChoiceWorld']
 
     def __init__(self, **kwargs):
         super(ChoiceWorldSession, self).__init__(**kwargs)

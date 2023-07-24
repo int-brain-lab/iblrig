@@ -84,7 +84,11 @@ class TestHardwareMixins(unittest.TestCase):
 
 
 class TestExperimentDescription(unittest.TestCase):
-    """Test creation of experiment description dictionary."""
+    """
+    Test creation of experiment description dictionary
+    Note: another part of testing is done in test/base.py, where the specific extractor classes
+    are passed on to the acquisition description and tested for each task.
+    """
 
     def setUp(self) -> None:
         self.stub = {

@@ -4,6 +4,7 @@ import iblrig.misc
 
 class Session(TrainingChoiceWorldSession):
     protocol_name = "_iblrig_tasks_trainingPhaseChoiceWorld"
+    extractor_tasks = ['TrialRegisterRaw', 'TrainingTrials', 'TrainingStatus']
 
     def __init__(self, *args, **kwargs):
         super(Session, self).__init__(*args, **kwargs)

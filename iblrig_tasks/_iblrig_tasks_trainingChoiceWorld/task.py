@@ -4,6 +4,7 @@ import iblrig.misc
 
 
 class Session(TrainingChoiceWorldSession):
+    extractor_tasks = ['TrialRegisterRaw', 'TrainingTrials', 'TrainingStatus']
 
     @staticmethod
     def extra_parser():

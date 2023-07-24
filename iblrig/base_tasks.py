@@ -47,6 +47,7 @@ class BaseSession(ABC):
     protocol_name = None
     base_parameters_file = None
     is_mock = False
+    extractor_tasks = None
 
     def __init__(self, subject=None, task_parameter_file=None, file_hardware_settings=None,
                  hardware_settings=None, file_iblrig_settings=None, iblrig_settings=None,
@@ -119,7 +120,7 @@ class BaseSession(ABC):
         # Prepare the experiment description dictionary
         self.experiment_description = self.make_experiment_description_dict(
             self.protocol_name, self.paths.TASK_COLLECTION,
-            procedures, projects, self.hardware_settings, stub)
+            procedures, projects, self.hardware_settings, stub, extractors=self.extractor_tasks)
 
     def _init_paths(self, append: bool = False):
         """
@@ -191,8 +192,9 @@ class BaseSession(ABC):
             self.logger = logger
 
     @staticmethod
-    def make_experiment_description_dict(task_protocol: str, task_collection: str, procedures: list = None, projects: list = None,
-                                         hardware_settings: dict = None, stub: Path = None):
+    def make_experiment_description_dict(task_protocol: str, task_collection: str, procedures: list = None,
+                                         projects: list = None, hardware_settings: dict = None,
+                                         stub: Path = None, extractors: list = None):
         """
         Construct an experiment description dictionary.
 
@@ -210,6 +212,8 @@ class BaseSession(ABC):
             An optional dict of hardware devices, loaded from the hardware_settings.yaml file.
         stub : dict
             An optional experiment description stub to update.
+        extractors: list
+            An optional list of extractor names for the task.
 
         Returns
         -------
@@ -238,6 +242,9 @@ class BaseSession(ABC):
                 'bpod': {'collection': task_collection, 'acquisition_software': 'pybpod', 'extension': '.jsonable'}}
         # Add task
         task = {task_protocol: {'collection': task_collection, 'sync_label': 'bpod'}}
+        if extractors:
+            assert isinstance(extractors, list), 'extractors parameter must be a list of strings'
+            task[task_protocol].update({'extractors': extractors})
         if 'tasks' not in description:
             description['tasks'] = [task]
         else:

@@ -58,6 +58,11 @@ class BaseTestCases():
                 pdf_out = Path(inspect.getfile(self.task.__class__)).parent.joinpath('state_machine_graph')
                 self.task.get_graphviz_task(output_file=pdf_out, view=False)
 
+        def test_acquisition_description(self) -> None:
+            # This makes sure that the task has a defined set of extractors
+            description_task = self.task.experiment_description['tasks'][0][self.task.protocol_name]
+            self.assertEqual(description_task['extractors'], self.task.extractor_tasks)
+
 
 class TestIntegrationFullRuns(BaseTestCases.CommonTestTask):
     """
