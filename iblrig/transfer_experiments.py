@@ -116,6 +116,8 @@ class SessionCopier():
         if status:
             pending_file = self.glob_file_remote_copy_status('pending')
             pending_file.rename(pending_file.with_suffix('.status_complete'))
+            if self.session_path.joinpath('transfer_me.flag').exists():
+                self.session_path.joinpath('transfer_me.flag').unlink()
         return status
 
     def initialize_experiment(self, acquisition_description=None, overwrite=False):

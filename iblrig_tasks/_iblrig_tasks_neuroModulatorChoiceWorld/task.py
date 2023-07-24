@@ -30,7 +30,7 @@ class Session(BiasedChoiceWorldSession):
         elif choice_delay_strategy == 'uniform':  # uniform probability draw between 1.5s and 3s
             self.trials_table.at[self.trial_num, 'choice_delay'] = np.random.random() * 1.5 + 1.5
         elif choice_delay_strategy == 'binned':  # 5 valures from 0 to 2.5 secs The "Charline Way"
-            self.trials_table.at[self.trial_num, 'choice_delay'] = np.random.choice(np.linspace(0, 2.5, 5))
+            self.trials_table.at[self.trial_num, 'choice_delay'] = np.random.choice(np.linspace(0, 2.5, 3))
 
         if self.task_params.VARIABLE_REWARDS:
             # the reward is a draw within an uniform distribution between 3 and 1
