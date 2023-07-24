@@ -12,6 +12,8 @@ elif sys.platform.startswith('darwin'):
     ports = glob.glob('/dev/tty.*')
 else:
     raise EnvironmentError('Unsupported platform')
+
+
 def query(s_obj, req, n=1):
     s_obj.write(req)
     return s.read(n)
