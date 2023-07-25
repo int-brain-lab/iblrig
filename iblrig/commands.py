@@ -5,14 +5,51 @@ import yaml
 import shutil
 
 from iblutil.util import setup_logger
-
+from ibllib.io import raw_data_loaders, session_params
 from iblrig.transfer_experiments import SessionCopier
 import iblrig
 from iblrig.hardware import Bpod
-from iblrig.path_helper import load_settings_yaml, get_iblrig_path
+from iblrig.path_helper import load_settings_yaml
 from iblrig.online_plots import OnlinePlots
 
 logger = setup_logger('iblrig', level='INFO')
+
+
+def transfer_data():
+    """
+    Remove local sessions older than 2 weeks
+    :param weeks:
+    :param dry:
+    :return:
+    """
+    iblrig_settings = load_settings_yaml()
+    local_subjects_path = Path(iblrig_settings['iblrig_local_data_path'])
+    remote_subjects_path = Path(iblrig_settings['iblrig_remote_data_path']).joinpath('Subjects')
+
+    for flag in list(local_subjects_path.rglob('transfer_me.flag')):
+        session_path = flag.parent
+        task_settings = raw_data_loaders.load_settings(session_path, task_collection='raw_task_data_00')
+        if task_settings['NTRIALS'] < 42:
+            continue
+        sc = SessionCopier(session_path, remote_subjects_folder=remote_subjects_path)
+        state = sc.get_state()
+        logger.critical(f"{sc.state}, {sc.session_path}")
+        # session_params.write_yaml(sc.file_remote_experiment_description, ad)
+        if sc.state == -1:  # this case is not implemented automatically and corresponds to a hard reset
+            logger.info(f"{sc.state}, {sc.session_path}")
+            shutil.rmtree(sc.remote_session_path)
+            sc.initialize_experiment(session_params.read_params(session_path))
+        if sc.state == 0:  # the session hasn't even been initialzed: copy the stub to the remote
+            logger.info(f"{sc.state}, {sc.session_path}")
+            state = sc.initialize_experiment(session_params.read_params(session_path))
+        if sc.state == 1:  # the session
+            logger.info(f"{sc.state}, {sc.session_path}")
+            state = sc.copy_collections()
+        if sc.state == 2:
+            logger.info(f"{sc.state}, {sc.session_path}")
+            state = sc.finalize_copy(number_of_expected_devices=1)
+        if sc.state == 3:
+            logger.info(f"{state}, {sc.session_path}")
 
 
 def remove_local_sessions(weeks=2, dry=False):
@@ -53,59 +90,6 @@ def viewsession():
     args = parser.parse_args()
     self = OnlinePlots()
     self.run(Path(args.file_jsonable))
-
-
-def transfer_data():
-    """
-    >>> transfer_data -l /full/path/to/iblrig_data/Subjects -r /full/path/to/remote/folder/Subjects
-    :return:
-    """
-    from deploy.transfer_data import transfer_sessions
-    help_str = ">>> transfer_data -l /full/path/to/iblrig_data/Subjects -r /full/path/to/remote/folder/Subjects"
-
-    iblrig_settings = load_settings_yaml()
-    default_local = iblrig_settings['iblrig_local_data_path']
-    default_remote = iblrig_settings['iblrig_remote_data_path']
-    if default_local is not None:
-        default_local = Path(default_local).joinpath(iblrig_settings['ALYX_LAB'] or "", "Subjects")
-    if default_remote is not None:
-        default_remote = Path(default_remote).joinpath("Subjects")
-
-    parser = argparse.ArgumentParser(description='Transfers data from the rigs to the local server',
-                                     epilog=help_str)
-    parser.add_argument('-l', '--local', default=default_local, required=False, help='Local iblrig_data/Subjects folder')
-    parser.add_argument('-r', '--remote', default=default_remote, required=False, help='Remote iblrig_data/Subjects folder')
-    args = parser.parse_args()
-
-    error_message = (f'path should be specified in settings files here: \n'
-                     f'         {get_iblrig_path().joinpath("settings", "iblrig_settings.yaml")} \n '
-                     f'                         OR through command line as shown here: \n'
-                     f'         {help_str}')
-
-    # check that the local path is not None and that the folder exists
-    if args.local is None:
-        logger.critical('Local ' + error_message)
-        return
-
-    local = Path(args.local)
-    if not local.exists():
-        logger.critical(f'Local path does not exist: {args.local} \n {help_str}')
-        return
-    logger.info(f'Local path set to:  {local}')
-
-    # check that the remote path is not None and that the folder exists
-    if args.remote is None:
-        logger.critical('Remote ' + error_message)
-        return
-    remote = Path(args.remote)
-    logger.info(f'Remote path set to:  {remote}')
-
-    if not remote.exists():
-        logger.critical(f'Remote path does not exist: {args.remote} \n {help_str}')
-        return
-
-    # launch transfer after all checks
-    transfer_sessions(local, remote)
 
 
 def flush():

@@ -46,11 +46,15 @@ To initiate the data transfer from the local server to the remote server, open a
     transfer_data
 
 The transfer local and remote directories are set in the `iblrig/settings/iblrig_settings.py` file.
-You can override those by using the `--local` and `--remote` flags.
 
-    transfer_data --local C:\iblrigv8_custom_data --remote \\server\iblrig_data\Subjects
+### Clean-up local data
 
+To remove sessions fully copied to the server and older than 2 weeks, open a terminal and type:
 
+    C:\iblrigv8\venv\scripts\Activate.ps1
+    remove-old-sessions
+
+Note: the server needs to be up and running or the sessions won't be verified as copied.
 
 ### Installation
 If you get missing libraries, you can install the iblscripts package with
