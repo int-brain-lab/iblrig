@@ -13,7 +13,7 @@ import iblrig.misc
 
 class Session(BiasedChoiceWorldSession):
     protocol_name = "_iblrig_tasks_ephysChoiceWorld"
-    extractor_tasks = ['TrialRegisterRaw', 'BiasedTrials', 'TrainingStatus']
+    extractor_tasks = ['TrialRegisterRaw', 'ChoiceWorldTrials', 'TrainingStatus']
 
     def __init__(self, *args, session_template_id=0, delay_secs=0, **kwargs):
         super(Session, self).__init__(*args, **kwargs)

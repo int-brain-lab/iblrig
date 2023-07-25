@@ -1,5 +1,6 @@
 import datetime
 import inspect
+import ibllib.pipes.dynamic_pipeline
 import json
 import random
 import string
@@ -63,8 +64,12 @@ class BaseTestCases():
             description_task = self.task.experiment_description['tasks'][0][self.task.protocol_name]
             self.assertEqual(description_task['extractors'], self.task.extractor_tasks)
 
+        def test_pipeline(self) -> None:
+            self.task.create_session()
+            ibllib.pipes.dynamic_pipeline.make_pipeline(self.task.paths.SESSION_FOLDER)
 
-class TestIntegrationFullRuns(BaseTestCases.CommonTestTask):
+
+class IntegrationFullRuns(BaseTestCases.CommonTestTask):
     """
     This provides a base class that creates a subject on the test database for testing
     the full registration / run / register results cycle

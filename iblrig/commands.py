@@ -1,15 +1,45 @@
 import argparse
+import datetime
 from pathlib import Path
 import yaml
+import shutil
 
 from iblutil.util import setup_logger
 
+from iblrig.transfer_experiments import SessionCopier
 import iblrig
 from iblrig.hardware import Bpod
 from iblrig.path_helper import load_settings_yaml, get_iblrig_path
 from iblrig.online_plots import OnlinePlots
 
 logger = setup_logger('iblrig', level='INFO')
+
+
+def remove_local_sessions(weeks=2, dry=False):
+    """
+    Remove local sessions older than 2 weeks
+    :param weeks:
+    :param dry:
+    :return:
+    """
+    iblrig_settings = load_settings_yaml()
+    local_subjects_path = Path(iblrig_settings['iblrig_local_data_path'])
+    remote_subjects_path = Path(iblrig_settings['iblrig_remote_data_path']).joinpath('Subjects')
+
+    size = 0
+    for flag in sorted(list(local_subjects_path.rglob('_ibl_experiment.description_behavior.yaml')), reverse=True):
+        session_path = flag.parent
+        age = (datetime.datetime.now() - datetime.datetime.strptime(session_path.parts[-2], '%Y-%m-%d')).days
+        if age < weeks * 7:
+            continue
+        sc = SessionCopier(session_path, remote_subjects_folder=remote_subjects_path)
+        if sc.state == 3:
+            session_size = sum(f.stat().st_size for f in session_path.rglob('*') if f.is_file()) / 1024 ** 3
+            logger.info(f"{sc.session_path}, {session_size:0.02f} Go")
+            size += session_size
+            if not dry:
+                shutil.rmtree(session_path)
+    logger.info(f"Cleanup size {size:0.02f} Go")
 
 
 def viewsession():

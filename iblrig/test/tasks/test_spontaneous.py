@@ -1,11 +1,11 @@
-from iblrig.test.base import TestIntegrationFullRuns
+from iblrig.test.base import IntegrationFullRuns
 from iblrig_tasks._iblrig_tasks_spontaneous.task import Session as SpontaneousSession
 
 
-class TestSpontaneous(TestIntegrationFullRuns):
+class Spontaneous(IntegrationFullRuns):
 
     def setUp(self) -> None:
-        super(TestSpontaneous, self).setUp()
+        super(Spontaneous, self).setUp()
         self.task = SpontaneousSession(one=self.one, duration_secs=2, **self.kwargs)
 
     def test_task_spontaneous(self):

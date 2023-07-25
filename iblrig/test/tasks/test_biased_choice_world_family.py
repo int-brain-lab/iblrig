@@ -5,8 +5,10 @@ import numpy as np
 import pandas as pd
 
 from iblrig.raw_data_loaders import load_task_jsonable
-from iblrig.test.base import TASK_KWARGS, BaseTestCases, TestIntegrationFullRuns, PATH_FIXTURES
+from iblrig.test.base import TASK_KWARGS, BaseTestCases, IntegrationFullRuns, PATH_FIXTURES
 from iblrig_tasks._iblrig_tasks_biasedChoiceWorld.task import Session as BiasedChoiceWorldSession
+from iblrig_tasks._iblrig_tasks_ephysChoiceWorld.task import Session as EphysChoiceWorldSession
+from iblrig_tasks._iblrig_tasks_neuroModulatorChoiceWorld.task import Session as NeuroModulatorChoiceWorldSession
 
 
 class TestInstantiationBiased(BaseTestCases.CommonTestInstantiateTask):
@@ -71,7 +73,22 @@ class TestInstantiationBiased(BaseTestCases.CommonTestInstantiateTask):
         self.assertTrue(np.all(self.task.trials_table['quiescent_period'] < 0.8))
 
 
-class TestIntegrationFullRun(TestIntegrationFullRuns):
+class TestInstantiationEphys(TestInstantiationBiased):
+    def setUp(self) -> None:
+        self.task = EphysChoiceWorldSession(**TASK_KWARGS)
+
+
+class TestNeuroModulatorBiasedChoiceWorld(TestInstantiationBiased):
+    def setUp(self) -> None:
+        self.task = NeuroModulatorChoiceWorldSession(**TASK_KWARGS)
+
+    def test_task(self):
+        super(TestNeuroModulatorBiasedChoiceWorld, self).test_task()
+        # we expect 10% of null feedback trials
+        assert np.abs(.05 - np.mean(self.task.trials_table['omit_feedback'])) < .05
+
+
+class TestIntegrationFullRun(IntegrationFullRuns):
     def setUp(self) -> None:
         super(TestIntegrationFullRun, self).setUp()
         self.task = BiasedChoiceWorldSession(one=self.one, **self.kwargs)

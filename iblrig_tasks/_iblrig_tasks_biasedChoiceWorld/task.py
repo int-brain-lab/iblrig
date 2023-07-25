@@ -3,7 +3,7 @@ import iblrig.misc
 
 
 class Session(BiasedChoiceWorldSession):
-    extractor_tasks = ['TrialRegisterRaw', 'BiasedTrials', 'TrainingStatus']
+    extractor_tasks = ['TrialRegisterRaw', 'ChoiceWorldTrials', 'TrainingStatus']
 
 
 if __name__ == "__main__":  # pragma: no cover

@@ -4,7 +4,7 @@ import iblrig.misc
 
 class Session(ActiveChoiceWorldSession):
     protocol_name = "_iblrig_tasks_advancedChoiceWorld"
-    extractor_tasks = ['TrialRegisterRaw', 'TrainingTrials', 'TrainingStatus']
+    extractor_tasks = ['TrialRegisterRaw', 'ChoiceWorldTrials', 'TrainingStatus']
 
     def next_trial(self):
         # update counters

@@ -42,6 +42,7 @@ setup(
             'viewsession=iblrig.commands:viewsession',
             'transfer_data=iblrig.commands:transfer_data',
             'flush=iblrig.commands:flush',
+            'remove-old-sessions=iblrig.commands:remove_local_sessions',
             'iblrig=iblrig.gui.wizard:main',
         ],
     },

@@ -2,7 +2,7 @@ import numpy as np
 
 from iblrig_tasks._iblrig_tasks_trainingChoiceWorld.task import Session as TrainingChoiceWorldSession
 from iblrig.test.base import TASK_KWARGS, BaseTestCases
-from iblrig.test.tasks.test_biased_choice_world import get_fixtures
+from iblrig.test.tasks.test_biased_choice_world_family import get_fixtures
 
 
 class TestInstantiationTraining(BaseTestCases.CommonTestInstantiateTask):
@@ -46,7 +46,7 @@ class TestInstantiationTraining(BaseTestCases.CommonTestInstantiateTask):
                 '_iblrig_tasks_trainingChoiceWorld': {
                     'collection': 'raw_task_data_00',
                     'sync_label': 'bpod',
-                    'extractors': ['TrialRegisterRaw', 'TrainingTrials', 'TrainingStatus']}}
+                    'extractors': ['TrialRegisterRaw', 'ChoiceWorldTrials', 'TrainingStatus']}}
             ],
         }
         for k in ed:

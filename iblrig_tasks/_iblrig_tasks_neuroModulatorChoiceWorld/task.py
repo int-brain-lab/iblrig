@@ -11,7 +11,7 @@ REWARD_AMOUNTS_UL = (1, 3)
 
 class Session(BiasedChoiceWorldSession):
     protocol_name = "_iblrig_tasks_neuromodulatorChoiceWorld"
-    extractor_tasks = ['TrialRegisterRaw', 'TrialsTableNeuromodulator', 'TrainingStatus']
+    extractor_tasks = ['TrialRegisterRaw', 'ChoiceWorldNeuromodulators', 'TrainingStatus']
 
     def __init__(self, *args, **kwargs):
         super(Session, self).__init__(*args, **kwargs)
