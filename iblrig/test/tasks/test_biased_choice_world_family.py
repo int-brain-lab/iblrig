@@ -9,6 +9,7 @@ from iblrig.test.base import TASK_KWARGS, BaseTestCases, IntegrationFullRuns, PA
 from iblrig_tasks._iblrig_tasks_biasedChoiceWorld.task import Session as BiasedChoiceWorldSession
 from iblrig_tasks._iblrig_tasks_ephysChoiceWorld.task import Session as EphysChoiceWorldSession
 from iblrig_tasks._iblrig_tasks_neuroModulatorChoiceWorld.task import Session as NeuroModulatorChoiceWorldSession
+from iblrig_tasks._iblrig_tasks_ImagingChoiceWorld.task import Session as ImagingChoiceWorldSession
 
 
 class TestInstantiationBiased(BaseTestCases.CommonTestInstantiateTask):
@@ -71,6 +72,11 @@ class TestInstantiationBiased(BaseTestCases.CommonTestInstantiateTask):
         """
         self.assertTrue(np.all(self.task.trials_table['quiescent_period'] > 0.4))
         self.assertTrue(np.all(self.task.trials_table['quiescent_period'] < 0.8))
+
+
+class TestImagingChoiceWorld(TestInstantiationBiased):
+    def setUp(self) -> None:
+        self.task = ImagingChoiceWorldSession(**TASK_KWARGS)
 
 
 class TestInstantiationEphys(TestInstantiationBiased):
