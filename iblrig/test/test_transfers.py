@@ -100,5 +100,10 @@ class TestTransferExperiments(unittest.TestCase):
             assert 'sync' in ec.experiment_description
             ec.copy_collections()
             assert ec.state == 2
+            # here it is a bit tricky; we want to safeguard finalizing the copy when the sync is different than bpod
+            # so in this case, we expect the status to stay at 2 and a warning to be thrown
+            sc.finalize_copy(number_of_expected_devices=1)
+            assert ec.state == 2
+            # this time it's all there and we move on
             sc.finalize_copy(number_of_expected_devices=3)
-            assert sc.state == 3   # this time it's all there and we move on
+            assert sc.state == 3

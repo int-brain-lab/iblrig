@@ -167,13 +167,19 @@ class SessionCopier():
         files_stub = list(self.file_remote_experiment_description.parent.glob('*.yaml'))
         for file_stub in files_stub:
             ready_to_finalize += int(file_stub.with_suffix('.status_complete').exists())
+            ad_stub = session_params.read_params(file_stub)
+            # here we check the sync field of the device files
+            if next(iter(ad_stub.get('sync', {})), None) != 'bpod' and number_of_expected_devices == 1:
+                log.warning("Only bpod is supported for single device sessions, it seems you are "
+                            "attempting to transfer a session with more than one device.")
+                return
         log.info(f"{ready_to_finalize}/{number_of_expected_devices} copy completion status")
         if ready_to_finalize == number_of_expected_devices:
             for file_stub in files_stub:
                 session_params.aggregate_device(
                     file_stub, self.remote_session_path.joinpath('_ibl_experiment.description.yaml'))
                 file_stub.with_suffix('.status_complete').rename(file_stub.with_suffix('.status_final'))
-        self.remote_session_path.joinpath('raw_session.flag').touch()
+            self.remote_session_path.joinpath('raw_session.flag').touch()
 
 
 class VideoCopier(SessionCopier):
