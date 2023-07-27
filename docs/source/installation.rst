@@ -131,6 +131,9 @@ See instructions for that here: https://int-brain-lab.github.io/iblenv/notebooks
 
     .. code-block:: python
 
+        from one.api import ONE
+        one = ONE()
+
 
 .. exercise:: You can check that everything went fine by running the test suite:
 
@@ -140,6 +143,3 @@ See instructions for that here: https://int-brain-lab.github.io/iblenv/notebooks
         python -m unittest discover
 
     The tests should pass to completion after around 40 seconds
-
-        from one.api import ONE
-        one = ONE()
