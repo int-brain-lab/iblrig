@@ -689,8 +689,8 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
                 self.logger.warning(f"Could not get training phase from Alyx: {traceback.format_exc()}, please set it"
                                     f"manually in ./iblrig_tasks/_iblrig_tasks_trainingChoiceWorld/task.py default is phase is 5")
                 training_phase = 5
-            else:
-                self.logger.warning(f"Training phase manually set to: {training_phase}")
+        else:
+            self.logger.warning(f"Training phase manually set to: {training_phase}")
         self.training_phase = training_phase
         self.var = {
             "training_phase_trial_counts": np.zeros(6),
