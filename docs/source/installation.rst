@@ -84,15 +84,6 @@ Install additional personal project tasks and extractors
     cd project_extraction
     pip install -e .
 
-.. exercise:: You can check that everything went fine by running the test suite:
-
-    .. code-block:: powershell
-
-        cd C:\iblrigv8
-        python -m unittest discover
-
-    The tests should pass to completion after around 40 seconds
-
 
 
 Configuration instructions
@@ -139,6 +130,16 @@ See instructions for that here: https://int-brain-lab.github.io/iblenv/notebooks
     Then at the Ipython prompt
 
     .. code-block:: python
+
+
+.. exercise:: You can check that everything went fine by running the test suite:
+
+    .. code-block:: powershell
+
+        cd C:\iblrigv8
+        python -m unittest discover
+
+    The tests should pass to completion after around 40 seconds
 
         from one.api import ONE
         one = ONE()
