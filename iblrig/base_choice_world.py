@@ -5,6 +5,7 @@ import abc
 import json
 import math
 import random
+import traceback
 from pathlib import Path
 from string import ascii_letters
 import subprocess
@@ -676,9 +677,20 @@ TRIALS IN BLOCK:      {trial_info.block_trial_num}
 class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
     protocol_name = "_iblrig_tasks_trainingChoiceWorld"
 
-    def __init__(self, training_phase=0, **kwargs):
+    def __init__(self, training_phase=-1, **kwargs):
         super(TrainingChoiceWorldSession, self).__init__(**kwargs)
+        from iblrig.choiceworld import get_training_phase
+        if training_phase == -1:
+            try:
+                training_phase = get_training_phase(self.session_info.SUBJECT_NAME) or 0
+                self.logger.info(f"Got training phase: {training_phase}")
+            except Exception:
+                self.logger.warning(f"Could not get training phase from Alyx: {traceback.format_exc()}, please set it"
+                                    f"manually in ./iblrig_tasks/_iblrig_tasks_trainingChoiceWorld/task.py default is phase is 5")
+                training_phase = 5
+
         self.training_phase = training_phase
+
         self.var = {
             "training_phase_trial_counts": np.zeros(6),
             "last_10_responses_sides": np.zeros(10),
