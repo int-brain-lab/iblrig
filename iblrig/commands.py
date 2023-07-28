@@ -29,7 +29,8 @@ def transfer_data():
     for flag in list(local_subjects_path.rglob('transfer_me.flag')):
         session_path = flag.parent
         task_settings = raw_data_loaders.load_settings(session_path, task_collection='raw_task_data_00')
-        if task_settings['NTRIALS'] < 42:
+        if task_settings is None or task_settings['NTRIALS'] < 42:
+            print('Skipping {}'.format(session_path))
             continue
         sc = SessionCopier(session_path, remote_subjects_folder=remote_subjects_path)
         state = sc.get_state()
