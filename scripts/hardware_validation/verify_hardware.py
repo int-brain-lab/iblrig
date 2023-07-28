@@ -1,15 +1,16 @@
 import platform
 from glob import glob
 from pathlib import Path
-# from serial import Serial
+
+from serial import Serial
+import serial.tools.list_ports
 
 import logging
-import numpy as np
-
+# import numpy as np
+# import pandas as pd
 
 import iblrig.base_tasks
 # from pybpodapi.protocol import Bpod, StateMachine
-
 
 # set up logging
 logging.basicConfig(
@@ -17,6 +18,13 @@ logging.basicConfig(
     level=logging.INFO
 )
 log = logging.getLogger(__name__)
+
+
+# function for querying a serial device
+def query(s_obj, req, n=1):
+    s_obj.write(req)
+    return s.read(n)
+
 
 # read hardware_settings.yaml
 log.info('Checking hardware_settings.yaml:')
@@ -36,13 +44,12 @@ if not any(tmp):
 ports = {k: v for k, v in ports.items() if v is not None}
 
 # check for duplicate serial ports
-tmp = np.unique(list(ports.values()), return_counts=True)[1] > 1
-if any(tmp):
-    raise Exception('Duplicate serial port: "{}"'.format(list(ports.values())[np.argmax(tmp > 1)]))
-else:
-    log.info('- no duplicate serial ports found')
+seen = set()
+for p in [x for x in ports.values() if x in seen or seen.add(x)]:
+    raise Exception('Duplicate serial port: "{}"'.format(p))
+log.info('- no duplicate serial ports found')
 
-# check for invalid serial ports
+# collect valid ports
 match platform.system():
     case 'Windows':
         valid_ports = ['COM{:d}'.format(i + 1) for i in range(256)]
@@ -50,11 +57,55 @@ match platform.system():
         valid_ports = glob('/dev/tty[A-Za-z]*')
     case _:
         raise Exception('Unsupported platform: "{}"'.format(platform.system()))
+
+# check for invalid port-strings
 for p in [(k, v) for k, v in ports.items() if v not in valid_ports]:
     raise Exception('Invalid serial port: "{}"'.format(p[1]))
-log.info('- no invalid serial ports found')
+log.info('- no invalid port-strings found')
 
-# TO DO: test correct assignment of serial ports
+# check individual serial ports
+port_info = [i for i in serial.tools.list_ports.comports()]
+for (description, port) in ports.items():
+    log.info('Checking serial port {} ({}):'.format(port, description))
+
+    # check if serial port exists
+    try:
+        info = [i for i in serial.tools.list_ports.comports() if i.device == port][0]
+    except IndexError:
+        raise Exception('"{}" ({}) cannot be found - is the device connected to the computer?'.format(port, description))
+    log.info('- serial port exists')
+
+    # check if serial ports can be connected to
+    try:
+        s = Serial(port, timeout=1)
+    except serial.SerialException:
+        raise Exception('Cannot connect to "{}" ({}) - is another process using the port?'.format(port, description))
+    log.info('- serial port can be connected to')
+
+    # check correct assignments of serial ports
+    match description:
+        case "COM_BPOD":
+            if query(s, b'6') == b'5':
+                s.write(b'X')
+                log.info('- device seems to be a Bpod Finite State Machines')
+            else:
+                raise Exception(
+                    'Device on port "{}" does not appear to be a Bpod.'.format(port))
+        case "COM_F2TTL":
+            if query(s, b'C') == (218).to_bytes(1, 'little'):
+                log.info('- device seems to be a Frame2TTL')
+            else:
+                raise Exception(
+                    'Device on port "{}" does not appear to be a Frame2TTL.'.format(port))
+        case "COM_ROTARY_ENCODER":
+            if len(query(s, b'Q', 2)) > 1 and query(s, b'P00', 1) == (1).to_bytes(1, 'little'):
+                log.info('- device seems to be a Rotary Encoder Module')
+            else:
+                raise Exception('Device on port "{}" does not appear to be a Rotary Encoder Module.'.format(port))
+        case _:
+            raise Exception('How did you get here??')
+
+    s.close()
 
 # TO DO: bpod
 # bpod = Bpod(hw_settings['device_bpod']['COM_BPOD'])
@@ -66,7 +117,6 @@ log.info('- no invalid serial ports found')
 # TO DO: sound output
 # TO DO: encoder module
 # TO DO: ambient module
-# TO DO:
 
 log.info('---------------')
 log.info('No issues found')
