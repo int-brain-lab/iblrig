@@ -23,7 +23,7 @@ PROCEDURES = [
     'Ephys recording with acute probe(s)',
     'Ephys recording with chronic probe(s)',
     'Fiber photometry',
-    'handling_habituation'
+    'handling_habituation',
     'Imaging',
 ]
 
