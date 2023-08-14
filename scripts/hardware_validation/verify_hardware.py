@@ -49,7 +49,8 @@ seen = set()
 for p in [x for x in ports.values() if x in seen or seen.add(x)]:
     log.critical(f' ├ ✘  Duplicate serial port: "{p}"')
     issues += 1
-log.info(' ├ ✔  no duplicate serial ports found')
+else:
+    log.info(' ├ ✔  no duplicate serial ports found')
 
 # collect valid ports
 match platform.system():
@@ -65,7 +66,8 @@ match platform.system():
 for p in [(k, v) for k, v in ports.items() if v not in valid_ports]:
     log.critical(f'✘  Invalid serial port: "{p[1]}"')
     issues += 1
-log.info(' └ ✔  no invalid port-strings found')
+else:
+    log.info(' └ ✔  no invalid port-strings found')
 
 # check individual serial ports
 port_info = [i for i in serial.tools.list_ports.comports()]
@@ -79,7 +81,8 @@ for (description, port) in ports.items():
         log.critical(
             f' ├ ✘  "{port}" ({description}) cannot be found - is the device connected to the computer?')
         issues += 1
-    log.info(' ├ ✔  serial port exists')
+    else:
+        log.info(' ├ ✔  serial port exists')
 
     # check if serial ports can be connected to
     try:
@@ -87,7 +90,8 @@ for (description, port) in ports.items():
     except serial.SerialException:
         log.critical(f' ├ ✘  Cannot connect to "{port}" ({description}) - is another process using the port?')
         issues += 1
-    log.info(' ├ ✔  serial port can be connected to')
+    else:
+        log.info(' ├ ✔  serial port can be connected to')
 
     # check correct assignments of serial ports
     match description:
@@ -140,11 +144,11 @@ if 'COM_ROTARY_ENCODER' in ports.keys():
     if len(module) == 0:
         log.critical(' ├ ✘  Rotary Encoder Module is not connected to the Bpod')
         issues += 1
-    if len(module) > 1:
+    elif len(module) > 1:
         log.critical(' ├ ✘  More than one Rotary Encoder Module connected to the Bpod')
         issues += 1
-    log.info(
-        f' ├ ✔  module "{module[0].name}" is connected to the Bpod\'s module port #{module[0].serial_port}')
+    else:
+        log.info(f' ├ ✔  module "{module[0].name}" is connected to the Bpod\'s module port #{module[0].serial_port}')
 
     s = serial.Serial(ports['COM_ROTARY_ENCODER'])
     s.write(b'I')
@@ -163,7 +167,8 @@ if 'COM_ROTARY_ENCODER' in ports.keys():
     if p > 0:
         log.critical(' └ ✘  Rotary encoder seems to be wired incorrectly - try swapping A and B')
         issues += 1
-    log.info(' └ ✔  rotary encoder is wired correctly')
+    else:
+        log.info(' └ ✔  rotary encoder is wired correctly')
     s.close()
 
 if 'device_sound' in hw_settings and 'OUTPUT' in hw_settings['device_sound']:
@@ -209,7 +214,7 @@ bpod.close()
 
 
 if issues:
-    logstr = f'   ✘  {issues} issues found' if issues > 1 else '   ✘  1 issue found'
+    logstr = f"   ✘  {issues} issue{'s' if issues > 1 else ''} found"
     log.info('   ' + '═' * (len(logstr) - 3))
     log.critical(logstr)
 else:
