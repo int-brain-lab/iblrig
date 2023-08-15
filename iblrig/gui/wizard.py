@@ -63,6 +63,7 @@ class RigWizardModel:
     subject: str = None
     session_folder: Path = None
     hardware_settings: dict = None
+    test_subject_name: str = 'test_subject'
 
     def __post_init__(self):
         self.iblrig_settings = iblrig.path_helper.load_settings_yaml()
@@ -75,13 +76,15 @@ class RigWizardModel:
         self.all_projects = sorted(PROJECTS)
         # get the subjects from iterating over folders in the the iblrig data path
         if self.iblrig_settings['iblrig_local_data_path'] is None:
-            self.all_subjects = []
+            self.all_subjects = [self.test_subject_name]
         else:
             folder_subjects = Path(
                 self.iblrig_settings['iblrig_local_data_path']).joinpath(
                 self.iblrig_settings['ALYX_LAB'], 'Subjects')
-            self.all_subjects = sorted([f.name for f in folder_subjects.glob('*') if f.is_dir()])
-        file_settings = Path(iblrig.__file__).parents[1].joinpath('settings', 'hardware_settings.yaml')
+            self.all_subjects = [self.test_subject_name] + sorted(
+                [f.name for f in folder_subjects.glob('*') if f.is_dir()])
+        file_settings = Path(iblrig.__file__).parents[1].joinpath('settings',
+                                                                  'hardware_settings.yaml')
         self.hardware_settings = yaml.safe_load(file_settings.read_text())
 
     def _get_task_extra_kwargs(self, task_name=None):
@@ -103,9 +106,14 @@ class RigWizardModel:
             self.one = ONE(base_url=self.iblrig_settings['ALYX_URL'], username=username, mode='local')
         else:
             self.one = one
-        rest_subjects = self.one.alyx.rest('subjects', 'list', alive=True, lab=self.iblrig_settings['ALYX_LAB'])
-        self.all_subjects = sorted(set(self.all_subjects + [s['nickname'] for s in rest_subjects]))
-        self.all_users = sorted(set([s['responsible_user'] for s in rest_subjects] + self.all_users))
+        rest_subjects = self.one.alyx.rest('subjects', 'list', alive=True,
+                                           lab=self.iblrig_settings['ALYX_LAB'])
+        self.all_subjects.remove(self.test_subject_name)
+        self.all_subjects = sorted(
+            set(self.all_subjects + [s['nickname'] for s in rest_subjects]))
+        self.all_subjects = [self.test_subject_name] + self.all_subjects
+        self.all_users = sorted(
+            set([s['responsible_user'] for s in rest_subjects] + self.all_users))
         rest_projects = self.one.alyx.rest('projects', 'list')
         projects = [p['name'] for p in rest_projects if (username in p['users'] or len(p['users']) == 0)]
         self.all_projects = sorted(set(projects + self.all_projects))
