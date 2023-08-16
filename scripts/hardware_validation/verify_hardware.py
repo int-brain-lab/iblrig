@@ -7,7 +7,6 @@ import usb.core
 from serial import Serial
 import serial.tools.list_ports
 
-import logging
 import numpy as np
 # import pandas as pd
 
@@ -83,7 +82,7 @@ else:
 # collect valid ports
 match platform.system():
     case 'Windows':
-        valid_ports = [f'COM{i + 1}' for i in range(256)]
+        valid_ports = (f'COM{i + 1}' for i in range(256))
     case 'Linux':
         valid_ports = glob('/dev/tty*')
     case _:
@@ -204,8 +203,7 @@ if 'device_sound' in hw_settings and 'OUTPUT' in hw_settings['device_sound']:
                 log.critical(
                     ' ├ ✘  Cannot find Harp Sound Card\'s Serial port - did you plug in *both* USB ports of the device?')
             else:
-                log_fun('pass', 'found USB device {:04X}:{:04X} (FT232 UART), serial port: {}'.format(dev.vid, dev.pid,
-                                                                                                     dev.name))
+                log_fun('pass', 'found USB device {:04X}:{:04X} (FT232 UART), serial port: {}'.format(dev.vid, dev.pid, dev.name))
 
             module = [m for m in modules if m.name.startswith('SoundCard')]
             if len(module) == 0:
@@ -217,6 +215,14 @@ if 'device_sound' in hw_settings and 'OUTPUT' in hw_settings['device_sound']:
                         last=True)
         case _:
             pass
+
+log_fun('head', 'Checking Ambient Module:')
+module = next((m for m in modules if m.name.startswith('AmbientModule')), None)
+if module:
+    log_fun('pass', f'module "{module.name}" is connected to the Bpod\'s module port #{module.serial_port}')
+    log_fun('info', f'firmware version: {module.firmware_version}')
+else:
+    log_fun('fail', 'Could not find Ambient Module', last=True)
 
 bpod.close()
 
