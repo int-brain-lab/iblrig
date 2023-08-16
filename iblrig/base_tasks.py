@@ -514,6 +514,8 @@ class BonsaiRecordingMixin(object):
         desired borders of rig features, the actual triggering of the  cameras is done in the trigger_bonsai_cameras method.
         """
 
+        # TODO: spinnaker SDK
+
         if self._camera_mixin_bonsai_get_workflow_file(self.hardware_settings.get('device_cameras', None)) is None:
             return
 
