@@ -129,6 +129,7 @@ class RigWizard(QtWidgets.QMainWindow):
         self.uiPushFlush.clicked.connect(self.flush)
         self.uiPushStart.clicked.connect(self.startstop)
         self.uiPushConnect.clicked.connect(self.alyx_connect)
+        self.lineEditSubject.textChanged.connect(self._filter_subjects)
         self.running_task_process = None
 
     def model2view(self):
@@ -157,6 +158,11 @@ class RigWizard(QtWidgets.QMainWindow):
     def alyx_connect(self):
         self.model.connect()
         self.model2view()
+
+    def _filter_subjects(self):
+        filter_str = self.lineEditSubject.text()
+        result = [s for s in self.model.all_subjects if filter_str in s]
+        self.uiComboSubject.setModel(QtCore.QStringListModel(result))
 
     def startstop(self):
         match self.uiPushStart.text():
