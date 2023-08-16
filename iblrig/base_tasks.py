@@ -769,7 +769,7 @@ class ValveMixin:
                 'CALIBRATION_VALUE' = <MANUAL_CALIBRATION>
             ##########################################"""
         # regardless of the calibration method, the reward valve time has to be lower than 1 second
-        assert self.compute_reward_time(amount_ul=1.5) < 1,\
+        assert self.compute_reward_time(amount_ul=1.5) < 1, \
             """
             ##########################################
                 REWARD VALVE TIME IS TOO HIGH!
