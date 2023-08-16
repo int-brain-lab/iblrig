@@ -160,8 +160,8 @@ class RigWizard(QtWidgets.QMainWindow):
         self.model2view()
 
     def _filter_subjects(self):
-        filter_str = self.lineEditSubject.text()
-        result = [s for s in self.model.all_subjects if filter_str in s]
+        filter_str = self.lineEditSubject.text().lower()
+        result = [s for s in self.model.all_subjects if filter_str in s.lower()]
         self.uiComboSubject.setModel(QtCore.QStringListModel(result))
 
     def startstop(self):
