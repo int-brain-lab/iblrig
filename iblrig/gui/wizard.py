@@ -106,7 +106,7 @@ class RigWizardModel:
             self.one = ONE(base_url=self.iblrig_settings['ALYX_URL'], username=username, mode='local')
         else:
             self.one = one
-        rest_subjects = self.one.alyx.rest('subjects', 'list', alive=True,
+        rest_subjects = self.one.alyx.rest('subjects', 'list', alive=True, stock=False,
                                            lab=self.iblrig_settings['ALYX_LAB'])
         self.all_subjects.remove(self.test_subject_name)
         self.all_subjects = sorted(

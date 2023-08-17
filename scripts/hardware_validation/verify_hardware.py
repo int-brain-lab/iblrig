@@ -7,7 +7,6 @@ import usb.core
 from serial import Serial
 import serial.tools.list_ports
 
-import logging
 import numpy as np
 # import pandas as pd
 
@@ -204,8 +203,7 @@ if 'device_sound' in hw_settings and 'OUTPUT' in hw_settings['device_sound']:
                 log.critical(
                     ' ├ ✘  Cannot find Harp Sound Card\'s Serial port - did you plug in *both* USB ports of the device?')
             else:
-                log_fun('pass', 'found USB device {:04X}:{:04X} (FT232 UART), serial port: {}'.format(dev.vid, dev.pid,
-                                                                                                     dev.name))
+                log_fun('pass', 'found USB device {:04X}:{:04X} (FT232 UART), serial port: {}'.format(dev.vid, dev.pid, dev.name))
 
             module = [m for m in modules if m.name.startswith('SoundCard')]
             if len(module) == 0:
