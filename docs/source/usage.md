@@ -1,12 +1,37 @@
 # Using IBLRIG
 
 ## Run a task
-### Through the gaphical user interface
+### Through the graphical user interface
 
-To run a task using the graphical user interface, open a terminal and type in the `iblrig command`
+To run a task using the graphical user interface, open a terminal and type in the following:
 
     C:\iblrigv8\venv\scripts\Activate.ps1
     iblrig
+
+The *IBL Rig Wizard* GUI window will pop open:![gui.png](gui.png)
+
+1.  Enter your Alyx username & click connect
+
+    This will populate the GUI's fields with the entries relevant to your lab.
+
+2.  Select the desired values.
+    
+    Use the *Filter* field to quickly narrow down the displayed subjects.
+    
+3.  Hit *Start* and off you go.
+
+
+There are some additional controls in the *Flow* section:
+
+-   When checking *Append* before pressing *Start*, the task will be joined to the previous task - resulting in chained tasks.
+
+-   The *Flush* button will toggle the valve for cleaning purposes.
+     
+
+    
+
+
+
 
 ### Command Line
 To run a task using command line, open a terminal and activate the environment and set current directory.
