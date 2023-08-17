@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>738</width>
-    <height>445</height>
+    <width>698</width>
+    <height>432</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -62,62 +62,18 @@
             </property>
            </widget>
           </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="1" column="2">
-        <widget class="QGroupBox" name="uiGroupProjects">
-         <property name="maximumSize">
-          <size>
-           <width>16777215</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <property name="title">
-          <string>Projects</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_3">
-          <item row="0" column="0">
-           <widget class="QListView" name="uiListProjects">
-            <property name="selectionMode">
-             <enum>QAbstractItemView::MultiSelection</enum>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="2" column="0">
-        <widget class="QGroupBox" name="uiGroupSubject">
-         <property name="title">
-          <string>Subject</string>
-         </property>
-         <layout class="QVBoxLayout" name="verticalLayout_2">
           <item>
-           <widget class="QComboBox" name="uiComboSubject">
-            <property name="minimumSize">
+           <spacer name="verticalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
              <size>
-              <width>0</width>
-              <height>26</height>
+              <width>20</width>
+              <height>40</height>
              </size>
             </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="2" column="2">
-        <widget class="QGroupBox" name="uiGroupProcedures">
-         <property name="title">
-          <string>Procedures</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_2">
-          <item row="0" column="0">
-           <widget class="QListView" name="uiListProcedures">
-            <property name="selectionMode">
-             <enum>QAbstractItemView::MultiSelection</enum>
-            </property>
-           </widget>
+           </spacer>
           </item>
          </layout>
         </widget>
@@ -144,6 +100,41 @@
             </property>
            </widget>
           </item>
+          <item>
+           <spacer name="verticalSpacer_3">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="1" column="2">
+        <widget class="QGroupBox" name="uiGroupProjects">
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="title">
+          <string>Projects</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_3">
+          <item row="0" column="0">
+           <widget class="QListView" name="uiListProjects">
+            <property name="selectionMode">
+             <enum>QAbstractItemView::MultiSelection</enum>
+            </property>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>
@@ -153,6 +144,13 @@
           <string>Flow</string>
          </property>
          <layout class="QGridLayout" name="gridLayout">
+          <item row="0" column="0">
+           <widget class="QLabel" name="uiLabelDevices">
+            <property name="text">
+             <string># Devices</string>
+            </property>
+           </widget>
+          </item>
           <item row="0" column="2">
            <widget class="QCheckBox" name="uiCheckAppend">
             <property name="toolTip">
@@ -160,6 +158,13 @@
             </property>
             <property name="text">
              <string>Append</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QSpinBox" name="uiSpinDevices">
+            <property name="toolTip">
+             <string>Number of additional computers (video +1, ephys +1, photometry +1)</string>
             </property>
            </widget>
           </item>
@@ -183,19 +188,86 @@
             </property>
            </widget>
           </item>
+          <item row="3" column="1">
+           <spacer name="verticalSpacer_4">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="2" column="2">
+        <widget class="QGroupBox" name="uiGroupProcedures">
+         <property name="title">
+          <string>Procedures</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_2">
           <item row="0" column="0">
-           <widget class="QLabel" name="uiLabelDevices">
-            <property name="text">
-             <string># Devices</string>
+           <widget class="QListView" name="uiListProcedures">
+            <property name="selectionMode">
+             <enum>QAbstractItemView::MultiSelection</enum>
             </property>
            </widget>
           </item>
-          <item row="2" column="0">
-           <widget class="QSpinBox" name="uiSpinDevices">
-            <property name="toolTip">
-             <string>Number of additional computers (video +1, ephys +1, photometry +1)</string>
+         </layout>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QGroupBox" name="uiGroupSubject">
+         <property name="title">
+          <string>Subject</string>
+         </property>
+         <property name="flat">
+          <bool>false</bool>
+         </property>
+         <property name="checkable">
+          <bool>false</bool>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_2">
+          <item>
+           <layout class="QFormLayout" name="formLayout">
+            <item row="0" column="1">
+             <widget class="QLineEdit" name="lineEditSubject"/>
+            </item>
+            <item row="0" column="0">
+             <widget class="QLabel" name="label">
+              <property name="text">
+               <string>Filter</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QComboBox" name="uiComboSubject">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>26</height>
+             </size>
             </property>
            </widget>
+          </item>
+          <item>
+           <spacer name="verticalSpacer">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
           </item>
          </layout>
         </widget>
@@ -210,8 +282,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>738</width>
-     <height>24</height>
+     <width>698</width>
+     <height>28</height>
     </rect>
    </property>
    <widget class="QMenu" name="uiMenuFile">
