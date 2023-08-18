@@ -11,6 +11,7 @@ Welcome to iblrig's documentation!
    :caption: Contents:
 
    usage
+   frequent_issues
    installation
    description_file
    developer_guide

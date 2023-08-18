@@ -8,6 +8,7 @@
     <y>0</y>
     <width>698</width>
     <height>432</height>
+    <height>450</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -144,38 +145,7 @@
           <string>Flow</string>
          </property>
          <layout class="QGridLayout" name="gridLayout">
-          <item row="0" column="0">
-           <widget class="QLabel" name="uiLabelDevices">
-            <property name="text">
-             <string># Devices</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="2">
-           <widget class="QCheckBox" name="uiCheckAppend">
-            <property name="toolTip">
-             <string>Append to existing session for the same day</string>
-            </property>
-            <property name="text">
-             <string>Append</string>
-            </property>
-           </widget>
-          </item>
           <item row="2" column="0">
-           <widget class="QSpinBox" name="uiSpinDevices">
-            <property name="toolTip">
-             <string>Number of additional computers (video +1, ephys +1, photometry +1)</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="2">
-           <widget class="QPushButton" name="uiPushStart">
-            <property name="text">
-             <string>Start</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
            <widget class="QPushButton" name="uiPushFlush">
             <property name="enabled">
              <bool>true</bool>
@@ -188,7 +158,14 @@
             </property>
            </widget>
           </item>
-          <item row="3" column="1">
+          <item row="2" column="1">
+           <widget class="QPushButton" name="uiPushStart">
+            <property name="text">
+             <string>Start</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
            <spacer name="verticalSpacer_4">
             <property name="orientation">
              <enum>Qt::Vertical</enum>
@@ -200,6 +177,16 @@
              </size>
             </property>
            </spacer>
+          </item>
+          <item row="3" column="1">
+           <widget class="QCheckBox" name="uiCheckAppend">
+            <property name="toolTip">
+             <string>Append to existing session for the same day</string>
+            </property>
+            <property name="text">
+             <string>Append</string>
+            </property>
+           </widget>
           </item>
          </layout>
         </widget>

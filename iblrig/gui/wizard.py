@@ -216,6 +216,7 @@ class RigWizard(QtWidgets.QMainWindow):
 
 def main():
     app = QtWidgets.QApplication([])
+    app.setStyle("Fusion")
     w = RigWizard()
     w.show()
     app.exec_()
