@@ -38,26 +38,29 @@ def transfer_data():
         if task_settings.get('NTRIALS', 43) < 42:
             # here we check the number of trials in the raw data to see if the session crashed
             jsonable = session_path.joinpath('raw_task_data_00', '_iblrig_taskData.raw.jsonable')
-            if jsonable.exists():
-                trials, bpod_data = load_task_jsonable(jsonable)
-                ntrials = trials.shape[0]
-                if ntrials < 42:
-                    continue
-                # we have the case where the session hard crashed. Patch the settings file to wrap the session
-                # and continue the copying
-                logger.info(f'recovering crashed session {session_path}')
-                settings_file = session_path.joinpath('raw_task_data_00', '_iblrig_taskSettings.raw.json')
-                with open(settings_file, 'r') as fid:
-                    raw_settings = json.load(fid)
-                raw_settings['NTRIALS'] = int(ntrials)
-                raw_settings['NTRIALS_CORRECT'] = int(trials['trial_correct'].sum())
-                raw_settings['TOTAL_WATER_DELIVERED'] = int(trials['reward_amount'].sum())
-                # cast the timestamp in a datetime object and add the session length to it
-                end_time = datetime.datetime.strptime(raw_settings['SESSION_START_TIME'], '%Y-%m-%dT%H:%M:%S.%f')
-                end_time += datetime.timedelta(seconds=bpod_data[-1]['Trial end timestamp'])
-                raw_settings['SESSION_END_TIME'] = end_time.strftime('%Y-%m-%dT%H:%M:%S.%f')
-                with open(settings_file, 'w') as fid:
-                    json.dump(raw_settings, fid)
+            if not jsonable.exists():
+                logger.info(f'skipping: No task data found for {session_path}')
+                continue
+            trials, bpod_data = load_task_jsonable(jsonable)
+            ntrials = trials.shape[0]
+            if ntrials < 42:
+                logger.info(f'Skipping: not enough trials for {session_path}')
+                continue
+            # we have the case where the session hard crashed. Patch the settings file to wrap the session
+            # and continue the copying
+            logger.info(f'recovering crashed session {session_path}')
+            settings_file = session_path.joinpath('raw_task_data_00', '_iblrig_taskSettings.raw.json')
+            with open(settings_file, 'r') as fid:
+                raw_settings = json.load(fid)
+            raw_settings['NTRIALS'] = int(ntrials)
+            raw_settings['NTRIALS_CORRECT'] = int(trials['trial_correct'].sum())
+            raw_settings['TOTAL_WATER_DELIVERED'] = int(trials['reward_amount'].sum())
+            # cast the timestamp in a datetime object and add the session length to it
+            end_time = datetime.datetime.strptime(raw_settings['SESSION_START_TIME'], '%Y-%m-%dT%H:%M:%S.%f')
+            end_time += datetime.timedelta(seconds=bpod_data[-1]['Trial end timestamp'])
+            raw_settings['SESSION_END_TIME'] = end_time.strftime('%Y-%m-%dT%H:%M:%S.%f')
+            with open(settings_file, 'w') as fid:
+                json.dump(raw_settings, fid)
         sc = SessionCopier(session_path, remote_subjects_folder=remote_subjects_path)
         state = sc.get_state()
         logger.critical(f"{sc.state}, {sc.session_path}")
