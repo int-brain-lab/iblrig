@@ -1,5 +1,6 @@
 import argparse
 import datetime
+import json
 from pathlib import Path
 import yaml
 import shutil
@@ -11,13 +12,14 @@ import iblrig
 from iblrig.hardware import Bpod
 from iblrig.path_helper import load_settings_yaml
 from iblrig.online_plots import OnlinePlots
+from iblrig.raw_data_loaders import load_task_jsonable
 
 logger = setup_logger('iblrig', level='INFO')
 
 
 def transfer_data():
     """
-    Remove local sessions older than 2 weeks
+    Copies the data from the rig to the local server if the session has more than 42 trials
     :param weeks:
     :param dry:
     :return:
@@ -29,9 +31,33 @@ def transfer_data():
     for flag in list(local_subjects_path.rglob('transfer_me.flag')):
         session_path = flag.parent
         task_settings = raw_data_loaders.load_settings(session_path, task_collection='raw_task_data_00')
-        if task_settings is None or task_settings['NTRIALS'] < 42:
-            print('Skipping {}'.format(session_path))
+        if task_settings is None:
+            logger.info(f'No settings found for {session_path}')
             continue
+        # we check the number of trials acomplished. If the field is not there, we copy the session as is
+        if task_settings.get('NTRIALS', 43) < 42:
+            # here we check the number of trials in the raw data to see if the session crashed
+            jsonable = session_path.joinpath('raw_task_data_00', '_iblrig_taskData.raw.jsonable')
+            if jsonable.exists():
+                trials, bpod_data = load_task_jsonable(jsonable)
+                ntrials = trials.shape[0]
+                if ntrials < 42:
+                    continue
+                # we have the case where the session hard crashed. Patch the settings file to wrap the session
+                # and continue the copying
+                logger.info(f'recovering crashed session {session_path}')
+                settings_file = session_path.joinpath('raw_task_data_00', '_iblrig_taskSettings.raw.json')
+                with open(settings_file, 'r') as fid:
+                    raw_settings = json.load(fid)
+                raw_settings['NTRIALS'] = int(ntrials)
+                raw_settings['NTRIALS_CORRECT'] = int(trials['trial_correct'].sum())
+                raw_settings['TOTAL_WATER_DELIVERED'] = int(trials['reward_amount'].sum())
+                # cast the timestamp in a datetime object and add the session length to it
+                end_time = datetime.datetime.strptime(raw_settings['SESSION_START_TIME'], '%Y-%m-%dT%H:%M:%S.%f')
+                end_time += datetime.timedelta(seconds=bpod_data[-1]['Trial end timestamp'])
+                raw_settings['SESSION_END_TIME'] = end_time.strftime('%Y-%m-%dT%H:%M:%S.%f')
+                with open(settings_file, 'w') as fid:
+                    json.dump(raw_settings, fid)
         sc = SessionCopier(session_path, remote_subjects_folder=remote_subjects_path)
         state = sc.get_state()
         logger.critical(f"{sc.state}, {sc.session_path}")
@@ -67,8 +93,8 @@ def remove_local_sessions(weeks=2, dry=False):
     size = 0
     for flag in sorted(list(local_subjects_path.rglob('_ibl_experiment.description_behavior.yaml')), reverse=True):
         session_path = flag.parent
-        age = (datetime.datetime.now() - datetime.datetime.strptime(session_path.parts[-2], '%Y-%m-%d')).days
-        if age < weeks * 7:
+        days_elapsed = (datetime.datetime.now() - datetime.datetime.strptime(session_path.parts[-2], '%Y-%m-%d')).days
+        if days_elapsed < (weeks * 7):
             continue
         sc = SessionCopier(session_path, remote_subjects_folder=remote_subjects_path)
         if sc.state == 3:

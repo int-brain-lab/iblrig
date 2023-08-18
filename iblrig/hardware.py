@@ -235,4 +235,6 @@ def sound_device_factory(output="sysdefault", samplerate=None):
         sd.default.channels = 2
         sd.default.samplerate = samplerate
         channels = 'stereo'
+    else:
+        raise ValueError(f"{output} soundcard is neither xonar, harp or sysdefault. Fix your hardware_settings.yam")
     return sd, samplerate, channels
