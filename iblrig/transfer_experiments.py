@@ -105,6 +105,7 @@ class SessionCopier():
     def copy_collections(self):
         """
         Recursively copies the collection folders into the remote session path
+        Do not overload, overload _copy_collections instead
         :return:
         """
         if self.glob_file_remote_copy_status('complete'):

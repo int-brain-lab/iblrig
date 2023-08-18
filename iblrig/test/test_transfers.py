@@ -1,27 +1,93 @@
 from pathlib import Path
+import random
 import tempfile
 import unittest
 
 from iblrig_tasks._iblrig_tasks_trainingChoiceWorld.task import Session
 from iblrig.test.base import TASK_KWARGS
 from iblrig.transfer_experiments import SessionCopier, VideoCopier, EphysCopier
+import iblrig.commands
+import iblrig.raw_data_loaders
 
 
-class TestTransferExperiments(unittest.TestCase):
+def _create_behavior_session(temp_dir, ntrials=None, hard_crash=False):
+    """
+    Creates a generic session in a tempdir. If ntrials is specified, create a jsonable file with ntrials
+    and update the task settings
+    :param temp_dir:
+    :param ntrials:
+    :param hard_crash: if True, simulates a hardcrash by not labeling the session end time and ntrials
+    :return:
+    """
+    iblrig_settings = {
+        'iblrig_local_data_path': Path(temp_dir).joinpath('behavior'),
+        'iblrig_remote_data_path': Path(temp_dir).joinpath('remote'),
+    }
+    session = Session(iblrig_settings=iblrig_settings, **TASK_KWARGS)
+    session.create_session()
+    session.paths.SESSION_FOLDER.joinpath('raw_video_data').mkdir(parents=True)
+    session.paths.SESSION_FOLDER.joinpath('raw_video_data', 'tutu.avi').touch()
+    if ntrials is not None:
+        with open(Path(__file__).parent.joinpath('fixtures', 'task_data_short.jsonable')) as fid:
+            lines = fid.readlines()
+        with open(Path(session.paths.DATA_FILE_PATH), 'w') as fid:
+            for _ in range(ntrials):
+                fid.write(random.choice(lines))
+        if not hard_crash:
+            session.session_info['NTRIALS'] = ntrials
+            session.session_info['SESSION_END_TIME'] = session.session_info['SESSION_START_TIME']
+            session.save_task_parameters_to_json_file()
+    return session
 
+
+class TestIntegrationTransferExperiments(unittest.TestCase):
+    """
+    This test emulates the `transfer_data` command as run on the rig.
+    """
+    def test_behavior_copy_complete_session(self):
+        """
+        Here there are 2 cases, one is about a complete session, the other is about a session that crashed
+        but is still valid (ie. more than 42 trials)
+        In this case both sessions should end up on the remote path with a copy state of 3
+        """
+        for hard_crash in [False, True]:
+            with tempfile.TemporaryDirectory() as td:
+                session = _create_behavior_session(td, ntrials=50, hard_crash=hard_crash)
+                session.paths.SESSION_FOLDER.joinpath('transfer_me.flag').touch()
+                iblrig.commands.transfer_data(local_subjects_path=session.paths.LOCAL_SUBJECT_FOLDER,
+                                              remote_subjects_path=session.paths.REMOTE_SUBJECT_FOLDER)
+                sc = SessionCopier(session_path=session.paths.SESSION_FOLDER,
+                                   remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER)
+                self.assertEqual(sc.state, 3)
+
+    def test_behavior_do_not_copy_dummy_sessions(self):
+        """
+        Here we test the case when an aborted session or a session with less than 42 trials attempts to be copied
+        The expected behaviour is for the session folder on the remote session to be removed
+        :return:
+        """
+        for ntrials in [None, 41]:
+            with tempfile.TemporaryDirectory() as td:
+                session = _create_behavior_session(td, ntrials=ntrials)
+                session.paths.SESSION_FOLDER.joinpath('transfer_me.flag').touch()
+                iblrig.commands.transfer_data(
+                    local_subjects_path=session.paths.LOCAL_SUBJECT_FOLDER,
+                    remote_subjects_path=session.paths.REMOTE_SUBJECT_FOLDER
+                )
+                sc = SessionCopier(
+                    session_path=session.paths.SESSION_FOLDER,
+                    remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER)
+                self.assertFalse(sc.remote_session_path.exists())
+
+
+class TestUnitTransferExperiments(unittest.TestCase):
+    """
+    UnitTest the SessionCopier, VideoCopier and EphysCopier classes and methods
+    Unlike the integration test, the sessions here are made from scratch using an actual instantiated session
+    """
     def test_behavior_copy(self):
         with tempfile.TemporaryDirectory() as td:
-            """
-            First create a behavior session
-            """
-            iblrig_settings = {
-                'iblrig_local_data_path': Path(td).joinpath('behavior'),
-                'iblrig_remote_data_path': Path(td).joinpath('remote'),
-            }
-            session = Session(iblrig_settings=iblrig_settings, **TASK_KWARGS)
-            session.create_session()
-            session.paths.SESSION_FOLDER.joinpath('raw_video_data').mkdir(parents=True)
-            session.paths.SESSION_FOLDER.joinpath('raw_video_data', 'tutu.avi').touch()
+            session = _create_behavior_session(td)
             sc = SessionCopier(session_path=session.paths.SESSION_FOLDER,
                                remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER)
             assert sc.state == 1

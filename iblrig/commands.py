@@ -17,7 +17,7 @@ from iblrig.raw_data_loaders import load_task_jsonable
 logger = setup_logger('iblrig', level='INFO')
 
 
-def transfer_data():
+def transfer_data(local_subjects_path=None, remote_subjects_path=None, dry=False):
     """
     Copies the data from the rig to the local server if the session has more than 42 trials
     :param weeks:
@@ -25,30 +25,29 @@ def transfer_data():
     :return:
     """
     iblrig_settings = load_settings_yaml()
-    local_subjects_path = Path(iblrig_settings['iblrig_local_data_path'])
-    remote_subjects_path = Path(iblrig_settings['iblrig_remote_data_path']).joinpath('Subjects')
+    local_subjects_path = local_subjects_path or Path(iblrig_settings['iblrig_local_data_path'])
+    remote_subjects_path = remote_subjects_path or Path(iblrig_settings['iblrig_remote_data_path']).joinpath('Subjects')
 
     for flag in list(local_subjects_path.rglob('transfer_me.flag')):
         session_path = flag.parent
+        sc = SessionCopier(session_path, remote_subjects_folder=remote_subjects_path)
         task_settings = raw_data_loaders.load_settings(session_path, task_collection='raw_task_data_00')
         if task_settings is None:
-            logger.info(f'No settings found for {session_path}')
+            logger.info(f'skipping: no task settings found for {session_path}')
             continue
-        # we check the number of trials acomplished. If the field is not there, we copy the session as is
-        if task_settings.get('NTRIALS', 43) < 42:
-            # here we check the number of trials in the raw data to see if the session crashed
+        # here if the session end time has not been labeled we assume that the session crashed, and patch the settings
+        if task_settings['SESSION_END_TIME'] is None:
             jsonable = session_path.joinpath('raw_task_data_00', '_iblrig_taskData.raw.jsonable')
             if not jsonable.exists():
-                logger.info(f'skipping: No task data found for {session_path}')
+                logger.info(f'skipping: no task data found for {session_path}')
+                if sc.remote_session_path.exists():
+                    shutil.rmtree(sc.remote_session_path)
                 continue
             trials, bpod_data = load_task_jsonable(jsonable)
             ntrials = trials.shape[0]
-            if ntrials < 42:
-                logger.info(f'Skipping: not enough trials for {session_path}')
-                continue
             # we have the case where the session hard crashed. Patch the settings file to wrap the session
             # and continue the copying
-            logger.info(f'recovering crashed session {session_path}')
+            logger.warning(f'recovering crashed session {session_path}')
             settings_file = session_path.joinpath('raw_task_data_00', '_iblrig_taskSettings.raw.json')
             with open(settings_file, 'r') as fid:
                 raw_settings = json.load(fid)
@@ -61,7 +60,13 @@ def transfer_data():
             raw_settings['SESSION_END_TIME'] = end_time.strftime('%Y-%m-%dT%H:%M:%S.%f')
             with open(settings_file, 'w') as fid:
                 json.dump(raw_settings, fid)
-        sc = SessionCopier(session_path, remote_subjects_folder=remote_subjects_path)
+            task_settings = raw_data_loaders.load_settings(session_path, task_collection='raw_task_data_00')
+        # we check the number of trials acomplished. If the field is not there, we copy the session as is
+        if task_settings.get('NTRIALS', 43) < 42:
+            logger.info(f'Skipping: not enough trials for {session_path}')
+            if sc.remote_session_path.exists():
+                shutil.rmtree(sc.remote_session_path)
+            continue
         state = sc.get_state()
         logger.critical(f"{sc.state}, {sc.session_path}")
         # session_params.write_yaml(sc.file_remote_experiment_description, ad)
