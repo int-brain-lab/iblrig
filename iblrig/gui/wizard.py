@@ -199,7 +199,7 @@ class RigWizard(QtWidgets.QMainWindow):
 
     def flush(self):
         try:
-            bpod = Bpod(self.model.hardware_settings['device_bpod']['COM_BPOD'])  # bpod is a singleton
+            bpod = Bpod(self.model.hardware_settings['device_bpod']['COM_BPOD'], disable_behavior_ports=[1, 2, 3])  # bpod is a singleton
             bpod.manual_override(bpod.ChannelTypes.OUTPUT, bpod.ChannelNames.VALVE, 1, self.uiPushFlush.isChecked())
         except (OSError, exceptions.bpod_error.BpodErrorException):
             print(traceback.format_exc())

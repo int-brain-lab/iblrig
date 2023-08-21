@@ -82,7 +82,7 @@ else:
 # collect valid ports
 match platform.system():
     case 'Windows':
-        valid_ports = (f'COM{i + 1}' for i in range(256))
+        valid_ports = [f'COM{i + 1}' for i in range(256)]
     case 'Linux':
         valid_ports = glob('/dev/tty*')
     case _:

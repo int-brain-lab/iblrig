@@ -646,7 +646,7 @@ class BpodMixin(object):
         self.bpod.close()
 
     def start_mixin_bpod(self):
-        self.bpod = Bpod(self.hardware_settings['device_bpod']['COM_BPOD'])
+        self.bpod = Bpod(self.hardware_settings['device_bpod']['COM_BPOD'], disable_behavior_ports=[1, 2, 3])
         self.bpod.define_rotary_encoder_actions()
 
         def softcode_handler(code):
