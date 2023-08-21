@@ -1,65 +1,67 @@
 # Using IBLRIG
+ 
 
-## Run a task
-### Through the graphical user interface
+## The Graphical User Interface
 
-To run a task using the graphical user interface, open a terminal and type in the following:
+To initiate a task through the graphical user interface, follow these steps:
 
-    C:\iblrigv8\venv\scripts\Activate.ps1
-    iblrig
+```powershell
+C:\iblrigv8\venv\scripts\Activate.ps1
+iblrig
+```
 
-The *IBL Rig Wizard* GUI window will pop open:![gui.png](gui.png)
+This command activates the necessary environment and launches the IBL Rig Wizard GUI window, as shown below:
+![gui.png](gui.png)
 
-1.  Enter your Alyx username & click connect
+Complete the following actions within the GUI:
 
-    This will populate the GUI's fields with the entries relevant to your lab.
+1.  Enter your Alyx username, then click on the *Connect* button. This action will automatically populate the GUI fields with information pertinent to your lab.
 
-2.  Select the desired values.
-    
-    Use the *Filter* field to quickly narrow down the displayed subjects.
-    
-3.  Hit *Start* and off you go.
+2.  Select the desired values from the provided options. Utilize the *Filter* field to swiftly narrow down the list of displayed subjects.
 
-
-There are some additional controls in the *Flow* section:
-
--   When checking *Append* before pressing *Start*, the task will be joined to the previous task - resulting in chained tasks.
-
--   The *Flush* button will toggle the valve for cleaning purposes.
-     
-
-    
+3.  Click the *Start* button to initiate the task.
 
 
+Additionally, there are supplementary controls located in the "Flow" section::
+
+-   If you check the *Append* option before clicking *Start*, the task you initiate will be linked to the preceding task, creating a sequence of connected tasks.
+
+-   The *Flush* button serves to toggle the valve for cleaning purposes.
 
 
-### Command Line
-To run a task using command line, open a terminal and activate the environment and set current directory.
+## The Command Line Interface
 
-    C:\iblrigv8\venv\scripts\Activate.ps1
+To use the command line interface, open a terminal and activate the environment:
+
     cd C:\iblrigv8\
+    venv\scripts\Activate.ps1
 
-#### Running a single task
 
+### Running a single task
+To run a single task, execute the following command:
+ 
     python .\iblrig_tasks\_iblrig_tasks_trainingChoiceWorld\task.py --subject algernon --user john.doe
+ 
 
-#### Chain several tasks together
-You can feed the `append` flag to the task to chain several tasks together.  For example, to run a passive task after an ephys task, you can do:
+### Chaining several tasks together
+To chain several tasks together, use the `--append` flag. For instance, to run a passive task after an ephys task:
 
-    python .\iblrig_tasks\_iblrig_tasks_ephysChoiceWorld\task.py --subject algernon
+1.  Run the ephys task
 
-Followed by:
+        python .\iblrig_tasks\_iblrig_tasks_ephysChoiceWorld\task.py --subject algernon
 
-    python .\iblrig_tasks\_iblrig_tasks_passiveChoiceWorld\task.py --subject algernon --append
+2.  Run the passive task with the `--append`flag:
 
+        python .\iblrig_tasks\_iblrig_tasks_passiveChoiceWorld\task.py --subject algernon --append
+ 
 
-### Flush valve
+### Flushing the valve
 
-To flush valve 1 of the Bpod, enter
+To flush valve 1 of the Bpod, enter:
 
     flush
 
-Press ENTER to close the valve.
+Press the ENTER key to close the valve.
 
 ## Copy commands
 
@@ -89,32 +91,50 @@ If you get missing libraries, you can install the iblscripts package with
 
 
 ## FAQ
-Section here with common copy errors and how to fix them
 
-## Behind the copy scripts
+TODO: Section with common copy errors and how to fix them
+
+## Behind the Copy Scripts
 
 ### Workflow
-1. At the start of acquisition an incomplete experiment description file (a 'stub') is saved on
-the local PC and in the lab server, in a session subfolder called `_devices`.  The filename
-includes the PC's identifier so the copy script knows which stub was saved by which PC.
-2. The copy script is run on each acquisition PC in any order.
-3. The script iterates through the local session data (or optionally a separate 'transfers'
-folder) that contain experiment.description stubs.
-4. Session folders containing a 'transferred.flag' file are ignored. 
-5. For each session, the stub file is read in and rsync is called for each `collection`
-contained.  If there is a local subfolder that isn't specified in a `collection` key, it won't
-be copied.
-6. Once rsync succeeds, the remote stub file is merged with the remote experiment.description
-file (or copied over if one doesn't already exist).  The remote stub is deleted. 
-7. A `transferred.flag` file is created in the local session folder.
-8. If no more remote stub files exist for a given session, the empty _devices subfolder is
-deleted and a 'raw_session.flag' file is created in the remote session folder.
+
+1. **Initial Stub Creation:** At the start of acquisition, an incomplete 
+   experiment description file - a *'stub'* - is saved to the session on, 
+   both, the local PC and the lab server in a subfolder called `_devices`. The 
+   filename of the stub includes the PC's identifier, allowing the copy script 
+   to identify its source.
+   
+2. **Executing the Copy Script:** The copy script is executed on each 
+   acquisition PC independently and in no particular order.
+   
+3. **Navigating Local Session Data:** The script systematically navigates 
+   through local session folders (or optionally a separate `transfers` 
+   folder) that contain `experiment.description` stubs.
+   
+4. **Skipping Transferred Sessions:** The script ignores session folders 
+   containing a file named `transferred.flag` (see 7).
+   
+5. **Copying Collections:** For each session, the script reads the 
+   respective stub and uses `rsync` to copy each `collection`. Subfolders 
+   not specified under a `collection` key are omitted from copying.
+   
+6. **Removing Remote Stubs:** Upon successful copying, the remote stub 
+   file is merged with the remote `experiment.description` file (or copied 
+   over if one doesn't exist already). The remote stub file is then deleted.
+   
+7. **Confirming Transfer Locally:** A `transferred.flag` file is created in the 
+   local session folder to confirm the transfer's success.
+   
+8. **Completion and Cleanup:** Once no more remote stub files exist for a given
+   session, the empty `_devices` subfolder is removed. Additionally, a  
+   'raw_session.flag' file is created in the remote session folder, 
+   indicating the successful transfer of all files.
+
 
 ### Example of workflow
 Example of three sessions each in a different copy state:
 
-#### Lab server
-The state on the remote lab server
+#### The State on the Remote Lab Server
 ```
 lab server/
 └── subject/
@@ -135,8 +155,7 @@ lab server/
             └── raw_session.flag
 ```
 
-#### Task acquisition PC
-The state on the local task acquisition PC
+#### The State on the Local Task Acquisition PC
 ```
 acquisition computer (taskPC)/
 └── subject/
@@ -154,8 +173,7 @@ acquisition computer (taskPC)/
             ├── _ibl_experiment.description_taskPC.yaml
             └── transferred.flag
 ```
-#### Ephys acquisition PC
-The state on the local ephys acquisition PC
+#### The State on the Local Ephys Acquisition PC
 ```
 acquisition computer (ephysPC)/
 └── subject/
@@ -181,3 +199,16 @@ states
 - subject/2020-01-01/002 - data from 'taskPC' have been copied, data from 'ephysPC' remains to be copied.
 - subject/2020-01-01/003 - data copied from all acquisition PCs.
 ```
+
+
+### Sound Issues
+
+- Is everything wired and set up according to [the manual](https://doi.org/10.6084/m9.figshare.11634732.v6)?
+- Is `hardware_settings.yaml` set up correctly? Valid options for sound `OUTPUT` are:
+  - `harp`,
+  - `xonar` or
+  - `sysdefault`.
+  
+  Make sure that this value matches the actual soundcard used on your rig.
+
+- Double-check all wiring for loose connections. 
