@@ -221,6 +221,18 @@ module = next((m for m in modules if m.name.startswith('AmbientModule')), None)
 if module:
     log_fun('pass', f'module "{module.name}" is connected to the Bpod\'s module port #{module.serial_port}')
     log_fun('info', f'firmware version: {module.firmware_version}')
+    module.start_module_relay()
+    bpod.bpod_modules.module_write(module, "R")
+    r = bpod.bpod_modules.module_read(module, 12)
+    module.stop_module_relay()
+    v = {
+        "Temperature_C": np.frombuffer(bytes(r[:4]), np.float32)[0],
+        "AirPressure_mb": np.frombuffer(bytes(r[4:8]), np.float32)[0] / 100,
+        "RelativeHumidity": np.frombuffer(bytes(r[8:]), np.float32)[0],
+    }
+    log_fun('info', f'temperature: {v["Temperature_C"]:.1f} °C')
+    log_fun('info', f'air pressure: {v["AirPressure_mb"]:.1f} mbar')
+    log_fun('info', f'rel. humidity: {v["RelativeHumidity"]:.1f}%')
 else:
     log_fun('fail', 'Could not find Ambient Module', last=True)
 
