@@ -194,13 +194,13 @@ if 'device_sound' in hw_settings and 'OUTPUT' in hw_settings['device_sound']:
 
             dev = usb.core.find(idVendor=0x04D8, idProduct=0xEE6A)
             if not dev:
-                log_fun('fail', Cannot find Harp Sound Card')
+                log_fun('fail', 'Cannot find Harp Sound Card')
             else:
                 log_fun('pass', 'found USB device {:04X}:{:04X} (Harp Sound Card)'.format(dev.idVendor, dev.idProduct))
 
             dev = next((p for p in serial.tools.list_ports.comports() if (p.vid == 1027 and p.pid == 24577)), None)
             if not dev:
-                log_fun('fail', cannot find Harp Sound Card\'s Serial port - did you plug in *both* USB ports of the device?')
+                log_fun('fail', 'cannot find Harp Sound Card\'s Serial port - did you plug in *both* USB ports of the device?')
             else:
                 log_fun('pass', 'found USB device {:04X}:{:04X} (FT232 UART), serial port: {}'.format(dev.vid, dev.pid, dev.name))
 
@@ -243,9 +243,9 @@ if "device_cameras" in hw_settings and isinstance(hw_settings["device_cameras"],
     triggers = [i.host_timestamp for i in bpod.session.current_trial.events_occurrences if i.content == 'Port1In']
     np.mean(np.diff(triggers))
     if len(triggers) == 0:
-        log_fun('fail', 'could not read camera trigger.', last=True)
+        log_fun('fail', 'could not read camera trigger', last=True)
     else:
-        log_fun('pass', 'successfully read camera trigger.')
+        log_fun('pass', 'successfully read camera trigger')
         log_fun('info', f'average frame-rate: {np.mean(np.diff(triggers)) * 1E3:.3f} Hz', last=True)
 
 bpod.close()
