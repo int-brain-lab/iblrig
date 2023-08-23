@@ -683,7 +683,7 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
         from iblrig.choiceworld import get_training_phase
         if training_phase == -1:
             try:
-                training_phase = get_training_phase(self.session_info.SUBJECT_NAME) or 0
+                training_phase = get_training_phase(self.session_info.SUBJECT_NAME)
                 self.logger.warning(f"Got training phase: {training_phase}")
             except Exception:
                 self.logger.warning(f"Could not get training phase from Alyx: {traceback.format_exc()}, please set it"

@@ -41,13 +41,14 @@ def get_training_phase(subject):
     :param subject:
     :return:
     """
+    DEFAULT_PHASE = 0
     iblrig_settings = load_settings_yaml()
     local_subjects_path = Path(iblrig_settings['iblrig_local_data_path']).joinpath(iblrig_settings['ALYX_LAB'], 'Subjects')
-    local = _get_latest_training_phase_from_folder(local_subjects_path.joinpath(subject)) or (None, '0000-00-00')
+    local = _get_latest_training_phase_from_folder(local_subjects_path.joinpath(subject)) or (DEFAULT_PHASE, '0000-00-00')
     remote = (None, '0000-00-00')
     if iblrig_settings['iblrig_remote_data_path'] is not None:
         remote_subjects_path = Path(iblrig_settings['iblrig_remote_data_path']).joinpath('Subjects')
-        remote = _get_latest_training_phase_from_folder(remote_subjects_path.joinpath(subject)) or (None, '0000-00-00')
+        remote = _get_latest_training_phase_from_folder(remote_subjects_path.joinpath(subject)) or (DEFAULT_PHASE, '0000-00-00')
     if remote[1] > local[1]:
         return remote[0]
     else:
