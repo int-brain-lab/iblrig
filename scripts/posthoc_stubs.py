@@ -1,7 +1,6 @@
 from pathlib import Path
 from re import search
-from os import walk, listdir
-from glob import glob
+from os import walk
 import sys
 
 from ibllib.io import session_params
@@ -14,11 +13,11 @@ class posthoc_stubs(object):
     def __init__(self, stub_file: str) -> None:
 
         # pick relevant options for ephys/video data (identified by name of stub-file)
-        if search('^cameras_.+\.yaml', stub_file):
+        if search(r'^cameras_.+\.yaml', stub_file):
             self.stub_file = Path(videopc.__file__).parent.joinpath('device_stubs', stub_file)
             self.copier = VideoCopier
             self.type = 'video'
-        elif search('^neuropixel_.+\.yaml', stub_file):
+        elif search(r'^neuropixel_.+\.yaml', stub_file):
             self.stub_file = Path(ephyspc.__file__).parent.joinpath('device_stubs', stub_file)
             self.copier = EphysCopier
             self.type = 'ephys'
