@@ -29,7 +29,7 @@ def _get_latest_training_phase_from_folder(folder_subjects):
             trials_data, bpod_data = load_task_jsonable(session_path.joinpath(adt['collection'], '_iblrig_taskData.raw.jsonable'))
             if 'training_phase' in trials_data:
                 training_phase = trials_data['training_phase'].values[-1]
-                return (training_phase, session_path)
+                return (training_phase, session_path.parts[-2])
         c += 1
         if c >= n_retries:
             break
@@ -45,7 +45,7 @@ def get_training_phase(subject):
     iblrig_settings = load_settings_yaml()
     local_subjects_path = Path(iblrig_settings['iblrig_local_data_path']).joinpath(iblrig_settings['ALYX_LAB'], 'Subjects')
     local = _get_latest_training_phase_from_folder(local_subjects_path.joinpath(subject)) or (DEFAULT_PHASE, '0000-00-00')
-    remote = (None, '0000-00-00')
+    remote = (DEFAULT_PHASE, '0000-00-00')
     if iblrig_settings['iblrig_remote_data_path'] is not None:
         remote_subjects_path = Path(iblrig_settings['iblrig_remote_data_path']).joinpath('Subjects')
         remote = _get_latest_training_phase_from_folder(remote_subjects_path.joinpath(subject)) or (DEFAULT_PHASE, '0000-00-00')
