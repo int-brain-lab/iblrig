@@ -40,49 +40,51 @@ Then exit the admin window and open a new Windows Powershell prompt (no admin mo
 Install iblrigv8
 ----------------
 
-From the Powershell command line, clone iblrig to the ‘iblrigv8’ directory, and switch to iblrigv8 branch
+1.  From the Powershell command line, clone iblrig to the ‘iblrigv8’ directory, and switch to iblrigv8 branch
 
-.. code-block:: powershell
+    .. code-block:: powershell
 
-    cd C:\
-    git clone https://github.com/int-brain-lab/iblrig.git iblrigv8
-    cd iblrigv8
-    git checkout iblrigv8
-
-
-Install a new virtual environment and update pip (modify the <Username> value if needed)
-
-.. code-block:: powershell
-
-    C:\Users\IBLuser\AppData\Local\Programs\Python\Python310\.\python.exe -m venv C:\iblrigv8\venv
-    C:\iblrigv8\venv\scripts\python.exe -m pip install --upgrade pip wheel
+        cd C:\
+        git clone https://github.com/int-brain-lab/iblrig.git iblrigv8
+        cd iblrigv8
+        git checkout iblrigv8
 
 
-Install iblrig in editable mode
+2.  Install a new virtual environment and update pip (modify the <Username> value if needed)
 
-.. code-block:: powershell
+    .. code-block:: powershell
 
-    C:\iblrigv8\venv\scripts\Activate.ps1
-    cd C:\iblrigv8
-    pip install -e .
-    pip install -r requirements.txt
+        C:\Users\IBLuser\AppData\Local\Programs\Python\Python310\.\python.exe -m venv C:\iblrigv8\venv
+        C:\iblrigv8\venv\scripts\python.exe -m pip install --upgrade pip wheel
 
-Install Bonsai in portable mode
 
-.. code-block:: powershell
+3.  Install iblrig in editable mode
 
-    cd C:\iblrigv8\Bonsai
-    powershell.exe .\install.ps1
-    cd ..
+    .. code-block:: powershell
 
-Install additional personal project tasks and extractors
+        C:\iblrigv8\venv\scripts\Activate.ps1
+        cd C:\iblrigv8
+        pip install -e .
+        pip install -r requirements.txt
 
-.. code-block:: powershell
 
-    cd C:\
-    git clone https://github.com/int-brain-lab/project_extraction.git
-    cd project_extraction
-    pip install -e .
+4.  Install additional tasks and extractors
+
+    .. code-block:: powershell
+
+        cd C:\
+        git clone https://github.com/int-brain-lab/project_extraction.git
+        cd project_extraction
+        pip install -e .
+
+
+5.  Install Bonsai in portable mode
+
+    .. code-block:: powershell
+
+        cd C:\iblrigv8\Bonsai
+        powershell.exe .\install.ps1
+        cd ..
 
 
 
