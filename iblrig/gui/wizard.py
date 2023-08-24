@@ -17,6 +17,7 @@ import iblrig_custom_tasks
 import iblrig.path_helper
 from iblrig.base_tasks import BaseSession
 from iblrig.hardware import Bpod
+from iblrig.version_management import check_for_updates
 from pybpodapi import exceptions
 
 PROCEDURES = [
@@ -133,6 +134,22 @@ class RigWizard(QtWidgets.QMainWindow):
         self.uiPushConnect.clicked.connect(self.alyx_connect)
         self.lineEditSubject.textChanged.connect(self._filter_subjects)
         self.running_task_process = None
+        self.setDisabled(True)
+        QtCore.QTimer.singleShot(100, self.check_for_update)
+
+    def check_for_update(self):
+        update_available, remote_version = check_for_updates()
+        if update_available == 1:
+            msgBox = QtWidgets.QMessageBox(parent=self)
+            msgBox.setWindowTitle("Update Notice")
+            msgBox.setText(f"Update to version {remote_version} of IBLRIG is available.")
+            msgBox.setInformativeText("Please update using 'git pull'.")
+            msgBox.setStandardButtons(QtWidgets.QMessageBox.Ok)
+            msgBox.setIcon(QtWidgets.QMessageBox().Information)
+            msgBox.findChild(QtWidgets.QPushButton).setText('Yes, I promise!')
+            msgBox.exec_()
+        self.setDisabled(False)
+        self.update()
 
     def model2view(self):
         # stores the current values in the model
