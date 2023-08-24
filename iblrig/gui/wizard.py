@@ -202,6 +202,7 @@ class RigWizard(QtWidgets.QMainWindow):
                     cmd.extend(['--projects', *self.model.projects])
                 if self.uiCheckAppend.isChecked():
                     cmd.append('--append')
+                cmd.append('--wizard')
                 if self.running_task_process is None:
                     self.running_task_process = subprocess.Popen(cmd)
                 self.uiPushStart.setText('Stop')

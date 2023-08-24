@@ -36,6 +36,7 @@ import iblrig.sound as sound
 import iblrig.spacer
 import iblrig.alyx
 import iblrig.graphic as graph
+from iblrig.version_management import check_for_updates
 import ibllib.io.session_params as ses_params
 from iblrig.transfer_experiments import SessionCopier
 
@@ -48,11 +49,12 @@ class BaseSession(ABC):
     base_parameters_file = None
     is_mock = False
     extractor_tasks = None
+    checked_for_update = False
 
     def __init__(self, subject=None, task_parameter_file=None, file_hardware_settings=None,
                  hardware_settings=None, file_iblrig_settings=None, iblrig_settings=None,
                  one=None, interactive=True, projects=None, procedures=None, stub=None,
-                 append=False, log_level='INFO'):
+                 append=False, log_level='INFO', wizard=False):
         """
         :param subject: The subject nickname. Required.
         :param task_parameter_file: an optional path to the task_parameters.yaml file
@@ -72,6 +74,26 @@ class BaseSession(ABC):
         self.logger = None
         self._setup_loggers(level=log_level)
         self.logger.info(f"Running iblrig {iblrig.__version__}, pybpod version {pybpodapi.__version__}")
+
+        # check for update
+        if not wizard and not BaseSession.checked_for_update:
+            BaseSession.checked_for_update = True
+            update_status, remote_version = check_for_updates()
+            if update_status == 0:
+                print(f"Update to IBL Rig v{remote_version} is available! Please "
+                      f"update using 'git pull'.")
+
+                while True:
+                    print("\n- To exit IBL Rig and perform the update right away: "
+                          "press [Enter]\n- To continue running without updating, "
+                          "enter 'I will update later'.")
+                    response = input('> ')
+                    if response == '':
+                        print("Thanks for keeping IBL Rig up to date!")
+                        exit()
+                    elif response == 'I will update later':
+                        break
+
         self.interactive = False if append else interactive
         self._one = one
         self.init_datetime = datetime.datetime.now()
