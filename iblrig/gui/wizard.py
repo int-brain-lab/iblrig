@@ -7,6 +7,7 @@ import subprocess
 import sys
 import yaml
 import traceback
+import webbrowser
 
 from PyQt5 import QtWidgets, QtCore, uic
 
@@ -126,6 +127,7 @@ class RigWizard(QtWidgets.QMainWindow):
         self.settings = QtCore.QSettings('iblrig', 'wizard')
         self.model = RigWizardModel()
         self.model2view()
+        self.uiPushHelp.clicked.connect(self.help)
         self.uiPushFlush.clicked.connect(self.flush)
         self.uiPushStart.clicked.connect(self.startstop)
         self.uiPushConnect.clicked.connect(self.alyx_connect)
@@ -212,6 +214,9 @@ class RigWizard(QtWidgets.QMainWindow):
         else:
             bpod.close()
             self.uiPushStart.setEnabled(True)
+
+    def help(self):
+        webbrowser.open('https://int-brain-lab.github.io/iblrig/usage.html')
 
 
 def main():
