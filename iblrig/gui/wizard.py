@@ -177,8 +177,13 @@ class RigWizard(QtWidgets.QMainWindow):
                 if self.model.session_folder.joinpath('.stop').exists():
                     self.model.session_folder.joinpath('.stop').unlink()
                 # runs the python command
-                cmd = [shutil.which('python'), str(self.model.all_tasks[self.model.task_name]),
-                       '--user', self.model.user, '--subject', self.model.subject]
+                cmd = [shutil.which('python')]
+                if self.model.task_name:
+                    cmd.extend([str(self.model.all_tasks[self.model.task_name])])
+                if self.model.user:
+                    cmd.extend(['--user', self.model.user])
+                if self.model.subject:
+                    cmd.extend(['--subject', self.model.subject])
                 if self.model.procedures:
                     cmd.extend(['--procedures', *self.model.procedures])
                 if self.model.projects:
