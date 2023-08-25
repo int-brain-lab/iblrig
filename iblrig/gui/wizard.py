@@ -189,7 +189,7 @@ class RigWizard(QtWidgets.QMainWindow):
         match self.uiPushStart.text():
             case 'Start':
                 self.controller2model()
-                task = EmptySession(subject=self.model.subject, append=self.uiCheckAppend.isChecked())
+                task = EmptySession(subject=self.model.subject, append=self.uiCheckAppend.isChecked(), wizard=True)
                 self.model.session_folder = task.paths['SESSION_FOLDER']
                 if self.model.session_folder.joinpath('.stop').exists():
                     self.model.session_folder.joinpath('.stop').unlink()
