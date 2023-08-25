@@ -142,7 +142,7 @@ class RigWizard(QtWidgets.QMainWindow):
         if update_available == 1:
             msgBox = QtWidgets.QMessageBox(parent=self)
             msgBox.setWindowTitle("Update Notice")
-            msgBox.setText(f"Update to version {remote_version} of IBLRIG is available.")
+            msgBox.setText(f"Update toiblrig {remote_version} is available.")
             msgBox.setInformativeText("Please update using 'git pull'.")
             msgBox.setStandardButtons(QtWidgets.QMessageBox.Ok)
             msgBox.setIcon(QtWidgets.QMessageBox().Information)

@@ -79,19 +79,18 @@ class BaseSession(ABC):
         if not wizard and not BaseSession.checked_for_update:
             BaseSession.checked_for_update = True
             update_status, remote_version = check_for_updates()
-            if update_status == 0:
-                print(f"Update to IBL Rig v{remote_version} is available! Please "
-                      f"update using 'git pull'.")
+            if update_status == True:
+                print(f"\nUpdate to iblrig {remote_version} is available! Please update using 'git pull'.\n")
 
                 while True:
-                    print("\n- To exit IBL Rig and perform the update right away: "
-                          "press [Enter]\n- To continue running without updating, "
-                          "enter 'I will update later'.")
-                    response = input('> ')
+                    print("- Press [Enter] to exit IBL Rig and perform the update right away.\n"
+                          "- Enter 'I will update later' to continue without updating.")
+                    response = input('Your response: ')
                     if response == '':
-                        print("Thanks for keeping IBL Rig up to date!")
+                        print("\nEnter 'git pull' - then restart iblrig. Thanks for keeping iblrig up to date!")
                         exit()
                     elif response == 'I will update later':
+                        print("\nPlease do so!")
                         break
 
         self.interactive = False if append else interactive
