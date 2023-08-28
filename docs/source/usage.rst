@@ -54,7 +54,7 @@ The Command Line Interface
 
 To use the command line interface, open a terminal and activate the
 environment:
-slack://channel?id=C05MDMWNPV1&team=T23CK8G6R
+
 .. code:: powershell
 
    cd C:\iblrigv8\
