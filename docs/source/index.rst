@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to iblrig's documentation!
-==================================
+IBLRIG documentation
+====================
 
 .. toctree::
    :maxdepth: 2
@@ -14,3 +14,4 @@ Welcome to iblrig's documentation!
    installation
    description_file
    developer_guide
+   faq
