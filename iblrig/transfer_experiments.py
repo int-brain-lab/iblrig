@@ -7,7 +7,6 @@ from iblutil.util import setup_logger
 from ibllib.io import session_params
 from ibllib.pipes.misc import rsync_paths
 
-
 log = setup_logger('iblrig', level='INFO')
 
 
@@ -220,7 +219,7 @@ class EphysCopier(SessionCopier):
         ibllib.pipes.misc.rename_ephys_files(self.session_path)
         ibllib.pipes.misc.move_ephys_files(self.session_path)
         # copy the wiring files from template
-        path_wiring = Path(deploy.ephyspc.__file__).parent.joinpath('wirings')
+        path_wiring = Path(iblrig.ephyspc.__file__).parent.joinpath('wirings')
         probe_model = '3A'
         for file_nidq_bin in self.session_path.joinpath('raw_ephys_data').glob('*.nidq.bin'):
             probe_model = '3B'

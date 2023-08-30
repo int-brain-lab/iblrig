@@ -134,7 +134,7 @@ See instructions for that here: https://int-brain-lab.github.io/iblenv/notebooks
     .. code-block:: python
 
         from one.api import ONE
-        one = ONE()
+        one = ONE(username='your_username', password='your_password', base_url='https://alyx.internationalbrainlab.org')
 
 
 .. exercise:: You can check that everything went fine by running the test suite:
