@@ -8,7 +8,6 @@ from serial.tools.list_ports import comports
 from serial.serialutil import SerialTimeoutException
 import logging
 from usb.core import find as find_device
-import matplotlib.pyplot as plt
 
 import numpy as np
 
@@ -60,7 +59,7 @@ class Frame2TTL(Serial):
                               f'the only known fix.') from e
             else:
                 raise e
-        if self.read() != bytes([218]):
+        if self.read()!=bytes([218]):
             raise IOError(f'Device on {self.portstr} is not a Frame2TTL')
 
         # get hardware version
@@ -94,13 +93,18 @@ class Frame2TTL(Serial):
 
         # self.streaming = False
         # self.reset_input_buffer()
-        return samples
+        print(n_samples)
+        return samples[0:n_samples]
 
-    def calibration(self, color1: tuple[int, int, int] = (0, 0, 0), color2: tuple[int, int, int] = None, screen: int = 0, size: int = 100):
+    def calibration(self,
+                    color: tuple[int, int, int] = (0, 0, 0),
+                    screen: int = 0,
+                    size: int = 100,
+                    n_samples: int = 2000) -> np.array:
         app = QApplication.instance()
-        if app is None:  # pragma: no cover
+        if app is None:
             app = QApplication([])
-        win = _Calibrator(frame2ttl=self, color1=color1, color2=color2, screen=screen, size=size)
+        win = _Calibrator(frame2ttl=self, color=color, screen=screen, size=size, n_samples=n_samples)
         app.exec_()
         return win.data
 
@@ -109,47 +113,34 @@ class _Calibrator(QDialog):
 
     def __init__(self,
                  frame2ttl: Frame2TTL,
-                 color1: tuple[int, int, int],
-                 color2: tuple[int, int, int],
+                 color: tuple[int, int, int],
                  screen: int,
                  size: int,
+                 n_samples: int,
                  *args,
-                 **kwargs):
-        self.data = np.array([])
+                 **kwargs) -> np.array:
         self.f2ttl = frame2ttl
-        self.state = 0
-        self.color1 = color1
-        self.color2 = color2
+        self.color = color
+        self.n_samples = n_samples
 
+        self.data: np.array = None
+        self.state = 0
+
+        # display frameless QDialog with given color
         super().__init__(*args, **kwargs)
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
         self.setFixedSize(size, size)
         x, y, w, h = QApplication.desktop().screenGeometry(screen).getRect()
         self.move(QPoint(x + w - size, y + h - size))
-        self.setStyleSheet(f"background: rgb{self.color1}")
+        self.setStyleSheet(f"background: rgb{self.color}")
         self.show()
 
-        self.timer = QtCore.QTimer(self)
-        self.timer.timeout.connect(self.switch)
-        self.timer.start(100)
+        # call measuring routine
+        QtCore.QTimer.singleShot(250, self._measure)
 
-    def switch(self):
-        self.timer.stop()
-
-        if self.state == 0:
-            self.f2ttl.flushInput()
-            self.f2ttl.streaming = True
-        elif self.state % 2 == 0:
-            self.data = np.append(self.data, self.f2ttl.sample(100))
-            self.setStyleSheet(f"background: rgb{self.color1}")
-        else:
-            self.data = np.append(self.data, self.f2ttl.sample(100))
-            self.setStyleSheet(f"background: rgb{self.color2}")
-        if self.state > 20:
-            self.f2ttl.streaming = False
-            self.close()
-            return
-
-        self.show()
-        self.state += 1
-        self.timer.start(100)
+    def _measure(self):
+        self.f2ttl.flushInput()
+        self.f2ttl.streaming = True
+        self.data = self.f2ttl.sample(n_samples=self.n_samples)
+        self.f2ttl.streaming = False
+        self.close()
