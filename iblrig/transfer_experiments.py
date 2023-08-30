@@ -2,11 +2,11 @@ from pathlib import Path
 import shutil
 import traceback
 
+import iblrig
 from iblutil.util import setup_logger
 from ibllib.io import session_params
 from ibllib.pipes.misc import rsync_paths
-import deploy.ephyspc
-import deploy.videopc
+
 
 log = setup_logger('iblrig', level='INFO')
 
@@ -189,7 +189,7 @@ class VideoCopier(SessionCopier):
 
     def initialize_experiment(self, acquisition_description=None, **kwargs):
         if not acquisition_description:
-            stub_file = Path(deploy.videopc.__file__).parent.joinpath('device_stubs', 'cameras_body_left_right.yaml')
+            stub_file = Path(iblrig.__file__).parent.joinpath('device_stubs', 'cameras_body_left_right.yaml')
             acquisition_description = session_params.read_params(stub_file)
         super(VideoCopier, self).initialize_experiment(acquisition_description=acquisition_description, **kwargs)
 
@@ -204,8 +204,8 @@ class EphysCopier(SessionCopier):
             match nprobes:
                 case 1: stub_name = 'neuropixel_single_probe.yaml'
                 case 2: stub_name = 'neuropixel_dual_probe.yaml'
-            stub_file = Path(deploy.ephyspc.__file__).parent.joinpath('device_stubs', stub_name)
-            sync_file = Path(deploy.ephyspc.__file__).parent.joinpath('device_stubs', 'sync_nidq_raw_ephys_data.yaml')
+            stub_file = Path(iblrig.__file__).parent.joinpath('device_stubs', stub_name)
+            sync_file = Path(iblrig.__file__).parent.joinpath('device_stubs', 'sync_nidq_raw_ephys_data.yaml')
             acquisition_description = session_params.read_params(stub_file)
             acquisition_description.update(session_params.read_params(sync_file))
         super(EphysCopier, self).initialize_experiment(acquisition_description=acquisition_description, **kwargs)
