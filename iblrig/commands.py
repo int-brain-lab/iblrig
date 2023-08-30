@@ -85,6 +85,8 @@ def transfer_data(local_subjects_path=None, remote_subjects_path=None, dry=False
             state = sc.finalize_copy(number_of_expected_devices=1)
         if sc.state == 3:
             logger.info(f"{state}, {sc.session_path}")
+    # once we copied the data, remove older session for which the data was successfully uploaded
+    remove_local_sessions(weeks=2, dry=dry)
 
 
 def remove_local_sessions(weeks=2, dry=False):
