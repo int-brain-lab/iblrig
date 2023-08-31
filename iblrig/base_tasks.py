@@ -722,6 +722,11 @@ class RotaryEncoderMixin:
         )
 
     def start_mixin_rotary_encoder(self):
+        if self.hardware_settings['device_rotary_encoder']['COM_ROTARY_ENCODER'] is None:
+            raise ValueError(
+                "The value for device_rotary_encoder:COM_ROTARY_ENCODER in "
+                "settings/hardware_settings.yaml is null. Please "
+                "provide a valid port name.")
         try:
             self.device_rotary_encoder.connect()
         except serial.serialutil.SerialException as e:

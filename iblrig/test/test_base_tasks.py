@@ -63,6 +63,8 @@ class TestHardwareMixins(unittest.TestCase):
             -2: 'RotaryEncoder1_3',
             2: 'RotaryEncoder1_4'
         }
+        with self.assertRaises(ValueError):
+            RotaryEncoderMixin.start_mixin_rotary_encoder(session)
 
     def test_frame2ttl_mixin(self):
         """
