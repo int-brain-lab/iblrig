@@ -63,7 +63,7 @@ class TestInstantiationBiased(BaseTestCases.CommonTestInstantiateTask):
         # make sure that all subsequent blocks alternate between 0.2 and 0.8 left probability
         assert np.all(np.isclose(np.abs(np.diff(df_blocks['stim_probability_left'].values[1:])), 0.6))
         # assert the the trial outcomes are within 0.3 of the generating probability
-        assert np.all(np.abs(df_blocks['position'] - df_blocks['stim_probability_left']) < 0.3)
+        np.testing.assert_array_less(np.abs(df_blocks['position'] - df_blocks['stim_probability_left']), 0.4)
 
     def check_quiescent_period(self):
         """

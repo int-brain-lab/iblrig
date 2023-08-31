@@ -188,7 +188,7 @@ class VideoCopier(SessionCopier):
 
     def initialize_experiment(self, acquisition_description=None, **kwargs):
         if not acquisition_description:
-            stub_file = Path(iblrig.__file__).parent.joinpath('device_stubs', 'cameras_body_left_right.yaml')
+            stub_file = Path(iblrig.__file__).parent.joinpath('device_descriptions', 'cameras', 'body_left_right.yaml')
             acquisition_description = session_params.read_params(stub_file)
         super(VideoCopier, self).initialize_experiment(acquisition_description=acquisition_description, **kwargs)
 
@@ -201,10 +201,10 @@ class EphysCopier(SessionCopier):
         if not acquisition_description:
             nprobes = nprobes or len(list(self.session_path.joinpath('raw_ephys_data').rglob('*.ap.bin')))
             match nprobes:
-                case 1: stub_name = 'neuropixel_single_probe.yaml'
-                case 2: stub_name = 'neuropixel_dual_probe.yaml'
-            stub_file = Path(iblrig.__file__).parent.joinpath('device_stubs', stub_name)
-            sync_file = Path(iblrig.__file__).parent.joinpath('device_stubs', 'sync_nidq_raw_ephys_data.yaml')
+                case 1: stub_name = 'single_probe.yaml'
+                case 2: stub_name = 'dual_probe.yaml'
+            stub_file = Path(iblrig.__file__).parent.joinpath('device_descriptions', 'neuropixel', stub_name)
+            sync_file = Path(iblrig.__file__).parent.joinpath('device_descriptions', 'sync', 'nidq.yaml')
             acquisition_description = session_params.read_params(stub_file)
             acquisition_description.update(session_params.read_params(sync_file))
         super(EphysCopier, self).initialize_experiment(acquisition_description=acquisition_description, **kwargs)
@@ -219,7 +219,7 @@ class EphysCopier(SessionCopier):
         ibllib.pipes.misc.rename_ephys_files(self.session_path)
         ibllib.pipes.misc.move_ephys_files(self.session_path)
         # copy the wiring files from template
-        path_wiring = Path(iblrig.ephyspc.__file__).parent.joinpath('wirings')
+        path_wiring = Path(iblrig.__file__).parent.joinpath('device_descriptions', 'neuropixel', 'wirings')
         probe_model = '3A'
         for file_nidq_bin in self.session_path.joinpath('raw_ephys_data').glob('*.nidq.bin'):
             probe_model = '3B'
