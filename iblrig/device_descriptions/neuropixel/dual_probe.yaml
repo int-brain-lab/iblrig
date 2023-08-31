@@ -1,0 +1,7 @@
+neuropixel:
+  probe00:
+      collection: raw_ephys_data/probe00
+      sync_label: imec_sync
+  probe01:
+      collection: raw_ephys_data/probe01
+      sync_label: imec_sync

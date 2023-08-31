@@ -86,10 +86,10 @@ def transfer_data(local_subjects_path=None, remote_subjects_path=None, dry=False
         if sc.state == 3:
             logger.info(f"{state}, {sc.session_path}")
     # once we copied the data, remove older session for which the data was successfully uploaded
-    remove_local_sessions(weeks=2, dry=dry)
+    remove_local_sessions(weeks=2, dry=dry, local_subjects_path=local_subjects_path, remote_subjects_path=remote_subjects_path)
 
 
-def remove_local_sessions(weeks=2, dry=False):
+def remove_local_sessions(weeks=2, local_subjects_path=None, remote_subjects_path=None, dry=False):
     """
     Remove local sessions older than 2 weeks
     :param weeks:
@@ -97,8 +97,8 @@ def remove_local_sessions(weeks=2, dry=False):
     :return:
     """
     iblrig_settings = load_settings_yaml()
-    local_subjects_path = Path(iblrig_settings['iblrig_local_data_path'])
-    remote_subjects_path = Path(iblrig_settings['iblrig_remote_data_path']).joinpath('Subjects')
+    local_subjects_path = local_subjects_path or Path(iblrig_settings['iblrig_local_data_path'])
+    remote_subjects_path = remote_subjects_path or Path(iblrig_settings['iblrig_remote_data_path']).joinpath('Subjects')
 
     size = 0
     for flag in sorted(list(local_subjects_path.rglob('_ibl_experiment.description_behavior.yaml')), reverse=True):
