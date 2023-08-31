@@ -648,8 +648,8 @@ class BpodMixin(object):
     def start_mixin_bpod(self):
         if self.hardware_settings['device_bpod']['COM_BPOD'] is None:
             raise ValueError("The value for device_bpod:COM_BPOD in "
-                              "settings/hardware_settings.yaml is null. Please "
-                              "provide a valid port name.")
+                             "settings/hardware_settings.yaml is null. Please "
+                             "provide a valid port name.")
         self.bpod = Bpod(self.hardware_settings['device_bpod']['COM_BPOD'])
         self.bpod.define_rotary_encoder_actions()
 
@@ -694,8 +694,8 @@ class Frame2TTLMixin:
         # todo release port on failure
         if self.hardware_settings['device_frame2ttl']['COM_F2TTL'] is None:
             raise ValueError("The value for device_frame2ttl:COM_F2TTL in "
-                              "settings/hardware_settings.yaml is null. Please "
-                              "provide a valid port name.")
+                             "settings/hardware_settings.yaml is null. Please "
+                             "provide a valid port name.")
         self.frame2ttl = frame2TTL.frame2ttl_factory(self.hardware_settings['device_frame2ttl']['COM_F2TTL'])
         try:
             self.frame2ttl.set_thresholds(

@@ -64,7 +64,6 @@ class TestHardwareMixins(unittest.TestCase):
             2: 'RotaryEncoder1_4'
         }
 
-
     def test_frame2ttl_mixin(self):
         """
         Instantiates a bare session with the frame2ttl mixin
