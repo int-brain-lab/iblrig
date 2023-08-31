@@ -54,7 +54,7 @@ jobs:
         shell: bash -l {0}
         run: |
           pwd
-          python -m unittest discover ./iblrig/iblrig/test
+          python -m unittest discover ../iblrig/test
 
       - name: Generate requirements_frozen.txt
         run: pip freeze > requirements_frozen.txt
