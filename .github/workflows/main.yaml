@@ -53,8 +53,10 @@ jobs:
       - name: iblrig unit tests
         shell: bash -l {0}
         run: |
-          cd ..
-          python -m unittest discover ./iblrig/iblrig/iblrig/test
+          cd ./iblrig/iblrig/test
+          pwd
+          python -c "import iblrig; print(iblrig.__file__)"
+          python -m unittest discover
 
       - name: Generate requirements_frozen.txt
         run: pip freeze > requirements_frozen.txt
