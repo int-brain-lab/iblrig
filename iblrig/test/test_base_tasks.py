@@ -13,7 +13,8 @@ import yaml
 import ibllib.io.session_params as ses_params
 
 from iblrig.test.base import TASK_KWARGS
-from iblrig.base_tasks import SoundMixin, RotaryEncoderMixin, BaseSession, BpodMixin, ValveMixin
+from iblrig.base_tasks import (SoundMixin, RotaryEncoderMixin, BaseSession, BpodMixin,
+                               ValveMixin, Frame2TTLMixin)
 from iblrig.base_choice_world import BiasedChoiceWorldSession
 from ibllib.io.session_params import read_params
 from iblrig.misc import _get_task_argument_parser, _post_parse_arguments
@@ -63,6 +64,16 @@ class TestHardwareMixins(unittest.TestCase):
             2: 'RotaryEncoder1_4'
         }
 
+
+    def test_frame2ttl_mixin(self):
+        """
+        Instantiates a bare session with the frame2ttl mixin
+        """
+        session = self.session
+        Frame2TTLMixin.init_mixin_frame2ttl(session)
+        with self.assertRaises(ValueError):
+            Frame2TTLMixin.start_mixin_frame2ttl(session)
+
     def test_sound_card_mixin(self):
         """
         Instantiates a bare session with the sound card mixin
@@ -75,6 +86,8 @@ class TestHardwareMixins(unittest.TestCase):
         session = self.session
         BpodMixin.init_mixin_bpod(session)
         assert hasattr(session, 'bpod')
+        with self.assertRaises(ValueError):
+            BpodMixin.start_mixin_bpod(session)
 
     def test_valve_mixin(self):
         session = self.session
