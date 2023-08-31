@@ -53,10 +53,6 @@ jobs:
       - name: iblrig unit tests
         shell: bash -l {0}
         run: |
-          pwd
-          cd ..
-          pwd
-          echo "Hi Olivier!"
           python -m unittest discover ./iblrig/test
 
       - name: Generate requirements_frozen.txt
