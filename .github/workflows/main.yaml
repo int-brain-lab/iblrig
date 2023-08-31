@@ -51,11 +51,7 @@ jobs:
       - name: iblrig unit tests
         shell: bash -l {0}
         run: |
-          cd iblrig
-          cd test
-          python -m unittest discover
-          cd test_tasks
-          python -m unittest discover
+          python -m unittest discover ./iblrig/test
 
       - name: Generate requirements_frozen.txt
         run: pip freeze > requirements_frozen.txt
