@@ -1,0 +1,4 @@
+sync:
+  bpod:
+    collection: raw_behavior_data
+    extension: bins
