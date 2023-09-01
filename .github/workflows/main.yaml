@@ -55,17 +55,22 @@ jobs:
           cd Bonsai
           powershell.exe .\install.ps1
 
-      - name: Create config files (ubuntu-latest)
+      - name: Create config files (Ubuntu)
         if: matrix.os == 'ubuntu-latest'
         run: |
           cp settings/hardware_settings_template.yaml settings/hardware_settings.yaml
           cp settings/iblrig_settings_template.yaml settings/iblrig_settings.yaml
 
-      - name: Create config files (windows-latest)
+      - name: Create config files (Windows)
         if: matrix.os == 'windows-latest'
         run: |
           copy settings\hardware_settings_template.yaml settings\hardware_settings.yaml
           copy settings\iblrig_settings_template.yaml settings\iblrig_settings.yaml
+
+      - name: Activate virtualenv
+        run: |
+          . venv/bin/activate
+          echo PATH=$PATH >> $GITHUB_ENV
 
       - name: iblrig unit tests
         shell: bash -l {0}
