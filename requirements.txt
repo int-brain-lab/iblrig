@@ -5,7 +5,7 @@ git+https://github.com/int-brain-lab/ibllib.git@iblrigv8
 ipython
 git+https://github.com/int-brain-lab/iblpybpod.git@no-gui
 git+https://github.com/int-brain-lab/iblscripts.git@iblrigv8
-git+https://github.com/int-brain-lab/project_extraction.git
+project_extraction @ git+https://github.com/int-brain-lab/project_extraction.git
 numpy
 ONE-api
 packaging

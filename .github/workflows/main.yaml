@@ -27,13 +27,13 @@ jobs:
 
       - name: flake8
         run: |
+          pip install --upgrade pip
           pip install flake8 --quiet
           python -m flake8
 
       - name: iblrig and iblpybpod requirements
         shell: bash -l {0}
         run: |
-          pip install --upgrade pip
           pip install --editable iblrig
           pip install -r requirements.txt
           cd ..
