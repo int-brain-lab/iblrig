@@ -43,7 +43,6 @@ jobs:
           git clone https://github.com/int-brain-lab/project_extraction.git
           cd project_extraction
           pip install -e .
-          cd iblrig
 
       - name: Install audio library (Ubuntu only)
         if: matrix.os == 'ubuntu-latest'
