@@ -67,14 +67,10 @@ jobs:
           copy settings\hardware_settings_template.yaml settings\hardware_settings.yaml
           copy settings\iblrig_settings_template.yaml settings\iblrig_settings.yaml
 
-      - name: Activate virtualenv
-        run: |
-          . venv/bin/activate
-          echo PATH=$PATH >> $GITHUB_ENV
-
       - name: iblrig unit tests
         shell: bash -l {0}
         run: |
+          source venv/bin/activate
           python -m unittest discover -s ./iblrig/test -t .
 
       - name: Generate requirements_frozen.txt
