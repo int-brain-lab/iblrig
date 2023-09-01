@@ -9,13 +9,7 @@ from one.api import ONE
 
 import scripts.transfer_rig_data as transfer_rig_data
 from scripts.ibllib.purge_rig_data import purge_local_data, session_name
-
-OPENALYX_PARAMETERS = {
-    "base_url": "https://test.alyx.internationalbrainlab.org",
-    "username": "intbrainlab",
-    "password": "international",
-    "silent": True
-}
+from ibllib.tests import TEST_DB
 
 
 class TestScripts(unittest.TestCase):
@@ -29,7 +23,7 @@ class TestScripts(unittest.TestCase):
         local_data = root.joinpath('iblrig_data', 'Subjects')
         local_data.mkdir(parents=True)
         # Need to add a username/password to the ONE call for the test to function
-        one = ONE(**OPENALYX_PARAMETERS)
+        one = ONE(**TEST_DB)
         # Find a session with at least 5 or so datasets and touch those files
         sessions = one.search(lab='cortex')
         session = next(x for x in sessions if len(one.list_datasets(x, collection='raw*')) > 5)
