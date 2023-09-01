@@ -68,7 +68,7 @@ Install iblrigv8
         pip install -r requirements.txt
 
 
-4.  Install additional tasks and extractors
+4.  Install additional tasks and extractors for personal projects (optional)
 
     .. code-block:: powershell
 
