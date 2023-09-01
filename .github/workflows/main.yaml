@@ -37,7 +37,9 @@ jobs:
           pip install --editable iblrig
           pip install -r requirements.txt
           cd ..
-          pip install --editable git+https://github.com/int-brain-lab/project_extraction.git#egg=project_extraction
+          git clone https://github.com/int-brain-lab/project_extraction.git
+          cd project_extraction
+          pip install -e .
 
       - name: Install audio library (Ubuntu only)
         if: matrix.os == 'ubuntu-latest'
