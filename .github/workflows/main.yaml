@@ -34,15 +34,10 @@ jobs:
         shell: bash -l {0}
         run: |
           pip install --editable iblrig
+          pip install --editable project_extraction
           pip install -r requirements.txt
-
-      - name: install project_extraction
-        shell: bash -l {0}
-        run: |
-          cd ..
-          git clone https://github.com/int-brain-lab/project_extraction.git
-          cd project_extraction
-          pip install -e .
+          pwd
+          ls -la
 
       - name: Install audio library (Ubuntu only)
         if: matrix.os == 'ubuntu-latest'
