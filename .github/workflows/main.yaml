@@ -17,8 +17,6 @@ jobs:
     steps:
       - name: Checkout iblrig repo
         uses: actions/checkout@v3
-        with:
-          path: iblrig
 
       - name: Setup Python
         uses: actions/setup-python@v4
@@ -30,14 +28,13 @@ jobs:
       - name: flake8
         run: |
           pip install flake8 --quiet
-          cd iblrig
           python -m flake8
 
       - name: iblrig and iblpybpod requirements
         shell: bash -l {0}
         run: |
           pip install --editable iblrig
-          pip install -r iblrig/requirements.txt
+          pip install -r requirements.txt
 
       - name: Install audio library (Ubuntu only)
         if: matrix.os == 'ubuntu-latest'
@@ -47,16 +44,13 @@ jobs:
         if: matrix.os == 'windows-latest'
         shell: pwsh -l {0}
         run: |
-          cd iblrig\Bonsai
+          cd Bonsai
           powershell.exe .\install.ps1
 
       - name: iblrig unit tests
         shell: bash -l {0}
         run: |
-          cd ./iblrig/iblrig/test
-          pwd
-          python -c "import iblrig; print(iblrig.__file__)"
-          python -m unittest discover
+          python -m unittest discover -s ./iblrig/test
 
       - name: Generate requirements_frozen.txt
         run: pip freeze > requirements_frozen.txt
