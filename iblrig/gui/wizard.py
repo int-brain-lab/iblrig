@@ -10,6 +10,7 @@ import traceback
 import webbrowser
 
 from PyQt5 import QtWidgets, QtCore, uic
+from PyQt5.QtWidgets import QStyle
 
 from one.api import ONE
 import iblrig_tasks
@@ -130,9 +131,19 @@ class RigWizard(QtWidgets.QMainWindow):
         self.uiPushHelp.clicked.connect(self.help)
         self.uiPushFlush.clicked.connect(self.flush)
         self.uiPushStart.clicked.connect(self.startstop)
+        self.uiPushPause.clicked.connect(self.pause)
         self.uiPushConnect.clicked.connect(self.alyx_connect)
         self.lineEditSubject.textChanged.connect(self._filter_subjects)
         self.running_task_process = None
+
+        pixmapi = QStyle.SP_MediaPlay
+        self.uiPushStart.setIcon(self.style().standardIcon(pixmapi))
+        pixmapi = QStyle.SP_MediaPause
+        self.uiPushPause.setIcon(self.style().standardIcon(pixmapi))
+        pixmapi = QStyle.SP_BrowserReload
+        self.uiPushFlush.setIcon(self.style().standardIcon(pixmapi))
+        pixmapi = QStyle.SP_DialogHelpButton
+        self.uiPushHelp.setIcon(self.style().standardIcon(pixmapi))
 
     def model2view(self):
         # stores the current values in the model
@@ -168,6 +179,17 @@ class RigWizard(QtWidgets.QMainWindow):
             result = [self.model.test_subject_name]
         self.uiComboSubject.setModel(QtCore.QStringListModel(result))
 
+    def pause(self):
+        match self.uiPushPause.isChecked():
+            case True:
+                print('Pausing after current trial ...')
+                if self.model.session_folder.exists():
+                    self.model.session_folder.joinpath('.pause').touch()
+            case False:
+                print('Resuming ...')
+                if self.model.session_folder.joinpath('.pause').exists():
+                    self.model.session_folder.joinpath('.pause').unlink()
+
     def startstop(self):
         match self.uiPushStart.text():
             case 'Start':
@@ -193,7 +215,10 @@ class RigWizard(QtWidgets.QMainWindow):
                 if self.running_task_process is None:
                     self.running_task_process = subprocess.Popen(cmd)
                 self.uiPushStart.setText('Stop')
+                pixmapi = QStyle.SP_MediaStop
+                self.uiPushStart.setIcon(self.style().standardIcon(pixmapi))
                 self.uiPushFlush.setEnabled(False)
+                self.uiPushPause.setEnabled(True)
             case 'Stop':
                 # if the process crashed catastrophically, the session folder might not exist
                 if self.model.session_folder.exists():
@@ -202,7 +227,10 @@ class RigWizard(QtWidgets.QMainWindow):
                 self.running_task_process.communicate()
                 self.running_task_process = None
                 self.uiPushStart.setText('Start')
+                pixmapi = QStyle.SP_MediaPlay
+                self.uiPushStart.setIcon(self.style().standardIcon(pixmapi))
                 self.uiPushFlush.setEnabled(True)
+                self.uiPushPause.setEnabled(False)
 
     def flush(self):
         try:
