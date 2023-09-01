@@ -11,7 +11,7 @@ import scripts.transfer_rig_data as transfer_rig_data
 from scripts.ibllib.purge_rig_data import purge_local_data, session_name
 
 OPENALYX_PARAMETERS = {
-    "base_url": "https://openalyx.internationalbrainlab.org",
+    "base_url": "https://test.alyx.internationalbrainlab.org",
     "username": "intbrainlab",
     "password": "international",
     "silent": True
