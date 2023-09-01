@@ -70,7 +70,6 @@ jobs:
       - name: iblrig unit tests
         shell: bash -l {0}
         run: |
-          source venv/bin/activate
           python -m unittest discover -s ./iblrig/test -t .
 
       - name: Generate requirements_frozen.txt
