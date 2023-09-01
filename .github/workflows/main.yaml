@@ -33,11 +33,11 @@ jobs:
       - name: iblrig and iblpybpod requirements
         shell: bash -l {0}
         run: |
+          pip install --upgrade pip
           pip install --editable iblrig
-          pip install --editable project_extraction
           pip install -r requirements.txt
-          pwd
-          ls -la
+          cd ..
+          pip install --editable project_extraction
 
       - name: Install audio library (Ubuntu only)
         if: matrix.os == 'ubuntu-latest'
