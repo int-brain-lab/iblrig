@@ -36,6 +36,7 @@ jobs:
         run: |
           pip install --editable iblrig
           pip install -r requirements.txt
+          cd ..
           git clone https://github.com/int-brain-lab/project_extraction.git
           cd project_extraction
           pip install -e .
