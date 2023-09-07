@@ -685,10 +685,12 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
             try:
                 training_phase = get_training_phase(self.session_info.SUBJECT_NAME)
                 self.logger.warning(f"Got training phase: {training_phase}")
-            except Exception:
+            except Exception as ex:
+                self.logger.debug('Failed to get training phase: %s', ex)
                 if self.interactive:
                     training_phase = iblrig.graphic.numinput(
-                        "Subject training phase", "Subject trainig phase : (0-5)", nullable=False)
+                        "Subject training phase", "Subject training phase: (0-5)",
+                        askint=True, nullable=False, default=0, minval=0, maxval=5)
                 else:
                     self.logger.warning(f"Could not get training phase from Alyx: {traceback.format_exc()}, please set it"
                                         f"manually in ./iblrig_tasks/_iblrig_tasks_trainingChoiceWorld/task.py"
