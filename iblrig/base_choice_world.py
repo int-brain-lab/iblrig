@@ -126,6 +126,8 @@ class ChoiceWorldSession(
             time_last_trial_end = time.time()
             self.trial_completed(self.bpod.session.current_trial.export())
             self.show_trial_log()
+            while self.paths.SESSION_FOLDER.joinpath('.pause').exists():
+                time.sleep(1)
             if self.paths.SESSION_FOLDER.joinpath('.stop').exists():
                 self.paths.SESSION_FOLDER.joinpath('.stop').unlink()
                 break
