@@ -18,6 +18,7 @@ import iblrig_custom_tasks
 import iblrig.path_helper
 from iblrig.base_tasks import BaseSession
 from iblrig.hardware import Bpod
+from iblrig.version_management import check_for_updates
 from pybpodapi import exceptions
 
 PROCEDURES = [
@@ -135,6 +136,22 @@ class RigWizard(QtWidgets.QMainWindow):
         self.uiPushConnect.clicked.connect(self.alyx_connect)
         self.lineEditSubject.textChanged.connect(self._filter_subjects)
         self.running_task_process = None
+        self.setDisabled(True)
+        QtCore.QTimer.singleShot(100, self.check_for_update)
+
+    def check_for_update(self):
+        update_available, remote_version = check_for_updates()
+        if update_available == 1:
+            msgBox = QtWidgets.QMessageBox(parent=self)
+            msgBox.setWindowTitle("Update Notice")
+            msgBox.setText(f"Update toiblrig {remote_version} is available.")
+            msgBox.setInformativeText("Please update using 'git pull'.")
+            msgBox.setStandardButtons(QtWidgets.QMessageBox.Ok)
+            msgBox.setIcon(QtWidgets.QMessageBox().Information)
+            msgBox.findChild(QtWidgets.QPushButton).setText('Yes, I promise!')
+            msgBox.exec_()
+        self.setDisabled(False)
+        self.update()
 
         pixmapi = QStyle.SP_MediaPlay
         self.uiPushStart.setIcon(self.style().standardIcon(pixmapi))
@@ -194,7 +211,7 @@ class RigWizard(QtWidgets.QMainWindow):
         match self.uiPushStart.text():
             case 'Start':
                 self.controller2model()
-                task = EmptySession(subject=self.model.subject, append=self.uiCheckAppend.isChecked())
+                task = EmptySession(subject=self.model.subject, append=self.uiCheckAppend.isChecked(), wizard=True)
                 self.model.session_folder = task.paths['SESSION_FOLDER']
                 if self.model.session_folder.joinpath('.stop').exists():
                     self.model.session_folder.joinpath('.stop').unlink()
@@ -212,6 +229,7 @@ class RigWizard(QtWidgets.QMainWindow):
                     cmd.extend(['--projects', *self.model.projects])
                 if self.uiCheckAppend.isChecked():
                     cmd.append('--append')
+                cmd.append('--wizard')
                 if self.running_task_process is None:
                     self.running_task_process = subprocess.Popen(cmd)
                 self.uiPushStart.setText('Stop')
