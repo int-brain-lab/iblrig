@@ -17,25 +17,25 @@ jobs:
     steps:
       - name: Checkout iblrig repo
         uses: actions/checkout@v3
-        with:
-          path: iblrig
 
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+          cache-dependency-path: '**/requirements*.txt'
 
       - name: flake8
         run: |
+          pip install --upgrade pip
           pip install flake8 --quiet
-          cd iblrig
           python -m flake8
 
       - name: iblrig and iblpybpod requirements
         shell: bash -l {0}
         run: |
           pip install --editable iblrig
-          pip install -r iblrig/requirements.txt
+          pip install -r requirements.txt
 
       - name: Install audio library (Ubuntu only)
         if: matrix.os == 'ubuntu-latest'
@@ -45,17 +45,25 @@ jobs:
         if: matrix.os == 'windows-latest'
         shell: pwsh -l {0}
         run: |
-          cd iblrig\Bonsai
+          cd Bonsai
           powershell.exe .\install.ps1
+
+      - name: Create config files (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          cp settings/hardware_settings_template.yaml settings/hardware_settings.yaml
+          cp settings/iblrig_settings_template.yaml settings/iblrig_settings.yaml
+
+      - name: Create config files (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          copy settings\hardware_settings_template.yaml settings\hardware_settings.yaml
+          copy settings\iblrig_settings_template.yaml settings\iblrig_settings.yaml
 
       - name: iblrig unit tests
         shell: bash -l {0}
         run: |
-          cd iblrig
-          cd test
-          python -m unittest discover
-          cd test_tasks
-          python -m unittest discover
+          python -m unittest discover -s ./iblrig/test -t .
 
       - name: Generate requirements_frozen.txt
         run: pip freeze > requirements_frozen.txt
