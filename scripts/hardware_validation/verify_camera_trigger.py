@@ -19,7 +19,7 @@ def softcode_handler(self, data):
 
 file_settings = Path(iblrig.__file__).parents[1].joinpath('settings', 'hardware_settings.yaml')
 hardware_settings = iblrig.path_helper.load_settings_yaml(file_settings)
-bpod = Bpod(hardware_settings['device_bpod']['COM_BPOD'],disable_behavior_ports=[1, 2, 3])
+bpod = Bpod(hardware_settings['device_bpod']['COM_BPOD'], disable_behavior_ports=[1, 2, 3])
 bpod.softcode_handler_function = types.MethodType(softcode_handler, bpod)
 
 sma = StateMachine(bpod)
