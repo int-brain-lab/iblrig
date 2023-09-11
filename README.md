@@ -1,6 +1,10 @@
 # iblrig v7
 Software used to interact with various pieces of specialized hardware for neuroscience data acquisition.
 
+> [!WARNING]  
+> We are in the process of moving our rigs to [iblrig v8](https://int-brain-lab.github.io/iblrig/).  
+> Support for iblrig v7 is being phased out as of mid-2023.
+
 ## Usage instructions
 
 ### Launch a task
