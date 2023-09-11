@@ -261,9 +261,11 @@ class RigWizard(QtWidgets.QMainWindow):
             return
 
         if self.uiPushFlush.isChecked():
+            self.uiPushFlush.setStyleSheet('QPushButton {background-color: rgb(128, 128, 255);}')
             self.uiPushStart.setEnabled(False)
         else:
             bpod.close()
+            self.uiPushFlush.setStyleSheet('')
             self.uiPushStart.setEnabled(True)
 
     def help(self):
