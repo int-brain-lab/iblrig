@@ -79,7 +79,7 @@ class BaseSession(ABC):
         if not wizard and not BaseSession.checked_for_update:
             BaseSession.checked_for_update = True
             update_status, remote_version = check_for_updates()
-            if update_status == True:
+            if update_status is True:
                 print(f"\nUpdate to iblrig {remote_version} is available! Please update using 'git pull'.\n")
 
                 while True:

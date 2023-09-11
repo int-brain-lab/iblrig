@@ -8,6 +8,7 @@ from iblutil.util import setup_logger
 
 log = setup_logger('iblrig')
 
+
 def check_for_updates():
     log.info('Checking for updates ...')
 
@@ -27,7 +28,7 @@ def check_for_updates():
                                           cwd=dir_base)
         version_remote_str = sub(r'[^\d\.]', '', version_remote_str.decode())
     except (SubprocessError, FileNotFoundError):
-        log.debug(f'Could not fetch remote tags')
+        log.debug('Could not fetch remote tags')
         return -1, ''
 
     # parse version information
@@ -35,11 +36,11 @@ def check_for_updates():
         version_local = version.parse(iblrig.__version__)
         version_remote = version.parse(version_remote_str)
     except version.InvalidVersion:
-        log.debug(f'Invalid version string')
+        log.debug('Invalid version string')
         return -1, ''
 
     if version_remote > version_local:
         log.info(f'Update to iblrig {version_remote_str} found.')
     else:
-        log.info(f'No update found.')
+        log.info('No update found.')
     return version_remote > version_local, version_remote_str
