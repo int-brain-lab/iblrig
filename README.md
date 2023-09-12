@@ -19,7 +19,7 @@ python -m unittest discover ./iblrig/test
 ### Build the documentation
 ```shell
 # make sure pre-requisites are installed
-pip install -r requirements-dev.txt
+pip install --upgrade -e .[DEV]
 # create the static directory
 rm -rf ./docs/build
 mkdir -p ./docs/build/html/_static
