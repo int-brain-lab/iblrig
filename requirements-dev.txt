@@ -1,7 +1,0 @@
-coverage
-myst-parser
-pylint
-sphinx
-sphinx-autobuild
-sphinx_lesson
-sphinx_rtd_theme

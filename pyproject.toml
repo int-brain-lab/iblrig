@@ -1,0 +1,61 @@
+[build-system]
+requires = [
+    "setuptools>=64",
+    "wheel"
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "iblrig"
+description = "IBL Rig (v8 branch)"
+dynamic = ["version", "readme"]
+keywords = ["IBL", "neuro-science"]
+requires-python = "~=3.10"
+license = {file = "LICENSE"}
+dependencies = [
+    "colorlog",
+    "cython",
+    "graphviz",
+    "ibllib@git+https://github.com/int-brain-lab/ibllib.git@iblrigv8",
+    "ipython",
+    "iblpybpod@git+https://github.com/int-brain-lab/iblpybpod.git@no-gui",
+    "iblscripts@git+https://github.com/int-brain-lab/iblscripts.git@iblrigv8",
+    "project_extraction@git+https://github.com/int-brain-lab/project_extraction.git",
+    "numpy",
+    "ONE-api",
+    "packaging",
+    "pandas",
+    "pyOpenSSL",
+    "python-dateutil",
+    "python-osc",
+    "pywin32; sys_platform == 'win32'",
+    "PySocks",
+    "PyYAML",
+    "scipy",
+    "sounddevice",
+]
+
+[project.optional-dependencies]
+DEV = [
+    "coverage",
+    "myst-parser",
+    "pylint",
+    "sphinx",
+    "sphinx-autobuild",
+    "sphinx_lesson",
+    "sphinx_rtd_theme",
+]
+
+[project.scripts]
+viewsession = "iblrig.commands:viewsession"
+transfer_data = "iblrig.commands:transfer_data"
+flush = "iblrig.commands:flush"
+remove-old-sessions = "iblrig.commands:remove_local_sessions"
+iblrig = "iblrig.gui.wizard:main"
+
+[tool.setuptools.dynamic]
+version = {attr = "iblrig.__version__"}
+readme = {file = "README.md", content-type = "text/markdown"}
+
+[tool.setuptools.packages]
+find = {}
