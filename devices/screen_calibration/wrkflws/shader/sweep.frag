@@ -10,6 +10,6 @@ uniform float Red = 0.0;
 uniform float Green = 0.0;
 uniform float Blue = 0.0;
 
-void main(){ 
+void main(){
   fragColor = vec4(vec3(Red, Green, Blue), 1.);
 }

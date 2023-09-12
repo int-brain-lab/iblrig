@@ -44,6 +44,7 @@ DEV = [
     "sphinx-autobuild",
     "sphinx_lesson",
     "sphinx_rtd_theme",
+    "pre-commit"
 ]
 
 [project.scripts]

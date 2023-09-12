@@ -50,7 +50,7 @@ public class SparseNoiseGenerator
                         {
                             // sample when the next poisson event will happen for each square using rate
                             nextUpdate[i] = Exponential.Sample(random, Rate);
-                        }                        
+                        }
                     }
 
                     // check each visual angle quad for state and update
