@@ -105,11 +105,11 @@ class TestUnitTransferExperiments(unittest.TestCase):
                 'iblrig_local_data_path': Path(td).joinpath('behavior'),
                 'iblrig_remote_data_path': Path(td).joinpath('remote'),
             }
-            hardware_settings = {
+            TASK_KWARGS['hardware_settings'].update({
                 'device_cameras': None,
                 'MAIN_SYNC': False,  # this is quite important for ephys sessions
-            }
-            session = Session(iblrig_settings=iblrig_settings, hardware_settings=hardware_settings, **TASK_KWARGS)
+            })
+            session = Session(iblrig_settings=iblrig_settings, **TASK_KWARGS)
             session.create_session()
             # SESSION_RAW_DATA_FOLDER is the one that gets copied
             folder_session_video = Path(td).joinpath('video', 'Subjects', *session.paths.SESSION_FOLDER.parts[-3:])

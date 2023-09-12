@@ -158,15 +158,14 @@ class TestPathCreation(unittest.TestCase):
 
     def test_create_chained_protocols(self):
         # creates a first task
+        TASK_KWARGS['hardware_settings']['MAIN_SYNC'] = False
         first_task = EmptyHardwareSession(
             iblrig_settings={'iblrig_remote_data_path': False},
-            hardware_settings={'MAIN_SYNC': False},
             **TASK_KWARGS)
         first_task.create_session()
         # append a new protocol the the current task
         second_task = EmptyHardwareSession(
             append=True,
-            hardware_settings={'MAIN_SYNC': False},
             iblrig_settings={'iblrig_remote_data_path': False},
             **TASK_KWARGS)
         # unless the task has reached the create session stage, there is only one protocol in there

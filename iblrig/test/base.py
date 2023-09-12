@@ -22,6 +22,7 @@ TASK_KWARGS = {
     'interactive': False,
     'projects': ['ibl_neuropixel_brainwide_01', 'ibl_mainenlab'],
     'procedures': ['Behavior training/tasks', 'Imaging'],
+    'hardware_settings': dict(RIG_NAME='_iblrig_cortexlab_behavior_3'),
 }
 
 
@@ -83,7 +84,7 @@ class IntegrationFullRuns(BaseTestCases.CommonTestTask):
         """
         cls.one = ONE(**TEST_DB, mode='remote')
         cls.kwargs = TASK_KWARGS
-        cls.kwargs['subject'] = 'iblrig_unit_test_' + ''.join(random.choices(string.ascii_letters, k=8))
+        cls.kwargs.update({'subject': 'iblrig_unit_test_' + ''.join(random.choices(string.ascii_letters, k=8))})
         cls.one.alyx.rest('subjects', 'create', data=dict(nickname=cls.kwargs['subject'], lab='cortexlab'))
 
     @classmethod
