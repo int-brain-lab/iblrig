@@ -1,3 +1,4 @@
+import copy
 from pathlib import Path
 import random
 import tempfile
@@ -105,11 +106,13 @@ class TestUnitTransferExperiments(unittest.TestCase):
                 'iblrig_local_data_path': Path(td).joinpath('behavior'),
                 'iblrig_remote_data_path': Path(td).joinpath('remote'),
             }
-            TASK_KWARGS['hardware_settings'].update({
+
+            task_kwargs = copy.deepcopy(TASK_KWARGS)
+            task_kwargs['hardware_settings'].update({
                 'device_cameras': None,
                 'MAIN_SYNC': False,  # this is quite important for ephys sessions
             })
-            session = Session(iblrig_settings=iblrig_settings, **TASK_KWARGS)
+            session = Session(iblrig_settings=iblrig_settings, **task_kwargs)
             session.create_session()
             # SESSION_RAW_DATA_FOLDER is the one that gets copied
             folder_session_video = Path(td).joinpath('video', 'Subjects', *session.paths.SESSION_FOLDER.parts[-3:])
