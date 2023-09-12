@@ -85,7 +85,7 @@ class RigWizardModel:
                 self.iblrig_settings['iblrig_local_data_path']).joinpath(
                 self.iblrig_settings['ALYX_LAB'], 'Subjects')
             self.all_subjects = [self.test_subject_name] + sorted(
-                [f.name for f in folder_subjects.glob('*') if f.is_dir()])
+                [f.name for f in folder_subjects.glob('*') if f.is_dir() and f.name != self.test_subject_name])
         file_settings = Path(iblrig.__file__).parents[1].joinpath('settings',
                                                                   'hardware_settings.yaml')
         self.hardware_settings = yaml.safe_load(file_settings.read_text())
