@@ -24,10 +24,10 @@
        </size>
       </property>
       <property name="frameShape">
-       <enum>QFrame::StyledPanel</enum>
+       <enum>QFrame::NoFrame</enum>
       </property>
       <property name="frameShadow">
-       <enum>QFrame::Raised</enum>
+       <enum>QFrame::Plain</enum>
       </property>
       <layout class="QGridLayout" name="gridLayout_4">
        <item row="1" column="2">
@@ -107,6 +107,15 @@
                </colorrole>
               </disabled>
              </palette>
+            </property>
+            <property name="cursor" stdset="0">
+             <cursorShape>PointingHandCursor</cursorShape>
+            </property>
+            <property name="focusPolicy">
+             <enum>Qt::TabFocus</enum>
+            </property>
+            <property name="editTriggers">
+             <set>QAbstractItemView::NoEditTriggers</set>
             </property>
             <property name="selectionMode">
              <enum>QAbstractItemView::MultiSelection</enum>
@@ -199,6 +208,15 @@
                </colorrole>
               </disabled>
              </palette>
+            </property>
+            <property name="cursor" stdset="0">
+             <cursorShape>PointingHandCursor</cursorShape>
+            </property>
+            <property name="focusPolicy">
+             <enum>Qt::TabFocus</enum>
+            </property>
+            <property name="editTriggers">
+             <set>QAbstractItemView::NoEditTriggers</set>
             </property>
             <property name="selectionMode">
              <enum>QAbstractItemView::MultiSelection</enum>
@@ -485,38 +503,14 @@
     </item>
    </layout>
   </widget>
-  <widget class="QMenuBar" name="menubar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>698</width>
-     <height>21</height>
-    </rect>
+  <widget class="QStatusBar" name="statusbar">
+   <property name="enabled">
+    <bool>true</bool>
    </property>
-   <widget class="QMenu" name="uiMenuFile">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="title">
-     <string>File</string>
-    </property>
-    <widget class="QMenu" name="uiMenuTemplates">
-     <property name="title">
-      <string>templates</string>
-     </property>
-     <addaction name="uiActionTrainingTemplate"/>
-     <addaction name="uiActionEphysTemplate"/>
-    </widget>
-    <addaction name="uiActionLoadSession"/>
-    <addaction name="separator"/>
-    <addaction name="uiActionRecent"/>
-    <addaction name="separator"/>
-    <addaction name="uiMenuTemplates"/>
-   </widget>
-   <addaction name="uiMenuFile"/>
+   <property name="toolTip">
+    <string/>
+   </property>
   </widget>
-  <widget class="QStatusBar" name="statusbar"/>
   <action name="uiActionLoadSession">
    <property name="text">
     <string>load session</string>

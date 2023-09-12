@@ -137,7 +137,18 @@ class RigWizard(QtWidgets.QMainWindow):
         self.lineEditSubject.textChanged.connect(self._filter_subjects)
         self.running_task_process = None
         self.setDisabled(True)
-        QtCore.QTimer.singleShot(100, self.check_for_update)
+
+        self.uiPushStart.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))
+        self.uiPushPause.setIcon(self.style().standardIcon(QStyle.SP_MediaPause))
+        self.uiPushFlush.setIcon(self.style().standardIcon(QStyle.SP_BrowserReload))
+        self.uiPushHelp.setIcon(self.style().standardIcon(QStyle.SP_DialogHelpButton))
+
+        self.checkSubProcessTimer = QtCore.QTimer()
+        self.checkSubProcessTimer.timeout.connect(self.checkSubProcess)
+
+        self.statusbar.showMessage("Checking for updates ...")
+        self.show()
+        QtCore.QTimer.singleShot(1, self.check_for_update)
 
     def check_for_update(self):
         update_available, remote_version = check_for_updates()
@@ -151,16 +162,8 @@ class RigWizard(QtWidgets.QMainWindow):
             msgBox.findChild(QtWidgets.QPushButton).setText('Yes, I promise!')
             msgBox.exec_()
         self.setDisabled(False)
+        self.statusbar.showMessage(f"iblrig v{remote_version}")
         self.update()
-
-        pixmapi = QStyle.SP_MediaPlay
-        self.uiPushStart.setIcon(self.style().standardIcon(pixmapi))
-        pixmapi = QStyle.SP_MediaPause
-        self.uiPushPause.setIcon(self.style().standardIcon(pixmapi))
-        pixmapi = QStyle.SP_BrowserReload
-        self.uiPushFlush.setIcon(self.style().standardIcon(pixmapi))
-        pixmapi = QStyle.SP_DialogHelpButton
-        self.uiPushHelp.setIcon(self.style().standardIcon(pixmapi))
 
     def model2view(self):
         # stores the current values in the model
@@ -177,6 +180,7 @@ class RigWizard(QtWidgets.QMainWindow):
         self.uiComboSubject.setCurrentText(self.model.subject)
         _set_list_view_from_string_list(self.uiListProcedures, self.model.procedures)
         _set_list_view_from_string_list(self.uiListProjects, self.model.projects)
+        self.enable_UI_elements()
 
     def controller2model(self):
         self.model.procedures = [i.data() for i in self.uiListProcedures.selectedIndexes()]
@@ -197,6 +201,7 @@ class RigWizard(QtWidgets.QMainWindow):
         self.uiComboSubject.setModel(QtCore.QStringListModel(result))
 
     def pause(self):
+        self.uiPushPause.setStyleSheet('QPushButton {background-color: yellow;}' if self.uiPushPause.isChecked() else '')
         match self.uiPushPause.isChecked():
             case True:
                 print('Pausing after current trial ...')
@@ -233,24 +238,43 @@ class RigWizard(QtWidgets.QMainWindow):
                 if self.running_task_process is None:
                     self.running_task_process = subprocess.Popen(cmd)
                 self.uiPushStart.setText('Stop')
-                pixmapi = QStyle.SP_MediaStop
-                self.uiPushStart.setIcon(self.style().standardIcon(pixmapi))
-                self.uiPushFlush.setEnabled(False)
-                self.uiPushPause.setEnabled(True)
+                self.uiPushStart.setIcon(self.style().standardIcon(QStyle.SP_MediaStop))
+                self.checkSubProcessTimer.start(100)
             case 'Stop':
+                self.checkSubProcessTimer.stop()
                 # if the process crashed catastrophically, the session folder might not exist
                 if self.model.session_folder.exists():
                     self.model.session_folder.joinpath('.stop').touch()
                 # this will wait for the process to finish, usually the time for the trial to end
                 self.running_task_process.communicate()
+
+                if self.running_task_process.returncode:
+                    msgBox = QtWidgets.QMessageBox(parent=self)
+                    msgBox.setWindowTitle("Oh no!")
+                    msgBox.setText("The task was terminated with an error.\nPlease check the command-line output for details.")
+                    msgBox.setIcon(QtWidgets.QMessageBox().Critical)
+                    msgBox.exec_()
+
                 self.running_task_process = None
                 self.uiPushStart.setText('Start')
-                pixmapi = QStyle.SP_MediaPlay
-                self.uiPushStart.setIcon(self.style().standardIcon(pixmapi))
-                self.uiPushFlush.setEnabled(True)
-                self.uiPushPause.setEnabled(False)
+                self.uiPushStart.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))
+        self.enable_UI_elements()
+
+    def checkSubProcess(self):
+        returncode = None if self.running_task_process is None else self.running_task_process.poll()
+        if returncode is None:
+            return
+        else:
+            self.startstop()
+
 
     def flush(self):
+
+        # paint button blue when in toggled state
+        self.uiPushFlush.setStyleSheet('QPushButton {background-color: rgb(128, 128, 255);}'
+                                       if self.uiPushFlush.isChecked() else '')
+        self.enable_UI_elements()
+
         try:
             bpod = Bpod(self.model.hardware_settings['device_bpod']['COM_BPOD'])  # bpod is a singleton
             bpod.manual_override(bpod.ChannelTypes.OUTPUT, bpod.ChannelNames.VALVE, 1, self.uiPushFlush.isChecked())
@@ -260,16 +284,26 @@ class RigWizard(QtWidgets.QMainWindow):
             self.uiPushFlush.setChecked(False)
             return
 
-        if self.uiPushFlush.isChecked():
-            self.uiPushFlush.setStyleSheet('QPushButton {background-color: rgb(128, 128, 255);}')
-            self.uiPushStart.setEnabled(False)
-        else:
+        if not self.uiPushFlush.isChecked():
             bpod.close()
-            self.uiPushFlush.setStyleSheet('')
-            self.uiPushStart.setEnabled(True)
 
     def help(self):
         webbrowser.open('https://int-brain-lab.github.io/iblrig/usage.html')
+
+    def enable_UI_elements(self):
+        is_running = self.uiPushStart.text() == 'Stop'
+
+        self.uiPushStart.setEnabled(
+            not self.uiPushFlush.isChecked())
+        self.uiPushPause.setEnabled(is_running)
+        self.uiPushFlush.setEnabled(not is_running)
+        self.uiCheckAppend.setEnabled(not is_running)
+        self.uiGroupUser.setEnabled(not is_running)
+        self.uiGroupSubject.setEnabled(not is_running)
+        self.uiGroupTask.setEnabled(not is_running)
+        self.uiGroupProjects.setEnabled(not is_running)
+        self.uiGroupProcedures.setEnabled(not is_running)
+        self.repaint()
 
 
 def main():

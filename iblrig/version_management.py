@@ -43,4 +43,4 @@ def check_for_updates():
         log.info(f'Update to iblrig {version_remote_str} found.')
     else:
         log.info('No update found.')
-    return version_remote > version_local, version_remote_str
+    return version_remote > version_local, version_remote_str if version_remote > version_local else version_local
