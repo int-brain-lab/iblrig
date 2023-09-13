@@ -19,3 +19,4 @@ Hue              -> 0
 
 Click on Apply (bottom right of the window)
 Close the Nvidia control panel.
+

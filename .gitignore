@@ -34,4 +34,3 @@ app.log
 /.idea/*
 /venv/
 *.autosave
-build
