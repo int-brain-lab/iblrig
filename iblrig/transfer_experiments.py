@@ -12,7 +12,6 @@ log = setup_logger('iblrig', level='INFO')
 
 
 class SessionCopier(abc.ABC):
-    tag = 'behavior'
     assert_connect_on_init = False
     _experiment_description = None
 
@@ -224,15 +223,30 @@ class VideoCopier(SessionCopier):
     tag = 'video'
     assert_connect_on_init = True
 
+    def create_video_stub(self, nvideos=None):
+        match len(list(self.session_path.joinpath('raw_video_data').glob('*.avi'))):
+            case 3:
+                stub_file = Path(iblrig.__file__).parent.joinpath('device_descriptions', 'cameras',
+                                                                  'body_left_right.yaml')
+            case 1:
+                stub_file = Path(iblrig.__file__).parent.joinpath('device_descriptions', 'cameras', 'left.yaml')
+        acquisition_description = session_params.read_params(stub_file)
+        session_params.write_params(self.session_path, acquisition_description)
+
     def initialize_experiment(self, acquisition_description=None, **kwargs):
         if not acquisition_description:
-            stub_file = Path(iblrig.__file__).parent.joinpath('device_descriptions', 'cameras', 'body_left_right.yaml')
-            acquisition_description = session_params.read_params(stub_file)
+            # creates the acquisition description stub if not found, and then read it
+            if not self.file_experiment_description.exists():
+                self.create_video_stub()
+            acquisition_description = session_params.read_params(self.file_experiment_description)
         self._experiment_description = acquisition_description
         super(VideoCopier, self).initialize_experiment(acquisition_description=acquisition_description, **kwargs)
 
 
 class BehaviorCopier(SessionCopier):
+    tag = 'behavior'
+    assert_connect_on_init = False
+
     @property
     def experiment_description(self):
         return session_params.read_params(self.session_path)

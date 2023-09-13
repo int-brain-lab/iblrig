@@ -156,6 +156,7 @@ class TestUnitTransferExperiments(unittest.TestCase):
             assert sc.state == 2  # here we still don't have all devides so this won't cut it and we stay in state 2
 
             vc = VideoCopier(session_path=folder_session_video, remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER)
+            vc.create_video_stub()
             assert vc.state == 0
             vc.initialize_experiment()
             assert vc.state == 1
