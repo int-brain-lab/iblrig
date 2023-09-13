@@ -58,7 +58,7 @@ class TestIntegrationTransferExperiments(unittest.TestCase):
                 iblrig.commands.transfer_data(local_subjects_path=session.paths.LOCAL_SUBJECT_FOLDER,
                                               remote_subjects_path=session.paths.REMOTE_SUBJECT_FOLDER)
                 sc = BehaviorCopier(session_path=session.paths.SESSION_FOLDER,
-                                   remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER)
+                                    remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER)
                 self.assertEqual(sc.state, 3)
 
     def test_behavior_do_not_copy_dummy_sessions(self):
@@ -90,7 +90,7 @@ class TestUnitTransferExperiments(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             session = _create_behavior_session(td)
             sc = BehaviorCopier(session_path=session.paths.SESSION_FOLDER,
-                               remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER)
+                                remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER)
             assert sc.state == 1
             sc.copy_collections()
             assert sc.state == 2

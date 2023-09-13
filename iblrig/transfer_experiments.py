@@ -1,5 +1,5 @@
+import abc
 from pathlib import Path
-from abc import ABC
 import shutil
 import traceback
 
@@ -11,9 +11,10 @@ from ibllib.pipes.misc import rsync_paths
 log = setup_logger('iblrig', level='INFO')
 
 
-class SessionCopier(ABC):
+class SessionCopier(abc.ABC):
     tag = 'behavior'
     assert_connect_on_init = False
+    _experiment_description = None
 
     def __init__(self, session_path, remote_subjects_folder=None, tag=None):
         self.tag = tag or self.tag
@@ -77,7 +78,7 @@ class SessionCopier(ABC):
 
     @property
     def experiment_description(self):
-        return session_params.read_params(self.session_path)
+        return self._experiment_description
 
     @property
     def remote_session_path(self):
@@ -227,11 +228,15 @@ class VideoCopier(SessionCopier):
         if not acquisition_description:
             stub_file = Path(iblrig.__file__).parent.joinpath('device_descriptions', 'cameras', 'body_left_right.yaml')
             acquisition_description = session_params.read_params(stub_file)
+        self._experiment_description = acquisition_description
         super(VideoCopier, self).initialize_experiment(acquisition_description=acquisition_description, **kwargs)
 
 
 class BehaviorCopier(SessionCopier):
-    pass
+
+    @property
+    def experiment_description(self):
+        return session_params.read_params(self.session_path)
 
 
 class EphysCopier(SessionCopier):
@@ -248,6 +253,7 @@ class EphysCopier(SessionCopier):
             sync_file = Path(iblrig.__file__).parent.joinpath('device_descriptions', 'sync', 'nidq.yaml')
             acquisition_description = session_params.read_params(stub_file)
             acquisition_description.update(session_params.read_params(sync_file))
+        self._experiment_description = acquisition_description
         super(EphysCopier, self).initialize_experiment(acquisition_description=acquisition_description, **kwargs)
 
     def _copy_collections(self):
