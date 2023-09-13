@@ -16,7 +16,7 @@ import iblrig
 log = logging.getLogger("iblrig")
 
 
-def load_settings_yaml(file_name='iblrig_settings.yaml'):
+def load_settings_yaml(file_name='iblrig_settings.yaml', mode='raise'):
     """
     Load a yaml file from the settings folder.
     If the file_name is not absolute, it will be searched in the settings folder
@@ -25,6 +25,8 @@ def load_settings_yaml(file_name='iblrig_settings.yaml'):
     """
     if not Path(file_name).is_absolute():
         file_name = Path(iblrig.__file__).parents[1].joinpath('settings', file_name)
+    if not file_name.exists() and mode != 'raise':
+        return {}
     with open(file_name) as fp:
         rs = yaml.safe_load(fp)
     rs = patch_settings(rs, Path(file_name).stem)

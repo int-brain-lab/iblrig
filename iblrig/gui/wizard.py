@@ -267,7 +267,6 @@ class RigWizard(QtWidgets.QMainWindow):
         else:
             self.startstop()
 
-
     def flush(self):
 
         # paint button blue when in toggled state
