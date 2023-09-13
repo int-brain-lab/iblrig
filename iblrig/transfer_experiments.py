@@ -153,7 +153,7 @@ class SessionCopier(abc.ABC):
                 self.session_path.joinpath('transfer_me.flag').unlink()
         return status
 
-    def initialize_experiment(self, acquisition_description=None, overwrite=False):
+    def initialize_experiment(self, acquisition_description=None, overwrite=True):
         """
         Copy acquisition description yaml to the server and local transfers folder.
 
