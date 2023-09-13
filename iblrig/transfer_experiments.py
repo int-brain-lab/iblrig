@@ -233,7 +233,6 @@ class VideoCopier(SessionCopier):
 
 
 class BehaviorCopier(SessionCopier):
-
     @property
     def experiment_description(self):
         return session_params.read_params(self.session_path)

@@ -4,6 +4,8 @@ import random
 import tempfile
 import unittest
 
+from ibllib.io import session_params
+
 from iblrig_tasks._iblrig_tasks_trainingChoiceWorld.task import Session
 from iblrig.test.base import TASK_KWARGS
 from iblrig.transfer_experiments import BehaviorCopier, VideoCopier, EphysCopier
@@ -176,3 +178,7 @@ class TestUnitTransferExperiments(unittest.TestCase):
             # this time it's all there and we move on
             sc.finalize_copy(number_of_expected_devices=3)
             assert sc.state == 3
+            final_experiment_description = session_params.read_params(sc.remote_session_path)
+            assert len(final_experiment_description['tasks']) == 1
+            assert set(final_experiment_description['devices']['cameras'].keys()) == set(['body', 'left', 'right'])
+            assert set(final_experiment_description['sync'].keys()) == set(['nidq'])
