@@ -26,7 +26,38 @@ class SessionCopier():
     def state(self):
         return self.get_state()[0]
 
+    def run(self, number_of_expected_devices=None):
+        """
+        Runs the copy of this device experiment. It will try to get as far as possible in the copy
+        process (from states 0 init experiment to state 3 finalize experiment) if possible, and
+        return earlier if the process can't be completed.
+        :return:
+        """
+        if self.state == -1:  # this case is not implemented automatically and corresponds to a hard reset
+            log.info(f"{self.state}, {self.session_path}")
+            shutil.rmtree(self.remote_session_path)
+            self.initialize_experiment(session_params.read_params(self.session_path))
+        if self.state == 0:  # the session hasn't even been initialzed: copy the stub to the remote
+            log.info(f"{self.state}, {self.session_path}")
+            self.initialize_experiment(session_params.read_params(self.session_path))
+        if self.state == 1:  # the session
+            log.info(f"{self.state}, {self.session_path}")
+            self.copy_collections()
+        if self.state == 2:
+            log.info(f"{self.state}, {self.session_path}")
+            self.finalize_copy(number_of_expected_devices=number_of_expected_devices)
+        if self.state == 3:
+            log.info(f"{self.state}, {self.session_path}")
+
     def get_state(self):
+        """
+        Gets the current copier state.
+        State 0: this device experiment has not been initialized for this device
+        State 1: this device experiment is initialized (the experiment description stub is present on the remote)
+        State 2: this device experiment is copied on the remote server, but other devices copies are still pending
+        State 3: the whole experiment is finalized and all of the data is on the server
+        :return:
+        """
         if self.remote_subjects_folder is None or not self.remote_subjects_folder.exists():
             return None, f'Remote subjects folder {self.remote_subjects_folder} set to Null or unreachable'
         if not self.file_remote_experiment_description.exists():

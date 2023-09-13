@@ -6,7 +6,7 @@ import yaml
 import shutil
 
 from iblutil.util import setup_logger
-from ibllib.io import raw_data_loaders, session_params
+from ibllib.io import raw_data_loaders
 from iblrig.transfer_experiments import SessionCopier
 import iblrig
 from iblrig.hardware import Bpod
@@ -20,13 +20,16 @@ logger = setup_logger('iblrig', level='INFO')
 def transfer_data(local_subjects_path=None, remote_subjects_path=None, dry=False):
     """
     Copies the data from the rig to the local server if the session has more than 42 trials
+    If the hardware settings file contains MAIN_SYNC=True, the number of expected devices is set to 1
     :param weeks:
     :param dry:
     :return:
     """
     iblrig_settings = load_settings_yaml()
-    local_subjects_path = local_subjects_path or Path(iblrig_settings['iblrig_local_data_path'])
+    hardware_settings = load_settings_yaml('hardware_settings.yaml')
+    local_subjects_path = local_subjects_path or Path(iblrig_settings['iblrig_local_data_path']).joinpath('Subjects')
     remote_subjects_path = remote_subjects_path or Path(iblrig_settings['iblrig_remote_data_path']).joinpath('Subjects')
+    number_of_expected_devices = 1 if hardware_settings.get('MAIN_SYNC', True) else None
 
     for flag in list(local_subjects_path.rglob('transfer_me.flag')):
         session_path = flag.parent
@@ -67,24 +70,8 @@ def transfer_data(local_subjects_path=None, remote_subjects_path=None, dry=False
             if sc.remote_session_path.exists():
                 shutil.rmtree(sc.remote_session_path)
             continue
-        state = sc.get_state()
         logger.critical(f"{sc.state}, {sc.session_path}")
-        # session_params.write_yaml(sc.file_remote_experiment_description, ad)
-        if sc.state == -1:  # this case is not implemented automatically and corresponds to a hard reset
-            logger.info(f"{sc.state}, {sc.session_path}")
-            shutil.rmtree(sc.remote_session_path)
-            sc.initialize_experiment(session_params.read_params(session_path))
-        if sc.state == 0:  # the session hasn't even been initialzed: copy the stub to the remote
-            logger.info(f"{sc.state}, {sc.session_path}")
-            state = sc.initialize_experiment(session_params.read_params(session_path))
-        if sc.state == 1:  # the session
-            logger.info(f"{sc.state}, {sc.session_path}")
-            state = sc.copy_collections()
-        if sc.state == 2:
-            logger.info(f"{sc.state}, {sc.session_path}")
-            state = sc.finalize_copy(number_of_expected_devices=1)
-        if sc.state == 3:
-            logger.info(f"{state}, {sc.session_path}")
+        sc.run(number_of_expected_devices=number_of_expected_devices)
     # once we copied the data, remove older session for which the data was successfully uploaded
     remove_local_sessions(weeks=2, dry=dry, local_subjects_path=local_subjects_path, remote_subjects_path=remote_subjects_path)
 

@@ -5,6 +5,7 @@ The start() methods of those mixins require the hardware to be connected.
 
 """
 import argparse
+import copy
 from pathlib import Path
 import unittest
 import tempfile
@@ -158,17 +159,12 @@ class TestPathCreation(unittest.TestCase):
 
     def test_create_chained_protocols(self):
         # creates a first task
-        first_task = EmptyHardwareSession(
-            iblrig_settings={'iblrig_remote_data_path': False},
-            hardware_settings={'MAIN_SYNC': False},
-            **TASK_KWARGS)
+        task_kwargs = copy.deepcopy(TASK_KWARGS)
+        task_kwargs['hardware_settings']['MAIN_SYNC'] = False
+        first_task = EmptyHardwareSession(iblrig_settings={'iblrig_remote_data_path': False}, **task_kwargs)
         first_task.create_session()
         # append a new protocol the the current task
-        second_task = EmptyHardwareSession(
-            append=True,
-            hardware_settings={'MAIN_SYNC': False},
-            iblrig_settings={'iblrig_remote_data_path': False},
-            **TASK_KWARGS)
+        second_task = EmptyHardwareSession(append=True, iblrig_settings={'iblrig_remote_data_path': False}, **task_kwargs)
         # unless the task has reached the create session stage, there is only one protocol in there
         self.assertEqual(set([d.name for d in first_task.paths.SESSION_FOLDER.iterdir() if d.is_dir()]),
                          set(['raw_task_data_00']))
