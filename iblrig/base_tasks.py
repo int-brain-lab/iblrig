@@ -53,7 +53,7 @@ class BaseSession(ABC):
 
     def __init__(self, subject=None, task_parameter_file=None, file_hardware_settings=None,
                  hardware_settings=None, file_iblrig_settings=None, iblrig_settings=None,
-                 one=None, interactive=True, projects=None, procedures=None, stub=None,
+                 one=None, interactive=True, projects=None, procedures=None, subject_weight_grams=None, stub=None,
                  append=False, log_level='INFO', wizard=False):
         """
         :param subject: The subject nickname. Required.
@@ -66,6 +66,7 @@ class BaseSession(ABC):
         :param interactive:
         :param projects: An optional list of Alyx protocols.
         :param procedures: An optional list of Alyx procedures.
+        :param subject_weight_grams: weight of the subject
         :param stub: A full path to an experiment description file containing experiment information.
         :param append: bool, if True, append to the latest existing session of the same subject for the same day
         :param fmake: (DEPRECATED) if True, only create the raw_behavior_data folder.
@@ -131,7 +132,7 @@ class BaseSession(ABC):
             'SESSION_END_TIME': None,
             'SESSION_NUMBER': 0,
             'SUBJECT_NAME': subject,
-            'SUBJECT_WEIGHT': None,
+            'SUBJECT_WEIGHT': subject_weight_grams,
             'TOTAL_WATER_DELIVERED': 0,
         })
         # Executes mixins init methods
@@ -383,7 +384,7 @@ class BaseSession(ABC):
         # this prevents from incrementing endlessly the session number if the hardware fails to connect
         self.start_hardware()
         self.create_session()
-        if self.interactive:
+        if self.session_info.SUBJECT_WEIGHT is None and self.interactive:
             self.session_info.SUBJECT_WEIGHT = graph.numinput(
                 "Subject weighing (gr)", f"{self.session_info.SUBJECT_NAME} weight (gr):", nullable=False)
 

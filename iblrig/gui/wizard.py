@@ -133,6 +133,8 @@ class RigWizard(QtWidgets.QMainWindow):
         self.uiPushFlush.clicked.connect(self.flush)
         self.uiPushStart.clicked.connect(self.startstop)
         self.uiPushPause.clicked.connect(self.pause)
+        self.uiListProjects.clicked.connect(self.enable_UI_elements)
+        self.uiListProcedures.clicked.connect(self.enable_UI_elements)
         self.uiPushConnect.clicked.connect(self.alyx_connect)
         self.lineEditSubject.textChanged.connect(self._filter_subjects)
         self.running_task_process = None
@@ -149,6 +151,24 @@ class RigWizard(QtWidgets.QMainWindow):
         self.statusbar.showMessage("Checking for updates ...")
         self.show()
         QtCore.QTimer.singleShot(1, self.check_for_update)
+
+    def closeEvent(self, event):
+        if self.running_task_process is None:
+            event.accept()
+        else:
+            msgBox = QtWidgets.QMessageBox(parent=self)
+            msgBox.setWindowTitle("Hold on")
+            msgBox.setText("A task is running - do you really want to quit?")
+            msgBox.setStandardButtons(QtWidgets.QMessageBox.No | QtWidgets.QMessageBox.Yes)
+            msgBox.setIcon(QtWidgets.QMessageBox().Question)
+            match msgBox.exec_():
+                case QtWidgets.QMessageBox.No:
+                    event.ignore()
+                case QtWidgets.QMessageBox.Yes:
+                    self.setEnabled(False)
+                    self.repaint()
+                    self.startstop()
+                    event.accept()
 
     def check_for_update(self):
         update_available, remote_version = check_for_updates()
@@ -215,6 +235,12 @@ class RigWizard(QtWidgets.QMainWindow):
     def startstop(self):
         match self.uiPushStart.text():
             case 'Start':
+                dlg = QtWidgets.QInputDialog()
+                weight, ok = dlg.getDouble(self, 'Subject Weight', 'Subject Weight (g):', value=0, min=0,
+                                           flags=dlg.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
+                if not ok or weight == 0:
+                    return
+
                 self.controller2model()
                 task = EmptySession(subject=self.model.subject, append=self.uiCheckAppend.isChecked(), wizard=True)
                 self.model.session_folder = task.paths['SESSION_FOLDER']
@@ -232,9 +258,10 @@ class RigWizard(QtWidgets.QMainWindow):
                     cmd.extend(['--procedures', *self.model.procedures])
                 if self.model.projects:
                     cmd.extend(['--projects', *self.model.projects])
+                cmd.extend(['--weight', f'{weight}'])
+                cmd.append('--wizard')
                 if self.uiCheckAppend.isChecked():
                     cmd.append('--append')
-                cmd.append('--wizard')
                 if self.running_task_process is None:
                     self.running_task_process = subprocess.Popen(cmd)
                 self.uiPushStart.setText('Stop')
@@ -281,6 +308,7 @@ class RigWizard(QtWidgets.QMainWindow):
             print(traceback.format_exc())
             print("Cannot find bpod - is it connected?")
             self.uiPushFlush.setChecked(False)
+            self.uiPushFlush.setStyleSheet('')
             return
 
         if not self.uiPushFlush.isChecked():
@@ -293,7 +321,9 @@ class RigWizard(QtWidgets.QMainWindow):
         is_running = self.uiPushStart.text() == 'Stop'
 
         self.uiPushStart.setEnabled(
-            not self.uiPushFlush.isChecked())
+            not self.uiPushFlush.isChecked()
+            and len(self.uiListProjects.selectedIndexes()) > 0
+            and len(self.uiListProcedures.selectedIndexes()) > 0)
         self.uiPushPause.setEnabled(is_running)
         self.uiPushFlush.setEnabled(not is_running)
         self.uiCheckAppend.setEnabled(not is_running)
