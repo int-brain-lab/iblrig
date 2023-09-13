@@ -1,4 +1,5 @@
 from pathlib import Path
+from abc import ABC
 import shutil
 import traceback
 
@@ -10,7 +11,7 @@ from ibllib.pipes.misc import rsync_paths
 log = setup_logger('iblrig', level='INFO')
 
 
-class SessionCopier():
+class SessionCopier(ABC):
     tag = 'behavior'
     assert_connect_on_init = False
 
@@ -36,10 +37,10 @@ class SessionCopier():
         if self.state == -1:  # this case is not implemented automatically and corresponds to a hard reset
             log.info(f"{self.state}, {self.session_path}")
             shutil.rmtree(self.remote_session_path)
-            self.initialize_experiment(session_params.read_params(self.session_path))
+            self.initialize_experiment()
         if self.state == 0:  # the session hasn't even been initialzed: copy the stub to the remote
             log.info(f"{self.state}, {self.session_path}")
-            self.initialize_experiment(session_params.read_params(self.session_path))
+            self.initialize_experiment()
         if self.state == 1:  # the session
             log.info(f"{self.state}, {self.session_path}")
             self.copy_collections()
@@ -162,6 +163,9 @@ class SessionCopier():
         overwrite : bool
             If true, overwrite any existing file with the new one, otherwise, update the existing file.
         """
+        if acquisition_description is None:
+            acquisition_description = self.experiment_description
+
         assert acquisition_description
 
         # First attempt to add the remote description stub to the _device folder on the remote session
@@ -174,6 +178,8 @@ class SessionCopier():
             try:
                 merged_description = session_params.merge_params(previous_description, acquisition_description)
                 session_params.write_yaml(remote_stub_file, merged_description)
+                for f in remote_stub_file.parent.glob(remote_stub_file.name + '.status_*'):
+                    f.unlink()
                 remote_stub_file.with_suffix('.status_pending').touch()
                 log.info(f'Written data to remote device at: {remote_stub_file}.')
             except Exception as e:
@@ -222,6 +228,10 @@ class VideoCopier(SessionCopier):
             stub_file = Path(iblrig.__file__).parent.joinpath('device_descriptions', 'cameras', 'body_left_right.yaml')
             acquisition_description = session_params.read_params(stub_file)
         super(VideoCopier, self).initialize_experiment(acquisition_description=acquisition_description, **kwargs)
+
+
+class BehaviorCopier(SessionCopier):
+    pass
 
 
 class EphysCopier(SessionCopier):

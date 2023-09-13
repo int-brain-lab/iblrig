@@ -7,7 +7,7 @@ import shutil
 
 from iblutil.util import setup_logger
 from ibllib.io import raw_data_loaders
-from iblrig.transfer_experiments import SessionCopier
+from iblrig.transfer_experiments import BehaviorCopier
 import iblrig
 from iblrig.hardware import Bpod
 from iblrig.path_helper import load_settings_yaml
@@ -33,7 +33,7 @@ def transfer_data(local_subjects_path=None, remote_subjects_path=None, dry=False
 
     for flag in list(local_subjects_path.rglob('transfer_me.flag')):
         session_path = flag.parent
-        sc = SessionCopier(session_path, remote_subjects_folder=remote_subjects_path)
+        sc = BehaviorCopier(session_path, remote_subjects_folder=remote_subjects_path)
         task_settings = raw_data_loaders.load_settings(session_path, task_collection='raw_task_data_00')
         if task_settings is None:
             logger.info(f'skipping: no task settings found for {session_path}')

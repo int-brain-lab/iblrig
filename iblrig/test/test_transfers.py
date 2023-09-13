@@ -6,7 +6,7 @@ import unittest
 
 from iblrig_tasks._iblrig_tasks_trainingChoiceWorld.task import Session
 from iblrig.test.base import TASK_KWARGS
-from iblrig.transfer_experiments import SessionCopier, VideoCopier, EphysCopier
+from iblrig.transfer_experiments import BehaviorCopier, VideoCopier, EphysCopier
 import iblrig.commands
 import iblrig.raw_data_loaders
 
@@ -57,7 +57,7 @@ class TestIntegrationTransferExperiments(unittest.TestCase):
                 session.paths.SESSION_FOLDER.joinpath('transfer_me.flag').touch()
                 iblrig.commands.transfer_data(local_subjects_path=session.paths.LOCAL_SUBJECT_FOLDER,
                                               remote_subjects_path=session.paths.REMOTE_SUBJECT_FOLDER)
-                sc = SessionCopier(session_path=session.paths.SESSION_FOLDER,
+                sc = BehaviorCopier(session_path=session.paths.SESSION_FOLDER,
                                    remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER)
                 self.assertEqual(sc.state, 3)
 
@@ -75,7 +75,7 @@ class TestIntegrationTransferExperiments(unittest.TestCase):
                     local_subjects_path=session.paths.LOCAL_SUBJECT_FOLDER,
                     remote_subjects_path=session.paths.REMOTE_SUBJECT_FOLDER
                 )
-                sc = SessionCopier(
+                sc = BehaviorCopier(
                     session_path=session.paths.SESSION_FOLDER,
                     remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER)
                 self.assertFalse(sc.remote_session_path.exists())
@@ -83,13 +83,13 @@ class TestIntegrationTransferExperiments(unittest.TestCase):
 
 class TestUnitTransferExperiments(unittest.TestCase):
     """
-    UnitTest the SessionCopier, VideoCopier and EphysCopier classes and methods
+    UnitTest the BehaviorCopier, VideoCopier and EphysCopier classes and methods
     Unlike the integration test, the sessions here are made from scratch using an actual instantiated session
     """
     def test_behavior_copy(self):
         with tempfile.TemporaryDirectory() as td:
             session = _create_behavior_session(td)
-            sc = SessionCopier(session_path=session.paths.SESSION_FOLDER,
+            sc = BehaviorCopier(session_path=session.paths.SESSION_FOLDER,
                                remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER)
             assert sc.state == 1
             sc.copy_collections()
@@ -141,8 +141,8 @@ class TestUnitTransferExperiments(unittest.TestCase):
             """
             Test the copiers
             """
-            sc = SessionCopier(session_path=session.paths.SESSION_FOLDER,
-                               remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER)
+            sc = BehaviorCopier(session_path=session.paths.SESSION_FOLDER,
+                                remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER)
             assert sc.glob_file_remote_copy_status().suffix == '.status_pending'
             assert sc.state == 1
             sc.copy_collections()
