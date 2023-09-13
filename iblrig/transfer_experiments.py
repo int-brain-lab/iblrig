@@ -179,7 +179,7 @@ class SessionCopier(abc.ABC):
             try:
                 merged_description = session_params.merge_params(previous_description, acquisition_description)
                 session_params.write_yaml(remote_stub_file, merged_description)
-                for f in remote_stub_file.parent.glob(remote_stub_file.name + '.status_*'):
+                for f in remote_stub_file.parent.glob(remote_stub_file.stem + '.status_*'):
                     f.unlink()
                 remote_stub_file.with_suffix('.status_pending').touch()
                 log.info(f'Written data to remote device at: {remote_stub_file}.')
