@@ -17,9 +17,9 @@ Its version string (currently "|version|") is a combination of three fields, sep
 
 On the developer side, these 3 fields are manually controlled by adding the respective version string to a commit as a `git tag <https://git-scm.com/book/en/v2/Git-Basics-Tagging>`_, for instance:
 
-.. parsed-literal::
+.. code-block:: console
 
-   git tag |version|
+   git tag 8.8.4
    git push origin --tags
 
 The version string displayed by IBLRIG *may* include additional fields, such as in "|version|.dev3+dirty".
@@ -29,6 +29,34 @@ Here,
 * ``+dirty`` indicates the presence of uncommited changes in your local repository of IBLRIG.
 
 Both of these fields are inferred by `setuptools_scm <https://pypi.org/project/setuptools-scm/>`_ and do not require manual interaction from the developer.
+
+
+Running Tests Locally
+=====================
+
+.. code-block:: console
+
+   flake8
+   python -m unittest discover ./iblrig/test
+
+
+Building the documentation
+==========================
+
+.. code-block:: console
+
+   # make sure pre-requisites are installed
+   pip install --upgrade -e .[DEV]
+   # create the static directory
+   rm -rf ./docs/build
+   mkdir -p ./docs/build/html/_static
+   # unit tests generate task diagrams
+   python -m unittest discover ./iblrig/test
+   # generate class diagrams
+   pyreverse -o png -m y --ignore iblrig.test -A --output-directory ./docs/build/html/_static ./iblrig_tasks
+   # build and serve the docs locally
+   sphinx-autobuild ./docs/source ./docs/build/html/
+
 
 
 Guide to Creating Your Own Task
