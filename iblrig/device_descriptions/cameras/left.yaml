@@ -1,4 +1,5 @@
-cameras:
-  left:
-      collection: raw_video_data
-      sync_label: frame2ttl
+devices:
+  cameras:
+    left:
+        collection: raw_video_data
+        sync_label: frame2ttl

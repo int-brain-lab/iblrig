@@ -1,3 +1,4 @@
+import abc
 from pathlib import Path
 import shutil
 import traceback
@@ -10,9 +11,9 @@ from ibllib.pipes.misc import rsync_paths
 log = setup_logger('iblrig', level='INFO')
 
 
-class SessionCopier():
-    tag = 'behavior'
+class SessionCopier(abc.ABC):
     assert_connect_on_init = False
+    _experiment_description = None
 
     def __init__(self, session_path, remote_subjects_folder=None, tag=None):
         self.tag = tag or self.tag
@@ -36,10 +37,10 @@ class SessionCopier():
         if self.state == -1:  # this case is not implemented automatically and corresponds to a hard reset
             log.info(f"{self.state}, {self.session_path}")
             shutil.rmtree(self.remote_session_path)
-            self.initialize_experiment(session_params.read_params(self.session_path))
+            self.initialize_experiment()
         if self.state == 0:  # the session hasn't even been initialzed: copy the stub to the remote
             log.info(f"{self.state}, {self.session_path}")
-            self.initialize_experiment(session_params.read_params(self.session_path))
+            self.initialize_experiment()
         if self.state == 1:  # the session
             log.info(f"{self.state}, {self.session_path}")
             self.copy_collections()
@@ -76,7 +77,7 @@ class SessionCopier():
 
     @property
     def experiment_description(self):
-        return session_params.read_params(self.session_path)
+        return self._experiment_description
 
     @property
     def remote_session_path(self):
@@ -151,7 +152,7 @@ class SessionCopier():
                 self.session_path.joinpath('transfer_me.flag').unlink()
         return status
 
-    def initialize_experiment(self, acquisition_description=None, overwrite=False):
+    def initialize_experiment(self, acquisition_description=None, overwrite=True):
         """
         Copy acquisition description yaml to the server and local transfers folder.
 
@@ -162,6 +163,9 @@ class SessionCopier():
         overwrite : bool
             If true, overwrite any existing file with the new one, otherwise, update the existing file.
         """
+        if acquisition_description is None:
+            acquisition_description = self.experiment_description
+
         assert acquisition_description
 
         # First attempt to add the remote description stub to the _device folder on the remote session
@@ -174,6 +178,8 @@ class SessionCopier():
             try:
                 merged_description = session_params.merge_params(previous_description, acquisition_description)
                 session_params.write_yaml(remote_stub_file, merged_description)
+                for f in remote_stub_file.parent.glob(remote_stub_file.stem + '.status_*'):
+                    f.unlink()
                 remote_stub_file.with_suffix('.status_pending').touch()
                 log.info(f'Written data to remote device at: {remote_stub_file}.')
             except Exception as e:
@@ -219,11 +225,33 @@ class VideoCopier(SessionCopier):
     tag = 'video'
     assert_connect_on_init = True
 
+    def create_video_stub(self, nvideos=None):
+        match len(list(self.session_path.joinpath('raw_video_data').glob('*.avi'))):
+            case 3:
+                stub_file = Path(iblrig.__file__).parent.joinpath('device_descriptions', 'cameras',
+                                                                  'body_left_right.yaml')
+            case 1:
+                stub_file = Path(iblrig.__file__).parent.joinpath('device_descriptions', 'cameras', 'left.yaml')
+        acquisition_description = session_params.read_params(stub_file)
+        session_params.write_params(self.session_path, acquisition_description)
+
     def initialize_experiment(self, acquisition_description=None, **kwargs):
         if not acquisition_description:
-            stub_file = Path(iblrig.__file__).parent.joinpath('device_descriptions', 'cameras', 'body_left_right.yaml')
-            acquisition_description = session_params.read_params(stub_file)
+            # creates the acquisition description stub if not found, and then read it
+            if not self.file_experiment_description.exists():
+                self.create_video_stub()
+            acquisition_description = session_params.read_params(self.file_experiment_description)
+        self._experiment_description = acquisition_description
         super(VideoCopier, self).initialize_experiment(acquisition_description=acquisition_description, **kwargs)
+
+
+class BehaviorCopier(SessionCopier):
+    tag = 'behavior'
+    assert_connect_on_init = False
+
+    @property
+    def experiment_description(self):
+        return session_params.read_params(self.session_path)
 
 
 class EphysCopier(SessionCopier):
@@ -240,6 +268,7 @@ class EphysCopier(SessionCopier):
             sync_file = Path(iblrig.__file__).parent.joinpath('device_descriptions', 'sync', 'nidq.yaml')
             acquisition_description = session_params.read_params(stub_file)
             acquisition_description.update(session_params.read_params(sync_file))
+        self._experiment_description = acquisition_description
         super(EphysCopier, self).initialize_experiment(acquisition_description=acquisition_description, **kwargs)
 
     def _copy_collections(self):

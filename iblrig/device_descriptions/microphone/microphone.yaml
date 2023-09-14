@@ -1,4 +1,5 @@
-microphone:
+devices:
   microphone:
-      collection: raw_behavior_data
-      sync_label: null
+    microphone:
+        collection: raw_behavior_data
+        sync_label: null
