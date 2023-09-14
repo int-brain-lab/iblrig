@@ -41,6 +41,7 @@ setup(
         'console_scripts': [
             'viewsession=iblrig.commands:viewsession',
             'transfer_data=iblrig.commands:transfer_data',
+            'transfer_video_data=iblrig.commands:transfer_video_data',
             'flush=iblrig.commands:flush',
             'remove-old-sessions=iblrig.commands:remove_local_sessions',
             'iblrig=iblrig.gui.wizard:main',

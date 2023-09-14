@@ -70,7 +70,8 @@ class DataModel(object):
             self.ntrials_engaged = 0  # those are the trials happening within the first 400s
         else:
             trials_table, bpod_data = load_task_jsonable(task_file)
-            self.time_elapsed = bpod_data[-1]['Trial end timestamp'] - bpod_data[-1]['Bpod start timestamp']
+            # here we take the end time of the first trial as reference to avoid factoring in the delay
+            self.time_elapsed = bpod_data[-1]['Trial end timestamp'] - bpod_data[0]['Trial end timestamp']
             trials_table['signed_contrast'] = np.sign(trials_table['position']) * trials_table['contrast']
             trials_table['choice'] = trials_table['position'] > 0
             trials_table.loc[~trials_table.trial_correct, 'choice'] = ~trials_table['choice'][~trials_table.trial_correct]

@@ -16,6 +16,20 @@ import iblrig
 log = logging.getLogger("iblrig")
 
 
+def get_local_and_remote_paths(local_subjects_path=None, remote_subjects_path=None):
+    """
+    Function used to parse input arguments to transfer commands. If the arguments are None, reads in the settings
+    and returns the values from the files, otherwise
+    :param local_subjects_path:
+    :param remote_subjects_path:
+    :return:
+    """
+    iblrig_settings = load_settings_yaml()
+    local_subjects_path = local_subjects_path or Path(iblrig_settings['iblrig_local_data_path'])
+    remote_subjects_path = remote_subjects_path or Path(iblrig_settings['iblrig_remote_data_path']).joinpath('Subjects')
+    return local_subjects_path, remote_subjects_path
+
+
 def load_settings_yaml(file_name='iblrig_settings.yaml', mode='raise'):
     """
     Load a yaml file from the settings folder.

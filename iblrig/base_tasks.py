@@ -38,7 +38,7 @@ import iblrig.alyx
 import iblrig.graphic as graph
 from iblrig.version_management import check_for_updates
 import ibllib.io.session_params as ses_params
-from iblrig.transfer_experiments import SessionCopier
+from iblrig.transfer_experiments import BehaviorCopier
 
 OSC_CLIENT_IP = "127.0.0.1"
 
@@ -371,8 +371,8 @@ class BaseSession(ABC):
         logfile = self.paths.SESSION_RAW_DATA_FOLDER.joinpath('_ibl_log.info-acquisition.log')
         self._setup_loggers(level=self.logger.level, file=logfile)
         # copy the acquisition stub to the remote session folder
-        sc = SessionCopier(self.paths.SESSION_FOLDER, remote_subjects_folder=self.paths['REMOTE_SUBJECT_FOLDER'])
-        sc.initialize_experiment(self.experiment_description)
+        sc = BehaviorCopier(self.paths.SESSION_FOLDER, remote_subjects_folder=self.paths['REMOTE_SUBJECT_FOLDER'])
+        sc.initialize_experiment(self.experiment_description, overwrite=False)
         self.register_to_alyx()
 
     def run(self):
