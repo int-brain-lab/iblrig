@@ -22,7 +22,7 @@ On the developer side, these 3 fields are manually controlled by adding the resp
    git tag 8.8.4
    git push origin --tags
 
-The version string displayed by IBLRIG *may* include additional fields, such as in "|version|.dev3+dirty".
+The version string displayed by IBLRIG *may* include additional fields, such as in "|version|.post3+dirty".
 Here,
 
 * ``.dev3`` indicates the third unversioned commit after the latest versioned release, and
