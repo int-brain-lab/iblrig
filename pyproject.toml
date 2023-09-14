@@ -1,6 +1,7 @@
 [build-system]
 requires = [
     "setuptools>=64",
+    "setuptools_scm[toml]>=7.1",
     "wheel"
 ]
 build-backend = "setuptools.build_meta"
@@ -32,6 +33,7 @@ dependencies = [
     "PySocks",
     "PyYAML",
     "scipy",
+    "setuptools_scm",
     "sounddevice",
 ]
 
@@ -55,8 +57,11 @@ remove-old-sessions = "iblrig.commands:remove_local_sessions"
 iblrig = "iblrig.gui.wizard:main"
 
 [tool.setuptools.dynamic]
-version = {attr = "iblrig.__version__"}
 readme = {file = "README.md", content-type = "text/markdown"}
+
+[tool.setuptools_scm]
+version_scheme = "post-release"
+local_scheme = "dirty-tag"
 
 [tool.setuptools.packages]
 find = {}

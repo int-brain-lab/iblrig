@@ -1,15 +1,11 @@
-# Configuration file for the Sphinx documentation builder.
-#
-# For the full list of built-in configuration values, see the documentation:
-# https://www.sphinx-doc.org/en/master/usage/configuration.html
-
-# -- Project information -----------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
+from importlib.metadata import version
+from datetime import date
 
 project = 'iblrig'
-copyright = '2018, International Brain Laboratory'
+copyright = f'International Brain Laboratory, 2018 – {date.today().year}'
 author = 'International Brain Laboratory'
-release = '8.x'
+release = version('iblrig')
+version = '.'.join(release.split('.')[:3])
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

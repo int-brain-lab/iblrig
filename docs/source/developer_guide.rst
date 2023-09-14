@@ -1,3 +1,39 @@
+===============
+Developer Guide
+===============
+
+Versioning Scheme
+=================
+
+IBLRIG v8 uses `Semantic Versioning 2.0.0 <https://semver.org/spec/v2.0.0.html>`_.
+Its version string (currently "|version|") is a combination of three fields, separated by dots:
+
+.. centered:: ``MAJOR`` . ``MINOR`` . ``PATCH``
+
+* The ``MAJOR`` field is only incremented for breaking changes, i.e., changes that are not backward compatible with previous changes.
+  Releases of IBLRIG v8, for instance, are generally incompatible with IBLRIG v7.
+* The ``MINOR`` field will be incremented upon adding new, backwards compatible features.
+* The ``PATCH`` field will be incremented with each new, backwards compatible bugfix release that does not implement a new feature.
+
+On the developer side, these 3 fields are being manually controlled by adding the respective version string to a commit as a `git tag <https://git-scm.com/book/en/v2/Git-Basics-Tagging>`_, for instance:
+
+.. parsed-literal::
+
+   git tag |version|
+   git push origin --tags
+
+The version string displayed by IBLRIG *may* include additional fields, such as:
+
+.. centered:: |version|.dev3+dirty
+
+Here,
+
+* ``.dev3`` indicates the third unversioned commit after the latest versioned release, and
+* ``+dirty`` indicates uncommited changes in your local copy of the IBLRIG repository.
+
+Both of these fields are inferred by `setuptools_scm <https://pypi.org/project/setuptools-scm/>`_ and do not require manual interaction from the developer.
+
+
 Guide to Creating Your Own Task
 ===============================
 
