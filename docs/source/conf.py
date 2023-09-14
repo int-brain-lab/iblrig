@@ -2,7 +2,7 @@ from importlib.metadata import version
 from datetime import date
 
 project = 'iblrig'
-copyright = f'International Brain Laboratory, 2018 – {date.today().year}'
+copyright = f'2018 – {date.today().year} International Brain Laboratory'
 author = 'International Brain Laboratory'
 release = version('iblrig')
 version = '.'.join(release.split('.')[:3])
