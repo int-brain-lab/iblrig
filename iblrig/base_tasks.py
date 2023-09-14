@@ -80,8 +80,9 @@ class BaseSession(ABC):
             BaseSession.checked_for_update = True
             update_status, remote_version = check_for_updates()
             if update_status is True:
-                print(f"\nUpdate to iblrig {remote_version} is available! Please update using 'git pull'.\n")
-
+                print(f"\nUpdate to iblrig {remote_version} is available!\n"
+                      f"Please update by issuing:\n\n"
+                      f"   pip install --upgrade -e .\n")
                 while True:
                     print("- Press [Enter] to exit IBL Rig and perform the update right away.\n"
                           "- Enter 'I will update later' to continue without updating.")

@@ -8,6 +8,7 @@ import sys
 import yaml
 import traceback
 import webbrowser
+from random import choice
 
 from PyQt5 import QtWidgets, QtCore, uic
 from PyQt5.QtWidgets import QStyle
@@ -153,13 +154,18 @@ class RigWizard(QtWidgets.QMainWindow):
     def check_for_update(self):
         update_available, remote_version = check_for_updates()
         if update_available == 1:
+            cmdBox = QtWidgets.QLineEdit('pip install --upgrade -e .')
+            cmdBox.setReadOnly(True)
             msgBox = QtWidgets.QMessageBox(parent=self)
             msgBox.setWindowTitle("Update Notice")
-            msgBox.setText(f"Update toiblrig {remote_version} is available.")
-            msgBox.setInformativeText("Please update using 'git pull'.")
+            msgBox.setText(f"Update to iblrig {remote_version} is available.\n\n"
+                           f"Please update iblrig by issuing:")
             msgBox.setStandardButtons(QtWidgets.QMessageBox.Ok)
             msgBox.setIcon(QtWidgets.QMessageBox().Information)
-            msgBox.findChild(QtWidgets.QPushButton).setText('Yes, I promise!')
+            msgBox.layout().addWidget(cmdBox, 1, 2)
+            msgBox.findChild(QtWidgets.QPushButton).setText(
+                choice(['Yes, I promise!', 'I will do so immediately!',
+                        'Straight away!', 'Of course I will!']))
             msgBox.exec_()
         self.setDisabled(False)
         self.statusbar.showMessage(f"iblrig v{remote_version}")
