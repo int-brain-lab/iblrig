@@ -25,7 +25,7 @@ On the developer side, these 3 fields are manually controlled by adding the resp
 The version string displayed by IBLRIG *may* include additional fields, such as in "|version|.post3+dirty".
 Here,
 
-* ``.dev3`` indicates the third unversioned commit after the latest versioned release, and
+* ``.post3`` indicates the third unversioned commit after the latest versioned release, and
 * ``+dirty`` indicates the presence of uncommited changes in your local repository of IBLRIG.
 
 Both of these fields are inferred by `setuptools_scm <https://pypi.org/project/setuptools-scm/>`_ and do not require manual interaction from the developer.
