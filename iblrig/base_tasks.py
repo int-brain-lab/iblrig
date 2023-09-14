@@ -372,7 +372,7 @@ class BaseSession(ABC):
         self._setup_loggers(level=self.logger.level, file=logfile)
         # copy the acquisition stub to the remote session folder
         sc = BehaviorCopier(self.paths.SESSION_FOLDER, remote_subjects_folder=self.paths['REMOTE_SUBJECT_FOLDER'])
-        sc.initialize_experiment(self.experiment_description)
+        sc.initialize_experiment(self.experiment_description, overwrite=False)
         self.register_to_alyx()
 
     def run(self):
