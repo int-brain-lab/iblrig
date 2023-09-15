@@ -193,7 +193,9 @@ class SessionCopier():
         At the end of the copy, check if all the files are there and if so, aggregate the device files
         :return:
         """
-        assert number_of_expected_devices
+        if number_of_expected_devices is None:
+            log.warning(f"Number of expected devices is not specified, will not finalize this session {self.session_path}")
+            return
         ready_to_finalize = 0
         files_stub = list(self.file_remote_experiment_description.parent.glob('*.yaml'))
         for file_stub in files_stub:
