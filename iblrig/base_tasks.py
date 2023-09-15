@@ -82,7 +82,7 @@ class BaseSession(ABC):
             if update_status is True:
                 print(f"\nUpdate to iblrig {remote_version} is available!\n"
                       f"Please update by issuing:\n\n"
-                      f"   pip install --upgrade -e .\n")
+                      f"   upgrade_iblrig\n")
                 while True:
                     print("- Press [Enter] to exit IBL Rig and perform the update right away.\n"
                           "- Enter 'I will update later' to continue without updating.")

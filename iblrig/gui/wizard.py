@@ -154,7 +154,7 @@ class RigWizard(QtWidgets.QMainWindow):
     def check_for_update(self):
         update_available, remote_version = check_for_updates()
         if update_available == 1:
-            cmdBox = QtWidgets.QLineEdit('pip install --upgrade -e .')
+            cmdBox = QtWidgets.QLineEdit('upgrade_iblrig')
             cmdBox.setReadOnly(True)
             msgBox = QtWidgets.QMessageBox(parent=self)
             msgBox.setWindowTitle("Update Notice")

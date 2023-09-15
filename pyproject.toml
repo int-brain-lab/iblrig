@@ -56,6 +56,7 @@ transfer_video_data = "iblrig.commands:transfer_video_data"
 flush = "iblrig.commands:flush"
 remove-old-sessions = "iblrig.commands:remove_local_sessions"
 iblrig = "iblrig.gui.wizard:main"
+upgrade_iblrig = "iblrig.version_management:upgrade"
 
 [tool.setuptools.dynamic]
 readme = {file = "README.md", content-type = "text/markdown"}
