@@ -8,6 +8,7 @@ settings/alyx
 settings/visvis/
 docs/build
 
+pybpod_fixtures/*
 Bonsai/*
 Subjects/*
 Bonsai/Bonsai.exe.settings
