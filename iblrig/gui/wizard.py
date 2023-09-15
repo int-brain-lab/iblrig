@@ -168,7 +168,7 @@ class RigWizard(QtWidgets.QMainWindow):
                         'Straight away!', 'Of course I will!']))
             msgBox.exec_()
         self.setDisabled(False)
-        self.statusbar.showMessage(f"iblrig v{remote_version}")
+        self.statusbar.showMessage(f"iblrig v{iblrig.__version__}")
         self.update()
 
     def model2view(self):

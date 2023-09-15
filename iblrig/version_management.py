@@ -28,7 +28,7 @@ def check_for_updates():
         log.info(f'Update to iblrig {v_remote} found.')
     else:
         log.info('No update found.')
-    return (v_remote > v_local, str(v_remote) if v_remote > v_local else str(v_local))
+    return v_remote > v_local, str(v_remote)
 
 
 def update_available():
