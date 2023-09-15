@@ -17,13 +17,15 @@ jobs:
     steps:
       - name: Checkout iblrig repo
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
           cache: 'pip'
-          cache-dependency-path: '**/requirements*.txt'
+          cache-dependency-path: 'pyproject.toml'
 
       - name: flake8
         run: |
@@ -34,8 +36,7 @@ jobs:
       - name: iblrig and iblpybpod requirements
         shell: bash -l {0}
         run: |
-          pip install --editable iblrig
-          pip install -r requirements.txt
+          pip install --editable .
 
       - name: Install audio library (Ubuntu only)
         if: matrix.os == 'ubuntu-latest'

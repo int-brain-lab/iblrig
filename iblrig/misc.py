@@ -46,7 +46,8 @@ def _get_task_argument_parser(parents=None):
                         help="long description of what is occurring, something like 'Ephys recording with acute probe(s)'; "
                              "be sure to use the double quote characters to encapsulate the description and a space to separate "
                              "multiple procedures")
-    parser.add_argument('-w', '--weight', type=float, dest='subject_weight_grams', required=False, default=None)
+    parser.add_argument('-w', '--weight', type=float, dest='subject_weight_grams',
+                        required=False, default=None)
     parser.add_argument('--no-interactive', dest='interactive', action='store_false', default=True)
     parser.add_argument('--append', dest='append', action='store_true', default=False)
     parser.add_argument('--stub', type=Path, help="Path to _ibl_experiment.description.yaml stub file.")

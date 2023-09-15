@@ -1,0 +1,31 @@
+repos:
+
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+    -   id: end-of-file-fixer
+        types_or: [python, yaml, json, toml]
+    -   id: trailing-whitespace
+        types_or: [python, yaml, json, toml]
+    -   id: check-case-conflict
+    -   id: check-docstring-first
+    -   id: check-ast
+    -   id: check-yaml
+    -   id: check-json
+    -   id: check-toml
+    -   id: check-xml
+    -   id: check-vcs-permalinks
+    -   id: detect-private-key
+
+-   repo: https://github.com/pre-commit/pygrep-hooks
+    rev: v1.10.0
+    hooks:
+    -   id: python-check-blanket-type-ignore
+    -   id: python-use-type-annotations
+    -   id: python-no-log-warn
+    -   id: text-unicode-replacement-char
+
+-   repo: https://github.com/pycqa/flake8
+    rev: 6.1.0
+    hooks:
+    -   id: flake8
