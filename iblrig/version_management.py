@@ -98,6 +98,7 @@ def upgrade():
             if user_input.lower() in ['n', 'no', '']:
                 return
             if user_input.lower() in ['y', 'yes']:
+                check_call([sys.executable, "-m", "pip", "reset", "--hard"])
                 break
 
     check_call([sys.executable, "-m", "pip", "install", "-U", "-e", "."])
