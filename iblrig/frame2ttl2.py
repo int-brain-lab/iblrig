@@ -1,4 +1,6 @@
 import struct
+import time
+from pathlib import Path
 
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import QApplication, QDialog
@@ -48,19 +50,29 @@ class Frame2TTL(Serial):
 
         # try to connect and identify Frame2TTL
         try:
-            self.flushInput()
-            self.write(b'C')
+            self.handshake(raise_on_fail=True)
         except SerialTimeoutException as e:
             if is_samd21mini:
-                dev = find_device(idVendor=port_info.vid, idProduct=port_info.pid)
-                raise IOError(f'Writing to {self.portstr} timed out. This is a known '
-                              f'problem with the SAMD21 mini breakout used by '
-                              f'Frame2TTL v1. Unplugging and replugging the device is '
-                              f'the only known fix.') from e
+
+                # touch frame2ttl with magic baud rate to trigger a reboot
+                logger.info(f'Trying to reboot frame2ttl on {self.portstr} ...')
+                self.baudrate = 300
+                self.close()
+                time.sleep(1)
+
+                # try a second handshake
+                self.baudrate = kwargs["baudrate"]
+                self.open()
+                try:
+                    self.handshake(raise_on_fail=True)
+                except SerialTimeoutException as e:
+                    raise IOError(f'Writing to {self.portstr} timed out. This is a known '
+                                  f'problem with the SAMD21 mini breakout used by '
+                                  f'Frame2TTL v1. Updating the Frame2TTL firmware should '
+                                  f'alleviate the issue. Alternatively, unplugging and '
+                                  f'replugging the device should help as well.') from e
             else:
                 raise e
-        if self.read()!=bytes([218]):
-            raise IOError(f'Device on {self.portstr} is not a Frame2TTL')
 
         # get hardware version
         if is_samd21mini:
@@ -78,6 +90,14 @@ class Frame2TTL(Serial):
         self.write(struct.pack('<c?', b'S', bool))
         self.reset_input_buffer()
         self._streaming = state
+
+    def handshake(self, raise_on_fail: bool = False) -> bool:
+        self.flushInput()
+        self.write(b'C')
+        status = self.read() == bytes([218])
+        if not status and raise_on_fail:
+            raise IOError(f'Device on {self.portstr} is not a Frame2TTL')
+        return status
 
     def sample(self, n_samples: int) -> np.array:
         samples = np.array([])
@@ -144,3 +164,6 @@ class _Calibrator(QDialog):
         self.data = self.f2ttl.sample(n_samples=self.n_samples)
         self.f2ttl.streaming = False
         self.close()
+
+
+Frame2TTL('COM8')
