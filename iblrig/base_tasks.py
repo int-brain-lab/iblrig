@@ -788,7 +788,7 @@ class ValveMixin:
         self.valve = Bunch({})
         # the template settings files have a date in 2099, so assume that the rig is not calibrated if that is the case
         # the assertion on calibration is thrown when starting the device
-        self.valve['is_calibrated'] = datetime.date.today() > self.hardware_settings['device_valve']['WATER_CALIBRATION_DATE']
+        self.valve['is_calibrated'] = datetime.date.today() >= self.hardware_settings['device_valve']['WATER_CALIBRATION_DATE']
         self.valve['fcn_vol2time'] = scipy.interpolate.pchip(
             self.hardware_settings['device_valve']["WATER_CALIBRATION_WEIGHT_PERDROP"],
             self.hardware_settings['device_valve']["WATER_CALIBRATION_OPEN_TIMES"],
