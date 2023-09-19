@@ -2,9 +2,9 @@ name: Docs
 on:
   push:
     branches: [iblrigv8, docs]
-      paths:
-        - '.github/workflows/documentation.yaml'
-        - 'docs/**'
+    paths:
+      - '.github/workflows/documentation.yaml'
+      - 'docs/**'
 permissions:
     contents: write
 jobs:
