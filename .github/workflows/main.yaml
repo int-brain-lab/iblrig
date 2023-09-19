@@ -3,8 +3,12 @@ name: iblrigv8 CI
 on:
   push:
     branches: [iblrigv8]
+      paths-ignore:
+        - 'docs/**'
   pull_request:
     branches: [iblrigv8]
+      paths-ignore:
+        - 'docs/**'
 
 jobs:
   tests:
