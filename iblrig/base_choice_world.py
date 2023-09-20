@@ -45,8 +45,9 @@ class ChoiceWorldSession(
 ):
     base_parameters_file = Path(__file__).parent.joinpath('base_choice_world_params.yaml')
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, delay_secs=0, **kwargs):
         super(ChoiceWorldSession, self).__init__(**kwargs)
+        self.task_params["SESSION_DELAY_START"] = delay_secs
         # init behaviour data
         self.movement_left = self.device_rotary_encoder.THRESHOLD_EVENTS[
             self.task_params.QUIESCENCE_THRESHOLDS[0]]
@@ -80,6 +81,14 @@ class ChoiceWorldSession(
             "AirPressure_mb": np.zeros(NTRIALS_INIT) * np.NaN,
             "RelativeHumidity": np.zeros(NTRIALS_INIT) * np.NaN,
         })
+
+    @staticmethod
+    def extra_parser():
+        """ :return: argparse.parser() """
+        parser = super(ChoiceWorldSession, ChoiceWorldSession).extra_parser()
+        parser.add_argument('--delay_secs', dest='delay_secs', default=0, type=int, required=False,
+                            help="initial delay before starting the first trial (default: 0s)")
+        return parser
 
     def start_hardware(self):
         """

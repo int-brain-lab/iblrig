@@ -22,11 +22,13 @@ class TestRigWizardModel(unittest.TestCase):
         :return:
         """
         for task_name in self.wizard.all_tasks:
-            extra_args = self.wizard._get_task_extra_kwargs(task_name)
+            parser = self.wizard.get_task_extra_parser(task_name)
+            extra_args = [{act.option_strings[0]: act.type} for act in parser._actions]
             match task_name:
-                case '_iblrig_tasks_ephysChoiceWorld':
+                case '_iblrig_tasks_ephysChoiceWorld' | '_iblrig_tasks_trainingChoiceWorld':
                     assert len(extra_args) == 2
-                case '_iblrig_tasks_trainingChoiceWorld':
-                    assert len(extra_args) == 1
-                case _:
+                case '_iblrig_tasks_spontaneous' | 'plau_oddBallAudio':
                     assert len(extra_args) == 0
+                case _:
+                    print(task_name)
+                    assert len(extra_args) == 1

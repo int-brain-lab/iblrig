@@ -7,6 +7,6 @@ class Session(HabituationChoiceWorldSession):
 
 
 if __name__ == "__main__":  # pragma: no cover
-    kwargs = iblrig.misc.get_task_arguments()
+    kwargs = iblrig.misc.get_task_arguments(parents=[Session.extra_parser()])
     sess = Session(**kwargs)
     sess.run()
