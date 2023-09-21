@@ -142,9 +142,10 @@ class RigWizard(QtWidgets.QMainWindow):
         self.uiListProcedures.clicked.connect(self.enable_UI_elements)
         self.uiPushConnect.clicked.connect(self.alyx_connect)
         self.lineEditSubject.textChanged.connect(self._filter_subjects)
+
         self.running_task_process = None
-        self.taskArguments = dict()
-        self.taskSettingsWidgets = None
+        self.task_arguments = dict()
+        self.task_settings_widgets = None
 
         self.uiPushStart.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))
         self.uiPushPause.setIcon(self.style().standardIcon(QStyle.SP_MediaPause))
@@ -251,7 +252,7 @@ class RigWizard(QtWidgets.QMainWindow):
 
     def controls_for_extra_parameters(self):
         self.controller2model()
-        self.taskArguments = dict()
+        self.task_arguments = dict()
 
         #
         args_general = sorted(_get_task_argument_parser()._actions, key=lambda x: x.dest)
@@ -265,7 +266,7 @@ class RigWizard(QtWidgets.QMainWindow):
 
         group = self.uiGroupTaskParameters
         layout = group.layout()
-        self.taskSettingsWidgets = [None] * len(args)
+        self.task_settings_widgets = [None] * len(args)
 
         while layout.rowCount():
             layout.removeRow(0)
@@ -276,6 +277,7 @@ class RigWizard(QtWidgets.QMainWindow):
             label = label.replace('Id', 'ID')
             param = arg.option_strings[0]
 
+            # create widget for bool arguments
             if isinstance(arg, (argparse._StoreTrueAction, argparse._StoreFalseAction)):
                 widget = QtWidgets.QCheckBox()
                 widget.setTristate(False)
@@ -284,6 +286,7 @@ class RigWizard(QtWidgets.QMainWindow):
                 widget.toggled.connect(lambda val, a=arg: self._set_task_arg(a.option_strings[0], val > 0))
                 widget.toggled.emit(widget.isChecked() > 0)
 
+            # create widget for string arguments
             elif arg.type in (str, None):
                 if isinstance(arg.choices, list):
                     widget = QtWidgets.QComboBox()
@@ -302,6 +305,7 @@ class RigWizard(QtWidgets.QMainWindow):
                         lambda p=param, w=widget: self._set_task_arg(p, w.text()))
                     widget.editingFinished.emit()
 
+            # create widget for numerical arguments
             elif arg.type in [float, int]:
                 if arg.type == float:
                     widget = QtWidgets.QDoubleSpinBox()
@@ -314,6 +318,7 @@ class RigWizard(QtWidgets.QMainWindow):
                     lambda val, a=arg: self._set_task_arg(a.option_strings[0], str(val)))
                 widget.valueChanged.emit(widget.value())
 
+            # no other argument types supported for now
             else:
                 continue
 
@@ -338,7 +343,7 @@ class RigWizard(QtWidgets.QMainWindow):
         QtCore.QTimer.singleShot(1, self.setSize)
 
     def _set_task_arg(self, key, value):
-        self.taskArguments[key] = value
+        self.task_arguments[key] = value
 
     def setSize(self):
         self.setFixedSize(self.layout().minimumSize())
@@ -397,8 +402,8 @@ class RigWizard(QtWidgets.QMainWindow):
                     cmd.extend(['--procedures', *self.model.procedures])
                 if self.model.projects:
                     cmd.extend(['--projects', *self.model.projects])
-                for key in self.taskArguments.keys():
-                    cmd.extend([key, self.taskArguments[key]])
+                for key in self.task_arguments.keys():
+                    cmd.extend([key, self.task_arguments[key]])
                 cmd.extend(['--weight', f'{weight}'])
                 cmd.append('--no-interactive')
                 if self.uiCheckAppend.isChecked():
