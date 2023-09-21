@@ -101,4 +101,5 @@ def upgrade():
                 check_call([sys.executable, "-m", "pip", "reset", "--hard"])
                 break
 
+    check_call([sys.executable, "git", "pull"])
     check_call([sys.executable, "-m", "pip", "install", "-U", "-e", "."])

@@ -1,6 +1,8 @@
 from collections import OrderedDict
 from dataclasses import dataclass
 import importlib
+import json
+import argparse
 from pathlib import Path
 import shutil
 import subprocess
@@ -17,6 +19,7 @@ from one.api import ONE
 import iblrig_tasks
 import iblrig_custom_tasks
 import iblrig.path_helper
+from iblrig.misc import _get_task_argument_parser
 from iblrig.base_tasks import BaseSession
 from iblrig.hardware import Bpod
 from iblrig.version_management import check_for_updates
@@ -87,11 +90,10 @@ class RigWizardModel:
                 self.iblrig_settings['ALYX_LAB'], 'Subjects')
             self.all_subjects = [self.test_subject_name] + sorted(
                 [f.name for f in folder_subjects.glob('*') if f.is_dir() and f.name != self.test_subject_name])
-        file_settings = Path(iblrig.__file__).parents[1].joinpath('settings',
-                                                                  'hardware_settings.yaml')
+        file_settings = Path(iblrig.__file__).parents[1].joinpath('settings', 'hardware_settings.yaml')
         self.hardware_settings = yaml.safe_load(file_settings.read_text())
 
-    def _get_task_extra_kwargs(self, task_name=None):
+    def get_task_extra_parser(self, task_name=None):
         """
         Get the extra kwargs from the task, by importing the task and parsing the extra_parser static method
         This parser will give us a list of arguments and their types so we can build a custom dialog for this task
@@ -102,7 +104,7 @@ class RigWizardModel:
         task = importlib.util.module_from_spec(spec)
         sys.modules[spec.name] = task
         spec.loader.exec_module(task)
-        return [{act.option_strings[0]: act.type} for act in task.Session.extra_parser()._actions]
+        return task.Session.extra_parser()
 
     def connect(self, username=None, one=None):
         if one is None:
@@ -130,27 +132,48 @@ class RigWizard(QtWidgets.QMainWindow):
         self.settings = QtCore.QSettings('iblrig', 'wizard')
         self.model = RigWizardModel()
         self.model2view()
+
+        self.uiComboTask.currentIndexChanged.connect(self.controls_for_extra_parameters)
         self.uiPushHelp.clicked.connect(self.help)
         self.uiPushFlush.clicked.connect(self.flush)
-        self.uiPushStart.clicked.connect(self.startstop)
+        self.uiPushStart.clicked.connect(self.start_stop)
         self.uiPushPause.clicked.connect(self.pause)
         self.uiListProjects.clicked.connect(self.enable_UI_elements)
         self.uiListProcedures.clicked.connect(self.enable_UI_elements)
         self.uiPushConnect.clicked.connect(self.alyx_connect)
         self.lineEditSubject.textChanged.connect(self._filter_subjects)
+
         self.running_task_process = None
-        self.setDisabled(True)
+        self.task_arguments = dict()
+        self.task_settings_widgets = None
 
         self.uiPushStart.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))
         self.uiPushPause.setIcon(self.style().standardIcon(QStyle.SP_MediaPause))
         self.uiPushFlush.setIcon(self.style().standardIcon(QStyle.SP_BrowserReload))
         self.uiPushHelp.setIcon(self.style().standardIcon(QStyle.SP_DialogHelpButton))
 
-        self.checkSubProcessTimer = QtCore.QTimer()
-        self.checkSubProcessTimer.timeout.connect(self.checkSubProcess)
+        self.controller2model()
 
-        self.statusbar.showMessage("Checking for updates ...")
-        self.show()
+        self.checkSubProcessTimer = QtCore.QTimer()
+        self.checkSubProcessTimer.timeout.connect(self.check_sub_process)
+
+        # display disk stats
+        local_data = self.model.iblrig_settings['iblrig_local_data_path']
+        local_data = Path(local_data) if local_data else Path.home().joinpath('iblrig_data')
+        v8data_size = sum(file.stat().st_size for file in Path(local_data).rglob('*'))
+        total_space, total_used, total_free = shutil.disk_usage(local_data.anchor)
+        self.uiProgressDiskSpace.setStatusTip(f'utilization of drive {local_data.anchor}')
+        self.uiProgressDiskSpace.setValue(round(total_used / total_space * 100))
+        self.uiLableDiskAvailableValue.setText(f'{total_free / 1024**3 : .1f} GB')
+        self.uiLableDiskIblrigValue.setText(f'{v8data_size / 1024**3 : .1f} GB')
+
+        tmp = QtWidgets.QLabel(f'iblrig v{iblrig.__version__}')
+        tmp.setContentsMargins(4, 0, 0, 0)
+        self.statusbar.addWidget(tmp)
+        self.controls_for_extra_parameters()
+        self.setDisabled(True)
+
+        QtCore.QTimer.singleShot(1, self.check_dirty)
         QtCore.QTimer.singleShot(1, self.check_for_update)
 
     def closeEvent(self, event):
@@ -168,12 +191,25 @@ class RigWizard(QtWidgets.QMainWindow):
                 case QtWidgets.QMessageBox.Yes:
                     self.setEnabled(False)
                     self.repaint()
-                    self.startstop()
+                    self.start_stop()
                     event.accept()
 
+    def check_dirty(self):
+        if not iblrig.__version__.endswith('dirty'):
+            return
+        msg_box = QtWidgets.QMessageBox(parent=self)
+        msg_box.setWindowTitle("Warning")
+        msg_box.setText("Your copy of iblrig contains local changes.\nDon't expect things to work as intended!")
+        msg_box.setDetailedText("To reset the repository to its default state, use:\n\n    git reset --hard\n\n")
+        msg_box.setStandardButtons(QtWidgets.QMessageBox.Ok)
+        msg_box.setIcon(QtWidgets.QMessageBox().Information)
+        msg_box.exec_()
+        self.setDisabled(False)
+
     def check_for_update(self):
+        self.statusbar.showMessage("Checking for updates ...")
         update_available, remote_version = check_for_updates()
-        if update_available == 1:
+        if update_available:
             cmdBox = QtWidgets.QLineEdit('upgrade_iblrig')
             cmdBox.setReadOnly(True)
             msgBox = QtWidgets.QMessageBox(parent=self)
@@ -188,8 +224,7 @@ class RigWizard(QtWidgets.QMainWindow):
                         'Straight away!', 'Of course I will!']))
             msgBox.exec_()
         self.setDisabled(False)
-        self.statusbar.showMessage(f"iblrig v{iblrig.__version__}")
-        self.update()
+        self.statusbar.clearMessage()
 
     def model2view(self):
         # stores the current values in the model
@@ -215,6 +250,104 @@ class RigWizard(QtWidgets.QMainWindow):
         self.model.user = self.uiComboUser.currentText()
         self.model.subject = self.uiComboSubject.currentText()
 
+    def controls_for_extra_parameters(self):
+        self.controller2model()
+        self.task_arguments = dict()
+
+        #
+        args_general = sorted(_get_task_argument_parser()._actions, key=lambda x: x.dest)
+        args_general = [x for x in args_general
+                        if not any(set(x.option_strings).intersection(['--subject', '--user', '--projects',
+                                                                       '--log-level', '--procedures', '--weight',
+                                                                       '--help', '--append', '--no-interactive',
+                                                                       '--stub']))]
+        args_extra = sorted(self.model.get_task_extra_parser(self.model.task_name)._actions, key=lambda x: x.dest)
+        args = args_extra + args_general
+
+        group = self.uiGroupTaskParameters
+        layout = group.layout()
+        self.task_settings_widgets = [None] * len(args)
+
+        while layout.rowCount():
+            layout.removeRow(0)
+
+        for idx, arg in enumerate(args):
+            label = arg.option_strings[0]
+            label = label.replace('_', ' ').replace('--', '').title()
+            label = label.replace('Id', 'ID')
+            param = arg.option_strings[0]
+
+            # create widget for bool arguments
+            if isinstance(arg, (argparse._StoreTrueAction, argparse._StoreFalseAction)):
+                widget = QtWidgets.QCheckBox()
+                widget.setTristate(False)
+                if arg.default:
+                    widget.setCheckState(arg.default * 2)
+                widget.toggled.connect(lambda val, a=arg: self._set_task_arg(a.option_strings[0], val > 0))
+                widget.toggled.emit(widget.isChecked() > 0)
+
+            # create widget for string arguments
+            elif arg.type in (str, None):
+                if isinstance(arg.choices, list):
+                    widget = QtWidgets.QComboBox()
+                    widget.addItems(arg.choices)
+                    if arg.default:
+                        widget.setCurrentIndex([widget.itemText(x) for x in range(widget.count())].index(arg.default))
+                    widget.currentTextChanged.connect(
+                        lambda val, p=param: self._set_task_arg(p, val))
+                    widget.currentTextChanged.emit(widget.currentText())
+
+                else:
+                    widget = QtWidgets.QLineEdit()
+                    if arg.default:
+                        widget.setText(arg.default)
+                    widget.editingFinished.connect(
+                        lambda p=param, w=widget: self._set_task_arg(p, w.text()))
+                    widget.editingFinished.emit()
+
+            # create widget for numerical arguments
+            elif arg.type in [float, int]:
+                if arg.type == float:
+                    widget = QtWidgets.QDoubleSpinBox()
+                    widget.setDecimals(1)
+                else:
+                    widget = QtWidgets.QSpinBox()
+                if arg.default:
+                    widget.setValue(arg.default)
+                widget.valueChanged.connect(
+                    lambda val, a=arg: self._set_task_arg(a.option_strings[0], str(val)))
+                widget.valueChanged.emit(widget.value())
+
+            # no other argument types supported for now
+            else:
+                continue
+
+            # display help strings as status tip
+            if arg.help:
+                widget.setStatusTip(arg.help)
+
+            if label == 'Training Phase':
+                widget.setSpecialValueText('automatic')
+                widget.setMaximum(5)
+                widget.setMinimum(-1)
+                widget.setValue(-1)
+
+            layout.addRow(self.tr(label), widget)
+
+        # add label to indicate absence of task specific parameters
+        if layout.rowCount() == 0:
+            layout.addRow(self.tr('(none)'), None)
+            layout.itemAt(0, 0).widget().setEnabled(False)
+
+        # call timer to set size of window
+        QtCore.QTimer.singleShot(1, self.set_size)
+
+    def _set_task_arg(self, key, value):
+        self.task_arguments[key] = value
+
+    def set_size(self):
+        self.setFixedSize(self.layout().minimumSize())
+
     def alyx_connect(self):
         self.model.connect()
         self.model2view()
@@ -238,9 +371,12 @@ class RigWizard(QtWidgets.QMainWindow):
                 if self.model.session_folder.joinpath('.pause').exists():
                     self.model.session_folder.joinpath('.pause').unlink()
 
-    def startstop(self):
+    def start_stop(self):
         match self.uiPushStart.text():
             case 'Start':
+                self.uiPushStart.setText('Stop')
+                self.enable_UI_elements()
+
                 dlg = QtWidgets.QInputDialog()
                 weight, ok = dlg.getDouble(self, 'Subject Weight', 'Subject Weight (g):', value=0, min=0,
                                            flags=dlg.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
@@ -248,10 +384,12 @@ class RigWizard(QtWidgets.QMainWindow):
                     return
 
                 self.controller2model()
-                task = EmptySession(subject=self.model.subject, append=self.uiCheckAppend.isChecked(), wizard=True)
+                task = EmptySession(subject=self.model.subject, append=self.uiCheckAppend.isChecked(), interactive=False)
                 self.model.session_folder = task.paths['SESSION_FOLDER']
                 if self.model.session_folder.joinpath('.stop').exists():
                     self.model.session_folder.joinpath('.stop').unlink()
+                self.model.raw_data_folder = task.paths['SESSION_RAW_DATA_FOLDER']
+
                 # runs the python command
                 cmd = [shutil.which('python')]
                 if self.model.task_name:
@@ -264,42 +402,58 @@ class RigWizard(QtWidgets.QMainWindow):
                     cmd.extend(['--procedures', *self.model.procedures])
                 if self.model.projects:
                     cmd.extend(['--projects', *self.model.projects])
+                for key in self.task_arguments.keys():
+                    cmd.extend([key, self.task_arguments[key]])
                 cmd.extend(['--weight', f'{weight}'])
-                cmd.append('--wizard')
+                cmd.append('--no-interactive')
                 if self.uiCheckAppend.isChecked():
                     cmd.append('--append')
-                cmd.append('--wizard')
                 if self.running_task_process is None:
                     self.running_task_process = subprocess.Popen(cmd)
-                self.uiPushStart.setText('Stop')
+                self.uiPushStart.setStatusTip('stop the session after the current trial')
                 self.uiPushStart.setIcon(self.style().standardIcon(QStyle.SP_MediaStop))
-                self.checkSubProcessTimer.start(100)
+                self.checkSubProcessTimer.start(1000)
             case 'Stop':
+                self.uiPushStart.setText('Stop')
+                self.uiPushStart.setEnabled(False)
                 self.checkSubProcessTimer.stop()
                 # if the process crashed catastrophically, the session folder might not exist
                 if self.model.session_folder.exists():
                     self.model.session_folder.joinpath('.stop').touch()
+
                 # this will wait for the process to finish, usually the time for the trial to end
                 self.running_task_process.communicate()
-
                 if self.running_task_process.returncode:
                     msgBox = QtWidgets.QMessageBox(parent=self)
                     msgBox.setWindowTitle("Oh no!")
                     msgBox.setText("The task was terminated with an error.\nPlease check the command-line output for details.")
                     msgBox.setIcon(QtWidgets.QMessageBox().Critical)
                     msgBox.exec_()
-
                 self.running_task_process = None
-                self.uiPushStart.setText('Start')
-                self.uiPushStart.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))
-        self.enable_UI_elements()
 
-    def checkSubProcess(self):
-        returncode = None if self.running_task_process is None else self.running_task_process.poll()
-        if returncode is None:
+                # manage poop count
+                task_settings_file = Path(self.model.raw_data_folder).joinpath("_iblrig_taskSettings.raw.json")
+                if task_settings_file.exists():
+                    dlg = QtWidgets.QInputDialog()
+                    droppings, ok = dlg.getInt(self, 'Droppings', 'Number of droppings:', value=0, min=0,
+                                               flags=dlg.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
+                    with open(task_settings_file, "r") as fid:
+                        d = json.load(fid)
+                    d['POOP_COUNT'] = droppings
+                    with open(task_settings_file, "w") as fid:
+                        json.dump(d, fid, indent=4, sort_keys=True, default=str)
+
+                self.uiPushStart.setText('Start')
+                self.uiPushStart.setStatusTip('start the session')
+                self.uiPushStart.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))
+                self.enable_UI_elements()
+
+    def check_sub_process(self):
+        return_code = None if self.running_task_process is None else self.running_task_process.poll()
+        if return_code is None:
             return
         else:
-            self.startstop()
+            self.start_stop()
 
     def flush(self):
 
@@ -334,11 +488,9 @@ class RigWizard(QtWidgets.QMainWindow):
         self.uiPushPause.setEnabled(is_running)
         self.uiPushFlush.setEnabled(not is_running)
         self.uiCheckAppend.setEnabled(not is_running)
-        self.uiGroupUser.setEnabled(not is_running)
-        self.uiGroupSubject.setEnabled(not is_running)
-        self.uiGroupTask.setEnabled(not is_running)
-        self.uiGroupProjects.setEnabled(not is_running)
-        self.uiGroupProcedures.setEnabled(not is_running)
+        self.uiGroupParameters.setEnabled(not is_running)
+        self.uiGroupTaskParameters.setEnabled(not is_running)
+        self.uiGroupTools.setEnabled(not is_running)
         self.repaint()
 
 

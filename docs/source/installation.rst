@@ -93,6 +93,15 @@ Update iblrigv8
 
       C:\iblrigv8\venv\scripts\Activate.ps1
       cd C:\iblrigv8
+      upgrade_iblrig
+
+   alternatively, run:
+
+   .. code-block:: powershell
+
+      C:\iblrigv8\venv\scripts\Activate.ps1
+      cd C:\iblrigv8
+      git pull
       pip install --upgrade -e .
 
 
