@@ -1,6 +1,6 @@
 from packaging import version
 from pathlib import Path
-from re import sub
+from re import sub, findall
 from subprocess import check_output, check_call, SubprocessError
 import sys
 
@@ -51,18 +51,15 @@ class Remote(object):
         try:
             dir_base = Path(iblrig.__file__).parents[1]
             branch = check_output(["git", "rev-parse", "--abbrev-ref", "HEAD"],
-                                  cwd=dir_base)
-            branch = sub(r'\n', '', branch.decode())
-            check_call(["git", "fetch", "origin", branch, "-q"],
-                       cwd=dir_base, timeout=5)
-            version_str = check_output(["git", "describe", "--tags", "--abbrev=0"],
-                                       cwd=dir_base)
+                                  cwd=dir_base, timeout=5, encoding='UTF-8').removesuffix('\n')
+            check_call(["git", "fetch", "origin", branch, "-t", "-q"], cwd=dir_base, timeout=5)
+            references = check_output(["git", "ls-remote", "-t", "-q", "--exit-code", "--refs", "origin", "tags", "*"],
+                                      cwd=dir_base, timeout=5, encoding='UTF-8')
         except (SubprocessError, FileNotFoundError):
             return None
 
-        version_str = sub(r'[^\d\.]', '', version_str.decode())
         try:
-            Remote._version = version.parse(version_str)
+            Remote._version = max([version.parse(v) for v in findall(r'/([\d.]+)', references)])
             return Remote._version
         except (version.InvalidVersion, TypeError):
             return None
