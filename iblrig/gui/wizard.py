@@ -136,7 +136,7 @@ class RigWizard(QtWidgets.QMainWindow):
         self.uiComboTask.currentIndexChanged.connect(self.controls_for_extra_parameters)
         self.uiPushHelp.clicked.connect(self.help)
         self.uiPushFlush.clicked.connect(self.flush)
-        self.uiPushStart.clicked.connect(self.startstop)
+        self.uiPushStart.clicked.connect(self.start_stop)
         self.uiPushPause.clicked.connect(self.pause)
         self.uiListProjects.clicked.connect(self.enable_UI_elements)
         self.uiListProcedures.clicked.connect(self.enable_UI_elements)
@@ -155,7 +155,7 @@ class RigWizard(QtWidgets.QMainWindow):
         self.controller2model()
 
         self.checkSubProcessTimer = QtCore.QTimer()
-        self.checkSubProcessTimer.timeout.connect(self.checkSubProcess)
+        self.checkSubProcessTimer.timeout.connect(self.check_sub_process)
 
         # display disk stats
         local_data = self.model.iblrig_settings['iblrig_local_data_path']
@@ -191,7 +191,7 @@ class RigWizard(QtWidgets.QMainWindow):
                 case QtWidgets.QMessageBox.Yes:
                     self.setEnabled(False)
                     self.repaint()
-                    self.startstop()
+                    self.start_stop()
                     event.accept()
 
     def check_dirty(self):
@@ -340,12 +340,12 @@ class RigWizard(QtWidgets.QMainWindow):
             layout.itemAt(0, 0).widget().setEnabled(False)
 
         # call timer to set size of window
-        QtCore.QTimer.singleShot(1, self.setSize)
+        QtCore.QTimer.singleShot(1, self.set_size)
 
     def _set_task_arg(self, key, value):
         self.task_arguments[key] = value
 
-    def setSize(self):
+    def set_size(self):
         self.setFixedSize(self.layout().minimumSize())
 
     def alyx_connect(self):
@@ -371,7 +371,7 @@ class RigWizard(QtWidgets.QMainWindow):
                 if self.model.session_folder.joinpath('.pause').exists():
                     self.model.session_folder.joinpath('.pause').unlink()
 
-    def startstop(self):
+    def start_stop(self):
         match self.uiPushStart.text():
             case 'Start':
                 self.uiPushStart.setText('Stop')
@@ -448,12 +448,12 @@ class RigWizard(QtWidgets.QMainWindow):
                 self.uiPushStart.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))
                 self.enable_UI_elements()
 
-    def checkSubProcess(self):
+    def check_sub_process(self):
         return_code = None if self.running_task_process is None else self.running_task_process.poll()
         if return_code is None:
             return
         else:
-            self.startstop()
+            self.start_stop()
 
     def flush(self):
 
