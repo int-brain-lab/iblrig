@@ -133,7 +133,7 @@ class RigWizard(QtWidgets.QMainWindow):
         self.model = RigWizardModel()
         self.model2view()
 
-        self.uiComboTask.currentIndexChanged.connect(self.getExtraKwargs)
+        self.uiComboTask.currentIndexChanged.connect(self.controls_for_extra_parameters)
         self.uiPushHelp.clicked.connect(self.help)
         self.uiPushFlush.clicked.connect(self.flush)
         self.uiPushStart.clicked.connect(self.startstop)
@@ -145,8 +145,6 @@ class RigWizard(QtWidgets.QMainWindow):
         self.running_task_process = None
         self.taskArguments = dict()
         self.taskSettingsWidgets = None
-
-        self.setDisabled(True)
 
         self.uiPushStart.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))
         self.uiPushPause.setIcon(self.style().standardIcon(QStyle.SP_MediaPause))
@@ -171,8 +169,10 @@ class RigWizard(QtWidgets.QMainWindow):
         tmp = QtWidgets.QLabel(f'iblrig v{iblrig.__version__}')
         tmp.setContentsMargins(4, 0, 0, 0)
         self.statusbar.addWidget(tmp)
-        self.getExtraKwargs()
+        self.controls_for_extra_parameters()
+        self.setDisabled(True)
 
+        QtCore.QTimer.singleShot(1, self.check_dirty)
         QtCore.QTimer.singleShot(1, self.check_for_update)
 
     def closeEvent(self, event):
@@ -192,6 +192,18 @@ class RigWizard(QtWidgets.QMainWindow):
                     self.repaint()
                     self.startstop()
                     event.accept()
+
+    def check_dirty(self):
+        if not iblrig.__version__.endswith('dirty'):
+            return
+        msg_box = QtWidgets.QMessageBox(parent=self)
+        msg_box.setWindowTitle("Warning")
+        msg_box.setText("Your copy of iblrig contains local changes.\nDon't expect things to work as intended!")
+        msg_box.setDetailedText("To reset the repository to its default state, use:\n\n    git reset --hard\n\n")
+        msg_box.setStandardButtons(QtWidgets.QMessageBox.Ok)
+        msg_box.setIcon(QtWidgets.QMessageBox().Information)
+        msg_box.exec_()
+        self.setDisabled(False)
 
     def check_for_update(self):
         self.statusbar.showMessage("Checking for updates ...")
@@ -237,10 +249,11 @@ class RigWizard(QtWidgets.QMainWindow):
         self.model.user = self.uiComboUser.currentText()
         self.model.subject = self.uiComboSubject.currentText()
 
-    def getExtraKwargs(self):
+    def controls_for_extra_parameters(self):
         self.controller2model()
         self.taskArguments = dict()
 
+        #
         args_general = sorted(_get_task_argument_parser()._actions, key=lambda x: x.dest)
         args_general = [x for x in args_general
                         if not any(set(x.option_strings).intersection(['--subject', '--user', '--projects',
@@ -304,14 +317,15 @@ class RigWizard(QtWidgets.QMainWindow):
             else:
                 continue
 
+            # display help strings as status tip
             if arg.help:
                 widget.setStatusTip(arg.help)
 
             if label == 'Training Phase':
                 widget.setSpecialValueText('automatic')
-                widget.setMinimum(arg.default)
                 widget.setMaximum(5)
-                widget.setValue(arg.default)
+                widget.setMinimum(-1)
+                widget.setValue(-1)
 
             layout.addRow(self.tr(label), widget)
 
