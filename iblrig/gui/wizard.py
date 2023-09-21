@@ -158,16 +158,15 @@ class RigWizard(QtWidgets.QMainWindow):
         self.checkSubProcessTimer = QtCore.QTimer()
         self.checkSubProcessTimer.timeout.connect(self.checkSubProcess)
 
+        # display disk stats
         local_data = self.model.iblrig_settings['iblrig_local_data_path']
         local_data = Path(local_data) if local_data else Path.home().joinpath('iblrig_data')
         v8data_size = sum(file.stat().st_size for file in Path(local_data).rglob('*'))
         total_space, total_used, total_free = shutil.disk_usage(local_data.anchor)
-        self.uiProgressDiskSpaceV8.setRange(0, round(total_space / 1024 ** 3))
-        self.uiProgressDiskSpaceV8.setValue(round(v8data_size / 1024 ** 3))
-        self.uiProgressDiskSpaceV8.setFormat('%v GB')
-        self.uiProgressDiskSpaceOther.setRange(0, round(total_space / 1024 ** 3))
-        self.uiProgressDiskSpaceOther.setValue(round((total_used - v8data_size) / 1024 ** 3))
-        self.uiProgressDiskSpaceOther.setFormat('%v GB')
+        self.uiProgressDiskSpace.setStatusTip(f'utilization of drive {local_data.anchor}')
+        self.uiProgressDiskSpace.setValue(round(total_used / total_space * 100))
+        self.uiLableDiskAvailableValue.setText(f'{total_free / 1024**3 : .1f} GB')
+        self.uiLableDiskIblrigValue.setText(f'{v8data_size / 1024**3 : .1f} GB')
 
         tmp = QtWidgets.QLabel(f'iblrig v{iblrig.__version__}')
         tmp.setContentsMargins(4, 0, 0, 0)
@@ -245,8 +244,9 @@ class RigWizard(QtWidgets.QMainWindow):
         args_general = sorted(_get_task_argument_parser()._actions, key=lambda x: x.dest)
         args_general = [x for x in args_general
                         if not any(set(x.option_strings).intersection(['--subject', '--user', '--projects',
-                                                                       '--procedures', '--weight', '--help',
-                                                                       '--append', '--no-interactive', '--stub']))]
+                                                                       '--log-level', '--procedures', '--weight',
+                                                                       '--help', '--append', '--no-interactive',
+                                                                       '--stub']))]
         args_extra = sorted(self.model.get_task_extra_parser(self.model.task_name)._actions, key=lambda x: x.dest)
         args = args_extra + args_general
 
@@ -307,6 +307,9 @@ class RigWizard(QtWidgets.QMainWindow):
             if arg.help:
                 widget.setStatusTip(arg.help)
 
+            if label == 'Training Phase':
+                widget.setMinimum(arg.default)
+
             layout.addRow(self.tr(label), widget)
 
         # add label to indicate absence of task specific parameters
@@ -314,6 +317,7 @@ class RigWizard(QtWidgets.QMainWindow):
             layout.addRow(self.tr('(none)'), None)
             layout.itemAt(0, 0).widget().setEnabled(False)
 
+        # call timer to set size of window
         QtCore.QTimer.singleShot(1, self.setSize)
 
     def _set_task_arg(self, key, value):
