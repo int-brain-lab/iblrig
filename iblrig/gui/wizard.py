@@ -308,7 +308,10 @@ class RigWizard(QtWidgets.QMainWindow):
                 widget.setStatusTip(arg.help)
 
             if label == 'Training Phase':
+                widget.setSpecialValueText('automatic')
                 widget.setMinimum(arg.default)
+                widget.setMaximum(5)
+                widget.setValue(arg.default)
 
             layout.addRow(self.tr(label), widget)
 
