@@ -553,7 +553,7 @@ class HabituationChoiceWorldSession(ChoiceWorldSession):
             state_name="iti",
             state_timer=self.task_params.ITI_DELAY_SECS,
             state_change_conditions={"Tup": "exit"},
-            output_actions=[],
+            output_actions=[("BNC1", 255)]
         )
         return sma
 
