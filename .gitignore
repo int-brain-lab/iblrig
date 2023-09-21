@@ -35,3 +35,4 @@ app.log
 /.idea/*
 /venv/
 *.autosave
+*.code-workspace
