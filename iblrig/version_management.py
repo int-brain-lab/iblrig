@@ -11,6 +11,9 @@ log = setup_logger('iblrig')
 
 
 def check_for_updates():
+
+    return False, iblrig.__version__
+
     log.info('Checking for updates ...')
 
     try:

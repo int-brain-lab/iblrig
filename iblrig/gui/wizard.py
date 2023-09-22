@@ -207,6 +207,8 @@ class RigWizard(QtWidgets.QMainWindow):
         self.setDisabled(False)
 
     def check_for_update(self):
+        self.setDisabled(False)
+        return
         self.statusbar.showMessage("Checking for updates ...")
         update_available, remote_version = check_for_updates()
         if update_available:
@@ -260,7 +262,7 @@ class RigWizard(QtWidgets.QMainWindow):
                         if not any(set(x.option_strings).intersection(['--subject', '--user', '--projects',
                                                                        '--log-level', '--procedures', '--weight',
                                                                        '--help', '--append', '--no-interactive',
-                                                                       '--stub']))]
+                                                                       '--stub', '--wizard']))]
         args_extra = sorted(self.model.get_task_extra_parser(self.model.task_name)._actions, key=lambda x: x.dest)
         args = args_extra + args_general
 
@@ -405,7 +407,7 @@ class RigWizard(QtWidgets.QMainWindow):
                 for key in self.task_arguments.keys():
                     cmd.extend([key, self.task_arguments[key]])
                 cmd.extend(['--weight', f'{weight}'])
-                # cmd.append('--no-interactive')
+                cmd.append('--wizard')
                 if self.uiCheckAppend.isChecked():
                     cmd.append('--append')
                 if self.running_task_process is None:

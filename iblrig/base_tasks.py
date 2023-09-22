@@ -54,7 +54,7 @@ class BaseSession(ABC):
     def __init__(self, subject=None, task_parameter_file=None, file_hardware_settings=None,
                  hardware_settings=None, file_iblrig_settings=None, iblrig_settings=None,
                  one=None, interactive=True, projects=None, procedures=None, stub=None, subject_weight_grams=None,
-                 append=False, log_level='INFO'):
+                 append=False, wizard=False, log_level='INFO'):
         """
         :param subject: The subject nickname. Required.
         :param task_parameter_file: an optional path to the task_parameters.yaml file
@@ -77,7 +77,7 @@ class BaseSession(ABC):
         self.logger.info(f"Running iblrig {iblrig.__version__}, pybpod version {pybpodapi.__version__}")
 
         # check for update
-        if interactive and not BaseSession.checked_for_update:
+        if not wizard and not BaseSession.checked_for_update:
             BaseSession.checked_for_update = True
             update_status, remote_version = check_for_updates()
             if update_status is True:

@@ -53,6 +53,7 @@ def _get_task_argument_parser(parents=None):
     parser.add_argument('--stub', type=Path, help="Path to _ibl_experiment.description.yaml stub file.")
     parser.add_argument('--log-level', default="INFO", help="verbosity of the console logger (default: INFO)",
                         choices=['NOTSET', 'DEBUG', 'INFO', 'WARN', 'ERROR', 'CRITICAL'])
+    parser.add_argument('--wizard', dest='wizard', action='store_true')
     return parser
 
 
