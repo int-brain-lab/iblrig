@@ -173,8 +173,8 @@ class RigWizard(QtWidgets.QMainWindow):
         self.controls_for_extra_parameters()
         self.setDisabled(True)
 
-        QtCore.QTimer.singleShot(1, self.check_dirty)
-        QtCore.QTimer.singleShot(1, self.check_for_update)
+        QtCore.QTimer.singleShot(50, self.check_dirty)
+        QtCore.QTimer.singleShot(100, self.check_for_update)
 
     def closeEvent(self, event):
         if self.running_task_process is None:
@@ -207,23 +207,20 @@ class RigWizard(QtWidgets.QMainWindow):
         self.setDisabled(False)
 
     def check_for_update(self):
-        self.setDisabled(False)
-        return
         self.statusbar.showMessage("Checking for updates ...")
         update_available, remote_version = check_for_updates()
-        if update_available:
+        if not update_available:
             cmdBox = QtWidgets.QLineEdit('upgrade_iblrig')
             cmdBox.setReadOnly(True)
             msgBox = QtWidgets.QMessageBox(parent=self)
             msgBox.setWindowTitle("Update Notice")
             msgBox.setText(f"Update to iblrig {remote_version} is available.\n\n"
-                           f"Please update iblrig by issuing:")
+                           f"To update iblrig:\n"
+                           f" - close the IBL Rig Wizard\n"
+                           f" - issue the following command:\n")
             msgBox.setStandardButtons(QtWidgets.QMessageBox.Ok)
             msgBox.setIcon(QtWidgets.QMessageBox().Information)
             msgBox.layout().addWidget(cmdBox, 1, 2)
-            msgBox.findChild(QtWidgets.QPushButton).setText(
-                choice(['Yes, I promise!', 'I will do so immediately!',
-                        'Straight away!', 'Of course I will!']))
             msgBox.exec_()
         self.setDisabled(False)
         self.statusbar.clearMessage()

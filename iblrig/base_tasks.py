@@ -75,26 +75,6 @@ class BaseSession(ABC):
         self.logger = None
         self._setup_loggers(level=log_level)
         self.logger.info(f"Running iblrig {iblrig.__version__}, pybpod version {pybpodapi.__version__}")
-
-        # check for update
-        if not wizard and not BaseSession.checked_for_update:
-            BaseSession.checked_for_update = True
-            update_status, remote_version = check_for_updates()
-            if update_status is True:
-                print(f"\nUpdate to iblrig {remote_version} is available!\n"
-                      f"Please update by issuing:\n\n"
-                      f"   upgrade_iblrig\n")
-                while True:
-                    print("- Press [Enter] to exit IBL Rig and perform the update right away.\n"
-                          "- Enter 'I will update later' to continue without updating.")
-                    response = input('Your response: ')
-                    if response == '':
-                        print("\nEnter 'git pull' - then restart iblrig. Thanks for keeping iblrig up to date!")
-                        exit()
-                    elif response == 'I will update later':
-                        print("\nPlease do so!")
-                        break
-
         self.interactive = False if append else interactive
         self._one = one
         self.init_datetime = datetime.datetime.now()
