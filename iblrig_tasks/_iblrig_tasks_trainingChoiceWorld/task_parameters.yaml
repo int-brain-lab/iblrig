@@ -1,5 +1,5 @@
 'ADAPTIVE_GAIN': True
-'ADAPTIVE_REWARD': True
+'ADAPTIVE_REWARD': False
 'AG_INIT_VALUE': 8.0  # Adaptive Gain init value (azimuth_degree/mm)
 'AG_MIN_VALUE': 4.0  # (azimuth_degree/mm)
 'CONTRAST_SET': [1.0, 0.5, 0.25, 0.125, 0.0625, 0.0]
