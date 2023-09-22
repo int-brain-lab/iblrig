@@ -405,7 +405,7 @@ class RigWizard(QtWidgets.QMainWindow):
                 for key in self.task_arguments.keys():
                     cmd.extend([key, self.task_arguments[key]])
                 cmd.extend(['--weight', f'{weight}'])
-                cmd.append('--no-interactive')
+                # cmd.append('--no-interactive')
                 if self.uiCheckAppend.isChecked():
                     cmd.append('--append')
                 if self.running_task_process is None:
