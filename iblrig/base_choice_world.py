@@ -691,10 +691,10 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
 
     def __init__(self, training_phase=-1, **kwargs):
         super(TrainingChoiceWorldSession, self).__init__(**kwargs)
-        from iblrig.choiceworld import get_training_phase
+        from iblrig.choiceworld import get_training_info
         if training_phase == -1:
             try:
-                training_phase = get_training_phase(self.session_info.SUBJECT_NAME)
+                training_phase = get_training_info(self.session_info.SUBJECT_NAME)
                 self.logger.warning(f"Got training phase: {training_phase}")
             except Exception as ex:
                 self.logger.debug('Failed to get training phase: %s', ex)
