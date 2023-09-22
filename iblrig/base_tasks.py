@@ -36,7 +36,6 @@ import iblrig.sound as sound
 import iblrig.spacer
 import iblrig.alyx
 import iblrig.graphic as graph
-from iblrig.version_management import check_for_updates
 import ibllib.io.session_params as ses_params
 from iblrig.transfer_experiments import BehaviorCopier
 

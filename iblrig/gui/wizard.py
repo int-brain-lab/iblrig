@@ -10,7 +10,6 @@ import sys
 import yaml
 import traceback
 import webbrowser
-from random import choice
 
 from PyQt5 import QtWidgets, QtCore, uic
 from PyQt5.QtWidgets import QStyle
@@ -173,7 +172,7 @@ class RigWizard(QtWidgets.QMainWindow):
         self.controls_for_extra_parameters()
         self.setDisabled(True)
 
-        QtCore.QTimer.singleShot(50, self.check_dirty)
+        QtCore.QTimer.singleShot(100, self.check_dirty)
         QtCore.QTimer.singleShot(100, self.check_for_update)
 
     def closeEvent(self, event):
@@ -209,7 +208,9 @@ class RigWizard(QtWidgets.QMainWindow):
     def check_for_update(self):
         self.statusbar.showMessage("Checking for updates ...")
         update_available, remote_version = check_for_updates()
-        if not update_available:
+        self.statusbar.clearMessage()
+        self.setDisabled(False)
+        if update_available:
             cmdBox = QtWidgets.QLineEdit('upgrade_iblrig')
             cmdBox.setReadOnly(True)
             msgBox = QtWidgets.QMessageBox(parent=self)
@@ -222,8 +223,6 @@ class RigWizard(QtWidgets.QMainWindow):
             msgBox.setIcon(QtWidgets.QMessageBox().Information)
             msgBox.layout().addWidget(cmdBox, 1, 2)
             msgBox.exec_()
-        self.setDisabled(False)
-        self.statusbar.clearMessage()
 
     def model2view(self):
         # stores the current values in the model
