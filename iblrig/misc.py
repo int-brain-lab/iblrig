@@ -48,11 +48,12 @@ def _get_task_argument_parser(parents=None):
                              "multiple procedures")
     parser.add_argument('-w', '--weight', type=float, dest='subject_weight_grams',
                         required=False, default=None)
-    parser.add_argument('--no-interactive', dest='interactive', action='store_false', default=True)
-    parser.add_argument('--append', dest='append', action='store_true', default=False)
+    parser.add_argument('--no-interactive', dest='interactive', action='store_false')
+    parser.add_argument('--append', dest='append', action='store_true')
     parser.add_argument('--stub', type=Path, help="Path to _ibl_experiment.description.yaml stub file.")
-    parser.add_argument('--log-level', type=str, help="Logger level", default="INFO")
-    parser.add_argument('--wizard', action='store_true', default=False)
+    parser.add_argument('--log-level', default="INFO", help="verbosity of the console logger (default: INFO)",
+                        choices=['NOTSET', 'DEBUG', 'INFO', 'WARN', 'ERROR', 'CRITICAL'])
+    parser.add_argument('--wizard', dest='wizard', action='store_true')
     return parser
 
 
@@ -60,11 +61,10 @@ def _post_parse_arguments(**kwargs):
     """
     This is called to post-process the arguments after parsing. It is used to force the interactive
     mode to True (as it is a call from a user) and to override the settings file value for the user.
-    This function is split for unit-test puprposes.
+    This function is split for unit-test purposes.
     :param kwargs:
     :return:
     """
-    kwargs['interactive'] = True
     # if the user is specified, then override the settings file value
     user = kwargs.pop('user')
     if user is not None:

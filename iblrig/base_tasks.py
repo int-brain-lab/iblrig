@@ -54,7 +54,7 @@ class BaseSession(ABC):
     def __init__(self, subject=None, task_parameter_file=None, file_hardware_settings=None,
                  hardware_settings=None, file_iblrig_settings=None, iblrig_settings=None,
                  one=None, interactive=True, projects=None, procedures=None, stub=None, subject_weight_grams=None,
-                 append=False, log_level='INFO', wizard=False):
+                 append=False, wizard=False, log_level='INFO'):
         """
         :param subject: The subject nickname. Required.
         :param task_parameter_file: an optional path to the task_parameters.yaml file
@@ -114,16 +114,19 @@ class BaseSession(ABC):
         # Load the tasks settings, from the task folder or override with the input argument
         task_parameter_file = task_parameter_file or Path(inspect.getfile(self.__class__)).parent.joinpath('task_parameters.yaml')
         self.task_params = Bunch({})
+
         # first loads the base parameters for a given task
         if self.base_parameters_file is not None and self.base_parameters_file.exists():
             with open(self.base_parameters_file) as fp:
                 self.task_params = Bunch(yaml.safe_load(fp))
+
         # then updates the dictionary with the child task parameters
         if task_parameter_file.exists():
             with open(task_parameter_file) as fp:
                 task_params = yaml.safe_load(fp)
             if task_params is not None:
                 self.task_params.update(Bunch(task_params))
+
         self.session_info = Bunch({
             'NTRIALS': 0,
             'NTRIALS_CORRECT': 0,
@@ -430,7 +433,8 @@ class BaseSession(ABC):
         Make sure you instantiate the parser
         :return: argparse.parser()
         """
-        return argparse.ArgumentParser(add_help=False)
+        parser = argparse.ArgumentParser(add_help=False)
+        return parser
 
 
 class OSCClient(udp_client.SimpleUDPClient):

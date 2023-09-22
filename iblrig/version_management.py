@@ -13,6 +13,9 @@ _remote_version = None
 
 
 def check_for_updates():
+
+    return False, iblrig.__version__
+
     log.info('Checking for updates ...')
 
     v_remote = get_remote_version()

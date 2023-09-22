@@ -2,7 +2,6 @@
 The ephys choice world task is the same as the biased choice world except that
 the trials are pregenerated and saved in a fixture file.
 """
-import argparse
 from pathlib import Path
 
 import pandas as pd
@@ -15,9 +14,8 @@ class Session(BiasedChoiceWorldSession):
     protocol_name = "_iblrig_tasks_ephysChoiceWorld"
     extractor_tasks = ['TrialRegisterRaw', 'ChoiceWorldTrials', 'TrainingStatus']
 
-    def __init__(self, *args, session_template_id=0, delay_secs=0, **kwargs):
+    def __init__(self, *args, session_template_id=0, **kwargs):
         super(Session, self).__init__(*args, **kwargs)
-        self.task_params.SESSION_START_DELAY_SEC = delay_secs
         self.task_params.SESSION_TEMPLATE_ID = session_template_id
         trials_table = pd.read_parquet(Path(__file__).parent.joinpath('trials_fixtures.pqt'))
         self.trials_table = trials_table.loc[
@@ -32,10 +30,9 @@ class Session(BiasedChoiceWorldSession):
     @staticmethod
     def extra_parser():
         """ :return: argparse.parser() """
-        parser = argparse.ArgumentParser(add_help=False)
+        parser = super(Session, Session).extra_parser()
         parser.add_argument('--session_template_id', option_strings=['--session_template_id'],
                             dest='session_template_id', default=0, type=int)
-        parser.add_argument('--delay_secs', option_strings=['--delay_secs'], dest='delay_secs', default=0, type=int)
         return parser
 
 
