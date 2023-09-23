@@ -10,6 +10,8 @@ import sys
 import yaml
 import traceback
 import webbrowser
+import ctypes
+import os
 
 from PyQt5 import QtWidgets, QtCore, uic
 from PyQt5.QtWidgets import QStyle
@@ -493,6 +495,9 @@ class RigWizard(QtWidgets.QMainWindow):
 
 
 def main():
+    if os.name == 'nt':
+        appid = f'IBL.iblrig.wizard.{iblrig.__version__}'
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(appid)
     app = QtWidgets.QApplication([])
     app.setStyle("Fusion")
     w = RigWizard()
