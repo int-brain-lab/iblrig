@@ -33,7 +33,7 @@ dependencies = [
     "PySocks",
     "PyYAML",
     "scipy",
-    "setuptools_scm>8",
+    "setuptools_scm>8.0.2",
     "sounddevice",
 ]
 

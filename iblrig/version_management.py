@@ -31,7 +31,7 @@ def check_for_updates() -> tuple[bool, Union[str, None]]:
             log.info('No update available.')
         update_available = v_remote > v_local
 
-    return update_available, v_remote.base_version
+    return update_available, v_remote.base_version if v_remote else ''
 
 
 def get_local_version() -> Union[version.Version, None]:
@@ -66,7 +66,7 @@ def get_remote_version() -> Union[version.Version, None]:
         return None
     try:
         log.debug('Parsing local version string')
-        _remote_version = max([version.parse(v) for v in findall(r'/([\d.]+)', references)])
+        _remote_version = max([version.parse(v) for v in findall(r'/(\d+\.\d+\.\d+)', references)])
         return _remote_version
     except (version.InvalidVersion, TypeError):
         log.error('Could not parse remote version string')
