@@ -107,10 +107,6 @@ class BaseSession(ABC):
         self.iblrig_settings = iblrig.path_helper.load_settings_yaml(file_iblrig_settings or 'iblrig_settings.yaml')
         if iblrig_settings is not None:
             self.iblrig_settings.update(iblrig_settings)
-        if self.iblrig_settings['iblrig_local_data_path'] is None:
-            self.iblrig_settings['iblrig_local_data_path'] = Path.home().joinpath('iblrig_data')
-        else:
-            self.iblrig_settings['iblrig_local_data_path'] = Path(self.iblrig_settings['iblrig_local_data_path'])
         # Load the tasks settings, from the task folder or override with the input argument
         task_parameter_file = task_parameter_file or Path(inspect.getfile(self.__class__)).parent.joinpath('task_parameters.yaml')
         self.task_params = Bunch({})
@@ -171,17 +167,18 @@ class BaseSession(ABC):
         DATA_FILE_PATH: contains the bpod trials
             >>> C:\iblrigv8_data\mainenlab\Subjects\SWC_043\2019-01-01\001\raw_task_data_00\_iblrig_taskData.raw.jsonable  # noqa
         """
+        rig_computer_paths = iblrig.path_helper.get_local_and_remote_paths(
+            local_path=self.iblrig_settings['iblrig_local_data_path'],
+            remote_path=self.iblrig_settings['iblrig_remote_data_path'],
+            lab=self.iblrig_settings['ALYX_LAB']
+        )
         paths = Bunch({'IBLRIG_FOLDER': Path(iblrig.__file__).parents[1]})
         paths.BONSAI = paths.IBLRIG_FOLDER.joinpath('Bonsai', 'Bonsai.exe')
         paths.VISUAL_STIM_FOLDER = paths.IBLRIG_FOLDER.joinpath('visual_stim')
-        paths.LOCAL_SUBJECT_FOLDER = self.iblrig_settings['iblrig_local_data_path'].joinpath(
-            self.iblrig_settings['ALYX_LAB'] or '', 'Subjects')
-        paths.REMOTE_SUBJECT_FOLDER = (Path(self.iblrig_settings['iblrig_remote_data_path']).joinpath('Subjects')
-                                       if self.iblrig_settings['iblrig_remote_data_path'] else None)
+        paths.LOCAL_SUBJECT_FOLDER = rig_computer_paths['local_subjects_folder']
+        paths.REMOTE_SUBJECT_FOLDER = rig_computer_paths['remote_subjects_folder']
         # initialize the session path
-        date_folder = self.iblrig_settings['iblrig_local_data_path'].joinpath(
-            self.iblrig_settings['ALYX_LAB'] or '',
-            'Subjects',
+        date_folder = paths.LOCAL_SUBJECT_FOLDER.joinpath(
             self.session_info.SUBJECT_NAME,
             self.session_info.SESSION_START_TIME[:10],
         )

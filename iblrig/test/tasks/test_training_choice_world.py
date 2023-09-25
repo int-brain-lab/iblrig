@@ -17,7 +17,6 @@ class TestInstantiationTraining(BaseTestCases.CommonTestInstantiateTask):
             task = TrainingChoiceWorldSession(**TASK_KWARGS)
             task.training_phase = training_phase
             task.create_session()
-
             for i in np.arange(nt):
                 task.next_trial()
                 # pc = task.psychometric_curve()
@@ -27,7 +26,6 @@ class TestInstantiationTraining(BaseTestCases.CommonTestInstantiateTask):
                     assert task.trials_table['trial_correct'][task.trial_num]
                 else:
                     assert not task.trials_table['trial_correct'][task.trial_num]
-
                 if i == 245:
                     task.show_trial_log()
                 assert not np.isnan(task.reward_time)

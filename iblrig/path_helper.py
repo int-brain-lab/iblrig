@@ -9,25 +9,104 @@ import subprocess
 import yaml
 
 from packaging import version
+import numpy as np
 
 from iblutil.util import Bunch
 import iblrig
+from ibllib.io import session_params
 
 log = logging.getLogger("iblrig")
 
 
-def get_local_and_remote_paths(local_subjects_path=None, remote_subjects_path=None):
+def iterate_previous_sessions(subject_name, task_name, n=1, **kwargs):
+    """
+    This function iterates over the sessions of a given subject in both the remote and local path
+    and searches for a given protocol name. It returns the information of the last n found
+    matching protocols in the form of a dictionary
+    :param subject_name:
+    :param task_name: name of the protocol to look for in experiment description : '_iblrig_tasks_trainingChoiceWorld'
+    :param **kwargs: optional arguments to be passed to iblrig.path_helper.get_local_and_remote_paths
+    if not used, will use the arguments from iblrig/settings/iblrig_settings.yaml
+    :return:
+        list of dictionaries with keys: session_path, experiment_description, task_settings, file_task_data
+    """
+    rig_paths = get_local_and_remote_paths(**kwargs)
+    sessions = _iterate_protocols(
+        rig_paths.local_subjects_folder.joinpath(subject_name), task_name=task_name, n=n)
+    if rig_paths.remote_subjects_folder is not None:
+        remote_sessions = _iterate_protocols(
+            rig_paths.remote_subjects_folder.joinpath(subject_name), task_name=task_name, n=n)
+        sessions.extend(remote_sessions)
+        _, ises = np.unique([s['session_stub'] for s in sessions], return_index=True)
+        sessions = [sessions[i] for i in ises]
+    return sessions
+
+
+def _iterate_protocols(subject_folder, task_name, n=1):
+    """
+    This function iterates over the sessions of a given subject and searches for a given protocol name
+    It will then return the information of the last n found matching protocols in the form of a
+    dictionary
+    :param subject_folder:
+    :param task_name: name of the protocol to look for in experiment description : '_iblrig_tasks_trainingChoiceWorld'
+    :param n: number of maximum protocols to return
+    :return:
+        list of dictionaries with keys: session_stub, session_path, experiment_description, task_settings, file_task_data
+    """
+    protocols = []
+    if subject_folder is None or Path(subject_folder).exists() is False:
+        return protocols
+    for file_experiment in sorted(subject_folder.rglob('_ibl_experiment.description*.yaml'), reverse=True):
+        session_path = file_experiment.parent
+        ad = session_params.read_params(file_experiment)
+        if task_name not in ad['tasks'][0]:
+            continue
+        # reversed: we look for the last task first if the protocol ran twice
+        for ad_task in reversed(ad['tasks']):
+            adt = ad_task.get(task_name, None)
+            if not adt:
+                return
+            task_settings = iblrig.raw_data_loaders.load_settings(session_path, collection=adt['collection'])
+            if task_settings.get('NTRIALS', 43) < 42:  # we consider that under 42 trials it is a dud session
+                continue
+            protocols.append({
+                'session_stub': '_'.join(file_experiment.parent.parts[-2:]),  # 2019-01-01_001
+                'session_path': file_experiment.parent,
+                'task_collection': adt['collection'],
+                'experiment_description': ad,
+                'task_settings': task_settings,
+                'file_task_data': session_path.joinpath(adt['collection'], '_iblrig_taskData.raw.jsonable')
+            })
+            if len(protocols) >= n:
+                return protocols
+    return protocols
+
+
+def get_local_and_remote_paths(local_path=None, remote_path=None, lab=None):
     """
     Function used to parse input arguments to transfer commands. If the arguments are None, reads in the settings
-    and returns the values from the files, otherwise
-    :param local_subjects_path:
-    :param remote_subjects_path:
-    :return:
+    and returns the values from the files.
+    local_subects_path alwawys has a fallback on the home directory / ilbrig_data
+    remote_subjects_path has no fallback and will return None when all options are exhausted
+    :param local_path:
+    :param remote_path:
+    :param lab:
+    :return: dictionary, with following keys (example output)
+       {'local_data_folder': PosixPath('C:/iblrigv8_data'),
+        'remote_data_folder': PosixPath('Y:/'),
+        'local_subjects_folder': PosixPath('C:/iblrigv8_data/mainenlab/Subjects'),
+        'remote_subjects_folder': PosixPath('Y:/Subjects')}
     """
     iblrig_settings = load_settings_yaml()
-    local_subjects_path = local_subjects_path or Path(iblrig_settings['iblrig_local_data_path'])
-    remote_subjects_path = remote_subjects_path or Path(iblrig_settings['iblrig_remote_data_path']).joinpath('Subjects')
-    return local_subjects_path, remote_subjects_path
+    paths = Bunch({'local_data_folder': local_path, 'remote_data_folder': remote_path})
+    if paths.local_data_folder is None:
+        paths.local_data_folder = Path(p) if (p := iblrig_settings['iblrig_local_data_path'])\
+            else Path.home().joinpath('iblrig_data')
+    if paths.remote_data_folder is None:
+        paths.remote_data_folder = Path(p) if (p := iblrig_settings['iblrig_remote_data_path']) else None
+    paths.local_subjects_folder = paths.local_data_folder.joinpath(lab or iblrig_settings['ALYX_LAB'] or '', 'Subjects')
+    paths.remote_subjects_folder = Path(p).joinpath('Subjects') if (p := paths.remote_data_folder) else None
+    return paths
 
 
 def load_settings_yaml(file_name='iblrig_settings.yaml', mode='raise'):

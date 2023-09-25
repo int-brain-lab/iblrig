@@ -691,10 +691,9 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
 
     def __init__(self, training_phase=-1, **kwargs):
         super(TrainingChoiceWorldSession, self).__init__(**kwargs)
-        from iblrig.choiceworld import get_training_info
         if training_phase == -1:
             try:
-                training_phase = get_training_info(self.session_info.SUBJECT_NAME)
+                training_phase, _ = self.get_subject_training_info()
                 self.logger.warning(f"Got training phase: {training_phase}")
             except Exception as ex:
                 self.logger.debug('Failed to get training phase: %s', ex)
@@ -703,9 +702,7 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
                         "Subject training phase", "Subject training phase: (0-5)",
                         askint=True, nullable=False, default=0, minval=0, maxval=5)
                 else:
-                    self.logger.warning(f"Could not get training phase from Alyx: {traceback.format_exc()}, please set it"
-                                        f"manually in ./iblrig_tasks/_iblrig_tasks_trainingChoiceWorld/task.py"
-                                        f"training phase is set 0 for this session")
+                    self.logger.warning(f"Could not get training phase from Alyx: {traceback.format_exc()}")
                     training_phase = 0
         else:
             self.logger.warning(f"Training phase manually set to: {training_phase}")
@@ -716,6 +713,13 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
         }
         self.trials_table['training_phase'] = np.zeros(NTRIALS_INIT, dtype=np.int8)
         self.trials_table['debias_trial'] = np.zeros(NTRIALS_INIT, dtype=bool)
+
+    def get_subject_training_info(self):
+        training_phase, adaptive_reward = choiceworld.get_subject_training_info(
+            self.session_info.SUBJECT_NAME,
+            task_name=self.protocol_name
+        )
+        return training_phase, adaptive_reward
 
     def compute_performance(self):
         """
