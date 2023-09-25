@@ -25,10 +25,9 @@ from iblrig.misc import _get_task_argument_parser
 from iblrig.base_tasks import BaseSession
 from iblrig.hardware import Bpod
 from iblrig.version_management import check_for_updates
-from pybpodapi import exceptions
-
 from iblrig.gui.ui_wizard import Ui_wizard
 from iblrig.gui.ui_update import Ui_update
+from pybpodapi import exceptions
 
 PROCEDURES = [
     'Behavior training/tasks',
