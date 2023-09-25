@@ -43,6 +43,7 @@ PROJECTS = [
     'practice'
 ]
 
+WIZARD_PNG = str(Path(BASE_DIR).joinpath('iblrig', 'gui', 'wizard.png'))
 
 # this class gets called to get the path constructor utility to predict the session path
 class EmptySession(BaseSession):
@@ -133,7 +134,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
     def __init__(self, *args, **kwargs):
         super(RigWizard, self).__init__(*args, **kwargs)
         self.setupUi(self)
-        self.setWindowIcon(QtGui.QIcon('wizard.png'))
+        self.setWindowIcon(QtGui.QIcon(WIZARD_PNG))
 
         self.settings = QtCore.QSettings('iblrig', 'wizard')
         self.model = RigWizardModel()
@@ -510,8 +511,8 @@ class UpdateNotice(QtWidgets.QDialog, Ui_update):
             changelog = f.read()
         self.uiTextBrowserChanges.setMarkdown(changelog)
         self.uiTextBrowserChanges.setHtml(self.uiTextBrowserChanges.toHtml())
-        self.uiLabelLogo.setPixmap(QtGui.QPixmap("wizard.png"))
-        self.setWindowIcon(QtGui.QIcon('wizard.png'))
+        self.uiLabelLogo.setPixmap(QtGui.QPixmap(WIZARD_PNG))
+        self.setWindowIcon(QtGui.QIcon(WIZARD_PNG))
         self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
 
 
