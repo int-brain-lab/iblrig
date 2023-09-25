@@ -10,19 +10,23 @@ import sys
 import yaml
 import traceback
 import webbrowser
-from random import choice
+import ctypes
+import os
 
-from PyQt5 import QtWidgets, QtCore, uic
+from PyQt5 import QtWidgets, QtCore, QtGui
 from PyQt5.QtWidgets import QStyle
 
 from one.api import ONE
 import iblrig_tasks
 import iblrig_custom_tasks
 import iblrig.path_helper
+from iblrig.constants import BASE_DIR
 from iblrig.misc import _get_task_argument_parser
 from iblrig.base_tasks import BaseSession
 from iblrig.hardware import Bpod
 from iblrig.version_management import check_for_updates
+from iblrig.gui.ui_wizard import Ui_wizard
+from iblrig.gui.ui_update import Ui_update
 from pybpodapi import exceptions
 
 PROCEDURES = [
@@ -38,6 +42,8 @@ PROJECTS = [
     'ibl_neuropixel_brainwide_01',
     'practice'
 ]
+
+WIZARD_PNG = str(Path(BASE_DIR).joinpath('iblrig', 'gui', 'wizard.png'))
 
 
 # this class gets called to get the path constructor utility to predict the session path
@@ -125,10 +131,12 @@ class RigWizardModel:
         self.all_projects = sorted(set(projects + self.all_projects))
 
 
-class RigWizard(QtWidgets.QMainWindow):
+class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
     def __init__(self, *args, **kwargs):
         super(RigWizard, self).__init__(*args, **kwargs)
-        uic.loadUi(Path(__file__).parent.joinpath('wizard.ui'), self)
+        self.setupUi(self)
+        self.setWindowIcon(QtGui.QIcon(WIZARD_PNG))
+
         self.settings = QtCore.QSettings('iblrig', 'wizard')
         self.model = RigWizardModel()
         self.model2view()
@@ -164,17 +172,17 @@ class RigWizard(QtWidgets.QMainWindow):
         total_space, total_used, total_free = shutil.disk_usage(local_data.anchor)
         self.uiProgressDiskSpace.setStatusTip(f'utilization of drive {local_data.anchor}')
         self.uiProgressDiskSpace.setValue(round(total_used / total_space * 100))
-        self.uiLableDiskAvailableValue.setText(f'{total_free / 1024**3 : .1f} GB')
-        self.uiLableDiskIblrigValue.setText(f'{v8data_size / 1024**3 : .1f} GB')
+        self.uiLableDiskAvailableValue.setText(f'{total_free / 1024 ** 3 : .1f} GB')
+        self.uiLableDiskIblrigValue.setText(f'{v8data_size / 1024 ** 3 : .1f} GB')
 
         tmp = QtWidgets.QLabel(f'iblrig v{iblrig.__version__}')
         tmp.setContentsMargins(4, 0, 0, 0)
         self.statusbar.addWidget(tmp)
         self.controls_for_extra_parameters()
-        self.setDisabled(True)
 
-        QtCore.QTimer.singleShot(1, self.check_dirty)
-        QtCore.QTimer.singleShot(1, self.check_for_update)
+        self.setDisabled(True)
+        QtCore.QTimer.singleShot(100, self.check_dirty)
+        QtCore.QTimer.singleShot(100, self.check_for_update)
 
     def closeEvent(self, event):
         if self.running_task_process is None:
@@ -195,6 +203,19 @@ class RigWizard(QtWidgets.QMainWindow):
                     event.accept()
 
     def check_dirty(self):
+        """
+        Check if the iblrig installation contains local changes.
+
+        This method checks if the installed version of iblrig contains local changes
+        (indicated by the version string ending with 'dirty'). If local changes are
+        detected, it displays a warning message to inform the user about potential
+        issues and provides instructions on how to reset the repository to its
+        default state.
+
+        Returns
+        -------
+        None
+        """
         if not iblrig.__version__.endswith('dirty'):
             return
         msg_box = QtWidgets.QMessageBox(parent=self)
@@ -204,29 +225,16 @@ class RigWizard(QtWidgets.QMainWindow):
         msg_box.setStandardButtons(QtWidgets.QMessageBox.Ok)
         msg_box.setIcon(QtWidgets.QMessageBox().Information)
         msg_box.exec_()
-        self.setDisabled(False)
 
     def check_for_update(self):
-        self.setDisabled(False)
-        return
-        self.statusbar.showMessage("Checking for updates ...")
         update_available, remote_version = check_for_updates()
-        if update_available:
-            cmdBox = QtWidgets.QLineEdit('upgrade_iblrig')
-            cmdBox.setReadOnly(True)
-            msgBox = QtWidgets.QMessageBox(parent=self)
-            msgBox.setWindowTitle("Update Notice")
-            msgBox.setText(f"Update to iblrig {remote_version} is available.\n\n"
-                           f"Please update iblrig by issuing:")
-            msgBox.setStandardButtons(QtWidgets.QMessageBox.Ok)
-            msgBox.setIcon(QtWidgets.QMessageBox().Information)
-            msgBox.layout().addWidget(cmdBox, 1, 2)
-            msgBox.findChild(QtWidgets.QPushButton).setText(
-                choice(['Yes, I promise!', 'I will do so immediately!',
-                        'Straight away!', 'Of course I will!']))
-            msgBox.exec_()
+
         self.setDisabled(False)
-        self.statusbar.clearMessage()
+        if update_available:
+            dialog = UpdateNotice(parent=self)
+            dialog.uiLabelHeader.setText(f"Update to iblrig {remote_version} is available.")
+            dialog.uiPushButtonOK.released.connect(lambda: dialog.close())
+            dialog.exec_()
 
     def model2view(self):
         # stores the current values in the model
@@ -496,7 +504,23 @@ class RigWizard(QtWidgets.QMainWindow):
         self.repaint()
 
 
+class UpdateNotice(QtWidgets.QDialog, Ui_update):
+    def __init__(self, parent=None, *args, **kwargs):
+        super(UpdateNotice, self).__init__(*args, **kwargs)
+        self.setupUi(self)
+        with open(Path(BASE_DIR).joinpath('CHANGELOG.md')) as f:
+            changelog = f.read()
+        self.uiTextBrowserChanges.setMarkdown(changelog)
+        self.uiTextBrowserChanges.setHtml(self.uiTextBrowserChanges.toHtml())
+        self.uiLabelLogo.setPixmap(QtGui.QPixmap(WIZARD_PNG))
+        self.setWindowIcon(QtGui.QIcon(WIZARD_PNG))
+        self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
+
+
 def main():
+    if os.name == 'nt':
+        appid = f'IBL.iblrig.wizard.{iblrig.__version__}'
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(appid)
     app = QtWidgets.QApplication([])
     app.setStyle("Fusion")
     w = RigWizard()
