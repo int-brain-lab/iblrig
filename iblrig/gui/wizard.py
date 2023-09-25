@@ -172,8 +172,8 @@ class RigWizard(QtWidgets.QMainWindow):
         tmp.setContentsMargins(4, 0, 0, 0)
         self.statusbar.addWidget(tmp)
         self.controls_for_extra_parameters()
-        self.setDisabled(True)
 
+        self.setDisabled(True)
         QtCore.QTimer.singleShot(100, self.check_dirty)
         QtCore.QTimer.singleShot(100, self.check_for_update)
 
@@ -196,6 +196,19 @@ class RigWizard(QtWidgets.QMainWindow):
                     event.accept()
 
     def check_dirty(self):
+        """
+        Check if the iblrig installation contains local changes.
+
+        This method checks if the installed version of iblrig contains local changes
+        (indicated by the version string ending with 'dirty'). If local changes are
+        detected, it displays a warning message to inform the user about potential
+        issues and provides instructions on how to reset the repository to its
+        default state.
+
+        Returns
+        -------
+        None
+        """
         if not iblrig.__version__.endswith('dirty'):
             return
         msg_box = QtWidgets.QMessageBox(parent=self)
@@ -205,12 +218,9 @@ class RigWizard(QtWidgets.QMainWindow):
         msg_box.setStandardButtons(QtWidgets.QMessageBox.Ok)
         msg_box.setIcon(QtWidgets.QMessageBox().Information)
         msg_box.exec_()
-        self.setDisabled(False)
 
     def check_for_update(self):
-        self.statusbar.showMessage("Checking for updates ...")
         update_available, remote_version = check_for_updates()
-        self.statusbar.clearMessage()
         self.setDisabled(False)
         if update_available:
             cmdBox = QtWidgets.QLineEdit('upgrade_iblrig')

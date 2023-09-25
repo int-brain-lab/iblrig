@@ -20,10 +20,15 @@ To initiate a task through the graphical user interface, open a Windows PowerShe
 These commands activate the necessary environment and launch the IBL
 Rig Wizard GUI window, as shown below:
 
-.. image:: gui.png
-   :alt: The IBLRIG GUI
+.. figure:: gui.png
+   :alt: A screenshot of IBL Rig Wizard
+   :align: center
 
-Complete the following actions within the GUI:
+   A screenshot of IBL Rig Wizard
+
+
+Starting a Task
+---------------
 
 1. Enter your Alyx username, then click on the *Connect* button. This
    action will automatically populate the GUI fields with information
@@ -31,11 +36,13 @@ Complete the following actions within the GUI:
 
 2. Select the desired values from the provided options. Utilize the
    *Filter* field to swiftly narrow down the list of displayed subjects.
+   Note that selections for *Project* and *Procedure* are mandatory.
 
 3. Click the *Start* button to initiate the task.
 
-Additionally, there are supplementary controls located in the “Flow”
-section::
+
+Supplementary Controls
+----------------------
 
 -  If you check the *Append* option before clicking *Start*, the task
    you initiate will be linked to the preceding task, creating a
