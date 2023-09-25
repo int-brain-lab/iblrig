@@ -27,8 +27,8 @@ from iblrig.hardware import Bpod
 from iblrig.version_management import check_for_updates
 from pybpodapi import exceptions
 
-from ui_wizard import Ui_wizard
-from ui_update import Ui_update
+from iblrig.gui.ui_wizard import Ui_wizard
+from iblrig.gui.ui_update import Ui_update
 
 PROCEDURES = [
     'Behavior training/tasks',
