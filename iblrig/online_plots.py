@@ -167,15 +167,22 @@ class DataModel(object):
         Implements critera to change the color of the figure display, according to the specifications of the task
         :return:
         """
-        # the mouse  reaction time over the last 20 trials is more than 5 times greater than the overall reaction time
-        if (self.trials_table['response_time'][:self.ntrials].median() * 5) < self.last_trials['response_time'].median():
-            return '#ede34e'  # yellow
-        if self.time_elapsed > (90 * 60):  # if the mouse has been training for more than 90 minutes
-            return '#eb5757'  # red
-        # the mouse fails to do more than 400 trials in the first 45 mins: green
-        if self.time_elapsed > ENGAGED_CRITIERION['secs'] and self.ntrials_engaged <= ENGAGED_CRITIERION['trial_count']:
-            return '#57eb8b'  # green
-        return '#ffffff'
+        colour = {'red': '#eb5757', 'green': '#57eb8b', 'yellow': '#ede34e', 'white': '#ffffff'}
+        # Within the first part of the session we don't apply response time criterion
+        if self.time_elapsed < ENGAGED_CRITIERION['secs']:
+            return colour['white']
+        # if the mouse has been training for more than 90 minutes subject training too long
+        elif self.time_elapsed > (90 * 60):
+            return colour['red']
+        # the mouse fails to do more than 400 trials in the first 45 mins
+        elif self.ntrials_engaged <= ENGAGED_CRITIERION['trial_count']:
+            return colour['green']
+        # the subject reaction time over the last 20 trials is more than 5 times greater than the overall reaction time
+        elif (self.trials_table['response_time'][:self.ntrials].median() * 5) < self.last_trials['response_time'].median():
+            return colour['yellow']
+        # 90 > time > 45 min and subject's avg response time hasn't significantly decreased
+        else:
+            return colour['white']
 
 
 class OnlinePlots(object):
