@@ -45,6 +45,7 @@ PROJECTS = [
 
 WIZARD_PNG = str(Path(BASE_DIR).joinpath('iblrig', 'gui', 'wizard.png'))
 
+
 # this class gets called to get the path constructor utility to predict the session path
 class EmptySession(BaseSession):
     protocol_name = 'empty'
@@ -171,8 +172,8 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         total_space, total_used, total_free = shutil.disk_usage(local_data.anchor)
         self.uiProgressDiskSpace.setStatusTip(f'utilization of drive {local_data.anchor}')
         self.uiProgressDiskSpace.setValue(round(total_used / total_space * 100))
-        self.uiLableDiskAvailableValue.setText(f'{total_free / 1024**3 : .1f} GB')
-        self.uiLableDiskIblrigValue.setText(f'{v8data_size / 1024**3 : .1f} GB')
+        self.uiLableDiskAvailableValue.setText(f'{total_free / 1024 ** 3 : .1f} GB')
+        self.uiLableDiskIblrigValue.setText(f'{v8data_size / 1024 ** 3 : .1f} GB')
 
         tmp = QtWidgets.QLabel(f'iblrig v{iblrig.__version__}')
         tmp.setContentsMargins(4, 0, 0, 0)
