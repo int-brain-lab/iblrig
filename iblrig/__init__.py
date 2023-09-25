@@ -1,4 +1,6 @@
-# REMEMBER to also git tag the release in accordance to the version number below!
+# PLEASE REMEMBER TO:
+# 1) update CHANGELOG.md
+# 2) git tag the release in accordance to the version number below
 __version__ = '8.9.3'
 
 # The following method call will try to get post-release information (i.e. the number of commits since the last tagged release
