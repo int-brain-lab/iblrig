@@ -13,18 +13,22 @@ import webbrowser
 import ctypes
 import os
 
-from PyQt5 import QtWidgets, QtCore, uic
+from PyQt5 import QtWidgets, QtCore, QtGui
 from PyQt5.QtWidgets import QStyle
 
 from one.api import ONE
 import iblrig_tasks
 import iblrig_custom_tasks
 import iblrig.path_helper
+from constants import BASE_DIR
 from iblrig.misc import _get_task_argument_parser
 from iblrig.base_tasks import BaseSession
 from iblrig.hardware import Bpod
 from iblrig.version_management import check_for_updates
 from pybpodapi import exceptions
+
+from ui_wizard import Ui_wizard
+from ui_update import Ui_update
 
 PROCEDURES = [
     'Behavior training/tasks',
@@ -126,10 +130,12 @@ class RigWizardModel:
         self.all_projects = sorted(set(projects + self.all_projects))
 
 
-class RigWizard(QtWidgets.QMainWindow):
+class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
     def __init__(self, *args, **kwargs):
         super(RigWizard, self).__init__(*args, **kwargs)
-        uic.loadUi(Path(__file__).parent.joinpath('wizard.ui'), self)
+        self.setupUi(self)
+        self.setWindowIcon(QtGui.QIcon('wizard.png'))
+
         self.settings = QtCore.QSettings('iblrig', 'wizard')
         self.model = RigWizardModel()
         self.model2view()
@@ -221,20 +227,13 @@ class RigWizard(QtWidgets.QMainWindow):
 
     def check_for_update(self):
         update_available, remote_version = check_for_updates()
+
         self.setDisabled(False)
         if update_available:
-            cmdBox = QtWidgets.QLineEdit('upgrade_iblrig')
-            cmdBox.setReadOnly(True)
-            msgBox = QtWidgets.QMessageBox(parent=self)
-            msgBox.setWindowTitle("Update Notice")
-            msgBox.setText(f"Update to iblrig {remote_version} is available.\n\n"
-                           f"To update iblrig:\n"
-                           f" - close the IBL Rig Wizard\n"
-                           f" - issue the following command:\n")
-            msgBox.setStandardButtons(QtWidgets.QMessageBox.Ok)
-            msgBox.setIcon(QtWidgets.QMessageBox().Information)
-            msgBox.layout().addWidget(cmdBox, 1, 2)
-            msgBox.exec_()
+            dialog = UpdateNotice(parent=self)
+            dialog.uiLabelHeader.setText(f"Update to iblrig {remote_version} is available.")
+            dialog.uiPushButtonOK.released.connect(lambda: dialog.close())
+            dialog.exec_()
 
     def model2view(self):
         # stores the current values in the model
@@ -502,6 +501,19 @@ class RigWizard(QtWidgets.QMainWindow):
         self.uiGroupTaskParameters.setEnabled(not is_running)
         self.uiGroupTools.setEnabled(not is_running)
         self.repaint()
+
+
+class UpdateNotice(QtWidgets.QDialog, Ui_update):
+    def __init__(self, parent=None, *args, **kwargs):
+        super(UpdateNotice, self).__init__(*args, **kwargs)
+        self.setupUi(self)
+        with open(Path(BASE_DIR).joinpath('CHANGELOG.md')) as f:
+            changelog = f.read()
+        self.uiTextBrowserChanges.setMarkdown(changelog)
+        self.uiTextBrowserChanges.setHtml(self.uiTextBrowserChanges.toHtml())
+        self.uiLabelLogo.setPixmap(QtGui.QPixmap("wizard.png"))
+        self.setWindowIcon(QtGui.QIcon('wizard.png'))
+        self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
 
 
 def main():

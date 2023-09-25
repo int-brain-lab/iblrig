@@ -7,3 +7,4 @@ exclude =
     Bonsai,
     venv*
     _version.py
+    ui_*.py
