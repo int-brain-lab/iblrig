@@ -7,6 +7,8 @@ Changelog
 8.9.3
 -----
 * re-implemented update notice
+* corrected implementation of end session criteria
+* set adaptive reward to false temporarily
 
 8.9.2
 -----
