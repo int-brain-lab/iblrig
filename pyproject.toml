@@ -1,7 +1,6 @@
 [build-system]
 requires = [
     "setuptools>=64",
-    "setuptools_scm[toml]>=7.1",
     "wheel"
 ]
 build-backend = "setuptools.build_meta"
@@ -33,7 +32,6 @@ dependencies = [
     "PySocks",
     "PyYAML",
     "scipy",
-    "setuptools_scm",
     "sounddevice",
 ]
 
@@ -60,10 +58,7 @@ upgrade_iblrig = "iblrig.version_management:upgrade"
 
 [tool.setuptools.dynamic]
 readme = {file = "README.md", content-type = "text/markdown"}
-
-[tool.setuptools_scm]
-version_scheme = "post-release"
-local_scheme = "dirty-tag"
+version = {attr = "iblrig.__version__"}
 
 [tool.setuptools.packages]
 find = {}

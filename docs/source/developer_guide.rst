@@ -15,20 +15,24 @@ Its version string (currently "|version|") is a combination of three fields, sep
 * The ``MINOR`` field will be incremented upon adding new, backwards compatible features.
 * The ``PATCH`` field will be incremented with each new, backwards compatible bugfix release that does not implement a new feature.
 
-On the developer side, these 3 fields are manually controlled by adding the respective version string to a commit as a `git tag <https://git-scm.com/book/en/v2/Git-Basics-Tagging>`_, for instance:
+On the developer side, these 3 fields are manually controlled by, both
 
-.. code-block:: console
+   1. adjusting the variable ``__version__`` in ``iblrig/__init__.py``, and
+   2. adding the corresponding version string to a commit as a `git tag <https://git-scm.com/book/en/v2/Git-Basics-Tagging>`_,
+      for instance:
 
-   git tag 8.8.4
-   git push origin --tags
+      .. code-block:: console
+
+         git tag 8.8.4
+         git push origin --tags
 
 The version string displayed by IBLRIG *may* include additional fields, such as in "|version|.post3+dirty".
 Here,
 
-* ``.post3`` indicates the third unversioned commit after the latest versioned release, and
-* ``+dirty`` indicates the presence of uncommited changes in your local repository of IBLRIG.
+* ``post3`` indicates the third unversioned commit after the latest versioned release, and
+* ``dirty`` indicates the presence of uncommited changes in your local repository of IBLRIG.
 
-Both of these fields are inferred by `setuptools_scm <https://pypi.org/project/setuptools-scm/>`_ and do not require manual interaction from the developer.
+Both of these fields are inferred by means of git describe and do not require manual interaction from the developer.
 
 
 Running Tests Locally
