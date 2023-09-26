@@ -69,14 +69,14 @@ def _iterate_protocols(subject_folder, task_name, n=1):
             task_settings = iblrig.raw_data_loaders.load_settings(session_path, collection=adt['collection'])
             if task_settings.get('NTRIALS', 43) < 42:  # we consider that under 42 trials it is a dud session
                 continue
-            protocols.append({
+            protocols.append(Bunch({
                 'session_stub': '_'.join(file_experiment.parent.parts[-2:]),  # 2019-01-01_001
                 'session_path': file_experiment.parent,
                 'task_collection': adt['collection'],
                 'experiment_description': ad,
                 'task_settings': task_settings,
                 'file_task_data': session_path.joinpath(adt['collection'], '_iblrig_taskData.raw.jsonable')
-            })
+            }))
             if len(protocols) >= n:
                 return protocols
     return protocols

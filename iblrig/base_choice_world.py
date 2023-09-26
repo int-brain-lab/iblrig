@@ -559,7 +559,18 @@ class HabituationChoiceWorldSession(ChoiceWorldSession):
 
 
 class ActiveChoiceWorldSession(ChoiceWorldSession):
+    """
+    The ActiveChoiceWorldSession is a base class for protocols wherethe mouse is actively making decisions
+    by turning the wheel. It has the following characteristics
+    -   it is trial based
+    -   it is decision based
+    -   left and right simulus are equiprobable: there is no biased block
+    -   a trial can either be correct / error / no_go depending on the side of the stimulus and the response
+    -   it has a quantifiable performance by computing the proportion of correct trials
+    of passive stimulations protocols or habituation protocols.
 
+    The TrainingChoiceWorld, BiasedChoiceWorld are all subclasses of this class
+    """
     def __init__(self, **kwargs):
         super(ActiveChoiceWorldSession, self).__init__(**kwargs)
         self.trials_table['stim_probability_left'] = np.zeros(NTRIALS_INIT, dtype=np.float32)
@@ -620,6 +631,10 @@ NTRIALS ERROR:        {self.trial_num - self.session_info.NTRIALS_CORRECT}
 
 
 class BiasedChoiceWorldSession(ActiveChoiceWorldSession):
+    """
+    Biased choice world session is the instantiation of ActiveChoiceWorld where the notion of biased
+    blocks is introduced.
+    """
     protocol_name = "_iblrig_tasks_biasedChoiceWorld"
 
     def __init__(self, **kwargs):
@@ -687,26 +702,29 @@ TRIALS IN BLOCK:      {trial_info.block_trial_num}
 
 
 class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
+    """
+    The TrainingChoiceWorldSession corresponds to the first training protocol of the choice world task.
+    This protocol has a complicated adaptation of the number of contrasts (embodied by the training_phase
+    property) and the reward amount, embodied by the adaptive_reward property.
+    The blocks
+    """
     protocol_name = "_iblrig_tasks_trainingChoiceWorld"
 
-    def __init__(self, training_phase=-1, **kwargs):
+    def __init__(self, training_phase=-1, adaptive_reward=-1.0, **kwargs):
         super(TrainingChoiceWorldSession, self).__init__(**kwargs)
+        inferred_training_phase, inferred_adaptive_reward = self.get_subject_training_info()
         if training_phase == -1:
-            try:
-                training_phase, _ = self.get_subject_training_info()
-                self.logger.warning(f"Got training phase: {training_phase}")
-            except Exception as ex:
-                self.logger.debug('Failed to get training phase: %s', ex)
-                if self.interactive:
-                    training_phase = iblrig.graphic.numinput(
-                        "Subject training phase", "Subject training phase: (0-5)",
-                        askint=True, nullable=False, default=0, minval=0, maxval=5)
-                else:
-                    self.logger.warning(f"Could not get training phase from Alyx: {traceback.format_exc()}")
-                    training_phase = 0
+            self.logger.warning(f"Got training phase: {inferred_training_phase}")
+            self.training_phase = inferred_training_phase
         else:
             self.logger.warning(f"Training phase manually set to: {training_phase}")
-        self.training_phase = training_phase
+            self.training_phase = training_phase
+        if adaptive_reward == -1:
+            self.logger.warning(f"Got Adaptive reward {inferred_adaptive_reward} uL")
+            self.session_info["ADAPTIVE_REWARD_AMOUNT_UL"] = inferred_adaptive_reward
+        else:
+            self.logger.warning(f"Adaptive reward manually set to {adaptive_reward} uL")
+            self.session_info["ADAPTIVE_REWARD_AMOUNT_UL"] = adaptive_reward
         self.var = {
             "training_phase_trial_counts": np.zeros(6),
             "last_10_responses_sides": np.zeros(10),
@@ -715,10 +733,26 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
         self.trials_table['debias_trial'] = np.zeros(NTRIALS_INIT, dtype=bool)
 
     def get_subject_training_info(self):
-        training_phase, adaptive_reward = choiceworld.get_subject_training_info(
-            self.session_info.SUBJECT_NAME,
-            task_name=self.protocol_name
-        )
+        """
+        Get the previous sessions according to this session parameters and deduce the
+        training level and adaptive reward amount.
+        :return:
+        """
+        try:
+            training_phase, adaptive_reward = choiceworld.get_subject_training_info(
+                subject_name=self.session_info.SUBJECT_NAME,
+                subject_weight_grams=self.session_info['SUBJECT_WEIGHT'],
+                local_path=self.iblrig_settings['iblrig_local_data_path'],
+                remote_path=self.iblrig_settings['iblrig_remote_data_path'],
+                lab=self.iblrig_settings['ALYX_LAB'],
+                task_name=self.protocol_name,
+            )
+        except Exception:
+            self.logger.critical('Failed to get training information from previous subjects: %s', traceback.format_exc())
+            training_phase, adaptive_reward = (
+                iblrig.choiceworld.DEFAULT_TRAINING_PHASE, iblrig.choiceworld.DEFAULT_REWARD_VOLUME)
+            self.logger.critical(f'The mouse will train on level {training_phase} and with reward {adaptive_reward} uL')
+
         return training_phase, adaptive_reward
 
     def compute_performance(self):
