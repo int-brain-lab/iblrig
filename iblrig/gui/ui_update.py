@@ -103,5 +103,5 @@ class Ui_update(object):
         update.setWindowTitle(_translate("update", "Update Notice"))
         self.uiLabelHeader.setText(_translate("update", "Update Available!"))
         self.uiLabelFooter.setText(_translate("update", "To update, close IBL Rig Wizard and run the following command within the iblrigv8 Python environment:"))
-        self.uiLineEditCommand.setText(_translate("update", "iblrig_update"))
+        self.uiLineEditCommand.setText(_translate("update", "upgrade_iblrig"))
         self.uiPushButtonOK.setText(_translate("update", "OK"))

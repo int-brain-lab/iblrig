@@ -150,7 +150,7 @@
        <item>
         <widget class="QLineEdit" name="uiLineEditCommand">
          <property name="text">
-          <string>iblrig_update</string>
+          <string>upgrade_iblrig</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>

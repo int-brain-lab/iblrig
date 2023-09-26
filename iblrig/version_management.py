@@ -260,8 +260,8 @@ def upgrade() -> int:
             return 0
         check_call([sys.executable, "-m", "pip", "reset", "--hard"])
 
-    # check_call([sys.executable, "git", "pull", "--tags"])
-    # check_call([sys.executable, "-m", "pip", "install", "-U", "-e", "."])
+    check_call([sys.executable, "git", "pull", "--tags"])
+    check_call([sys.executable, "-m", "pip", "install", "-U", "-e", "."])
 
 
 def _ask_user(prompt: str, default: bool = False) -> bool:
