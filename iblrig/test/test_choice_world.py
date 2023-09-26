@@ -88,19 +88,19 @@ class TestGetPreviousSession(unittest.TestCase):
         # test the function entry point
         result = iblrig.choiceworld.get_subject_training_info(
             self.kwargs['subject'], subject_weight_grams=17, local_path=Path(self.root_path), lab='cortexlab', mode='raise')
-        self.assertEqual(result, (2, 2.1))
+        self.assertEqual((2, 2.1), result)
 
         # test the task instantiation, should be the same as above
         t = TrainingChoiceWorldSession(**self.kwargs, training_phase=4, adaptive_reward=2.9)
         result = (t.training_phase, t.session_info["ADAPTIVE_REWARD_AMOUNT_UL"])
-        self.assertEqual(result, (4, 2.9))
+        self.assertEqual((4, 2.9), result)
         # using the method we should get the same as above
         self.assertEqual(t.get_subject_training_info(), (2, 2.1))
 
         # now the mouse is underfed
         self.mock_jsonable(self.sesb.paths.DATA_FILE_PATH, training_phase=1, reward_amount=500)
         result = t.get_subject_training_info()
-        self.assertEqual(result, (1, 2.2))
+        self.assertEqual((1, 2.2), result)
 
     def tearDown(self) -> None:
         self.td.cleanup()

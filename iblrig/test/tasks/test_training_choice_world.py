@@ -12,9 +12,10 @@ class TestInstantiationTraining(BaseTestCases.CommonTestInstantiateTask):
 
     def test_task(self):
         trial_fixtures = get_fixtures()
+        ADAPTIVE_REWARD = 1.9
         nt = 800
         for training_phase in np.arange(6):
-            task = TrainingChoiceWorldSession(**TASK_KWARGS)
+            task = TrainingChoiceWorldSession(**TASK_KWARGS, adaptive_reward=ADAPTIVE_REWARD)
             task.training_phase = training_phase
             task.create_session()
             for i in np.arange(nt):
@@ -23,7 +24,8 @@ class TestInstantiationTraining(BaseTestCases.CommonTestInstantiateTask):
                 trial_type = np.random.choice(['correct', 'error', 'no_go'], p=[.9, .05, .05])
                 task.trial_completed(trial_fixtures[trial_type])
                 if trial_type == 'correct':
-                    assert task.trials_table['trial_correct'][task.trial_num]
+                    self.assertTrue(task.trials_table['trial_correct'][task.trial_num])
+                    self.assertEqual(task.trials_table['reward_amount'][task.trial_num], ADAPTIVE_REWARD)
                 else:
                     assert not task.trials_table['trial_correct'][task.trial_num]
                 if i == 245:

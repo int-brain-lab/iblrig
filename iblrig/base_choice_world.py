@@ -375,6 +375,10 @@ class ChoiceWorldSession(
     def next_trial(self):
         pass
 
+    @property
+    def reward_amount(self):
+        return self.task_params.REWARD_AMOUNT_UL
+
     def draw_next_trial_info(self, pleft=0.5, contrast=None, position=None):
         contrast = contrast or misc.draw_contrast(self.task_params.CONTRAST_SET, self.task_params.CONTRAST_SET_PROBABILITY_TYPE)
         assert len(self.task_params.STIM_POSITIONS) == 2, "Only two positions are supported"
@@ -389,7 +393,7 @@ class ChoiceWorldSession(
         self.trials_table.at[self.trial_num, 'stim_freq'] = self.task_params.STIM_FREQ
         self.trials_table.at[self.trial_num, 'trial_num'] = self.trial_num
         self.trials_table.at[self.trial_num, 'position'] = position
-        self.trials_table.at[self.trial_num, 'reward_amount'] = self.task_params.REWARD_AMOUNT_UL
+        self.trials_table.at[self.trial_num, 'reward_amount'] = self.reward_amount
         self.trials_table.at[self.trial_num, 'stim_probability_left'] = pleft
         self.send_trial_info_to_bonsai()
 
@@ -714,16 +718,16 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
         super(TrainingChoiceWorldSession, self).__init__(**kwargs)
         inferred_training_phase, inferred_adaptive_reward = self.get_subject_training_info()
         if training_phase == -1:
-            self.logger.warning(f"Got training phase: {inferred_training_phase}")
+            self.logger.critical(f"Got training phase: {inferred_training_phase}")
             self.training_phase = inferred_training_phase
         else:
-            self.logger.warning(f"Training phase manually set to: {training_phase}")
+            self.logger.critical(f"Training phase manually set to: {training_phase}")
             self.training_phase = training_phase
         if adaptive_reward == -1:
-            self.logger.warning(f"Got Adaptive reward {inferred_adaptive_reward} uL")
+            self.logger.critical(f"Got Adaptive reward {inferred_adaptive_reward} uL")
             self.session_info["ADAPTIVE_REWARD_AMOUNT_UL"] = inferred_adaptive_reward
         else:
-            self.logger.warning(f"Adaptive reward manually set to {adaptive_reward} uL")
+            self.logger.critical(f"Adaptive reward manually set to {adaptive_reward} uL")
             self.session_info["ADAPTIVE_REWARD_AMOUNT_UL"] = adaptive_reward
         self.var = {
             "training_phase_trial_counts": np.zeros(6),
@@ -731,6 +735,10 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
         }
         self.trials_table['training_phase'] = np.zeros(NTRIALS_INIT, dtype=np.int8)
         self.trials_table['debias_trial'] = np.zeros(NTRIALS_INIT, dtype=bool)
+
+    @property
+    def reward_amount(self):
+        return self.session_info.get("ADAPTIVE_REWARD_AMOUNT_UL", self.task_params.REWARD_AMOUNT_UL)
 
     def get_subject_training_info(self):
         """
@@ -742,6 +750,7 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
             training_phase, adaptive_reward = choiceworld.get_subject_training_info(
                 subject_name=self.session_info.SUBJECT_NAME,
                 subject_weight_grams=self.session_info['SUBJECT_WEIGHT'],
+                default_reward=self.task_params.REWARD_AMOUNT_UL,
                 local_path=self.iblrig_settings['iblrig_local_data_path'],
                 remote_path=self.iblrig_settings['iblrig_remote_data_path'],
                 lab=self.iblrig_settings['ALYX_LAB'],

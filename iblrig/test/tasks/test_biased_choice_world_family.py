@@ -18,7 +18,7 @@ class TestInstantiationBiased(BaseTestCases.CommonTestInstantiateTask):
         self.task = BiasedChoiceWorldSession(**TASK_KWARGS)
         np.random.seed(12345)
 
-    def test_task(self):
+    def test_task(self, reward_set=np.array([0, 1.5])):
         task = self.task
         task.create_session()
         trial_fixtures = get_fixtures()
@@ -31,10 +31,9 @@ class TestInstantiationBiased(BaseTestCases.CommonTestInstantiateTask):
             trial_type = np.random.choice(['correct', 'error', 'no_go'], p=[.9, .05, .05])
             task.trial_completed(trial_fixtures[trial_type])
             if trial_type == 'correct':
-                assert task.trials_table['trial_correct'][task.trial_num]
+                self.assertTrue(task.trials_table['trial_correct'][task.trial_num])
             else:
-                assert not task.trials_table['trial_correct'][task.trial_num]
-
+                self.assertFalse(task.trials_table['trial_correct'][task.trial_num])
             if i == 245:
                 task.show_trial_log()
             assert not np.isnan(task.reward_time)
@@ -53,7 +52,6 @@ class TestInstantiationBiased(BaseTestCases.CommonTestInstantiateTask):
             position=pd.NamedAgg(column="position", aggfunc=lambda x: 1 - (np.mean(np.sign(x)) + 1) / 2),
             first_trial=pd.NamedAgg(column="block_trial_num", aggfunc='first'),
         )
-
         # test that the first block is 90 trials
         assert df_blocks['count'].values[0] == 90
         # make all first block trials were reset to 0
@@ -64,6 +62,7 @@ class TestInstantiationBiased(BaseTestCases.CommonTestInstantiateTask):
         assert np.all(np.isclose(np.abs(np.diff(df_blocks['stim_probability_left'].values[1:])), 0.6))
         # assert the the trial outcomes are within 0.3 of the generating probability
         np.testing.assert_array_less(np.abs(df_blocks['position'] - df_blocks['stim_probability_left']), 0.4)
+        np.testing.assert_array_equal(np.unique(task.trials_table['reward_amount']), reward_set)
 
     def check_quiescent_period(self):
         """
@@ -89,7 +88,7 @@ class TestNeuroModulatorBiasedChoiceWorld(TestInstantiationBiased):
         self.task = NeuroModulatorChoiceWorldSession(**TASK_KWARGS)
 
     def test_task(self):
-        super(TestNeuroModulatorBiasedChoiceWorld, self).test_task()
+        super(TestNeuroModulatorBiasedChoiceWorld, self).test_task(reward_set=np.array([0, 1., 1.5, 3.]))
         # we expect 10% of null feedback trials
         assert np.abs(.05 - np.mean(self.task.trials_table['omit_feedback'])) < .05
 

@@ -34,12 +34,14 @@ def compute_adaptive_reward_volume(subject_weight_g, reward_volume_ul, delivered
 
 
 def get_subject_training_info(
-        subject_name, subject_weight_grams=None, task_name='_iblrig_tasks_trainingChoiceWorld', mode='silent', **kwargs):
+        subject_name, subject_weight_grams=None, task_name='_iblrig_tasks_trainingChoiceWorld',
+        default_reward=DEFAULT_REWARD_VOLUME, mode='silent', **kwargs):
     """
     Goes through the history of a subject and gets the latest
     training phase and the adaptive reward volume for this subject
     :param subject_name:
     :param subject_weight_grams: current weight of the subject in grams, if not available, will use the previous session weight
+    :param default_reward: default reward volume in uL if no previous session is available
     :param task_name: name of the protocol to look for in experiment description,
      defaults to '_iblrig_tasks_trainingChoiceWorld'
     :param mode: 'defaults' or 'raise': if 'defaults' returns default values if no history is found, if 'raise' raises ValueError
@@ -50,7 +52,7 @@ def get_subject_training_info(
     session_info = iterate_previous_sessions(subject_name, task_name=task_name, n=1, **kwargs)
     if len(session_info) == 0:
         if mode == 'silent':
-            return DEFAULT_TRAINING_PHASE, DEFAULT_REWARD_VOLUME
+            return DEFAULT_TRAINING_PHASE, default_reward
         elif mode == 'raise':
             raise ValueError("The training status could not be determined as no previous sessions were found")
     else:

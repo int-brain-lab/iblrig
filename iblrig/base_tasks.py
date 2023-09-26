@@ -744,25 +744,6 @@ class RotaryEncoderMixin:
 
 
 class ValveMixin:
-    def get_session_reward_amount(self: object) -> float:
-        # simply returns the reward amount if no adaptive rewared is used
-        if not self.task_params.ADAPTIVE_REWARD:
-            return self.task_params.REWARD_AMOUNT
-        # simply returns the reward amount if no adaptive rewared is used
-        if not self.task_params.ADAPTIVE_REWARD:
-            return self.task_params.REWARD_AMOUNT
-        else:
-            raise NotImplementedError
-        # todo: training choice world reward from session to session
-        # first session : AR_INIT_VALUE, return
-        # if total_water_session < (subject_weight / 25):
-        #   minimum(last_reward + AR_STEP, AR_MAX_VALUE)  3 microliters AR_MAX_VALUE
-        # last ntrials strictly below 200:
-        #   keep the same reward
-        # trial between 200 and above:
-        #   maximum(last_reward - AR_STEP, AR_MIN_VALUE)  1.5 microliters AR_MIN_VALUE
-
-        # when implementing this make sure the test is solid
 
     def init_mixin_valve(self: object):
         self.valve = Bunch({})

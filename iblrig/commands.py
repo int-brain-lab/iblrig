@@ -35,6 +35,7 @@ def transfer_data(local_path=None, remote_path=None, dry=False):
     """
     Copies the behavior data from the rig to the local server if the session has more than 42 trials
     If the hardware settings file contains MAIN_SYNC=True, the number of expected devices is set to 1
+    :param local_path: local path to the subjects folder
     :param weeks:
     :param dry:
     :return:
@@ -85,7 +86,7 @@ def transfer_data(local_path=None, remote_path=None, dry=False):
         logger.critical(f"{sc.state}, {sc.session_path}")
         sc.run(number_of_expected_devices=number_of_expected_devices)
     # once we copied the data, remove older session for which the data was successfully uploaded
-    remove_local_sessions(weeks=2, dry=dry, local_subjects_path=local_path, remote_subjects_path=remote_path)
+    remove_local_sessions(weeks=2, dry=dry, local_path=local_path, remote_path=remote_path)
 
 
 def remove_local_sessions(weeks=2, local_path=None, remote_path=None, dry=False, tag='behavior'):
@@ -100,12 +101,12 @@ def remove_local_sessions(weeks=2, local_path=None, remote_path=None, dry=False,
     match tag:
         case 'behavior': Copier = BehaviorCopier
         case 'video': Copier = VideoCopier
-    for flag in sorted(list(rig_paths['local_subjects_path'].rglob(f'_ibl_experiment.description_{tag}.yaml')), reverse=True):
+    for flag in sorted(list(rig_paths['local_subjects_folder'].rglob(f'_ibl_experiment.description_{tag}.yaml')), reverse=True):
         session_path = flag.parent
         days_elapsed = (datetime.datetime.now() - datetime.datetime.strptime(session_path.parts[-2], '%Y-%m-%d')).days
         if days_elapsed < (weeks * 7):
             continue
-        sc = Copier(session_path, remote_subjects_folder=rig_paths['remote_subjects_path'])
+        sc = Copier(session_path, remote_subjects_folder=rig_paths['remote_subjects_folder'])
         if sc.state == 3:
             session_size = sum(f.stat().st_size for f in session_path.rglob('*') if f.is_file()) / 1024 ** 3
             logger.info(f"{sc.session_path}, {session_size:0.02f} Go")
