@@ -139,7 +139,7 @@ def get_detailed_version_string(v_basic: str) -> str:
         return v_basic
 
     # apply a bit of regex magic for formatting & return the detailed version string
-    v_detailed = re.sub(r'^((?:[\d+\.])+)(-\d+)?(-\w+)(-dirty|-broken)?\n$', r'\1\2\4', v_detailed)
+    v_detailed = re.sub(r'^((?:[\d+\.])+)(-[1-9]{1}\d*)?(?:-0\d*)?(?:-\w+)(-dirty|-broken)?\n?$', r'\1\2\3', v_detailed)
     v_detailed = re.sub(r'-(\d+)', r'-post\1', v_detailed)
     v_detailed = re.sub(r'\-(dirty|broken)', r'.\1', v_detailed)
     return v_detailed
