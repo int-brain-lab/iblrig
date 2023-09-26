@@ -3,6 +3,10 @@ Changelog
 
 -------------------------------
 
+8.9.4
+-----
+* correction for version regex
+* fix version strings for compatibility with packaging.version
 
 8.9.3
 -----
