@@ -2,6 +2,10 @@ Changelog
 ---------
 
 -------------------------------
+8.10.0
+------
+* adaptive reward from previous sessions in TrainingChoiceWorld
+* updater: fetch remote changelog to advertise new features
 
 8.9.4
 -----
