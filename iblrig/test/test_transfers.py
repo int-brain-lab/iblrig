@@ -54,7 +54,7 @@ class TestIntegrationTransferExperiments(unittest.TestCase):
         In this case both sessions should end up on the remote path with a copy state of 3
         """
         for hard_crash in [False, True]:
-            with tempfile.TemporaryDirectory() as td:
+            with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as td:
                 session = _create_behavior_session(td, ntrials=50, hard_crash=hard_crash)
                 session.paths.SESSION_FOLDER.joinpath('transfer_me.flag').touch()
                 iblrig.commands.transfer_data(local_subjects_path=session.paths.LOCAL_SUBJECT_FOLDER,
