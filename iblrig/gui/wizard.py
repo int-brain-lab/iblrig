@@ -24,7 +24,7 @@ from iblrig.constants import BASE_DIR
 from iblrig.misc import _get_task_argument_parser
 from iblrig.base_tasks import BaseSession
 from iblrig.hardware import Bpod
-from iblrig.version_management import check_for_updates
+from iblrig.version_management import check_for_updates, get_changelog
 from iblrig.gui.ui_wizard import Ui_wizard
 from iblrig.gui.ui_update import Ui_update
 from pybpodapi import exceptions
@@ -508,10 +508,7 @@ class UpdateNotice(QtWidgets.QDialog, Ui_update):
     def __init__(self, parent=None, *args, **kwargs):
         super(UpdateNotice, self).__init__(*args, **kwargs)
         self.setupUi(self)
-        with open(Path(BASE_DIR).joinpath('CHANGELOG.md')) as f:
-            changelog = f.read()
-        self.uiTextBrowserChanges.setMarkdown(changelog)
-        self.uiTextBrowserChanges.setHtml(self.uiTextBrowserChanges.toHtml())
+        self.uiTextBrowserChanges.setMarkdown(get_changelog())
         self.uiLabelLogo.setPixmap(QtGui.QPixmap(WIZARD_PNG))
         self.setWindowIcon(QtGui.QIcon(WIZARD_PNG))
         self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)

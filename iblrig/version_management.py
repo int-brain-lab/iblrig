@@ -1,5 +1,6 @@
+from pathlib import Path
 from typing import Union, Callable, Any
-
+import requests
 from packaging import version
 import re
 from subprocess import check_output, check_call, SubprocessError, CalledProcessError, STDOUT
@@ -131,7 +132,7 @@ def get_detailed_version_string(v_basic: str) -> str:
 
     # get details through `git describe`
     try:
-        fetch_remote_tags()
+        get_remote_tags()
         v_detailed = check_output(["git", "describe", "--dirty", "--broken", "--match", v_sanitized, "--tags", "--long"],
                                   cwd=BASE_DIR, text=True, timeout=1, stderr=STDOUT)
     except (SubprocessError, CalledProcessError):
@@ -145,18 +146,45 @@ def get_detailed_version_string(v_basic: str) -> str:
     return v_detailed
 
 
+@static_vars(branch=None)
+def get_branch() -> Union[str, None]:
+    if get_branch.branch:
+        return get_branch.branch
+    if not IS_GIT:
+        log.error('This installation of iblrig is not managed through git')
+    try:
+        get_branch.branch = check_output(["git", "rev-parse", "--abbrev-ref", "HEAD"],
+                                         cwd=BASE_DIR, timeout=5, text=True).removesuffix('\n')
+        return get_branch.branch
+    except (SubprocessError, CalledProcessError):
+        return None
+
+
 @static_vars(is_fetched_already=False)
-def fetch_remote_tags() -> None:
-    if fetch_remote_tags.is_fetched_already:
+def get_remote_tags() -> None:
+    if get_remote_tags.is_fetched_already:
         return
     if not IS_GIT:
         log.error('This installation of iblrig is not managed through git')
     try:
-        branch = check_output(["git", "rev-parse", "--abbrev-ref", "HEAD"], cwd=BASE_DIR, timeout=5, text=True).removesuffix('\n')
-        check_call(["git", "fetch", "origin", branch, "-t", "-q"], cwd=BASE_DIR, timeout=5)
+        check_call(["git", "fetch", "origin", get_branch(), "-t", "-q"], cwd=BASE_DIR, timeout=5)
     except (SubprocessError, CalledProcessError):
         return
-    fetch_remote_tags.is_fetched_already = True
+    get_remote_tags.is_fetched_already = True
+
+
+@static_vars(changelog=None)
+def get_changelog() -> str:
+    if get_changelog.changelog:
+        return get_changelog.changelog
+    try:
+        changelog = requests.get(f'https://raw.githubusercontent.com/int-brain-lab/iblrig/{get_branch()}/CHANGELOG.md',
+                                 allow_redirects=True).text
+    except requests.RequestException:
+        with open(Path(BASE_DIR).joinpath('CHANGELOG.md')) as f:
+            changelog = f.read()
+    get_changelog.changelog = changelog
+    return get_changelog.changelog
 
 
 @static_vars(remote_version=None)
@@ -187,7 +215,7 @@ def get_remote_version() -> Union[version.Version, None]:
 
     try:
         log.debug('Obtaining remote version from github')
-        fetch_remote_tags()
+        get_remote_tags()
         references = check_output(["git", "ls-remote", "-t", "-q", "--exit-code", "--refs", "origin", "tags", "*"],
                                   cwd=BASE_DIR, timeout=5, encoding='UTF-8')
 
