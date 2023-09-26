@@ -342,6 +342,13 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 widget.setMinimum(-1)
                 widget.setValue(-1)
 
+            if label == 'Adaptive Reward':
+                widget.setSpecialValueText('automatic')
+                widget.setMaximum(3)
+                widget.setSingleStep(0.1)
+                widget.setMinimum(-1)
+                widget.setValue(-1)
+
             layout.addRow(self.tr(label), widget)
 
         # add label to indicate absence of task specific parameters
