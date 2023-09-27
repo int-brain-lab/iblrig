@@ -89,6 +89,7 @@ class BaseSession(ABC):
         # Load the tasks settings, from the task folder or override with the input argument
         task_parameter_file = task_parameter_file or Path(inspect.getfile(self.__class__)).parent.joinpath('task_parameters.yaml')
         self.task_params = Bunch({})
+        self.wizard = wizard
 
         # first loads the base parameters for a given task
         if self.base_parameters_file is not None and self.base_parameters_file.exists():
@@ -383,7 +384,7 @@ class BaseSession(ABC):
         self.logger.critical("Graceful exit")
         self.logger.info(f'Session {self.paths.SESSION_RAW_DATA_FOLDER}')
         self.session_info.SESSION_END_TIME = datetime.datetime.now().isoformat()
-        if self.interactive:
+        if self.interactive and not self.wizard:
             self.session_info.POOP_COUNT = graph.numinput(
                 "Poop count", f"{self.session_info.SUBJECT_NAME} droppings count:", nullable=True, askint=True)
         self.save_task_parameters_to_json_file()

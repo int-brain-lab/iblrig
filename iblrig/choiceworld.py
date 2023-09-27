@@ -7,6 +7,9 @@ import numpy as np
 
 import iblrig.raw_data_loaders
 from iblrig.path_helper import iterate_previous_sessions
+from iblutil.util import setup_logger
+
+logger = setup_logger('iblrig', level='INFO')
 
 CONTRASTS = 1 / np.array([-1, - 2, -4, -8, -16, np.inf, 16, 8, 4, 2, 1])
 DEFAULT_TRAINING_PHASE = 0
@@ -47,12 +50,14 @@ def get_subject_training_info(
     :param mode: 'defaults' or 'raise': if 'defaults' returns default values if no history is found, if 'raise' raises ValueError
     :param **kwargs: optional arguments to be passed to iblrig.path_helper.get_local_and_remote_paths
     if not used, will use the arguments from iblrig/settings/iblrig_settings.yaml
-    :return:
+    :return: training_phase (int), default_reward uL (float between 1.5 and 3) and status (True if previous was found,
+    False if unable and default values were returned)
     """
     session_info = iterate_previous_sessions(subject_name, task_name=task_name, n=1, **kwargs)
     if len(session_info) == 0:
         if mode == 'silent':
-            return DEFAULT_TRAINING_PHASE, default_reward
+            logger.warning("The training status could not be determined returning default values")
+            return DEFAULT_TRAINING_PHASE, default_reward, False
         elif mode == 'raise':
             raise ValueError("The training status could not be determined as no previous sessions were found")
     else:
@@ -69,7 +74,7 @@ def get_subject_training_info(
         training_phase = trials_data['training_phase'].values[-1]
     else:
         training_phase = DEFAULT_TRAINING_PHASE
-    return training_phase, adaptive_reward
+    return training_phase, adaptive_reward, True
 
 
 def training_contrasts_probabilities(phase=1):

@@ -88,7 +88,7 @@ class TestGetPreviousSession(unittest.TestCase):
         # test the function entry point
         result = iblrig.choiceworld.get_subject_training_info(
             self.kwargs['subject'], subject_weight_grams=17, local_path=Path(self.root_path), lab='cortexlab', mode='raise')
-        self.assertEqual((2, 2.1), result)
+        self.assertEqual((2, 2.1, True), result)
 
         # test the task instantiation, should be the same as above
         t = TrainingChoiceWorldSession(**self.kwargs, training_phase=4, adaptive_reward=2.9)

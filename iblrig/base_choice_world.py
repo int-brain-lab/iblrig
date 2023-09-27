@@ -747,7 +747,7 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
         :return:
         """
         try:
-            training_phase, adaptive_reward = choiceworld.get_subject_training_info(
+            training_phase, adaptive_reward, _ = choiceworld.get_subject_training_info(
                 subject_name=self.session_info.SUBJECT_NAME,
                 subject_weight_grams=self.session_info['SUBJECT_WEIGHT'],
                 default_reward=self.task_params.REWARD_AMOUNT_UL,

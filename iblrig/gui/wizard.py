@@ -264,15 +264,13 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.controller2model()
         self.task_arguments = dict()
 
-        #
-        args_general = sorted(_get_task_argument_parser()._actions, key=lambda x: x.dest)
-        args_general = [x for x in args_general
-                        if not any(set(x.option_strings).intersection(['--subject', '--user', '--projects',
-                                                                       '--log-level', '--procedures', '--weight',
-                                                                       '--help', '--append', '--no-interactive',
-                                                                       '--stub', '--wizard']))]
-        args_extra = sorted(self.model.get_task_extra_parser(self.model.task_name)._actions, key=lambda x: x.dest)
-        args = args_extra + args_general
+        # collect & filter list of parser arguments (general & task specific)
+        args = sorted(_get_task_argument_parser()._actions, key=lambda x: x.dest)
+        args = [x for x in args
+                if not any(set(x.option_strings).intersection(['--subject', '--user', '--projects', '--log-level',
+                                                               '--procedures', '--weight', '--help', '--append',
+                                                               '--no-interactive', '--stub', '--wizard']))]
+        args = sorted(self.model.get_task_extra_parser(self.model.task_name)._actions, key=lambda x: x.dest) + args
 
         group = self.uiGroupTaskParameters
         layout = group.layout()
@@ -282,10 +280,8 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
             layout.removeRow(0)
 
         for idx, arg in enumerate(args):
-            label = arg.option_strings[0]
-            label = label.replace('_', ' ').replace('--', '').title()
-            label = label.replace('Id', 'ID')
-            param = arg.option_strings[0]
+            param = max(arg.option_strings, key=len)
+            label = param.replace('_', ' ').replace('--', '').title()
 
             # create widget for bool arguments
             if isinstance(arg, (argparse._StoreTrueAction, argparse._StoreFalseAction)):
@@ -293,7 +289,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 widget.setTristate(False)
                 if arg.default:
                     widget.setCheckState(arg.default * 2)
-                widget.toggled.connect(lambda val, a=arg: self._set_task_arg(a.option_strings[0], val > 0))
+                widget.toggled.connect(lambda val, p=param: self._set_task_arg(param, val > 0))
                 widget.toggled.emit(widget.isChecked() > 0)
 
             # create widget for string arguments
@@ -325,29 +321,46 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 if arg.default:
                     widget.setValue(arg.default)
                 widget.valueChanged.connect(
-                    lambda val, a=arg: self._set_task_arg(a.option_strings[0], str(val)))
+                    lambda val, p=param: self._set_task_arg(p, str(val)))
                 widget.valueChanged.emit(widget.value())
 
             # no other argument types supported for now
             else:
                 continue
 
+            # add custom widget properties
+            QtCore.QMetaProperty
+            widget.setProperty('parameter_name', param)
+            widget.setProperty('parameter_dest', arg.dest)
+
             # display help strings as status tip
             if arg.help:
                 widget.setStatusTip(arg.help)
 
-            if label == 'Training Phase':
-                widget.setSpecialValueText('automatic')
-                widget.setMaximum(5)
-                widget.setMinimum(-1)
-                widget.setValue(-1)
+            # some customizations
+            match widget.property('parameter_dest'):
+                case 'session_template_id':
+                    label = 'Session Template ID'
 
-            if label == 'Adaptive Reward':
-                widget.setSpecialValueText('automatic')
-                widget.setMaximum(3)
-                widget.setSingleStep(0.1)
-                widget.setMinimum(-1)
-                widget.setValue(-1)
+                case 'delay_secs':
+                    label = 'Initial Delay, s'
+
+                case 'training_phase':
+                    widget.setSpecialValueText('automatic')
+                    widget.setMaximum(5)
+                    widget.setMinimum(-1)
+                    widget.setValue(-1)
+
+                case 'adaptive_reward':
+                    label = 'Reward Amount, μl'
+                    widget.setSpecialValueText('automatic')
+                    widget.setMaximum(3)
+                    widget.setSingleStep(0.1)
+                    widget.setMinimum(-1)
+                    widget.setValue(widget.minimum())
+                    widget.valueChanged.connect(
+                        lambda val, a=arg:
+                        self._set_task_arg(a.option_strings[0], str(val if val > widget.minimum() else -1)))
 
             layout.addRow(self.tr(label), widget)
 

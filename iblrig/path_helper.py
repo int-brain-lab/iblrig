@@ -104,7 +104,7 @@ def get_local_and_remote_paths(local_path=None, remote_path=None, lab=None):
             else Path.home().joinpath('iblrig_data')
     if paths.remote_data_folder is None:
         paths.remote_data_folder = Path(p) if (p := iblrig_settings['iblrig_remote_data_path']) else None
-    paths.local_subjects_folder = paths.local_data_folder.joinpath(lab or iblrig_settings['ALYX_LAB'] or '', 'Subjects')
+    paths.local_subjects_folder = Path(paths.local_data_folder).joinpath(lab or iblrig_settings['ALYX_LAB'] or '', 'Subjects')
     paths.remote_subjects_folder = Path(p).joinpath('Subjects') if (p := paths.remote_data_folder) else None
     return paths
 
