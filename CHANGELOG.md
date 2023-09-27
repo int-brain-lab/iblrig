@@ -2,6 +2,12 @@ Changelog
 ---------
 
 -------------------------------
+
+8.10.1
+------
+* more reliable way to check for dirty repository
+* add visual hint for unfilled list-views
+
 8.10.0
 ------
 * adaptive reward from previous sessions in TrainingChoiceWorld
