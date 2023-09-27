@@ -564,14 +564,14 @@ class HabituationChoiceWorldSession(ChoiceWorldSession):
 
 class ActiveChoiceWorldSession(ChoiceWorldSession):
     """
-    The ActiveChoiceWorldSession is a base class for protocols wherethe mouse is actively making decisions
+    The ActiveChoiceWorldSession is a base class for protocols where the mouse is actively making decisions
     by turning the wheel. It has the following characteristics
     -   it is trial based
     -   it is decision based
     -   left and right simulus are equiprobable: there is no biased block
     -   a trial can either be correct / error / no_go depending on the side of the stimulus and the response
-    -   it has a quantifiable performance by computing the proportion of correct trials
-    of passive stimulations protocols or habituation protocols.
+    -   it has a quantifiable performance by computing the proportion of correct trials of passive stimulations protocols or
+        habituation protocols.
 
     The TrainingChoiceWorld, BiasedChoiceWorld are all subclasses of this class
     """
@@ -710,7 +710,6 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
     The TrainingChoiceWorldSession corresponds to the first training protocol of the choice world task.
     This protocol has a complicated adaptation of the number of contrasts (embodied by the training_phase
     property) and the reward amount, embodied by the adaptive_reward property.
-    The blocks
     """
     protocol_name = "_iblrig_tasks_trainingChoiceWorld"
 
@@ -742,7 +741,7 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
 
     def get_subject_training_info(self):
         """
-        Get the previous sessions according to this session parameters and deduce the
+        Get the previous session's according to this session parameters and deduce the
         training level and adaptive reward amount.
         :return:
         """
