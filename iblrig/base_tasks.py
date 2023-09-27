@@ -446,6 +446,9 @@ class OSCClient(udp_client.SimpleUDPClient):
     def __init__(self, port, ip="127.0.0.1"):
         super(OSCClient, self).__init__(ip, port)
 
+    def __del__(self):
+        self._sock.close()
+
     def send2bonsai(self, **kwargs):
         """
         :param see list of keys in OSC_PROTOCOL
