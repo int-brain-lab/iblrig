@@ -280,6 +280,13 @@ def get_remote_version() -> Union[version.Version, None]:
         return None
 
 
+def is_dirty() -> bool:
+    try:
+        return check_call(["git", "diff", "--quiet"]) != 0
+    except CalledProcessError:
+        return True
+
+
 def upgrade() -> int:
     """
     Upgrade the IBLRIG software installation.
@@ -330,13 +337,13 @@ def upgrade() -> int:
         if not _ask_user('No need to upgrade. Do you want to run the upgrade routine anyways?', False):
             return 0
 
-    if v_local.local == 'dirty':
+    if is_dirty():
         print('There are changes in your local copy of IBLRIG that will be lost when upgrading.')
         if not _ask_user('Do you want to proceed?', False):
             return 0
         check_call([sys.executable, "-m", "pip", "reset", "--hard"])
 
-    check_call([sys.executable, "git", "pull", "--tags"])
+    check_call(["git", "pull", "--tags"])
     check_call([sys.executable, "-m", "pip", "install", "-U", "-e", "."])
 
 

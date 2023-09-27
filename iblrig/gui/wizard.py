@@ -24,7 +24,7 @@ from iblrig.constants import BASE_DIR
 from iblrig.misc import _get_task_argument_parser
 from iblrig.base_tasks import BaseSession
 from iblrig.hardware import Bpod
-from iblrig.version_management import check_for_updates, get_changelog
+from iblrig.version_management import check_for_updates, get_changelog, is_dirty
 from iblrig.gui.ui_wizard import Ui_wizard
 from iblrig.gui.ui_update import Ui_update
 from pybpodapi import exceptions
@@ -156,6 +156,8 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.task_settings_widgets = None
 
         self.uiPushStart.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))
+        self.uiPushStart.installEventFilter(self)
+
         self.uiPushPause.setIcon(self.style().standardIcon(QStyle.SP_MediaPause))
         self.uiPushFlush.setIcon(self.style().standardIcon(QStyle.SP_BrowserReload))
         self.uiPushHelp.setIcon(self.style().standardIcon(QStyle.SP_DialogHelpButton))
@@ -183,6 +185,19 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.setDisabled(True)
         QtCore.QTimer.singleShot(100, self.check_dirty)
         QtCore.QTimer.singleShot(100, self.check_for_update)
+
+    def eventFilter(self, obj, event):
+        if obj == self.uiPushStart and event.type() in [QtCore.QEvent.HoverEnter, QtCore.QEvent.HoverLeave]:
+            for widget in [self.uiListProcedures, self.uiListProjects]:
+                if len(widget.selectedIndexes()) > 0:
+                    continue
+                match event.type():
+                    case QtCore.QEvent.HoverEnter:
+                        widget.setStyleSheet('QListView { background-color: pink; border: 1px solid red; }')
+                    case _:
+                        widget.setStyleSheet('')
+            return True
+        return False
 
     def closeEvent(self, event):
         if self.running_task_process is None:
@@ -216,7 +231,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         -------
         None
         """
-        if not iblrig.__version__.endswith('dirty'):
+        if not is_dirty():
             return
         msg_box = QtWidgets.QMessageBox(parent=self)
         msg_box.setWindowTitle("Warning")
