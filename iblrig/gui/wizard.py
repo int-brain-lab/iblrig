@@ -24,7 +24,7 @@ from iblrig.constants import BASE_DIR
 from iblrig.misc import _get_task_argument_parser
 from iblrig.base_tasks import BaseSession
 from iblrig.hardware import Bpod
-from iblrig.version_management import check_for_updates, get_changelog
+from iblrig.version_management import check_for_updates, get_changelog, is_dirty
 from iblrig.gui.ui_wizard import Ui_wizard
 from iblrig.gui.ui_update import Ui_update
 from pybpodapi import exceptions
@@ -216,7 +216,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         -------
         None
         """
-        if not iblrig.__version__.endswith('dirty'):
+        if not is_dirty():
             return
         msg_box = QtWidgets.QMessageBox(parent=self)
         msg_box.setWindowTitle("Warning")
