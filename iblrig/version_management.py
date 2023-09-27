@@ -119,7 +119,6 @@ def get_detailed_version_string(v_basic: str) -> str:
     This method will only work with installations managed through Git.
     """
 
-    # this method will only work with installations managed through git
     if not IS_GIT:
         log.error('This installation of IBLRIG is not managed through git.')
         return v_basic
@@ -148,6 +147,22 @@ def get_detailed_version_string(v_basic: str) -> str:
 
 @static_vars(branch=None)
 def get_branch() -> Union[str, None]:
+    """
+    Get the Git branch of the iblrig installation.
+
+    This function retrieves and caches the Git branch of the iblrig installation.
+    If the branch is already cached, it returns the cached value. If not, it
+    attempts to obtain the branch from the Git repository.
+
+    Returns
+    -------
+    Union[str, None]
+        The Git branch of the iblrig installation, or None if it cannot be determined.
+
+    Notes
+    -----
+    This method will only work with installations managed through Git.
+    """
     if get_branch.branch:
         return get_branch.branch
     if not IS_GIT:
@@ -162,6 +177,21 @@ def get_branch() -> Union[str, None]:
 
 @static_vars(is_fetched_already=False)
 def get_remote_tags() -> None:
+    """
+    Fetch remote Git tags if not already fetched.
+
+    This function fetches remote Git tags if they have not been fetched already.
+    If tags are already fetched, it does nothing. If the installation is not
+    managed through Git, it logs an error.
+
+    Returns
+    -------
+    None
+
+    Notes
+    -----
+    This method will only work with installations managed through Git.
+    """
     if get_remote_tags.is_fetched_already:
         return
     if not IS_GIT:
@@ -175,6 +205,24 @@ def get_remote_tags() -> None:
 
 @static_vars(changelog=None)
 def get_changelog() -> str:
+    """
+    Retrieve the changelog for the iblrig installation.
+
+    This function retrieves and caches the changelog for the iblrig installation
+    based on the current Git branch. If the changelog is already cached, it
+    returns the cached value. If not, it attempts to fetch the changelog from
+    the GitHub repository or read it locally if the remote fetch fails.
+
+    Returns
+    -------
+    str
+        The changelog for the iblrig installation.
+
+    Notes
+    -----
+    This method relies on the presence of a CHANGELOG.md file either in the
+    repository or locally.
+    """
     if get_changelog.changelog:
         return get_changelog.changelog
     try:

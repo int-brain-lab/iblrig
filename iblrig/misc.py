@@ -9,11 +9,7 @@ import argparse
 import datetime
 import json
 import logging
-import os
-import shutil
-import subprocess
 from pathlib import Path
-from sys import platform
 from typing import Optional, Union
 
 import numpy as np
@@ -86,50 +82,6 @@ def get_task_arguments(parents=None):
     return _post_parse_arguments(**kwargs)
 
 
-def call_exp_desc_gui():
-    """
-    Used to call the 'Experiment Description GUI' in the iblscripts repo from a task. Attempts to perform the following:
-    * parse alyx username from home directory alyx config file (production alyx)
-    * parses the subject name from pybpod's session user_settings file,
-        i.e. ../iblrig_params/IBL/experiments/_iblrig_tasks/setups/task_name/sessions/date_dir/user_settings.py
-    * uses subprocess to call the gui, i.e. iblscripts/deploy/project_procedure_gui/experiment_form.py
-
-    Better implementation is desired.
-    """
-    log.info("Attempting to launch experiment description form...")
-
-    # determine alyx_username
-    if platform == "win32":
-        alyx_prod_config_path = Path.home() / "AppData" / "Roaming" / ".one" / ".alyx.internationalbrainlab.org"
-    else:
-        alyx_prod_config_path = Path.home() / ".one" / ".alyx.internationalbrainlab.org"
-    with open(alyx_prod_config_path, "r") as f:
-        data = json.load(f)
-    alyx_username = data["ALYX_LOGIN"]
-    log.info(f"Alyx username set: {alyx_username}")
-
-    # determine currently selected subject in pybpod, hope that the user did not select multiple subjects
-    subject_name = None
-    if "user_settings.py" in os.listdir():
-        with open("user_settings.py", "r") as f:
-            lines = f.readlines()
-        for row in lines:
-            if "PYBPOD_SUBJECT_EXTRA" in row:
-                name_index = row.split().index('"name":')
-                subject_name = row.split()[name_index + 1].strip(",\"")
-                break
-    log.info(f"Subject name: {subject_name}")
-
-    if alyx_username and subject_name:
-        if platform == "win32":  # Set path for platform
-            experiment_form_path = Path("C:\\iblscripts\\deploy\\project_procedure_gui\\experiment_form.py")
-        else:
-            experiment_form_path = Path.home() / "Documents/repos/iblscripts/deploy/project_procedure_gui/experiment_form.py"
-        if experiment_form_path.exists():  # verify iblscripts dir exists in the expected location
-            cmd = ["python", experiment_form_path, subject_name, alyx_username]  # set subprocess command
-            subprocess.run(cmd)
-
-
 def _isdatetime(x: str) -> Optional[bool]:
     """
     Check if string is a date in the format YYYY-MM-DD.
@@ -158,33 +110,6 @@ def get_session_path(path: Union[str, Path]) -> Optional[Path]:
             sess = Path().joinpath(*path.parts[: i + 1])
 
     return sess
-
-
-def check_transfer(src_session_path: str, dst_session_path: str):
-    """
-    Check all the files in the source directory match those in the destination directory.
-    :param src_session_path: The source directory that was copied
-    :param dst_session_path: The copy target directory
-    :return:
-    """
-    src_files = sorted([x for x in Path(src_session_path).rglob("*") if x.is_file()])
-    dst_files = sorted([x for x in Path(dst_session_path).rglob("*") if x.is_file()])
-    assert len(src_files) == len(dst_files), "Not all files transferred"
-    for s, d in zip(src_files, dst_files):
-        assert s.name == d.name, "file name mismatch"
-        assert s.stat().st_size == d.stat().st_size, "file size mismatch"
-
-
-def transfer_folder(src: Path, dst: Path, force: bool = False) -> None:
-    print(f"Attempting to copy:\n{src}\n--> {dst}")
-    if force:
-        print(f"Removing {dst}")
-        shutil.rmtree(dst, ignore_errors=True)
-    print(f"Copying all files:\n{src}\n--> {dst}")
-    shutil.copytree(src, dst)
-    # If folder was created delete the src_flag_file
-    if check_transfer(src, dst) is None:
-        print("All files copied")
 
 
 def smooth_rolling_window(x, window_len=11, window="blackman"):

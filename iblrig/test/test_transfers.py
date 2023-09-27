@@ -57,8 +57,8 @@ class TestIntegrationTransferExperiments(unittest.TestCase):
             with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as td:
                 session = _create_behavior_session(td, ntrials=50, hard_crash=hard_crash)
                 session.paths.SESSION_FOLDER.joinpath('transfer_me.flag').touch()
-                iblrig.commands.transfer_data(local_subjects_path=session.paths.LOCAL_SUBJECT_FOLDER,
-                                              remote_subjects_path=session.paths.REMOTE_SUBJECT_FOLDER)
+                iblrig.commands.transfer_data(local_path=session.iblrig_settings['iblrig_local_data_path'],
+                                              remote_path=session.iblrig_settings['iblrig_remote_data_path'])
                 sc = BehaviorCopier(session_path=session.paths.SESSION_FOLDER,
                                     remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER)
                 self.assertEqual(sc.state, 3)
@@ -73,10 +73,8 @@ class TestIntegrationTransferExperiments(unittest.TestCase):
             with tempfile.TemporaryDirectory() as td:
                 session = _create_behavior_session(td, ntrials=ntrials)
                 session.paths.SESSION_FOLDER.joinpath('transfer_me.flag').touch()
-                iblrig.commands.transfer_data(
-                    local_subjects_path=session.paths.LOCAL_SUBJECT_FOLDER,
-                    remote_subjects_path=session.paths.REMOTE_SUBJECT_FOLDER
-                )
+                iblrig.commands.transfer_data(local_path=session.iblrig_settings['iblrig_local_data_path'],
+                                              remote_path=session.iblrig_settings['iblrig_remote_data_path'])
                 sc = BehaviorCopier(
                     session_path=session.paths.SESSION_FOLDER,
                     remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER)
