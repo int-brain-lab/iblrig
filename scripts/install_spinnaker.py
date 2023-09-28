@@ -1,48 +1,49 @@
 import sys
-from hashlib import md5
-from os import unlink
+import os
 import subprocess
-import urllib.request
+from importlib.util import find_spec
 import zipfile
-import shutil
 from pathlib import Path
 
-from one.webclient import AlyxClient
+from one.webclient import AlyxClient, http_download_file
 from iblutil.io import hashfile
 
 
 def download(asset: int, filename: str, target_md5: str):
-    print(f'Downloading {filename}')
-    out_file = Path.home().joinpath('Downloads', filename)
-    # if Path(out_file).exists() and hashfile.md5(out_file) == target_md5:
-    #     return out_file, True
+    out_dir = Path.home().joinpath('Downloads')
+    out_file = out_dir.joinpath(filename)
+    options = {'target_dir': out_dir, 'clobber': True, 'return_md5': True}
+    if out_file.exists() and hashfile.md5(out_file) == target_md5:
+        return out_file
     try:
-        AlyxClient().download_file(f'resources/spinnaker/{filename}s', clobber=True,
-                                   target_dir=Path.home().joinpath('Downloads'))
-    except OSError as error_alyx:
+        tmp_file, md5_sum = AlyxClient().download_file(f'resources/spinnaker/{filename}', **options)
+    except OSError as e1:
         try:
-            print('Couldn\'t download from Alyx - trying alternative (please wait)')
             url = f'https://flir.netx.net/file/asset/{asset}/original/attachment'
-            with urllib.request.urlopen(url) as response, open(out_file, 'wb') as f:
-                shutil.copyfileobj(response, f)
-        except OSError as error_flir:
-            raise error_flir from error_alyx
+            tmp_file, md5_sum = http_download_file(url, **options)
+        except OSError as e2:
+            raise e2 from e1
     finally:
-        return out_file, hashfile.md5(out_file) == target_md5
+        os.rename(tmp_file, out_file)
+        if md5_sum != target_md5:
+            raise Exception(f'`{filename}` does not match the expected MD5 - please download to {out_dir} manually.')
+        return out_file
 
 
-out1 = download(54396, 'spinnaker_python-3.1.0.79-cp310-cp310-win_amd64.zip', 'e00148800757d0ed7171348d850947ac')
-out2 = download(54386, 'SpinnakerSDK_FULL_3.1.0.79_x64.exe', 'd9d83772f852e5369da2fbcc248c9c81')
-pass
+if os.name != 'nt':
+    raise Exception(f'{Path(__file__).name} can only be run on Windows.')
 
-# with zipfile.ZipFile(path_to_zip_file, 'r') as zip_ref:
-#     zip_ref.extractall(directory_to_extract_to)
+if find_spec('PySpin'):
+    print('Python Spinnaker SDK is already installed')
+else:
+    if sys.base_prefix == sys.prefix:
+        raise Exception('You need to be in the IBLRIG venv in order to install the Python Spinnaker SDK.')
+    print('Installing Python Spinnaker SDK')
+    file_zip = download(54396, 'spinnaker_python-3.1.0.79-cp310-cp310-win_amd64.zip', 'e00148800757d0ed7171348d850947ac')
+    with zipfile.ZipFile(file_zip, 'r') as f:
+        file_whl = f.extract(file_zip.stem + '.whl', file_zip.parent)
+    subprocess.check_call([sys.executable, "-m", "pip", "install", file_whl])
+    os.unlink(file_whl)
+    file_zip.unlink()
 
-
-# return
-
-# alyx.is_logged_in
-# file_remote = 'resources/spinnaker/spinnaker_python-3.1.0.79-cp310-cp310-win_amd64.zip'
-# file_local = alyx.download_file(file_remote)
-# subprocess.check_call([sys.executable, "-m", "pip", "install", file_local])
-# unlink(file_local)
+file_winsdk = download(54386, 'SpinnakerSDK_FULL_3.1.0.79_x64.exe', 'd9d83772f852e5369da2fbcc248c9c81')
