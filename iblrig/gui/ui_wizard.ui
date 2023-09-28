@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>414</width>
-    <height>619</height>
+    <width>437</width>
+    <height>702</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -86,7 +86,7 @@
      <number>0</number>
     </property>
     <item>
-     <layout class="QGridLayout" name="mainGrid" columnstretch="0,0,0">
+     <layout class="QGridLayout" name="mainGrid" columnstretch="0">
       <property name="sizeConstraint">
        <enum>QLayout::SetDefaultConstraint</enum>
       </property>
@@ -105,7 +105,7 @@
       <item row="0" column="0">
        <widget class="QTabWidget" name="tabWidget">
         <property name="currentIndex">
-         <number>1</number>
+         <number>0</number>
         </property>
         <widget class="QWidget" name="uiTabSession">
          <attribute name="title">
