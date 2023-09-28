@@ -420,12 +420,16 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         match self.uiPushStart.text():
             case 'Start':
                 self.uiPushStart.setText('Stop')
+                self.uiPushStart.setIcon(self.style().standardIcon(QStyle.SP_MediaStop))
                 self.enable_UI_elements()
 
                 dlg = QtWidgets.QInputDialog()
                 weight, ok = dlg.getDouble(self, 'Subject Weight', 'Subject Weight (g):', value=0, min=0,
                                            flags=dlg.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
                 if not ok or weight == 0:
+                    self.uiPushStart.setText('Start')
+                    self.uiPushStart.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))
+                    self.enable_UI_elements()
                     return
 
                 self.controller2model()
@@ -460,10 +464,9 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 self.checkSubProcessTimer.start(1000)
             case 'Stop':
                 self.uiPushStart.setText('Stop')
-                self.uiPushStart.setEnabled(False)
                 self.checkSubProcessTimer.stop()
                 # if the process crashed catastrophically, the session folder might not exist
-                if self.model.session_folder.exists():
+                if self.model.session_folder and self.model.session_folder.exists():
                     self.model.session_folder.joinpath('.stop').touch()
 
                 # this will wait for the process to finish, usually the time for the trial to end
