@@ -748,7 +748,6 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
         try:
             training_phase, adaptive_reward, _ = choiceworld.get_subject_training_info(
                 subject_name=self.session_info.SUBJECT_NAME,
-                subject_weight_grams=self.session_info['SUBJECT_WEIGHT'],
                 default_reward=self.task_params.REWARD_AMOUNT_UL,
                 local_path=self.iblrig_settings['iblrig_local_data_path'],
                 remote_path=self.iblrig_settings['iblrig_remote_data_path'],

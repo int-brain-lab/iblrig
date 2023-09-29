@@ -371,11 +371,12 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                     widget.setSpecialValueText('automatic')
                     widget.setMaximum(3)
                     widget.setSingleStep(0.1)
-                    widget.setMinimum(-1)
+                    widget.setMinimum(1.4)
                     widget.setValue(widget.minimum())
                     widget.valueChanged.connect(
-                        lambda val, a=arg:
-                        self._set_task_arg(a.option_strings[0], str(val if val > widget.minimum() else -1)))
+                        lambda val, a=arg, m=widget.minimum():
+                        self._set_task_arg(a.option_strings[0], str(val if val > m else -1)))
+                    widget.valueChanged.emit(widget.value())
 
             layout.addRow(self.tr(label), widget)
 
@@ -420,12 +421,16 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         match self.uiPushStart.text():
             case 'Start':
                 self.uiPushStart.setText('Stop')
+                self.uiPushStart.setIcon(self.style().standardIcon(QStyle.SP_MediaStop))
                 self.enable_UI_elements()
 
                 dlg = QtWidgets.QInputDialog()
                 weight, ok = dlg.getDouble(self, 'Subject Weight', 'Subject Weight (g):', value=0, min=0,
                                            flags=dlg.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
                 if not ok or weight == 0:
+                    self.uiPushStart.setText('Start')
+                    self.uiPushStart.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))
+                    self.enable_UI_elements()
                     return
 
                 self.controller2model()
@@ -460,10 +465,9 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 self.checkSubProcessTimer.start(1000)
             case 'Stop':
                 self.uiPushStart.setText('Stop')
-                self.uiPushStart.setEnabled(False)
                 self.checkSubProcessTimer.stop()
                 # if the process crashed catastrophically, the session folder might not exist
-                if self.model.session_folder.exists():
+                if self.model.session_folder and self.model.session_folder.exists():
                     self.model.session_folder.joinpath('.stop').touch()
 
                 # this will wait for the process to finish, usually the time for the trial to end
@@ -474,6 +478,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                     msgBox.setText("The task was terminated with an error.\nPlease check the command-line output for details.")
                     msgBox.setIcon(QtWidgets.QMessageBox().Critical)
                     msgBox.exec_()
+
                 self.running_task_process = None
 
                 # manage poop count

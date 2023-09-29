@@ -39,6 +39,9 @@ import iblrig.graphic as graph
 import ibllib.io.session_params as ses_params
 from iblrig.transfer_experiments import BehaviorCopier
 
+# if HAS_PYSPIN:
+#     import PySpin
+
 OSC_CLIENT_IP = "127.0.0.1"
 
 
@@ -446,6 +449,9 @@ class OSCClient(udp_client.SimpleUDPClient):
     def __init__(self, port, ip="127.0.0.1"):
         super(OSCClient, self).__init__(ip, port)
 
+    def __del__(self):
+        self._sock.close()
+
     def send2bonsai(self, **kwargs):
         """
         :param see list of keys in OSC_PROTOCOL
@@ -518,10 +524,17 @@ class BonsaiRecordingMixin(object):
         desired borders of rig features, the actual triggering of the  cameras is done in the trigger_bonsai_cameras method.
         """
 
-        # TODO: spinnaker SDK
-
         if self._camera_mixin_bonsai_get_workflow_file(self.hardware_settings.get('device_cameras', None)) is None:
             return
+
+        # # TODO
+        # # enable trigger mode - if PySpin is available
+        # if HAS_PYSPIN:
+        #     pyspin_system = PySpin.System.GetInstance()
+        #     pyspin_cameras = pyspin_system.GetCameras()
+        #     for cam in pyspin_cameras:
+        #         cam.Init()
+        #         cam.TriggerMode.SetValue(True)
 
         bonsai_camera_file = self.paths.IBLRIG_FOLDER.joinpath('devices', 'camera_setup', 'setup_video.bonsai')
         # this locks until Bonsai closes

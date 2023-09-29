@@ -35,12 +35,17 @@ def transfer_data(local_path=None, remote_path=None, dry=False):
     """
     Copies the behavior data from the rig to the local server if the session has more than 42 trials
     If the hardware settings file contains MAIN_SYNC=True, the number of expected devices is set to 1
-    :param local_path: local path to the subjects folder
-    :param weeks:
+    :param local_path: local path to the subjects folder, otherwise uses the local_data_folder key in
+    the iblrig_settings.yaml file, or the iblrig_data directory in the home path.
     :param dry:
     :return:
     """
+    # If paths not passed, uses those defined in the iblrig_settings.yaml file
     rig_paths = get_local_and_remote_paths(local_path=local_path, remote_path=remote_path)
+    local_path = rig_paths.local_subjects_folder
+    remote_path = rig_paths.remote_subjects_folder
+    assert isinstance(local_path, Path)  # get_local_and_remote_paths should always return Path obj
+
     hardware_settings = load_settings_yaml('hardware_settings.yaml')
     number_of_expected_devices = 1 if hardware_settings.get('MAIN_SYNC', True) else None
 

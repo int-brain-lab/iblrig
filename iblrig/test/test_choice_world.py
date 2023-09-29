@@ -84,11 +84,14 @@ class TestGetPreviousSession(unittest.TestCase):
         """
         self.mock_jsonable(self.sesb.paths.DATA_FILE_PATH, training_phase=2, reward_amount=1050)
         self.sesb.session_info['ADAPTIVE_REWARD_AMOUNT_UL'] = 2.1
+        self.sesb.session_info['SUBJECT_WEIGHT'] = 17
+
         self.sesb.save_task_parameters_to_json_file()
         # test the function entry point
-        result = iblrig.choiceworld.get_subject_training_info(
-            self.kwargs['subject'], subject_weight_grams=17, local_path=Path(self.root_path), lab='cortexlab', mode='raise')
-        self.assertEqual((2, 2.1, True), result)
+        a, b, info = iblrig.choiceworld.get_subject_training_info(
+            self.kwargs['subject'], local_path=Path(self.root_path), lab='cortexlab', mode='raise')
+        self.assertEqual((2, 2.1), (a, b))
+        self.assertIsInstance(info, dict)
 
         # test the task instantiation, should be the same as above
         t = TrainingChoiceWorldSession(**self.kwargs, training_phase=4, adaptive_reward=2.9)

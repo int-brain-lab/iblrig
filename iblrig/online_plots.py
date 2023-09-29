@@ -255,7 +255,7 @@ class OnlinePlots(object):
     def update_titles(self):
         self.h.fig_title.set_text(
             f"{self._session_string} time elapsed: {str(datetime.timedelta(seconds=int(self.data.time_elapsed)))}")
-        self.h.ax_water.title.set_text(f"water \n {int(self.data.water_delivered)} (uL)")
+        self.h.ax_water.title.set_text(f"water \n {self.data.water_delivered:.2f} (uL)")
         self.h.ax_performance.title.set_text(f" correct/tot \n {self.data.ntrials_correct} / {self.data.ntrials}")
 
     def update_trial(self, trial_data, bpod_data):
