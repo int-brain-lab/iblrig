@@ -3,6 +3,10 @@ Changelog
 
 -------------------------------
 
+8.10.2
+------
+* hot-fix parsing of path args in transfer_data
+
 8.10.1
 ------
 * more reliable way to check for dirty repository
