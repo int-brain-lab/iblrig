@@ -28,7 +28,6 @@ from pybpodapi.protocol import StateMachine
 from one.api import ONE
 
 import iblrig
-from iblrig.constants import HAS_PYSPIN
 import iblrig.path_helper
 from iblutil.util import Bunch, setup_logger
 from iblrig.hardware import Bpod, MyRotaryEncoder, sound_device_factory, SOFTCODE

@@ -9,11 +9,6 @@ from shutil import which
 from one.webclient import AlyxClient, http_download_file
 from iblutil.io import hashfile
 
-try:
-    import PySpin
-except ModuleNotFoundError:
-    pass
-
 
 def pyspin_installed() -> bool:
     return find_spec('PySpin') is not None
