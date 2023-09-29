@@ -40,8 +40,8 @@ import iblrig.graphic as graph
 import ibllib.io.session_params as ses_params
 from iblrig.transfer_experiments import BehaviorCopier
 
-if HAS_PYSPIN:
-    import PySpin
+# if HAS_PYSPIN:
+#     import PySpin
 
 OSC_CLIENT_IP = "127.0.0.1"
 
