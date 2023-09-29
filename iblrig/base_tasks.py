@@ -28,6 +28,7 @@ from pybpodapi.protocol import StateMachine
 from one.api import ONE
 
 import iblrig
+from iblrig.constants import HAS_PYSPIN
 import iblrig.path_helper
 from iblutil.util import Bunch, setup_logger
 from iblrig.hardware import Bpod, MyRotaryEncoder, sound_device_factory, SOFTCODE
@@ -38,6 +39,9 @@ import iblrig.alyx
 import iblrig.graphic as graph
 import ibllib.io.session_params as ses_params
 from iblrig.transfer_experiments import BehaviorCopier
+
+if HAS_PYSPIN:
+    import PySpin
 
 OSC_CLIENT_IP = "127.0.0.1"
 
@@ -521,10 +525,17 @@ class BonsaiRecordingMixin(object):
         desired borders of rig features, the actual triggering of the  cameras is done in the trigger_bonsai_cameras method.
         """
 
-        # TODO: spinnaker SDK
-
         if self._camera_mixin_bonsai_get_workflow_file(self.hardware_settings.get('device_cameras', None)) is None:
             return
+
+        # # TODO
+        # # enable trigger mode - if PySpin is available
+        # if HAS_PYSPIN:
+        #     pyspin_system = PySpin.System.GetInstance()
+        #     pyspin_cameras = pyspin_system.GetCameras()
+        #     for cam in pyspin_cameras:
+        #         cam.Init()
+        #         cam.TriggerMode.SetValue(True)
 
         bonsai_camera_file = self.paths.IBLRIG_FOLDER.joinpath('devices', 'camera_setup', 'setup_video.bonsai')
         # this locks until Bonsai closes

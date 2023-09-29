@@ -9,20 +9,21 @@ from shutil import which
 from one.webclient import AlyxClient, http_download_file
 from iblutil.io import hashfile
 
-
-def spinnaker_sdk_installed() -> bool:
-    if os.name != 'nt':
-        return False
-    spin_exe = which('SpinUpdateConsole_v140')
-    return spin_exe and Path(spin_exe).parents[2].joinpath('src').exists()
+try:
+    import PySpin
+except ModuleNotFoundError:
+    pass
 
 
 def pyspin_installed() -> bool:
     return find_spec('PySpin') is not None
 
 
-def pyspin_functional() -> bool:
-    return spinnaker_sdk_installed() and pyspin_installed()
+def spinnaker_sdk_installed() -> bool:
+    if os.name != 'nt':
+        return False
+    spin_exe = which('SpinUpdateConsole_v140')
+    return spin_exe and Path(spin_exe).parents[2].joinpath('src').exists()
 
 
 def install_spinnaker_sdk():
