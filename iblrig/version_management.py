@@ -119,7 +119,6 @@ def get_detailed_version_string(v_basic: str) -> str:
     This method will only work with installations managed through Git.
     """
 
-    # this method will only work with installations managed through git
     if not IS_GIT:
         log.error('This installation of IBLRIG is not managed through git.')
         return v_basic
@@ -133,14 +132,14 @@ def get_detailed_version_string(v_basic: str) -> str:
     # get details through `git describe`
     try:
         get_remote_tags()
-        v_detailed = check_output(["git", "describe", "--dirty", "--broken", "--match", v_sanitized, "--tags", "--long"],
-                                  cwd=BASE_DIR, text=True, timeout=1, stderr=STDOUT)
-    except (SubprocessError, CalledProcessError):
-        log.error('Error calling `git describe`')
+        v_detailed = check_output(["git", "describe", "--dirty", "--broken", "--match", v_sanitized,
+                                   "--tags", "--long"], cwd=BASE_DIR, text=True, timeout=1, stderr=STDOUT)
+    except (SubprocessError, CalledProcessError) as e:
+        log.debug(e, exc_info=True)
         return v_basic
 
     # apply a bit of regex magic for formatting & return the detailed version string
-    v_detailed = re.sub(r'^((?:[\d+\.])+)(-[1-9]{1}\d*)?(?:-0\d*)?(?:-\w+)(-dirty|-broken)?\n?$', r'\1\2\3', v_detailed)
+    v_detailed = re.sub(r'^((?:[\d+\.])+)(-[1-9]\d*)?(?:-0\d*)?(?:-\w+)(-dirty|-broken)?\n?$', r'\1\2\3', v_detailed)
     v_detailed = re.sub(r'-(\d+)', r'.post\1', v_detailed)
     v_detailed = re.sub(r'\-(dirty|broken)', r'+\1', v_detailed)
     return v_detailed
@@ -148,6 +147,22 @@ def get_detailed_version_string(v_basic: str) -> str:
 
 @static_vars(branch=None)
 def get_branch() -> Union[str, None]:
+    """
+    Get the Git branch of the iblrig installation.
+
+    This function retrieves and caches the Git branch of the iblrig installation.
+    If the branch is already cached, it returns the cached value. If not, it
+    attempts to obtain the branch from the Git repository.
+
+    Returns
+    -------
+    Union[str, None]
+        The Git branch of the iblrig installation, or None if it cannot be determined.
+
+    Notes
+    -----
+    This method will only work with installations managed through Git.
+    """
     if get_branch.branch:
         return get_branch.branch
     if not IS_GIT:
@@ -162,6 +177,21 @@ def get_branch() -> Union[str, None]:
 
 @static_vars(is_fetched_already=False)
 def get_remote_tags() -> None:
+    """
+    Fetch remote Git tags if not already fetched.
+
+    This function fetches remote Git tags if they have not been fetched already.
+    If tags are already fetched, it does nothing. If the installation is not
+    managed through Git, it logs an error.
+
+    Returns
+    -------
+    None
+
+    Notes
+    -----
+    This method will only work with installations managed through Git.
+    """
     if get_remote_tags.is_fetched_already:
         return
     if not IS_GIT:
@@ -175,6 +205,24 @@ def get_remote_tags() -> None:
 
 @static_vars(changelog=None)
 def get_changelog() -> str:
+    """
+    Retrieve the changelog for the iblrig installation.
+
+    This function retrieves and caches the changelog for the iblrig installation
+    based on the current Git branch. If the changelog is already cached, it
+    returns the cached value. If not, it attempts to fetch the changelog from
+    the GitHub repository or read it locally if the remote fetch fails.
+
+    Returns
+    -------
+    str
+        The changelog for the iblrig installation.
+
+    Notes
+    -----
+    This method relies on the presence of a CHANGELOG.md file either in the
+    repository or locally.
+    """
     if get_changelog.changelog:
         return get_changelog.changelog
     try:
@@ -232,6 +280,13 @@ def get_remote_version() -> Union[version.Version, None]:
         return None
 
 
+def is_dirty() -> bool:
+    try:
+        return check_call(["git", "diff", "--quiet"]) != 0
+    except CalledProcessError:
+        return True
+
+
 def upgrade() -> int:
     """
     Upgrade the IBLRIG software installation.
@@ -282,13 +337,13 @@ def upgrade() -> int:
         if not _ask_user('No need to upgrade. Do you want to run the upgrade routine anyways?', False):
             return 0
 
-    if v_local.local == 'dirty':
+    if is_dirty():
         print('There are changes in your local copy of IBLRIG that will be lost when upgrading.')
         if not _ask_user('Do you want to proceed?', False):
             return 0
         check_call([sys.executable, "-m", "pip", "reset", "--hard"])
 
-    check_call([sys.executable, "git", "pull", "--tags"])
+    check_call(["git", "pull", "--tags"])
     check_call([sys.executable, "-m", "pip", "install", "-U", "-e", "."])
 
 

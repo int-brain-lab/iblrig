@@ -3,6 +3,24 @@ Changelog
 
 -------------------------------
 
+8.10.2
+------
+* hot-fix parsing of path args in transfer_data
+* add install_spinnaker command for ... installing spinnaker
+* fixed CI warnings about ports that haven't been closed
+* draw subject weight for adaptive reward from previous session
+* format reward with 1 decimal on online plot
+
+8.10.1
+------
+* more reliable way to check for dirty repository
+* add visual hint for unfilled list-views
+
+8.10.0
+------
+* adaptive reward from previous sessions in TrainingChoiceWorld
+* updater: fetch remote changelog to advertise new features
+
 8.9.4
 -----
 * correction for version regex

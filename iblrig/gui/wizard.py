@@ -24,7 +24,7 @@ from iblrig.constants import BASE_DIR
 from iblrig.misc import _get_task_argument_parser
 from iblrig.base_tasks import BaseSession
 from iblrig.hardware import Bpod
-from iblrig.version_management import check_for_updates, get_changelog
+from iblrig.version_management import check_for_updates, get_changelog, is_dirty
 from iblrig.gui.ui_wizard import Ui_wizard
 from iblrig.gui.ui_update import Ui_update
 from pybpodapi import exceptions
@@ -156,6 +156,8 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.task_settings_widgets = None
 
         self.uiPushStart.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))
+        self.uiPushStart.installEventFilter(self)
+
         self.uiPushPause.setIcon(self.style().standardIcon(QStyle.SP_MediaPause))
         self.uiPushFlush.setIcon(self.style().standardIcon(QStyle.SP_BrowserReload))
         self.uiPushHelp.setIcon(self.style().standardIcon(QStyle.SP_DialogHelpButton))
@@ -183,6 +185,19 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.setDisabled(True)
         QtCore.QTimer.singleShot(100, self.check_dirty)
         QtCore.QTimer.singleShot(100, self.check_for_update)
+
+    def eventFilter(self, obj, event):
+        if obj == self.uiPushStart and event.type() in [QtCore.QEvent.HoverEnter, QtCore.QEvent.HoverLeave]:
+            for widget in [self.uiListProcedures, self.uiListProjects]:
+                if len(widget.selectedIndexes()) > 0:
+                    continue
+                match event.type():
+                    case QtCore.QEvent.HoverEnter:
+                        widget.setStyleSheet('QListView { background-color: pink; border: 1px solid red; }')
+                    case _:
+                        widget.setStyleSheet('')
+            return True
+        return False
 
     def closeEvent(self, event):
         if self.running_task_process is None:
@@ -216,7 +231,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         -------
         None
         """
-        if not iblrig.__version__.endswith('dirty'):
+        if not is_dirty():
             return
         msg_box = QtWidgets.QMessageBox(parent=self)
         msg_box.setWindowTitle("Warning")
@@ -264,15 +279,13 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.controller2model()
         self.task_arguments = dict()
 
-        #
-        args_general = sorted(_get_task_argument_parser()._actions, key=lambda x: x.dest)
-        args_general = [x for x in args_general
-                        if not any(set(x.option_strings).intersection(['--subject', '--user', '--projects',
-                                                                       '--log-level', '--procedures', '--weight',
-                                                                       '--help', '--append', '--no-interactive',
-                                                                       '--stub', '--wizard']))]
-        args_extra = sorted(self.model.get_task_extra_parser(self.model.task_name)._actions, key=lambda x: x.dest)
-        args = args_extra + args_general
+        # collect & filter list of parser arguments (general & task specific)
+        args = sorted(_get_task_argument_parser()._actions, key=lambda x: x.dest)
+        args = [x for x in args
+                if not any(set(x.option_strings).intersection(['--subject', '--user', '--projects', '--log-level',
+                                                               '--procedures', '--weight', '--help', '--append',
+                                                               '--no-interactive', '--stub', '--wizard']))]
+        args = sorted(self.model.get_task_extra_parser(self.model.task_name)._actions, key=lambda x: x.dest) + args
 
         group = self.uiGroupTaskParameters
         layout = group.layout()
@@ -282,10 +295,8 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
             layout.removeRow(0)
 
         for idx, arg in enumerate(args):
-            label = arg.option_strings[0]
-            label = label.replace('_', ' ').replace('--', '').title()
-            label = label.replace('Id', 'ID')
-            param = arg.option_strings[0]
+            param = max(arg.option_strings, key=len)
+            label = param.replace('_', ' ').replace('--', '').title()
 
             # create widget for bool arguments
             if isinstance(arg, (argparse._StoreTrueAction, argparse._StoreFalseAction)):
@@ -293,7 +304,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 widget.setTristate(False)
                 if arg.default:
                     widget.setCheckState(arg.default * 2)
-                widget.toggled.connect(lambda val, a=arg: self._set_task_arg(a.option_strings[0], val > 0))
+                widget.toggled.connect(lambda val, p=param: self._set_task_arg(param, val > 0))
                 widget.toggled.emit(widget.isChecked() > 0)
 
             # create widget for string arguments
@@ -325,22 +336,47 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 if arg.default:
                     widget.setValue(arg.default)
                 widget.valueChanged.connect(
-                    lambda val, a=arg: self._set_task_arg(a.option_strings[0], str(val)))
+                    lambda val, p=param: self._set_task_arg(p, str(val)))
                 widget.valueChanged.emit(widget.value())
 
             # no other argument types supported for now
             else:
                 continue
 
+            # add custom widget properties
+            QtCore.QMetaProperty
+            widget.setProperty('parameter_name', param)
+            widget.setProperty('parameter_dest', arg.dest)
+
             # display help strings as status tip
             if arg.help:
                 widget.setStatusTip(arg.help)
 
-            if label == 'Training Phase':
-                widget.setSpecialValueText('automatic')
-                widget.setMaximum(5)
-                widget.setMinimum(-1)
-                widget.setValue(-1)
+            # some customizations
+            match widget.property('parameter_dest'):
+                case 'session_template_id':
+                    label = 'Session Template ID'
+
+                case 'delay_secs':
+                    label = 'Initial Delay, s'
+
+                case 'training_phase':
+                    widget.setSpecialValueText('automatic')
+                    widget.setMaximum(5)
+                    widget.setMinimum(-1)
+                    widget.setValue(-1)
+
+                case 'adaptive_reward':
+                    label = 'Reward Amount, μl'
+                    widget.setSpecialValueText('automatic')
+                    widget.setMaximum(3)
+                    widget.setSingleStep(0.1)
+                    widget.setMinimum(1.4)
+                    widget.setValue(widget.minimum())
+                    widget.valueChanged.connect(
+                        lambda val, a=arg, m=widget.minimum():
+                        self._set_task_arg(a.option_strings[0], str(val if val > m else -1)))
+                    widget.valueChanged.emit(widget.value())
 
             layout.addRow(self.tr(label), widget)
 
@@ -385,12 +421,16 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         match self.uiPushStart.text():
             case 'Start':
                 self.uiPushStart.setText('Stop')
+                self.uiPushStart.setIcon(self.style().standardIcon(QStyle.SP_MediaStop))
                 self.enable_UI_elements()
 
                 dlg = QtWidgets.QInputDialog()
                 weight, ok = dlg.getDouble(self, 'Subject Weight', 'Subject Weight (g):', value=0, min=0,
                                            flags=dlg.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
                 if not ok or weight == 0:
+                    self.uiPushStart.setText('Start')
+                    self.uiPushStart.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))
+                    self.enable_UI_elements()
                     return
 
                 self.controller2model()
@@ -425,10 +465,9 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 self.checkSubProcessTimer.start(1000)
             case 'Stop':
                 self.uiPushStart.setText('Stop')
-                self.uiPushStart.setEnabled(False)
                 self.checkSubProcessTimer.stop()
                 # if the process crashed catastrophically, the session folder might not exist
-                if self.model.session_folder.exists():
+                if self.model.session_folder and self.model.session_folder.exists():
                     self.model.session_folder.joinpath('.stop').touch()
 
                 # this will wait for the process to finish, usually the time for the trial to end
@@ -439,6 +478,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                     msgBox.setText("The task was terminated with an error.\nPlease check the command-line output for details.")
                     msgBox.setIcon(QtWidgets.QMessageBox().Critical)
                     msgBox.exec_()
+
                 self.running_task_process = None
 
                 # manage poop count

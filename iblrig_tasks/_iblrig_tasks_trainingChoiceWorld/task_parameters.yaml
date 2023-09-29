@@ -1,8 +1,8 @@
 'ADAPTIVE_GAIN': True
-'ADAPTIVE_REWARD': False
+'ADAPTIVE_REWARD': True
 'AG_INIT_VALUE': 8.0  # Adaptive Gain init value (azimuth_degree/mm)
 'AG_MIN_VALUE': 4.0  # (azimuth_degree/mm)
 'CONTRAST_SET': [1.0, 0.5, 0.25, 0.125, 0.0625, 0.0]
 'CONTRAST_SET_PROBABILITY_TYPE': skew_zero  # uniform, skew_zero
 'DEBIAS': True  # Whether to use debiasing rule or not by repeating error trials
-'REWARD_AMOUNT_UL': 3.0  # Reward amount (uL)
+'REWARD_AMOUNT_UL': 3.0  # Reward amount (uL), will oscillate between 1.5 and 3 uL depending on previous sessions if adaptive_reward is True

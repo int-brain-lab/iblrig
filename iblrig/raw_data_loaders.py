@@ -374,7 +374,7 @@ def load_camera_gpio(session_path, label: str, as_dicts=False):
     return gpio
 
 
-def load_settings(session_path: Union[str, Path]):
+def load_settings(session_path: Union[str, Path], collection='raw_behavior_data'):
     """
     Load PyBpod Settings files (.json).
 
@@ -388,7 +388,7 @@ def load_settings(session_path: Union[str, Path]):
     if session_path is None:
         log.warning("No data loaded: session_path is None")
         return
-    path = Path(session_path).joinpath("raw_behavior_data")
+    path = Path(session_path).joinpath(collection)
     path = next(path.glob("_iblrig_taskSettings.raw*.json"), None)
     if not path:
         log.warning("No data loaded: could not find raw settings file")

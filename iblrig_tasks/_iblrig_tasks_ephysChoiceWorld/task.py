@@ -32,7 +32,7 @@ class Session(BiasedChoiceWorldSession):
         """ :return: argparse.parser() """
         parser = super(Session, Session).extra_parser()
         parser.add_argument('--session_template_id', option_strings=['--session_template_id'],
-                            dest='session_template_id', default=0, type=int)
+                            dest='session_template_id', default=0, type=int, help='pre-generated session index (zero-based)')
         return parser
 
 

@@ -46,13 +46,6 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: sudo apt-get install -y libportaudio2
 
-      - name: Install Bonsai (Windows only)
-        if: matrix.os == 'windows-latest'
-        shell: pwsh -l {0}
-        run: |
-          cd Bonsai
-          powershell.exe .\install.ps1
-
       - name: Create config files (Ubuntu)
         if: matrix.os == 'ubuntu-latest'
         run: |
