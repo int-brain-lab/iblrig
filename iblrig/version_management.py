@@ -344,6 +344,7 @@ def upgrade() -> int:
         check_call([sys.executable, "-m", "pip", "reset", "--hard"])
 
     check_call(["git", "pull", "--tags"])
+    check_call([sys.executable, "-m", "pip", "install", "-U", "pip"])
     check_call([sys.executable, "-m", "pip", "install", "-U", "-e", "."])
 
 
