@@ -3,6 +3,7 @@ from pathlib import Path
 import random
 import tempfile
 import unittest
+from unittest import mock
 
 from ibllib.io import session_params
 
@@ -62,6 +63,16 @@ class TestIntegrationTransferExperiments(unittest.TestCase):
                 sc = BehaviorCopier(session_path=session.paths.SESSION_FOLDER,
                                     remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER)
                 self.assertEqual(sc.state, 3)
+
+        # Check that the settings file is used when no path passed
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as td:
+            session = _create_behavior_session(td, ntrials=50, hard_crash=hard_crash)
+            session.paths.SESSION_FOLDER.joinpath('transfer_me.flag').touch()
+            with mock.patch('iblrig.path_helper.load_settings_yaml', return_value=session.iblrig_settings):
+                iblrig.commands.transfer_data()
+            sc = BehaviorCopier(session_path=session.paths.SESSION_FOLDER,
+                                remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER)
+            self.assertEqual(sc.state, 3)
 
     def test_behavior_do_not_copy_dummy_sessions(self):
         """
