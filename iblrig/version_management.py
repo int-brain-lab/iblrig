@@ -1,4 +1,5 @@
 from pathlib import Path
+import socket
 from typing import Union, Callable, Any
 import requests
 from packaging import version
@@ -11,6 +12,44 @@ from iblrig.constants import BASE_DIR, IS_GIT
 from iblutil.util import setup_logger
 
 log = setup_logger('iblrig')
+
+
+def internet_available(host: str = "8.8.8.8", port: int = 53, timeout: int = 3, force_update: bool = False):
+    """
+    Check if the internet connection is available.
+
+    This function checks if an internet connection is available by attempting to
+    establish a connection to a specified host and port. It will use a cached
+    result if the latter is available and `force_update` is set to False.
+
+    Parameters
+    ----------
+    host : str, optional
+        The IP address or domain name of the host to check the connection to.
+        Default is "8.8.8.8" (Google's DNS server).
+    port : int, optional
+        The port to use for the connection check. Default is 53 (DNS port).
+    timeout : int, optional
+        The maximum time (in seconds) to wait for the connection attempt.
+        Default is 3 seconds.
+    force_update : bool, optional
+        If True, force an update and recheck the internet connection even if
+        the result is cached. Default is False.
+
+    Returns
+    -------
+    bool
+        True if an internet connection is available, False otherwise.
+    """
+    if hasattr(internet_available, 'return_value') and not force_update:
+        return internet_available.return_value
+    try:
+        socket.setdefaulttimeout(timeout)
+        socket.socket(socket.AF_INET, socket.SOCK_STREAM).connect((host, port))
+        internet_available.return_value = True
+    except socket.error:
+        internet_available.return_value = False
+    return internet_available.return_value
 
 
 def static_vars(**kwargs) -> Callable[..., Any]:
@@ -52,6 +91,9 @@ def check_for_updates() -> tuple[bool, Union[str, None]]:
             - A string representing the latest available version, or None if
               no remote version information is available.
     """
+    if not internet_available():
+        return False, ''
+
     log.info('Checking for updates ...')
 
     update_available = False
@@ -118,6 +160,9 @@ def get_detailed_version_string(v_basic: str) -> str:
     -----
     This method will only work with installations managed through Git.
     """
+
+    if not internet_available():
+        return v_basic
 
     if not IS_GIT:
         log.error('This installation of IBLRIG is not managed through git.')
@@ -313,6 +358,8 @@ def upgrade() -> int:
     This method requires that the installation is managed through Git and that
     the user is in the IBLRIG virtual environment.
     """
+    if not internet_available():
+        raise Exception('Connection to internet not available.')
     if not IS_GIT:
         raise Exception('This installation of IBLRIG is not managed through git.')
     if sys.base_prefix == sys.prefix:
