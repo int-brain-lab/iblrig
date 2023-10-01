@@ -14,6 +14,7 @@ import ctypes
 import os
 
 from PyQt5 import QtWidgets, QtCore, QtGui
+from PyQt5.QtCore import QThread
 from PyQt5.QtWidgets import QStyle
 
 from one.api import ONE
@@ -141,6 +142,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.model = RigWizardModel()
         self.model2view()
 
+        # connect widgets signals to slots
         self.uiComboTask.currentIndexChanged.connect(self.controls_for_extra_parameters)
         self.uiPushHelp.clicked.connect(self.help)
         self.uiPushFlush.clicked.connect(self.flush)
@@ -182,9 +184,10 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.statusbar.addWidget(tmp)
         self.controls_for_extra_parameters()
 
-        self.setDisabled(True)
+        self.update_check = UpdateCheckWorker(self)
+        self.update_check.start()
+
         QtCore.QTimer.singleShot(100, self.check_dirty)
-        QtCore.QTimer.singleShot(100, self.check_for_update)
 
     def eventFilter(self, obj, event):
         if obj == self.uiPushStart and event.type() in [QtCore.QEvent.HoverEnter, QtCore.QEvent.HoverLeave]:
@@ -240,16 +243,6 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         msg_box.setStandardButtons(QtWidgets.QMessageBox.Ok)
         msg_box.setIcon(QtWidgets.QMessageBox().Information)
         msg_box.exec_()
-
-    def check_for_update(self):
-        update_available, remote_version = check_for_updates()
-
-        self.setDisabled(False)
-        if update_available:
-            dialog = UpdateNotice(parent=self)
-            dialog.uiLabelHeader.setText(f"Update to iblrig {remote_version} is available.")
-            dialog.uiPushButtonOK.released.connect(lambda: dialog.close())
-            dialog.exec_()
 
     def model2view(self):
         # stores the current values in the model
@@ -544,25 +537,45 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.repaint()
 
 
-class UpdateNotice(QtWidgets.QDialog, Ui_update):
-    def __init__(self, parent=None, *args, **kwargs):
-        super(UpdateNotice, self).__init__(*args, **kwargs)
-        self.setupUi(self)
-        self.uiTextBrowserChanges.setMarkdown(get_changelog())
-        self.uiLabelLogo.setPixmap(QtGui.QPixmap(WIZARD_PNG))
-        self.setWindowIcon(QtGui.QIcon(WIZARD_PNG))
-        self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
+class UpdateCheckWorker(QThread):
+
+    def __init__(self, parent):
+        super().__init__()
+        self.parent = parent
+        self.update_available = False
+        self.remote_version = ''
+        self.finished.connect(self.check_results)
+
+    def run(self):
+        self.update_available, self.remote_version = check_for_updates()
+
+    def check_results(self):
+        if self.update_available:
+            dialog = self.UpdateNotice(parent=self.parent)
+            dialog.uiLabelHeader.setText(f"Update to iblrig {self.remote_version} is available.")
+            dialog.uiPushButtonOK.released.connect(lambda: dialog.close())
+            dialog.exec_()
+            self.deleteLater()
+
+    class UpdateNotice(QtWidgets.QDialog, Ui_update):
+        def __init__(self, parent=None):
+            super().__init__(parent)
+            self.setupUi(self)
+            self.uiTextBrowserChanges.setMarkdown(get_changelog())
+            self.uiLabelLogo.setPixmap(QtGui.QPixmap(WIZARD_PNG))
+            self.setWindowIcon(QtGui.QIcon(WIZARD_PNG))
+            self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
 
 
 def main():
     if os.name == 'nt':
         appid = f'IBL.iblrig.wizard.{iblrig.__version__}'
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(appid)
-    app = QtWidgets.QApplication([])
+    app = QtWidgets.QApplication(sys.argv)
     app.setStyle("Fusion")
     w = RigWizard()
     w.show()
-    app.exec_()
+    app.exec()
 
 
 if __name__ == "__main__":
