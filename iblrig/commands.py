@@ -31,14 +31,43 @@ def transfer_video_data(local_subjects_path=None, remote_subjects_path=None, dry
                           remote_subjects_path=remote_subjects_path, dry=dry, tag='video')
 
 
-def transfer_data(local_path=None, remote_path=None, dry=False):
+def dir_path(directory: str):
+    directory = Path(directory)
+    if directory.exists():
+        return directory
+    raise argparse.ArgumentError(None, f'Directory `{directory}` not found')
+
+
+def transfer_data_cli():
+    parser = argparse.ArgumentParser(description="Copy behavior data to the local server.",
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+                                     argument_default=argparse.SUPPRESS)
+    parser.add_argument("-l", "--local", action="store", type=dir_path, dest='local_path', help="override local data path")
+    parser.add_argument("-r", "--remote", action="store", type=dir_path, dest='remote_path', help="override remote data path")
+    parser.add_argument("-d", "--dry", action="store_true", dest='dry', help="do not remove local data after copying")
+    args = parser.parse_args()
+    transfer_data(**vars(args))
+
+
+def transfer_data(local_path: Path = None, remote_path: Path = None, dry: bool = False) -> None:
     """
     Copies the behavior data from the rig to the local server if the session has more than 42 trials
     If the hardware settings file contains MAIN_SYNC=True, the number of expected devices is set to 1
     :param local_path: local path to the subjects folder, otherwise uses the local_data_folder key in
     the iblrig_settings.yaml file, or the iblrig_data directory in the home path.
-    :param dry:
-    :return:
+
+    Parameters
+    ----------
+    local_path : Path
+        Path to local data
+    remote_path : Path
+        Path to remote data
+    dry : bool
+        Do not remove local data after copying if `dry` is True
+
+    Returns
+    -------
+    None
     """
     # If paths not passed, uses those defined in the iblrig_settings.yaml file
     rig_paths = get_local_and_remote_paths(local_path=local_path, remote_path=remote_path)
