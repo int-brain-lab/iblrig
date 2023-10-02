@@ -6,6 +6,7 @@ Changelog
 8.10.3
 ------
 * add check for availability of internet
+* add proper CLI for transfer_data
 * move update-check to separate thread
 
 8.10.2
