@@ -5,23 +5,36 @@ import traceback
 
 import iblrig
 from iblutil.util import setup_logger
+from iblutil.io import hashfile
 from ibllib.io import session_params
 import ibllib.pipes.misc
 
 log = setup_logger('iblrig', level='INFO')
 
 
-def copy_folders(local_folder, remote_folder):
+def copy_file_md5(src, dst, *args, **kwargs):
+    src_md5 = hashfile.md5(src)
+    if Path(dst).exists() and src_md5 == hashfile.md5(dst):
+        return
+    shutil.copy2(src, dst, *args, **kwargs)
+    if not src_md5 == hashfile.md5(dst):
+        raise Exception(f'Error copying {src}: MD5 mismatch.')
+
+
+def copy_folders(local_folder, remote_folder, overwrite=False):
     """
     Transfers local_folder onto remote_folder
     :param local_folder:
     :param remote_folder:
+    :param overwrite:
     :return:
     """
     status = True
     try:
         remote_folder.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copytree(local_folder, remote_folder)
+        shutil.copytree(local_folder, remote_folder, dirs_exist_ok=overwrite,
+                        ignore=shutil.ignore_patterns('transfer_me.flag'),
+                        copy_function=copy_file_md5)
     except BaseException:
         log.error(traceback.print_exc())
         log.info(f"Could not copy {local_folder} to {remote_folder}")
