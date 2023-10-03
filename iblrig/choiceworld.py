@@ -38,7 +38,7 @@ def compute_adaptive_reward_volume(subject_weight_g, reward_volume_ul, delivered
 
 def get_subject_training_info(
         subject_name, task_name='_iblrig_tasks_trainingChoiceWorld',
-        default_reward=DEFAULT_REWARD_VOLUME, mode='silent', **kwargs):
+        default_reward=DEFAULT_REWARD_VOLUME, mode='silent', **kwargs) -> tuple[int, float, dict]:
     """
     Goes through the history of a subject and gets the latest
     training phase and the adaptive reward volume for this subject

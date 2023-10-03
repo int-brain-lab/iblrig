@@ -28,6 +28,7 @@ from iblrig.hardware import Bpod
 from iblrig.version_management import check_for_updates, get_changelog, is_dirty
 from iblrig.gui.ui_wizard import Ui_wizard
 from iblrig.gui.ui_update import Ui_update
+from iblrig.choiceworld import get_subject_training_info
 from pybpodapi import exceptions
 
 PROCEDURES = [
@@ -78,6 +79,8 @@ class RigWizardModel:
     session_folder: Path = None
     hardware_settings: dict = None
     test_subject_name: str = 'test_subject'
+    subject_details_worker = None
+    subject_details: tuple = None
 
     def __post_init__(self):
         self.iblrig_settings = iblrig.path_helper.load_settings_yaml()
@@ -131,6 +134,15 @@ class RigWizardModel:
         projects = [p['name'] for p in rest_projects if (username in p['users'] or len(p['users']) == 0)]
         self.all_projects = sorted(set(projects + self.all_projects))
 
+    def get_subject_details(self, subject):
+        self.subject_details_worker = SubjectDetailsWorker(subject)
+        self.subject_details_worker.finished.connect(self.process_subject_details)
+        self.subject_details_worker.start()
+
+    def process_subject_details(self):
+        self.subject_details = SubjectDetailsWorker.result
+        self.subject_details_worker.deleteLater()
+
 
 class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
     def __init__(self, *args, **kwargs):
@@ -143,7 +155,8 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.model2view()
 
         # connect widgets signals to slots
-        self.uiComboTask.currentIndexChanged.connect(self.controls_for_extra_parameters)
+        self.uiComboTask.currentTextChanged.connect(self.controls_for_extra_parameters)
+        self.uiComboSubject.currentTextChanged.connect(self.model.get_subject_details)
         self.uiPushHelp.clicked.connect(self.help)
         self.uiPushFlush.clicked.connect(self.flush)
         self.uiPushStart.clicked.connect(self.start_stop)
@@ -185,7 +198,6 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.controls_for_extra_parameters()
 
         self.update_check = UpdateCheckWorker(self)
-        self.update_check.start()
 
         QtCore.QTimer.singleShot(100, self.check_dirty)
 
@@ -545,6 +557,7 @@ class UpdateCheckWorker(QThread):
         self.update_available = False
         self.remote_version = ''
         self.finished.connect(self.check_results)
+        self.start()
 
     def run(self):
         self.update_available, self.remote_version = check_for_updates()
@@ -565,6 +578,18 @@ class UpdateCheckWorker(QThread):
             self.uiLabelLogo.setPixmap(QtGui.QPixmap(WIZARD_PNG))
             self.setWindowIcon(QtGui.QIcon(WIZARD_PNG))
             self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
+
+
+class SubjectDetailsWorker(QThread):
+    subject_name: str = None
+    result: tuple[int, float, dict] = None
+
+    def __init__(self, subject_name):
+        super().__init__()
+        self.subject_name = subject_name
+
+    def run(self):
+        self.result = get_subject_training_info(self.subject_name)
 
 
 def main():
