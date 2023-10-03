@@ -49,7 +49,7 @@ def transfer_data_cli():
     transfer_data(**vars(args))
 
 
-def transfer_data(local_path: Path = None, remote_path: Path = None, dry: bool = False) -> None:
+def transfer_data(local_path: Path = None, remote_path: Path = None, dry: bool = False, lab: str = None) -> None:
     """
     Copies the behavior data from the rig to the local server if the session has more than 42 trials
     If the hardware settings file contains MAIN_SYNC=True, the number of expected devices is set to 1
@@ -62,6 +62,9 @@ def transfer_data(local_path: Path = None, remote_path: Path = None, dry: bool =
         Path to local data
     remote_path : Path
         Path to remote data
+    lab : str
+        the lab name ie. "cortexlab" or "mainenlab" to use to find the local path. Defaults to the ALYX_LAB key
+        in the settings/iblrig_settings.yaml file
     dry : bool
         Do not remove local data after copying if `dry` is True
 
@@ -70,7 +73,7 @@ def transfer_data(local_path: Path = None, remote_path: Path = None, dry: bool =
     None
     """
     # If paths not passed, uses those defined in the iblrig_settings.yaml file
-    rig_paths = get_local_and_remote_paths(local_path=local_path, remote_path=remote_path)
+    rig_paths = get_local_and_remote_paths(local_path=local_path, remote_path=remote_path, lab=lab)
     local_path = rig_paths.local_subjects_folder
     remote_path = rig_paths.remote_subjects_folder
     assert isinstance(local_path, Path)  # get_local_and_remote_paths should always return Path obj
