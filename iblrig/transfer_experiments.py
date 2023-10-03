@@ -6,9 +6,27 @@ import traceback
 import iblrig
 from iblutil.util import setup_logger
 from ibllib.io import session_params
-from ibllib.pipes.misc import rsync_paths
+import ibllib.pipes.misc
 
 log = setup_logger('iblrig', level='INFO')
+
+
+def copy_folders(local_folder, remote_folder):
+    """
+    Transfers local_folder onto remote_folder
+    :param local_folder:
+    :param remote_folder:
+    :return:
+    """
+    status = True
+    try:
+        remote_folder.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copytree(local_folder, remote_folder)
+    except BaseException:
+        log.error(traceback.print_exc())
+        log.info(f"Could not copy {local_folder} to {remote_folder}")
+        status = False
+    return status
 
 
 class SessionCopier(abc.ABC):
@@ -130,7 +148,7 @@ class SessionCopier(abc.ABC):
                 # and will error out if the remote collection already exists
                 log.warning(f'Collection {remote_collection} already exists, removing')
                 shutil.rmtree(remote_collection)
-            status &= rsync_paths(local_collection, remote_collection)
+            status &= copy_folders(local_collection, remote_collection)
         return status
 
     def copy_collections(self):
@@ -272,7 +290,6 @@ class EphysCopier(SessionCopier):
         super(EphysCopier, self).initialize_experiment(acquisition_description=acquisition_description, **kwargs)
 
     def _copy_collections(self):
-        import ibllib.pipes.misc
         """
         Here we overload the copy to be able to rename the probes properly and also create the insertions
         :return:
@@ -293,4 +310,4 @@ class EphysCopier(SessionCopier):
         except BaseException:
             log.error(traceback.print_exc())
             log.info("Probe creation failed, please create the probe insertions manually. Continuing transfer...")
-        return rsync_paths(self.session_path.joinpath('raw_ephys_data'), self.remote_session_path.joinpath('raw_ephys_data'))
+        return copy_folders(self.session_path.joinpath('raw_ephys_data'), self.remote_session_path.joinpath('raw_ephys_data'))
