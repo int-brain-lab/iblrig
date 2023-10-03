@@ -1,4 +1,6 @@
 import abc
+import os
+from os.path import samestat
 from pathlib import Path
 import shutil
 import traceback
@@ -12,31 +14,72 @@ import ibllib.pipes.misc
 log = setup_logger('iblrig', level='INFO')
 
 
-def copy_file_md5(src, dst, *args, **kwargs):
-    src_md5 = hashfile.md5(src)
-    if Path(dst).exists() and src_md5 == hashfile.md5(dst):
-        return
-    shutil.copy2(src, dst, *args, **kwargs)
-    if not src_md5 == hashfile.md5(dst):
-        raise Exception(f'Error copying {src}: MD5 mismatch.')
-
-
-def copy_folders(local_folder, remote_folder, overwrite=False):
+def _copy_file_md5(src: str, dst: str, *args, **kwargs) -> str:
     """
-    Transfers local_folder onto remote_folder
-    :param local_folder:
-    :param remote_folder:
-    :param overwrite:
-    :return:
+    Copy a file from source to destination with MD5 hash verification.
+
+    This function copies a file from the source path to the destination path
+    while verifying the MD5 hash of the source and destination files. If the
+    MD5 hashes do not match after copying, an OSError is raised.
+
+    Parameters
+    ----------
+    src : str
+        The path to the source file.
+    dst : str
+        The path to the destination file.
+    *args, **kwargs
+        Additional arguments and keyword arguments to pass to `shutil.copy2`.
+
+    Returns
+    -------
+    str
+        The path to the copied file.
+
+    Raises
+    ------
+    OSError
+        If the MD5 hashes of the source and destination files do not match.
+    """
+    src_md5 = hashfile.md5(src)
+    if os.path.exists(dst) and samestat(os.stat(src), os.stat(dst)) and src_md5 == hashfile.md5(dst):
+        return dst
+    return_val = shutil.copy2(src, dst, *args, **kwargs)
+    if not src_md5 == hashfile.md5(dst):
+        raise OSError(f'Error copying {src}: MD5 mismatch.')
+    return return_val
+
+
+def copy_folders(local_folder: str, remote_folder: str, overwrite: bool = False) -> bool:
+    """
+    Copy folders and files from a local location to a remote location.
+
+    This function copies all folders and files from a local directory to a
+    remote directory. It provides options to overwrite existing files in
+    the remote directory and ignore specific file patterns.
+
+    Parameters
+    ----------
+    local_folder : str
+        The path to the local folder to copy from.
+    remote_folder : str
+        The path to the remote folder to copy to.
+    overwrite : bool, optional
+        If True, overwrite existing files in the remote folder. Default is False.
+
+    Returns
+    -------
+    bool
+        True if the copying is successful, False otherwise.
     """
     status = True
     try:
         remote_folder.parent.mkdir(parents=True, exist_ok=True)
         shutil.copytree(local_folder, remote_folder, dirs_exist_ok=overwrite,
                         ignore=shutil.ignore_patterns('transfer_me.flag'),
-                        copy_function=copy_file_md5)
-    except BaseException:
-        log.error(traceback.print_exc())
+                        copy_function=_copy_file_md5)
+    except OSError:
+        log.error(traceback.format_exc())
         log.info(f"Could not copy {local_folder} to {remote_folder}")
         status = False
     return status
