@@ -17,18 +17,21 @@ from iblrig.raw_data_loaders import load_task_jsonable
 logger = setup_logger('iblrig', level='INFO')
 
 
-def transfer_video_data(local_subjects_path=None, remote_subjects_path=None, dry=False):
-    local_subjects_path, remote_subjects_path = get_local_and_remote_paths(
-        local_path=local_subjects_path, remote_path=remote_subjects_path)
+def transfer_video_data(local_path=None, remote_path=None, dry=False):
+    # If paths not passed, uses those defined in the iblrig_settings.yaml file
+    rig_paths = get_local_and_remote_paths(local_path=local_path, remote_path=remote_path)
+    local_path = rig_paths.local_subjects_folder
+    remote_path = rig_paths.remote_subjects_folder
+    assert isinstance(local_path, Path)
 
-    for flag in list(local_subjects_path.rglob('transfer_me.flag')):
+    for flag in list(local_path.rglob('transfer_me.flag')):
         session_path = flag.parent
-        vc = VideoCopier(session_path, remote_subjects_folder=remote_subjects_path)
+        vc = VideoCopier(session_path, remote_subjects_folder=remote_path)
         logger.critical(f"{vc.state}, {vc.session_path}")
         if not dry:
             vc.run()
-    remove_local_sessions(weeks=2, local_subjects_path=local_subjects_path,
-                          remote_subjects_path=remote_subjects_path, dry=dry, tag='video')
+    remove_local_sessions(weeks=2, local_path=local_path,
+                          remote_path=remote_path, dry=dry, tag='video')
 
 
 def transfer_data(local_path=None, remote_path=None, dry=False):
