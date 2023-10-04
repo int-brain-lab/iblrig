@@ -6,8 +6,9 @@ Changelog
 8.10.3
 ------
 * add check for availability of internet
-* add proper CLI for transfer_data
+* add proper CLI for data transfer scripts
 * move update-check to separate thread
+* detect dud (less than 42 trials) and offer deletion
 
 8.10.2
 ------

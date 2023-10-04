@@ -488,18 +488,24 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                     msgBox.exec_()
 
                 self.running_task_process = None
+                self.uiPushStart.setText('Start')
+                self.uiPushStart.setStatusTip('start the session')
+                self.uiPushStart.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))
+                self.enable_UI_elements()
 
                 if (task_settings_file := Path(self.model.raw_data_folder).joinpath("_iblrig_taskSettings.raw.json")).exists():
                     with open(task_settings_file, "r") as fid:
                         session_data = json.load(fid)
 
                     # check if session was a dud
-                    if ntrials := session_data['NTRIALS'] < 42:
+                    if ntrials := session_data['NTRIALS'] < 42 and 'spontaneous' not in self.model.task_name:
                         answer = QtWidgets.QMessageBox.question(self, 'Is this a dud?',
-                                                                f"The session consisted of only {ntrials} trials and "
-                                                                f"appears to be a dud.\n\nShould it be deleted?")
+                                                                f"The session consisted of only {ntrials:d} trial"
+                                                                f"{'s' if ntrials>0 else ''} and appears to be a dud.\n\n"
+                                                                f"Should it be deleted?")
                         if answer == QtWidgets.QMessageBox.Yes:
-                            pass  # to be implemented
+                            self.model.session_folder.unlink()
+                            return
 
                     # manage poop count
                     dlg = QtWidgets.QInputDialog()
@@ -508,11 +514,6 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                     session_data['POOP_COUNT'] = droppings
                     with open(task_settings_file, "w") as fid:
                         json.dump(session_data, fid, indent=4, sort_keys=True, default=str)
-
-                self.uiPushStart.setText('Start')
-                self.uiPushStart.setStatusTip('start the session')
-                self.uiPushStart.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))
-                self.enable_UI_elements()
 
     def check_sub_process(self):
         return_code = None if self.running_task_process is None else self.running_task_process.poll()
