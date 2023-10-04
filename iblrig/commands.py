@@ -93,12 +93,15 @@ def transfer_data_cli():
     transfer_data(**vars(args))
 
 
-def transfer_video_data(local_path=None, remote_path=None, dry=False):
+def transfer_video_data(local_path: Path = None, remote_path: Path = None, dry: bool = False):
     # If paths not passed, uses those defined in the iblrig_settings.yaml file
     rig_paths = get_local_and_remote_paths(local_path=local_path, remote_path=remote_path)
     local_path = rig_paths.local_subjects_folder
     remote_path = rig_paths.remote_subjects_folder
     assert isinstance(local_path, Path)
+    assert isinstance(remote_path, Path)
+    logger.info(f'Local Path: {local_path}')
+    logger.info(f'Remote Path: {remote_path}')
 
     for flag in list(local_path.rglob('transfer_me.flag')):
         session_path = flag.parent
