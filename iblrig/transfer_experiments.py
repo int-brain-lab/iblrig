@@ -52,7 +52,7 @@ def _copy2_checksum(src: str, dst: str, *args, **kwargs) -> str:
             log.info('  - local and remote BLAKE2B hashes MATCH, skipping copy')
             return dst
         else:
-            log.info('  - local and remote MD5 checksums DO NOT MATCH')
+            log.info('  - local and remote BLAKE2B hashes DO NOT MATCH')
     log.info(f'  - copying file to `{dst}`')
     return_val = shutil.copy2(src, dst, *args, **kwargs)
     log.info('  - calculating BLAKE2B hash of remote file')
@@ -62,7 +62,7 @@ def _copy2_checksum(src: str, dst: str, *args, **kwargs) -> str:
     return return_val
 
 
-def copy_folders(local_folder: str, remote_folder: str, overwrite: bool = False) -> bool:
+def copy_folders(local_folder: Path, remote_folder: Path, overwrite: bool = False) -> bool:
     """
     Copy folders and files from a local location to a remote location.
 
@@ -72,9 +72,9 @@ def copy_folders(local_folder: str, remote_folder: str, overwrite: bool = False)
 
     Parameters
     ----------
-    local_folder : str
+    local_folder : Path
         The path to the local folder to copy from.
-    remote_folder : str
+    remote_folder : Path
         The path to the remote folder to copy to.
     overwrite : bool, optional
         If True, overwrite existing files in the remote folder. Default is False.
@@ -378,4 +378,6 @@ class EphysCopier(SessionCopier):
         except BaseException:
             log.error(traceback.print_exc())
             log.info("Probe creation failed, please create the probe insertions manually. Continuing transfer...")
-        return copy_folders(self.session_path.joinpath('raw_ephys_data'), self.remote_session_path.joinpath('raw_ephys_data'))
+        return copy_folders(local_folder=self.session_path.joinpath('raw_ephys_data'),
+                            remote_folder=self.remote_session_path.joinpath('raw_ephys_data'),
+                            overwrite=True)
