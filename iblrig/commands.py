@@ -2,6 +2,7 @@ import argparse
 import datetime
 import json
 from pathlib import Path
+
 import yaml
 import shutil
 
@@ -15,6 +16,33 @@ from iblrig.online_plots import OnlinePlots
 from iblrig.raw_data_loaders import load_task_jsonable
 
 logger = setup_logger('iblrig', level='INFO')
+
+
+def _transfer_parser(description: str) -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description=description,
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+                                     argument_default=argparse.SUPPRESS)
+    parser.add_argument("-l", "--local", action="store", type=dir_path, dest='local_path', help="override local data path")
+    parser.add_argument("-r", "--remote", action="store", type=dir_path, dest='remote_path', help="override remote data path")
+    parser.add_argument("-d", "--dry", action="store_true", dest='dry', help="do not remove local data after copying")
+    return parser
+
+
+def dir_path(directory: str) -> Path:
+    directory = Path(directory)
+    if directory.exists():
+        return directory
+    raise argparse.ArgumentError(None, f'Directory `{directory}` not found')
+
+
+def transfer_video_data_cli():
+    args = _transfer_parser("Copy video data to the local server.").parse_args()
+    transfer_video_data(**vars(args))
+
+
+def transfer_data_cli():
+    args = _transfer_parser("Copy behavior data to the local server.").parse_args()
+    transfer_data(**vars(args))
 
 
 def transfer_video_data(local_path=None, remote_path=None, dry=False):
@@ -32,24 +60,6 @@ def transfer_video_data(local_path=None, remote_path=None, dry=False):
             vc.run()
     remove_local_sessions(weeks=2, local_path=local_path,
                           remote_path=remote_path, dry=dry, tag='video')
-
-
-def dir_path(directory: str):
-    directory = Path(directory)
-    if directory.exists():
-        return directory
-    raise argparse.ArgumentError(None, f'Directory `{directory}` not found')
-
-
-def transfer_data_cli():
-    parser = argparse.ArgumentParser(description="Copy behavior data to the local server.",
-                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-                                     argument_default=argparse.SUPPRESS)
-    parser.add_argument("-l", "--local", action="store", type=dir_path, dest='local_path', help="override local data path")
-    parser.add_argument("-r", "--remote", action="store", type=dir_path, dest='remote_path', help="override remote data path")
-    parser.add_argument("-d", "--dry", action="store_true", dest='dry', help="do not remove local data after copying")
-    args = parser.parse_args()
-    transfer_data(**vars(args))
 
 
 def transfer_data(local_path: Path = None, remote_path: Path = None, dry: bool = False, lab: str = None) -> None:

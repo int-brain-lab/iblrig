@@ -14,7 +14,7 @@ import ibllib.pipes.misc
 log = setup_logger('iblrig', level='INFO')
 
 
-def _copy_file_md5(src: str, dst: str, *args, **kwargs) -> str:
+def _copy2_md5(src: str, dst: str, *args, **kwargs) -> str:
     """
     Copy a file from source to destination with MD5 hash verification.
 
@@ -43,6 +43,7 @@ def _copy_file_md5(src: str, dst: str, *args, **kwargs) -> str:
     """
     src_md5 = hashfile.md5(src)
     if os.path.exists(dst) and samestat(os.stat(src), os.stat(dst)) and src_md5 == hashfile.md5(dst):
+        log.info(f'Skipping {dst.name} as it already exists at the destination')
         return dst
     return_val = shutil.copy2(src, dst, *args, **kwargs)
     if not src_md5 == hashfile.md5(dst):
@@ -77,7 +78,7 @@ def copy_folders(local_folder: str, remote_folder: str, overwrite: bool = False)
         remote_folder.parent.mkdir(parents=True, exist_ok=True)
         shutil.copytree(local_folder, remote_folder, dirs_exist_ok=overwrite,
                         ignore=shutil.ignore_patterns('transfer_me.flag'),
-                        copy_function=_copy_file_md5)
+                        copy_function=_copy2_md5)
     except OSError:
         log.error(traceback.format_exc())
         log.info(f"Could not copy {local_folder} to {remote_folder}")
