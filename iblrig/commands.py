@@ -100,10 +100,13 @@ def transfer_video_data(local_path: Path = None, remote_path: Path = None, dry: 
     remote_path = rig_paths.remote_subjects_folder
     assert isinstance(local_path, Path)
     assert isinstance(remote_path, Path)
-    logger.info(f'Local Path: {local_path}')
+    logger.info(f'Local Path:  {local_path}')
     logger.info(f'Remote Path: {remote_path}')
 
-    for flag in list(local_path.rglob('transfer_me.flag')):
+    flags = list(local_path.rglob('transfer_me.flag'))
+    logger.info(f'Found {len(flags)} sessions that require transferring.')
+
+    for flag in flags:
         session_path = flag.parent
         vc = VideoCopier(session_path, remote_subjects_folder=remote_path)
         logger.critical(f"{vc.state}, {vc.session_path}")
