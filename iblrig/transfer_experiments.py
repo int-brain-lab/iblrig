@@ -4,23 +4,24 @@ from os.path import samestat
 from pathlib import Path
 import shutil
 import traceback
+from hashlib import blake2b
 
 import iblrig
 from iblutil.util import setup_logger
-from iblutil.io import hashfile
+from iblutil.io.hashfile import _hash_file
 from ibllib.io import session_params
 import ibllib.pipes.misc
 
 log = setup_logger('iblrig', level='INFO')
 
 
-def _copy2_md5(src: str, dst: str, *args, **kwargs) -> str:
+def _copy2_checksum(src: str, dst: str, *args, **kwargs) -> str:
     """
-    Copy a file from source to destination with MD5 hash verification.
+    Copy a file from source to destination with checksum verification.
 
     This function copies a file from the source path to the destination path
-    while verifying the MD5 hash of the source and destination files. If the
-    MD5 hashes do not match after copying, an OSError is raised.
+    while verifying the BLAKE2B hash of the source and destination files. If the
+    BLAKE2B hashes do not match after copying, an OSError is raised.
 
     Parameters
     ----------
@@ -39,25 +40,25 @@ def _copy2_md5(src: str, dst: str, *args, **kwargs) -> str:
     Raises
     ------
     OSError
-        If the MD5 hashes of the source and destination files do not match.
+        If the BLAKE2B hashes of the source and destination files do not match.
     """
     log.info(f'Processing `{src}`:')
-    log.info('  - calculating MD5 of local file')
-    src_md5 = hashfile.md5(src)
+    log.info('  - calculating BLAKE2B hash of local file')
+    src_md5 = _hash_file(src, blake2b(), False)
     if os.path.exists(dst) and samestat(os.stat(src), os.stat(dst)):
         log.info('  - file already exists at destination')
-        log.info('  - calculating MD5 of remote file')
-        if src_md5 == hashfile.md5(dst):
-            log.info('  - local and remote MD5 checksums MATCH, skipping copy')
+        log.info('  - calculating BLAKE2B hash of remote file')
+        if src_md5 == _hash_file(dst, blake2b(), False):
+            log.info('  - local and remote BLAKE2B hashes MATCH, skipping copy')
             return dst
         else:
             log.info('  - local and remote MD5 checksums DO NOT MATCH')
     log.info(f'  - copying file to `{dst}`')
     return_val = shutil.copy2(src, dst, *args, **kwargs)
-    log.info('  - calculating MD5 of remote file')
-    if not src_md5 == hashfile.md5(dst):
-        raise OSError(f'Error copying {src}: MD5 mismatch.')
-    log.info('  - local and remote MD5 checksums MATCH')
+    log.info('  - calculating BLAKE2B hash of remote file')
+    if not src_md5 == _hash_file(dst, blake2b(), False):
+        raise OSError(f'Error copying {src}: BLAKE2B hash mismatch.')
+    log.info('  - local and remote BLAKE2B hashes DO MATCH')
     return return_val
 
 
@@ -88,7 +89,7 @@ def copy_folders(local_folder: str, remote_folder: str, overwrite: bool = False)
         remote_folder.parent.mkdir(parents=True, exist_ok=True)
         shutil.copytree(local_folder, remote_folder, dirs_exist_ok=overwrite,
                         ignore=shutil.ignore_patterns('transfer_me.flag'),
-                        copy_function=_copy2_md5)
+                        copy_function=_copy2_checksum)
     except OSError:
         log.error(traceback.format_exc())
         log.info(f"Could not copy {local_folder} to {remote_folder}")
