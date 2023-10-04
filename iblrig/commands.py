@@ -8,7 +8,7 @@ import shutil
 
 from iblutil.util import setup_logger
 from ibllib.io import raw_data_loaders
-from iblrig.transfer_experiments import BehaviorCopier, VideoCopier
+from iblrig.transfer_experiments import BehaviorCopier, VideoCopier, EphysCopier
 import iblrig
 from iblrig.hardware import Bpod
 from iblrig.path_helper import load_settings_yaml, get_local_and_remote_paths
@@ -111,8 +111,14 @@ def transfer_ephys_data(local_path: Path = None, remote_path: Path = None, dry: 
     logger.info(f'Local Path:  {local_path}')
     logger.info(f'Remote Path: {remote_path}')
 
-    # TODO
-    pass
+    for flag in list(local_path.rglob('transfer_me.flag')):
+        session_path = flag.parent
+        vc = EphysCopier(session_path, remote_subjects_folder=remote_path)
+        logger.critical(f"{vc.state}, {vc.session_path}")
+        if not dry:
+            vc.run()
+    remove_local_sessions(weeks=2, local_path=local_path,
+                          remote_path=remote_path, dry=dry, tag='ephys')
 
 
 def transfer_video_data(local_path: Path = None, remote_path: Path = None, dry: bool = False):
@@ -125,10 +131,7 @@ def transfer_video_data(local_path: Path = None, remote_path: Path = None, dry: 
     logger.info(f'Local Path:  {local_path}')
     logger.info(f'Remote Path: {remote_path}')
 
-    flags = list(local_path.rglob('transfer_me.flag'))
-    logger.info(f'Found {len(flags)} sessions that require transferring.')
-
-    for flag in flags:
+    for flag in list(local_path.rglob('transfer_me.flag')):
         session_path = flag.parent
         vc = VideoCopier(session_path, remote_subjects_folder=remote_path)
         logger.critical(f"{vc.state}, {vc.session_path}")
