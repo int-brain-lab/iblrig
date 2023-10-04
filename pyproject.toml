@@ -16,7 +16,7 @@ dependencies = [
     "colorlog",
     "cython",
     "graphviz",
-    "ibllib@git+https://github.com/int-brain-lab/ibllib.git@iblrigv8",
+    "ibllib@git+https://github.com/int-brain-lab/ibllib.git",
     "ipython",
     "iblpybpod@git+https://github.com/int-brain-lab/iblpybpod.git@no-gui",
     "iblscripts@git+https://github.com/int-brain-lab/iblscripts.git@iblrigv8",
