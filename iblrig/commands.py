@@ -19,16 +19,58 @@ logger = setup_logger('iblrig', level='INFO')
 
 
 def _transfer_parser(description: str) -> argparse.ArgumentParser:
+    """
+    Create an ArgumentParser for transfer scripts.
+
+    This function creates an ArgumentParser object with specific arguments for a
+    script related to data transfer. It defines command-line arguments for
+    defining local and remote data paths and enabling the dry run mode.
+
+    Parameters
+    ----------
+    description : str
+        A brief description of the script's purpose.
+
+    Returns
+    -------
+    argparse.ArgumentParser
+        An ArgumentParser object with pre-defined arguments.
+    """
     parser = argparse.ArgumentParser(description=description,
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter,
                                      argument_default=argparse.SUPPRESS)
-    parser.add_argument("-l", "--local", action="store", type=dir_path, dest='local_path', help="override local data path")
-    parser.add_argument("-r", "--remote", action="store", type=dir_path, dest='remote_path', help="override remote data path")
+    parser.add_argument("-l", "--local", action="store", type=dir_path, dest='local_path', help="define local data path")
+    parser.add_argument("-r", "--remote", action="store", type=dir_path, dest='remote_path', help="define remote data path")
     parser.add_argument("-d", "--dry", action="store_true", dest='dry', help="do not remove local data after copying")
     return parser
 
 
 def dir_path(directory: str) -> Path:
+    """
+    Convert a string to a Path object and check if the directory exists.
+
+    This function is intended for use as a type conversion function with argparse.
+    It takes a string argument representing a directory path, converts it into
+    a Path object, and checks if the directory exists. If the directory exists,
+    it returns the Path object; otherwise, it raises an argparse.ArgumentError
+    with an appropriate error message.
+
+    Parameters
+    ----------
+    directory : str
+        A string representing a directory path.
+
+    Returns
+    -------
+    pathlib.Path
+        A Path object representing the directory.
+
+    Raises
+    ------
+    argparse.ArgumentError
+        If the directory does not exist, an argparse.ArgumentError is raised
+        with an error message indicating that the directory was not found.
+    """
     directory = Path(directory)
     if directory.exists():
         return directory
@@ -36,11 +78,17 @@ def dir_path(directory: str) -> Path:
 
 
 def transfer_video_data_cli():
+    """
+    Command-line interface for transferring video data to the local server.
+    """
     args = _transfer_parser("Copy video data to the local server.").parse_args()
     transfer_video_data(**vars(args))
 
 
 def transfer_data_cli():
+    """
+    Command-line interface for transferring behavioral data to the local server.
+    """
     args = _transfer_parser("Copy behavior data to the local server.").parse_args()
     transfer_data(**vars(args))
 
