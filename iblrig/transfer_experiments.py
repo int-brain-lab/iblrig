@@ -41,13 +41,22 @@ def _copy2_md5(src: str, dst: str, *args, **kwargs) -> str:
     OSError
         If the MD5 hashes of the source and destination files do not match.
     """
+    log.info(f'Processing `{src}` ...')
+    log.info('  - calculating MD5 of local file')
     src_md5 = hashfile.md5(src)
-    if os.path.exists(dst) and samestat(os.stat(src), os.stat(dst)) and src_md5 == hashfile.md5(dst):
-        log.info(f'Skipping {dst.name} as it already exists at the destination')
-        return dst
+    if os.path.exists(dst) and samestat(os.stat(src), os.stat(dst)):
+        log.info('  - file already exists at destination')
+        log.info('  - calculating MD5 of remote file')
+        if src_md5 == hashfile.md5(dst):
+            log.info('  - match of local and remote MD5 checksums, skipping copy')
+            return dst
+        else:
+            log.info('  - mismatch of local and remote MD5 checksums')
+    log.info('  - copying ...')
     return_val = shutil.copy2(src, dst, *args, **kwargs)
     if not src_md5 == hashfile.md5(dst):
         raise OSError(f'Error copying {src}: MD5 mismatch.')
+    log.info('  - match of local and remote MD5 checksums')
     return return_val
 
 
