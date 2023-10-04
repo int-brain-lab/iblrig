@@ -77,14 +77,6 @@ def dir_path(directory: str) -> Path:
     raise argparse.ArgumentError(None, f'Directory `{directory}` not found')
 
 
-def transfer_video_data_cli():
-    """
-    Command-line interface for transferring video data to the local server.
-    """
-    args = _transfer_parser("Copy video data to the local server.").parse_args()
-    transfer_video_data(**vars(args))
-
-
 def transfer_data_cli():
     """
     Command-line interface for transferring behavioral data to the local server.
@@ -93,11 +85,32 @@ def transfer_data_cli():
     transfer_data(**vars(args))
 
 
+def transfer_video_data_cli():
+    """
+    Command-line interface for transferring video data to the local server.
+    """
+    args = _transfer_parser("Copy video data to the local server.").parse_args()
+    transfer_video_data(**vars(args))
+
+
+def transfer_ephys_data_cli():
+    """
+    Command-line interface for transferring ephys data to the local server.
+    """
+    args = _transfer_parser("Copy ephys data to the local server.").parse_args()
+    transfer_ephys_data(**vars(args))
+
+
+def transfer_ephys_data(local_path: Path = None, remote_path: Path = None, dry: bool = False):
+    # TODO
+    pass
+
+
 def transfer_video_data(local_path: Path = None, remote_path: Path = None, dry: bool = False):
     # If paths not passed, uses those defined in the iblrig_settings.yaml file
     rig_paths = get_local_and_remote_paths(local_path=local_path, remote_path=remote_path)
-    local_path = rig_paths.local_subjects_folder
-    remote_path = rig_paths.remote_subjects_folder
+    local_path = rig_paths.local_folder
+    remote_path = rig_paths.remote_folder
     assert isinstance(local_path, Path)
     assert isinstance(remote_path, Path)
     logger.info(f'Local Path:  {local_path}')
