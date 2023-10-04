@@ -495,10 +495,9 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
 
                     # check if session was a dud
                     if ntrials := session_data['NTRIALS'] < 42:
-                        answer = QtWidgets.QMessageBox.question(self,
-                                                                title="Is this a dud?",
-                                                                text=(f"The session consisted of only {ntrials} trials and "
-                                                                      f"appears to be a dud.\n\nShould it be deleted?"))
+                        answer = QtWidgets.QMessageBox.question(self, 'Is this a dud?',
+                                                                f"The session consisted of only {ntrials} trials and "
+                                                                f"appears to be a dud.\n\nShould it be deleted?")
                         if answer == QtWidgets.QMessageBox.Yes:
                             pass  # to be implemented
 
