@@ -141,7 +141,6 @@ class RigWizardModel:
 
     def process_subject_details(self):
         self.subject_details = SubjectDetailsWorker.result
-        self.subject_details_worker.deleteLater()
 
 
 class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
@@ -446,7 +445,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 self.model.raw_data_folder = task.paths['SESSION_RAW_DATA_FOLDER']
 
                 # runs the python command
-                cmd = [shutil.which('python')]
+                cmd = []
                 if self.model.task_name:
                     cmd.extend([str(self.model.all_tasks[self.model.task_name])])
                 if self.model.user:
@@ -464,6 +463,10 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 if self.uiCheckAppend.isChecked():
                     cmd.append('--append')
                 if self.running_task_process is None:
+                    # self.running_task_process = QProcess()
+                    # self.running_task_process.start(shutil.which('python'), cmd)
+                    # self.running_task_process.readyReadStandardOutput.connect(self.handle_stdout)
+                    # self.running_task_process.readyReadStandardError.connect(self.handle_stderr)
                     self.running_task_process = subprocess.Popen(cmd)
                 self.uiPushStart.setStatusTip('stop the session after the current trial')
                 self.uiPushStart.setIcon(self.style().standardIcon(QStyle.SP_MediaStop))
@@ -486,17 +489,26 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
 
                 self.running_task_process = None
 
-                # manage poop count
-                task_settings_file = Path(self.model.raw_data_folder).joinpath("_iblrig_taskSettings.raw.json")
-                if task_settings_file.exists():
+                if (task_settings_file := Path(self.model.raw_data_folder).joinpath("_iblrig_taskSettings.raw.json")).exists():
+                    with open(task_settings_file, "r") as fid:
+                        session_data = json.load(fid)
+
+                    # check if session was a dud
+                    if ntrials := session_data['NTRIALS'] < 42:
+                        answer = QtWidgets.QMessageBox.question(self,
+                                                                title="Is this a dud?",
+                                                                text=(f"The session consisted of only {ntrials} trials and "
+                                                                      f"appears to be a dud.\n\nShould it be deleted?"))
+                        if answer == QtWidgets.QMessageBox.Yes:
+                            pass  # to be implemented
+
+                    # manage poop count
                     dlg = QtWidgets.QInputDialog()
                     droppings, ok = dlg.getInt(self, 'Droppings', 'Number of droppings:', value=0, min=0,
                                                flags=dlg.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
-                    with open(task_settings_file, "r") as fid:
-                        d = json.load(fid)
-                    d['POOP_COUNT'] = droppings
+                    session_data['POOP_COUNT'] = droppings
                     with open(task_settings_file, "w") as fid:
-                        json.dump(d, fid, indent=4, sort_keys=True, default=str)
+                        json.dump(session_data, fid, indent=4, sort_keys=True, default=str)
 
                 self.uiPushStart.setText('Start')
                 self.uiPushStart.setStatusTip('start the session')
