@@ -445,7 +445,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 self.model.raw_data_folder = task.paths['SESSION_RAW_DATA_FOLDER']
 
                 # runs the python command
-                cmd = []
+                cmd = [shutil.which('python')]
                 if self.model.task_name:
                     cmd.extend([str(self.model.all_tasks[self.model.task_name])])
                 if self.model.user:
