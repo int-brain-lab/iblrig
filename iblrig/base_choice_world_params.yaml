@@ -8,7 +8,7 @@
 'BONSAI_EDITOR': false
 'CALIBRATION_VALUE': 0.067
 'CONTRAST_SET': [1.0, 0.25, 0.125, 0.0625, 0.0]
-'CONTRAST_SET_PROBABILITY_TYPE': uniform  # uniform, skew_zero
+'CONTRAST_SET_PROBABILITY_TYPE': uniform  # uniform or skew_zero: uniform makes the 0 contrast as likely as the others, while skew_zero makes it half as likely as other contrasts
 'GO_TONE_AMPLITUDE': 0.0272
 'GO_TONE_DURATION': 0.11
 'GO_TONE_IDX': 2
