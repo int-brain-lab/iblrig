@@ -5,6 +5,7 @@ from pathlib import Path
 import shutil
 import traceback
 from hashlib import blake2b
+import ctypes
 
 import iblrig
 from iblutil.util import setup_logger
@@ -14,7 +15,25 @@ import ibllib.pipes.misc
 
 log = setup_logger('iblrig', level='INFO')
 
+ES_CONTINUOUS = 0x80000000
+ES_SYSTEM_REQUIRED = 0x00000001
 
+
+def _set_thread_execution(state):
+    if os.name == 'nt':
+        ctypes.windll.kernel32.SetThreadExecutionState(state)
+
+
+def long_running(func):
+    def inner(*args, **kwargs):
+        _set_thread_execution(ES_CONTINUOUS | ES_SYSTEM_REQUIRED)
+        result = func(*args, **kwargs)
+        _set_thread_execution(ES_CONTINUOUS)
+        return result
+    return inner
+
+
+@long_running
 def _copy2_checksum(src: str, dst: str, *args, **kwargs) -> str:
     """
     Copy a file from source to destination with checksum verification.
