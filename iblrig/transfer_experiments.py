@@ -6,6 +6,7 @@ import shutil
 import traceback
 from hashlib import blake2b
 import ctypes
+from typing import Callable, Any
 
 import iblrig
 from iblutil.util import setup_logger
@@ -19,13 +20,50 @@ ES_CONTINUOUS = 0x80000000
 ES_SYSTEM_REQUIRED = 0x00000001
 
 
-def _set_thread_execution(state):
+def _set_thread_execution(state: int) -> None:
+    """
+    Set the thread execution state to control system power management.
+
+    This function sets the thread execution state to control system power
+    management on Windows systems. It prevents the system from entering
+    sleep or idle mode while a specific state is active.
+
+    Parameters
+    ----------
+    state : int
+        The desired thread execution state. Use ES_CONTINUOUS and ES_SYSTEM_REQUIRED
+        constants to specify the state.
+
+    Raises
+    ------
+    OSError
+        If there is an issue setting the thread execution state.
+    """
     if os.name == 'nt':
-        ctypes.windll.kernel32.SetThreadExecutionState(state)
+        result = ctypes.windll.kernel32.SetThreadExecutionState(state)
+        if result == 0:
+            raise OSError("Failed to set thread execution state.")
 
 
-def long_running(func):
-    def inner(*args, **kwargs):
+def long_running(func: Callable[..., Any]) -> Callable[..., Any]:
+    """
+    Decorator to ensure that the system doesn't enter sleep or idle mode during a long-running task.
+
+    This decorator wraps a function and sets the thread execution state to prevent
+    the system from entering sleep or idle mode while the decorated function is
+    running.
+
+    Parameters
+    ----------
+    func : callable
+        The function to decorate.
+
+    Returns
+    -------
+    callable
+        The decorated function.
+    """
+    def inner(*args, **kwargs) -> Any:
         _set_thread_execution(ES_CONTINUOUS | ES_SYSTEM_REQUIRED)
         result = func(*args, **kwargs)
         _set_thread_execution(ES_CONTINUOUS)
