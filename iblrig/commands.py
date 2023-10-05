@@ -2,6 +2,7 @@ import argparse
 import datetime
 import json
 from pathlib import Path
+from typing import List, Tuple
 
 import yaml
 import shutil
@@ -101,44 +102,53 @@ def transfer_ephys_data_cli():
     transfer_ephys_data(**vars(args))
 
 
-def transfer_ephys_data(local_path: Path = None, remote_path: Path = None, dry: bool = False):
-    # If paths not passed, uses those defined in the iblrig_settings.yaml file
-    rig_paths = get_local_and_remote_paths(local_path=local_path, remote_path=remote_path)
+def _get_subjects_folders(local_path: Path, remote_path: Path) -> Tuple[Path, Path]:
+    rig_paths = get_local_and_remote_paths(local_path, remote_path)
     local_path = rig_paths.local_subjects_folder
     remote_path = rig_paths.remote_subjects_folder
     assert isinstance(local_path, Path)
-    assert isinstance(remote_path, Path)
-    logger.info(f'Local Path:  {local_path}')
-    logger.info(f'Remote Path: {remote_path}')
+    if remote_path is None:
+        raise Exception("Remote Path is not defined.")
+    logger.info(f'Local Path:  `{local_path}`')
+    logger.info(f'Remote Path: `{remote_path}`')
+    return local_path, remote_path
 
-    for flag in list(local_path.rglob('transfer_me.flag')):
-        session_path = flag.parent
-        vc = EphysCopier(session_path, remote_subjects_folder=remote_path)
+
+def _get_session_paths(local_path: Path, glob_pattern: str = 'transfer_me.flag',
+                       print_summary: bool = True) -> List[Path]:
+    session_paths = [f.parent for f in local_path.rglob(glob_pattern)]
+    if len(session_paths) == 0:
+        print('Could not find any sessions to copy to the local server.')
+        return list()
+    if print_summary:
+        print('Copying the following sessions to the local server:')
+        for session_path in session_paths:
+            print(f' * {session_path}')
+    return session_paths
+
+
+def transfer_ephys_data(local_path: Path = None, remote_path: Path = None, dry: bool = False):
+    local_subject_folder, remote_subject_folder = _get_subjects_folders(local_path, remote_path)
+
+    for session_path in _get_session_paths(local_subject_folder):
+        vc = EphysCopier(session_path, remote_subjects_folder=remote_subject_folder)
         logger.critical(f"{vc.state}, {vc.session_path}")
         if not dry:
             vc.run()
-    remove_local_sessions(weeks=2, local_path=local_path,
-                          remote_path=remote_path, dry=dry, tag='ephys')
+    remove_local_sessions(weeks=2, local_path=local_subject_folder,
+                          remote_path=remote_subject_folder, dry=dry, tag='ephys')
 
 
 def transfer_video_data(local_path: Path = None, remote_path: Path = None, dry: bool = False):
-    # If paths not passed, uses those defined in the iblrig_settings.yaml file
-    rig_paths = get_local_and_remote_paths(local_path=local_path, remote_path=remote_path)
-    local_path = rig_paths.local_subjects_folder
-    remote_path = rig_paths.remote_subjects_folder
-    assert isinstance(local_path, Path)
-    assert isinstance(remote_path, Path)
-    logger.info(f'Local Path:  {local_path}')
-    logger.info(f'Remote Path: {remote_path}')
+    local_subject_folder, remote_subject_folder = _get_subjects_folders(local_path, remote_path)
 
-    for flag in list(local_path.rglob('transfer_me.flag')):
-        session_path = flag.parent
-        vc = VideoCopier(session_path, remote_subjects_folder=remote_path)
+    for session_path in _get_session_paths(local_subject_folder):
+        vc = VideoCopier(session_path, remote_subjects_folder=remote_subject_folder)
         logger.critical(f"{vc.state}, {vc.session_path}")
         if not dry:
             vc.run()
-    remove_local_sessions(weeks=2, local_path=local_path,
-                          remote_path=remote_path, dry=dry, tag='video')
+    remove_local_sessions(weeks=2, local_path=local_subject_folder,
+                          remote_path=remote_subject_folder, dry=dry, tag='video')
 
 
 def transfer_data(local_path: Path = None, remote_path: Path = None, dry: bool = False, lab: str = None) -> None:
@@ -164,18 +174,12 @@ def transfer_data(local_path: Path = None, remote_path: Path = None, dry: bool =
     -------
     None
     """
-    # If paths not passed, uses those defined in the iblrig_settings.yaml file
-    rig_paths = get_local_and_remote_paths(local_path=local_path, remote_path=remote_path, lab=lab)
-    local_path = rig_paths.local_subjects_folder
-    remote_path = rig_paths.remote_subjects_folder
-    assert isinstance(local_path, Path)  # get_local_and_remote_paths should always return Path obj
-
+    local_subject_folder, remote_subject_folder = _get_subjects_folders(local_path, remote_path)
     hardware_settings = load_settings_yaml('hardware_settings.yaml')
     number_of_expected_devices = 1 if hardware_settings.get('MAIN_SYNC', True) else None
 
-    for flag in list(local_path.rglob('transfer_me.flag')):
-        session_path = flag.parent
-        sc = BehaviorCopier(session_path, remote_subjects_folder=rig_paths['remote_subjects_folder'])
+    for session_path in _get_session_paths(local_subject_folder):
+        sc = BehaviorCopier(session_path, remote_subjects_folder=remote_subject_folder)
         task_settings = raw_data_loaders.load_settings(session_path, task_collection='raw_task_data_00')
         if task_settings is None:
             logger.info(f'skipping: no task settings found for {session_path}')
@@ -215,7 +219,7 @@ def transfer_data(local_path: Path = None, remote_path: Path = None, dry: bool =
         logger.critical(f"{sc.state}, {sc.session_path}")
         sc.run(number_of_expected_devices=number_of_expected_devices)
     # once we copied the data, remove older session for which the data was successfully uploaded
-    remove_local_sessions(weeks=2, dry=dry, local_path=local_path, remote_path=remote_path)
+    remove_local_sessions(weeks=2, dry=dry, local_path=local_subject_folder, remote_path=remote_subject_folder)
 
 
 def remove_local_sessions(weeks=2, local_path=None, remote_path=None, dry=False, tag='behavior'):
@@ -225,17 +229,17 @@ def remove_local_sessions(weeks=2, local_path=None, remote_path=None, dry=False,
     :param dry:
     :return:
     """
-    rig_paths = get_local_and_remote_paths(local_path=local_path, remote_path=remote_path)
+    local_subject_folder, remote_subject_folder = _get_subjects_folders(local_path, remote_path)
     size = 0
     match tag:
         case 'behavior': Copier = BehaviorCopier
         case 'video': Copier = VideoCopier
-    for flag in sorted(list(rig_paths['local_subjects_folder'].rglob(f'_ibl_experiment.description_{tag}.yaml')), reverse=True):
+    for flag in sorted(list(local_subject_folder.rglob(f'_ibl_experiment.description_{tag}.yaml')), reverse=True):
         session_path = flag.parent
         days_elapsed = (datetime.datetime.now() - datetime.datetime.strptime(session_path.parts[-2], '%Y-%m-%d')).days
         if days_elapsed < (weeks * 7):
             continue
-        sc = Copier(session_path, remote_subjects_folder=rig_paths['remote_subjects_folder'])
+        sc = Copier(session_path, remote_subjects_folder=remote_subject_folder)
         if sc.state == 3:
             session_size = sum(f.stat().st_size for f in session_path.rglob('*') if f.is_file()) / 1024 ** 3
             logger.info(f"{sc.session_path}, {session_size:0.02f} Go")
