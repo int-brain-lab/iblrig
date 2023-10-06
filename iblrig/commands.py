@@ -109,8 +109,8 @@ def _get_subjects_folders(local_path: Path, remote_path: Path) -> Tuple[Path, Pa
     assert isinstance(local_path, Path)
     if remote_path is None:
         raise Exception("Remote Path is not defined.")
-    logger.info(f'Local Path:  `{local_path}`')
-    logger.info(f'Remote Path: `{remote_path}`')
+    print(f'Local Path:  `{local_path}`')
+    print(f'Remote Path: `{remote_path}`\n')
     return local_path, remote_path
 
 
@@ -119,11 +119,13 @@ def _get_session_paths(local_path: Path, glob_pattern: str = 'transfer_me.flag',
     session_paths = [f.parent for f in local_path.rglob(glob_pattern)]
     if len(session_paths) == 0:
         print('Could not find any sessions to copy to the local server.')
-        return list()
-    if print_summary:
-        print('Copying the following sessions to the local server:')
+        session_paths = list()
+    elif print_summary:
+        print('Going to copy following sessions to the local server:')
         for session_path in session_paths:
             print(f' * {session_path}')
+        if input('Do you want to continue? [Y/n]  ') not in ('y', ''):
+            session_paths = list()
     return session_paths
 
 

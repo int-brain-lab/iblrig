@@ -3,7 +3,7 @@ Changelog
 
 -------------------------------
 
-8.10.3
+8.11.0
 ------
 * add check for availability of internet
 * add proper CLI for data transfer scripts

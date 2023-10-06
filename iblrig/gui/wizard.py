@@ -498,7 +498,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                         session_data = json.load(fid)
 
                     # check if session was a dud
-                    if ntrials := session_data['NTRIALS'] < 42 and 'spontaneous' not in self.model.task_name:
+                    if (ntrials := session_data['NTRIALS']) < 42 and 'spontaneous' not in self.model.task_name:
                         answer = QtWidgets.QMessageBox.question(self, 'Is this a dud?',
                                                                 f"The session consisted of only {ntrials:d} trial"
                                                                 f"{'s' if ntrials>1 else ''} and appears to be a dud.\n\n"
