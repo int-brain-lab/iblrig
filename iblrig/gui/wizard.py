@@ -501,10 +501,10 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                     if ntrials := session_data['NTRIALS'] < 42 and 'spontaneous' not in self.model.task_name:
                         answer = QtWidgets.QMessageBox.question(self, 'Is this a dud?',
                                                                 f"The session consisted of only {ntrials:d} trial"
-                                                                f"{'s' if ntrials>0 else ''} and appears to be a dud.\n\n"
+                                                                f"{'s' if ntrials>1 else ''} and appears to be a dud.\n\n"
                                                                 f"Should it be deleted?")
                         if answer == QtWidgets.QMessageBox.Yes:
-                            self.model.session_folder.unlink()
+                            shutil.rmtree(self.model.session_folder)
                             return
 
                     # manage poop count
