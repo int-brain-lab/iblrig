@@ -594,7 +594,7 @@ class UpdateCheckWorker(QThread):
 
 class SubjectDetailsWorker(QThread):
     subject_name: str = None
-    result: tuple[int, float, dict] = None
+    result: tuple[dict, dict] = None
 
     def __init__(self, subject_name):
         super().__init__()
