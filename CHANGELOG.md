@@ -9,6 +9,7 @@ Changelog
 * add proper CLI for data transfer scripts
 * move update-check to separate thread
 * detect dud (less than 42 trials) and offer deletion
+* various small bugfixes
 
 8.10.2
 ------
