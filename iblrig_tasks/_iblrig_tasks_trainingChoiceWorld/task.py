@@ -18,6 +18,9 @@ class Session(TrainingChoiceWorldSession):
         parser.add_argument('--adaptive_reward', option_strings=['--adaptive_reward'],
                             dest='adaptive_reward', default=ADAPTIVE_REWARD, type=float,
                             help='reward volume in microliters')
+        parser.add_argument('--adaptive_gain', option_strings=['--adaptive_gain'],
+                            dest='adaptive_gain', default=None, type=float,
+                            help='Gain of the wheel in degrees/mm')
         return parser
 
 

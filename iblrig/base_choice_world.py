@@ -639,6 +639,7 @@ class BiasedChoiceWorldSession(ActiveChoiceWorldSession):
     Biased choice world session is the instantiation of ActiveChoiceWorld where the notion of biased
     blocks is introduced.
     """
+    base_parameters_file = Path(__file__).parent.joinpath('base_biased_choice_world_params.yaml')
     protocol_name = "_iblrig_tasks_biasedChoiceWorld"
 
     def __init__(self, **kwargs):
@@ -713,9 +714,9 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
     """
     protocol_name = "_iblrig_tasks_trainingChoiceWorld"
 
-    def __init__(self, training_phase=-1, adaptive_reward=-1.0, **kwargs):
+    def __init__(self, training_phase=-1, adaptive_reward=-1.0, adaptive_gain=None, **kwargs):
         super(TrainingChoiceWorldSession, self).__init__(**kwargs)
-        inferred_training_phase, inferred_adaptive_reward = self.get_subject_training_info()
+        inferred_training_phase, inferred_adaptive_reward, inferred_adaptive_gain = self.get_subject_training_info()
         if training_phase == -1:
             self.logger.critical(f"Got training phase: {inferred_training_phase}")
             self.training_phase = inferred_training_phase
@@ -728,6 +729,12 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
         else:
             self.logger.critical(f"Adaptive reward manually set to {adaptive_reward} uL")
             self.session_info["ADAPTIVE_REWARD_AMOUNT_UL"] = adaptive_reward
+        if adaptive_gain is None:
+            self.logger.critical(f"Got Adaptive gain {inferred_adaptive_gain} degrees/mm")
+            self.session_info["ADAPTIVE_GAIN_VALUE"] = inferred_adaptive_gain
+        else:
+            self.logger.critical(f"Adaptive gain manually set to {adaptive_gain} degrees/mm")
+            self.session_info["ADAPTIVE_GAIN_VALUE"] = adaptive_gain
         self.var = {
             "training_phase_trial_counts": np.zeros(6),
             "last_10_responses_sides": np.zeros(10),
@@ -742,13 +749,14 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
     def get_subject_training_info(self):
         """
         Get the previous session's according to this session parameters and deduce the
-        training level and adaptive reward amount.
+        training level, adaptive reward amount and adaptive gain value
         :return:
         """
         try:
-            training_phase, adaptive_reward, _ = choiceworld.get_subject_training_info(
+            tinfo, _ = choiceworld.get_subject_training_info(
                 subject_name=self.session_info.SUBJECT_NAME,
                 default_reward=self.task_params.REWARD_AMOUNT_UL,
+                stim_gain=self.task_params.STIM_GAIN,
                 local_path=self.iblrig_settings['iblrig_local_data_path'],
                 remote_path=self.iblrig_settings['iblrig_remote_data_path'],
                 lab=self.iblrig_settings['ALYX_LAB'],
@@ -756,11 +764,14 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
             )
         except Exception:
             self.logger.critical('Failed to get training information from previous subjects: %s', traceback.format_exc())
-            training_phase, adaptive_reward = (
-                iblrig.choiceworld.DEFAULT_TRAINING_PHASE, iblrig.choiceworld.DEFAULT_REWARD_VOLUME)
-            self.logger.critical(f'The mouse will train on level {training_phase} and with reward {adaptive_reward} uL')
-
-        return training_phase, adaptive_reward
+            tinfo = dict(
+                training_phase=iblrig.choiceworld.DEFAULT_TRAINING_PHASE,
+                adaptive_reward=iblrig.choiceworld.DEFAULT_REWARD_VOLUME,
+                adaptive_gain=self.task_params.AG_INIT_VALUE
+            )
+            self.logger.critical(f"The mouse will train on level {tinfo['training_phase']}, "
+                                 f"with reward {tinfo['adaptive_reward']} uL and gain {tinfo['adaptive_gain']}")
+        return tinfo['training_phase'], tinfo['adaptive_reward'], tinfo['adaptive_gain']
 
     def compute_performance(self):
         """
@@ -823,7 +834,7 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
                 # contrast is the last contrast
                 contrast = last_contrast
         # save and send trial info to bonsai
-        self.draw_next_trial_info(pleft=0.5, position=position, contrast=contrast)
+        self.draw_next_trial_info(pleft=self.task_params.PROBABILITY_LEFT, position=position, contrast=contrast)
         self.trials_table.at[self.trial_num, 'training_phase'] = self.training_phase
 
     def show_trial_log(self):

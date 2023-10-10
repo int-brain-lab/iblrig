@@ -89,23 +89,27 @@ class BaseSession(ABC):
         self.iblrig_settings = iblrig.path_helper.load_settings_yaml(file_iblrig_settings or 'iblrig_settings.yaml')
         if iblrig_settings is not None:
             self.iblrig_settings.update(iblrig_settings)
-        # Load the tasks settings, from the task folder or override with the input argument
-        task_parameter_file = task_parameter_file or Path(inspect.getfile(self.__class__)).parent.joinpath('task_parameters.yaml')
-        self.task_params = Bunch({})
         self.wizard = wizard
-
-        # first loads the base parameters for a given task
-        if self.base_parameters_file is not None and self.base_parameters_file.exists():
-            with open(self.base_parameters_file) as fp:
-                self.task_params = Bunch(yaml.safe_load(fp))
-
-        # then updates the dictionary with the child task parameters
-        if task_parameter_file.exists():
-            with open(task_parameter_file) as fp:
-                task_params = yaml.safe_load(fp)
-            if task_params is not None:
-                self.task_params.update(Bunch(task_params))
-
+        # Load the tasks settings, from the task folder or override with the input argument
+        base_parameters_files = [
+            task_parameter_file or Path(inspect.getfile(self.__class__)).parent.joinpath('task_parameters.yaml')]
+        # loop through the task hierarchy to gather parameter files
+        for cls in self.__class__.__mro__:
+            base_file = getattr(cls, 'base_parameters_file', None)
+            if base_file is not None:
+                base_parameters_files.append(base_file)
+        # this is a trick to remove list duplicates while preserving order, we want the highest order first
+        base_parameters_files = list(reversed(list(dict.fromkeys(base_parameters_files))))
+        # now we loop into the files and update the dictionary, the latest files in the hierarchy have precedence
+        self.task_params = Bunch({})
+        for param_file in base_parameters_files:
+            if Path(param_file).exists():
+                with open(param_file) as fp:
+                    params = yaml.safe_load(fp)
+                if params is not None:
+                    self.task_params.update(Bunch(params))
+        # at last sort the dictionary so itś easier for a human to navigate the many keys
+        self.task_params = Bunch(dict(sorted(self.task_params.items())))
         self.session_info = Bunch({
             'NTRIALS': 0,
             'NTRIALS_CORRECT': 0,

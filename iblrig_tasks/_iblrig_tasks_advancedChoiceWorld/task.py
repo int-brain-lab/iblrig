@@ -16,7 +16,7 @@ class Session(ActiveChoiceWorldSession):
         # update counters
         self.trial_num += 1
         # save and send trial info to bonsai
-        self.draw_next_trial_info(pleft=0.5)
+        self.draw_next_trial_info(pleft=self.task_params.PROBABILITY_LEFT)
 
 
 if __name__ == "__main__":  # pragma: no cover

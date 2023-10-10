@@ -26,7 +26,7 @@ class TestRigWizardModel(unittest.TestCase):
             extra_args = [{act.option_strings[0]: act.type} for act in parser._actions]
             match task_name:
                 case '_iblrig_tasks_trainingChoiceWorld':
-                    expect = 3
+                    expect = 4
                 case '_iblrig_tasks_ephysChoiceWorld':
                     expect = 2
                 case '_iblrig_tasks_spontaneous' | 'plau_oddBallAudio':
