@@ -388,7 +388,7 @@ def upgrade() -> int:
         print('There are changes in your local copy of IBLRIG that will be lost when upgrading.')
         if not _ask_user('Do you want to proceed?', False):
             return 0
-        check_call([sys.executable, "-m", "pip", "reset", "--hard"])
+        check_call([sys.executable, "-m", "git", "reset", "--hard"])
 
     check_call(["git", "pull", "--tags"])
     check_call([sys.executable, "-m", "pip", "install", "-U", "pip"])
