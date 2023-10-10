@@ -21,6 +21,7 @@ dependencies = [
     "iblpybpod@git+https://github.com/int-brain-lab/iblpybpod.git@no-gui",
     "iblscripts@git+https://github.com/int-brain-lab/iblscripts.git@iblrigv8",
     "project_extraction@git+https://github.com/int-brain-lab/project_extraction.git",
+    "iblutil >= 1.7.1",
     "numpy",
     "ONE-api",
     "packaging",
