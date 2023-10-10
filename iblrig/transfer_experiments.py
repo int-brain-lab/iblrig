@@ -4,13 +4,12 @@ from os.path import samestat
 from pathlib import Path
 import shutil
 import traceback
-from hashlib import blake2b
 import ctypes
 from typing import Callable, Any
 
 import iblrig
 from iblutil.util import setup_logger
-from iblutil.io.hashfile import _hash_file
+from iblutil.io import hashfile
 from ibllib.io import session_params
 import ibllib.pipes.misc
 
@@ -100,22 +99,22 @@ def _copy2_checksum(src: str, dst: str, *args, **kwargs) -> str:
         If the BLAKE2B hashes of the source and destination files do not match.
     """
     log.info(f'Processing `{src}`:')
-    log.info('  - calculating BLAKE2B hash of local file')
-    src_md5 = _hash_file(src, blake2b(), False)
+    log.info('  - calculating hash of local file')
+    src_md5 = hashfile.blake2b(src, False)
     if os.path.exists(dst) and samestat(os.stat(src), os.stat(dst)):
         log.info('  - file already exists at destination')
-        log.info('  - calculating BLAKE2B hash of remote file')
-        if src_md5 == _hash_file(dst, blake2b(), False):
-            log.info('  - local and remote BLAKE2B hashes MATCH, skipping copy')
+        log.info('  - calculating hash of remote file')
+        if src_md5 == hashfile.blake2b(dst, False):
+            log.info('  - local and remote BLAKE2B hashes match, skipping copy')
             return dst
         else:
-            log.info('  - local and remote BLAKE2B hashes DO NOT MATCH')
+            log.info('  - local and remote hashes DO NOT match')
     log.info(f'  - copying file to `{dst}`')
     return_val = shutil.copy2(src, dst, *args, **kwargs)
-    log.info('  - calculating BLAKE2B hash of remote file')
-    if not src_md5 == _hash_file(dst, blake2b(), False):
-        raise OSError(f'Error copying {src}: BLAKE2B hash mismatch.')
-    log.info('  - local and remote BLAKE2B hashes DO MATCH')
+    log.info('  - calculating hash of remote file')
+    if not src_md5 == hashfile.blake2b(dst, False):
+        raise OSError(f'Error copying {src}: hash mismatch.')
+    log.info('  - local and remote hashes match, copy successful')
     return return_val
 
 
