@@ -54,9 +54,11 @@ transfer_video_data = "iblrig.commands:transfer_video_data_cli"
 transfer_ephys_data = "iblrig.commands:transfer_ephys_data_cli"
 flush = "iblrig.commands:flush"
 remove-old-sessions = "iblrig.commands:remove_local_sessions"
-iblrig = "iblrig.gui.wizard:main"
 upgrade_iblrig = "iblrig.version_management:upgrade"
 install_spinnaker = "iblrig.video:install_spinnaker_sdk"
+
+[project.gui-scripts]
+iblrig = "iblrig.gui.wizard:main"
 
 [tool.setuptools.dynamic]
 readme = {file = "README.md", content-type = "text/markdown"}
