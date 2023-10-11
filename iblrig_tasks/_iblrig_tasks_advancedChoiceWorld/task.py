@@ -1,3 +1,7 @@
+import inspect
+from pathlib import Path
+import yaml
+
 from iblrig.base_choice_world import ActiveChoiceWorldSession
 import iblrig.misc
 
@@ -11,6 +15,21 @@ class Session(ActiveChoiceWorldSession):
     """
     protocol_name = "_iblrig_tasks_advancedChoiceWorld"
     extractor_tasks = ['TrialRegisterRaw', 'ChoiceWorldTrials', 'TrainingStatus']
+
+    @staticmethod
+    def extra_parser():
+        """ :return: argparse.parser() """
+
+        # read defaults from task_parameters.yaml
+        task_parameters = Path(inspect.getfile(__class__)).parent.joinpath('task_parameters.yaml')
+        with open(task_parameters) as f:
+            defaults = yaml.safe_load(f)
+
+        parser = super(Session, Session).extra_parser()
+        parser.add_argument('--probability_left', option_strings=['--probability_left'],
+                            dest='session_template_id', default=defaults["PROBABILITY_LEFT"],
+                            type=float, help='probability for stimulus to appear on the left')
+        return parser
 
     def next_trial(self):
         # update counters
