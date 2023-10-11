@@ -196,6 +196,8 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.statusbar.addWidget(tmp)
         self.controls_for_extra_parameters()
 
+        self.layout().setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
+
         self.update_check = UpdateCheckWorker(self)
 
         QtCore.QTimer.singleShot(100, self.check_dirty)
@@ -418,14 +420,11 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
             layout.addRow(self.tr('(none)'), None)
             layout.itemAt(0, 0).widget().setEnabled(False)
 
-        # call timer to set size of window
-        QtCore.QTimer.singleShot(1, self.set_size)
+        # call timer to resize window
+        QtCore.QTimer.singleShot(1, lambda: self.resize(self.minimumSizeHint()))
 
     def _set_task_arg(self, key, value):
         self.task_arguments[key] = value
-
-    def set_size(self):
-        self.setFixedSize(self.layout().minimumSize())
 
     def alyx_connect(self):
         self.model.connect()

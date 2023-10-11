@@ -2,16 +2,19 @@
 <ui version="4.0">
  <class>wizard</class>
  <widget class="QMainWindow" name="wizard">
+  <property name="windowModality">
+   <enum>Qt::NonModal</enum>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
     <width>350</width>
-    <height>527</height>
+    <height>618</height>
    </rect>
   </property>
   <property name="sizePolicy">
-   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
     <horstretch>0</horstretch>
     <verstretch>0</verstretch>
    </sizepolicy>
@@ -34,8 +37,11 @@
     <height>0</height>
    </size>
   </property>
+  <property name="focusPolicy">
+   <enum>Qt::StrongFocus</enum>
+  </property>
   <property name="contextMenuPolicy">
-   <enum>Qt::DefaultContextMenu</enum>
+   <enum>Qt::NoContextMenu</enum>
   </property>
   <property name="windowTitle">
    <string>IBL Rig Wizard</string>
@@ -54,6 +60,9 @@
    <bool>false</bool>
   </property>
   <property name="documentMode">
+   <bool>false</bool>
+  </property>
+  <property name="unifiedTitleAndToolBarOnMac">
    <bool>false</bool>
   </property>
   <widget class="QWidget" name="centralwidget">
@@ -89,7 +98,7 @@
      <number>0</number>
     </property>
     <item>
-     <layout class="QGridLayout" name="mainGrid" columnstretch="0,0">
+     <layout class="QGridLayout" name="mainGrid" columnstretch="1,1">
       <property name="sizeConstraint">
        <enum>QLayout::SetDefaultConstraint</enum>
       </property>
@@ -97,18 +106,18 @@
        <number>6</number>
       </property>
       <property name="topMargin">
-       <number>0</number>
+       <number>6</number>
       </property>
       <property name="rightMargin">
        <number>6</number>
       </property>
       <property name="bottomMargin">
-       <number>0</number>
+       <number>6</number>
       </property>
       <item row="1" column="0" colspan="2">
        <widget class="QGroupBox" name="uiGroupParameters">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
@@ -131,6 +140,9 @@
            <property name="text">
             <string>Alyx User</string>
            </property>
+           <property name="buddy">
+            <cstring>uiComboUser</cstring>
+           </property>
           </widget>
          </item>
          <item row="0" column="1">
@@ -147,7 +159,7 @@
            <property name="frameShadow">
             <enum>QFrame::Plain</enum>
            </property>
-           <layout class="QHBoxLayout" name="horizontalLayout_2">
+           <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="2,1">
             <property name="leftMargin">
              <number>0</number>
             </property>
@@ -164,7 +176,7 @@
              <widget class="QComboBox" name="uiComboUser">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                <horstretch>3</horstretch>
+                <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
               </property>
@@ -179,14 +191,14 @@
             <item>
              <widget class="QPushButton" name="uiPushConnect">
               <property name="sizePolicy">
-               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                <horstretch>2</horstretch>
+               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
               </property>
               <property name="maximumSize">
                <size>
-                <width>150</width>
+                <width>16777215</width>
                 <height>16777215</height>
                </size>
               </property>
@@ -209,6 +221,9 @@
            <property name="text">
             <string>Subject</string>
            </property>
+           <property name="buddy">
+            <cstring>uiComboSubject</cstring>
+           </property>
           </widget>
          </item>
          <item row="1" column="1">
@@ -225,7 +240,7 @@
            <property name="frameShadow">
             <enum>QFrame::Plain</enum>
            </property>
-           <layout class="QHBoxLayout" name="horizontalLayout">
+           <layout class="QHBoxLayout" name="horizontalLayout" stretch="2,1">
             <property name="leftMargin">
              <number>0</number>
             </property>
@@ -242,7 +257,7 @@
              <widget class="QComboBox" name="uiComboSubject">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                <horstretch>3</horstretch>
+                <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
               </property>
@@ -260,8 +275,8 @@
             <item>
              <widget class="QLineEdit" name="lineEditSubject">
               <property name="sizePolicy">
-               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                <horstretch>2</horstretch>
+               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
               </property>
@@ -283,6 +298,9 @@
           <widget class="QLabel" name="label_4">
            <property name="text">
             <string>Task</string>
+           </property>
+           <property name="buddy">
+            <cstring>uiComboTask</cstring>
            </property>
           </widget>
          </item>
@@ -309,6 +327,9 @@
           <widget class="QLabel" name="label_3">
            <property name="text">
             <string>Project</string>
+           </property>
+           <property name="buddy">
+            <cstring>uiListProjects</cstring>
            </property>
           </widget>
          </item>
@@ -411,6 +432,9 @@
           <widget class="QLabel" name="label_5">
            <property name="text">
             <string>Procedure</string>
+           </property>
+           <property name="buddy">
+            <cstring>uiListProcedures</cstring>
            </property>
           </widget>
          </item>
@@ -518,7 +542,7 @@
          <bool>true</bool>
         </property>
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
@@ -545,7 +569,7 @@
       <item row="4" column="1">
        <widget class="QGroupBox" name="uiGroupDiskSpace">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
@@ -561,12 +585,49 @@
           <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
          </property>
          <property name="horizontalSpacing">
-          <number>0</number>
+          <number>6</number>
          </property>
          <property name="verticalSpacing">
-          <number>0</number>
+          <number>6</number>
          </property>
-         <item row="0" column="1">
+         <item row="2" column="1">
+          <widget class="QLabel" name="uiLableDiskAvailableValue">
+           <property name="text">
+            <string>80.3 GB</string>
+           </property>
+           <property name="textFormat">
+            <enum>Qt::AutoText</enum>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QLabel" name="uiLableDiskIblrigValue">
+           <property name="text">
+            <string>1.2 GB</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="uiLableDiskIblrig">
+           <property name="text">
+            <string>IBL Rig Data:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="uiLableDiskAvailable">
+           <property name="text">
+            <string>Available Space:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0" colspan="2">
           <widget class="QProgressBar" name="uiProgressDiskSpace">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
@@ -588,67 +649,13 @@
            </property>
           </widget>
          </item>
-         <item row="2" column="1">
-          <layout class="QHBoxLayout" name="horizontalLayout_4">
-           <property name="spacing">
-            <number>0</number>
-           </property>
-           <item>
-            <layout class="QFormLayout" name="formLayout_4">
-             <property name="verticalSpacing">
-              <number>6</number>
-             </property>
-             <property name="topMargin">
-              <number>6</number>
-             </property>
-             <item row="0" column="0">
-              <widget class="QLabel" name="uiLableDiskAvailable">
-               <property name="text">
-                <string>Available Space:</string>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="1">
-              <widget class="QLabel" name="uiLableDiskAvailableValue">
-               <property name="text">
-                <string>80.3 GB</string>
-               </property>
-               <property name="textFormat">
-                <enum>Qt::AutoText</enum>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="0">
-              <widget class="QLabel" name="uiLableDiskIblrig">
-               <property name="text">
-                <string>IBL Rig Data:</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="1">
-              <widget class="QLabel" name="uiLableDiskIblrigValue">
-               <property name="text">
-                <string>1.2 GB</string>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-          </layout>
-         </item>
         </layout>
        </widget>
       </item>
       <item row="4" column="0">
        <widget class="QGroupBox" name="uiGroupTools">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
@@ -704,7 +711,7 @@
       <item row="3" column="0" colspan="2">
        <widget class="QGroupBox" name="uiGroupSessionControl">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
@@ -712,7 +719,7 @@
         <property name="title">
          <string>Session Control</string>
         </property>
-        <layout class="QGridLayout" name="gridLayout" columnstretch="0,0,0">
+        <layout class="QGridLayout" name="gridLayout" columnstretch="1,1">
          <property name="sizeConstraint">
           <enum>QLayout::SetDefaultConstraint</enum>
          </property>
@@ -722,7 +729,26 @@
          <property name="horizontalSpacing">
           <number>6</number>
          </property>
-         <item row="2" column="1">
+         <item row="1" column="1">
+          <widget class="QCheckBox" name="uiCheckAppend">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="toolTip">
+            <string/>
+           </property>
+           <property name="statusTip">
+            <string>append to previous session</string>
+           </property>
+           <property name="text">
+            <string>Append</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0">
           <widget class="QPushButton" name="uiPushPause">
            <property name="enabled">
             <bool>false</bool>
@@ -741,7 +767,7 @@
            </property>
           </widget>
          </item>
-         <item row="2" column="2">
+         <item row="0" column="1">
           <widget class="QPushButton" name="uiPushStart">
            <property name="statusTip">
             <string>start the session</string>
@@ -751,25 +777,6 @@
            </property>
            <property name="text">
             <string>Start</string>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="2">
-          <widget class="QCheckBox" name="uiCheckAppend">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="toolTip">
-            <string/>
-           </property>
-           <property name="statusTip">
-            <string>append to previous session</string>
-           </property>
-           <property name="text">
-            <string>Append</string>
            </property>
           </widget>
          </item>
@@ -821,8 +828,6 @@
   <tabstop>uiListProjects</tabstop>
   <tabstop>uiListProcedures</tabstop>
   <tabstop>uiPushPause</tabstop>
-  <tabstop>uiPushStart</tabstop>
-  <tabstop>uiCheckAppend</tabstop>
   <tabstop>uiPushFlush</tabstop>
   <tabstop>uiPushHelp</tabstop>
  </tabstops>
