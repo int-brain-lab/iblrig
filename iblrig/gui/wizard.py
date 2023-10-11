@@ -358,6 +358,15 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
 
             # some customizations
             match widget.property('parameter_dest'):
+                case 'probability_left':
+                    widget.setMinimum(0.0)
+                    widget.setMaximum(1.0)
+                    widget.setSingleStep(0.1)
+                    widget.setDecimals(2)
+
+                case 'contrast_set_probability_type':
+                    label = 'Probability Type'
+
                 case 'session_template_id':
                     label = 'Session Template ID'
 
@@ -381,6 +390,26 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                         lambda val, a=arg, m=widget.minimum():
                         self._set_task_arg(a.option_strings[0], str(val if val > m else -1)))
                     widget.valueChanged.emit(widget.value())
+
+                case 'adaptive_gain':
+                    label = 'Stimulus Gain, μl'
+                    widget.setSpecialValueText('automatic')
+                    widget.setMaximum(3)
+                    widget.setSingleStep(0.1)
+                    widget.setMinimum(1.4)
+                    widget.setValue(widget.minimum())
+                    widget.valueChanged.connect(
+                        lambda val, a=arg, m=widget.minimum():
+                        self._set_task_arg(a.option_strings[0], str(val if val > m else -1)))
+                    widget.valueChanged.emit(widget.value())
+
+                case 'reward_amount_ul':
+                    label = 'Reward Amount, μl'
+                    widget.setSingleStep(0.1)
+                    widget.setMinimum(0)
+
+                case 'stim_gain':
+                    label = 'Stimulus Gain'
 
             layout.addRow(self.tr(label), widget)
 
