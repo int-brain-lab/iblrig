@@ -188,8 +188,8 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         total_space, total_used, total_free = shutil.disk_usage(local_data.anchor)
         self.uiProgressDiskSpace.setStatusTip(f'utilization of drive {local_data.anchor}')
         self.uiProgressDiskSpace.setValue(round(total_used / total_space * 100))
-        self.uiLableDiskAvailableValue.setText(f'{total_free / 1024 ** 3 : .1f} GB')
-        self.uiLableDiskIblrigValue.setText(f'{v8data_size / 1024 ** 3 : .1f} GB')
+        self.uiLabelDiskAvailableValue.setText(f'{total_free / 1024 ** 3 : .1f} GB')
+        self.uiLabelDiskIblrigValue.setText(f'{v8data_size / 1024 ** 3 : .1f} GB')
 
         tmp = QtWidgets.QLabel(f'iblrig v{iblrig.__version__}')
         tmp.setContentsMargins(4, 0, 0, 0)
