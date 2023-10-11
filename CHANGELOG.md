@@ -7,8 +7,10 @@ Changelog
 ------
 * add check for availability of internet
 * add proper CLI for data transfer scripts
+* add options for AdvancedChoiceWorld
 * move update-check to separate thread
-* detect dud (less than 42 trials) and offer deletion
+* detect duds (less than 42 trials) and offer deletion
+* fix crash on GUI-resize (linux)
 
 8.10.2
 ------
