@@ -13,7 +13,7 @@ import webbrowser
 import ctypes
 import os
 
-from PyQt5 import QtWidgets, QtCore
+from PyQt5 import QtWidgets, QtCore, QtGui
 from PyQt5.QtCore import QThread
 from PyQt5.QtWidgets import QStyle
 
@@ -21,6 +21,7 @@ from one.api import ONE
 import iblrig_tasks
 import iblrig_custom_tasks
 import iblrig.path_helper
+from iblrig.constants import BASE_DIR
 from iblrig.misc import _get_task_argument_parser
 from iblrig.base_tasks import BaseSession
 from iblrig.hardware import Bpod
@@ -43,6 +44,8 @@ PROJECTS = [
     'ibl_neuropixel_brainwide_01',
     'practice'
 ]
+
+WIZARD_PNG = str(Path(BASE_DIR).joinpath('iblrig', 'gui', 'wizard.png'))
 
 
 # this class gets called to get the path constructor utility to predict the session path
@@ -144,6 +147,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
     def __init__(self, *args, **kwargs):
         super(RigWizard, self).__init__(*args, **kwargs)
         self.setupUi(self)
+        self.setWindowIcon(QtGui.QIcon(WIZARD_PNG))
 
         self.settings = QtCore.QSettings('iblrig', 'wizard')
         self.model = RigWizardModel()
@@ -609,15 +613,15 @@ class UpdateCheckWorker(QThread):
 
     Methods
     -------
-    run()
+    run() -> None
         The main method that performs the update check and sets the result.
 
-    check_results()
+    check_results() -> None
         A method that is called when the update check is finished to show
         an update notice if an update is available.
     """
 
-    def __init__(self, parent: QtWidgets.QWidget):
+    def __init__(self, parent: QtWidgets.QWidget) -> None:
         super().__init__()
         self.parent = parent
         self.update_available = False
@@ -625,7 +629,7 @@ class UpdateCheckWorker(QThread):
         self.finished.connect(self.check_results)
         self.start()
 
-    def run(self):
+    def run(self) -> None:
         """
         Perform the update check and set the result.
 
@@ -635,14 +639,14 @@ class UpdateCheckWorker(QThread):
         """
         self.update_available, self.remote_version = check_for_updates()
 
-    def check_results(self):
+    def check_results(self) -> None:
         """
         Check the update check results and display an update notice if available.
 
         This method is called when the update check is finished. It checks if
         an update is available, and if so, it displays an update notice dialog.
         """
-        if not self.update_available:
+        if self.update_available:
             self.UpdateNotice(parent=self.parent, version=self.remote_version)
 
     class UpdateNotice(QtWidgets.QDialog, Ui_update):
@@ -668,10 +672,12 @@ class UpdateCheckWorker(QThread):
         -------
         None
         """
-        def __init__(self, parent: QtWidgets.QWidget, version: str):
+        def __init__(self, parent: QtWidgets.QWidget, version: str) -> None:
             super().__init__(parent)
-            self.setAttribute(QtCore.Qt.WA_DeleteOnClose, True)
             self.setupUi(self)
+            self.setAttribute(QtCore.Qt.WA_DeleteOnClose, True)
+            self.setWindowIcon(QtGui.QIcon(WIZARD_PNG))
+            self.uiLabelLogo.setPixmap(QtGui.QPixmap(WIZARD_PNG))
             self.uiLabelHeader.setText(f"Update to iblrig {version} is available.")
             self.uiTextBrowserChanges.setMarkdown(get_changelog())
             self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
