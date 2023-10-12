@@ -1,3 +1,4 @@
+import re
 from collections import OrderedDict
 from dataclasses import dataclass
 import importlib
@@ -648,6 +649,7 @@ class UpdateCheckWorker(QThread):
         """
         if self.update_available:
             self.UpdateNotice(parent=self.parent, version=self.remote_version)
+        self.deleteLater()
 
     class UpdateNotice(QtWidgets.QDialog, Ui_update):
         """
@@ -682,6 +684,57 @@ class UpdateCheckWorker(QThread):
             self.uiTextBrowserChanges.setMarkdown(get_changelog())
             self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
             self.exec_()
+
+
+class AnyDeskWorker(QThread):
+    """
+    A worker thread for obtaining the AnyDesk ID using the AnyDesk command line tool.
+
+    This class runs the AnyDesk command line tool to obtain the AnyDesk ID and emits a
+    signal with the ID if successful.
+
+    Attributes
+    ----------
+    id_available : QtCore.pyqtSignal
+        A signal emitted when the AnyDesk ID is available. The signal's parameter is
+        the AnyDesk ID.
+
+    Methods
+    -------
+    run() -> None
+        Runs the AnyDesk command to obtain the AnyDesk ID and emits the signal if successful.
+    """
+    id_available = QtCore.pyqtSignal(str)
+
+    def run(self) -> None:
+        """
+        Run the AnyDesk command to obtain the AnyDesk ID and emit the ID via a signal.
+
+        This method runs the AnyDesk command to obtain the AnyDesk ID. If successful, it emits
+        the `id_available` signal with the AnyDesk ID as a parameter.
+
+        Returns
+        -------
+        None
+        """
+        try:
+            if cmd := shutil.which('anydesk'):
+                cmd = Path(cmd)
+            elif os.name == 'nt':
+                cmd = Path(os.environ["ProgramFiles(x86)"], 'AnyDesk', 'anydesk.exe')
+            if not cmd.exists():
+                raise FileNotFoundError("AnyDesk executable not found")
+
+            proc = subprocess.Popen([cmd, '--get-id'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            if proc.stdout and re.match(r'^\d{10}$', id_string := next(proc.stdout).decode()):
+                self.id_available.emit('{:,}'.format(int(id_string)).replace(',', ' '))
+
+        except (FileNotFoundError, subprocess.CalledProcessError, StopIteration, UnicodeDecodeError):
+            # handle specific exceptions here
+            pass
+
+        finally:
+            self.deleteLater()
 
 
 class SubjectDetailsWorker(QThread):
