@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>353</width>
+    <width>451</width>
     <height>496</height>
    </rect>
   </property>
@@ -21,7 +21,7 @@
   </property>
   <property name="windowIcon">
    <iconset>
-    <normaloff>:/images/wizard.png</normaloff>:/images/wizard.png</iconset>
+    <normaloff>wizard.png</normaloff>wizard.png</iconset>
   </property>
   <property name="modal">
    <bool>true</bool>
@@ -77,17 +77,11 @@
      </item>
      <item>
       <widget class="QTextBrowser" name="uiTextBrowserChanges">
-       <property name="styleSheet">
-        <string notr="true"/>
-       </property>
        <property name="verticalScrollBarPolicy">
         <enum>Qt::ScrollBarAlwaysOn</enum>
        </property>
        <property name="horizontalScrollBarPolicy">
         <enum>Qt::ScrollBarAlwaysOff</enum>
-       </property>
-       <property name="documentTitle">
-        <string/>
        </property>
        <property name="markdown">
         <string/>
@@ -118,9 +112,6 @@
      </item>
      <item>
       <spacer name="verticalSpacer_2">
-       <property name="orientation">
-        <enum>Qt::Vertical</enum>
-       </property>
        <property name="sizeType">
         <enum>QSizePolicy::Fixed</enum>
        </property>
@@ -177,9 +168,6 @@
      </item>
      <item>
       <spacer name="verticalSpacer_3">
-       <property name="orientation">
-        <enum>Qt::Vertical</enum>
-       </property>
        <property name="sizeType">
         <enum>QSizePolicy::Fixed</enum>
        </property>
@@ -227,5 +215,22 @@
   </layout>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>uiPushButtonOK</sender>
+   <signal>released()</signal>
+   <receiver>update</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>399</x>
+     <y>471</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>225</x>
+     <y>247</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

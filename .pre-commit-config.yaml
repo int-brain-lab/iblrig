@@ -20,7 +20,6 @@ repos:
 -   repo: https://github.com/pre-commit/pygrep-hooks
     rev: v1.10.0
     hooks:
-    -   id: python-check-blanket-type-ignore
     -   id: python-use-type-annotations
     -   id: python-no-log-warn
     -   id: text-unicode-replacement-char

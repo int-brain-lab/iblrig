@@ -13,7 +13,7 @@ import webbrowser
 import ctypes
 import os
 
-from PyQt5 import QtWidgets, QtCore, QtGui
+from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtCore import QThread
 from PyQt5.QtWidgets import QStyle
 
@@ -21,7 +21,6 @@ from one.api import ONE
 import iblrig_tasks
 import iblrig_custom_tasks
 import iblrig.path_helper
-from iblrig.constants import BASE_DIR
 from iblrig.misc import _get_task_argument_parser
 from iblrig.base_tasks import BaseSession
 from iblrig.hardware import Bpod
@@ -44,8 +43,6 @@ PROJECTS = [
     'ibl_neuropixel_brainwide_01',
     'practice'
 ]
-
-WIZARD_PNG = str(Path(BASE_DIR).joinpath('iblrig', 'gui', 'wizard.png'))
 
 
 # this class gets called to get the path constructor utility to predict the session path
@@ -147,7 +144,6 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
     def __init__(self, *args, **kwargs):
         super(RigWizard, self).__init__(*args, **kwargs)
         self.setupUi(self)
-        self.setWindowIcon(QtGui.QIcon(WIZARD_PNG))
 
         self.settings = QtCore.QSettings('iblrig', 'wizard')
         self.model = RigWizardModel()
@@ -197,6 +193,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.controls_for_extra_parameters()
 
         self.layout().setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
+        self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowFullscreenButtonHint)
 
         self.update_check = UpdateCheckWorker(self)
 
@@ -590,8 +587,37 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
 
 
 class UpdateCheckWorker(QThread):
+    """
+    A worker thread for checking updates and displaying update notices.
 
-    def __init__(self, parent):
+    This class is used to run the update check in a separate thread to avoid
+    blocking the main UI. When the update check is completed, it triggers the
+    display of an update notice if an update is available.
+
+    Parameters
+    ----------
+    parent : QtWidgets.QWidget
+        The parent widget associated with this worker.
+
+    Attributes
+    ----------
+    update_available : bool
+        A flag indicating whether an update is available.
+
+    remote_version : str
+        The remote version of the application.
+
+    Methods
+    -------
+    run()
+        The main method that performs the update check and sets the result.
+
+    check_results()
+        A method that is called when the update check is finished to show
+        an update notice if an update is available.
+    """
+
+    def __init__(self, parent: QtWidgets.QWidget):
         super().__init__()
         self.parent = parent
         self.update_available = False
@@ -600,24 +626,56 @@ class UpdateCheckWorker(QThread):
         self.start()
 
     def run(self):
+        """
+        Perform the update check and set the result.
+
+        This method is automatically called when the worker thread is started.
+        It runs the update check by calling check_for_updates() and sets
+        the update_available and remote_version attributes based on the result.
+        """
         self.update_available, self.remote_version = check_for_updates()
 
     def check_results(self):
-        if self.update_available:
-            dialog = self.UpdateNotice(parent=self.parent)
-            dialog.uiLabelHeader.setText(f"Update to iblrig {self.remote_version} is available.")
-            dialog.uiPushButtonOK.released.connect(lambda: dialog.close())
-            dialog.exec_()
-            self.deleteLater()
+        """
+        Check the update check results and display an update notice if available.
+
+        This method is called when the update check is finished. It checks if
+        an update is available, and if so, it displays an update notice dialog.
+        """
+        if not self.update_available:
+            self.UpdateNotice(parent=self.parent, version=self.remote_version)
 
     class UpdateNotice(QtWidgets.QDialog, Ui_update):
-        def __init__(self, parent=None):
+        """
+        A dialog for displaying update notices.
+
+        This class is used to create a dialog for displaying update notices.
+        It shows information about the available update and provides a changelog.
+
+        Parameters
+        ----------
+        parent : QtWidgets.QWidget
+            The parent widget associated with this dialog.
+
+        version : str
+            The version of the available update.
+
+        Attributes
+        ----------
+        None
+
+        Methods
+        -------
+        None
+        """
+        def __init__(self, parent: QtWidgets.QWidget, version: str):
             super().__init__(parent)
+            self.setAttribute(QtCore.Qt.WA_DeleteOnClose, True)
             self.setupUi(self)
+            self.uiLabelHeader.setText(f"Update to iblrig {version} is available.")
             self.uiTextBrowserChanges.setMarkdown(get_changelog())
-            self.uiLabelLogo.setPixmap(QtGui.QPixmap(WIZARD_PNG))
-            self.setWindowIcon(QtGui.QIcon(WIZARD_PNG))
             self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
+            self.exec_()
 
 
 class SubjectDetailsWorker(QThread):
@@ -634,8 +692,8 @@ class SubjectDetailsWorker(QThread):
 
 def main():
     if os.name == 'nt':
-        appid = f'IBL.iblrig.wizard.{iblrig.__version__}'
-        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(appid)
+        app_id = f'IBL.iblrig.wizard.{iblrig.__version__}'
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(app_id)
     app = QtWidgets.QApplication(sys.argv)
     app.setStyle("Fusion")
     w = RigWizard()
