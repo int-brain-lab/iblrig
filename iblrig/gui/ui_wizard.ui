@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>350</width>
-    <height>527</height>
+    <width>472</width>
+    <height>644</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -682,7 +682,7 @@
            </property>
           </widget>
          </item>
-         <item row="1" column="0">
+         <item row="2" column="0">
           <widget class="QPushButton" name="uiPushHelp">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
@@ -695,6 +695,19 @@
            </property>
            <property name="text">
             <string>Help!</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QPushButton" name="uiPushStatusLED">
+           <property name="statusTip">
+            <string>toggle the Bpod Status LED (always off during sessions)</string>
+           </property>
+           <property name="text">
+            <string>Status LED</string>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
            </property>
           </widget>
          </item>
