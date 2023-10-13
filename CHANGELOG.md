@@ -3,6 +3,10 @@ Changelog
 
 -------------------------------
 
+8.10.3
+------
+* hot-fix for disabling Bpod status LED
+
 8.10.2
 ------
 * hot-fix parsing of path args in transfer_data

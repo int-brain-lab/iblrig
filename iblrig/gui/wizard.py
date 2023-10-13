@@ -182,6 +182,8 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.statusbar.addWidget(tmp)
         self.controls_for_extra_parameters()
 
+        self.set_bpod_status_led(False)
+
         self.setDisabled(True)
         QtCore.QTimer.singleShot(100, self.check_dirty)
         QtCore.QTimer.singleShot(100, self.check_for_update)
@@ -201,6 +203,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
 
     def closeEvent(self, event):
         if self.running_task_process is None:
+            self.set_bpod_status_led(True)
             event.accept()
         else:
             msgBox = QtWidgets.QMessageBox(parent=self)
@@ -215,6 +218,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                     self.setEnabled(False)
                     self.repaint()
                     self.start_stop()
+                    self.set_bpod_status_led(True)
                     event.accept()
 
     def check_dirty(self):
@@ -524,6 +528,10 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
 
         if not self.uiPushFlush.isChecked():
             bpod.close()
+
+    def set_bpod_status_led(self, enabled: bool) -> None:
+        bpod = Bpod(self.model.hardware_settings['device_bpod']['COM_BPOD'])
+        bpod.set_status_led(enabled)
 
     def help(self):
         webbrowser.open('https://int-brain-lab.github.io/iblrig/usage.html')
