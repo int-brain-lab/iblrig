@@ -11,6 +11,8 @@ import datetime
 import inspect
 import json
 import os
+from typing import Optional
+
 import serial
 import subprocess
 import time
@@ -47,7 +49,7 @@ OSC_CLIENT_IP = "127.0.0.1"
 
 class BaseSession(ABC):
     version = None
-    protocol_name = None
+    protocol_name: Optional[str] = None
     base_parameters_file = None
     is_mock = False
     extractor_tasks = None

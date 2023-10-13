@@ -1,4 +1,3 @@
-import re
 from collections import OrderedDict
 from dataclasses import dataclass
 import importlib
@@ -8,6 +7,8 @@ from pathlib import Path
 import shutil
 import subprocess
 import sys
+from typing import Any, Callable, Union, Optional
+
 import yaml
 import traceback
 import webbrowser
@@ -15,7 +16,7 @@ import ctypes
 import os
 
 from PyQt5 import QtWidgets, QtCore, QtGui
-from PyQt5.QtCore import QThread
+from PyQt5.QtCore import QThread, QThreadPool
 from PyQt5.QtWidgets import QStyle
 
 from one.api import ONE
@@ -60,28 +61,28 @@ class EmptySession(BaseSession):
         pass
 
 
-def _set_list_view_from_string_list(uilist: QtWidgets.QListView, string_list: list):
+def _set_list_view_from_string_list(ui_list: QtWidgets.QListView, string_list: list):
     """Small boiler plate util to set the selection of a list view from a list of strings"""
     if string_list is None or len(string_list) == 0:
         return
-    for i, s in enumerate(uilist.model().stringList()):
+    for i, s in enumerate(ui_list.model().stringList()):
         if s in string_list:
-            uilist.selectionModel().select(uilist.model().createIndex(i, 0), QtCore.QItemSelectionModel.Select)
+            ui_list.selectionModel().select(ui_list.model().createIndex(i, 0), QtCore.QItemSelectionModel.Select)
 
 
 @dataclass
 class RigWizardModel:
-    one: ONE = None
-    procedures: list = None
-    projects: list = None
-    task_name: str = None
-    user: str = None
-    subject: str = None
-    session_folder: Path = None
-    hardware_settings: dict = None
-    test_subject_name: str = 'test_subject'
+    one: Optional[ONE] = None
+    procedures: Optional[list] = None
+    projects: Optional[list] = None
+    task_name: Optional[str] = None
+    user: Optional[str] = None
+    subject: Optional[str] = None
+    session_folder: Optional[Path] = None
+    hardware_settings: Optional[dict] = None
+    test_subject_name: Optional[str] = 'test_subject'
     subject_details_worker = None
-    subject_details: tuple = None
+    subject_details: Optional[tuple] = None
 
     def __post_init__(self):
         self.iblrig_settings = iblrig.path_helper.load_settings_yaml()
@@ -200,9 +201,62 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.layout().setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
         self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowFullscreenButtonHint)
 
-        self.update_check = UpdateCheckWorker(self)
+        # get AnyDesk ID
+        # anydesk_worker = Worker(get_anydesk_id)
+        # anydesk_worker.signals.result.connect(lambda var: print(f'Your AnyDesk ID: {var:s}'))
+        # QThreadPool.globalInstance().tryStart(anydesk_worker)
 
-        QtCore.QTimer.singleShot(100, self.check_dirty)
+        # check for update
+        update_worker = Worker(check_for_updates)
+        update_worker.signals.result.connect(self._on_check_update_result)
+        QThreadPool.globalInstance().start(update_worker)
+
+        # check dirty state
+        dirty_worker = Worker(is_dirty)
+        dirty_worker.signals.result.connect(self._on_check_dirty_result)
+        QThreadPool.globalInstance().start(dirty_worker)
+
+    def _on_check_update_result(self, result: tuple[bool, str | None]) -> None:
+        """
+        Handle the result of checking for updates.
+
+        Parameters
+        ----------
+        result : tuple[bool, str | None]
+            A tuple containing a boolean flag indicating update availability (result[0])
+            and the remote version string (result[1]).
+
+        Returns
+        -------
+        None
+        """
+        if not result[0]:
+            UpdateNotice(parent=self, version=result[1])
+
+    def _on_check_dirty_result(self, repository_is_dirty: bool) -> None:
+        """
+        Handle the result of checking for local changes in the repository.
+
+        Parameters
+        ----------
+        repository_is_dirty : bool
+            A boolean flag indicating whether the repository contains local changes.
+
+        Returns
+        -------
+        None
+        """
+        if repository_is_dirty:
+            message_box = QtWidgets.QMessageBox(
+                parent=self,
+                windowTitle='Warning',
+                icon=QtWidgets.QMessageBox().Warning,
+                text="Your copy of iblrig contains local changes.\nDon't expect things to work as intended!",
+                detailedText="To list all files that have been changed locally:\n\n"
+                             "    git diff --name-only\n\n"
+                             "To reset the repository to its default state:\n\n"
+                             "    git reset --hard")
+            message_box.exec()
 
     def eventFilter(self, obj, event):
         if obj == self.uiPushStart and event.type() in [QtCore.QEvent.HoverEnter, QtCore.QEvent.HoverLeave]:
@@ -234,30 +288,6 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                     self.repaint()
                     self.start_stop()
                     event.accept()
-
-    def check_dirty(self):
-        """
-        Check if the iblrig installation contains local changes.
-
-        This method checks if the installed version of iblrig contains local changes
-        (indicated by the version string ending with 'dirty'). If local changes are
-        detected, it displays a warning message to inform the user about potential
-        issues and provides instructions on how to reset the repository to its
-        default state.
-
-        Returns
-        -------
-        None
-        """
-        if not is_dirty():
-            return
-        msg_box = QtWidgets.QMessageBox(parent=self)
-        msg_box.setWindowTitle("Warning")
-        msg_box.setText("Your copy of iblrig contains local changes.\nDon't expect things to work as intended!")
-        msg_box.setDetailedText("To reset the repository to its default state, use:\n\n    git reset --hard\n\n")
-        msg_box.setStandardButtons(QtWidgets.QMessageBox.Ok)
-        msg_box.setIcon(QtWidgets.QMessageBox().Information)
-        msg_box.exec_()
 
     def model2view(self):
         # stores the current values in the model
@@ -591,155 +621,155 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.repaint()
 
 
-class UpdateCheckWorker(QThread):
+class WorkerSignals(QtCore.QObject):
     """
-    A worker thread for checking updates and displaying update notices.
-
-    This class is used to run the update check in a separate thread to avoid
-    blocking the main UI. When the update check is completed, it triggers the
-    display of an update notice if an update is available.
-
-    Parameters
-    ----------
-    parent : QtWidgets.QWidget
-        The parent widget associated with this worker.
+    Signals used by the Worker class to communicate with the main thread.
 
     Attributes
     ----------
-    update_available : bool
-        A flag indicating whether an update is available.
+    finished : QtCore.pyqtSignal
+        Signal emitted when the worker has finished its task.
 
-    remote_version : str
-        The remote version of the application.
+    error : QtCore.pyqtSignal(tuple)
+        Signal emitted when an error occurs. The signal carries a tuple with the exception type,
+        exception value, and the formatted traceback.
+
+    result : QtCore.pyqtSignal(Any)
+        Signal emitted when the worker has successfully completed its task. The signal carries
+        the result of the task.
+
+    progress : QtCore.pyqtSignal(int)
+        Signal emitted to report progress during the task. The signal carries an integer value.
+    """
+    finished: QtCore.pyqtSignal = QtCore.pyqtSignal()
+    error: QtCore.pyqtSignal = QtCore.pyqtSignal(tuple)
+    result: QtCore.pyqtSignal = QtCore.pyqtSignal(object)
+    progress: QtCore.pyqtSignal = QtCore.pyqtSignal(int)
+
+
+class Worker(QtCore.QRunnable):
+    """
+    A generic worker class for executing functions concurrently in a separate thread.
+
+    This class is designed to run functions concurrently in a separate thread and emit signals
+    to communicate the results or errors back to the main thread.
+
+    Adapted from: https://www.pythonguis.com/tutorials/multithreading-pyqt-applications-qthreadpool/
+
+    Attributes
+    ----------
+    fn : Callable
+        The function to be executed concurrently.
+
+    args : tuple
+        Positional arguments for the function.
+
+    kwargs : dict
+        Keyword arguments for the function.
+
+    signals : WorkerSignals
+        An instance of WorkerSignals used to emit signals.
 
     Methods
     -------
     run() -> None
-        The main method that performs the update check and sets the result.
-
-    check_results() -> None
-        A method that is called when the update check is finished to show
-        an update notice if an update is available.
+        The main entry point for running the worker. Executes the provided function and
+        emits signals accordingly.
     """
 
-    def __init__(self, parent: QtWidgets.QWidget) -> None:
-        super().__init__()
-        self.parent = parent
-        self.update_available = False
-        self.remote_version = ''
-        self.finished.connect(self.check_results)
-        self.start()
-
-    def run(self) -> None:
+    def __init__(self, fn: Callable[..., Any], *args: Any, **kwargs: Any) -> None:
         """
-        Perform the update check and set the result.
-
-        This method is automatically called when the worker thread is started.
-        It runs the update check by calling check_for_updates() and sets
-        the update_available and remote_version attributes based on the result.
-        """
-        self.update_available, self.remote_version = check_for_updates()
-
-    def check_results(self) -> None:
-        """
-        Check the update check results and display an update notice if available.
-
-        This method is called when the update check is finished. It checks if
-        an update is available, and if so, it displays an update notice dialog.
-        """
-        if self.update_available:
-            self.UpdateNotice(parent=self.parent, version=self.remote_version)
-        self.deleteLater()
-
-    class UpdateNotice(QtWidgets.QDialog, Ui_update):
-        """
-        A dialog for displaying update notices.
-
-        This class is used to create a dialog for displaying update notices.
-        It shows information about the available update and provides a changelog.
+        Initialize the Worker instance.
 
         Parameters
         ----------
-        parent : QtWidgets.QWidget
-            The parent widget associated with this dialog.
+        fn : Callable
+            The function to be executed concurrently.
 
-        version : str
-            The version of the available update.
+        *args : tuple
+            Positional arguments for the function.
 
-        Attributes
-        ----------
-        None
+        **kwargs : dict
+            Keyword arguments for the function.
 
-        Methods
+        Returns
         -------
         None
         """
-        def __init__(self, parent: QtWidgets.QWidget, version: str) -> None:
-            super().__init__(parent)
-            self.setupUi(self)
-            self.setAttribute(QtCore.Qt.WA_DeleteOnClose, True)
-            self.setWindowIcon(QtGui.QIcon(WIZARD_PNG))
-            self.uiLabelLogo.setPixmap(QtGui.QPixmap(WIZARD_PNG))
-            self.uiLabelHeader.setText(f"Update to iblrig {version} is available.")
-            self.uiTextBrowserChanges.setMarkdown(get_changelog())
-            self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
-            self.exec_()
-
-
-class AnyDeskWorker(QThread):
-    """
-    A worker thread for obtaining the AnyDesk ID using the AnyDesk command line tool.
-
-    This class runs the AnyDesk command line tool to obtain the AnyDesk ID and emits a
-    signal with the ID if successful.
-
-    Attributes
-    ----------
-    id_available : QtCore.pyqtSignal
-        A signal emitted when the AnyDesk ID is available. The signal's parameter is
-        the AnyDesk ID.
-
-    Methods
-    -------
-    run() -> None
-        Runs the AnyDesk command to obtain the AnyDesk ID and emits the signal if successful.
-    """
-    id_available = QtCore.pyqtSignal(str)
+        super(Worker, self).__init__()
+        self.fn: Callable[..., Any] = fn
+        self.args = args
+        self.kwargs = kwargs
+        self.signals: WorkerSignals = WorkerSignals()
 
     def run(self) -> None:
         """
-        Run the AnyDesk command to obtain the AnyDesk ID and emit the ID via a signal.
+        Execute the provided function and emit signals accordingly.
 
-        This method runs the AnyDesk command to obtain the AnyDesk ID. If successful, it emits
-        the `id_available` signal with the AnyDesk ID as a parameter.
+        This method is the main entry point for running the worker. It executes the provided
+        function and emits signals to communicate the results or errors back to the main thread.
 
         Returns
         -------
         None
         """
         try:
-            if cmd := shutil.which('anydesk'):
-                cmd = Path(cmd)
-            elif os.name == 'nt':
-                cmd = Path(os.environ["ProgramFiles(x86)"], 'AnyDesk', 'anydesk.exe')
-            if not cmd.exists():
-                raise FileNotFoundError("AnyDesk executable not found")
-
-            proc = subprocess.Popen([cmd, '--get-id'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-            if proc.stdout and re.match(r'^\d{10}$', id_string := next(proc.stdout).decode()):
-                self.id_available.emit('{:,}'.format(int(id_string)).replace(',', ' '))
-
-        except (FileNotFoundError, subprocess.CalledProcessError, StopIteration, UnicodeDecodeError):
-            # handle specific exceptions here
-            pass
-
+            result = self.fn(*self.args, **self.kwargs)
+        except:  # noqa: 722
+            # Handle exceptions and emit error signal with exception details
+            traceback.print_exc()
+            exctype, value = sys.exc_info()[:2]
+            self.signals.error.emit((exctype, value, traceback.format_exc()))
+        else:
+            # Emit result signal with the result of the task
+            self.signals.result.emit(result)
         finally:
-            self.deleteLater()
+            # Emit the finished signal to indicate completion
+            self.signals.finished.emit()
+
+
+class UpdateNotice(QtWidgets.QDialog, Ui_update):
+    """
+    A dialog for displaying update notices.
+
+    This class is used to create a dialog for displaying update notices.
+    It shows information about the available update and provides a changelog.
+
+    Parameters
+    ----------
+    parent : QtWidgets.QWidget
+        The parent widget associated with this dialog.
+
+    update_available : bool
+        Indicates if an update is available.
+
+    version : str
+        The version of the available update.
+
+    Attributes
+    ----------
+    None
+
+    Methods
+    -------
+    None
+    """
+
+    def __init__(self, parent: QtWidgets.QWidget, version: str) -> None:
+        super().__init__(parent)
+        self.setupUi(self)
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose, True)
+        self.setWindowIcon(QtGui.QIcon(WIZARD_PNG))
+        self.uiLabelLogo.setPixmap(QtGui.QPixmap(WIZARD_PNG))
+        self.uiLabelHeader.setText(f"Update to iblrig {version} is available.")
+        self.uiTextBrowserChanges.setMarkdown(get_changelog())
+        self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
+        self.exec()
 
 
 class SubjectDetailsWorker(QThread):
-    subject_name: str = None
-    result: tuple[dict, dict] = None
+    subject_name: Union[str, None] = None
+    result: Union[tuple[dict, dict], None] = None
 
     def __init__(self, subject_name):
         super().__init__()

@@ -8,7 +8,8 @@ Changelog
 * add check for availability of internet
 * add proper CLI for data transfer scripts
 * add options for AdvancedChoiceWorld
-* move update-check to separate thread
+* add method for receiving rig's AnyDesk ID
+* implement multi-threading
 * detect duds (less than 42 trials) and offer deletion
 * fix crash on GUI-resize (linux)
 
