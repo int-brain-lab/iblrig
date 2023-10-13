@@ -2,6 +2,7 @@
 This modules contains hardware classes used to interact with modules.
 """
 import logging
+import struct
 import time
 from enum import IntEnum
 import threading
@@ -164,6 +165,9 @@ class Bpod(BpodIO):
         else:
             time.sleep(duration)
         self.manual_override(self.ChannelTypes.OUTPUT, self.ChannelNames.VALVE, 1, 0)
+
+    def set_status_led(self, state: bool) -> None:
+        self._arcom.write_array(struct.pack("cB", b":", state))
 
     def valve(self, valve_id: int, state: bool):
         self.manual_override(self.ChannelTypes.OUTPUT, self.ChannelNames.VALVE, valve_id, state)
