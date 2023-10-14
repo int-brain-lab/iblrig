@@ -14,7 +14,7 @@ Installation guide
 .. tip::
 
    If you believe this guide is incomplete or requires improvements, please don't hesitate to reach out and
-   :ref:`submit a bug report<Feature Request?>`.
+   :ref:`submit a bug report<Bug Reports & Feature Requests>`.
 
 
 Prepare Windows PowerShell
