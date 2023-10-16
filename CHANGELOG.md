@@ -8,11 +8,11 @@ Changelog
 * add check for availability of internet
 * add proper CLI for data transfer scripts
 * add option for disabling Bpod status LED
+* skip initialization of existing Bpod singleton
 * remember settings for status LED and GUI position
 * move update-check to separate thread
 * detect dud (less than 42 trials) and offer deletion
 * various small bugfixes
-* skip initialization of existing Bpod singleton 
 
 8.10.2
 ------

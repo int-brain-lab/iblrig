@@ -45,7 +45,11 @@ PROJECTS = [
     'practice'
 ]
 
-WIZARD_PNG = str(Path(BASE_DIR).joinpath('iblrig', 'gui', 'wizard.png'))
+GUI_DIR = Path(BASE_DIR).joinpath('iblrig', 'gui')
+WIZARD_PNG = str(GUI_DIR.joinpath('wizard.svg'))
+ICON_FLUSH = str(GUI_DIR.joinpath('icon_flush.svg'))
+ICON_HELP = str(GUI_DIR.joinpath('icon_help.svg'))
+ICON_STATUS_LED = str(GUI_DIR.joinpath('icon_status_led.svg'))
 
 
 # this class gets called to get the path constructor utility to predict the session path
@@ -175,12 +179,12 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.task_arguments = dict()
         self.task_settings_widgets = None
 
-        self.uiPushStart.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))
         self.uiPushStart.installEventFilter(self)
-
+        self.uiPushStart.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))
         self.uiPushPause.setIcon(self.style().standardIcon(QStyle.SP_MediaPause))
-        self.uiPushFlush.setIcon(self.style().standardIcon(QStyle.SP_BrowserReload))
-        self.uiPushHelp.setIcon(self.style().standardIcon(QStyle.SP_DialogHelpButton))
+        self.uiPushFlush.setIcon(QtGui.QIcon(ICON_FLUSH))
+        self.uiPushHelp.setIcon(QtGui.QIcon(ICON_HELP))
+        self.uiPushStatusLED.setIcon(QtGui.QIcon(ICON_STATUS_LED))
 
         self.controller2model()
 
