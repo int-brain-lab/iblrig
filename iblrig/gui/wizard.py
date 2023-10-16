@@ -48,7 +48,7 @@ PROJECTS = [
 ]
 
 GUI_DIR = Path(BASE_DIR).joinpath('iblrig', 'gui')
-WIZARD_PNG = str(GUI_DIR.joinpath('wizard.svg'))
+WIZARD_PNG = str(GUI_DIR.joinpath('wizard.png'))
 ICON_FLUSH = str(GUI_DIR.joinpath('icon_flush.svg'))
 ICON_HELP = str(GUI_DIR.joinpath('icon_help.svg'))
 ICON_STATUS_LED = str(GUI_DIR.joinpath('icon_status_led.svg'))
@@ -240,7 +240,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         -------
         None
         """
-        if not result[0]:
+        if result[0]:
             UpdateNotice(parent=self, version=result[1])
 
     def _on_check_dirty_result(self, repository_is_dirty: bool) -> None:
