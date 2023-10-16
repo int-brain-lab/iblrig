@@ -137,21 +137,25 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.setupUi(self)
         self.setWindowIcon(QtGui.QIcon(WIZARD_PNG))
 
-        self.settings = QtCore.QSettings('iblrig', 'wizard')
+        self.settings = QtCore.QSettings()
+        self.move(self.settings.value("pos", self.pos(), QtCore.QPoint))
+
         self.model = RigWizardModel()
         self.model2view()
 
         self.uiComboTask.currentIndexChanged.connect(self.controls_for_extra_parameters)
         self.uiPushHelp.clicked.connect(self.help)
         self.uiPushFlush.clicked.connect(self.flush)
-        self.uiPushStatusLED.toggled.connect(self.toggle_status_led)
-        self.toggle_status_led(is_toggled=False)
         self.uiPushStart.clicked.connect(self.start_stop)
         self.uiPushPause.clicked.connect(self.pause)
         self.uiListProjects.clicked.connect(self.enable_UI_elements)
         self.uiListProcedures.clicked.connect(self.enable_UI_elements)
         self.uiPushConnect.clicked.connect(self.alyx_connect)
         self.lineEditSubject.textChanged.connect(self._filter_subjects)
+
+        self.uiPushStatusLED.setChecked(self.settings.value("bpod_status_led", True, bool))
+        self.uiPushStatusLED.toggled.connect(self.toggle_status_led)
+        self.toggle_status_led(self.uiPushStatusLED.isChecked())
 
         self.running_task_process = None
         self.task_arguments = dict()
@@ -201,26 +205,31 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
             return True
         return False
 
-    def closeEvent(self, event):
-        if self.running_task_process is None:
-            self.toggle_status_led(is_toggled=False)
+    def closeEvent(self, event) -> None:
+        def accept() -> None:
+            self.settings.setValue("pos", self.pos())
+            self.settings.setValue("bpod_status_led", self.uiPushStatusLED.isChecked())
+            self.toggle_status_led(is_toggled=True)
+            bpod = Bpod(self.model.hardware_settings['device_bpod']['COM_BPOD'])  # bpod is a singleton
+            bpod.close()
             event.accept()
+
+        if self.running_task_process is None:
+            accept()
         else:
-            msgBox = QtWidgets.QMessageBox(parent=self)
-            msgBox.setWindowTitle("Hold on")
-            msgBox.setText("A task is running - do you really want to quit?")
-            msgBox.setStandardButtons(QtWidgets.QMessageBox.No | QtWidgets.QMessageBox.Yes)
-            msgBox.setIcon(QtWidgets.QMessageBox().Question)
-            match msgBox.exec_():
+            msg_box = QtWidgets.QMessageBox(parent=self)
+            msg_box.setWindowTitle("Hold on")
+            msg_box.setText("A task is running - do you really want to quit?")
+            msg_box.setStandardButtons(QtWidgets.QMessageBox.No | QtWidgets.QMessageBox.Yes)
+            msg_box.setIcon(QtWidgets.QMessageBox().Question)
+            match msg_box.exec_():
                 case QtWidgets.QMessageBox.No:
                     event.ignore()
                 case QtWidgets.QMessageBox.Yes:
                     self.setEnabled(False)
                     self.repaint()
                     self.start_stop()
-                    self.set_bpod_status_led(True)
-                    self.toggle_status_led(is_toggled=False)
-                    event.accept()
+                    accept()
 
     def check_dirty(self):
         """
@@ -445,6 +454,13 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                     self.model.session_folder.joinpath('.stop').unlink()
                 self.model.raw_data_folder = task.paths['SESSION_RAW_DATA_FOLDER']
 
+                # disable Bpod status LED
+                bpod = Bpod(self.model.hardware_settings['device_bpod']['COM_BPOD'])
+                bpod.set_status_led(False)
+
+                # close Bpod singleton so subprocess can access use the port
+                bpod.close()
+
                 # runs the python command
                 cmd = [shutil.which('python')]
                 if self.model.task_name:
@@ -501,8 +517,11 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 self.uiPushStart.setText('Start')
                 self.uiPushStart.setStatusTip('start the session')
                 self.uiPushStart.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))
+
+                # re-enable UI elements and recall state of Bpod status LED
                 self.enable_UI_elements()
-                self.toggle_status_led()
+                bpod = Bpod(self.model.hardware_settings['device_bpod']['COM_BPOD'])
+                bpod.set_status_led(self.uiPushStatusLED.isChecked())
 
     def check_sub_process(self):
         return_code = None if self.running_task_process is None else self.running_task_process.poll()
@@ -528,9 +547,6 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
             self.uiPushFlush.setStyleSheet('')
             return
 
-        if not self.uiPushFlush.isChecked():
-            bpod.close()
-
     def toggle_status_led(self, is_toggled: bool):
 
         # paint button green when in toggled state
@@ -544,8 +560,6 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         except (OSError, exceptions.bpod_error.BpodErrorException, AttributeError):
             self.uiPushStatusLED.setChecked(False)
             self.uiPushStatusLED.setStyleSheet('')
-        else:
-            bpod.close()
 
     def help(self):
         webbrowser.open('https://int-brain-lab.github.io/iblrig/usage.html')
@@ -578,6 +592,9 @@ class UpdateNotice(QtWidgets.QDialog, Ui_update):
 
 
 def main():
+    QtCore.QCoreApplication.setOrganizationName("International Brain Laboratory")
+    QtCore.QCoreApplication.setOrganizationDomain("internationalbrainlab.org")
+    QtCore.QCoreApplication.setApplicationName("IBLRIG Wizard")
     if os.name == 'nt':
         appid = f'IBL.iblrig.wizard.{iblrig.__version__}'
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(appid)

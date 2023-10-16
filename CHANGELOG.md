@@ -6,6 +6,8 @@ Changelog
 8.10.3
 ------
 * hot-fix for disabling Bpod status LED
+* remember settings for status LED and GUI position
+* skip initialization of existing Bpod singleton 
 
 8.10.2
 ------
