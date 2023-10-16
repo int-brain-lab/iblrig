@@ -3,21 +3,54 @@ Installation guide
 
 .. prerequisites::
 
-   *  Windows OS
-   *  git installation.
-   *  Recommended: Notepad++ or a decent text file editor
+   *  A computer running Windows 10 or 11,
+   *  A working installation of `git for windows <https://gitforwindows.org>`_, and
+   *  `Notepad++ <https://notepad-plus-plus.org>`_ or some other decent text editor.
+
+.. tip::
+
+   iblrigv8 can be installed alongside older versions of iblrig without affecting the latter.
+
+.. tip::
+
+   If you believe this guide is incomplete or requires improvements, please don't hesitate to reach out and
+   :ref:`submit a bug report<Bug Reports & Feature Requests>`.
 
 
-Install Python 3.10
--------------------
+Prepare Windows PowerShell
+--------------------------
 
-Open an Administrator: Windows Powershell prompt and run the following:
+Open Windows PowerShell in administrator mode:
+
+* Click on the Windows Start button or press the Windows key on your keyboard.
+* Type "PowerShell" into the search bar.
+* You should see "Windows PowerShell" or "PowerShell" in the search results.
+* Right-click on it.
+* In the context menu that appears, select "Run as administrator."
+
+Now, run the following command at the prompt of Windows PowerShell:
 
 .. code-block:: powershell
 
    Set-ExecutionPolicy RemoteSigned
 
-Then exit the admin window and open a new Windows Powershell prompt (no admin mode) and run the following:
+.. warning:: Make sure you exit the Administrator PowerShell before continuing with the next steps!
+
+.. admonition:: Background
+   :class: seealso
+
+   In PowerShell, there are execution policies that determine the level of security for running scripts. The default execution
+   policy is often set to ``Restricted``, which means that scripts are not allowed to run. However, to install Python or run
+   certain scripts, you need to adjust the execution policy. By setting the execution policy to ``RemoteSigned``, you are
+   allowing the execution of locally created scripts without any digital signature while requiring that remotely downloaded
+   scripts (from the internet) must be digitally signed by a trusted source to run. This strikes a balance between security
+   and usability.
+
+
+Install Python 3.10
+-------------------
+
+Open a `new` Windows Powershell prompt (no administrator mode) and run the following:
 
 .. code-block:: powershell
 
@@ -25,29 +58,30 @@ Then exit the admin window and open a new Windows Powershell prompt (no admin mo
    Invoke-WebRequest -Uri https://www.python.org/ftp/python/3.10.11/python-3.10.11-amd64.exe -OutFile C:\Temp\python-3.10.11-amd64.exe
    Start-Process -NoNewWindow -Wait -FilePath C:\Temp\python-3.10.11-amd64.exe -ArgumentList "/passive", "InstallAllUsers=0", "Include_launcher=0", "Include_test=0"
 
+Check that everything worked by running the following command:
 
-.. exercise:: You can check that everything worked by running the following command:
+.. code-block:: powershell
 
-   .. code-block:: powershell
+   C:\Users\IBLuser\AppData\Local\Programs\Python\Python310\.\python.exe --version
 
-      C:\Users\IBLuser\AppData\Local\Programs\Python\Python310\.\python.exe --version
+The command should return ``Python 3.10.11``
 
-   Should return `Python 3.10.11`
 
-.. warning:: Make sure you exit the Administrator Powershell prompt before going to the next steps.
+.. admonition:: Background
+   :class: seealso
+
+   These commands will create a temporary directory, download the Python installer from a specific URL, and then execute the
+   installer with specific installation options, all in a controlled and automated manner.
 
 
 Install iblrigv8
 ----------------
 
-1. From the Powershell command line, clone iblrig to the ‘iblrigv8’ directory, and switch to iblrigv8 branch
+1. From the Powershell command line, clone the `iblrigv8` branch of iblrig to ``C:\iblrigv8``:
 
    .. code-block:: powershell
 
-      cd C:\
-      git clone https://github.com/int-brain-lab/iblrig.git iblrigv8
-      cd iblrigv8
-      git checkout iblrigv8
+      git clone -b iblrigv8 https://github.com/int-brain-lab/iblrig.git C:\iblrigv8
 
 
 2. Install a new virtual environment and update pip (modify the <Username> value if needed)
