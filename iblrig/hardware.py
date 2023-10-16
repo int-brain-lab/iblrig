@@ -2,6 +2,7 @@
 This modules contains hardware classes used to interact with modules.
 """
 import logging
+import struct
 import time
 from enum import IntEnum
 import threading
@@ -27,19 +28,24 @@ log = logging.getLogger(__name__)
 class Bpod(BpodIO):
     _instances = {}
     _lock = threading.Lock()
+    _is_initialized = False
 
-    def __new__(self, *args, **kwargs):
+    def __new__(cls, *args, **kwargs):
         serial_port = args[0] if len(args) > 0 else ''
         serial_port = kwargs.get('serial_port', serial_port)
-        with self._lock:
+        with cls._lock:
             instance = Bpod._instances.get(serial_port, None)
-            if instance is not None:
+            if instance:
                 return instance
-            instance = super().__new__(self)
+            instance = super().__new__(cls)
             Bpod._instances[serial_port] = instance
             return instance
 
     def __init__(self, *args, **kwargs):
+        # skip initialization if it has already been performed before
+        if self._is_initialized:
+            return
+
         # try to instantiate once for nothing
         try:
             super(Bpod, self).__init__(*args, **kwargs)
@@ -56,6 +62,11 @@ class Bpod(BpodIO):
                     "Please unplug the Bpod USB cable from the computer and plug it back in to start the task. ") from e
         self.default_message_idx = 0
         self.actions = Bunch({})
+        self._is_initialized = True
+
+    def close(self) -> None:
+        super().close()
+        self._is_initialized = False
 
     def __del__(self):
         with self._lock:
@@ -164,6 +175,10 @@ class Bpod(BpodIO):
         else:
             time.sleep(duration)
         self.manual_override(self.ChannelTypes.OUTPUT, self.ChannelNames.VALVE, 1, 0)
+
+    def set_status_led(self, state: bool):
+        self._arcom.serial_object.write(struct.pack("cB", b":", state))
+        self._arcom.serial_object.flushInput()
 
     def valve(self, valve_id: int, state: bool):
         self.manual_override(self.ChannelTypes.OUTPUT, self.ChannelNames.VALVE, valve_id, state)

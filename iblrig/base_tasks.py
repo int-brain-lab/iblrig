@@ -675,6 +675,7 @@ class BpodMixin(object):
                              "provide a valid port name.")
         self.bpod = Bpod(self.hardware_settings['device_bpod']['COM_BPOD'])
         self.bpod.define_rotary_encoder_actions()
+        self.bpod.set_status_led(False)
 
         def softcode_handler(code):
             """

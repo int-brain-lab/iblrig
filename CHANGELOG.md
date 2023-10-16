@@ -7,11 +7,14 @@ Changelog
 ------
 * add check for availability of internet
 * add proper CLI for data transfer scripts
-* add options for AdvancedChoiceWorld
-* add method for receiving rig's AnyDesk ID
+* add option for disabling Bpod's status LED
+* add GUI options for AdvancedChoiceWorld
 * implement multi-threading
 * detect duds (less than 42 trials) and offer deletion
-* fix crash on GUI-resize (linux)
+* skip initialization of existing Bpod singleton
+* remember settings for status LED and GUI position
+* move update-check to separate thread
+* various small bugfixes
 
 8.10.2
 ------
