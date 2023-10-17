@@ -226,7 +226,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         dirty_worker.signals.result.connect(self._on_check_dirty_result)
         QThreadPool.globalInstance().start(dirty_worker)
 
-    def _on_check_update_result(self, result: tuple[bool, str | None]) -> None:
+    def _on_check_update_result(self, result: tuple[bool, str]) -> None:
         """
         Handle the result of checking for updates.
 
@@ -257,16 +257,15 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         None
         """
         if repository_is_dirty:
-            message_box = QtWidgets.QMessageBox(
-                parent=self,
-                windowTitle='Warning',
-                icon=QtWidgets.QMessageBox().Warning,
-                text="Your copy of iblrig contains local changes.\nDon't expect things to work as intended!",
-                detailedText="To list all files that have been changed locally:\n\n"
-                             "    git diff --name-only\n\n"
-                             "To reset the repository to its default state:\n\n"
-                             "    git reset --hard")
-            message_box.exec()
+            msg_box = QtWidgets.QMessageBox(parent=self)
+            msg_box.setWindowTitle('Warning')
+            msg_box.setIcon(QtWidgets.QMessageBox().Warning)
+            msg_box.setText("Your copy of iblrig contains local changes.\nDon't expect things to work as intended!")
+            msg_box.setDetailedText("To list all files that have been changed locally:\n\n"
+                                    "    git diff --name-only\n\n"
+                                    "To reset the repository to its default state:\n\n"
+                                    "    git reset --hard")
+            msg_box.exec()
 
     def eventFilter(self, obj, event):
         if obj == self.uiPushStart and event.type() in [QtCore.QEvent.HoverEnter, QtCore.QEvent.HoverLeave]:

@@ -14,7 +14,7 @@ from iblutil.util import setup_logger
 log = setup_logger('iblrig')
 
 
-def check_for_updates() -> tuple[bool, Union[str, None]]:
+def check_for_updates() -> tuple[bool, str]:
     """
     Check for updates to the iblrig software.
 

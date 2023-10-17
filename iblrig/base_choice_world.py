@@ -10,9 +10,11 @@ from pathlib import Path
 from string import ascii_letters
 import subprocess
 import time
+from typing import TypedDict, Literal, List
 
 import numpy as np
 import pandas as pd
+from pydantic import BaseModel
 
 from pybpodapi.protocol import StateMachine
 from pybpodapi.com.messaging.trial import Trial
@@ -33,6 +35,46 @@ NTRIALS_INIT = 2000
 NBLOCKS_INIT = 100
 
 
+class ChoiceWorldParams(BaseModel):
+    AUTOMATIC_CALIBRATION: bool = True
+    ADAPTIVE_REWARD: bool = False
+    BONSAI_EDITOR: bool = False
+    CALIBRATION_VALUE: float = 0.067
+    CONTRAST_SET: list[float] = [1.0, 0.25, 0.125, 0.0625, 0.0]
+    CONTRAST_SET_PROBABILITY_TYPE: Literal["uniform", "skew_zero"]
+    GO_TONE_AMPLITUDE: float
+    GO_TONE_DURATION: float
+    GO_TONE_IDX: int
+    GO_TONE_FREQUENCY: float
+    FEEDBACK_CORRECT_DELAY_SECS: float
+    FEEDBACK_ERROR_DELAY_SECS: float
+    FEEDBACK_NOGO_DELAY_SECS: float
+    INTERACTIVE_DELAY: float
+    ITI_DELAY_SECS: float
+    NTRIALS: int
+    POOP_COUNT: bool
+    PROBABILITY_LEFT: float
+    QUIESCENCE_THRESHOLDS: list[float]
+    QUIESCENT_PERIOD: float
+    RECORD_AMBIENT_SENSOR_DATA: bool
+    RECORD_SOUND: bool
+    RESPONSE_WINDOW: float
+    REWARD_AMOUNT_UL: float
+    REWARD_TYPE: str
+    STIM_ANGLE: float
+    STIM_FREQ: float
+    STIM_GAIN: float  # wheel to stimulus relationship (degrees visual angle per mm of wheel displacement)
+    STIM_POSITIONS: list[float]
+    STIM_SIGMA: float
+    STIM_TRANSLATION_Z: Literal[7, 8]  # 7 for ephys, 8 otherwise. -p:Stim.TranslationZ-{STIM_TRANSLATION_Z} bonsai parameter
+    SYNC_SQUARE_X: float
+    SYNC_SQUARE_Y: float
+    USE_AUTOMATIC_STOPPING_CRITERIONS: bool
+    VISUAL_STIMULUS: str
+    WHITE_NOISE_AMPLITUDE: float
+    WHITE_NOISE_DURATION: float
+    WHITE_NOISE_IDX: int
+
 class ChoiceWorldSession(
     iblrig.base_tasks.BaseSession,
     iblrig.base_tasks.BonsaiRecordingMixin,
@@ -43,6 +85,46 @@ class ChoiceWorldSession(
     iblrig.base_tasks.SoundMixin,
     iblrig.base_tasks.ValveMixin,
 ):
+    task_params: ChoiceWorldParams = {
+        'AUTOMATIC_CALIBRATION': True,
+        'ADAPTIVE_REWARD': False,
+        'BONSAI_EDITOR': False,
+        'CALIBRATION_VALUE': 0.067,
+        'CONTRAST_SET': [1.0, 0.25, 0.125, 0.0625, 0.0],
+        'CONTRAST_SET_PROBABILITY_TYPE': 'uniform',  # uniform or skew_zero: uniform makes the 0 contrast as likely as the others, while skew_zero makes it half as likely as other contrasts
+        'GO_TONE_AMPLITUDE': 0.0272,
+        'GO_TONE_DURATION': 0.11,
+        'GO_TONE_IDX': 2,
+        'GO_TONE_FREQUENCY': 5000,
+        'FEEDBACK_CORRECT_DELAY_SECS': 1,
+        'FEEDBACK_ERROR_DELAY_SECS': 2,
+        'FEEDBACK_NOGO_DELAY_SECS': 2,
+        'INTERACTIVE_DELAY': 0.0,
+        'ITI_DELAY_SECS': 1,
+        'NTRIALS': 2000,
+        'POOP_COUNT': True,
+        'PROBABILITY_LEFT': 0.5,
+        'QUIESCENCE_THRESHOLDS': [-2, 2],
+        'QUIESCENT_PERIOD': 0.2,
+        'RECORD_AMBIENT_SENSOR_DATA': True,
+        'RECORD_SOUND': True,
+        'RESPONSE_WINDOW': 60,
+        'REWARD_AMOUNT_UL': 1.5,
+        'REWARD_TYPE': 'Water 10% Sucrose',
+        'STIM_ANGLE': 0.0,
+        'STIM_FREQ': 0.1,
+        'STIM_GAIN': 4.0,  # wheel to stimulus relationship (degrees visual angle per mm of wheel displacement)
+        'STIM_POSITIONS': [-35, 35],
+        'STIM_SIGMA': 7.0,
+        'STIM_TRANSLATION_Z': 7,  # 7 for ephys, 8 otherwise. -p:Stim.TranslationZ-{STIM_TRANSLATION_Z} bonsai parameter
+        'SYNC_SQUARE_X': 1.33,
+        'SYNC_SQUARE_Y': -1.03,
+        'USE_AUTOMATIC_STOPPING_CRITERIONS': True,
+        # 'VISUAL_STIMULUS': GaborIBLTask / Gabor2D.bonsai  # null / passiveChoiceWorld_passive.bonsai
+        'WHITE_NOISE_AMPLITUDE': 0.05,
+        'WHITE_NOISE_DURATION': 0.5,
+        'WHITE_NOISE_IDX': 3,
+    }
     base_parameters_file = Path(__file__).parent.joinpath('base_choice_world_params.yaml')
 
     def __init__(self, *args, delay_secs=0, **kwargs):

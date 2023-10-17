@@ -50,7 +50,7 @@ OSC_CLIENT_IP = "127.0.0.1"
 class BaseSession(ABC):
     version = None
     protocol_name: Optional[str] = None
-    base_parameters_file = None
+    base_parameters_file: Optional[Path] = None
     is_mock = False
     extractor_tasks = None
     checked_for_update = False
