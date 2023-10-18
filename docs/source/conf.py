@@ -10,7 +10,7 @@ version = '.'.join(__version__.split('.')[:3])
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = ['sphinx_lesson']
+extensions = ['sphinx_lesson', 'sphinx.ext.autosectionlabel']
 source_suffix = ['.rst', '.md']
 
 templates_path = ['_templates']

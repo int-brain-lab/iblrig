@@ -1,14 +1,156 @@
 import abc
+import os
+from os.path import samestat
 from pathlib import Path
 import shutil
 import traceback
+import ctypes
+from typing import Callable, Any
 
 import iblrig
 from iblutil.util import setup_logger
+from iblutil.io import hashfile
 from ibllib.io import session_params
-from ibllib.pipes.misc import rsync_paths
+import ibllib.pipes.misc
 
 log = setup_logger('iblrig', level='INFO')
+
+ES_CONTINUOUS = 0x80000000
+ES_SYSTEM_REQUIRED = 0x00000001
+
+
+def _set_thread_execution(state: int) -> None:
+    """
+    Set the thread execution state to control system power management.
+
+    This function sets the thread execution state to control system power
+    management on Windows systems. It prevents the system from entering
+    sleep or idle mode while a specific state is active.
+
+    Parameters
+    ----------
+    state : int
+        The desired thread execution state. Use ES_CONTINUOUS and ES_SYSTEM_REQUIRED
+        constants to specify the state.
+
+    Raises
+    ------
+    OSError
+        If there is an issue setting the thread execution state.
+    """
+    if os.name == 'nt':
+        result = ctypes.windll.kernel32.SetThreadExecutionState(state)
+        if result == 0:
+            raise OSError("Failed to set thread execution state.")
+
+
+def long_running(func: Callable[..., Any]) -> Callable[..., Any]:
+    """
+    Decorator to ensure that the system doesn't enter sleep or idle mode during a long-running task.
+
+    This decorator wraps a function and sets the thread execution state to prevent
+    the system from entering sleep or idle mode while the decorated function is
+    running.
+
+    Parameters
+    ----------
+    func : callable
+        The function to decorate.
+
+    Returns
+    -------
+    callable
+        The decorated function.
+    """
+    def inner(*args, **kwargs) -> Any:
+        _set_thread_execution(ES_CONTINUOUS | ES_SYSTEM_REQUIRED)
+        result = func(*args, **kwargs)
+        _set_thread_execution(ES_CONTINUOUS)
+        return result
+    return inner
+
+
+@long_running
+def _copy2_checksum(src: str, dst: str, *args, **kwargs) -> str:
+    """
+    Copy a file from source to destination with checksum verification.
+
+    This function copies a file from the source path to the destination path
+    while verifying the BLAKE2B hash of the source and destination files. If the
+    BLAKE2B hashes do not match after copying, an OSError is raised.
+
+    Parameters
+    ----------
+    src : str
+        The path to the source file.
+    dst : str
+        The path to the destination file.
+    *args, **kwargs
+        Additional arguments and keyword arguments to pass to `shutil.copy2`.
+
+    Returns
+    -------
+    str
+        The path to the copied file.
+
+    Raises
+    ------
+    OSError
+        If the BLAKE2B hashes of the source and destination files do not match.
+    """
+    log.info(f'Processing `{src}`:')
+    log.info('  - calculating hash of local file')
+    src_md5 = hashfile.blake2b(src, False)
+    if os.path.exists(dst) and samestat(os.stat(src), os.stat(dst)):
+        log.info('  - file already exists at destination')
+        log.info('  - calculating hash of remote file')
+        if src_md5 == hashfile.blake2b(dst, False):
+            log.info('  - local and remote BLAKE2B hashes match, skipping copy')
+            return dst
+        else:
+            log.info('  - local and remote hashes DO NOT match')
+    log.info(f'  - copying file to `{dst}`')
+    return_val = shutil.copy2(src, dst, *args, **kwargs)
+    log.info('  - calculating hash of remote file')
+    if not src_md5 == hashfile.blake2b(dst, False):
+        raise OSError(f'Error copying {src}: hash mismatch.')
+    log.info('  - local and remote hashes match, copy successful')
+    return return_val
+
+
+def copy_folders(local_folder: Path, remote_folder: Path, overwrite: bool = False) -> bool:
+    """
+    Copy folders and files from a local location to a remote location.
+
+    This function copies all folders and files from a local directory to a
+    remote directory. It provides options to overwrite existing files in
+    the remote directory and ignore specific file patterns.
+
+    Parameters
+    ----------
+    local_folder : Path
+        The path to the local folder to copy from.
+    remote_folder : Path
+        The path to the remote folder to copy to.
+    overwrite : bool, optional
+        If True, overwrite existing files in the remote folder. Default is False.
+
+    Returns
+    -------
+    bool
+        True if the copying is successful, False otherwise.
+    """
+    status = True
+    try:
+        remote_folder.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copytree(local_folder, remote_folder, dirs_exist_ok=overwrite,
+                        ignore=shutil.ignore_patterns('transfer_me.flag'),
+                        copy_function=_copy2_checksum)
+    except OSError:
+        log.error(traceback.format_exc())
+        log.info(f"Could not copy {local_folder} to {remote_folder}")
+        status = False
+    return status
 
 
 class SessionCopier(abc.ABC):
@@ -130,7 +272,7 @@ class SessionCopier(abc.ABC):
                 # and will error out if the remote collection already exists
                 log.warning(f'Collection {remote_collection} already exists, removing')
                 shutil.rmtree(remote_collection)
-            status &= rsync_paths(local_collection, remote_collection)
+            status &= copy_folders(local_collection, remote_collection)
         return status
 
     def copy_collections(self):
@@ -272,7 +414,6 @@ class EphysCopier(SessionCopier):
         super(EphysCopier, self).initialize_experiment(acquisition_description=acquisition_description, **kwargs)
 
     def _copy_collections(self):
-        import ibllib.pipes.misc
         """
         Here we overload the copy to be able to rename the probes properly and also create the insertions
         :return:
@@ -293,4 +434,6 @@ class EphysCopier(SessionCopier):
         except BaseException:
             log.error(traceback.print_exc())
             log.info("Probe creation failed, please create the probe insertions manually. Continuing transfer...")
-        return rsync_paths(self.session_path.joinpath('raw_ephys_data'), self.remote_session_path.joinpath('raw_ephys_data'))
+        return copy_folders(local_folder=self.session_path.joinpath('raw_ephys_data'),
+                            remote_folder=self.remote_session_path.joinpath('raw_ephys_data'),
+                            overwrite=True)

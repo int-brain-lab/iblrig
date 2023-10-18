@@ -23,18 +23,11 @@ If your rig is acting up:
 *  Don't hesitate to **contact our developer team** for assistance. We're committed to getting your system back on track.
 
 
-Bug Alert!
-==========
+Bug Reports & Feature Requests
+==============================
 
-Indeed, bugs are persistently present. Our team is in a perpetual quest to eliminate these pesky issues. Your
-contribution is invaluable in this endeavor; kindly consider `creating an issue on GitHub <https://github.com/int-brain-lab/iblrig/issues>`_.
-
-
-Feature Request?
-================
-
-IBLRIG remains in dynamic development, tailored to meet your needs. Your input shapes our direction. `Send us your
-feature-requests via GitHub <https://github.com/int-brain-lab/iblrig/issues>`_ - we will do our best to help you.
+IBLRIG remains in dynamic development. Your input is invaluable in shaping its direction. `Send us your
+bug reports and feature-requests via GitHub <https://github.com/int-brain-lab/iblrig/issues>`_ - we will do our best to help you.
 
 
 Sound Issues
@@ -55,7 +48,7 @@ Screen Issues
 =============
 
 *  The ribbon cable attaching the screen to the driver board is notoriously finicky. If you are having brightness issues or do not have a signal, try gently repositioning this cable and ensure it is tightly seated in its connection.
-*  Screen and ribbon cable can be easily damaged. It is useful to have backup at on hand.
+*  Screen and ribbon cable can be easily damaged. It is useful to have backup at hand.
 *  If the Bonsai display is appearing on the PC screen when a task starts, try unplugging the rig screen, rebooting and plugging the screen back in. Other variations of screen unplugging and rebooting may also work.
    Also make sure, that the ``DISPLAY_IDX`` value in ``hardware_settings.yaml`` is set correctly.
 *  Screen flashing can occur if the power supply does not match the screen specifications. Use a 12V adapter with at least 1A.

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'iblrig/gui/ui_wizard.ui'
+# Form implementation generated from reading ui file 'ui_wizard.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.9
 #
@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_wizard(object):
     def setupUi(self, wizard):
         wizard.setObjectName("wizard")
-        wizard.resize(350, 527)
+        wizard.resize(472, 644)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -25,7 +25,7 @@ class Ui_wizard(object):
         wizard.setSizeIncrement(QtCore.QSize(0, 0))
         wizard.setContextMenuPolicy(QtCore.Qt.DefaultContextMenu)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("iblrig/gui\\wizard.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap("wizard.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         wizard.setWindowIcon(icon)
         wizard.setWindowOpacity(1.0)
         wizard.setAutoFillBackground(False)
@@ -304,7 +304,11 @@ class Ui_wizard(object):
         sizePolicy.setHeightForWidth(self.uiPushHelp.sizePolicy().hasHeightForWidth())
         self.uiPushHelp.setSizePolicy(sizePolicy)
         self.uiPushHelp.setObjectName("uiPushHelp")
-        self.gridLayout_3.addWidget(self.uiPushHelp, 1, 0, 1, 1)
+        self.gridLayout_3.addWidget(self.uiPushHelp, 2, 0, 1, 1)
+        self.uiPushStatusLED = QtWidgets.QPushButton(self.uiGroupTools)
+        self.uiPushStatusLED.setCheckable(True)
+        self.uiPushStatusLED.setObjectName("uiPushStatusLED")
+        self.gridLayout_3.addWidget(self.uiPushStatusLED, 1, 0, 1, 1)
         self.mainGrid.addWidget(self.uiGroupTools, 4, 0, 1, 1)
         self.uiGroupSessionControl = QtWidgets.QGroupBox(self.centralwidget)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Minimum)
@@ -395,9 +399,11 @@ class Ui_wizard(object):
         self.uiLableDiskIblrigValue.setText(_translate("wizard", "1.2 GB"))
         self.uiGroupTools.setTitle(_translate("wizard", "Tools"))
         self.uiPushFlush.setStatusTip(_translate("wizard", "flush the valve"))
-        self.uiPushFlush.setText(_translate("wizard", "Flush"))
+        self.uiPushFlush.setText(_translate("wizard", " Flush Valve"))
         self.uiPushHelp.setStatusTip(_translate("wizard", "open the iblrig documentation in your browser"))
-        self.uiPushHelp.setText(_translate("wizard", "Help!"))
+        self.uiPushHelp.setText(_translate("wizard", "  Help!"))
+        self.uiPushStatusLED.setStatusTip(_translate("wizard", "toggle the Bpod Status LED (always off during sessions)"))
+        self.uiPushStatusLED.setText(_translate("wizard", " Status LED"))
         self.uiGroupSessionControl.setTitle(_translate("wizard", "Session Control"))
         self.uiPushPause.setStatusTip(_translate("wizard", "pause the session after the current trial"))
         self.uiPushPause.setText(_translate("wizard", "Pause"))
