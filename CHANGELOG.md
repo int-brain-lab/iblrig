@@ -6,7 +6,6 @@ Changelog
 8.11.1
 ------
 * add GUI options for AdvancedChoiceWorld
-* 
 
 8.11.0
 ------
