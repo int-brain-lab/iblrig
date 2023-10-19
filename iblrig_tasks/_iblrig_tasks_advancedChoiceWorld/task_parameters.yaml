@@ -1,2 +1,7 @@
 'CONTRAST_SET': [1.0, 0.5, 0.25, 0.125, 0.0625, 0.0]
 'CONTRAST_SET_PROBABILITY_TYPE': skew_zero  # uniform, skew_zero
+'PROBABILITY_LEFT': 0.5
+'REWARD_AMOUNT_UL': 1.5
+'STIM_GAIN': 4.0  # wheel to stimulus relationship
+#'DEBIAS': True  # Whether to use debiasing rule or not by repeating error trials  # todo
+#'CONTRAST_SET_PROBABILITIES': [2, 2, 2, 2, 1]  # todo

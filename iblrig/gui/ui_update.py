@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'iblrig/gui/ui_update.ui'
+# Form implementation generated from reading ui file 'ui_update.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.9
 #
@@ -14,14 +14,14 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_update(object):
     def setupUi(self, update):
         update.setObjectName("update")
-        update.resize(353, 496)
+        update.resize(451, 496)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(update.sizePolicy().hasHeightForWidth())
         update.setSizePolicy(sizePolicy)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/images/wizard.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap("wizard.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         update.setWindowIcon(icon)
         update.setModal(True)
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout(update)
@@ -32,7 +32,7 @@ class Ui_update(object):
         self.uiLabelLogo = QtWidgets.QLabel(update)
         self.uiLabelLogo.setMaximumSize(QtCore.QSize(64, 64))
         self.uiLabelLogo.setText("")
-        self.uiLabelLogo.setPixmap(QtGui.QPixmap("iblrig/gui\\wizard.png"))
+        self.uiLabelLogo.setPixmap(QtGui.QPixmap("wizard.png"))
         self.uiLabelLogo.setScaledContents(True)
         self.uiLabelLogo.setObjectName("uiLabelLogo")
         self.uiLayoutLogo.addWidget(self.uiLabelLogo)
@@ -45,10 +45,8 @@ class Ui_update(object):
         self.uiLabelHeader.setObjectName("uiLabelHeader")
         self.uiLayoutRight.addWidget(self.uiLabelHeader)
         self.uiTextBrowserChanges = QtWidgets.QTextBrowser(update)
-        self.uiTextBrowserChanges.setStyleSheet("")
         self.uiTextBrowserChanges.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
         self.uiTextBrowserChanges.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
-        self.uiTextBrowserChanges.setDocumentTitle("")
         self.uiTextBrowserChanges.setMarkdown("")
         self.uiTextBrowserChanges.setTextInteractionFlags(QtCore.Qt.NoTextInteraction)
         self.uiTextBrowserChanges.setObjectName("uiTextBrowserChanges")
@@ -96,6 +94,7 @@ class Ui_update(object):
         self.horizontalLayout_2.setStretch(1, 100)
 
         self.retranslateUi(update)
+        self.uiPushButtonOK.released.connect(update.close) # type: ignore
         QtCore.QMetaObject.connectSlotsByName(update)
 
     def retranslateUi(self, update):

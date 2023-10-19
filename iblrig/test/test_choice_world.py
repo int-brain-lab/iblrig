@@ -88,22 +88,23 @@ class TestGetPreviousSession(unittest.TestCase):
 
         self.sesb.save_task_parameters_to_json_file()
         # test the function entry point
-        a, b, info = iblrig.choiceworld.get_subject_training_info(
+        tinfo, info = iblrig.choiceworld.get_subject_training_info(
             self.kwargs['subject'], local_path=Path(self.root_path), lab='cortexlab', mode='raise')
-        self.assertEqual((2, 2.1), (a, b))
+        self.assertEqual((2, 2.1), (tinfo['training_phase'], tinfo['adaptive_reward']))
         self.assertIsInstance(info, dict)
 
         # test the task instantiation, should be the same as above
-        t = TrainingChoiceWorldSession(**self.kwargs, training_phase=4, adaptive_reward=2.9)
-        result = (t.training_phase, t.session_info["ADAPTIVE_REWARD_AMOUNT_UL"])
-        self.assertEqual((4, 2.9), result)
+        t = TrainingChoiceWorldSession(**self.kwargs, training_phase=4, adaptive_reward=2.9, adaptive_gain=6.0)
+        result = (t.training_phase, t.session_info["ADAPTIVE_REWARD_AMOUNT_UL"], t.session_info['ADAPTIVE_GAIN_VALUE'])
+        self.assertEqual((4, 2.9, 6.0), result)
         # using the method we should get the same as above
-        self.assertEqual(t.get_subject_training_info(), (2, 2.1))
-
+        self.assertEqual(t.get_subject_training_info(), (2, 2.1, 4.0))
         # now the mouse is underfed
+        self.sesb.session_info['ADAPTIVE_GAIN_VALUE'] = 5.0
+        self.sesb.save_task_parameters_to_json_file()
         self.mock_jsonable(self.sesb.paths.DATA_FILE_PATH, training_phase=1, reward_amount=500)
         result = t.get_subject_training_info()
-        self.assertEqual((1, 2.2), result)
+        self.assertEqual((1, 2.2, 5.0), result)
 
     def tearDown(self) -> None:
         self.td.cleanup()

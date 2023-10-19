@@ -37,8 +37,8 @@ def compute_adaptive_reward_volume(subject_weight_g, reward_volume_ul, delivered
 
 
 def get_subject_training_info(
-        subject_name, task_name='_iblrig_tasks_trainingChoiceWorld',
-        default_reward=DEFAULT_REWARD_VOLUME, mode='silent', **kwargs) -> tuple[int, float, dict]:
+        subject_name, task_name='_iblrig_tasks_trainingChoiceWorld', stim_gain=None,
+        default_reward=DEFAULT_REWARD_VOLUME, mode='silent', **kwargs) -> tuple[dict, dict]:
     """
     Goes through the history of a subject and gets the latest
     training phase and the adaptive reward volume for this subject
@@ -50,19 +50,21 @@ def get_subject_training_info(
     :param mode: 'defaults' or 'raise': if 'defaults' returns default values if no history is found, if 'raise' raises ValueError
     :param **kwargs: optional arguments to be passed to iblrig.path_helper.get_local_and_remote_paths
     if not used, will use the arguments from iblrig/settings/iblrig_settings.yaml
-    :return: training_phase (int), default_reward uL (float between 1.5 and 3) and a
+    :return: training_info dictionary with keys:
+        default_reward uL (float between 1.5 and 3) and a
     session_info dictionary with keys: session_path, experiment_description, task_settings, file_task_data
     """
     session_info = iterate_previous_sessions(subject_name, task_name=task_name, n=1, **kwargs)
     if len(session_info) == 0:
         if mode == 'silent':
             logger.warning("The training status could not be determined returning default values")
-            return DEFAULT_TRAINING_PHASE, default_reward, None
+            return dict(training_phase=DEFAULT_TRAINING_PHASE, adaptive_reward=default_reward, adaptive_gain=stim_gain), None
         elif mode == 'raise':
             raise ValueError("The training status could not be determined as no previous sessions were found")
     else:
         session_info = session_info[0]
     trials_data, _ = iblrig.raw_data_loaders.load_task_jsonable(session_info.file_task_data)
+    # gets the reward volume from the previous session
     previous_reward_volume = (session_info.task_settings.get('ADAPTIVE_REWARD_AMOUNT_UL') or
                               session_info.task_settings.get('REWARD_AMOUNT_UL'))
     adaptive_reward = compute_adaptive_reward_volume(
@@ -70,11 +72,16 @@ def get_subject_training_info(
         reward_volume_ul=previous_reward_volume,
         delivered_volume_ul=trials_data['reward_amount'].sum(),
         ntrials=trials_data.shape[0])
+    # gets the trainng_phase by looking at the trials table
     if 'training_phase' in trials_data:
         training_phase = trials_data['training_phase'].values[-1]
     else:
         training_phase = DEFAULT_TRAINING_PHASE
-    return training_phase, adaptive_reward, session_info
+    # gets the adaptive gain
+    adaptive_gain = session_info.task_settings.get('ADAPTIVE_GAIN_VALUE', session_info.task_settings.get('AG_INIT_VALUE'))
+    if np.sum(trials_data['response_side'] != 0) > 200:
+        adaptive_gain = session_info.task_settings.get('STIM_GAIN')
+    return dict(training_phase=training_phase, adaptive_reward=adaptive_reward, adaptive_gain=adaptive_gain), session_info
 
 
 def training_contrasts_probabilities(phase=1):
