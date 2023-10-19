@@ -57,8 +57,7 @@ transfer_ephys_data = "iblrig.commands:transfer_ephys_data_cli"
 flush = "iblrig.commands:flush"
 remove-old-sessions = "iblrig.commands:remove_local_sessions"
 upgrade_iblrig = "iblrig.version_management:upgrade"
-install_spinnaker = "iblrig.video:install_spinnaker_sdk"
-iblrig = "iblrig.gui.wizard:main"
+install_spinnaker = "iblrig.camera:install_spinnaker_sdk"
 
 [tool.setuptools.dynamic]
 readme = {file = "README.md", content-type = "text/markdown"}
