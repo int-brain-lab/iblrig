@@ -7,7 +7,7 @@ from pathlib import Path
 import shutil
 import subprocess
 import sys
-from typing import Any, Callable, Union, Optional
+from typing import Any, Callable, Union, Optional, Iterable
 
 import yaml
 import traceback
@@ -31,7 +31,10 @@ from iblrig.version_management import check_for_updates, get_changelog, is_dirty
 from iblrig.gui.ui_wizard import Ui_wizard
 from iblrig.gui.ui_update import Ui_update
 from iblrig.choiceworld import get_subject_training_info
+from iblutil.util import setup_logger
 from pybpodapi import exceptions
+
+log = setup_logger("iblrig")
 
 PROCEDURES = [
     'Behavior training/tasks',
@@ -160,6 +163,10 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
 
         self.model = RigWizardModel()
         self.model2view()
+
+        # default to biasedChoiceWorld
+        if (idx := self.uiComboTask.findText('_iblrig_tasks_biasedChoiceWorld')) >= 0:
+            self.uiComboTask.setCurrentIndex(idx)
 
         # connect widgets signals to slots
         self.uiComboTask.currentTextChanged.connect(self.controls_for_extra_parameters)
@@ -359,7 +366,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 widget.setTristate(False)
                 if arg.default:
                     widget.setCheckState(arg.default * 2)
-                widget.toggled.connect(lambda val, p=param: self._set_task_arg(param, val > 0))
+                widget.toggled.connect(lambda val, p=param: self._set_task_arg(p, val > 0))
                 widget.toggled.emit(widget.isChecked() > 0)
 
             # create widget for string arguments
@@ -380,6 +387,16 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                     widget.editingFinished.connect(
                         lambda p=param, w=widget: self._set_task_arg(p, w.text()))
                     widget.editingFinished.emit()
+
+            # create widget for list of floats
+            elif arg.type == float and arg.nargs == '+':
+                widget = QtWidgets.QLineEdit()
+                if arg.default:
+                    widget.setText(str(arg.default)[1:-1])
+                widget.editingFinished.connect(
+                    lambda p=param, w=widget:
+                    self._set_task_arg(p, [x.strip() for x in w.text().split(',')]))
+                widget.editingFinished.emit()
 
             # create widget for numerical arguments
             elif arg.type in [float, int]:
@@ -541,12 +558,19 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 if self.model.projects:
                     cmd.extend(['--projects', *self.model.projects])
                 for key in self.task_arguments.keys():
-                    cmd.extend([key, self.task_arguments[key]])
+                    if isinstance(self.task_arguments[key], Iterable) and not isinstance(self.task_arguments[key], str):
+                        cmd.extend([str(key)])
+                        for value in self.task_arguments[key]:
+                            cmd.extend([value])
+                    else:
+                        cmd.extend([key, self.task_arguments[key]])
                 cmd.extend(['--weight', f'{weight}'])
                 cmd.append('--wizard')
                 if self.uiCheckAppend.isChecked():
                     cmd.append('--append')
                 if self.running_task_process is None:
+                    log.info('Starting subprocess')
+                    log.info(subprocess.list2cmdline(cmd))
                     # self.running_task_process = QProcess()
                     # self.running_task_process.start(shutil.which('python'), cmd)
                     # self.running_task_process.readyReadStandardOutput.connect(self.handle_stdout)

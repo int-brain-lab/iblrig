@@ -3,5 +3,5 @@
 'PROBABILITY_LEFT': 0.5
 'REWARD_AMOUNT_UL': 1.5
 'STIM_GAIN': 4.0  # wheel to stimulus relationship
-#'DEBIAS': True  # Whether to use debiasing rule or not by repeating error trials# todo
+#'DEBIAS': True  # Whether to use debiasing rule or not by repeating error trials  # todo
 #'CONTRAST_SET_PROBABILITIES': [2, 2, 2, 2, 1]  # todo
