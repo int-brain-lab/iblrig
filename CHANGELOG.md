@@ -3,6 +3,12 @@ Changelog
 
 -------------------------------
 
+8.11.2
+------
+* make custom_tasks optional
+* repair lost entry-point for iblrig wizard
+* fetch remote tags only if connected to internet
+
 8.11.1
 ------
 * add GUI options for AdvancedChoiceWorld

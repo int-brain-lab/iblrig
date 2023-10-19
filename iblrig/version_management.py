@@ -173,7 +173,7 @@ def get_remote_tags() -> None:
     -----
     This method will only work with installations managed through Git.
     """
-    if get_remote_tags.is_fetched_already:
+    if get_remote_tags.is_fetched_already or not internet_available():
         return
     if not IS_GIT:
         log.error('This installation of iblrig is not managed through git')

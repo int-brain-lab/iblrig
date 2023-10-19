@@ -21,7 +21,12 @@ from PyQt5.QtWidgets import QStyle
 
 from one.api import ONE
 import iblrig_tasks
-import iblrig_custom_tasks
+try:
+    import iblrig_custom_tasks
+    CUSTOM_TASKS = True
+except ImportError:
+    CUSTOM_TASKS = False
+    pass
 import iblrig.path_helper
 from iblrig.constants import BASE_DIR
 from iblrig.misc import _get_task_argument_parser
@@ -95,11 +100,15 @@ class RigWizardModel:
         self.iblrig_settings = iblrig.path_helper.load_settings_yaml()
         self.all_users = [self.iblrig_settings['ALYX_USER']] if self.iblrig_settings['ALYX_USER'] else []
         self.all_procedures = sorted(PROCEDURES)
-        # for the tasks, we build a dictionary that contains the task name as key and the path to the task.py as value
+
+        # for the tasks, we build a dictionary that contains the task name as key and the path to task.py as value
         tasks = sorted([p for p in Path(iblrig_tasks.__file__).parent.rglob('task.py')])
-        tasks.extend(sorted([p for p in Path(iblrig_custom_tasks.__file__).parent.rglob('task.py')]))
+        if CUSTOM_TASKS:
+            tasks.extend(sorted([p for p in Path(iblrig_custom_tasks.__file__).parent.rglob('task.py')]))
         self.all_tasks = OrderedDict({p.parts[-2]: p for p in tasks})
+
         self.all_projects = sorted(PROJECTS)
+
         # get the subjects from iterating over folders in the the iblrig data path
         if self.iblrig_settings['iblrig_local_data_path'] is None:
             self.all_subjects = [self.test_subject_name]
@@ -847,6 +856,7 @@ def main():
     QtCore.QCoreApplication.setOrganizationName("International Brain Laboratory")
     QtCore.QCoreApplication.setOrganizationDomain("internationalbrainlab.org")
     QtCore.QCoreApplication.setApplicationName("IBLRIG Wizard")
+
     if os.name == 'nt':
         app_id = f'IBL.iblrig.wizard.{iblrig.__version__}'
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(app_id)
