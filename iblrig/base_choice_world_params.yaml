@@ -1,10 +1,5 @@
 'AUTOMATIC_CALIBRATION': true
 'ADAPTIVE_REWARD': false
-'BLOCK_INIT_5050': true
-'BLOCK_LEN_FACTOR': 60
-'BLOCK_LEN_MAX': 100
-'BLOCK_LEN_MIN': 20
-'BLOCK_PROBABILITY_SET': [0.2, 0.8]
 'BONSAI_EDITOR': false
 'CALIBRATION_VALUE': 0.067
 'CONTRAST_SET': [1.0, 0.25, 0.125, 0.0625, 0.0]
@@ -20,17 +15,17 @@
 'ITI_DELAY_SECS': 1
 'NTRIALS': 2000
 'POOP_COUNT': true
+'PROBABILITY_LEFT': 0.5
 'QUIESCENCE_THRESHOLDS': [-2, 2]
 'QUIESCENT_PERIOD': 0.2
 'RECORD_AMBIENT_SENSOR_DATA': true
 'RECORD_SOUND': true
-'REPEAT_ON_ERROR': false
 'RESPONSE_WINDOW': 60
 'REWARD_AMOUNT_UL': 1.5
 'REWARD_TYPE': Water 10% Sucrose
 'STIM_ANGLE': 0.0
 'STIM_FREQ': 0.1
-'STIM_GAIN': 4.0
+'STIM_GAIN': 4.0  # wheel to stimulus relationship (degrees visual angle per mm of wheel displacement)
 'STIM_POSITIONS': [-35, 35]
 'STIM_SIGMA': 7.0
 'STIM_TRANSLATION_Z': 7  # 7 for ephys, 8 otherwise. -p:Stim.TranslationZ-{STIM_TRANSLATION_Z} bonsai parameter

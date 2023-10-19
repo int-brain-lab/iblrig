@@ -16,7 +16,7 @@ import ibllib.io.session_params as ses_params
 from iblrig.test.base import TASK_KWARGS
 from iblrig.base_tasks import (SoundMixin, RotaryEncoderMixin, BaseSession, BpodMixin,
                                ValveMixin, Frame2TTLMixin)
-from iblrig.base_choice_world import BiasedChoiceWorldSession
+from iblrig.base_choice_world import BiasedChoiceWorldSession, ChoiceWorldSession
 from ibllib.io.session_params import read_params
 from iblrig.misc import _get_task_argument_parser, _post_parse_arguments
 
@@ -47,7 +47,7 @@ class TestHierarchicalParameters(unittest.TestCase):
 
 class TestHardwareMixins(unittest.TestCase):
     def setUp(self):
-        task_settings_file = BiasedChoiceWorldSession.base_parameters_file
+        task_settings_file = ChoiceWorldSession.base_parameters_file
         self.session = EmptyHardwareSession(task_parameter_file=task_settings_file, **TASK_KWARGS)
 
     def test_rotary_encoder_mixin(self):
@@ -161,7 +161,8 @@ class TestPathCreation(unittest.TestCase):
         # creates a first task
         task_kwargs = copy.deepcopy(TASK_KWARGS)
         task_kwargs['hardware_settings']['MAIN_SYNC'] = False
-        first_task = EmptyHardwareSession(iblrig_settings={'iblrig_remote_data_path': False}, **task_kwargs)
+        first_task = EmptyHardwareSession(iblrig_settings={'iblrig_remote_data_path': False},
+                                          **task_kwargs, task_parameter_file=ChoiceWorldSession.base_parameters_file)
         first_task.create_session()
         # append a new protocol the the current task
         second_task = EmptyHardwareSession(append=True, iblrig_settings={'iblrig_remote_data_path': False}, **task_kwargs)
