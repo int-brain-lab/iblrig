@@ -3,6 +3,10 @@ Changelog
 
 -------------------------------
 
+8.11.3
+------
+* bugfix: 0 contrasts argument overwritten for trainingCW
+
 8.11.2
 ------
 * make custom_tasks optional
