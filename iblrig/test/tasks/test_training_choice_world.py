@@ -31,6 +31,8 @@ class TestInstantiationTraining(BaseTestCases.CommonTestInstantiateTask):
                 if i == 245:
                     task.show_trial_log()
                 assert not np.isnan(task.reward_time)
+            if training_phase == 5:
+                assert np.sum(task.trials_table['contrast'] == 0.5) == 0
 
     def test_acquisition_description(self):
         ad = self.task.experiment_description
