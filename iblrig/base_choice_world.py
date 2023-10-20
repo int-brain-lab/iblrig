@@ -426,7 +426,8 @@ class ChoiceWorldSession(
         return self.task_params.REWARD_AMOUNT_UL
 
     def draw_next_trial_info(self, pleft=0.5, contrast=None, position=None):
-        contrast = contrast or misc.draw_contrast(self.task_params.CONTRAST_SET, self.task_params.CONTRAST_SET_PROBABILITY_TYPE)
+        if contrast is None:
+            contrast = misc.draw_contrast(self.task_params.CONTRAST_SET, self.task_params.CONTRAST_SET_PROBABILITY_TYPE)
         assert len(self.task_params.STIM_POSITIONS) == 2, "Only two positions are supported"
         position = position or int(np.random.choice(self.task_params.STIM_POSITIONS, p=[pleft, 1 - pleft]))
         quiescent_period = self.task_params.QUIESCENT_PERIOD + misc.texp(factor=0.35, min_=0.2, max_=0.5)
