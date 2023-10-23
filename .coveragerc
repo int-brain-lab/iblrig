@@ -1,5 +1,6 @@
 [run]
 include = ./iblrig/*, ./iblrig_tasks/*
+command_line = coverage run -m unittest
 
 [report]
 include = ./iblrig/*, ./iblrig_tasks/*
