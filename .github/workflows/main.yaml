@@ -37,10 +37,10 @@ jobs:
           pip install flake8 --quiet
           python -m flake8
 
-      - name: iblrig and iblpybpod requirements
+      - name: install requirements
         shell: bash -l {0}
         run: |
-          pip install --editable .
+          pip install --editable .[DEV]
 
       - name: Install audio library (Ubuntu only)
         if: matrix.os == 'ubuntu-latest'
@@ -59,9 +59,15 @@ jobs:
           copy settings\iblrig_settings_template.yaml settings\iblrig_settings.yaml
 
       - name: iblrig unit tests
-        shell: bash -l {0}
         run: |
-          python -m unittest discover -s ./iblrig/test -t .
+          coverage run -m unittest discover -s ./iblrig/test -t .
+
+      - name: Upload coverage data to coveralls.io
+        run: coveralls --service=github
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COVERALLS_FLAG_NAME: ${{ matrix.python-version }}, ${{ matrix.os }}
+          COVERALLS_PARALLEL: true
 
       - name: Generate requirements_frozen.txt
         run: pip freeze > requirements_frozen.txt

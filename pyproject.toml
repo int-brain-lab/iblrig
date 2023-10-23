@@ -39,6 +39,7 @@ dependencies = [
 
 [project.optional-dependencies]
 DEV = [
+    "flake8",
     "coverage",
     "myst-parser",
     "pylint",

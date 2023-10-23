@@ -37,3 +37,5 @@ app.log
 *.autosave
 iblrig/_version.py
 *.code-workspace
+
+.coverage
