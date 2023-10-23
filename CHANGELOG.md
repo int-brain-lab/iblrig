@@ -3,6 +3,10 @@ Changelog
 
 -------------------------------
 
+8.11.4
+------
+* bugfix: incorrect subprocess-calls in version_management
+
 8.11.3
 ------
 * bugfix: 0 contrasts argument overwritten for trainingCW
