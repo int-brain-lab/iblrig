@@ -80,7 +80,7 @@ jobs:
 
   coveralls:
     name: Indicate completion to coveralls.io
-    needs: build
+    needs: tests
     runs-on: ubuntu-latest
     container: python:3-slim
     steps:
