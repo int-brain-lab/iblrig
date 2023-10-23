@@ -178,6 +178,7 @@ def get_remote_tags() -> None:
     if not IS_GIT:
         log.error('This installation of iblrig is not managed through git')
     try:
+
         check_call(["git", "fetch", "origin", get_branch(), "-t", "-q"], cwd=BASE_DIR, timeout=5)
     except (SubprocessError, CalledProcessError):
         return
@@ -263,7 +264,7 @@ def get_remote_version() -> Union[version.Version, None]:
 
 def is_dirty() -> bool:
     try:
-        return check_call(["git", "diff", "--quiet"]) != 0
+        return check_call(["git", "diff", "--quiet"], cwd=BASE_DIR) != 0
     except CalledProcessError:
         return True
 
@@ -324,8 +325,8 @@ def upgrade() -> int:
         print('There are changes in your local copy of IBLRIG that will be lost when upgrading.')
         if not ask_user('Do you want to proceed?', False):
             return 0
-        check_call([sys.executable, "-m", "git", "reset", "--hard"])
+        check_call(["git", "reset", "--hard"], cwd=BASE_DIR)
 
-    check_call(["git", "pull", "--tags"])
+    check_call(["git", "pull", "--tags"], cwd=BASE_DIR)
     check_call([sys.executable, "-m", "pip", "install", "-U", "pip"])
     check_call([sys.executable, "-m", "pip", "install", "-U", "-e", "."])
