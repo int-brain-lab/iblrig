@@ -39,6 +39,7 @@ dependencies = [
 
 [project.optional-dependencies]
 DEV = [
+    "coverall",
     "flake8",
     "coverage",
     "myst-parser",
