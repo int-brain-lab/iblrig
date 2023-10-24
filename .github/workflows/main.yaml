@@ -65,7 +65,7 @@ jobs:
       - name: coveralls.io
         uses: coverallsapp/github-action@v2
         with:
-          flag_name: ${{ matrix.python-version }}, ${{ matrix.os }}
+          flag-name: ${{ matrix.python-version }}, ${{ matrix.os }}
           parallel: true
           compare-ref: iblrigv8
 
