@@ -61,12 +61,14 @@ jobs:
       - name: iblrig unit tests
         run: |
           coverage run -m unittest discover -s ./iblrig/test -t .
+          coverage xml
 
       - name: coveralls.io
         uses: coverallsapp/github-action@v2
         with:
           flag-name: ${{ matrix.python-version }}, ${{ matrix.os }}
           parallel: true
+          file: coverage.xml
           compare-ref: iblrigv8
 
       - name: Generate requirements_frozen.txt
