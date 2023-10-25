@@ -179,7 +179,11 @@ class Bpod(BpodIO):
     def set_status_led(self, state: bool) -> None:
         if self._arcom.serial_object:
             self._arcom.serial_object.write(struct.pack("cB", b":", state))
-            self._arcom.serial_object.reset_input_buffer()
+            t0 = time.monotonic()
+            while time.monotonic() - t0 < .1 and self._arcom.serial_object.in_waiting == 0:
+                pass
+            if self._arcom.serial_object.in_waiting:
+                self._arcom.serial_object.read(1)
 
     def valve(self, valve_id: int, state: bool):
         self.manual_override(self.ChannelTypes.OUTPUT, self.ChannelNames.VALVE, valve_id, state)

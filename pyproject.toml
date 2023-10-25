@@ -39,7 +39,8 @@ dependencies = [
 
 [project.optional-dependencies]
 DEV = [
-    "coverage",
+    "coveralls",
+    "flake8",
     "myst-parser",
     "pylint",
     "sphinx",

@@ -3,6 +3,10 @@ Changelog
 
 -------------------------------
 
+8.11.5
+------
+* bugfix: negative time being displayed in the live-plots
+
 8.11.4
 ------
 * bugfix: incorrect subprocess-calls in version_management

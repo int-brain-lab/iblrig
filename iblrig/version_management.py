@@ -179,7 +179,7 @@ def get_remote_tags() -> None:
         log.error('This installation of iblrig is not managed through git')
     try:
 
-        check_call(["git", "fetch", "origin", get_branch(), "-t", "-q"], cwd=BASE_DIR, timeout=5)
+        check_call(["git", "fetch", "origin", get_branch(), "-t", "-q", "-f"], cwd=BASE_DIR, timeout=5)
     except (SubprocessError, CalledProcessError):
         return
     get_remote_tags.is_fetched_already = True
@@ -330,3 +330,4 @@ def upgrade() -> int:
     check_call(["git", "pull", "--tags"], cwd=BASE_DIR)
     check_call([sys.executable, "-m", "pip", "install", "-U", "pip"])
     check_call([sys.executable, "-m", "pip", "install", "-U", "-e", "."])
+    return 0

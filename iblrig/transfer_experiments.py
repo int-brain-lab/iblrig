@@ -6,7 +6,6 @@ import shutil
 import traceback
 import ctypes
 from typing import Callable, Any
-
 import iblrig
 from iblutil.util import setup_logger
 from iblutil.io import hashfile
