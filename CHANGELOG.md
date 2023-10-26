@@ -1,6 +1,10 @@
 Changelog
 ---------
 
+8.12.0
+------
+* add a trainingPhaseChoiceWorld task to fix the training levels
+* bugfix: copy script prompt accepts both upper case and lower case Y to proceed
 -------------------------------
 
 8.11.5
