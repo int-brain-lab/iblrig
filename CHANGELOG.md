@@ -5,6 +5,8 @@ Changelog
 ------
 * add a trainingPhaseChoiceWorld task to fix the training levels
 * bugfix: copy script prompt accepts both upper case and lower case Y to proceed
+* bugfix: update-check used incorrect calls for subprocesses
+
 -------------------------------
 
 8.11.5
@@ -40,6 +42,8 @@ Changelog
 * detect duds (less than 42 trials) and offer deletion
 * various small bugfixes
 
+-------------------------------
+
 8.10.2
 ------
 * hot-fix parsing of path args in transfer_data
@@ -57,6 +61,8 @@ Changelog
 ------
 * adaptive reward from previous sessions in TrainingChoiceWorld
 * updater: fetch remote changelog to advertise new features
+
+-------------------------------
 
 8.9.4
 -----
