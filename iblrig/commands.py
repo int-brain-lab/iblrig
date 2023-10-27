@@ -141,7 +141,7 @@ def _get_copiers(copier: Type[SessionCopier], local_folder: Path, remote_folder:
         print('Could not find any sessions to copy to the local server.')
     elif interactive:
         _print_status(copiers, 'Session states prior to transfer operation:')
-        if input('\nDo you want to continue? [Y/n]  ') not in ('y', ''):
+        if input('\nDo you want to continue? [Y/n]  ').lower() not in ('y', ''):
             copiers = list()
     return copiers
 
