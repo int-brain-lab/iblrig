@@ -179,15 +179,18 @@ class Bpod(BpodIO):
         self.manual_override(self.ChannelTypes.OUTPUT, self.ChannelNames.VALVE, 1, 0)
 
     @static_vars(supported=True)
-    def set_status_led(self, state: bool) -> None:
+    def set_status_led(self, state: bool) -> bool:
         if self._arcom.serial_object and self.set_status_led.supported:
             try:
-                self._arcom.serial_object.write(struct.pack("cB", b":", state))
-                self._arcom.serial_object.read(1)
+                log.info(f'{"en" if state else "dis"}abling Bpod Status LED')
+                command = struct.pack("cB", b":", state)
+                self._arcom.serial_object.write(command)
+                return self._arcom.serial_object.read(1)
             except serial.SerialException:
                 self._arcom.serial_object.flush()
-                log.warning('Bpod device does not support control of the status LED. Please update firmware.')
+                log.error('Bpod device does not support control of the status LED. Please update firmware.')
                 self.set_status_led.supported = False
+        return False
 
     def valve(self, valve_id: int, state: bool):
         self.manual_override(self.ChannelTypes.OUTPUT, self.ChannelNames.VALVE, valve_id, state)
