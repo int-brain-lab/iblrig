@@ -182,7 +182,7 @@ class Bpod(BpodIO):
 
     @static_vars(supported=True)
     def set_status_led(self, state: bool) -> bool:
-        if self.serial_port and self._can_control_led and self._arcom.serial_object:
+        if self.serial_port is not None and self._can_control_led and self._arcom.serial_object:
             try:
                 log.info(f'{"en" if state else "dis"}abling Bpod Status LED')
                 command = struct.pack("cB", b":", state)
