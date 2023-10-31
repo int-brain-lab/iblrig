@@ -13,5 +13,6 @@ IBLRIG documentation
    usage
    installation
    description_file
+   write_your_own_task
    developer_guide
    faq

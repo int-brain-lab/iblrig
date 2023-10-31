@@ -9,6 +9,8 @@ import threading
 
 import serial
 import numpy as np
+
+from iblrig.tools import static_vars
 from iblutil.util import Bunch
 
 import sounddevice as sd
@@ -29,6 +31,7 @@ class Bpod(BpodIO):
     _instances = {}
     _lock = threading.Lock()
     _is_initialized = False
+    _can_control_led = True
 
     def __new__(cls, *args, **kwargs):
         serial_port = args[0] if len(args) > 0 else ''
@@ -62,6 +65,7 @@ class Bpod(BpodIO):
                     "Please unplug the Bpod USB cable from the computer and plug it back in to start the task. ") from e
         self.default_message_idx = 0
         self.actions = Bunch({})
+        self._can_control_led = self.set_status_led(True)
         self._is_initialized = True
 
     def close(self) -> None:
@@ -176,14 +180,20 @@ class Bpod(BpodIO):
             time.sleep(duration)
         self.manual_override(self.ChannelTypes.OUTPUT, self.ChannelNames.VALVE, 1, 0)
 
-    def set_status_led(self, state: bool) -> None:
-        if self._arcom.serial_object:
-            self._arcom.serial_object.write(struct.pack("cB", b":", state))
-            t0 = time.monotonic()
-            while time.monotonic() - t0 < .1 and self._arcom.serial_object.in_waiting == 0:
+    @static_vars(supported=True)
+    def set_status_led(self, state: bool) -> bool:
+        if self._can_control_led and self._arcom is not None:
+            try:
+                log.info(f'{"en" if state else "dis"}abling Bpod Status LED')
+                command = struct.pack("cB", b":", state)
+                self._arcom.serial_object.write(command)
+                if self._arcom.read_uint8() == 1:
+                    return True
+            except serial.SerialException:
                 pass
-            if self._arcom.serial_object.in_waiting:
-                self._arcom.serial_object.read(1)
+            self._arcom.serial_object.flush()
+            log.error('Bpod device does not support control of the status LED. Please update firmware.')
+        return False
 
     def valve(self, valve_id: int, state: bool):
         self.manual_override(self.ChannelTypes.OUTPUT, self.ChannelNames.VALVE, valve_id, state)

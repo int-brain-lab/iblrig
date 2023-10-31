@@ -1,6 +1,10 @@
 Changelog
 ---------
 
+8.12.1
+------
+* bugfix: remember ability for setting the status LED
+
 8.12.0
 ------
 * add a trainingPhaseChoiceWorld task to fix the training levels

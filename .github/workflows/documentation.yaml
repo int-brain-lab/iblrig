@@ -1,7 +1,14 @@
 name: Docs
 on:
+  workflow_dispatch:
+    branches:
+      - iblrigv8dev
+    paths:
+      - '.github/workflows/documentation.yaml'
+      - 'docs/**'
   push:
-    branches: [iblrigv8, docs]
+    branches:
+      - iblrigv8
     paths:
       - '.github/workflows/documentation.yaml'
       - 'docs/**'

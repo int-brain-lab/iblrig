@@ -6,22 +6,48 @@ import zipfile
 from pathlib import Path
 from shutil import which
 
-from one.webclient import AlyxClient, http_download_file
-from iblutil.io import hashfile
+from one.webclient import AlyxClient, http_download_file  # type: ignore
+from iblutil.io import hashfile  # type: ignore
 
 
 def pyspin_installed() -> bool:
+    """
+    Check if the PySpin module is installed.
+
+    Returns:
+        bool: True if PySpin is installed, False otherwise.
+    """
     return find_spec('PySpin') is not None
 
 
 def spinnaker_sdk_installed() -> bool:
+    """
+    Check if the Spinnaker SDK is installed on a Windows system.
+
+    Returns:
+        bool: True if the Spinnaker SDK is installed, False otherwise.
+    """
     if os.name != 'nt':
         return False
     spin_exe = which('SpinUpdateConsole_v140')
-    return spin_exe and Path(spin_exe).parents[2].joinpath('src').exists()
+    return spin_exe is not None and Path(spin_exe).parents[2].joinpath('src').exists()
 
 
 def install_spinnaker_sdk():
+    """
+    Download and install the Spinnaker SDK and PySpin for Windows.
+
+    This script will automatically:
+      1) Download & install Spinnaker SDK for Windows
+      2) Download & install PySpin to the IBLRIG Python environment.
+
+    Prerequisites:
+      - This script can only be run on Windows.
+      - It should be executed in the IBLRIG virtual environment.
+
+    Returns:
+        None
+    """
     def download(asset: int, filename: str, target_md5: str):
         print(f'Downloading {filename} ...')
         out_dir = Path.home().joinpath('Downloads')
