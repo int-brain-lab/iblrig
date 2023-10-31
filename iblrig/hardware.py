@@ -185,11 +185,12 @@ class Bpod(BpodIO):
                 log.info(f'{"en" if state else "dis"}abling Bpod Status LED')
                 command = struct.pack("cB", b":", state)
                 self._arcom.serial_object.write(command)
-                return self._arcom.serial_object.read(1)
+                if self._arcom.read_uint8() == 1:
+                    return True
             except serial.SerialException:
                 self._arcom.serial_object.flush()
                 log.error('Bpod device does not support control of the status LED. Please update firmware.')
-                self.set_status_led.supported = False
+        self.set_status_led.supported = False
         return False
 
     def valve(self, valve_id: int, state: bool):
