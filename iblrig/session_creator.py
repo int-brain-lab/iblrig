@@ -132,10 +132,10 @@ def make_passiveCW_session_delays_ids(seed_num=None):  # XXX
     # get the delays between the stims (add the first delay)
     sess_delays_out = np.insert(np.diff(sess_delays_cumsum), 0, sess_delays_cumsum[0])
     tot_dur = (
-            np.sum(
-                np.sum(g_len) + np.sum(n_len) + np.sum(t_len) + np.sum(v_len) + np.sum(sess_delays_out)
-            )
-            / 60
+        np.sum(
+            np.sum(g_len) + np.sum(n_len) + np.sum(t_len) + np.sum(v_len) + np.sum(sess_delays_out)
+        )
+        / 60
     )
 
     # print(f'Stim IDs: {sess_labels_out}')
