@@ -31,11 +31,11 @@ from one.api import ONE
 
 import iblrig
 import iblrig.path_helper
+from iblutil.spacer import Spacer
 from iblutil.util import Bunch, setup_logger
 from iblrig.hardware import Bpod, MyRotaryEncoder, sound_device_factory, SOFTCODE
 import iblrig.frame2TTL as frame2TTL
 import iblrig.sound as sound
-import iblrig.spacer
 import iblrig.alyx
 import iblrig.graphic as graph
 import ibllib.io.session_params as ses_params
@@ -699,8 +699,7 @@ class BpodMixin(object):
     def send_spacers(self):
         self.logger.info("Starting task by sending a spacer signal on BNC1")
         sma = StateMachine(self.bpod)
-        spacer = iblrig.spacer.Spacer()
-        spacer.add_spacer_states(sma, next_state="exit")
+        Spacer().add_spacer_states(sma, next_state="exit")
         self.bpod.send_state_machine(sma)
         self.bpod.run_state_machine(sma)  # Locks until state machine 'exit' is reached
         return self.bpod.session.current_trial.export()
