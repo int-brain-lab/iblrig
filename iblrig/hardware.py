@@ -45,9 +45,9 @@ class Bpod(BpodIO):
             return instance
 
     def __init__(self, *args, **kwargs):
-        # skip initialization if it has already been performed before
-        if self._is_initialized:
-            return
+        # # skip initialization if it has already been performed before
+        # if self._is_initialized:
+        #     return
 
         # try to instantiate once for nothing
         try:
