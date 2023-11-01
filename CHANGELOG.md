@@ -1,6 +1,10 @@
 Changelog
 ---------
 
+8.12.2
+------
+* bugfix: rollback skipping of bpod initialization (possible source of integer overflow)
+* removal of dead code
 
 8.12.1
 ------
