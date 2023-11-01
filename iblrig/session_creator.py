@@ -38,7 +38,7 @@ def make_ephysCW_pc(prob_type='biased'):
         len_block.append(draw_block_len(60, min_=20, max_=100))
         for x in range(len_block[-1]):
             p = draw_position([-35, 35], prob_left)
-            c = misc.draw_contrast(contrasts, prob_type=prob_type)
+            c = misc.draw_contrast(contrasts, probability_type=prob_type)
             pc = np.append(pc, np.array([[p, c, prob_left]]), axis=0)
             # do this in PC space
         prob_left = np.round(np.abs(1 - prob_left), 1)

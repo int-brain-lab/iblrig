@@ -22,31 +22,31 @@ ENGAGED_CRITIERION = {'secs': 45 * 60, 'trial_count': 400}
 sns.set_style('white')
 
 
-def online_std(new_sample: float, count: int, mean: float, std: float) -> tuple[float, float]:
+def online_std(new_sample: float, new_count: int, old_mean: float, old_std: float) -> tuple[float, float]:
     """
     Updates the mean and standard deviation of a group of values after a sample update
 
     Parameters
     ----------
     new_sample : float
-        The new data point to be included in the calculation.
-    count : int
-        The current count of data points (including new_sample).
-    mean : float
-        The current mean of the data points (N - 1).
-    std : float
-        The current standard deviation of the data points (N - 1).
+        The new sample to be included.
+    new_count : int
+        The new count of samples (including new_sample).
+    old_mean : float
+        The previous mean (N - 1).
+    old_std : float
+        The previous standard deviation (N - 1).
 
     Returns
     -------
     tuple[float, float]
         Updated mean and standard deviation.
     """
-    if count == 1:
+    if new_count == 1:
         return new_sample, 0.0
-    mean_ = (mean * (count - 1) + new_sample) / count
-    std_ = np.sqrt((std ** 2 * (count - 1) + (new_sample - mean) * (new_sample - mean_)) / count)
-    return mean_, std_
+    new_mean = (old_mean * (new_count - 1) + new_sample) / new_count
+    new_std = np.sqrt((old_std ** 2 * (new_count - 1) + (new_sample - old_mean) * (new_sample - new_mean)) / new_count)
+    return new_mean, new_std
 
 
 class DataModel(object):
@@ -144,15 +144,15 @@ class DataModel(object):
         self.psychometrics.loc[indexer, ('count')] += 1
         self.psychometrics.loc[indexer, ('response_time')], self.psychometrics.loc[indexer, ('response_time_std')] = online_std(
             new_sample=trial_data.response_time,
-            count=self.psychometrics.loc[indexer, ('count')],
-            mean=self.psychometrics.loc[indexer, ('response_time')],
-            std=self.psychometrics.loc[indexer, ('response_time_std')]
+            new_count=self.psychometrics.loc[indexer, ('count')],
+            old_mean=self.psychometrics.loc[indexer, ('response_time')],
+            old_std=self.psychometrics.loc[indexer, ('response_time_std')]
         )
         self.psychometrics.loc[indexer, ('choice')], self.psychometrics.loc[indexer, ('choice_std')] = online_std(
             new_sample=float(choice),
-            count=self.psychometrics.loc[indexer, ('count')],
-            mean=self.psychometrics.loc[indexer, ('choice')],
-            std=self.psychometrics.loc[indexer, ('choice_std')]
+            new_count=self.psychometrics.loc[indexer, ('count')],
+            old_mean=self.psychometrics.loc[indexer, ('choice')],
+            old_std=self.psychometrics.loc[indexer, ('choice_std')]
         )
         # update last trials table
         self.last_trials = self.last_trials.shift(-1)
