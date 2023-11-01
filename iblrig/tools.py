@@ -48,10 +48,10 @@ def get_anydesk_id(silent: bool = False) -> Optional[str]:
     anydesk_id = None
     try:
         if cmd := shutil.which('anydesk'):
-            cmd = Path(cmd)
+            pass
         elif os.name == 'nt':
-            cmd = Path(os.environ["ProgramFiles(x86)"], 'AnyDesk', 'anydesk.exe')
-        if not cmd.exists():
+            cmd = str(Path(os.environ["ProgramFiles(x86)"], 'AnyDesk', 'anydesk.exe'))
+        if cmd is None or not Path(cmd).exists():
             raise FileNotFoundError("AnyDesk executable not found")
 
         proc = subprocess.Popen([cmd, '--get-id'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)

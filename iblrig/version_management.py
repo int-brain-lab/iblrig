@@ -36,7 +36,7 @@ def check_for_updates() -> tuple[bool, str]:
     v_local = get_local_version()
     v_remote = get_remote_version()
 
-    if all((v_remote, v_local)):
+    if v_remote and v_local:
         v_remote_base = version.parse(v_remote.base_version)
         v_local_base = version.parse(v_local.base_version)
 
