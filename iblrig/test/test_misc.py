@@ -1,4 +1,5 @@
 import unittest
+from typing import Iterable
 
 import numpy as np
 from scipy import stats
@@ -9,20 +10,25 @@ from iblrig import misc
 class TestMisc(unittest.TestCase):
     def test_draw_contrast(self):
 
-        contrast_set = np.linspace(0, 1, 11)
-        n = 500
+        n_draws = 400
+        n_contrasts = 10
+        contrast_set = np.linspace(0, 1, n_contrasts)
 
-        drawn_contrasts = [misc.draw_contrast(contrast_set, "uniform") for i in range(n)]
-        frequencies = np.unique(drawn_contrasts, return_counts=True)[1]
-        assert stats.chisquare(frequencies).pvalue > 0.05
+        def assert_distribution(values: int, f_exp: float | None = None) -> None:
+            f_obs = np.unique(values, return_counts=True)[1]
+            assert stats.chisquare(f_obs, f_exp).pvalue > 0.05
 
-        for p_idx in np.linspace(0.1, 0.9, 7):
-            drawn_contrasts = [misc.draw_contrast(contrast_set, "biased", 0, p_idx) for i in range(n)]
-            expected = np.ones(contrast_set.size)
+        # uniform distribution
+        contrasts = [misc.draw_contrast(contrast_set, "uniform") for i in range(n_draws)]
+        assert_distribution(contrasts)
+
+        # biased distribution
+        for p_idx in [0.25, 0.5, 0.75, 1.25]:
+            contrasts = [misc.draw_contrast(contrast_set, "biased", 0, p_idx) for i in range(n_draws)]
+            expected = np.ones(n_contrasts)
             expected[0] = p_idx
-            expected = expected / expected.sum() * n
-            frequencies = np.unique(drawn_contrasts, return_counts=True)[1]
-            assert stats.chisquare(frequencies, expected).pvalue > 0.05
+            expected = expected / expected.sum() * n_draws
+            assert_distribution(contrasts, expected)
 
         self.assertRaises(ValueError, misc.draw_contrast, [], "incorrect_type")  # assert exception for incorrect type
         self.assertRaises(ValueError, misc.draw_contrast, [0, 1], "biased", 2)  # assert exception for out-of-range index

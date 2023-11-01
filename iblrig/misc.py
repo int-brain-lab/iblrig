@@ -133,43 +133,42 @@ def texp(factor: float = 0.35, min_: float = 0.2, max_: float = 0.5) -> float:
         return texp(factor=factor, min_=min_, max_=max_)
 
 
-def get_biased_probs(n: int, idx: int = -1, idx_probability: float = 0.5) -> list:
+def get_biased_probs(n: int, idx: int = -1, p_idx: float = 0.5) -> list[float]:
     """
-    Calculate the biased probability for all elements of an array so that
-    the <idx> value has <prob> probability of being drawn in respect to the
-    remaining values.
-    https://github.com/int-brain-lab/iblrig/issues/74
-    For prob == 0.5
-    p = [2 / (2 * len(contrast_set) - 1) for x in contrast_set]
-    p[-1] *= 1 / 2
-    For arbitrary probs
-    p = [1/(n-1 + 0.5)] * (n - 1)
+    Calculate biased probabilities for all elements of an array such that the
+    `i`th value has probability `p_i` for being drawn relative to the remaining
+    values.
 
-    e.g. get_biased_probs(3, idx=-1, prob=0.5)
-    >>> [0.4, 0.4, 0.2]
+    See: https://github.com/int-brain-lab/iblrig/issues/74
 
-    :param n: The length of the array, i.e. the num of probas to generate
-    :type n: int
-    :param idx: The index of the value that has the biased probability,
-                defaults to -1
-    :type idx: int, optional
-    :param idx_probability: The probability of the idxth value relative top the rest,
-                 defaults to 0.5
-    :type idx_probability: float, optional
-    :return: List of biased probabilities
-    :rtype: list
+    Parameters
+    ----------
+    n : int
+        The length of the array, i.e., the number of probabilities to generate.
+    idx : int, optional
+        The index of the value that has the biased probability. Defaults to -1.
+    p_idx : float, optional
+        The probability of the `idx`-th value relative to the rest. Defaults to 0.5.
 
+    Returns
+    -------
+    List[float]
+        List of biased probabilities.
+
+    Raises
+    ------
+    ValueError
+        If `idx` is outside the valid range [-1, n), or if `p_idx` is 0.
     """
     if idx < -1 or idx >= n:
         raise ValueError("Invalid index. Index should be in the range [-1, n).")
-    # z = n - 1 + idx_probability
-    # p = [1 / z] * (n + 1)
-    # p[idx] *= idx_probability
-    # return p
-    n_1 = n - 1
-    z = n_1 + idx_probability
-    p = [1 / z] * (n_1 + 1)
-    p[idx] *= idx_probability
+    if n == 1:
+        return [1.0]
+    if p_idx == 0:
+        raise ValueError("Probability must be larger than 0.")
+    z = n - 1 + p_idx
+    p = [1 / z] * n
+    p[idx] *= p_idx
     return p
 
 
@@ -205,7 +204,7 @@ def draw_contrast(contrast_set: Iterable[float],
         If an unsupported `probability_type` is provided.
     """
     if probability_type in ["skew_zero", "biased"]:
-        p = get_biased_probs(len(contrast_set), idx=idx, idx_probability=idx_probability)
+        p = get_biased_probs(n=len(contrast_set), idx=idx, p_idx=idx_probability)
         return np.random.choice(contrast_set, p=p)
     elif probability_type == "uniform":
         return np.random.choice(contrast_set)
