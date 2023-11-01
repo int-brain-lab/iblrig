@@ -45,9 +45,9 @@ class Bpod(BpodIO):
             return instance
 
     def __init__(self, *args, **kwargs):
-        # skip initialization if it has already been performed before
-        if self._is_initialized:
-            return
+        # # skip initialization if it has already been performed before
+        # if self._is_initialized:
+        #     return
 
         # try to instantiate once for nothing
         try:
@@ -191,7 +191,8 @@ class Bpod(BpodIO):
                     return True
             except serial.SerialException:
                 pass
-            self._arcom.serial_object.flush()
+            self._arcom.serial_object.reset_input_buffer()
+            self._arcom.serial_object.reset_output_buffer()
             log.error('Bpod device does not support control of the status LED. Please update firmware.')
         return False
 
