@@ -9,6 +9,8 @@ import seaborn as sns
 from pandas.api.types import CategoricalDtype
 
 import one.alf.io
+
+from iblrig.misc import online_std
 from iblrig.raw_data_loaders import load_task_jsonable
 from iblutil.util import Bunch
 
