@@ -22,14 +22,25 @@ ENGAGED_CRITIERION = {'secs': 45 * 60, 'trial_count': 400}
 sns.set_style('white')
 
 
-def online_std(new_sample, count, mean, std):
+def online_std(new_sample: float, count: int, mean: float, std: float) -> tuple[float, float]:
     """
     Updates the mean and standard deviation of a group of values after a sample update
-    :param new: new sample value
-    :param count: number of samples after the new addition
-    :param mu: (N - 1) mean
-    :param std: (N - 1) standard deviation
-    :return:
+
+    Parameters
+    ----------
+    new_sample : float
+        The new data point to be included in the calculation.
+    count : int
+        The current count of data points (including new_sample).
+    mean : float
+        The current mean of the data points (N - 1).
+    std : float
+        The current standard deviation of the data points (N - 1).
+
+    Returns
+    -------
+    tuple[float, float]
+        Updated mean and standard deviation.
     """
     if count == 1:
         return new_sample, 0.0
@@ -116,7 +127,7 @@ class DataModel(object):
         self.last_contrasts[ileft, 0] = np.abs(self.last_trials.signed_contrast[ileft])
         self.last_contrasts[iright, 1] = np.abs(self.last_trials.signed_contrast[iright])
 
-    def update_trial(self, trial_data, bpod_data):
+    def update_trial(self, trial_data, bpod_data) -> None:
         # update counters
         self.time_elapsed = bpod_data['Trial end timestamp'] - bpod_data['Bpod start timestamp']
         if self.time_elapsed <= (ENGAGED_CRITIERION['secs']):
@@ -268,7 +279,7 @@ class OnlinePlots(object):
         self.data.update_trial(trial_data, bpod_data)
         self.update_graphics(pupdate=trial_data.stim_probability_left)
 
-    def update_graphics(self, pupdate=None):
+    def update_graphics(self, pupdate: float | None = None):
         background_color = self.data.compute_end_session_criteria()
         h = self.h
         h.fig.set_facecolor(background_color)
@@ -293,10 +304,10 @@ class OnlinePlots(object):
             h.ax_performance.set(ylim=[0, (self.data.ntrials // 50 + 1) * 50])
 
     @property
-    def _session_string(self):
+    def _session_string(self) -> str:
         return ' - '.join(self.data.session_path.parts[-3:]) if self.data.session_path != "" else ""
 
-    def run(self, task_file):
+    def run(self, task_file: Path | str) -> None:
         """
         This methods is for online use, it will watch for a file in conjunction with an iblrigv8 running task
         :param task_file:
