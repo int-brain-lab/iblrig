@@ -44,10 +44,11 @@ class Bpod(BpodIO):
             Bpod._instances[serial_port] = instance
             return instance
 
-    def __init__(self, *args, **kwargs):
-        # # skip initialization if it has already been performed before
-        # if self._is_initialized:
-        #     return
+    def __init__(self, *args, skip_initialization: bool = False, **kwargs):
+        # skip initialization if it has already been performed before
+        # IMPORTANT: only use this for non-critical tasks (e.g., flushing valve from GUI)
+        if skip_initialization and self._is_initialized:
+            return
 
         # try to instantiate once for nothing
         try:

@@ -651,7 +651,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.enable_UI_elements()
 
         try:
-            bpod = Bpod(self.model.hardware_settings['device_bpod']['COM_BPOD'])  # bpod is a singleton
+            bpod = Bpod(self.model.hardware_settings['device_bpod']['COM_BPOD'], skip_initialization=True)
             bpod.manual_override(bpod.ChannelTypes.OUTPUT, bpod.ChannelNames.VALVE, 1, self.uiPushFlush.isChecked())
         except (OSError, exceptions.bpod_error.BpodErrorException):
             print(traceback.format_exc())
@@ -668,7 +668,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.enable_UI_elements()
 
         try:
-            bpod = Bpod(self.model.hardware_settings['device_bpod']['COM_BPOD'])
+            bpod = Bpod(self.model.hardware_settings['device_bpod']['COM_BPOD'], skip_initialization=True)
             bpod.set_status_led(is_toggled)
         except (OSError, exceptions.bpod_error.BpodErrorException, AttributeError):
             self.uiPushStatusLED.setChecked(False)
