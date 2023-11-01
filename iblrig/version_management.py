@@ -328,6 +328,6 @@ def upgrade() -> int:
         check_call(["git", "reset", "--hard"], cwd=BASE_DIR)
 
     check_call(["git", "pull", "--tags"], cwd=BASE_DIR)
-    check_call(["pip", "install", "-U", "pip"])
-    check_call(["pip", "install", "-U", "-e", "."])
+    check_call([sys.executable, "-m", "pip", "install", "-U", "pip"], cwd=BASE_DIR)
+    check_call([sys.executable, "-m", "pip", "install", "-U", "-e", BASE_DIR], cwd=BASE_DIR)
     return 0
