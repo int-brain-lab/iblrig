@@ -9,7 +9,7 @@ from iblrig.misc import online_std
 
 class TestMisc(unittest.TestCase):
     def test_draw_contrast(self):
-        n_draws = 400
+        n_draws = 1000
         n_contrasts = 10
         contrast_set = np.linspace(0, 1, n_contrasts)
 
