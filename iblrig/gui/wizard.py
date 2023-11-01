@@ -232,6 +232,10 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         # anydesk_worker.signals.result.connect(lambda var: print(f'Your AnyDesk ID: {var:s}'))
         # QThreadPool.globalInstance().tryStart(anydesk_worker)
 
+        # disable control of LED if Bpod does not have the respective capability
+        bpod = Bpod(self.model.hardware_settings['device_bpod']['COM_BPOD'], skip_initialization=True)
+        self.uiPushStatusLED.setEnabled(bpod.can_control_led)
+
         # check for update
         update_worker = Worker(check_for_updates)
         update_worker.signals.result.connect(self._on_check_update_result)

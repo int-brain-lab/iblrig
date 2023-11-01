@@ -28,10 +28,10 @@ log = logging.getLogger(__name__)
 
 
 class Bpod(BpodIO):
+    can_control_led = True
     _instances = {}
     _lock = threading.Lock()
     _is_initialized = False
-    _can_control_led = True
 
     def __new__(cls, *args, **kwargs):
         serial_port = args[0] if len(args) > 0 else ''
@@ -66,7 +66,7 @@ class Bpod(BpodIO):
                     "Please unplug the Bpod USB cable from the computer and plug it back in to start the task. ") from e
         self.default_message_idx = 0
         self.actions = Bunch({})
-        self._can_control_led = self.set_status_led(True)
+        self.can_control_led = self.set_status_led(True)
         self._is_initialized = True
 
     def close(self) -> None:
@@ -183,7 +183,7 @@ class Bpod(BpodIO):
 
     @static_vars(supported=True)
     def set_status_led(self, state: bool) -> bool:
-        if self._can_control_led and self._arcom is not None:
+        if self.can_control_led and self._arcom is not None:
             try:
                 log.info(f'{"en" if state else "dis"}abling Bpod Status LED')
                 command = struct.pack("cB", b":", state)
