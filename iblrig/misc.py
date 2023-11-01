@@ -80,13 +80,19 @@ def get_task_arguments(parents=None):
     return _post_parse_arguments(**kwargs)
 
 
-def _isdatetime(x: str) -> Optional[bool]:
+def _is_datetime(x: str) -> bool:
     """
-    Check if string is a date in the format YYYY-MM-DD.
+    Check if a string is a date in the format YYYY-MM-DD.
 
-    :param x: The string to check
-    :return: True if the string matches the date format, False otherwise.
-    :rtype: Optional[bool]
+    Parameters
+    ----------
+    x : str
+        The string to check.
+
+    Returns
+    -------
+    bool or None
+        True if the string matches the date format, False otherwise, or None if there's an exception.
     """
     try:
         datetime.strptime(x, "%Y-%m-%d")
@@ -104,7 +110,7 @@ def get_session_path(path: Union[str, Path]) -> Optional[Path]:
         path = Path(path)
     sess = None
     for i, p in enumerate(path.parts):
-        if p.isdigit() and _isdatetime(path.parts[i - 1]):
+        if p.isdigit() and _is_datetime(path.parts[i - 1]):
             sess = Path().joinpath(*path.parts[: i + 1])
 
     return sess
@@ -210,3 +216,30 @@ def draw_contrast(contrast_set: Iterable[float],
         return np.random.choice(contrast_set)
     else:
         raise ValueError("Unsupported probability_type. Use 'skew_zero', 'biased', or 'uniform'.")
+
+
+def online_std(new_sample: float, new_count: int, old_mean: float, old_std: float) -> tuple[float, float]:
+    """
+    Updates the mean and standard deviation of a group of values after a sample update
+
+    Parameters
+    ----------
+    new_sample : float
+        The new sample to be included.
+    new_count : int
+        The new count of samples (including new_sample).
+    old_mean : float
+        The previous mean (N - 1).
+    old_std : float
+        The previous standard deviation (N - 1).
+
+    Returns
+    -------
+    tuple[float, float]
+        Updated mean and standard deviation.
+    """
+    if new_count == 1:
+        return new_sample, 0.0
+    new_mean = (old_mean * (new_count - 1) + new_sample) / new_count
+    new_std = np.sqrt((old_std ** 2 * (new_count - 1) + (new_sample - old_mean) * (new_sample - new_mean)) / new_count)
+    return new_mean, new_std

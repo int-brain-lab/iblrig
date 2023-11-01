@@ -22,33 +22,6 @@ ENGAGED_CRITIERION = {'secs': 45 * 60, 'trial_count': 400}
 sns.set_style('white')
 
 
-def online_std(new_sample: float, new_count: int, old_mean: float, old_std: float) -> tuple[float, float]:
-    """
-    Updates the mean and standard deviation of a group of values after a sample update
-
-    Parameters
-    ----------
-    new_sample : float
-        The new sample to be included.
-    new_count : int
-        The new count of samples (including new_sample).
-    old_mean : float
-        The previous mean (N - 1).
-    old_std : float
-        The previous standard deviation (N - 1).
-
-    Returns
-    -------
-    tuple[float, float]
-        Updated mean and standard deviation.
-    """
-    if new_count == 1:
-        return new_sample, 0.0
-    new_mean = (old_mean * (new_count - 1) + new_sample) / new_count
-    new_std = np.sqrt((old_std ** 2 * (new_count - 1) + (new_sample - old_mean) * (new_sample - new_mean)) / new_count)
-    return new_mean, new_std
-
-
 class DataModel(object):
     """
     The data model is a pure numpy / pandas container for the choice world task.

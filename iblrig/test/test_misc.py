@@ -4,11 +4,11 @@ import numpy as np
 from scipy import stats
 
 from iblrig import misc
+from iblrig.misc import online_std
 
 
 class TestMisc(unittest.TestCase):
     def test_draw_contrast(self):
-
         n_draws = 400
         n_contrasts = 10
         contrast_set = np.linspace(0, 1, n_contrasts)
@@ -31,3 +31,11 @@ class TestMisc(unittest.TestCase):
 
         self.assertRaises(ValueError, misc.draw_contrast, [], "incorrect_type")  # assert exception for incorrect type
         self.assertRaises(ValueError, misc.draw_contrast, [0, 1], "biased", 2)  # assert exception for out-of-range index
+
+    def test_online_std(self):
+        n = 41
+        b = np.random.rand(n)
+        a = b[:-1]
+        mu, std = online_std(new_sample=b[-1], new_count=n, old_mean=np.mean(a), old_std=np.std(a))
+        np.testing.assert_almost_equal(std, np.std(b))
+        np.testing.assert_almost_equal(mu, np.mean(b))
