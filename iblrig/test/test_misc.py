@@ -1,5 +1,4 @@
 import unittest
-from typing import Iterable
 
 import numpy as np
 from scipy import stats
@@ -14,7 +13,7 @@ class TestMisc(unittest.TestCase):
         n_contrasts = 10
         contrast_set = np.linspace(0, 1, n_contrasts)
 
-        def assert_distribution(values: int, f_exp: float | None = None) -> None:
+        def assert_distribution(values: list[int], f_exp: list[float] | None = None) -> None:
             f_obs = np.unique(values, return_counts=True)[1]
             assert stats.chisquare(f_obs, f_exp).pvalue > 0.05
 
