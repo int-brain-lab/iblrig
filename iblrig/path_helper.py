@@ -36,7 +36,8 @@ def iterate_previous_sessions(subject_name, task_name, n=1, **kwargs):
     if rig_paths.remote_subjects_folder is not None:
         remote_sessions = _iterate_protocols(
             rig_paths.remote_subjects_folder.joinpath(subject_name), task_name=task_name, n=n)
-        sessions.extend(remote_sessions)
+        if remote_sessions is not None:
+            sessions.extend(remote_sessions)
         _, ises = np.unique([s['session_stub'] for s in sessions], return_index=True)
         sessions = [sessions[i] for i in ises]
     return sessions

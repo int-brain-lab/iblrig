@@ -201,7 +201,7 @@ def get_biased_probs(n: int, idx: int = -1, p_idx: float = 0.5) -> list[float]:
     return p
 
 
-def draw_contrast(contrast_set: Iterable[float],
+def draw_contrast(contrast_set: list[float],
                   probability_type: Literal["skew_zero", "biased", "uniform"] = "biased",
                   idx: int = -1,
                   idx_probability: float = 0.5) -> float:
