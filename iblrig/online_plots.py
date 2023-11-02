@@ -2,9 +2,11 @@ from pathlib import Path
 import datetime
 import time
 
+import matplotlib
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.style as mplstyle
 import seaborn as sns
 from pandas.api.types import CategoricalDtype
 
@@ -23,6 +25,8 @@ PROBABILITY_SET = np.array([.2, .5, .8])
 ENGAGED_CRITIERION = {'secs': 45 * 60, 'trial_count': 400}
 sns.set_style('white')
 
+mplstyle.use(['ggplot', 'fast'])
+matplotlib.use('Qt5Agg')
 
 class DataModel(object):
     """
@@ -92,7 +96,7 @@ class DataModel(object):
             # we keep only a single column as buffer
             self.trials_table = trials_table[['response_time']]
         # for the trials plots this is the background image showing green if correct, red if incorrect
-        self.rgb_background = np.zeros((NTRIALS_PLOT, 1, 3), dtype=np.uint8)
+        self.rgb_background = np.ones((NTRIALS_PLOT, 1, 3), dtype=np.uint8) * 229
         self.rgb_background[self.last_trials.correct == False, 0, 0] = 255  # noqa
         self.rgb_background[self.last_trials.correct == True, 0, 1] = 255  # noqa
         # keep the last contrasts as a 20 by 2 array
@@ -194,20 +198,20 @@ class OnlinePlots(object):
         h.ax_performance = h.fig.add_subplot(h.gs[0, nc - 1])
         h.ax_reaction = h.fig.add_subplot(h.gs[1, hc:nc - 1])
         h.ax_water = h.fig.add_subplot(h.gs[1, nc - 1])
-        h.ax_psych.set(title='psychometric curve', xlim=[-1.01, 1.01], ylim=[0, 1.01])
-        h.ax_reaction.set(title='reaction times', xlim=[-1.01, 1.01], ylim=[0, 4], xlabel='signed contrast')
+        h.ax_psych.set(title='psychometric curve', xlim=[-1, 1], ylim=[0, 1])
+        h.ax_reaction.set(title='reaction times', xlim=[-1, 1], ylim=[0, 4], xlabel='signed contrast')
         h.ax_trials.set(yticks=[], title='trials timeline', xlim=[-5, 30], xlabel='time (s)')
-        h.ax_performance.set(xticks=[], xlim=[-1.01, 1.01], title='# trials')
-        h.ax_water.set(xticks=[], xlim=[-1.01, 1.01], ylim=[0, 1000], title='water (uL)')
+        h.ax_performance.set(xticks=[], xlim=[-0.6, 0.6], title='# trials')
+        h.ax_water.set(xticks=[], xlim=[-0.6, 0.6], ylim=[0, 1000], title='reward')
 
         # create psych curves
         h.curve_psych = {}
         h.curve_reaction = {}
         for i, p in enumerate(PROBABILITY_SET):
             h.curve_psych[p] = h.ax_psych.plot(
-                self.data.psychometrics.loc[p].index, self.data.psychometrics.loc[p]['choice'], '.-')
+                self.data.psychometrics.loc[p].index, self.data.psychometrics.loc[p]['choice'], 'k.-', zorder=10, clip_on=False)
             h.curve_reaction[p] = h.ax_reaction.plot(
-                self.data.psychometrics.loc[p].index, self.data.psychometrics.loc[p]['response_time'], '.-')
+                self.data.psychometrics.loc[p].index, self.data.psychometrics.loc[p]['response_time'], 'k.-')
 
         # create the two bars on the right side
         h.bar_correct = h.ax_performance.bar(0, self.data.ntrials_correct, label='correct', color='g')
@@ -215,8 +219,12 @@ class OnlinePlots(object):
             0, self.data.ntrials - self.data.ntrials_correct, label='error', color='r', bottom=self.data.ntrials_correct)
         h.bar_water = h.ax_water.bar(0, self.data.water_delivered, label='water delivered', color='b')
 
+        # h.label_correct = h.ax_performance.bar_label(h.bar_correct, label_type='center')
+        # h.label_error = h.ax_performance.bar_label(h.bar_error, label_type='center')
+        # h.label_water = h.ax_water.bar_label(h.bar_water)
+
         # create the trials timeline view in a single axis
-        xpos = np.tile([[-4, -1.5]], (NTRIALS_PLOT, 1)).T.flatten()
+        xpos = np.tile([[-3.75, -1.25]], (NTRIALS_PLOT, 1)).T.flatten()
         ypos = np.tile(np.arange(NTRIALS_PLOT), 2)
         h.im_trials = h.ax_trials.imshow(
             self.data.rgb_background, alpha=.2, extent=[-10, 50, -.5, NTRIALS_PLOT - .5], aspect='auto', origin='lower')
@@ -241,7 +249,7 @@ class OnlinePlots(object):
     def update_titles(self):
         self.h.fig_title.set_text(
             f"{self._session_string} time elapsed: {str(datetime.timedelta(seconds=int(self.data.time_elapsed)))}")
-        self.h.ax_water.title.set_text(f"water \n {self.data.water_delivered:.2f} (uL)")
+        self.h.ax_water.title.set_text(f"reward \n {self.data.water_delivered:.1f}  μL")
         self.h.ax_performance.title.set_text(f" correct/tot \n {self.data.ntrials_correct} / {self.data.ntrials}")
 
     def update_trial(self, trial_data, bpod_data):
@@ -276,7 +284,7 @@ class OnlinePlots(object):
             self.h.bar_correct[0].set(height=self.data.ntrials_correct)
             self.h.bar_error[0].set(height=self.data.ntrials - self.data.ntrials_correct, y=self.data.ntrials_correct)
             self.h.bar_water[0].set(height=self.data.water_delivered)
-            h.ax_performance.set(ylim=[0, (self.data.ntrials // 50 + 1) * 50])
+            h.ax_performance.set(ylim=[0, self.data.ntrials])
 
     @property
     def _session_string(self) -> str:
