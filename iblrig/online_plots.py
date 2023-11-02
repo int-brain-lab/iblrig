@@ -23,9 +23,8 @@ CONTRAST_SET = np.array([0, 1 / 16, 1 / 8, 1 / 4, 1 / 2, 1])
 PROBABILITY_SET = np.array([.2, .5, .8])
 # if the mouse does less than 400 trials in the first 45mins it's disengaged
 ENGAGED_CRITIERION = {'secs': 45 * 60, 'trial_count': 400}
-sns.set_style('white')
+sns.set_style("darkgrid")
 
-mplstyle.use(['ggplot', 'fast'])
 matplotlib.use('Qt5Agg')
 
 class DataModel(object):
