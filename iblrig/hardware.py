@@ -194,7 +194,7 @@ class Bpod(BpodIO):
                 pass
             self._arcom.serial_object.reset_input_buffer()
             self._arcom.serial_object.reset_output_buffer()
-            log.error('Bpod device does not support control of the status LED. Please update firmware.')
+            log.warning('Bpod device does not support control of the status LED. Please update firmware.')
         return False
 
     def valve(self, valve_id: int, state: bool):
