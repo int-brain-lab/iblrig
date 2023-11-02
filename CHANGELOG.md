@@ -1,6 +1,13 @@
 Changelog
 ---------
 
+8.12.3
+------
+* bugfix: getting training status of subject not present on local server
+* skipping of bpod initialization now optional (used in GUI)
+* disable button for status LED if not supported by hardware
+* tests, type-hints, removal of dead code
+
 8.12.2
 ------
 * bugfix: rollback skipping of bpod initialization (possible source of integer overflow)

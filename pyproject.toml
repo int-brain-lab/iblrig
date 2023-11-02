@@ -47,7 +47,8 @@ DEV = [
     "sphinx-autobuild",
     "sphinx_lesson",
     "sphinx_rtd_theme",
-    "pre-commit"
+    "pre-commit",
+    "mypy"
 ]
 
 [project.scripts]
@@ -67,3 +68,6 @@ version = {attr = "iblrig.__version__"}
 
 [tool.setuptools.packages]
 find = {}
+
+[tool.mypy]
+ignore_missing_imports = true

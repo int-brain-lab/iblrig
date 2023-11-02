@@ -430,7 +430,9 @@ class ChoiceWorldSession(
             contrast = misc.draw_contrast(self.task_params.CONTRAST_SET, self.task_params.CONTRAST_SET_PROBABILITY_TYPE)
         assert len(self.task_params.STIM_POSITIONS) == 2, "Only two positions are supported"
         position = position or int(np.random.choice(self.task_params.STIM_POSITIONS, p=[pleft, 1 - pleft]))
-        quiescent_period = self.task_params.QUIESCENT_PERIOD + misc.texp(factor=0.35, min_=0.2, max_=0.5)
+        quiescent_period = self.task_params.QUIESCENT_PERIOD + misc.truncated_exponential(scale=0.35,
+                                                                                          min_value=0.2,
+                                                                                          max_value=0.5)
         self.trials_table.at[self.trial_num, 'quiescent_period'] = quiescent_period
         self.trials_table.at[self.trial_num, 'contrast'] = contrast
         self.trials_table.at[self.trial_num, 'stim_phase'] = random.uniform(0, 2 * math.pi)
@@ -711,10 +713,10 @@ class BiasedChoiceWorldSession(ActiveChoiceWorldSession):
         if self.task_params.BLOCK_INIT_5050 and self.block_num == 0:
             block_len = 90
         else:
-            block_len = int(misc.texp(
-                factor=self.task_params.BLOCK_LEN_FACTOR,
-                min_=self.task_params.BLOCK_LEN_MIN,
-                max_=self.task_params.BLOCK_LEN_MAX
+            block_len = int(misc.truncated_exponential(
+                scale=self.task_params.BLOCK_LEN_FACTOR,
+                min_value=self.task_params.BLOCK_LEN_MIN,
+                max_value=self.task_params.BLOCK_LEN_MAX
             ))
         if self.block_num == 0:
             if self.task_params.BLOCK_INIT_5050:

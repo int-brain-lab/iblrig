@@ -36,7 +36,7 @@ def check_for_updates() -> tuple[bool, str]:
     v_local = get_local_version()
     v_remote = get_remote_version()
 
-    if all((v_remote, v_local)):
+    if v_remote is not None and v_local is not None:
         v_remote_base = version.parse(v_remote.base_version)
         v_local_base = version.parse(v_local.base_version)
 
@@ -144,7 +144,7 @@ def get_branch() -> Union[str, None]:
     -----
     This method will only work with installations managed through Git.
     """
-    if get_branch.branch:
+    if get_branch.branch is not None:
         return get_branch.branch
     if not IS_GIT:
         log.error('This installation of iblrig is not managed through git')
@@ -205,7 +205,7 @@ def get_changelog() -> str:
     This method relies on the presence of a CHANGELOG.md file either in the
     repository or locally.
     """
-    if get_changelog.changelog:
+    if get_changelog.changelog is not None:
         return get_changelog.changelog
     try:
         changelog = requests.get(f'https://raw.githubusercontent.com/int-brain-lab/iblrig/{get_branch()}/CHANGELOG.md',
@@ -235,7 +235,7 @@ def get_remote_version() -> Union[version.Version, None]:
     -----
     This method will only work with installations managed through Git.
     """
-    if get_remote_version.remote_version:
+    if get_remote_version.remote_version is not None:
         log.debug(f'Using cached remote version: {get_remote_version.remote_version}')
         return get_remote_version.remote_version
 
@@ -328,6 +328,6 @@ def upgrade() -> int:
         check_call(["git", "reset", "--hard"], cwd=BASE_DIR)
 
     check_call(["git", "pull", "--tags"], cwd=BASE_DIR)
-    check_call(["pip", "install", "-U", "pip"])
-    check_call(["pip", "install", "-U", "-e", "."])
+    check_call([sys.executable, "-m", "pip", "install", "-U", "pip"], cwd=BASE_DIR)
+    check_call([sys.executable, "-m", "pip", "install", "-U", "-e", BASE_DIR], cwd=BASE_DIR)
     return 0

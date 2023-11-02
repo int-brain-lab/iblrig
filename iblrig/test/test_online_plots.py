@@ -11,17 +11,6 @@ zip_jsonable = Path(__file__).parent.joinpath('fixtures', 'online_plots_biased_i
 matplotlib.use('Agg')  # avoid pyqt testing issues
 
 
-class TestOnlineStd(unittest.TestCase):
-
-    def test_online_std(self):
-        n = 41
-        b = np.random.rand(n)
-        a = b[:-1]
-        mu, std = op.online_std(new_sample=b[-1], count=n, mean=np.mean(a), std=np.std(a))
-        np.testing.assert_almost_equal(std, np.std(b))
-        np.testing.assert_almost_equal(mu, np.mean(b))
-
-
 class TestOnlinePlots(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:

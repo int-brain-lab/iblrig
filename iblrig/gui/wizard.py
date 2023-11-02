@@ -232,6 +232,10 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         # anydesk_worker.signals.result.connect(lambda var: print(f'Your AnyDesk ID: {var:s}'))
         # QThreadPool.globalInstance().tryStart(anydesk_worker)
 
+        # disable control of LED if Bpod does not have the respective capability
+        bpod = Bpod(self.model.hardware_settings['device_bpod']['COM_BPOD'], skip_initialization=True)
+        self.uiPushStatusLED.setEnabled(bpod.can_control_led)
+
         # check for update
         update_worker = Worker(check_for_updates)
         update_worker.signals.result.connect(self._on_check_update_result)
@@ -651,7 +655,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.enable_UI_elements()
 
         try:
-            bpod = Bpod(self.model.hardware_settings['device_bpod']['COM_BPOD'])  # bpod is a singleton
+            bpod = Bpod(self.model.hardware_settings['device_bpod']['COM_BPOD'], skip_initialization=True)
             bpod.manual_override(bpod.ChannelTypes.OUTPUT, bpod.ChannelNames.VALVE, 1, self.uiPushFlush.isChecked())
         except (OSError, exceptions.bpod_error.BpodErrorException):
             print(traceback.format_exc())
@@ -668,7 +672,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.enable_UI_elements()
 
         try:
-            bpod = Bpod(self.model.hardware_settings['device_bpod']['COM_BPOD'])
+            bpod = Bpod(self.model.hardware_settings['device_bpod']['COM_BPOD'], skip_initialization=True)
             bpod.set_status_led(is_toggled)
         except (OSError, exceptions.bpod_error.BpodErrorException, AttributeError):
             self.uiPushStatusLED.setChecked(False)
