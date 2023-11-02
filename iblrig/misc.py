@@ -126,17 +126,40 @@ def get_port_events(events: dict, name: str = "") -> list:
     return out
 
 
-def texp(factor: float = 0.35, min_: float = 0.2, max_: float = 0.5) -> float:
-    """Truncated exponential
-    mean = 0.35
-    min = 0.2
-    max = 0.5
+def truncated_exponential(scale: float = 0.35, min_value: float = 0.2, max_value: float = 0.5) -> float:
     """
-    x = np.random.exponential(factor)
-    if min_ <= x <= max_:
+    Generate a truncated exponential random variable within a specified range.
+
+    Parameters
+    ----------
+    scale : float, optional
+        Scale of the exponential distribution (inverse of rate parameter). Defaults to 0.35.
+    min_value : float, optional
+        Minimum value for the truncated range. Defaults to 0.2.
+    max_value : float, optional
+        Maximum value for the truncated range. Defaults to 0.5.
+
+    Returns
+    -------
+    float
+        Truncated exponential random variable.
+
+    Notes
+    -----
+    This function generates a random variable from an exponential distribution
+    with the specified `scale`. It then checks if the generated value is within
+    the specified range `[min_value, max_value]`. If it is within the range, it returns
+    the generated value; otherwise, it recursively generates a new value until it falls
+    within the specified range.
+
+    The `scale` should typically be greater than or equal to the `min_value` to avoid
+    potential issues with infinite recursion.
+    """
+    x = np.random.exponential(scale)
+    if min_value <= x <= max_value:
         return x
     else:
-        return texp(factor=factor, min_=min_, max_=max_)
+        return truncated_exponential(scale=scale, min_value=min_value, max_value=max_value)
 
 
 def get_biased_probs(n: int, idx: int = -1, p_idx: float = 0.5) -> list[float]:

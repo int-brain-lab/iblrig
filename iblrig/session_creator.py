@@ -13,7 +13,7 @@ def draw_position(position_set, stim_probability_left) -> int:
 
 
 def draw_block_len(factor, min_=20, max_=100):
-    return int(misc.texp(factor=factor, min_=min_, max_=max_))
+    return int(misc.truncated_exponential(scale=factor, min_value=min_, max_value=max_))
 
 
 # EPHYS CHOICE WORLD
@@ -52,7 +52,7 @@ def make_ephysCW_pcqs(pc):
     qperiod = []
     for i in pc:
         sphase.append(np.random.uniform(0, 2 * math.pi))
-        qperiod.append(qperiod_base + misc.texp(factor=0.35, min_=0.2, max_=0.5))
+        qperiod.append(qperiod_base + misc.truncated_exponential(scale=0.35, min_value=0.2, max_value=0.5))
     qs = np.array([qperiod, sphase]).T
     pcqs = np.append(pc, qs, axis=1)
     perm = [0, 1, 3, 4, 2]
