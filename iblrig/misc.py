@@ -9,7 +9,7 @@ import argparse
 import datetime
 import logging
 from pathlib import Path
-from typing import Optional, Union, Literal, Iterable
+from typing import Optional, Union, Literal
 
 import numpy as np
 
