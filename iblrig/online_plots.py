@@ -59,6 +59,9 @@ class DataModel(object):
             self.trials_table = pd.DataFrame(columns=['response_time'], index=np.arange(NTRIALS_INIT))
             self.ntrials = 0
             self.ntrials_correct = 0
+            self.ntrials_nan = np.nan
+            self.percent_correct = np.nan
+            self.percent_error = np.nan
             self.water_delivered = 0
             self.time_elapsed = 0
             self.ntrials_engaged = 0  # those are the trials happening within the first 400s
@@ -83,6 +86,8 @@ class DataModel(object):
             )
             self.ntrials = trials_table.shape[0]
             self.ntrials_correct = np.sum(trials_table.trial_correct)
+            self.ntrials_nan = self.ntrials if self.ntrials > 0 else np.nan
+            self.percent_correct = self.ntrials_correct / self.ntrials_nan * 100
             # agg.water_delivered = trials_table.water_delivered.iloc[-1]
             self.water_delivered = trials_table.reward_amount.sum()
             # init the last trials table
@@ -161,6 +166,8 @@ class DataModel(object):
         self.last_contrasts[-1, :] = 0
         self.last_contrasts[-1, int(self.last_trials.signed_contrast.iloc[-1] > 0)] = abs(
             self.last_trials.signed_contrast.iloc[-1])
+        self.ntrials_nan = self.ntrials if self.ntrials > 0 else np.nan
+        self.percent_correct = self.ntrials_correct / self.ntrials_nan * 100
 
     def compute_end_session_criteria(self):
         """
@@ -221,8 +228,8 @@ class OnlinePlots(object):
         h.ax_reaction.set_xticks(xticks, xticklabels)
 
         h.ax_trials.set(yticks=[], title='trials timeline', xlim=[-5, 30], xlabel='time (s)')
-        # h.ax_trials.set_xticklabels(np.hstack(([''], h.ax_trials.get_xticklabels()[1::])))
-        h.ax_performance.set(xticks=[], xlim=[-0.6, 0.6], title='# trials')
+        h.ax_trials.set_xticks(h.ax_trials.get_xticks(), [''] + h.ax_trials.get_xticklabels()[1::])
+        h.ax_performance.set(xticks=[], xlim=[-0.6, 0.6], ylim=[0, 100], title='performance')
         h.ax_water.set(xticks=[], xlim=[-0.6, 0.6], ylim=[0, 1000], title='reward')
 
         # create psych curves
@@ -235,9 +242,7 @@ class OnlinePlots(object):
                 self.data.psychometrics.loc[p].index, self.data.psychometrics.loc[p]['response_time'], 'k.-')
 
         # create the two bars on the right side
-        h.bar_correct = h.ax_performance.bar(0, self.data.ntrials_correct, label='correct', color='g')
-        h.bar_error = h.ax_performance.bar(
-            0, self.data.ntrials - self.data.ntrials_correct, label='error', color='r', bottom=self.data.ntrials_correct)
+        h.bar_correct = h.ax_performance.bar(0, self.data.percent_correct, label='correct', color='k')
         h.bar_water = h.ax_water.bar(0, self.data.water_delivered, label='water delivered', color='b')
 
         # create the trials timeline view in a single axis
@@ -269,10 +274,12 @@ class OnlinePlots(object):
         plt.draw()
 
     def update_titles(self):
-        self.h.fig_title.set_text(
-            self._session_string + f"time elapsed: {str(datetime.timedelta(seconds=int(self.data.time_elapsed)))}")
-        self.h.ax_water.title.set_text(f"reward \n {self.data.water_delivered:.1f}  μL")
-        self.h.ax_performance.title.set_text(f" correct/tot \n {self.data.ntrials_correct} / {self.data.ntrials}")
+        protocol = (self.data.task_settings["PYBPOD_PROTOCOL"] if self.data.task_settings else '').replace('_', '\_')
+        spacer = '\ \ ·\ \ '
+        main_title = r'$\mathbf{' + protocol + f'{spacer}{self.data.ntrials}\ trials{spacer}time\ elapsed:\ {str(datetime.timedelta(seconds=int(self.data.time_elapsed)))}' + r'}$'
+        self.h.fig_title.set_text(main_title + '\n' + self._session_string)
+        self.h.ax_water.title.set_text(f"total reward\n{self.data.water_delivered:.1f}μL")
+        self.h.ax_performance.title.set_text(f"performance\n{self.data.percent_correct:.0f}%")
 
     def update_trial(self, trial_data, bpod_data):
         """
@@ -303,23 +310,19 @@ class OnlinePlots(object):
                 h.lines_trials[k][0].set(xdata=self.data.last_trials[k])
             self.h.scatter_contrast.set_array(self.data.last_contrasts.T.flatten())
             # update barplots
-            self.h.bar_correct[0].set(height=self.data.ntrials_correct)
-            self.h.bar_error[0].set(height=self.data.ntrials - self.data.ntrials_correct, y=self.data.ntrials_correct)
+            self.h.bar_correct[0].set(height=self.data.percent_correct)
             self.h.bar_water[0].set(height=self.data.water_delivered)
-            h.ax_performance.set(ylim=[0, self.data.ntrials])
 
     def _set_session_string(self) -> None:
         if isinstance(self.data.task_settings, dict):
             training_info, _ = get_subject_training_info(subject_name=self.data.task_settings["SUBJECT_NAME"],
                                                          task_name=self.data.task_settings["PYBPOD_PROTOCOL"],
                                                          lab=self.data.task_settings["ALYX_LAB"])
-            protocol = r'$\mathbf{' + self.data.task_settings["PYBPOD_PROTOCOL"].replace('_', '\_') + r'}$'
-            self._session_string = f'{protocol}\n' \
-                                   f'subject: {self.data.task_settings["SUBJECT_NAME"]}  ·  ' \
+            self._session_string = f'subject: {self.data.task_settings["SUBJECT_NAME"]}  ·  ' \
                                    f'weight: {self.data.task_settings["SUBJECT_WEIGHT"]}g  ·  ' \
                                    f'training phase: {training_info["training_phase"]}  ·  ' \
                                    f'stimulus gain: {self.data.task_settings["STIM_GAIN"]}  ·  ' \
-                                   f'reward amount: {self.data.task_settings["REWARD_AMOUNT_UL"]}µl  ·  '
+                                   f'reward amount: {self.data.task_settings["REWARD_AMOUNT_UL"]}µl'
         else:
             self._session_string = ''
 

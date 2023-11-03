@@ -1,6 +1,10 @@
 Changelog
 ---------
 
+8.12.4
+------
+* updated online-plots
+
 8.12.3
 ------
 * bugfix: getting training status of subject not present on local server
