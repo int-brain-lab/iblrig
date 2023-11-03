@@ -118,6 +118,8 @@ class DataModel(object):
 
     def get_task_settings(self, session_directory: str | Path) -> None:
         task_settings_file = Path(session_directory).joinpath('_iblrig_taskSettings.raw.json')
+        if not task_settings_file.exists():
+            return
         with open(task_settings_file, 'r') as fid:
             self.task_settings = json.load(fid)
 

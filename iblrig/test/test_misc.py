@@ -9,7 +9,7 @@ from iblrig.misc import online_std
 
 class TestMisc(unittest.TestCase):
     def test_draw_contrast(self):
-        n_draws = 1000
+        n_draws = 5000
         n_contrasts = 10
         contrast_set = np.linspace(0, 1, n_contrasts)
 
@@ -30,7 +30,7 @@ class TestMisc(unittest.TestCase):
             assert_distribution(contrasts, expected)
 
         self.assertRaises(ValueError, misc.draw_contrast, [], "incorrect_type")  # assert exception for incorrect type
-        self.assertRaises(ValueError, misc.draw_contrast, [0, 1], "biased", 2)  # assert exception for out-of-range index
+        self.assertRaises(IndexError, misc.draw_contrast, [0, 1], "biased", 2)  # assert exception for out-of-range index
 
     def test_online_std(self):
         n = 41
