@@ -274,9 +274,10 @@ class OnlinePlots(object):
         plt.draw()
 
     def update_titles(self):
-        protocol = (self.data.task_settings["PYBPOD_PROTOCOL"] if self.data.task_settings else '').replace('_', '\_')
-        spacer = '\ \ ·\ \ '
-        main_title = r'$\mathbf{' + protocol + f'{spacer}{self.data.ntrials}\ trials{spacer}time\ elapsed:\ {str(datetime.timedelta(seconds=int(self.data.time_elapsed)))}' + r'}$'
+        protocol = (self.data.task_settings["PYBPOD_PROTOCOL"] if self.data.task_settings else '').replace('_', r'\_')
+        spacer = r'\ \ ·\ \ '
+        main_title = r'$\mathbf{' + protocol + fr'{spacer}{self.data.ntrials}\ trials{spacer}time\ elapsed:\ ' \
+                                               fr'{str(datetime.timedelta(seconds=int(self.data.time_elapsed)))}' + r'}$'
         self.h.fig_title.set_text(main_title + '\n' + self._session_string)
         self.h.ax_water.title.set_text(f"total reward\n{self.data.water_delivered:.1f}μL")
         self.h.ax_performance.title.set_text(f"performance\n{self.data.percent_correct:.0f}%")
