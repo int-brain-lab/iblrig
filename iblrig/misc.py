@@ -159,7 +159,7 @@ def truncated_exponential(scale: float = 0.35, min_value: float = 0.2, max_value
     if min_value <= x <= max_value:
         return x
     else:
-        return truncated_exponential(scale=scale, min_value=min_value, max_value=max_value)
+        return truncated_exponential(scale, min_value, max_value)
 
 
 def get_biased_probs(n: int, idx: int = -1, p_idx: float = 0.5) -> list[float]:
@@ -186,13 +186,15 @@ def get_biased_probs(n: int, idx: int = -1, p_idx: float = 0.5) -> list[float]:
 
     Raises
     ------
+    IndexError
+        If `idx` is out of range
     ValueError
-        If `idx` is outside the valid range [-1, n), or if `p_idx` is 0.
+        If `p_idx` is 0.
     """
-    if idx < -1 or idx >= n:
-        raise ValueError("Invalid index. Index should be in the range [-1, n).")
     if n == 1:
         return [1.0]
+    if idx not in range(-n, n):
+        raise IndexError("`idx` is out of range.")
     if p_idx == 0:
         raise ValueError("Probability must be larger than 0.")
     z = n - 1 + p_idx

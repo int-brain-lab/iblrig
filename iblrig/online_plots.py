@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 import datetime
 import time
@@ -10,6 +11,7 @@ from pandas.api.types import CategoricalDtype
 
 import one.alf.io
 
+from iblrig.choiceworld import get_subject_training_info
 from iblrig.misc import online_std
 from iblrig.raw_data_loaders import load_task_jsonable
 from iblutil.util import Bunch
@@ -21,7 +23,7 @@ CONTRAST_SET = np.array([0, 1 / 16, 1 / 8, 1 / 4, 1 / 2, 1])
 PROBABILITY_SET = np.array([.2, .5, .8])
 # if the mouse does less than 400 trials in the first 45mins it's disengaged
 ENGAGED_CRITIERION = {'secs': 45 * 60, 'trial_count': 400}
-sns.set_style('white')
+sns.set_style("darkgrid")
 
 
 class DataModel(object):
@@ -33,6 +35,8 @@ class DataModel(object):
     - a last trials dataframe that contains 20 trials worth of data for the timeline view
     - various counters such as ntrials and water delivered
     """
+    task_settings = None
+
     def __init__(self, task_file):
         """
         Can be instantiated empty or from an existing jsonable file from any rig version
@@ -42,6 +46,7 @@ class DataModel(object):
         self.last_trials = pd.DataFrame(
             columns=['correct', 'signed_contrast', 'stim_on', 'play_tone', 'reward_time', 'error_time', 'response_time'],
             index=np.arange(NTRIALS_PLOT))
+
         if task_file is None or not Path(task_file).exists():
             self.psychometrics = pd.DataFrame(
                 columns=['count', 'response_time', 'choice', 'response_time_std', 'choice_std'],
@@ -51,10 +56,14 @@ class DataModel(object):
             self.trials_table = pd.DataFrame(columns=['response_time'], index=np.arange(NTRIALS_INIT))
             self.ntrials = 0
             self.ntrials_correct = 0
+            self.ntrials_nan = np.nan
+            self.percent_correct = np.nan
+            self.percent_error = np.nan
             self.water_delivered = 0
             self.time_elapsed = 0
             self.ntrials_engaged = 0  # those are the trials happening within the first 400s
         else:
+            self.get_task_settings(Path(task_file).parent)
             trials_table, bpod_data = load_task_jsonable(task_file)
             # here we take the end time of the first trial as reference to avoid factoring in the delay
             self.time_elapsed = bpod_data[-1]['Trial end timestamp'] - bpod_data[0]['Trial end timestamp']
@@ -74,6 +83,8 @@ class DataModel(object):
             )
             self.ntrials = trials_table.shape[0]
             self.ntrials_correct = np.sum(trials_table.trial_correct)
+            self.ntrials_nan = self.ntrials if self.ntrials > 0 else np.nan
+            self.percent_correct = self.ntrials_correct / self.ntrials_nan * 100
             # agg.water_delivered = trials_table.water_delivered.iloc[-1]
             self.water_delivered = trials_table.reward_amount.sum()
             # init the last trials table
@@ -92,7 +103,7 @@ class DataModel(object):
             # we keep only a single column as buffer
             self.trials_table = trials_table[['response_time']]
         # for the trials plots this is the background image showing green if correct, red if incorrect
-        self.rgb_background = np.zeros((NTRIALS_PLOT, 1, 3), dtype=np.uint8)
+        self.rgb_background = np.ones((NTRIALS_PLOT, 1, 3), dtype=np.uint8) * 229
         self.rgb_background[self.last_trials.correct == False, 0, 0] = 255  # noqa
         self.rgb_background[self.last_trials.correct == True, 0, 1] = 255  # noqa
         # keep the last contrasts as a 20 by 2 array
@@ -101,6 +112,13 @@ class DataModel(object):
         self.last_contrasts = np.zeros((NTRIALS_PLOT, 2))
         self.last_contrasts[ileft, 0] = np.abs(self.last_trials.signed_contrast[ileft])
         self.last_contrasts[iright, 1] = np.abs(self.last_trials.signed_contrast[iright])
+
+    def get_task_settings(self, session_directory: str | Path) -> None:
+        task_settings_file = Path(session_directory).joinpath('_iblrig_taskSettings.raw.json')
+        if not task_settings_file.exists():
+            return
+        with open(task_settings_file, 'r') as fid:
+            self.task_settings = json.load(fid)
 
     def update_trial(self, trial_data, bpod_data) -> None:
         # update counters
@@ -147,6 +165,8 @@ class DataModel(object):
         self.last_contrasts[-1, :] = 0
         self.last_contrasts[-1, int(self.last_trials.signed_contrast.iloc[-1] > 0)] = abs(
             self.last_trials.signed_contrast.iloc[-1])
+        self.ntrials_nan = self.ntrials if self.ntrials > 0 else np.nan
+        self.percent_correct = self.ntrials_correct / self.ntrials_nan * 100
 
     def compute_end_session_criteria(self):
         """
@@ -180,12 +200,15 @@ class OnlinePlots(object):
     Use ctrl + Z to interrupt
     >>> OnlinePlots().run(task_file)
     """
+
     def __init__(self, task_file=None):
         self.data = DataModel(task_file=task_file)
+
         # create figure and axes
         h = Bunch({})
         h.fig = plt.figure(constrained_layout=True, figsize=(10, 8))
-        h.fig_title = h.fig.suptitle(f"{self._session_string}", fontweight='bold')
+        self._set_session_string()
+        h.fig_title = h.fig.suptitle(f"{self._session_string}")
         nc = 9
         hc = nc // 2
         h.gs = h.fig.add_gridspec(2, nc)
@@ -194,29 +217,35 @@ class OnlinePlots(object):
         h.ax_performance = h.fig.add_subplot(h.gs[0, nc - 1])
         h.ax_reaction = h.fig.add_subplot(h.gs[1, hc:nc - 1])
         h.ax_water = h.fig.add_subplot(h.gs[1, nc - 1])
-        h.ax_psych.set(title='psychometric curve', xlim=[-1.01, 1.01], ylim=[0, 1.01])
-        h.ax_reaction.set(title='reaction times', xlim=[-1.01, 1.01], ylim=[0, 4], xlabel='signed contrast')
+
+        h.ax_psych.set(title='psychometric curve', xlim=[-1, 1], ylim=[0, 1])
+        h.ax_reaction.set(title='reaction times', xlim=[-1, 1], ylim=[0, 4], xlabel='signed contrast')
+        xticks = np.arange(-1, 1.1, .25)
+        xticklabels = np.array([f'{x:g}' for x in xticks])
+        xticklabels[1::2] = ''
+        h.ax_psych.set_xticks(xticks, xticklabels)
+        h.ax_reaction.set_xticks(xticks, xticklabels)
+
         h.ax_trials.set(yticks=[], title='trials timeline', xlim=[-5, 30], xlabel='time (s)')
-        h.ax_performance.set(xticks=[], xlim=[-1.01, 1.01], title='# trials')
-        h.ax_water.set(xticks=[], xlim=[-1.01, 1.01], ylim=[0, 1000], title='water (uL)')
+        h.ax_trials.set_xticks(h.ax_trials.get_xticks(), [''] + h.ax_trials.get_xticklabels()[1::])
+        h.ax_performance.set(xticks=[], xlim=[-0.6, 0.6], ylim=[0, 100], title='performance')
+        h.ax_water.set(xticks=[], xlim=[-0.6, 0.6], ylim=[0, 1000], title='reward')
 
         # create psych curves
         h.curve_psych = {}
         h.curve_reaction = {}
         for i, p in enumerate(PROBABILITY_SET):
             h.curve_psych[p] = h.ax_psych.plot(
-                self.data.psychometrics.loc[p].index, self.data.psychometrics.loc[p]['choice'], '.-')
+                self.data.psychometrics.loc[p].index, self.data.psychometrics.loc[p]['choice'], 'k.-', zorder=10, clip_on=False)
             h.curve_reaction[p] = h.ax_reaction.plot(
-                self.data.psychometrics.loc[p].index, self.data.psychometrics.loc[p]['response_time'], '.-')
+                self.data.psychometrics.loc[p].index, self.data.psychometrics.loc[p]['response_time'], 'k.-')
 
         # create the two bars on the right side
-        h.bar_correct = h.ax_performance.bar(0, self.data.ntrials_correct, label='correct', color='g')
-        h.bar_error = h.ax_performance.bar(
-            0, self.data.ntrials - self.data.ntrials_correct, label='error', color='r', bottom=self.data.ntrials_correct)
+        h.bar_correct = h.ax_performance.bar(0, self.data.percent_correct, label='correct', color='k')
         h.bar_water = h.ax_water.bar(0, self.data.water_delivered, label='water delivered', color='b')
 
         # create the trials timeline view in a single axis
-        xpos = np.tile([[-4, -1.5]], (NTRIALS_PLOT, 1)).T.flatten()
+        xpos = np.tile([[-3.75, -1.25]], (NTRIALS_PLOT, 1)).T.flatten()
         ypos = np.tile(np.arange(NTRIALS_PLOT), 2)
         h.im_trials = h.ax_trials.imshow(
             self.data.rgb_background, alpha=.2, extent=[-10, 50, -.5, NTRIALS_PLOT - .5], aspect='auto', origin='lower')
@@ -233,16 +262,24 @@ class OnlinePlots(object):
         }
         h.scatter_contrast = h.ax_trials.scatter(xpos, ypos, s=250, c=self.data.last_contrasts.T.flatten(),
                                                  alpha=1, marker='o', vmin=0.0, vmax=1, cmap='Greys')
+        xticks = np.arange(-1, 1.1, .25)
+        xticklabels = np.array([f'{x:g}' for x in xticks])
+        xticklabels[1::2] = ''
+        h.ax_psych.set_xticks(xticks, xticklabels)
+
         self.h = h
         self.update_titles()
         plt.show(block=False)
         plt.draw()
 
     def update_titles(self):
-        self.h.fig_title.set_text(
-            f"{self._session_string} time elapsed: {str(datetime.timedelta(seconds=int(self.data.time_elapsed)))}")
-        self.h.ax_water.title.set_text(f"water \n {self.data.water_delivered:.2f} (uL)")
-        self.h.ax_performance.title.set_text(f" correct/tot \n {self.data.ntrials_correct} / {self.data.ntrials}")
+        protocol = (self.data.task_settings["PYBPOD_PROTOCOL"] if self.data.task_settings else '').replace('_', r'\_')
+        spacer = r'\ \ ·\ \ '
+        main_title = r'$\mathbf{' + protocol + fr'{spacer}{self.data.ntrials}\ trials{spacer}time\ elapsed:\ ' \
+                                               fr'{str(datetime.timedelta(seconds=int(self.data.time_elapsed)))}' + r'}$'
+        self.h.fig_title.set_text(main_title + '\n' + self._session_string)
+        self.h.ax_water.title.set_text(f"total reward\n{self.data.water_delivered:.1f}μL")
+        self.h.ax_performance.title.set_text(f"performance\n{self.data.percent_correct:.0f}%")
 
     def update_trial(self, trial_data, bpod_data):
         """
@@ -273,14 +310,21 @@ class OnlinePlots(object):
                 h.lines_trials[k][0].set(xdata=self.data.last_trials[k])
             self.h.scatter_contrast.set_array(self.data.last_contrasts.T.flatten())
             # update barplots
-            self.h.bar_correct[0].set(height=self.data.ntrials_correct)
-            self.h.bar_error[0].set(height=self.data.ntrials - self.data.ntrials_correct, y=self.data.ntrials_correct)
+            self.h.bar_correct[0].set(height=self.data.percent_correct)
             self.h.bar_water[0].set(height=self.data.water_delivered)
-            h.ax_performance.set(ylim=[0, (self.data.ntrials // 50 + 1) * 50])
 
-    @property
-    def _session_string(self) -> str:
-        return ' - '.join(self.data.session_path.parts[-3:]) if self.data.session_path != "" else ""
+    def _set_session_string(self) -> None:
+        if isinstance(self.data.task_settings, dict):
+            training_info, _ = get_subject_training_info(subject_name=self.data.task_settings["SUBJECT_NAME"],
+                                                         task_name=self.data.task_settings["PYBPOD_PROTOCOL"],
+                                                         lab=self.data.task_settings["ALYX_LAB"])
+            self._session_string = f'subject: {self.data.task_settings["SUBJECT_NAME"]}  ·  ' \
+                                   f'weight: {self.data.task_settings["SUBJECT_WEIGHT"]}g  ·  ' \
+                                   f'training phase: {training_info["training_phase"]}  ·  ' \
+                                   f'stimulus gain: {self.data.task_settings["STIM_GAIN"]}  ·  ' \
+                                   f'reward amount: {self.data.task_settings["REWARD_AMOUNT_UL"]}µl'
+        else:
+            self._session_string = ''
 
     def run(self, task_file: Path | str) -> None:
         """
@@ -288,9 +332,12 @@ class OnlinePlots(object):
         :param task_file:
         :return:
         """
+        task_file = Path(task_file)
+        self.data.get_task_settings(task_file.parent)
+        self._set_session_string()
+        self.update_titles()
         self.h.fig.canvas.flush_events()
         self.real_time = Bunch({'fseek': 0, 'time_last_check': 0})
-        task_file = Path(task_file)
         flag_file = task_file.parent.joinpath('new_trial.flag')
 
         while True:
