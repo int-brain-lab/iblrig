@@ -197,9 +197,17 @@ class OnlinePlots(object):
         h.ax_performance = h.fig.add_subplot(h.gs[0, nc - 1])
         h.ax_reaction = h.fig.add_subplot(h.gs[1, hc:nc - 1])
         h.ax_water = h.fig.add_subplot(h.gs[1, nc - 1])
+
         h.ax_psych.set(title='psychometric curve', xlim=[-1, 1], ylim=[0, 1])
         h.ax_reaction.set(title='reaction times', xlim=[-1, 1], ylim=[0, 4], xlabel='signed contrast')
+        xticks = np.arange(-1, 1.1, .25)
+        xticklabels = np.array([f'{x:g}' for x in xticks])
+        xticklabels[1::2] = ''
+        h.ax_psych.set_xticks(xticks, xticklabels)
+        h.ax_reaction.set_xticks(xticks, xticklabels)
+
         h.ax_trials.set(yticks=[], title='trials timeline', xlim=[-5, 30], xlabel='time (s)')
+        h.ax_trials.set_xticklabels(np.hstack(([''], h.ax_trials.get_xticklabels()[1::])))
         h.ax_performance.set(xticks=[], xlim=[-0.6, 0.6], title='# trials')
         h.ax_water.set(xticks=[], xlim=[-0.6, 0.6], ylim=[0, 1000], title='reward')
 
@@ -217,10 +225,6 @@ class OnlinePlots(object):
         h.bar_error = h.ax_performance.bar(
             0, self.data.ntrials - self.data.ntrials_correct, label='error', color='r', bottom=self.data.ntrials_correct)
         h.bar_water = h.ax_water.bar(0, self.data.water_delivered, label='water delivered', color='b')
-
-        # h.label_correct = h.ax_performance.bar_label(h.bar_correct, label_type='center')
-        # h.label_error = h.ax_performance.bar_label(h.bar_error, label_type='center')
-        # h.label_water = h.ax_water.bar_label(h.bar_water)
 
         # create the trials timeline view in a single axis
         xpos = np.tile([[-3.75, -1.25]], (NTRIALS_PLOT, 1)).T.flatten()
@@ -240,6 +244,11 @@ class OnlinePlots(object):
         }
         h.scatter_contrast = h.ax_trials.scatter(xpos, ypos, s=250, c=self.data.last_contrasts.T.flatten(),
                                                  alpha=1, marker='o', vmin=0.0, vmax=1, cmap='Greys')
+        xticks = np.arange(-1, 1.1, .25)
+        xticklabels = np.array([f'{x:g}' for x in xticks])
+        xticklabels[1::2] = ''
+        h.ax_psych.set_xticks(xticks, xticklabels)
+
         self.h = h
         self.update_titles()
         plt.show(block=False)
