@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 import datetime
 import time
@@ -6,12 +7,12 @@ import matplotlib
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.style as mplstyle
 import seaborn as sns
 from pandas.api.types import CategoricalDtype
 
 import one.alf.io
 
+from iblrig.choiceworld import get_subject_training_info
 from iblrig.misc import online_std
 from iblrig.raw_data_loaders import load_task_jsonable
 from iblutil.util import Bunch
@@ -27,6 +28,7 @@ sns.set_style("darkgrid")
 
 matplotlib.use('Qt5Agg')
 
+
 class DataModel(object):
     """
     The data model is a pure numpy / pandas container for the choice world task.
@@ -36,6 +38,8 @@ class DataModel(object):
     - a last trials dataframe that contains 20 trials worth of data for the timeline view
     - various counters such as ntrials and water delivered
     """
+    task_settings = None
+
     def __init__(self, task_file):
         """
         Can be instantiated empty or from an existing jsonable file from any rig version
@@ -45,6 +49,7 @@ class DataModel(object):
         self.last_trials = pd.DataFrame(
             columns=['correct', 'signed_contrast', 'stim_on', 'play_tone', 'reward_time', 'error_time', 'response_time'],
             index=np.arange(NTRIALS_PLOT))
+
         if task_file is None or not Path(task_file).exists():
             self.psychometrics = pd.DataFrame(
                 columns=['count', 'response_time', 'choice', 'response_time_std', 'choice_std'],
@@ -58,6 +63,7 @@ class DataModel(object):
             self.time_elapsed = 0
             self.ntrials_engaged = 0  # those are the trials happening within the first 400s
         else:
+            self.get_task_settings(Path(task_file).parent)
             trials_table, bpod_data = load_task_jsonable(task_file)
             # here we take the end time of the first trial as reference to avoid factoring in the delay
             self.time_elapsed = bpod_data[-1]['Trial end timestamp'] - bpod_data[0]['Trial end timestamp']
@@ -104,6 +110,11 @@ class DataModel(object):
         self.last_contrasts = np.zeros((NTRIALS_PLOT, 2))
         self.last_contrasts[ileft, 0] = np.abs(self.last_trials.signed_contrast[ileft])
         self.last_contrasts[iright, 1] = np.abs(self.last_trials.signed_contrast[iright])
+
+    def get_task_settings(self, session_directory: str | Path) -> None:
+        task_settings_file = Path(session_directory).joinpath('_iblrig_taskSettings.raw.json')
+        with open(task_settings_file, 'r') as fid:
+            self.task_settings = json.load(fid)
 
     def update_trial(self, trial_data, bpod_data) -> None:
         # update counters
@@ -183,12 +194,15 @@ class OnlinePlots(object):
     Use ctrl + Z to interrupt
     >>> OnlinePlots().run(task_file)
     """
+
     def __init__(self, task_file=None):
         self.data = DataModel(task_file=task_file)
+
         # create figure and axes
         h = Bunch({})
         h.fig = plt.figure(constrained_layout=True, figsize=(10, 8))
-        h.fig_title = h.fig.suptitle(f"{self._session_string}", fontweight='bold')
+        self._set_session_string()
+        h.fig_title = h.fig.suptitle(f"{self._session_string}")
         nc = 9
         hc = nc // 2
         h.gs = h.fig.add_gridspec(2, nc)
@@ -207,7 +221,7 @@ class OnlinePlots(object):
         h.ax_reaction.set_xticks(xticks, xticklabels)
 
         h.ax_trials.set(yticks=[], title='trials timeline', xlim=[-5, 30], xlabel='time (s)')
-        h.ax_trials.set_xticklabels(np.hstack(([''], h.ax_trials.get_xticklabels()[1::])))
+        # h.ax_trials.set_xticklabels(np.hstack(([''], h.ax_trials.get_xticklabels()[1::])))
         h.ax_performance.set(xticks=[], xlim=[-0.6, 0.6], title='# trials')
         h.ax_water.set(xticks=[], xlim=[-0.6, 0.6], ylim=[0, 1000], title='reward')
 
@@ -256,7 +270,7 @@ class OnlinePlots(object):
 
     def update_titles(self):
         self.h.fig_title.set_text(
-            f"{self._session_string} time elapsed: {str(datetime.timedelta(seconds=int(self.data.time_elapsed)))}")
+            self._session_string + f"time elapsed: {str(datetime.timedelta(seconds=int(self.data.time_elapsed)))}")
         self.h.ax_water.title.set_text(f"reward \n {self.data.water_delivered:.1f}  μL")
         self.h.ax_performance.title.set_text(f" correct/tot \n {self.data.ntrials_correct} / {self.data.ntrials}")
 
@@ -294,9 +308,20 @@ class OnlinePlots(object):
             self.h.bar_water[0].set(height=self.data.water_delivered)
             h.ax_performance.set(ylim=[0, self.data.ntrials])
 
-    @property
-    def _session_string(self) -> str:
-        return ' - '.join(self.data.session_path.parts[-3:]) if self.data.session_path != "" else ""
+    def _set_session_string(self) -> None:
+        if isinstance(self.data.task_settings, dict):
+            training_info, _ = get_subject_training_info(subject_name=self.data.task_settings["SUBJECT_NAME"],
+                                                         task_name=self.data.task_settings["PYBPOD_PROTOCOL"],
+                                                         lab=self.data.task_settings["ALYX_LAB"])
+            protocol = r'$\mathbf{' + self.data.task_settings["PYBPOD_PROTOCOL"].replace('_', '\_') + r'}$'
+            self._session_string = f'{protocol}\n' \
+                                   f'subject: {self.data.task_settings["SUBJECT_NAME"]}  ·  ' \
+                                   f'weight: {self.data.task_settings["SUBJECT_WEIGHT"]}g  ·  ' \
+                                   f'training phase: {training_info["training_phase"]}  ·  ' \
+                                   f'stimulus gain: {self.data.task_settings["STIM_GAIN"]}  ·  ' \
+                                   f'reward amount: {self.data.task_settings["REWARD_AMOUNT_UL"]}µl  ·  '
+        else:
+            self._session_string = ''
 
     def run(self, task_file: Path | str) -> None:
         """
@@ -304,9 +329,12 @@ class OnlinePlots(object):
         :param task_file:
         :return:
         """
+        task_file = Path(task_file)
+        self.data.get_task_settings(task_file.parent)
+        self._set_session_string()
+        self.update_titles()
         self.h.fig.canvas.flush_events()
         self.real_time = Bunch({'fseek': 0, 'time_last_check': 0})
-        task_file = Path(task_file)
         flag_file = task_file.parent.joinpath('new_trial.flag')
 
         while True:
