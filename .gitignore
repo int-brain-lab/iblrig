@@ -38,4 +38,5 @@ app.log
 iblrig/_version.py
 *.code-workspace
 
-.coverage
+.coverage*
+coverage.xml
