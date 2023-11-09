@@ -728,6 +728,23 @@
     <bool>false</bool>
    </property>
   </widget>
+  <widget class="QMenuBar" name="uiMenuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>391</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="uiMenuTools">
+    <property name="title">
+     <string>Tools</string>
+    </property>
+    <addaction name="uiActionTrainingLevelV7"/>
+   </widget>
+   <addaction name="uiMenuTools"/>
+  </widget>
   <action name="uiActionLoadSession">
    <property name="text">
     <string>load session</string>
@@ -746,6 +763,11 @@
   <action name="uiActionEphysTemplate">
    <property name="text">
     <string>ephys rig</string>
+   </property>
+  </action>
+  <action name="uiActionTrainingLevelV7">
+   <property name="text">
+    <string>training level v7</string>
    </property>
   </action>
  </widget>
