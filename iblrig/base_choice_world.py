@@ -10,9 +10,11 @@ from pathlib import Path
 from string import ascii_letters
 import subprocess
 import time
+from typing import Literal, Annotated
 
 import numpy as np
 import pandas as pd
+from pydantic import BaseModel, Field
 
 from pybpodapi.protocol import StateMachine
 from pybpodapi.com.messaging.trial import Trial
@@ -32,6 +34,49 @@ log = setup_logger(__name__)
 NTRIALS_INIT = 2000
 NBLOCKS_INIT = 100
 
+Probability = Annotated[float, Field(ge=0.0, le=1.0)]
+
+
+class ChoiceWorldParams(BaseModel):
+    AUTOMATIC_CALIBRATION: bool = True
+    ADAPTIVE_REWARD: bool = False
+    BONSAI_EDITOR: bool = False
+    CALIBRATION_VALUE: float = 0.067
+    CONTRAST_SET: list[Probability] = Field([1.0, 0.25, 0.125, 0.0625, 0.0], min_items=1)
+    CONTRAST_SET_PROBABILITY_TYPE: Literal["uniform", "skew_zero"] = 'uniform'
+    GO_TONE_AMPLITUDE: float = 0.0272
+    GO_TONE_DURATION: float = 0.11
+    GO_TONE_IDX: int = Field(2, ge=0)
+    GO_TONE_FREQUENCY: float = Field(5000, gt=0)
+    FEEDBACK_CORRECT_DELAY_SECS: float = 1
+    FEEDBACK_ERROR_DELAY_SECS: float = 2
+    FEEDBACK_NOGO_DELAY_SECS: float = 2
+    INTERACTIVE_DELAY: float = 0.0
+    ITI_DELAY_SECS: float = 1
+    NTRIALS: int = Field(2000, gt=0)
+    POOP_COUNT: bool = True
+    PROBABILITY_LEFT: Probability = 0.5
+    QUIESCENCE_THRESHOLDS: list[float] = Field(default=[-2, 2], min_length=2, max_length=2)
+    QUIESCENT_PERIOD: float = 0.2
+    RECORD_AMBIENT_SENSOR_DATA: bool = True
+    RECORD_SOUND: bool = True
+    RESPONSE_WINDOW: float = 60
+    REWARD_AMOUNT_UL: float = 1.5
+    REWARD_TYPE: str = 'Water 10% Sucrose'
+    STIM_ANGLE: float = 0.0
+    STIM_FREQ: float = 0.1
+    STIM_GAIN: float = 4.0  # wheel to stimulus relationship (degrees visual angle per mm of wheel displacement)
+    STIM_POSITIONS: list[float] = [-35, 35]
+    STIM_SIGMA: float = 7.0
+    STIM_TRANSLATION_Z: Literal[7, 8] = 7  # 7 for ephys, 8 otherwise. -p:Stim.TranslationZ-{STIM_TRANSLATION_Z} bonsai parameter
+    SYNC_SQUARE_X: float = 1.33
+    SYNC_SQUARE_Y: float = -1.03
+    USE_AUTOMATIC_STOPPING_CRITERIONS: bool = True
+    VISUAL_STIMULUS: str = 'GaborIBLTask / Gabor2D.bonsai'  # null / passiveChoiceWorld_passive.bonsai
+    WHITE_NOISE_AMPLITUDE: float = 0.05
+    WHITE_NOISE_DURATION: float = 0.5
+    WHITE_NOISE_IDX: int = 3
+
 
 class ChoiceWorldSession(
     iblrig.base_tasks.BaseSession,
@@ -43,10 +88,12 @@ class ChoiceWorldSession(
     iblrig.base_tasks.SoundMixin,
     iblrig.base_tasks.ValveMixin,
 ):
+    # task_params = ChoiceWorldParams()
     base_parameters_file = Path(__file__).parent.joinpath('base_choice_world_params.yaml')
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, delay_secs=0, **kwargs):
         super(ChoiceWorldSession, self).__init__(**kwargs)
+        self.task_params["SESSION_DELAY_START"] = delay_secs
         # init behaviour data
         self.movement_left = self.device_rotary_encoder.THRESHOLD_EVENTS[
             self.task_params.QUIESCENCE_THRESHOLDS[0]]
@@ -80,6 +127,14 @@ class ChoiceWorldSession(
             "AirPressure_mb": np.zeros(NTRIALS_INIT) * np.NaN,
             "RelativeHumidity": np.zeros(NTRIALS_INIT) * np.NaN,
         })
+
+    @staticmethod
+    def extra_parser():
+        """ :return: argparse.parser() """
+        parser = super(ChoiceWorldSession, ChoiceWorldSession).extra_parser()
+        parser.add_argument('--delay_secs', dest='delay_secs', default=0, type=int, required=False,
+                            help="initial delay before starting the first trial (default: 0s)")
+        return parser
 
     def start_hardware(self):
         """
@@ -126,6 +181,8 @@ class ChoiceWorldSession(
             time_last_trial_end = time.time()
             self.trial_completed(self.bpod.session.current_trial.export())
             self.show_trial_log()
+            while self.paths.SESSION_FOLDER.joinpath('.pause').exists():
+                time.sleep(1)
             if self.paths.SESSION_FOLDER.joinpath('.stop').exists():
                 self.paths.SESSION_FOLDER.joinpath('.stop').unlink()
                 break
@@ -364,11 +421,18 @@ class ChoiceWorldSession(
     def next_trial(self):
         pass
 
+    @property
+    def reward_amount(self):
+        return self.task_params.REWARD_AMOUNT_UL
+
     def draw_next_trial_info(self, pleft=0.5, contrast=None, position=None):
-        contrast = contrast or misc.draw_contrast(self.task_params.CONTRAST_SET, self.task_params.CONTRAST_SET_PROBABILITY_TYPE)
+        if contrast is None:
+            contrast = misc.draw_contrast(self.task_params.CONTRAST_SET, self.task_params.CONTRAST_SET_PROBABILITY_TYPE)
         assert len(self.task_params.STIM_POSITIONS) == 2, "Only two positions are supported"
         position = position or int(np.random.choice(self.task_params.STIM_POSITIONS, p=[pleft, 1 - pleft]))
-        quiescent_period = self.task_params.QUIESCENT_PERIOD + misc.texp(factor=0.35, min_=0.2, max_=0.5)
+        quiescent_period = self.task_params.QUIESCENT_PERIOD + misc.truncated_exponential(scale=0.35,
+                                                                                          min_value=0.2,
+                                                                                          max_value=0.5)
         self.trials_table.at[self.trial_num, 'quiescent_period'] = quiescent_period
         self.trials_table.at[self.trial_num, 'contrast'] = contrast
         self.trials_table.at[self.trial_num, 'stim_phase'] = random.uniform(0, 2 * math.pi)
@@ -378,7 +442,7 @@ class ChoiceWorldSession(
         self.trials_table.at[self.trial_num, 'stim_freq'] = self.task_params.STIM_FREQ
         self.trials_table.at[self.trial_num, 'trial_num'] = self.trial_num
         self.trials_table.at[self.trial_num, 'position'] = position
-        self.trials_table.at[self.trial_num, 'reward_amount'] = self.task_params.REWARD_AMOUNT_UL
+        self.trials_table.at[self.trial_num, 'reward_amount'] = self.reward_amount
         self.trials_table.at[self.trial_num, 'stim_probability_left'] = pleft
         self.send_trial_info_to_bonsai()
 
@@ -542,13 +606,24 @@ class HabituationChoiceWorldSession(ChoiceWorldSession):
             state_name="iti",
             state_timer=self.task_params.ITI_DELAY_SECS,
             state_change_conditions={"Tup": "exit"},
-            output_actions=[],
+            output_actions=[("BNC1", 255)]
         )
         return sma
 
 
 class ActiveChoiceWorldSession(ChoiceWorldSession):
+    """
+    The ActiveChoiceWorldSession is a base class for protocols where the mouse is actively making decisions
+    by turning the wheel. It has the following characteristics
+    -   it is trial based
+    -   it is decision based
+    -   left and right simulus are equiprobable: there is no biased block
+    -   a trial can either be correct / error / no_go depending on the side of the stimulus and the response
+    -   it has a quantifiable performance by computing the proportion of correct trials of passive stimulations protocols or
+        habituation protocols.
 
+    The TrainingChoiceWorld, BiasedChoiceWorld are all subclasses of this class
+    """
     def __init__(self, **kwargs):
         super(ActiveChoiceWorldSession, self).__init__(**kwargs)
         self.trials_table['stim_probability_left'] = np.zeros(NTRIALS_INIT, dtype=np.float32)
@@ -609,6 +684,11 @@ NTRIALS ERROR:        {self.trial_num - self.session_info.NTRIALS_CORRECT}
 
 
 class BiasedChoiceWorldSession(ActiveChoiceWorldSession):
+    """
+    Biased choice world session is the instantiation of ActiveChoiceWorld where the notion of biased
+    blocks is introduced.
+    """
+    base_parameters_file = Path(__file__).parent.joinpath('base_biased_choice_world_params.yaml')
     protocol_name = "_iblrig_tasks_biasedChoiceWorld"
 
     def __init__(self, **kwargs):
@@ -633,10 +713,10 @@ class BiasedChoiceWorldSession(ActiveChoiceWorldSession):
         if self.task_params.BLOCK_INIT_5050 and self.block_num == 0:
             block_len = 90
         else:
-            block_len = int(misc.texp(
-                factor=self.task_params.BLOCK_LEN_FACTOR,
-                min_=self.task_params.BLOCK_LEN_MIN,
-                max_=self.task_params.BLOCK_LEN_MAX
+            block_len = int(misc.truncated_exponential(
+                scale=self.task_params.BLOCK_LEN_FACTOR,
+                min_value=self.task_params.BLOCK_LEN_MIN,
+                max_value=self.task_params.BLOCK_LEN_MAX
             ))
         if self.block_num == 0:
             if self.task_params.BLOCK_INIT_5050:
@@ -676,28 +756,71 @@ TRIALS IN BLOCK:      {trial_info.block_trial_num}
 
 
 class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
+    """
+    The TrainingChoiceWorldSession corresponds to the first training protocol of the choice world task.
+    This protocol has a complicated adaptation of the number of contrasts (embodied by the training_phase
+    property) and the reward amount, embodied by the adaptive_reward property.
+    """
     protocol_name = "_iblrig_tasks_trainingChoiceWorld"
 
-    def __init__(self, training_phase=-1, **kwargs):
+    def __init__(self, training_phase=-1, adaptive_reward=-1.0, adaptive_gain=None, **kwargs):
         super(TrainingChoiceWorldSession, self).__init__(**kwargs)
-        from iblrig.choiceworld import get_training_phase
+        inferred_training_phase, inferred_adaptive_reward, inferred_adaptive_gain = self.get_subject_training_info()
         if training_phase == -1:
-            try:
-                training_phase = get_training_phase(self.session_info.SUBJECT_NAME)
-                self.logger.warning(f"Got training phase: {training_phase}")
-            except Exception:
-                self.logger.warning(f"Could not get training phase from Alyx: {traceback.format_exc()}, please set it"
-                                    f"manually in ./iblrig_tasks/_iblrig_tasks_trainingChoiceWorld/task.py default is phase is 5")
-                training_phase = 5
+            self.logger.critical(f"Got training phase: {inferred_training_phase}")
+            self.training_phase = inferred_training_phase
         else:
-            self.logger.warning(f"Training phase manually set to: {training_phase}")
-        self.training_phase = training_phase
+            self.logger.critical(f"Training phase manually set to: {training_phase}")
+            self.training_phase = training_phase
+        if adaptive_reward == -1:
+            self.logger.critical(f"Got Adaptive reward {inferred_adaptive_reward} uL")
+            self.session_info["ADAPTIVE_REWARD_AMOUNT_UL"] = inferred_adaptive_reward
+        else:
+            self.logger.critical(f"Adaptive reward manually set to {adaptive_reward} uL")
+            self.session_info["ADAPTIVE_REWARD_AMOUNT_UL"] = adaptive_reward
+        if adaptive_gain is None:
+            self.logger.critical(f"Got Adaptive gain {inferred_adaptive_gain} degrees/mm")
+            self.session_info["ADAPTIVE_GAIN_VALUE"] = inferred_adaptive_gain
+        else:
+            self.logger.critical(f"Adaptive gain manually set to {adaptive_gain} degrees/mm")
+            self.session_info["ADAPTIVE_GAIN_VALUE"] = adaptive_gain
         self.var = {
             "training_phase_trial_counts": np.zeros(6),
             "last_10_responses_sides": np.zeros(10),
         }
         self.trials_table['training_phase'] = np.zeros(NTRIALS_INIT, dtype=np.int8)
         self.trials_table['debias_trial'] = np.zeros(NTRIALS_INIT, dtype=bool)
+
+    @property
+    def reward_amount(self):
+        return self.session_info.get("ADAPTIVE_REWARD_AMOUNT_UL", self.task_params.REWARD_AMOUNT_UL)
+
+    def get_subject_training_info(self):
+        """
+        Get the previous session's according to this session parameters and deduce the
+        training level, adaptive reward amount and adaptive gain value
+        :return:
+        """
+        try:
+            tinfo, _ = choiceworld.get_subject_training_info(
+                subject_name=self.session_info.SUBJECT_NAME,
+                default_reward=self.task_params.REWARD_AMOUNT_UL,
+                stim_gain=self.task_params.STIM_GAIN,
+                local_path=self.iblrig_settings['iblrig_local_data_path'],
+                remote_path=self.iblrig_settings['iblrig_remote_data_path'],
+                lab=self.iblrig_settings['ALYX_LAB'],
+                task_name=self.protocol_name,
+            )
+        except Exception:
+            self.logger.critical('Failed to get training information from previous subjects: %s', traceback.format_exc())
+            tinfo = dict(
+                training_phase=iblrig.choiceworld.DEFAULT_TRAINING_PHASE,
+                adaptive_reward=iblrig.choiceworld.DEFAULT_REWARD_VOLUME,
+                adaptive_gain=self.task_params.AG_INIT_VALUE
+            )
+            self.logger.critical(f"The mouse will train on level {tinfo['training_phase']}, "
+                                 f"with reward {tinfo['adaptive_reward']} uL and gain {tinfo['adaptive_gain']}")
+        return tinfo['training_phase'], tinfo['adaptive_reward'], tinfo['adaptive_gain']
 
     def compute_performance(self):
         """
@@ -760,7 +883,7 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
                 # contrast is the last contrast
                 contrast = last_contrast
         # save and send trial info to bonsai
-        self.draw_next_trial_info(pleft=0.5, position=position, contrast=contrast)
+        self.draw_next_trial_info(pleft=self.task_params.PROBABILITY_LEFT, position=position, contrast=contrast)
         self.trials_table.at[self.trial_num, 'training_phase'] = self.training_phase
 
     def show_trial_log(self):

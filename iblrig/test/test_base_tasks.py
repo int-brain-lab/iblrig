@@ -5,6 +5,7 @@ The start() methods of those mixins require the hardware to be connected.
 
 """
 import argparse
+import copy
 from pathlib import Path
 import unittest
 import tempfile
@@ -13,8 +14,9 @@ import yaml
 import ibllib.io.session_params as ses_params
 
 from iblrig.test.base import TASK_KWARGS
-from iblrig.base_tasks import SoundMixin, RotaryEncoderMixin, BaseSession, BpodMixin, ValveMixin
-from iblrig.base_choice_world import BiasedChoiceWorldSession
+from iblrig.base_tasks import (SoundMixin, RotaryEncoderMixin, BaseSession, BpodMixin,
+                               ValveMixin, Frame2TTLMixin)
+from iblrig.base_choice_world import BiasedChoiceWorldSession, ChoiceWorldSession
 from ibllib.io.session_params import read_params
 from iblrig.misc import _get_task_argument_parser, _post_parse_arguments
 
@@ -45,7 +47,7 @@ class TestHierarchicalParameters(unittest.TestCase):
 
 class TestHardwareMixins(unittest.TestCase):
     def setUp(self):
-        task_settings_file = BiasedChoiceWorldSession.base_parameters_file
+        task_settings_file = ChoiceWorldSession.base_parameters_file
         self.session = EmptyHardwareSession(task_parameter_file=task_settings_file, **TASK_KWARGS)
 
     def test_rotary_encoder_mixin(self):
@@ -62,6 +64,17 @@ class TestHardwareMixins(unittest.TestCase):
             -2: 'RotaryEncoder1_3',
             2: 'RotaryEncoder1_4'
         }
+        with self.assertRaises(ValueError):
+            RotaryEncoderMixin.start_mixin_rotary_encoder(session)
+
+    def test_frame2ttl_mixin(self):
+        """
+        Instantiates a bare session with the frame2ttl mixin
+        """
+        session = self.session
+        Frame2TTLMixin.init_mixin_frame2ttl(session)
+        with self.assertRaises(ValueError):
+            Frame2TTLMixin.start_mixin_frame2ttl(session)
 
     def test_sound_card_mixin(self):
         """
@@ -75,6 +88,8 @@ class TestHardwareMixins(unittest.TestCase):
         session = self.session
         BpodMixin.init_mixin_bpod(session)
         assert hasattr(session, 'bpod')
+        with self.assertRaises(ValueError):
+            BpodMixin.start_mixin_bpod(session)
 
     def test_valve_mixin(self):
         session = self.session
@@ -144,17 +159,13 @@ class TestPathCreation(unittest.TestCase):
 
     def test_create_chained_protocols(self):
         # creates a first task
-        first_task = EmptyHardwareSession(
-            iblrig_settings={'iblrig_remote_data_path': False},
-            hardware_settings={'MAIN_SYNC': False},
-            **TASK_KWARGS)
+        task_kwargs = copy.deepcopy(TASK_KWARGS)
+        task_kwargs['hardware_settings']['MAIN_SYNC'] = False
+        first_task = EmptyHardwareSession(iblrig_settings={'iblrig_remote_data_path': False},
+                                          **task_kwargs, task_parameter_file=ChoiceWorldSession.base_parameters_file)
         first_task.create_session()
         # append a new protocol the the current task
-        second_task = EmptyHardwareSession(
-            append=True,
-            hardware_settings={'MAIN_SYNC': False},
-            iblrig_settings={'iblrig_remote_data_path': False},
-            **TASK_KWARGS)
+        second_task = EmptyHardwareSession(append=True, iblrig_settings={'iblrig_remote_data_path': False}, **task_kwargs)
         # unless the task has reached the create session stage, there is only one protocol in there
         self.assertEqual(set([d.name for d in first_task.paths.SESSION_FOLDER.iterdir() if d.is_dir()]),
                          set(['raw_task_data_00']))

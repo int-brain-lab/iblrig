@@ -2,12 +2,15 @@
 This modules contains hardware classes used to interact with modules.
 """
 import logging
+import struct
 import time
 from enum import IntEnum
 import threading
 
 import serial
 import numpy as np
+
+from iblrig.tools import static_vars
 from iblutil.util import Bunch
 
 import sounddevice as sd
@@ -25,21 +28,28 @@ log = logging.getLogger(__name__)
 
 
 class Bpod(BpodIO):
+    can_control_led = True
     _instances = {}
     _lock = threading.Lock()
+    _is_initialized = False
 
-    def __new__(self, *args, **kwargs):
+    def __new__(cls, *args, **kwargs):
         serial_port = args[0] if len(args) > 0 else ''
         serial_port = kwargs.get('serial_port', serial_port)
-        with self._lock:
+        with cls._lock:
             instance = Bpod._instances.get(serial_port, None)
-            if instance is not None:
+            if instance:
                 return instance
-            instance = super().__new__(self)
+            instance = super().__new__(cls)
             Bpod._instances[serial_port] = instance
             return instance
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, skip_initialization: bool = False, **kwargs):
+        # skip initialization if it has already been performed before
+        # IMPORTANT: only use this for non-critical tasks (e.g., flushing valve from GUI)
+        if skip_initialization and self._is_initialized:
+            return
+
         # try to instantiate once for nothing
         try:
             super(Bpod, self).__init__(*args, **kwargs)
@@ -56,6 +66,12 @@ class Bpod(BpodIO):
                     "Please unplug the Bpod USB cable from the computer and plug it back in to start the task. ") from e
         self.default_message_idx = 0
         self.actions = Bunch({})
+        self.can_control_led = self.set_status_led(True)
+        self._is_initialized = True
+
+    def close(self) -> None:
+        super().close()
+        self._is_initialized = False
 
     def __del__(self):
         with self._lock:
@@ -164,6 +180,22 @@ class Bpod(BpodIO):
         else:
             time.sleep(duration)
         self.manual_override(self.ChannelTypes.OUTPUT, self.ChannelNames.VALVE, 1, 0)
+
+    @static_vars(supported=True)
+    def set_status_led(self, state: bool) -> bool:
+        if self.can_control_led and self._arcom is not None:
+            try:
+                log.info(f'{"en" if state else "dis"}abling Bpod Status LED')
+                command = struct.pack("cB", b":", state)
+                self._arcom.serial_object.write(command)
+                if self._arcom.read_uint8() == 1:
+                    return True
+            except serial.SerialException:
+                pass
+            self._arcom.serial_object.reset_input_buffer()
+            self._arcom.serial_object.reset_output_buffer()
+            log.warning('Bpod device does not support control of the status LED. Please update firmware.')
+        return False
 
     def valve(self, valve_id: int, state: bool):
         self.manual_override(self.ChannelTypes.OUTPUT, self.ChannelNames.VALVE, valve_id, state)

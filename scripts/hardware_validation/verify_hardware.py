@@ -21,10 +21,12 @@ log = setup_logger('iblrig', level='DEBUG')
 
 issues = 0
 
+
 # function for querying a serial device
 def query(s_obj, req, n=1, end: bool = False):
     s_obj.write(req)
     return s.read(n)
+
 
 def log_fun(msg_type: str = 'info', msg: str = '', last: bool = False):
     global issues
@@ -210,7 +212,8 @@ if 'device_sound' in hw_settings and 'OUTPUT' in hw_settings['device_sound']:
             elif len(module) > 1:
                 log_fun('fail', 'more than one Harp Sound Card connected to the Bpod', last=True)
             else:
-                log_fun('pass', f'module "{module[0].name}" is connected to the Bpod\'s module port #{module[0].serial_port}',
+                log_fun('pass',
+                        f'module "{module[0].name}" is connected to the Bpod\'s module port #{module[0].serial_port}',
                         last=True)
         case _:
             pass
@@ -225,7 +228,7 @@ if module:
     (t, p, h) = unpack('3f', bytes(bpod.bpod_modules.module_read(module, 12)))
     module.stop_module_relay()
     log_fun('info', f'temperature: {t:.1f} °C')
-    log_fun('info', f'air pressure: {p/100:.1f} mbar')
+    log_fun('info', f'air pressure: {p / 100:.1f} mbar')
     log_fun('info', f'rel. humidity: {h:.1f}%')
 else:
     log_fun('fail', 'Could not find Ambient Module', last=True)

@@ -6,3 +6,5 @@ exclude =
     scratch_*.py,
     Bonsai,
     venv*
+    _version.py
+    ui_*.py

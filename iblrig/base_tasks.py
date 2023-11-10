@@ -11,6 +11,8 @@ import datetime
 import inspect
 import json
 import os
+from typing import Optional
+
 import serial
 import subprocess
 import time
@@ -29,30 +31,34 @@ from one.api import ONE
 
 import iblrig
 import iblrig.path_helper
+from iblutil.spacer import Spacer
 from iblutil.util import Bunch, setup_logger
 from iblrig.hardware import Bpod, MyRotaryEncoder, sound_device_factory, SOFTCODE
 import iblrig.frame2TTL as frame2TTL
 import iblrig.sound as sound
-import iblrig.spacer
 import iblrig.alyx
 import iblrig.graphic as graph
 import ibllib.io.session_params as ses_params
-from iblrig.transfer_experiments import SessionCopier
+from iblrig.transfer_experiments import BehaviorCopier
+
+# if HAS_PYSPIN:
+#     import PySpin
 
 OSC_CLIENT_IP = "127.0.0.1"
 
 
 class BaseSession(ABC):
     version = None
-    protocol_name = None
-    base_parameters_file = None
+    protocol_name: Optional[str] = None
+    base_parameters_file: Optional[Path] = None
     is_mock = False
     extractor_tasks = None
+    checked_for_update = False
 
     def __init__(self, subject=None, task_parameter_file=None, file_hardware_settings=None,
                  hardware_settings=None, file_iblrig_settings=None, iblrig_settings=None,
-                 one=None, interactive=True, projects=None, procedures=None, stub=None,
-                 append=False, log_level='INFO'):
+                 one=None, interactive=True, projects=None, procedures=None, stub=None, subject_weight_grams=None,
+                 append=False, wizard=False, log_level='INFO'):
         """
         :param subject: The subject nickname. Required.
         :param task_parameter_file: an optional path to the task_parameters.yaml file
@@ -64,6 +70,7 @@ class BaseSession(ABC):
         :param interactive:
         :param projects: An optional list of Alyx protocols.
         :param procedures: An optional list of Alyx procedures.
+        :param subject_weight_grams: weight of the subject
         :param stub: A full path to an experiment description file containing experiment information.
         :param append: bool, if True, append to the latest existing session of the same subject for the same day
         :param fmake: (DEPRECATED) if True, only create the raw_behavior_data folder.
@@ -84,23 +91,27 @@ class BaseSession(ABC):
         self.iblrig_settings = iblrig.path_helper.load_settings_yaml(file_iblrig_settings or 'iblrig_settings.yaml')
         if iblrig_settings is not None:
             self.iblrig_settings.update(iblrig_settings)
-        if self.iblrig_settings['iblrig_local_data_path'] is None:
-            self.iblrig_settings['iblrig_local_data_path'] = Path.home().joinpath('iblrig_data')
-        else:
-            self.iblrig_settings['iblrig_local_data_path'] = Path(self.iblrig_settings['iblrig_local_data_path'])
+        self.wizard = wizard
         # Load the tasks settings, from the task folder or override with the input argument
-        task_parameter_file = task_parameter_file or Path(inspect.getfile(self.__class__)).parent.joinpath('task_parameters.yaml')
+        base_parameters_files = [
+            task_parameter_file or Path(inspect.getfile(self.__class__)).parent.joinpath('task_parameters.yaml')]
+        # loop through the task hierarchy to gather parameter files
+        for cls in self.__class__.__mro__:
+            base_file = getattr(cls, 'base_parameters_file', None)
+            if base_file is not None:
+                base_parameters_files.append(base_file)
+        # this is a trick to remove list duplicates while preserving order, we want the highest order first
+        base_parameters_files = list(reversed(list(dict.fromkeys(base_parameters_files))))
+        # now we loop into the files and update the dictionary, the latest files in the hierarchy have precedence
         self.task_params = Bunch({})
-        # first loads the base parameters for a given task
-        if self.base_parameters_file is not None and self.base_parameters_file.exists():
-            with open(self.base_parameters_file) as fp:
-                self.task_params = Bunch(yaml.safe_load(fp))
-        # then updates the dictionary with the child task parameters
-        if task_parameter_file.exists():
-            with open(task_parameter_file) as fp:
-                task_params = yaml.safe_load(fp)
-            if task_params is not None:
-                self.task_params.update(Bunch(task_params))
+        for param_file in base_parameters_files:
+            if Path(param_file).exists():
+                with open(param_file) as fp:
+                    params = yaml.safe_load(fp)
+                if params is not None:
+                    self.task_params.update(Bunch(params))
+        # at last sort the dictionary so itś easier for a human to navigate the many keys
+        self.task_params = Bunch(dict(sorted(self.task_params.items())))
         self.session_info = Bunch({
             'NTRIALS': 0,
             'NTRIALS_CORRECT': 0,
@@ -110,7 +121,7 @@ class BaseSession(ABC):
             'SESSION_END_TIME': None,
             'SESSION_NUMBER': 0,
             'SUBJECT_NAME': subject,
-            'SUBJECT_WEIGHT': None,
+            'SUBJECT_WEIGHT': subject_weight_grams,
             'TOTAL_WATER_DELIVERED': 0,
         })
         # Executes mixins init methods
@@ -145,17 +156,18 @@ class BaseSession(ABC):
         DATA_FILE_PATH: contains the bpod trials
             >>> C:\iblrigv8_data\mainenlab\Subjects\SWC_043\2019-01-01\001\raw_task_data_00\_iblrig_taskData.raw.jsonable  # noqa
         """
+        rig_computer_paths = iblrig.path_helper.get_local_and_remote_paths(
+            local_path=self.iblrig_settings['iblrig_local_data_path'],
+            remote_path=self.iblrig_settings['iblrig_remote_data_path'],
+            lab=self.iblrig_settings['ALYX_LAB']
+        )
         paths = Bunch({'IBLRIG_FOLDER': Path(iblrig.__file__).parents[1]})
         paths.BONSAI = paths.IBLRIG_FOLDER.joinpath('Bonsai', 'Bonsai.exe')
         paths.VISUAL_STIM_FOLDER = paths.IBLRIG_FOLDER.joinpath('visual_stim')
-        paths.LOCAL_SUBJECT_FOLDER = self.iblrig_settings['iblrig_local_data_path'].joinpath(
-            self.iblrig_settings['ALYX_LAB'] or '', 'Subjects')
-        paths.REMOTE_SUBJECT_FOLDER = (Path(self.iblrig_settings['iblrig_remote_data_path']).joinpath('Subjects')
-                                       if self.iblrig_settings['iblrig_remote_data_path'] else None)
+        paths.LOCAL_SUBJECT_FOLDER = rig_computer_paths['local_subjects_folder']
+        paths.REMOTE_SUBJECT_FOLDER = rig_computer_paths['remote_subjects_folder']
         # initialize the session path
-        date_folder = self.iblrig_settings['iblrig_local_data_path'].joinpath(
-            self.iblrig_settings['ALYX_LAB'] or '',
-            'Subjects',
+        date_folder = paths.LOCAL_SUBJECT_FOLDER.joinpath(
             self.session_info.SUBJECT_NAME,
             self.session_info.SESSION_START_TIME[:10],
         )
@@ -349,8 +361,8 @@ class BaseSession(ABC):
         logfile = self.paths.SESSION_RAW_DATA_FOLDER.joinpath('_ibl_log.info-acquisition.log')
         self._setup_loggers(level=self.logger.level, file=logfile)
         # copy the acquisition stub to the remote session folder
-        sc = SessionCopier(self.paths.SESSION_FOLDER, remote_subjects_folder=self.paths['REMOTE_SUBJECT_FOLDER'])
-        sc.initialize_experiment(self.experiment_description)
+        sc = BehaviorCopier(self.paths.SESSION_FOLDER, remote_subjects_folder=self.paths['REMOTE_SUBJECT_FOLDER'])
+        sc.initialize_experiment(self.experiment_description, overwrite=False)
         self.register_to_alyx()
 
     def run(self):
@@ -362,7 +374,7 @@ class BaseSession(ABC):
         # this prevents from incrementing endlessly the session number if the hardware fails to connect
         self.start_hardware()
         self.create_session()
-        if self.interactive:
+        if self.session_info.SUBJECT_WEIGHT is None and self.interactive:
             self.session_info.SUBJECT_WEIGHT = graph.numinput(
                 "Subject weighing (gr)", f"{self.session_info.SUBJECT_NAME} weight (gr):", nullable=False)
 
@@ -381,7 +393,7 @@ class BaseSession(ABC):
         self.logger.critical("Graceful exit")
         self.logger.info(f'Session {self.paths.SESSION_RAW_DATA_FOLDER}')
         self.session_info.SESSION_END_TIME = datetime.datetime.now().isoformat()
-        if self.interactive:
+        if self.interactive and not self.wizard:
             self.session_info.POOP_COUNT = graph.numinput(
                 "Poop count", f"{self.session_info.SUBJECT_NAME} droppings count:", nullable=True, askint=True)
         self.save_task_parameters_to_json_file()
@@ -407,7 +419,8 @@ class BaseSession(ABC):
         Make sure you instantiate the parser
         :return: argparse.parser()
         """
-        return argparse.ArgumentParser(add_help=False)
+        parser = argparse.ArgumentParser(add_help=False)
+        return parser
 
 
 class OSCClient(udp_client.SimpleUDPClient):
@@ -441,6 +454,9 @@ class OSCClient(udp_client.SimpleUDPClient):
 
     def __init__(self, port, ip="127.0.0.1"):
         super(OSCClient, self).__init__(ip, port)
+
+    def __del__(self):
+        self._sock.close()
 
     def send2bonsai(self, **kwargs):
         """
@@ -514,10 +530,17 @@ class BonsaiRecordingMixin(object):
         desired borders of rig features, the actual triggering of the  cameras is done in the trigger_bonsai_cameras method.
         """
 
-        # TODO: spinnaker SDK
-
         if self._camera_mixin_bonsai_get_workflow_file(self.hardware_settings.get('device_cameras', None)) is None:
             return
+
+        # # TODO
+        # # enable trigger mode - if PySpin is available
+        # if HAS_PYSPIN:
+        #     pyspin_system = PySpin.System.GetInstance()
+        #     pyspin_cameras = pyspin_system.GetCameras()
+        #     for cam in pyspin_cameras:
+        #         cam.Init()
+        #         cam.TriggerMode.SetValue(True)
 
         bonsai_camera_file = self.paths.IBLRIG_FOLDER.joinpath('devices', 'camera_setup', 'setup_video.bonsai')
         # this locks until Bonsai closes
@@ -646,8 +669,13 @@ class BpodMixin(object):
         self.bpod.close()
 
     def start_mixin_bpod(self):
+        if self.hardware_settings['device_bpod']['COM_BPOD'] is None:
+            raise ValueError("The value for device_bpod:COM_BPOD in "
+                             "settings/hardware_settings.yaml is null. Please "
+                             "provide a valid port name.")
         self.bpod = Bpod(self.hardware_settings['device_bpod']['COM_BPOD'])
         self.bpod.define_rotary_encoder_actions()
+        self.bpod.set_status_led(False)
 
         def softcode_handler(code):
             """
@@ -671,8 +699,7 @@ class BpodMixin(object):
     def send_spacers(self):
         self.logger.info("Starting task by sending a spacer signal on BNC1")
         sma = StateMachine(self.bpod)
-        spacer = iblrig.spacer.Spacer()
-        spacer.add_spacer_states(sma, next_state="exit")
+        Spacer().add_spacer_states(sma, next_state="exit")
         self.bpod.send_state_machine(sma)
         self.bpod.run_state_machine(sma)  # Locks until state machine 'exit' is reached
         return self.bpod.session.current_trial.export()
@@ -688,6 +715,10 @@ class Frame2TTLMixin:
     def start_mixin_frame2ttl(self):
         # todo assert calibration
         # todo release port on failure
+        if self.hardware_settings['device_frame2ttl']['COM_F2TTL'] is None:
+            raise ValueError("The value for device_frame2ttl:COM_F2TTL in "
+                             "settings/hardware_settings.yaml is null. Please "
+                             "provide a valid port name.")
         self.frame2ttl = frame2TTL.frame2ttl_factory(self.hardware_settings['device_frame2ttl']['COM_F2TTL'])
         try:
             self.frame2ttl.set_thresholds(
@@ -714,6 +745,11 @@ class RotaryEncoderMixin:
         )
 
     def start_mixin_rotary_encoder(self):
+        if self.hardware_settings['device_rotary_encoder']['COM_ROTARY_ENCODER'] is None:
+            raise ValueError(
+                "The value for device_rotary_encoder:COM_ROTARY_ENCODER in "
+                "settings/hardware_settings.yaml is null. Please "
+                "provide a valid port name.")
         try:
             self.device_rotary_encoder.connect()
         except serial.serialutil.SerialException as e:
@@ -728,31 +764,12 @@ class RotaryEncoderMixin:
 
 
 class ValveMixin:
-    def get_session_reward_amount(self: object) -> float:
-        # simply returns the reward amount if no adaptive rewared is used
-        if not self.task_params.ADAPTIVE_REWARD:
-            return self.task_params.REWARD_AMOUNT
-        # simply returns the reward amount if no adaptive rewared is used
-        if not self.task_params.ADAPTIVE_REWARD:
-            return self.task_params.REWARD_AMOUNT
-        else:
-            raise NotImplementedError
-        # todo: training choice world reward from session to session
-        # first session : AR_INIT_VALUE, return
-        # if total_water_session < (subject_weight / 25):
-        #   minimum(last_reward + AR_STEP, AR_MAX_VALUE)  3 microliters AR_MAX_VALUE
-        # last ntrials strictly below 200:
-        #   keep the same reward
-        # trial between 200 and above:
-        #   maximum(last_reward - AR_STEP, AR_MIN_VALUE)  1.5 microliters AR_MIN_VALUE
-
-        # when implementing this make sure the test is solid
 
     def init_mixin_valve(self: object):
         self.valve = Bunch({})
         # the template settings files have a date in 2099, so assume that the rig is not calibrated if that is the case
         # the assertion on calibration is thrown when starting the device
-        self.valve['is_calibrated'] = datetime.date.today() > self.hardware_settings['device_valve']['WATER_CALIBRATION_DATE']
+        self.valve['is_calibrated'] = datetime.date.today() >= self.hardware_settings['device_valve']['WATER_CALIBRATION_DATE']
         self.valve['fcn_vol2time'] = scipy.interpolate.pchip(
             self.hardware_settings['device_valve']["WATER_CALIBRATION_WEIGHT_PERDROP"],
             self.hardware_settings['device_valve']["WATER_CALIBRATION_OPEN_TIMES"],
