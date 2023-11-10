@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'ui_wizard.ui'
+# Form implementation generated from reading ui file 'iblrig/gui/ui_wizard.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.9
 #
@@ -25,7 +25,7 @@ class Ui_wizard(object):
         wizard.setSizeIncrement(QtCore.QSize(0, 0))
         wizard.setContextMenuPolicy(QtCore.Qt.DefaultContextMenu)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("wizard.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap("iblrig/gui/wizard.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         wizard.setWindowIcon(icon)
         wizard.setWindowOpacity(1.0)
         wizard.setAutoFillBackground(False)
@@ -316,6 +316,12 @@ class Ui_wizard(object):
         self.statusbar.setSizeGripEnabled(False)
         self.statusbar.setObjectName("statusbar")
         wizard.setStatusBar(self.statusbar)
+        self.uiMenuBar = QtWidgets.QMenuBar(wizard)
+        self.uiMenuBar.setGeometry(QtCore.QRect(0, 0, 391, 22))
+        self.uiMenuBar.setObjectName("uiMenuBar")
+        self.uiMenuTools = QtWidgets.QMenu(self.uiMenuBar)
+        self.uiMenuTools.setObjectName("uiMenuTools")
+        wizard.setMenuBar(self.uiMenuBar)
         self.uiActionLoadSession = QtWidgets.QAction(wizard)
         self.uiActionLoadSession.setObjectName("uiActionLoadSession")
         self.uiActionRecent = QtWidgets.QAction(wizard)
@@ -324,6 +330,10 @@ class Ui_wizard(object):
         self.uiActionTrainingTemplate.setObjectName("uiActionTrainingTemplate")
         self.uiActionEphysTemplate = QtWidgets.QAction(wizard)
         self.uiActionEphysTemplate.setObjectName("uiActionEphysTemplate")
+        self.uiActionTrainingLevelV7 = QtWidgets.QAction(wizard)
+        self.uiActionTrainingLevelV7.setObjectName("uiActionTrainingLevelV7")
+        self.uiMenuTools.addAction(self.uiActionTrainingLevelV7)
+        self.uiMenuBar.addAction(self.uiMenuTools.menuAction())
 
         self.retranslateUi(wizard)
         QtCore.QMetaObject.connectSlotsByName(wizard)
@@ -366,7 +376,9 @@ class Ui_wizard(object):
         self.uiLabelDiskAvailableValue.setText(_translate("wizard", "80.3 GB"))
         self.uiLabelDiskAvailable.setText(_translate("wizard", "Available Space:"))
         self.uiLabelDiskIblrigValue.setText(_translate("wizard", "1.2 GB"))
+        self.uiMenuTools.setTitle(_translate("wizard", "Tools"))
         self.uiActionLoadSession.setText(_translate("wizard", "load session"))
         self.uiActionRecent.setText(_translate("wizard", "recent"))
         self.uiActionTrainingTemplate.setText(_translate("wizard", "training rig"))
         self.uiActionEphysTemplate.setText(_translate("wizard", "ephys rig"))
+        self.uiActionTrainingLevelV7.setText(_translate("wizard", "training level v7"))

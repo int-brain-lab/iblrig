@@ -178,6 +178,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
             self.uiComboTask.setCurrentIndex(idx)
 
         # connect widgets signals to slots
+        self.uiActionTrainingLevelV7.triggered.connect(self._on_menu_training_level_v7)
         self.uiComboTask.currentTextChanged.connect(self.controls_for_extra_parameters)
         self.uiComboSubject.currentTextChanged.connect(self.model.get_subject_details)
         self.uiPushHelp.clicked.connect(self.help)
@@ -245,6 +246,29 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         dirty_worker = Worker(is_dirty)
         dirty_worker.signals.result.connect(self._on_check_dirty_result)
         QThreadPool.globalInstance().start(dirty_worker)
+
+    def _on_menu_training_level_v7(self):
+        """
+        This prompt the user for a session path to get the v7 training level
+        This code will be removed and is here only for convenience while users transition from v7 to v8
+        :return:
+        """
+        local_path = self.model.iblrig_settings['iblrig_local_data_path']
+        session_path = QtWidgets.QFileDialog.getExistingDirectory(
+            self, "Select Session Path", str(local_path), QtWidgets.QFileDialog.ShowDirsOnly)
+        if session_path is None:
+            return
+        file_jsonable = next(Path(session_path).glob('raw_behavior_data/_iblrig_taskData.raw.jsonable'), None)
+        if file_jsonable is None:
+            QtWidgets.QMessageBox().critical(self, 'Error', f"No jsonable found in {session_path}")
+            return
+        trials_table, bpod_data = iblrig.raw_data_loaders.load_task_jsonable(file_jsonable)
+        last_trial = trials_table.iloc[-1]
+        QtWidgets.QMessageBox().information(
+            self, f"{session_path}f", f"{session_path}\n"
+                                      f" contrasts: {last_trial['contrast_set']}\n"
+                                      f"reward: {last_trial['reward_amount']} uL\n"
+                                      f"stim gain: {last_trial['stim_gain']}")
 
     def _on_check_update_result(self, result: tuple[bool, str]) -> None:
         """

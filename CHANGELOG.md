@@ -1,5 +1,8 @@
 Changelog
 ---------
+8.12.5
+------
+* add a tools menu in the wizard to get training level from v7 sessions to ease transition
 
 8.12.4
 ------
