@@ -263,6 +263,15 @@ def get_remote_version() -> Union[version.Version, None]:
 
 
 def is_dirty() -> bool:
+    """
+    Check if the Git working directory is dirty (has uncommitted changes).
+
+    Uses 'git diff --quiet' to determine if there are uncommitted changes in the Git repository.
+
+    Returns:
+        bool: True if the directory is dirty (has uncommitted changes) or an error occurs during execution,
+              False if the directory is clean (no uncommitted changes).
+    """
     try:
         return check_call(["git", "diff", "--quiet"], cwd=BASE_DIR) != 0
     except CalledProcessError:
