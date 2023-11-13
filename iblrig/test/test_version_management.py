@@ -31,7 +31,6 @@ class TestCheckForUpdates(unittest.TestCase):
         self.assertEqual(latest_version, '1.0.0')
 
 
-
 class TestIsDirty(unittest.TestCase):
 
     @patch('iblrig.version_management.check_call')
