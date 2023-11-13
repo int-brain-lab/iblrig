@@ -11,6 +11,7 @@ import yaml
 from packaging import version
 import numpy as np
 
+from ibllib.io.raw_data_loaders import load_settings
 from iblutil.util import Bunch
 import iblrig
 from ibllib.io import session_params
@@ -67,7 +68,7 @@ def _iterate_protocols(subject_folder, task_name, n=1):
             adt = ad_task.get(task_name, None)
             if not adt:
                 return
-            task_settings = iblrig.raw_data_loaders.load_settings(session_path, collection=adt['collection'])
+            task_settings = load_settings(session_path, task_collection=adt['collection'])
             if task_settings.get('NTRIALS', 43) < 42:  # we consider that under 42 trials it is a dud session
                 continue
             protocols.append(Bunch({
