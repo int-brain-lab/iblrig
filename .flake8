@@ -1,6 +1,6 @@
 [flake8]
 max-line-length = 130
-ignore = E266, W503, W504
+ignore = E203, E266, W503, W504
 exclude =
     .git,
     scratch_*.py,
