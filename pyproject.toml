@@ -36,6 +36,7 @@ dependencies = [
 
 [project.optional-dependencies]
 DEV = [
+    "coverage[toml]",
     "coveralls",
     "flake8",
     "mypy",
@@ -72,9 +73,9 @@ find = {}
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
-addopts    = "-ra --cov-report xml --cov=iblrig --tb=native"
-minversion = "6.0"
-testpaths  = [ "iblrig/test", "iblrig/test/tasks" ]
+addopts        = "-ra --cov-report xml --cov=iblrig --cov=iblrig_tasks --tb=native"
+minversion     = "6.0"
+testpaths      = [ "iblrig/test", "iblrig/test/tasks" ]
 
 [tool.ruff]
 exclude = [ ".mypy_cache", "dist", "docs", "venv" ]
@@ -102,3 +103,6 @@ quote-style = "single"
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"
+
+[tool.ruff.lint.isort]
+known-first-party = [ "ibllib", "iblpybpod", "iblscripts", "iblutil" ]
