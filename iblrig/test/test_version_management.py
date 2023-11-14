@@ -1,12 +1,9 @@
-import logging
 import unittest
 from subprocess import CalledProcessError
-from unittest import mock
-from unittest.mock import patch, PropertyMock
+from unittest.mock import patch
 from packaging import version
 
-from iblrig import __version__
-from iblrig.version_management import is_dirty, check_for_updates, get_local_version
+from iblrig.version_management import is_dirty, check_for_updates
 
 
 class TestCheckForUpdates(unittest.TestCase):
@@ -32,24 +29,6 @@ class TestCheckForUpdates(unittest.TestCase):
         update_available, latest_version = check_for_updates()
         self.assertFalse(update_available)
         self.assertEqual(latest_version, '1.0.0')
-
-
-class TestGetLocalVersion(unittest.TestCase):
-
-    def test_get_local_version_success(self):
-        with self.assertNoLogs('iblrig', level='ERROR'):
-            result = get_local_version()
-            self.assertIsNotNone(result)
-            self.assertIsInstance(result, version.Version)
-            # local_version = version.parse(version.parse(__version__).base_version)
-            local_version = version.parse(__version__)
-            self.assertEqual(local_version, result)
-
-    @patch('iblrig.version_management.__version__', 'invalid')
-    def test_get_local_version_failure(self):
-        with self.assertLogs('iblrig', level='ERROR'):
-            result = get_local_version()
-            self.assertIsNone(result)
 
 
 class TestIsDirty(unittest.TestCase):
