@@ -5,29 +5,25 @@ import abc
 import json
 import math
 import random
+import subprocess
+import time
 import traceback
 from pathlib import Path
 from string import ascii_letters
-import subprocess
-import time
-from typing import Literal, Annotated
+from typing import Annotated, Literal
 
 import numpy as np
 import pandas as pd
 from pydantic import BaseModel, Field
 
-from pybpodapi.protocol import StateMachine
-from pybpodapi.com.messaging.trial import Trial
-
-from iblutil.util import Bunch
-from iblutil.io import jsonable
-from iblutil.util import setup_logger
-
-import iblrig.graphic
-from iblrig import choiceworld
 import iblrig.base_tasks
-import iblrig.misc as misc
+import iblrig.graphic
+from iblrig import choiceworld, misc
 from iblrig.hardware import SOFTCODE
+from iblutil.io import jsonable
+from iblutil.util import Bunch, setup_logger
+from pybpodapi.com.messaging.trial import Trial
+from pybpodapi.protocol import StateMachine
 
 log = setup_logger(__name__)
 

@@ -3,8 +3,9 @@ import re
 import shutil
 import socket
 import subprocess
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable, Any, Optional
+from typing import Any, Optional
 
 from iblutil.util import setup_logger
 
@@ -56,7 +57,7 @@ def get_anydesk_id(silent: bool = False) -> Optional[str]:
 
         proc = subprocess.Popen([cmd, '--get-id'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         if proc.stdout and re.match(r'^\d{10}$', id_string := next(proc.stdout).decode()):
-            anydesk_id = '{:,}'.format(int(id_string)).replace(',', ' ')
+            anydesk_id = f'{int(id_string):,}'.replace(',', ' ')
     except (FileNotFoundError, subprocess.CalledProcessError, StopIteration, UnicodeDecodeError) as e:
         if silent:
             logger.debug(e, exc_info=True)
@@ -128,6 +129,6 @@ def internet_available(host: str = "8.8.8.8", port: int = 53, timeout: int = 3, 
         socket.setdefaulttimeout(timeout)
         socket.socket(socket.AF_INET, socket.SOCK_STREAM).connect((host, port))
         internet_available.return_value = True
-    except socket.error:
+    except OSError:
         internet_available.return_value = False
     return internet_available.return_value

@@ -1,10 +1,11 @@
 import unittest
 from subprocess import CalledProcessError
 from unittest.mock import patch
+
 from packaging import version
 
 from iblrig import __version__
-from iblrig.version_management import is_dirty, check_for_updates, get_local_version, get_detailed_version_string
+from iblrig.version_management import check_for_updates, get_detailed_version_string, get_local_version, is_dirty
 
 
 class TestCheckForUpdates(unittest.TestCase):

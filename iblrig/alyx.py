@@ -1,6 +1,7 @@
 import logging
-from one.registration import RegistrationClient
+
 import iblrig
+from one.registration import RegistrationClient
 
 log = logging.getLogger("iblrig")
 

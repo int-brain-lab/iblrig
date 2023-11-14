@@ -1,21 +1,19 @@
-import json
-from pathlib import Path
 import datetime
+import json
 import time
+from pathlib import Path
 
-import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 import seaborn as sns
 from pandas.api.types import CategoricalDtype
 
 import one.alf.io
-
 from iblrig.choiceworld import get_subject_training_info
 from iblrig.misc import online_std
 from iblrig.raw_data_loaders import load_task_jsonable
 from iblutil.util import Bunch
-
 
 NTRIALS_INIT = 2000
 NTRIALS_PLOT = 20  # do not edit - this is used also to enforce the completion criteria
@@ -26,7 +24,7 @@ ENGAGED_CRITIERION = {'secs': 45 * 60, 'trial_count': 400}
 sns.set_style("darkgrid")
 
 
-class DataModel(object):
+class DataModel:
     """
     The data model is a pure numpy / pandas container for the choice world task.
     It contains:
@@ -117,7 +115,7 @@ class DataModel(object):
         task_settings_file = Path(session_directory).joinpath('_iblrig_taskSettings.raw.json')
         if not task_settings_file.exists():
             return
-        with open(task_settings_file, 'r') as fid:
+        with open(task_settings_file) as fid:
             self.task_settings = json.load(fid)
 
     def update_trial(self, trial_data, bpod_data) -> None:
@@ -191,7 +189,7 @@ class DataModel(object):
             return colour['white']
 
 
-class OnlinePlots(object):
+class OnlinePlots:
     """
     Full object to implement the online plots
     Either the object is instantiated in a static mode from an existing jsonable file and it will produce the figure

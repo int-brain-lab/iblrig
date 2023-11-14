@@ -1,25 +1,24 @@
 """
 Unit tests for task logic functions
 """
-from pathlib import Path
-import unittest
 import copy
-import tempfile
-import shutil
 import json
+import shutil
+import tempfile
+import unittest
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
-from iblrig.test.base import TASK_KWARGS
-from iblrig import session_creator
 import iblrig.choiceworld
+from iblrig import session_creator
 from iblrig.path_helper import iterate_previous_sessions
 from iblrig.raw_data_loaders import load_task_jsonable
-
-from iblrig_tasks._iblrig_tasks_trainingChoiceWorld.task import Session as TrainingChoiceWorldSession
+from iblrig.test.base import TASK_KWARGS
 from iblrig_tasks._iblrig_tasks_passiveChoiceWorld.task import Session as PassiveChoiceWorldSession
 from iblrig_tasks._iblrig_tasks_spontaneous.task import Session as SpontaneousSession
+from iblrig_tasks._iblrig_tasks_trainingChoiceWorld.task import Session as TrainingChoiceWorldSession
 
 
 class TestGetPreviousSession(unittest.TestCase):

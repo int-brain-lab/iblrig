@@ -1,20 +1,20 @@
 import argparse
 import datetime
 import json
+import shutil
+from collections.abc import Iterable
 from pathlib import Path
-from typing import List, Tuple, Iterable, Type
 
 import yaml
-import shutil
 
-from iblutil.util import setup_logger
-from ibllib.io import raw_data_loaders
-from iblrig.transfer_experiments import BehaviorCopier, VideoCopier, EphysCopier, SessionCopier
 import iblrig
+from ibllib.io import raw_data_loaders
 from iblrig.hardware import Bpod
-from iblrig.path_helper import load_settings_yaml, get_local_and_remote_paths
 from iblrig.online_plots import OnlinePlots
+from iblrig.path_helper import get_local_and_remote_paths, load_settings_yaml
 from iblrig.raw_data_loaders import load_task_jsonable
+from iblrig.transfer_experiments import BehaviorCopier, EphysCopier, SessionCopier, VideoCopier
+from iblutil.util import setup_logger
 
 logger = setup_logger('iblrig', level='INFO')
 
@@ -102,7 +102,7 @@ def transfer_ephys_data_cli():
     transfer_ephys_data(**vars(args), interactive=True)
 
 
-def _get_subjects_folders(local_path: Path, remote_path: Path, interactive: bool = False) -> Tuple[Path, Path]:
+def _get_subjects_folders(local_path: Path, remote_path: Path, interactive: bool = False) -> tuple[Path, Path]:
     rig_paths = get_local_and_remote_paths(local_path, remote_path)
     local_path = rig_paths.local_subjects_folder
     remote_path = rig_paths.remote_subjects_folder
@@ -118,8 +118,8 @@ def _get_subjects_folders(local_path: Path, remote_path: Path, interactive: bool
     return local_path, remote_path
 
 
-def _get_copiers(copier: Type[SessionCopier], local_folder: Path, remote_folder: Path, lab: str = None,
-                 glob_pattern: str = 'transfer_me.flag', interactive: bool = False) -> List[SessionCopier]:
+def _get_copiers(copier: type[SessionCopier], local_folder: Path, remote_folder: Path, lab: str = None,
+                 glob_pattern: str = 'transfer_me.flag', interactive: bool = False) -> list[SessionCopier]:
 
     # get local/remote subjects folder
     rig_paths = get_local_and_remote_paths(local_path=local_folder, remote_path=remote_folder, lab=lab)
@@ -249,7 +249,7 @@ def transfer_data(local_path: Path = None, remote_path: Path = None, dry: bool =
             # and continue the copying
             logger.warning(f'recovering crashed session {session_path}')
             settings_file = session_path.joinpath('raw_task_data_00', '_iblrig_taskSettings.raw.json')
-            with open(settings_file, 'r') as fid:
+            with open(settings_file) as fid:
                 raw_settings = json.load(fid)
             raw_settings['NTRIALS'] = int(ntrials)
             raw_settings['NTRIALS_CORRECT'] = int(trials['trial_correct'].sum())

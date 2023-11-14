@@ -1,16 +1,18 @@
 import abc
+import ctypes
 import os
-from os.path import samestat
-from pathlib import Path
 import shutil
 import traceback
-import ctypes
-from typing import Callable, Any
-import iblrig
-from iblutil.util import setup_logger
-from iblutil.io import hashfile
-from ibllib.io import session_params
+from collections.abc import Callable
+from os.path import samestat
+from pathlib import Path
+from typing import Any
+
 import ibllib.pipes.misc
+import iblrig
+from ibllib.io import session_params
+from iblutil.io import hashfile
+from iblutil.util import setup_logger
 
 log = setup_logger('iblrig', level='INFO')
 

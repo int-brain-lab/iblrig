@@ -1,10 +1,10 @@
 import numpy as np
 import pandas as pd
 
-from iblrig_tasks._iblrig_tasks_trainingChoiceWorld.task import Session as TrainingChoiceWorldSession
-from iblrig_tasks._iblrig_tasks_trainingPhaseChoiceWorld.task import Session as TrainingPhaseChoiceWorldSession
 from iblrig.test.base import TASK_KWARGS, BaseTestCases
 from iblrig.test.tasks.test_biased_choice_world_family import get_fixtures
+from iblrig_tasks._iblrig_tasks_trainingChoiceWorld.task import Session as TrainingChoiceWorldSession
+from iblrig_tasks._iblrig_tasks_trainingPhaseChoiceWorld.task import Session as TrainingPhaseChoiceWorldSession
 
 
 class TestTrainingPhaseChoiceWorld(BaseTestCases.CommonTestInstantiateTask):
@@ -71,7 +71,7 @@ class TestTrainingPhaseChoiceWorld(BaseTestCases.CommonTestInstantiateTask):
                         contrast_set = np.array([0.5, 1.])
 
                 np.testing.assert_equal(contrasts['contrast'].values, contrast_set)
-                normalized_counts = np.abs((nt / contrast_set.size - contrasts['count'].values))
+                normalized_counts = np.abs(nt / contrast_set.size - contrasts['count'].values)
                 normalized_counts = normalized_counts * probas / np.sum(probas)
                 normalized_counts = normalized_counts / (nt / contrast_set.size)
                 np.testing.assert_array_less(normalized_counts, 0.33)

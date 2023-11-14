@@ -1,26 +1,27 @@
-from collections import OrderedDict
-from dataclasses import dataclass
+import argparse
+import ctypes
 import importlib
 import json
-import argparse
-from pathlib import Path
+import os
 import shutil
 import subprocess
 import sys
-from typing import Any, Callable, Union, Optional, Iterable
-
-import yaml
 import traceback
 import webbrowser
-import ctypes
-import os
+from collections import OrderedDict
+from collections.abc import Callable, Iterable
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any, Optional, Union
 
-from PyQt5 import QtWidgets, QtCore, QtGui
+import yaml
+from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QThread, QThreadPool
 from PyQt5.QtWidgets import QStyle
 
-from one.api import ONE
 import iblrig_tasks
+from one.api import ONE
+
 try:
     import iblrig_custom_tasks
     CUSTOM_TASKS = True
@@ -28,14 +29,14 @@ except ImportError:
     CUSTOM_TASKS = False
     pass
 import iblrig.path_helper
-from iblrig.constants import BASE_DIR
-from iblrig.misc import _get_task_argument_parser
 from iblrig.base_tasks import BaseSession
-from iblrig.hardware import Bpod
-from iblrig.version_management import check_for_updates, get_changelog, is_dirty
-from iblrig.gui.ui_wizard import Ui_wizard
-from iblrig.gui.ui_update import Ui_update
 from iblrig.choiceworld import get_subject_training_info
+from iblrig.constants import BASE_DIR
+from iblrig.gui.ui_update import Ui_update
+from iblrig.gui.ui_wizard import Ui_wizard
+from iblrig.hardware import Bpod
+from iblrig.misc import _get_task_argument_parser
+from iblrig.version_management import check_for_updates, get_changelog, is_dirty
 from iblutil.util import setup_logger
 from pybpodapi import exceptions
 
@@ -643,7 +644,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 bpod.set_status_led(self.uiPushStatusLED.isChecked())
 
                 if (task_settings_file := Path(self.model.raw_data_folder).joinpath("_iblrig_taskSettings.raw.json")).exists():
-                    with open(task_settings_file, "r") as fid:
+                    with open(task_settings_file) as fid:
                         session_data = json.load(fid)
 
                     # check if session was a dud

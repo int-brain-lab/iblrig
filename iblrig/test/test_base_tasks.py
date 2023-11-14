@@ -6,19 +6,18 @@ The start() methods of those mixins require the hardware to be connected.
 """
 import argparse
 import copy
-from pathlib import Path
-import unittest
 import tempfile
+import unittest
+from pathlib import Path
 
 import yaml
-import ibllib.io.session_params as ses_params
 
-from iblrig.test.base import TASK_KWARGS
-from iblrig.base_tasks import (SoundMixin, RotaryEncoderMixin, BaseSession, BpodMixin,
-                               ValveMixin, Frame2TTLMixin)
-from iblrig.base_choice_world import BiasedChoiceWorldSession, ChoiceWorldSession
+import ibllib.io.session_params as ses_params
 from ibllib.io.session_params import read_params
+from iblrig.base_choice_world import BiasedChoiceWorldSession, ChoiceWorldSession
+from iblrig.base_tasks import BaseSession, BpodMixin, Frame2TTLMixin, RotaryEncoderMixin, SoundMixin, ValveMixin
 from iblrig.misc import _get_task_argument_parser, _post_parse_arguments
+from iblrig.test.base import TASK_KWARGS
 
 
 class EmptyHardwareSession(BaseSession):
@@ -56,14 +55,14 @@ class TestHardwareMixins(unittest.TestCase):
         """
         session = self.session
         RotaryEncoderMixin.init_mixin_rotary_encoder(session)
-        assert session.device_rotary_encoder.ENCODER_EVENTS == [
-            'RotaryEncoder1_1', 'RotaryEncoder1_2', 'RotaryEncoder1_3', 'RotaryEncoder1_4']
-        assert session.device_rotary_encoder.THRESHOLD_EVENTS == {
+        assert [
+            'RotaryEncoder1_1', 'RotaryEncoder1_2', 'RotaryEncoder1_3', 'RotaryEncoder1_4'] == session.device_rotary_encoder.ENCODER_EVENTS
+        assert {
             -35: 'RotaryEncoder1_1',
             35: 'RotaryEncoder1_2',
             -2: 'RotaryEncoder1_3',
             2: 'RotaryEncoder1_4'
-        }
+        } == session.device_rotary_encoder.THRESHOLD_EVENTS
         with self.assertRaises(ValueError):
             RotaryEncoderMixin.start_mixin_rotary_encoder(session)
 

@@ -5,41 +5,37 @@ This module tries to be exclude task related logic
 """
 import abc
 import argparse
-from pathlib import Path
-from abc import ABC
 import datetime
 import inspect
 import json
 import os
-from typing import Optional
-
-import serial
+import signal
 import subprocess
 import time
-import yaml
-import signal
 import traceback
+from abc import ABC
+from pathlib import Path
+from typing import Optional
 
 import numpy as np
 import scipy.interpolate
-
+import serial
+import yaml
 from pythonosc import udp_client
-import pybpodapi
-from pybpodapi.protocol import StateMachine
 
-from one.api import ONE
-
+import ibllib.io.session_params as ses_params
 import iblrig
-import iblrig.path_helper
-from iblutil.spacer import Spacer
-from iblutil.util import Bunch, setup_logger
-from iblrig.hardware import Bpod, MyRotaryEncoder, sound_device_factory, SOFTCODE
-import iblrig.frame2TTL as frame2TTL
-import iblrig.sound as sound
 import iblrig.alyx
 import iblrig.graphic as graph
-import ibllib.io.session_params as ses_params
+import iblrig.path_helper
+import pybpodapi
+from iblrig import frame2TTL, sound
+from iblrig.hardware import SOFTCODE, Bpod, MyRotaryEncoder, sound_device_factory
 from iblrig.transfer_experiments import BehaviorCopier
+from iblutil.spacer import Spacer
+from iblutil.util import Bunch, setup_logger
+from one.api import ONE
+from pybpodapi.protocol import StateMachine
 
 # if HAS_PYSPIN:
 #     import PySpin
@@ -474,7 +470,7 @@ class OSCClient(udp_client.SimpleUDPClient):
         self.send_message("/x", 1)
 
 
-class BonsaiRecordingMixin(object):
+class BonsaiRecordingMixin:
 
     def init_mixin_bonsai_recordings(self, *args, **kwargs):
         self.bonsai_camera = Bunch({
@@ -570,7 +566,7 @@ class BonsaiRecordingMixin(object):
         self.logger.info('Bonsai camera recording process started')
 
 
-class BonsaiVisualStimulusMixin(object):
+class BonsaiVisualStimulusMixin:
 
     def init_mixin_bonsai_visual_stimulus(self, *args, **kwargs):
         # camera 7111, microphone 7112
@@ -659,7 +655,7 @@ class BonsaiVisualStimulusMixin(object):
         self.logger.info("Bonsai visual stimulus module loaded: OK")
 
 
-class BpodMixin(object):
+class BpodMixin:
 
     def init_mixin_bpod(self, *args, **kwargs):
         self.bpod = Bpod()

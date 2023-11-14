@@ -1,8 +1,9 @@
 import logging
 
 import numpy as np
-from pybpod_soundcard_module.module_api import DataType, SampleRate, SoundCardModule
 from scipy.signal import chirp
+
+from pybpod_soundcard_module.module_api import DataType, SampleRate, SoundCardModule
 
 log = logging.getLogger("iblrig")
 
@@ -142,7 +143,6 @@ def configure_sound_card(card=None, sounds=[], indexes=[], sample_rate=96):
 
     if close_card:
         card.close()
-    return
 
 
 # FIXME: in _passiveCW use SoundCardModule to give to this v instead of finding device yourself

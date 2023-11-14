@@ -1,8 +1,8 @@
 import numpy as np
 
-from iblrig_tasks._iblrig_tasks_advancedChoiceWorld.task import Session as AdvancedChoiceWorldSession
 from iblrig.test.base import TASK_KWARGS, BaseTestCases
 from iblrig.test.tasks.test_biased_choice_world_family import get_fixtures
+from iblrig_tasks._iblrig_tasks_advancedChoiceWorld.task import Session as AdvancedChoiceWorldSession
 
 
 class TestInstantiationAdvanced(BaseTestCases.CommonTestInstantiateTask):

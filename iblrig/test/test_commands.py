@@ -1,6 +1,6 @@
 import unittest
+from collections.abc import Callable
 from importlib.metadata import entry_points
-from typing import Callable
 
 
 class TestEntryPoints(unittest.TestCase):

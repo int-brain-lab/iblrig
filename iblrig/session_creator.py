@@ -5,7 +5,7 @@ import math
 
 import numpy as np
 
-import iblrig.misc as misc
+from iblrig import misc
 
 
 def draw_position(position_set, stim_probability_left) -> int:
@@ -99,10 +99,10 @@ def make_passiveCW_session_delays_ids(seed_num=None):  # XXX
     if seed_num is not None:
         np.random.seed(seed_num)
 
-    g_len = np.ones((180)) * 0.3
-    n_len = np.ones((40)) * 0.5
-    t_len = np.ones((40)) * 0.1
-    v_len = np.ones((40)) * 0.2
+    g_len = np.ones(180) * 0.3
+    n_len = np.ones(40) * 0.5
+    t_len = np.ones(40) * 0.1
+    v_len = np.ones(40) * 0.2
 
     g_labels = ["G"] * 180
     n_labels = ["N"] * 40

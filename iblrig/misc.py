@@ -9,10 +9,9 @@ import argparse
 import datetime
 import logging
 from pathlib import Path
-from typing import Optional, Union, Literal
+from typing import Literal, Optional, Union
 
 import numpy as np
-
 
 FLAG_FILE_NAMES = [
     "transfer_me.flag",

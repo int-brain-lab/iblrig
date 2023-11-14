@@ -21,7 +21,7 @@ def frame2ttl_factory(serial_port: str, version: int = 2):
     return f2ttl
 
 
-class Frame2TTL(object):
+class Frame2TTL:
     """Determine whether to use v1 or v2 by trying to connect to v2 and find the hw_version
 
     Args:

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 
 # Form implementation generated from reading ui file 'iblrig/gui/ui_wizard.ui'
 #
@@ -11,7 +10,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 
-class Ui_wizard(object):
+class Ui_wizard:
     def setupUi(self, wizard):
         wizard.setObjectName("wizard")
         wizard.resize(391, 660)

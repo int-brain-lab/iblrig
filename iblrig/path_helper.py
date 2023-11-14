@@ -4,17 +4,17 @@ Various get functions to return paths of folders and network drives
 import logging
 import os
 import re
-from pathlib import Path
 import subprocess
-import yaml
+from pathlib import Path
 
-from packaging import version
 import numpy as np
+import yaml
+from packaging import version
 
-from ibllib.io.raw_data_loaders import load_settings
-from iblutil.util import Bunch
 import iblrig
 from ibllib.io import session_params
+from ibllib.io.raw_data_loaders import load_settings
+from iblutil.util import Bunch
 
 log = logging.getLogger("iblrig")
 

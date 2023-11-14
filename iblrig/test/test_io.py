@@ -1,6 +1,8 @@
-from pathlib import Path
 import unittest
+from pathlib import Path
+
 import numpy as np
+
 from iblrig.raw_data_loaders import load_task_jsonable
 
 

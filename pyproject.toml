@@ -105,4 +105,4 @@ quote-style = "single"
 convention = "numpy"
 
 [tool.ruff.lint.isort]
-known-first-party = [ "ibllib", "iblpybpod", "iblscripts", "iblutil" ]
+known-first-party = [ "ibl*", "one*", "pybpod*" ]

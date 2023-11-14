@@ -1,13 +1,13 @@
-import sys
 import os
 import subprocess
-from importlib.util import find_spec
+import sys
 import zipfile
+from importlib.util import find_spec
 from pathlib import Path
 from shutil import which
 
-from one.webclient import AlyxClient, http_download_file  # type: ignore
 from iblutil.io import hashfile  # type: ignore
+from one.webclient import AlyxClient, http_download_file  # type: ignore
 
 
 def pyspin_installed() -> bool:

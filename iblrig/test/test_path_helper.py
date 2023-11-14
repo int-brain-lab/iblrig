@@ -1,7 +1,7 @@
 """Tests for iblrig.path_helper module."""
+import tempfile
 import unittest
 from pathlib import Path
-import tempfile
 
 import iblrig.path_helper
 from iblrig.base_tasks import BonsaiRecordingMixin
