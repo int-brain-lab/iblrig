@@ -48,6 +48,7 @@ def install_spinnaker_sdk():
     Returns:
         None
     """
+
     def download(asset: int, filename: str, target_md5: str):
         print(f'Downloading {filename} ...')
         out_dir = Path.home().joinpath('Downloads')
@@ -75,9 +76,11 @@ def install_spinnaker_sdk():
         raise Exception(f'{Path(__file__).name} needs to be started in the IBLRIG venv.')
 
     # Display some information
-    print('This script will try to automatically\n'
-          '   1) Download & install Spinnaker SDK for Windows, and\n'
-          '   2) Download & install PySpin to the IBLRIG Python environment.')
+    print(
+        'This script will try to automatically\n'
+        '   1) Download & install Spinnaker SDK for Windows, and\n'
+        '   2) Download & install PySpin to the IBLRIG Python environment.'
+    )
     input('Press [ENTER] to continue.\n')
 
     # Download & install Spinnaker SDK
@@ -86,8 +89,10 @@ def install_spinnaker_sdk():
     else:
         file_winsdk = download(54386, 'SpinnakerSDK_FULL_3.1.0.79_x64.exe', 'd9d83772f852e5369da2fbcc248c9c81')
         print('Installing Spinnaker SDK for Windows ...')
-        input('Please select the "Application Development" Installation Profile. Everything else can be left at '
-              'default values. Press [ENTER] to continue.')
+        input(
+            'Please select the "Application Development" Installation Profile. Everything else can be left at '
+            'default values. Press [ENTER] to continue.'
+        )
         return_code = subprocess.check_call(file_winsdk)
         if return_code == 0 and spinnaker_sdk_installed():
             print('Installation of Spinnaker SDK was successful.')
@@ -97,12 +102,11 @@ def install_spinnaker_sdk():
     if pyspin_installed():
         print('PySpin is already installed.')
     else:
-        file_zip = download(54396, 'spinnaker_python-3.1.0.79-cp310-cp310-win_amd64.zip',
-                            'e00148800757d0ed7171348d850947ac')
+        file_zip = download(54396, 'spinnaker_python-3.1.0.79-cp310-cp310-win_amd64.zip', 'e00148800757d0ed7171348d850947ac')
         print('Installing PySpin ...')
         with zipfile.ZipFile(file_zip, 'r') as f:
             file_whl = f.extract(file_zip.stem + '.whl', file_zip.parent)
-        return_code = subprocess.check_call([sys.executable, "-m", "pip", "install", file_whl])
+        return_code = subprocess.check_call([sys.executable, '-m', 'pip', 'install', file_whl])
         if return_code == 0:
             print('Installation of PySpin was successful.')
         os.unlink(file_whl)

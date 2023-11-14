@@ -6,7 +6,6 @@ from one.api import ONE
 
 
 class TestRigWizardModel(unittest.TestCase):
-
     def setUp(self):
         self.wizard = RigWizardModel()
 

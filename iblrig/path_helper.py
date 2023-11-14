@@ -16,7 +16,7 @@ from ibllib.io import session_params
 from ibllib.io.raw_data_loaders import load_settings
 from iblutil.util import Bunch
 
-log = logging.getLogger("iblrig")
+log = logging.getLogger('iblrig')
 
 
 def iterate_previous_sessions(subject_name, task_name, n=1, **kwargs):
@@ -32,11 +32,9 @@ def iterate_previous_sessions(subject_name, task_name, n=1, **kwargs):
         list of dictionaries with keys: session_path, experiment_description, task_settings, file_task_data
     """
     rig_paths = get_local_and_remote_paths(**kwargs)
-    sessions = _iterate_protocols(
-        rig_paths.local_subjects_folder.joinpath(subject_name), task_name=task_name, n=n)
+    sessions = _iterate_protocols(rig_paths.local_subjects_folder.joinpath(subject_name), task_name=task_name, n=n)
     if rig_paths.remote_subjects_folder is not None:
-        remote_sessions = _iterate_protocols(
-            rig_paths.remote_subjects_folder.joinpath(subject_name), task_name=task_name, n=n)
+        remote_sessions = _iterate_protocols(rig_paths.remote_subjects_folder.joinpath(subject_name), task_name=task_name, n=n)
         if remote_sessions is not None:
             sessions.extend(remote_sessions)
         _, ises = np.unique([s['session_stub'] for s in sessions], return_index=True)
@@ -71,14 +69,18 @@ def _iterate_protocols(subject_folder, task_name, n=1):
             task_settings = load_settings(session_path, task_collection=adt['collection'])
             if task_settings.get('NTRIALS', 43) < 42:  # we consider that under 42 trials it is a dud session
                 continue
-            protocols.append(Bunch({
-                'session_stub': '_'.join(file_experiment.parent.parts[-2:]),  # 2019-01-01_001
-                'session_path': file_experiment.parent,
-                'task_collection': adt['collection'],
-                'experiment_description': ad,
-                'task_settings': task_settings,
-                'file_task_data': session_path.joinpath(adt['collection'], '_iblrig_taskData.raw.jsonable')
-            }))
+            protocols.append(
+                Bunch(
+                    {
+                        'session_stub': '_'.join(file_experiment.parent.parts[-2:]),  # 2019-01-01_001
+                        'session_path': file_experiment.parent,
+                        'task_collection': adt['collection'],
+                        'experiment_description': ad,
+                        'task_settings': task_settings,
+                        'file_task_data': session_path.joinpath(adt['collection'], '_iblrig_taskData.raw.jsonable'),
+                    }
+                )
+            )
             if len(protocols) >= n:
                 return protocols
     return protocols
@@ -102,8 +104,9 @@ def get_local_and_remote_paths(local_path=None, remote_path=None, lab=None):
     iblrig_settings = load_settings_yaml()
     paths = Bunch({'local_data_folder': local_path, 'remote_data_folder': remote_path})
     if paths.local_data_folder is None:
-        paths.local_data_folder = Path(p) if (p := iblrig_settings['iblrig_local_data_path'])\
-            else Path.home().joinpath('iblrig_data')
+        paths.local_data_folder = (
+            Path(p) if (p := iblrig_settings['iblrig_local_data_path']) else Path.home().joinpath('iblrig_data')
+        )
     if paths.remote_data_folder is None:
         paths.remote_data_folder = Path(p) if (p := iblrig_settings['iblrig_remote_data_path']) else None
     paths.local_subjects_folder = Path(paths.local_data_folder).joinpath(lab or iblrig_settings['ALYX_LAB'] or '', 'Subjects')
@@ -157,43 +160,44 @@ def get_iblrig_path() -> Path or None:
 
 
 def get_iblrig_params_path() -> Path or None:
-    return get_iblrig_path().joinpath("pybpod_fixtures")
+    return get_iblrig_path().joinpath('pybpod_fixtures')
 
 
 def get_commit_hash(folder: str):
     here = os.getcwd()
     os.chdir(folder)
-    out = subprocess.check_output(["git", "rev-parse", "HEAD"]).decode().strip()
+    out = subprocess.check_output(['git', 'rev-parse', 'HEAD']).decode().strip()
     os.chdir(here)
     if not out:
-        log.debug("Commit hash is empty string")
-    log.debug(f"Found commit hash {out}")
+        log.debug('Commit hash is empty string')
+    log.debug(f'Found commit hash {out}')
     return out
 
 
 def get_bonsai_path(use_iblrig_bonsai: bool = True) -> str:
     """Checks for Bonsai folder in iblrig. Returns string with bonsai executable path."""
     iblrig_folder = get_iblrig_path()
-    bonsai_folder = next((folder for folder in Path(
-        iblrig_folder).glob('*') if folder.is_dir() and 'Bonsai' in folder.name), None)
+    bonsai_folder = next(
+        (folder for folder in Path(iblrig_folder).glob('*') if folder.is_dir() and 'Bonsai' in folder.name), None
+    )
     if bonsai_folder is None:
         return
-    ibl_bonsai = os.path.join(bonsai_folder, "Bonsai64.exe")
+    ibl_bonsai = os.path.join(bonsai_folder, 'Bonsai64.exe')
     if not Path(ibl_bonsai).exists():  # if Bonsai64 does not exist Bonsai v >2.5.0
-        ibl_bonsai = os.path.join(bonsai_folder, "Bonsai.exe")
+        ibl_bonsai = os.path.join(bonsai_folder, 'Bonsai.exe')
 
-    preexisting_bonsai = Path.home() / "AppData/Local/Bonsai/Bonsai64.exe"
+    preexisting_bonsai = Path.home() / 'AppData/Local/Bonsai/Bonsai64.exe'
     if not preexisting_bonsai.exists():
-        preexisting_bonsai = Path.home() / "AppData/Local/Bonsai/Bonsai.exe"
+        preexisting_bonsai = Path.home() / 'AppData/Local/Bonsai/Bonsai.exe'
 
     if use_iblrig_bonsai is True:
         BONSAI = ibl_bonsai
     elif use_iblrig_bonsai is False and preexisting_bonsai.exists():
         BONSAI = str(preexisting_bonsai)
     elif use_iblrig_bonsai is False and not preexisting_bonsai.exists():
-        log.debug(f"NOT FOUND: {preexisting_bonsai}. Using packaged Bonsai")
+        log.debug(f'NOT FOUND: {preexisting_bonsai}. Using packaged Bonsai')
         BONSAI = ibl_bonsai
-    log.debug(f"Found Bonsai executable: {BONSAI}")
+    log.debug(f'Found Bonsai executable: {BONSAI}')
 
     return BONSAI
 

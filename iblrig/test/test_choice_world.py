@@ -22,7 +22,6 @@ from iblrig_tasks._iblrig_tasks_trainingChoiceWorld.task import Session as Train
 
 
 class TestGetPreviousSession(unittest.TestCase):
-
     def setUp(self) -> None:
         self.kwargs = copy.deepcopy(TASK_KWARGS)
         self.kwargs.update({'subject_weight_grams': 25})
@@ -43,8 +42,12 @@ class TestGetPreviousSession(unittest.TestCase):
 
     def test_iterate_previous_sessions(self):
         previous_sessions = iterate_previous_sessions(
-            self.kwargs['subject'], task_name='_iblrig_tasks_trainingChoiceWorld',
-            local_path=Path(self.root_path), lab='cortexlab', n=2)
+            self.kwargs['subject'],
+            task_name='_iblrig_tasks_trainingChoiceWorld',
+            local_path=Path(self.root_path),
+            lab='cortexlab',
+            n=2,
+        )
         self.assertEqual(len(previous_sessions), 1)
         # here we create a remote path, and copy over the sessions
         # then sesb is removed from the local server and sesd gets completed
@@ -55,8 +58,13 @@ class TestGetPreviousSession(unittest.TestCase):
             self.sesd.session_info['NTRIALS'] = 400
             self.sesd.save_task_parameters_to_json_file()
             previous_sessions = iterate_previous_sessions(
-                self.kwargs['subject'], task_name='_iblrig_tasks_trainingChoiceWorld',
-                local_path=self.root_path, remote_path=Path(tdd), lab='cortexlab', n=2)
+                self.kwargs['subject'],
+                task_name='_iblrig_tasks_trainingChoiceWorld',
+                local_path=self.root_path,
+                remote_path=Path(tdd),
+                lab='cortexlab',
+                n=2,
+            )
             # we expect 2 sessions, one from the local data path and one from the remote
             self.assertEqual(len(previous_sessions), 2)
             self.assertEqual(len(set([ps['session_path'].parents[3] for ps in previous_sessions])), 2)
@@ -72,7 +80,7 @@ class TestGetPreviousSession(unittest.TestCase):
             trials_table['reward_amount'] = reward_amount / trials_table.shape[0]
         for i, trial in trials_table.iterrows():
             save_dict = trial.to_dict()
-            save_dict["behavior_data"] = bpod_data[i]
+            save_dict['behavior_data'] = bpod_data[i]
             with open(file_path, 'a') as fp:
                 fp.write(json.dumps(save_dict) + '\n')
 
@@ -88,13 +96,14 @@ class TestGetPreviousSession(unittest.TestCase):
         self.sesb.save_task_parameters_to_json_file()
         # test the function entry point
         tinfo, info = iblrig.choiceworld.get_subject_training_info(
-            self.kwargs['subject'], local_path=Path(self.root_path), lab='cortexlab', mode='raise')
+            self.kwargs['subject'], local_path=Path(self.root_path), lab='cortexlab', mode='raise'
+        )
         self.assertEqual((2, 2.1), (tinfo['training_phase'], tinfo['adaptive_reward']))
         self.assertIsInstance(info, dict)
 
         # test the task instantiation, should be the same as above
         t = TrainingChoiceWorldSession(**self.kwargs, training_phase=4, adaptive_reward=2.9, adaptive_gain=6.0)
-        result = (t.training_phase, t.session_info["ADAPTIVE_REWARD_AMOUNT_UL"], t.session_info['ADAPTIVE_GAIN_VALUE'])
+        result = (t.training_phase, t.session_info['ADAPTIVE_REWARD_AMOUNT_UL'], t.session_info['ADAPTIVE_GAIN_VALUE'])
         self.assertEqual((4, 2.9, 6.0), result)
         # using the method we should get the same as above
         self.assertEqual(t.get_subject_training_info(), (2, 2.1, 4.0))
@@ -110,7 +119,6 @@ class TestGetPreviousSession(unittest.TestCase):
 
 
 class TestAdaptiveReward(unittest.TestCase):
-
     def test_adaptive_reward(self):
         fixture = (
             ((25, 3, 1234, 399), 2.9),
@@ -127,7 +135,6 @@ class TestAdaptiveReward(unittest.TestCase):
 
 
 class TestsBiasedBlocksGeneration(unittest.TestCase):
-
     @staticmethod
     def count_contrasts(pc):
         df = pd.DataFrame(data=pc, columns=['angle', 'contrast', 'proba'])

@@ -73,12 +73,12 @@ find = {}
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
-addopts        = "-ra --cov-report xml --cov=iblrig --cov=iblrig_tasks --tb=native"
-minversion     = "6.0"
-testpaths      = [ "iblrig/test", "iblrig/test/tasks" ]
+addopts    = "-ra --cov-report xml --cov=iblrig --cov=iblrig_tasks --tb=native"
+minversion = "6.0"
+testpaths  = [ "iblrig/test", "iblrig/test/tasks" ]
 
 [tool.ruff]
-exclude = [ ".mypy_cache", "dist", "docs", "venv", "iblrig/gui/ui_*.py" ]
+exclude = [ ".mypy_cache", "dist", "docs", "iblrig/gui/ui_*.py", "venv" ]
 ignore = [
     "PLR2004", # Magic value used in comparison, consider replacing with a constant variable
 ]

@@ -74,6 +74,7 @@ class IntegrationFullRuns(BaseTestCases.CommonTestTask):
     This provides a base class that creates a subject on the test database for testing
     the full registration / run / register results cycle
     """
+
     @classmethod
     def setUpClass(cls) -> None:
         """

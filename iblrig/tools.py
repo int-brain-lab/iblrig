@@ -9,7 +9,7 @@ from typing import Any
 
 from iblutil.util import setup_logger
 
-logger = setup_logger("iblrig")
+logger = setup_logger('iblrig')
 
 
 def ask_user(prompt: str, default: bool = False) -> bool:
@@ -51,9 +51,9 @@ def get_anydesk_id(silent: bool = False) -> str | None:
         if cmd := shutil.which('anydesk'):
             pass
         elif os.name == 'nt':
-            cmd = str(Path(os.environ["PROGRAMFILES(X86)"], 'AnyDesk', 'anydesk.exe'))
+            cmd = str(Path(os.environ['PROGRAMFILES(X86)'], 'AnyDesk', 'anydesk.exe'))
         if cmd is None or not Path(cmd).exists():
-            raise FileNotFoundError("AnyDesk executable not found")
+            raise FileNotFoundError('AnyDesk executable not found')
 
         proc = subprocess.Popen([cmd, '--get-id'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         if proc.stdout and re.match(r'^\d{10}$', id_string := next(proc.stdout).decode()):
@@ -96,7 +96,7 @@ def static_vars(**kwargs) -> Callable[..., Any]:
 
 
 @static_vars(return_value=None)
-def internet_available(host: str = "8.8.8.8", port: int = 53, timeout: int = 3, force_update: bool = False):
+def internet_available(host: str = '8.8.8.8', port: int = 53, timeout: int = 3, force_update: bool = False):
     """
     Check if the internet connection is available.
 
@@ -127,7 +127,8 @@ def internet_available(host: str = "8.8.8.8", port: int = 53, timeout: int = 3, 
         return internet_available.return_value
     try:
         socket.setdefaulttimeout(timeout)
-        socket.socket(socket.AF_INET, socket.SOCK_STREAM).connect((host, port))
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.connect((host, port))
         internet_available.return_value = True
     except OSError:
         internet_available.return_value = False

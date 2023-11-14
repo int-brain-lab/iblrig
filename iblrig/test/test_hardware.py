@@ -4,9 +4,7 @@ from iblrig.hardware import Bpod
 
 
 class TestHardware(unittest.TestCase):
-
     def test_singleton(self):
-
         bpod_None = Bpod()
         bpod0 = Bpod('COM3', connect=False)
         bpod1 = Bpod(serial_port='COM3', connect=False)
