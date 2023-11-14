@@ -53,7 +53,6 @@ class BaseSession(ABC):
     base_parameters_file: Optional[Path] = None
     is_mock = False
     extractor_tasks = None
-    checked_for_update = False
 
     def __init__(self, subject=None, task_parameter_file=None, file_hardware_settings=None,
                  hardware_settings=None, file_iblrig_settings=None, iblrig_settings=None,

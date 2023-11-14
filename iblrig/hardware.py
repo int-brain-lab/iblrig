@@ -223,10 +223,6 @@ class MyRotaryEncoder(object):
         if connect:
             self.connect()
 
-    def reprJSON(self):
-        d = self.__dict__
-        return d
-
     def connect(self):
         if self.RE_PORT == "COM#":
             return
