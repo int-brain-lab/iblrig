@@ -15,7 +15,6 @@ import time
 import traceback
 from abc import ABC
 from pathlib import Path
-from typing import Optional
 
 import numpy as np
 import scipy.interpolate
@@ -45,8 +44,8 @@ OSC_CLIENT_IP = "127.0.0.1"
 
 class BaseSession(ABC):
     version = None
-    protocol_name: Optional[str] = None
-    base_parameters_file: Optional[Path] = None
+    protocol_name: str | None = None
+    base_parameters_file: Path | None = None
     is_mock = False
     extractor_tasks = None
 
@@ -448,7 +447,7 @@ class OSCClient(udp_client.SimpleUDPClient):
     }
 
     def __init__(self, port, ip="127.0.0.1"):
-        super(OSCClient, self).__init__(ip, port)
+        super().__init__(ip, port)
 
     def __del__(self):
         self._sock.close()
@@ -904,7 +903,7 @@ class SpontaneousSession(BaseSession):
     It is used to get extraction structure for data streams
     """
     def __init__(self, duration_secs=None, **kwargs):
-        super(SpontaneousSession, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.duration_secs = duration_secs
 
     def start_hardware(self):

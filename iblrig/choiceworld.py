@@ -73,10 +73,7 @@ def get_subject_training_info(
         delivered_volume_ul=trials_data['reward_amount'].sum(),
         ntrials=trials_data.shape[0])
     # gets the trainng_phase by looking at the trials table
-    if 'training_phase' in trials_data:
-        training_phase = trials_data['training_phase'].values[-1]
-    else:
-        training_phase = DEFAULT_TRAINING_PHASE
+    training_phase = trials_data['training_phase'].values[-1] if 'training_phase' in trials_data else DEFAULT_TRAINING_PHASE
     # gets the adaptive gain
     adaptive_gain = session_info.task_settings.get('ADAPTIVE_GAIN_VALUE', session_info.task_settings.get('AG_INIT_VALUE'))
     if np.sum(trials_data['response_side'] != 0) > 200:

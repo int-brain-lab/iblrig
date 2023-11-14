@@ -144,12 +144,11 @@ def patch_settings(rs: dict, name: str) -> dict:
     dict
         The updated settings.
     """
-    if name.startswith('hardware'):
-        if version.parse(rs.get('VERSION', '0.0.0')) < version.Version('1.0.0'):
-            if 'device_camera' in rs:
-                log.info('Patching hardware settings; assuming left camera label')
-                rs['device_cameras'] = {'left': rs.pop('device_camera')}
-            rs['VERSION'] = '1.0.0'
+    if name.startswith('hardware') and version.parse(rs.get('VERSION', '0.0.0')) < version.Version('1.0.0'):
+        if 'device_camera' in rs:
+            log.info('Patching hardware settings; assuming left camera label')
+            rs['device_cameras'] = {'left': rs.pop('device_camera')}
+        rs['VERSION'] = '1.0.0'
     return rs
 
 

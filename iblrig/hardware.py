@@ -51,12 +51,12 @@ class Bpod(BpodIO):
 
         # try to instantiate once for nothing
         try:
-            super(Bpod, self).__init__(*args, **kwargs)
+            super().__init__(*args, **kwargs)
         except Exception:
             log.warning("Couldn't instantiate BPOD, retrying once...")
             time.sleep(1)
             try:
-                super(Bpod, self).__init__(*args, **kwargs)
+                super().__init__(*args, **kwargs)
             except (serial.serialutil.SerialException, UnicodeDecodeError) as e:
                 log.error(e)
                 raise serial.serialutil.SerialException(
@@ -208,7 +208,7 @@ class MyRotaryEncoder:
         self.mm_deg = self.WHEEL_PERIM / 360
         self.factor = 1 / (self.mm_deg * gain)
         self.SET_THRESHOLDS = [x * self.factor for x in all_thresholds]
-        self.ENABLE_THRESHOLDS = [(True if x != 0 else False) for x in self.SET_THRESHOLDS]
+        self.ENABLE_THRESHOLDS = [(x != 0) for x in self.SET_THRESHOLDS]
         # ENABLE_THRESHOLDS needs 8 bools even if only 2 thresholds are set
         while len(self.ENABLE_THRESHOLDS) < 8:
             self.ENABLE_THRESHOLDS.append(False)

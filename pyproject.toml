@@ -78,7 +78,7 @@ minversion     = "6.0"
 testpaths      = [ "iblrig/test", "iblrig/test/tasks" ]
 
 [tool.ruff]
-exclude = [ ".mypy_cache", "dist", "docs", "venv" ]
+exclude = [ ".mypy_cache", "dist", "docs", "venv", "iblrig/gui/ui_*.py" ]
 ignore = [
     "PLR2004", # Magic value used in comparison, consider replacing with a constant variable
 ]

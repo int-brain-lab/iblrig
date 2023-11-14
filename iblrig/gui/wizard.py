@@ -12,7 +12,7 @@ from collections import OrderedDict
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Any, Optional
 
 import yaml
 from PyQt5 import QtCore, QtGui, QtWidgets
@@ -86,16 +86,16 @@ def _set_list_view_from_string_list(ui_list: QtWidgets.QListView, string_list: l
 @dataclass
 class RigWizardModel:
     one: Optional[ONE] = None
-    procedures: Optional[list] = None
-    projects: Optional[list] = None
-    task_name: Optional[str] = None
-    user: Optional[str] = None
-    subject: Optional[str] = None
-    session_folder: Optional[Path] = None
-    hardware_settings: Optional[dict] = None
-    test_subject_name: Optional[str] = 'test_subject'
+    procedures: list | None = None
+    projects: list | None = None
+    task_name: str | None = None
+    user: str | None = None
+    subject: str | None = None
+    session_folder: Path | None = None
+    hardware_settings: dict | None = None
+    test_subject_name: str | None = 'test_subject'
     subject_details_worker = None
-    subject_details: Optional[tuple] = None
+    subject_details: tuple | None = None
 
     def __post_init__(self):
         self.iblrig_settings = iblrig.path_helper.load_settings_yaml()
@@ -164,7 +164,7 @@ class RigWizardModel:
 
 class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
     def __init__(self, *args, **kwargs):
-        super(RigWizard, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.setupUi(self)
         self.setWindowIcon(QtGui.QIcon(WIZARD_PNG))
 
@@ -394,12 +394,12 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         while layout.rowCount():
             layout.removeRow(0)
 
-        for idx, arg in enumerate(args):
+        for arg in args:
             param = max(arg.option_strings, key=len)
             label = param.replace('_', ' ').replace('--', '').title()
 
             # create widget for bool arguments
-            if isinstance(arg, (argparse._StoreTrueAction, argparse._StoreFalseAction)):
+            if isinstance(arg, argparse._StoreTrueAction | argparse._StoreFalseAction):
                 widget = QtWidgets.QCheckBox()
                 widget.setTristate(False)
                 if arg.default:
@@ -595,7 +595,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                     cmd.extend(['--procedures', *self.model.procedures])
                 if self.model.projects:
                     cmd.extend(['--projects', *self.model.projects])
-                for key in self.task_arguments.keys():
+                for key in self.task_arguments:
                     if isinstance(self.task_arguments[key], Iterable) and not isinstance(self.task_arguments[key], str):
                         cmd.extend([str(key)])
                         for value in self.task_arguments[key]:
@@ -798,7 +798,7 @@ class Worker(QtCore.QRunnable):
         -------
         None
         """
-        super(Worker, self).__init__()
+        super().__init__()
         self.fn: Callable[..., Any] = fn
         self.args = args
         self.kwargs = kwargs
@@ -870,8 +870,8 @@ class UpdateNotice(QtWidgets.QDialog, Ui_update):
 
 
 class SubjectDetailsWorker(QThread):
-    subject_name: Union[str, None] = None
-    result: Union[tuple[dict, dict], None] = None
+    subject_name: str | None = None
+    result: tuple[dict, dict] | None = None
 
     def __init__(self, subject_name):
         super().__init__()

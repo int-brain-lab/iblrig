@@ -33,7 +33,7 @@ class TestTrainingPhaseChoiceWorld(BaseTestCases.CommonTestInstantiateTask):
                     **TASK_KWARGS, adaptive_reward=ADAPTIVE_REWARD, training_level=training_phase)
                 assert task.training_phase == training_phase
                 task.create_session()
-                for i in np.arange(nt):
+                for _i in np.arange(nt):
                     task.next_trial()
                     # pc = task.psychometric_curve()
                     trial_type = np.random.choice(['correct', 'error', 'no_go'], p=[.9, .05, .05])

@@ -5,7 +5,7 @@ import socket
 import subprocess
 from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from iblutil.util import setup_logger
 
@@ -45,13 +45,13 @@ def ask_user(prompt: str, default: bool = False) -> bool:
             return False
 
 
-def get_anydesk_id(silent: bool = False) -> Optional[str]:
+def get_anydesk_id(silent: bool = False) -> str | None:
     anydesk_id = None
     try:
         if cmd := shutil.which('anydesk'):
             pass
         elif os.name == 'nt':
-            cmd = str(Path(os.environ["ProgramFiles(x86)"], 'AnyDesk', 'anydesk.exe'))
+            cmd = str(Path(os.environ["PROGRAMFILES(X86)"], 'AnyDesk', 'anydesk.exe'))
         if cmd is None or not Path(cmd).exists():
             raise FileNotFoundError("AnyDesk executable not found")
 

@@ -120,14 +120,18 @@ def format_sound(sound, file_path=None, flat=False):
     return bin_sound.flatten() if flat else bin_sound
 
 
-def configure_sound_card(card=None, sounds=[], indexes=[], sample_rate=96):
+def configure_sound_card(card=None, sounds=None, indexes=None, sample_rate=96):
+    if indexes is None:
+        indexes = []
+    if sounds is None:
+        sounds = []
     if card is None:
         card = SoundCardModule()
         close_card = True
 
-    if sample_rate == 192 or sample_rate == 192000:
+    if sample_rate in (192, 192000):
         sample_rate = SampleRate._192000HZ
-    elif sample_rate == 96 or sample_rate == 96000:
+    elif sample_rate in (96, 96000):
         sample_rate = SampleRate._96000HZ
     else:
         log.error(f"Sound sample rate {sample_rate} should be 96 or 192 (KHz)")

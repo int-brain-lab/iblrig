@@ -88,14 +88,14 @@ class TestNeuroModulatorBiasedChoiceWorld(TestInstantiationBiased):
         self.task = NeuroModulatorChoiceWorldSession(**TASK_KWARGS)
 
     def test_task(self):
-        super(TestNeuroModulatorBiasedChoiceWorld, self).test_task(reward_set=np.array([0, 1., 1.5, 3.]))
+        super().test_task(reward_set=np.array([0, 1., 1.5, 3.]))
         # we expect 10% of null feedback trials
         assert np.abs(.05 - np.mean(self.task.trials_table['omit_feedback'])) < .05
 
 
 class TestIntegrationFullRun(IntegrationFullRuns):
     def setUp(self) -> None:
-        super(TestIntegrationFullRun, self).setUp()
+        super().setUp()
         self.task = BiasedChoiceWorldSession(one=self.one, **self.kwargs)
 
     def test_task_biased(self):

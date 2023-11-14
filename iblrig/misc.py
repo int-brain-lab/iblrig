@@ -9,7 +9,7 @@ import argparse
 import datetime
 import logging
 from pathlib import Path
-from typing import Literal, Optional, Union
+from typing import Literal
 
 import numpy as np
 
@@ -100,7 +100,7 @@ def _is_datetime(x: str) -> bool:
         return False
 
 
-def get_session_path(path: Union[str, Path]) -> Optional[Path]:
+def get_session_path(path: str | Path) -> Path | None:
     """Returns the session path from any filepath if the date/number
     pattern is found"""
     if path is None:

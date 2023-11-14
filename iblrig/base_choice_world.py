@@ -88,7 +88,7 @@ class ChoiceWorldSession(
     base_parameters_file = Path(__file__).parent.joinpath('base_choice_world_params.yaml')
 
     def __init__(self, *args, delay_secs=0, **kwargs):
-        super(ChoiceWorldSession, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.task_params["SESSION_DELAY_START"] = delay_secs
         # init behaviour data
         self.movement_left = self.device_rotary_encoder.THRESHOLD_EVENTS[
@@ -188,7 +188,7 @@ class ChoiceWorldSession(
         This methods serves to instantiate a state machine and bpod object to simulate a taks run.
         This is useful to test or display the state machine flow
         """
-        super(ChoiceWorldSession, self).mock()
+        super().mock()
 
         if file_jsonable_fixture is not None:
             task_data = jsonable.read(file_jsonable_fixture)
@@ -514,7 +514,7 @@ TIME FROM START:      {self.time_elapsed}
         by subtracting the time it takes to give a reward from the desired ITI.
         """
         if assert_calibration:
-            assert 'REWARD_VALVE_TIME' in self.calibration.keys(), 'Reward valve time not calibrated'
+            assert 'REWARD_VALVE_TIME' in self.calibration, 'Reward valve time not calibrated'
         return self.task_params.ITI_CORRECT - self.calibration.get('REWARD_VALVE_TIME', None)
 
     """
@@ -545,7 +545,7 @@ class HabituationChoiceWorldSession(ChoiceWorldSession):
     protocol_name = "_iblrig_tasks_habituationChoiceWorld"
 
     def __init__(self, **kwargs):
-        super(HabituationChoiceWorldSession, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.trials_table['delay_to_stim_center'] = np.zeros(NTRIALS_INIT) * np.NaN
 
     def next_trial(self):
@@ -556,7 +556,7 @@ class HabituationChoiceWorldSession(ChoiceWorldSession):
         # update trial table fields specific to habituation choice world
         self.trials_table.at[self.trial_num, 'delay_to_stim_center'] = np.random.normal(
             self.task_params.DELAY_TO_STIM_CENTER, 2)
-        super(HabituationChoiceWorldSession, self).draw_next_trial_info(*args, **kwargs)
+        super().draw_next_trial_info(*args, **kwargs)
 
     def get_state_machine_trial(self, i):
         sma = StateMachine(self.bpod)
@@ -621,7 +621,7 @@ class ActiveChoiceWorldSession(ChoiceWorldSession):
     The TrainingChoiceWorld, BiasedChoiceWorld are all subclasses of this class
     """
     def __init__(self, **kwargs):
-        super(ActiveChoiceWorldSession, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.trials_table['stim_probability_left'] = np.zeros(NTRIALS_INIT, dtype=np.float32)
 
     def _run(self):
@@ -629,7 +629,7 @@ class ActiveChoiceWorldSession(ChoiceWorldSession):
         if self.interactive:
             subprocess.Popen(["viewsession", str(self.paths['DATA_FILE_PATH'])],
                              stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
-        super(ActiveChoiceWorldSession, self)._run()
+        super()._run()
 
     def show_trial_log(self, extra_info=""):
         trial_info = self.trials_table.iloc[self.trial_num]
@@ -641,7 +641,7 @@ TRIAL CORRECT:        {trial_info.trial_correct}
 NTRIALS CORRECT:      {self.session_info.NTRIALS_CORRECT}
 NTRIALS ERROR:        {self.trial_num - self.session_info.NTRIALS_CORRECT}
         """
-        super(ActiveChoiceWorldSession, self).show_trial_log(extra_info=extra_info)
+        super().show_trial_log(extra_info=extra_info)
 
     def trial_completed(self, bpod_data):
         """
@@ -676,7 +676,7 @@ NTRIALS ERROR:        {self.trial_num - self.session_info.NTRIALS_CORRECT}
             ValueError("The task outcome doesn't contain no_go, error or correct")
         assert position != 0, "the position value should be either 35 or -35"
 
-        super(ActiveChoiceWorldSession, self).trial_completed(bpod_data)
+        super().trial_completed(bpod_data)
 
 
 class BiasedChoiceWorldSession(ActiveChoiceWorldSession):
@@ -688,7 +688,7 @@ class BiasedChoiceWorldSession(ActiveChoiceWorldSession):
     protocol_name = "_iblrig_tasks_biasedChoiceWorld"
 
     def __init__(self, **kwargs):
-        super(BiasedChoiceWorldSession, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.blocks_table = pd.DataFrame({
             'probability_left': np.zeros(NBLOCKS_INIT) * np.NaN,
             'block_length': np.zeros(NBLOCKS_INIT, dtype=np.int16) * -1,
@@ -715,10 +715,7 @@ class BiasedChoiceWorldSession(ActiveChoiceWorldSession):
                 max_value=self.task_params.BLOCK_LEN_MAX
             ))
         if self.block_num == 0:
-            if self.task_params.BLOCK_INIT_5050:
-                pleft = 0.5
-            else:
-                pleft = np.random.choice(self.task_params.BLOCK_PROBABILITY_SET)
+            pleft = 0.5 if self.task_params.BLOCK_INIT_5050 else np.random.choice(self.task_params.BLOCK_PROBABILITY_SET)
         elif self.block_num == 1 and self.task_params.BLOCK_INIT_5050:
             pleft = np.random.choice(self.task_params.BLOCK_PROBABILITY_SET)
         else:
@@ -748,7 +745,7 @@ BLOCK NUMBER:         {trial_info.block_num}
 BLOCK LENGTH:         {self.blocks_table.loc[self.block_num, 'block_length']}
 TRIALS IN BLOCK:      {trial_info.block_trial_num}
         """
-        super(BiasedChoiceWorldSession, self).show_trial_log(extra_info=extra_info)
+        super().show_trial_log(extra_info=extra_info)
 
 
 class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
@@ -760,7 +757,7 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
     protocol_name = "_iblrig_tasks_trainingChoiceWorld"
 
     def __init__(self, training_phase=-1, adaptive_reward=-1.0, adaptive_gain=None, **kwargs):
-        super(TrainingChoiceWorldSession, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         inferred_training_phase, inferred_adaptive_reward, inferred_adaptive_gain = self.get_subject_training_info()
         if training_phase == -1:
             self.logger.critical(f"Got training phase: {inferred_training_phase}")
@@ -887,4 +884,4 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
 CONTRAST SET:         {np.unique(np.abs(choiceworld.contrasts_set(self.training_phase)))}
 SUBJECT TRAINING PHASE (0-5):         {self.training_phase}
             """
-        super(TrainingChoiceWorldSession, self).show_trial_log(extra_info=extra_info)
+        super().show_trial_log(extra_info=extra_info)

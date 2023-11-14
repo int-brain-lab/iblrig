@@ -232,7 +232,7 @@ class OnlinePlots:
         # create psych curves
         h.curve_psych = {}
         h.curve_reaction = {}
-        for i, p in enumerate(PROBABILITY_SET):
+        for p in PROBABILITY_SET:
             h.curve_psych[p] = h.ax_psych.plot(
                 self.data.psychometrics.loc[p].index, self.data.psychometrics.loc[p]['choice'], 'k.-', zorder=10, clip_on=False)
             h.curve_reaction[p] = h.ax_reaction.plot(

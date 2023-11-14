@@ -36,7 +36,7 @@ def make_ephysCW_pc(prob_type='biased'):
     prob_left = 0.8 if draw_position([-35, 35], 0.5) < 0 else 0.2
     while len(pc) < 2001:
         len_block.append(draw_block_len(60, min_=20, max_=100))
-        for x in range(len_block[-1]):
+        for _x in range(len_block[-1]):
             p = draw_position([-35, 35], prob_left)
             c = misc.draw_contrast(contrasts, probability_type=prob_type)
             pc = np.append(pc, np.array([[p, c, prob_left]]), axis=0)
@@ -50,7 +50,7 @@ def make_ephysCW_pcqs(pc):
     qperiod_base = 0.2  # + x, where x~exp(0.35), t ∈ 0.2 <= R <= 0.5
     sphase = []
     qperiod = []
-    for i in pc:
+    for _i in pc:
         sphase.append(np.random.uniform(0, 2 * math.pi))
         qperiod.append(qperiod_base + misc.truncated_exponential(scale=0.35, min_value=0.2, max_value=0.5))
     qs = np.array([qperiod, sphase]).T

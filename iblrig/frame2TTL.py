@@ -61,7 +61,7 @@ class Frame2TTL:
 class Frame2TTLv1(Frame2TTL):
 
     def __init__(self, serial_port: str):
-        super(Frame2TTLv1, self).__init__(serial_port)
+        super().__init__(serial_port)
         self.light_threshold = 40
         self.dark_threshold = 80
         try:
@@ -110,7 +110,7 @@ class Frame2TTLv1(Frame2TTL):
         import time
 
         sample_sum = []
-        for i in range(num_samples):
+        for _i in range(num_samples):
             sample_sum.append(self.read_value())
             time.sleep(0.001)
 
@@ -210,7 +210,7 @@ class Frame2TTLv1(Frame2TTL):
 class Frame2TTLv2(Frame2TTL):
 
     def __init__(self, serial_port: str):
-        super(Frame2TTLv2, self).__init__(serial_port)
+        super().__init__(serial_port)
         self.dark_threshold = -150
         self.light_threshold = 100
 
@@ -218,7 +218,7 @@ class Frame2TTLv2(Frame2TTL):
         """Create connection to serial_port
         Perform a handshake and confirm it's a version 2 device
         """
-        super(Frame2TTLv2, self).connect()
+        super().connect()
         try:
             self.serial.write(b"C")
             # 1 byte response expected (unsigned)

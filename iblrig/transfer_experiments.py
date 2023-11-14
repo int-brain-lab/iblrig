@@ -164,7 +164,7 @@ class SessionCopier(abc.ABC):
         self.remote_subjects_folder = Path(remote_subjects_folder) if remote_subjects_folder else None
 
     def __repr__(self):
-        return f"{super(SessionCopier, self).__repr__()} \n local: {self.session_path} \n remote: {self.remote_session_path}"
+        return f"{super().__repr__()} \n local: {self.session_path} \n remote: {self.remote_session_path}"
 
     @property
     def state(self):
@@ -385,7 +385,7 @@ class VideoCopier(SessionCopier):
                 self.create_video_stub()
             acquisition_description = session_params.read_params(self.file_experiment_description)
         self._experiment_description = acquisition_description
-        super(VideoCopier, self).initialize_experiment(acquisition_description=acquisition_description, **kwargs)
+        super().initialize_experiment(acquisition_description=acquisition_description, **kwargs)
 
 
 class BehaviorCopier(SessionCopier):
@@ -412,7 +412,7 @@ class EphysCopier(SessionCopier):
             acquisition_description = session_params.read_params(stub_file)
             acquisition_description.update(session_params.read_params(sync_file))
         self._experiment_description = acquisition_description
-        super(EphysCopier, self).initialize_experiment(acquisition_description=acquisition_description, **kwargs)
+        super().initialize_experiment(acquisition_description=acquisition_description, **kwargs)
 
     def _copy_collections(self):
         """
