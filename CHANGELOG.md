@@ -1,5 +1,11 @@
 Changelog
 ---------
+
+8.12.6
+------
+* reverting TTL on trial end introduced with PR #504, release 8.9.0
+* general code maintenance (unit-tests, doc-strings, type-hints, removal of dead code) 
+
 8.12.5
 ------
 * add a tools menu in the wizard to get training level from v7 sessions to ease transition
