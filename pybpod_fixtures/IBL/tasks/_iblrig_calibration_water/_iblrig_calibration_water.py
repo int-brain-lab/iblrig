@@ -126,10 +126,7 @@ def scale_read(COMport_string):
 
 
 # initialize a dataframe with the results
-df1 = pd.DataFrame(
-    columns=["time", "open_time", "ndrops", "mean_measured_weight", "std_measured_weight"],
-    dtype=object,
-)
+dict1 = dict.fromkeys(["time", "open_time", "ndrops", "mean_measured_weight", "std_measured_weight"])
 ntrials = sph.NTRIALS
 # in milliseconds, 10 to 100ms opening time
 open_times = range(sph.MIN_OPEN_TIME, sph.MAX_OPEN_TIME, sph.STEP)
@@ -171,7 +168,7 @@ for open_time in open_times:
     mw.append(measured_weight)
 
     if pass_ % sph.PASSES == 0:
-        df1 = df1.append(
+        dict1 = dict1.append(
             {
                 "open_time": open_time,
                 "ndrops": ntrials,
@@ -196,6 +193,7 @@ for open_time in open_times:
     )
 
 # SAVE
+df1 = pd.DataFrame.from_records(dict1)
 df1["open_time"] = df1["open_time"].astype("float")
 df1["mean_measured_weight"] = df1["mean_measured_weight"].astype("float")
 df1["ndrops"] = df1["ndrops"].astype("float")
