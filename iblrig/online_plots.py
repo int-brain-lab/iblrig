@@ -243,11 +243,13 @@ class OnlinePlots:
         h.curve_reaction = {}
         for p in PROBABILITY_SET:
             h.curve_psych[p] = h.ax_psych.plot(
-                self.data.psychometrics.loc[p].index, self.data.psychometrics.loc[p]['choice'], 'k.-', zorder=10, clip_on=False
+                self.data.psychometrics.loc[p].index, self.data.psychometrics.loc[p]['choice'], '.-', zorder=10, clip_on=False, label=f'p = {p}'
             )
             h.curve_reaction[p] = h.ax_reaction.plot(
-                self.data.psychometrics.loc[p].index, self.data.psychometrics.loc[p]['response_time'], 'k.-'
+                self.data.psychometrics.loc[p].index, self.data.psychometrics.loc[p]['response_time'], '.-', label=f'p = {p}'
             )
+        h.ax_psych.legend()
+        h.ax_reaction.legend()
 
         # create the two bars on the right side
         h.bar_correct = h.ax_performance.bar(0, self.data.percent_correct, label='correct', color='k')
