@@ -1,0 +1,39 @@
+name: Docs
+on:
+  workflow_dispatch:
+    paths:
+      - '.github/workflows/documentation.yaml'
+      - 'docs/**'
+  push:
+    branches:
+      - iblrigv8
+    paths:
+      - '.github/workflows/documentation.yaml'
+      - 'docs/**'
+permissions:
+    contents: write
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: iblrigv8dev
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 'pypy3.10'
+          cache: 'pip'
+          cache-dependency-path: '**/pyproject.toml'
+      - name: Install dependencies
+        run: |
+          pip install --editable .[DEV]
+      - name: Sphinx build
+        run: |
+          sphinx-build docs/source docs/build/html
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          publish_branch: gh-pages
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: docs/build/html
+          force_orphan: true

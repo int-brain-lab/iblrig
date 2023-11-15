@@ -21,3 +21,6 @@ XDG_CACHE_HOME/
 app.log
 /.idea/*
 /venv/
+
+# fix annoyance when switching from/to iblrigv8 branch
+settings/*
