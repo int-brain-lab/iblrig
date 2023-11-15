@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 
 # Form implementation generated from reading ui file 'ui_update.ui'
 #
@@ -11,7 +10,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 
-class Ui_update(object):
+class Ui_update:
     def setupUi(self, update):
         update.setObjectName("update")
         update.resize(451, 496)

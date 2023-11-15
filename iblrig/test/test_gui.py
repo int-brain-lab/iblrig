@@ -1,13 +1,11 @@
 import unittest
 
-from one.api import ONE
 from ibllib.tests import TEST_DB
-
-from iblrig.gui.wizard import RigWizardModel, PROJECTS
+from iblrig.gui.wizard import PROJECTS, RigWizardModel
+from one.api import ONE
 
 
 class TestRigWizardModel(unittest.TestCase):
-
     def setUp(self):
         self.wizard = RigWizardModel()
 

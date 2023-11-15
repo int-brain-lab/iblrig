@@ -1,16 +1,18 @@
 import abc
+import ctypes
 import os
-from os.path import samestat
-from pathlib import Path
 import shutil
 import traceback
-import ctypes
-from typing import Callable, Any
-import iblrig
-from iblutil.util import setup_logger
-from iblutil.io import hashfile
-from ibllib.io import session_params
+from collections.abc import Callable
+from os.path import samestat
+from pathlib import Path
+from typing import Any
+
 import ibllib.pipes.misc
+import iblrig
+from ibllib.io import session_params
+from iblutil.io import hashfile
+from iblutil.util import setup_logger
 
 log = setup_logger('iblrig', level='INFO')
 
@@ -40,7 +42,7 @@ def _set_thread_execution(state: int) -> None:
     if os.name == 'nt':
         result = ctypes.windll.kernel32.SetThreadExecutionState(state)
         if result == 0:
-            raise OSError("Failed to set thread execution state.")
+            raise OSError('Failed to set thread execution state.')
 
 
 def long_running(func: Callable[..., Any]) -> Callable[..., Any]:
@@ -61,11 +63,13 @@ def long_running(func: Callable[..., Any]) -> Callable[..., Any]:
     callable
         The decorated function.
     """
+
     def inner(*args, **kwargs) -> Any:
         _set_thread_execution(ES_CONTINUOUS | ES_SYSTEM_REQUIRED)
         result = func(*args, **kwargs)
         _set_thread_execution(ES_CONTINUOUS)
         return result
+
     return inner
 
 
@@ -142,12 +146,16 @@ def copy_folders(local_folder: Path, remote_folder: Path, overwrite: bool = Fals
     status = True
     try:
         remote_folder.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copytree(local_folder, remote_folder, dirs_exist_ok=overwrite,
-                        ignore=shutil.ignore_patterns('transfer_me.flag'),
-                        copy_function=_copy2_checksum)
+        shutil.copytree(
+            local_folder,
+            remote_folder,
+            dirs_exist_ok=overwrite,
+            ignore=shutil.ignore_patterns('transfer_me.flag'),
+            copy_function=_copy2_checksum,
+        )
     except OSError:
         log.error(traceback.format_exc())
-        log.info(f"Could not copy {local_folder} to {remote_folder}")
+        log.info(f'Could not copy {local_folder} to {remote_folder}')
         status = False
     return status
 
@@ -162,7 +170,7 @@ class SessionCopier(abc.ABC):
         self.remote_subjects_folder = Path(remote_subjects_folder) if remote_subjects_folder else None
 
     def __repr__(self):
-        return f"{super(SessionCopier, self).__repr__()} \n local: {self.session_path} \n remote: {self.remote_session_path}"
+        return f'{super().__repr__()} \n local: {self.session_path} \n remote: {self.remote_session_path}'
 
     @property
     def state(self):
@@ -176,20 +184,20 @@ class SessionCopier(abc.ABC):
         :return:
         """
         if self.state == -1:  # this case is not implemented automatically and corresponds to a hard reset
-            log.info(f"{self.state}, {self.session_path}")
+            log.info(f'{self.state}, {self.session_path}')
             shutil.rmtree(self.remote_session_path)
             self.initialize_experiment()
         if self.state == 0:  # the session hasn't even been initialzed: copy the stub to the remote
-            log.info(f"{self.state}, {self.session_path}")
+            log.info(f'{self.state}, {self.session_path}')
             self.initialize_experiment()
         if self.state == 1:  # the session
-            log.info(f"{self.state}, {self.session_path}")
+            log.info(f'{self.state}, {self.session_path}')
             self.copy_collections()
         if self.state == 2:
-            log.info(f"{self.state}, {self.session_path}")
+            log.info(f'{self.state}, {self.session_path}')
             self.finalize_copy(number_of_expected_devices=number_of_expected_devices)
         if self.state == 3:
-            log.info(f"{self.state}, {self.session_path}")
+            log.info(f'{self.state}, {self.session_path}')
 
     def get_state(self):
         """
@@ -232,19 +240,20 @@ class SessionCopier(abc.ABC):
         Returns the local experiment description file, if none found, returns one with the tag
         :return:
         """
-        return next(self.session_path.glob('_ibl_experiment.description*'),
-                    self.session_path.joinpath(f'_ibl_experiment.description_{self.tag}.yaml'))
+        return next(
+            self.session_path.glob('_ibl_experiment.description*'),
+            self.session_path.joinpath(f'_ibl_experiment.description_{self.tag}.yaml'),
+        )
 
     def glob_file_remote_copy_status(self, status='*'):
-        """ status: pending / complete """
+        """status: pending / complete"""
         fr = self.file_remote_experiment_description
-        return next(fr.parent.glob(f"{fr.stem}.status_{status}"), None) if fr else None
+        return next(fr.parent.glob(f'{fr.stem}.status_{status}'), None) if fr else None
 
     @property
     def file_remote_experiment_description(self):
         if self.remote_subjects_folder:
-            return session_params.get_remote_stub_name(
-                self.remote_session_path, device_id=self.tag)
+            return session_params.get_remote_stub_name(self.remote_session_path, device_id=self.tag)
 
     @property
     def remote_experiment_description_stub(self):
@@ -261,7 +270,7 @@ class SessionCopier(abc.ABC):
         for collection in collections:
             local_collection = self.session_path.joinpath(collection)
             if not local_collection.exists():
-                log.error(f'Collection {local_collection} doesn\'t exist')
+                log.error(f"Collection {local_collection} doesn't exist")
                 status = False
                 continue
             log.info(f'transferring {self.session_path} - {collection}')
@@ -281,8 +290,10 @@ class SessionCopier(abc.ABC):
         :return:
         """
         if self.glob_file_remote_copy_status('complete'):
-            log.warning(f"Copy already complete for {self.session_path},"
-                        f" remove {self.glob_file_remote_copy_status('complete')} to force")
+            log.warning(
+                f"Copy already complete for {self.session_path},"
+                f" remove {self.glob_file_remote_copy_status('complete')} to force"
+            )
             return True
         status = self._copy_collections()
         # post copy stuff: rename the pending flag to complete
@@ -314,8 +325,9 @@ class SessionCopier(abc.ABC):
             log.info('The remote path is unspecified and remote experiment.description stub creation is omitted.')
         else:
             remote_stub_file = self.file_remote_experiment_description
-            previous_description = session_params.read_params(remote_stub_file)\
-                if remote_stub_file.exists() and not overwrite else {}
+            previous_description = (
+                session_params.read_params(remote_stub_file) if remote_stub_file.exists() and not overwrite else {}
+            )
             try:
                 merged_description = session_params.merge_params(previous_description, acquisition_description)
                 session_params.write_yaml(remote_stub_file, merged_description)
@@ -329,10 +341,14 @@ class SessionCopier(abc.ABC):
                 log.warning(f'Failed to write data to remote device at: {remote_stub_file}. \n {e}')
 
         # then create on the local machine
-        previous_description = session_params.read_params(self.file_experiment_description)\
-            if self.file_experiment_description.exists() and not overwrite else {}
+        previous_description = (
+            session_params.read_params(self.file_experiment_description)
+            if self.file_experiment_description.exists() and not overwrite
+            else {}
+        )
         session_params.write_yaml(
-            self.file_experiment_description, session_params.merge_params(previous_description, acquisition_description))
+            self.file_experiment_description, session_params.merge_params(previous_description, acquisition_description)
+        )
         log.info(f'Written data to local session at : {self.file_experiment_description}.')
 
     def finalize_copy(self, number_of_expected_devices=None):
@@ -341,7 +357,7 @@ class SessionCopier(abc.ABC):
         :return:
         """
         if number_of_expected_devices is None:
-            log.warning(f"Number of expected devices is not specified, will not finalize this session {self.session_path}")
+            log.warning(f'Number of expected devices is not specified, will not finalize this session {self.session_path}')
             return
         ready_to_finalize = 0
         files_stub = list(self.file_remote_experiment_description.parent.glob('*.yaml'))
@@ -350,14 +366,15 @@ class SessionCopier(abc.ABC):
             ad_stub = session_params.read_params(file_stub)
             # here we check the sync field of the device files
             if next(iter(ad_stub.get('sync', {})), None) != 'bpod' and number_of_expected_devices == 1:
-                log.warning("Only bpod is supported for single device sessions, it seems you are "
-                            "attempting to transfer a session with more than one device.")
+                log.warning(
+                    'Only bpod is supported for single device sessions, it seems you are '
+                    'attempting to transfer a session with more than one device.'
+                )
                 return
-        log.info(f"{ready_to_finalize}/{number_of_expected_devices} copy completion status")
+        log.info(f'{ready_to_finalize}/{number_of_expected_devices} copy completion status')
         if ready_to_finalize == number_of_expected_devices:
             for file_stub in files_stub:
-                session_params.aggregate_device(
-                    file_stub, self.remote_session_path.joinpath('_ibl_experiment.description.yaml'))
+                session_params.aggregate_device(file_stub, self.remote_session_path.joinpath('_ibl_experiment.description.yaml'))
                 file_stub.with_suffix('.status_complete').rename(file_stub.with_suffix('.status_final'))
             self.remote_session_path.joinpath('raw_session.flag').touch()
 
@@ -369,8 +386,7 @@ class VideoCopier(SessionCopier):
     def create_video_stub(self, nvideos=None):
         match len(list(self.session_path.joinpath('raw_video_data').glob('*.avi'))):
             case 3:
-                stub_file = Path(iblrig.__file__).parent.joinpath('device_descriptions', 'cameras',
-                                                                  'body_left_right.yaml')
+                stub_file = Path(iblrig.__file__).parent.joinpath('device_descriptions', 'cameras', 'body_left_right.yaml')
             case 1:
                 stub_file = Path(iblrig.__file__).parent.joinpath('device_descriptions', 'cameras', 'left.yaml')
         acquisition_description = session_params.read_params(stub_file)
@@ -383,7 +399,7 @@ class VideoCopier(SessionCopier):
                 self.create_video_stub()
             acquisition_description = session_params.read_params(self.file_experiment_description)
         self._experiment_description = acquisition_description
-        super(VideoCopier, self).initialize_experiment(acquisition_description=acquisition_description, **kwargs)
+        super().initialize_experiment(acquisition_description=acquisition_description, **kwargs)
 
 
 class BehaviorCopier(SessionCopier):
@@ -403,21 +419,23 @@ class EphysCopier(SessionCopier):
         if not acquisition_description:
             nprobes = nprobes or len(list(self.session_path.joinpath('raw_ephys_data').rglob('*.ap.bin')))
             match nprobes:
-                case 1: stub_name = 'single_probe.yaml'
-                case 2: stub_name = 'dual_probe.yaml'
+                case 1:
+                    stub_name = 'single_probe.yaml'
+                case 2:
+                    stub_name = 'dual_probe.yaml'
             stub_file = Path(iblrig.__file__).parent.joinpath('device_descriptions', 'neuropixel', stub_name)
             sync_file = Path(iblrig.__file__).parent.joinpath('device_descriptions', 'sync', 'nidq.yaml')
             acquisition_description = session_params.read_params(stub_file)
             acquisition_description.update(session_params.read_params(sync_file))
         self._experiment_description = acquisition_description
-        super(EphysCopier, self).initialize_experiment(acquisition_description=acquisition_description, **kwargs)
+        super().initialize_experiment(acquisition_description=acquisition_description, **kwargs)
 
     def _copy_collections(self):
         """
         Here we overload the copy to be able to rename the probes properly and also create the insertions
         :return:
         """
-        log.info(f"Transferring ephys session: {self.session_path} to {self.remote_session_path}")
+        log.info(f'Transferring ephys session: {self.session_path} to {self.remote_session_path}')
         ibllib.pipes.misc.rename_ephys_files(self.session_path)
         ibllib.pipes.misc.move_ephys_files(self.session_path)
         # copy the wiring files from template
@@ -432,7 +450,9 @@ class EphysCopier(SessionCopier):
             ibllib.pipes.misc.create_alyx_probe_insertions(self.session_path)
         except BaseException:
             log.error(traceback.print_exc())
-            log.info("Probe creation failed, please create the probe insertions manually. Continuing transfer...")
-        return copy_folders(local_folder=self.session_path.joinpath('raw_ephys_data'),
-                            remote_folder=self.remote_session_path.joinpath('raw_ephys_data'),
-                            overwrite=True)
+            log.info('Probe creation failed, please create the probe insertions manually. Continuing transfer...')
+        return copy_folders(
+            local_folder=self.session_path.joinpath('raw_ephys_data'),
+            remote_folder=self.remote_session_path.joinpath('raw_ephys_data'),
+            overwrite=True,
+        )

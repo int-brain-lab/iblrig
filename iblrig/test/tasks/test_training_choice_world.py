@@ -1,14 +1,13 @@
 import numpy as np
 import pandas as pd
 
-from iblrig_tasks._iblrig_tasks_trainingChoiceWorld.task import Session as TrainingChoiceWorldSession
-from iblrig_tasks._iblrig_tasks_trainingPhaseChoiceWorld.task import Session as TrainingPhaseChoiceWorldSession
 from iblrig.test.base import TASK_KWARGS, BaseTestCases
 from iblrig.test.tasks.test_biased_choice_world_family import get_fixtures
+from iblrig_tasks._iblrig_tasks_trainingChoiceWorld.task import Session as TrainingChoiceWorldSession
+from iblrig_tasks._iblrig_tasks_trainingPhaseChoiceWorld.task import Session as TrainingPhaseChoiceWorldSession
 
 
 class TestTrainingPhaseChoiceWorld(BaseTestCases.CommonTestInstantiateTask):
-
     def setUp(self) -> None:
         self.task = TrainingChoiceWorldSession(**TASK_KWARGS)
 
@@ -30,13 +29,14 @@ class TestTrainingPhaseChoiceWorld(BaseTestCases.CommonTestInstantiateTask):
             with self.subTest(training_phase=training_phase):
                 np.random.seed(12354)
                 task = TrainingPhaseChoiceWorldSession(
-                    **TASK_KWARGS, adaptive_reward=ADAPTIVE_REWARD, training_level=training_phase)
+                    **TASK_KWARGS, adaptive_reward=ADAPTIVE_REWARD, training_level=training_phase
+                )
                 assert task.training_phase == training_phase
                 task.create_session()
-                for i in np.arange(nt):
+                for _i in np.arange(nt):
                     task.next_trial()
                     # pc = task.psychometric_curve()
-                    trial_type = np.random.choice(['correct', 'error', 'no_go'], p=[.9, .05, .05])
+                    trial_type = np.random.choice(['correct', 'error', 'no_go'], p=[0.9, 0.05, 0.05])
                     task.trial_completed(trial_fixtures[trial_type])
                     if trial_type == 'correct':
                         self.assertTrue(task.trials_table['trial_correct'][task.trial_num])
@@ -44,10 +44,14 @@ class TestTrainingPhaseChoiceWorld(BaseTestCases.CommonTestInstantiateTask):
                     else:
                         assert not task.trials_table['trial_correct'][task.trial_num]
                     assert not np.isnan(task.reward_time)
-                trials_table = task.trials_table[:task.trial_num].copy()
-                contrasts = trials_table.groupby(['contrast']).agg(
-                    count=pd.NamedAgg(column='contrast', aggfunc='count'),
-                ).reset_index()
+                trials_table = task.trials_table[: task.trial_num].copy()
+                contrasts = (
+                    trials_table.groupby(['contrast'])
+                    .agg(
+                        count=pd.NamedAgg(column='contrast', aggfunc='count'),
+                    )
+                    .reset_index()
+                )
                 np.testing.assert_equal(trials_table['stim_probability_left'].values, 0.5)
                 np.testing.assert_equal(np.unique(trials_table['reward_amount'].values), np.array([0, ADAPTIVE_REWARD]))
                 np.testing.assert_equal(trials_table['training_phase'].values, training_phase)
@@ -55,23 +59,23 @@ class TestTrainingPhaseChoiceWorld(BaseTestCases.CommonTestInstantiateTask):
                 probas = 1
                 match training_phase:
                     case 5:
-                        contrast_set = np.array([0, 0.0625, 0.125, 0.25, 1.])
+                        contrast_set = np.array([0, 0.0625, 0.125, 0.25, 1.0])
                         probas = np.array([1, 2, 2, 2, 2])
                         debias = False
                     case 4:
-                        contrast_set = np.array([0, 0.0625, 0.125, 0.25, 0.5, 1.])
+                        contrast_set = np.array([0, 0.0625, 0.125, 0.25, 0.5, 1.0])
                         probas = np.array([1, 2, 2, 2, 2, 2])
                     case 3:
-                        contrast_set = np.array([0.0625, 0.125, 0.25, 0.5, 1.])
+                        contrast_set = np.array([0.0625, 0.125, 0.25, 0.5, 1.0])
                     case 2:
-                        contrast_set = np.array([0.125, 0.25, 0.5, 1.])
+                        contrast_set = np.array([0.125, 0.25, 0.5, 1.0])
                     case 1:
-                        contrast_set = np.array([0.25, 0.5, 1.])
+                        contrast_set = np.array([0.25, 0.5, 1.0])
                     case 0:
-                        contrast_set = np.array([0.5, 1.])
+                        contrast_set = np.array([0.5, 1.0])
 
                 np.testing.assert_equal(contrasts['contrast'].values, contrast_set)
-                normalized_counts = np.abs((nt / contrast_set.size - contrasts['count'].values))
+                normalized_counts = np.abs(nt / contrast_set.size - contrasts['count'].values)
                 normalized_counts = normalized_counts * probas / np.sum(probas)
                 normalized_counts = normalized_counts / (nt / contrast_set.size)
                 np.testing.assert_array_less(normalized_counts, 0.33)
@@ -82,7 +86,6 @@ class TestTrainingPhaseChoiceWorld(BaseTestCases.CommonTestInstantiateTask):
 
 
 class TestInstantiationTraining(BaseTestCases.CommonTestInstantiateTask):
-
     def setUp(self) -> None:
         self.task = TrainingChoiceWorldSession(**TASK_KWARGS)
 
@@ -95,7 +98,7 @@ class TestInstantiationTraining(BaseTestCases.CommonTestInstantiateTask):
         for i in np.arange(nt):
             task.next_trial()
             # pc = task.psychometric_curve()
-            trial_type = np.random.choice(['correct', 'error', 'no_go'], p=[.9, .05, .05])
+            trial_type = np.random.choice(['correct', 'error', 'no_go'], p=[0.9, 0.05, 0.05])
             task.trial_completed(trial_fixtures[trial_type])
             if trial_type == 'correct':
                 self.assertTrue(task.trials_table['trial_correct'][task.trial_num])
@@ -109,19 +112,20 @@ class TestInstantiationTraining(BaseTestCases.CommonTestInstantiateTask):
     def test_acquisition_description(self):
         ad = self.task.experiment_description
         ed = {
-            'sync': {
-                'bpod': {'collection': 'raw_task_data_00', 'extension': '.jsonable', 'acquisition_software': 'pybpod'}
-            },
+            'sync': {'bpod': {'collection': 'raw_task_data_00', 'extension': '.jsonable', 'acquisition_software': 'pybpod'}},
             'devices': {
                 'cameras': {'left': {'collection': 'raw_video_data', 'sync_label': 'audio'}},
                 'microphone': {'microphone': {'collection': 'raw_task_data_00', 'sync_label': 'audio'}},
             },
-            'tasks': [{
-                '_iblrig_tasks_trainingChoiceWorld': {
-                    'collection': 'raw_task_data_00',
-                    'sync_label': 'bpod',
-                    'extractors': ['TrialRegisterRaw', 'ChoiceWorldTrials', 'TrainingStatus']}}
+            'tasks': [
+                {
+                    '_iblrig_tasks_trainingChoiceWorld': {
+                        'collection': 'raw_task_data_00',
+                        'sync_label': 'bpod',
+                        'extractors': ['TrialRegisterRaw', 'ChoiceWorldTrials', 'TrainingStatus'],
+                    }
+                }
             ],
         }
         for k in ed:
-            assert ad[k] == ed[k], f"Failed on {k}"
+            assert ad[k] == ed[k], f'Failed on {k}'

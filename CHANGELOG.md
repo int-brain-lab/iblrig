@@ -1,6 +1,11 @@
 Changelog
 ---------
 
+8.12.7
+------
+* online plot: fix line colors and add legends
+* do not show Bonsai editor during session
+
 8.12.6
 ------
 * reverting TTL on trial end introduced with PR #504, release 8.9.0

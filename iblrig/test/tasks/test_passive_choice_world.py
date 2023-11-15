@@ -5,7 +5,6 @@ from iblrig_tasks._iblrig_tasks_passiveChoiceWorld.task import Session as Passiv
 
 
 class TestInstantiatePassiveChoiceWorld(BaseTestCases.CommonTestInstantiateTask):
-
     def setUp(self) -> None:
         self.task = PassiveChoiceWorldSession(**TASK_KWARGS)
         self.task.mock()

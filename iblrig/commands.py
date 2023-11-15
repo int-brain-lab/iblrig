@@ -1,20 +1,20 @@
 import argparse
 import datetime
 import json
+import shutil
+from collections.abc import Iterable
 from pathlib import Path
-from typing import List, Tuple, Iterable, Type
 
 import yaml
-import shutil
 
-from iblutil.util import setup_logger
-from ibllib.io import raw_data_loaders
-from iblrig.transfer_experiments import BehaviorCopier, VideoCopier, EphysCopier, SessionCopier
 import iblrig
+from ibllib.io import raw_data_loaders
 from iblrig.hardware import Bpod
-from iblrig.path_helper import load_settings_yaml, get_local_and_remote_paths
 from iblrig.online_plots import OnlinePlots
+from iblrig.path_helper import get_local_and_remote_paths, load_settings_yaml
 from iblrig.raw_data_loaders import load_task_jsonable
+from iblrig.transfer_experiments import BehaviorCopier, EphysCopier, SessionCopier, VideoCopier
+from iblutil.util import setup_logger
 
 logger = setup_logger('iblrig', level='INFO')
 
@@ -37,12 +37,12 @@ def _transfer_parser(description: str) -> argparse.ArgumentParser:
     argparse.ArgumentParser
         An ArgumentParser object with pre-defined arguments.
     """
-    parser = argparse.ArgumentParser(description=description,
-                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-                                     argument_default=argparse.SUPPRESS)
-    parser.add_argument("-l", "--local", action="store", type=dir_path, dest='local_path', help="define local data path")
-    parser.add_argument("-r", "--remote", action="store", type=dir_path, dest='remote_path', help="define remote data path")
-    parser.add_argument("-d", "--dry", action="store_true", dest='dry', help="do not remove local data after copying")
+    parser = argparse.ArgumentParser(
+        description=description, formatter_class=argparse.ArgumentDefaultsHelpFormatter, argument_default=argparse.SUPPRESS
+    )
+    parser.add_argument('-l', '--local', action='store', type=dir_path, dest='local_path', help='define local data path')
+    parser.add_argument('-r', '--remote', action='store', type=dir_path, dest='remote_path', help='define remote data path')
+    parser.add_argument('-d', '--dry', action='store_true', dest='dry', help='do not remove local data after copying')
     return parser
 
 
@@ -82,7 +82,7 @@ def transfer_data_cli():
     """
     Command-line interface for transferring behavioral data to the local server.
     """
-    args = _transfer_parser("Copy behavior data to the local server.").parse_args()
+    args = _transfer_parser('Copy behavior data to the local server.').parse_args()
     transfer_data(**vars(args), interactive=True)
 
 
@@ -90,7 +90,7 @@ def transfer_video_data_cli():
     """
     Command-line interface for transferring video data to the local server.
     """
-    args = _transfer_parser("Copy video data to the local server.").parse_args()
+    args = _transfer_parser('Copy video data to the local server.').parse_args()
     transfer_video_data(**vars(args), interactive=True)
 
 
@@ -98,17 +98,17 @@ def transfer_ephys_data_cli():
     """
     Command-line interface for transferring ephys data to the local server.
     """
-    args = _transfer_parser("Copy ephys data to the local server.").parse_args()
+    args = _transfer_parser('Copy ephys data to the local server.').parse_args()
     transfer_ephys_data(**vars(args), interactive=True)
 
 
-def _get_subjects_folders(local_path: Path, remote_path: Path, interactive: bool = False) -> Tuple[Path, Path]:
+def _get_subjects_folders(local_path: Path, remote_path: Path, interactive: bool = False) -> tuple[Path, Path]:
     rig_paths = get_local_and_remote_paths(local_path, remote_path)
     local_path = rig_paths.local_subjects_folder
     remote_path = rig_paths.remote_subjects_folder
     assert isinstance(local_path, Path)
     if remote_path is None:
-        raise Exception("Remote Path is not defined.")
+        raise Exception('Remote Path is not defined.')
     if interactive:
         print(f'Local Path:  `{local_path}`')
         print(f'Remote Path: `{remote_path}`\n')
@@ -118,16 +118,21 @@ def _get_subjects_folders(local_path: Path, remote_path: Path, interactive: bool
     return local_path, remote_path
 
 
-def _get_copiers(copier: Type[SessionCopier], local_folder: Path, remote_folder: Path, lab: str = None,
-                 glob_pattern: str = 'transfer_me.flag', interactive: bool = False) -> List[SessionCopier]:
-
+def _get_copiers(
+    copier: type[SessionCopier],
+    local_folder: Path,
+    remote_folder: Path,
+    lab: str = None,
+    glob_pattern: str = 'transfer_me.flag',
+    interactive: bool = False,
+) -> list[SessionCopier]:
     # get local/remote subjects folder
     rig_paths = get_local_and_remote_paths(local_path=local_folder, remote_path=remote_folder, lab=lab)
     local_subjects_folder = rig_paths.local_subjects_folder
     remote_subjects_folder = rig_paths.remote_subjects_folder
     assert isinstance(local_subjects_folder, Path)
     if remote_subjects_folder is None:
-        raise Exception("Remote Path is not defined.")
+        raise Exception('Remote Path is not defined.')
     if interactive:
         print(f'Local Path:  `{local_subjects_folder}`')
         print(f'Remote Path: `{remote_subjects_folder}`\n')
@@ -163,13 +168,12 @@ def _print_status(copiers: Iterable[SessionCopier], heading: str = '') -> None:
         print(f' * {copier.session_path}: {state}')
 
 
-def transfer_ephys_data(local_path: Path = None, remote_path: Path = None, dry: bool = False,
-                        interactive: bool = False):
+def transfer_ephys_data(local_path: Path = None, remote_path: Path = None, dry: bool = False, interactive: bool = False):
     local_subject_folder, remote_subject_folder = _get_subjects_folders(local_path, remote_path, interactive)
     copiers = _get_copiers(EphysCopier, local_path, remote_path, interactive=interactive)
 
     for copier in copiers:
-        logger.critical(f"{copier.state}, {copier.session_path}")
+        logger.critical(f'{copier.state}, {copier.session_path}')
         if not dry:
             copier.run()
 
@@ -177,17 +181,15 @@ def transfer_ephys_data(local_path: Path = None, remote_path: Path = None, dry: 
         _print_status(copiers, 'States after transfer operation:')
 
     # once we copied the data, remove older session for which the data was successfully uploaded
-    remove_local_sessions(weeks=2, local_path=local_subject_folder,
-                          remote_path=remote_subject_folder, dry=dry, tag='ephys')
+    remove_local_sessions(weeks=2, local_path=local_subject_folder, remote_path=remote_subject_folder, dry=dry, tag='ephys')
 
 
-def transfer_video_data(local_path: Path = None, remote_path: Path = None, dry: bool = False,
-                        interactive: bool = False):
+def transfer_video_data(local_path: Path = None, remote_path: Path = None, dry: bool = False, interactive: bool = False):
     local_subject_folder, remote_subject_folder = _get_subjects_folders(local_path, remote_path, interactive)
     copiers = _get_copiers(VideoCopier, local_path, remote_path, interactive=interactive)
 
     for copier in copiers:
-        logger.critical(f"{copier.state}, {copier.session_path}")
+        logger.critical(f'{copier.state}, {copier.session_path}')
         if not dry:
             copier.run()
 
@@ -195,12 +197,10 @@ def transfer_video_data(local_path: Path = None, remote_path: Path = None, dry: 
         _print_status(copiers, 'Session states after transfer operation:')
 
     # once we copied the data, remove older session for which the data was successfully uploaded
-    remove_local_sessions(weeks=2, local_path=local_subject_folder,
-                          remote_path=remote_subject_folder, dry=dry, tag='video')
+    remove_local_sessions(weeks=2, local_path=local_subject_folder, remote_path=remote_subject_folder, dry=dry, tag='video')
 
 
-def transfer_data(local_path: Path = None, remote_path: Path = None, dry: bool = False,
-                  interactive: bool = False) -> None:
+def transfer_data(local_path: Path = None, remote_path: Path = None, dry: bool = False, interactive: bool = False) -> None:
     """
     Copies the behavior data from the rig to the local server if the session has more than 42 trials
     If the hardware settings file contains MAIN_SYNC=True, the number of expected devices is set to 1
@@ -249,7 +249,7 @@ def transfer_data(local_path: Path = None, remote_path: Path = None, dry: bool =
             # and continue the copying
             logger.warning(f'recovering crashed session {session_path}')
             settings_file = session_path.joinpath('raw_task_data_00', '_iblrig_taskSettings.raw.json')
-            with open(settings_file, 'r') as fid:
+            with open(settings_file) as fid:
                 raw_settings = json.load(fid)
             raw_settings['NTRIALS'] = int(ntrials)
             raw_settings['NTRIALS_CORRECT'] = int(trials['trial_correct'].sum())
@@ -267,7 +267,7 @@ def transfer_data(local_path: Path = None, remote_path: Path = None, dry: bool =
             if copier.remote_session_path.exists():
                 shutil.rmtree(copier.remote_session_path)
             continue
-        logger.critical(f"{copier.state}, {copier.session_path}")
+        logger.critical(f'{copier.state}, {copier.session_path}')
         copier.run(number_of_expected_devices=number_of_expected_devices)
 
     if interactive:
@@ -287,8 +287,10 @@ def remove_local_sessions(weeks=2, local_path=None, remote_path=None, dry=False,
     local_subject_folder, remote_subject_folder = _get_subjects_folders(local_path, remote_path)
     size = 0
     match tag:
-        case 'behavior': Copier = BehaviorCopier
-        case 'video': Copier = VideoCopier
+        case 'behavior':
+            Copier = BehaviorCopier
+        case 'video':
+            Copier = VideoCopier
     for flag in sorted(list(local_subject_folder.rglob(f'_ibl_experiment.description_{tag}.yaml')), reverse=True):
         session_path = flag.parent
         days_elapsed = (datetime.datetime.now() - datetime.datetime.strptime(session_path.parts[-2], '%Y-%m-%d')).days
@@ -296,12 +298,12 @@ def remove_local_sessions(weeks=2, local_path=None, remote_path=None, dry=False,
             continue
         sc = Copier(session_path, remote_subjects_folder=remote_subject_folder)
         if sc.state == 3:
-            session_size = sum(f.stat().st_size for f in session_path.rglob('*') if f.is_file()) / 1024 ** 3
-            logger.info(f"{sc.session_path}, {session_size:0.02f} Go")
+            session_size = sum(f.stat().st_size for f in session_path.rglob('*') if f.is_file()) / 1024**3
+            logger.info(f'{sc.session_path}, {session_size:0.02f} Go')
             size += session_size
             if not dry:
                 shutil.rmtree(session_path)
-    logger.info(f"Cleanup size {size:0.02f} Go")
+    logger.info(f'Cleanup size {size:0.02f} Go')
 
 
 def viewsession():
@@ -311,7 +313,7 @@ def viewsession():
     :return: None
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument("file_jsonable", help="full file path to jsonable file")
+    parser.add_argument('file_jsonable', help='full file path to jsonable file')
     args = parser.parse_args()
     self = OnlinePlots()
     self.run(Path(args.file_jsonable))
