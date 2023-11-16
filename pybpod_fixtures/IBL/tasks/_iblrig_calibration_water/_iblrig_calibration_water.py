@@ -179,7 +179,7 @@ for open_time in open_times:
             "std_measured_weight": np.std(mw),
             "time": datetime.datetime.now(),
         })
-        df1 = pd.concat([df1, df], ignore_index=True)
+        df1 = pd.concat([df1, df.to_frame().T], ignore_index=True))
 
         pass_ = 1
         mw = []
