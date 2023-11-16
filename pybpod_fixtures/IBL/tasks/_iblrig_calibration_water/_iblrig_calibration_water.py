@@ -171,17 +171,15 @@ for open_time in open_times:
     mw.append(measured_weight)
 
     if pass_ % sph.PASSES == 0:
-        df1 = df1.append(
-            {
-                "open_time": open_time,
-                "ndrops": ntrials,
-                "npasses": sph.PASSES,
-                "mean_measured_weight": np.mean(mw),
-                "std_measured_weight": np.std(mw),
-                "time": datetime.datetime.now(),
-            },
-            ignore_index=True,
-        )
+        df = pd.Series({
+            "open_time": open_time,
+            "ndrops": ntrials,
+            "npasses": sph.PASSES,
+            "mean_measured_weight": np.mean(mw),
+            "std_measured_weight": np.std(mw),
+            "time": datetime.datetime.now(),
+        })
+        df1 = pd.concat([df1, df], ignore_index=True)
 
         pass_ = 1
         mw = []
