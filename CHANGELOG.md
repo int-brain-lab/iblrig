@@ -1,6 +1,11 @@
 Changelog
 ---------
 
+8.12.8
+------
+* fix incorrect limits & unit for adaptive gain in trainingChoiceWorld  
+* usability improvements for "Show Training Level" tool
+
 8.12.7
 ------
 * online plot: fix line colors and add legends

@@ -767,7 +767,7 @@
   </action>
   <action name="uiActionTrainingLevelV7">
    <property name="text">
-    <string>training level v7</string>
+    <string>Get Training Level</string>
    </property>
   </action>
  </widget>
