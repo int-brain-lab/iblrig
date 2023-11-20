@@ -380,4 +380,4 @@ class Ui_wizard:
         self.uiActionRecent.setText(_translate("wizard", "recent"))
         self.uiActionTrainingTemplate.setText(_translate("wizard", "training rig"))
         self.uiActionEphysTemplate.setText(_translate("wizard", "ephys rig"))
-        self.uiActionTrainingLevelV7.setText(_translate("wizard", "training level v7"))
+        self.uiActionTrainingLevelV7.setText(_translate("wizard", "Get Training Level"))

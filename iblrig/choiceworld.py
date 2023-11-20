@@ -105,11 +105,20 @@ def training_contrasts_probabilities(phase=1):
     return frequencies / np.sum(frequencies)
 
 
-def draw_training_contrast(phase):
+def draw_training_contrast(phase: int) -> float:
     probabilities = training_contrasts_probabilities(phase)
     return np.random.choice(CONTRASTS, p=probabilities)
 
 
-def contrasts_set(phase):
+def contrasts_set(phase: int) -> np.array:
     probabilities = training_contrasts_probabilities(phase)
     return CONTRASTS[probabilities > 0]
+
+
+def training_phase_from_contrast_set(contrast_set: list[float]) -> int | None:
+    contrast_set = sorted(contrast_set)
+    for phase in range(6):
+        expected_set = CONTRASTS[np.logical_and(training_contrasts_probabilities(phase) > 0, CONTRASTS >= 0)]
+        if np.array_equal(contrast_set, expected_set):
+            return phase
+    raise Exception(f'Could not determine training phase from contrast set {contrast_set}')

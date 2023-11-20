@@ -31,7 +31,7 @@ except ImportError:
     pass
 import iblrig.path_helper
 from iblrig.base_tasks import BaseSession
-from iblrig.choiceworld import get_subject_training_info
+from iblrig.choiceworld import get_subject_training_info, training_phase_from_contrast_set
 from iblrig.constants import BASE_DIR
 from iblrig.gui.ui_update import Ui_update
 from iblrig.gui.ui_wizard import Ui_wizard
@@ -250,26 +250,29 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         This code will be removed and is here only for convenience while users transition from v7 to v8
         :return:
         """
-        local_path = self.model.iblrig_settings['iblrig_local_data_path']
+        if not (local_path := Path(r'C:\iblrig_data\Subjects')).exists():
+            local_path = self.model.iblrig_settings['iblrig_local_data_path']
         session_path = QtWidgets.QFileDialog.getExistingDirectory(
             self, 'Select Session Path', str(local_path), QtWidgets.QFileDialog.ShowDirsOnly
         )
-        if session_path is None:
+        if session_path is None or session_path == '':
             return
         file_jsonable = next(Path(session_path).glob('raw_behavior_data/_iblrig_taskData.raw.jsonable'), None)
         if file_jsonable is None:
             QtWidgets.QMessageBox().critical(self, 'Error', f'No jsonable found in {session_path}')
             return
-        trials_table, bpod_data = iblrig.raw_data_loaders.load_task_jsonable(file_jsonable)
+        trials_table, _ = iblrig.raw_data_loaders.load_task_jsonable(file_jsonable)
+        if trials_table.empty:
+            QtWidgets.QMessageBox().critical(self, 'Error', f'No trials found in {session_path}')
+            return
         last_trial = trials_table.iloc[-1]
-        QtWidgets.QMessageBox().information(
-            self,
-            f'{session_path}f',
-            f"{session_path}\n"
-            f" contrasts: {last_trial['contrast_set']}\n"
-            f"reward: {last_trial['reward_amount']} uL\n"
-            f"stim gain: {last_trial['stim_gain']}",
-        )
+        training_phase = training_phase_from_contrast_set(last_trial['contrast_set'])
+        info_text = f"{session_path}\n\n" \
+                    f"training phase:\t{training_phase}\n" \
+                    f"contrasts:\t{last_trial['contrast_set']}\n" \
+                    f"reward:\t{last_trial['reward_amount']} uL\n" \
+                    f"stimulus gain:\t{last_trial['stim_gain']}"
+        QtWidgets.QMessageBox().information(self, 'Training Level', info_text)
 
     def _on_check_update_result(self, result: tuple[bool, str]) -> None:
         """
