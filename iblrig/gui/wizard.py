@@ -516,11 +516,10 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                     widget.valueChanged.emit(widget.value())
 
                 case 'adaptive_gain':
-                    label = 'Stimulus Gain, μl'
+                    label = 'Stimulus Gain'
                     widget.setSpecialValueText('automatic')
-                    widget.setMaximum(3)
                     widget.setSingleStep(0.1)
-                    widget.setMinimum(1.4)
+                    widget.setMinimum(0)
                     widget.setValue(widget.minimum())
                     widget.valueChanged.connect(
                         lambda val, a=arg, m=widget.minimum(): self._set_task_arg(
