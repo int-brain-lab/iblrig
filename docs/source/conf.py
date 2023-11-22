@@ -1,20 +1,16 @@
-# Configuration file for the Sphinx documentation builder.
-#
-# For the full list of built-in configuration values, see the documentation:
-# https://www.sphinx-doc.org/en/master/usage/configuration.html
+from datetime import date
 
-# -- Project information -----------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
+from iblrig import __version__
 
 project = 'iblrig'
-copyright = '2018, International Brain Laboratory'
+copyright = f'2018 – {date.today().year} International Brain Laboratory'
 author = 'International Brain Laboratory'
-release = '8.x'
+version = '.'.join(__version__.split('.')[:3])
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = ['sphinx_lesson']
+extensions = ['sphinx_lesson', 'sphinx.ext.autosectionlabel']
 source_suffix = ['.rst', '.md']
 
 templates_path = ['_templates']

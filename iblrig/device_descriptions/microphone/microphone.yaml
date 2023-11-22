@@ -1,0 +1,5 @@
+devices:
+  microphone:
+    microphone:
+        collection: raw_behavior_data
+        sync_label: null

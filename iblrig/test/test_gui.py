@@ -1,13 +1,11 @@
 import unittest
 
-from one.api import ONE
 from ibllib.tests import TEST_DB
-
-from iblrig.gui.wizard import RigWizardModel, PROJECTS
+from iblrig.gui.wizard import PROJECTS, RigWizardModel
+from one.api import ONE
 
 
 class TestRigWizardModel(unittest.TestCase):
-
     def setUp(self):
         self.wizard = RigWizardModel()
 
@@ -22,11 +20,21 @@ class TestRigWizardModel(unittest.TestCase):
         :return:
         """
         for task_name in self.wizard.all_tasks:
-            extra_args = self.wizard._get_task_extra_kwargs(task_name)
-            match task_name:
-                case '_iblrig_tasks_ephysChoiceWorld':
-                    assert len(extra_args) == 2
-                case '_iblrig_tasks_trainingChoiceWorld':
-                    assert len(extra_args) == 1
-                case _:
-                    assert len(extra_args) == 0
+            with self.subTest(task_name=task_name):
+                parser = self.wizard.get_task_extra_parser(task_name)
+                extra_args = [{act.option_strings[0]: act.type} for act in parser._actions]
+                match task_name:
+                    case '_iblrig_tasks_advancedChoiceWorld':
+                        expect = 6
+                    case '_iblrig_tasks_trainingPhaseChoiceWorld':
+                        expect = 3
+                    case '_iblrig_tasks_trainingChoiceWorld':
+                        expect = 4
+                    case '_iblrig_tasks_ephysChoiceWorld':
+                        expect = 2
+                    case '_iblrig_tasks_spontaneous' | 'plau_oddBallAudio':
+                        expect = 0
+                    case _:
+                        print(task_name)
+                        expect = 1
+                self.assertEqual(expect, len(extra_args))

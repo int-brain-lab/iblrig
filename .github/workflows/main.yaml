@@ -3,8 +3,12 @@ name: iblrigv8 CI
 on:
   push:
     branches: [iblrigv8]
+    paths-ignore:
+      - 'docs/**'
   pull_request:
     branches: [iblrigv8]
+    paths-ignore:
+      - 'docs/**'
 
 jobs:
   tests:
@@ -18,44 +22,54 @@ jobs:
       - name: Checkout iblrig repo
         uses: actions/checkout@v3
         with:
-          path: iblrig
+          fetch-depth: 0
 
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+          cache-dependency-path: 'pyproject.toml'
 
       - name: flake8
         run: |
+          pip install --upgrade pip
           pip install flake8 --quiet
-          cd iblrig
           python -m flake8
 
-      - name: iblrig and iblpybpod requirements
+      - name: install requirements
         shell: bash -l {0}
         run: |
-          pip install --editable iblrig
-          pip install -r iblrig/requirements.txt
+          pip install --editable .[DEV]
 
       - name: Install audio library (Ubuntu only)
         if: matrix.os == 'ubuntu-latest'
         run: sudo apt-get install -y libportaudio2
 
-      - name: Install Bonsai (Windows only)
-        if: matrix.os == 'windows-latest'
-        shell: pwsh -l {0}
+      - name: Create config files (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
         run: |
-          cd iblrig\Bonsai
-          powershell.exe .\install.ps1
+          cp settings/hardware_settings_template.yaml settings/hardware_settings.yaml
+          cp settings/iblrig_settings_template.yaml settings/iblrig_settings.yaml
+
+      - name: Create config files (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          copy settings\hardware_settings_template.yaml settings\hardware_settings.yaml
+          copy settings\iblrig_settings_template.yaml settings\iblrig_settings.yaml
 
       - name: iblrig unit tests
-        shell: bash -l {0}
         run: |
-          cd iblrig
-          cd test
-          python -m unittest discover
-          cd test_tasks
-          python -m unittest discover
+          coverage run -m unittest discover -s ./iblrig/test -t .
+          coverage xml
+
+      - name: coveralls.io
+        uses: coverallsapp/github-action@v2
+        with:
+          flag-name: ${{ matrix.python-version }}, ${{ matrix.os }}
+          parallel: true
+          file: coverage.xml
+          compare-ref: iblrigv8
 
       - name: Generate requirements_frozen.txt
         run: pip freeze > requirements_frozen.txt
@@ -65,3 +79,13 @@ jobs:
         with:
           name: requirements_frozen
           path: requirements_frozen.txt
+
+  finish:
+    needs: tests
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+    - name: Coveralls Finished
+      uses: coverallsapp/github-action@v2
+      with:
+        parallel-finished: true

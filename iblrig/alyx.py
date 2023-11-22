@@ -1,13 +1,13 @@
 import logging
-from one.registration import RegistrationClient
-import iblrig
 
-log = logging.getLogger("iblrig")
+import iblrig
+from one.registration import RegistrationClient
+
+log = logging.getLogger('iblrig')
 
 
 def register_session(session_path, settings_dict, one=None):
-    """Register session in Alyx database.
-    """
+    """Register session in Alyx database."""
 
     if one is None:
         return
@@ -28,7 +28,7 @@ def register_session(session_path, settings_dict, one=None):
         'task_protocol': settings_dict['PYBPOD_PROTOCOL'] + iblrig.__version__,
         'lab': settings_dict['ALYX_LAB'],
         'start_time': settings_dict['SESSION_START_TIME'],
-        'end_time': settings_dict['SESSION_END_TIME']
+        'end_time': settings_dict['SESSION_END_TIME'],
     }
     rc = RegistrationClient(one=one)
     ses, _ = rc.register_session(**registration_kwargs)
@@ -39,9 +39,11 @@ def register_session(session_path, settings_dict, one=None):
         wd = dict(nickname=settings_dict['SUBJECT_NAME'], date_time=settings_dict['SESSION_START_TIME'])
         previous_weighings = one.alyx.rest('weighings', 'list', **wd, no_cache=True)
         if len(previous_weighings) == 0:
-            wd = dict(subject=settings_dict['SUBJECT_NAME'],
-                      date_time=settings_dict['SESSION_START_TIME'],
-                      weight=settings_dict['SUBJECT_WEIGHT'])
+            wd = dict(
+                subject=settings_dict['SUBJECT_NAME'],
+                date_time=settings_dict['SESSION_START_TIME'],
+                weight=settings_dict['SUBJECT_WEIGHT'],
+            )
             one.alyx.rest('weighings', 'create', data=wd)
             log.info(f"weighing registered in Alyx database: {ses['subject']}, {settings_dict['SUBJECT_WEIGHT']}g")
 
@@ -55,5 +57,7 @@ def register_session(session_path, settings_dict, one=None):
                 water_administered=settings_dict['TOTAL_WATER_DELIVERED'] / 1000,
             )
             one.alyx.rest('water-administrations', 'create', data=wa_data)
-            log.info(f"Water administered registered in Alyx database: {ses['subject']},"
-                     f"{settings_dict['TOTAL_WATER_DELIVERED'] / 1000}mL")
+            log.info(
+                f"Water administered registered in Alyx database: {ses['subject']},"
+                f"{settings_dict['TOTAL_WATER_DELIVERED'] / 1000}mL"
+            )

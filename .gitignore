@@ -8,6 +8,7 @@ settings/alyx
 settings/visvis/
 docs/build
 
+pybpod_fixtures/*
 Bonsai/*
 Subjects/*
 Bonsai/Bonsai.exe.settings
@@ -34,3 +35,8 @@ app.log
 /.idea/*
 /venv/
 *.autosave
+iblrig/_version.py
+*.code-workspace
+
+.coverage*
+coverage.xml

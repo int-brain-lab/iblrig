@@ -1,13 +1,14 @@
 import logging
 
 import numpy as np
-from pybpod_soundcard_module.module_api import DataType, SampleRate, SoundCardModule
 from scipy.signal import chirp
 
-log = logging.getLogger("iblrig")
+from pybpod_soundcard_module.module_api import DataType, SampleRate, SoundCardModule
+
+log = logging.getLogger('iblrig')
 
 
-def make_sound(rate=44100, frequency=5000, duration=0.1, amplitude=1, fade=0.01, chans="L+TTL"):
+def make_sound(rate=44100, frequency=5000, duration=0.1, amplitude=1, fade=0.01, chans='L+TTL'):
     """
     Build sounds and save bin file for upload to soundcard or play via
     sounddevice lib.
@@ -54,17 +55,17 @@ def make_sound(rate=44100, frequency=5000, duration=0.1, amplitude=1, fade=0.01,
     if frequency == -1:
         tone = amplitude * np.random.rand(tone.size)
 
-    if chans == "mono":
+    if chans == 'mono':
         sound = np.array(tone)
-    elif chans == "L":
+    elif chans == 'L':
         sound = np.array([tone, null]).T
-    elif chans == "R":
+    elif chans == 'R':
         sound = np.array([null, tone]).T
-    elif chans == "stereo":
+    elif chans == 'stereo':
         sound = np.array([tone, tone]).T
-    elif chans == "L+TTL":
+    elif chans == 'L+TTL':
         sound = np.array([tone, ttl]).T
-    elif chans == "TTL+R":
+    elif chans == 'TTL+R':
         sound = np.array([ttl, tone]).T
 
     return sound
@@ -75,7 +76,7 @@ def make_chirp(f0=80, f1=160, length=0.1, amp=0.1, fade=0.01, sf=96000):
     t1 = length
     t = np.linspace(t0, t1, sf)
 
-    c = amp * chirp(t, f0=f0, f1=f1, t1=t1, method="linear")
+    c = amp * chirp(t, f0=f0, f1=f1, t1=t1, method='linear')
 
     len_fade = int(fade * sf)
     fade_io = np.hanning(len_fade * 2)
@@ -103,7 +104,7 @@ def format_sound(sound, file_path=None, flat=False):
     :param file_path: full path of file. [default: None]
     :type file_path: str
     """
-    bin_sound = (sound * ((2 ** 31) - 1)).astype(np.int32)
+    bin_sound = (sound * ((2**31) - 1)).astype(np.int32)
 
     if bin_sound.flags.f_contiguous:
         bin_sound = np.ascontiguousarray(bin_sound)
@@ -112,28 +113,32 @@ def format_sound(sound, file_path=None, flat=False):
     bin_save = np.ascontiguousarray(bin_save)
 
     if file_path:
-        with open(file_path, "wb") as bf:
+        with open(file_path, 'wb') as bf:
             bf.writelines(bin_save)
             bf.flush()
 
     return bin_sound.flatten() if flat else bin_sound
 
 
-def configure_sound_card(card=None, sounds=[], indexes=[], sample_rate=96):
+def configure_sound_card(card=None, sounds=None, indexes=None, sample_rate=96):
+    if indexes is None:
+        indexes = []
+    if sounds is None:
+        sounds = []
     if card is None:
         card = SoundCardModule()
         close_card = True
 
-    if sample_rate == 192 or sample_rate == 192000:
+    if sample_rate in (192, 192000):
         sample_rate = SampleRate._192000HZ
-    elif sample_rate == 96 or sample_rate == 96000:
+    elif sample_rate in (96, 96000):
         sample_rate = SampleRate._96000HZ
     else:
-        log.error(f"Sound sample rate {sample_rate} should be 96 or 192 (KHz)")
+        log.error(f'Sound sample rate {sample_rate} should be 96 or 192 (KHz)')
         raise (ValueError)
 
     if len(sounds) != len(indexes):
-        log.error("Wrong number of sounds and indexes")
+        log.error('Wrong number of sounds and indexes')
         raise (ValueError)
 
     sounds = [format_sound(s, flat=True) for s in sounds]
@@ -142,7 +147,6 @@ def configure_sound_card(card=None, sounds=[], indexes=[], sample_rate=96):
 
     if close_card:
         card.close()
-    return
 
 
 # FIXME: in _passiveCW use SoundCardModule to give to this v instead of finding device yourself

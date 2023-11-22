@@ -1,25 +1,15 @@
 import unittest
-import numpy as np
-from pathlib import Path
 import zipfile
+from pathlib import Path
+
 import matplotlib
+import numpy as np
 
 import iblrig.online_plots as op
 from iblrig.raw_data_loaders import load_task_jsonable
 
 zip_jsonable = Path(__file__).parent.joinpath('fixtures', 'online_plots_biased_iblrigv7.zip')
 matplotlib.use('Agg')  # avoid pyqt testing issues
-
-
-class TestOnlineStd(unittest.TestCase):
-
-    def test_online_std(self):
-        n = 41
-        b = np.random.rand(n)
-        a = b[:-1]
-        mu, std = op.online_std(new_sample=b[-1], count=n, mean=np.mean(a), std=np.std(a))
-        np.testing.assert_almost_equal(std, np.std(b))
-        np.testing.assert_almost_equal(mu, np.mean(b))
 
 
 class TestOnlinePlots(unittest.TestCase):

@@ -68,6 +68,6 @@ class Session(ChoiceWorldSession):
 
 if __name__ == "__main__":  # pragma: no cover
     # python .\iblrig_tasks\_iblrig_tasks_spontaneous\task.py --subject mysubject
-    kwargs = iblrig.misc.get_task_arguments()
+    kwargs = iblrig.misc.get_task_arguments(parents=[Session.extra_parser()])
     sess = Session(**kwargs)
     sess.run()

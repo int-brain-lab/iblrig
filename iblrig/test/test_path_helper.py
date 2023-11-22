@@ -1,7 +1,7 @@
 """Tests for iblrig.path_helper module."""
+import tempfile
 import unittest
 from pathlib import Path
-import tempfile
 
 import iblrig.path_helper
 from iblrig.base_tasks import BonsaiRecordingMixin
@@ -24,7 +24,7 @@ class TestPathHelper(unittest.TestCase):
     def test_get_commit_hash(self):
         import subprocess
 
-        out = subprocess.check_output(["git", "rev-parse", "HEAD"]).decode().strip()
+        out = subprocess.check_output(['git', 'rev-parse', 'HEAD']).decode().strip()
         # Run it
         ch = iblrig.path_helper.get_commit_hash(str(iblrig.path_helper.get_iblrig_path()))
         self.assertTrue(out == ch)
@@ -35,6 +35,7 @@ class TestPathHelper(unittest.TestCase):
 
 class TestIterateCollection(unittest.TestCase):
     """Test for iblrig.path_helper.iterate_collection"""
+
     def setUp(self) -> None:
         tmp = tempfile.TemporaryDirectory()
         self.addCleanup(tmp.cleanup)
@@ -66,7 +67,6 @@ class TestPatchSettings(unittest.TestCase):
 
 
 class TestHardwareSettings(unittest.TestCase):
-
     def test_get_left_camera_workflow(self):
         hws = iblrig.path_helper.load_settings_yaml('hardware_settings_template.yaml')
         self.assertIsNotNone(BonsaiRecordingMixin._camera_mixin_bonsai_get_workflow_file(hws['device_cameras']))
@@ -74,5 +74,5 @@ class TestHardwareSettings(unittest.TestCase):
         self.assertIsNone(BonsaiRecordingMixin._camera_mixin_bonsai_get_workflow_file({}))
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     unittest.main(exit=False)
