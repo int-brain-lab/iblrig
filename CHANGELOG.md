@@ -4,6 +4,8 @@ Changelog
 8.12.9
 ------
 * usability improvements for "Show Training Level" tool
+* ignore unused behavior ports
+* remove unnecessary dependencies
 
 8.12.8
 ------

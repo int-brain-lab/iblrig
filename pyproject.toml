@@ -14,6 +14,7 @@ dependencies = [
     "PyYAML",
     "graphviz",
     "ibllib@git+https://github.com/int-brain-lab/ibllib.git",
+    "iblbpod@git+https://github.com/int-brain-lab/iblbpod.git",
     "iblpybpod@git+https://github.com/int-brain-lab/iblpybpod.git@no-gui",
     "iblscripts@git+https://github.com/int-brain-lab/iblscripts.git",
     "serial_singleton@git+https://github.com/int-brain-lab/serial_singleton.git",
