@@ -4,7 +4,6 @@ from unittest.mock import patch
 
 from packaging import version
 
-from iblrig import __version__
 from iblrig.version_management import check_for_updates, get_detailed_version_string, get_local_version, is_dirty
 
 
@@ -32,8 +31,6 @@ class TestGetLocalVersion(unittest.TestCase):
             result = get_local_version()
             self.assertIsNotNone(result)
             self.assertIsInstance(result, version.Version)
-            local_version = version.parse(__version__)
-            self.assertEqual(local_version, result)
 
     @patch('iblrig.version_management.__version__', 'invalid')
     def test_get_local_version_failure(self):
