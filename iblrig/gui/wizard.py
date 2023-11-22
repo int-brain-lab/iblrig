@@ -265,17 +265,31 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         if trials_table.empty:
             QtWidgets.QMessageBox().critical(self, 'Error', f'No trials found in {session_path}')
             return
+
         last_trial = trials_table.iloc[-1]
         training_phase = training_phase_from_contrast_set(last_trial['contrast_set'])
-        info_text = (
+        reward_amount = last_trial['reward_amount']
+        stim_gain = last_trial['stim_gain']
+
+        box = QtWidgets.QMessageBox(parent=self)
+        box.setIcon(QtWidgets.QMessageBox.Information)
+        box.setModal(False)
+        box.setWindowTitle('Training Level')
+        box.setText(
             f"{session_path}\n\n"
             f"training phase:\t{training_phase}\n"
-            f"contrasts:\t{last_trial['contrast_set']}\n"
-            f"reward:\t{last_trial['reward_amount']} uL\n"
-            f"stimulus gain:\t{last_trial['stim_gain']}"
+            f"reward:\t{reward_amount} uL\n"
+            f"stimulus gain:\t{stim_gain}"
         )
-        buttons = QtWidgets.QMessageBox.Ok
-        QtWidgets.QMessageBox().information(self, 'Training Level', info_text, buttons)
+        if self.uiComboTask.currentText() == '_iblrig_tasks_trainingChoiceWorld':
+            box.setStandardButtons(QtWidgets.QMessageBox.Apply | QtWidgets.QMessageBox.Close)
+        else:
+            box.setStandardButtons(QtWidgets.QMessageBox.Close)
+        box.exec()
+        if box.clickedButton() == box.button(QtWidgets.QMessageBox.Apply):
+            self.uiGroupTaskParameters.findChild(QtWidgets.QWidget, '--adaptive_gain').setValue(stim_gain)
+            self.uiGroupTaskParameters.findChild(QtWidgets.QWidget, '--adaptive_reward').setValue(reward_amount)
+            self.uiGroupTaskParameters.findChild(QtWidgets.QWidget, '--training_phase').setValue(training_phase)
 
     def _on_check_update_result(self, result: tuple[bool, str]) -> None:
         """
@@ -477,6 +491,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
 
             # add custom widget properties
             QtCore.QMetaProperty
+            widget.setObjectName(param)
             widget.setProperty('parameter_name', param)
             widget.setProperty('parameter_dest', arg.dest)
 

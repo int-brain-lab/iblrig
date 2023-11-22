@@ -1,6 +1,10 @@
 Changelog
 ---------
 
+8.12.9
+------
+* usability improvements for "Show Training Level" tool
+
 8.12.8
 ------
 * fix incorrect limits & unit for adaptive gain in trainingChoiceWorld  
