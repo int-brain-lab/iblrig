@@ -19,7 +19,7 @@ def softcode_handler(self, data):
 
 file_settings = Path(iblrig.__file__).parents[1].joinpath('settings', 'hardware_settings.yaml')
 hardware_settings = iblrig.path_helper.load_settings_yaml(file_settings)
-bpod = Bpod(hardware_settings['device_bpod']['COM_BPOD'])
+bpod = Bpod(hardware_settings['device_bpod']['COM_BPOD'], disable_behavior_ports=[1, 2, 3])
 bpod.softcode_handler_function = types.MethodType(softcode_handler, bpod)
 
 sma = StateMachine(bpod)
@@ -36,11 +36,11 @@ sma.add_state(
     state_timer=0,
     state_change_conditions={"Port1In": "flash",
                              "GlobalTimer1_End": "exit"},
-    output_actions=[("PWM1", 255)]
+    output_actions=[("PWM1", 0)]
 )
 sma.add_state(
     state_name="flash",
-    state_timer=0,
+    state_timer=0.001,
     state_change_conditions={"Tup": "wait",
                              "GlobalTimer1_End": "exit"},
     output_actions=[("PWM1", 255),

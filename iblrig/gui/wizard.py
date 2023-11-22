@@ -267,11 +267,13 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
             return
         last_trial = trials_table.iloc[-1]
         training_phase = training_phase_from_contrast_set(last_trial['contrast_set'])
-        info_text = f"{session_path}\n\n" \
-                    f"training phase:\t{training_phase}\n" \
-                    f"contrasts:\t{last_trial['contrast_set']}\n" \
-                    f"reward:\t{last_trial['reward_amount']} uL\n" \
-                    f"stimulus gain:\t{last_trial['stim_gain']}"
+        info_text = (
+            f"{session_path}\n\n"
+            f"training phase:\t{training_phase}\n"
+            f"contrasts:\t{last_trial['contrast_set']}\n"
+            f"reward:\t{last_trial['reward_amount']} uL\n"
+            f"stimulus gain:\t{last_trial['stim_gain']}"
+        )
         QtWidgets.QMessageBox().information(self, 'Training Level', info_text)
 
     def _on_check_update_result(self, result: tuple[bool, str]) -> None:
@@ -717,7 +719,11 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.enable_UI_elements()
 
         try:
-            bpod = Bpod(self.model.hardware_settings['device_bpod']['COM_BPOD'], skip_initialization=True)
+            bpod = Bpod(
+                self.model.hardware_settings['device_bpod']['COM_BPOD'],
+                skip_initialization=True,
+                disable_behavior_ports=[1, 2, 3],
+            )
             bpod.manual_override(bpod.ChannelTypes.OUTPUT, bpod.ChannelNames.VALVE, 1, self.uiPushFlush.isChecked())
         except (OSError, exceptions.bpod_error.BpodErrorException):
             print(traceback.format_exc())
