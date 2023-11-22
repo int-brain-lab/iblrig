@@ -4,7 +4,6 @@ from unittest.mock import patch
 
 from packaging import version
 
-from iblrig import __version__
 from iblrig.version_management import check_for_updates, get_detailed_version_string, get_local_version, is_dirty
 
 
