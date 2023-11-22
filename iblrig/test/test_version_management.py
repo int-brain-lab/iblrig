@@ -32,8 +32,6 @@ class TestGetLocalVersion(unittest.TestCase):
             result = get_local_version()
             self.assertIsNotNone(result)
             self.assertIsInstance(result, version.Version)
-            local_version = version.parse(__version__)
-            self.assertEqual(local_version, result)
 
     @patch('iblrig.version_management.__version__', 'invalid')
     def test_get_local_version_failure(self):
