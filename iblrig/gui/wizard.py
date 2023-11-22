@@ -244,11 +244,11 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         dirty_worker.signals.result.connect(self._on_check_dirty_result)
         QThreadPool.globalInstance().start(dirty_worker)
 
-    def _on_menu_training_level_v7(self):
+    def _on_menu_training_level_v7(self) -> None:
         """
-        This prompt the user for a session path to get the v7 training level
+        Prompt user for a session path to get v7 training level.
+
         This code will be removed and is here only for convenience while users transition from v7 to v8
-        :return:
         """
         if not (local_path := Path(r'C:\iblrig_data\Subjects')).exists():
             local_path = self.model.iblrig_settings['iblrig_local_data_path']
@@ -274,7 +274,8 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
             f"reward:\t{last_trial['reward_amount']} uL\n"
             f"stimulus gain:\t{last_trial['stim_gain']}"
         )
-        QtWidgets.QMessageBox().information(self, 'Training Level', info_text)
+        buttons = QtWidgets.QMessageBox.Ok
+        QtWidgets.QMessageBox().information(self, 'Training Level', info_text, buttons)
 
     def _on_check_update_result(self, result: tuple[bool, str]) -> None:
         """
