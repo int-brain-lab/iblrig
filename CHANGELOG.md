@@ -1,6 +1,10 @@
 Changelog
 ---------
 
+8.12.10
+-------
+* revert visibility of Bonsai editor during session (c.f. 8.12.7)
+
 8.12.9
 ------
 * usability improvements for "Show Training Level" tool
