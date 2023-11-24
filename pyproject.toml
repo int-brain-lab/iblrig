@@ -33,7 +33,6 @@ dependencies = [
 [project.optional-dependencies]
 DEV = [
     "coverage[toml]",
-    "coveralls",
     "flake8",
     "mypy",
     "myst-parser",
@@ -45,6 +44,8 @@ DEV = [
     "sphinx-autobuild",
     "sphinx_lesson",
     "sphinx_rtd_theme",
+    "types-PyYAML",
+    "types-requests",
 ]
 
 [project.scripts]
