@@ -1,10 +1,11 @@
 import json
-import logging
 from typing import Any
 
 import pandas as pd
 
-log = logging.getLogger('iblrig')
+from iblutil.util import setup_logger
+
+log = setup_logger('iblrig')
 
 
 def load_task_jsonable(jsonable_file: str, offset: int | None = None) -> tuple[pd.DataFrame, list[Any]]:

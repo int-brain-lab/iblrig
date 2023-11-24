@@ -1,7 +1,6 @@
 """
 This modules contains hardware classes used to interact with modules.
 """
-import logging
 import struct
 import threading
 import time
@@ -12,14 +11,14 @@ import serial
 import sounddevice as sd
 
 from iblrig.tools import static_vars
-from iblutil.util import Bunch
+from iblutil.util import Bunch, setup_logger
 from pybpod_rotaryencoder_module.module import RotaryEncoder
 from pybpod_rotaryencoder_module.module_api import RotaryEncoderModule
 from pybpodapi.bpod.bpod_io import BpodIO
 
 SOFTCODE = IntEnum('SOFTCODE', ['STOP_SOUND', 'PLAY_TONE', 'PLAY_NOISE', 'TRIGGER_CAMERA'])
 
-log = logging.getLogger(__name__)
+log = setup_logger('iblrig')
 
 
 class Bpod(BpodIO):
