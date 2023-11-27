@@ -47,11 +47,27 @@ Sound Issues
 Screen Issues
 =============
 
+General
+^^^^^^^
+
 *  The ribbon cable attaching the screen to the driver board is notoriously finicky. If you are having brightness issues or do not have a signal, try gently repositioning this cable and ensure it is tightly seated in its connection.
 *  Screen and ribbon cable can be easily damaged. It is useful to have backup at hand.
+*  Screen flashing can occur if the power supply does not match the screen specifications. Use a 12V adapter with at least 1A.
 *  If the Bonsai display is appearing on the PC screen when a task starts, try unplugging the rig screen, rebooting and plugging the screen back in. Other variations of screen unplugging and rebooting may also work.
    Also make sure, that the ``DISPLAY_IDX`` value in ``hardware_settings.yaml`` is set correctly.
-*  Screen flashing can occur if the power supply does not match the screen specifications. Use a 12V adapter with at least 1A.
+
+Define Default Position & Size of Bonsai Visualizers
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Is the preview window of the video recording showing on the iPad screen instead of the computer's main display? To
+redefine the default position and size of the Bonsai visualizer used for displaying the video recording during a session:
+
+1. Execute `C:\iblrigv8\Bonsai\Bonsai.exe`
+2. Open the respective Bonsai workflow (``C:\iblrigv8\devices\camera_recordings\TrainingRig_SaveVideo_TrainingTasks.bonsai``)
+3. Start the workflow
+4. Position / resize the windows as to your preference
+5. Stop the workflow
+6. Save the workflow
 
 
 Frame2TTL
