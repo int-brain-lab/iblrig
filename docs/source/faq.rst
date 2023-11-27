@@ -59,15 +59,20 @@ General
 Define Default Position & Size of Bonsai Visualizers
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Is the preview window of the video recording showing on the iPad screen instead of the computer's main display? To
-redefine the default position and size of the Bonsai visualizer used for displaying the video recording during a session:
+Is the preview window of the video recording showing on the iPad screen instead of the computer's main display during a
+session? To redefine the default position and size of the Bonsai visualizer:
 
-1. Execute `C:\iblrigv8\Bonsai\Bonsai.exe`
-2. Open the respective Bonsai workflow (``C:\iblrigv8\devices\camera_recordings\TrainingRig_SaveVideo_TrainingTasks.bonsai``)
-3. Start the workflow
-4. Position / resize the windows as to your preference
-5. Stop the workflow
-6. Save the workflow
+#. Open the Bonsai executable distributed with IBLRIG: ``C:\iblrigv8\Bonsai\Bonsai.exe``.
+#. Open the respective Bonsai workflow:
+
+   .. code::
+
+      C:\iblrigv8\devices\camera_recordings\TrainingRig_SaveVideo_TrainingTasks.bonsai
+
+#. Start the workflow by clicking on the play-button.
+#. Adjust the position and size of the windows as per your preference.
+#. Stop the workflow.
+#. Save the workflow.
 
 
 Frame2TTL
