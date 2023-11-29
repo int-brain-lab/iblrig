@@ -13,6 +13,7 @@ from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Optional
+import requests
 
 import yaml
 from PyQt5 import QtCore, QtGui, QtWidgets
@@ -140,6 +141,7 @@ class RigWizardModel:
             self.one = ONE(base_url=self.iblrig_settings['ALYX_URL'], username=username, mode='local')
         else:
             self.one = one
+        self.hardware_settings['RIG_NAME']
         rest_subjects = self.one.alyx.rest('subjects', 'list', alive=True, stock=False, lab=self.iblrig_settings['ALYX_LAB'])
         self.all_subjects.remove(self.test_subject_name)
         self.all_subjects = sorted(set(self.all_subjects + [s['nickname'] for s in rest_subjects]))
@@ -148,6 +150,16 @@ class RigWizardModel:
         rest_projects = self.one.alyx.rest('projects', 'list')
         projects = [p['name'] for p in rest_projects if (username in p['users'] or len(p['users']) == 0)]
         self.all_projects = sorted(set(projects + self.all_projects))
+        # check that
+        try:
+            self.one.alyx.rest('locations', 'read', id=self.hardware_settings['RIG_NAME'])
+        except requests.exceptions.HTTPError:
+            error_messag = f'\nCould not find rig name {self.hardware_settings["RIG_NAME"]} in Alyx\n'\
+                           f'Please check the RIG_NAME key in the settings/hardware_settings.yaml file\n'\
+                           f'and make sure it is created in Alyx here: ' \
+                           f'{self.iblrig_settings["ALYX_URL"]}/admin/misc/lablocation/'
+            log.critical(error_messag)
+            QtWidgets.QMessageBox().critical(None, 'Error', error_messag)
 
     def get_subject_details(self, subject):
         self.subject_details_worker = SubjectDetailsWorker(subject)
