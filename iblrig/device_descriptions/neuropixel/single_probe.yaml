@@ -3,3 +3,4 @@ devices:
     probe00:
         collection: raw_ephys_data/probe00
         sync_label: imec_sync
+version: 1.0.0

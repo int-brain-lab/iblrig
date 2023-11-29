@@ -7,6 +7,8 @@ from collections.abc import Callable
 from os.path import samestat
 from pathlib import Path
 from typing import Any
+import socket
+import uuid
 
 import ibllib.pipes.misc
 import iblrig
@@ -161,10 +163,30 @@ def copy_folders(local_folder: Path, remote_folder: Path, overwrite: bool = Fals
 
 
 class SessionCopier(abc.ABC):
+    """Initialize and copy session data to a remote server."""
+
     assert_connect_on_init = False
+    """bool: Raise error if unable to write stub file to remote server."""
+
     _experiment_description = None
+    """dict: The experiment description file used for the copy."""
+
+    tag = f'{socket.gethostname()}_{uuid.getnode()}'
+    """str: The device name (adds this to the experiment description stub file on the remote server)."""
 
     def __init__(self, session_path, remote_subjects_folder=None, tag=None):
+        """
+        Initialize and copy session data to a remote server.
+
+        Parameters
+        ----------
+        session_path : str, pathlib.Path
+            The partial or session path to copy.
+        remote_subjects_folder : str, pathlib.Path
+            The remote server path to which to copy the session data.
+        tag : str
+            The device name (adds this to the experiment description stub file on the remote server).
+        """
         self.tag = tag or self.tag
         self.session_path = Path(session_path)
         self.remote_subjects_folder = Path(remote_subjects_folder) if remote_subjects_folder else None
@@ -337,7 +359,7 @@ class SessionCopier(abc.ABC):
                 log.info(f'Written data to remote device at: {remote_stub_file}.')
             except Exception as e:
                 if self.assert_connect_on_init:
-                    raise Exception(f'Failed to write data to remote device at: {remote_stub_file}. \n {e}') from e
+                    raise RuntimeError(f'Failed to write data to remote device at: {remote_stub_file}. \n {e}') from e
                 log.warning(f'Failed to write data to remote device at: {remote_stub_file}. \n {e}')
 
         # then create on the local machine
@@ -383,12 +405,15 @@ class VideoCopier(SessionCopier):
     tag = 'video'
     assert_connect_on_init = True
 
-    def create_video_stub(self, nvideos=None):
-        match len(list(self.session_path.joinpath('raw_video_data').glob('*.avi'))):
+    def create_video_stub(self, n_videos=None):
+        n_videos = n_videos or len(list(self.session_path.joinpath('raw_video_data').glob('*.avi')))
+        match n_videos:
             case 3:
                 stub_file = Path(iblrig.__file__).parent.joinpath('device_descriptions', 'cameras', 'body_left_right.yaml')
             case 1:
                 stub_file = Path(iblrig.__file__).parent.joinpath('device_descriptions', 'cameras', 'left.yaml')
+            case _:
+                raise NotImplementedError(f'No template for {n_videos} videos')
         acquisition_description = session_params.read_params(stub_file)
         session_params.write_params(self.session_path, acquisition_description)
 
@@ -396,7 +421,7 @@ class VideoCopier(SessionCopier):
         if not acquisition_description:
             # creates the acquisition description stub if not found, and then read it
             if not self.file_experiment_description.exists():
-                self.create_video_stub()
+                self.create_video_stub(n_videos=kwargs.pop('n_videos'))
             acquisition_description = session_params.read_params(self.file_experiment_description)
         self._experiment_description = acquisition_description
         super().initialize_experiment(acquisition_description=acquisition_description, **kwargs)
