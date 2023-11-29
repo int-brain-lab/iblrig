@@ -276,10 +276,10 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         box.setModal(False)
         box.setWindowTitle('Training Level')
         box.setText(
-            f"{session_path}\n\n"
-            f"training phase:\t{training_phase}\n"
-            f"reward:\t{reward_amount} uL\n"
-            f"stimulus gain:\t{stim_gain}"
+            f'{session_path}\n\n'
+            f'training phase:\t{training_phase}\n'
+            f'reward:\t{reward_amount} uL\n'
+            f'stimulus gain:\t{stim_gain}'
         )
         if self.uiComboTask.currentText() == '_iblrig_tasks_trainingChoiceWorld':
             box.setStandardButtons(QtWidgets.QMessageBox.Apply | QtWidgets.QMessageBox.Close)
