@@ -56,8 +56,8 @@ General
 *  If the Bonsai display is appearing on the PC screen when a task starts, try unplugging the rig screen, rebooting and plugging the screen back in. Other variations of screen unplugging and rebooting may also work.
    Also make sure, that the ``DISPLAY_IDX`` value in ``hardware_settings.yaml`` is set correctly.
 
-Define Default Position & Size of Bonsai Visualizers
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Defining Default Position & Size of Bonsai Visualizers
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Is the preview window of the video recording showing on the iPad screen instead of the computer's main display during a
 session? To redefine the default position and size of the Bonsai visualizer:
