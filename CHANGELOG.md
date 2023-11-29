@@ -3,7 +3,7 @@ Changelog
 
 8.12.10
 -------
-* revert visibility of Bonsai editor during session (c.f. 8.12.7)
+* ignore user-side changes to bonsai layouts (for camera workflows only)
 
 8.12.9
 ------
