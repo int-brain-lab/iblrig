@@ -2,25 +2,21 @@ import logging
 import re
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from pathlib import Path
 from typing import Any, Literal
+import requests
 
-import yaml
 from serial import Serial, SerialException
 from serial.tools import list_ports
 from serial_singleton import SerialSingleton, filter_ports
 
-from iblrig.constants import BASE_DIR
+from iblrig.path_helper import load_settings_yaml
 from iblutil.util import setup_logger
-
-_file_settings = Path(BASE_DIR).joinpath('settings', 'hardware_settings.yaml')
-_hardware_settings = yaml.safe_load(_file_settings.read_text())
 
 log = setup_logger('iblrig', level='DEBUG')
 
 
 @dataclass
-class TestResult:
+class ValidateResult:
     status: Literal['PASS', 'INFO', 'FAIL'] = 'FAIL'
     message: str = ''
     ext_message: str = ''
@@ -29,24 +25,29 @@ class TestResult:
     exception: Exception | None = None
 
 
-class TestHardwareException(Exception):
-    def __init__(self, results: TestResult):
+class ValidateHardwareException(Exception):
+    def __init__(self, results: ValidateResult):
         super().__init__(results.message)
         self.results = results
 
 
-class TestHardware(ABC):
+class ValidateHardware(ABC):
     log_results: bool = True
     raise_fail_as_exception: bool = False
 
-    def __init__(self):
-        self.last_result = self.run()
+    def __init__(self, iblrig_settings=None, hardware_settings=None):
+        self.iblrig_settings = iblrig_settings or load_settings_yaml('iblrig_settings.yaml')
+        self.hardware_settings = hardware_settings or load_settings_yaml('hardware_settings.yaml')
 
     @abstractmethod
-    def run(self):
+    def _run(self):
         ...
 
-    def process(self, results: TestResult) -> None:
+    def run(self, *args, **kwargs):
+        self.process(result := self._run(*args, **kwargs))
+        return result
+
+    def process(self, results: ValidateResult) -> None:
         if self.log_results:
             match results.status:
                 case 'PASS':
@@ -68,43 +69,41 @@ class TestHardware(ABC):
 
         if self.raise_fail_as_exception and results.status == 'FAIL':
             if results.exception is not None:
-                raise TestHardwareException(results) from results.exception
+                raise ValidateHardwareException(results) from results.exception
             else:
-                raise TestHardwareException(results)
+                raise ValidateHardwareException(results)
 
 
-class TestHardwareDevice(TestHardware):
+class ValidateHardwareDevice(ValidateHardware):
     device_name: str
 
     @abstractmethod
-    def run(self):
+    def _run(self):
         ...
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         if self.log_results:
             log.info(f'Running hardware tests for {self.device_name}:')
-        super().__init__()
+        super().__init__(*args, **kwargs)
 
 
-class TestSerialDevice(TestHardwareDevice):
+class ValidateSerialDevice(ValidateHardwareDevice):
     port: str
     port_properties: None | dict[str, Any]
     serial_queries: None | dict[tuple[object, int], bytes]
 
-    def run(self) -> TestResult:
+    def _run(self) -> ValidateResult:
         if self.port is None:
-            result = TestResult('FAIL', f'No serial port defined for {self.device_name}')
+            result = ValidateResult('FAIL', f'No serial port defined for {self.device_name}')
         elif next((p for p in list_ports.comports() if p.device == self.port), None) is None:
-            result = TestResult('FAIL', f'`{self.port}` is not a valid serial port')
+            result = ValidateResult('FAIL', f'`{self.port}` is not a valid serial port')
         else:
             try:
                 Serial(self.port, timeout=1).close()
             except SerialException as e:
-                result = TestResult('FAIL', f'`{self.port}` cannot be connected to', exception=e)
+                result = ValidateResult('FAIL', f'`{self.port}` cannot be connected to', exception=e)
             else:
-                result = TestResult('PASS', f'`{self.port}` is a valid serial port that can be connected to')
-        self.process(result)
-
+                result = ValidateResult('PASS', f'`{self.port}` is a valid serial port that can be connected to')
         # first, test for properties of the serial port without opening the latter (VID, PID, etc)
         passed = self.port in filter_ports(**self.port_properties) if self.port_properties is not None else False
 
@@ -118,19 +117,40 @@ class TestSerialDevice(TestHardwareDevice):
                         break
 
         if passed:
-            result = TestResult('PASS', f'Device on `{self.port}` does in fact seem to be a {self.device_name}')
+            result = ValidateResult('PASS', f'Device on `{self.port}` does in fact seem to be a {self.device_name}')
         else:
-            result = TestResult('FAIL', f'Device on `{self.port}` does NOT seem to be a {self.device_name}')
-        self.process(result)
+            result = ValidateResult('FAIL', f'Device on `{self.port}` does NOT seem to be a {self.device_name}')
 
         return result
 
 
-class TestRotaryEncoder(TestSerialDevice):
+class ValidateRotaryEncoder(ValidateSerialDevice):
     device_name = 'Rotary Encoder Module'
-    port = _hardware_settings['device_rotary_encoder']['COM_ROTARY_ENCODER']
     port_properties = {'vid': 0x16C0}
     serial_queries = {(b'Q', 2): b'^..$', (b'P00', 1): b'\x01'}
 
-    def run(self):
+    @property
+    def port(self):
+        return self.hardware_settings['device_rotary_encoder']['COM_ROTARY_ENCODER']
+
+    def _run(self):
         super().run()
+
+
+class ValidateAlyxLabLocation(ValidateHardware):
+    """
+    This class validates that the rig name in the hardware_settings.yaml file is exists in Alyx.
+    """
+    raise_fail_as_exception: bool = False
+
+    def _run(self, one):
+        try:
+            one.alyx.rest('locations', 'read', id=self.hardware_settings['RIG_NAME'])
+            results_kwargs = dict(status='PASS', message='')
+        except requests.exceptions.HTTPError:
+            error_message = f'Could not find rig name {self.hardware_settings["RIG_NAME"]} in Alyx'
+            solution = f'Please check the RIG_NAME key in the settings/hardware_settings.yaml file ' \
+                       f'and make sure it is created in Alyx here: ' \
+                       f'{self.iblrig_settings["ALYX_URL"]}/admin/misc/lablocation/'
+            results_kwargs = dict(status='FAIL', message=error_message, solution=solution)
+        return ValidateResult(**results_kwargs)

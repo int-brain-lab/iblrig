@@ -14,17 +14,14 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Optional
 
-import yaml
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QThread, QThreadPool
 from PyQt5.QtWidgets import QStyle
 
 import iblrig_tasks
 from one.api import ONE
-
 try:
     import iblrig_custom_tasks
-
     CUSTOM_TASKS = True
 except ImportError:
     CUSTOM_TASKS = False
@@ -39,7 +36,9 @@ from iblrig.hardware import Bpod
 from iblrig.misc import _get_task_argument_parser
 from iblrig.version_management import check_for_updates, get_changelog, is_dirty
 from iblutil.util import setup_logger
+import iblrig.hardware_validation
 from pybpodapi import exceptions
+from iblrig.path_helper import load_settings_yaml
 
 log = setup_logger('iblrig')
 
@@ -96,7 +95,8 @@ class RigWizardModel:
     subject_details: tuple | None = None
 
     def __post_init__(self):
-        self.iblrig_settings = iblrig.path_helper.load_settings_yaml()
+        self.iblrig_settings = load_settings_yaml('iblrig_settings.yaml')
+        self.hardware_settings = load_settings_yaml('hardware_settings.yaml')
         self.all_users = [self.iblrig_settings['ALYX_USER']] if self.iblrig_settings['ALYX_USER'] else []
         self.all_procedures = sorted(PROCEDURES)
 
@@ -118,8 +118,6 @@ class RigWizardModel:
             self.all_subjects = [self.test_subject_name] + sorted(
                 [f.name for f in folder_subjects.glob('*') if f.is_dir() and f.name != self.test_subject_name]
             )
-        file_settings = Path(iblrig.__file__).parents[1].joinpath('settings', 'hardware_settings.yaml')
-        self.hardware_settings = yaml.safe_load(file_settings.read_text())
 
     def get_task_extra_parser(self, task_name=None):
         """
@@ -140,14 +138,28 @@ class RigWizardModel:
             self.one = ONE(base_url=self.iblrig_settings['ALYX_URL'], username=username, mode='local')
         else:
             self.one = one
+        self.hardware_settings['RIG_NAME']
+        # get subjects from alyx: this is the set of subjects that are alive and not stock in the lab defined in settings
         rest_subjects = self.one.alyx.rest('subjects', 'list', alive=True, stock=False, lab=self.iblrig_settings['ALYX_LAB'])
         self.all_subjects.remove(self.test_subject_name)
         self.all_subjects = sorted(set(self.all_subjects + [s['nickname'] for s in rest_subjects]))
         self.all_subjects = [self.test_subject_name] + self.all_subjects
+        # for the users we get all the users responsible for the set of subjects
         self.all_users = sorted(set([s['responsible_user'] for s in rest_subjects] + self.all_users))
+        # then from the list of users we find all others users that have delegate access to the subjects
+        rest_users_with_delegates = self.one.alyx.rest('users', 'list', no_cache=True,
+                                                       django=f'username__in,{self.all_users},allowed_users__isnull,False')
+        for user_with_delegate in rest_users_with_delegates:
+            self.all_users.extend(user_with_delegate['allowed_users'])
+        self.all_users = list(set(self.all_users))
+        # then get the projects that map to the set of users
         rest_projects = self.one.alyx.rest('projects', 'list')
         projects = [p['name'] for p in rest_projects if (username in p['users'] or len(p['users']) == 0)]
         self.all_projects = sorted(set(projects + self.all_projects))
+        # since we are connecting to Alyx, validate some parameters to ensure a smooth extraction
+        result = iblrig.hardware_validation.ValidateAlyxLabLocation().run(self.one)
+        if result.status == 'FAIL':
+            QtWidgets.QMessageBox().critical(None, 'Error', f"{result.message}\n\n{result.solution}")
 
     def get_subject_details(self, subject):
         self.subject_details_worker = SubjectDetailsWorker(subject)

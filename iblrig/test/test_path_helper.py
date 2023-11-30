@@ -16,11 +16,6 @@ class TestPathHelper(unittest.TestCase):
         self.assertIsNotNone(p)
         self.assertIsInstance(p, Path)
 
-    def test_get_iblrig_params_path(self):
-        p = iblrig.path_helper.get_iblrig_params_path()
-        self.assertIsNotNone(p)
-        self.assertIsInstance(p, Path)
-
     def test_get_commit_hash(self):
         import subprocess
 
