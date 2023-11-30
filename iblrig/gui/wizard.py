@@ -132,7 +132,13 @@ class RigWizardModel:
         spec.loader.exec_module(task)
         return task.Session.extra_parser()
 
-    def connect(self, username=None, one=None):
+    def connect(self, username=None, one=None, gui=False):
+        """
+        :param username:
+        :param one:
+        :param gui: bool: whether or not a Qt Application is running to throw an error message
+        :return:
+        """
         if one is None:
             username = username or self.iblrig_settings['ALYX_USER']
             self.one = ONE(base_url=self.iblrig_settings['ALYX_URL'], username=username, mode='local')
@@ -158,7 +164,7 @@ class RigWizardModel:
         self.all_projects = sorted(set(projects + self.all_projects))
         # since we are connecting to Alyx, validate some parameters to ensure a smooth extraction
         result = iblrig.hardware_validation.ValidateAlyxLabLocation().run(self.one)
-        if result.status == 'FAIL':
+        if result.status == 'FAIL' and gui:
             QtWidgets.QMessageBox().critical(None, 'Error', f"{result.message}\n\n{result.solution}")
 
     def get_subject_details(self, subject):
@@ -583,7 +589,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.task_arguments[key] = value
 
     def alyx_connect(self):
-        self.model.connect()
+        self.model.connect(gui=True)
         self.model2view()
 
     def _filter_subjects(self):
