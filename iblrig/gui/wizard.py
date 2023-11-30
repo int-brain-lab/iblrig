@@ -144,9 +144,15 @@ class RigWizardModel:
         self.all_subjects.remove(self.test_subject_name)
         self.all_subjects = sorted(set(self.all_subjects + [s['nickname'] for s in rest_subjects]))
         self.all_subjects = [self.test_subject_name] + self.all_subjects
-        # for the users we get all the users respondible for the set of subjects
-        # then from the list of users we find all others users that have delegate access to the subjects
+        # for the users we get all the users responsible for the set of subjects
         self.all_users = sorted(set([s['responsible_user'] for s in rest_subjects] + self.all_users))
+        # then from the list of users we find all others users that have delegate access to the subjects
+        rest_users_with_delegates = self.one.alyx.rest('users', 'list', no_cache=True,
+                                                       django=f'username__in,{self.all_users},allowed_users__isnull,False')
+        for user_with_delegate in rest_users_with_delegates:
+            self.all_users.extend(user_with_delegate['allowed_users'])
+        self.all_users = list(set(self.all_users))
+        # then get the projects that map to the set of users
         rest_projects = self.one.alyx.rest('projects', 'list')
         projects = [p['name'] for p in rest_projects if (username in p['users'] or len(p['users']) == 0)]
         self.all_projects = sorted(set(projects + self.all_projects))
