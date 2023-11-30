@@ -1,25 +1,30 @@
 """
 This modules contains hardware classes used to interact with modules.
 """
-import logging
+import os
+import re
+import shutil
 import struct
+import subprocess
 import threading
 import time
 from enum import IntEnum
+from pathlib import Path
 
 import numpy as np
 import serial
 import sounddevice as sd
+from serial.tools import list_ports
 
 from iblrig.tools import static_vars
-from iblutil.util import Bunch
+from iblutil.util import Bunch, setup_logger
 from pybpod_rotaryencoder_module.module import RotaryEncoder
 from pybpod_rotaryencoder_module.module_api import RotaryEncoderModule
 from pybpodapi.bpod.bpod_io import BpodIO
 
 SOFTCODE = IntEnum('SOFTCODE', ['STOP_SOUND', 'PLAY_TONE', 'PLAY_NOISE', 'TRIGGER_CAMERA'])
 
-log = logging.getLogger(__name__)
+log = setup_logger('iblrig')
 
 
 class Bpod(BpodIO):
@@ -270,3 +275,52 @@ def sound_device_factory(output='sysdefault', samplerate=None):
     else:
         raise ValueError(f'{output} soundcard is neither xonar, harp or sysdefault. Fix your hardware_settings.yam')
     return sd, samplerate, channels
+
+
+def restart_com_port(regexp: str) -> bool:
+    """
+    Restart the communication port(s) matching the specified regular expression.
+
+    Parameters
+    ----------
+    regexp : str
+        A regular expression used to match the communication port(s).
+
+    Returns
+    -------
+    bool
+        Returns True if all matched ports are successfully restarted, False otherwise.
+
+    Raises
+    ------
+    NotImplementedError
+        If the operating system is not Windows.
+
+    FileNotFoundError
+        If the required 'pnputil.exe' executable is not found.
+
+    Examples
+    --------
+    >>> restart_com_port("COM3")  # Restart the communication port with serial number 'COM3'
+    True
+
+    >>> restart_com_port("COM[1-3]")  # Restart communication ports with serial numbers 'COM1', 'COM2', 'COM3'
+    True
+    """
+    if not os.name == 'nt':
+        raise NotImplementedError('Only implemented for Windows OS.')
+    if not (file_pnputil := Path(shutil.which('pnputil'))).exists():
+        raise FileNotFoundError('Could not find pnputil.exe')
+    result = []
+    for port in list_ports.grep(regexp):
+        pnputil_output = subprocess.check_output([file_pnputil, '/enum-devices', '/connected', '/class', 'ports'])
+        instance_id = re.search(rf'(\S*{port.serial_number}\S*)', pnputil_output.decode())
+        if instance_id is None:
+            continue
+        result.append(
+            subprocess.check_call(
+                [file_pnputil, '/restart-device', f'"{instance_id.group}"'], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT
+            )
+            == 0
+        )
+    return all(result)

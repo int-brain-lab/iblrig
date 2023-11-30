@@ -1,19 +1,18 @@
 import platform
+import time
 from glob import glob
 from pathlib import Path
-import time
 from struct import unpack
 
-import usb.core
-
-from serial import Serial
-import serial.tools.list_ports
-
 import numpy as np
-# import pandas as pd
+import serial.tools.list_ports
+import usb.core
+from serial import Serial
 
-from iblutil.util import setup_logger
 import iblrig.base_tasks
+
+# import pandas as pd
+from iblutil.util import setup_logger
 from pybpodapi.protocol import Bpod, StateMachine
 
 # set up logging
@@ -98,7 +97,7 @@ else:
 
 # check individual serial ports
 port_info = [i for i in serial.tools.list_ports.comports()]
-for (description, port) in ports.items():
+for description, port in ports.items():
     log_fun('head', f'Checking serial port {description} ({port}):')
 
     # check if serial port exists
@@ -122,12 +121,12 @@ for (description, port) in ports.items():
     # check correct assignments of serial ports
     ok = False
     match description:
-        case "COM_BPOD":
+        case 'COM_BPOD':
             device_name = 'Bpod Finite State Machine'
             ok = query(s, b'6') == b'5'
             if ok:
                 s.write(b'Z')
-        case "COM_F2TTL":
+        case 'COM_F2TTL':
             device_name = 'Frame2TTL'
             try:
                 s.write(b'C')
@@ -140,7 +139,7 @@ for (description, port) in ports.items():
                 continue
             finally:
                 ok = s.read() == (218).to_bytes(1, 'little')
-        case "COM_ROTARY_ENCODER":
+        case 'COM_ROTARY_ENCODER':
             device_name = 'Rotary Encoder Module'
             ok = len(query(s, b'Q', 2)) > 1 and query(s, b'P00', 1) == (1).to_bytes(1, 'little')
         case _:
@@ -153,7 +152,7 @@ for (description, port) in ports.items():
         log_fun('fail', f'device on port {port} does not appear to be a {device_name}', last=True)
 
     # To Do: Look into this required delay
-    time.sleep(.02)
+    time.sleep(0.02)
 
 # check bpod modules
 bpod = Bpod(hw_settings['device_bpod']['COM_BPOD'])
@@ -171,16 +170,16 @@ if 'COM_ROTARY_ENCODER' in ports.keys():
 
     s = serial.Serial(ports['COM_ROTARY_ENCODER'])
     s.write(b'I')
-    time.sleep(.02)
+    time.sleep(0.02)
     if s.in_waiting == 0:
         s.write(b'x')
-    v = "1.x" if s.read(1) == (1).to_bytes(1, 'little') else "2+"
+    v = '1.x' if s.read(1) == (1).to_bytes(1, 'little') else '2+'
     log_fun('info', f'hardware version: {v}')
     log_fun('info', f'firmware version: {bpod.modules[0].firmware_version}')
 
     s.write(b'Z')
     p = np.frombuffer(query(s, b'Q', 2), dtype=np.int16)[0]
-    log_fun('warn', 'please move the wheel to the left (animal\'s POV) by a quarter turn')
+    log_fun('warn', "please move the wheel to the left (animal's POV) by a quarter turn")
     while np.abs(p) < 200:
         p = np.frombuffer(query(s, b'Q', 2), dtype=np.int16)[0]
     if p > 0:
@@ -198,13 +197,13 @@ if 'device_sound' in hw_settings and 'OUTPUT' in hw_settings['device_sound']:
             if not dev:
                 log_fun('fail', 'Cannot find Harp Sound Card')
             else:
-                log_fun('pass', 'found USB device {:04X}:{:04X} (Harp Sound Card)'.format(dev.idVendor, dev.idProduct))
+                log_fun('pass', f'found USB device {dev.idVendor:04X}:{dev.idProduct:04X} (Harp Sound Card)')
 
             dev = next((p for p in serial.tools.list_ports.comports() if (p.vid == 1027 and p.pid == 24577)), None)
             if not dev:
-                log_fun('fail', 'cannot find Harp Sound Card\'s Serial port - did you plug in *both* USB ports of the device?')
+                log_fun('fail', "cannot find Harp Sound Card's Serial port - did you plug in *both* USB ports of the device?")
             else:
-                log_fun('pass', 'found USB device {:04X}:{:04X} (FT232 UART), serial port: {}'.format(dev.vid, dev.pid, dev.name))
+                log_fun('pass', f'found USB device {dev.vid:04X}:{dev.pid:04X} (FT232 UART), serial port: {dev.name}')
 
             module = [m for m in modules if m.name.startswith('SoundCard')]
             if len(module) == 0:
@@ -212,9 +211,11 @@ if 'device_sound' in hw_settings and 'OUTPUT' in hw_settings['device_sound']:
             elif len(module) > 1:
                 log_fun('fail', 'more than one Harp Sound Card connected to the Bpod', last=True)
             else:
-                log_fun('pass',
-                        f'module "{module[0].name}" is connected to the Bpod\'s module port #{module[0].serial_port}',
-                        last=True)
+                log_fun(
+                    'pass',
+                    f'module "{module[0].name}" is connected to the Bpod\'s module port #{module[0].serial_port}',
+                    last=True,
+                )
         case _:
             pass
 
@@ -224,7 +225,7 @@ if module:
     log_fun('pass', f'module "{module.name}" is connected to the Bpod\'s module port #{module.serial_port}')
     log_fun('info', f'firmware version: {module.firmware_version}')
     module.start_module_relay()
-    bpod.bpod_modules.module_write(module, "R")
+    bpod.bpod_modules.module_write(module, 'R')
     (t, p, h) = unpack('3f', bytes(bpod.bpod_modules.module_read(module, 12)))
     module.stop_module_relay()
     log_fun('info', f'temperature: {t:.1f} °C')
@@ -233,13 +234,13 @@ if module:
 else:
     log_fun('fail', 'Could not find Ambient Module', last=True)
 
-if "device_cameras" in hw_settings and isinstance(hw_settings["device_cameras"], dict):
+if 'device_cameras' in hw_settings and isinstance(hw_settings['device_cameras'], dict):
     log_fun('head', 'Checking Camera Trigger:')
     sma = StateMachine(bpod)
     sma.add_state(
-        state_name="collect",
+        state_name='collect',
         state_timer=1,
-        state_change_conditions={"Tup": "exit"},
+        state_change_conditions={'Tup': 'exit'},
     )
     bpod.send_state_machine(sma)
     bpod.run_state_machine(sma)

@@ -1,11 +1,10 @@
-import logging
-
 import numpy as np
 from scipy.signal import chirp
 
+from iblutil.util import setup_logger
 from pybpod_soundcard_module.module_api import DataType, SampleRate, SoundCardModule
 
-log = logging.getLogger('iblrig')
+log = setup_logger('iblrig')
 
 
 def make_sound(rate=44100, frequency=5000, duration=0.1, amplitude=1, fade=0.01, chans='L+TTL'):

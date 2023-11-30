@@ -9,6 +9,7 @@ import datetime
 import inspect
 import json
 import os
+import shutil
 import signal
 import subprocess
 import time
@@ -570,6 +571,7 @@ class BonsaiRecordingMixin:
         #         cam.TriggerMode.SetValue(True)
 
         bonsai_camera_file = self.paths.IBLRIG_FOLDER.joinpath('devices', 'camera_setup', 'setup_video.bonsai')
+        self.create_bonsai_layout_from_template(bonsai_camera_file)
         # this locks until Bonsai closes
         cmd = [str(self.paths.BONSAI), str(bonsai_camera_file), '--start-no-debug', '--no-boot']
         self.logger.info('starting Bonsai microphone recording')
@@ -577,16 +579,26 @@ class BonsaiRecordingMixin:
         subprocess.call(cmd, cwd=bonsai_camera_file.parent)
         self.logger.info('Bonsai cameras setup module loaded: OK')
 
+    def create_bonsai_layout_from_template(self, workflow_file: Path) -> Path:
+        if not (layout_file := workflow_file.with_suffix('.bonsai.layout')).exists():
+            self.logger.info(f'creating default {layout_file.name}')
+            template_file = workflow_file.with_suffix('.bonsai.layout_template')
+            if not template_file.exists():
+                FileNotFoundError(template_file)
+            shutil.copy(template_file, layout_file)
+        return template_file
+
     def trigger_bonsai_cameras(self):
         workflow_file = self._camera_mixin_bonsai_get_workflow_file(self.hardware_settings.get('device_cameras', None))
         if workflow_file is None:
             return
         self.logger.info('attempt to launch Bonsai camera recording')
         workflow_file = self.paths.IBLRIG_FOLDER.joinpath(*workflow_file.split('/'))
+        self.create_bonsai_layout_from_template(workflow_file)
         cmd = [
             str(self.paths.BONSAI),
             str(workflow_file),
-            '--no-editor',
+            '--start',  # '--no-editor',
             f"-p:FileNameLeft={self.paths.SESSION_FOLDER / 'raw_video_data' / '_iblrig_leftCamera.raw.avi'}",
             f"-p:FileNameLeftData={self.paths.SESSION_FOLDER / 'raw_video_data' / '_iblrig_leftCamera.frameData.bin'}",
             f"-p:FileNameMic={self.paths.SESSION_RAW_DATA_FOLDER / '_iblrig_micData.raw.wav'}",

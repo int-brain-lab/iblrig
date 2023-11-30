@@ -1,7 +1,6 @@
 """
 Various get functions to return paths of folders and network drives
 """
-import logging
 import os
 import re
 import subprocess
@@ -14,9 +13,9 @@ from packaging import version
 import iblrig
 from ibllib.io import session_params
 from ibllib.io.raw_data_loaders import load_settings
-from iblutil.util import Bunch
+from iblutil.util import Bunch, setup_logger
 
-log = logging.getLogger('iblrig')
+log = setup_logger('iblrig')
 
 
 def iterate_previous_sessions(subject_name, task_name, n=1, **kwargs):
@@ -157,10 +156,6 @@ def patch_settings(rs: dict, name: str) -> dict:
 
 def get_iblrig_path() -> Path or None:
     return Path(iblrig.__file__).parents[1]
-
-
-def get_iblrig_params_path() -> Path or None:
-    return get_iblrig_path().joinpath('pybpod_fixtures')
 
 
 def get_commit_hash(folder: str):

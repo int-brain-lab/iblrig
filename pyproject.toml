@@ -13,11 +13,10 @@ dependencies = [
     "ONE-api",
     "PyYAML",
     "graphviz",
-    "ibllib@git+https://github.com/int-brain-lab/ibllib.git",
     "iblbpod@git+https://github.com/int-brain-lab/iblbpod.git",
+    "ibllib@git+https://github.com/int-brain-lab/ibllib.git",
     "iblpybpod@git+https://github.com/int-brain-lab/iblpybpod.git@no-gui",
     "iblscripts@git+https://github.com/int-brain-lab/iblscripts.git",
-    "serial_singleton@git+https://github.com/int-brain-lab/serial_singleton.git",
     "iblutil >= 1.7.1",
     "numpy",
     "packaging",
@@ -27,13 +26,13 @@ dependencies = [
     "python-osc",
     "pywin32; sys_platform == 'win32'",
     "scipy",
+    "serial_singleton@git+https://github.com/int-brain-lab/serial_singleton.git",
     "sounddevice",
 ]
 
 [project.optional-dependencies]
 DEV = [
     "coverage[toml]",
-    "coveralls",
     "flake8",
     "mypy",
     "myst-parser",
@@ -45,6 +44,8 @@ DEV = [
     "sphinx-autobuild",
     "sphinx_lesson",
     "sphinx_rtd_theme",
+    "types-PyYAML",
+    "types-requests",
 ]
 
 [project.scripts]
@@ -66,6 +67,7 @@ version = { attr = "iblrig.__version__" }
 find = {}
 
 [tool.mypy]
+files                  = [ "iblrig/**/*.py", "iblrig_tasks/**/*.py" ]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]

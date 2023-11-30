@@ -1,6 +1,13 @@
 Changelog
 ---------
 
+8.12.10
+-------
+* ignore user-side changes to bonsai layouts (for camera workflows only)
+* error message if rig-name is not defined in Alyx
+* populate delegate users
+* the usual: minor fixes, clean-ups and unit-tests
+
 8.12.9
 ------
 * usability improvements for "Show Training Level" tool

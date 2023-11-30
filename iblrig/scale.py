@@ -12,16 +12,16 @@ class Scale(SerialSingleton):
         self.assert_setting('1M')
         self.assert_setting('0FMT')
 
-    def assert_setting(self, query: str, response: str = 'OK!') -> None:
-        assert self.query_line(query) == response
+    def assert_setting(self, query: str, expected_response: str = 'OK!') -> None:
+        assert self.query_line(query) == expected_response
 
     def query_line(self, query: str) -> str:
         self.reset_input_buffer()
         self.write(query + '\r\n')
         return self.readline().strip().decode()
 
-    def zero(self) -> bool:
-        return self.assert_setting('Z')
+    def zero(self) -> None:
+        self.assert_setting('Z')
 
     @property
     def version(self) -> str:

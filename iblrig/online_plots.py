@@ -243,12 +243,15 @@ class OnlinePlots:
         h.curve_reaction = {}
         for p in PROBABILITY_SET:
             h.curve_psych[p] = h.ax_psych.plot(
-                self.data.psychometrics.loc[p].index, self.data.psychometrics.loc[p]['choice'], '.-',
-                zorder=10, clip_on=False, label=f'p = {p}'
+                self.data.psychometrics.loc[p].index,
+                self.data.psychometrics.loc[p]['choice'],
+                '.-',
+                zorder=10,
+                clip_on=False,
+                label=f'p = {p}',
             )
             h.curve_reaction[p] = h.ax_reaction.plot(
-                self.data.psychometrics.loc[p].index, self.data.psychometrics.loc[p]['response_time'], '.-',
-                label=f'p = {p}'
+                self.data.psychometrics.loc[p].index, self.data.psychometrics.loc[p]['response_time'], '.-', label=f'p = {p}'
             )
         h.ax_psych.legend()
         h.ax_reaction.legend()
