@@ -15,17 +15,14 @@ from pathlib import Path
 from typing import Any, Optional
 import requests
 
-import yaml
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QThread, QThreadPool
 from PyQt5.QtWidgets import QStyle
 
 import iblrig_tasks
 from one.api import ONE
-
 try:
     import iblrig_custom_tasks
-
     CUSTOM_TASKS = True
 except ImportError:
     CUSTOM_TASKS = False
@@ -40,7 +37,9 @@ from iblrig.hardware import Bpod
 from iblrig.misc import _get_task_argument_parser
 from iblrig.version_management import check_for_updates, get_changelog, is_dirty
 from iblutil.util import setup_logger
+import iblrig.hardware_validation
 from pybpodapi import exceptions
+from iblrig.path_helper import load_settings_yaml
 
 log = setup_logger('iblrig')
 
@@ -60,6 +59,23 @@ WIZARD_PNG = str(GUI_DIR.joinpath('wizard.png'))
 ICON_FLUSH = str(GUI_DIR.joinpath('icon_flush.svg'))
 ICON_HELP = str(GUI_DIR.joinpath('icon_help.svg'))
 ICON_STATUS_LED = str(GUI_DIR.joinpath('icon_status_led.svg'))
+
+
+class TestLabLocation(iblrig.hardware_validation.TestHardware):
+    raise_fail_as_exception: bool = False
+
+    def run(self, one):
+        try:
+            one.alyx.rest('locations', 'read', id=self.hardware_settings['RIG_NAME'])
+        except requests.exceptions.HTTPError:
+            error_messag = f'\nCould not find rig name {self.hardware_settings["RIG_NAME"]} in Alyx\n'\
+                           f'Please check the RIG_NAME key in the settings/hardware_settings.yaml file\n'\
+                           f'and make sure it is created in Alyx here: ' \
+                           f'{self.iblrig_settings["ALYX_URL"]}/admin/misc/lablocation/'
+            log.critical(error_messag)
+            QtWidgets.QMessageBox().critical(None, 'Error', error_messag)
+        self.process(result := iblrig.hardware_tests.TestResult())
+        return result
 
 
 # this class gets called to get the path constructor utility to predict the session path
@@ -97,7 +113,8 @@ class RigWizardModel:
     subject_details: tuple | None = None
 
     def __post_init__(self):
-        self.iblrig_settings = iblrig.path_helper.load_settings_yaml()
+        self.iblrig_settings = load_settings_yaml('iblrig_settings.yaml')
+        self.hardware_settings = load_settings_yaml('hardware_settings.yaml')
         self.all_users = [self.iblrig_settings['ALYX_USER']] if self.iblrig_settings['ALYX_USER'] else []
         self.all_procedures = sorted(PROCEDURES)
 
@@ -119,8 +136,6 @@ class RigWizardModel:
             self.all_subjects = [self.test_subject_name] + sorted(
                 [f.name for f in folder_subjects.glob('*') if f.is_dir() and f.name != self.test_subject_name]
             )
-        file_settings = Path(iblrig.__file__).parents[1].joinpath('settings', 'hardware_settings.yaml')
-        self.hardware_settings = yaml.safe_load(file_settings.read_text())
 
     def get_task_extra_parser(self, task_name=None):
         """
@@ -150,16 +165,6 @@ class RigWizardModel:
         rest_projects = self.one.alyx.rest('projects', 'list')
         projects = [p['name'] for p in rest_projects if (username in p['users'] or len(p['users']) == 0)]
         self.all_projects = sorted(set(projects + self.all_projects))
-        # check that
-        try:
-            self.one.alyx.rest('locations', 'read', id=self.hardware_settings['RIG_NAME'])
-        except requests.exceptions.HTTPError:
-            error_messag = f'\nCould not find rig name {self.hardware_settings["RIG_NAME"]} in Alyx\n'\
-                           f'Please check the RIG_NAME key in the settings/hardware_settings.yaml file\n'\
-                           f'and make sure it is created in Alyx here: ' \
-                           f'{self.iblrig_settings["ALYX_URL"]}/admin/misc/lablocation/'
-            log.critical(error_messag)
-            QtWidgets.QMessageBox().critical(None, 'Error', error_messag)
 
     def get_subject_details(self, subject):
         self.subject_details_worker = SubjectDetailsWorker(subject)

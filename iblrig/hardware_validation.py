@@ -2,19 +2,14 @@ import logging
 import re
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from pathlib import Path
 from typing import Any, Literal
 
-import yaml
 from serial import Serial, SerialException
 from serial.tools import list_ports
 from serial_singleton import SerialSingleton, filter_ports
 
-from iblrig.constants import BASE_DIR
+from iblrig.path_helper import load_settings_yaml
 from iblutil.util import setup_logger
-
-_file_settings = Path(BASE_DIR).joinpath('settings', 'hardware_settings.yaml')
-_hardware_settings = yaml.safe_load(_file_settings.read_text())
 
 log = setup_logger('iblrig', level='DEBUG')
 
@@ -39,12 +34,16 @@ class TestHardware(ABC):
     log_results: bool = True
     raise_fail_as_exception: bool = False
 
-    def __init__(self):
-        self.last_result = self.run()
+    def __init__(self, iblrig_settings=None, hardware_settings=None):
+        self.iblrig_settings = iblrig_settings or load_settings_yaml('iblrig_settings.yaml')
+        self.hardware_settings = hardware_settings or load_settings_yaml('hardware_settings.yaml')
 
     @abstractmethod
-    def run(self):
+    def _run(self):
         ...
+
+    def run(self, *args, **kwargs):
+        self.process(self._run(*args, **kwargs))
 
     def process(self, results: TestResult) -> None:
         if self.log_results:
@@ -77,13 +76,13 @@ class TestHardwareDevice(TestHardware):
     device_name: str
 
     @abstractmethod
-    def run(self):
+    def _run(self):
         ...
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         if self.log_results:
             log.info(f'Running hardware tests for {self.device_name}:')
-        super().__init__()
+        super().__init__(*args, **kwargs)
 
 
 class TestSerialDevice(TestHardwareDevice):
@@ -91,7 +90,7 @@ class TestSerialDevice(TestHardwareDevice):
     port_properties: None | dict[str, Any]
     serial_queries: None | dict[tuple[object, int], bytes]
 
-    def run(self) -> TestResult:
+    def _run(self) -> TestResult:
         if self.port is None:
             result = TestResult('FAIL', f'No serial port defined for {self.device_name}')
         elif next((p for p in list_ports.comports() if p.device == self.port), None) is None:
@@ -128,9 +127,12 @@ class TestSerialDevice(TestHardwareDevice):
 
 class TestRotaryEncoder(TestSerialDevice):
     device_name = 'Rotary Encoder Module'
-    port = _hardware_settings['device_rotary_encoder']['COM_ROTARY_ENCODER']
     port_properties = {'vid': 0x16C0}
     serial_queries = {(b'Q', 2): b'^..$', (b'P00', 1): b'\x01'}
 
-    def run(self):
+    @property
+    def port(self):
+        return self.hardware_settings['device_rotary_encoder']['COM_ROTARY_ENCODER']
+
+    def _run(self):
         super().run()
