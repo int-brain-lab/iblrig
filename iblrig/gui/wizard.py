@@ -13,7 +13,6 @@ from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Optional
-import requests
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QThread, QThreadPool
@@ -59,23 +58,6 @@ WIZARD_PNG = str(GUI_DIR.joinpath('wizard.png'))
 ICON_FLUSH = str(GUI_DIR.joinpath('icon_flush.svg'))
 ICON_HELP = str(GUI_DIR.joinpath('icon_help.svg'))
 ICON_STATUS_LED = str(GUI_DIR.joinpath('icon_status_led.svg'))
-
-
-class TestLabLocation(iblrig.hardware_validation.TestHardware):
-    raise_fail_as_exception: bool = False
-
-    def run(self, one):
-        try:
-            one.alyx.rest('locations', 'read', id=self.hardware_settings['RIG_NAME'])
-        except requests.exceptions.HTTPError:
-            error_messag = f'\nCould not find rig name {self.hardware_settings["RIG_NAME"]} in Alyx\n'\
-                           f'Please check the RIG_NAME key in the settings/hardware_settings.yaml file\n'\
-                           f'and make sure it is created in Alyx here: ' \
-                           f'{self.iblrig_settings["ALYX_URL"]}/admin/misc/lablocation/'
-            log.critical(error_messag)
-            QtWidgets.QMessageBox().critical(None, 'Error', error_messag)
-        self.process(result := iblrig.hardware_tests.TestResult())
-        return result
 
 
 # this class gets called to get the path constructor utility to predict the session path
@@ -157,14 +139,21 @@ class RigWizardModel:
         else:
             self.one = one
         self.hardware_settings['RIG_NAME']
+        # get subjects from alyx: this is the set of subjects that are alive and not stock in the lab defined in settings
         rest_subjects = self.one.alyx.rest('subjects', 'list', alive=True, stock=False, lab=self.iblrig_settings['ALYX_LAB'])
         self.all_subjects.remove(self.test_subject_name)
         self.all_subjects = sorted(set(self.all_subjects + [s['nickname'] for s in rest_subjects]))
         self.all_subjects = [self.test_subject_name] + self.all_subjects
+        # for the users we get all the users respondible for the set of subjects
+        # then from the list of users we find all others users that have delegate access to the subjects
         self.all_users = sorted(set([s['responsible_user'] for s in rest_subjects] + self.all_users))
         rest_projects = self.one.alyx.rest('projects', 'list')
         projects = [p['name'] for p in rest_projects if (username in p['users'] or len(p['users']) == 0)]
         self.all_projects = sorted(set(projects + self.all_projects))
+        # since we are connecting to Alyx, validate some parameters to ensure a smooth extraction
+        result = iblrig.hardware_validation.ValidateAlyxLabLocation().run(self.one)
+        if result.status == 'FAIL':
+            QtWidgets.QMessageBox().critical(None, 'Error', f"{result.message}\n\n{result.solution}")
 
     def get_subject_details(self, subject):
         self.subject_details_worker = SubjectDetailsWorker(subject)

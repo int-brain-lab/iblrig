@@ -3,6 +3,7 @@ import re
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any, Literal
+import requests
 
 from serial import Serial, SerialException
 from serial.tools import list_ports
@@ -15,7 +16,7 @@ log = setup_logger('iblrig', level='DEBUG')
 
 
 @dataclass
-class TestResult:
+class ValidateResult:
     status: Literal['PASS', 'INFO', 'FAIL'] = 'FAIL'
     message: str = ''
     ext_message: str = ''
@@ -24,13 +25,13 @@ class TestResult:
     exception: Exception | None = None
 
 
-class TestHardwareException(Exception):
-    def __init__(self, results: TestResult):
+class ValidateHardwareException(Exception):
+    def __init__(self, results: ValidateResult):
         super().__init__(results.message)
         self.results = results
 
 
-class TestHardware(ABC):
+class ValidateHardware(ABC):
     log_results: bool = True
     raise_fail_as_exception: bool = False
 
@@ -43,9 +44,10 @@ class TestHardware(ABC):
         ...
 
     def run(self, *args, **kwargs):
-        self.process(self._run(*args, **kwargs))
+        self.process(result := self._run(*args, **kwargs))
+        return result
 
-    def process(self, results: TestResult) -> None:
+    def process(self, results: ValidateResult) -> None:
         if self.log_results:
             match results.status:
                 case 'PASS':
@@ -67,12 +69,12 @@ class TestHardware(ABC):
 
         if self.raise_fail_as_exception and results.status == 'FAIL':
             if results.exception is not None:
-                raise TestHardwareException(results) from results.exception
+                raise ValidateHardwareException(results) from results.exception
             else:
-                raise TestHardwareException(results)
+                raise ValidateHardwareException(results)
 
 
-class TestHardwareDevice(TestHardware):
+class ValidateHardwareDevice(ValidateHardware):
     device_name: str
 
     @abstractmethod
@@ -85,25 +87,23 @@ class TestHardwareDevice(TestHardware):
         super().__init__(*args, **kwargs)
 
 
-class TestSerialDevice(TestHardwareDevice):
+class ValidateSerialDevice(ValidateHardwareDevice):
     port: str
     port_properties: None | dict[str, Any]
     serial_queries: None | dict[tuple[object, int], bytes]
 
-    def _run(self) -> TestResult:
+    def _run(self) -> ValidateResult:
         if self.port is None:
-            result = TestResult('FAIL', f'No serial port defined for {self.device_name}')
+            result = ValidateResult('FAIL', f'No serial port defined for {self.device_name}')
         elif next((p for p in list_ports.comports() if p.device == self.port), None) is None:
-            result = TestResult('FAIL', f'`{self.port}` is not a valid serial port')
+            result = ValidateResult('FAIL', f'`{self.port}` is not a valid serial port')
         else:
             try:
                 Serial(self.port, timeout=1).close()
             except SerialException as e:
-                result = TestResult('FAIL', f'`{self.port}` cannot be connected to', exception=e)
+                result = ValidateResult('FAIL', f'`{self.port}` cannot be connected to', exception=e)
             else:
-                result = TestResult('PASS', f'`{self.port}` is a valid serial port that can be connected to')
-        self.process(result)
-
+                result = ValidateResult('PASS', f'`{self.port}` is a valid serial port that can be connected to')
         # first, test for properties of the serial port without opening the latter (VID, PID, etc)
         passed = self.port in filter_ports(**self.port_properties) if self.port_properties is not None else False
 
@@ -117,15 +117,14 @@ class TestSerialDevice(TestHardwareDevice):
                         break
 
         if passed:
-            result = TestResult('PASS', f'Device on `{self.port}` does in fact seem to be a {self.device_name}')
+            result = ValidateResult('PASS', f'Device on `{self.port}` does in fact seem to be a {self.device_name}')
         else:
-            result = TestResult('FAIL', f'Device on `{self.port}` does NOT seem to be a {self.device_name}')
-        self.process(result)
+            result = ValidateResult('FAIL', f'Device on `{self.port}` does NOT seem to be a {self.device_name}')
 
         return result
 
 
-class TestRotaryEncoder(TestSerialDevice):
+class ValidateRotaryEncoder(ValidateSerialDevice):
     device_name = 'Rotary Encoder Module'
     port_properties = {'vid': 0x16C0}
     serial_queries = {(b'Q', 2): b'^..$', (b'P00', 1): b'\x01'}
@@ -136,3 +135,22 @@ class TestRotaryEncoder(TestSerialDevice):
 
     def _run(self):
         super().run()
+
+
+class ValidateAlyxLabLocation(ValidateHardware):
+    """
+    This class validates that the rig name in the hardware_settings.yaml file is exists in Alyx.
+    """
+    raise_fail_as_exception: bool = False
+
+    def _run(self, one):
+        try:
+            one.alyx.rest('locations', 'read', id=self.hardware_settings['RIG_NAME'])
+            results_kwargs = dict(status='PASS', message='')
+        except requests.exceptions.HTTPError:
+            error_message = f'Could not find rig name {self.hardware_settings["RIG_NAME"]} in Alyx'
+            solution = f'Please check the RIG_NAME key in the settings/hardware_settings.yaml file ' \
+                       f'and make sure it is created in Alyx here: ' \
+                       f'{self.iblrig_settings["ALYX_URL"]}/admin/misc/lablocation/'
+            results_kwargs = dict(status='FAIL', message=error_message, solution=solution)
+        return ValidateResult(**results_kwargs)
