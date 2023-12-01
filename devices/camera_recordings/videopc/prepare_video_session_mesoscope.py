@@ -107,7 +107,7 @@ def main(mouse: str, training_session: bool = False, new: bool = False) -> None:
 
     # For now assert iblrig settings match old settings
     rig_settings = load_settings_yaml('iblrig_settings.yaml')
-    assert DATA_FOLDER == Path(rig_settings['iblrig_local_data_path'])
+    assert DATA_FOLDER == Path(rig_settings['iblrig_local_data_path'], 'Subjects')
 
     BONSAI = VIDEOPC_FOLDER_PATH / "bonsai" / "bin" / "Bonsai.exe"
     BONSAI_WORKFLOWS_PATH = BONSAI.parent.parent / "workflows"
