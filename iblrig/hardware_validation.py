@@ -3,8 +3,8 @@ import re
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any, Literal
-import requests
 
+import requests
 from serial import Serial, SerialException
 from serial.tools import list_ports
 from serial_singleton import SerialSingleton, filter_ports

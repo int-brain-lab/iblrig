@@ -1,6 +1,11 @@
 Changelog
 ---------
 
+
+8.12.12
+-------
+
+
 8.12.11
 -------
 * hotfix for creation of bonsai layout-file

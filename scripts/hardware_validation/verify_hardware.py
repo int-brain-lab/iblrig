@@ -158,7 +158,7 @@ for description, port in ports.items():
 bpod = Bpod(hw_settings['device_bpod']['COM_BPOD'])
 modules = [m for m in bpod.bpod_modules.modules if m.connected]
 
-if 'COM_ROTARY_ENCODER' in ports.keys():
+if 'COM_ROTARY_ENCODER' in ports:
     log_fun('head', 'Checking Rotary Encoder Module:')
     module = [m for m in modules if m.name.startswith('RotaryEncoder')]
     if len(module) == 0:

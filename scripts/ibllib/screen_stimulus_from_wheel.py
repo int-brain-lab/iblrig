@@ -56,10 +56,7 @@ def get_stim_from_wheel(eid, tr):
     wheel = one.load_object(eid, 'wheel')
 
     # check where stimulus started for initial shift
-    if np.isnan(trials['contrastLeft'][tr]):
-        init_pos = -35
-    else:
-        init_pos = 35
+    init_pos = -35 if np.isnan(trials['contrastLeft'][tr]) else 35
 
     # the screen stim is only coupled to the wheel in this time
     wheel_start_idx = find_nearest(wheel.timestamps, trials['goCue_times'][tr])

@@ -186,15 +186,14 @@ def get_bonsai_path(use_iblrig_bonsai: bool = True) -> str:
         preexisting_bonsai = Path.home() / 'AppData/Local/Bonsai/Bonsai.exe'
 
     if use_iblrig_bonsai is True:
-        BONSAI = ibl_bonsai
+        bonsai = ibl_bonsai
     elif use_iblrig_bonsai is False and preexisting_bonsai.exists():
-        BONSAI = str(preexisting_bonsai)
+        bonsai = str(preexisting_bonsai)
     elif use_iblrig_bonsai is False and not preexisting_bonsai.exists():
         log.debug(f'NOT FOUND: {preexisting_bonsai}. Using packaged Bonsai')
-        BONSAI = ibl_bonsai
-    log.debug(f'Found Bonsai executable: {BONSAI}')
-
-    return BONSAI
+        bonsai = ibl_bonsai
+    log.debug(f'Found Bonsai executable: {bonsai}')
+    return bonsai
 
 
 def iterate_collection(session_path: str, collection_name='raw_task_data') -> str:

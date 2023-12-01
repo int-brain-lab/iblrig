@@ -1,9 +1,9 @@
 import unittest
 
-from one.api import ONE
 import iblrig.hardware_validation
-from iblrig.path_helper import load_settings_yaml
 from ibllib.tests import TEST_DB  # noqa
+from iblrig.path_helper import load_settings_yaml
+from one.api import ONE
 
 VALIDATORS_INIT_KWARGS = dict(
     iblrig_settings=load_settings_yaml('iblrig_settings_template.yaml'),
