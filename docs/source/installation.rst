@@ -32,7 +32,7 @@ Now, run the following command at the prompt of Windows PowerShell:
 
 .. code-block:: powershell
 
-   Set-ExecutionPolicy RemoteSigned
+   Set-ExecutionPolicy RemoteSigned -Force
 
 .. warning:: Make sure you exit the Administrator PowerShell before continuing with the next steps!
 
