@@ -1,0 +1,154 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<WorkflowBuilder Version="2.6.1"
+                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                 xmlns:p1="clr-namespace:Bonsai.PointGrey;assembly=Bonsai.PointGrey"
+                 xmlns:p2="clr-namespace:Bonsai.Vision;assembly=Bonsai.Vision"
+                 xmlns:p3="clr-namespace:Bonsai.Dsp;assembly=Bonsai.Dsp"
+                 xmlns:rx="clr-namespace:Bonsai.Reactive;assembly=Bonsai.Core"
+                 xmlns="https://bonsai-rx.org/2018/workflow">
+  <Workflow>
+    <Nodes>
+      <Expression xsi:type="ExternalizedMapping">
+        <Property Name="LeftCameraIndex" />
+        <Property Name="FileNameLeft" />
+        <Property Name="FileNameLeftData" />
+        <Property Name="RightCameraIndex" />
+        <Property Name="FileNameRight" />
+        <Property Name="FileNameRightData" />
+      </Expression>
+      <Expression xsi:type="NestedWorkflow">
+        <Workflow>
+          <Nodes>
+            <Expression xsi:type="ExternalizedMapping">
+              <Property Name="FileName" DisplayName="FileNameLeft" />
+            </Expression>
+            <Expression xsi:type="ExternalizedMapping">
+              <Property Name="Index" DisplayName="LeftCameraIndex" />
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="p1:FlyCapture">
+                <p1:Index>0</p1:Index>
+                <p1:ColorProcessing>Default</p1:ColorProcessing>
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="MemberSelector">
+              <Selector>Image</Selector>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="p2:VideoWriter">
+                <p2:FileName>D:\iblrig_data\Subjects\_iblrig_test_mouse\2000-01-01\001\raw_video_data\_iblrig_leftCamera.raw.avi</p2:FileName>
+                <p2:Suffix>None</p2:Suffix>
+                <p2:Buffered>true</p2:Buffered>
+                <p2:Overwrite>true</p2:Overwrite>
+                <p2:FourCC>FMP4</p2:FourCC>
+                <p2:FrameRate>60</p2:FrameRate>
+                <p2:FrameSize>
+                  <p2:Width>0</p2:Width>
+                  <p2:Height>0</p2:Height>
+                </p2:FrameSize>
+                <p2:ResizeInterpolation>NearestNeighbor</p2:ResizeInterpolation>
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="MemberSelector">
+              <Selector>Metadata</Selector>
+            </Expression>
+            <Expression xsi:type="IncludeWorkflow" Path="Extensions\GetFrameData.bonsai" />
+            <Expression xsi:type="ExternalizedMapping">
+              <Property Name="Path" DisplayName="FileNameLeftData" />
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="p3:MatrixWriter">
+                <p3:Path>D:\iblrig_data\Subjects\_iblrig_test_mouse\2000-01-01\001\raw_video_data\_iblrig_leftCamera.frameData.bin</p3:Path>
+                <p3:Suffix>None</p3:Suffix>
+                <p3:Overwrite>true</p3:Overwrite>
+                <p3:Layout>ColumnMajor</p3:Layout>
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="ExternalizedMapping">
+              <Property Name="Index" DisplayName="RightCameraIndex" />
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="p1:FlyCapture">
+                <p1:Index>1</p1:Index>
+                <p1:ColorProcessing>Default</p1:ColorProcessing>
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="MemberSelector">
+              <Selector>Image</Selector>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="p2:Flip">
+                <p2:Mode>Both</p2:Mode>
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="ExternalizedMapping">
+              <Property Name="FileName" DisplayName="FileNameRight" />
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="p2:VideoWriter">
+                <p2:FileName>D:\iblrig_data\Subjects\_iblrig_test_mouse\2000-01-01\001\raw_video_data\_iblrig_rightCamera.raw.avi</p2:FileName>
+                <p2:Suffix>None</p2:Suffix>
+                <p2:Buffered>true</p2:Buffered>
+                <p2:Overwrite>true</p2:Overwrite>
+                <p2:FourCC>FMP4</p2:FourCC>
+                <p2:FrameRate>150</p2:FrameRate>
+                <p2:FrameSize>
+                  <p2:Width>0</p2:Width>
+                  <p2:Height>0</p2:Height>
+                </p2:FrameSize>
+                <p2:ResizeInterpolation>NearestNeighbor</p2:ResizeInterpolation>
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="MemberSelector">
+              <Selector>Metadata</Selector>
+            </Expression>
+            <Expression xsi:type="IncludeWorkflow" Path="Extensions\GetFrameData.bonsai" />
+            <Expression xsi:type="ExternalizedMapping">
+              <Property Name="Path" DisplayName="FileNameRightData" />
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="p3:MatrixWriter">
+                <p3:Path>D:\iblrig_data\Subjects\_iblrig_test_mouse\2000-01-01\001\raw_video_data\_iblrig_rightCamera.frameData.bin</p3:Path>
+                <p3:Suffix>None</p3:Suffix>
+                <p3:Overwrite>true</p3:Overwrite>
+                <p3:Layout>ColumnMajor</p3:Layout>
+              </Combinator>
+            </Expression>
+          </Nodes>
+          <Edges>
+            <Edge From="0" To="4" Label="Source2" />
+            <Edge From="1" To="2" Label="Source1" />
+            <Edge From="2" To="3" Label="Source1" />
+            <Edge From="2" To="5" Label="Source1" />
+            <Edge From="3" To="4" Label="Source1" />
+            <Edge From="5" To="6" Label="Source1" />
+            <Edge From="6" To="8" Label="Source1" />
+            <Edge From="7" To="8" Label="Source2" />
+            <Edge From="9" To="10" Label="Source1" />
+            <Edge From="10" To="11" Label="Source1" />
+            <Edge From="10" To="15" Label="Source1" />
+            <Edge From="11" To="12" Label="Source1" />
+            <Edge From="12" To="14" Label="Source2" />
+            <Edge From="13" To="14" Label="Source2" />
+            <Edge From="15" To="16" Label="Source1" />
+            <Edge From="16" To="18" Label="Source1" />
+            <Edge From="17" To="18" Label="Source2" />
+          </Edges>
+        </Workflow>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="rx:Last" />
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="rx:Delay">
+          <rx:DueTime>PT1S</rx:DueTime>
+        </Combinator>
+      </Expression>
+    </Nodes>
+    <Edges>
+      <Edge From="0" To="1" Label="Source1" />
+      <Edge From="1" To="2" Label="Source1" />
+      <Edge From="2" To="3" Label="Source1" />
+    </Edges>
+  </Workflow>
+</WorkflowBuilder>
