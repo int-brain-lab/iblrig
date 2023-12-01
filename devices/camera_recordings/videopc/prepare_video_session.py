@@ -15,7 +15,7 @@ from ibllib.pipes.misc import load_videopc_params
 from one.alf.io import next_num_folder
 
 from iblrig.transfer_experiments import VideoCopier
-from iblrig.path_helper import load_settings_yaml
+from iblrig.path_helper import load_settings_yaml, get_local_and_remote_paths
 
 import config_cameras as cams
 from video_lengths import main as len_files
@@ -56,8 +56,7 @@ def launch_three_videos_acquisition(mouse: str, training_session: bool = False, 
     VIDEOPC_FOLDER_PATH = Path(__file__).absolute().parent
 
     # For now assert iblrig settings match old settings
-    rig_settings = load_settings_yaml('iblrig_settings.yaml')
-    assert DATA_FOLDER == Path(rig_settings['iblrig_local_data_path'], 'Subjects')
+    assert DATA_FOLDER == get_local_and_remote_paths().remote
 
     BONSAI = VIDEOPC_FOLDER_PATH / "bonsai" / "bin" / "Bonsai.exe"
     BONSAI_WORKFLOWS_PATH = BONSAI.parent.parent / "workflows"
