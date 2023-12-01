@@ -579,14 +579,13 @@ class BonsaiRecordingMixin:
         subprocess.call(cmd, cwd=bonsai_camera_file.parent)
         self.logger.info('Bonsai cameras setup module loaded: OK')
 
-    def create_bonsai_layout_from_template(self, workflow_file: Path) -> Path:
+    def create_bonsai_layout_from_template(self, workflow_file: Path) -> None:
         if not (layout_file := workflow_file.with_suffix('.bonsai.layout')).exists():
             self.logger.info(f'creating default {layout_file.name}')
             template_file = workflow_file.with_suffix('.bonsai.layout_template')
             if not template_file.exists():
                 FileNotFoundError(template_file)
             shutil.copy(template_file, layout_file)
-        return template_file
 
     def trigger_bonsai_cameras(self):
         workflow_file = self._camera_mixin_bonsai_get_workflow_file(self.hardware_settings.get('device_cameras', None))
