@@ -1,6 +1,11 @@
 Changelog
 ---------
 
+8.12.11
+-------
+* hotfix for creation of bonsai layout-file
+* separated installers for Spinnaker SDK and PySpin
+
 8.12.10
 -------
 * ignore user-side changes to bonsai layouts (for camera workflows only)
