@@ -5,6 +5,7 @@ import zipfile
 from importlib.util import find_spec
 from pathlib import Path
 from shutil import which
+from urllib.error import URLError
 
 from iblrig.tools import ask_user
 from iblutil.io import hashfile  # type: ignore
@@ -65,7 +66,7 @@ def _download_from_alyx_or_flir(asset: int, filename: str, target_md5: str) -> s
         return out_file
     try:
         tmp_file, md5_sum = AlyxClient().download_file(f'resources/spinnaker/{filename}', **options)
-    except (OSError, AttributeError) as e1:
+    except (OSError, AttributeError, URLError) as e1:
         try:
             url = f'https://flir.nsetx.net/file/asset/{asset}/original/attachment'
             tmp_file, md5_sum = http_download_file(url, **options)
