@@ -68,7 +68,7 @@ def _download_from_alyx_or_flir(asset: int, filename: str, target_md5: str) -> s
         tmp_file, md5_sum = AlyxClient().download_file(f'resources/spinnaker/{filename}', **options)
     except (OSError, AttributeError, URLError) as e1:
         try:
-            url = f'https://flir.nsetx.net/file/asset/{asset}/original/attachment'
+            url = f'https://flir.netx.net/file/asset/{asset}/original/attachment'
             tmp_file, md5_sum = http_download_file(url, **options)
         except OSError as e2:
             raise e2 from e1
