@@ -57,6 +57,9 @@ remove-old-sessions = "iblrig.commands:remove_local_sessions"
 iblrig              = "iblrig.gui.wizard:main"
 upgrade_iblrig      = "iblrig.version_management:upgrade"
 install_spinnaker   = "iblrig.camera:install_spinnaker_sdk"
+prepare_video_session = "iblrig.devices.camera_recordings.videopc.prepare_video_session:main"
+prepare_video_session_mesoscope = "iblrig.devices.camera_recordings.videopc.prepare_video_session_mescoscope:main"
+prepare_video_session_single_mesoscope = "iblrig.devices.camera_recordings.videopc.prepare_video_session_single_mesoscope:main"
 
 [tool.setuptools.dynamic]
 readme  = { file = "README.md", content-type = "text/markdown" }
