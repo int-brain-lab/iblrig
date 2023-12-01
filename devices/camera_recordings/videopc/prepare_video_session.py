@@ -56,7 +56,7 @@ def launch_three_videos_acquisition(mouse: str, training_session: bool = False, 
     VIDEOPC_FOLDER_PATH = Path(__file__).absolute().parent
 
     # For now assert iblrig settings match old settings
-    rig_settings = load_settings_yaml('iblrig_settings')
+    rig_settings = load_settings_yaml('iblrig_settings.yaml')
     assert DATA_FOLDER == Path(rig_settings['iblrig_local_data_path'])
 
     BONSAI = VIDEOPC_FOLDER_PATH / "bonsai" / "bin" / "Bonsai.exe"
