@@ -25,8 +25,13 @@ class ValidateResult:
     exception: Exception | None = None
 
 
+<<<<<<< Updated upstream:iblrig/hardware_validation.py
 class ValidateHardwareException(Exception):
     def __init__(self, results: ValidateResult):
+=======
+class TestHardwareError(Exception):
+    def __init__(self, results: TestResult):
+>>>>>>> Stashed changes:iblrig/hardware_tests.py
         super().__init__(results.message)
         self.results = results
 
@@ -69,9 +74,15 @@ class ValidateHardware(ABC):
 
         if self.raise_fail_as_exception and results.status == 'FAIL':
             if results.exception is not None:
+<<<<<<< Updated upstream:iblrig/hardware_validation.py
                 raise ValidateHardwareException(results) from results.exception
             else:
                 raise ValidateHardwareException(results)
+=======
+                raise TestHardwareError(results) from results.exception
+            else:
+                raise TestHardwareError(results)
+>>>>>>> Stashed changes:iblrig/hardware_tests.py
 
 
 class ValidateHardwareDevice(ValidateHardware):

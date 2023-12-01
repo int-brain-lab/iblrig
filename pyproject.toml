@@ -57,7 +57,7 @@ flush               = "iblrig.commands:flush"
 remove-old-sessions = "iblrig.commands:remove_local_sessions"
 iblrig              = "iblrig.gui.wizard:main"
 upgrade_iblrig      = "iblrig.version_management:upgrade"
-install_spinnaker   = "iblrig.camera:install_spinnaker_sdk"
+install_spinnaker   = "iblrig.camera:install_spinnaker"
 install_pyspin      = "iblrig.camera:install_pyspin"
 
 [tool.setuptools.dynamic]

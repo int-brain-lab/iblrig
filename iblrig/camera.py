@@ -77,7 +77,7 @@ def _download_from_alyx_or_flir(asset: int, filename: str, target_md5: str) -> s
     return out_file
 
 
-def install_spinnaker_sdk():
+def install_spinnaker():
     """
     Install the Spinnaker SDK for Windows.
 
@@ -89,7 +89,7 @@ def install_spinnaker_sdk():
 
     # Check prerequisites
     if os.name != 'nt':
-        raise Exception(f'{Path(__file__).name} can only be run on Windows.')
+        raise Exception('install_spinnaker can only be run on Windows.')
 
     # Display some information
     print('This script will try to automatically download & install Spinnaker SDK for Windows')
@@ -127,9 +127,9 @@ def install_pyspin():
 
     # Check prerequisites
     if os.name != 'nt':
-        raise Exception(f'{Path(__file__).name} can only be run on Windows.')
+        raise Exception('install_pyspin can only be run on Windows.')
     if sys.base_prefix == sys.prefix:
-        raise Exception(f'{Path(__file__).name} needs to be started in the IBLRIG venv.')
+        raise Exception('install_pyspin needs to be started in the IBLRIG venv.')
 
     # Display some information
     print('This script will try to automatically download & install PySpin to the IBLRIG Python environment')
