@@ -81,7 +81,7 @@ def launch_three_videos_acquisition(mouse: str, training_session: bool = False, 
         },
         'version': '1.0.0'
     }
-    remote = Path(rig_settings['iblrig_remote_data_path'])
+    remote = get_local_and_remote_paths().remote_subjects_folder
     copier = VideoCopier(session_path=session_path, remote_subjects_folder=remote)
     copier.initialize_experiment(acquisition_description=acq_desc)
 
