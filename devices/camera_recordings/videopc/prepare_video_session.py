@@ -56,7 +56,7 @@ def launch_three_videos_acquisition(mouse: str, training_session: bool = False, 
     VIDEOPC_FOLDER_PATH = Path(__file__).absolute().parent
 
     # For now assert iblrig settings match old settings
-    assert DATA_FOLDER == get_local_and_remote_paths().remote
+    assert DATA_FOLDER == get_local_and_remote_paths().remote_subjects_folder
 
     BONSAI = VIDEOPC_FOLDER_PATH / "bonsai" / "bin" / "Bonsai.exe"
     BONSAI_WORKFLOWS_PATH = BONSAI.parent.parent / "workflows"
