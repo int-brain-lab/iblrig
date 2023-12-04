@@ -58,6 +58,8 @@ def _iterate_protocols(subject_folder, task_name, n=1):
     for file_experiment in sorted(subject_folder.rglob('_ibl_experiment.description*.yaml'), reverse=True):
         session_path = file_experiment.parent
         ad = session_params.read_params(file_experiment)
+        if 'tasks' not in ad:
+            continue
         if task_name not in ad['tasks'][0]:
             continue
         # reversed: we look for the last task first if the protocol ran twice
