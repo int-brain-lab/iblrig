@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import patch
-from iblrig.tools import *
+from iblrig.tools import ask_user, static_vars, internet_available
 
 
 class TestAskUser(unittest.TestCase):
