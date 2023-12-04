@@ -90,7 +90,7 @@ def get_local_and_remote_paths(local_path=None, remote_path=None, lab=None):
     """
     Function used to parse input arguments to transfer commands. If the arguments are None, reads in the settings
     and returns the values from the files.
-    local_subects_path alwawys has a fallback on the home directory / ilbrig_data
+    local_subjects_path always has a fallback on the home directory / ilbrig_data
     remote_subjects_path has no fallback and will return None when all options are exhausted
     :param local_path:
     :param remote_path:
@@ -109,8 +109,14 @@ def get_local_and_remote_paths(local_path=None, remote_path=None, lab=None):
         )
     if paths.remote_data_folder is None:
         paths.remote_data_folder = Path(p) if (p := iblrig_settings['iblrig_remote_data_path']) else None
-    paths.local_subjects_folder = Path(paths.local_data_folder).joinpath(lab or iblrig_settings['ALYX_LAB'] or '', 'Subjects')
-    paths.remote_subjects_folder = Path(p).joinpath('Subjects') if (p := paths.remote_data_folder) else None
+
+    # Get the subjects folder. If not defined in the settings, assume data path + /Subjects
+    paths.local_subjects_folder = iblrig_settings.get('iblrig_local_subjects_path')
+    if paths.local_subjects_folder is None:
+        paths.local_subjects_folder = Path(paths.local_data_folder).joinpath(lab or iblrig_settings['ALYX_LAB'] or '', 'Subjects')
+    paths.remote_subjects_folder = iblrig_settings.get('iblrig_remote_subjects_path')
+    if paths.remote_subjects_folder is None:
+        Path(p).joinpath('Subjects') if (p := paths.remote_data_folder) else None
     return paths
 
 

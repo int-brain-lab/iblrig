@@ -162,7 +162,7 @@ def copy_folders(local_folder: Path, remote_folder: Path, overwrite: bool = Fals
     return status
 
 
-class SessionCopier(abc.ABC):
+class SessionCopier:
     """Initialize and copy session data to a remote server."""
 
     assert_connect_on_init = False
@@ -209,7 +209,7 @@ class SessionCopier(abc.ABC):
             log.info(f'{self.state}, {self.session_path}')
             shutil.rmtree(self.remote_session_path)
             self.initialize_experiment()
-        if self.state == 0:  # the session hasn't even been initialzed: copy the stub to the remote
+        if self.state == 0:  # the session hasn't even been initialized: copy the stub to the remote
             log.info(f'{self.state}, {self.session_path}')
             self.initialize_experiment()
         if self.state == 1:  # the session
@@ -227,7 +227,7 @@ class SessionCopier(abc.ABC):
         State 0: this device experiment has not been initialized for this device
         State 1: this device experiment is initialized (the experiment description stub is present on the remote)
         State 2: this device experiment is copied on the remote server, but other devices copies are still pending
-        State 3: the whole experiment is finalized and all of the data is on the server
+        State 3: the whole experiment is finalized and all data is on the server
         :return:
         """
         if self.remote_subjects_folder is None or not self.remote_subjects_folder.exists():

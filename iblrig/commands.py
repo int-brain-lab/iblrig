@@ -13,7 +13,7 @@ from iblrig.hardware import Bpod
 from iblrig.online_plots import OnlinePlots
 from iblrig.path_helper import get_local_and_remote_paths, load_settings_yaml
 from iblrig.raw_data_loaders import load_task_jsonable
-from iblrig.transfer_experiments import BehaviorCopier, EphysCopier, SessionCopier, VideoCopier
+from iblrig.transfer_experiments import BehaviorCopier, EphysCopier, SessionCopier, VideoCopier, SessionCopier
 from iblutil.util import setup_logger
 
 logger = setup_logger('iblrig', level='INFO')
@@ -43,6 +43,8 @@ def _transfer_parser(description: str) -> argparse.ArgumentParser:
     parser.add_argument('-l', '--local', action='store', type=dir_path, dest='local_path', help='define local data path')
     parser.add_argument('-r', '--remote', action='store', type=dir_path, dest='remote_path', help='define remote data path')
     parser.add_argument('-d', '--dry', action='store_true', dest='dry', help='do not remove local data after copying')
+    # TODO pass this arg to other functions!!
+    parser.add_argument('--cleanup-weeks', help='cleanup data older than this many weeks', default=False)
     return parser
 
 
@@ -84,6 +86,14 @@ def transfer_data_cli():
     """
     args = _transfer_parser('Copy behavior data to the local server.').parse_args()
     transfer_data(**vars(args), interactive=True)
+
+
+def transfer_other_data_cli():
+    """
+    Command-line interface for transferring behavioral data to the local server.
+    """
+    args = _transfer_parser('Copy data to the local server.').parse_args()
+    transfer_other_data(**vars(args), interactive=True)
 
 
 def transfer_video_data_cli():
@@ -168,7 +178,7 @@ def _print_status(copiers: Iterable[SessionCopier], heading: str = '') -> None:
         print(f' * {copier.session_path}: {state}')
 
 
-def transfer_ephys_data(local_path: Path = None, remote_path: Path = None, dry: bool = False, interactive: bool = False):
+def transfer_ephys_data(local_path: Path = None, remote_path: Path = None, dry: bool = False, interactive: bool = False, **_):
     local_subject_folder, remote_subject_folder = _get_subjects_folders(local_path, remote_path, interactive)
     copiers = _get_copiers(EphysCopier, local_path, remote_path, interactive=interactive)
 
@@ -184,7 +194,7 @@ def transfer_ephys_data(local_path: Path = None, remote_path: Path = None, dry: 
     remove_local_sessions(weeks=2, local_path=local_subject_folder, remote_path=remote_subject_folder, dry=dry, tag='ephys')
 
 
-def transfer_video_data(local_path: Path = None, remote_path: Path = None, dry: bool = False, interactive: bool = False):
+def transfer_video_data(local_path: Path = None, remote_path: Path = None, dry: bool = False, interactive: bool = False, **_):
     local_subject_folder, remote_subject_folder = _get_subjects_folders(local_path, remote_path, interactive)
     copiers = _get_copiers(VideoCopier, local_path, remote_path, interactive=interactive)
 
@@ -200,7 +210,7 @@ def transfer_video_data(local_path: Path = None, remote_path: Path = None, dry: 
     remove_local_sessions(weeks=2, local_path=local_subject_folder, remote_path=remote_subject_folder, dry=dry, tag='video')
 
 
-def transfer_data(local_path: Path = None, remote_path: Path = None, dry: bool = False, interactive: bool = False) -> None:
+def transfer_data(local_path: Path = None, remote_path: Path = None, dry: bool = False, interactive: bool = False, **_) -> None:
     """
     Copies the behavior data from the rig to the local server if the session has more than 42 trials
     If the hardware settings file contains MAIN_SYNC=True, the number of expected devices is set to 1
@@ -214,7 +224,7 @@ def transfer_data(local_path: Path = None, remote_path: Path = None, dry: bool =
     remote_path : Path
         Path to remote data
     lab : str
-        the lab name ie. "cortexlab" or "mainenlab" to use to find the local path. Defaults to the ALYX_LAB key
+        the lab name i.e. "cortexlab" or "mainenlab" to use to find the local path. Defaults to the ALYX_LAB key
         in the settings/iblrig_settings.yaml file
     dry : bool
         Do not remove local data after copying if `dry` is True
@@ -261,7 +271,7 @@ def transfer_data(local_path: Path = None, remote_path: Path = None, dry: bool =
             with open(settings_file, 'w') as fid:
                 json.dump(raw_settings, fid)
             task_settings = raw_data_loaders.load_settings(session_path, task_collection='raw_task_data_00')
-        # we check the number of trials acomplished. If the field is not there, we copy the session as is
+        # we check the number of trials accomplished. If the field is not there, we copy the session as is
         if task_settings.get('NTRIALS', 43) < 42:
             logger.info(f'Skipping: not enough trials for {session_path}')
             if copier.remote_session_path.exists():
@@ -275,6 +285,44 @@ def transfer_data(local_path: Path = None, remote_path: Path = None, dry: bool =
 
     # once we copied the data, remove older session for which the data was successfully uploaded
     remove_local_sessions(weeks=2, dry=dry, local_path=local_subject_folder, remote_path=remote_subject_folder)
+
+
+def transfer_other_data(local_path: Path = None, remote_path: Path = None, dry: bool = False, interactive: bool = False,
+                        cleanup_weeks=2) -> None:
+    """
+    Copies data from the rig to the local server.
+
+    Parameters
+    ----------
+    local_path : Path
+        Path to local subjects folder, otherwise fetches path from iblrig_settings.yaml file.
+    remote_path : Path
+        Path to remote subjects folder, otherwise fetches path from iblrig_settings.yaml file.
+    dry : bool
+        Do not remove local data after copying if `dry` is True
+    cleanup_weeks : int, bool
+        Remove local data older than this number of weeks. If False, do not remove.
+
+    Returns
+    -------
+    None
+    """
+    local_subject_folder, remote_subject_folder = _get_subjects_folders(local_path, remote_path, interactive)
+    SessionCopier.assert_connect_on_init = True  # FIXME This affects all instances of the base class
+
+    copiers = _get_copiers(SessionCopier, local_path, remote_path, interactive=interactive)
+
+    for copier in copiers:
+        session_path = copier.session_path
+        logger.critical(f'{copier.state}, {copier.session_path}')
+        copier.run()
+
+    if interactive:
+        _print_status(copiers, 'States after transfer operation:')
+
+    # once we copied the data, remove older session for which the data was successfully uploaded
+    if cleanup_weeks not in (False, 0):
+        remove_local_sessions(weeks=cleanup_weeks, dry=dry, local_path=local_subject_folder, remote_path=remote_subject_folder)
 
 
 def remove_local_sessions(weeks=2, local_path=None, remote_path=None, dry=False, tag='behavior'):
@@ -291,6 +339,8 @@ def remove_local_sessions(weeks=2, local_path=None, remote_path=None, dry=False,
             Copier = BehaviorCopier
         case 'video':
             Copier = VideoCopier
+        case _:
+            Copier = SessionCopier
     for flag in sorted(list(local_subject_folder.rglob(f'_ibl_experiment.description_{tag}.yaml')), reverse=True):
         session_path = flag.parent
         days_elapsed = (datetime.datetime.now() - datetime.datetime.strptime(session_path.parts[-2], '%Y-%m-%d')).days
