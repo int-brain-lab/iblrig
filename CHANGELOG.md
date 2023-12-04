@@ -2,9 +2,17 @@ Changelog
 ---------
 
 
+8.12.14
+-------
+* unit-tests and linting
+
+8.12.13
+-------
+* fix problem with corrupt acquisition descriptions in history
+
 8.12.12
 -------
-
+* skipped
 
 8.12.11
 -------
