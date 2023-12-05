@@ -46,6 +46,38 @@ def ask_user(prompt: str, default: bool = False) -> bool:
 
 
 def get_anydesk_id(silent: bool = False) -> str | None:
+    """
+    Retrieve the AnyDesk ID of the current machine.
+
+    Parameters
+    ----------
+    silent : bool, optional
+        If True, suppresses exceptions and logs them instead.
+        If False (default), raises exceptions.
+
+    Returns
+    -------
+    str or None
+        The AnyDesk ID as a formatted string (e.g., '123 456 789') if successful,
+        or None on failure.
+
+    Raises
+    ------
+    FileNotFoundError
+        If the AnyDesk executable is not found.
+    subprocess.CalledProcessError
+        If an error occurs while executing the AnyDesk command.
+    StopIteration
+        If the subprocess output is empty.
+    UnicodeDecodeError
+        If there is an issue decoding the subprocess output.
+
+    Notes
+    -----
+    The function attempts to find the AnyDesk executable and retrieve the ID using the command line.
+    On success, the AnyDesk ID is returned as a formatted string. If silent is True, exceptions are logged,
+    and None is returned on failure. If silent is False, exceptions are raised on failure.
+    """
     anydesk_id = None
     try:
         if cmd := shutil.which('anydesk'):
