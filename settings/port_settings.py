@@ -22,7 +22,23 @@ UPDATE_FIELDS = {
 
 
 def main(v7_path=None, v8_path=None):
+    """
+    Generate iblrigv8 settings files using iblrigv7 parameters JSON.
 
+    Parameters
+    ----------
+    v7_path : pathlib.Path
+        The absolute path of the folder containing the iblrigv7 '.iblrig_params.json' file.
+    v8_path : pathlib.Path
+        The absolute path of the folder containing the iblrigv8 settings files.
+
+    Returns
+    -------
+    dict
+        The iblrigv8 settings, saved to `v8_path` / iblrig_settings.yaml.
+    dict
+        The iblrigv8 hardware settings, saved to `v8_path` / hardware_settings.yaml.
+    """
     v7_path = v7_path or Path(Path.home().drive, '/', 'iblrig_params')
     v7_path = v7_path / '.iblrig_params.json'
     v8_path = v8_path or Path(Path.home().drive, '/', 'iblrigv8', 'settings')
@@ -64,31 +80,31 @@ def main(v7_path=None, v8_path=None):
     else:
         warnings.warn('Unknown lab name, please manually update ALYX_LAB field.')
 
-    # TODO Attempt to load ONE settings for these fields
     v8_settings['ALYX_URL'] = one.params.get_default_client()
-    v8_settings['ALYX_USER'] = one.params.get(client=v8_settings['ALYX_URL'], silent=True)
+    v8_settings['ALYX_USER'] = one.params.get(client=v8_settings['ALYX_URL'], silent=True).ALYX_LOGIN
 
     with open(v8_path.with_name('iblrig_settings.yaml'), 'w') as fp:
-        yaml.safe_dump(fp, v8_settings)
+        yaml.safe_dump(v8_settings, fp)
+    return v8_settings, v8_hw_settings
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="Port iblrigv7 settings to iblrigv8")
+    parser = argparse.ArgumentParser(description='Port iblrigv7 settings to iblrigv8')
     parser.add_argument(
-        "-v7",
-        "--v7-path",
+        '-v7',
+        '--v7-path',
         default=None,
         required=False,
         type=Path,
-        help=r"The path to iblrigv7 params folder (default is C:\iblrig_params).",
+        help=r'The path to iblrigv7 params folder (default is C:\iblrig_params).',
     )
     parser.add_argument(
-        "-v8",
-        "--v8-path",
+        '-v8',
+        '--v8-path',
         default=None,
         required=False,
         type=Path,
-        help=r"The path to iblrigv8 settings (default is C:\iblrigv8\settings).",
+        help=r'The path to iblrigv8 settings (default is C:\iblrigv8\settings).',
     )
     args = parser.parse_args()
     main(**vars(args))

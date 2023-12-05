@@ -14,7 +14,6 @@ from iblrig.misc import online_std
 
 from settings.port_settings import main  # FIXME This is not a module
 
-
 class TestMisc(unittest.TestCase):
     def test_draw_contrast(self):
         n_draws = 5000
@@ -51,7 +50,6 @@ class TestMisc(unittest.TestCase):
 
 class TestPortSettings(unittest.TestCase):
     """Test settings/port_settings.py."""
-
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
@@ -91,3 +89,10 @@ class TestPortSettings(unittest.TestCase):
         with open(settings_path, 'r') as fp:
             settings = yaml.safe_load(fp)
         self.assertEqual(settings['ALYX_LAB'], 'cortexlab')
+
+        # Test handling of non-standard rig name
+        self.v7_settings['NAME'] = '_ibl_foobar_rig_'
+        with open(self.v7 / '.iblrig_params.json', 'w') as fp:
+            json.dump(self.v7_settings, fp)
+        self.assertWarns(Warning, main, self.v7, self.v8)
+
