@@ -34,7 +34,9 @@ Now, run the following command at the prompt of Windows PowerShell:
 
    Set-ExecutionPolicy RemoteSigned -Force
 
-.. warning:: Make sure you exit the Administrator PowerShell before continuing with the next steps!
+.. tip::
+
+   Keep the Administrator PowerShell open for the next step.
 
 .. admonition:: Background
    :class: seealso
@@ -45,6 +47,19 @@ Now, run the following command at the prompt of Windows PowerShell:
    allowing the execution of locally created scripts without any digital signature while requiring that remotely downloaded
    scripts (from the internet) must be digitally signed by a trusted source to run. This strikes a balance between security
    and usability.
+
+
+Installing MS Visual C++ Redistributable
+----------------------------------------
+
+With the Administrator PowerShell still open, run the following commands:
+
+.. code-block:: powershell
+
+   Invoke-WebRequest -Uri https://aka.ms/vs/17/release/vc_redist.x64.exe  -OutFile C:\Temp\vc_redist.x64.exe
+   Start-Process -NoNewWindow -Wait -FilePath C:\Temp\vc_redist.x64.exe -ArgumentList "/install", "/quiet", "/norestart"
+
+.. warning:: Make sure you exit the Administrator PowerShell before continuing with the next steps!
 
 
 Installing Python 3.10
