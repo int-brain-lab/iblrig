@@ -56,10 +56,18 @@ With the Administrator PowerShell still open, run the following commands:
 
 .. code-block:: powershell
 
+   New-Item -ItemType Directory -Force -Path C:\Temp
    Invoke-WebRequest -Uri https://aka.ms/vs/17/release/vc_redist.x64.exe  -OutFile C:\Temp\vc_redist.x64.exe
    Start-Process -NoNewWindow -Wait -FilePath C:\Temp\vc_redist.x64.exe -ArgumentList "/install", "/quiet", "/norestart"
 
 .. warning:: Make sure you exit the Administrator PowerShell before continuing with the next steps!
+
+.. admonition:: Background
+   :class: seealso
+
+   These commands will create a temporary directory, download and silently install the Visual C++ Redistributable package for
+   64-bit Windows systems. The installer is retrieved from a Microsoft server and executed with parameters to ensure a seamless
+   and unobtrusive installation process.
 
 
 Installing Python 3.10
