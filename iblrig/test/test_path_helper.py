@@ -3,6 +3,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from constants import BASE_DIR
+
 import iblrig.path_helper
 from iblrig.base_tasks import BonsaiRecordingMixin
 
@@ -11,17 +13,12 @@ class TestPathHelper(unittest.TestCase):
     def setUp(self):
         pass
 
-    def test_get_iblrig_path(self):
-        p = iblrig.path_helper.get_iblrig_path()
-        self.assertIsNotNone(p)
-        self.assertIsInstance(p, Path)
-
     def test_get_commit_hash(self):
         import subprocess
 
         out = subprocess.check_output(['git', 'rev-parse', 'HEAD']).decode().strip()
         # Run it
-        ch = iblrig.path_helper.get_commit_hash(str(iblrig.path_helper.get_iblrig_path()))
+        ch = iblrig.path_helper.get_commit_hash(BASE_DIR)
         self.assertTrue(out == ch)
 
     def tearDown(self):

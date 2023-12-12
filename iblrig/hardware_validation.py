@@ -141,6 +141,7 @@ class ValidateAlyxLabLocation(ValidateHardware):
     """
     This class validates that the rig name in the hardware_settings.yaml file is exists in Alyx.
     """
+
     raise_fail_as_exception: bool = False
 
     def _run(self, one):
@@ -149,8 +150,10 @@ class ValidateAlyxLabLocation(ValidateHardware):
             results_kwargs = dict(status='PASS', message='')
         except requests.exceptions.HTTPError:
             error_message = f'Could not find rig name {self.hardware_settings["RIG_NAME"]} in Alyx'
-            solution = f'Please check the RIG_NAME key in the settings/hardware_settings.yaml file ' \
-                       f'and make sure it is created in Alyx here: ' \
-                       f'{self.iblrig_settings["ALYX_URL"]}/admin/misc/lablocation/'
+            solution = (
+                f'Please check the RIG_NAME key in the settings/hardware_settings.yaml file '
+                f'and make sure it is created in Alyx here: '
+                f'{self.iblrig_settings["ALYX_URL"]}/admin/misc/lablocation/'
+            )
             results_kwargs = dict(status='FAIL', message=error_message, solution=solution)
         return ValidateResult(**results_kwargs)

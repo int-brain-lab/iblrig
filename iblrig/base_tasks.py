@@ -9,7 +9,6 @@ import datetime
 import inspect
 import json
 import os
-import shutil
 import signal
 import subprocess
 import time
@@ -30,6 +29,7 @@ import iblrig.graphic as graph
 import iblrig.path_helper
 import pybpodapi
 from iblrig import frame2TTL, sound
+from iblrig.constants import BASE_PATH
 from iblrig.hardware import SOFTCODE, Bpod, MyRotaryEncoder, sound_device_factory
 from iblrig.transfer_experiments import BehaviorCopier
 from iblutil.spacer import Spacer
@@ -87,7 +87,8 @@ class BaseSession(ABC):
         assert self.protocol_name is not None, 'Protocol name must be defined by the child class'
         self.logger = None
         self._setup_loggers(level=log_level)
-        self.logger.info(f'Running iblrig {iblrig.__version__}, pybpod version {pybpodapi.__version__}')
+        if not isinstance(self, EmptySession):
+            self.logger.info(f'Running iblrig {iblrig.__version__}, pybpod version {pybpodapi.__version__}')
         self.interactive = False if append else interactive
         self._one = one
         self.init_datetime = datetime.datetime.now()
@@ -139,7 +140,8 @@ class BaseSession(ABC):
         # Executes mixins init methods
         self._execute_mixins_shared_function('init_mixin')
         self.paths = self._init_paths(append=append)
-        self.logger.info(f'Session {self.paths.SESSION_RAW_DATA_FOLDER}')
+        if not isinstance(self, EmptySession):
+            self.logger.info(f'Session {self.paths.SESSION_RAW_DATA_FOLDER}')
         # Prepare the experiment description dictionary
         self.experiment_description = self.make_experiment_description_dict(
             self.protocol_name,
@@ -179,7 +181,7 @@ class BaseSession(ABC):
             remote_path=self.iblrig_settings['iblrig_remote_data_path'],
             lab=self.iblrig_settings['ALYX_LAB'],
         )
-        paths = Bunch({'IBLRIG_FOLDER': Path(iblrig.__file__).parents[1]})
+        paths = Bunch({'IBLRIG_FOLDER': BASE_PATH})
         paths.BONSAI = paths.IBLRIG_FOLDER.joinpath('Bonsai', 'Bonsai.exe')
         paths.VISUAL_STIM_FOLDER = paths.IBLRIG_FOLDER.joinpath('visual_stim')
         paths.LOCAL_SUBJECT_FOLDER = rig_computer_paths['local_subjects_folder']
@@ -450,6 +452,17 @@ class BaseSession(ABC):
         return parser
 
 
+# this class gets called to get the path constructor utility to predict the session path
+class EmptySession(BaseSession):
+    protocol_name = 'empty'
+
+    def _run(self):
+        pass
+
+    def start_hardware(self):
+        pass
+
+
 class OSCClient(udp_client.SimpleUDPClient):
     """
     Handles communication to Bonsai using an UDP Client
@@ -571,7 +584,7 @@ class BonsaiRecordingMixin:
         #         cam.TriggerMode.SetValue(True)
 
         bonsai_camera_file = self.paths.IBLRIG_FOLDER.joinpath('devices', 'camera_setup', 'setup_video.bonsai')
-        self.create_bonsai_layout_from_template(bonsai_camera_file)
+        iblrig.path_helper.create_bonsai_layout_from_template(bonsai_camera_file)
         # this locks until Bonsai closes
         cmd = [str(self.paths.BONSAI), str(bonsai_camera_file), '--start-no-debug', '--no-boot']
         self.logger.info('starting Bonsai microphone recording')
@@ -579,21 +592,13 @@ class BonsaiRecordingMixin:
         subprocess.call(cmd, cwd=bonsai_camera_file.parent)
         self.logger.info('Bonsai cameras setup module loaded: OK')
 
-    def create_bonsai_layout_from_template(self, workflow_file: Path) -> None:
-        if not (layout_file := workflow_file.with_suffix('.bonsai.layout')).exists():
-            self.logger.info(f'creating default {layout_file.name}')
-            template_file = workflow_file.with_suffix('.bonsai.layout_template')
-            if not template_file.exists():
-                FileNotFoundError(template_file)
-            shutil.copy(template_file, layout_file)
-
     def trigger_bonsai_cameras(self):
         workflow_file = self._camera_mixin_bonsai_get_workflow_file(self.hardware_settings.get('device_cameras', None))
         if workflow_file is None:
             return
         self.logger.info('attempt to launch Bonsai camera recording')
         workflow_file = self.paths.IBLRIG_FOLDER.joinpath(*workflow_file.split('/'))
-        self.create_bonsai_layout_from_template(workflow_file)
+        iblrig.path_helper.create_bonsai_layout_from_template(workflow_file)
         cmd = [
             str(self.paths.BONSAI),
             str(workflow_file),

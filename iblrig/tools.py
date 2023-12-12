@@ -7,6 +7,7 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
+from iblrig.path_helper import create_bonsai_layout_from_template, get_bonsai_path
 from iblutil.util import setup_logger
 
 logger = setup_logger('iblrig')
@@ -165,3 +166,23 @@ def internet_available(host: str = '8.8.8.8', port: int = 53, timeout: int = 3, 
     except OSError:
         internet_available.return_value = False
     return internet_available.return_value
+
+
+def call_bonsai(
+    workflow_file: str | Path, args: list[str] | None = None, debug: bool = False, bootstrap: bool = True, editor: bool = True
+) -> int:
+    workflow_file = Path(workflow_file)
+    if not workflow_file.exists():
+        raise FileNotFoundError(workflow_file)
+    working_directory = Path(workflow_file).parent
+    create_bonsai_layout_from_template(workflow_file)
+    cmd = [get_bonsai_path(), '--start' if debug else '--start-no-debug']
+    for arg in args:
+        cmd.append(arg)
+    if not bootstrap:
+        cmd.append('--no-boot')
+    if not editor:
+        cmd.append('--no-editor')
+    cmd.append(workflow_file)
+    logger.info(f'Starting Bonsai workflow `{workflow_file.name}`')
+    return subprocess.check_call(cmd, cwd=working_directory)

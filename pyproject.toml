@@ -50,16 +50,16 @@ DEV = [
 ]
 
 [project.scripts]
-viewsession         = "iblrig.commands:viewsession"
-transfer_data       = "iblrig.commands:transfer_data_cli"
-transfer_video_data = "iblrig.commands:transfer_video_data_cli"
-transfer_ephys_data = "iblrig.commands:transfer_ephys_data_cli"
-flush               = "iblrig.commands:flush"
-remove-old-sessions = "iblrig.commands:remove_local_sessions"
-iblrig              = "iblrig.gui.wizard:main"
-upgrade_iblrig      = "iblrig.version_management:upgrade"
-install_spinnaker   = "iblrig.camera:install_spinnaker"
-install_pyspin      = "iblrig.camera:install_pyspin"
+viewsession           = "iblrig.commands:viewsession"
+transfer_data         = "iblrig.commands:transfer_data_cli"
+transfer_video_data   = "iblrig.commands:transfer_video_data_cli"
+transfer_ephys_data   = "iblrig.commands:transfer_ephys_data_cli"
+flush                 = "iblrig.commands:flush"
+remove-old-sessions   = "iblrig.commands:remove_local_sessions"
+iblrig                = "iblrig.gui.wizard:main"
+upgrade_iblrig        = "iblrig.version_management:upgrade"
+install_spinnaker     = "iblrig.video:install_spinnaker"
+install_pyspin        = "iblrig.video:install_pyspin"
 
 [tool.setuptools.dynamic]
 readme  = { file = "README.md", content-type = "text/markdown" }

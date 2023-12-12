@@ -3,6 +3,7 @@ Various get functions to return paths of folders and network drives
 """
 import os
 import re
+import shutil
 import subprocess
 from pathlib import Path
 
@@ -13,6 +14,7 @@ from packaging import version
 import iblrig
 from ibllib.io import session_params
 from ibllib.io.raw_data_loaders import load_settings
+from iblrig.constants import BASE_PATH
 from iblutil.util import Bunch, setup_logger
 
 log = setup_logger('iblrig')
@@ -156,10 +158,6 @@ def patch_settings(rs: dict, name: str) -> dict:
     return rs
 
 
-def get_iblrig_path() -> Path or None:
-    return Path(iblrig.__file__).parents[1]
-
-
 def get_commit_hash(folder: str):
     here = os.getcwd()
     os.chdir(folder)
@@ -173,10 +171,7 @@ def get_commit_hash(folder: str):
 
 def get_bonsai_path(use_iblrig_bonsai: bool = True) -> str:
     """Checks for Bonsai folder in iblrig. Returns string with bonsai executable path."""
-    iblrig_folder = get_iblrig_path()
-    bonsai_folder = next(
-        (folder for folder in Path(iblrig_folder).glob('*') if folder.is_dir() and 'Bonsai' in folder.name), None
-    )
+    bonsai_folder = next((folder for folder in BASE_PATH.glob('*') if folder.is_dir() and 'bonsai' in folder.name.lower()), None)
     if bonsai_folder is None:
         return
     ibl_bonsai = os.path.join(bonsai_folder, 'Bonsai64.exe')
@@ -234,3 +229,15 @@ def iterate_collection(session_path: str, collection_name='raw_task_data') -> st
     if len(tasks) == 0:
         return f'{collection_name}_00'
     return f'{collection_name}_{int(tasks[-1][-2:]) + 1:02}'
+
+
+def create_bonsai_layout_from_template(workflow_file: Path) -> None:
+    if not workflow_file.exists():
+        FileNotFoundError(workflow_file)
+    if not (layout_file := workflow_file.with_suffix('.bonsai.layout')).exists():
+        template_file = workflow_file.with_suffix('.bonsai.layout_template')
+        if template_file.exists():
+            log.info(f'Creating default {layout_file.name}')
+            shutil.copy(template_file, layout_file)
+        else:
+            log.debug(f'No template layout for {workflow_file.name}')

@@ -1,10 +1,10 @@
 import unittest
 from unittest.mock import patch
-from iblrig.tools import ask_user, static_vars, internet_available
+
+from iblrig.tools import ask_user, internet_available, static_vars
 
 
 class TestAskUser(unittest.TestCase):
-
     @patch('builtins.input', return_value='')
     def test_ask_user_with_defaults(self, mock_input):
         result = ask_user('Do you want to continue?')
@@ -29,11 +29,11 @@ class TestAskUser(unittest.TestCase):
 
 
 class TestStaticVarsDecorator(unittest.TestCase):
-
     def test_static_vars_decorator(self):
         @static_vars(var1=1, var2='test')
         def test_function():
             return test_function.var1, test_function.var2
+
         self.assertEqual(test_function(), (1, 'test'))
         test_function.var1 = 42
         test_function.var2 = 'modified'
@@ -41,7 +41,6 @@ class TestStaticVarsDecorator(unittest.TestCase):
 
 
 class TestInternetAvailableFunction(unittest.TestCase):
-
     @patch('socket.socket')
     def test_internet_available_with_internet(self, mock_socket):
         mock_socket.return_value.__enter__.return_value.connect.side_effect = None

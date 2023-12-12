@@ -1,6 +1,6 @@
 import unittest
-from unittest.mock import patch
 from pathlib import Path
+from unittest.mock import patch
 
 
 class TestDownloadFunction(unittest.TestCase):

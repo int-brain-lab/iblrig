@@ -20,25 +20,27 @@ from PyQt5.QtWidgets import QStyle
 
 import iblrig_tasks
 from one.api import ONE
+
 try:
     import iblrig_custom_tasks
+
     CUSTOM_TASKS = True
 except ImportError:
     CUSTOM_TASKS = False
     pass
+import iblrig.hardware_validation
 import iblrig.path_helper
-from iblrig.base_tasks import BaseSession
+from iblrig.base_tasks import EmptySession
 from iblrig.choiceworld import get_subject_training_info, training_phase_from_contrast_set
 from iblrig.constants import BASE_DIR
 from iblrig.gui.ui_update import Ui_update
 from iblrig.gui.ui_wizard import Ui_wizard
 from iblrig.hardware import Bpod
 from iblrig.misc import _get_task_argument_parser
+from iblrig.path_helper import load_settings_yaml
 from iblrig.version_management import check_for_updates, get_changelog, is_dirty
 from iblutil.util import setup_logger
-import iblrig.hardware_validation
 from pybpodapi import exceptions
-from iblrig.path_helper import load_settings_yaml
 
 log = setup_logger('iblrig')
 
@@ -58,17 +60,6 @@ WIZARD_PNG = str(GUI_DIR.joinpath('wizard.png'))
 ICON_FLUSH = str(GUI_DIR.joinpath('icon_flush.svg'))
 ICON_HELP = str(GUI_DIR.joinpath('icon_help.svg'))
 ICON_STATUS_LED = str(GUI_DIR.joinpath('icon_status_led.svg'))
-
-
-# this class gets called to get the path constructor utility to predict the session path
-class EmptySession(BaseSession):
-    protocol_name = 'empty'
-
-    def _run(self):
-        pass
-
-    def start_hardware(self):
-        pass
 
 
 def _set_list_view_from_string_list(ui_list: QtWidgets.QListView, string_list: list):
@@ -153,8 +144,9 @@ class RigWizardModel:
         # for the users we get all the users responsible for the set of subjects
         self.all_users = sorted(set([s['responsible_user'] for s in rest_subjects] + self.all_users))
         # then from the list of users we find all others users that have delegate access to the subjects
-        rest_users_with_delegates = self.one.alyx.rest('users', 'list', no_cache=True,
-                                                       django=f'username__in,{self.all_users},allowed_users__isnull,False')
+        rest_users_with_delegates = self.one.alyx.rest(
+            'users', 'list', no_cache=True, django=f'username__in,{self.all_users},allowed_users__isnull,False'
+        )
         for user_with_delegate in rest_users_with_delegates:
             self.all_users.extend(user_with_delegate['allowed_users'])
         self.all_users = list(set(self.all_users))
@@ -165,7 +157,7 @@ class RigWizardModel:
         # since we are connecting to Alyx, validate some parameters to ensure a smooth extraction
         result = iblrig.hardware_validation.ValidateAlyxLabLocation().run(self.one)
         if result.status == 'FAIL' and gui:
-            QtWidgets.QMessageBox().critical(None, 'Error', f"{result.message}\n\n{result.solution}")
+            QtWidgets.QMessageBox().critical(None, 'Error', f'{result.message}\n\n{result.solution}')
 
     def get_subject_details(self, subject):
         self.subject_details_worker = SubjectDetailsWorker(subject)

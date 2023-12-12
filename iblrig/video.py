@@ -1,3 +1,4 @@
+import contextlib
 import os
 import subprocess
 import sys
@@ -7,9 +8,18 @@ from pathlib import Path
 from shutil import which
 from urllib.error import URLError
 
-from iblrig.tools import ask_user
+from base_tasks import EmptySession
+from constants import BASE_PATH
+
+from iblrig.tools import ask_user, call_bonsai
 from iblutil.io import hashfile  # type: ignore
+from iblutil.util import setup_logger
 from one.webclient import AlyxClient, http_download_file  # type: ignore
+
+with contextlib.suppress(ImportError):
+    from iblrig import video_pyspin
+
+log = setup_logger('iblrig', level='DEBUG')
 
 
 def pyspin_installed() -> bool:
@@ -35,7 +45,7 @@ def spinnaker_sdk_installed() -> bool:
     return spin_exe is not None and Path(spin_exe).parents[2].joinpath('src').exists()
 
 
-def _download_from_alyx_or_flir(asset: int, filename: str, target_md5: str) -> str:
+def _download_from_alyx_or_flir(asset: int, filename: str, target_md5: str) -> Path:
     """
     Download a file from Alyx or FLIR server and verify its integrity using MD5 checksum.
 
@@ -50,7 +60,7 @@ def _download_from_alyx_or_flir(asset: int, filename: str, target_md5: str) -> s
 
     Returns
     -------
-    str
+    Path
         The path to the downloaded file.
 
     Raises
@@ -97,13 +107,13 @@ def install_spinnaker():
     input('Press [ENTER] to continue.\n')
 
     # Check for existing installation
-    if spinnaker_sdk_installed():
-        if not ask_user('Spinnaker SDK for Windows is already installed. Do you want to continue anyways?'):
-            return
+    if spinnaker_sdk_installed() and not ask_user(
+        'Spinnaker SDK for Windows is already installed. Do you want to continue anyways?'
+    ):
+        return
 
     # Download & install Spinnaker SDK
-    file_winsdk = _download_from_alyx_or_flir(54386, 'SpinnakerSDK_FULL_3.1.0.79_x64.exe',
-                                              'd9d83772f852e5369da2fbcc248c9c81')
+    file_winsdk = _download_from_alyx_or_flir(54386, 'SpinnakerSDK_FULL_3.1.0.79_x64.exe', 'd9d83772f852e5369da2fbcc248c9c81')
     print('Installing Spinnaker SDK for Windows ...')
     input(
         'Please select the "Application Development" Installation Profile. Everything else can be left at '
@@ -137,16 +147,16 @@ def install_pyspin():
     input('Press [ENTER] to continue.\n')
 
     # Check for existing installation
-    if pyspin_installed():
-        if not ask_user('PySpin is already installed. Do you want to continue anyways?'):
-            return
+    if pyspin_installed() and not ask_user('PySpin is already installed. Do you want to continue anyways?'):
+        return
 
     # Download & install PySpin
     if pyspin_installed():
         print('PySpin is already installed.')
     else:
-        file_zip = _download_from_alyx_or_flir(54396, 'spinnaker_python-3.1.0.79-cp310-cp310-win_amd64.zip',
-                                               'e00148800757d0ed7171348d850947ac')
+        file_zip = _download_from_alyx_or_flir(
+            54396, 'spinnaker_python-3.1.0.79-cp310-cp310-win_amd64.zip', 'e00148800757d0ed7171348d850947ac'
+        )
         print('Installing PySpin ...')
         with zipfile.ZipFile(file_zip, 'r') as f:
             file_whl = f.extract(file_zip.stem + '.whl', file_zip.parent)
@@ -155,3 +165,52 @@ def install_pyspin():
             print('Installation of PySpin was successful.')
         os.unlink(file_whl)
         file_zip.unlink()
+
+
+def prepare_video_session(subject_name: str = '', training_session: bool = False):
+    if not spinnaker_sdk_installed():
+        if ask_user("Spinnaker SDK doesn't seem to be installed. Do you want to install it now?"):
+            install_spinnaker()
+        return
+    if not pyspin_installed():
+        if ask_user("PySpin doesn't seem to be installed. Do you want to install it now?"):
+            install_pyspin()
+        return
+
+    with video_pyspin.Cameras() as cameras:
+        for camera in cameras:
+            video_pyspin.configure_trigger(camera, enable=False)
+        del camera
+
+    fake_session = EmptySession(subject='mickey', interactive=False)
+    session_folder = fake_session.paths.SESSION_FOLDER
+    raw_data_folder = session_folder.joinpath('raw_video_data')
+    raw_data_folder.mkdir(parents=True, exist_ok=True)
+    cam_index = {'Body': 0, 'Left': 1, 'Right': 2}
+
+    # camera setup
+    bonsai_workflow = BASE_PATH.joinpath('devices', 'camera_setup', 'EphysRig_SetupCameras.bonsai')
+    args = []
+    for pos in cam_index.keys():
+        args.append(f'-p:{pos}CameraIndex={cam_index[pos]}')
+    call_bonsai(bonsai_workflow, args)
+
+    # actual recording
+    if training_session:
+        bonsai_workflow = BASE_PATH.joinpath('devices', 'camera_setup', 'EphysRig_SaveVideo_TrainingTasks.bonsai')
+    else:
+        bonsai_workflow = BASE_PATH.joinpath('devices', 'camera_setup', 'EphysRig_SaveVideo_EphysTasks.bonsai')
+    for pos in cam_index.keys():
+        args.append(f'-p:FileName{pos}={raw_data_folder / f"_iblrig_{pos.lower()}Camera.raw.avi"}')
+        args.append(f'-p:FileName{pos}Data={raw_data_folder / f"_iblrig_{pos.lower()}Camera.frameData.bin"}')
+    call_bonsai(bonsai_workflow, args)
+
+    # remove empty-folders
+    if not any(raw_data_folder.iterdir()):
+        current_folder = raw_data_folder
+        while not any(current_folder.iterdir()):
+            current_folder.rmdir()
+            current_folder = Path(current_folder.parent)
+    else:
+        # TODO: create stubs
+        pass
