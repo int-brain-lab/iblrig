@@ -156,7 +156,7 @@ def internet_available(host: str = '8.8.8.8', port: int = 53, timeout: int = 3, 
     bool
         True if an internet connection is available, False otherwise.
     """
-    if not force_update and internet_available.return_value is not None:
+    if not force_update and internet_available.return_value:
         return internet_available.return_value
     try:
         socket.setdefaulttimeout(timeout)
