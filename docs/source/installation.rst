@@ -57,6 +57,8 @@ With the Administrator PowerShell still open, run the following commands:
 .. code-block:: powershell
 
    New-Item -ItemType Directory -Force -Path C:\Temp
+   Invoke-WebRequest -Uri https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe  -OutFile C:\Temp\vcredist_x64.exe
+   Start-Process -NoNewWindow -Wait -FilePath C:\Temp\vcredist_x64.exe -ArgumentList "/install", "/quiet", "/norestart"
    Invoke-WebRequest -Uri https://aka.ms/vs/17/release/vc_redist.x64.exe  -OutFile C:\Temp\vc_redist.x64.exe
    Start-Process -NoNewWindow -Wait -FilePath C:\Temp\vc_redist.x64.exe -ArgumentList "/install", "/quiet", "/norestart"
 
