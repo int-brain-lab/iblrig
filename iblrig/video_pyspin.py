@@ -5,25 +5,12 @@ from iblutil.util import setup_logger
 log = setup_logger('iblrig')
 
 
-class Instance:
-    def __init__(self):
-        self._instance = PySpin.System.GetInstance()
-
-    def __enter__(self) -> PySpin.SystemPtr:
-        return self._instance
-
-    def __exit__(self, *_):
-        self._instance.ReleaseInstance()
-
-
 class Cameras:
     _instance = None
 
-    def __init__(self, instance: PySpin.SystemPtr | None = None, init_cameras: bool = True):
-        if instance is None:
-            self._instance = Instance()
-            instance = self._instance.__enter__()
-        self._cameras = instance.GetCameras()
+    def __init__(self, init_cameras: bool = True):
+        self._instance = PySpin.System.GetInstance()
+        self._cameras = self._instance.GetCameras()
         if not init_cameras:
             return
         for camera in self._cameras:
@@ -34,8 +21,11 @@ class Cameras:
 
     def __exit__(self, *_):
         self._cameras.Clear()
-        if self._instance is not None:
-            self._instance.__exit__()
+        self._instance.ReleaseInstance()
+
+    @property
+    def instance(self):
+        return self._instance
 
 
 def configure_trigger(camera: PySpin.CameraPtr, enable: bool):
