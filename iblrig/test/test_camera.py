@@ -7,7 +7,7 @@ class TestDownloadFunction(unittest.TestCase):
     @patch('one.webclient.AlyxClient.download_file', return_value=('mocked_tmp_file', 'mocked_md5_checksum'))
     @patch('os.rename', return_value=None)
     def test_download_from_alyx_or_flir(self, mock_os_rename, mock_alyx_download):
-        from iblrig.camera import _download_from_alyx_or_flir
+        from iblrig.video import _download_from_alyx_or_flir
 
         asset = 123
         filename = 'test_file.txt'
