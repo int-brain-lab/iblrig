@@ -8,9 +8,8 @@ from pathlib import Path
 from shutil import which
 from urllib.error import URLError
 
-from base_tasks import EmptySession
-from constants import BASE_PATH
-
+from iblrig.base_tasks import EmptySession
+from iblrig.constants import BASE_PATH
 from iblrig.tools import ask_user, call_bonsai
 from iblutil.io import hashfile  # type: ignore
 from iblutil.util import setup_logger

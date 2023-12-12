@@ -3,10 +3,9 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from constants import BASE_DIR
-
 import iblrig.path_helper
 from iblrig.base_tasks import BonsaiRecordingMixin
+from iblrig.constants import BASE_DIR
 
 
 class TestPathHelper(unittest.TestCase):
