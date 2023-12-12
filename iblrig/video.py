@@ -187,18 +187,18 @@ def prepare_video_session(subject_name: str = '', training_session: bool = False
     raw_data_folder.mkdir(parents=True, exist_ok=True)
     cam_index = {'Body': 0, 'Left': 1, 'Right': 2}
 
-    # camera setup
+    # align cameras
     bonsai_workflow = BASE_PATH.joinpath('devices', 'camera_setup', 'EphysRig_SetupCameras.bonsai')
     args = []
     for pos in cam_index.keys():
         args.append(f'-p:{pos}CameraIndex={cam_index[pos]}')
     call_bonsai(bonsai_workflow, args)
 
-    # actual recording
+    # record video
     if training_session:
-        bonsai_workflow = BASE_PATH.joinpath('devices', 'camera_setup', 'EphysRig_SaveVideo_TrainingTasks.bonsai')
+        bonsai_workflow = BASE_PATH.joinpath('devices', 'camera_recordings', 'EphysRig_SaveVideo_TrainingTasks.bonsai')
     else:
-        bonsai_workflow = BASE_PATH.joinpath('devices', 'camera_setup', 'EphysRig_SaveVideo_EphysTasks.bonsai')
+        bonsai_workflow = BASE_PATH.joinpath('devices', 'camera_recordings', 'EphysRig_SaveVideo_EphysTasks.bonsai')
     for pos in cam_index.keys():
         args.append(f'-p:FileName{pos}={raw_data_folder / f"_iblrig_{pos.lower()}Camera.raw.avi"}')
         args.append(f'-p:FileName{pos}Data={raw_data_folder / f"_iblrig_{pos.lower()}Camera.frameData.bin"}')
