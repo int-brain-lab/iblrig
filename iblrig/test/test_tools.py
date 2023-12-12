@@ -1,7 +1,8 @@
 import unittest
+from pathlib import Path
 from unittest.mock import patch
 
-from iblrig.tools import ask_user, internet_available, static_vars
+from iblrig.tools import ask_user, call_bonsai, internet_available, static_vars
 
 
 class TestAskUser(unittest.TestCase):
@@ -61,3 +62,26 @@ class TestInternetAvailableFunction(unittest.TestCase):
         mock_socket.return_value.__enter__.return_value.connect.side_effect = OSError
         result2 = internet_available(force_update=False)
         self.assertTrue(result2)
+
+
+class TestCallBonsai(unittest.TestCase):
+    @patch('subprocess.check_call', return_value=0)
+    @patch('iblrig.tools.create_bonsai_layout_from_template')
+    @patch('iblrig.tools.get_bonsai_path', return_value=Path('path', 'to', 'Bonsai.exe'))
+    @patch('pathlib.Path.exists', return_value=False)
+    def test_call_bonsai(self, mock_exists, mock_get_bonsai_path, mock_create_layout, mock_check_call):
+        bonsai_path = mock_get_bonsai_path.return_value
+        workflow_file = Path('some', 'dir', 'example_workflow.bonsai')
+        with self.assertRaises(FileNotFoundError):
+            call_bonsai(workflow_file)
+        mock_exists.return_value = True
+        args = ['arg1', 'arg2']
+        result = call_bonsai(workflow_file, args, debug=True, bootstrap=False, editor=False)
+        mock_check_call.assert_called_once_with(
+            executable=bonsai_path,
+            args=['--start', '--no-editor', '--no-boot', 'arg1', 'arg2', Path(workflow_file)],
+            cwd=workflow_file.parent,
+        )
+        mock_create_layout.assert_called_once_with(workflow_file)
+        mock_get_bonsai_path.assert_called_once()
+        self.assertEqual(result, 0)

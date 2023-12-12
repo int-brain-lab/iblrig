@@ -171,18 +171,44 @@ def internet_available(host: str = '8.8.8.8', port: int = 53, timeout: int = 3, 
 def call_bonsai(
     workflow_file: str | Path, args: list[str] | None = None, debug: bool = False, bootstrap: bool = True, editor: bool = True
 ) -> int:
-    workflow_file = Path(workflow_file)
-    if not workflow_file.exists():
+    """
+    Execute a Bonsai workflow within a subprocess call.
+
+    Parameters
+    ----------
+    workflow_file : Union[str, Path]
+        Path to the Bonsai workflow file.
+    args : List[str], optional
+        Additional command-line arguments for Bonsai.
+    debug : bool, optional
+        Enable debugging mode if True (default is False).
+    bootstrap : bool, optional
+        Enable Bonsai bootstrapping if True (default is True).
+    editor : bool, optional
+        Enable Bonsai editor if True (default is True).
+
+    Returns
+    -------
+    int
+        Exit code of the Bonsai subprocess.
+
+    Raises
+    ------
+    FileNotFoundError
+        If the specified workflow file does not exist.
+    """
+    if not (workflow_file := Path(workflow_file)).exists():
         raise FileNotFoundError(workflow_file)
     working_directory = Path(workflow_file).parent
     create_bonsai_layout_from_template(workflow_file)
-    cmd = [get_bonsai_path(), '--start' if debug else '--start-no-debug']
-    for arg in args:
-        cmd.append(arg)
+    exe = get_bonsai_path()
+    if args is None:
+        args = list()
+    args.insert(0, '--start' if debug else '--start-no-debug')
     if not bootstrap:
-        cmd.append('--no-boot')
+        args.insert(1, '--no-boot')
     if not editor:
-        cmd.append('--no-editor')
-    cmd.append(workflow_file)
+        args.insert(1, '--no-editor')
+    args.append(workflow_file)
     logger.info(f'Starting Bonsai workflow `{workflow_file.name}`')
-    return subprocess.check_call(cmd, cwd=working_directory)
+    return subprocess.check_call(executable=exe, args=args, cwd=working_directory)
