@@ -37,9 +37,9 @@ from iblrig.gui.ui_update import Ui_update
 from iblrig.gui.ui_wizard import Ui_wizard
 from iblrig.hardware import Bpod
 from iblrig.misc import _get_task_argument_parser
-from iblrig.path_helper import load_hardware_settings_yaml, load_rig_settings_yaml
+from iblrig.path_helper import load_hardware_settings, load_rig_settings
 from iblrig.version_management import check_for_updates, get_changelog, is_dirty
-from iblutil.util import setup_logger
+from iblutil.util import Bunch, setup_logger
 from pybpodapi import exceptions
 
 log = setup_logger('iblrig')
@@ -80,14 +80,13 @@ class RigWizardModel:
     user: str | None = None
     subject: str | None = None
     session_folder: Path | None = None
-    hardware_settings: dict | None = None
     test_subject_name: str | None = 'test_subject'
     subject_details_worker = None
     subject_details: tuple | None = None
 
     def __post_init__(self):
-        self.iblrig_settings = load_rig_settings_yaml().model_dump()
-        self.hardware_settings = load_hardware_settings_yaml().model_dump()
+        self.iblrig_settings = load_rig_settings(t=Bunch)
+        self.hardware_settings = load_hardware_settings(t=Bunch)
         self.all_users = [self.iblrig_settings['ALYX_USER']] if self.iblrig_settings['ALYX_USER'] else []
         self.all_procedures = sorted(PROCEDURES)
 

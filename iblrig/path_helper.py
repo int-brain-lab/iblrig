@@ -1,15 +1,14 @@
-"""
-Various get functions to return paths of folders and network drives
-"""
 import os
 import re
 import shutil
 import subprocess
 from pathlib import Path
+from typing import TypeVar
 
 import numpy as np
 import yaml
 from packaging import version
+from pydantic import BaseModel, ValidationError
 
 import iblrig
 from ibllib.io import session_params
@@ -19,6 +18,7 @@ from iblrig.pydantic_definitions import HardwareSettings, RigSettings
 from iblutil.util import Bunch, setup_logger
 
 log = setup_logger('iblrig')
+T = TypeVar('T')
 
 
 def iterate_previous_sessions(subject_name, task_name, n=1, **kwargs):
@@ -118,7 +118,7 @@ def get_local_and_remote_paths(local_path=None, remote_path=None, lab=None):
     return paths
 
 
-def load_settings_yaml(filename: Path | str = 'iblrig_settings.yaml', do_raise: bool = True):
+def load_settings_yaml(filename: Path | str = RIG_SETTINGS_YAML, do_raise: bool = True) -> Bunch:
     filename = Path(filename)
     if not filename.is_absolute():
         filename = Path(iblrig.__file__).parents[1].joinpath('settings', filename)
@@ -131,18 +131,33 @@ def load_settings_yaml(filename: Path | str = 'iblrig_settings.yaml', do_raise: 
     return Bunch(rs)
 
 
-# def load_pydantic_yaml(filename: Path | str, model: BaseModel, do_raise: bool = True, t: Type[T]) -> T:
-#     return model
-
-
-def load_hardware_settings_yaml(filename: Path | str = HARDWARE_SETTINGS_YAML, do_raise: bool = True) -> HardwareSettings:
+def _load_pydantic_yaml(filename: Path | str, model: BaseModel, do_raise: bool = True, t: T = Bunch) -> T:
     rs = load_settings_yaml(filename=filename, do_raise=do_raise)
-    return HardwareSettings.model_validate(rs)
+    if t not in [Bunch, model]:
+        raise TypeError(f'type {t} is not supported')
+    try:
+        pydantic_output = model.model_validate(rs)
+    except ValidationError as e:
+        if not do_raise:
+            log.exception(e)
+            if t == Bunch:
+                return rs
+            else:
+                return model.construct(**rs)
+        else:
+            raise e
+    if t == Bunch:
+        return Bunch(pydantic_output.model_dump())
+    else:
+        return pydantic_output
 
 
-def load_rig_settings_yaml(filename: Path | str = RIG_SETTINGS_YAML, do_raise: bool = True) -> RigSettings:
-    rs = load_settings_yaml(filename=filename, do_raise=do_raise)
-    return RigSettings.model_validate(rs)
+def load_hardware_settings(filename: Path | str = HARDWARE_SETTINGS_YAML, do_raise: bool = True, t: T = HardwareSettings) -> T:
+    return _load_pydantic_yaml(HARDWARE_SETTINGS_YAML, model=HardwareSettings, t=t, do_raise=do_raise)
+
+
+def load_rig_settings(filename: Path | str = RIG_SETTINGS_YAML, do_raise: bool = True, t: T = RigSettings) -> T:
+    return _load_pydantic_yaml(RIG_SETTINGS_YAML, model=RigSettings, t=t, do_raise=do_raise)
 
 
 def patch_settings(rs: dict, filename: str | Path) -> dict:

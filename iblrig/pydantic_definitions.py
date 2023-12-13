@@ -19,13 +19,13 @@ class RigSettings(BaseModel, validate_assignment=True):
     ALYX_LAB: str | None = Field(description="Your lab's name as registered on the Alyx database")
 
     @field_validator('*')
-    def str_must_not_contain_space(cls, v):
+    def str_must_not_contain_space(cls, v):  # noqa: N805
         if isinstance(v, str) and ' ' in v:
             raise ValueError('must not contain a space')
         return v
 
     @field_validator('iblrig_remote_data_path')
-    def validate_remote_data_path(cls, v):
+    def validate_remote_data_path(cls, v):  # noqa: N805
         if isinstance(v, bool) and v:
             raise ValueError()
         return v
