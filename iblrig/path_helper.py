@@ -152,11 +152,11 @@ def _load_pydantic_yaml(filename: Path | str, model: BaseModel, do_raise: bool =
         return pydantic_output
 
 
-def load_hardware_settings(filename: Path | str = HARDWARE_SETTINGS_YAML, do_raise: bool = True, t: T = HardwareSettings) -> T:
+def load_hardware_settings(t: T = HardwareSettings, do_raise: bool = True) -> T:
     return _load_pydantic_yaml(HARDWARE_SETTINGS_YAML, model=HardwareSettings, t=t, do_raise=do_raise)
 
 
-def load_rig_settings(filename: Path | str = RIG_SETTINGS_YAML, do_raise: bool = True, t: T = RigSettings) -> T:
+def load_rig_settings(t: T = RigSettings, do_raise: bool = True) -> T:
     return _load_pydantic_yaml(RIG_SETTINGS_YAML, model=RigSettings, t=t, do_raise=do_raise)
 
 

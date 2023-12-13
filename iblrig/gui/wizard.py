@@ -85,8 +85,8 @@ class RigWizardModel:
     subject_details: tuple | None = None
 
     def __post_init__(self):
-        self.iblrig_settings = load_rig_settings(t=Bunch)
-        self.hardware_settings = load_hardware_settings(t=Bunch)
+        self.iblrig_settings = load_rig_settings(Bunch)
+        self.hardware_settings = load_hardware_settings(Bunch)
         self.all_users = [self.iblrig_settings['ALYX_USER']] if self.iblrig_settings['ALYX_USER'] else []
         self.all_procedures = sorted(PROCEDURES)
 

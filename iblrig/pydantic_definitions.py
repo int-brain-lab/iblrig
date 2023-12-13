@@ -14,7 +14,7 @@ class RigSettings(BaseModel, validate_assignment=True):
     iblrig_remote_data_path: Path | bool | None = Field(
         title='IBLRIG remote data path', description='The remote folder IBLRIG should use for storing data'
     )
-    ALYX_USER: str = Field(description='Your Alyx username')
+    ALYX_USER: str | None = Field(description='Your Alyx username')
     ALYX_URL: HttpUrl | IPv4Address | None = Field(title='Alyx URL', description='The URL to your Alyx database')
     ALYX_LAB: str | None = Field(description="Your lab's name as registered on the Alyx database")
 
