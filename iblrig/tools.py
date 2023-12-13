@@ -96,8 +96,7 @@ def get_anydesk_id(silent: bool = False) -> str | None:
             logger.debug(e, exc_info=True)
         else:
             raise e
-    finally:
-        return anydesk_id
+    return anydesk_id
 
 
 def static_vars(**kwargs) -> Callable[..., Any]:
@@ -129,7 +128,7 @@ def static_vars(**kwargs) -> Callable[..., Any]:
 
 
 @static_vars(return_value=None)
-def internet_available(host: str = '8.8.8.8', port: int = 53, timeout: int = 3, force_update: bool = False):
+def internet_available(host: str = '8.8.8.8', port: int = 53, timeout: int = 3, force_update: bool = False) -> bool:
     """
     Check if the internet connection is available.
 
@@ -169,7 +168,11 @@ def internet_available(host: str = '8.8.8.8', port: int = 53, timeout: int = 3, 
 
 
 def call_bonsai(
-    workflow_file: str | Path, args: list[str] | None = None, debug: bool = False, bootstrap: bool = True, editor: bool = True
+    workflow_file: str | Path,
+    args: list[str | Path] | None = None,
+    debug: bool = False,
+    bootstrap: bool = True,
+    editor: bool = True,
 ) -> int:
     """
     Execute a Bonsai workflow within a subprocess call.

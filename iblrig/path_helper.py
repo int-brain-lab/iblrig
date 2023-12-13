@@ -169,28 +169,30 @@ def get_commit_hash(folder: str):
     return out
 
 
-def get_bonsai_path(use_iblrig_bonsai: bool = True) -> str:
-    """Checks for Bonsai folder in iblrig. Returns string with bonsai executable path."""
-    bonsai_folder = next((folder for folder in BASE_PATH.glob('*') if folder.is_dir() and 'bonsai' in folder.name.lower()), None)
-    if bonsai_folder is None:
-        return
-    ibl_bonsai = os.path.join(bonsai_folder, 'Bonsai64.exe')
-    if not Path(ibl_bonsai).exists():  # if Bonsai64 does not exist Bonsai v >2.5.0
-        ibl_bonsai = os.path.join(bonsai_folder, 'Bonsai.exe')
+def get_bonsai_path() -> Path:
+    """
+    Get the path to the Bonsai executable.
 
-    preexisting_bonsai = Path.home() / 'AppData/Local/Bonsai/Bonsai64.exe'
-    if not preexisting_bonsai.exists():
-        preexisting_bonsai = Path.home() / 'AppData/Local/Bonsai/Bonsai.exe'
+    This function checks for the existence of both 'Bonsai64.exe' and 'Bonsai.exe' packaged with iblrig and returns the path to
+    the first one found.
 
-    if use_iblrig_bonsai is True:
-        bonsai = ibl_bonsai
-    elif use_iblrig_bonsai is False and preexisting_bonsai.exists():
-        bonsai = str(preexisting_bonsai)
-    elif use_iblrig_bonsai is False and not preexisting_bonsai.exists():
-        log.debug(f'NOT FOUND: {preexisting_bonsai}. Using packaged Bonsai')
-        bonsai = ibl_bonsai
-    log.debug(f'Found Bonsai executable: {bonsai}')
-    return bonsai
+    Returns
+    -------
+    Path
+        The full path to the Bonsai executable.
+
+    Raises
+    ------
+    FileNotFoundError
+        If neither 'Bonsai64.exe' nor 'Bonsai.exe' is found.
+    """
+    if (bonsai_path := BASE_PATH.joinpath('Bonsai', 'Bonsai64.exe')).exists():
+        pass
+    elif (bonsai_path := BASE_PATH.joinpath('Bonsai', 'Bonsai.exe')).exists():
+        pass
+    else:
+        raise FileNotFoundError('Bonsai.exe')
+    return bonsai_path
 
 
 def iterate_collection(session_path: str, collection_name='raw_task_data') -> str:
