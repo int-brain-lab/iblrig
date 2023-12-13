@@ -14,6 +14,8 @@ from packaging import version
 import iblrig
 from ibllib.io import session_params
 from ibllib.io.raw_data_loaders import load_settings
+from iblrig.constants import HARDWARE_SETTINGS_YAML, RIG_SETTINGS_YAML
+from iblrig.pydantic_definitions import HardwareSettings, RigSettings
 from iblutil.util import Bunch, setup_logger
 
 log = setup_logger('iblrig')
@@ -116,24 +118,34 @@ def get_local_and_remote_paths(local_path=None, remote_path=None, lab=None):
     return paths
 
 
-def load_settings_yaml(file_name='iblrig_settings.yaml', mode='raise'):
-    """
-    Load a yaml file from the settings folder.
-    If the file_name is not absolute, it will be searched in the settings folder
-    :param file_name: Path or str
-    :return:
-    """
-    if not Path(file_name).is_absolute():
-        file_name = Path(iblrig.__file__).parents[1].joinpath('settings', file_name)
-    if not file_name.exists() and mode != 'raise':
+def load_settings_yaml(filename: Path | str = 'iblrig_settings.yaml', do_raise: bool = True):
+    filename = Path(filename)
+    if not filename.is_absolute():
+        filename = Path(iblrig.__file__).parents[1].joinpath('settings', filename)
+    if not filename.exists() and not do_raise:
+        log.error(f'File not found: {filename}')
         return {}
-    with open(file_name) as fp:
+    with open(filename) as fp:
         rs = yaml.safe_load(fp)
-    rs = patch_settings(rs, Path(file_name).stem)
+    rs = patch_settings(rs, filename.stem)
     return Bunch(rs)
 
 
-def patch_settings(rs: dict, name: str) -> dict:
+# def load_pydantic_yaml(filename: Path | str, model: BaseModel, do_raise: bool = True, t: Type[T]) -> T:
+#     return model
+
+
+def load_hardware_settings_yaml(filename: Path | str = HARDWARE_SETTINGS_YAML, do_raise: bool = True) -> HardwareSettings:
+    rs = load_settings_yaml(filename=filename, do_raise=do_raise)
+    return HardwareSettings.model_validate(rs)
+
+
+def load_rig_settings_yaml(filename: Path | str = RIG_SETTINGS_YAML, do_raise: bool = True) -> RigSettings:
+    rs = load_settings_yaml(filename=filename, do_raise=do_raise)
+    return RigSettings.model_validate(rs)
+
+
+def patch_settings(rs: dict, filename: str | Path) -> dict:
     """
     Update loaded settings files to ensure compatibility with latest version.
 
@@ -141,15 +153,16 @@ def patch_settings(rs: dict, name: str) -> dict:
     ----------
     rs : dict
         A loaded settings file.
-    name : str
-        The name of the settings file, e.g. 'hardware_settings'.
+    filename : str | Path
+        The filename of the settings file.
 
     Returns
     -------
     dict
         The updated settings.
     """
-    if name.startswith('hardware') and version.parse(rs.get('VERSION', '0.0.0')) < version.Version('1.0.0'):
+    filename = Path(filename)
+    if filename.stem.startswith('hardware') and version.parse(rs.get('VERSION', '0.0.0')) < version.Version('1.0.0'):
         if 'device_camera' in rs:
             log.info('Patching hardware settings; assuming left camera label')
             rs['device_cameras'] = {'left': rs.pop('device_camera')}

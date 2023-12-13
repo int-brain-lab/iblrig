@@ -179,7 +179,7 @@ def prepare_video_session_cmd():
 
     parser = argparse.ArgumentParser(prog='start_video_session', description='Prepare video PC for video recording session')
     parser.add_argument('subject_name', help='name of subject')
-    parser.add_argument('-t', '--training', action='store_true', help='launch video workflow for training session.')
+    parser.add_argument('-t', '--training', action='store_true', help='launch video workflow for training session')
     args = parser.parse_args()
 
     prepare_video_session(subject_name=args.subject_name, training_session=args.training)

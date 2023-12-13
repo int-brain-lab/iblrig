@@ -734,6 +734,7 @@ class BpodMixin:
         assert len(self.bpod.actions.keys()) == 6
         assert self.bpod.is_connected
         self.logger.info('Bpod hardware module loaded: OK')
+        self.send_spacers()
 
     def send_spacers(self):
         self.logger.info('Starting task by sending a spacer signal on BNC1')
