@@ -186,12 +186,11 @@ def get_bonsai_path() -> Path:
     FileNotFoundError
         If neither 'Bonsai64.exe' nor 'Bonsai.exe' is found.
     """
-    if (bonsai_path := BASE_PATH.joinpath('Bonsai', 'Bonsai64.exe')).exists():
-        pass
-    elif (bonsai_path := BASE_PATH.joinpath('Bonsai', 'Bonsai.exe')).exists():
-        pass
-    else:
-        raise FileNotFoundError('Bonsai.exe')
+    bonsai_path = BASE_PATH.joinpath('Bonsai', 'Bonsai64.exe')
+    if not bonsai_path.exists():
+        bonsai_path = BASE_PATH.joinpath('Bonsai', 'Bonsai.exe')
+        if not bonsai_path.exists():
+            raise FileNotFoundError('Bonsai.exe')
     return bonsai_path
 
 
