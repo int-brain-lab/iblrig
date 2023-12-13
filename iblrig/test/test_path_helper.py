@@ -66,26 +66,5 @@ class TestHardwareSettings(unittest.TestCase):
         self.assertIsNone(BonsaiRecordingMixin._camera_mixin_bonsai_get_workflow_file({}))
 
 
-class TestGetBonsaiPath(unittest.TestCase):
-    def setUp(self):
-        self.bonsai_folder = 'Bonsai'
-
-    def test_get_bonsai_subfolder_exists(self):
-        assert path_helper.BASE_PATH.joinpath(self.bonsai_folder).exists()
-
-    @patch('pathlib.Path.exists', side_effect=[True, False, True])
-    def test_get_bonsai_path_exists(self, mock_exists):
-        expected_path = path_helper.BASE_PATH.joinpath(self.bonsai_folder, 'Bonsai64.exe')
-        self.assertEqual(expected_path, path_helper.get_bonsai_path())
-        expected_path = path_helper.BASE_PATH.joinpath(self.bonsai_folder, 'Bonsai.exe')
-        self.assertEqual(expected_path, path_helper.get_bonsai_path())
-
-    @patch('pathlib.Path.exists', return_value=False)
-    def test_get_bonsai_path_not_exists(self, mock_exists):
-        with self.assertRaises(FileNotFoundError):
-            path_helper.get_bonsai_path()
-        mock_exists.assert_called()
-
-
 if __name__ == '__main__':
     unittest.main(exit=False)

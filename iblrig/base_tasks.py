@@ -29,7 +29,7 @@ import iblrig.graphic as graph
 import iblrig.path_helper
 import pybpodapi
 from iblrig import frame2TTL, sound
-from iblrig.constants import BASE_PATH
+from iblrig.constants import BASE_PATH, BONSAI_EXE
 from iblrig.hardware import SOFTCODE, Bpod, MyRotaryEncoder, sound_device_factory
 from iblrig.transfer_experiments import BehaviorCopier
 from iblutil.spacer import Spacer
@@ -182,7 +182,7 @@ class BaseSession(ABC):
             lab=self.iblrig_settings['ALYX_LAB'],
         )
         paths = Bunch({'IBLRIG_FOLDER': BASE_PATH})
-        paths.BONSAI = paths.IBLRIG_FOLDER.joinpath('Bonsai', 'Bonsai.exe')
+        paths.BONSAI = BONSAI_EXE
         paths.VISUAL_STIM_FOLDER = paths.IBLRIG_FOLDER.joinpath('visual_stim')
         paths.LOCAL_SUBJECT_FOLDER = rig_computer_paths['local_subjects_folder']
         paths.REMOTE_SUBJECT_FOLDER = rig_computer_paths['remote_subjects_folder']

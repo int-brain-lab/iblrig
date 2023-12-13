@@ -7,7 +7,8 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
-from iblrig.path_helper import create_bonsai_layout_from_template, get_bonsai_path
+from iblrig.constants import BONSAI_EXE
+from iblrig.path_helper import create_bonsai_layout_from_template
 from iblutil.util import setup_logger
 
 logger = setup_logger('iblrig')
@@ -198,13 +199,15 @@ def call_bonsai(
     Raises
     ------
     FileNotFoundError
+        If the Bonsai executable does not exist.
         If the specified workflow file does not exist.
     """
+    if not BONSAI_EXE.exists():
+        FileNotFoundError(BONSAI_EXE)
     if not (workflow_file := Path(workflow_file)).exists():
         raise FileNotFoundError(workflow_file)
     working_directory = Path(workflow_file).parent
     create_bonsai_layout_from_template(workflow_file)
-    exe = get_bonsai_path()
     if args is None:
         args = list()
     args.insert(0, '--start' if debug else '--start-no-debug')
@@ -214,4 +217,4 @@ def call_bonsai(
         args.insert(1, '--no-editor')
     args.append(workflow_file)
     logger.info(f'Starting Bonsai workflow `{workflow_file.name}`')
-    return subprocess.check_call(executable=exe, args=args, cwd=working_directory)
+    return subprocess.check_call(executable=BONSAI_EXE, args=args, cwd=working_directory)

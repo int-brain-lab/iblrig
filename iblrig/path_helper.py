@@ -169,31 +169,6 @@ def get_commit_hash(folder: str):
     return out
 
 
-def get_bonsai_path() -> Path:
-    """
-    Get the path to the Bonsai executable.
-
-    This function checks for the existence of both 'Bonsai64.exe' and 'Bonsai.exe' packaged with iblrig and returns the path to
-    the first one found.
-
-    Returns
-    -------
-    Path
-        The full path to the Bonsai executable.
-
-    Raises
-    ------
-    FileNotFoundError
-        If neither 'Bonsai64.exe' nor 'Bonsai.exe' is found.
-    """
-    bonsai_path = BASE_PATH.joinpath('Bonsai', 'Bonsai64.exe')
-    if not bonsai_path.exists():
-        bonsai_path = BASE_PATH.joinpath('Bonsai', 'Bonsai.exe')
-        if not bonsai_path.exists():
-            raise FileNotFoundError('Bonsai.exe')
-    return bonsai_path
-
-
 def iterate_collection(session_path: str, collection_name='raw_task_data') -> str:
     """
     Given a session path returns the next numbered collection name.
