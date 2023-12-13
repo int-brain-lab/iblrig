@@ -8,13 +8,13 @@ from typing import TypeVar
 import numpy as np
 import yaml
 from packaging import version
-from pydantic import BaseModel, ValidationError
+from pydantic import ValidationError
 
 import iblrig
 from ibllib.io import session_params
 from ibllib.io.raw_data_loaders import load_settings
 from iblrig.constants import HARDWARE_SETTINGS_YAML, RIG_SETTINGS_YAML
-from iblrig.pydantic_definitions import HardwareSettings, RigSettings
+from iblrig.pydantic_definitions import BunchModel, HardwareSettings, RigSettings
 from iblutil.util import Bunch, setup_logger
 
 log = setup_logger('iblrig')
@@ -131,33 +131,24 @@ def load_settings_yaml(filename: Path | str = RIG_SETTINGS_YAML, do_raise: bool 
     return Bunch(rs)
 
 
-def _load_pydantic_yaml(filename: Path | str, model: BaseModel, do_raise: bool = True, t: T = Bunch) -> T:
+def _load_pydantic_yaml(filename: Path | str, model: BunchModel, do_raise: bool = True) -> BunchModel:
     rs = load_settings_yaml(filename=filename, do_raise=do_raise)
-    if t not in [Bunch, model]:
-        raise TypeError(f'type {t} is not supported')
     try:
-        pydantic_output = model.model_validate(rs)
+        return model.model_validate(rs)
     except ValidationError as e:
         if not do_raise:
             log.exception(e)
-            if t == Bunch:
-                return rs
-            else:
-                return model.model_construct(**rs)
+            return model.model_construct(**rs)
         else:
             raise e
-    if t == Bunch:
-        return Bunch(pydantic_output.model_dump())
-    else:
-        return pydantic_output
 
 
-def load_hardware_settings(t: T = HardwareSettings, do_raise: bool = True) -> T:
-    return _load_pydantic_yaml(HARDWARE_SETTINGS_YAML, model=HardwareSettings, t=t, do_raise=do_raise)
+def load_hardware_settings(do_raise: bool = True) -> HardwareSettings:
+    return _load_pydantic_yaml(HARDWARE_SETTINGS_YAML, model=HardwareSettings, do_raise=do_raise)
 
 
-def load_rig_settings(t: T = RigSettings, do_raise: bool = True) -> T:
-    return _load_pydantic_yaml(RIG_SETTINGS_YAML, model=RigSettings, t=t, do_raise=do_raise)
+def load_rig_settings(do_raise: bool = True) -> RigSettings:
+    return _load_pydantic_yaml(RIG_SETTINGS_YAML, model=RigSettings, do_raise=do_raise)
 
 
 def patch_settings(rs: dict, filename: str | Path) -> dict:

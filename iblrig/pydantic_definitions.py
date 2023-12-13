@@ -6,7 +6,15 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl, field_validator
 
 
-class RigSettings(BaseModel, validate_assignment=True):
+class BunchModel(BaseModel):
+    def __getitem__(self, key):
+        return getattr(self, key)
+
+    def __setitem__(self, key, value):
+        setattr(self, key, value)
+
+
+class RigSettings(BunchModel, validate_assignment=True):
     model_config = ConfigDict(title='iblrig_settings.yaml')
     iblrig_local_data_path: Path = Field(
         title='IBLRIG local data path', description='The local folder IBLRIG should use for storing data'
@@ -31,7 +39,7 @@ class RigSettings(BaseModel, validate_assignment=True):
         return v
 
 
-class HardwareSettingsBpod(BaseModel):
+class HardwareSettingsBpod(BunchModel):
     COM_BPOD: str | None
     BPOD_TTL_TEST_DATE: date | None = None
     BPOD_TTL_TEST_STATUS: str | None = None
@@ -39,7 +47,7 @@ class HardwareSettingsBpod(BaseModel):
     ROTARY_ENCODER_BPOD_PORT: Literal['Serial1', 'Serial2', 'Serial3', 'Serial4', 'Serial5', None] = None
 
 
-class HardwareSettingsFrame2TTL(BaseModel):
+class HardwareSettingsFrame2TTL(BunchModel):
     COM_F2TTL: str | None
     F2TTL_CALIBRATION_DATE: date | None
     F2TTL_DARK_THRESH: int = Field(gt=0)
@@ -47,11 +55,11 @@ class HardwareSettingsFrame2TTL(BaseModel):
     F2TTL_LIGHT_THRESH: int = Field(gt=0)
 
 
-class HardwareSettingsRotaryEncoder(BaseModel):
+class HardwareSettingsRotaryEncoder(BunchModel):
     COM_ROTARY_ENCODER: str | None
 
 
-class HardwareSettingsScreen(BaseModel):
+class HardwareSettingsScreen(BunchModel):
     DISPLAY_IDX: Literal[0, 1]
     SCREEN_FREQ_TARGET: int = Field(gt=0)
     SCREEN_FREQ_TEST_DATE: date | None = None
@@ -60,32 +68,32 @@ class HardwareSettingsScreen(BaseModel):
     SCREEN_LUX_VALUE: float | None = None
 
 
-class HardwareSettingsSound(BaseModel):
+class HardwareSettingsSound(BunchModel):
     OUTPUT: Literal['harp', 'xonar', 'sysdefault']
 
 
-class HardwareSettingsValve(BaseModel):
+class HardwareSettingsValve(BunchModel):
     WATER_CALIBRATION_DATE: date
     WATER_CALIBRATION_OPEN_TIMES: list[float] = Field(min_items=2)  # type: ignore
     WATER_CALIBRATION_RANGE: list[float] = Field(min_items=2, max_items=2)  # type: ignore
     WATER_CALIBRATION_WEIGHT_PERDROP: list[float] = Field(min_items=2)  # type: ignore
 
 
-class HardwareSettingsCamera(BaseModel):
+class HardwareSettingsCamera(BunchModel):
     BONSAI_WORKFLOW: Path
 
 
-class HardwareSettingsCameras(BaseModel):
+class HardwareSettingsCameras(BunchModel):
     left: HardwareSettingsCamera | None
     right: HardwareSettingsCamera | None = None
     body: HardwareSettingsCamera | None = None
 
 
-class HardwareSettingsMicrophone(BaseModel):
+class HardwareSettingsMicrophone(BunchModel):
     BONSAI_WORKFLOW: Path
 
 
-class HardwareSettings(BaseModel):
+class HardwareSettings(BunchModel):
     model_config = ConfigDict(title='hardware_settings.yaml')
     RIG_NAME: str
     MAIN_SYNC: bool
