@@ -14,7 +14,6 @@ from packaging import version
 import iblrig
 from ibllib.io import session_params
 from ibllib.io.raw_data_loaders import load_settings
-from iblrig.constants import BASE_PATH
 from iblutil.util import Bunch, setup_logger
 
 log = setup_logger('iblrig')

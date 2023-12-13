@@ -2,7 +2,6 @@
 import tempfile
 import unittest
 from pathlib import Path
-from unittest.mock import patch
 
 from iblrig import path_helper
 from iblrig.base_tasks import BonsaiRecordingMixin
