@@ -143,7 +143,7 @@ def _load_pydantic_yaml(filename: Path | str, model: BaseModel, do_raise: bool =
             if t == Bunch:
                 return rs
             else:
-                return model.construct(**rs)
+                return model.model_construct(**rs)
         else:
             raise e
     if t == Bunch:
