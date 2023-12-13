@@ -32,7 +32,7 @@ class RigSettings(BaseModel, validate_assignment=True):
 
 
 class HardwareSettingsBpod(BaseModel):
-    COM_BPOD: str
+    COM_BPOD: str | None
     BPOD_TTL_TEST_DATE: date | None = None
     BPOD_TTL_TEST_STATUS: str | None = None
     SOUND_BOARD_BPOD_PORT: Literal['Serial1', 'Serial2', 'Serial3', 'Serial4', 'Serial5', None] = None
@@ -40,7 +40,7 @@ class HardwareSettingsBpod(BaseModel):
 
 
 class HardwareSettingsFrame2TTL(BaseModel):
-    COM_F2TTL: str
+    COM_F2TTL: str | None
     F2TTL_CALIBRATION_DATE: date | None
     F2TTL_DARK_THRESH: int = Field(gt=0)
     F2TTL_HW_VERSION: Literal[1, 2, 3, None]
@@ -48,7 +48,7 @@ class HardwareSettingsFrame2TTL(BaseModel):
 
 
 class HardwareSettingsRotaryEncoder(BaseModel):
-    COM_ROTARY_ENCODER: str
+    COM_ROTARY_ENCODER: str | None
 
 
 class HardwareSettingsScreen(BaseModel):
