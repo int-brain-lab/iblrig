@@ -1,3 +1,4 @@
+import argparse
 import contextlib
 import os
 import subprocess
@@ -166,7 +167,7 @@ def install_pyspin():
         file_zip.unlink()
 
 
-def prepare_video_session(subject_name: str = '', training_session: bool = False):
+def prepare_video_session_cmd():
     if not spinnaker_sdk_installed():
         if ask_user("Spinnaker SDK doesn't seem to be installed. Do you want to install it now?"):
             install_spinnaker()
@@ -175,6 +176,18 @@ def prepare_video_session(subject_name: str = '', training_session: bool = False
         if ask_user("PySpin doesn't seem to be installed. Do you want to install it now?"):
             install_pyspin()
         return
+
+    parser = argparse.ArgumentParser(prog='start_video_session', description='Prepare video PC for video recording session')
+    parser.add_argument('subject_name', help='name of subject')
+    parser.add_argument('-t', '--training', action='store_true', help='launch video workflow for training session.')
+    args = parser.parse_args()
+
+    prepare_video_session(subject_name=args.subject_name, training_session=args.training)
+
+
+def prepare_video_session(subject_name: str = '', training_session: bool = False):
+    assert spinnaker_sdk_installed()
+    assert pyspin_installed()
 
     with video_pyspin.Cameras() as cameras:
         for camera in cameras:

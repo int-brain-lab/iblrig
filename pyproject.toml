@@ -60,6 +60,7 @@ iblrig                = "iblrig.gui.wizard:main"
 upgrade_iblrig        = "iblrig.version_management:upgrade"
 install_spinnaker     = "iblrig.video:install_spinnaker"
 install_pyspin        = "iblrig.video:install_pyspin"
+start_video_session   = "iblrig.video:prepare_video_session_cmd"
 
 [tool.setuptools.dynamic]
 readme  = { file = "README.md", content-type = "text/markdown" }
