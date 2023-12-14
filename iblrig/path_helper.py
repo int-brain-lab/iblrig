@@ -1,22 +1,24 @@
-"""
-Various get functions to return paths of folders and network drives
-"""
-import logging
 import os
 import re
+import shutil
 import subprocess
 from pathlib import Path
+from typing import TypeVar
 
 import numpy as np
 import yaml
 from packaging import version
+from pydantic import ValidationError
 
 import iblrig
 from ibllib.io import session_params
 from ibllib.io.raw_data_loaders import load_settings
-from iblutil.util import Bunch
+from iblrig.constants import HARDWARE_SETTINGS_YAML, RIG_SETTINGS_YAML
+from iblrig.pydantic_definitions import BunchModel, HardwareSettings, RigSettings
+from iblutil.util import Bunch, setup_logger
 
-log = logging.getLogger('iblrig')
+log = setup_logger('iblrig')
+T = TypeVar('T')
 
 
 def iterate_previous_sessions(subject_name, task_name, n=1, **kwargs):
@@ -59,6 +61,8 @@ def _iterate_protocols(subject_folder, task_name, n=1):
     for file_experiment in sorted(subject_folder.rglob('_ibl_experiment.description*.yaml'), reverse=True):
         session_path = file_experiment.parent
         ad = session_params.read_params(file_experiment)
+        if 'tasks' not in ad:
+            continue
         if task_name not in ad['tasks'][0]:
             continue
         # reversed: we look for the last task first if the protocol ran twice
@@ -124,24 +128,40 @@ def get_local_and_remote_paths(local_path=None, remote_path=None, lab=None):
     return paths
 
 
-def load_settings_yaml(file_name='iblrig_settings.yaml', mode='raise'):
-    """
-    Load a yaml file from the settings folder.
-    If the file_name is not absolute, it will be searched in the settings folder
-    :param file_name: Path or str
-    :return:
-    """
-    if not Path(file_name).is_absolute():
-        file_name = Path(iblrig.__file__).parents[1].joinpath('settings', file_name)
-    if not file_name.exists() and mode != 'raise':
+def load_settings_yaml(filename: Path | str = RIG_SETTINGS_YAML, do_raise: bool = True) -> Bunch:
+    filename = Path(filename)
+    if not filename.is_absolute():
+        filename = Path(iblrig.__file__).parents[1].joinpath('settings', filename)
+    if not filename.exists() and not do_raise:
+        log.error(f'File not found: {filename}')
         return {}
-    with open(file_name) as fp:
+    with open(filename) as fp:
         rs = yaml.safe_load(fp)
-    rs = patch_settings(rs, Path(file_name).stem)
+    rs = patch_settings(rs, filename.stem)
     return Bunch(rs)
 
 
-def patch_settings(rs: dict, name: str) -> dict:
+def _load_pydantic_yaml(filename: Path | str, model: BunchModel, do_raise: bool = True) -> BunchModel:
+    rs = load_settings_yaml(filename=filename, do_raise=do_raise)
+    try:
+        return model.model_validate(rs)
+    except ValidationError as e:
+        if not do_raise:
+            log.exception(e)
+            return model.model_construct(**rs)
+        else:
+            raise e
+
+
+def load_hardware_settings(do_raise: bool = True) -> HardwareSettings:
+    return _load_pydantic_yaml(HARDWARE_SETTINGS_YAML, model=HardwareSettings, do_raise=do_raise)
+
+
+def load_rig_settings(do_raise: bool = True) -> RigSettings:
+    return _load_pydantic_yaml(RIG_SETTINGS_YAML, model=RigSettings, do_raise=do_raise)
+
+
+def patch_settings(rs: dict, filename: str | Path) -> dict:
     """
     Update loaded settings files to ensure compatibility with latest version.
 
@@ -149,28 +169,21 @@ def patch_settings(rs: dict, name: str) -> dict:
     ----------
     rs : dict
         A loaded settings file.
-    name : str
-        The name of the settings file, e.g. 'hardware_settings'.
+    filename : str | Path
+        The filename of the settings file.
 
     Returns
     -------
     dict
         The updated settings.
     """
-    if name.startswith('hardware') and version.parse(rs.get('VERSION', '0.0.0')) < version.Version('1.0.0'):
+    filename = Path(filename)
+    if filename.stem.startswith('hardware') and version.parse(rs.get('VERSION', '0.0.0')) < version.Version('1.0.0'):
         if 'device_camera' in rs:
             log.info('Patching hardware settings; assuming left camera label')
             rs['device_cameras'] = {'left': rs.pop('device_camera')}
         rs['VERSION'] = '1.0.0'
     return rs
-
-
-def get_iblrig_path() -> Path or None:
-    return Path(iblrig.__file__).parents[1]
-
-
-def get_iblrig_params_path() -> Path or None:
-    return get_iblrig_path().joinpath('pybpod_fixtures')
 
 
 def get_commit_hash(folder: str):
@@ -182,34 +195,6 @@ def get_commit_hash(folder: str):
         log.debug('Commit hash is empty string')
     log.debug(f'Found commit hash {out}')
     return out
-
-
-def get_bonsai_path(use_iblrig_bonsai: bool = True) -> str:
-    """Checks for Bonsai folder in iblrig. Returns string with bonsai executable path."""
-    iblrig_folder = get_iblrig_path()
-    bonsai_folder = next(
-        (folder for folder in Path(iblrig_folder).glob('*') if folder.is_dir() and 'Bonsai' in folder.name), None
-    )
-    if bonsai_folder is None:
-        return
-    ibl_bonsai = os.path.join(bonsai_folder, 'Bonsai64.exe')
-    if not Path(ibl_bonsai).exists():  # if Bonsai64 does not exist Bonsai v >2.5.0
-        ibl_bonsai = os.path.join(bonsai_folder, 'Bonsai.exe')
-
-    preexisting_bonsai = Path.home() / 'AppData/Local/Bonsai/Bonsai64.exe'
-    if not preexisting_bonsai.exists():
-        preexisting_bonsai = Path.home() / 'AppData/Local/Bonsai/Bonsai.exe'
-
-    if use_iblrig_bonsai is True:
-        BONSAI = ibl_bonsai
-    elif use_iblrig_bonsai is False and preexisting_bonsai.exists():
-        BONSAI = str(preexisting_bonsai)
-    elif use_iblrig_bonsai is False and not preexisting_bonsai.exists():
-        log.debug(f'NOT FOUND: {preexisting_bonsai}. Using packaged Bonsai')
-        BONSAI = ibl_bonsai
-    log.debug(f'Found Bonsai executable: {BONSAI}')
-
-    return BONSAI
 
 
 def iterate_collection(session_path: str, collection_name='raw_task_data') -> str:
@@ -248,3 +233,15 @@ def iterate_collection(session_path: str, collection_name='raw_task_data') -> st
     if len(tasks) == 0:
         return f'{collection_name}_00'
     return f'{collection_name}_{int(tasks[-1][-2:]) + 1:02}'
+
+
+def create_bonsai_layout_from_template(workflow_file: Path) -> None:
+    if not workflow_file.exists():
+        FileNotFoundError(workflow_file)
+    if not (layout_file := workflow_file.with_suffix('.bonsai.layout')).exists():
+        template_file = workflow_file.with_suffix('.bonsai.layout_template')
+        if template_file.exists():
+            log.info(f'Creating default {layout_file.name}')
+            shutil.copy(template_file, layout_file)
+        else:
+            log.debug(f'No template layout for {workflow_file.name}')

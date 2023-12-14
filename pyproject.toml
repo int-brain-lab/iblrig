@@ -13,12 +13,12 @@ dependencies = [
     "ONE-api",
     "PyYAML",
     "graphviz",
-    "ibllib@git+https://github.com/int-brain-lab/ibllib.git",
     "iblbpod@git+https://github.com/int-brain-lab/iblbpod.git",
+    "ibllib@git+https://github.com/int-brain-lab/ibllib.git",
     "iblpybpod@git+https://github.com/int-brain-lab/iblpybpod.git@no-gui",
     "iblscripts@git+https://github.com/int-brain-lab/iblscripts.git",
-    "serial_singleton@git+https://github.com/int-brain-lab/serial_singleton.git",
     "iblutil >= 1.7.1",
+    "ipython",
     "numpy",
     "packaging",
     "pandas",
@@ -27,13 +27,13 @@ dependencies = [
     "python-osc",
     "pywin32; sys_platform == 'win32'",
     "scipy",
+    "serial_singleton@git+https://github.com/int-brain-lab/serial_singleton.git",
     "sounddevice",
 ]
 
 [project.optional-dependencies]
 DEV = [
     "coverage[toml]",
-    "coveralls",
     "flake8",
     "mypy",
     "myst-parser",
@@ -45,19 +45,23 @@ DEV = [
     "sphinx-autobuild",
     "sphinx_lesson",
     "sphinx_rtd_theme",
+    "types-PyYAML",
+    "types-requests",
 ]
 
 [project.scripts]
-viewsession         = "iblrig.commands:viewsession"
-transfer_data       = "iblrig.commands:transfer_data_cli"
-transfer_other_data = "iblrig.commands:transfer_other_data_cli"
-transfer_video_data = "iblrig.commands:transfer_video_data_cli"
-transfer_ephys_data = "iblrig.commands:transfer_ephys_data_cli"
-flush               = "iblrig.commands:flush"
-remove-old-sessions = "iblrig.commands:remove_local_sessions"
-iblrig              = "iblrig.gui.wizard:main"
-upgrade_iblrig      = "iblrig.version_management:upgrade"
-install_spinnaker   = "iblrig.camera:install_spinnaker_sdk"
+viewsession           = "iblrig.commands:viewsession"
+transfer_data         = "iblrig.commands:transfer_data_cli"
+transfer_other_data   = "iblrig.commands:transfer_other_data_cli"
+transfer_video_data   = "iblrig.commands:transfer_video_data_cli"
+transfer_ephys_data   = "iblrig.commands:transfer_ephys_data_cli"
+flush                 = "iblrig.commands:flush"
+remove-old-sessions   = "iblrig.commands:remove_local_sessions"
+iblrig                = "iblrig.gui.wizard:main"
+upgrade_iblrig        = "iblrig.version_management:upgrade"
+install_spinnaker     = "iblrig.video:install_spinnaker"
+install_pyspin        = "iblrig.video:install_pyspin"
+start_video_session   = "iblrig.video:prepare_video_session_cmd"
 prepare_video_session = "iblrig.devices.camera_recordings.videopc.prepare_video_session:main"
 prepare_video_session_mesoscope = "iblrig.devices.camera_recordings.videopc.prepare_video_session_mescoscope:main"
 prepare_video_session_single_mesoscope = "iblrig.devices.camera_recordings.videopc.prepare_video_session_single_mesoscope:main"
@@ -70,6 +74,7 @@ version = { attr = "iblrig.__version__" }
 find = {}
 
 [tool.mypy]
+files                  = [ "iblrig/**/*.py", "iblrig_tasks/**/*.py" ]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]

@@ -7,6 +7,8 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
+from iblrig.constants import BONSAI_EXE
+from iblrig.path_helper import create_bonsai_layout_from_template
 from iblutil.util import setup_logger
 
 logger = setup_logger('iblrig')
@@ -46,6 +48,38 @@ def ask_user(prompt: str, default: bool = False) -> bool:
 
 
 def get_anydesk_id(silent: bool = False) -> str | None:
+    """
+    Retrieve the AnyDesk ID of the current machine.
+
+    Parameters
+    ----------
+    silent : bool, optional
+        If True, suppresses exceptions and logs them instead.
+        If False (default), raises exceptions.
+
+    Returns
+    -------
+    str or None
+        The AnyDesk ID as a formatted string (e.g., '123 456 789') if successful,
+        or None on failure.
+
+    Raises
+    ------
+    FileNotFoundError
+        If the AnyDesk executable is not found.
+    subprocess.CalledProcessError
+        If an error occurs while executing the AnyDesk command.
+    StopIteration
+        If the subprocess output is empty.
+    UnicodeDecodeError
+        If there is an issue decoding the subprocess output.
+
+    Notes
+    -----
+    The function attempts to find the AnyDesk executable and retrieve the ID using the command line.
+    On success, the AnyDesk ID is returned as a formatted string. If silent is True, exceptions are logged,
+    and None is returned on failure. If silent is False, exceptions are raised on failure.
+    """
     anydesk_id = None
     try:
         if cmd := shutil.which('anydesk'):
@@ -63,8 +97,7 @@ def get_anydesk_id(silent: bool = False) -> str | None:
             logger.debug(e, exc_info=True)
         else:
             raise e
-    finally:
-        return anydesk_id
+    return anydesk_id
 
 
 def static_vars(**kwargs) -> Callable[..., Any]:
@@ -96,7 +129,7 @@ def static_vars(**kwargs) -> Callable[..., Any]:
 
 
 @static_vars(return_value=None)
-def internet_available(host: str = '8.8.8.8', port: int = 53, timeout: int = 3, force_update: bool = False):
+def internet_available(host: str = '8.8.8.8', port: int = 53, timeout: int = 3, force_update: bool = False) -> bool:
     """
     Check if the internet connection is available.
 
@@ -133,3 +166,55 @@ def internet_available(host: str = '8.8.8.8', port: int = 53, timeout: int = 3, 
     except OSError:
         internet_available.return_value = False
     return internet_available.return_value
+
+
+def call_bonsai(
+    workflow_file: str | Path,
+    args: list[str | Path] | None = None,
+    debug: bool = False,
+    bootstrap: bool = True,
+    editor: bool = True,
+) -> int:
+    """
+    Execute a Bonsai workflow within a subprocess call.
+
+    Parameters
+    ----------
+    workflow_file : Union[str, Path]
+        Path to the Bonsai workflow file.
+    args : List[str], optional
+        Additional command-line arguments for Bonsai.
+    debug : bool, optional
+        Enable debugging mode if True (default is False).
+    bootstrap : bool, optional
+        Enable Bonsai bootstrapping if True (default is True).
+    editor : bool, optional
+        Enable Bonsai editor if True (default is True).
+
+    Returns
+    -------
+    int
+        Exit code of the Bonsai subprocess.
+
+    Raises
+    ------
+    FileNotFoundError
+        If the Bonsai executable does not exist.
+        If the specified workflow file does not exist.
+    """
+    if not BONSAI_EXE.exists():
+        FileNotFoundError(BONSAI_EXE)
+    if not (workflow_file := Path(workflow_file)).exists():
+        raise FileNotFoundError(workflow_file)
+    working_directory = Path(workflow_file).parent
+    create_bonsai_layout_from_template(workflow_file)
+    if args is None:
+        args = list()
+    args.insert(0, '--start' if debug else '--start-no-debug')
+    if not bootstrap:
+        args.insert(1, '--no-boot')
+    if not editor:
+        args.insert(1, '--no-editor')
+    args.append(workflow_file)
+    logger.info(f'Starting Bonsai workflow `{workflow_file.name}`')
+    return subprocess.check_call(executable=BONSAI_EXE, args=args, cwd=working_directory)

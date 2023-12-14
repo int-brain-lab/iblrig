@@ -3,14 +3,15 @@
 # @Author: Niccolo' Bonacchi (@nbonacchi)
 # @Date: Friday, November 5th 2021, 12:47:34 pm
 # @Creation_Date: 2018-06-08 11:04:05
-import logging
 import struct
 import time
 
 import numpy as np
 import serial
 
-log = logging.getLogger('iblrig')
+from iblutil.util import setup_logger
+
+log = setup_logger('iblrig')
 
 
 def frame2ttl_factory(serial_port: str, version: int = 2):

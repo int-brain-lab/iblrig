@@ -1,6 +1,31 @@
 Changelog
 ---------
 
+
+8.12.14
+-------
+* unit-tests and linting
+
+8.12.13
+-------
+* fix problem with corrupt acquisition descriptions in history
+
+8.12.12
+-------
+* skipped
+
+8.12.11
+-------
+* hotfix for creation of bonsai layout-file
+* separated installers for Spinnaker SDK and PySpin
+
+8.12.10
+-------
+* ignore user-side changes to bonsai layouts (for camera workflows only)
+* error message if rig-name is not defined in Alyx
+* populate delegate users
+* the usual: minor fixes, clean-ups and unit-tests
+
 8.12.9
 ------
 * usability improvements for "Show Training Level" tool

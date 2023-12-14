@@ -1,9 +1,11 @@
 import unittest
+from pathlib import Path
 from subprocess import CalledProcessError
 from unittest.mock import patch
 
 from packaging import version
 
+from iblrig.constants import BASE_DIR
 from iblrig.version_management import check_for_updates, get_detailed_version_string, get_local_version, is_dirty
 
 
@@ -80,3 +82,9 @@ class TestIsDirty(unittest.TestCase):
     def test_exception_handling(self, mock_check_call):
         mock_check_call.side_effect = CalledProcessError(1, 'cmd')
         self.assertTrue(is_dirty())
+
+
+class TestChangeLog(unittest.TestCase):
+    def test_change_log(self):
+        with Path(BASE_DIR).joinpath('CHANGELOG.md').open() as f:
+            assert str(get_local_version()) in f.read()

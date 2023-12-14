@@ -25,7 +25,7 @@ from iblutil.util import Bunch, setup_logger
 from pybpodapi.com.messaging.trial import Trial
 from pybpodapi.protocol import StateMachine
 
-log = setup_logger(__name__)
+log = setup_logger('iblrig')
 
 NTRIALS_INIT = 2000
 NBLOCKS_INIT = 100
@@ -161,7 +161,6 @@ class ChoiceWorldSession(
         :return:
         """
         # make the bpod send spacer signals to the main sync clock for protocol discovery
-        self.send_spacers()
         time_last_trial_end = time.time()
         for i in range(self.task_params.NTRIALS):  # Main loop
             # t_overhead = time.time()
