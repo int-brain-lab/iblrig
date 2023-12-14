@@ -1,3 +1,4 @@
+from collections import abc
 from datetime import date
 from ipaddress import IPv4Address
 from pathlib import Path
@@ -6,12 +7,18 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl, field_validator
 
 
-class BunchModel(BaseModel):
+class BunchModel(BaseModel, abc.MutableMapping):
     def __getitem__(self, key):
         return getattr(self, key)
 
     def __setitem__(self, key, value):
         setattr(self, key, value)
+
+    def __delitem__(self, key):
+        del self.__dict__[key]
+
+    def __len__(self):
+        return len(self.__dict__)
 
 
 class RigSettings(BunchModel, validate_assignment=True):
@@ -74,8 +81,8 @@ class HardwareSettingsSound(BunchModel):
 
 class HardwareSettingsValve(BunchModel):
     WATER_CALIBRATION_DATE: date
-    WATER_CALIBRATION_OPEN_TIMES: list[float] = Field(min_items=2)  # type: ignore
     WATER_CALIBRATION_RANGE: list[float] = Field(min_items=2, max_items=2)  # type: ignore
+    WATER_CALIBRATION_OPEN_TIMES: list[float] = Field(min_items=2)  # type: ignore
     WATER_CALIBRATION_WEIGHT_PERDROP: list[float] = Field(min_items=2)  # type: ignore
 
 
