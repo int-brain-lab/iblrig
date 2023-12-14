@@ -31,6 +31,7 @@ import pybpodapi
 from iblrig import frame2TTL, sound
 from iblrig.constants import BASE_PATH, BONSAI_EXE
 from iblrig.hardware import SOFTCODE, Bpod, MyRotaryEncoder, sound_device_factory
+from iblrig.pydantic_definitions import RigSettings, HardwareSettings
 from iblrig.transfer_experiments import BehaviorCopier
 from iblutil.spacer import Spacer
 from iblutil.util import Bunch, setup_logger
@@ -94,13 +95,20 @@ class BaseSession(ABC):
         self.init_datetime = datetime.datetime.now()
         # Create the folder architecture and get the paths property updated
         # the template for this file is in settings/hardware_settings.yaml
-        self.hardware_settings = iblrig.path_helper.load_settings_yaml(file_hardware_settings or 'hardware_settings.yaml')
+
         # loads in the settings: first load the files, then update with the input argument if provided
+        # TODO: Pydantic models are currently converted to Bunch type ... this is ugly as hell
+        self.hardware_settings = Bunch(iblrig.path_helper.load_hardware_settings().model_dump())
         if hardware_settings is not None:
+            if isinstance(hardware_settings, HardwareSettings):
+                Bunch(hardware_settings.model_dump())
             self.hardware_settings.update(hardware_settings)
-        self.iblrig_settings = iblrig.path_helper.load_settings_yaml(file_iblrig_settings or 'iblrig_settings.yaml')
+        self.iblrig_settings = Bunch(iblrig.path_helper.load_rig_settings().model_dump())
         if iblrig_settings is not None:
+            if isinstance(iblrig_settings, RigSettings):
+                Bunch(iblrig_settings.model_dump())
             self.iblrig_settings.update(iblrig_settings)
+
         self.wizard = wizard
         # Load the tasks settings, from the task folder or override with the input argument
         base_parameters_files = [
@@ -782,6 +790,7 @@ class RotaryEncoderMixin:
     """
 
     def init_mixin_rotary_encoder(self, *args, **kwargs):
+        print(self.hardware_settings)
         self.device_rotary_encoder = MyRotaryEncoder(
             all_thresholds=self.task_params.STIM_POSITIONS + self.task_params.QUIESCENCE_THRESHOLDS,
             gain=self.task_params.STIM_GAIN,
