@@ -31,7 +31,8 @@ import pybpodapi
 from iblrig import frame2TTL, sound
 from iblrig.constants import BASE_PATH, BONSAI_EXE
 from iblrig.hardware import SOFTCODE, Bpod, MyRotaryEncoder, sound_device_factory
-from iblrig.pydantic_definitions import RigSettings, HardwareSettings
+from iblrig.pydantic_definitions import HardwareSettings, RigSettings
+from iblrig.tools import call_bonsai
 from iblrig.transfer_experiments import BehaviorCopier
 from iblutil.spacer import Spacer
 from iblutil.util import Bunch, setup_logger
@@ -347,7 +348,7 @@ class BaseSession(ABC):
             )
             try:
                 self._one = ONE(
-                    base_url=self.iblrig_settings['ALYX_URL'], username=self.iblrig_settings['ALYX_USER'], mode='remote'
+                    base_url=str(self.iblrig_settings['ALYX_URL']), username=self.iblrig_settings['ALYX_USER'], mode='remote'
                 )
                 self.logger.info('instantiated ' + info_str)
             except Exception:
@@ -592,12 +593,8 @@ class BonsaiRecordingMixin:
         #         cam.TriggerMode.SetValue(True)
 
         bonsai_camera_file = self.paths.IBLRIG_FOLDER.joinpath('devices', 'camera_setup', 'setup_video.bonsai')
-        iblrig.path_helper.create_bonsai_layout_from_template(bonsai_camera_file)
-        # this locks until Bonsai closes
-        cmd = [str(self.paths.BONSAI), str(bonsai_camera_file), '--start-no-debug', '--no-boot']
         self.logger.info('starting Bonsai microphone recording')
-        self.logger.info(' '.join(cmd))
-        subprocess.call(cmd, cwd=bonsai_camera_file.parent)
+        call_bonsai(bonsai_camera_file, wait=True)
         self.logger.info('Bonsai cameras setup module loaded: OK')
 
     def trigger_bonsai_cameras(self):
@@ -605,20 +602,15 @@ class BonsaiRecordingMixin:
         if workflow_file is None:
             return
         self.logger.info('attempt to launch Bonsai camera recording')
-        workflow_file = self.paths.IBLRIG_FOLDER.joinpath(*workflow_file.split('/'))
+        workflow_file = self.paths.IBLRIG_FOLDER.joinpath(workflow_file)
         iblrig.path_helper.create_bonsai_layout_from_template(workflow_file)
-        cmd = [
-            str(self.paths.BONSAI),
-            str(workflow_file),
-            '--start',  # '--no-editor',
-            f"-p:FileNameLeft={self.paths.SESSION_FOLDER / 'raw_video_data' / '_iblrig_leftCamera.raw.avi'}",
-            f"-p:FileNameLeftData={self.paths.SESSION_FOLDER / 'raw_video_data' / '_iblrig_leftCamera.frameData.bin'}",
-            f"-p:FileNameMic={self.paths.SESSION_RAW_DATA_FOLDER / '_iblrig_micData.raw.wav'}",
-            f'-p:RecordSound={self.task_params.RECORD_SOUND}',
-            '--no-boot',
-        ]
-        self.logger.info(' '.join(cmd))
-        subprocess.Popen(cmd, cwd=workflow_file.parent)
+        parameters = {
+            'FileNameLeft': self.paths.SESSION_FOLDER.joinpath('raw_video_data', '_iblrig_leftCamera.raw.avi'),
+            'FileNameLeftData': self.paths.SESSION_FOLDER.joinpath('raw_video_data', '_iblrig_leftCamera.frameData.bin'),
+            'FileNameMic': self.paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_micData.raw.wav'),
+            'RecordSound': self.task_params.RECORD_SOUND,
+        }
+        call_bonsai(workflow_file, parameters, wait=False, editor=False)
         self.logger.info('Bonsai camera recording process started')
 
 
@@ -790,7 +782,6 @@ class RotaryEncoderMixin:
     """
 
     def init_mixin_rotary_encoder(self, *args, **kwargs):
-        print(self.hardware_settings)
         self.device_rotary_encoder = MyRotaryEncoder(
             all_thresholds=self.task_params.STIM_POSITIONS + self.task_params.QUIESCENCE_THRESHOLDS,
             gain=self.task_params.STIM_GAIN,
