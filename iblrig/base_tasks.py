@@ -32,7 +32,7 @@ from iblrig import frame2TTL, sound
 from iblrig.constants import BASE_PATH, BONSAI_EXE
 from iblrig.hardware import SOFTCODE, Bpod, MyRotaryEncoder, sound_device_factory
 from iblrig.path_helper import load_pydantic_yaml
-from iblrig.pydantic_definitions import HardwareSettings, RigSettings
+from iblrig.pydantic_definitions import HardwareSettings, HardwareSettingsCameras, RigSettings
 from iblrig.tools import call_bonsai
 from iblrig.transfer_experiments import BehaviorCopier
 from iblutil.spacer import Spacer
@@ -537,7 +537,7 @@ class BonsaiRecordingMixin:
     def start_mixin_bonsai_microphone(self):
         # the camera workflow on the behaviour computer already contains the microphone recording
         # so the device camera workflow and the microphone one are exclusive
-        if self._camera_mixin_bonsai_get_workflow_file(self.hardware_settings.get('device_cameras', None)) is not None:
+        if self._camera_mixin_bonsai_get_workflow_file(self.hardware_settings.device_cameras) is not None:
             return
         if not self.task_params.RECORD_SOUND:
             return
@@ -556,31 +556,23 @@ class BonsaiRecordingMixin:
         self.logger.info('Bonsai microphone recording module loaded: OK')
 
     @staticmethod
-    def _camera_mixin_bonsai_get_workflow_file(device_cameras_key):
+    def _camera_mixin_bonsai_get_workflow_file(cameras: HardwareSettingsCameras | dict | None) -> Path | None:
         """
-        Returns the first available bonsai workflow file for the cameras from the the hardware_settings.yaml file
+        Returns the first available bonsai workflow file for the cameras from the hardware_settings.yaml file
         :param device_cameras_key:
         :return:
         """
-        if device_cameras_key is None:
-            return
+        if cameras is None:
+            return None
         else:
-            return next(
-                (
-                    device_cameras_key[k]['BONSAI_WORKFLOW']
-                    for k in device_cameras_key
-                    if 'BONSAI_WORKFLOW' in device_cameras_key[k]
-                ),
-                None,
-            )
+            return next((camera.BONSAI_WORKFLOW for camera in cameras.values() if camera is not None), None)
 
     def start_mixin_bonsai_cameras(self):
         """
         This prepares the cameras by starting the pipeline that aligns the camera focus with the
         desired borders of rig features, the actual triggering of the  cameras is done in the trigger_bonsai_cameras method.
         """
-
-        if self._camera_mixin_bonsai_get_workflow_file(self.hardware_settings.get('device_cameras', None)) is None:
+        if self._camera_mixin_bonsai_get_workflow_file(self.hardware_settings.device_cameras) is None:
             return
 
         # # TODO
@@ -598,7 +590,7 @@ class BonsaiRecordingMixin:
         self.logger.info('Bonsai cameras setup module loaded: OK')
 
     def trigger_bonsai_cameras(self):
-        workflow_file = self._camera_mixin_bonsai_get_workflow_file(self.hardware_settings.get('device_cameras', None))
+        workflow_file = self._camera_mixin_bonsai_get_workflow_file(self.hardware_settings.device_cameras)
         if workflow_file is None:
             return
         self.logger.info('attempt to launch Bonsai camera recording')

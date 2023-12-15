@@ -105,7 +105,7 @@ def get_local_and_remote_paths(local_path=None, remote_path=None, lab=None):
         'local_subjects_folder': PosixPath('C:/iblrigv8_data/mainenlab/Subjects'),
         'remote_subjects_folder': PosixPath('Y:/Subjects')}
     """
-    iblrig_settings = load_settings_yaml()
+    iblrig_settings = _load_settings_yaml()
     paths = Bunch({'local_data_folder': local_path, 'remote_data_folder': remote_path})
     if paths.local_data_folder is None:
         paths.local_data_folder = (
@@ -118,7 +118,7 @@ def get_local_and_remote_paths(local_path=None, remote_path=None, lab=None):
     return paths
 
 
-def load_settings_yaml(filename: Path | str = RIG_SETTINGS_YAML, do_raise: bool = True) -> Bunch:
+def _load_settings_yaml(filename: Path | str = RIG_SETTINGS_YAML, do_raise: bool = True) -> Bunch:
     filename = Path(filename)
     if not filename.is_absolute():
         filename = Path(iblrig.__file__).parents[1].joinpath('settings', filename)
@@ -144,7 +144,7 @@ def load_pydantic_yaml(model: type[T], filename: Path | str | None = None, do_ra
             filename = RIG_SETTINGS_YAML
         else:
             raise TypeError(f'Cannot deduce filename for model `{model.__name__}`.')
-    rs = load_settings_yaml(filename=filename, do_raise=do_raise)
+    rs = _load_settings_yaml(filename=filename, do_raise=do_raise)
     try:
         return model.model_validate(rs)
     except ValidationError as e:
