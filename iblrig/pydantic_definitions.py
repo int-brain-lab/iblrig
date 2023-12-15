@@ -111,5 +111,5 @@ class HardwareSettings(BunchModel):
     device_sound: HardwareSettingsSound
     device_valve: HardwareSettingsValve
     device_cameras: HardwareSettingsCameras | None = None
-    device_microphone: HardwareSettingsMicrophone
+    device_microphone: HardwareSettingsMicrophone | None = None
     VERSION: str = '1.0.0'

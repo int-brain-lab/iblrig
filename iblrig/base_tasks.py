@@ -97,18 +97,14 @@ class BaseSession(ABC):
         self.init_datetime = datetime.datetime.now()
 
         # loads in the settings: first load the files, then update with the input argument if provided
-        # TODO: Pydantic models are currently converted to Bunch type ... this is ugly as hell
-        # TODO: Also, the various sources of settings (file constant, file-argument, dict-arguments)
-        self.hardware_settings = Bunch(load_pydantic_yaml(HardwareSettings, file_hardware_settings).model_dump())
+        self.hardware_settings = load_pydantic_yaml(HardwareSettings, file_hardware_settings)
         if hardware_settings is not None:
-            if isinstance(hardware_settings, HardwareSettings):  # TODO: is this necessary?
-                Bunch(hardware_settings.model_dump())
             self.hardware_settings.update(hardware_settings)
-        self.iblrig_settings = Bunch(load_pydantic_yaml(RigSettings, file_iblrig_settings).model_dump())
+            HardwareSettings.model_validate(self.hardware_settings)
+        self.iblrig_settings = load_pydantic_yaml(RigSettings, file_iblrig_settings)
         if iblrig_settings is not None:
-            if isinstance(iblrig_settings, RigSettings):  # TODO: is this necessary?
-                Bunch(iblrig_settings.model_dump())
             self.iblrig_settings.update(iblrig_settings)
+            RigSettings.model_validate(self.iblrig_settings)
 
         self.wizard = wizard
         # Load the tasks settings, from the task folder or override with the input argument
@@ -238,7 +234,7 @@ class BaseSession(ABC):
         task_collection: str,
         procedures: list = None,
         projects: list = None,
-        hardware_settings: dict = None,
+        hardware_settings: dict | HardwareSettings = None,
         stub: Path = None,
         extractors: list = None,
     ):
@@ -270,7 +266,9 @@ class BaseSession(ABC):
         description = ses_params.read_params(stub) if stub else {}
 
         # Add hardware devices
-        if hardware_settings:
+        if hardware_settings is not None:
+            if isinstance(hardware_settings, HardwareSettings):
+                hardware_settings = hardware_settings.model_dump()
             devices = {}
             cams = hardware_settings.get('device_cameras', None)
             if cams:
@@ -307,7 +305,7 @@ class BaseSession(ABC):
         :return:
         """
         output_dict = dict(self.task_params)  # Grab parameters from task_params session
-        output_dict.update(dict(self.hardware_settings))  # Update dict with hardware settings from session
+        output_dict.update(self.hardware_settings.model_dump())  # Update dict with hardware settings from session
         output_dict.update(dict(self.session_info))  # Update dict with session_info (subject, procedure, projects)
         patch_dict = {  # Various values added to ease transition from iblrig v7 to v8, different home may be desired
             'IBLRIG_VERSION': iblrig.__version__,
@@ -736,7 +734,7 @@ class BpodMixin:
         assert len(self.bpod.actions.keys()) == 6
         assert self.bpod.is_connected
         self.logger.info('Bpod hardware module loaded: OK')
-        self.send_spacers()
+        # self.send_spacers()
 
     def send_spacers(self):
         self.logger.info('Starting task by sending a spacer signal on BNC1')

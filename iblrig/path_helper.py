@@ -132,6 +132,11 @@ def load_settings_yaml(filename: Path | str = RIG_SETTINGS_YAML, do_raise: bool 
 
 
 def load_pydantic_yaml(model: type[T], filename: Path | str | None = None, do_raise: bool = True) -> T:
+    if filename not in (HARDWARE_SETTINGS_YAML, RIG_SETTINGS_YAML):
+        # TODO: We currently skip validation of pydantic models if an extra
+        #       filename is provided that does NOT correspond to the standard
+        #       settings files of IBLRIG. This should be re-evaluated.
+        do_raise = False
     if filename is None:
         if model == HardwareSettings:
             filename = HARDWARE_SETTINGS_YAML
