@@ -5,7 +5,6 @@ import socket
 import subprocess
 from collections.abc import Callable
 from pathlib import Path
-from subprocess import Popen
 from typing import Any
 
 from iblrig.constants import BONSAI_EXE
@@ -178,7 +177,7 @@ def call_bonsai(
     editor: bool = True,
     wait: bool = True,
     check: bool = False,
-) -> Popen[bytes] | Popen[str | bytes | Any] | int:
+) -> subprocess.Popen[bytes] | subprocess.Popen[str | bytes | Any] | subprocess.CompletedProcess:
     """
     Execute a Bonsai workflow within a subprocess call.
 
@@ -205,8 +204,8 @@ def call_bonsai(
 
     Returns
     -------
-    Popen[bytes] | Popen[str | bytes | Any] | int
-        Pointer to the Bonsai subprocess if wait is True, otherwise exit code.
+    Popen[bytes] | Popen[str | bytes | Any] | CompletedProcess
+        Pointer to the Bonsai subprocess if wait is False, otherwise subprocess.CompletedProcess.
 
     Raises
     ------
@@ -239,6 +238,6 @@ def call_bonsai(
     logger.info(f'Starting Bonsai workflow `{workflow_file.name}`')
     print(cmd)
     if wait:
-        return subprocess.run(args=cmd, cwd=cwd, check=check).returncode
+        return subprocess.run(args=cmd, cwd=cwd, check=check)
     else:
         return subprocess.Popen(args=cmd, cwd=cwd)

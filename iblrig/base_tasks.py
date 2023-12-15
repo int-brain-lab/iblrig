@@ -268,6 +268,7 @@ class BaseSession(ABC):
             The experiment description.
         """
         description = ses_params.read_params(stub) if stub else {}
+
         # Add hardware devices
         if hardware_settings:
             devices = {}
@@ -279,7 +280,8 @@ class BaseSession(ABC):
                         devices['cameras'][camera] = {'collection': 'raw_video_data', 'sync_label': 'audio'}
             if hardware_settings.get('device_microphone', None):
                 devices['microphone'] = {'microphone': {'collection': task_collection, 'sync_label': 'audio'}}
-        ses_params.merge_params(description, {'devices': devices})
+            ses_params.merge_params(description, {'devices': devices})
+
         # Add projects and procedures
         description['procedures'] = list(set(description.get('procedures', []) + (procedures or [])))
         description['projects'] = list(set(description.get('projects', []) + (projects or [])))
