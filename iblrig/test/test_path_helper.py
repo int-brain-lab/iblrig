@@ -3,11 +3,10 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from pydantic_definitions import HardwareSettings
-
 from iblrig import path_helper
 from iblrig.base_tasks import BonsaiRecordingMixin
 from iblrig.constants import BASE_DIR
+from iblrig.pydantic_definitions import HardwareSettings
 
 
 class TestPathHelper(unittest.TestCase):
