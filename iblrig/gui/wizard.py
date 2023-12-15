@@ -18,8 +18,22 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QThread, QThreadPool
 from PyQt5.QtWidgets import QStyle
 
+import iblrig.hardware_validation
+import iblrig.path_helper
 import iblrig_tasks
+from iblrig.base_tasks import EmptySession
+from iblrig.choiceworld import get_subject_training_info, training_phase_from_contrast_set
+from iblrig.constants import BASE_DIR
+from iblrig.gui.ui_update import Ui_update
+from iblrig.gui.ui_wizard import Ui_wizard
+from iblrig.hardware import Bpod
+from iblrig.misc import _get_task_argument_parser
+from iblrig.path_helper import load_pydantic_yaml
+from iblrig.pydantic_definitions import HardwareSettings, RigSettings
+from iblrig.version_management import check_for_updates, get_changelog, is_dirty
+from iblutil.util import setup_logger
 from one.api import ONE
+from pybpodapi import exceptions
 
 try:
     import iblrig_custom_tasks
@@ -28,19 +42,6 @@ try:
 except ImportError:
     CUSTOM_TASKS = False
     pass
-import iblrig.hardware_validation
-import iblrig.path_helper
-from iblrig.base_tasks import EmptySession
-from iblrig.choiceworld import get_subject_training_info, training_phase_from_contrast_set
-from iblrig.constants import BASE_DIR
-from iblrig.gui.ui_update import Ui_update
-from iblrig.gui.ui_wizard import Ui_wizard
-from iblrig.hardware import Bpod
-from iblrig.misc import _get_task_argument_parser
-from iblrig.path_helper import load_hardware_settings, load_rig_settings
-from iblrig.version_management import check_for_updates, get_changelog, is_dirty
-from iblutil.util import setup_logger
-from pybpodapi import exceptions
 
 log = setup_logger('iblrig')
 
@@ -85,8 +86,8 @@ class RigWizardModel:
     subject_details: tuple | None = None
 
     def __post_init__(self):
-        self.iblrig_settings = load_rig_settings()
-        self.hardware_settings = load_hardware_settings()
+        self.iblrig_settings = load_pydantic_yaml(RigSettings)
+        self.hardware_settings = load_pydantic_yaml(HardwareSettings)
         self.all_users = [self.iblrig_settings['ALYX_USER']] if self.iblrig_settings['ALYX_USER'] else []
         self.all_procedures = sorted(PROCEDURES)
 

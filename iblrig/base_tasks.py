@@ -31,6 +31,7 @@ import pybpodapi
 from iblrig import frame2TTL, sound
 from iblrig.constants import BASE_PATH, BONSAI_EXE
 from iblrig.hardware import SOFTCODE, Bpod, MyRotaryEncoder, sound_device_factory
+from iblrig.path_helper import load_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings, RigSettings
 from iblrig.tools import call_bonsai
 from iblrig.transfer_experiments import BehaviorCopier
@@ -94,19 +95,18 @@ class BaseSession(ABC):
         self.interactive = False if append else interactive
         self._one = one
         self.init_datetime = datetime.datetime.now()
-        # Create the folder architecture and get the paths property updated
-        # the template for this file is in settings/hardware_settings.yaml
 
         # loads in the settings: first load the files, then update with the input argument if provided
         # TODO: Pydantic models are currently converted to Bunch type ... this is ugly as hell
-        self.hardware_settings = Bunch(iblrig.path_helper.load_hardware_settings().model_dump())
+        # TODO: Also, the various sources of settings (file constant, file-argument, dict-arguments)
+        self.hardware_settings = Bunch(load_pydantic_yaml(HardwareSettings, file_hardware_settings).model_dump())
         if hardware_settings is not None:
-            if isinstance(hardware_settings, HardwareSettings):
+            if isinstance(hardware_settings, HardwareSettings):  # TODO: is this necessary?
                 Bunch(hardware_settings.model_dump())
             self.hardware_settings.update(hardware_settings)
-        self.iblrig_settings = Bunch(iblrig.path_helper.load_rig_settings().model_dump())
+        self.iblrig_settings = Bunch(load_pydantic_yaml(RigSettings, file_iblrig_settings).model_dump())
         if iblrig_settings is not None:
-            if isinstance(iblrig_settings, RigSettings):
+            if isinstance(iblrig_settings, RigSettings):  # TODO: is this necessary?
                 Bunch(iblrig_settings.model_dump())
             self.iblrig_settings.update(iblrig_settings)
 
