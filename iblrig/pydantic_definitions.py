@@ -14,12 +14,11 @@ class BunchModel(BaseModel, abc.MutableMapping):
     def __setitem__(self, key, value):
         setattr(self, key, value)
 
-    def __delitem__(self, key):
-        # del self.__dict__[key]
-        raise NotImplementedError()
-
     def __len__(self):
         return len(self.__dict__)
+
+    def __iter__(self):
+        return iter(self.model_fields.keys())
 
     def items(self):
         return [(key, getattr(self, key)) for key in self.keys()]
@@ -29,6 +28,9 @@ class BunchModel(BaseModel, abc.MutableMapping):
 
     def values(self):
         return (getattr(self, key) for key in self.keys())
+
+    def __delitem__(self, key):
+        raise NotImplementedError()
 
 
 class RigSettings(BunchModel, validate_assignment=True):
