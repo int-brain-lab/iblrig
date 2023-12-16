@@ -132,6 +132,38 @@ def _load_settings_yaml(filename: Path | str = RIG_SETTINGS_YAML, do_raise: bool
 
 
 def load_pydantic_yaml(model: type[T], filename: Path | str | None = None, do_raise: bool = True) -> T:
+    """
+    Load YAML data from a specified file or a standard IBLRIG settings file,
+    validate it using a Pydantic model, and return the validated Pydantic model
+    instance.
+
+    Parameters
+    ----------
+    model : Type[T]
+        The Pydantic model class to validate the YAML data against.
+    filename : Path | str | None, optional
+        The path to the YAML file.
+        If None (default), the function deduces the appropriate standard IBLRIG
+        settings file based on the model.
+    do_raise : bool, optional
+        If True (default), raise a ValidationError if validation fails.
+        If False, log the validation error and construct a model instance
+        with the provided data. Defaults to True.
+
+    Returns
+    -------
+    T
+        An instance of the Pydantic model, validated against the YAML data.
+
+    Raises
+    ------
+    ValidationError
+        If validation fails and do_raise is set to True.
+        The raised exception contains details about the validation error.
+    TypeError
+        If the filename is None and the model class is not recognized as
+        HardwareSettings or RigSettings.
+    """
     if filename not in (HARDWARE_SETTINGS_YAML, RIG_SETTINGS_YAML):
         # TODO: We currently skip validation of pydantic models if an extra
         #       filename is provided that does NOT correspond to the standard
