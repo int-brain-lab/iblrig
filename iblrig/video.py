@@ -16,6 +16,8 @@ from iblutil.io import hashfile  # type: ignore
 from iblutil.util import setup_logger
 from one.webclient import AlyxClient, http_download_file  # type: ignore
 
+from transfer_experiments import VideoCopier
+
 with contextlib.suppress(ImportError):
     from iblrig import video_pyspin
 
@@ -205,11 +207,6 @@ def prepare_video_session(subject_name: str = '', training_session: bool = False
     assert spinnaker_sdk_installed()
     assert pyspin_installed()
 
-    with video_pyspin.Cameras() as cameras:
-        for camera in cameras:
-            video_pyspin.configure_trigger(camera, enable=False)
-        del camera
-
     fake_session = EmptySession(subject='mickey', interactive=False)
     session_folder = fake_session.paths.SESSION_FOLDER
     raw_data_folder = session_folder.joinpath('raw_video_data')
@@ -221,6 +218,7 @@ def prepare_video_session(subject_name: str = '', training_session: bool = False
     params = {}
     for key, value in cam_index.items():
         params[f'{key}CameraIndex'] = value
+    video_pyspin.configure_trigger(enable=False)
     call_bonsai(bonsai_workflow, params)
 
     # record video
@@ -231,14 +229,15 @@ def prepare_video_session(subject_name: str = '', training_session: bool = False
     for key, _ in cam_index.items():
         params[f'FileName{key}'] = raw_data_folder.joinpath(f'_iblrig_{key.lower()}Camera.raw.avi')
         params[f'FileName{key}Data'] = raw_data_folder.joinpath(f'_iblrig_{key.lower()}Camera.frameData.bin')
-    call_bonsai(bonsai_workflow, params)
+    video_pyspin.configure_trigger(enable=True)
+    bonsai_process = call_bonsai(bonsai_workflow, params, wait=False)
+    input("PRESS ENTER TO START CAMERAS")
+    video_pyspin.configure_trigger(enable=False)
+    vc = VideoCopier(session_path=session_folder)
+    vc.create_video_stub(nvideos=1 if training_session else 3)
+    session_folder.joinpath("transfer_me.flag").touch()
+    bonsai_process.wait()
 
-    # remove empty-folders
+    # remove empty-folders and parent-folders
     if not any(raw_data_folder.iterdir()):
-        current_folder = raw_data_folder
-        while not any(current_folder.iterdir()):
-            current_folder.rmdir()
-            current_folder = Path(current_folder.parent)
-    else:
-        # TODO: create stubs
-        pass
+        os.removedirs(raw_data_folder)
