@@ -228,7 +228,7 @@ def prepare_video_session(subject_name: str = '', training_session: bool = False
         bonsai_workflow = BASE_PATH.joinpath('devices', 'camera_recordings', 'EphysRig_SaveVideo_TrainingTasks.bonsai')
     else:
         bonsai_workflow = BASE_PATH.joinpath('devices', 'camera_recordings', 'EphysRig_SaveVideo_EphysTasks.bonsai')
-    for key, value in cam_index.items():
+    for key, _ in cam_index.items():
         params[f'FileName{key}'] = raw_data_folder.joinpath(f'_iblrig_{key.lower()}Camera.raw.avi')
         params[f'FileName{key}Data'] = raw_data_folder.joinpath(f'_iblrig_{key.lower()}Camera.frameData.bin')
     call_bonsai(bonsai_workflow, params)

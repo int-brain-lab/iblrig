@@ -17,12 +17,12 @@ class TestAskUser(unittest.TestCase):
 
     @patch('builtins.input', side_effect=['', 'n', 'No', 'NO'])
     def test_ask_user_with_input_no(self, mock_input):
-        for i in range(4):
+        for _ in range(4):
             self.assertFalse(ask_user(''))
 
     @patch('builtins.input', side_effect=['', 'y', 'Yes', 'YES'])
     def test_ask_user_with_input_yes(self, mock_input):
-        for i in range(4):
+        for _ in range(4):
             self.assertTrue(ask_user('', default=True))
 
     @patch('builtins.input', side_effect=['invalid', 'blah', 'a', 'n'])

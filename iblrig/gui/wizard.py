@@ -886,7 +886,7 @@ class Worker(QtCore.QRunnable):
         """
         try:
             result = self.fn(*self.args, **self.kwargs)
-        except:  # noqa: 722
+        except:  # noqa: E722
             # Handle exceptions and emit error signal with exception details
             traceback.print_exc()
             exctype, value = sys.exc_info()[:2]
