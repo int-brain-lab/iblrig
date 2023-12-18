@@ -22,12 +22,26 @@ with contextlib.suppress(ImportError):
 log = setup_logger('iblrig', level='DEBUG')
 
 
+def pyspin_available() -> bool:
+    """
+    Check if, both, PySpin and its dependency Spinnaker SDK are installed.
+
+    Returns
+    -------
+    bool
+        True if PySpin and Spinnaker SDK are installed.
+    """
+    return spinnaker_sdk_installed() and pyspin_installed()
+
+
 def pyspin_installed() -> bool:
     """
     Check if the PySpin module is installed.
 
-    Returns:
-        bool: True if PySpin is installed, False otherwise.
+    Returns
+    -------
+    bool
+        True if PySpin is installed, False otherwise.
     """
     return find_spec('PySpin') is not None
 
@@ -36,8 +50,10 @@ def spinnaker_sdk_installed() -> bool:
     """
     Check if the Spinnaker SDK is installed on a Windows system.
 
-    Returns:
-        bool: True if the Spinnaker SDK is installed, False otherwise.
+    Returns
+    -------
+    bool
+        True if the Spinnaker SDK is installed, False otherwise.
     """
     if os.name != 'nt':
         return False
