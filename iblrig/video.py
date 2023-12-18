@@ -12,11 +12,10 @@ from urllib.error import URLError
 from iblrig.base_tasks import EmptySession
 from iblrig.constants import BASE_PATH
 from iblrig.tools import ask_user, call_bonsai
+from iblrig.transfer_experiments import VideoCopier
 from iblutil.io import hashfile  # type: ignore
 from iblutil.util import setup_logger
 from one.webclient import AlyxClient, http_download_file  # type: ignore
-
-from transfer_experiments import VideoCopier
 
 with contextlib.suppress(ImportError):
     from iblrig import video_pyspin
