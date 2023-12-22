@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 
 # Form implementation generated from reading ui file 'iblrig/gui/ui_wizard.ui'
 #
@@ -10,7 +11,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 
-class Ui_wizard:
+class Ui_wizard(object):
     def setupUi(self, wizard):
         wizard.setObjectName("wizard")
         wizard.resize(391, 660)
@@ -292,17 +293,17 @@ class Ui_wizard:
         self.uiLabelDiskIblrig = QtWidgets.QLabel(self.uiGroupDiskSpace)
         self.uiLabelDiskIblrig.setObjectName("uiLabelDiskIblrig")
         self.formLayout_2.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.uiLabelDiskIblrig)
-        self.uiLabelDiskAvailableValue = QtWidgets.QLabel(self.uiGroupDiskSpace)
-        self.uiLabelDiskAvailableValue.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
-        self.uiLabelDiskAvailableValue.setObjectName("uiLabelDiskAvailableValue")
-        self.formLayout_2.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.uiLabelDiskAvailableValue)
-        self.uiLabelDiskAvailable = QtWidgets.QLabel(self.uiGroupDiskSpace)
-        self.uiLabelDiskAvailable.setObjectName("uiLabelDiskAvailable")
-        self.formLayout_2.setWidget(3, QtWidgets.QFormLayout.LabelRole, self.uiLabelDiskAvailable)
         self.uiLabelDiskIblrigValue = QtWidgets.QLabel(self.uiGroupDiskSpace)
         self.uiLabelDiskIblrigValue.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
         self.uiLabelDiskIblrigValue.setObjectName("uiLabelDiskIblrigValue")
-        self.formLayout_2.setWidget(3, QtWidgets.QFormLayout.FieldRole, self.uiLabelDiskIblrigValue)
+        self.formLayout_2.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.uiLabelDiskIblrigValue)
+        self.uiLabelDiskAvailable = QtWidgets.QLabel(self.uiGroupDiskSpace)
+        self.uiLabelDiskAvailable.setObjectName("uiLabelDiskAvailable")
+        self.formLayout_2.setWidget(3, QtWidgets.QFormLayout.LabelRole, self.uiLabelDiskAvailable)
+        self.uiLabelDiskAvailableValue = QtWidgets.QLabel(self.uiGroupDiskSpace)
+        self.uiLabelDiskAvailableValue.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
+        self.uiLabelDiskAvailableValue.setObjectName("uiLabelDiskAvailableValue")
+        self.formLayout_2.setWidget(3, QtWidgets.QFormLayout.FieldRole, self.uiLabelDiskAvailableValue)
         spacerItem = QtWidgets.QSpacerItem(20, 0, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.formLayout_2.setItem(0, QtWidgets.QFormLayout.SpanningRole, spacerItem)
         spacerItem1 = QtWidgets.QSpacerItem(20, 0, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
@@ -372,9 +373,9 @@ class Ui_wizard:
         self.uiGroupTaskParameters.setTitle(_translate("wizard", "Task Specific Parameters"))
         self.uiGroupDiskSpace.setTitle(_translate("wizard", "Disk Usage"))
         self.uiLabelDiskIblrig.setText(_translate("wizard", "IBL Rig Data:"))
-        self.uiLabelDiskAvailableValue.setText(_translate("wizard", "80.3 GB"))
-        self.uiLabelDiskAvailable.setText(_translate("wizard", "Available Space:"))
         self.uiLabelDiskIblrigValue.setText(_translate("wizard", "1.2 GB"))
+        self.uiLabelDiskAvailable.setText(_translate("wizard", "Available Space:"))
+        self.uiLabelDiskAvailableValue.setText(_translate("wizard", "80.3 GB"))
         self.uiMenuTools.setTitle(_translate("wizard", "Tools"))
         self.uiActionLoadSession.setText(_translate("wizard", "load session"))
         self.uiActionRecent.setText(_translate("wizard", "recent"))

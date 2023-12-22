@@ -660,9 +660,9 @@
         </widget>
        </item>
        <item row="2" column="1">
-        <widget class="QLabel" name="uiLabelDiskAvailableValue">
+        <widget class="QLabel" name="uiLabelDiskIblrigValue">
          <property name="text">
-          <string>80.3 GB</string>
+          <string>1.2 GB</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -677,9 +677,9 @@
         </widget>
        </item>
        <item row="3" column="1">
-        <widget class="QLabel" name="uiLabelDiskIblrigValue">
+        <widget class="QLabel" name="uiLabelDiskAvailableValue">
          <property name="text">
-          <string>1.2 GB</string>
+          <string>80.3 GB</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
