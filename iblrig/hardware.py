@@ -196,7 +196,7 @@ class Bpod(BpodIO):
     def set_status_led(self, state: bool) -> bool:
         if self.can_control_led and self._arcom is not None:
             try:
-                log.info(f'{"en" if state else "dis"}abling Bpod Status LED')
+                log.debug(f'{"en" if state else "dis"}abling Bpod Status LED')
                 command = struct.pack('cB', b':', state)
                 self._arcom.serial_object.write(command)
                 if self._arcom.read_uint8() == 1:
