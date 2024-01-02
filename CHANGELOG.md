@@ -9,7 +9,7 @@ Changelog
 * validated parsing of settings files
 * fix display of disk stats
 * add legend to trials-timeline
-* clean-up and unit-tests
+* various improvements under the hood, clean-up and unit-tests
 
 8.12.13
 -------

@@ -23,6 +23,7 @@ import iblrig.path_helper
 import iblrig_tasks
 from iblrig.base_tasks import EmptySession
 from iblrig.choiceworld import get_subject_training_info, training_phase_from_contrast_set
+from iblrig.constants import BASE_DIR
 from iblrig.gui.ui_update import Ui_update
 from iblrig.gui.ui_wizard import Ui_wizard
 from iblrig.hardware import Bpod
@@ -184,8 +185,8 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.uiPushFlush.clicked.connect(self.flush)
         self.uiPushStart.clicked.connect(self.start_stop)
         self.uiPushPause.clicked.connect(self.pause)
-        self.uiListProjects.clicked.connect(self.enable_UI_elements)
-        self.uiListProcedures.clicked.connect(self.enable_UI_elements)
+        self.uiListProjects.clicked.connect(self._enable_ui_elements)
+        self.uiListProcedures.clicked.connect(self._enable_ui_elements)
         self.uiPushConnect.clicked.connect(self.alyx_connect)
         self.lineEditSubject.textChanged.connect(self._filter_subjects)
 
@@ -202,9 +203,6 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.uiPushPause.setIcon(self.style().standardIcon(QStyle.SP_MediaPause))
 
         self.controller2model()
-
-        self.checkSubProcessTimer = QtCore.QTimer()
-        self.checkSubProcessTimer.timeout.connect(self.check_sub_process)
 
         # display disk stats
         local_data = self.model.iblrig_settings['iblrig_local_data_path']
@@ -387,7 +385,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.uiComboSubject.setCurrentText(self.model.subject)
         _set_list_view_from_string_list(self.uiListProcedures, self.model.procedures)
         _set_list_view_from_string_list(self.uiListProjects, self.model.projects)
-        self.enable_UI_elements()
+        self._enable_ui_elements()
 
     def controller2model(self):
         self.model.procedures = [i.data() for i in self.uiListProcedures.selectedIndexes()]
@@ -597,7 +595,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
             case 'Start':
                 self.uiPushStart.setText('Stop')
                 self.uiPushStart.setIcon(self.style().standardIcon(QStyle.SP_MediaStop))
-                self.enable_UI_elements()
+                self._enable_ui_elements()
 
                 dlg = QtWidgets.QInputDialog()
                 weight, ok = dlg.getDouble(
@@ -611,7 +609,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 if not ok or weight == 0:
                     self.uiPushStart.setText('Start')
                     self.uiPushStart.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))
-                    self.enable_UI_elements()
+                    self._enable_ui_elements()
                     return
 
                 self.controller2model()
@@ -629,7 +627,8 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 bpod.close()
 
                 # runs the python command
-                cmd = [shutil.which('python')]
+                # cmd = [shutil.which('python')]
+                cmd = []
                 if self.model.task_name:
                     cmd.extend([str(self.model.all_tasks[self.model.task_name])])
                 if self.model.user:
@@ -654,84 +653,76 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 if self.running_task_process is None:
                     log.info('Starting subprocess')
                     log.info(subprocess.list2cmdline(cmd))
-                    # self.running_task_process = QProcess()
-                    # self.running_task_process.start(shutil.which('python'), cmd)
-                    # self.running_task_process.readyReadStandardOutput.connect(self.handle_stdout)
-                    # self.running_task_process.readyReadStandardError.connect(self.handle_stderr)
-                    self.running_task_process = subprocess.Popen(cmd)
+                    self.running_task_process = QtCore.QProcess()
+                    self.running_task_process.setWorkingDirectory(BASE_DIR)
+                    self.running_task_process.setProcessChannelMode(QtCore.QProcess.ForwardedChannels)
+                    self.running_task_process.finished.connect(self._on_task_finished)
+                    self.running_task_process.start(shutil.which('python'), cmd)
                 self.uiPushStart.setStatusTip('stop the session after the current trial')
                 self.uiPushStart.setIcon(self.style().standardIcon(QStyle.SP_MediaStop))
-                self.checkSubProcessTimer.start(1000)
             case 'Stop':
-                self.uiPushStart.setText('Stop')
-                self.checkSubProcessTimer.stop()
-                # if the process crashed catastrophically, the session folder might not exist
+                self.uiPushStart.setEnabled(False)
                 if self.model.session_folder and self.model.session_folder.exists():
                     self.model.session_folder.joinpath('.stop').touch()
 
-                # this will wait for the process to finish, usually the time for the trial to end
-                self.running_task_process.communicate()
-                if self.running_task_process.returncode:
-                    msgBox = QtWidgets.QMessageBox(parent=self)
-                    msgBox.setWindowTitle('Oh no!')
-                    msgBox.setText('The task was terminated with an error.\nPlease check the command-line output for details.')
-                    msgBox.setIcon(QtWidgets.QMessageBox().Critical)
-                    msgBox.exec_()
+    def _on_task_finished(self, exit_code, exit_status):
 
-                self.running_task_process = None
-                self.uiPushStart.setText('Start')
-                self.uiPushStart.setStatusTip('start the session')
-                self.uiPushStart.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))
+        if exit_code:
+            msg_box = QtWidgets.QMessageBox(parent=self)
+            msg_box.setWindowTitle('Oh no!')
+            msg_box.setText('The task was terminated with an error.\nPlease check the command-line output for details.')
+            msg_box.setIcon(QtWidgets.QMessageBox().Critical)
+            msg_box.exec_()
 
-                # re-enable UI elements and recall state of Bpod status LED
-                self.enable_UI_elements()
-                bpod = Bpod(self.model.hardware_settings['device_bpod']['COM_BPOD'])
-                bpod.set_status_led(self.uiPushStatusLED.isChecked())
+        self.running_task_process = None
 
-                if (task_settings_file := Path(self.model.raw_data_folder).joinpath('_iblrig_taskSettings.raw.json')).exists():
-                    with open(task_settings_file) as fid:
-                        session_data = json.load(fid)
+        # re-enable UI elements
+        self.uiPushStart.setText('Start')
+        self.uiPushStart.setStatusTip('start the session')
+        self.uiPushStart.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))
+        self._enable_ui_elements()
 
-                    # check if session was a dud
-                    if (ntrials := session_data['NTRIALS']) < 42 and 'spontaneous' not in self.model.task_name:
-                        answer = QtWidgets.QMessageBox.question(
-                            self,
-                            'Is this a dud?',
-                            f"The session consisted of only {ntrials:d} trial"
-                            f"{'s' if ntrials>1 else ''} and appears to be a dud.\n\n"
-                            f"Should it be deleted?",
-                        )
-                        if answer == QtWidgets.QMessageBox.Yes:
-                            shutil.rmtree(self.model.session_folder)
-                            return
+        # recall state of Bpod status LED
+        bpod = Bpod(self.model.hardware_settings['device_bpod']['COM_BPOD'])
+        bpod.set_status_led(self.uiPushStatusLED.isChecked())
 
-                    # manage poop count
-                    dlg = QtWidgets.QInputDialog()
-                    droppings, ok = dlg.getInt(
-                        self,
-                        'Droppings',
-                        'Number of droppings:',
-                        value=0,
-                        min=0,
-                        flags=dlg.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint,
-                    )
-                    session_data['POOP_COUNT'] = droppings
-                    with open(task_settings_file, 'w') as fid:
-                        json.dump(session_data, fid, indent=4, sort_keys=True, default=str)
+        if (task_settings_file := Path(self.model.raw_data_folder).joinpath('_iblrig_taskSettings.raw.json')).exists():
+            with open(task_settings_file) as fid:
+                session_data = json.load(fid)
 
-    def check_sub_process(self):
-        return_code = None if self.running_task_process is None else self.running_task_process.poll()
-        if return_code is None:
-            return
-        else:
-            self.start_stop()
+            # check if session was a dud
+            if (ntrials := session_data['NTRIALS']) < 42 and 'spontaneous' not in self.model.task_name:
+                answer = QtWidgets.QMessageBox.question(
+                    self,
+                    'Is this a dud?',
+                    f"The session consisted of only {ntrials:d} trial"
+                    f"{'s' if ntrials > 1 else ''} and appears to be a dud.\n\n"
+                    f"Should it be deleted?",
+                )
+                if answer == QtWidgets.QMessageBox.Yes:
+                    shutil.rmtree(self.model.session_folder)
+                    return
+
+            # manage poop count
+            dlg = QtWidgets.QInputDialog()
+            droppings, ok = dlg.getInt(
+                self,
+                'Droppings',
+                'Number of droppings:',
+                value=0,
+                min=0,
+                flags=dlg.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint,
+            )
+            session_data['POOP_COUNT'] = droppings
+            with open(task_settings_file, 'w') as fid:
+                json.dump(session_data, fid, indent=4, sort_keys=True, default=str)
 
     def flush(self):
         # paint button blue when in toggled state
         self.uiPushFlush.setStyleSheet(
             'QPushButton {background-color: rgb(128, 128, 255);}' if self.uiPushFlush.isChecked() else ''
         )
-        self.enable_UI_elements()
+        self._enable_ui_elements()
 
         try:
             bpod = Bpod(
@@ -750,7 +741,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
     def toggle_status_led(self, is_toggled: bool):
         # paint button green when in toggled state
         self.uiPushStatusLED.setStyleSheet('QPushButton {background-color: rgb(128, 255, 128);}' if is_toggled else '')
-        self.enable_UI_elements()
+        self._enable_ui_elements()
 
         try:
             bpod = Bpod(self.model.hardware_settings['device_bpod']['COM_BPOD'], skip_initialization=True)
@@ -762,7 +753,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
     def help(self):
         webbrowser.open('https://int-brain-lab.github.io/iblrig/usage.html')
 
-    def enable_UI_elements(self):
+    def _enable_ui_elements(self):
         is_running = self.uiPushStart.text() == 'Stop'
 
         self.uiPushStart.setEnabled(
