@@ -1,0 +1,8 @@
+<RCC>
+  <qresource prefix="images">
+    <file>wizard.png</file>
+    <file>icon_flush.svg</file>
+    <file>icon_help.svg</file>
+    <file>icon_status_led.svg</file>
+  </qresource>
+</RCC>

@@ -14,7 +14,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Optional
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtCore import QThread, QThreadPool
 from PyQt5.QtWidgets import QStyle
 
@@ -23,7 +23,6 @@ import iblrig.path_helper
 import iblrig_tasks
 from iblrig.base_tasks import EmptySession
 from iblrig.choiceworld import get_subject_training_info, training_phase_from_contrast_set
-from iblrig.constants import BASE_DIR
 from iblrig.gui.ui_update import Ui_update
 from iblrig.gui.ui_wizard import Ui_wizard
 from iblrig.hardware import Bpod
@@ -55,12 +54,6 @@ PROCEDURES = [
 ]
 
 PROJECTS = ['ibl_neuropixel_brainwide_01', 'practice']
-
-GUI_DIR = Path(BASE_DIR).joinpath('iblrig', 'gui')
-WIZARD_PNG = str(GUI_DIR.joinpath('wizard.png'))
-ICON_FLUSH = str(GUI_DIR.joinpath('icon_flush.svg'))
-ICON_HELP = str(GUI_DIR.joinpath('icon_help.svg'))
-ICON_STATUS_LED = str(GUI_DIR.joinpath('icon_status_led.svg'))
 
 
 def _set_list_view_from_string_list(ui_list: QtWidgets.QListView, string_list: list):
@@ -172,7 +165,6 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setupUi(self)
-        self.setWindowIcon(QtGui.QIcon(WIZARD_PNG))
 
         self.settings = QtCore.QSettings()
         self.move(self.settings.value('pos', self.pos(), QtCore.QPoint))
@@ -208,9 +200,6 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.uiPushStart.installEventFilter(self)
         self.uiPushStart.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))
         self.uiPushPause.setIcon(self.style().standardIcon(QStyle.SP_MediaPause))
-        self.uiPushFlush.setIcon(QtGui.QIcon(ICON_FLUSH))
-        self.uiPushHelp.setIcon(QtGui.QIcon(ICON_HELP))
-        self.uiPushStatusLED.setIcon(QtGui.QIcon(ICON_STATUS_LED))
 
         self.controller2model()
 
@@ -930,8 +919,6 @@ class UpdateNotice(QtWidgets.QDialog, Ui_update):
         super().__init__(parent)
         self.setupUi(self)
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose, True)
-        self.setWindowIcon(QtGui.QIcon(WIZARD_PNG))
-        self.uiLabelLogo.setPixmap(QtGui.QPixmap(WIZARD_PNG))
         self.uiLabelHeader.setText(f'Update to iblrig {version} is available.')
         self.uiTextBrowserChanges.setMarkdown(get_changelog())
         self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)

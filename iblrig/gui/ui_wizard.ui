@@ -41,8 +41,8 @@
    <string>IBL Rig Wizard</string>
   </property>
   <property name="windowIcon">
-   <iconset>
-    <normaloff>wizard.png</normaloff>wizard.png</iconset>
+   <iconset resource="resources.qrc">
+    <normaloff>:/images/wizard.png</normaloff>:/images/wizard.png</iconset>
   </property>
   <property name="windowOpacity">
    <double>1.000000000000000</double>
@@ -102,6 +102,10 @@
          <property name="text">
           <string> Flush Valve</string>
          </property>
+         <property name="icon">
+          <iconset resource="resources.qrc">
+           <normaloff>:/images/icon_flush.svg</normaloff>:/images/icon_flush.svg</iconset>
+         </property>
          <property name="checkable">
           <bool>true</bool>
          </property>
@@ -121,6 +125,10 @@
          <property name="text">
           <string>  Help!</string>
          </property>
+         <property name="icon">
+          <iconset resource="resources.qrc">
+           <normaloff>:/images/icon_help.svg</normaloff>:/images/icon_help.svg</iconset>
+         </property>
         </widget>
        </item>
        <item row="1" column="0">
@@ -130,6 +138,10 @@
          </property>
          <property name="text">
           <string> Status LED</string>
+         </property>
+         <property name="icon">
+          <iconset resource="resources.qrc">
+           <normaloff>:/images/icon_status_led.svg</normaloff>:/images/icon_status_led.svg</iconset>
          </property>
          <property name="checkable">
           <bool>true</bool>
@@ -771,7 +783,9 @@
    </property>
   </action>
  </widget>
- <resources/>
+ <resources>
+  <include location="resources.qrc"/>
+ </resources>
  <connections/>
  <designerdata>
   <property name="gridDeltaX">

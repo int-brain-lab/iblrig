@@ -1,5 +1,6 @@
+# -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'ui_update.ui'
+# Form implementation generated from reading ui file 'iblrig/gui/ui_update.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.9
 #
@@ -10,7 +11,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 
-class Ui_update:
+class Ui_update(object):
     def setupUi(self, update):
         update.setObjectName("update")
         update.resize(451, 496)
@@ -20,7 +21,7 @@ class Ui_update:
         sizePolicy.setHeightForWidth(update.sizePolicy().hasHeightForWidth())
         update.setSizePolicy(sizePolicy)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("wizard.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap("iblrig/gui/wizard.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         update.setWindowIcon(icon)
         update.setModal(True)
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout(update)
@@ -31,7 +32,7 @@ class Ui_update:
         self.uiLabelLogo = QtWidgets.QLabel(update)
         self.uiLabelLogo.setMaximumSize(QtCore.QSize(64, 64))
         self.uiLabelLogo.setText("")
-        self.uiLabelLogo.setPixmap(QtGui.QPixmap("wizard.png"))
+        self.uiLabelLogo.setPixmap(QtGui.QPixmap(":/images/wizard.png"))
         self.uiLabelLogo.setScaledContents(True)
         self.uiLabelLogo.setObjectName("uiLabelLogo")
         self.uiLayoutLogo.addWidget(self.uiLabelLogo)
@@ -67,6 +68,9 @@ class Ui_update:
         spacerItem2 = QtWidgets.QSpacerItem(1, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.uiLayoutCommand.addItem(spacerItem2)
         self.uiLineEditCommand = QtWidgets.QLineEdit(update)
+        self.uiLineEditCommand.setStyleSheet("background-color: rgb(1, 36, 86);\n"
+"color: rgb(255, 255, 255);")
+        self.uiLineEditCommand.setFrame(False)
         self.uiLineEditCommand.setAlignment(QtCore.Qt.AlignCenter)
         self.uiLineEditCommand.setReadOnly(True)
         self.uiLineEditCommand.setObjectName("uiLineEditCommand")
@@ -103,3 +107,14 @@ class Ui_update:
         self.uiLabelFooter.setText(_translate("update", "To update, close IBL Rig Wizard and run the following command within the iblrigv8 Python environment:"))
         self.uiLineEditCommand.setText(_translate("update", "upgrade_iblrig"))
         self.uiPushButtonOK.setText(_translate("update", "OK"))
+from iblrig.gui import resources_rc
+
+
+if __name__ == "__main__":
+    import sys
+    app = QtWidgets.QApplication(sys.argv)
+    update = QtWidgets.QDialog()
+    ui = Ui_update()
+    ui.setupUi(update)
+    update.show()
+    sys.exit(app.exec_())
