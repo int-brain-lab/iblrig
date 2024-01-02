@@ -32,7 +32,7 @@ class Ui_update(object):
         self.uiLabelLogo = QtWidgets.QLabel(update)
         self.uiLabelLogo.setMaximumSize(QtCore.QSize(64, 64))
         self.uiLabelLogo.setText("")
-        self.uiLabelLogo.setPixmap(QtGui.QPixmap(":/images/wizard.png"))
+        self.uiLabelLogo.setPixmap(QtGui.QPixmap(":/images/iblrig_logo"))
         self.uiLabelLogo.setScaledContents(True)
         self.uiLabelLogo.setObjectName("uiLabelLogo")
         self.uiLayoutLogo.addWidget(self.uiLabelLogo)

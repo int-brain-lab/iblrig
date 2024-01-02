@@ -42,7 +42,7 @@
   </property>
   <property name="windowIcon">
    <iconset resource="resources.qrc">
-    <normaloff>:/images/wizard.png</normaloff>:/images/wizard.png</iconset>
+    <normaloff>:/images/iblrig_logo</normaloff>:/images/iblrig_logo</iconset>
   </property>
   <property name="windowOpacity">
    <double>1.000000000000000</double>
@@ -104,7 +104,7 @@
          </property>
          <property name="icon">
           <iconset resource="resources.qrc">
-           <normaloff>:/images/icon_flush.svg</normaloff>:/images/icon_flush.svg</iconset>
+           <normaloff>:/images/flush</normaloff>:/images/flush</iconset>
          </property>
          <property name="checkable">
           <bool>true</bool>
@@ -127,7 +127,7 @@
          </property>
          <property name="icon">
           <iconset resource="resources.qrc">
-           <normaloff>:/images/icon_help.svg</normaloff>:/images/icon_help.svg</iconset>
+           <normaloff>:/images/help</normaloff>:/images/help</iconset>
          </property>
         </widget>
        </item>
@@ -141,7 +141,7 @@
          </property>
          <property name="icon">
           <iconset resource="resources.qrc">
-           <normaloff>:/images/icon_status_led.svg</normaloff>:/images/icon_status_led.svg</iconset>
+           <normaloff>:/images/status_led</normaloff>:/images/status_led</iconset>
          </property>
          <property name="checkable">
           <bool>true</bool>
