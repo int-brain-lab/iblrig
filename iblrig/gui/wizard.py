@@ -26,10 +26,12 @@ from iblrig.choiceworld import get_subject_training_info, training_phase_from_co
 from iblrig.constants import BASE_DIR
 from iblrig.gui.ui_update import Ui_update
 from iblrig.gui.ui_wizard import Ui_wizard
+from iblrig.gui.ui_tab_session import Ui_tabSession
 from iblrig.hardware import Bpod
 from iblrig.misc import _get_task_argument_parser
 from iblrig.path_helper import load_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings, RigSettings
+from iblrig.tools import get_anydesk_id
 from iblrig.version_management import check_for_updates, get_changelog, is_dirty
 from iblutil.util import setup_logger
 from one.api import ONE
@@ -53,9 +55,8 @@ PROCEDURES = [
     'handling_habituation',
     'Imaging',
 ]
-
 PROJECTS = ['ibl_neuropixel_brainwide_01', 'practice']
-
+DOC_URL = 'https://int-brain-lab.github.io/iblrig'
 
 def _set_list_view_from_string_list(ui_list: QtWidgets.QListView, string_list: list):
     """Small boiler plate util to set the selection of a list view from a list of strings"""
@@ -181,7 +182,6 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.uiActionTrainingLevelV7.triggered.connect(self._on_menu_training_level_v7)
         self.uiComboTask.currentTextChanged.connect(self.controls_for_extra_parameters)
         self.uiComboSubject.currentTextChanged.connect(self.model.get_subject_details)
-        self.uiPushHelp.clicked.connect(self.help)
         self.uiPushFlush.clicked.connect(self.flush)
         self.uiPushStart.clicked.connect(self.start_stop)
         self.uiPushPause.clicked.connect(self.pause)
@@ -204,32 +204,44 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
 
         self.controller2model()
 
-        # display disk stats
+        self.tabWidget.currentChanged.connect(self._on_switch_tab)
+
+        # documentation
+        self.uiPushWebHome.clicked.connect(lambda: self.webEngineView.load(QtCore.QUrl(DOC_URL)))
+        self.uiPushWebBrowser.clicked.connect(lambda: webbrowser.open(DOC_URL))
+        # self.webEngineView.
+
+        # disk stats
         local_data = self.model.iblrig_settings['iblrig_local_data_path']
         local_data = Path(local_data) if local_data else Path.home().joinpath('iblrig_data')
         v8data_size = sum(file.stat().st_size for file in Path(local_data).rglob('*'))
         total_space, total_used, total_free = shutil.disk_usage(local_data.anchor)
-        self.uiProgressDiskSpace.setStatusTip(f'utilization of drive {local_data.anchor}')
+        self.uiProgressDiskSpace = QtWidgets.QProgressBar(self)
+        self.uiProgressDiskSpace.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        self.uiProgressDiskSpace.resize(20, 20)
         self.uiProgressDiskSpace.setValue(round(total_used / total_space * 100))
-        self.uiLabelDiskAvailableValue.setText(f'{total_free / 1024 ** 3 : .1f} GB')
-        self.uiLabelDiskIblrigValue.setText(f'{v8data_size / 1024 ** 3 : .1f} GB')
+        self.uiProgressDiskSpace.setStatusTip(f'local IBLRIG data: {v8data_size / 1024 ** 3 : .1f} GB  •  '
+                                              f'available space: {total_free / 1024 ** 3 : .1f} GB')
 
-        tmp = QtWidgets.QLabel(f'iblrig v{iblrig.__version__}')
-        tmp.setContentsMargins(4, 0, 0, 0)
-        self.statusbar.addWidget(tmp)
+        # statusbar
+        self.statusbar.setContentsMargins(0, 0, 6, 0)
+        self.uiLabelStatus = QtWidgets.QLabel(f'IBLRIG v{iblrig.__version__}')
+        self.uiLabelStatus.setContentsMargins(4, 0, 4, 0)
+        self.statusbar.addWidget(self.uiLabelStatus, 1)
+        self.statusbar.addPermanentWidget(self.uiProgressDiskSpace)
         self.controls_for_extra_parameters()
 
         self.layout().setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
         self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowFullscreenButtonHint)
 
-        # get AnyDesk ID
-        # anydesk_worker = Worker(get_anydesk_id)
-        # anydesk_worker.signals.result.connect(lambda var: print(f'Your AnyDesk ID: {var:s}'))
-        # QThreadPool.globalInstance().tryStart(anydesk_worker)
-
         # disable control of LED if Bpod does not have the respective capability
         bpod = Bpod(self.model.hardware_settings['device_bpod']['COM_BPOD'], skip_initialization=True)
         self.uiPushStatusLED.setEnabled(bpod.can_control_led)
+
+        # get AnyDesk ID
+        anydesk_worker = Worker(get_anydesk_id, True)
+        anydesk_worker.signals.result.connect(self._on_get_anydesk_result)
+        QThreadPool.globalInstance().tryStart(anydesk_worker)
 
         # check for update
         update_worker = Worker(check_for_updates)
@@ -240,6 +252,11 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         dirty_worker = Worker(is_dirty)
         dirty_worker.signals.result.connect(self._on_check_dirty_result)
         QThreadPool.globalInstance().start(dirty_worker)
+
+
+    def _on_switch_tab(self, index):
+        # if self.tabWidget.tabText(index) == 'Session':
+        QtCore.QTimer.singleShot(1, lambda: self.resize(self.minimumSizeHint()))
 
     def _on_menu_training_level_v7(self) -> None:
         """
@@ -304,6 +321,23 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         """
         if result[0]:
             UpdateNotice(parent=self, version=result[1])
+
+    def _on_get_anydesk_result(self, result: str | None) -> None:
+        """
+        Handle the result of checking for updates.
+
+        Parameters
+        ----------
+        result : tuple[bool, str | None]
+            A tuple containing a boolean flag indicating update availability (result[0])
+            and the remote version string (result[1]).
+
+        Returns
+        -------
+        None
+        """
+        if result is not None:
+            self.uiLabelStatus.setText(f'IBLRIG v{iblrig.__version__}  •  AnyDesk ID: {result}')
 
     def _on_check_dirty_result(self, repository_is_dirty: bool) -> None:
         """
@@ -750,9 +784,6 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
             self.uiPushStatusLED.setChecked(False)
             self.uiPushStatusLED.setStyleSheet('')
 
-    def help(self):
-        webbrowser.open('https://int-brain-lab.github.io/iblrig/usage.html')
-
     def _enable_ui_elements(self):
         is_running = self.uiPushStart.text() == 'Stop'
 
@@ -828,7 +859,7 @@ class Worker(QtCore.QRunnable):
         emits signals accordingly.
     """
 
-    def __init__(self, fn: Callable[..., Any], *args: Any, **kwargs: Any) -> None:
+    def __init__(self, fn: Callable[..., Any], *args: Any, **kwargs: Any):
         """
         Initialize the Worker instance.
 
@@ -848,7 +879,7 @@ class Worker(QtCore.QRunnable):
         None
         """
         super().__init__()
-        self.fn: Callable[..., Any] = fn
+        self.fn = fn
         self.args = args
         self.kwargs = kwargs
         self.signals: WorkerSignals = WorkerSignals()
@@ -936,7 +967,7 @@ def main():
     if os.name == 'nt':
         app_id = f'IBL.iblrig.wizard.{iblrig.__version__}'
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(app_id)
-    app = QtWidgets.QApplication(sys.argv)
+    app = QtWidgets.QApplication(['', '--no-sandbox'])
     app.setStyle('Fusion')
     w = RigWizard()
     w.show()
