@@ -8,6 +8,7 @@ import random
 import subprocess
 import time
 import traceback
+import logging
 from pathlib import Path
 from string import ascii_letters
 from typing import Annotated, Literal
@@ -21,11 +22,11 @@ import iblrig.graphic
 from iblrig import choiceworld, misc
 from iblrig.hardware import SOFTCODE
 from iblutil.io import jsonable
-from iblutil.util import Bunch, setup_logger
+from iblutil.util import Bunch
 from pybpodapi.com.messaging.trial import Trial
 from pybpodapi.protocol import StateMachine
 
-log = setup_logger('iblrig')
+log = logging.getLogger(__name__)
 
 NTRIALS_INIT = 2000
 NBLOCKS_INIT = 100

@@ -8,6 +8,7 @@ import subprocess
 import sys
 import traceback
 import webbrowser
+import logging
 from collections import OrderedDict
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass
@@ -33,7 +34,6 @@ from iblrig.path_helper import load_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings, RigSettings
 from iblrig.tools import get_anydesk_id
 from iblrig.version_management import check_for_updates, get_changelog, is_dirty
-from iblutil.util import setup_logger
 from one.api import ONE
 from pybpodapi import exceptions
 
@@ -45,7 +45,7 @@ except ImportError:
     CUSTOM_TASKS = False
     pass
 
-log = setup_logger('iblrig')
+log = logging.getLogger(__name__)
 
 PROCEDURES = [
     'Behavior training/tasks',

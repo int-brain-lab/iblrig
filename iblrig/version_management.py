@@ -2,6 +2,7 @@ import re
 import sys
 from pathlib import Path
 from subprocess import STDOUT, CalledProcessError, SubprocessError, check_call, check_output
+import logging
 
 import requests
 from packaging import version
@@ -9,9 +10,8 @@ from packaging import version
 from iblrig import __version__
 from iblrig.constants import BASE_DIR, IS_GIT
 from iblrig.tools import ask_user, internet_available, static_vars
-from iblutil.util import setup_logger
 
-log = setup_logger('iblrig')
+log = logging.getLogger(__name__)
 
 
 def check_for_updates() -> tuple[bool, str]:

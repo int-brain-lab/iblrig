@@ -2,14 +2,14 @@
 Choice World Task related logic and functions that translate the task description in
 Appendix 2 of the paper into code.
 """
+import logging
 
 import numpy as np
 
 import iblrig.raw_data_loaders
 from iblrig.path_helper import iterate_previous_sessions
-from iblutil.util import setup_logger
 
-logger = setup_logger('iblrig', level='INFO')
+log = logging.getLogger(__name__)
 
 CONTRASTS = 1 / np.array([-1, -2, -4, -8, -16, np.inf, 16, 8, 4, 2, 1])
 DEFAULT_TRAINING_PHASE = 0

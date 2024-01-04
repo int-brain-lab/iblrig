@@ -1,3 +1,4 @@
+import logging
 import argparse
 import datetime
 import json
@@ -14,9 +15,8 @@ from iblrig.online_plots import OnlinePlots
 from iblrig.path_helper import _load_settings_yaml, get_local_and_remote_paths
 from iblrig.raw_data_loaders import load_task_jsonable
 from iblrig.transfer_experiments import BehaviorCopier, EphysCopier, SessionCopier, VideoCopier
-from iblutil.util import setup_logger
 
-logger = setup_logger('iblrig', level='INFO')
+log = logging.getLogger(__name__)
 
 
 def _transfer_parser(description: str) -> argparse.ArgumentParser:

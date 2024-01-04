@@ -1,8 +1,9 @@
+import logging
+
 import iblrig
-from iblutil.util import setup_logger
 from one.registration import RegistrationClient
 
-log = setup_logger('iblrig')
+log = logging.getLogger(__name__)
 
 
 def register_session(session_path, settings_dict, one=None):

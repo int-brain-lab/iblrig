@@ -2,6 +2,7 @@ import os
 import re
 import shutil
 import socket
+import logging
 import subprocess
 from collections.abc import Callable
 from pathlib import Path
@@ -9,9 +10,8 @@ from typing import Any
 
 from iblrig.constants import BONSAI_EXE
 from iblrig.path_helper import create_bonsai_layout_from_template
-from iblutil.util import setup_logger
 
-logger = setup_logger('iblrig')
+log = logging.getLogger(__name__)
 
 
 def ask_user(prompt: str, default: bool = False) -> bool:

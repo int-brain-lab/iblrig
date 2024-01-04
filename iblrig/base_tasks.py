@@ -221,7 +221,7 @@ class BaseSession(ABC):
         return paths
 
     def _setup_loggers(self, level='INFO', file=None):
-        logger = setup_logger('iblrig', level=level, file=file)
+        logger = setup_logger('iblrig.task', level=level, file=file)
         setup_logger('pybpodapi', level=level, file=file)
         if self.logger is None:
             self.logger = logger
