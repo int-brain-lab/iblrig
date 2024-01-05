@@ -48,8 +48,10 @@ def register_session(session_path, settings_dict, one=None):
             log.info(f"weighing registered in Alyx database: {ses['subject']}, {settings_dict['SUBJECT_WEIGHT']}g")
 
     # add the water administration if there is no water administration registered
-    if settings_dict['TOTAL_WATER_DELIVERED'] and len(one.alyx.rest('water-administrations', 'list',
-                                                      session=ses['url'][-36:], no_cache=True)) == 0:
+    if (
+        settings_dict['TOTAL_WATER_DELIVERED']
+        and len(one.alyx.rest('water-administrations', 'list', session=ses['url'][-36:], no_cache=True)) == 0
+    ):
         wa_data = dict(
             session=ses['url'][-36:],
             subject=settings_dict['SUBJECT_NAME'],
