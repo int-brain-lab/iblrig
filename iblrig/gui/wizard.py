@@ -26,7 +26,6 @@ from iblrig.choiceworld import get_subject_training_info, training_phase_from_co
 from iblrig.constants import BASE_DIR
 from iblrig.gui.ui_update import Ui_update
 from iblrig.gui.ui_wizard import Ui_wizard
-from iblrig.gui.ui_tab_session import Ui_tabSession
 from iblrig.hardware import Bpod
 from iblrig.misc import _get_task_argument_parser
 from iblrig.path_helper import load_pydantic_yaml
@@ -57,6 +56,7 @@ PROCEDURES = [
 ]
 PROJECTS = ['ibl_neuropixel_brainwide_01', 'practice']
 DOC_URL = 'https://int-brain-lab.github.io/iblrig'
+
 
 def _set_list_view_from_string_list(ui_list: QtWidgets.QListView, string_list: list):
     """Small boiler plate util to set the selection of a list view from a list of strings"""
@@ -220,8 +220,9 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.uiProgressDiskSpace.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         self.uiProgressDiskSpace.resize(20, 20)
         self.uiProgressDiskSpace.setValue(round(total_used / total_space * 100))
-        self.uiProgressDiskSpace.setStatusTip(f'local IBLRIG data: {v8data_size / 1024 ** 3 : .1f} GB  •  '
-                                              f'available space: {total_free / 1024 ** 3 : .1f} GB')
+        self.uiProgressDiskSpace.setStatusTip(
+            f'local IBLRIG data: {v8data_size / 1024 ** 3 : .1f} GB  •  ' f'available space: {total_free / 1024 ** 3 : .1f} GB'
+        )
 
         # statusbar
         self.statusbar.setContentsMargins(0, 0, 6, 0)
@@ -252,7 +253,6 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         dirty_worker = Worker(is_dirty)
         dirty_worker.signals.result.connect(self._on_check_dirty_result)
         QThreadPool.globalInstance().start(dirty_worker)
-
 
     def _on_switch_tab(self, index):
         # if self.tabWidget.tabText(index) == 'Session':
@@ -702,7 +702,6 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                     self.model.session_folder.joinpath('.stop').touch()
 
     def _on_task_finished(self, exit_code, exit_status):
-
         if exit_code:
             msg_box = QtWidgets.QMessageBox(parent=self)
             msg_box.setWindowTitle('Oh no!')

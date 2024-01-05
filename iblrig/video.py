@@ -230,11 +230,11 @@ def prepare_video_session(subject_name: str = '', training_session: bool = False
         params[f'FileName{key}Data'] = raw_data_folder.joinpath(f'_iblrig_{key.lower()}Camera.frameData.bin')
     video_pyspin.configure_trigger(enable=True)
     bonsai_process = call_bonsai(bonsai_workflow, params, wait=False)
-    input("PRESS ENTER TO START CAMERAS")
+    input('PRESS ENTER TO START CAMERAS')
     video_pyspin.configure_trigger(enable=False)
     vc = VideoCopier(session_path=session_folder)
     vc.create_video_stub(nvideos=1 if training_session else 3)
-    session_folder.joinpath("transfer_me.flag").touch()
+    session_folder.joinpath('transfer_me.flag').touch()
     bonsai_process.wait()
 
     # remove empty-folders and parent-folders
