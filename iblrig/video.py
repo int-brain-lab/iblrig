@@ -1,6 +1,6 @@
 import argparse
-import logging
 import contextlib
+import logging
 import os
 import subprocess
 import sys

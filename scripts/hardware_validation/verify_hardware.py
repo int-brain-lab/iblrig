@@ -1,9 +1,9 @@
+import logging
 import platform
 import time
 from glob import glob
 from pathlib import Path
 from struct import unpack
-import logging
 
 import numpy as np
 import serial.tools.list_ports

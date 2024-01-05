@@ -1,8 +1,8 @@
+import logging
 import os
 import re
 import shutil
 import socket
-import logging
 import subprocess
 from collections.abc import Callable
 from pathlib import Path
@@ -94,7 +94,7 @@ def get_anydesk_id(silent: bool = False) -> str | None:
             anydesk_id = f'{int(id_string):,}'.replace(',', ' ')
     except (FileNotFoundError, subprocess.CalledProcessError, StopIteration, UnicodeDecodeError) as e:
         if silent:
-            logger.debug(e, exc_info=True)
+            log.debug(e, exc_info=True)
         else:
             raise e
     return anydesk_id
@@ -235,7 +235,7 @@ def call_bonsai(
     if not bootstrap:
         cmd.append('--no-boot')
 
-    logger.info(f'Starting Bonsai workflow `{workflow_file.name}`')
+    log.info(f'Starting Bonsai workflow `{workflow_file.name}`')
     print(cmd)
     if wait:
         return subprocess.run(args=cmd, cwd=cwd, check=check)

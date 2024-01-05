@@ -1,11 +1,11 @@
 """
 This modules contains hardware classes used to interact with modules.
 """
+import logging
 import os
 import re
 import shutil
 import struct
-import logging
 import subprocess
 import threading
 import time

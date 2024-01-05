@@ -1,8 +1,8 @@
+import logging
 import re
 import sys
 from pathlib import Path
 from subprocess import STDOUT, CalledProcessError, SubprocessError, check_call, check_output
-import logging
 
 import requests
 from packaging import version
