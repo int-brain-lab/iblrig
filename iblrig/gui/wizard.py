@@ -208,7 +208,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
 
         # documentation
         self.uiPushWebHome.clicked.connect(lambda: self.webEngineView.load(QtCore.QUrl(DOC_URL)))
-        self.uiPushWebBrowser.clicked.connect(lambda: webbrowser.open(DOC_URL))
+        self.uiPushWebBrowser.clicked.connect(lambda: webbrowser.open(str(self.webEngineView.url().url())))
         # self.webEngineView.
 
         # disk stats
@@ -231,7 +231,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.statusbar.addPermanentWidget(self.uiProgressDiskSpace)
         self.controls_for_extra_parameters()
 
-        self.layout().setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
+        # self.layout().setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
         self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowFullscreenButtonHint)
 
         # disable control of LED if Bpod does not have the respective capability
@@ -256,7 +256,9 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
 
     def _on_switch_tab(self, index):
         # if self.tabWidget.tabText(index) == 'Session':
-        QtCore.QTimer.singleShot(1, lambda: self.resize(self.minimumSizeHint()))
+        # QtCore.QTimer.singleShot(1, lambda: self.resize(self.minimumSizeHint()))
+        # self.adjustSize()
+        pass
 
     def _on_menu_training_level_v7(self) -> None:
         """
