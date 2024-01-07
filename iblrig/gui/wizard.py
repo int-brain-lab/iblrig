@@ -55,7 +55,11 @@ PROCEDURES = [
     'Imaging',
 ]
 PROJECTS = ['ibl_neuropixel_brainwide_01', 'practice']
-DOC_URL = 'https://int-brain-lab.github.io/iblrig'
+
+URL_DOC = 'https://int-brain-lab.github.io/iblrig'
+URL_REPO = 'https://github.com/int-brain-lab/iblrig/tree/iblrigv8'
+URL_ISSUES = 'https://github.com/int-brain-lab/iblrig/issues'
+URL_DISCUSSION = 'https://github.com/int-brain-lab/iblrig/discussions'
 
 
 def _set_list_view_from_string_list(ui_list: QtWidgets.QListView, string_list: list):
@@ -207,9 +211,15 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.tabWidget.currentChanged.connect(self._on_switch_tab)
 
         # documentation
-        self.uiPushWebHome.clicked.connect(lambda: self.webEngineView.load(QtCore.QUrl(DOC_URL)))
+        self.uiPushWebHome.clicked.connect(lambda: self.webEngineView.load(QtCore.QUrl(URL_DOC)))
         self.uiPushWebBrowser.clicked.connect(lambda: webbrowser.open(str(self.webEngineView.url().url())))
         # self.webEngineView.
+
+        # tab: about
+        self.commandLinkButtonGitHub.clicked.connect(lambda: webbrowser.open(URL_REPO))
+        self.commandLinkButtonDoc.clicked.connect(lambda: webbrowser.open(URL_DOC))
+        self.commandLinkButtonIssues.clicked.connect(lambda: webbrowser.open(URL_ISSUES))
+        self.commandLinkButtonDiscussion.clicked.connect(lambda: webbrowser.open(URL_DISCUSSION))
 
         # disk stats
         local_data = self.model.iblrig_settings['iblrig_local_data_path']
