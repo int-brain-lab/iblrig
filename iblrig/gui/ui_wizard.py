@@ -404,6 +404,7 @@ class Ui_wizard(object):
         self.commandLinkButtonDoc.setObjectName("commandLinkButtonDoc")
         self.gridLayout_3.addWidget(self.commandLinkButtonDoc, 8, 1, 1, 3)
         self.gridLayout_3.setRowStretch(0, 2)
+        self.gridLayout_3.setRowStretch(13, 3)
         icon12 = QtGui.QIcon()
         icon12.addPixmap(QtGui.QPixmap(":/images/about"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.tabWidget.addTab(self.tabAbout, icon12, "")

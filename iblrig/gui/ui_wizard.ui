@@ -851,7 +851,7 @@
        <attribute name="title">
         <string>About</string>
        </attribute>
-       <layout class="QGridLayout" name="gridLayout_3" rowstretch="2,0,0,0,0,0,0,0,0,0,0,0,0,0">
+       <layout class="QGridLayout" name="gridLayout_3" rowstretch="2,0,0,0,0,0,0,0,0,0,0,0,0,3">
         <item row="0" column="2">
          <spacer name="verticalSpacer">
           <property name="orientation">
