@@ -12,14 +12,14 @@ They are computed using either the Bpod or FGPA/PXI data, depending on the rig u
 
 .. tip::
 
-     The Task QC metrics definitions can be found in this
-    `documentation page <https://int-brain-lab.github.io/iblenv/_autosummary/ibllib.qc.task_metrics.html>`__
+     The Task QC metrics definitions can be found in this `documentation page <https://int-brain-lab.github.io/iblenv/_autosummary/ibllib.qc.task_metrics.html>`__
 
 
 Some are essential, i.e. if they fail you should immediately take action and verify your rig,
 and some are not as critical.
 
 Essential taskQCs:
+
 * check_audio_pre_trial
 * check_correct_trial_event_sequence
 * check_error_trial_event_sequence
@@ -33,6 +33,7 @@ Essential taskQCs:
 * check_wheel_freeze_during_quiescence
 
 Non essential taskQCs:
+
 * check_stimOff_itiIn_delays
 * check_positive_feedback_stimOff_delays
 * check_negative_feedback_stimOff_delays
@@ -57,6 +58,7 @@ Quantifying the task QC outcome at the session level
 ----------------------------------------------------
 
 The criteria for whether a session passes the Task QC is:
+
 * ``NOT_SET``: default value  (= not run yet)
 * ``FAIL``: if at least one metric is < 95%
 * ``WARNING``: if all metrics are >=95% , and at least one metric is <99 %
@@ -65,7 +67,7 @@ The criteria for whether a session passes the Task QC is:
 This aggregation is done on all metrics, regardless if they are essential or not.
 
 The criteria is defined at
-`this code line <https://github.com/int-brain-lab/ibllib/blob/master/ibllib/qc/task_metrics.py#L63 >`__
+`this code line <https://github.com/int-brain-lab/ibllib/blob/master/ibllib/qc/task_metrics.py#L63>`__
 
 How to check the task QC outcome
 --------------------------------
@@ -91,11 +93,12 @@ Once the session is registered on Alyx
 
 2. **Run the taskQC Viewer to investigate**
 
-    The application `Task QC Viewer <https://github.com/int-brain-lab/iblapps/blob/develop/task_qc_viewer/README.md >`__
+    The application `Task QC Viewer <https://github.com/int-brain-lab/iblapps/blob/develop/task_qc_viewer/README.md>`__
     enables to visualise the data streams of problematic trials.
 
     .. tip::
         Make sure you are up-to-date on the following branches:
+
         * develop on ibllib
         * master on iblapps
 
