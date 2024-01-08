@@ -79,7 +79,7 @@ To write the documentation:
 * If you are writing in a new file, add it to the ``index.rst`` so it appears in the table of content
 * Push all your changes to the ``iblrigv8dev`` branch ; if this branch does not exist, create it first
 
-To release the documentation onto the `website<https://int-brain-lab.github.io/iblrig>`_:
+To release the documentation onto the `website<https://int-brain-lab.github.io/iblrig>`__:
 
 * Wait for the next release, or
 * Manually trigger the GitHub action by clicking "Run Workflow" (select ``master``) here: https://github.com/int-brain-lab/iblrig/actions/workflows/docs.yaml
