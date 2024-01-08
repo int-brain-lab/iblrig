@@ -77,7 +77,7 @@ Once the session is registered on Alyx
 1. **Check on the Alyx webpage**
 
    From the `session overview page on Alyx <https://alyx.internationalbrainlab.org/ibl_reports/gallery/sessions>`__,
-   find your session click on ``See more session info ``.
+   find your session click on ``See more session info``.
    The session QC is displayed in one of the right panels.
 
    To get more information regarding which test pass or fail (contributing to this overall session QC),
@@ -88,8 +88,8 @@ Once the session is registered on Alyx
         You can hover over the bars with your mouse to easily know the name of the corresponding metric.
         This is useful if the value of the metric is ``0``.
 
-.. warning::
-    If an :ref:`essential metric<Metrics definitions>` fails, run the Task QC Viewer to investigate why.
+    .. warning::
+        If an :ref:`essential metric<Metrics definitions>` fails, run the Task QC Viewer to investigate why.
 
 2. **Run the taskQC Viewer to investigate**
 
@@ -103,32 +103,32 @@ Once the session is registered on Alyx
         * master on iblapps
 
 
-.. exercise:: Run the task QC metrics and viewer
+    .. exercise:: Run the task QC metrics and viewer
 
-   Select the ``eid`` for your session to inspect, and run the following Python code:
+       Select the ``eid`` for your session to inspect, and run the following Python code:
 
-   .. code-block:: python
+       .. code-block:: python
 
-      """
-      Plot the task QC for a session.
-      """
-      ### RUN QC FROM ANYWHERE AFTER THE SESSION HAD BEEN REGISTERED ###
-
-
-      from one.api import ONE
-      from ibllib.io.session_params import read_params
-      import ibllib.pipes.dynamic_pipeline as dyn
-      from ibllib.io.extractors.base import get_pipeline, get_session_extractor_type
-      from ibllib.pipes.dynamic_pipeline import get_trials_tasks
-      from task_qc_viewer.task_qc import show_session_task_qc
+          """
+          Plot the task QC for a session.
+          """
+          ### RUN QC FROM ANYWHERE AFTER THE SESSION HAD BEEN REGISTERED ###
 
 
-      EID = 'baecbddc-2b86-4eaf-a6f2-b30923225609'
-      one = ONE()
+          from one.api import ONE
+          from ibllib.io.session_params import read_params
+          import ibllib.pipes.dynamic_pipeline as dyn
+          from ibllib.io.extractors.base import get_pipeline, get_session_extractor_type
+          from ibllib.pipes.dynamic_pipeline import get_trials_tasks
+          from task_qc_viewer.task_qc import show_session_task_qc
 
-      # Get first none passive task run
-      task = next(t for t in get_trials_tasks(one.eid2path(EID), one) if 'passive' not in t.name.lower())
-      task.location = 'remote'
-      task.setUp()  # Download the task data
-      qc = task._run_qc(update=False)
-      show_session_task_qc(qc_or_session=qc)
+
+          EID = 'baecbddc-2b86-4eaf-a6f2-b30923225609'
+          one = ONE()
+
+          # Get first none passive task run
+          task = next(t for t in get_trials_tasks(one.eid2path(EID), one) if 'passive' not in t.name.lower())
+          task.location = 'remote'
+          task.setUp()  # Download the task data
+          qc = task._run_qc(update=False)
+          show_session_task_qc(qc_or_session=qc)
