@@ -7,13 +7,13 @@ the task. For example, is it expected to acquire one and only one goCue per tria
 Metrics definitions
 -------------------
 All the metrics computed as part of the Task logic integrity QC (Task QC) are implemented in
-`ibllib<https://github.com/int-brain-lab/ibllib/blob/master/ibllib/qc/task_metrics.py>`__.
+`ibllib <https://github.com/int-brain-lab/ibllib/blob/master/ibllib/qc/task_metrics.py>`__.
 They are computed using either the Bpod or FGPA/PXI data, depending on the rig used.
 
 .. tip::
 
      The Task QC metrics definitions can be found in this
-    `documentation page<https://int-brain-lab.github.io/iblenv/_autosummary/ibllib.qc.task_metrics.html>`__
+    `documentation page <https://int-brain-lab.github.io/iblenv/_autosummary/ibllib.qc.task_metrics.html>`__
 
 
 Some are essential, i.e. if they fail you should immediately take action and verify your rig,
@@ -65,7 +65,7 @@ The criteria for whether a session passes the Task QC is:
 This aggregation is done on all metrics, regardless if they are essential or not.
 
 The criteria is defined at
-`this code line<https://github.com/int-brain-lab/ibllib/blob/master/ibllib/qc/task_metrics.py#L63 >`__
+`this code line <https://github.com/int-brain-lab/ibllib/blob/master/ibllib/qc/task_metrics.py#L63 >`__
 
 How to check the task QC outcome
 --------------------------------
@@ -74,7 +74,7 @@ Once the session is registered on Alyx
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 1. **Check on the Alyx webpage**
 
-   From the `session overview page on Alyx<https://alyx.internationalbrainlab.org/ibl_reports/gallery/sessions>`__,
+   From the `session overview page on Alyx <https://alyx.internationalbrainlab.org/ibl_reports/gallery/sessions>`__,
    find your session click on ``See more session info ``.
    The session QC is displayed in one of the right panels.
 
@@ -91,7 +91,7 @@ Once the session is registered on Alyx
 
 2. **Run the taskQC Viewer to investigate**
 
-    The application `Task QC Viewer<https://github.com/int-brain-lab/iblapps/blob/develop/task_qc_viewer/README.md >`__
+    The application `Task QC Viewer <https://github.com/int-brain-lab/iblapps/blob/develop/task_qc_viewer/README.md >`__
     enables to visualise the data streams of problematic trials.
 
     .. tip::
