@@ -28,7 +28,12 @@ class Cameras:
         return self._instance
 
 
-def configure_trigger(camera: PySpin.CameraPtr, enable: bool):
+def configure_trigger(camera: PySpin.CameraPtr | None, enable: bool):
+    if camera is None:
+        with Cameras() as cameras:
+            for camera in cameras:
+                configure_trigger(camera, enable=False)
+            del camera
     node_map = camera.GetNodeMap()
     node_trigger_mode = PySpin.CEnumerationPtr(node_map.GetNode('TriggerMode'))
     node_trigger_mode_value = node_trigger_mode.GetEntryByName('On' if enable else 'Off').GetValue()

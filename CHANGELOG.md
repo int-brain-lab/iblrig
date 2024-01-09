@@ -2,9 +2,14 @@ Changelog
 ---------
 
 
-8.12.14
--------
-* unit-tests and linting
+8.13.0
+------
+* script for starting video-session in ephys-rig
+* installer scripts for Spinnaker SDK / PySpin
+* validated parsing of settings files
+* restructured user interface
+* add legend to trials-timeline
+* various improvements under the hood, clean-up and unit-tests
 
 8.12.13
 -------

@@ -11,7 +11,7 @@ import iblrig
 from ibllib.io import raw_data_loaders
 from iblrig.hardware import Bpod
 from iblrig.online_plots import OnlinePlots
-from iblrig.path_helper import get_local_and_remote_paths, load_settings_yaml
+from iblrig.path_helper import _load_settings_yaml, get_local_and_remote_paths
 from iblrig.raw_data_loaders import load_task_jsonable
 from iblrig.transfer_experiments import BehaviorCopier, EphysCopier, SessionCopier, VideoCopier, SessionCopier
 from iblutil.util import setup_logger
@@ -233,7 +233,7 @@ def transfer_data(local_path: Path = None, remote_path: Path = None, dry: bool =
     -------
     None
     """
-    hardware_settings = load_settings_yaml('hardware_settings.yaml')
+    hardware_settings = _load_settings_yaml('hardware_settings.yaml')
     number_of_expected_devices = 1 if hardware_settings.get('MAIN_SYNC', True) else None
 
     local_subject_folder, remote_subject_folder = _get_subjects_folders(local_path, remote_path, interactive)

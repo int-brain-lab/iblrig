@@ -14,12 +14,28 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Optional
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtCore import QThread, QThreadPool
 from PyQt5.QtWidgets import QStyle
 
+import iblrig.hardware_validation
+import iblrig.path_helper
 import iblrig_tasks
+from iblrig.base_tasks import EmptySession
+from iblrig.choiceworld import get_subject_training_info, training_phase_from_contrast_set
+from iblrig.constants import BASE_DIR
+from iblrig.gui.ui_update import Ui_update
+from iblrig.gui.ui_wizard import Ui_wizard
+from iblrig.gui.ui_tab_session import Ui_tabSession
+from iblrig.hardware import Bpod
+from iblrig.misc import _get_task_argument_parser
+from iblrig.path_helper import load_pydantic_yaml
+from iblrig.pydantic_definitions import HardwareSettings, RigSettings
+from iblrig.tools import get_anydesk_id
+from iblrig.version_management import check_for_updates, get_changelog, is_dirty
+from iblutil.util import setup_logger
 from one.api import ONE
+from pybpodapi import exceptions
 
 try:
     import iblrig_custom_tasks
@@ -28,19 +44,6 @@ try:
 except ImportError:
     CUSTOM_TASKS = False
     pass
-import iblrig.hardware_validation
-import iblrig.path_helper
-from iblrig.base_tasks import EmptySession
-from iblrig.choiceworld import get_subject_training_info, training_phase_from_contrast_set
-from iblrig.constants import BASE_DIR
-from iblrig.gui.ui_update import Ui_update
-from iblrig.gui.ui_wizard import Ui_wizard
-from iblrig.hardware import Bpod
-from iblrig.misc import _get_task_argument_parser
-from iblrig.path_helper import load_hardware_settings, load_rig_settings
-from iblrig.version_management import check_for_updates, get_changelog, is_dirty
-from iblutil.util import setup_logger
-from pybpodapi import exceptions
 
 log = setup_logger('iblrig')
 
@@ -52,15 +55,8 @@ PROCEDURES = [
     'handling_habituation',
     'Imaging',
 ]
-
 PROJECTS = ['ibl_neuropixel_brainwide_01', 'practice']
-
-GUI_DIR = Path(BASE_DIR).joinpath('iblrig', 'gui')
-WIZARD_PNG = str(GUI_DIR.joinpath('wizard.png'))
-ICON_FLUSH = str(GUI_DIR.joinpath('icon_flush.svg'))
-ICON_HELP = str(GUI_DIR.joinpath('icon_help.svg'))
-ICON_STATUS_LED = str(GUI_DIR.joinpath('icon_status_led.svg'))
-
+DOC_URL = 'https://int-brain-lab.github.io/iblrig'
 
 def _set_list_view_from_string_list(ui_list: QtWidgets.QListView, string_list: list):
     """Small boiler plate util to set the selection of a list view from a list of strings"""
@@ -85,8 +81,8 @@ class RigWizardModel:
     subject_details: tuple | None = None
 
     def __post_init__(self):
-        self.iblrig_settings = load_rig_settings()
-        self.hardware_settings = load_hardware_settings()
+        self.iblrig_settings = load_pydantic_yaml(RigSettings)
+        self.hardware_settings = load_pydantic_yaml(HardwareSettings)
         self.all_users = [self.iblrig_settings['ALYX_USER']] if self.iblrig_settings['ALYX_USER'] else []
         self.all_procedures = sorted(PROCEDURES)
 
@@ -171,7 +167,6 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setupUi(self)
-        self.setWindowIcon(QtGui.QIcon(WIZARD_PNG))
 
         self.settings = QtCore.QSettings()
         self.move(self.settings.value('pos', self.pos(), QtCore.QPoint))
@@ -187,12 +182,11 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.uiActionTrainingLevelV7.triggered.connect(self._on_menu_training_level_v7)
         self.uiComboTask.currentTextChanged.connect(self.controls_for_extra_parameters)
         self.uiComboSubject.currentTextChanged.connect(self.model.get_subject_details)
-        self.uiPushHelp.clicked.connect(self.help)
         self.uiPushFlush.clicked.connect(self.flush)
         self.uiPushStart.clicked.connect(self.start_stop)
         self.uiPushPause.clicked.connect(self.pause)
-        self.uiListProjects.clicked.connect(self.enable_UI_elements)
-        self.uiListProcedures.clicked.connect(self.enable_UI_elements)
+        self.uiListProjects.clicked.connect(self._enable_ui_elements)
+        self.uiListProcedures.clicked.connect(self._enable_ui_elements)
         self.uiPushConnect.clicked.connect(self.alyx_connect)
         self.lineEditSubject.textChanged.connect(self._filter_subjects)
 
@@ -207,41 +201,47 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.uiPushStart.installEventFilter(self)
         self.uiPushStart.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))
         self.uiPushPause.setIcon(self.style().standardIcon(QStyle.SP_MediaPause))
-        self.uiPushFlush.setIcon(QtGui.QIcon(ICON_FLUSH))
-        self.uiPushHelp.setIcon(QtGui.QIcon(ICON_HELP))
-        self.uiPushStatusLED.setIcon(QtGui.QIcon(ICON_STATUS_LED))
 
         self.controller2model()
 
-        self.checkSubProcessTimer = QtCore.QTimer()
-        self.checkSubProcessTimer.timeout.connect(self.check_sub_process)
+        self.tabWidget.currentChanged.connect(self._on_switch_tab)
 
-        # display disk stats
+        # documentation
+        self.uiPushWebHome.clicked.connect(lambda: self.webEngineView.load(QtCore.QUrl(DOC_URL)))
+        self.uiPushWebBrowser.clicked.connect(lambda: webbrowser.open(DOC_URL))
+        # self.webEngineView.
+
+        # disk stats
         local_data = self.model.iblrig_settings['iblrig_local_data_path']
         local_data = Path(local_data) if local_data else Path.home().joinpath('iblrig_data')
         v8data_size = sum(file.stat().st_size for file in Path(local_data).rglob('*'))
         total_space, total_used, total_free = shutil.disk_usage(local_data.anchor)
-        self.uiProgressDiskSpace.setStatusTip(f'utilization of drive {local_data.anchor}')
+        self.uiProgressDiskSpace = QtWidgets.QProgressBar(self)
+        self.uiProgressDiskSpace.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        self.uiProgressDiskSpace.resize(20, 20)
         self.uiProgressDiskSpace.setValue(round(total_used / total_space * 100))
-        self.uiLabelDiskAvailableValue.setText(f'{total_free / 1024 ** 3 : .1f} GB')
-        self.uiLabelDiskIblrigValue.setText(f'{v8data_size / 1024 ** 3 : .1f} GB')
+        self.uiProgressDiskSpace.setStatusTip(f'local IBLRIG data: {v8data_size / 1024 ** 3 : .1f} GB  •  '
+                                              f'available space: {total_free / 1024 ** 3 : .1f} GB')
 
-        tmp = QtWidgets.QLabel(f'iblrig v{iblrig.__version__}')
-        tmp.setContentsMargins(4, 0, 0, 0)
-        self.statusbar.addWidget(tmp)
+        # statusbar
+        self.statusbar.setContentsMargins(0, 0, 6, 0)
+        self.uiLabelStatus = QtWidgets.QLabel(f'IBLRIG v{iblrig.__version__}')
+        self.uiLabelStatus.setContentsMargins(4, 0, 4, 0)
+        self.statusbar.addWidget(self.uiLabelStatus, 1)
+        self.statusbar.addPermanentWidget(self.uiProgressDiskSpace)
         self.controls_for_extra_parameters()
 
         self.layout().setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
         self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowFullscreenButtonHint)
 
-        # get AnyDesk ID
-        # anydesk_worker = Worker(get_anydesk_id)
-        # anydesk_worker.signals.result.connect(lambda var: print(f'Your AnyDesk ID: {var:s}'))
-        # QThreadPool.globalInstance().tryStart(anydesk_worker)
-
         # disable control of LED if Bpod does not have the respective capability
         bpod = Bpod(self.model.hardware_settings['device_bpod']['COM_BPOD'], skip_initialization=True)
         self.uiPushStatusLED.setEnabled(bpod.can_control_led)
+
+        # get AnyDesk ID
+        anydesk_worker = Worker(get_anydesk_id, True)
+        anydesk_worker.signals.result.connect(self._on_get_anydesk_result)
+        QThreadPool.globalInstance().tryStart(anydesk_worker)
 
         # check for update
         update_worker = Worker(check_for_updates)
@@ -252,6 +252,11 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         dirty_worker = Worker(is_dirty)
         dirty_worker.signals.result.connect(self._on_check_dirty_result)
         QThreadPool.globalInstance().start(dirty_worker)
+
+
+    def _on_switch_tab(self, index):
+        # if self.tabWidget.tabText(index) == 'Session':
+        QtCore.QTimer.singleShot(1, lambda: self.resize(self.minimumSizeHint()))
 
     def _on_menu_training_level_v7(self) -> None:
         """
@@ -316,6 +321,23 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         """
         if result[0]:
             UpdateNotice(parent=self, version=result[1])
+
+    def _on_get_anydesk_result(self, result: str | None) -> None:
+        """
+        Handle the result of checking for updates.
+
+        Parameters
+        ----------
+        result : tuple[bool, str | None]
+            A tuple containing a boolean flag indicating update availability (result[0])
+            and the remote version string (result[1]).
+
+        Returns
+        -------
+        None
+        """
+        if result is not None:
+            self.uiLabelStatus.setText(f'IBLRIG v{iblrig.__version__}  •  AnyDesk ID: {result}')
 
     def _on_check_dirty_result(self, repository_is_dirty: bool) -> None:
         """
@@ -397,7 +419,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.uiComboSubject.setCurrentText(self.model.subject)
         _set_list_view_from_string_list(self.uiListProcedures, self.model.procedures)
         _set_list_view_from_string_list(self.uiListProjects, self.model.projects)
-        self.enable_UI_elements()
+        self._enable_ui_elements()
 
     def controller2model(self):
         self.model.procedures = [i.data() for i in self.uiListProcedures.selectedIndexes()]
@@ -607,7 +629,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
             case 'Start':
                 self.uiPushStart.setText('Stop')
                 self.uiPushStart.setIcon(self.style().standardIcon(QStyle.SP_MediaStop))
-                self.enable_UI_elements()
+                self._enable_ui_elements()
 
                 dlg = QtWidgets.QInputDialog()
                 weight, ok = dlg.getDouble(
@@ -621,7 +643,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 if not ok or weight == 0:
                     self.uiPushStart.setText('Start')
                     self.uiPushStart.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))
-                    self.enable_UI_elements()
+                    self._enable_ui_elements()
                     return
 
                 self.controller2model()
@@ -639,7 +661,8 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 bpod.close()
 
                 # runs the python command
-                cmd = [shutil.which('python')]
+                # cmd = [shutil.which('python')]
+                cmd = []
                 if self.model.task_name:
                     cmd.extend([str(self.model.all_tasks[self.model.task_name])])
                 if self.model.user:
@@ -664,84 +687,76 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 if self.running_task_process is None:
                     log.info('Starting subprocess')
                     log.info(subprocess.list2cmdline(cmd))
-                    # self.running_task_process = QProcess()
-                    # self.running_task_process.start(shutil.which('python'), cmd)
-                    # self.running_task_process.readyReadStandardOutput.connect(self.handle_stdout)
-                    # self.running_task_process.readyReadStandardError.connect(self.handle_stderr)
-                    self.running_task_process = subprocess.Popen(cmd)
+                    self.running_task_process = QtCore.QProcess()
+                    self.running_task_process.setWorkingDirectory(BASE_DIR)
+                    self.running_task_process.setProcessChannelMode(QtCore.QProcess.ForwardedChannels)
+                    self.running_task_process.finished.connect(self._on_task_finished)
+                    self.running_task_process.start(shutil.which('python'), cmd)
                 self.uiPushStart.setStatusTip('stop the session after the current trial')
                 self.uiPushStart.setIcon(self.style().standardIcon(QStyle.SP_MediaStop))
-                self.checkSubProcessTimer.start(1000)
             case 'Stop':
-                self.uiPushStart.setText('Stop')
-                self.checkSubProcessTimer.stop()
-                # if the process crashed catastrophically, the session folder might not exist
+                self.uiPushStart.setEnabled(False)
                 if self.model.session_folder and self.model.session_folder.exists():
                     self.model.session_folder.joinpath('.stop').touch()
 
-                # this will wait for the process to finish, usually the time for the trial to end
-                self.running_task_process.communicate()
-                if self.running_task_process.returncode:
-                    msgBox = QtWidgets.QMessageBox(parent=self)
-                    msgBox.setWindowTitle('Oh no!')
-                    msgBox.setText('The task was terminated with an error.\nPlease check the command-line output for details.')
-                    msgBox.setIcon(QtWidgets.QMessageBox().Critical)
-                    msgBox.exec_()
+    def _on_task_finished(self, exit_code, exit_status):
 
-                self.running_task_process = None
-                self.uiPushStart.setText('Start')
-                self.uiPushStart.setStatusTip('start the session')
-                self.uiPushStart.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))
+        if exit_code:
+            msg_box = QtWidgets.QMessageBox(parent=self)
+            msg_box.setWindowTitle('Oh no!')
+            msg_box.setText('The task was terminated with an error.\nPlease check the command-line output for details.')
+            msg_box.setIcon(QtWidgets.QMessageBox().Critical)
+            msg_box.exec_()
 
-                # re-enable UI elements and recall state of Bpod status LED
-                self.enable_UI_elements()
-                bpod = Bpod(self.model.hardware_settings['device_bpod']['COM_BPOD'])
-                bpod.set_status_led(self.uiPushStatusLED.isChecked())
+        self.running_task_process = None
 
-                if (task_settings_file := Path(self.model.raw_data_folder).joinpath('_iblrig_taskSettings.raw.json')).exists():
-                    with open(task_settings_file) as fid:
-                        session_data = json.load(fid)
+        # re-enable UI elements
+        self.uiPushStart.setText('Start')
+        self.uiPushStart.setStatusTip('start the session')
+        self.uiPushStart.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))
+        self._enable_ui_elements()
 
-                    # check if session was a dud
-                    if (ntrials := session_data['NTRIALS']) < 42 and 'spontaneous' not in self.model.task_name:
-                        answer = QtWidgets.QMessageBox.question(
-                            self,
-                            'Is this a dud?',
-                            f"The session consisted of only {ntrials:d} trial"
-                            f"{'s' if ntrials>1 else ''} and appears to be a dud.\n\n"
-                            f"Should it be deleted?",
-                        )
-                        if answer == QtWidgets.QMessageBox.Yes:
-                            shutil.rmtree(self.model.session_folder)
-                            return
+        # recall state of Bpod status LED
+        bpod = Bpod(self.model.hardware_settings['device_bpod']['COM_BPOD'])
+        bpod.set_status_led(self.uiPushStatusLED.isChecked())
 
-                    # manage poop count
-                    dlg = QtWidgets.QInputDialog()
-                    droppings, ok = dlg.getInt(
-                        self,
-                        'Droppings',
-                        'Number of droppings:',
-                        value=0,
-                        min=0,
-                        flags=dlg.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint,
-                    )
-                    session_data['POOP_COUNT'] = droppings
-                    with open(task_settings_file, 'w') as fid:
-                        json.dump(session_data, fid, indent=4, sort_keys=True, default=str)
+        if (task_settings_file := Path(self.model.raw_data_folder).joinpath('_iblrig_taskSettings.raw.json')).exists():
+            with open(task_settings_file) as fid:
+                session_data = json.load(fid)
 
-    def check_sub_process(self):
-        return_code = None if self.running_task_process is None else self.running_task_process.poll()
-        if return_code is None:
-            return
-        else:
-            self.start_stop()
+            # check if session was a dud
+            if (ntrials := session_data['NTRIALS']) < 42 and 'spontaneous' not in self.model.task_name:
+                answer = QtWidgets.QMessageBox.question(
+                    self,
+                    'Is this a dud?',
+                    f"The session consisted of only {ntrials:d} trial"
+                    f"{'s' if ntrials > 1 else ''} and appears to be a dud.\n\n"
+                    f"Should it be deleted?",
+                )
+                if answer == QtWidgets.QMessageBox.Yes:
+                    shutil.rmtree(self.model.session_folder)
+                    return
+
+            # manage poop count
+            dlg = QtWidgets.QInputDialog()
+            droppings, ok = dlg.getInt(
+                self,
+                'Droppings',
+                'Number of droppings:',
+                value=0,
+                min=0,
+                flags=dlg.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint,
+            )
+            session_data['POOP_COUNT'] = droppings
+            with open(task_settings_file, 'w') as fid:
+                json.dump(session_data, fid, indent=4, sort_keys=True, default=str)
 
     def flush(self):
         # paint button blue when in toggled state
         self.uiPushFlush.setStyleSheet(
             'QPushButton {background-color: rgb(128, 128, 255);}' if self.uiPushFlush.isChecked() else ''
         )
-        self.enable_UI_elements()
+        self._enable_ui_elements()
 
         try:
             bpod = Bpod(
@@ -760,7 +775,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
     def toggle_status_led(self, is_toggled: bool):
         # paint button green when in toggled state
         self.uiPushStatusLED.setStyleSheet('QPushButton {background-color: rgb(128, 255, 128);}' if is_toggled else '')
-        self.enable_UI_elements()
+        self._enable_ui_elements()
 
         try:
             bpod = Bpod(self.model.hardware_settings['device_bpod']['COM_BPOD'], skip_initialization=True)
@@ -769,10 +784,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
             self.uiPushStatusLED.setChecked(False)
             self.uiPushStatusLED.setStyleSheet('')
 
-    def help(self):
-        webbrowser.open('https://int-brain-lab.github.io/iblrig/usage.html')
-
-    def enable_UI_elements(self):
+    def _enable_ui_elements(self):
         is_running = self.uiPushStart.text() == 'Stop'
 
         self.uiPushStart.setEnabled(
@@ -847,7 +859,7 @@ class Worker(QtCore.QRunnable):
         emits signals accordingly.
     """
 
-    def __init__(self, fn: Callable[..., Any], *args: Any, **kwargs: Any) -> None:
+    def __init__(self, fn: Callable[..., Any], *args: Any, **kwargs: Any):
         """
         Initialize the Worker instance.
 
@@ -867,7 +879,7 @@ class Worker(QtCore.QRunnable):
         None
         """
         super().__init__()
-        self.fn: Callable[..., Any] = fn
+        self.fn = fn
         self.args = args
         self.kwargs = kwargs
         self.signals: WorkerSignals = WorkerSignals()
@@ -885,7 +897,7 @@ class Worker(QtCore.QRunnable):
         """
         try:
             result = self.fn(*self.args, **self.kwargs)
-        except:  # noqa: 722
+        except:  # noqa: E722
             # Handle exceptions and emit error signal with exception details
             traceback.print_exc()
             exctype, value = sys.exc_info()[:2]
@@ -929,8 +941,6 @@ class UpdateNotice(QtWidgets.QDialog, Ui_update):
         super().__init__(parent)
         self.setupUi(self)
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose, True)
-        self.setWindowIcon(QtGui.QIcon(WIZARD_PNG))
-        self.uiLabelLogo.setPixmap(QtGui.QPixmap(WIZARD_PNG))
         self.uiLabelHeader.setText(f'Update to iblrig {version} is available.')
         self.uiTextBrowserChanges.setMarkdown(get_changelog())
         self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
@@ -957,7 +967,7 @@ def main():
     if os.name == 'nt':
         app_id = f'IBL.iblrig.wizard.{iblrig.__version__}'
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(app_id)
-    app = QtWidgets.QApplication(sys.argv)
+    app = QtWidgets.QApplication(['', '--no-sandbox'])
     app.setStyle('Fusion')
     w = RigWizard()
     w.show()

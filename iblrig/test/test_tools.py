@@ -1,3 +1,4 @@
+import subprocess
 import unittest
 from pathlib import Path
 from unittest.mock import patch
@@ -16,12 +17,12 @@ class TestAskUser(unittest.TestCase):
 
     @patch('builtins.input', side_effect=['', 'n', 'No', 'NO'])
     def test_ask_user_with_input_no(self, mock_input):
-        for i in range(4):
+        for _ in range(4):
             self.assertFalse(ask_user(''))
 
     @patch('builtins.input', side_effect=['', 'y', 'Yes', 'YES'])
     def test_ask_user_with_input_yes(self, mock_input):
-        for i in range(4):
+        for _ in range(4):
             self.assertTrue(ask_user('', default=True))
 
     @patch('builtins.input', side_effect=['invalid', 'blah', 'a', 'n'])
@@ -66,7 +67,7 @@ class TestInternetAvailableFunction(unittest.TestCase):
 
 
 class TestCallBonsai(unittest.TestCase):
-    @patch('subprocess.check_call', return_value=0)
+    @patch('subprocess.run', return_value=subprocess.CompletedProcess(args='', returncode=0))
     @patch('iblrig.tools.create_bonsai_layout_from_template')
     @patch('pathlib.Path.exists', return_value=False)
     def test_call_bonsai(self, mock_exists, mock_create_layout, mock_check_call):
@@ -74,12 +75,20 @@ class TestCallBonsai(unittest.TestCase):
         with self.assertRaises(FileNotFoundError):
             call_bonsai(workflow_file)
         mock_exists.return_value = True
-        args = ['arg1', 'arg2']
-        result = call_bonsai(workflow_file, args, debug=True, bootstrap=False, editor=False)
+        parameters = {'parameter1': 1, 'parameter2': 'asd'}
+        result = call_bonsai(workflow_file, parameters, debug=True, bootstrap=False, editor=False)
         mock_check_call.assert_called_once_with(
-            executable=BONSAI_EXE,
-            args=['--start', '--no-editor', '--no-boot', 'arg1', 'arg2', Path(workflow_file)],
+            args=[
+                str(BONSAI_EXE),
+                str(workflow_file),
+                '--start',
+                '--no-editor',
+                '-p:parameter1=1',
+                '-p:parameter2=asd',
+                '--no-boot',
+            ],
             cwd=workflow_file.parent,
+            check=False,
         )
         mock_create_layout.assert_called_once_with(workflow_file)
-        self.assertEqual(result, 0)
+        self.assertIsInstance(result, subprocess.CompletedProcess)

@@ -8,17 +8,17 @@ from typing import TypeVar
 import numpy as np
 import yaml
 from packaging import version
-from pydantic import ValidationError
+from pydantic import BaseModel, ValidationError
 
 import iblrig
 from ibllib.io import session_params
 from ibllib.io.raw_data_loaders import load_settings
 from iblrig.constants import HARDWARE_SETTINGS_YAML, RIG_SETTINGS_YAML
-from iblrig.pydantic_definitions import BunchModel, HardwareSettings, RigSettings
+from iblrig.pydantic_definitions import HardwareSettings, RigSettings
 from iblutil.util import Bunch, setup_logger
 
 log = setup_logger('iblrig')
-T = TypeVar('T')
+T = TypeVar('T', bound=BaseModel)
 
 
 def iterate_previous_sessions(subject_name, task_name, n=1, **kwargs):
@@ -105,7 +105,7 @@ def get_local_and_remote_paths(local_path=None, remote_path=None, lab=None):
         'local_subjects_folder': PosixPath('C:/iblrigv8_data/mainenlab/Subjects'),
         'remote_subjects_folder': PosixPath('Y:/Subjects')}
     """
-    iblrig_settings = load_settings_yaml()
+    iblrig_settings = _load_settings_yaml()
     paths = Bunch({'local_data_folder': local_path, 'remote_data_folder': remote_path})
     if paths.local_data_folder is None:
         paths.local_data_folder = (
@@ -128,21 +128,65 @@ def get_local_and_remote_paths(local_path=None, remote_path=None, lab=None):
     return paths
 
 
-def load_settings_yaml(filename: Path | str = RIG_SETTINGS_YAML, do_raise: bool = True) -> Bunch:
+def _load_settings_yaml(filename: Path | str = RIG_SETTINGS_YAML, do_raise: bool = True) -> Bunch:
     filename = Path(filename)
     if not filename.is_absolute():
         filename = Path(iblrig.__file__).parents[1].joinpath('settings', filename)
     if not filename.exists() and not do_raise:
         log.error(f'File not found: {filename}')
-        return {}
+        return Bunch()
     with open(filename) as fp:
         rs = yaml.safe_load(fp)
     rs = patch_settings(rs, filename.stem)
     return Bunch(rs)
 
 
-def _load_pydantic_yaml(filename: Path | str, model: BunchModel, do_raise: bool = True) -> BunchModel:
-    rs = load_settings_yaml(filename=filename, do_raise=do_raise)
+def load_pydantic_yaml(model: type[T], filename: Path | str | None = None, do_raise: bool = True) -> T:
+    """
+    Load YAML data from a specified file or a standard IBLRIG settings file,
+    validate it using a Pydantic model, and return the validated Pydantic model
+    instance.
+
+    Parameters
+    ----------
+    model : Type[T]
+        The Pydantic model class to validate the YAML data against.
+    filename : Path | str | None, optional
+        The path to the YAML file.
+        If None (default), the function deduces the appropriate standard IBLRIG
+        settings file based on the model.
+    do_raise : bool, optional
+        If True (default), raise a ValidationError if validation fails.
+        If False, log the validation error and construct a model instance
+        with the provided data. Defaults to True.
+
+    Returns
+    -------
+    T
+        An instance of the Pydantic model, validated against the YAML data.
+
+    Raises
+    ------
+    ValidationError
+        If validation fails and do_raise is set to True.
+        The raised exception contains details about the validation error.
+    TypeError
+        If the filename is None and the model class is not recognized as
+        HardwareSettings or RigSettings.
+    """
+    if filename not in (HARDWARE_SETTINGS_YAML, RIG_SETTINGS_YAML):
+        # TODO: We currently skip validation of pydantic models if an extra
+        #       filename is provided that does NOT correspond to the standard
+        #       settings files of IBLRIG. This should be re-evaluated.
+        do_raise = False
+    if filename is None:
+        if model == HardwareSettings:
+            filename = HARDWARE_SETTINGS_YAML
+        elif model == RigSettings:
+            filename = RIG_SETTINGS_YAML
+        else:
+            raise TypeError(f'Cannot deduce filename for model `{model.__name__}`.')
+    rs = _load_settings_yaml(filename=filename, do_raise=do_raise)
     try:
         return model.model_validate(rs)
     except ValidationError as e:
@@ -151,14 +195,6 @@ def _load_pydantic_yaml(filename: Path | str, model: BunchModel, do_raise: bool 
             return model.model_construct(**rs)
         else:
             raise e
-
-
-def load_hardware_settings(do_raise: bool = True) -> HardwareSettings:
-    return _load_pydantic_yaml(HARDWARE_SETTINGS_YAML, model=HardwareSettings, do_raise=do_raise)
-
-
-def load_rig_settings(do_raise: bool = True) -> RigSettings:
-    return _load_pydantic_yaml(RIG_SETTINGS_YAML, model=RigSettings, do_raise=do_raise)
 
 
 def patch_settings(rs: dict, filename: str | Path) -> dict:

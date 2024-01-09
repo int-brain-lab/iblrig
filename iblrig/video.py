@@ -12,6 +12,7 @@ from urllib.error import URLError
 from iblrig.base_tasks import EmptySession
 from iblrig.constants import BASE_PATH
 from iblrig.tools import ask_user, call_bonsai
+from iblrig.transfer_experiments import VideoCopier
 from iblutil.io import hashfile  # type: ignore
 from iblutil.util import setup_logger
 from one.webclient import AlyxClient, http_download_file  # type: ignore
@@ -22,12 +23,26 @@ with contextlib.suppress(ImportError):
 log = setup_logger('iblrig', level='DEBUG')
 
 
+def pyspin_available() -> bool:
+    """
+    Check if, both, PySpin and its dependency Spinnaker SDK are installed.
+
+    Returns
+    -------
+    bool
+        True if PySpin and Spinnaker SDK are installed.
+    """
+    return spinnaker_sdk_installed() and pyspin_installed()
+
+
 def pyspin_installed() -> bool:
     """
     Check if the PySpin module is installed.
 
-    Returns:
-        bool: True if PySpin is installed, False otherwise.
+    Returns
+    -------
+    bool
+        True if PySpin is installed, False otherwise.
     """
     return find_spec('PySpin') is not None
 
@@ -36,8 +51,10 @@ def spinnaker_sdk_installed() -> bool:
     """
     Check if the Spinnaker SDK is installed on a Windows system.
 
-    Returns:
-        bool: True if the Spinnaker SDK is installed, False otherwise.
+    Returns
+    -------
+    bool
+        True if the Spinnaker SDK is installed, False otherwise.
     """
     if os.name != 'nt':
         return False
@@ -189,11 +206,6 @@ def prepare_video_session(subject_name: str = '', training_session: bool = False
     assert spinnaker_sdk_installed()
     assert pyspin_installed()
 
-    with video_pyspin.Cameras() as cameras:
-        for camera in cameras:
-            video_pyspin.configure_trigger(camera, enable=False)
-        del camera
-
     fake_session = EmptySession(subject='mickey', interactive=False)
     session_folder = fake_session.paths.SESSION_FOLDER
     raw_data_folder = session_folder.joinpath('raw_video_data')
@@ -202,27 +214,29 @@ def prepare_video_session(subject_name: str = '', training_session: bool = False
 
     # align cameras
     bonsai_workflow = BASE_PATH.joinpath('devices', 'camera_setup', 'EphysRig_SetupCameras.bonsai')
-    args = []
-    for pos in cam_index.keys():
-        args.append(f'-p:{pos}CameraIndex={cam_index[pos]}')
-    call_bonsai(bonsai_workflow, args)
+    params = {}
+    for key, value in cam_index.items():
+        params[f'{key}CameraIndex'] = value
+    video_pyspin.configure_trigger(enable=False)
+    call_bonsai(bonsai_workflow, params)
 
     # record video
     if training_session:
         bonsai_workflow = BASE_PATH.joinpath('devices', 'camera_recordings', 'EphysRig_SaveVideo_TrainingTasks.bonsai')
     else:
         bonsai_workflow = BASE_PATH.joinpath('devices', 'camera_recordings', 'EphysRig_SaveVideo_EphysTasks.bonsai')
-    for pos in cam_index.keys():
-        args.append(f'-p:FileName{pos}={raw_data_folder / f"_iblrig_{pos.lower()}Camera.raw.avi"}')
-        args.append(f'-p:FileName{pos}Data={raw_data_folder / f"_iblrig_{pos.lower()}Camera.frameData.bin"}')
-    call_bonsai(bonsai_workflow, args)
+    for key, _ in cam_index.items():
+        params[f'FileName{key}'] = raw_data_folder.joinpath(f'_iblrig_{key.lower()}Camera.raw.avi')
+        params[f'FileName{key}Data'] = raw_data_folder.joinpath(f'_iblrig_{key.lower()}Camera.frameData.bin')
+    video_pyspin.configure_trigger(enable=True)
+    bonsai_process = call_bonsai(bonsai_workflow, params, wait=False)
+    input("PRESS ENTER TO START CAMERAS")
+    video_pyspin.configure_trigger(enable=False)
+    vc = VideoCopier(session_path=session_folder)
+    vc.create_video_stub(nvideos=1 if training_session else 3)
+    session_folder.joinpath("transfer_me.flag").touch()
+    bonsai_process.wait()
 
-    # remove empty-folders
+    # remove empty-folders and parent-folders
     if not any(raw_data_folder.iterdir()):
-        current_folder = raw_data_folder
-        while not any(current_folder.iterdir()):
-            current_folder.rmdir()
-            current_folder = Path(current_folder.parent)
-    else:
-        # TODO: create stubs
-        pass
+        os.removedirs(raw_data_folder)

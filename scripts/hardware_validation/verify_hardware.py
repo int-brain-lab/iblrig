@@ -59,7 +59,7 @@ def log_fun(msg_type: str = 'info', msg: str = '', last: bool = False):
 # read hardware_settings.yaml
 log_fun('head', 'Checking hardware_settings.yaml:')
 file_settings = Path(iblrig.__file__).parents[1].joinpath('settings', 'hardware_settings.yaml')
-hw_settings = iblrig.path_helper.load_settings_yaml(file_settings)
+hw_settings = iblrig.path_helper._load_settings_yaml(file_settings)
 
 # collect all port-strings
 ports = [d for d in hw_settings.values() if isinstance(d, dict)]

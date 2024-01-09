@@ -2,12 +2,12 @@ import unittest
 
 import iblrig.hardware_validation
 from ibllib.tests import TEST_DB  # noqa
-from iblrig.path_helper import load_settings_yaml
+from iblrig.path_helper import _load_settings_yaml
 from one.api import ONE
 
 VALIDATORS_INIT_KWARGS = dict(
-    iblrig_settings=load_settings_yaml('iblrig_settings_template.yaml'),
-    hardware_settings=load_settings_yaml('hardware_settings_template.yaml'),
+    iblrig_settings=_load_settings_yaml('iblrig_settings_template.yaml'),
+    hardware_settings=_load_settings_yaml('hardware_settings_template.yaml'),
 )
 
 

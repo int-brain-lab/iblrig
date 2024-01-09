@@ -170,51 +170,74 @@ def internet_available(host: str = '8.8.8.8', port: int = 53, timeout: int = 3, 
 
 def call_bonsai(
     workflow_file: str | Path,
-    args: list[str | Path] | None = None,
+    parameters: dict[str, Any] | None = None,
+    start: bool = True,
     debug: bool = False,
     bootstrap: bool = True,
     editor: bool = True,
-) -> int:
+    wait: bool = True,
+    check: bool = False,
+) -> subprocess.Popen[bytes] | subprocess.Popen[str | bytes | Any] | subprocess.CompletedProcess:
     """
     Execute a Bonsai workflow within a subprocess call.
 
     Parameters
     ----------
-    workflow_file : Union[str, Path]
+    workflow_file : str | Path
         Path to the Bonsai workflow file.
-    args : List[str], optional
-        Additional command-line arguments for Bonsai.
+    parameters : dict[str, str], optional
+        Parameters to be passed to Bonsai workflow.
+    start : bool, optional
+        Start execution of the workflow within Bonsai (default is True)
     debug : bool, optional
         Enable debugging mode if True (default is False).
+        Only applies if editor is True.
     bootstrap : bool, optional
         Enable Bonsai bootstrapping if True (default is True).
     editor : bool, optional
         Enable Bonsai editor if True (default is True).
+    wait : bool, optional
+        Wait for Bonsai process to finish (default is True).
+    check : bool, optional
+        Raise CalledProcessError if Bonsai process exits with non-zero exit code (default is False).
+        Only applies if wait is True.
 
     Returns
     -------
-    int
-        Exit code of the Bonsai subprocess.
+    Popen[bytes] | Popen[str | bytes | Any] | CompletedProcess
+        Pointer to the Bonsai subprocess if wait is False, otherwise subprocess.CompletedProcess.
 
     Raises
     ------
     FileNotFoundError
         If the Bonsai executable does not exist.
         If the specified workflow file does not exist.
+
     """
     if not BONSAI_EXE.exists():
         FileNotFoundError(BONSAI_EXE)
-    if not (workflow_file := Path(workflow_file)).exists():
+    workflow_file = Path(workflow_file)
+    if not workflow_file.exists():
         raise FileNotFoundError(workflow_file)
-    working_directory = Path(workflow_file).parent
+    cwd = workflow_file.parent
     create_bonsai_layout_from_template(workflow_file)
-    if args is None:
-        args = list()
-    args.insert(0, '--start' if debug else '--start-no-debug')
-    if not bootstrap:
-        args.insert(1, '--no-boot')
+
+    cmd = [BONSAI_EXE]
+    cmd.append(workflow_file)
+    if start:
+        cmd.append('--start' if debug else '--start-no-debug')
     if not editor:
-        args.insert(1, '--no-editor')
-    args.append(workflow_file)
+        cmd.append('--no-editor')
+    cmd = [str(x) for x in cmd]
+    if parameters is not None:
+        for key, value in parameters.items():
+            cmd.append(f'-p:{key}={str(value)}')
+    if not bootstrap:
+        cmd.append('--no-boot')
+
     logger.info(f'Starting Bonsai workflow `{workflow_file.name}`')
-    return subprocess.check_call(executable=BONSAI_EXE, args=args, cwd=working_directory)
+    print(cmd)
+    if wait:
+        return subprocess.run(args=cmd, cwd=cwd, check=check)
+    else:
+        return subprocess.Popen(args=cmd, cwd=cwd)

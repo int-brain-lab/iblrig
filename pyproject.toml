@@ -65,6 +65,7 @@ start_video_session   = "iblrig.video:prepare_video_session_cmd"
 prepare_video_session = "iblrig.devices.camera_recordings.videopc.prepare_video_session:main"
 prepare_video_session_mesoscope = "iblrig.devices.camera_recordings.videopc.prepare_video_session_mescoscope:main"
 prepare_video_session_single_mesoscope = "iblrig.devices.camera_recordings.videopc.prepare_video_session_single_mesoscope:main"
+convert_uis           = "iblrig.gui.tools:convert_uis"
 
 [tool.setuptools.dynamic]
 readme  = { file = "README.md", content-type = "text/markdown" }
@@ -83,7 +84,7 @@ minversion = "6.0"
 testpaths  = [ "iblrig/test", "iblrig/test/tasks" ]
 
 [tool.ruff]
-exclude = [ ".mypy_cache", "dist", "docs", "iblrig/gui/ui_*.py", "venv" ]
+exclude = [ ".mypy_cache", "dist", "docs", "iblrig/gui/ui_*.py", "iblrig/gui/*_rc.py", "venv" ]
 ignore = [
     "PLR2004", # Magic value used in comparison, consider replacing with a constant variable
 ]

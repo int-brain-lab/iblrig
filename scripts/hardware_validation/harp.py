@@ -10,7 +10,7 @@ log = logging.getLogger('iblrig')
 
 
 # get hardware settings from 'settings/hardware_settings.yaml' file
-hardware_settings = path_helper.load_settings_yaml('hardware_settings.yaml')
+hardware_settings = path_helper._load_settings_yaml('hardware_settings.yaml')
 
 # check if bpod has had a COM port defined
 if hardware_settings['device_bpod']['COM_BPOD'] is None:

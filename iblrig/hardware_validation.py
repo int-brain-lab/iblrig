@@ -9,7 +9,7 @@ from serial import Serial, SerialException
 from serial.tools import list_ports
 from serial_singleton import SerialSingleton, filter_ports
 
-from iblrig.path_helper import load_settings_yaml
+from iblrig.path_helper import _load_settings_yaml
 from iblutil.util import setup_logger
 
 log = setup_logger('iblrig', level='DEBUG')
@@ -36,8 +36,8 @@ class ValidateHardware(ABC):
     raise_fail_as_exception: bool = False
 
     def __init__(self, iblrig_settings=None, hardware_settings=None):
-        self.iblrig_settings = iblrig_settings or load_settings_yaml('iblrig_settings.yaml')
-        self.hardware_settings = hardware_settings or load_settings_yaml('hardware_settings.yaml')
+        self.iblrig_settings = iblrig_settings or _load_settings_yaml('iblrig_settings.yaml')
+        self.hardware_settings = hardware_settings or _load_settings_yaml('hardware_settings.yaml')
 
     @abstractmethod
     def _run(self):
