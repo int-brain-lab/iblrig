@@ -135,7 +135,36 @@ def _get_copiers(
     lab: str = None,
     glob_pattern: str = 'transfer_me.flag',
     interactive: bool = False,
+    **kwargs
 ) -> list[SessionCopier]:
+    """
+
+    Parameters
+    ----------
+    copier : SessionCopier
+        A SessionCopier class to instantiate for each session.
+    local_folder : str
+        The absolute path of the local data directory (the copy root source). If None, loads from
+        the iblrig settings file.
+    remote_folder : str
+        The absolute path of the remote data directory (the copy root destination). If None, loads
+        from the iblrig settings file.
+    lab : str
+        The name of the lab. Only used if 'iblrig_local_subjects_path' is not defined in the
+        settings file. If None, uses 'ALYX_LAB' field of iblrig settings.
+    glob_pattern : str
+        The filename to recursively search within `local_folder` for determining which sessions to
+        copy.
+    interactive : bool
+        If true, users are prompted to review the sessions to copy before proceeding.
+    kwargs
+        Extract arguments such as `tag` to pass to the SessionCopier.
+
+    Returns
+    -------
+    list of SessionCopier
+        A list of SessionCopier objects.
+    """
     # get local/remote subjects folder
     rig_paths = get_local_and_remote_paths(local_path=local_folder, remote_path=remote_folder, lab=lab)
     local_subjects_folder = rig_paths.local_subjects_folder
@@ -151,13 +180,14 @@ def _get_copiers(
         logger.debug(f'Remote Path: `{remote_subjects_folder}`')
 
     # get copiers
-    copiers = [copier(f.parent, remote_subjects_folder) for f in local_subjects_folder.rglob(glob_pattern)]
+    copiers = [copier(f.parent, remote_subjects_folder, **kwargs)
+               for f in local_subjects_folder.rglob(glob_pattern)]
     if len(copiers) == 0:
         print('Could not find any sessions to copy to the local server.')
     elif interactive:
         _print_status(copiers, 'Session states prior to transfer operation:')
         if input('\nDo you want to continue? [Y/n]  ').lower() not in ('y', ''):
-            copiers = list()
+            copiers = []
     return copiers
 
 
@@ -287,13 +317,15 @@ def transfer_data(local_path: Path = None, remote_path: Path = None, dry: bool =
     remove_local_sessions(weeks=2, dry=dry, local_path=local_subject_folder, remote_path=remote_subject_folder)
 
 
-def transfer_other_data(local_path: Path = None, remote_path: Path = None, dry: bool = False, interactive: bool = False,
-                        cleanup_weeks=2) -> None:
+def transfer_other_data(tag, local_path: Path = None, remote_path: Path = None, dry: bool = False, interactive: bool = False,
+                        cleanup_weeks=2) -> list[SessionCopier]:
     """
     Copies data from the rig to the local server.
 
     Parameters
     ----------
+    tag : str
+        The acquisition PC tag to transfer.
     local_path : Path
         Path to local subjects folder, otherwise fetches path from iblrig_settings.yaml file.
     remote_path : Path
@@ -305,15 +337,15 @@ def transfer_other_data(local_path: Path = None, remote_path: Path = None, dry: 
 
     Returns
     -------
-    None
+    list of SessionCopier
+        A list of the copier objects that were run.
     """
     local_subject_folder, remote_subject_folder = _get_subjects_folders(local_path, remote_path, interactive)
     SessionCopier.assert_connect_on_init = True  # FIXME This affects all instances of the base class
 
-    copiers = _get_copiers(SessionCopier, local_path, remote_path, interactive=interactive)
+    copiers = _get_copiers(SessionCopier, local_path, remote_path, interactive=interactive, tag=tag)
 
     for copier in copiers:
-        session_path = copier.session_path
         logger.critical(f'{copier.state}, {copier.session_path}')
         copier.run()
 
@@ -323,6 +355,7 @@ def transfer_other_data(local_path: Path = None, remote_path: Path = None, dry: 
     # once we copied the data, remove older session for which the data was successfully uploaded
     if cleanup_weeks not in (False, 0):
         remove_local_sessions(weeks=cleanup_weeks, dry=dry, local_path=local_subject_folder, remote_path=remote_subject_folder)
+    return copiers
 
 
 def remove_local_sessions(weeks=2, local_path=None, remote_path=None, dry=False, tag='behavior'):

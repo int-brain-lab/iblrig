@@ -1,15 +1,18 @@
 import copy
 import random
+import shutil
 import tempfile
 import unittest
 from pathlib import Path
 from unittest import mock
 
+from iblutil.util import Bunch
+
 import iblrig.commands
 import iblrig.raw_data_loaders
 from ibllib.io import session_params
 from iblrig.test.base import TASK_KWARGS
-from iblrig.transfer_experiments import BehaviorCopier, EphysCopier, VideoCopier
+from iblrig.transfer_experiments import SessionCopier, BehaviorCopier, EphysCopier, VideoCopier
 from iblrig_tasks._iblrig_tasks_trainingChoiceWorld.task import Session
 
 
@@ -45,14 +48,12 @@ def _create_behavior_session(temp_dir, ntrials=None, hard_crash=False):
 
 
 class TestIntegrationTransferExperiments(unittest.TestCase):
-    """
-    This test emulates the `transfer_data` command as run on the rig.
-    """
+    """This test emulates the `transfer_data` command as run on the rig."""
 
     def test_behavior_copy_complete_session(self):
         """
         Here there are 2 cases, one is about a complete session, the other is about a session that crashed
-        but is still valid (ie. more than 42 trials)
+        but is still valid (i.e. more than 42 trials)
         In this case both sessions should end up on the remote path with a copy state of 3
         """
         for hard_crash in [False, True]:
@@ -93,6 +94,77 @@ class TestIntegrationTransferExperiments(unittest.TestCase):
                     session_path=session.paths.SESSION_FOLDER, remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER
                 )
                 self.assertFalse(sc.remote_session_path.exists())
+
+
+class TestGenericTransfer(unittest.TestCase):
+    """This test emulates the `transfer_other_data` command as run at an acquisition PC."""
+
+    def setUp(self):
+        """Set up the copy fixtures and mock objects.
+
+        This test simulates a 'timeline' main sync computer at the UCL mesoscope.
+        """
+        # Create a temporary directory
+        tmpdir = tempfile.TemporaryDirectory()
+        self.addCleanup(tmpdir.cleanup)
+        self.tmpdir = Path(tmpdir.name)
+
+        # Create local and remote data locations
+        self.local = self.tmpdir.joinpath('local', 'Subjects')
+        self.remote = self.tmpdir.joinpath('remote', 'Subjects')
+        self.local.mkdir(parents=True), self.remote.mkdir(parents=True)
+        self.session = 'test/2023-12-01/001'
+
+        # Mock settings file
+        self.settings = Bunch({
+            # Standard settings
+            'iblrig_local_data_path': str(self.local),
+            'iblrig_local_subjects_path': str(self.local),
+            'iblrig_remote_data_path': str(self.remote),
+            'iblrig_remote_subjects_path': str(self.remote),
+            'ALYX_LAB': 'cortexlab',
+            # Hardware settings
+            'RIG_NAME': 'mesoscope_timeline',
+            'MAIN_SYNC': True,
+            'VERSION': '1.0.0'
+        })
+        self.settings_mock = mock.patch('iblrig.path_helper._load_settings_yaml', return_value=self.settings)
+        self.settings_mock.start()
+        self.addCleanup(self.settings_mock.stop)
+
+        # Write remote files.
+        (folder := self.remote.joinpath(self.session, '_devices')).mkdir(parents=True)
+        folder.joinpath('2023-12-01_1_test@behavior.status_pending').touch()
+        with open(folder / '2023-12-01_1_test@timeline.yaml', 'w') as fp:
+            text = """
+sync:
+  nidq:
+    acquisition_software: timeline
+    collection: raw_sync_data
+    extension: npy
+version: 1.0.0
+            """
+            fp.write(text)
+
+        # Write 'local' data
+        folder = self.local.joinpath(self.session).parent.joinpath('1')
+        folder.joinpath('raw_sync_data').mkdir(parents=True)
+        timeline_files = ('_timeline_DAQdata.meta.json', '_timeline_DAQdata.raw.npy',
+                          '_timeline_DAQdata.timestamps.npy', '_timeline_softwareEvents.log.htsv')
+        for file in timeline_files:
+            folder.joinpath('raw_sync_data', file).touch()
+        src = self.remote.joinpath(self.session, '_devices', '2023-12-01_1_test@timeline.yaml')
+        shutil.copy(src, folder / '_ibl_experiment.description_timeline.yaml')
+        folder.joinpath('transfer_me.flag').touch()
+
+    def test_copy_complete_session(self):
+        """Tests the copy of a session using the SessionCopier base class with a specific tag."""
+        copiers = iblrig.commands.transfer_other_data('timeline')
+        self.assertEqual(1, len(copiers))
+        self.assertTrue(self.remote.joinpath(self.session, 'raw_sync_data').exists())
+        copied_files = list(self.remote.joinpath(self.session, 'raw_sync_data').iterdir())
+        self.assertEqual(len(copied_files), 4, 'failed to copy all sync files')
+        self.assertIsNone(next(self.local.rglob('transfer_me.flag'), None), 'failed to remove flag file')
 
 
 class TestUnitTransferExperiments(unittest.TestCase):

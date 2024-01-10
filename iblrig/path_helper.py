@@ -92,9 +92,10 @@ def _iterate_protocols(subject_folder, task_name, n=1):
 
 def get_local_and_remote_paths(local_path=None, remote_path=None, lab=None):
     """
-    Function used to parse input arguments to transfer commands. If the arguments are None, reads in the settings
-    and returns the values from the files.
-    local_subjects_path always has a fallback on the home directory / ilbrig_data
+    Function used to parse input arguments to transfer commands.
+
+    If the arguments are None, reads in the settings and returns the values from the files.
+    local_subjects_path always has a fallback on the home directory / iblrig_data
     remote_subjects_path has no fallback and will return None when all options are exhausted
     :param local_path:
     :param remote_path:

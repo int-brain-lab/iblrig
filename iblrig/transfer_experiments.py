@@ -1,4 +1,3 @@
-import abc
 import ctypes
 import os
 import shutil
@@ -15,6 +14,7 @@ import iblrig
 from ibllib.io import session_params
 from iblutil.io import hashfile
 from iblutil.util import setup_logger
+import one.alf.files as alfiles
 
 log = setup_logger('iblrig', level='INFO')
 
@@ -212,9 +212,10 @@ class SessionCopier:
         if self.state == 0:  # the session hasn't even been initialized: copy the stub to the remote
             log.info(f'{self.state}, {self.session_path}')
             self.initialize_experiment()
-        if self.state == 1:  # the session
+        if self.state == 1:  # the session is ready for copy
             log.info(f'{self.state}, {self.session_path}')
-            self.copy_collections()
+            if self.prepare_copy():
+                self.copy_collections()
         if self.state == 2:
             log.info(f'{self.state}, {self.session_path}')
             self.finalize_copy(number_of_expected_devices=number_of_expected_devices)
@@ -253,7 +254,8 @@ class SessionCopier:
     @property
     def remote_session_path(self):
         if self.remote_subjects_folder:
-            session_parts = self.session_path.as_posix().split('/')[-3:]
+            # padded_sequence ensures session path has zero padded number folder, e.g. 1 -> 001
+            session_parts = alfiles.padded_sequence(self.session_path).parts[-3:]
             return self.remote_subjects_folder.joinpath(*session_parts)
 
     @property
