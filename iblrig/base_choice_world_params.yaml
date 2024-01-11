@@ -12,7 +12,8 @@
 'FEEDBACK_ERROR_DELAY_SECS': 2
 'FEEDBACK_NOGO_DELAY_SECS': 2
 'INTERACTIVE_DELAY': 0.0
-'ITI_DELAY_SECS': 1
+'ITI_DELAY_SECS': 1  # the length of end trial TTL. DEAD_TIME + ITI_DELAY_SECS = inter-trial interval
+'DEAD_TIME': 0.5  # the length of time before entering the next trial. This plus ITI_DELAY_SECS define period of closed-loop grey screen
 'NTRIALS': 2000
 'POOP_COUNT': true
 'PROBABILITY_LEFT': 0.5
