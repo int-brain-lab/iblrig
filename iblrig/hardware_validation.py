@@ -10,6 +10,7 @@ from serial.tools import list_ports
 from serial_singleton import SerialSingleton, filter_ports
 
 from iblrig.path_helper import _load_settings_yaml
+from iblrig.tools import alyx_reachable
 from iblutil.util import setup_logger
 
 log = setup_logger('iblrig', level='DEBUG')
@@ -40,7 +41,7 @@ class ValidateHardware(ABC):
         self.hardware_settings = hardware_settings or _load_settings_yaml('hardware_settings.yaml')
 
     @abstractmethod
-    def _run(self):
+    def _run(self, *args, **kwargs) -> ValidateResult:
         ...
 
     def run(self, *args, **kwargs):
@@ -83,7 +84,7 @@ class ValidateHardwareDevice(ValidateHardware):
 
     def __init__(self, *args, **kwargs):
         if self.log_results:
-            log.info(f'Running hardware tests for {self.device_name}:')
+            log.info(f'Running hardware validations for {self.device_name}:')
         super().__init__(*args, **kwargs)
 
 
@@ -137,12 +138,23 @@ class ValidateRotaryEncoder(ValidateSerialDevice):
         super().run()
 
 
+class ValidateAlyx(ValidateHardware):
+    def _run(self) -> ValidateResult:
+        if alyx_reachable():
+            result = ValidateResult('PASS', f'Alyx at `{self.iblrig_settings.ALYX_URL}` can be connected to.')
+        else:
+            result = ValidateResult(
+                'FAIL',
+                f'Alyx at `{self.iblrig_settings.ALYX_URL}` can not be connected to.',
+                solution='Check the URL and make sure that your computer is allowed to connect to it.',
+            )
+        return result
+
+
 class ValidateAlyxLabLocation(ValidateHardware):
     """
-    This class validates that the rig name in the hardware_settings.yaml file is exists in Alyx.
+    This class validates that the rig name in hardware_settings.yaml does exist in Alyx.
     """
-
-    raise_fail_as_exception: bool = False
 
     def _run(self, one):
         try:
@@ -157,3 +169,8 @@ class ValidateAlyxLabLocation(ValidateHardware):
             )
             results_kwargs = dict(status='FAIL', message=error_message, solution=solution)
         return ValidateResult(**results_kwargs)
+
+
+def run_all_tests():
+    # Todo: implement method for running all children of ValidateHardware
+    pass

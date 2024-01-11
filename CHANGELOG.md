@@ -4,10 +4,10 @@ Changelog
 
 8.13.0
 ------
+* restructured user interface
 * script for starting video-session in ephys-rig
 * installer scripts for Spinnaker SDK / PySpin
 * validated parsing of settings files
-* restructured user interface
 * add legend to trials-timeline
 * various improvements under the hood, clean-up and unit-tests
 
