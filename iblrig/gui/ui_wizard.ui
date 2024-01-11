@@ -147,6 +147,9 @@
               </property>
               <item>
                <widget class="QLineEdit" name="uiLineEditUser">
+                <property name="statusTip">
+                 <string>Enter your user name</string>
+                </property>
                 <property name="placeholderText">
                  <string>not logged in</string>
                 </property>
@@ -159,6 +162,9 @@
                   <width>100</width>
                   <height>0</height>
                  </size>
+                </property>
+                <property name="statusTip">
+                 <string>Click to log user into Alyx</string>
                 </property>
                 <property name="text">
                  <string>Log In</string>
@@ -202,7 +208,7 @@
                  </sizepolicy>
                 </property>
                 <property name="statusTip">
-                 <string>choose a subject</string>
+                 <string>Choose a subject</string>
                 </property>
                </widget>
               </item>
@@ -227,7 +233,7 @@
                  </size>
                 </property>
                 <property name="statusTip">
-                 <string>filter displayed subjects by name</string>
+                 <string>Filter subjects by name</string>
                 </property>
                 <property name="layoutDirection">
                  <enum>Qt::LeftToRight</enum>
@@ -341,7 +347,7 @@
               <enum>Qt::TabFocus</enum>
              </property>
              <property name="statusTip">
-              <string>select one or several projects (mandatory)</string>
+              <string>Select one or several projects</string>
              </property>
              <property name="editTriggers">
               <set>QAbstractItemView::NoEditTriggers</set>
@@ -452,7 +458,7 @@
               <enum>Qt::TabFocus</enum>
              </property>
              <property name="statusTip">
-              <string>select one or several procedures (mandatory)</string>
+              <string>Select one or several procedures</string>
              </property>
              <property name="editTriggers">
               <set>QAbstractItemView::NoEditTriggers</set>
@@ -487,7 +493,7 @@
               </size>
              </property>
              <property name="statusTip">
-              <string>choose a task for the session</string>
+              <string>Select a task for the session</string>
              </property>
             </widget>
            </item>
