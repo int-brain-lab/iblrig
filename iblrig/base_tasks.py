@@ -622,7 +622,7 @@ class BonsaiVisualStimulusMixin:
         file_output_rfm = self.paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_RFMapStim.raw.bin')
         parameters = {
             'Stim.DisplayIndex': self.hardware_settings.device_screen['DISPLAY_IDX'],
-            'SpontaneousActivity0.DueTime': sa_time,
+            'Stim.SpontaneousActivity0.DueTime': sa_time,
             'Stim.ReceptiveFieldMappingStim.FileNameRFMapStim': file_output_rfm,
             'Stim.ReceptiveFieldMappingStim.MappingTime': map_time,
             'Stim.ReceptiveFieldMappingStim.Rate': rate,
@@ -638,15 +638,15 @@ class BonsaiVisualStimulusMixin:
         workflow_file = self.paths.VISUAL_STIM_FOLDER.joinpath(self.task_params.VISUAL_STIMULUS)
         parameters = {
             'Stim.DisplayIndex': self.hardware_settings.device_screen['DISPLAY_IDX'],
-            'Stim.FileNameEvents': self.paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_encoderEvents.raw.ssv'),
-            'Stim.FileNamePositions': self.paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_encoderPositions.raw.ssv'),
-            'Stim.FileNameTrialInfo': self.paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_encoderTrialInfo.raw.ssv'),
             'Stim.FileNameStimPositionScreen': self.paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_stimPositionScreen.raw.csv'),
             'Stim.FileNameSyncSquareUpdate': self.paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_syncSquareUpdate.raw.csv'),
+            'Stim.FileNamePositions': self.paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_encoderPositions.raw.ssv'),
+            'Stim.FileNameEvents': self.paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_encoderEvents.raw.ssv'),
+            'Stim.FileNameTrialInfo': self.paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_encoderTrialInfo.raw.ssv'),
             'Stim.REPortName': self.hardware_settings.device_rotary_encoder['COM_ROTARY_ENCODER'],
             'Stim.sync_x': self.task_params.SYNC_SQUARE_X,
             'Stim.sync_y': self.task_params.SYNC_SQUARE_Y,
-            'Stim.TranslationZ': self.task_params.STIM_TRANSLATION_Z,
+            'Stim.TranslationZ': -self.task_params.STIM_TRANSLATION_Z,  # MINUS!!
         }
         self.logger.info('starting Bonsai visual stimulus')
         call_bonsai(workflow_file, parameters, wait=False, editor=self.task_params.BONSAI_EDITOR, bootstrap=False)
