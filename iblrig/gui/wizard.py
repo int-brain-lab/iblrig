@@ -130,58 +130,45 @@ class RigWizardModel:
         spec.loader.exec_module(task)
         return task.Session.extra_parser()
 
-    def connect(self, username=None, one=None, gui=False):
-        """
-        :param username:
-        :param one:
-        :param gui: bool: whether or not a Qt Application is running to throw an error message
-        :return:
-        """
-        if one is None:
-            username = username or self.iblrig_settings['ALYX_USER']
-            self.one = ONE(base_url=self.iblrig_settings['ALYX_URL'], username=username, mode='local')
+    def login(
+        self, username: str, password: str | None = None, do_cache: bool = False, alyx_client: AlyxClient | None = None
+    ) -> bool:
+        # Use predefined AlyxClient for testing purposes:
+        if alyx_client is not None:
+            self.alyx = alyx_client
+
+        # Alternatively, try to log in:
         else:
-            self.one = one
-        self.hardware_settings['RIG_NAME']
-        # get subjects from alyx: this is the set of subjects that are alive and not stock in the lab defined in settings
-        rest_subjects = self.one.alyx.rest('subjects', 'list', alive=True, stock=False, lab=self.iblrig_settings['ALYX_LAB'])
+            try:
+                self.alyx.authenticate(username, password, do_cache, force=password is not None)
+                if self.alyx.is_logged_in and self.alyx.user == username:
+                    self.user = self.alyx.user
+                    log.info(f'Logged into {self.alyx.base_url} as {self.alyx.user}')
+                else:
+                    return False
+            except HTTPError as e:
+                if e.errno == 400 and any(x in e.response.text for x in ('credentials', 'required')):
+                    log.error(e.filename)
+                    return False
+                else:
+                    raise e
+
+        # # since we are connecting to Alyx, validate some parameters to ensure a smooth extraction
+        # result = iblrig.hardware_validation.ValidateAlyxLabLocation().run(self.one)
+        # if result.status == 'FAIL' and gui:
+        #     QtWidgets.QMessageBox().critical(None, 'Error', f'{result.message}\n\n{result.solution}')
+
+        # get subjects from Alyx: this is the set of subjects that are alive and not stock in the lab defined in settings
+        rest_subjects = self.alyx.rest('subjects', 'list', alive=True, stock=False, lab=self.iblrig_settings['ALYX_LAB'])
         self.all_subjects.remove(self.test_subject_name)
-        self.all_subjects = sorted(set(self.all_subjects + [s['nickname'] for s in rest_subjects]))
-        self.all_subjects = [self.test_subject_name] + self.all_subjects
-        # for the users we get all the users responsible for the set of subjects
-        self.all_users = sorted(set([s['responsible_user'] for s in rest_subjects] + self.all_users))
-        # then from the list of users we find all others users that have delegate access to the subjects
-        rest_users_with_delegates = self.one.alyx.rest(
-            'users', 'list', no_cache=True, django=f'username__in,{self.all_users},allowed_users__isnull,False'
-        )
-        for user_with_delegate in rest_users_with_delegates:
-            self.all_users.extend(user_with_delegate['allowed_users'])
-        self.all_users = list(set(self.all_users))
-        # then get the projects that map to the set of users
-        rest_projects = self.one.alyx.rest('projects', 'list')
+        self.all_subjects = [self.test_subject_name] + sorted(set(self.all_subjects + [s['nickname'] for s in rest_subjects]))
+
+        # then get the projects that map to the current user
+        rest_projects = self.alyx.rest('projects', 'list')
         projects = [p['name'] for p in rest_projects if (username in p['users'] or len(p['users']) == 0)]
         self.all_projects = sorted(set(projects + self.all_projects))
 
-        # since we are connecting to Alyx, validate some parameters to ensure a smooth extraction
-        result = iblrig.hardware_validation.ValidateAlyxLabLocation().run(self.one)
-        if result.status == 'FAIL' and gui:
-            QtWidgets.QMessageBox().critical(None, 'Error', f'{result.message}\n\n{result.solution}')
-
-    def login(self, username: str, password: str | None = None, do_cache: bool = False) -> bool:
-        if not alyx_reachable():
-            return False
-        try:
-            self.alyx.authenticate(username=username, password=password, cache_token=do_cache, force=password is not None)
-            if self.alyx.is_logged_in and self.alyx.user == username:
-                self.user = self.alyx.user
-            log.info(f'Connected to {self.alyx.base_url} as {self.alyx.user}')
-            return self.alyx.is_logged_in
-        except HTTPError as e:
-            if e.errno == 400 and any(x in e.response.text for x in ('credentials', 'required')):
-                log.error(e.filename)
-                return False
-            else:
-                raise e
+        return True
 
     def logout(self):
         if not self.alyx.is_logged_in or self.alyx.user is not self.user:
@@ -306,11 +293,14 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         dirty_worker.signals.result.connect(self._on_check_dirty_result)
         QThreadPool.globalInstance().start(dirty_worker)
 
-    def _show_error_dialog(self,
-                           title: str,
-                           description: str,
-                           issues: list[str] | None = None,
-                           suggestions: list[str] | None = None):
+    def _show_error_dialog(
+        self,
+        title: str,
+        description: str,
+        issues: list[str] | None = None,
+        suggestions: list[str] | None = None,
+        leads: list[str] | None = None,
+    ):
         text = description.strip()
 
         def build_list(items: list[str] or None, header_singular: str, header_plural: str | None = None):
@@ -326,8 +316,10 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
             for item in items:
                 text += f'<li>{item.strip()}</li>'
             text += '</ul>'
+
         build_list(issues, 'Possible issue')
         build_list(suggestions, 'Suggested action')
+        build_list(leads, 'Possible lead')
         QtWidgets.QMessageBox.critical(self, title, text)
 
     def _on_switch_tab(self, index):
@@ -448,6 +440,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
             msg_box.exec()
 
     def _log_in_or_out(self, username: str) -> bool:
+        # Routine for logging out:
         if self.uiPushButtonLogIn.text() == 'Log Out':
             self.model.logout()
             self.uiLineEditUser.setText('')
@@ -458,18 +451,34 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
             self.uiLineEditUser.actions()
             self.uiPushButtonLogIn.setText('Log In')
             return True
-        if not internet_available(timeout=1):
-            self._show_error_dialog(title="Error connecting to the internet",
-                                    description=f"Your computer appears to be offline.",
-                                    suggestions=["Please check your internet connection."])
+
+        # Routine for logging in:
+        # 1) Try to log in with just the username. This will succeed if the credentials for the respective user are cached. We
+        #    also try to catch connection issues and show helpful error messages.
+        try:
+            logged_in = self.model.login(username)
+        except ConnectionError:
+            if not internet_available(timeout=1, force_update=True):
+                self._show_error_dialog(
+                    title='Error connecting to Alyx',
+                    description='Your computer appears to be offline.',
+                    suggestions=['Check your internet connection.'],
+                )
+            elif not alyx_reachable():
+                self._show_error_dialog(
+                    title='Error connecting to Alyx',
+                    description=f'Cannot connect to {self.model.iblrig_settings.ALYX_URL}',
+                    leads=[
+                        'Is `ALYX_URL` in `iblrig_settings.yaml` set correctly?',
+                        'Is your machine allowed to connect to Alyx?',
+                        'Is the Alyx server up and running nominally?',
+                    ],
+                )
             return False
-        if not alyx_reachable():
-            self._show_error_dialog(title="Error connecting to Alyx",
-                                    description=f"Cannot connect to {self.model.iblrig_settings.ALYX_URL}",
-                                    suggestions=[f'Check that parameter `ALYX_URL` in `iblrig_settings.yaml` is correct',
-                                                 f'Check if your computer is allowed to connect to {self.model.iblrig_settings.ALYX_URL}'])
-            return False
-        if not (logged_in := self.model.login(username)):
+
+        # 2) If there is no cached session for the given user and we can connect to Alyx: show the password dialog and loop
+        #    until, either, the login was successful or the cancel button was pressed.
+        if not logged_in:
             password = ''
             remember = False
             while not logged_in:
@@ -483,12 +492,15 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 else:
                     dlg.deleteLater()
                     break
+
+        # 3) Finally, if the login was successful, we need to apply some changes to the GUI
         if logged_in:
             self.uiLineEditUser.addAction(QtGui.QIcon(':/images/check'), QtWidgets.QLineEdit.ActionPosition.TrailingPosition)
             self.uiLineEditUser.setText(username)
             self.uiLineEditUser.setReadOnly(True)
             self.uiLineEditUser.setStyleSheet('background-color: rgb(246, 245, 244);')
             self.uiPushButtonLogIn.setText('Log Out')
+            self.model2view()
         return logged_in
 
     def eventFilter(self, obj, event):
@@ -1043,8 +1055,9 @@ class LoginWindow(QtWidgets.QDialog, Ui_login):
         self.checkBoxRememberMe.setChecked(remember)
         self.lineEditUsername.textChanged.connect(self._onTextChanged)
         self.lineEditPassword.textChanged.connect(self._onTextChanged)
-        self.toggle_password = self.lineEditPassword.addAction(QtGui.QIcon(':/images/hide'),
-                                                               QtWidgets.QLineEdit.ActionPosition.TrailingPosition)
+        self.toggle_password = self.lineEditPassword.addAction(
+            QtGui.QIcon(':/images/hide'), QtWidgets.QLineEdit.ActionPosition.TrailingPosition
+        )
         self.toggle_password.triggered.connect(self._toggle_password_visibility)
         self.toggle_password.setCheckable(True)
         if len(username) > 0:
