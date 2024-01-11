@@ -1,10 +1,9 @@
 from collections import abc
 from datetime import date
-from ipaddress import IPv4Address
 from pathlib import Path
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, HttpUrl, field_validator
+from pydantic import AnyUrl, BaseModel, ConfigDict, Field, field_validator
 
 
 class BunchModel(BaseModel, abc.MutableMapping):
@@ -42,7 +41,7 @@ class RigSettings(BunchModel, validate_assignment=True):
         title='IBLRIG remote data path', description='The remote folder IBLRIG should use for storing data'
     )
     ALYX_USER: str | None = Field(description='Your Alyx username')
-    ALYX_URL: HttpUrl | IPv4Address | None = Field(title='Alyx URL', description='The URL to your Alyx database')
+    ALYX_URL: AnyUrl | None = Field(title='Alyx URL', description='The URL to your Alyx database')
     ALYX_LAB: str | None = Field(description="Your lab's name as registered on the Alyx database")
 
     @field_validator('*')

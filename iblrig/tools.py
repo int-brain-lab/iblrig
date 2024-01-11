@@ -8,7 +8,8 @@ from pathlib import Path
 from typing import Any
 
 from iblrig.constants import BONSAI_EXE
-from iblrig.path_helper import create_bonsai_layout_from_template
+from iblrig.path_helper import create_bonsai_layout_from_template, load_pydantic_yaml
+from iblrig.pydantic_definitions import RigSettings
 from iblutil.util import setup_logger
 
 logger = setup_logger('iblrig')
@@ -166,6 +167,21 @@ def internet_available(host: str = '8.8.8.8', port: int = 53, timeout: int = 3, 
     except OSError:
         internet_available.return_value = False
     return internet_available.return_value
+
+
+def alyx_reachable() -> bool:
+    """
+    Check if Alyx can be connected to.
+
+    Returns
+    -------
+    bool
+        True if Alyx can be connected to, False otherwise.
+    """
+    settings: RigSettings = load_pydantic_yaml(RigSettings)
+    if settings.ALYX_URL is not None:
+        return internet_available(host=settings.ALYX_URL.host, port=443, timeout=1, force_update=True)
+    return False
 
 
 def call_bonsai(
