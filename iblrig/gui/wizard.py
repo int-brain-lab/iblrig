@@ -1036,12 +1036,17 @@ class LoginWindow(QtWidgets.QDialog, Ui_login):
     def __init__(self, parent: RigWizard, username: str = '', password: str = '', remember: bool = False):
         super().__init__(parent)
         self.setupUi(self)
+        self.layout().setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
         self.labelServer.setText(str(parent.model.iblrig_settings['ALYX_URL']))
         self.lineEditUsername.setText(username)
         self.lineEditPassword.setText(password)
         self.checkBoxRememberMe.setChecked(remember)
         self.lineEditUsername.textChanged.connect(self._onTextChanged)
         self.lineEditPassword.textChanged.connect(self._onTextChanged)
+        self.toggle_password = self.lineEditPassword.addAction(QtGui.QIcon(':/images/hide'),
+                                                               QtWidgets.QLineEdit.ActionPosition.TrailingPosition)
+        self.toggle_password.triggered.connect(self._toggle_password_visibility)
+        self.toggle_password.setCheckable(True)
         if len(username) > 0:
             self.lineEditPassword.setFocus()
         self._onTextChanged()
@@ -1050,6 +1055,14 @@ class LoginWindow(QtWidgets.QDialog, Ui_login):
     def _onTextChanged(self):
         enable_ok = len(self.lineEditUsername.text()) > 0 and len(self.lineEditPassword.text()) > 0
         self.buttonBox.button(self.buttonBox.Ok).setEnabled(enable_ok)
+
+    def _toggle_password_visibility(self):
+        if self.toggle_password.isChecked():
+            self.toggle_password.setIcon(QtGui.QIcon(':/images/show'))
+            self.lineEditPassword.setEchoMode(QtWidgets.QLineEdit.EchoMode.Normal)
+        else:
+            self.toggle_password.setIcon(QtGui.QIcon(':/images/hide'))
+            self.lineEditPassword.setEchoMode(QtWidgets.QLineEdit.EchoMode.Password)
 
 
 class UpdateNotice(QtWidgets.QDialog, Ui_update):
