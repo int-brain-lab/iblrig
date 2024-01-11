@@ -15,9 +15,11 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Optional
 
-from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QThread, QThreadPool
+from PyQt5.QtWebEngineWidgets import QWebEnginePage
 from PyQt5.QtWidgets import QStyle
+from requests import HTTPError
 
 import iblrig.hardware_validation
 import iblrig.path_helper
@@ -25,15 +27,17 @@ import iblrig_tasks
 from iblrig.base_tasks import EmptySession
 from iblrig.choiceworld import get_subject_training_info, training_phase_from_contrast_set
 from iblrig.constants import BASE_DIR
+from iblrig.gui.ui_login import Ui_login
 from iblrig.gui.ui_update import Ui_update
 from iblrig.gui.ui_wizard import Ui_wizard
 from iblrig.hardware import Bpod
 from iblrig.misc import _get_task_argument_parser
 from iblrig.path_helper import load_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings, RigSettings
-from iblrig.tools import get_anydesk_id
+from iblrig.tools import alyx_reachable, get_anydesk_id, internet_available
 from iblrig.version_management import check_for_updates, get_changelog, is_dirty
 from one.api import ONE
+from one.webclient import AlyxClient
 from pybpodapi import exceptions
 
 try:
@@ -55,7 +59,11 @@ PROCEDURES = [
     'Imaging',
 ]
 PROJECTS = ['ibl_neuropixel_brainwide_01', 'practice']
-DOC_URL = 'https://int-brain-lab.github.io/iblrig'
+
+URL_DOC = 'https://int-brain-lab.github.io/iblrig'
+URL_REPO = 'https://github.com/int-brain-lab/iblrig/tree/iblrigv8'
+URL_ISSUES = 'https://github.com/int-brain-lab/iblrig/issues'
+URL_DISCUSSION = 'https://github.com/int-brain-lab/iblrig/discussions'
 
 
 def _set_list_view_from_string_list(ui_list: QtWidgets.QListView, string_list: list):
@@ -69,6 +77,7 @@ def _set_list_view_from_string_list(ui_list: QtWidgets.QListView, string_list: l
 
 @dataclass
 class RigWizardModel:
+    alyx: AlyxClient | None = None
     one: Optional[ONE] = None
     procedures: list | None = None
     projects: list | None = None
@@ -81,18 +90,21 @@ class RigWizardModel:
     subject_details: tuple | None = None
 
     def __post_init__(self):
-        self.iblrig_settings = load_pydantic_yaml(RigSettings)
-        self.hardware_settings = load_pydantic_yaml(HardwareSettings)
+        self.iblrig_settings: RigSettings = load_pydantic_yaml(RigSettings)
+        self.hardware_settings: HardwareSettings = load_pydantic_yaml(HardwareSettings)
+
+        if self.iblrig_settings.ALYX_URL is not None:
+            self.alyx = AlyxClient(base_url=str(self.iblrig_settings.ALYX_URL), silent=True)
+
         self.all_users = [self.iblrig_settings['ALYX_USER']] if self.iblrig_settings['ALYX_USER'] else []
         self.all_procedures = sorted(PROCEDURES)
+        self.all_projects = sorted(PROJECTS)
 
         # for the tasks, we build a dictionary that contains the task name as key and the path to task.py as value
         tasks = sorted([p for p in Path(iblrig_tasks.__file__).parent.rglob('task.py')])
         if CUSTOM_TASKS:
             tasks.extend(sorted([p for p in Path(iblrig_custom_tasks.__file__).parent.rglob('task.py')]))
         self.all_tasks = OrderedDict({p.parts[-2]: p for p in tasks})
-
-        self.all_projects = sorted(PROJECTS)
 
         # get the subjects from iterating over folders in the the iblrig data path
         if self.iblrig_settings['iblrig_local_data_path'] is None:
@@ -118,41 +130,53 @@ class RigWizardModel:
         spec.loader.exec_module(task)
         return task.Session.extra_parser()
 
-    def connect(self, username=None, one=None, gui=False):
-        """
-        :param username:
-        :param one:
-        :param gui: bool: whether or not a Qt Application is running to throw an error message
-        :return:
-        """
-        if one is None:
-            username = username or self.iblrig_settings['ALYX_USER']
-            self.one = ONE(base_url=self.iblrig_settings['ALYX_URL'], username=username, mode='local')
+    def login(
+        self, username: str, password: str | None = None, do_cache: bool = False, alyx_client: AlyxClient | None = None
+    ) -> bool:
+        # Use predefined AlyxClient for testing purposes:
+        if alyx_client is not None:
+            self.alyx = alyx_client
+
+        # Alternatively, try to log in:
         else:
-            self.one = one
-        self.hardware_settings['RIG_NAME']
-        # get subjects from alyx: this is the set of subjects that are alive and not stock in the lab defined in settings
-        rest_subjects = self.one.alyx.rest('subjects', 'list', alive=True, stock=False, lab=self.iblrig_settings['ALYX_LAB'])
+            try:
+                self.alyx.authenticate(username, password, do_cache, force=password is not None)
+                if self.alyx.is_logged_in and self.alyx.user == username:
+                    self.user = self.alyx.user
+                    log.info(f'Logged into {self.alyx.base_url} as {self.alyx.user}')
+                else:
+                    return False
+            except HTTPError as e:
+                if e.errno == 400 and any(x in e.response.text for x in ('credentials', 'required')):
+                    log.error(e.filename)
+                    return False
+                else:
+                    raise e
+
+        # # since we are connecting to Alyx, validate some parameters to ensure a smooth extraction
+        # result = iblrig.hardware_validation.ValidateAlyxLabLocation().run(self.one)
+        # if result.status == 'FAIL' and gui:
+        #     QtWidgets.QMessageBox().critical(None, 'Error', f'{result.message}\n\n{result.solution}')
+
+        # get subjects from Alyx: this is the set of subjects that are alive and not stock in the lab defined in settings
+        rest_subjects = self.alyx.rest('subjects', 'list', alive=True, stock=False, lab=self.iblrig_settings['ALYX_LAB'])
         self.all_subjects.remove(self.test_subject_name)
-        self.all_subjects = sorted(set(self.all_subjects + [s['nickname'] for s in rest_subjects]))
-        self.all_subjects = [self.test_subject_name] + self.all_subjects
-        # for the users we get all the users responsible for the set of subjects
-        self.all_users = sorted(set([s['responsible_user'] for s in rest_subjects] + self.all_users))
-        # then from the list of users we find all others users that have delegate access to the subjects
-        rest_users_with_delegates = self.one.alyx.rest(
-            'users', 'list', no_cache=True, django=f'username__in,{self.all_users},allowed_users__isnull,False'
-        )
-        for user_with_delegate in rest_users_with_delegates:
-            self.all_users.extend(user_with_delegate['allowed_users'])
-        self.all_users = list(set(self.all_users))
-        # then get the projects that map to the set of users
-        rest_projects = self.one.alyx.rest('projects', 'list')
+        self.all_subjects = [self.test_subject_name] + sorted(set(self.all_subjects + [s['nickname'] for s in rest_subjects]))
+
+        # then get the projects that map to the current user
+        rest_projects = self.alyx.rest('projects', 'list')
         projects = [p['name'] for p in rest_projects if (username in p['users'] or len(p['users']) == 0)]
         self.all_projects = sorted(set(projects + self.all_projects))
-        # since we are connecting to Alyx, validate some parameters to ensure a smooth extraction
-        result = iblrig.hardware_validation.ValidateAlyxLabLocation().run(self.one)
-        if result.status == 'FAIL' and gui:
-            QtWidgets.QMessageBox().critical(None, 'Error', f'{result.message}\n\n{result.solution}')
+
+        return True
+
+    def logout(self):
+        if not self.alyx.is_logged_in or self.alyx.user is not self.user:
+            return
+        log.info(f'User {self.user} logged out')
+        self.alyx.logout()
+        self.user = None
+        self.__post_init__()
 
     def get_subject_details(self, subject):
         self.subject_details_worker = SubjectDetailsWorker(subject)
@@ -187,7 +211,6 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.uiPushPause.clicked.connect(self.pause)
         self.uiListProjects.clicked.connect(self._enable_ui_elements)
         self.uiListProcedures.clicked.connect(self._enable_ui_elements)
-        self.uiPushConnect.clicked.connect(self.alyx_connect)
         self.lineEditSubject.textChanged.connect(self._filter_subjects)
 
         self.uiPushStatusLED.setChecked(self.settings.value('bpod_status_led', True, bool))
@@ -206,10 +229,26 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
 
         self.tabWidget.currentChanged.connect(self._on_switch_tab)
 
+        # username
+        if self.model.iblrig_settings.ALYX_URL is not None:
+            self.uiLineEditUser.returnPressed.connect(lambda w=self.uiLineEditUser: self._log_in_or_out(username=w.text()))
+            self.uiPushButtonLogIn.released.connect(lambda w=self.uiLineEditUser: self._log_in_or_out(username=w.text()))
+        else:
+            self.uiLineEditUser.setPlaceholderText('')
+            self.uiPushButtonLogIn.setEnabled(False)
+
         # documentation
-        self.uiPushWebHome.clicked.connect(lambda: self.webEngineView.load(QtCore.QUrl(DOC_URL)))
+        self.uiPushWebHome.clicked.connect(lambda: self.webEngineView.load(QtCore.QUrl(URL_DOC)))
         self.uiPushWebBrowser.clicked.connect(lambda: webbrowser.open(str(self.webEngineView.url().url())))
-        # self.webEngineView.
+        self.webEngineView.setPage(CustomWebEnginePage(self))
+        self.webEngineView.setUrl(QtCore.QUrl(URL_DOC))
+        self.webEngineView.urlChanged.connect(self._on_doc_url_changed)
+
+        # tab: about
+        self.commandLinkButtonGitHub.clicked.connect(lambda: webbrowser.open(URL_REPO))
+        self.commandLinkButtonDoc.clicked.connect(lambda: webbrowser.open(URL_DOC))
+        self.commandLinkButtonIssues.clicked.connect(lambda: webbrowser.open(URL_ISSUES))
+        self.commandLinkButtonDiscussion.clicked.connect(lambda: webbrowser.open(URL_DISCUSSION))
 
         # disk stats
         local_data = self.model.iblrig_settings['iblrig_local_data_path']
@@ -217,18 +256,18 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         v8data_size = sum(file.stat().st_size for file in Path(local_data).rglob('*'))
         total_space, total_used, total_free = shutil.disk_usage(local_data.anchor)
         self.uiProgressDiskSpace = QtWidgets.QProgressBar(self)
-        self.uiProgressDiskSpace.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
-        self.uiProgressDiskSpace.resize(20, 20)
+        self.uiProgressDiskSpace.setMaximumWidth(70)
         self.uiProgressDiskSpace.setValue(round(total_used / total_space * 100))
         self.uiProgressDiskSpace.setStatusTip(
             f'local IBLRIG data: {v8data_size / 1024 ** 3 : .1f} GB  •  ' f'available space: {total_free / 1024 ** 3 : .1f} GB'
         )
+        if self.uiProgressDiskSpace.value() > 90:
+            p = self.uiProgressDiskSpace.palette()
+            p.setColor(QtGui.QPalette.Highlight, QtGui.QColor('red'))
+            self.uiProgressDiskSpace.setPalette(p)
 
         # statusbar
         self.statusbar.setContentsMargins(0, 0, 6, 0)
-        self.uiLabelStatus = QtWidgets.QLabel(f'IBLRIG v{iblrig.__version__}')
-        self.uiLabelStatus.setContentsMargins(4, 0, 4, 0)
-        self.statusbar.addWidget(self.uiLabelStatus, 1)
         self.statusbar.addPermanentWidget(self.uiProgressDiskSpace)
         self.controls_for_extra_parameters()
 
@@ -253,6 +292,35 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         dirty_worker = Worker(is_dirty)
         dirty_worker.signals.result.connect(self._on_check_dirty_result)
         QThreadPool.globalInstance().start(dirty_worker)
+
+    def _show_error_dialog(
+        self,
+        title: str,
+        description: str,
+        issues: list[str] | None = None,
+        suggestions: list[str] | None = None,
+        leads: list[str] | None = None,
+    ):
+        text = description.strip()
+
+        def build_list(items: list[str] or None, header_singular: str, header_plural: str | None = None):
+            nonlocal text
+            if items is None or len(items) == 0:
+                return
+            if len(items) > 1:
+                if header_plural is None:
+                    header_plural = header_singular.strip() + 's'
+                text += f'<br><br>{header_plural}:<ul>'
+            else:
+                text += f'<br><br>{header_singular.strip()}:<ul>'
+            for item in items:
+                text += f'<li>{item.strip()}</li>'
+            text += '</ul>'
+
+        build_list(issues, 'Possible issue')
+        build_list(suggestions, 'Suggested action')
+        build_list(leads, 'Possible lead')
+        QtWidgets.QMessageBox.critical(self, title, text)
 
     def _on_switch_tab(self, index):
         # if self.tabWidget.tabText(index) == 'Session':
@@ -339,7 +407,11 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         None
         """
         if result is not None:
-            self.uiLabelStatus.setText(f'IBLRIG v{iblrig.__version__}  •  AnyDesk ID: {result}')
+            self.uiLabelAnyDesk.setText(f'Your AnyDesk ID: {result}')
+
+    def _on_doc_url_changed(self):
+        self.uiPushWebBack.setEnabled(len(self.webEngineView.history().backItems(1)) > 0)
+        self.uiPushWebForward.setEnabled(len(self.webEngineView.history().forwardItems(1)) > 0)
 
     def _on_check_dirty_result(self, repository_is_dirty: bool) -> None:
         """
@@ -366,6 +438,70 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 '    git reset --hard'
             )
             msg_box.exec()
+
+    def _log_in_or_out(self, username: str) -> bool:
+        # Routine for logging out:
+        if self.uiPushButtonLogIn.text() == 'Log Out':
+            self.model.logout()
+            self.uiLineEditUser.setText('')
+            self.uiLineEditUser.setReadOnly(False)
+            for action in self.uiLineEditUser.actions():
+                self.uiLineEditUser.removeAction(action)
+            self.uiLineEditUser.setStyleSheet('')
+            self.uiLineEditUser.actions()
+            self.uiPushButtonLogIn.setText('Log In')
+            return True
+
+        # Routine for logging in:
+        # 1) Try to log in with just the username. This will succeed if the credentials for the respective user are cached. We
+        #    also try to catch connection issues and show helpful error messages.
+        try:
+            logged_in = self.model.login(username)
+        except ConnectionError:
+            if not internet_available(timeout=1, force_update=True):
+                self._show_error_dialog(
+                    title='Error connecting to Alyx',
+                    description='Your computer appears to be offline.',
+                    suggestions=['Check your internet connection.'],
+                )
+            elif not alyx_reachable():
+                self._show_error_dialog(
+                    title='Error connecting to Alyx',
+                    description=f'Cannot connect to {self.model.iblrig_settings.ALYX_URL}',
+                    leads=[
+                        'Is `ALYX_URL` in `iblrig_settings.yaml` set correctly?',
+                        'Is your machine allowed to connect to Alyx?',
+                        'Is the Alyx server up and running nominally?',
+                    ],
+                )
+            return False
+
+        # 2) If there is no cached session for the given user and we can connect to Alyx: show the password dialog and loop
+        #    until, either, the login was successful or the cancel button was pressed.
+        if not logged_in:
+            password = ''
+            remember = False
+            while not logged_in:
+                dlg = LoginWindow(parent=self, username=username, password=password, remember=remember)
+                if dlg.result():
+                    username = dlg.lineEditUsername.text()
+                    password = dlg.lineEditPassword.text()
+                    remember = dlg.checkBoxRememberMe.isChecked()
+                    dlg.deleteLater()
+                    logged_in = self.model.login(username=username, password=password, do_cache=remember)
+                else:
+                    dlg.deleteLater()
+                    break
+
+        # 3) Finally, if the login was successful, we need to apply some changes to the GUI
+        if logged_in:
+            self.uiLineEditUser.addAction(QtGui.QIcon(':/images/check'), QtWidgets.QLineEdit.ActionPosition.TrailingPosition)
+            self.uiLineEditUser.setText(username)
+            self.uiLineEditUser.setReadOnly(True)
+            self.uiLineEditUser.setStyleSheet('background-color: rgb(246, 245, 244);')
+            self.uiPushButtonLogIn.setText('Log Out')
+            self.model2view()
+        return logged_in
 
     def eventFilter(self, obj, event):
         if obj == self.uiPushStart and event.type() in [QtCore.QEvent.HoverEnter, QtCore.QEvent.HoverLeave]:
@@ -410,13 +546,11 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         # stores the current values in the model
         self.controller2model()
         # set the default values
-        self.uiComboUser.setModel(QtCore.QStringListModel(self.model.all_users))
         self.uiComboTask.setModel(QtCore.QStringListModel(list(self.model.all_tasks.keys())))
         self.uiComboSubject.setModel(QtCore.QStringListModel(self.model.all_subjects))
         self.uiListProcedures.setModel(QtCore.QStringListModel(self.model.all_procedures))
         self.uiListProjects.setModel(QtCore.QStringListModel(self.model.all_projects))
         # set the selections
-        self.uiComboUser.setCurrentText(self.model.user)
         self.uiComboTask.setCurrentText(self.model.task_name)
         self.uiComboSubject.setCurrentText(self.model.subject)
         _set_list_view_from_string_list(self.uiListProcedures, self.model.procedures)
@@ -427,7 +561,6 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.model.procedures = [i.data() for i in self.uiListProcedures.selectedIndexes()]
         self.model.projects = [i.data() for i in self.uiListProjects.selectedIndexes()]
         self.model.task_name = self.uiComboTask.currentText()
-        self.model.user = self.uiComboUser.currentText()
         self.model.subject = self.uiComboSubject.currentText()
 
     def controls_for_extra_parameters(self):
@@ -911,6 +1044,40 @@ class Worker(QtCore.QRunnable):
             self.signals.finished.emit()
 
 
+class LoginWindow(QtWidgets.QDialog, Ui_login):
+    def __init__(self, parent: RigWizard, username: str = '', password: str = '', remember: bool = False):
+        super().__init__(parent)
+        self.setupUi(self)
+        self.layout().setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
+        self.labelServer.setText(str(parent.model.iblrig_settings['ALYX_URL']))
+        self.lineEditUsername.setText(username)
+        self.lineEditPassword.setText(password)
+        self.checkBoxRememberMe.setChecked(remember)
+        self.lineEditUsername.textChanged.connect(self._onTextChanged)
+        self.lineEditPassword.textChanged.connect(self._onTextChanged)
+        self.toggle_password = self.lineEditPassword.addAction(
+            QtGui.QIcon(':/images/hide'), QtWidgets.QLineEdit.ActionPosition.TrailingPosition
+        )
+        self.toggle_password.triggered.connect(self._toggle_password_visibility)
+        self.toggle_password.setCheckable(True)
+        if len(username) > 0:
+            self.lineEditPassword.setFocus()
+        self._onTextChanged()
+        self.exec()
+
+    def _onTextChanged(self):
+        enable_ok = len(self.lineEditUsername.text()) > 0 and len(self.lineEditPassword.text()) > 0
+        self.buttonBox.button(self.buttonBox.Ok).setEnabled(enable_ok)
+
+    def _toggle_password_visibility(self):
+        if self.toggle_password.isChecked():
+            self.toggle_password.setIcon(QtGui.QIcon(':/images/show'))
+            self.lineEditPassword.setEchoMode(QtWidgets.QLineEdit.EchoMode.Normal)
+        else:
+            self.toggle_password.setIcon(QtGui.QIcon(':/images/hide'))
+            self.lineEditPassword.setEchoMode(QtWidgets.QLineEdit.EchoMode.Password)
+
+
 class UpdateNotice(QtWidgets.QDialog, Ui_update):
     """
     A dialog for displaying update notices.
@@ -958,6 +1125,44 @@ class SubjectDetailsWorker(QThread):
 
     def run(self):
         self.result = get_subject_training_info(self.subject_name)
+
+
+class CustomWebEnginePage(QWebEnginePage):
+    """
+    Custom implementation of QWebEnginePage to handle navigation requests.
+
+    This class overrides the acceptNavigationRequest method to handle link clicks.
+    If the navigation type is a link click and the clicked URL does not start with
+    a specific prefix (URL_DOC), it opens the URL in the default web browser.
+    Otherwise, it delegates the handling to the base class.
+
+    Adapted from: https://www.pythonguis.com/faq/qwebengineview-open-links-new-window/
+    """
+
+    def acceptNavigationRequest(self, url: QtCore.QUrl, navigation_type: QWebEnginePage.NavigationType, is_main_frame: bool):
+        """
+        Decide whether to allow or block a navigation request.
+
+        Parameters
+        ----------
+        url : QUrl
+            The URL being navigated to.
+
+        navigation_type : QWebEnginePage.NavigationType
+            The type of navigation request.
+
+        is_main_frame : bool
+            Indicates whether the request is for the main frame.
+
+        Returns
+        -------
+        bool
+            True if the navigation request is accepted, False otherwise.
+        """
+        if navigation_type == QWebEnginePage.NavigationTypeLinkClicked and not url.url().startswith(URL_DOC):
+            webbrowser.open(url.url())
+            return False
+        return super().acceptNavigationRequest(url, navigation_type, is_main_frame)
 
 
 def main():

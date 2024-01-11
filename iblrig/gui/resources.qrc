@@ -1,5 +1,8 @@
 <RCC>
   <qresource prefix="images">
+    <file alias="hide">resources/icon_hide.svg</file>
+    <file alias="show">resources/icon_show.svg</file>
+    <file alias="check">resources/icon_check.svg</file>
     <file alias="about">resources/icon_about.svg</file>
     <file alias="bug">resources/icon_bug.svg</file>
     <file alias="github">resources/icon_github.svg</file>
