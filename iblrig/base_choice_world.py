@@ -175,11 +175,14 @@ class ChoiceWorldSession(
             # Send state machine description to Bpod device
             self.bpod.send_state_machine(sma)
             # t_overhead = time.time() - t_overhead
-            # Run state machine
-            dt = self.task_params.ITI_DELAY_SECS - 0.5 - (time.time() - time_last_trial_end)
+            # The ITI_DELAY_SECS defines the grey screen period within the state machine, where the
+            # Bpod TTL is HIGH. The DEAD_TIME param defines the time between last trial and the next
+            dead_time = self.task_params.get('DEAD_TIME', 0.5)
+            dt = self.task_params.ITI_DELAY_SECS - dead_time - (time.time() - time_last_trial_end)
             # wait to achieve the desired ITI duration
             if dt > 0:
                 time.sleep(dt)
+            # Run state machine
             log.debug('running state machine')
             self.bpod.run_state_machine(sma)  # Locks until state machine 'exit' is reached
             time_last_trial_end = time.time()
@@ -578,19 +581,22 @@ class HabituationChoiceWorldSession(ChoiceWorldSession):
         if i == 0:  # First trial exception start camera
             log.info('Waiting for camera pulses...')
             sma.add_state(
-                state_name='trial_start',
+                state_name='iti',
                 state_timer=3600,
                 state_change_conditions={'Port1In': 'stim_on'},
                 output_actions=[self.bpod.actions.bonsai_hide_stim, ('SoftCode', SOFTCODE.TRIGGER_CAMERA), ('BNC1', 255)],
-            )  # sart camera
+            )  # start camera
         else:
+            # NB: This state actually the inter-trial interval, i.e. the period of grey screen between stim off and stim on.
+            # During this period the Bpod TTL is HIGH and there are no stimuli. The onset of this state is trial end;
+            # the offset of this state is trial start!
             sma.add_state(
-                state_name='trial_start',
+                state_name='iti',
                 state_timer=1,  # Stim off for 1 sec
                 state_change_conditions={'Tup': 'stim_on'},
                 output_actions=[self.bpod.actions.bonsai_hide_stim, ('BNC1', 255)],
             )
-
+        # This stim_on state is considered the actual trial start
         sma.add_state(
             state_name='stim_on',
             state_timer=self.trials_table.at[self.trial_num, 'delay_to_stim_center'],
@@ -607,14 +613,16 @@ class HabituationChoiceWorldSession(ChoiceWorldSession):
 
         sma.add_state(
             state_name='reward',
-            state_timer=self.reward_time,
+            state_timer=self.reward_time,  # the length of time to leave reward valve open, i.e. reward size
             state_change_conditions={'Tup': 'iti'},
             output_actions=[('Valve1', 255), ('BNC1', 255)],
         )
-
+        # This state defines the period after reward where Bpod TTL is LOW.
+        # NB: The stimulus is on throughout this period. The stim off trigger occurs upon exit.
+        # The stimulus thus remains in the screen centre for 0.5 + ITI_DELAY_SECS seconds.
         sma.add_state(
-            state_name='iti',
-            state_timer=self.task_params.ITI_DELAY_SECS,
+            state_name='post_reward',
+            state_timer=self.task_params.ITI_DELAY_SECS - self.reward_time,
             state_change_conditions={'Tup': 'exit'},
             output_actions=[],
         )
