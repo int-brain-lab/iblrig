@@ -1,6 +1,5 @@
 import argparse
 import datetime
-import json
 import shutil
 from collections.abc import Iterable
 from pathlib import Path
@@ -8,12 +7,10 @@ from pathlib import Path
 import yaml
 
 import iblrig
-from ibllib.io import raw_data_loaders
 from iblrig.hardware import Bpod
 from iblrig.online_plots import OnlinePlots
 from iblrig.path_helper import _load_settings_yaml, get_local_and_remote_paths
-from iblrig.raw_data_loaders import load_task_jsonable
-from iblrig.transfer_experiments import BehaviorCopier, EphysCopier, SessionCopier, VideoCopier, SessionCopier
+from iblrig.transfer_experiments import BehaviorCopier, EphysCopier, VideoCopier, SessionCopier
 from iblutil.util import setup_logger
 
 logger = setup_logger('iblrig', level='INFO')
@@ -237,7 +234,9 @@ def transfer_video_data(local_path: Path = None, remote_path: Path = None, dry: 
         _print_status(copiers, 'Session states after transfer operation:')
 
     # once we copied the data, remove older session for which the data was successfully uploaded
-    remove_local_sessions(weeks=2, local_path=local_subject_folder, remote_path=remote_subject_folder, dry=dry, tag='video')
+    remove_local_sessions(
+        weeks=2, local_path=local_subject_folder, remote_path=remote_subject_folder, dry=dry, tag='video'
+    )
 
 
 def transfer_data(local_path: Path = None, remote_path: Path = None, dry: bool = False, interactive: bool = False, **_) -> None:
@@ -270,44 +269,6 @@ def transfer_data(local_path: Path = None, remote_path: Path = None, dry: bool =
     copiers = _get_copiers(BehaviorCopier, local_path, remote_path, interactive=interactive)
 
     for copier in copiers:
-        session_path = copier.session_path
-        task_settings = raw_data_loaders.load_settings(session_path, task_collection='raw_task_data_00')
-        if task_settings is None:
-            logger.info(f'skipping: no task settings found for {session_path}')
-            continue
-        # here if the session end time has not been labeled we assume that the session crashed, and patch the settings
-        if task_settings['SESSION_END_TIME'] is None:
-            jsonable = session_path.joinpath('raw_task_data_00', '_iblrig_taskData.raw.jsonable')
-            if not jsonable.exists():
-                logger.info(f'skipping: no task data found for {session_path}')
-                if copier.remote_session_path.exists():
-                    shutil.rmtree(copier.remote_session_path)
-                continue
-            trials, bpod_data = load_task_jsonable(jsonable)
-            ntrials = trials.shape[0]
-            # we have the case where the session hard crashed. Patch the settings file to wrap the session
-            # and continue the copying
-            logger.warning(f'recovering crashed session {session_path}')
-            settings_file = session_path.joinpath('raw_task_data_00', '_iblrig_taskSettings.raw.json')
-            with open(settings_file) as fid:
-                raw_settings = json.load(fid)
-            raw_settings['NTRIALS'] = int(ntrials)
-            raw_settings['NTRIALS_CORRECT'] = int(trials['trial_correct'].sum())
-            raw_settings['TOTAL_WATER_DELIVERED'] = int(trials['reward_amount'].sum())
-            # cast the timestamp in a datetime object and add the session length to it
-            end_time = datetime.datetime.strptime(raw_settings['SESSION_START_TIME'], '%Y-%m-%dT%H:%M:%S.%f')
-            end_time += datetime.timedelta(seconds=bpod_data[-1]['Trial end timestamp'])
-            raw_settings['SESSION_END_TIME'] = end_time.strftime('%Y-%m-%dT%H:%M:%S.%f')
-            with open(settings_file, 'w') as fid:
-                json.dump(raw_settings, fid)
-            task_settings = raw_data_loaders.load_settings(session_path, task_collection='raw_task_data_00')
-        # we check the number of trials accomplished. If the field is not there, we copy the session as is
-        if task_settings.get('NTRIALS', 43) < 42:
-            logger.info(f'Skipping: not enough trials for {session_path}')
-            if copier.remote_session_path.exists():
-                shutil.rmtree(copier.remote_session_path)
-            continue
-        logger.critical(f'{copier.state}, {copier.session_path}')
         copier.run(number_of_expected_devices=number_of_expected_devices)
 
     if interactive:
@@ -354,7 +315,9 @@ def transfer_other_data(tag, local_path: Path = None, remote_path: Path = None, 
 
     # once we copied the data, remove older session for which the data was successfully uploaded
     if cleanup_weeks not in (False, 0):
-        remove_local_sessions(weeks=cleanup_weeks, dry=dry, local_path=local_subject_folder, remote_path=remote_subject_folder)
+        remove_local_sessions(
+            weeks=cleanup_weeks, dry=dry, local_path=local_subject_folder, remote_path=remote_subject_folder, tag=tag
+        )
     return copiers
 
 

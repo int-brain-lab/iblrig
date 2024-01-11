@@ -15,7 +15,7 @@ from ibllib.pipes.misc import load_videopc_params
 from one.alf.io import next_num_folder
 
 from iblrig.transfer_experiments import VideoCopier
-from iblrig.path_helper import load_settings_yaml, get_local_and_remote_paths
+from iblrig.path_helper import get_local_and_remote_paths
 
 import config_cameras as cams
 from video_lengths import main as len_files

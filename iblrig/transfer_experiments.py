@@ -8,13 +8,18 @@ from pathlib import Path
 from typing import Any
 import socket
 import uuid
+import json
+import datetime
 
 import ibllib.pipes.misc
-import iblrig
+from ibllib.io import raw_data_loaders
 from ibllib.io import session_params
 from iblutil.io import hashfile
 from iblutil.util import setup_logger
 import one.alf.files as alfiles
+
+import iblrig
+from iblrig.raw_data_loaders import load_task_jsonable
 
 log = setup_logger('iblrig', level='INFO')
 
@@ -214,8 +219,7 @@ class SessionCopier:
             self.initialize_experiment()
         if self.state == 1:  # the session is ready for copy
             log.info(f'{self.state}, {self.session_path}')
-            if self.prepare_copy():
-                self.copy_collections()
+            self.copy_collections()
         if self.state == 2:
             log.info(f'{self.state}, {self.session_path}')
             self.finalize_copy(number_of_expected_devices=number_of_expected_devices)
@@ -285,8 +289,14 @@ class SessionCopier:
 
     def _copy_collections(self):
         """
-        This is the method to subclass and implement
-        :return:
+        Copy collections defined in experiment description file.
+
+        This is the method to subclass for pre- and post- copy routines.
+
+        Returns
+        -------
+        bool
+            True if transfer successfully completed.
         """
         status = True
         exp_pars = session_params.read_params(self.session_path)
@@ -309,7 +319,7 @@ class SessionCopier:
 
     def copy_collections(self):
         """
-        Recursively copies the collection folders into the remote session path
+        Recursively copies the collection folders into the remote session path.
         Do not overload, overload _copy_collections instead
         :return:
         """
@@ -437,6 +447,57 @@ class BehaviorCopier(SessionCopier):
     def experiment_description(self):
         return session_params.read_params(self.session_path)
 
+    def _copy_collections(self):
+        """
+        Patch settings files before copy.
+
+        Returns
+        -------
+        bool
+            True if transfer successfully completed.
+
+        FIXME support chained protocols; currently only loads one settings file
+        """
+        collection = 'raw_task_data_00'
+        task_settings = raw_data_loaders.load_settings(self.session_path, task_collection=collection)
+        if task_settings is None:
+            log.info(f'skipping: no task settings found for {self.session_path}')
+            return False
+        # here if the session end time has not been labeled we assume that the session crashed, and patch the settings
+        if task_settings['SESSION_END_TIME'] is None:
+            jsonable = self.session_path.joinpath(collection, '_iblrig_taskData.raw.jsonable')
+            if not jsonable.exists():
+                log.info(f'skipping: no task data found for {self.session_path}')
+                if self.remote_session_path.exists():
+                    shutil.rmtree(self.remote_session_path)
+                return False
+            trials, bpod_data = load_task_jsonable(jsonable)
+            ntrials = trials.shape[0]
+            # We have the case where the session hard crashed.
+            # Patch the settings file to wrap the session and continue the copying.
+            log.warning(f'recovering crashed session {self.session_path}')
+            settings_file = self.session_path.joinpath(collection, '_iblrig_taskSettings.raw.json')
+            with open(settings_file) as fid:
+                raw_settings = json.load(fid)
+            raw_settings['NTRIALS'] = int(ntrials)
+            raw_settings['NTRIALS_CORRECT'] = int(trials['trial_correct'].sum())
+            raw_settings['TOTAL_WATER_DELIVERED'] = int(trials['reward_amount'].sum())
+            # cast the timestamp in a datetime object and add the session length to it
+            end_time = datetime.datetime.strptime(raw_settings['SESSION_START_TIME'], '%Y-%m-%dT%H:%M:%S.%f')
+            end_time += datetime.timedelta(seconds=bpod_data[-1]['Trial end timestamp'])
+            raw_settings['SESSION_END_TIME'] = end_time.strftime('%Y-%m-%dT%H:%M:%S.%f')
+            with open(settings_file, 'w') as fid:
+                json.dump(raw_settings, fid)
+            task_settings = raw_data_loaders.load_settings(self.session_path, task_collection=collection)
+        # we check the number of trials accomplished. If the field is not there, we copy the session as is
+        if task_settings.get('NTRIALS', 43) < 42:
+            log.info(f'Skipping: not enough trials for {self.session_path}')
+            if self.remote_session_path.exists():
+                shutil.rmtree(self.remote_session_path)
+            return False
+        log.critical(f'{self.state}, {self.session_path}')
+        return super()._copy_collections()  # proceed with copy
+
 
 class EphysCopier(SessionCopier):
     tag = 'spikeglx'
@@ -458,10 +519,7 @@ class EphysCopier(SessionCopier):
         super().initialize_experiment(acquisition_description=acquisition_description, **kwargs)
 
     def _copy_collections(self):
-        """
-        Here we overload the copy to be able to rename the probes properly and also create the insertions
-        :return:
-        """
+        """Here we overload the copy to be able to rename the probes properly and also create the insertions."""
         log.info(f'Transferring ephys session: {self.session_path} to {self.remote_session_path}')
         ibllib.pipes.misc.rename_ephys_files(self.session_path)
         ibllib.pipes.misc.move_ephys_files(self.session_path)
