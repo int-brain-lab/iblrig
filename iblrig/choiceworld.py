@@ -62,10 +62,10 @@ def get_subject_training_info(
     session_info = iterate_previous_sessions(subject_name, task_name=task_name, n=1, **kwargs)
     if len(session_info) == 0:
         if mode == 'silent':
-            log.warning('The training status could not be determined returning default values')
+            log.warning(f'The training status for {subject_name} could not be determined - returning default values')
             return dict(training_phase=DEFAULT_TRAINING_PHASE, adaptive_reward=default_reward, adaptive_gain=stim_gain), None
         elif mode == 'raise':
-            raise ValueError('The training status could not be determined as no previous sessions were found')
+            raise ValueError(f'The training status for {subject_name} could not be determined as no previous sessions were found')
     else:
         session_info = session_info[0]
     trials_data, _ = iblrig.raw_data_loaders.load_task_jsonable(session_info.file_task_data)
