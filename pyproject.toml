@@ -85,7 +85,14 @@ ignore = [
     "PLR0915", # Too many statements
     "PLR2004", # Magic value used in comparison, consider replacing with a constant variable
 ]
-exclude = [ ".mypy_cache", "dist", "docs", "iblrig/gui/ui_*.py", "venv" ]
+exclude = [
+    ".mypy_cache",
+    "dist",
+    "docs",
+    "iblrig/gui/*_rc.py",
+    "iblrig/gui/ui_*.py",
+    "venv",
+]
 indent-width = 4
 line-length = 130
 target-version = "py310"
