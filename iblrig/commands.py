@@ -37,6 +37,7 @@ def _transfer_parser(description: str) -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=description, formatter_class=argparse.ArgumentDefaultsHelpFormatter, argument_default=argparse.SUPPRESS
     )
+    parser.add_argument('--tag', default='behavior', type=str, help='data type to transfer, e.g. "behavior", "video"')
     parser.add_argument('-l', '--local', action='store', type=dir_path, dest='local_path', help='define local data path')
     parser.add_argument('-r', '--remote', action='store', type=dir_path, dest='remote_path', help='define remote data path')
     parser.add_argument('-d', '--dry', action='store_true', dest='dry', help='do not remove local data after copying')
@@ -81,7 +82,7 @@ def transfer_data_cli():
     """
     Command-line interface for transferring behavioral data to the local server.
     """
-    args = _transfer_parser('Copy behavior data to the local server.').parse_args()
+    args = _transfer_parser('Copy data to the local server.').parse_args()
     transfer_data(**vars(args), interactive=True)
 
 
@@ -278,7 +279,7 @@ def transfer_data(local_path: Path = None, remote_path: Path = None, dry: bool =
     remove_local_sessions(weeks=2, dry=dry, local_path=local_subject_folder, remote_path=remote_subject_folder)
 
 
-def transfer_other_data(tag, local_path: Path = None, remote_path: Path = None, dry: bool = False, interactive: bool = False,
+def transfer_other_data(tag=None, local_path: Path = None, remote_path: Path = None, dry: bool = False, interactive: bool = False,
                         cleanup_weeks=2) -> list[SessionCopier]:
     """
     Copies data from the rig to the local server.
@@ -301,6 +302,8 @@ def transfer_other_data(tag, local_path: Path = None, remote_path: Path = None, 
     list of SessionCopier
         A list of the copier objects that were run.
     """
+    if not tag:
+        raise ValueError('Tag required.')
     local_subject_folder, remote_subject_folder = _get_subjects_folders(local_path, remote_path, interactive)
     SessionCopier.assert_connect_on_init = True  # FIXME This affects all instances of the base class
 
