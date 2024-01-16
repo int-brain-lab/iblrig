@@ -11,10 +11,9 @@ from serial_singleton import SerialSingleton, filter_ports
 
 from iblrig.path_helper import _load_settings_yaml
 from iblrig.tools import alyx_reachable
-from iblutil.util import setup_logger
 from one.webclient import AlyxClient
 
-log = setup_logger('iblrig', level='DEBUG')
+log = logging.getLogger(__name__)
 
 
 @dataclass

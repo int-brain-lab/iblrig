@@ -1,3 +1,4 @@
+import logging
 import re
 import sys
 from pathlib import Path
@@ -9,9 +10,8 @@ from packaging import version
 from iblrig import __version__
 from iblrig.constants import BASE_DIR, IS_GIT
 from iblrig.tools import ask_user, internet_available, static_vars
-from iblutil.util import setup_logger
 
-log = setup_logger('iblrig')
+log = logging.getLogger(__name__)
 
 
 def check_for_updates() -> tuple[bool, str]:
@@ -27,7 +27,7 @@ def check_for_updates() -> tuple[bool, str]:
             - A string representing the latest available version, or None if
               no remote version information is available.
     """
-    log.info('Checking for updates ...')
+    log.debug('Checking for updates ...')
 
     update_available = False
     v_local = get_local_version()
@@ -38,7 +38,7 @@ def check_for_updates() -> tuple[bool, str]:
         if update_available:
             log.info(f'Update to iblrig {v_remote.base_version} available')
         else:
-            log.info('No update available')
+            log.debug('No update available')
 
     return update_available, v_remote.base_version if v_remote else ''
 

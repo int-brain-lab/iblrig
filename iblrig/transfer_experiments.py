@@ -1,4 +1,5 @@
 import abc
+import logging
 import os
 import shutil
 import traceback
@@ -10,9 +11,8 @@ import iblrig
 from ibllib.io import session_params
 from ibllib.pipes.misc import sleepless
 from iblutil.io import hashfile
-from iblutil.util import setup_logger
 
-log = setup_logger('iblrig', level='INFO')
+log = logging.getLogger(__name__)
 
 ES_CONTINUOUS = 0x80000000
 ES_SYSTEM_REQUIRED = 0x00000001

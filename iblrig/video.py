@@ -1,5 +1,6 @@
 import argparse
 import contextlib
+import logging
 import os
 import subprocess
 import sys
@@ -14,13 +15,13 @@ from iblrig.constants import BASE_PATH
 from iblrig.tools import ask_user, call_bonsai
 from iblrig.transfer_experiments import VideoCopier
 from iblutil.io import hashfile  # type: ignore
-from iblutil.util import setup_logger
 from one.webclient import AlyxClient, http_download_file  # type: ignore
 
 with contextlib.suppress(ImportError):
     from iblrig import video_pyspin
 
-log = setup_logger('iblrig', level='DEBUG')
+log = logging.getLogger(__name__)
+log.setLevel(logging.DEBUG)
 
 
 def pyspin_available() -> bool:

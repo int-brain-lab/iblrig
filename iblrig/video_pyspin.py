@@ -1,8 +1,8 @@
+import logging
+
 import PySpin
 
-from iblutil.util import setup_logger
-
-log = setup_logger('iblrig')
+log = logging.getLogger(__name__)
 
 
 class Cameras:

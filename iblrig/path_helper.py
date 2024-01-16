@@ -1,3 +1,4 @@
+import logging
 import os
 import re
 import shutil
@@ -15,9 +16,9 @@ from ibllib.io import session_params
 from ibllib.io.raw_data_loaders import load_settings
 from iblrig.constants import HARDWARE_SETTINGS_YAML, RIG_SETTINGS_YAML
 from iblrig.pydantic_definitions import HardwareSettings, RigSettings
-from iblutil.util import Bunch, setup_logger
+from iblutil.util import Bunch
 
-log = setup_logger('iblrig')
+log = logging.getLogger(__name__)
 T = TypeVar('T', bound=BaseModel)
 
 

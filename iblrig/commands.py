@@ -1,6 +1,7 @@
 import argparse
 import datetime
 import json
+import logging
 import shutil
 from collections.abc import Iterable
 from pathlib import Path
@@ -14,9 +15,8 @@ from iblrig.online_plots import OnlinePlots
 from iblrig.path_helper import _load_settings_yaml, get_local_and_remote_paths
 from iblrig.raw_data_loaders import load_task_jsonable
 from iblrig.transfer_experiments import BehaviorCopier, EphysCopier, SessionCopier, VideoCopier
-from iblutil.util import setup_logger
 
-logger = setup_logger('iblrig', level='INFO')
+log = logging.getLogger(__name__)
 
 
 def _transfer_parser(description: str) -> argparse.ArgumentParser:
@@ -82,6 +82,7 @@ def transfer_data_cli():
     """
     Command-line interface for transferring behavioral data to the local server.
     """
+    setup_logger('iblrig', level='INFO')
     args = _transfer_parser('Copy behavior data to the local server.').parse_args()
     transfer_data(**vars(args), interactive=True)
 
@@ -90,6 +91,7 @@ def transfer_video_data_cli():
     """
     Command-line interface for transferring video data to the local server.
     """
+    setup_logger('iblrig', level='INFO')
     args = _transfer_parser('Copy video data to the local server.').parse_args()
     transfer_video_data(**vars(args), interactive=True)
 
@@ -98,6 +100,7 @@ def transfer_ephys_data_cli():
     """
     Command-line interface for transferring ephys data to the local server.
     """
+    setup_logger('iblrig', level='INFO')
     args = _transfer_parser('Copy ephys data to the local server.').parse_args()
     transfer_ephys_data(**vars(args), interactive=True)
 
@@ -113,8 +116,8 @@ def _get_subjects_folders(local_path: Path, remote_path: Path, interactive: bool
         print(f'Local Path:  `{local_path}`')
         print(f'Remote Path: `{remote_path}`\n')
     else:
-        logger.debug(f'Local Path:  `{local_path}`')
-        logger.debug(f'Remote Path: `{remote_path}`')
+        log.debug(f'Local Path:  `{local_path}`')
+        log.debug(f'Remote Path: `{remote_path}`')
     return local_path, remote_path
 
 
@@ -137,8 +140,8 @@ def _get_copiers(
         print(f'Local Path:  `{local_subjects_folder}`')
         print(f'Remote Path: `{remote_subjects_folder}`\n')
     else:
-        logger.debug(f'Local Path:  `{local_subjects_folder}`')
-        logger.debug(f'Remote Path: `{remote_subjects_folder}`')
+        log.debug(f'Local Path:  `{local_subjects_folder}`')
+        log.debug(f'Remote Path: `{remote_subjects_folder}`')
 
     # get copiers
     copiers = [copier(f.parent, remote_subjects_folder) for f in local_subjects_folder.rglob(glob_pattern)]
@@ -173,7 +176,7 @@ def transfer_ephys_data(local_path: Path = None, remote_path: Path = None, dry: 
     copiers = _get_copiers(EphysCopier, local_path, remote_path, interactive=interactive)
 
     for copier in copiers:
-        logger.critical(f'{copier.state}, {copier.session_path}')
+        log.critical(f'{copier.state}, {copier.session_path}')
         if not dry:
             copier.run()
 
@@ -189,7 +192,7 @@ def transfer_video_data(local_path: Path = None, remote_path: Path = None, dry: 
     copiers = _get_copiers(VideoCopier, local_path, remote_path, interactive=interactive)
 
     for copier in copiers:
-        logger.critical(f'{copier.state}, {copier.session_path}')
+        log.critical(f'{copier.state}, {copier.session_path}')
         if not dry:
             copier.run()
 
@@ -233,13 +236,13 @@ def transfer_data(local_path: Path = None, remote_path: Path = None, dry: bool =
         session_path = copier.session_path
         task_settings = raw_data_loaders.load_settings(session_path, task_collection='raw_task_data_00')
         if task_settings is None:
-            logger.info(f'skipping: no task settings found for {session_path}')
+            log.info(f'skipping: no task settings found for {session_path}')
             continue
         # here if the session end time has not been labeled we assume that the session crashed, and patch the settings
         if task_settings['SESSION_END_TIME'] is None:
             jsonable = session_path.joinpath('raw_task_data_00', '_iblrig_taskData.raw.jsonable')
             if not jsonable.exists():
-                logger.info(f'skipping: no task data found for {session_path}')
+                log.info(f'skipping: no task data found for {session_path}')
                 if copier.remote_session_path.exists():
                     shutil.rmtree(copier.remote_session_path)
                 continue
@@ -247,7 +250,7 @@ def transfer_data(local_path: Path = None, remote_path: Path = None, dry: bool =
             ntrials = trials.shape[0]
             # we have the case where the session hard crashed. Patch the settings file to wrap the session
             # and continue the copying
-            logger.warning(f'recovering crashed session {session_path}')
+            log.warning(f'recovering crashed session {session_path}')
             settings_file = session_path.joinpath('raw_task_data_00', '_iblrig_taskSettings.raw.json')
             with open(settings_file) as fid:
                 raw_settings = json.load(fid)
@@ -263,11 +266,11 @@ def transfer_data(local_path: Path = None, remote_path: Path = None, dry: bool =
             task_settings = raw_data_loaders.load_settings(session_path, task_collection='raw_task_data_00')
         # we check the number of trials acomplished. If the field is not there, we copy the session as is
         if task_settings.get('NTRIALS', 43) < 42:
-            logger.info(f'Skipping: not enough trials for {session_path}')
+            log.info(f'Skipping: not enough trials for {session_path}')
             if copier.remote_session_path.exists():
                 shutil.rmtree(copier.remote_session_path)
             continue
-        logger.critical(f'{copier.state}, {copier.session_path}')
+        log.critical(f'{copier.state}, {copier.session_path}')
         copier.run(number_of_expected_devices=number_of_expected_devices)
 
     if interactive:
@@ -299,11 +302,11 @@ def remove_local_sessions(weeks=2, local_path=None, remote_path=None, dry=False,
         sc = Copier(session_path, remote_subjects_folder=remote_subject_folder)
         if sc.state == 3:
             session_size = sum(f.stat().st_size for f in session_path.rglob('*') if f.is_file()) / 1024**3
-            logger.info(f'{sc.session_path}, {session_size:0.02f} Go')
+            log.info(f'{sc.session_path}, {session_size:0.02f} Go')
             size += session_size
             if not dry:
                 shutil.rmtree(session_path)
-    logger.info(f'Cleanup size {size:0.02f} Go')
+    log.info(f'Cleanup size {size:0.02f} Go')
 
 
 def viewsession():
