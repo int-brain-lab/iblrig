@@ -132,7 +132,12 @@ class RigWizardModel:
         return task.Session.extra_parser()
 
     def login(
-        self, username: str, password: str | None = None, do_cache: bool = False, alyx_client: AlyxClient | None = None
+        self,
+        username: str,
+        password: str | None = None,
+        do_cache: bool = False,
+        alyx_client: AlyxClient | None = None,
+        gui: bool = False,
     ) -> bool:
         # Use predefined AlyxClient for testing purposes:
         if alyx_client is not None:
@@ -154,10 +159,10 @@ class RigWizardModel:
                 else:
                     raise e
 
-        # # since we are connecting to Alyx, validate some parameters to ensure a smooth extraction
-        # result = iblrig.hardware_validation.ValidateAlyxLabLocation().run(self.one)
-        # if result.status == 'FAIL' and gui:
-        #     QtWidgets.QMessageBox().critical(None, 'Error', f'{result.message}\n\n{result.solution}')
+        # since we are connecting to Alyx, validate some parameters to ensure a smooth extraction
+        result = iblrig.hardware_validation.ValidateAlyxLabLocation().run(self.alyx)
+        if result.status == 'FAIL' and gui:
+            QtWidgets.QMessageBox().critical(None, 'Error', f'{result.message}\n\n{result.solution}')
 
         # get subjects from Alyx: this is the set of subjects that are alive and not stock in the lab defined in settings
         rest_subjects = self.alyx.rest('subjects', 'list', alive=True, stock=False, lab=self.iblrig_settings['ALYX_LAB'])
@@ -457,7 +462,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         # 1) Try to log in with just the username. This will succeed if the credentials for the respective user are cached. We
         #    also try to catch connection issues and show helpful error messages.
         try:
-            logged_in = self.model.login(username)
+            logged_in = self.model.login(username, gui=True)
         except ConnectionError:
             if not internet_available(timeout=1, force_update=True):
                 self._show_error_dialog(
@@ -489,7 +494,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                     password = dlg.lineEditPassword.text()
                     remember = dlg.checkBoxRememberMe.isChecked()
                     dlg.deleteLater()
-                    logged_in = self.model.login(username=username, password=password, do_cache=remember)
+                    logged_in = self.model.login(username=username, password=password, do_cache=remember, gui=True)
                 else:
                     dlg.deleteLater()
                     break
