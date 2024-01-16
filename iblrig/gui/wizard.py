@@ -36,6 +36,7 @@ from iblrig.path_helper import load_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings, RigSettings
 from iblrig.tools import alyx_reachable, get_anydesk_id, internet_available
 from iblrig.version_management import check_for_updates, get_changelog, is_dirty
+from iblutil.util import setup_logger
 from one.api import ONE
 from one.webclient import AlyxClient
 from pybpodapi import exceptions
@@ -1166,6 +1167,7 @@ class CustomWebEnginePage(QWebEnginePage):
 
 
 def main():
+    setup_logger('iblrig', level='INFO')
     QtCore.QCoreApplication.setOrganizationName('International Brain Laboratory')
     QtCore.QCoreApplication.setOrganizationDomain('internationalbrainlab.org')
     QtCore.QCoreApplication.setApplicationName('IBLRIG Wizard')

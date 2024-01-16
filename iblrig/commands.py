@@ -82,6 +82,7 @@ def transfer_data_cli():
     """
     Command-line interface for transferring behavioral data to the local server.
     """
+    setup_logger('iblrig', level='INFO')
     args = _transfer_parser('Copy behavior data to the local server.').parse_args()
     transfer_data(**vars(args), interactive=True)
 
@@ -90,6 +91,7 @@ def transfer_video_data_cli():
     """
     Command-line interface for transferring video data to the local server.
     """
+    setup_logger('iblrig', level='INFO')
     args = _transfer_parser('Copy video data to the local server.').parse_args()
     transfer_video_data(**vars(args), interactive=True)
 
@@ -98,6 +100,7 @@ def transfer_ephys_data_cli():
     """
     Command-line interface for transferring ephys data to the local server.
     """
+    setup_logger('iblrig', level='INFO')
     args = _transfer_parser('Copy ephys data to the local server.').parse_args()
     transfer_ephys_data(**vars(args), interactive=True)
 
