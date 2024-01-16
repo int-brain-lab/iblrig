@@ -15,6 +15,7 @@ from iblrig.online_plots import OnlinePlots
 from iblrig.path_helper import _load_settings_yaml, get_local_and_remote_paths
 from iblrig.raw_data_loaders import load_task_jsonable
 from iblrig.transfer_experiments import BehaviorCopier, EphysCopier, SessionCopier, VideoCopier
+from iblutil.util import setup_logger
 
 log = logging.getLogger(__name__)
 
