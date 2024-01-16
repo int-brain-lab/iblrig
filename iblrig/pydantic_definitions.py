@@ -68,9 +68,9 @@ class HardwareSettingsBpod(BunchModel):
 class HardwareSettingsFrame2TTL(BunchModel):
     COM_F2TTL: str | None
     F2TTL_CALIBRATION_DATE: date | None
-    F2TTL_DARK_THRESH: int = Field(gt=0)
+    F2TTL_DARK_THRESH: int
     F2TTL_HW_VERSION: Literal[1, 2, 3, None]
-    F2TTL_LIGHT_THRESH: int = Field(gt=0)
+    F2TTL_LIGHT_THRESH: int
 
 
 class HardwareSettingsRotaryEncoder(BunchModel):
