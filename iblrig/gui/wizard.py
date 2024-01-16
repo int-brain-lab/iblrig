@@ -4,6 +4,7 @@ import importlib
 import json
 import logging
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -243,7 +244,13 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
             self.uiLineEditUser.setPlaceholderText('')
             self.uiPushButtonLogIn.setEnabled(False)
 
-        # documentation
+        # tab: log
+        font = QtGui.QFont('Monospace')
+        font.setStyleHint(QtGui.QFont.TypeWriter)
+        font.setPointSize(8)
+        self.uiPlainTextEditLog.setFont(font)
+
+        # tab: documentation
         self.uiPushWebHome.clicked.connect(lambda: self.webEngineView.load(QtCore.QUrl(URL_DOC)))
         self.uiPushWebBrowser.clicked.connect(lambda: webbrowser.open(str(self.webEngineView.url().url())))
         self.webEngineView.setPage(CustomWebEnginePage(self))
@@ -826,12 +833,16 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 if self.uiCheckAppend.isChecked():
                     cmd.append('--append')
                 if self.running_task_process is None:
+                    self.uiPlainTextEditLog.clear()
+
                     log.info('Starting subprocess')
                     log.info(subprocess.list2cmdline(cmd))
                     self.running_task_process = QtCore.QProcess()
                     self.running_task_process.setWorkingDirectory(BASE_DIR)
-                    self.running_task_process.setProcessChannelMode(QtCore.QProcess.ForwardedChannels)
+                    self.running_task_process.setProcessChannelMode(QtCore.QProcess.SeparateChannels)
                     self.running_task_process.finished.connect(self._on_task_finished)
+                    self.running_task_process.readyReadStandardOutput.connect(self.on_readyReadStandardOutput)
+                    self.running_task_process.readyReadStandardError.connect(self.on_readyReadStandardError)
                     self.running_task_process.start(shutil.which('python'), cmd)
                 self.uiPushStart.setStatusTip('stop the session after the current trial')
                 self.uiPushStart.setIcon(self.style().standardIcon(QStyle.SP_MediaStop))
@@ -840,11 +851,42 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 if self.model.session_folder and self.model.session_folder.exists():
                     self.model.session_folder.joinpath('.stop').touch()
 
+    def on_readyReadStandardOutput(self):
+        regex = re.compile(r'\x1b\[.+m[\d-]+\s+([\d:.]+)\s*(\w+)\s+\[?([\w\.]+)\s*:\s*(\d+)\]?\s*(.*)\x1b\[0m\r?\n')
+        data = self.running_task_process.readAllStandardOutput().data().decode()
+        for entry in re.findall(regex, data):
+            match entry[2]:
+                case 'DEBUG':
+                    continue  # we skip debug messages in the GUI
+                    # color = QtGui.QColorConstants.Green
+                case 'INFO':
+                    color = QtGui.QColorConstants.Cyan
+                case 'WARNING':
+                    color = QtGui.QColorConstants.Yellow
+                case 'ERROR':
+                    color = QtGui.QColorConstants.Red
+                case 'CRITICAL':
+                    color = QtGui.QColorConstants.Magenta
+                case _:
+                    color = QtGui.QColorConstants.White
+            fmt = QtGui.QTextCharFormat()
+            fmt.setForeground(QtGui.QBrush(color))
+            self.uiPlainTextEditLog.setCurrentCharFormat(fmt)
+            msg = f'{entry[1]}  {entry[-1]}'
+            self.uiPlainTextEditLog.appendPlainText(msg)
+
+    def on_readyReadStandardError(self):
+        text = self.running_task_process.readAllStandardError().data().decode()
+        fmt = QtGui.QTextCharFormat()
+        fmt.setForeground(QtGui.QBrush(QtGui.QColorConstants.Red))
+        self.uiPlainTextEditLog.setCurrentCharFormat(fmt)
+        self.uiPlainTextEditLog.appendPlainText(text.strip())
+
     def _on_task_finished(self, exit_code, exit_status):
         if exit_code:
             msg_box = QtWidgets.QMessageBox(parent=self)
             msg_box.setWindowTitle('Oh no!')
-            msg_box.setText('The task was terminated with an error.\nPlease check the command-line output for details.')
+            msg_box.setText('The task was terminated with an error.\nPlease check the log for details.')
             msg_box.setIcon(QtWidgets.QMessageBox().Critical)
             msg_box.exec_()
 

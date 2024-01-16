@@ -63,7 +63,7 @@
      <verstretch>0</verstretch>
     </sizepolicy>
    </property>
-   <layout class="QHBoxLayout" name="horizontalLayout_3">
+   <layout class="QHBoxLayout" name="horizontalLayout_2">
     <property name="leftMargin">
      <number>6</number>
     </property>
@@ -95,7 +95,7 @@
        <attribute name="title">
         <string>Session</string>
        </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_2">
+       <layout class="QVBoxLayout" name="verticalLayoutSession">
         <item>
          <widget class="QWidget" name="uiGroupParameters" native="true">
           <layout class="QFormLayout" name="formLayout">
@@ -669,6 +669,27 @@
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="tabLog">
+       <attribute name="icon">
+        <iconset resource="resources.qrc">
+         <normaloff>:/images/log</normaloff>:/images/log</iconset>
+       </attribute>
+       <attribute name="title">
+        <string>Log</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayoutLog">
+        <item>
+         <widget class="QPlainTextEdit" name="uiPlainTextEditLog">
+          <property name="styleSheet">
+           <string notr="true">background-color: rgb(36, 31, 49);</string>
+          </property>
+          <property name="readOnly">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
       <widget class="QWidget" name="tabDocumentation">
        <attribute name="icon">
         <iconset resource="resources.qrc">
@@ -677,7 +698,7 @@
        <attribute name="title">
         <string>Docs</string>
        </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout" stretch="1,0,0">
+       <layout class="QVBoxLayout" name="verticalLayoutDoc" stretch="1,0,0">
         <property name="spacing">
          <number>0</number>
         </property>
