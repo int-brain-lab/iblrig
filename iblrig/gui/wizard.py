@@ -736,6 +736,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 case 'stim_gain':
                     label = 'Stimulus Gain'
 
+            widget.wheelEvent = lambda event: None
             layout.addRow(self.tr(label), widget)
 
         # add label to indicate absence of task specific parameters
