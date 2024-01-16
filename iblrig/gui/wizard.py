@@ -872,7 +872,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
             fmt = QtGui.QTextCharFormat()
             fmt.setForeground(QtGui.QBrush(color))
             self.uiPlainTextEditLog.setCurrentCharFormat(fmt)
-            msg = f'{entry[1]}  {entry[-1]}'
+            msg = f'{entry[0]}  {entry[-1]}'
             self.uiPlainTextEditLog.appendPlainText(msg)
 
     def on_readyReadStandardError(self):
