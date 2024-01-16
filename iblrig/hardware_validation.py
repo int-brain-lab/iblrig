@@ -12,6 +12,7 @@ from serial_singleton import SerialSingleton, filter_ports
 from iblrig.path_helper import _load_settings_yaml
 from iblrig.tools import alyx_reachable
 from iblutil.util import setup_logger
+from one.webclient import AlyxClient
 
 log = setup_logger('iblrig', level='DEBUG')
 
@@ -156,9 +157,9 @@ class ValidateAlyxLabLocation(ValidateHardware):
     This class validates that the rig name in hardware_settings.yaml does exist in Alyx.
     """
 
-    def _run(self, one):
+    def _run(self, alyx: AlyxClient):
         try:
-            one.alyx.rest('locations', 'read', id=self.hardware_settings['RIG_NAME'])
+            alyx.rest('locations', 'read', id=self.hardware_settings['RIG_NAME'])
             results_kwargs = dict(status='PASS', message='')
         except requests.exceptions.HTTPError:
             error_message = f'Could not find rig name {self.hardware_settings["RIG_NAME"]} in Alyx'
