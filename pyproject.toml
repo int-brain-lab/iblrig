@@ -18,6 +18,7 @@ dependencies = [
     "iblpybpod@git+https://github.com/int-brain-lab/iblpybpod.git@no-gui",
     "iblscripts@git+https://github.com/int-brain-lab/iblscripts.git",
     "iblutil >= 1.7.1",
+    "ipython",
     "numpy",
     "packaging",
     "pandas",
@@ -57,8 +58,10 @@ flush               = "iblrig.commands:flush"
 remove-old-sessions = "iblrig.commands:remove_local_sessions"
 iblrig              = "iblrig.gui.wizard:main"
 upgrade_iblrig      = "iblrig.version_management:upgrade"
-install_spinnaker   = "iblrig.camera:install_spinnaker"
-install_pyspin      = "iblrig.camera:install_pyspin"
+install_spinnaker   = "iblrig.video:install_spinnaker"
+install_pyspin      = "iblrig.video:install_pyspin"
+start_video_session = "iblrig.video:prepare_video_session_cmd"
+convert_uis         = "iblrig.gui.tools:convert_uis"
 
 [tool.setuptools.dynamic]
 readme  = { file = "README.md", content-type = "text/markdown" }
@@ -77,9 +80,18 @@ minversion = "6.0"
 testpaths  = [ "iblrig/test", "iblrig/test/tasks" ]
 
 [tool.ruff]
-exclude = [ ".mypy_cache", "dist", "docs", "iblrig/gui/ui_*.py", "venv" ]
 ignore = [
+    "PLR0912", # Too many branches
+    "PLR0915", # Too many statements
     "PLR2004", # Magic value used in comparison, consider replacing with a constant variable
+]
+exclude = [
+    ".mypy_cache",
+    "dist",
+    "docs",
+    "iblrig/gui/*_rc.py",
+    "iblrig/gui/ui_*.py",
+    "venv",
 ]
 indent-width = 4
 line-length = 130

@@ -2,3 +2,4 @@ sync:
   bpod:
     collection: raw_behavior_data
     extension: bins
+version: 1.0.0

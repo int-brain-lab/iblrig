@@ -44,7 +44,7 @@
         <string/>
        </property>
        <property name="pixmap">
-        <pixmap>wizard.png</pixmap>
+        <pixmap resource="resources.qrc">:/images/iblrig_logo</pixmap>
        </property>
        <property name="scaledContents">
         <bool>true</bool>
@@ -112,6 +112,9 @@
      </item>
      <item>
       <spacer name="verticalSpacer_2">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
        <property name="sizeType">
         <enum>QSizePolicy::Fixed</enum>
        </property>
@@ -140,8 +143,15 @@
        </item>
        <item>
         <widget class="QLineEdit" name="uiLineEditCommand">
+         <property name="styleSheet">
+          <string notr="true">background-color: rgb(1, 36, 86);
+color: rgb(255, 255, 255);</string>
+         </property>
          <property name="text">
           <string>upgrade_iblrig</string>
+         </property>
+         <property name="frame">
+          <bool>false</bool>
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>
@@ -168,6 +178,9 @@
      </item>
      <item>
       <spacer name="verticalSpacer_3">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
        <property name="sizeType">
         <enum>QSizePolicy::Fixed</enum>
        </property>
@@ -214,7 +227,9 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="resources.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>uiPushButtonOK</sender>

@@ -3,6 +3,7 @@ This modules extends the base_tasks modules by providing task logic around the C
 """
 import abc
 import json
+import logging
 import math
 import random
 import subprocess
@@ -21,11 +22,11 @@ import iblrig.graphic
 from iblrig import choiceworld, misc
 from iblrig.hardware import SOFTCODE
 from iblutil.io import jsonable
-from iblutil.util import Bunch, setup_logger
+from iblutil.util import Bunch
 from pybpodapi.com.messaging.trial import Trial
 from pybpodapi.protocol import StateMachine
 
-log = setup_logger('iblrig')
+log = logging.getLogger(__name__)
 
 NTRIALS_INIT = 2000
 NBLOCKS_INIT = 100
@@ -171,7 +172,7 @@ class ChoiceWorldSession(
             #     Start state machine definition
             # =============================================================================
             sma = self.get_state_machine_trial(i)
-            log.info('Sending state machine to bpod')
+            log.debug('Sending state machine to bpod')
             # Send state machine description to Bpod device
             self.bpod.send_state_machine(sma)
             # t_overhead = time.time() - t_overhead
@@ -180,7 +181,7 @@ class ChoiceWorldSession(
             # wait to achieve the desired ITI duration
             if dt > 0:
                 time.sleep(dt)
-            log.info('running state machine')
+            log.debug('running state machine')
             self.bpod.run_state_machine(sma)  # Locks until state machine 'exit' is reached
             time_last_trial_end = time.time()
             self.trial_completed(self.bpod.session.current_trial.export())
@@ -483,43 +484,28 @@ class ChoiceWorldSession(
         if not self.bpod.is_connected:
             return
         events = bpod_data['Events timestamps']
-        ev_bnc1 = misc.get_port_events(events, name='BNC1')
-        ev_bnc2 = misc.get_port_events(events, name='BNC2')
-        ev_port1 = misc.get_port_events(events, name='Port1')
-        NOT_FOUND = 'COULD NOT FIND DATA ON {}'
-        bnc1_msg = NOT_FOUND.format('BNC1') if not ev_bnc1 else 'OK'
-        bnc2_msg = NOT_FOUND.format('BNC2') if not ev_bnc2 else 'OK'
-        port1_msg = NOT_FOUND.format('Port1') if not ev_port1 else 'OK'
-        warn_msg = f"""
-            ##########################################
-                    NOT FOUND: SYNC PULSES
-            ##########################################
-            VISUAL STIMULUS SYNC: {bnc1_msg}
-            SOUND SYNC: {bnc2_msg}
-            CAMERA SYNC: {port1_msg}
-            ##########################################"""
-        if not ev_bnc1 or not ev_bnc2 or not ev_port1:
-            log.warning(warn_msg)
+        if not misc.get_port_events(events, name='BNC1'):
+            self.logger.warning("NO FRAME2TTL PULSES RECEIVED ON BPOD'S TTL INPUT 1")
+        if not misc.get_port_events(events, name='BNC2'):
+            self.logger.warning("NO SOUND SYNC PULSES RECEIVED ON BPOD'S TTL INPUT 2")
+        if not misc.get_port_events(events, name='Port1'):
+            self.logger.warning("NO CAMERA SYNC PULSES RECEIVED ON BPOD'S BEHAVIOR PORT 1")
 
     def show_trial_log(self, extra_info=''):
         trial_info = self.trials_table.iloc[self.trial_num]
-        msg = f"""
-Session {self.paths.SESSION_RAW_DATA_FOLDER}
-##########################################
-TRIAL NUM:            {trial_info.trial_num}
-TEMPERATURE:          {self.ambient_sensor_table.loc[self.trial_num, 'Temperature_C']} ºC
-AIR PRESSURE:         {self.ambient_sensor_table.loc[self.trial_num, 'AirPressure_mb']} mb
-RELATIVE HUMIDITY:    {self.ambient_sensor_table.loc[self.trial_num, 'RelativeHumidity']} %
-
-STIM POSITION:        {trial_info.position}
-STIM CONTRAST:        {trial_info.contrast}
-STIM PHASE:           {trial_info.stim_phase}
-STIM PROB LEFT:       {trial_info.stim_probability_left}
-{extra_info}
-WATER DELIVERED:      {np.round(self.session_info.TOTAL_WATER_DELIVERED, 3)} µl
-TIME FROM START:      {self.time_elapsed}
-##########################################"""
-        log.info(msg)
+        level = logging.INFO
+        log.log(level=level, msg=f'Outcome of Trial #{trial_info.trial_num}:')
+        log.log(level=level, msg=f'- Stim. Position:  {trial_info.position}')
+        log.log(level=level, msg=f'- Stim. Contrast:  {trial_info.contrast}')
+        log.log(level=level, msg=f'- Stim. Phase:     {trial_info.stim_phase}')
+        log.log(level=level, msg=f'- Stim. p Left:    {trial_info.stim_probability_left}')
+        log.log(level=level, msg=f'- Water delivered: {self.session_info.TOTAL_WATER_DELIVERED:.1f} µl')
+        log.log(level=level, msg=f'- Time from Start: {self.time_elapsed}')
+        log.log(level=level, msg=f'- Temperature:     {self.ambient_sensor_table.loc[self.trial_num, "Temperature_C"]:.1f} °C')
+        log.log(level=level, msg=f'- Air Pressure:    {self.ambient_sensor_table.loc[self.trial_num, "AirPressure_mb"]:.1f} mb')
+        log.log(
+            level=level, msg=f'- Rel. Humidity:   {self.ambient_sensor_table.loc[self.trial_num, "RelativeHumidity"]:.1f} %\n'
+        )
 
     @property
     def iti_reward(self, assert_calibration=True):

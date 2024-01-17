@@ -1,6 +1,26 @@
 Changelog
 ---------
 
+
+8.13.0
+------
+* restructured user interface
+* script for starting video-session in ephys-rig
+* installer scripts for Spinnaker SDK / PySpin
+* validated parsing of settings files
+* added legend to trials-timeline
+* added button for triggering a free reward (only available outside of running task for now)
+* cleaned-up logging
+* various improvements under the hood, clean-up and unit-tests
+
+8.12.13
+-------
+* fix problem with corrupt acquisition descriptions in history
+
+8.12.12
+-------
+* skipped
+
 8.12.11
 -------
 * hotfix for creation of bonsai layout-file

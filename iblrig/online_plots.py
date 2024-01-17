@@ -266,24 +266,26 @@ class OnlinePlots:
         h.im_trials = h.ax_trials.imshow(
             self.data.rgb_background, alpha=0.2, extent=[-10, 50, -0.5, NTRIALS_PLOT - 0.5], aspect='auto', origin='lower'
         )
-        kwargs = dict(markersize=25, markeredgewidth=2)
+        kwargs = dict(markersize=10, markeredgewidth=2)
         h.lines_trials = {
             'stim_on': h.ax_trials.plot(
-                self.data.last_trials.stim_on, np.arange(NTRIALS_PLOT), '|', color='b', **kwargs, label='stim_on'
+                self.data.last_trials.stim_on, np.arange(NTRIALS_PLOT), '|', color='b', **kwargs, label='stimulus on'
             ),
             'reward_time': h.ax_trials.plot(
-                self.data.last_trials.reward_time, np.arange(NTRIALS_PLOT), '|', color='g', **kwargs, label='reward_time'
+                self.data.last_trials.reward_time, np.arange(NTRIALS_PLOT), '|', color='g', **kwargs, label='reward'
             ),
             'error_time': h.ax_trials.plot(
-                self.data.last_trials.error_time, np.arange(NTRIALS_PLOT), '|', color='r', **kwargs, label='error_time'
+                self.data.last_trials.error_time, np.arange(NTRIALS_PLOT), '|', color='r', **kwargs, label='error'
             ),
             'play_tone': h.ax_trials.plot(
-                self.data.last_trials.play_tone, np.arange(NTRIALS_PLOT), '|', color='m', **kwargs, label='play_tone'
+                self.data.last_trials.play_tone, np.arange(NTRIALS_PLOT), '|', color='m', **kwargs, label='tone'
             ),
         }
         h.scatter_contrast = h.ax_trials.scatter(
             xpos, ypos, s=250, c=self.data.last_contrasts.T.flatten(), alpha=1, marker='o', vmin=0.0, vmax=1, cmap='Greys'
         )
+        h.ax_trials.legend()
+
         xticks = np.arange(-1, 1.1, 0.25)
         xticklabels = np.array([f'{x:g}' for x in xticks])
         xticklabels[1::2] = ''

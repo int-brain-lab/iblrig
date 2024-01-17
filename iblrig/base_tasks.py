@@ -8,10 +8,8 @@ import argparse
 import datetime
 import inspect
 import json
-import os
-import shutil
+import logging
 import signal
-import subprocess
 import time
 import traceback
 from abc import ABC
@@ -30,17 +28,20 @@ import iblrig.graphic as graph
 import iblrig.path_helper
 import pybpodapi
 from iblrig import frame2TTL, sound
+from iblrig.constants import BASE_PATH, BONSAI_EXE
 from iblrig.hardware import SOFTCODE, Bpod, MyRotaryEncoder, sound_device_factory
+from iblrig.path_helper import load_pydantic_yaml
+from iblrig.pydantic_definitions import HardwareSettings, HardwareSettingsCameras, RigSettings
+from iblrig.tools import call_bonsai
 from iblrig.transfer_experiments import BehaviorCopier
 from iblutil.spacer import Spacer
 from iblutil.util import Bunch, setup_logger
 from one.api import ONE
 from pybpodapi.protocol import StateMachine
 
-# if HAS_PYSPIN:
-#     import PySpin
-
 OSC_CLIENT_IP = '127.0.0.1'
+
+log = logging.getLogger(__name__)
 
 
 class BaseSession(ABC):
@@ -87,19 +88,22 @@ class BaseSession(ABC):
         assert self.protocol_name is not None, 'Protocol name must be defined by the child class'
         self.logger = None
         self._setup_loggers(level=log_level)
-        self.logger.info(f'Running iblrig {iblrig.__version__}, pybpod version {pybpodapi.__version__}')
+        if not isinstance(self, EmptySession):
+            log.info(f'Running iblrig {iblrig.__version__}, pybpod version {pybpodapi.__version__}')
         self.interactive = False if append else interactive
         self._one = one
         self.init_datetime = datetime.datetime.now()
-        # Create the folder architecture and get the paths property updated
-        # the template for this file is in settings/hardware_settings.yaml
-        self.hardware_settings = iblrig.path_helper.load_settings_yaml(file_hardware_settings or 'hardware_settings.yaml')
+
         # loads in the settings: first load the files, then update with the input argument if provided
+        self.hardware_settings = load_pydantic_yaml(HardwareSettings, file_hardware_settings)
         if hardware_settings is not None:
             self.hardware_settings.update(hardware_settings)
-        self.iblrig_settings = iblrig.path_helper.load_settings_yaml(file_iblrig_settings or 'iblrig_settings.yaml')
+            HardwareSettings.model_validate(self.hardware_settings)
+        self.iblrig_settings = load_pydantic_yaml(RigSettings, file_iblrig_settings)
         if iblrig_settings is not None:
             self.iblrig_settings.update(iblrig_settings)
+            RigSettings.model_validate(self.iblrig_settings)
+
         self.wizard = wizard
         # Load the tasks settings, from the task folder or override with the input argument
         base_parameters_files = [
@@ -139,7 +143,8 @@ class BaseSession(ABC):
         # Executes mixins init methods
         self._execute_mixins_shared_function('init_mixin')
         self.paths = self._init_paths(append=append)
-        self.logger.info(f'Session {self.paths.SESSION_RAW_DATA_FOLDER}')
+        if not isinstance(self, EmptySession):
+            log.info(f'Session {self.paths.SESSION_RAW_DATA_FOLDER}')
         # Prepare the experiment description dictionary
         self.experiment_description = self.make_experiment_description_dict(
             self.protocol_name,
@@ -179,8 +184,8 @@ class BaseSession(ABC):
             remote_path=self.iblrig_settings['iblrig_remote_data_path'],
             lab=self.iblrig_settings['ALYX_LAB'],
         )
-        paths = Bunch({'IBLRIG_FOLDER': Path(iblrig.__file__).parents[1]})
-        paths.BONSAI = paths.IBLRIG_FOLDER.joinpath('Bonsai', 'Bonsai.exe')
+        paths = Bunch({'IBLRIG_FOLDER': BASE_PATH})
+        paths.BONSAI = BONSAI_EXE
         paths.VISUAL_STIM_FOLDER = paths.IBLRIG_FOLDER.joinpath('visual_stim')
         paths.LOCAL_SUBJECT_FOLDER = rig_computer_paths['local_subjects_folder']
         paths.REMOTE_SUBJECT_FOLDER = rig_computer_paths['remote_subjects_folder']
@@ -215,9 +220,9 @@ class BaseSession(ABC):
         paths.DATA_FILE_PATH = paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_taskData.raw.jsonable')
         return paths
 
-    def _setup_loggers(self, level='INFO', file=None):
+    def _setup_loggers(self, level='INFO', level_bpod='WARNING', file=None):
         logger = setup_logger('iblrig', level=level, file=file)
-        setup_logger('pybpodapi', level=level, file=file)
+        setup_logger('pybpodapi', level=level_bpod, file=file)
         if self.logger is None:
             self.logger = logger
 
@@ -227,7 +232,7 @@ class BaseSession(ABC):
         task_collection: str,
         procedures: list = None,
         projects: list = None,
-        hardware_settings: dict = None,
+        hardware_settings: dict | HardwareSettings = None,
         stub: Path = None,
         extractors: list = None,
     ):
@@ -257,8 +262,11 @@ class BaseSession(ABC):
             The experiment description.
         """
         description = ses_params.read_params(stub) if stub else {}
+
         # Add hardware devices
-        if hardware_settings:
+        if hardware_settings is not None:
+            if isinstance(hardware_settings, HardwareSettings):
+                hardware_settings = hardware_settings.model_dump()
             devices = {}
             cams = hardware_settings.get('device_cameras', None)
             if cams:
@@ -268,7 +276,8 @@ class BaseSession(ABC):
                         devices['cameras'][camera] = {'collection': 'raw_video_data', 'sync_label': 'audio'}
             if hardware_settings.get('device_microphone', None):
                 devices['microphone'] = {'microphone': {'collection': task_collection, 'sync_label': 'audio'}}
-        ses_params.merge_params(description, {'devices': devices})
+            ses_params.merge_params(description, {'devices': devices})
+
         # Add projects and procedures
         description['procedures'] = list(set(description.get('procedures', []) + (procedures or [])))
         description['projects'] = list(set(description.get('projects', []) + (projects or [])))
@@ -294,7 +303,7 @@ class BaseSession(ABC):
         :return:
         """
         output_dict = dict(self.task_params)  # Grab parameters from task_params session
-        output_dict.update(dict(self.hardware_settings))  # Update dict with hardware settings from session
+        output_dict.update(self.hardware_settings.model_dump())  # Update dict with hardware settings from session
         output_dict.update(dict(self.session_info))  # Update dict with session_info (subject, procedure, projects)
         patch_dict = {  # Various values added to ease transition from iblrig v7 to v8, different home may be desired
             'IBLRIG_VERSION': iblrig.__version__,
@@ -337,12 +346,12 @@ class BaseSession(ABC):
             )
             try:
                 self._one = ONE(
-                    base_url=self.iblrig_settings['ALYX_URL'], username=self.iblrig_settings['ALYX_USER'], mode='remote'
+                    base_url=str(self.iblrig_settings['ALYX_URL']), username=self.iblrig_settings['ALYX_USER'], mode='remote'
                 )
-                self.logger.info('instantiated ' + info_str)
+                log.info('instantiated ' + info_str)
             except Exception:
-                self.logger.error(traceback.format_exc())
-                self.logger.error('could not connect to ' + info_str)
+                log.error(traceback.format_exc())
+                log.error('could not connect to ' + info_str)
         return self._one
 
     def register_to_alyx(self):
@@ -357,8 +366,8 @@ class BaseSession(ABC):
         try:
             iblrig.alyx.register_session(self.paths.SESSION_FOLDER, settings_dictionary, one=self.one)
         except Exception:
-            self.logger.error(traceback.format_exc())
-            self.logger.error('Could not register session to Alyx')
+            log.error(traceback.format_exc())
+            log.error('Could not register session to Alyx')
 
     def _execute_mixins_shared_function(self, pattern):
         """
@@ -407,7 +416,7 @@ class BaseSession(ABC):
         def sigint_handler(*args, **kwargs):
             # create a signal handler for a graceful exit: create a stop flag in the session folder
             self.paths.SESSION_FOLDER.joinpath('.stop').touch()
-            self.logger.critical('SIGINT signal detected, will exit at the end of the trial')
+            log.critical('SIGINT signal detected, will exit at the end of the trial')
 
         # if upon starting there is a flag just remove it, this is to prevent killing a session in the egg
         if self.paths.SESSION_FOLDER.joinpath('.stop').exists():
@@ -416,8 +425,8 @@ class BaseSession(ABC):
         signal.signal(signal.SIGINT, sigint_handler)
         self._run()  # runs the specific task logic ie. trial loop etc...
         # post task instructions
-        self.logger.critical('Graceful exit')
-        self.logger.info(f'Session {self.paths.SESSION_RAW_DATA_FOLDER}')
+        log.critical('Graceful exit')
+        log.info(f'Session {self.paths.SESSION_RAW_DATA_FOLDER}')
         self.session_info.SESSION_END_TIME = datetime.datetime.now().isoformat()
         if self.interactive and not self.wizard:
             self.session_info.POOP_COUNT = graph.numinput(
@@ -448,6 +457,17 @@ class BaseSession(ABC):
         """
         parser = argparse.ArgumentParser(add_help=False)
         return parser
+
+
+# this class gets called to get the path constructor utility to predict the session path
+class EmptySession(BaseSession):
+    protocol_name = 'empty'
+
+    def _run(self):
+        pass
+
+    def start_hardware(self):
+        pass
 
 
 class OSCClient(udp_client.SimpleUDPClient):
@@ -508,105 +528,69 @@ class BonsaiRecordingMixin:
         self.bonsai_microphone = Bunch({'udp_client': OSCClient(port=7112)})
 
     def stop_mixin_bonsai_recordings(self):
-        self.logger.info('Stopping Bonsai recordings')
+        log.info('Stopping Bonsai recordings')
         self.bonsai_camera.udp_client.exit()
         self.bonsai_microphone.udp_client.exit()
 
     def start_mixin_bonsai_microphone(self):
         # the camera workflow on the behaviour computer already contains the microphone recording
         # so the device camera workflow and the microphone one are exclusive
-        if self._camera_mixin_bonsai_get_workflow_file(self.hardware_settings.get('device_cameras', None)) is not None:
+        if self._camera_mixin_bonsai_get_workflow_file(self.hardware_settings.device_cameras) is not None:
             return
         if not self.task_params.RECORD_SOUND:
             return
         workflow_file = self.paths.IBLRIG_FOLDER.joinpath(*self.hardware_settings.device_microphone['BONSAI_WORKFLOW'].split('/'))
-        cmd = [
-            str(self.paths.BONSAI),
-            str(workflow_file),
-            '--start',
-            f"-p:FileNameMic={self.paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_micData.raw.wav')}",
-            f'-p:RecordSound={self.task_params.RECORD_SOUND}',
-            '--no-boot',
-        ]
-        self.logger.info('starting Bonsai microphone recording')
-        self.logger.info(' '.join(cmd))
-        subprocess.Popen(cmd, cwd=workflow_file.parent)
-        self.logger.info('Bonsai microphone recording module loaded: OK')
+        parameters = {
+            'FileNameMic': self.paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_micData.raw.wav'),
+            'RecordSound': self.task_params.RECORD_SOUND,
+        }
+        call_bonsai(workflow_file, parameters)
+        log.info('Bonsai microphone recording module loaded: OK')
 
     @staticmethod
-    def _camera_mixin_bonsai_get_workflow_file(device_cameras_key):
+    def _camera_mixin_bonsai_get_workflow_file(cameras: HardwareSettingsCameras | dict | None) -> Path | None:
         """
-        Returns the first available bonsai workflow file for the cameras from the the hardware_settings.yaml file
+        Returns the first available bonsai workflow file for the cameras from the hardware_settings.yaml file
         :param device_cameras_key:
         :return:
         """
-        if device_cameras_key is None:
-            return
+        if cameras is None:
+            return None
         else:
-            return next(
-                (
-                    device_cameras_key[k]['BONSAI_WORKFLOW']
-                    for k in device_cameras_key
-                    if 'BONSAI_WORKFLOW' in device_cameras_key[k]
-                ),
-                None,
-            )
+            return next((camera.BONSAI_WORKFLOW for camera in cameras.values() if camera is not None), None)
 
     def start_mixin_bonsai_cameras(self):
         """
         This prepares the cameras by starting the pipeline that aligns the camera focus with the
         desired borders of rig features, the actual triggering of the  cameras is done in the trigger_bonsai_cameras method.
         """
-
-        if self._camera_mixin_bonsai_get_workflow_file(self.hardware_settings.get('device_cameras', None)) is None:
+        if self._camera_mixin_bonsai_get_workflow_file(self.hardware_settings.device_cameras) is None:
             return
-
-        # # TODO
-        # # enable trigger mode - if PySpin is available
-        # if HAS_PYSPIN:
-        #     pyspin_system = PySpin.System.GetInstance()
-        #     pyspin_cameras = pyspin_system.GetCameras()
-        #     for cam in pyspin_cameras:
-        #         cam.Init()
-        #         cam.TriggerMode.SetValue(True)
-
-        bonsai_camera_file = self.paths.IBLRIG_FOLDER.joinpath('devices', 'camera_setup', 'setup_video.bonsai')
-        self.create_bonsai_layout_from_template(bonsai_camera_file)
-        # this locks until Bonsai closes
-        cmd = [str(self.paths.BONSAI), str(bonsai_camera_file), '--start-no-debug', '--no-boot']
-        self.logger.info('starting Bonsai microphone recording')
-        self.logger.info(' '.join(cmd))
-        subprocess.call(cmd, cwd=bonsai_camera_file.parent)
-        self.logger.info('Bonsai cameras setup module loaded: OK')
-
-    def create_bonsai_layout_from_template(self, workflow_file: Path) -> None:
-        if not (layout_file := workflow_file.with_suffix('.bonsai.layout')).exists():
-            self.logger.info(f'creating default {layout_file.name}')
-            template_file = workflow_file.with_suffix('.bonsai.layout_template')
-            if not template_file.exists():
-                FileNotFoundError(template_file)
-            shutil.copy(template_file, layout_file)
+        # TODO
+        # if PYSPIN_AVAILABLE:
+        #     from iblrig.video_pyspin import enable_camera_trigger
+        #     enable_camera_trigger(True)
+        workflow_file = self.paths.IBLRIG_FOLDER.joinpath('devices', 'camera_setup', 'setup_video.bonsai')
+        parameters = {
+            'ToggleTrigger': False,
+        }
+        call_bonsai(workflow_file, parameters, wait=True)
+        log.info('Bonsai cameras setup module loaded: OK')
 
     def trigger_bonsai_cameras(self):
-        workflow_file = self._camera_mixin_bonsai_get_workflow_file(self.hardware_settings.get('device_cameras', None))
+        workflow_file = self._camera_mixin_bonsai_get_workflow_file(self.hardware_settings.device_cameras)
         if workflow_file is None:
             return
-        self.logger.info('attempt to launch Bonsai camera recording')
-        workflow_file = self.paths.IBLRIG_FOLDER.joinpath(*workflow_file.split('/'))
-        self.create_bonsai_layout_from_template(workflow_file)
-        cmd = [
-            str(self.paths.BONSAI),
-            str(workflow_file),
-            '--start',  # '--no-editor',
-            f"-p:FileNameLeft={self.paths.SESSION_FOLDER / 'raw_video_data' / '_iblrig_leftCamera.raw.avi'}",
-            f"-p:FileNameLeftData={self.paths.SESSION_FOLDER / 'raw_video_data' / '_iblrig_leftCamera.frameData.bin'}",
-            f"-p:FileNameMic={self.paths.SESSION_RAW_DATA_FOLDER / '_iblrig_micData.raw.wav'}",
-            f'-p:RecordSound={self.task_params.RECORD_SOUND}',
-            '--no-boot',
-        ]
-        self.logger.info(' '.join(cmd))
-        subprocess.Popen(cmd, cwd=workflow_file.parent)
-        self.logger.info('Bonsai camera recording process started')
+        workflow_file = self.paths.IBLRIG_FOLDER.joinpath(workflow_file)
+        iblrig.path_helper.create_bonsai_layout_from_template(workflow_file)
+        parameters = {
+            'FileNameLeft': self.paths.SESSION_FOLDER.joinpath('raw_video_data', '_iblrig_leftCamera.raw.avi'),
+            'FileNameLeftData': self.paths.SESSION_FOLDER.joinpath('raw_video_data', '_iblrig_leftCamera.frameData.bin'),
+            'FileNameMic': self.paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_micData.raw.wav'),
+            'RecordSound': self.task_params.RECORD_SOUND,
+        }
+        call_bonsai(workflow_file, parameters, wait=False, editor=False)
+        log.info('Bonsai camera recording process started')
 
 
 class BonsaiVisualStimulusMixin:
@@ -618,7 +602,7 @@ class BonsaiVisualStimulusMixin:
         self.choice_world_visual_stimulus()
 
     def stop_mixin_bonsai_visual_stimulus(self):
-        self.logger.info('Stopping Bonsai visual stimulus')
+        log.info('Stopping Bonsai visual stimulus')
         self.bonsai_visual_udp_client.exit()
 
     def send_trial_info_to_bonsai(self):
@@ -632,64 +616,42 @@ class BonsaiVisualStimulusMixin:
             if k in self.trials_table.columns
         }
         self.bonsai_visual_udp_client.send2bonsai(**bonsai_dict)
-        self.logger.debug(bonsai_dict)
+        log.debug(bonsai_dict)
 
     def run_passive_visual_stim(self, map_time='00:05:00', rate=0.1, sa_time='00:05:00'):
-        file_bonsai_workflow = self.paths.VISUAL_STIM_FOLDER.joinpath('passiveChoiceWorld', 'passiveChoiceWorld_passive.bonsai')
+        workflow_file = self.paths.VISUAL_STIM_FOLDER.joinpath('passiveChoiceWorld', 'passiveChoiceWorld_passive.bonsai')
         file_output_rfm = self.paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_RFMapStim.raw.bin')
-        cmd = [
-            str(self.paths.BONSAI),
-            str(file_bonsai_workflow),
-            '--no-boot',
-            '--no-editor',
-            f"-p:Stim.DisplayIndex={self.hardware_settings.device_screen['DISPLAY_IDX']}",
-            f'-p:Stim.SpontaneousActivity0.DueTime={sa_time}',
-            f'-p:Stim.ReceptiveFieldMappingStim.FileNameRFMapStim={file_output_rfm}',
-            f'-p:Stim.ReceptiveFieldMappingStim.MappingTime={map_time}',
-            f'-p:Stim.ReceptiveFieldMappingStim.Rate={rate}',
-        ]
-        self.logger.info('Starting spontaneous activity and RF mapping stims')
-        self.logger.info(' '.join(cmd))
-        s = subprocess.run(cmd, stdout=subprocess.PIPE, cwd=file_bonsai_workflow.parent)  # locking call
-        self.logger.info('Spontaneous activity and RF mapping stims finished')
+        parameters = {
+            'Stim.DisplayIndex': self.hardware_settings.device_screen['DISPLAY_IDX'],
+            'Stim.SpontaneousActivity0.DueTime': sa_time,
+            'Stim.ReceptiveFieldMappingStim.FileNameRFMapStim': file_output_rfm,
+            'Stim.ReceptiveFieldMappingStim.MappingTime': map_time,
+            'Stim.ReceptiveFieldMappingStim.Rate': rate,
+        }
+        log.info('Starting spontaneous activity and RF mapping stims')
+        s = call_bonsai(workflow_file, parameters, editor=False)
+        log.info('Spontaneous activity and RF mapping stims finished')
         return s
 
     def choice_world_visual_stimulus(self):
         if self.task_params.VISUAL_STIMULUS is None:
             return
-        # Run Bonsai workflow, switch to the folder containing the bonsai visual stimulus file and switch back
-
-        visual_stim_file = self.paths.VISUAL_STIM_FOLDER.joinpath(self.task_params.VISUAL_STIMULUS)
-
-        evt = '-p:Stim.FileNameEvents=' + os.path.join(self.paths.SESSION_RAW_DATA_FOLDER, '_iblrig_encoderEvents.raw.ssv')
-        pos = '-p:Stim.FileNamePositions=' + os.path.join(self.paths.SESSION_RAW_DATA_FOLDER, '_iblrig_encoderPositions.raw.ssv')
-        itr = '-p:Stim.FileNameTrialInfo=' + os.path.join(self.paths.SESSION_RAW_DATA_FOLDER, '_iblrig_encoderTrialInfo.raw.ssv')
-        screen_pos = '-p:Stim.FileNameStimPositionScreen=' + os.path.join(
-            self.paths.SESSION_RAW_DATA_FOLDER, '_iblrig_stimPositionScreen.raw.csv'
-        )
-        sync_square = '-p:Stim.FileNameSyncSquareUpdate=' + os.path.join(
-            self.paths.SESSION_RAW_DATA_FOLDER, '_iblrig_syncSquareUpdate.raw.csv'
-        )
-        cmd = [
-            str(self.paths.BONSAI),
-            str(visual_stim_file),
-            '--start' if self.task_params.BONSAI_EDITOR else '--no-editor',
-            '--no-boot',
-            f"-p:Stim.DisplayIndex={self.hardware_settings.device_screen['DISPLAY_IDX']}",
-            screen_pos,
-            sync_square,
-            pos,
-            evt,
-            itr,
-            f"-p:Stim.REPortName={self.hardware_settings.device_rotary_encoder['COM_ROTARY_ENCODER']}",
-            f'-p:Stim.sync_x={self.task_params.SYNC_SQUARE_X}',
-            f'-p:Stim.sync_y={self.task_params.SYNC_SQUARE_Y}',
-            f'-p:Stim.TranslationZ=-{self.task_params.STIM_TRANSLATION_Z}',
-        ]
-        self.logger.info('starting Bonsai visual stimulus')
-        self.logger.info(' '.join(cmd))
-        subprocess.Popen(cmd, cwd=visual_stim_file.parent)
-        self.logger.info('Bonsai visual stimulus module loaded: OK')
+        workflow_file = self.paths.VISUAL_STIM_FOLDER.joinpath(self.task_params.VISUAL_STIMULUS)
+        parameters = {
+            'Stim.DisplayIndex': self.hardware_settings.device_screen['DISPLAY_IDX'],
+            'Stim.FileNameStimPositionScreen': self.paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_stimPositionScreen.raw.csv'),
+            'Stim.FileNameSyncSquareUpdate': self.paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_syncSquareUpdate.raw.csv'),
+            'Stim.FileNamePositions': self.paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_encoderPositions.raw.ssv'),
+            'Stim.FileNameEvents': self.paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_encoderEvents.raw.ssv'),
+            'Stim.FileNameTrialInfo': self.paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_encoderTrialInfo.raw.ssv'),
+            'Stim.REPortName': self.hardware_settings.device_rotary_encoder['COM_ROTARY_ENCODER'],
+            'Stim.sync_x': self.task_params.SYNC_SQUARE_X,
+            'Stim.sync_y': self.task_params.SYNC_SQUARE_Y,
+            'Stim.TranslationZ': -self.task_params.STIM_TRANSLATION_Z,  # MINUS!!
+        }
+        log.info('starting Bonsai visual stimulus')
+        call_bonsai(workflow_file, parameters, wait=False, editor=self.task_params.BONSAI_EDITOR, bootstrap=False)
+        log.info('Bonsai visual stimulus module loaded: OK')
 
 
 class BpodMixin:
@@ -728,10 +690,11 @@ class BpodMixin:
 
         assert len(self.bpod.actions.keys()) == 6
         assert self.bpod.is_connected
-        self.logger.info('Bpod hardware module loaded: OK')
+        log.info('Bpod hardware module loaded: OK')
+        # self.send_spacers()
 
     def send_spacers(self):
-        self.logger.info('Starting task by sending a spacer signal on BNC1')
+        log.info('Starting task by sending a spacer signal on BNC1')
         sma = StateMachine(self.bpod)
         Spacer().add_spacer_states(sma, next_state='exit')
         self.bpod.send_state_machine(sma)
@@ -762,12 +725,12 @@ class Frame2TTLMixin:
                 light=self.hardware_settings['device_frame2ttl']['F2TTL_LIGHT_THRESH'],
                 dark=self.hardware_settings['device_frame2ttl']['F2TTL_DARK_THRESH'],
             )
-            self.logger.info('Frame2TTL: Thresholds set.')
+            log.info('Frame2TTL: Thresholds set.')
         except serial.serialutil.SerialTimeoutException as e:
             self.frame2ttl.close()
             raise e
         assert self.frame2ttl.connected
-        self.logger.info('Frame2TTL module loaded: OK')
+        log.info('Frame2TTL module loaded: OK')
 
 
 class RotaryEncoderMixin:
@@ -803,7 +766,7 @@ class RotaryEncoderMixin:
                 "The rotary encoder couldn't connect. If the bpod is glowing in green,"
                 'disconnect and reconnect bpod from the computer'
             ) from e
-        self.logger.info('Rotary encoder module loaded: OK')
+        log.info('Rotary encoder module loaded: OK')
 
 
 class ValveMixin:
@@ -837,7 +800,7 @@ class ValveMixin:
                 AUTOMATIC_CALIBRATION = False
                 CALIBRATION_VALUE = <MANUAL_CALIBRATION>
             ##########################################"""
-        self.logger.info('Water valve module loaded: OK')
+        log.info('Water valve module loaded: OK')
 
     def compute_reward_time(self, amount_ul=None):
         amount_ul = self.task_params.REWARD_AMOUNT_UL if amount_ul is None else amount_ul
@@ -915,7 +878,7 @@ class SoundMixin:
             self.bpod.define_harp_sounds_actions(self.task_params.GO_TONE_IDX, self.task_params.WHITE_NOISE_IDX)
         else:  # xonar or system default
             self.bpod.define_xonar_sounds_actions()
-        self.logger.info(f"Sound module loaded: OK: {self.hardware_settings.device_sound['OUTPUT']}")
+        log.info(f"Sound module loaded: OK: {self.hardware_settings.device_sound['OUTPUT']}")
 
     def sound_play_noise(self, state_timer=0.510, state_name='play_noise'):
         """
@@ -967,7 +930,7 @@ class SpontaneousSession(BaseSession):
         This is the method that runs the task with the actual state machine
         :return:
         """
-        self.logger.info('Starting spontaneous acquisition')
+        log.info('Starting spontaneous acquisition')
         while True:
             time.sleep(1.5)
             if self.duration_secs is not None and self.time_elapsed.seconds > self.duration_secs:

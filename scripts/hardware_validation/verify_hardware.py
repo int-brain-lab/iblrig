@@ -1,3 +1,4 @@
+import logging
 import platform
 import time
 from glob import glob
@@ -12,11 +13,11 @@ from serial import Serial
 import iblrig.base_tasks
 
 # import pandas as pd
-from iblutil.util import setup_logger
 from pybpodapi.protocol import Bpod, StateMachine
 
 # set up logging
-log = setup_logger('iblrig', level='DEBUG')
+log = logging.getLogger(__name__)
+log.setLevel(logging.DEBUG)
 
 issues = 0
 
@@ -59,7 +60,7 @@ def log_fun(msg_type: str = 'info', msg: str = '', last: bool = False):
 # read hardware_settings.yaml
 log_fun('head', 'Checking hardware_settings.yaml:')
 file_settings = Path(iblrig.__file__).parents[1].joinpath('settings', 'hardware_settings.yaml')
-hw_settings = iblrig.path_helper.load_settings_yaml(file_settings)
+hw_settings = iblrig.path_helper._load_settings_yaml(file_settings)
 
 # collect all port-strings
 ports = [d for d in hw_settings.values() if isinstance(d, dict)]
@@ -158,7 +159,7 @@ for description, port in ports.items():
 bpod = Bpod(hw_settings['device_bpod']['COM_BPOD'])
 modules = [m for m in bpod.bpod_modules.modules if m.connected]
 
-if 'COM_ROTARY_ENCODER' in ports.keys():
+if 'COM_ROTARY_ENCODER' in ports:
     log_fun('head', 'Checking Rotary Encoder Module:')
     module = [m for m in modules if m.name.startswith('RotaryEncoder')]
     if len(module) == 0:

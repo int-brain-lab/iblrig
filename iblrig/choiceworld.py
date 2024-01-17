@@ -2,14 +2,14 @@
 Choice World Task related logic and functions that translate the task description in
 Appendix 2 of the paper into code.
 """
+import logging
 
 import numpy as np
 
 import iblrig.raw_data_loaders
 from iblrig.path_helper import iterate_previous_sessions
-from iblutil.util import setup_logger
 
-logger = setup_logger('iblrig', level='INFO')
+log = logging.getLogger(__name__)
 
 CONTRASTS = 1 / np.array([-1, -2, -4, -8, -16, np.inf, 16, 8, 4, 2, 1])
 DEFAULT_TRAINING_PHASE = 0
@@ -62,10 +62,10 @@ def get_subject_training_info(
     session_info = iterate_previous_sessions(subject_name, task_name=task_name, n=1, **kwargs)
     if len(session_info) == 0:
         if mode == 'silent':
-            logger.warning('The training status could not be determined returning default values')
+            log.warning(f'The training status for {subject_name} could not be determined - returning default values')
             return dict(training_phase=DEFAULT_TRAINING_PHASE, adaptive_reward=default_reward, adaptive_gain=stim_gain), None
         elif mode == 'raise':
-            raise ValueError('The training status could not be determined as no previous sessions were found')
+            raise ValueError(f'The training status for {subject_name} could not be determined as no previous sessions were found')
     else:
         session_info = session_info[0]
     trials_data, _ = iblrig.raw_data_loaders.load_task_jsonable(session_info.file_task_data)

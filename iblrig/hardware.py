@@ -1,6 +1,7 @@
 """
 This modules contains hardware classes used to interact with modules.
 """
+import logging
 import os
 import re
 import shutil
@@ -17,14 +18,14 @@ import sounddevice as sd
 from serial.tools import list_ports
 
 from iblrig.tools import static_vars
-from iblutil.util import Bunch, setup_logger
+from iblutil.util import Bunch
 from pybpod_rotaryencoder_module.module import RotaryEncoder
 from pybpod_rotaryencoder_module.module_api import RotaryEncoderModule
 from pybpodapi.bpod.bpod_io import BpodIO
 
 SOFTCODE = IntEnum('SOFTCODE', ['STOP_SOUND', 'PLAY_TONE', 'PLAY_NOISE', 'TRIGGER_CAMERA'])
 
-log = setup_logger('iblrig')
+log = logging.getLogger(__name__)
 
 
 class Bpod(BpodIO):
@@ -196,7 +197,7 @@ class Bpod(BpodIO):
     def set_status_led(self, state: bool) -> bool:
         if self.can_control_led and self._arcom is not None:
             try:
-                log.info(f'{"en" if state else "dis"}abling Bpod Status LED')
+                log.debug(f'{"en" if state else "dis"}abling Bpod Status LED')
                 command = struct.pack('cB', b':', state)
                 self._arcom.serial_object.write(command)
                 if self._arcom.read_uint8() == 1:

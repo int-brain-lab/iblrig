@@ -17,8 +17,8 @@ Installation guide
    :ref:`submit a bug report<Bug Reports & Feature Requests>`.
 
 
-Prepare Windows PowerShell
---------------------------
+Preparing Windows PowerShell
+----------------------------
 
 Open Windows PowerShell in administrator mode:
 
@@ -34,7 +34,9 @@ Now, run the following command at the prompt of Windows PowerShell:
 
    Set-ExecutionPolicy RemoteSigned -Force
 
-.. warning:: Make sure you exit the Administrator PowerShell before continuing with the next steps!
+.. tip::
+
+   Keep the Administrator PowerShell open for the next step.
 
 .. admonition:: Background
    :class: seealso
@@ -47,8 +49,31 @@ Now, run the following command at the prompt of Windows PowerShell:
    and usability.
 
 
-Install Python 3.10
--------------------
+Installing MS Visual C++ Redistributable
+----------------------------------------
+
+With the Administrator PowerShell still open, run the following commands:
+
+.. code-block:: powershell
+
+   New-Item -ItemType Directory -Force -Path C:\Temp
+   Invoke-WebRequest -Uri https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe  -OutFile C:\Temp\vcredist_x64.exe
+   Start-Process -NoNewWindow -Wait -FilePath C:\Temp\vcredist_x64.exe -ArgumentList "/install", "/quiet", "/norestart"
+   Invoke-WebRequest -Uri https://aka.ms/vs/17/release/vc_redist.x64.exe  -OutFile C:\Temp\vc_redist.x64.exe
+   Start-Process -NoNewWindow -Wait -FilePath C:\Temp\vc_redist.x64.exe -ArgumentList "/install", "/quiet", "/norestart"
+
+.. warning:: Make sure you exit the Administrator PowerShell before continuing with the next steps!
+
+.. admonition:: Background
+   :class: seealso
+
+   These commands will create a temporary directory, download and silently install the Visual C++ Redistributable package for
+   64-bit Windows systems. The installer is retrieved from a Microsoft server and executed with parameters to ensure a seamless
+   and unobtrusive installation process.
+
+
+Installing Python 3.10
+----------------------
 
 Open a `new` Windows Powershell prompt (no administrator mode) and run the following:
 
@@ -62,7 +87,7 @@ Check that everything worked by running the following command:
 
 .. code-block:: powershell
 
-   C:\Users\IBLuser\AppData\Local\Programs\Python\Python310\.\python.exe --version
+   &C:\Users\$env:USERNAME\AppData\Local\Programs\Python\Python310\python.exe --version
 
 The command should return ``Python 3.10.11``
 
@@ -74,8 +99,8 @@ The command should return ``Python 3.10.11``
    installer with specific installation options, all in a controlled and automated manner.
 
 
-Install iblrigv8
-----------------
+Installing iblrigv8
+-------------------
 
 1. From the Powershell command line, clone the `iblrigv8` branch of iblrig to ``C:\iblrigv8``:
 
@@ -84,15 +109,15 @@ Install iblrigv8
       git clone -b iblrigv8 https://github.com/int-brain-lab/iblrig.git C:\iblrigv8
 
 
-2. Install a new virtual environment and update pip (modify the <Username> value if needed)
+2. Install a new virtual environment and update pip:
 
    .. code-block:: powershell
 
-      C:\Users\IBLuser\AppData\Local\Programs\Python\Python310\.\python.exe -m venv C:\iblrigv8\venv
+      &C:\Users\$env:USERNAME\AppData\Local\Programs\Python\Python310\python.exe -m venv C:\iblrigv8\venv
       C:\iblrigv8\venv\scripts\python.exe -m pip install --upgrade pip wheel
 
 
-3. Install iblrig in editable mode
+3. Install iblrig in editable mode:
 
    .. code-block:: powershell
 
@@ -101,17 +126,7 @@ Install iblrigv8
       pip install -e .
 
 
-4. Install additional tasks and extractors for personal projects (optional)
-
-   .. code-block:: powershell
-
-      cd C:\
-      git clone https://github.com/int-brain-lab/project_extraction.git
-      cd project_extraction
-      pip install -e .
-
-
-5. Install Bonsai in portable mode
+4. Install Bonsai in portable mode:
 
    .. code-block:: powershell
 
@@ -120,33 +135,25 @@ Install iblrigv8
       cd ..
 
 
-Update iblrigv8
----------------
+5. Install additional tasks and extractors for personal projects (optional):
 
    .. code-block:: powershell
 
-      C:\iblrigv8\venv\scripts\Activate.ps1
-      cd C:\iblrigv8
-      upgrade_iblrig
-
-   alternatively, run:
-
-   .. code-block:: powershell
-
-      C:\iblrigv8\venv\scripts\Activate.ps1
-      cd C:\iblrigv8
-      git pull
-      pip install --upgrade -e .
+      git clone https://github.com/int-brain-lab/project_extraction.git C:\project_extraction
+      cd C:\project_extraction
+      pip install -e .
 
 
-Configuration instructions
+6. Continue with :ref:`the next section<Configuration instructions>`.
+
+
+Configuration Instructions
 --------------------------
 
-
-Rig configuration files
+Rig Configuration Files
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-Copy template settings files.
+Copy the template settings files:
 
 .. code-block::
 
@@ -156,14 +163,17 @@ Copy template settings files.
    explorer C:\iblrigv8\settings
 
 
-Update the 2 settings files, these values can likely be found in the `C:\iblrig_params\.iblrig_params.json` file if working with a existing rig
+Update the two settings files using a text-editor:
 
-*  iblrig_settings.yaml
-*  hardware_settings.yaml
+*  ``iblrig_settings.yaml``
+*  ``hardware_settings.yaml``
+
+If the computer has been used with IBLRIG version 7 or earlier, the correct values can likely be found in ``C:\iblrig_params\
+.iblrig_params.json``.
 
 
-Setup ONE
-~~~~~~~~~
+Setting up ONE
+~~~~~~~~~~~~~~
 
 
 Setup ONE to connect to https://alyx.internationalbrainlab.org, you will need your Alyx username and password.
@@ -180,7 +190,7 @@ See instructions for that here: https://int-brain-lab.github.io/iblenv/notebooks
       C:\iblrigv8\venv\scripts\Activate.ps1
       ipython
 
-   Then at the Ipython prompt
+   Then at the IPython prompt
 
    .. code-block:: python
 
@@ -196,3 +206,33 @@ See instructions for that here: https://int-brain-lab.github.io/iblenv/notebooks
       python -m unittest discover
 
    The tests should pass to completion after around 40 seconds
+
+
+Updating iblrigv8
+-----------------
+
+To update iblrigv8 to the newest version:
+
+   .. code-block:: powershell
+
+      C:\iblrigv8\venv\scripts\Activate.ps1
+      upgrade_iblrig
+
+
+If you're on an older version of iblrigv8, the command above may not be available yet.
+You can then run the following instead:
+
+   .. code-block:: powershell
+
+      C:\iblrigv8\venv\scripts\Activate.ps1
+      cd C:\iblrigv8
+      git pull
+      pip install --upgrade -e .
+
+
+To update the additional tasks and extractors (see :ref:`Installing iblrigv8`, point 5):
+
+   .. code-block:: powershell
+
+      cd C:\project_extraction
+      git pull

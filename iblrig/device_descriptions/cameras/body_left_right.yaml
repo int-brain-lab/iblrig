@@ -9,3 +9,4 @@ devices:
     right:
         collection: raw_video_data
         sync_label: frame2ttl
+version: 1.0.0
