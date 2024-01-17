@@ -547,7 +547,6 @@ class BonsaiRecordingMixin:
             'FileNameMic': self.paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_micData.raw.wav'),
             'RecordSound': self.task_params.RECORD_SOUND,
         }
-        log.info('starting Bonsai microphone recording')
         call_bonsai(workflow_file, parameters)
         log.info('Bonsai microphone recording module loaded: OK')
 
@@ -574,7 +573,6 @@ class BonsaiRecordingMixin:
         # if pyspin_available:
         #     configure_trigger(True)
         workflow_file = self.paths.IBLRIG_FOLDER.joinpath('devices', 'camera_setup', 'setup_video.bonsai')
-        log.info('starting Bonsai microphone recording')
         call_bonsai(workflow_file, wait=True)
         log.info('Bonsai cameras setup module loaded: OK')
 
@@ -590,7 +588,6 @@ class BonsaiRecordingMixin:
             'FileNameMic': self.paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_micData.raw.wav'),
             'RecordSound': self.task_params.RECORD_SOUND,
         }
-        log.info('attempt to launch Bonsai camera recording')
         call_bonsai(workflow_file, parameters, wait=False, editor=False)
         log.info('Bonsai camera recording process started')
 

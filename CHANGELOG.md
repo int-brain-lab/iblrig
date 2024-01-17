@@ -8,8 +8,9 @@ Changelog
 * script for starting video-session in ephys-rig
 * installer scripts for Spinnaker SDK / PySpin
 * validated parsing of settings files
-* add legend to trials-timeline
-* add button for triggering a free reward (only available outside of running task for now)
+* added legend to trials-timeline
+* added button for triggering a free reward (only available outside of running task for now)
+* cleaned-up logging
 * various improvements under the hood, clean-up and unit-tests
 
 8.12.13

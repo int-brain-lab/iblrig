@@ -493,23 +493,19 @@ class ChoiceWorldSession(
 
     def show_trial_log(self, extra_info=''):
         trial_info = self.trials_table.iloc[self.trial_num]
-        msg = f"""
-Session {self.paths.SESSION_RAW_DATA_FOLDER}
-##########################################
-TRIAL NUM:            {trial_info.trial_num}
-TEMPERATURE:          {self.ambient_sensor_table.loc[self.trial_num, 'Temperature_C']} ºC
-AIR PRESSURE:         {self.ambient_sensor_table.loc[self.trial_num, 'AirPressure_mb']} mb
-RELATIVE HUMIDITY:    {self.ambient_sensor_table.loc[self.trial_num, 'RelativeHumidity']} %
-
-STIM POSITION:        {trial_info.position}
-STIM CONTRAST:        {trial_info.contrast}
-STIM PHASE:           {trial_info.stim_phase}
-STIM PROB LEFT:       {trial_info.stim_probability_left}
-{extra_info}
-WATER DELIVERED:      {np.round(self.session_info.TOTAL_WATER_DELIVERED, 3)} µl
-TIME FROM START:      {self.time_elapsed}
-##########################################"""
-        log.info(msg)
+        level = logging.INFO
+        log.log(level=level, msg=f'Outcome of Trial #{trial_info.trial_num}:')
+        log.log(level=level, msg=f'- Stim. Position:  {trial_info.position}')
+        log.log(level=level, msg=f'- Stim. Contrast:  {trial_info.contrast}')
+        log.log(level=level, msg=f'- Stim. Phase:     {trial_info.stim_phase}')
+        log.log(level=level, msg=f'- Stim. p Left:    {trial_info.stim_probability_left}')
+        log.log(level=level, msg=f'- Water delivered: {self.session_info.TOTAL_WATER_DELIVERED:.1f} µl')
+        log.log(level=level, msg=f'- Time from Start: {self.time_elapsed}')
+        log.log(level=level, msg=f'- Temperature:     {self.ambient_sensor_table.loc[self.trial_num, "Temperature_C"]:.1f} °C')
+        log.log(level=level, msg=f'- Air Pressure:    {self.ambient_sensor_table.loc[self.trial_num, "AirPressure_mb"]:.1f} mb')
+        log.log(
+            level=level, msg=f'- Rel. Humidity:   {self.ambient_sensor_table.loc[self.trial_num, "RelativeHumidity"]:.1f} %\n'
+        )
 
     @property
     def iti_reward(self, assert_calibration=True):
