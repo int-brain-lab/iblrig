@@ -67,6 +67,8 @@ URL_REPO = 'https://github.com/int-brain-lab/iblrig/tree/iblrigv8'
 URL_ISSUES = 'https://github.com/int-brain-lab/iblrig/issues'
 URL_DISCUSSION = 'https://github.com/int-brain-lab/iblrig/discussions'
 
+ANSI_COLORS = {b'31': 'Red', b'32': 'Green', b'33': 'Yellow', b'35': 'Magenta', b'36': 'Cyan', b'37': 'White'}
+
 
 def _set_list_view_from_string_list(ui_list: QtWidgets.QListView, string_list: list):
     """Small boiler plate util to set the selection of a list view from a list of strings"""
@@ -247,7 +249,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         # tab: log
         font = QtGui.QFont('Monospace')
         font.setStyleHint(QtGui.QFont.TypeWriter)
-        font.setPointSize(8)
+        font.setPointSize(10)
         self.uiPlainTextEditLog.setFont(font)
 
         # tab: documentation
@@ -835,7 +837,8 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                     cmd.append('--append')
                 if self.running_task_process is None:
                     self.uiPlainTextEditLog.clear()
-
+                    self.uiPlainTextEditLog.setCurrentCharFormat(self._get_char_color_format())
+                    self.uiPlainTextEditLog.appendPlainText(f'Starting subprocess: {self.model.task_name} ...\n')
                     log.info('Starting subprocess')
                     log.info(subprocess.list2cmdline(cmd))
                     self.running_task_process = QtCore.QProcess()
@@ -847,43 +850,45 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                     self.running_task_process.start(shutil.which('python'), cmd)
                 self.uiPushStart.setStatusTip('stop the session after the current trial')
                 self.uiPushStart.setIcon(self.style().standardIcon(QStyle.SP_MediaStop))
+                self.tabWidget.setCurrentIndex(self.tabWidget.indexOf(self.tabLog))
             case 'Stop':
                 self.uiPushStart.setEnabled(False)
                 if self.model.session_folder and self.model.session_folder.exists():
                     self.model.session_folder.joinpath('.stop').touch()
 
+    @staticmethod
+    def _get_char_color_format(color: str = 'White', fmt=QtGui.QTextCharFormat()) -> QtGui.QTextCharFormat:
+        color = getattr(QtGui.QColorConstants, color, QtGui.QColorConstants.White)
+        fmt.setForeground(QtGui.QBrush(color))
+        return fmt
+
     def on_readyReadStandardOutput(self):
-        regex = re.compile(r'\x1b\[.+m[\d-]+\s+([\d:.]+)\s*(\w+)\s+\[?([\w\.]+)\s*:\s*(\d+)\]?\s*(.*)\x1b\[0m\r?\n')
-        data = self.running_task_process.readAllStandardOutput().data().decode()
-        for entry in re.findall(regex, data):
-            match entry[2]:
-                case 'DEBUG':
-                    continue  # we skip debug messages in the GUI
-                    # color = QtGui.QColorConstants.Green
-                case 'INFO':
-                    color = QtGui.QColorConstants.Cyan
-                case 'WARNING':
-                    color = QtGui.QColorConstants.Yellow
-                case 'ERROR':
-                    color = QtGui.QColorConstants.Red
-                case 'CRITICAL':
-                    color = QtGui.QColorConstants.Magenta
-                case _:
-                    color = QtGui.QColorConstants.White
-            fmt = QtGui.QTextCharFormat()
-            fmt.setForeground(QtGui.QBrush(color))
+        data = self.running_task_process.readAllStandardOutput().data()
+        regex = re.compile(
+            rb'^\x1b\[(?:\d;)?(?:\d+;)?'
+            rb'(?P<color>\d+)m[\d-]*\s+'
+            rb'(?P<time>[\d\:]+)\s+'
+            rb'(?P<level>\w+\s+)'
+            rb'(?P<file>[\w\:\.]+)\s+'
+            rb'(?P<message>[^\x1b]*)',
+            re.MULTILINE,
+        )
+        for entry in re.finditer(regex, data):
+            color = ANSI_COLORS.get(entry.groupdict().get('color', b'37'), 'White')
+            fmt = self._get_char_color_format(color)
             self.uiPlainTextEditLog.setCurrentCharFormat(fmt)
-            msg = f'{entry[0]}  {entry[-1]}'
-            self.uiPlainTextEditLog.appendPlainText(msg)
+            time = entry.groupdict().get('time', b'').decode()
+            msg = entry.groupdict().get('message', b'').decode()
+            self.uiPlainTextEditLog.appendPlainText(f'{time} {msg}')
 
     def on_readyReadStandardError(self):
         text = self.running_task_process.readAllStandardError().data().decode()
-        fmt = QtGui.QTextCharFormat()
-        fmt.setForeground(QtGui.QBrush(QtGui.QColorConstants.Red))
-        self.uiPlainTextEditLog.setCurrentCharFormat(fmt)
+        self.uiPlainTextEditLog.setCurrentCharFormat(self._get_char_color_format('Red'))
         self.uiPlainTextEditLog.appendPlainText(text.strip())
 
     def _on_task_finished(self, exit_code, exit_status):
+        self.uiPlainTextEditLog.setCurrentCharFormat(self._get_char_color_format())
+        self.uiPlainTextEditLog.appendPlainText('\nSubprocess finished.')
         if exit_code:
             msg_box = QtWidgets.QMessageBox(parent=self)
             msg_box.setWindowTitle('Oh no!')

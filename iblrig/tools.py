@@ -251,7 +251,7 @@ def call_bonsai(
             cmd.append(f'-p:{key}={str(value)}')
 
     log.info(f'Starting Bonsai workflow `{workflow_file.name}`')
-    log.info(' '.join(cmd))
+    log.debug(' '.join(cmd))
     if wait:
         return subprocess.run(args=cmd, cwd=cwd, check=check)
     else:

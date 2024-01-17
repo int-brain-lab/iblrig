@@ -484,23 +484,12 @@ class ChoiceWorldSession(
         if not self.bpod.is_connected:
             return
         events = bpod_data['Events timestamps']
-        ev_bnc1 = misc.get_port_events(events, name='BNC1')
-        ev_bnc2 = misc.get_port_events(events, name='BNC2')
-        ev_port1 = misc.get_port_events(events, name='Port1')
-        NOT_FOUND = 'COULD NOT FIND DATA ON {}'
-        bnc1_msg = NOT_FOUND.format('BNC1') if not ev_bnc1 else 'OK'
-        bnc2_msg = NOT_FOUND.format('BNC2') if not ev_bnc2 else 'OK'
-        port1_msg = NOT_FOUND.format('Port1') if not ev_port1 else 'OK'
-        warn_msg = f"""
-            ##########################################
-                    NOT FOUND: SYNC PULSES
-            ##########################################
-            VISUAL STIMULUS SYNC: {bnc1_msg}
-            SOUND SYNC: {bnc2_msg}
-            CAMERA SYNC: {port1_msg}
-            ##########################################"""
-        if not ev_bnc1 or not ev_bnc2 or not ev_port1:
-            log.warning(warn_msg)
+        if not misc.get_port_events(events, name='BNC1'):
+            self.logger.warning("NO FRAME2TTL PULSES RECEIVED ON BPOD'S TTL INPUT 1")
+        if not misc.get_port_events(events, name='BNC2'):
+            self.logger.warning("NO SOUND SYNC PULSES RECEIVED ON BPOD'S TTL INPUT 2")
+        if not misc.get_port_events(events, name='Port1'):
+            self.logger.warning("NO CAMERA SYNC PULSES RECEIVED ON BPOD'S BEHAVIOR PORT 1")
 
     def show_trial_log(self, extra_info=''):
         trial_info = self.trials_table.iloc[self.trial_num]
