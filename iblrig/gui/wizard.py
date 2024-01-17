@@ -16,6 +16,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Optional
 
+from pydantic import ValidationError
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QThread, QThreadPool
 from PyQt5.QtWebEngineWidgets import QWebEnginePage
@@ -244,7 +245,20 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.settings = QtCore.QSettings()
         self.move(self.settings.value('pos', self.pos(), QtCore.QPoint))
 
-        self.model = RigWizardModel()
+        try:
+            self.model = RigWizardModel()
+        except ValidationError as e:
+            yml = (
+                'hardware_settings.yaml'
+                if 'hardware' in e.title
+                else 'iblrig_settings.yaml'
+                if 'iblrig' in e.title
+                else 'Settings File'
+            )
+            loc = '.'.join(e.errors()[0]['loc'])
+            msg = e.errors()[0]['msg']
+            self._show_error_dialog(title=f'Error validating {yml}', description=f'{loc}:\n{msg}.')
+            raise e
         self.model2view()
 
         # default to biasedChoiceWorld
