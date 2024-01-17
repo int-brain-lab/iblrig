@@ -34,7 +34,7 @@ class BunchModel(BaseModel, abc.MutableMapping):
 
 class RigSettings(BunchModel, validate_assignment=True):
     model_config = ConfigDict(title='iblrig_settings.yaml')
-    iblrig_local_data_path: Path = Field(
+    iblrig_local_data_path: Path | None = Field(
         title='IBLRIG local data path', description='The local folder IBLRIG should use for storing data'
     )
     iblrig_remote_data_path: Path | bool | None = Field(
