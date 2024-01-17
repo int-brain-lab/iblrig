@@ -9,6 +9,7 @@ Changelog
 * installer scripts for Spinnaker SDK / PySpin
 * validated parsing of settings files
 * add legend to trials-timeline
+* add button for triggering a free reward (only available outside of running task for now)
 * various improvements under the hood, clean-up and unit-tests
 
 8.12.13

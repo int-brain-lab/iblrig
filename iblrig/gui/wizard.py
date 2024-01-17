@@ -25,7 +25,7 @@ from requests import HTTPError
 import iblrig.hardware_validation
 import iblrig.path_helper
 import iblrig_tasks
-from iblrig.base_tasks import EmptySession
+from iblrig.base_tasks import EmptySession, ValveMixin
 from iblrig.choiceworld import get_subject_training_info, training_phase_from_contrast_set
 from iblrig.constants import BASE_DIR
 from iblrig.gui.ui_login import Ui_login
@@ -37,10 +37,11 @@ from iblrig.path_helper import load_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings, RigSettings
 from iblrig.tools import alyx_reachable, get_anydesk_id, internet_available
 from iblrig.version_management import check_for_updates, get_changelog, is_dirty
-from iblutil.util import setup_logger
+from iblutil.util import Bunch, setup_logger
 from one.api import ONE
 from one.webclient import AlyxClient
 from pybpodapi import exceptions
+from pybpodapi.protocol import StateMachine
 
 try:
     import iblrig_custom_tasks
@@ -101,10 +102,20 @@ class RigWizardModel:
     test_subject_name = 'test_subject'
     subject_details_worker = None
     subject_details: tuple | None = None
+    free_reward_time: float | None = None
 
     def __post_init__(self):
         self.iblrig_settings: RigSettings = load_pydantic_yaml(RigSettings)
         self.hardware_settings: HardwareSettings = load_pydantic_yaml(HardwareSettings)
+
+        # calculate free reward time
+        class FakeSession(ValveMixin):
+            hardware_settings = self.hardware_settings.model_dump()
+            task_params = Bunch({'AUTOMATIC_CALIBRATION': True, 'REWARD_AMOUNT_UL': 10})
+
+        fake_session = FakeSession()
+        fake_session.init_mixin_valve()
+        self.free_reward_time = fake_session.compute_reward_time(self.hardware_settings.device_valve.FREE_REWARD_VOLUME_UL)
 
         if self.iblrig_settings.ALYX_URL is not None:
             self.alyx = AlyxClient(base_url=str(self.iblrig_settings.ALYX_URL), silent=True)
@@ -196,6 +207,26 @@ class RigWizardModel:
         self.user = None
         self.__post_init__()
 
+    def free_reward(self):
+        try:
+            bpod = Bpod(
+                self.hardware_settings['device_bpod']['COM_BPOD'],
+                skip_initialization=True,
+                disable_behavior_ports=[1, 2, 3],
+            )
+            sma = StateMachine(bpod)
+            sma.add_state(
+                state_name='flush',
+                state_timer=self.free_reward_time,
+                state_change_conditions={'Tup': 'exit'},
+                output_actions=[('Valve1', 255)],
+            )
+            bpod.send_state_machine(sma)
+            bpod.run_state_machine(sma)
+        except (OSError, exceptions.bpod_error.BpodErrorException):
+            log.error('Cannot find bpod - is it connected?')
+            return
+
     def get_subject_details(self, subject):
         self.subject_details_worker = SubjectDetailsWorker(subject)
         self.subject_details_worker.finished.connect(self.process_subject_details)
@@ -224,16 +255,11 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.uiActionTrainingLevelV7.triggered.connect(self._on_menu_training_level_v7)
         self.uiComboTask.currentTextChanged.connect(self.controls_for_extra_parameters)
         self.uiComboSubject.currentTextChanged.connect(self.model.get_subject_details)
-        self.uiPushFlush.clicked.connect(self.flush)
         self.uiPushStart.clicked.connect(self.start_stop)
         self.uiPushPause.clicked.connect(self.pause)
         self.uiListProjects.clicked.connect(self._enable_ui_elements)
         self.uiListProcedures.clicked.connect(self._enable_ui_elements)
         self.lineEditSubject.textChanged.connect(self._filter_subjects)
-
-        self.uiPushStatusLED.setChecked(self.settings.value('bpod_status_led', True, bool))
-        self.uiPushStatusLED.toggled.connect(self.toggle_status_led)
-        self.toggle_status_led(self.uiPushStatusLED.isChecked())
 
         self.running_task_process = None
         self.task_arguments = dict()
@@ -254,6 +280,16 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         else:
             self.uiLineEditUser.setPlaceholderText('')
             self.uiPushButtonLogIn.setEnabled(False)
+
+        # tools
+        self.uiPushFlush.clicked.connect(self.flush)
+        self.uiPushReward.clicked.connect(self.model.free_reward)
+        self.uiPushReward.setStatusTip(
+            f'Click to grant a free reward ({self.model.hardware_settings.device_valve.FREE_REWARD_VOLUME_UL:.1f} μL)'
+        )
+        self.uiPushStatusLED.setChecked(self.settings.value('bpod_status_led', True, bool))
+        self.uiPushStatusLED.toggled.connect(self.toggle_status_led)
+        self.toggle_status_led(self.uiPushStatusLED.isChecked())
 
         # tab: log
         font = QtGui.QFont('Monospace')
@@ -1010,6 +1046,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         )
         self.uiPushPause.setEnabled(is_running)
         self.uiPushFlush.setEnabled(not is_running)
+        self.uiPushReward.setEnabled(not is_running)
         self.uiPushStatusLED.setEnabled(not is_running)
         self.uiCheckAppend.setEnabled(not is_running)
         self.uiGroupParameters.setEnabled(not is_running)

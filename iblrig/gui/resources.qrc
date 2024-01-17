@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="images">
+    <file alias="present">resources/icon_present.svg</file>
     <file alias="log">resources/icon_log.svg</file>
     <file alias="hide">resources/icon_hide.svg</file>
     <file alias="show">resources/icon_show.svg</file>

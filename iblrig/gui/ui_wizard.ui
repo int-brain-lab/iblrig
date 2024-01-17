@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>450</width>
-    <height>600</height>
+    <height>633</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -548,7 +548,7 @@
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
-          <layout class="QHBoxLayout" name="horizontalLayout_8" stretch="1,2">
+          <layout class="QHBoxLayout" name="horizontalLayout_8" stretch="3,5">
            <property name="leftMargin">
             <number>0</number>
            </property>
@@ -582,7 +582,7 @@
                  <string>Click to flush the Bpod's valve</string>
                 </property>
                 <property name="text">
-                 <string> &amp;Flush Valve</string>
+                 <string> &amp;Flush Valve  </string>
                 </property>
                 <property name="icon">
                  <iconset resource="resources.qrc">
@@ -594,12 +594,26 @@
                </widget>
               </item>
               <item>
+               <widget class="QPushButton" name="uiPushReward">
+                <property name="statusTip">
+                 <string>Click to grant a free reward</string>
+                </property>
+                <property name="text">
+                 <string> Fr&amp;ee Reward</string>
+                </property>
+                <property name="icon">
+                 <iconset resource="resources.qrc">
+                  <normaloff>:/images/present</normaloff>:/images/present</iconset>
+                </property>
+               </widget>
+              </item>
+              <item>
                <widget class="QPushButton" name="uiPushStatusLED">
                 <property name="statusTip">
                  <string>Click to toggle the Bpod's status LED</string>
                 </property>
                 <property name="text">
-                 <string> Status &amp;LED</string>
+                 <string> Status &amp;LED   </string>
                 </property>
                 <property name="icon">
                  <iconset resource="resources.qrc">

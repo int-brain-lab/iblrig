@@ -95,6 +95,7 @@ class HardwareSettingsValve(BunchModel):
     WATER_CALIBRATION_RANGE: list[float] = Field(min_items=2, max_items=2)  # type: ignore
     WATER_CALIBRATION_OPEN_TIMES: list[float] = Field(min_items=2)  # type: ignore
     WATER_CALIBRATION_WEIGHT_PERDROP: list[float] = Field(min_items=2)  # type: ignore
+    FREE_REWARD_VOLUME_UL: float = 1.5
 
 
 class HardwareSettingsCamera(BunchModel):
