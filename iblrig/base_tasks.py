@@ -39,9 +39,6 @@ from iblutil.util import Bunch, setup_logger
 from one.api import ONE
 from pybpodapi.protocol import StateMachine
 
-# from iblrig.video import pyspin_available
-# from iblrig.video_pyspin import configure_trigger
-
 OSC_CLIENT_IP = '127.0.0.1'
 
 log = logging.getLogger(__name__)
@@ -569,11 +566,15 @@ class BonsaiRecordingMixin:
         """
         if self._camera_mixin_bonsai_get_workflow_file(self.hardware_settings.device_cameras) is None:
             return
-        # TODO: enable trigger (so Bonsai can disable it again, sigh)
-        # if pyspin_available:
-        #     configure_trigger(True)
+        # TODO
+        # if PYSPIN_AVAILABLE:
+        #     from iblrig.video_pyspin import enable_camera_trigger
+        #     enable_camera_trigger(True)
         workflow_file = self.paths.IBLRIG_FOLDER.joinpath('devices', 'camera_setup', 'setup_video.bonsai')
-        call_bonsai(workflow_file, wait=True)
+        parameters = {
+            'ToggleTrigger': False,
+        }
+        call_bonsai(workflow_file, parameters, wait=True)
         log.info('Bonsai cameras setup module loaded: OK')
 
     def trigger_bonsai_cameras(self):

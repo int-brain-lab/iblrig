@@ -5,13 +5,11 @@ import os
 import subprocess
 import sys
 import zipfile
-from importlib.util import find_spec
 from pathlib import Path
-from shutil import which
 from urllib.error import URLError
 
 from iblrig.base_tasks import EmptySession
-from iblrig.constants import BASE_PATH
+from iblrig.constants import BASE_PATH, HAS_PYSPIN, HAS_SPINNAKER
 from iblrig.tools import ask_user, call_bonsai
 from iblrig.transfer_experiments import VideoCopier
 from iblutil.io import hashfile  # type: ignore
@@ -22,45 +20,6 @@ with contextlib.suppress(ImportError):
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
-
-
-def pyspin_available() -> bool:
-    """
-    Check if, both, PySpin and its dependency Spinnaker SDK are installed.
-
-    Returns
-    -------
-    bool
-        True if PySpin and Spinnaker SDK are installed.
-    """
-    return spinnaker_sdk_installed() and pyspin_installed()
-
-
-def pyspin_installed() -> bool:
-    """
-    Check if the PySpin module is installed.
-
-    Returns
-    -------
-    bool
-        True if PySpin is installed, False otherwise.
-    """
-    return find_spec('PySpin') is not None
-
-
-def spinnaker_sdk_installed() -> bool:
-    """
-    Check if the Spinnaker SDK is installed on a Windows system.
-
-    Returns
-    -------
-    bool
-        True if the Spinnaker SDK is installed, False otherwise.
-    """
-    if os.name != 'nt':
-        return False
-    spin_exe = which('SpinUpdateConsole_v140')
-    return spin_exe is not None and Path(spin_exe).parents[2].joinpath('src').exists()
 
 
 def _download_from_alyx_or_flir(asset: int, filename: str, target_md5: str) -> Path:
@@ -125,9 +84,7 @@ def install_spinnaker():
     input('Press [ENTER] to continue.\n')
 
     # Check for existing installation
-    if spinnaker_sdk_installed() and not ask_user(
-        'Spinnaker SDK for Windows is already installed. Do you want to continue anyways?'
-    ):
+    if HAS_SPINNAKER and not ask_user('Spinnaker SDK for Windows is already installed. Do you want to continue anyways?'):
         return
 
     # Download & install Spinnaker SDK
@@ -138,7 +95,7 @@ def install_spinnaker():
         'default values. Press [ENTER] to continue.'
     )
     return_code = subprocess.check_call(file_winsdk)
-    if return_code == 0 and spinnaker_sdk_installed():
+    if return_code == 0:
         print('Installation of Spinnaker SDK was successful.')
     os.unlink(file_winsdk)
 
@@ -164,12 +121,8 @@ def install_pyspin():
     print('This script will try to automatically download & install PySpin to the IBLRIG Python environment')
     input('Press [ENTER] to continue.\n')
 
-    # Check for existing installation
-    if pyspin_installed() and not ask_user('PySpin is already installed. Do you want to continue anyways?'):
-        return
-
     # Download & install PySpin
-    if pyspin_installed():
+    if HAS_PYSPIN:
         print('PySpin is already installed.')
     else:
         file_zip = _download_from_alyx_or_flir(
@@ -186,11 +139,11 @@ def install_pyspin():
 
 
 def prepare_video_session_cmd():
-    if not spinnaker_sdk_installed():
+    if not HAS_SPINNAKER:
         if ask_user("Spinnaker SDK doesn't seem to be installed. Do you want to install it now?"):
             install_spinnaker()
         return
-    if not pyspin_installed():
+    if not HAS_PYSPIN:
         if ask_user("PySpin doesn't seem to be installed. Do you want to install it now?"):
             install_pyspin()
         return
@@ -204,8 +157,8 @@ def prepare_video_session_cmd():
 
 
 def prepare_video_session(subject_name: str = '', training_session: bool = False):
-    assert spinnaker_sdk_installed()
-    assert pyspin_installed()
+    assert HAS_SPINNAKER
+    assert HAS_PYSPIN
 
     fake_session = EmptySession(subject='mickey', interactive=False)
     session_folder = fake_session.paths.SESSION_FOLDER
@@ -218,7 +171,7 @@ def prepare_video_session(subject_name: str = '', training_session: bool = False
     params = {}
     for key, value in cam_index.items():
         params[f'{key}CameraIndex'] = value
-    video_pyspin.configure_trigger(enable=False)
+    video_pyspin.enable_camera_trigger(enable=False)
     call_bonsai(bonsai_workflow, params)
 
     # record video
@@ -229,10 +182,10 @@ def prepare_video_session(subject_name: str = '', training_session: bool = False
     for key, _ in cam_index.items():
         params[f'FileName{key}'] = raw_data_folder.joinpath(f'_iblrig_{key.lower()}Camera.raw.avi')
         params[f'FileName{key}Data'] = raw_data_folder.joinpath(f'_iblrig_{key.lower()}Camera.frameData.bin')
-    video_pyspin.configure_trigger(enable=True)
+    video_pyspin.enable_camera_trigger(enable=True)
     bonsai_process = call_bonsai(bonsai_workflow, params, wait=False)
     input('PRESS ENTER TO START CAMERAS')
-    video_pyspin.configure_trigger(enable=False)
+    video_pyspin.enable_camera_trigger(enable=False)
     vc = VideoCopier(session_path=session_folder)
     vc.create_video_stub(nvideos=1 if training_session else 3)
     session_folder.joinpath('transfer_me.flag').touch()
