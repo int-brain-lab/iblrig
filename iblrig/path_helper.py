@@ -165,11 +165,6 @@ def load_pydantic_yaml(model: type[T], filename: Path | str | None = None, do_ra
         If the filename is None and the model class is not recognized as
         HardwareSettings or RigSettings.
     """
-    if filename not in (HARDWARE_SETTINGS_YAML, RIG_SETTINGS_YAML):
-        # TODO: We currently skip validation of pydantic models if an extra
-        #       filename is provided that does NOT correspond to the standard
-        #       settings files of IBLRIG. This should be re-evaluated.
-        do_raise = False
     if filename is None:
         if model == HardwareSettings:
             filename = HARDWARE_SETTINGS_YAML
@@ -177,6 +172,11 @@ def load_pydantic_yaml(model: type[T], filename: Path | str | None = None, do_ra
             filename = RIG_SETTINGS_YAML
         else:
             raise TypeError(f'Cannot deduce filename for model `{model.__name__}`.')
+    if filename not in (HARDWARE_SETTINGS_YAML, RIG_SETTINGS_YAML):
+        # TODO: We currently skip validation of pydantic models if an extra
+        #       filename is provided that does NOT correspond to the standard
+        #       settings files of IBLRIG. This should be re-evaluated.
+        do_raise = False
     rs = _load_settings_yaml(filename=filename, do_raise=do_raise)
     try:
         return model.model_validate(rs)

@@ -105,12 +105,12 @@ class RigWizardModel:
     free_reward_time: float | None = None
 
     def __post_init__(self):
-        self.iblrig_settings: RigSettings = load_pydantic_yaml(RigSettings)
-        self.hardware_settings: HardwareSettings = load_pydantic_yaml(HardwareSettings)
+        self.iblrig_settings: RigSettings = load_pydantic_yaml(RigSettings, do_raise=True)
+        self.hardware_settings: HardwareSettings = load_pydantic_yaml(HardwareSettings, do_raise=True)
 
         # calculate free reward time
         class FakeSession(ValveMixin):
-            hardware_settings = self.hardware_settings.model_dump()
+            hardware_settings = self.hardware_settings
             task_params = Bunch({'AUTOMATIC_CALIBRATION': True, 'REWARD_AMOUNT_UL': 10})
 
         fake_session = FakeSession()
@@ -934,8 +934,8 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         for entry in entries:
             color = ANSI_COLORS.get(entry.groupdict().get('color', b'37'), 'White')
             self._set_plaintext_char_color(self.uiPlainTextEditLog, color)
-            time = entry.groupdict().get('time', b'').decode('ascii', 'ignore')
-            msg = entry.groupdict().get('message', b'').decode('ascii', 'ignore')
+            time = entry.groupdict().get('time', b'').decode('utf-8', 'ignore')
+            msg = entry.groupdict().get('message', b'').decode('utf-8', 'ignore')
             self.uiPlainTextEditLog.appendPlainText(f'{time} {msg}')
 
     def _on_read_standard_error(self):
