@@ -35,11 +35,11 @@ class TestInstantiateClasses(unittest.TestCase):
 
 class TestAlyxValidation(unittest.TestCase):
     def test_lab_location(self):
-        one = ONE(**TEST_DB, mode='remote')
+        alyx_client = ONE(**TEST_DB, mode='remote').alyx
         import copy
 
         kwargs = copy.deepcopy(VALIDATORS_INIT_KWARGS)
         kwargs['hardware_settings']['RIG_NAME'] = '_iblrig_carandinilab_ephys_0'
         v = iblrig.hardware_validation.ValidateAlyxLabLocation(**kwargs)
-        result = v.run(one)
+        result = v.run(alyx_client)
         assert result.status == 'PASS'

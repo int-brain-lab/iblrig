@@ -67,7 +67,7 @@ URL_REPO = 'https://github.com/int-brain-lab/iblrig/tree/iblrigv8'
 URL_ISSUES = 'https://github.com/int-brain-lab/iblrig/issues'
 URL_DISCUSSION = 'https://github.com/int-brain-lab/iblrig/discussions'
 
-ANSI_COLORS = {b'31': 'Red', b'32': 'Green', b'33': 'Yellow', b'35': 'Magenta', b'36': 'Cyan', b'37': 'White'}
+ANSI_COLORS: dict[bytes, str] = {b'31': 'Red', b'32': 'Green', b'33': 'Yellow', b'35': 'Magenta', b'36': 'Cyan', b'37': 'White'}
 REGEX_STDOUT = re.compile(
     rb'^\x1b\[(?:\d;)?(?:\d+;)?'
     rb'(?P<color>\d+)m[\d-]*\s+'
@@ -867,12 +867,32 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
 
     @staticmethod
     def _set_plaintext_char_color(widget: QtWidgets.QPlainTextEdit, color: str = 'White') -> None:
+        """
+        Set the foreground color of characters in a QPlainTextEdit widget.
+
+        Parameters
+        ----------
+        widget : QtWidgets.QPlainTextEdit
+            The QPlainTextEdit widget whose character color is to be set.
+
+        color : str, optional
+            The name of the color to set. Default is 'White'. Should be a valid color name
+            recognized by QtGui.QColorConstants. If the provided color name is not found,
+            it defaults to QtGui.QColorConstants.White.
+        """
         color = getattr(QtGui.QColorConstants, color, QtGui.QColorConstants.White)
         char_format = widget.currentCharFormat()
         char_format.setForeground(QtGui.QBrush(color))
         widget.setCurrentCharFormat(char_format)
 
     def _on_read_standard_output(self):
+        """
+        Read and process standard output entries.
+
+        Reads standard output from a running task process, processes each entry,
+        extracts color information, sets character color in the QPlainTextEdit widget,
+        and appends time and message information to the widget.
+        """
         data = self.running_task_process.readAllStandardOutput().data()
         entries = re.finditer(REGEX_STDOUT, data)
         for entry in entries:
@@ -883,6 +903,13 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
             self.uiPlainTextEditLog.appendPlainText(f'{time} {msg}')
 
     def _on_read_standard_error(self):
+        """
+        Read and process standard error entries.
+
+        Reads standard error from a running task process, sets character color
+        in the QPlainTextEdit widget to indicate an error (Red), and appends
+        the error message to the widget.
+        """
         text = self.running_task_process.readAllStandardError().data().decode()
         self._set_plaintext_char_color(self.uiPlainTextEditLog, 'Red')
         self.uiPlainTextEditLog.appendPlainText(text.strip())
