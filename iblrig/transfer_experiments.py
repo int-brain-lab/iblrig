@@ -170,7 +170,7 @@ def copy_folders(local_folder: Path, remote_folder: Path, overwrite: bool = Fals
 class SessionCopier:
     """Initialize and copy session data to a remote server."""
 
-    assert_connect_on_init = False
+    assert_connect_on_init = True
     """bool: Raise error if unable to write stub file to remote server."""
 
     _experiment_description = None

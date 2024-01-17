@@ -52,7 +52,6 @@ DEV = [
 [project.scripts]
 viewsession           = "iblrig.commands:viewsession"
 transfer_data         = "iblrig.commands:transfer_data_cli"
-transfer_other_data   = "iblrig.commands:transfer_other_data_cli"
 transfer_video_data   = "iblrig.commands:transfer_video_data_cli"
 transfer_ephys_data   = "iblrig.commands:transfer_ephys_data_cli"
 flush                 = "iblrig.commands:flush"

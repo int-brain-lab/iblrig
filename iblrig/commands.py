@@ -3,6 +3,7 @@ import datetime
 import shutil
 from collections.abc import Iterable
 from pathlib import Path
+import warnings
 
 import yaml
 
@@ -14,6 +15,9 @@ from iblrig.transfer_experiments import BehaviorCopier, EphysCopier, VideoCopier
 from iblutil.util import setup_logger
 
 logger = setup_logger('iblrig', level='INFO')
+
+
+tag2copier = {'behavior': BehaviorCopier, 'video': VideoCopier, 'ephys': EphysCopier}
 
 
 def _transfer_parser(description: str) -> argparse.ArgumentParser:
@@ -41,7 +45,7 @@ def _transfer_parser(description: str) -> argparse.ArgumentParser:
     parser.add_argument('-l', '--local', action='store', type=dir_path, dest='local_path', help='define local data path')
     parser.add_argument('-r', '--remote', action='store', type=dir_path, dest='remote_path', help='define remote data path')
     parser.add_argument('-d', '--dry', action='store_true', dest='dry', help='do not remove local data after copying')
-    # TODO pass this arg to other functions!!
+    # TODO change default to 2?
     parser.add_argument('--cleanup-weeks', help='cleanup data older than this many weeks', default=False)
     return parser
 
@@ -86,28 +90,22 @@ def transfer_data_cli():
     transfer_data(**vars(args), interactive=True)
 
 
-def transfer_other_data_cli():
-    """
-    Command-line interface for transferring behavioral data to the local server.
-    """
-    args = _transfer_parser('Copy data to the local server.').parse_args()
-    transfer_other_data(**vars(args), interactive=True)
-
-
 def transfer_video_data_cli():
     """
     Command-line interface for transferring video data to the local server.
     """
+    warnings.warn('transfer_video_data will be removed in the future. Use "transfer_data video" instead.', FutureWarning)
     args = _transfer_parser('Copy video data to the local server.').parse_args()
-    transfer_video_data(**vars(args), interactive=True)
+    transfer_data(**{**vars(args), 'tag': 'video'}, interactive=True)
 
 
 def transfer_ephys_data_cli():
     """
     Command-line interface for transferring ephys data to the local server.
     """
+    warnings.warn('transfer_ephys_data will be removed in the future. Use "transfer_data ephys" instead.', FutureWarning)
     args = _transfer_parser('Copy ephys data to the local server.').parse_args()
-    transfer_ephys_data(**vars(args), interactive=True)
+    transfer_data(**{**vars(args), 'tag': 'ephys'}, interactive=True)
 
 
 def _get_subjects_folders(local_path: Path, remote_path: Path, interactive: bool = False) -> tuple[Path, Path]:
@@ -131,7 +129,7 @@ def _get_copiers(
     local_folder: Path,
     remote_folder: Path,
     lab: str = None,
-    glob_pattern: str = 'transfer_me.flag',
+    glob_pattern: str = '*/*-*-*/*/transfer_me.flag',
     interactive: bool = False,
     **kwargs
 ) -> list[SessionCopier]:
@@ -179,7 +177,7 @@ def _get_copiers(
 
     # get copiers
     copiers = [copier(f.parent, remote_subjects_folder, **kwargs)
-               for f in local_subjects_folder.rglob(glob_pattern)]
+               for f in local_subjects_folder.glob(glob_pattern)]
     if len(copiers) == 0:
         print('Could not find any sessions to copy to the local server.')
     elif interactive:
@@ -204,40 +202,6 @@ def _print_status(copiers: Iterable[SessionCopier], heading: str = '') -> None:
             case _:
                 state = 'undefined'
         print(f' * {copier.session_path}: {state}')
-
-
-def transfer_ephys_data(local_path: Path = None, remote_path: Path = None, dry: bool = False, interactive: bool = False, **_):
-    local_subject_folder, remote_subject_folder = _get_subjects_folders(local_path, remote_path, interactive)
-    copiers = _get_copiers(EphysCopier, local_path, remote_path, interactive=interactive)
-
-    for copier in copiers:
-        logger.critical(f'{copier.state}, {copier.session_path}')
-        if not dry:
-            copier.run()
-
-    if interactive:
-        _print_status(copiers, 'States after transfer operation:')
-
-    # once we copied the data, remove older session for which the data was successfully uploaded
-    remove_local_sessions(weeks=2, local_path=local_subject_folder, remote_path=remote_subject_folder, dry=dry, tag='ephys')
-
-
-def transfer_video_data(local_path: Path = None, remote_path: Path = None, dry: bool = False, interactive: bool = False, **_):
-    local_subject_folder, remote_subject_folder = _get_subjects_folders(local_path, remote_path, interactive)
-    copiers = _get_copiers(VideoCopier, local_path, remote_path, interactive=interactive)
-
-    for copier in copiers:
-        logger.critical(f'{copier.state}, {copier.session_path}')
-        if not dry:
-            copier.run()
-
-    if interactive:
-        _print_status(copiers, 'Session states after transfer operation:')
-
-    # once we copied the data, remove older session for which the data was successfully uploaded
-    remove_local_sessions(
-        weeks=2, local_path=local_subject_folder, remote_path=remote_subject_folder, dry=dry, tag='video'
-    )
 
 
 def transfer_data(local_path: Path = None, remote_path: Path = None, dry: bool = False, interactive: bool = False, **_) -> None:
@@ -280,22 +244,26 @@ def transfer_data(local_path: Path = None, remote_path: Path = None, dry: bool =
 
 
 def transfer_other_data(tag=None, local_path: Path = None, remote_path: Path = None, dry: bool = False, interactive: bool = False,
-                        cleanup_weeks=2) -> list[SessionCopier]:
+                        cleanup_weeks=2, **kwargs) -> list[SessionCopier]:
     """
     Copies data from the rig to the local server.
 
     Parameters
     ----------
     tag : str
-        The acquisition PC tag to transfer.
+        The acquisition PC tag to transfer, e.g. 'behavior', 'video', 'ephys', 'timeline', etc.
     local_path : Path
         Path to local subjects folder, otherwise fetches path from iblrig_settings.yaml file.
     remote_path : Path
         Path to remote subjects folder, otherwise fetches path from iblrig_settings.yaml file.
     dry : bool
         Do not remove local data after copying if `dry` is True
+    interactive : bool
+        If true, users are prompted to review the sessions to copy before proceeding.
     cleanup_weeks : int, bool
         Remove local data older than this number of weeks. If False, do not remove.
+    kwargs
+        Optional arguments to pass to SessionCopier constructor.
 
     Returns
     -------
@@ -305,13 +273,14 @@ def transfer_other_data(tag=None, local_path: Path = None, remote_path: Path = N
     if not tag:
         raise ValueError('Tag required.')
     local_subject_folder, remote_subject_folder = _get_subjects_folders(local_path, remote_path, interactive)
-    SessionCopier.assert_connect_on_init = True  # FIXME This affects all instances of the base class
-
-    copiers = _get_copiers(SessionCopier, local_path, remote_path, interactive=interactive, tag=tag)
+    Copier = tag2copier.get(tag.lower(), SessionCopier)
+    logger.info('Searching for %s sessions using %s class', tag.lower(), Copier.__name__)
+    copiers = _get_copiers(Copier, local_path, remote_path, interactive=interactive, tag=tag, **kwargs)
 
     for copier in copiers:
         logger.critical(f'{copier.state}, {copier.session_path}')
-        copier.run()
+        if not dry:
+            copier.run()
 
     if interactive:
         _print_status(copiers, 'States after transfer operation:')
@@ -333,13 +302,7 @@ def remove_local_sessions(weeks=2, local_path=None, remote_path=None, dry=False,
     """
     local_subject_folder, remote_subject_folder = _get_subjects_folders(local_path, remote_path)
     size = 0
-    match tag:
-        case 'behavior':
-            Copier = BehaviorCopier
-        case 'video':
-            Copier = VideoCopier
-        case _:
-            Copier = SessionCopier
+    Copier = tag2copier.get(tag.lower(), SessionCopier)
     for flag in sorted(list(local_subject_folder.rglob(f'_ibl_experiment.description_{tag}.yaml')), reverse=True):
         session_path = flag.parent
         days_elapsed = (datetime.datetime.now() - datetime.datetime.strptime(session_path.parts[-2], '%Y-%m-%d')).days
