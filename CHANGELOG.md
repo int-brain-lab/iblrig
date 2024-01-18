@@ -1,6 +1,9 @@
 Changelog
 ---------
 
+8.13.1
+------
+* hotfix: passing non-existent parameter to Bonsai workflow
 
 8.13.0
 ------

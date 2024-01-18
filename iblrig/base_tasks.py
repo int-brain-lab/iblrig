@@ -571,10 +571,7 @@ class BonsaiRecordingMixin:
         #     from iblrig.video_pyspin import enable_camera_trigger
         #     enable_camera_trigger(True)
         workflow_file = self.paths.IBLRIG_FOLDER.joinpath('devices', 'camera_setup', 'setup_video.bonsai')
-        parameters = {
-            'ToggleTrigger': False,
-        }
-        call_bonsai(workflow_file, parameters, wait=True)
+        call_bonsai(workflow_file, wait=True)
         log.info('Bonsai cameras setup module loaded: OK')
 
     def trigger_bonsai_cameras(self):
