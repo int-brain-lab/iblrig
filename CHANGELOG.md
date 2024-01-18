@@ -1,6 +1,10 @@
 Changelog
 ---------
 
+8.13.2
+------
+* hotfix: 'WindowsPath' object has no attribute 'split'
+
 8.13.1
 ------
 * hotfix: passing non-existent parameter to Bonsai workflow
