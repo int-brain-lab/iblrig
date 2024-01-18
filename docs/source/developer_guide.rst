@@ -71,7 +71,18 @@ Building the documentation
    # build and serve the docs locally
    sphinx-autobuild ./docs/source ./docs/build/html/
 
+Contribute to the documentation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+To write the documentation:
 
+* Write the documentation in the ``iblrig/docs/source`` folder
+* If you are writing in a new file, add it to the ``index.rst`` so it appears in the table of content
+* Push all your changes to the ``iblrigv8dev`` branch ; if this branch does not exist, create it first
+
+To release the documentation onto the `website <https://int-brain-lab.github.io/iblrig>`__:
+
+* Wait for the next release, or
+* Manually trigger the GitHub action by clicking "Run Workflow" (select ``master``) here: https://github.com/int-brain-lab/iblrig/actions/workflows/docs.yaml
 
 Guide to Creating Your Own Task
 ===============================

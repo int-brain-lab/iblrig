@@ -7,7 +7,6 @@ from iblrig_tasks._iblrig_tasks_habituationChoiceWorld.task import Session as Ha
 
 
 class TestInstantiateHabituationChoiceWorld(BaseTestCases.CommonTestInstantiateTask):
-
     def setUp(self) -> None:
         self.task = HabituationChoiceWorldSession(**TASK_KWARGS)
         np.random.seed(12345)

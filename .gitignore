@@ -40,3 +40,6 @@ iblrig/_version.py
 
 .coverage*
 coverage.xml
+
+devices/camera_setup/*.layout
+devices/camera_recordings/*.layout

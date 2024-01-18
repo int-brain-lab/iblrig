@@ -1,18 +1,16 @@
 import unittest
 
-from one.api import ONE
 from ibllib.tests import TEST_DB
-
-from iblrig.gui.wizard import RigWizardModel, PROJECTS
+from iblrig.gui.wizard import PROJECTS, RigWizardModel
+from one.webclient import AlyxClient
 
 
 class TestRigWizardModel(unittest.TestCase):
-
     def setUp(self):
         self.wizard = RigWizardModel()
 
     def test_connect(self):
-        self.wizard.connect(one=ONE(**TEST_DB, mode='remote'))
+        self.wizard.login(username=TEST_DB['username'], alyx_client=AlyxClient(**TEST_DB))
         assert len(self.wizard.all_projects) > len(PROJECTS)
 
     def test_get_task_extra_kwargs(self):

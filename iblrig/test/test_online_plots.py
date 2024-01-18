@@ -1,8 +1,9 @@
 import unittest
-import numpy as np
-from pathlib import Path
 import zipfile
+from pathlib import Path
+
 import matplotlib
+import numpy as np
 
 import iblrig.online_plots as op
 from iblrig.raw_data_loaders import load_task_jsonable

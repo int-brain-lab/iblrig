@@ -3,9 +3,8 @@ from iblrig_tasks._iblrig_tasks_spontaneous.task import Session as SpontaneousSe
 
 
 class Spontaneous(IntegrationFullRuns):
-
     def setUp(self) -> None:
-        super(Spontaneous, self).setUp()
+        super().setUp()
         self.task = SpontaneousSession(one=self.one, duration_secs=2, **self.kwargs)
 
     def test_task_spontaneous(self):

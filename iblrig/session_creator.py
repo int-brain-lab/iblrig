@@ -5,7 +5,7 @@ import math
 
 import numpy as np
 
-import iblrig.misc as misc
+from iblrig import misc
 
 
 def draw_position(position_set, stim_probability_left) -> int:
@@ -36,7 +36,7 @@ def make_ephysCW_pc(prob_type='biased'):
     prob_left = 0.8 if draw_position([-35, 35], 0.5) < 0 else 0.2
     while len(pc) < 2001:
         len_block.append(draw_block_len(60, min_=20, max_=100))
-        for x in range(len_block[-1]):
+        for _x in range(len_block[-1]):
             p = draw_position([-35, 35], prob_left)
             c = misc.draw_contrast(contrasts, probability_type=prob_type)
             pc = np.append(pc, np.array([[p, c, prob_left]]), axis=0)
@@ -50,7 +50,7 @@ def make_ephysCW_pcqs(pc):
     qperiod_base = 0.2  # + x, where x~exp(0.35), t ∈ 0.2 <= R <= 0.5
     sphase = []
     qperiod = []
-    for i in pc:
+    for _i in pc:
         sphase.append(np.random.uniform(0, 2 * math.pi))
         qperiod.append(qperiod_base + misc.truncated_exponential(scale=0.35, min_value=0.2, max_value=0.5))
     qs = np.array([qperiod, sphase]).T
@@ -99,15 +99,15 @@ def make_passiveCW_session_delays_ids(seed_num=None):  # XXX
     if seed_num is not None:
         np.random.seed(seed_num)
 
-    g_len = np.ones((180)) * 0.3
-    n_len = np.ones((40)) * 0.5
-    t_len = np.ones((40)) * 0.1
-    v_len = np.ones((40)) * 0.2
+    g_len = np.ones(180) * 0.3
+    n_len = np.ones(40) * 0.5
+    t_len = np.ones(40) * 0.1
+    v_len = np.ones(40) * 0.2
 
-    g_labels = ["G"] * 180
-    n_labels = ["N"] * 40
-    t_labels = ["T"] * 40
-    v_labels = ["V"] * 40
+    g_labels = ['G'] * 180
+    n_labels = ['N'] * 40
+    t_labels = ['T'] * 40
+    v_labels = ['V'] * 40
 
     g_delay_dist = np.random.uniform(0.500, 1.900, len(g_labels))
     n_delay_dist = np.random.uniform(1, 5, len(n_labels))
@@ -131,15 +131,10 @@ def make_passiveCW_session_delays_ids(seed_num=None):  # XXX
     sess_labels_out = sess_labels_out[srtd_idx]
     # get the delays between the stims (add the first delay)
     sess_delays_out = np.insert(np.diff(sess_delays_cumsum), 0, sess_delays_cumsum[0])
-    tot_dur = (
-        np.sum(
-            np.sum(g_len) + np.sum(n_len) + np.sum(t_len) + np.sum(v_len) + np.sum(sess_delays_out)
-        )
-        / 60
-    )
+    tot_dur = np.sum(np.sum(g_len) + np.sum(n_len) + np.sum(t_len) + np.sum(v_len) + np.sum(sess_delays_out)) / 60
 
     # print(f'Stim IDs: {sess_labels_out}')
     # print(f'Stim delays: {sess_delays_out}')
-    print(f"Total duration of stims: {tot_dur} m")
+    print(f'Total duration of stims: {tot_dur} m')
 
     return sess_delays_out, sess_labels_out

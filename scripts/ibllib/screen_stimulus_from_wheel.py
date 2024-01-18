@@ -1,7 +1,8 @@
 import math
-from one.api import ONE
+
 import numpy as np
 
+from one.api import ONE
 
 WHEEL_RADIUS = 31
 USER_DEFINED_GAIN = 4.0
@@ -42,27 +43,24 @@ def get_stim_from_wheel(eid, tr):
 
     one = ONE()
     dataset_types = [
-        "trials.goCue_times",
-        "trials.feedback_times",
-        "trials.feedbackType",
-        "trials.contrastLeft",
-        "trials.contrastRight",
-        "trials.choice",
+        'trials.goCue_times',
+        'trials.feedback_times',
+        'trials.feedbackType',
+        'trials.contrastLeft',
+        'trials.contrastRight',
+        'trials.choice',
     ]
     one.load(eid, dataset_types=dataset_types, dclass_output=True)
-    alf_path = one.path_from_eid(eid) / "alf"
-    trials = one.load_object(alf_path, "trials")
-    wheel = one.load_object(eid, "wheel")
+    alf_path = one.path_from_eid(eid) / 'alf'
+    trials = one.load_object(alf_path, 'trials')
+    wheel = one.load_object(eid, 'wheel')
 
     # check where stimulus started for initial shift
-    if np.isnan(trials["contrastLeft"][tr]):
-        init_pos = -35
-    else:
-        init_pos = 35
+    init_pos = -35 if np.isnan(trials['contrastLeft'][tr]) else 35
 
     # the screen stim is only coupled to the wheel in this time
-    wheel_start_idx = find_nearest(wheel.timestamps, trials["goCue_times"][tr])
-    wheel_end_idx = find_nearest(wheel.timestamps, trials["feedback_times"][tr])
+    wheel_start_idx = find_nearest(wheel.timestamps, trials['goCue_times'][tr])
+    wheel_end_idx = find_nearest(wheel.timestamps, trials['feedback_times'][tr])
     wheel_pos = wheel.position[wheel_start_idx:wheel_end_idx]
     wheel_times = wheel.timestamps[wheel_start_idx:wheel_end_idx]
 
@@ -79,4 +77,4 @@ def get_stim_from_wheel(eid, tr):
     # f = interp1d(wheel_times, absolute_screen_deg)
     # as you might want to get values as shown on screen, i.e. at 60 Hz
 
-    return wheel_pos, screen_deg, trials["feedbackType"][tr], wheel_times
+    return wheel_pos, screen_deg, trials['feedbackType'][tr], wheel_times

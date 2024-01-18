@@ -1,18 +1,16 @@
 import copy
 import datetime
 import inspect
-import ibllib.pipes.dynamic_pipeline
 import json
 import random
 import string
-from pathlib import Path
 import unittest
+from pathlib import Path
 
-from one.api import ONE
-
-from ibllib.tests import TEST_DB  # noqa
-
+import ibllib.pipes.dynamic_pipeline
 import iblrig
+from ibllib.tests import TEST_DB  # noqa
+from one.api import ONE
 
 PATH_FIXTURES = Path(__file__).parent.joinpath('fixtures')
 
@@ -27,7 +25,7 @@ TASK_KWARGS = {
 }
 
 
-class BaseTestCases():
+class BaseTestCases:
     """
     We wrap the base class in a blank class to avoid it being called or discovered by unittest
     """
@@ -36,7 +34,7 @@ class BaseTestCases():
         task = None
 
         def read_and_assert_json_settings(self, json_file):
-            with open(json_file, "r") as fp:
+            with open(json_file) as fp:
                 settings = json.load(fp)
             # test a subset of keys useful for extraction
             self.assertIn('ALYX_USER', settings)
@@ -76,6 +74,7 @@ class IntegrationFullRuns(BaseTestCases.CommonTestTask):
     This provides a base class that creates a subject on the test database for testing
     the full registration / run / register results cycle
     """
+
     @classmethod
     def setUpClass(cls) -> None:
         """

@@ -2,16 +2,16 @@
 Choice World Task related logic and functions that translate the task description in
 Appendix 2 of the paper into code.
 """
+import logging
 
 import numpy as np
 
 import iblrig.raw_data_loaders
 from iblrig.path_helper import iterate_previous_sessions
-from iblutil.util import setup_logger
 
-logger = setup_logger('iblrig', level='INFO')
+log = logging.getLogger(__name__)
 
-CONTRASTS = 1 / np.array([-1, - 2, -4, -8, -16, np.inf, 16, 8, 4, 2, 1])
+CONTRASTS = 1 / np.array([-1, -2, -4, -8, -16, np.inf, 16, 8, 4, 2, 1])
 DEFAULT_TRAINING_PHASE = 0
 DEFAULT_REWARD_VOLUME = 3
 
@@ -37,8 +37,13 @@ def compute_adaptive_reward_volume(subject_weight_g, reward_volume_ul, delivered
 
 
 def get_subject_training_info(
-        subject_name, task_name='_iblrig_tasks_trainingChoiceWorld', stim_gain=None,
-        default_reward=DEFAULT_REWARD_VOLUME, mode='silent', **kwargs) -> tuple[dict, dict]:
+    subject_name,
+    task_name='_iblrig_tasks_trainingChoiceWorld',
+    stim_gain=None,
+    default_reward=DEFAULT_REWARD_VOLUME,
+    mode='silent',
+    **kwargs,
+) -> tuple[dict, dict]:
     """
     Goes through the history of a subject and gets the latest
     training phase and the adaptive reward volume for this subject
@@ -57,26 +62,25 @@ def get_subject_training_info(
     session_info = iterate_previous_sessions(subject_name, task_name=task_name, n=1, **kwargs)
     if len(session_info) == 0:
         if mode == 'silent':
-            logger.warning("The training status could not be determined returning default values")
+            log.warning(f'The training status for {subject_name} could not be determined - returning default values')
             return dict(training_phase=DEFAULT_TRAINING_PHASE, adaptive_reward=default_reward, adaptive_gain=stim_gain), None
         elif mode == 'raise':
-            raise ValueError("The training status could not be determined as no previous sessions were found")
+            raise ValueError(f'The training status for {subject_name} could not be determined as no previous sessions were found')
     else:
         session_info = session_info[0]
     trials_data, _ = iblrig.raw_data_loaders.load_task_jsonable(session_info.file_task_data)
     # gets the reward volume from the previous session
-    previous_reward_volume = (session_info.task_settings.get('ADAPTIVE_REWARD_AMOUNT_UL') or
-                              session_info.task_settings.get('REWARD_AMOUNT_UL'))
+    previous_reward_volume = session_info.task_settings.get('ADAPTIVE_REWARD_AMOUNT_UL') or session_info.task_settings.get(
+        'REWARD_AMOUNT_UL'
+    )
     adaptive_reward = compute_adaptive_reward_volume(
         subject_weight_g=session_info.task_settings['SUBJECT_WEIGHT'],
         reward_volume_ul=previous_reward_volume,
         delivered_volume_ul=trials_data['reward_amount'].sum(),
-        ntrials=trials_data.shape[0])
+        ntrials=trials_data.shape[0],
+    )
     # gets the trainng_phase by looking at the trials table
-    if 'training_phase' in trials_data:
-        training_phase = trials_data['training_phase'].values[-1]
-    else:
-        training_phase = DEFAULT_TRAINING_PHASE
+    training_phase = trials_data['training_phase'].values[-1] if 'training_phase' in trials_data else DEFAULT_TRAINING_PHASE
     # gets the adaptive gain
     adaptive_gain = session_info.task_settings.get('ADAPTIVE_GAIN_VALUE', session_info.task_settings.get('AG_INIT_VALUE'))
     if np.sum(trials_data['response_side'] != 0) > 200:
@@ -101,11 +105,20 @@ def training_contrasts_probabilities(phase=1):
     return frequencies / np.sum(frequencies)
 
 
-def draw_training_contrast(phase):
+def draw_training_contrast(phase: int) -> float:
     probabilities = training_contrasts_probabilities(phase)
     return np.random.choice(CONTRASTS, p=probabilities)
 
 
-def contrasts_set(phase):
+def contrasts_set(phase: int) -> np.array:
     probabilities = training_contrasts_probabilities(phase)
     return CONTRASTS[probabilities > 0]
+
+
+def training_phase_from_contrast_set(contrast_set: list[float]) -> int | None:
+    contrast_set = sorted(contrast_set)
+    for phase in range(6):
+        expected_set = CONTRASTS[np.logical_and(training_contrasts_probabilities(phase) > 0, CONTRASTS >= 0)]
+        if np.array_equal(contrast_set, expected_set):
+            return phase
+    raise Exception(f'Could not determine training phase from contrast set {contrast_set}')

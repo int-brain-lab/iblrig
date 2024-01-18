@@ -1,11 +1,12 @@
-from pathlib import Path
 import unittest
+from pathlib import Path
+
 import numpy as np
+
 from iblrig.raw_data_loaders import load_task_jsonable
 
 
 class TestLoadTaskData(unittest.TestCase):
-
     def test_load_task_jsonable(self):
         jsonable_file = Path(__file__).parent.joinpath('fixtures', 'task_data_short.jsonable')
         trials_table, bpod_data = load_task_jsonable(jsonable_file)

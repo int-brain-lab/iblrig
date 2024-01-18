@@ -1,19 +1,18 @@
-import time
 import datetime
+import time
 
 import numpy as np
 import pandas as pd
 
 from iblrig.raw_data_loaders import load_task_jsonable
-from iblrig.test.base import TASK_KWARGS, BaseTestCases, IntegrationFullRuns, PATH_FIXTURES
+from iblrig.test.base import PATH_FIXTURES, TASK_KWARGS, BaseTestCases, IntegrationFullRuns
 from iblrig_tasks._iblrig_tasks_biasedChoiceWorld.task import Session as BiasedChoiceWorldSession
 from iblrig_tasks._iblrig_tasks_ephysChoiceWorld.task import Session as EphysChoiceWorldSession
-from iblrig_tasks._iblrig_tasks_neuroModulatorChoiceWorld.task import Session as NeuroModulatorChoiceWorldSession
 from iblrig_tasks._iblrig_tasks_ImagingChoiceWorld.task import Session as ImagingChoiceWorldSession
+from iblrig_tasks._iblrig_tasks_neuroModulatorChoiceWorld.task import Session as NeuroModulatorChoiceWorldSession
 
 
 class TestInstantiationBiased(BaseTestCases.CommonTestInstantiateTask):
-
     def setUp(self) -> None:
         self.task = BiasedChoiceWorldSession(**TASK_KWARGS)
         np.random.seed(12345)
@@ -28,7 +27,7 @@ class TestInstantiationBiased(BaseTestCases.CommonTestInstantiateTask):
             t[i] = time.time()
             task.next_trial()
             # pc = task.psychometric_curve()
-            trial_type = np.random.choice(['correct', 'error', 'no_go'], p=[.9, .05, .05])
+            trial_type = np.random.choice(['correct', 'error', 'no_go'], p=[0.9, 0.05, 0.05])
             task.trial_completed(trial_fixtures[trial_type])
             if trial_type == 'correct':
                 self.assertTrue(task.trials_table['trial_correct'][task.trial_num])
@@ -38,7 +37,7 @@ class TestInstantiationBiased(BaseTestCases.CommonTestInstantiateTask):
                 task.show_trial_log()
             assert not np.isnan(task.reward_time)
         # test the trial table results
-        task.trials_table = task.trials_table[:task.trial_num + 1]
+        task.trials_table = task.trials_table[: task.trial_num + 1]
         np.testing.assert_array_equal(task.trials_table['trial_num'].values, np.arange(task.trial_num + 1))
         # makes sure the water reward counts check out
         assert task.trials_table['reward_amount'].sum() == task.session_info.TOTAL_WATER_DELIVERED
@@ -46,11 +45,11 @@ class TestInstantiationBiased(BaseTestCases.CommonTestInstantiateTask):
         assert np.all(~np.isnan(task.trials_table['reward_valve_time']))
         # Test the blocks task logic
         df_blocks = task.trials_table.groupby('block_num').agg(
-            count=pd.NamedAgg(column="stim_angle", aggfunc="count"),
-            n_stim_probability_left=pd.NamedAgg(column="stim_probability_left", aggfunc="nunique"),
-            stim_probability_left=pd.NamedAgg(column="stim_probability_left", aggfunc="first"),
-            position=pd.NamedAgg(column="position", aggfunc=lambda x: 1 - (np.mean(np.sign(x)) + 1) / 2),
-            first_trial=pd.NamedAgg(column="block_trial_num", aggfunc='first'),
+            count=pd.NamedAgg(column='stim_angle', aggfunc='count'),
+            n_stim_probability_left=pd.NamedAgg(column='stim_probability_left', aggfunc='nunique'),
+            stim_probability_left=pd.NamedAgg(column='stim_probability_left', aggfunc='first'),
+            position=pd.NamedAgg(column='position', aggfunc=lambda x: 1 - (np.mean(np.sign(x)) + 1) / 2),
+            first_trial=pd.NamedAgg(column='block_trial_num', aggfunc='first'),
         )
         # test that the first block is 90 trials
         assert df_blocks['count'].values[0] == 90
@@ -88,14 +87,14 @@ class TestNeuroModulatorBiasedChoiceWorld(TestInstantiationBiased):
         self.task = NeuroModulatorChoiceWorldSession(**TASK_KWARGS)
 
     def test_task(self):
-        super(TestNeuroModulatorBiasedChoiceWorld, self).test_task(reward_set=np.array([0, 1., 1.5, 3.]))
+        super().test_task(reward_set=np.array([0, 1.0, 1.5, 3.0]))
         # we expect 10% of null feedback trials
-        assert np.abs(.05 - np.mean(self.task.trials_table['omit_feedback'])) < .05
+        assert np.abs(0.05 - np.mean(self.task.trials_table['omit_feedback'])) < 0.05
 
 
 class TestIntegrationFullRun(IntegrationFullRuns):
     def setUp(self) -> None:
-        super(TestIntegrationFullRun, self).setUp()
+        super().setUp()
         self.task = BiasedChoiceWorldSession(one=self.one, **self.kwargs)
 
     def test_task_biased(self):
@@ -105,7 +104,9 @@ class TestIntegrationFullRun(IntegrationFullRuns):
         :return:
         """
         task = self.task
-        task.mock(file_jsonable_fixture=PATH_FIXTURES.joinpath('task_data_short.jsonable'),)
+        task.mock(
+            file_jsonable_fixture=PATH_FIXTURES.joinpath('task_data_short.jsonable'),
+        )
         task.task_params.NTRIALS = 3
         task.session_info['SUBJECT_WEIGHT'] = 24.2  # manually add a weighing
         # manually add water delivered since we test with few trials, there is a chance that this
@@ -123,27 +124,33 @@ class TestIntegrationFullRun(IntegrationFullRuns):
         assert trials_table.shape[0] == task.task_params.NTRIALS
         assert len(bpod_data) == task.task_params.NTRIALS
         # test that Alyx registration went well, we should find the session
-        ses = self.one.alyx.rest('sessions', 'list', subject=self.kwargs['subject'],
-                                 date=task.session_info['SESSION_START_TIME'][:10], number=task.session_info['SESSION_NUMBER'])
+        ses = self.one.alyx.rest(
+            'sessions',
+            'list',
+            subject=self.kwargs['subject'],
+            date=task.session_info['SESSION_START_TIME'][:10],
+            number=task.session_info['SESSION_NUMBER'],
+        )
         full_session = self.one.alyx.rest('sessions', 'read', id=ses[0]['id'])
         self.assertEqual(set(full_session['projects']), set(self.kwargs['projects']))
         self.assertEqual(set(full_session['procedures']), set(self.kwargs['procedures']))
         # and the water administered
         assert full_session['wateradmin_session_related'][0]['water_administered'] == init_water / 1000
         # and the related weighing
-        wei = self.one.alyx.rest('weighings', 'list', nickname=self.kwargs['subject'],
-                                 date=task.session_info['SESSION_START_TIME'][:10])
+        wei = self.one.alyx.rest(
+            'weighings', 'list', nickname=self.kwargs['subject'], date=task.session_info['SESSION_START_TIME'][:10]
+        )
         assert wei[0]['weight'] == task.session_info['SUBJECT_WEIGHT']
 
 
 def get_fixtures():
     correct_trial = {
-        "Bpod start timestamp": 0.0,
-        "Trial start timestamp": 15.570999999999998,
-        "Trial end timestamp": 50.578703,
-        "States timestamps": {
-            "trial_start": [[15.570999999999998, 15.571099999999998]],
-            "reset_rotary_encoder": [
+        'Bpod start timestamp': 0.0,
+        'Trial start timestamp': 15.570999999999998,
+        'Trial end timestamp': 50.578703,
+        'States timestamps': {
+            'trial_start': [[15.570999999999998, 15.571099999999998]],
+            'reset_rotary_encoder': [
                 [15.571099999999998, 15.571199999999997],
                 [15.671399999999998, 15.671499999999998],
                 [15.765699999999999, 15.765799999999999],
@@ -179,7 +186,7 @@ def get_fixtures():
                 [16.615899999999996, 16.616],
                 [16.9041, 16.9042],
             ],
-            "quiescent_period": [
+            'quiescent_period': [
                 [15.571199999999997, 15.671399999999998],
                 [15.671499999999998, 15.765699999999999],
                 [15.765799999999999, 15.793999999999997],
@@ -215,16 +222,16 @@ def get_fixtures():
                 [16.616, 16.9041],
                 [16.9042, 17.3646],
             ],
-            "stim_on": [[17.3646, 17.464599999999997]],
-            "reset2_rotary_encoder": [[17.464599999999997, 17.464699999999997]],
-            "closed_loop": [[17.464699999999997, 49.5787]],
-            "reward": [[49.5787, 49.7357]],
-            "correct": [[49.7357, 50.5787]],
-            "no_go": [[np.nan, np.nan]],
-            "error": [[np.nan, np.nan]],
+            'stim_on': [[17.3646, 17.464599999999997]],
+            'reset2_rotary_encoder': [[17.464599999999997, 17.464699999999997]],
+            'closed_loop': [[17.464699999999997, 49.5787]],
+            'reward': [[49.5787, 49.7357]],
+            'correct': [[49.7357, 50.5787]],
+            'no_go': [[np.nan, np.nan]],
+            'error': [[np.nan, np.nan]],
         },
-        "Events timestamps": {
-            "Tup": [
+        'Events timestamps': {
+            'Tup': [
                 15.571099999999998,
                 15.571199999999997,
                 15.671499999999998,
@@ -266,7 +273,7 @@ def get_fixtures():
                 49.7357,
                 50.5787,
             ],
-            "BNC1Low": [
+            'BNC1Low': [
                 15.637299999999996,
                 17.5215,
                 18.539299999999997,
@@ -317,7 +324,7 @@ def get_fixtures():
                 49.5368,
                 49.6195,
             ],
-            "RotaryEncoder1_4": [
+            'RotaryEncoder1_4': [
                 15.671399999999998,
                 15.765699999999999,
                 15.793999999999997,
@@ -353,7 +360,7 @@ def get_fixtures():
                 16.9041,
                 18.5982,
             ],
-            "BNC1High": [
+            'BNC1High': [
                 17.406499999999998,
                 18.4564,
                 18.656399999999998,
@@ -403,17 +410,17 @@ def get_fixtures():
                 49.4718,
                 49.571799999999996,
             ],
-            "RotaryEncoder1_3": [33.9907],
-            "RotaryEncoder1_2": [49.5787],
+            'RotaryEncoder1_3': [33.9907],
+            'RotaryEncoder1_2': [49.5787],
         },
     }  # noqa
     error_trial = {
-        "Bpod start timestamp": 0.0,
-        "Trial start timestamp": 0.0,
-        "Trial end timestamp": 15.485902,
-        "States timestamps": {
-            "trial_start": [[0.0, 0.00010000000000021103]],
-            "reset_rotary_encoder": [
+        'Bpod start timestamp': 0.0,
+        'Trial start timestamp': 0.0,
+        'Trial end timestamp': 15.485902,
+        'States timestamps': {
+            'trial_start': [[0.0, 0.00010000000000021103]],
+            'reset_rotary_encoder': [
                 [0.00010000000000021103, 0.00019999999999997797],
                 [0.4855999999999998, 0.4857],
                 [0.5165000000000002, 0.5166],
@@ -423,7 +430,7 @@ def get_fixtures():
                 [0.5741, 0.5742000000000003],
                 [0.5952999999999999, 0.5954000000000002],
             ],
-            "quiescent_period": [
+            'quiescent_period': [
                 [0.00019999999999997797, 0.4855999999999998],
                 [0.4857, 0.5165000000000002],
                 [0.5166, 0.5331999999999999],
@@ -433,16 +440,16 @@ def get_fixtures():
                 [0.5742000000000003, 0.5952999999999999],
                 [0.5954000000000002, 1.1006],
             ],
-            "stim_on": [[1.1006, 1.2006000000000006]],
-            "reset2_rotary_encoder": [[1.2006000000000006, 1.2007000000000003]],
-            "closed_loop": [[1.2007000000000003, 13.4859]],
-            "error": [[13.4859, 15.4859]],
-            "no_go": [[np.nan, np.nan]],
-            "reward": [[np.nan, np.nan]],
-            "correct": [[np.nan, np.nan]],
+            'stim_on': [[1.1006, 1.2006000000000006]],
+            'reset2_rotary_encoder': [[1.2006000000000006, 1.2007000000000003]],
+            'closed_loop': [[1.2007000000000003, 13.4859]],
+            'error': [[13.4859, 15.4859]],
+            'no_go': [[np.nan, np.nan]],
+            'reward': [[np.nan, np.nan]],
+            'correct': [[np.nan, np.nan]],
         },
-        "Events timestamps": {
-            "Tup": [
+        'Events timestamps': {
+            'Tup': [
                 0.00010000000000021103,
                 0.00019999999999997797,
                 0.4857,
@@ -457,7 +464,7 @@ def get_fixtures():
                 1.2007000000000003,
                 15.4859,
             ],
-            "BNC1High": [
+            'BNC1High': [
                 0.07390000000000008,
                 1.3236999999999997,
                 1.7572,
@@ -480,7 +487,7 @@ def get_fixtures():
                 13.423300000000001,
                 13.523399999999999,
             ],
-            "RotaryEncoder1_4": [
+            'RotaryEncoder1_4': [
                 0.4855999999999998,
                 0.5165000000000002,
                 0.5331999999999999,
@@ -490,7 +497,7 @@ def get_fixtures():
                 0.5952999999999999,
                 1.7535999999999996,
             ],
-            "BNC1Low": [
+            'BNC1Low': [
                 1.1719,
                 1.5057,
                 1.8071000000000002,
@@ -512,40 +519,40 @@ def get_fixtures():
                 13.405999999999999,
                 13.4541,
             ],
-            "RotaryEncoder1_3": [1.1886, 11.780000000000001],
-            "RotaryEncoder1_1": [13.4859],
+            'RotaryEncoder1_3': [1.1886, 11.780000000000001],
+            'RotaryEncoder1_1': [13.4859],
         },
     }  # noqa
     no_go_trial = {
-        "Bpod start timestamp": 0.0,
-        "Trial start timestamp": 2950.106299,
-        "Trial end timestamp": 3012.791701,
-        "States timestamps": {
-            "trial_start": [[2950.106299, 2950.1063990000002]],
-            "reset_rotary_encoder": [
+        'Bpod start timestamp': 0.0,
+        'Trial start timestamp': 2950.106299,
+        'Trial end timestamp': 3012.791701,
+        'States timestamps': {
+            'trial_start': [[2950.106299, 2950.1063990000002]],
+            'reset_rotary_encoder': [
                 [2950.1063990000002, 2950.106499],
                 [2950.120499, 2950.120599],
                 [2950.139099, 2950.139199],
                 [2950.161899, 2950.161999],
                 [2950.194099, 2950.194199],
             ],
-            "quiescent_period": [
+            'quiescent_period': [
                 [2950.106499, 2950.120499],
                 [2950.120599, 2950.139099],
                 [2950.139199, 2950.161899],
                 [2950.161999, 2950.194099],
                 [2950.194199, 2950.691599],
             ],
-            "stim_on": [[2950.691599, 2950.791599]],
-            "reset2_rotary_encoder": [[2950.791599, 2950.791699]],
-            "closed_loop": [[2950.791699, 3010.791699]],
-            "no_go": [[3010.791699, 3012.791699]],
-            "error": [[np.nan, np.nan]],
-            "reward": [[np.nan, np.nan]],
-            "correct": [[np.nan, np.nan]],
+            'stim_on': [[2950.691599, 2950.791599]],
+            'reset2_rotary_encoder': [[2950.791599, 2950.791699]],
+            'closed_loop': [[2950.791699, 3010.791699]],
+            'no_go': [[3010.791699, 3012.791699]],
+            'error': [[np.nan, np.nan]],
+            'reward': [[np.nan, np.nan]],
+            'correct': [[np.nan, np.nan]],
         },
-        "Events timestamps": {
-            "Tup": [
+        'Events timestamps': {
+            'Tup': [
                 2950.1063990000002,
                 2950.106499,
                 2950.120599,
@@ -558,8 +565,8 @@ def get_fixtures():
                 3010.791699,
                 3012.791699,
             ],
-            "RotaryEncoder1_3": [2950.120499, 2950.139099, 2950.161899, 2950.194099, 2981.703499],
-            "BNC1Low": [
+            'RotaryEncoder1_3': [2950.120499, 2950.139099, 2950.161899, 2950.194099, 2981.703499],
+            'BNC1Low': [
                 2950.181299,
                 2950.8635990000002,
                 2960.946299,
@@ -587,7 +594,7 @@ def get_fixtures():
                 3011.178199,
                 3011.245099,
             ],
-            "BNC1High": [
+            'BNC1High': [
                 2950.750499,
                 2960.766799,
                 2960.983499,
@@ -614,8 +621,8 @@ def get_fixtures():
                 3011.148299,
                 3011.181399,
             ],
-            "RotaryEncoder1_4": [2961.126499],
-            "RotaryEncoder1_1": [3011.1679990000002],
+            'RotaryEncoder1_4': [2961.126499],
+            'RotaryEncoder1_1': [3011.1679990000002],
         },
     }  # noqa
     return dict(correct=correct_trial, error=error_trial, no_go=no_go_trial)
