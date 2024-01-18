@@ -1,6 +1,10 @@
 Changelog
 ---------
 
+8.13.4
+------
+* pin iblutil to version 1.7.3 or later
+
 8.13.3
 ______
 * add tests with mock Bonsai to cover for task start methods
