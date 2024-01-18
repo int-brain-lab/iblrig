@@ -9,13 +9,15 @@ import copy
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 import yaml
 
 import ibllib.io.session_params as ses_params
 from ibllib.io.session_params import read_params
 from iblrig.base_choice_world import BiasedChoiceWorldSession, ChoiceWorldSession
-from iblrig.base_tasks import BaseSession, BpodMixin, Frame2TTLMixin, RotaryEncoderMixin, SoundMixin, ValveMixin
+from iblrig.base_tasks import (BaseSession, BpodMixin, Frame2TTLMixin, RotaryEncoderMixin, SoundMixin, ValveMixin,
+                               BonsaiRecordingMixin, BonsaiVisualStimulusMixin)
 from iblrig.misc import _get_task_argument_parser, _post_parse_arguments
 from iblrig.test.base import TASK_KWARGS
 
@@ -28,6 +30,19 @@ class EmptyHardwareSession(BaseSession):
 
     def _run(self):
         pass
+
+
+def mixin_factory(cls_mixin):
+    """
+    Composes the empty hardware session class with a single mixin for testing purposes
+    :param cls_mixin:
+    :return:
+    """
+    class TestMixin(EmptyHardwareSession, cls_mixin):
+        pass
+
+    session = TestMixin(task_parameter_file=ChoiceWorldSession.base_parameters_file, **TASK_KWARGS)
+    return session
 
 
 class TestHierarchicalParameters(unittest.TestCase):
@@ -47,6 +62,31 @@ class TestHardwareMixins(unittest.TestCase):
     def setUp(self):
         task_settings_file = ChoiceWorldSession.base_parameters_file
         self.session = EmptyHardwareSession(task_parameter_file=task_settings_file, **TASK_KWARGS)
+
+    @mock.patch('iblrig.base_tasks.call_bonsai')
+    def test_bonsai_recording_mixin(self, mock_call_bonsai):
+        # create an session with the bonsai recording mixin only and all tests parameters
+        session = mixin_factory(BonsaiRecordingMixin)
+        session.init_mixin_bonsai_recordings()
+        # this will fail if the udp clients are not alive, which they should be
+        session.bonsai_camera.udp_client.send2bonsai(trial_num=6, sim_freq=50)
+        session.bonsai_microphone.udp_client.send2bonsai(trial_num=6, sim_freq=50)
+        # test the camera + microphone recording as in the behavior
+        session.start_mixin_bonsai_cameras()
+        session.trigger_bonsai_cameras()
+        # test the single microphone recording
+        session.hardware_settings.device_cameras = None
+        session.start_mixin_bonsai_microphone()
+        session.stop_mixin_bonsai_recordings()
+
+    @mock.patch('iblrig.base_tasks.call_bonsai')
+    def test_bonsai_visual_stimulus_mixin(self, mock_call_bonsai):
+        session = mixin_factory(BonsaiVisualStimulusMixin)
+        session.start_mixin_bonsai_visual_stimulus()
+        session.init_mixin_bonsai_visual_stimulus()
+        session.choice_world_visual_stimulus()
+        session.run_passive_visual_stim()
+        session.stop_mixin_bonsai_visual_stimulus()
 
     def test_rotary_encoder_mixin(self):
         """
