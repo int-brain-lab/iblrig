@@ -10,7 +10,7 @@ import yaml
 import iblrig
 from iblrig.hardware import Bpod
 from iblrig.online_plots import OnlinePlots
-from iblrig.path_helper import _load_settings_yaml, get_local_and_remote_paths
+from iblrig.path_helper import get_local_and_remote_paths
 from iblrig.transfer_experiments import BehaviorCopier, EphysCopier, VideoCopier, SessionCopier
 from iblutil.util import setup_logger
 
@@ -45,8 +45,9 @@ def _transfer_parser(description: str) -> argparse.ArgumentParser:
     parser.add_argument('-l', '--local', action='store', type=dir_path, dest='local_path', help='define local data path')
     parser.add_argument('-r', '--remote', action='store', type=dir_path, dest='remote_path', help='define remote data path')
     parser.add_argument('-d', '--dry', action='store_true', dest='dry', help='do not remove local data after copying')
-    # TODO change default to 2?
-    parser.add_argument('--cleanup-weeks', help='cleanup data older than this many weeks', default=False)
+    parser.add_argument(
+        '--cleanup-weeks', type=int, help='cleanup data older than this many weeks (-1 for no cleanup)', default=2
+    )
     return parser
 
 
@@ -218,7 +219,7 @@ def transfer_data(tag=None, local_path: Path = None, remote_path: Path = None, d
     remote_path : Path
         Path to remote subjects folder, otherwise fetches path from iblrig_settings.yaml file.
     dry : bool
-        Do not remove local data after copying if `dry` is True
+        Do not copy or remove local data.
     interactive : bool
         If true, users are prompted to review the sessions to copy before proceeding.
     cleanup_weeks : int, bool
@@ -248,7 +249,7 @@ def transfer_data(tag=None, local_path: Path = None, remote_path: Path = None, d
         _print_status(copiers, 'States after transfer operation:')
 
     # once we copied the data, remove older session for which the data was successfully uploaded
-    if cleanup_weeks not in (False, 0):
+    if isinstance(cleanup_weeks, int) and cleanup_weeks > -1:
         remove_local_sessions(
             weeks=cleanup_weeks, dry=dry, local_path=local_subject_folder, remote_path=remote_subject_folder, tag=tag
         )
@@ -257,14 +258,30 @@ def transfer_data(tag=None, local_path: Path = None, remote_path: Path = None, d
 
 def remove_local_sessions(weeks=2, local_path=None, remote_path=None, dry=False, tag='behavior'):
     """
-    Remove local sessions older than 2 weeks
-    :param weeks:
-    :param dry:
-    :return:
+    Remove local sessions older than N weeks.
+
+    Parameters
+    ----------
+    weeks : int
+        Remove local sessions older than this number of weeks.
+    local_path : Path
+        Path to local subjects folder, otherwise fetches path from iblrig_settings.yaml file.
+    remote_path : Path
+        Path to remote subjects folder, otherwise fetches path from iblrig_settings.yaml file.
+    dry : bool
+        Do not remove local data if True.
+    tag : str
+        The acquisition PC tag to transfer, e.g. 'behavior', 'video', 'ephys', 'timeline', etc.
+
+    Returns
+    -------
+    list of Path
+        A list of removed session paths.
     """
     local_subject_folder, remote_subject_folder = _get_subjects_folders(local_path, remote_path)
     size = 0
     Copier = tag2copier.get(tag.lower(), SessionCopier)
+    removed = []
     for flag in sorted(list(local_subject_folder.rglob(f'_ibl_experiment.description_{tag}.yaml')), reverse=True):
         session_path = flag.parent
         days_elapsed = (datetime.datetime.now() - datetime.datetime.strptime(session_path.parts[-2], '%Y-%m-%d')).days
@@ -277,7 +294,9 @@ def remove_local_sessions(weeks=2, local_path=None, remote_path=None, dry=False,
             size += session_size
             if not dry:
                 shutil.rmtree(session_path)
+            removed.append(session_path)
     logger.info(f'Cleanup size {size:0.02f} Go')
+    return removed
 
 
 def viewsession():

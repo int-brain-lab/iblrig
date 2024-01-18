@@ -515,7 +515,7 @@ class BehaviorCopier(SessionCopier):
 
 
 class EphysCopier(SessionCopier):
-    tag = 'spikeglx'
+    tag = 'ephys'
     assert_connect_on_init = True
 
     def initialize_experiment(self, acquisition_description=None, nprobes=None, **kwargs):

@@ -14,6 +14,7 @@ from iblrig.misc import online_std
 
 from settings.port_settings import main  # FIXME This is not a module
 
+
 class TestMisc(unittest.TestCase):
     def test_draw_contrast(self):
         n_draws = 5000
@@ -95,4 +96,3 @@ class TestPortSettings(unittest.TestCase):
         with open(self.v7 / '.iblrig_params.json', 'w') as fp:
             json.dump(self.v7_settings, fp)
         self.assertWarns(Warning, main, self.v7, self.v8)
-
