@@ -300,18 +300,25 @@ class SessionCopier:
         """
         status = True
         exp_pars = session_params.read_params(self.session_path)
-        collections = set(session_params.get_collections(exp_pars).values())
-        for collection in collections:
-            local_collection = self.session_path.joinpath(collection)
-            if not local_collection.exists():
-                log.error(f"Collection {local_collection} doesn't exist")
+        collections = set()
+        # First glob on each collection pattern to find all folders to transfer
+        for collection in session_params.get_collections(exp_pars, flat=True):
+            folders = map(Path.is_dir, self.session_path.glob(collection))
+            _collections = list(map(lambda x: x.relative_to(self.session_path), folders))
+            if not _collections:
+                log.error(f'No collection(s) matching "{collection}" found')
                 status = False
                 continue
+            collections.update(_collections)
+
+        # Attempt to copy each folder
+        for collection in collections:
+            local_collection = self.session_path.joinpath(collection)
+            assert local_collection.exists(), f'local collection "{collection}" no longer exists'
             log.info(f'transferring {self.session_path} - {collection}')
             remote_collection = self.remote_session_path.joinpath(collection)
             if remote_collection.exists():
-                # this is far from ideal, but here rsync-diff backup is not the right tool for syncing
-                # and will error out if the remote collection already exists
+                # this is far from ideal: we currently recopy all files even if some already copied
                 log.warning(f'Collection {remote_collection} already exists, removing')
                 shutil.rmtree(remote_collection)
             status &= copy_folders(local_collection, remote_collection)
@@ -325,8 +332,8 @@ class SessionCopier:
         """
         if self.glob_file_remote_copy_status('complete'):
             log.warning(
-                f"Copy already complete for {self.session_path},"
-                f" remove {self.glob_file_remote_copy_status('complete')} to force"
+                f'Copy already complete for {self.session_path},'
+                f' remove {self.glob_file_remote_copy_status("complete")} to force'
             )
             return True
         status = self._copy_collections()
