@@ -264,10 +264,7 @@ class SessionCopier:
 
     @property
     def file_experiment_description(self):
-        """
-        Returns the local experiment description file, if none found, returns one with the tag
-        :return:
-        """
+        """Returns the local experiment description file, if none found, returns one with the tag."""
         return next(
             self.session_path.glob('_ibl_experiment.description*'),
             self.session_path.joinpath(f'_ibl_experiment.description_{self.tag}.yaml'),
@@ -280,6 +277,7 @@ class SessionCopier:
 
     @property
     def file_remote_experiment_description(self):
+        """Return the remote path to the remote stub file."""
         if self.remote_subjects_folder:
             return session_params.get_remote_stub_name(self.remote_session_path, device_id=self.tag)
 
@@ -393,15 +391,14 @@ class SessionCopier:
         log.info(f'Written data to local session at : {self.file_experiment_description}.')
 
     def finalize_copy(self, number_of_expected_devices=None):
-        """
-        At the end of the copy, check if all the files are there and if so, aggregate the device files
-        :return:
-        """
-        if number_of_expected_devices is None:
-            log.warning(f'Number of expected devices is not specified, will not finalize this session {self.session_path}')
-            return
+        """At the end of the copy, check if all the files are there and if so, aggregate the device files."""
         ready_to_finalize = 0
+        # List the stub files in _devices folder
         files_stub = list(self.file_remote_experiment_description.parent.glob('*.yaml'))
+        if number_of_expected_devices is None:
+            number_of_expected_devices = len(files_stub)
+        log.debug(f'Number of expected devices is {number_of_expected_devices}')
+
         for file_stub in files_stub:
             ready_to_finalize += int(file_stub.with_suffix('.status_complete').exists())
             ad_stub = session_params.read_params(file_stub)
@@ -412,6 +409,10 @@ class SessionCopier:
                     'attempting to transfer a session with more than one device.'
                 )
                 return
+
+        if ready_to_finalize > number_of_expected_devices:
+            log.error('More stub files (%i) than expected devices (%i)', ready_to_finalize, number_of_expected_devices)
+            return
         log.info(f'{ready_to_finalize}/{number_of_expected_devices} copy completion status')
         if ready_to_finalize == number_of_expected_devices:
             for file_stub in files_stub:
@@ -504,6 +505,13 @@ class BehaviorCopier(SessionCopier):
             return False
         log.critical(f'{self.state}, {self.session_path}')
         return super()._copy_collections()  # proceed with copy
+
+    def finalize_copy(self, number_of_expected_devices=None):
+        """If main sync is bpod, expect a single stub file."""
+        if (number_of_expected_devices is None and
+                session_params.get_sync(self.remote_experiment_description_stub) == 'bpod'):
+            number_of_expected_devices = 1
+        super().finalize_copy(number_of_expected_devices=number_of_expected_devices)
 
 
 class EphysCopier(SessionCopier):

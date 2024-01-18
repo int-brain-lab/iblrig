@@ -204,47 +204,8 @@ def _print_status(copiers: Iterable[SessionCopier], heading: str = '') -> None:
         print(f' * {copier.session_path}: {state}')
 
 
-def transfer_data(local_path: Path = None, remote_path: Path = None, dry: bool = False, interactive: bool = False, **_) -> None:
-    """
-    Copies the behavior data from the rig to the local server if the session has more than 42 trials
-    If the hardware settings file contains MAIN_SYNC=True, the number of expected devices is set to 1
-    :param local_path: local path to the subjects folder, otherwise uses the local_data_folder key in
-    the iblrig_settings.yaml file, or the iblrig_data directory in the home path.
-
-    Parameters
-    ----------
-    local_path : Path
-        Path to local data
-    remote_path : Path
-        Path to remote data
-    lab : str
-        the lab name i.e. "cortexlab" or "mainenlab" to use to find the local path. Defaults to the ALYX_LAB key
-        in the settings/iblrig_settings.yaml file
-    dry : bool
-        Do not remove local data after copying if `dry` is True
-
-    Returns
-    -------
-    None
-    """
-    hardware_settings = _load_settings_yaml('hardware_settings.yaml')
-    number_of_expected_devices = 1 if hardware_settings.get('MAIN_SYNC', True) else None
-
-    local_subject_folder, remote_subject_folder = _get_subjects_folders(local_path, remote_path, interactive)
-    copiers = _get_copiers(BehaviorCopier, local_path, remote_path, interactive=interactive)
-
-    for copier in copiers:
-        copier.run(number_of_expected_devices=number_of_expected_devices)
-
-    if interactive:
-        _print_status(copiers, 'States after transfer operation:')
-
-    # once we copied the data, remove older session for which the data was successfully uploaded
-    remove_local_sessions(weeks=2, dry=dry, local_path=local_subject_folder, remote_path=remote_subject_folder)
-
-
-def transfer_other_data(tag=None, local_path: Path = None, remote_path: Path = None, dry: bool = False, interactive: bool = False,
-                        cleanup_weeks=2, **kwargs) -> list[SessionCopier]:
+def transfer_data(tag=None, local_path: Path = None, remote_path: Path = None, dry: bool = False,
+                  interactive: bool = False, cleanup_weeks=2, **kwargs) -> list[SessionCopier]:
     """
     Copies data from the rig to the local server.
 
@@ -275,12 +236,13 @@ def transfer_other_data(tag=None, local_path: Path = None, remote_path: Path = N
     local_subject_folder, remote_subject_folder = _get_subjects_folders(local_path, remote_path, interactive)
     Copier = tag2copier.get(tag.lower(), SessionCopier)
     logger.info('Searching for %s sessions using %s class', tag.lower(), Copier.__name__)
+    expected_devices = kwargs.pop('number_of_expected_devices', None)
     copiers = _get_copiers(Copier, local_path, remote_path, interactive=interactive, tag=tag, **kwargs)
 
     for copier in copiers:
         logger.critical(f'{copier.state}, {copier.session_path}')
         if not dry:
-            copier.run()
+            copier.run(number_of_expected_devices=expected_devices)
 
     if interactive:
         _print_status(copiers, 'States after transfer operation:')
