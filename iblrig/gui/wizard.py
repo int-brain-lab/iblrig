@@ -944,6 +944,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         and appends time and message information to the widget.
         """
         data = self.running_task_process.readAllStandardOutput().data()
+        print(data.decode().strip())
         entries = re.finditer(REGEX_STDOUT, data)
         for entry in entries:
             color = ANSI_COLORS.get(entry.groupdict().get('color', b'37'), 'White')
@@ -961,6 +962,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         the error message to the widget.
         """
         text = self.running_task_process.readAllStandardError().data().decode()
+        print(text.stip())
         self._set_plaintext_char_color(self.uiPlainTextEditLog, 'Red')
         self.uiPlainTextEditLog.appendPlainText(text.strip())
 
