@@ -16,8 +16,16 @@ import yaml
 import ibllib.io.session_params as ses_params
 from ibllib.io.session_params import read_params
 from iblrig.base_choice_world import BiasedChoiceWorldSession, ChoiceWorldSession
-from iblrig.base_tasks import (BaseSession, BpodMixin, Frame2TTLMixin, RotaryEncoderMixin, SoundMixin, ValveMixin,
-                               BonsaiRecordingMixin, BonsaiVisualStimulusMixin)
+from iblrig.base_tasks import (
+    BaseSession,
+    BonsaiRecordingMixin,
+    BonsaiVisualStimulusMixin,
+    BpodMixin,
+    Frame2TTLMixin,
+    RotaryEncoderMixin,
+    SoundMixin,
+    ValveMixin,
+)
 from iblrig.misc import _get_task_argument_parser, _post_parse_arguments
 from iblrig.test.base import TASK_KWARGS
 
@@ -38,6 +46,7 @@ def mixin_factory(cls_mixin):
     :param cls_mixin:
     :return:
     """
+
     class TestMixin(EmptyHardwareSession, cls_mixin):
         pass
 

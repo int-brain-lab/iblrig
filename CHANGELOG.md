@@ -1,6 +1,11 @@
 Changelog
 ---------
 
+8.13.3
+______
+* add tests with mock Bonsai to cover for task start methods
+* hotfix: also log to PowerShell (for now)
+
 8.13.2
 ------
 * hotfix: 'WindowsPath' object has no attribute 'split'
