@@ -4,6 +4,7 @@ import shutil
 from collections.abc import Iterable
 from pathlib import Path
 import warnings
+import logging
 
 import yaml
 
@@ -14,7 +15,7 @@ from iblrig.path_helper import get_local_and_remote_paths
 from iblrig.transfer_experiments import BehaviorCopier, EphysCopier, VideoCopier, SessionCopier
 from iblutil.util import setup_logger
 
-logger = setup_logger('iblrig', level='INFO')
+logger = logging.getLogger(__name__)
 
 
 tag2copier = {'behavior': BehaviorCopier, 'video': VideoCopier, 'ephys': EphysCopier}
@@ -87,6 +88,7 @@ def transfer_data_cli():
     """
     Command-line interface for transferring behavioral data to the local server.
     """
+    setup_logger('iblrig', level='INFO')
     args = _transfer_parser('Copy data to the local server.').parse_args()
     transfer_data(**vars(args), interactive=True)
 
@@ -95,6 +97,7 @@ def transfer_video_data_cli():
     """
     Command-line interface for transferring video data to the local server.
     """
+    setup_logger('iblrig', level='INFO')
     warnings.warn('transfer_video_data will be removed in the future. Use "transfer_data video" instead.', FutureWarning)
     args = _transfer_parser('Copy video data to the local server.').parse_args()
     transfer_data(**{**vars(args), 'tag': 'video'}, interactive=True)
@@ -104,6 +107,7 @@ def transfer_ephys_data_cli():
     """
     Command-line interface for transferring ephys data to the local server.
     """
+    setup_logger('iblrig', level='INFO')
     warnings.warn('transfer_ephys_data will be removed in the future. Use "transfer_data ephys" instead.', FutureWarning)
     args = _transfer_parser('Copy ephys data to the local server.').parse_args()
     transfer_data(**{**vars(args), 'tag': 'ephys'}, interactive=True)

@@ -34,7 +34,7 @@ class BunchModel(BaseModel, abc.MutableMapping):
 
 class RigSettings(BunchModel, validate_assignment=True):
     model_config = ConfigDict(title='iblrig_settings.yaml')
-    iblrig_local_data_path: Path = Field(
+    iblrig_local_data_path: Path | None = Field(
         title='IBLRIG local data path', description='The local folder IBLRIG should use for storing data'
     )
     iblrig_remote_data_path: Path | bool | None = Field(
@@ -68,9 +68,9 @@ class HardwareSettingsBpod(BunchModel):
 class HardwareSettingsFrame2TTL(BunchModel):
     COM_F2TTL: str | None
     F2TTL_CALIBRATION_DATE: date | None
-    F2TTL_DARK_THRESH: int = Field(gt=0)
+    F2TTL_DARK_THRESH: int
     F2TTL_HW_VERSION: Literal[1, 2, 3, None]
-    F2TTL_LIGHT_THRESH: int = Field(gt=0)
+    F2TTL_LIGHT_THRESH: int
 
 
 class HardwareSettingsRotaryEncoder(BunchModel):
@@ -95,6 +95,7 @@ class HardwareSettingsValve(BunchModel):
     WATER_CALIBRATION_RANGE: list[float] = Field(min_items=2, max_items=2)  # type: ignore
     WATER_CALIBRATION_OPEN_TIMES: list[float] = Field(min_items=2)  # type: ignore
     WATER_CALIBRATION_WEIGHT_PERDROP: list[float] = Field(min_items=2)  # type: ignore
+    FREE_REWARD_VOLUME_UL: float = 1.5
 
 
 class HardwareSettingsCamera(BunchModel):

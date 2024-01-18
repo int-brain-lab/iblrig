@@ -1,3 +1,4 @@
+import logging
 import platform
 import time
 from glob import glob
@@ -12,11 +13,11 @@ from serial import Serial
 import iblrig.base_tasks
 
 # import pandas as pd
-from iblutil.util import setup_logger
 from pybpodapi.protocol import Bpod, StateMachine
 
 # set up logging
-log = setup_logger('iblrig', level='DEBUG')
+log = logging.getLogger(__name__)
+log.setLevel(logging.DEBUG)
 
 issues = 0
 

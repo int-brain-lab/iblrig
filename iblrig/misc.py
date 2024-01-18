@@ -7,12 +7,11 @@ repo change over time.
 """
 import argparse
 import datetime
+import logging
 from pathlib import Path
 from typing import Literal
 
 import numpy as np
-
-from iblutil.util import setup_logger
 
 FLAG_FILE_NAMES = [
     'transfer_me.flag',
@@ -21,7 +20,7 @@ FLAG_FILE_NAMES = [
     'passive_data_for_ephys.flag',
 ]
 
-log = setup_logger('iblrig')
+log = logging.getLogger(__name__)
 
 
 def _get_task_argument_parser(parents=None):

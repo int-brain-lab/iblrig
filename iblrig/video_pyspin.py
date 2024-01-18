@@ -1,8 +1,8 @@
+import logging
+
 import PySpin
 
-from iblutil.util import setup_logger
-
-log = setup_logger('iblrig')
+log = logging.getLogger(__name__)
 
 
 class Cameras:
@@ -28,14 +28,15 @@ class Cameras:
         return self._instance
 
 
-def configure_trigger(camera: PySpin.CameraPtr | None, enable: bool):
+def enable_camera_trigger(enable: bool, camera: PySpin.CameraPtr | None = None):
     if camera is None:
         with Cameras() as cameras:
             for camera in cameras:
-                configure_trigger(camera, enable=False)
+                enable_camera_trigger(enable=False, camera=camera)
             del camera
-    node_map = camera.GetNodeMap()
-    node_trigger_mode = PySpin.CEnumerationPtr(node_map.GetNode('TriggerMode'))
-    node_trigger_mode_value = node_trigger_mode.GetEntryByName('On' if enable else 'Off').GetValue()
-    node_trigger_mode.SetIntValue(node_trigger_mode_value)
-    log.debug(('Enabled' if enable else 'Disabled') + f' trigger for camera #{camera.DeviceID.ToString()}.')
+    else:
+        node_map = camera.GetNodeMap()
+        node_trigger_mode = PySpin.CEnumerationPtr(node_map.GetNode('TriggerMode'))
+        node_trigger_mode_value = node_trigger_mode.GetEntryByName('On' if enable else 'Off').GetValue()
+        node_trigger_mode.SetIntValue(node_trigger_mode_value)
+        log.info(('Enabled' if enable else 'Disabled') + f' trigger for camera #{camera.DeviceID.ToString()}.')

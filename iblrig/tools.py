@@ -1,3 +1,4 @@
+import logging
 import os
 import re
 import shutil
@@ -10,9 +11,8 @@ from typing import Any
 from iblrig.constants import BONSAI_EXE
 from iblrig.path_helper import create_bonsai_layout_from_template, load_pydantic_yaml
 from iblrig.pydantic_definitions import RigSettings
-from iblutil.util import setup_logger
 
-logger = setup_logger('iblrig')
+log = logging.getLogger(__name__)
 
 
 def ask_user(prompt: str, default: bool = False) -> bool:
@@ -95,7 +95,7 @@ def get_anydesk_id(silent: bool = False) -> str | None:
             anydesk_id = f'{int(id_string):,}'.replace(',', ' ')
     except (FileNotFoundError, subprocess.CalledProcessError, StopIteration, UnicodeDecodeError) as e:
         if silent:
-            logger.debug(e, exc_info=True)
+            log.debug(e, exc_info=True)
         else:
             raise e
     return anydesk_id
@@ -238,21 +238,20 @@ def call_bonsai(
     cwd = workflow_file.parent
     create_bonsai_layout_from_template(workflow_file)
 
-    cmd = [BONSAI_EXE]
-    cmd.append(workflow_file)
+    cmd = [BONSAI_EXE, workflow_file]
     if start:
         cmd.append('--start' if debug else '--start-no-debug')
     if not editor:
         cmd.append('--no-editor')
+    if not bootstrap:
+        cmd.append('--no-boot')
     cmd = [str(x) for x in cmd]
     if parameters is not None:
         for key, value in parameters.items():
             cmd.append(f'-p:{key}={str(value)}')
-    if not bootstrap:
-        cmd.append('--no-boot')
 
-    logger.info(f'Starting Bonsai workflow `{workflow_file.name}`')
-    print(cmd)
+    log.info(f'Starting Bonsai workflow `{workflow_file.name}`')
+    log.debug(' '.join(cmd))
     if wait:
         return subprocess.run(args=cmd, cwd=cwd, check=check)
     else:

@@ -1,6 +1,9 @@
 Changelog
 ---------
 
+8.13.1
+------
+* hotfix: passing non-existent parameter to Bonsai workflow
 
 8.13.0
 ------
@@ -8,7 +11,9 @@ Changelog
 * script for starting video-session in ephys-rig
 * installer scripts for Spinnaker SDK / PySpin
 * validated parsing of settings files
-* add legend to trials-timeline
+* added legend to trials-timeline
+* added button for triggering a free reward (only available outside of running task for now)
+* cleaned-up logging
 * various improvements under the hood, clean-up and unit-tests
 
 8.12.13

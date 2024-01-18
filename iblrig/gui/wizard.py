@@ -2,7 +2,9 @@ import argparse
 import ctypes
 import importlib
 import json
+import logging
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -14,6 +16,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Optional
 
+from pydantic import ValidationError
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QThread, QThreadPool
 from PyQt5.QtWebEngineWidgets import QWebEnginePage
@@ -23,7 +26,7 @@ from requests import HTTPError
 import iblrig.hardware_validation
 import iblrig.path_helper
 import iblrig_tasks
-from iblrig.base_tasks import EmptySession
+from iblrig.base_tasks import EmptySession, ValveMixin
 from iblrig.choiceworld import get_subject_training_info, training_phase_from_contrast_set
 from iblrig.constants import BASE_DIR
 from iblrig.gui.ui_login import Ui_login
@@ -35,10 +38,11 @@ from iblrig.path_helper import load_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings, RigSettings
 from iblrig.tools import alyx_reachable, get_anydesk_id, internet_available
 from iblrig.version_management import check_for_updates, get_changelog, is_dirty
-from iblutil.util import setup_logger
+from iblutil.util import Bunch, setup_logger
 from one.api import ONE
 from one.webclient import AlyxClient
 from pybpodapi import exceptions
+from pybpodapi.protocol import StateMachine
 
 try:
     import iblrig_custom_tasks
@@ -48,7 +52,7 @@ except ImportError:
     CUSTOM_TASKS = False
     pass
 
-log = setup_logger('iblrig')
+log = logging.getLogger(__name__)
 
 PROCEDURES = [
     'Behavior training/tasks',
@@ -64,6 +68,17 @@ URL_DOC = 'https://int-brain-lab.github.io/iblrig'
 URL_REPO = 'https://github.com/int-brain-lab/iblrig/tree/iblrigv8'
 URL_ISSUES = 'https://github.com/int-brain-lab/iblrig/issues'
 URL_DISCUSSION = 'https://github.com/int-brain-lab/iblrig/discussions'
+
+ANSI_COLORS: dict[bytes, str] = {b'31': 'Red', b'32': 'Green', b'33': 'Yellow', b'35': 'Magenta', b'36': 'Cyan', b'37': 'White'}
+REGEX_STDOUT = re.compile(
+    rb'^\x1b\[(?:\d;)?(?:\d+;)?'
+    rb'(?P<color>\d+)m[\d-]*\s+'
+    rb'(?P<time>[\d\:]+)\s+'
+    rb'(?P<level>\w+\s+)'
+    rb'(?P<file>[\w\:\.]+)\s+'
+    rb'(?P<message>[^\x1b]*)',
+    re.MULTILINE,
+)
 
 
 def _set_list_view_from_string_list(ui_list: QtWidgets.QListView, string_list: list):
@@ -88,10 +103,20 @@ class RigWizardModel:
     test_subject_name = 'test_subject'
     subject_details_worker = None
     subject_details: tuple | None = None
+    free_reward_time: float | None = None
 
     def __post_init__(self):
-        self.iblrig_settings: RigSettings = load_pydantic_yaml(RigSettings)
-        self.hardware_settings: HardwareSettings = load_pydantic_yaml(HardwareSettings)
+        self.iblrig_settings: RigSettings = load_pydantic_yaml(RigSettings, do_raise=True)
+        self.hardware_settings: HardwareSettings = load_pydantic_yaml(HardwareSettings, do_raise=True)
+
+        # calculate free reward time
+        class FakeSession(ValveMixin):
+            hardware_settings = self.hardware_settings
+            task_params = Bunch({'AUTOMATIC_CALIBRATION': True, 'REWARD_AMOUNT_UL': 10})
+
+        fake_session = FakeSession()
+        fake_session.init_mixin_valve()
+        self.free_reward_time = fake_session.compute_reward_time(self.hardware_settings.device_valve.FREE_REWARD_VOLUME_UL)
 
         if self.iblrig_settings.ALYX_URL is not None:
             self.alyx = AlyxClient(base_url=str(self.iblrig_settings.ALYX_URL), silent=True)
@@ -131,7 +156,12 @@ class RigWizardModel:
         return task.Session.extra_parser()
 
     def login(
-        self, username: str, password: str | None = None, do_cache: bool = False, alyx_client: AlyxClient | None = None
+        self,
+        username: str,
+        password: str | None = None,
+        do_cache: bool = False,
+        alyx_client: AlyxClient | None = None,
+        gui: bool = False,
     ) -> bool:
         # Use predefined AlyxClient for testing purposes:
         if alyx_client is not None:
@@ -153,10 +183,10 @@ class RigWizardModel:
                 else:
                     raise e
 
-        # # since we are connecting to Alyx, validate some parameters to ensure a smooth extraction
-        # result = iblrig.hardware_validation.ValidateAlyxLabLocation().run(self.one)
-        # if result.status == 'FAIL' and gui:
-        #     QtWidgets.QMessageBox().critical(None, 'Error', f'{result.message}\n\n{result.solution}')
+        # since we are connecting to Alyx, validate some parameters to ensure a smooth extraction
+        result = iblrig.hardware_validation.ValidateAlyxLabLocation().run(self.alyx)
+        if result.status == 'FAIL' and gui:
+            QtWidgets.QMessageBox().critical(None, 'Error', f'{result.message}\n\n{result.solution}')
 
         # get subjects from Alyx: this is the set of subjects that are alive and not stock in the lab defined in settings
         rest_subjects = self.alyx.rest('subjects', 'list', alive=True, stock=False, lab=self.iblrig_settings['ALYX_LAB'])
@@ -178,6 +208,26 @@ class RigWizardModel:
         self.user = None
         self.__post_init__()
 
+    def free_reward(self):
+        try:
+            bpod = Bpod(
+                self.hardware_settings['device_bpod']['COM_BPOD'],
+                skip_initialization=True,
+                disable_behavior_ports=[1, 2, 3],
+            )
+            sma = StateMachine(bpod)
+            sma.add_state(
+                state_name='flush',
+                state_timer=self.free_reward_time,
+                state_change_conditions={'Tup': 'exit'},
+                output_actions=[('Valve1', 255)],
+            )
+            bpod.send_state_machine(sma)
+            bpod.run_state_machine(sma)
+        except (OSError, exceptions.bpod_error.BpodErrorException):
+            log.error('Cannot find bpod - is it connected?')
+            return
+
     def get_subject_details(self, subject):
         self.subject_details_worker = SubjectDetailsWorker(subject)
         self.subject_details_worker.finished.connect(self.process_subject_details)
@@ -195,7 +245,20 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.settings = QtCore.QSettings()
         self.move(self.settings.value('pos', self.pos(), QtCore.QPoint))
 
-        self.model = RigWizardModel()
+        try:
+            self.model = RigWizardModel()
+        except ValidationError as e:
+            yml = (
+                'hardware_settings.yaml'
+                if 'hardware' in e.title
+                else 'iblrig_settings.yaml'
+                if 'iblrig' in e.title
+                else 'Settings File'
+            )
+            loc = '.'.join(e.errors()[0]['loc'])
+            msg = e.errors()[0]['msg']
+            self._show_error_dialog(title=f'Error validating {yml}', description=f'{loc}:\n{msg}.')
+            raise e
         self.model2view()
 
         # default to biasedChoiceWorld
@@ -206,16 +269,11 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.uiActionTrainingLevelV7.triggered.connect(self._on_menu_training_level_v7)
         self.uiComboTask.currentTextChanged.connect(self.controls_for_extra_parameters)
         self.uiComboSubject.currentTextChanged.connect(self.model.get_subject_details)
-        self.uiPushFlush.clicked.connect(self.flush)
         self.uiPushStart.clicked.connect(self.start_stop)
         self.uiPushPause.clicked.connect(self.pause)
         self.uiListProjects.clicked.connect(self._enable_ui_elements)
         self.uiListProcedures.clicked.connect(self._enable_ui_elements)
         self.lineEditSubject.textChanged.connect(self._filter_subjects)
-
-        self.uiPushStatusLED.setChecked(self.settings.value('bpod_status_led', True, bool))
-        self.uiPushStatusLED.toggled.connect(self.toggle_status_led)
-        self.toggle_status_led(self.uiPushStatusLED.isChecked())
 
         self.running_task_process = None
         self.task_arguments = dict()
@@ -237,7 +295,23 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
             self.uiLineEditUser.setPlaceholderText('')
             self.uiPushButtonLogIn.setEnabled(False)
 
-        # documentation
+        # tools
+        self.uiPushFlush.clicked.connect(self.flush)
+        self.uiPushReward.clicked.connect(self.model.free_reward)
+        self.uiPushReward.setStatusTip(
+            f'Click to grant a free reward ({self.model.hardware_settings.device_valve.FREE_REWARD_VOLUME_UL:.1f} μL)'
+        )
+        self.uiPushStatusLED.setChecked(self.settings.value('bpod_status_led', True, bool))
+        self.uiPushStatusLED.toggled.connect(self.toggle_status_led)
+        self.toggle_status_led(self.uiPushStatusLED.isChecked())
+
+        # tab: log
+        font = QtGui.QFont('Monospace')
+        font.setStyleHint(QtGui.QFont.TypeWriter)
+        font.setPointSize(9)
+        self.uiPlainTextEditLog.setFont(font)
+
+        # tab: documentation
         self.uiPushWebHome.clicked.connect(lambda: self.webEngineView.load(QtCore.QUrl(URL_DOC)))
         self.uiPushWebBrowser.clicked.connect(lambda: webbrowser.open(str(self.webEngineView.url().url())))
         self.webEngineView.setPage(CustomWebEnginePage(self))
@@ -456,7 +530,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         # 1) Try to log in with just the username. This will succeed if the credentials for the respective user are cached. We
         #    also try to catch connection issues and show helpful error messages.
         try:
-            logged_in = self.model.login(username)
+            logged_in = self.model.login(username, gui=True)
         except ConnectionError:
             if not internet_available(timeout=1, force_update=True):
                 self._show_error_dialog(
@@ -488,7 +562,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                     password = dlg.lineEditPassword.text()
                     remember = dlg.checkBoxRememberMe.isChecked()
                     dlg.deleteLater()
-                    logged_in = self.model.login(username=username, password=password, do_cache=remember)
+                    logged_in = self.model.login(username=username, password=password, do_cache=remember, gui=True)
                 else:
                     dlg.deleteLater()
                     break
@@ -723,6 +797,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 case 'stim_gain':
                     label = 'Stimulus Gain'
 
+            widget.wheelEvent = lambda event: None
             layout.addRow(self.tr(label), widget)
 
         # add label to indicate absence of task specific parameters
@@ -820,25 +895,82 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 if self.uiCheckAppend.isChecked():
                     cmd.append('--append')
                 if self.running_task_process is None:
+                    self.uiPlainTextEditLog.clear()
+                    self._set_plaintext_char_color(self.uiPlainTextEditLog, 'White')
+                    self.uiPlainTextEditLog.appendPlainText(f'Starting subprocess: {self.model.task_name} ...\n')
                     log.info('Starting subprocess')
                     log.info(subprocess.list2cmdline(cmd))
                     self.running_task_process = QtCore.QProcess()
                     self.running_task_process.setWorkingDirectory(BASE_DIR)
-                    self.running_task_process.setProcessChannelMode(QtCore.QProcess.ForwardedChannels)
+                    self.running_task_process.setProcessChannelMode(QtCore.QProcess.SeparateChannels)
                     self.running_task_process.finished.connect(self._on_task_finished)
+                    self.running_task_process.readyReadStandardOutput.connect(self._on_read_standard_output)
+                    self.running_task_process.readyReadStandardError.connect(self._on_read_standard_error)
                     self.running_task_process.start(shutil.which('python'), cmd)
                 self.uiPushStart.setStatusTip('stop the session after the current trial')
                 self.uiPushStart.setIcon(self.style().standardIcon(QStyle.SP_MediaStop))
+                self.tabWidget.setCurrentIndex(self.tabWidget.indexOf(self.tabLog))
             case 'Stop':
                 self.uiPushStart.setEnabled(False)
                 if self.model.session_folder and self.model.session_folder.exists():
                     self.model.session_folder.joinpath('.stop').touch()
 
+    @staticmethod
+    def _set_plaintext_char_color(widget: QtWidgets.QPlainTextEdit, color: str = 'White') -> None:
+        """
+        Set the foreground color of characters in a QPlainTextEdit widget.
+
+        Parameters
+        ----------
+        widget : QtWidgets.QPlainTextEdit
+            The QPlainTextEdit widget whose character color is to be set.
+
+        color : str, optional
+            The name of the color to set. Default is 'White'. Should be a valid color name
+            recognized by QtGui.QColorConstants. If the provided color name is not found,
+            it defaults to QtGui.QColorConstants.White.
+        """
+        color = getattr(QtGui.QColorConstants, color, QtGui.QColorConstants.White)
+        char_format = widget.currentCharFormat()
+        char_format.setForeground(QtGui.QBrush(color))
+        widget.setCurrentCharFormat(char_format)
+
+    def _on_read_standard_output(self):
+        """
+        Read and process standard output entries.
+
+        Reads standard output from a running task process, processes each entry,
+        extracts color information, sets character color in the QPlainTextEdit widget,
+        and appends time and message information to the widget.
+        """
+        data = self.running_task_process.readAllStandardOutput().data()
+        entries = re.finditer(REGEX_STDOUT, data)
+        for entry in entries:
+            color = ANSI_COLORS.get(entry.groupdict().get('color', b'37'), 'White')
+            self._set_plaintext_char_color(self.uiPlainTextEditLog, color)
+            time = entry.groupdict().get('time', b'').decode('utf-8', 'ignore')
+            msg = entry.groupdict().get('message', b'').decode('utf-8', 'ignore')
+            self.uiPlainTextEditLog.appendPlainText(f'{time} {msg}')
+
+    def _on_read_standard_error(self):
+        """
+        Read and process standard error entries.
+
+        Reads standard error from a running task process, sets character color
+        in the QPlainTextEdit widget to indicate an error (Red), and appends
+        the error message to the widget.
+        """
+        text = self.running_task_process.readAllStandardError().data().decode()
+        self._set_plaintext_char_color(self.uiPlainTextEditLog, 'Red')
+        self.uiPlainTextEditLog.appendPlainText(text.strip())
+
     def _on_task_finished(self, exit_code, exit_status):
+        self._set_plaintext_char_color(self.uiPlainTextEditLog, 'White')
+        self.uiPlainTextEditLog.appendPlainText('\nSubprocess finished.')
         if exit_code:
             msg_box = QtWidgets.QMessageBox(parent=self)
             msg_box.setWindowTitle('Oh no!')
-            msg_box.setText('The task was terminated with an error.\nPlease check the command-line output for details.')
+            msg_box.setText('The task was terminated with an error.\nPlease check the log for details.')
             msg_box.setIcon(QtWidgets.QMessageBox().Critical)
             msg_box.exec_()
 
@@ -928,6 +1060,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         )
         self.uiPushPause.setEnabled(is_running)
         self.uiPushFlush.setEnabled(not is_running)
+        self.uiPushReward.setEnabled(not is_running)
         self.uiPushStatusLED.setEnabled(not is_running)
         self.uiCheckAppend.setEnabled(not is_running)
         self.uiGroupParameters.setEnabled(not is_running)
@@ -1166,6 +1299,7 @@ class CustomWebEnginePage(QWebEnginePage):
 
 
 def main():
+    setup_logger('iblrig', level='INFO')
     QtCore.QCoreApplication.setOrganizationName('International Brain Laboratory')
     QtCore.QCoreApplication.setOrganizationDomain('internationalbrainlab.org')
     QtCore.QCoreApplication.setApplicationName('IBLRIG Wizard')
