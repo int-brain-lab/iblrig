@@ -1,7 +1,7 @@
 from collections import abc
 from datetime import date
 from pathlib import Path
-from typing import Literal
+from typing import Literal, Optional
 
 from pydantic import AnyUrl, BaseModel, ConfigDict, Field, field_validator
 
@@ -37,8 +37,17 @@ class RigSettings(BunchModel, validate_assignment=True):
     iblrig_local_data_path: Path | None = Field(
         title='IBLRIG local data path', description='The local folder IBLRIG should use for storing data'
     )
+    iblrig_local_subjects_path: Optional[Path] = Field(
+        title='IBLRIG full local data path', omit_default=True, default=None,
+        description='An optional full local data folder (including /Subjects)'
+    )
     iblrig_remote_data_path: Path | bool | None = Field(
-        title='IBLRIG remote data path', description='The remote folder IBLRIG should use for storing data'
+        title='IBLRIG remote data path',
+        description='The remote folder IBLRIG should use for storing data'
+    )
+    iblrig_remote_subjects_path: Optional[Path] = Field(
+        title='IBLRIG full remote data path', omit_default=True, default=None,
+        description='An optional full remote data folder (including /Subjects)'
     )
     ALYX_USER: str | None = Field(description='Your Alyx username')
     ALYX_URL: AnyUrl | None = Field(title='Alyx URL', description='The URL to your Alyx database')

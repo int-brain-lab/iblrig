@@ -246,8 +246,8 @@ class SessionCopier:
         collections = set()
         # First glob on each collection pattern to find all folders to transfer
         for collection in session_params.get_collections(exp_pars, flat=True):
-            folders = map(Path.is_dir, self.session_path.glob(collection))
-            _collections = list(map(lambda x: x.relative_to(self.session_path), folders))
+            folders = filter(Path.is_dir, self.session_path.glob(collection))
+            _collections = list(map(lambda x: x.relative_to(self.session_path).as_posix(), folders))
             if not _collections:
                 log.error(f'No collection(s) matching "{collection}" found')
                 status = False
@@ -422,7 +422,9 @@ class BehaviorCopier(SessionCopier):
             if not jsonable.exists():
                 log.info(f'skipping: no task data found for {self.session_path}')
                 if self.remote_session_path.exists():
-                    shutil.rmtree(self.remote_session_path)
+                    # No local data and only behaviour stub in remote; assume dud and remove entire session
+                    if len(list(self.file_remote_experiment_description.parent.glob('*.yaml'))) <= 1:
+                        shutil.rmtree(self.remote_session_path)
                 return False
             trials, bpod_data = load_task_jsonable(jsonable)
             ntrials = trials.shape[0]
@@ -493,7 +495,7 @@ class EphysCopier(SessionCopier):
             shutil.copy(path_wiring.joinpath(f'{probe_model}.wiring.json'), file_ap_bin.with_suffix('.wiring.json'))
         try:
             ibllib.pipes.misc.create_alyx_probe_insertions(self.session_path)
-        except BaseException:
+        except Exception:
             log.error(traceback.print_exc())
             log.info('Probe creation failed, please create the probe insertions manually. Continuing transfer...')
         return copy_folders(

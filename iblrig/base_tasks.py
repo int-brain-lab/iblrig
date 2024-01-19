@@ -221,10 +221,9 @@ class BaseSession(ABC):
         return paths
 
     def _setup_loggers(self, level='INFO', level_bpod='WARNING', file=None):
-        logger = setup_logger('iblrig', level=level, file=file)
-        setup_logger('pybpodapi', level=level_bpod, file=file)
         if self.logger is None:
-            self.logger = logger
+            self.logger = setup_logger('iblrig.task', level=level, file=file)
+            setup_logger('pybpodapi', level=level_bpod, file=file)
 
     @staticmethod
     def make_experiment_description_dict(
@@ -401,7 +400,7 @@ class BaseSession(ABC):
 
     def run(self):
         """
-        Common pre-run instructions for all tasks: singint handler for a graceful exit
+        Common pre-run instructions for all tasks: sigint handler for a graceful exit
         :return:
         """
         # here we make sure we connect to the hardware before writing the session to disk

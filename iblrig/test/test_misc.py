@@ -74,7 +74,8 @@ class TestPortSettings(unittest.TestCase):
         with open(hw_settings_path, 'r') as fp:
             hw_settings = yaml.safe_load(fp)
         self.assertEqual(hw_settings['device_sound']['OUTPUT'], 'harp')
-        expected = {'WATER_CALIBRATION_DATE': datetime.date(2099, 12, 31),
+        expected = {'FREE_REWARD_VOLUME_UL': 1.5,
+                    'WATER_CALIBRATION_DATE': datetime.date(2099, 12, 31),
                     'WATER_CALIBRATION_OPEN_TIMES': [50.0, 100.0, 150.0, 200.0],
                     'WATER_CALIBRATION_RANGE': [50.0, 150.0],
                     'WATER_CALIBRATION_WEIGHT_PERDROP': [
