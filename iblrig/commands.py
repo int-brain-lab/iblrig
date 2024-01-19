@@ -113,19 +113,13 @@ def transfer_ephys_data_cli():
     transfer_data(**{**vars(args), 'tag': 'ephys'}, interactive=True)
 
 
-def _get_subjects_folders(local_path: Path, remote_path: Path, interactive: bool = False) -> tuple[Path, Path]:
+def _get_subjects_folders(local_path: Path, remote_path: Path) -> tuple[Path, Path]:
     rig_paths = get_local_and_remote_paths(local_path, remote_path)
     local_path = rig_paths.local_subjects_folder
     remote_path = rig_paths.remote_subjects_folder
     assert isinstance(local_path, Path)
     if remote_path is None:
         raise Exception('Remote Path is not defined.')
-    if interactive:
-        print(f'Local Path:  `{local_path}`')
-        print(f'Remote Path: `{remote_path}`\n')
-    else:
-        logger.debug(f'Local Path:  `{local_path}`')
-        logger.debug(f'Remote Path: `{remote_path}`')
     return local_path, remote_path
 
 
@@ -173,12 +167,9 @@ def _get_copiers(
     assert isinstance(local_subjects_folder, Path)
     if remote_subjects_folder is None:
         raise Exception('Remote Path is not defined.')
-    if interactive:
-        print(f'Local Path:  `{local_subjects_folder}`')
-        print(f'Remote Path: `{remote_subjects_folder}`\n')
-    else:
-        logger.debug(f'Local Path:  `{local_subjects_folder}`')
-        logger.debug(f'Remote Path: `{remote_subjects_folder}`')
+    level = logging.INFO if interactive else logging.DEBUG
+    logger.log(level, 'Local Path: %s', local_subjects_folder)
+    logger.log(level, 'Remote Path: %s', remote_subjects_folder)
 
     # get copiers
     copiers = [copier(f.parent, remote_subjects_folder, **kwargs)
@@ -238,7 +229,7 @@ def transfer_data(tag=None, local_path: Path = None, remote_path: Path = None, d
     """
     if not tag:
         raise ValueError('Tag required.')
-    local_subject_folder, remote_subject_folder = _get_subjects_folders(local_path, remote_path, interactive)
+    local_subject_folder, remote_subject_folder = _get_subjects_folders(local_path, remote_path)
     Copier = tag2copier.get(tag.lower(), SessionCopier)
     logger.info('Searching for %s sessions using %s class', tag.lower(), Copier.__name__)
     expected_devices = kwargs.pop('number_of_expected_devices', None)
