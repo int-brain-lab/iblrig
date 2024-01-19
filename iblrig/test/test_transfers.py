@@ -160,6 +160,8 @@ version: 1.0.0
 
     def test_copy_complete_session(self):
         """Tests the copy of a session using the SessionCopier base class with a specific tag."""
+        copiers = iblrig.commands.transfer_data(tag='timeline', subject='foo')
+        self.assertEqual(0, len(copiers))
         copiers = iblrig.commands.transfer_data(tag='timeline')
         self.assertEqual(1, len(copiers))
         self.assertTrue(self.remote.joinpath(self.session, 'raw_sync_data').exists())
@@ -267,3 +269,15 @@ class TestUnitTransferExperiments(unittest.TestCase):
         self.assertEqual(1, len(final_experiment_description['tasks']))
         self.assertEqual(set(final_experiment_description['devices']['cameras'].keys()), {'body', 'left', 'right'})
         self.assertEqual(set(final_experiment_description['sync'].keys()), {'nidq'})
+
+
+class TestBuildGlobPattern(unittest.TestCase):
+    """Test iblrig.commands._build_glob_pattern function."""
+    def test_build_glob_pattern(self):
+        self.assertEqual('*/*-*-*/*/transfer_me.flag', iblrig.commands._build_glob_pattern())
+        glob_pattern = iblrig.commands._build_glob_pattern(subject='SP*', date='2023-*', number='001')
+        self.assertEqual('SP*/2023-*/001/transfer_me.flag', glob_pattern)
+        glob_pattern = iblrig.commands._build_glob_pattern(flag_file='flag.file', subject='foo')
+        self.assertEqual('foo/*-*-*/*/flag.file', glob_pattern)
+        glob_pattern = iblrig.commands._build_glob_pattern(flag_file='flag.file', glob_pattern='foo/bar/baz.*')
+        self.assertEqual('foo/bar/baz.*', glob_pattern)

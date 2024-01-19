@@ -49,6 +49,12 @@ def _transfer_parser(description: str) -> argparse.ArgumentParser:
     parser.add_argument(
         '--cleanup-weeks', type=int, help='cleanup data older than this many weeks (-1 for no cleanup)', default=2
     )
+    parser.add_argument(
+        '--subject', type=str, help='an optional subject name to filter sessions by. Wildcards accepted.', default='*'
+    )
+    parser.add_argument(
+        '--date', type=str, help='an optional date pattern to filter sessions by. Wildcards accepted.', default='*-*-*'
+    )
     return parser
 
 
@@ -200,6 +206,31 @@ def _print_status(copiers: Iterable[SessionCopier], heading: str = '') -> None:
         print(f' * {copier.session_path}: {state}')
 
 
+def _build_glob_pattern(subject='*', date='*-*-*', number='*', flag_file='transfer_me.flag', **kwargs):
+    """
+    Build the copier glob pattern from filter keyword arguments.
+
+    Parameters
+    ----------
+    subject : str
+        A subject folder filter pattern.
+    date : str
+        A date folder pattern.
+    number : str
+        A number (i.e. experiment sequence) folder pattern.
+    flag_file : str
+        A flag filename pattern.
+    glob_pattern : str
+        The full glob pattern string (if defined, overrides all other arguments).
+
+    Returns
+    -------
+    str
+        The full glob pattern.
+    """
+    return kwargs.get('glob_pattern', '/'.join((subject, date, number, flag_file)))
+
+
 def transfer_data(tag=None, local_path: Path = None, remote_path: Path = None, dry: bool = False,
                   interactive: bool = False, cleanup_weeks=2, **kwargs) -> list[SessionCopier]:
     """
@@ -229,6 +260,9 @@ def transfer_data(tag=None, local_path: Path = None, remote_path: Path = None, d
     """
     if not tag:
         raise ValueError('Tag required.')
+    # Build glob patten based on subject/date/number/flag_file filter
+    kwargs['glob_pattern'] = _build_glob_pattern(**kwargs)
+    kwargs = {k: v for k, v in kwargs.items() if k not in ('subject', 'date', 'number', 'flag_file')}
     local_subject_folder, remote_subject_folder = _get_subjects_folders(local_path, remote_path)
     Copier = tag2copier.get(tag.lower(), SessionCopier)
     logger.info('Searching for %s sessions using %s class', tag.lower(), Copier.__name__)
