@@ -4,6 +4,7 @@ Changelog
 8.13.4
 ------
 * pin iblutil to version 1.7.3 or later
+* fixed display of version string in "about" tab
 
 8.13.3
 ______
