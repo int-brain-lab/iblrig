@@ -78,9 +78,125 @@ class TestCallSubprocesses(unittest.TestCase):
 
 class TestUpgradeFunction(unittest.TestCase):
     @patch('iblrig.upgrade_iblrig.check_upgrade_prerequisites')
-    @patch('iblrig.upgrade_iblrig.get_local_version')
-    @patch('iblrig.upgrade_iblrig.get_remote_version')
-    @patch('iblrig.upgrade_iblrig.is_dirty')
+    @patch('iblrig.upgrade_iblrig.get_local_version', return_value=None)
+    @patch('iblrig.upgrade_iblrig.call_subprocesses')
+    def test_upgrade_no_local_version(self, mock_call_subprocesses, mock_get_local_version, mock_check_upgrade_prerequisites):
+        with self.assertRaises(Exception):
+            upgrade(raise_exceptions=True)
+        mock_check_upgrade_prerequisites.assert_called_once()
+        mock_get_local_version.assert_called_once()
+        mock_call_subprocesses.assert_not_called()
+
+    @patch('iblrig.upgrade_iblrig.check_upgrade_prerequisites')
+    @patch('iblrig.upgrade_iblrig.get_remote_version', return_value=None)
+    @patch('iblrig.upgrade_iblrig.call_subprocesses')
+    def test_upgrade_no_remote_version(self, mock_call_subprocesses, mock_get_remote_version, mock_check_upgrade_prerequisites):
+        with self.assertRaises(Exception):
+            upgrade(raise_exceptions=True)
+        mock_check_upgrade_prerequisites.assert_called_once()
+        mock_get_remote_version.assert_called_once()
+        mock_call_subprocesses.assert_not_called()
+
+    @patch('iblrig.upgrade_iblrig.check_upgrade_prerequisites')
+    @patch('iblrig.upgrade_iblrig.get_local_version', return_value=Version('1.0.0'))
+    @patch('iblrig.upgrade_iblrig.get_remote_version', return_value=Version('1.0.0'))
+    @patch('iblrig.upgrade_iblrig.ask_user', return_value=False)
+    @patch('iblrig.upgrade_iblrig.call_subprocesses')
+    def test_upgrade_not_necessary(
+        self,
+        mock_call_subprocesses,
+        mock_ask_user,
+        mock_get_remote_version,
+        mock_get_local_version,
+        mock_check_upgrade_prerequisites,
+    ):
+        with self.assertRaises(SystemExit):
+            upgrade(raise_exceptions=True)
+        mock_check_upgrade_prerequisites.assert_called_once()
+        mock_get_local_version.assert_called_once()
+        mock_get_remote_version.assert_called_once()
+        mock_ask_user.assert_called_once()
+        mock_call_subprocesses.assert_not_called()
+
+    @patch('iblrig.upgrade_iblrig.check_upgrade_prerequisites')
+    @patch('iblrig.upgrade_iblrig.get_local_version', return_value=Version('1.0.0'))
+    @patch('iblrig.upgrade_iblrig.get_remote_version', return_value=Version('2.0.0'))
+    @patch('iblrig.upgrade_iblrig.is_dirty', return_value=True)
+    @patch('iblrig.upgrade_iblrig.ask_user', return_value=False)
+    @patch('iblrig.upgrade_iblrig.call_subprocesses')
+    def test_upgrade_not_necessary(
+        self,
+        mock_call_subprocesses,
+        mock_ask_user,
+        mock_is_dirty,
+        mock_get_remote_version,
+        mock_get_local_version,
+        mock_check_upgrade_prerequisites,
+    ):
+        with self.assertRaises(SystemExit):
+            upgrade(raise_exceptions=True)
+        mock_check_upgrade_prerequisites.assert_called_once()
+        mock_get_local_version.assert_called_once()
+        mock_get_remote_version.assert_called_once()
+        mock_ask_user.assert_called_once()
+        mock_is_dirty.assert_called_once()
+        mock_call_subprocesses.assert_not_called()
+
+    @patch('iblrig.upgrade_iblrig.check_upgrade_prerequisites')
+    @patch('iblrig.upgrade_iblrig.get_local_version', return_value=Version('1.0.0'))
+    @patch('iblrig.upgrade_iblrig.get_remote_version', return_value=Version('2.0.0'))
+    @patch('iblrig.upgrade_iblrig.is_dirty', return_value=False)
+    @patch('iblrig.upgrade_iblrig.ask_user')
+    @patch('iblrig.upgrade_iblrig.call_subprocesses', side_effect=CalledProcessError(cmd='asd', returncode=42))
+    def test_upgrade_subprocess_exception_raised(
+        self,
+        mock_call_subprocesses,
+        mock_ask_user,
+        mock_is_dirty,
+        mock_get_remote_version,
+        mock_get_local_version,
+        mock_check_upgrade_prerequisites,
+    ):
+        with self.assertRaises(CalledProcessError):
+            upgrade(raise_exceptions=True)
+        mock_check_upgrade_prerequisites.assert_called_once()
+        mock_get_local_version.assert_called_once()
+        mock_get_remote_version.assert_called_once()
+        mock_ask_user.assert_not_called()
+        mock_is_dirty.assert_called_once()
+        mock_call_subprocesses.assert_called_once()
+
+    @patch('iblrig.upgrade_iblrig.check_upgrade_prerequisites')
+    @patch('iblrig.upgrade_iblrig.get_local_version', return_value=Version('1.0.0'))
+    @patch('iblrig.upgrade_iblrig.get_remote_version', return_value=Version('2.0.0'))
+    @patch('iblrig.upgrade_iblrig.is_dirty', return_value=False)
+    @patch('iblrig.upgrade_iblrig.ask_user')
+    @patch('iblrig.upgrade_iblrig.call_subprocesses', side_effect=CalledProcessError(cmd='asd', returncode=42))
+    @patch('sys.exit')
+    def test_upgrade_subprocess_exception_as_error(
+        self,
+        mock_exit,
+        mock_call_subprocesses,
+        mock_ask_user,
+        mock_is_dirty,
+        mock_get_remote_version,
+        mock_get_local_version,
+        mock_check_upgrade_prerequisites,
+    ):
+        with self.assertLogs(level='ERROR'):
+            upgrade(raise_exceptions=False)
+        mock_check_upgrade_prerequisites.assert_called_once()
+        mock_get_local_version.assert_called_once()
+        mock_get_remote_version.assert_called_once()
+        mock_ask_user.assert_not_called()
+        mock_is_dirty.assert_called_once()
+        mock_call_subprocesses.assert_called_once()
+        mock_exit.assert_called_once_with(42)
+
+    @patch('iblrig.upgrade_iblrig.check_upgrade_prerequisites')
+    @patch('iblrig.upgrade_iblrig.get_local_version', return_value=Version('1.0.0'))
+    @patch('iblrig.upgrade_iblrig.get_remote_version', return_value=Version('2.0.0'))
+    @patch('iblrig.upgrade_iblrig.is_dirty', return_value=False)
     @patch('iblrig.upgrade_iblrig.call_subprocesses')
     @patch('iblrig.upgrade_iblrig._exit_or_raise')
     @patch('sys.exit')
@@ -94,12 +210,7 @@ class TestUpgradeFunction(unittest.TestCase):
         mock_get_local_version,
         mock_check_upgrade_prerequisites,
     ):
-        mock_get_local_version.return_value = Version('1.0.0')
-        mock_get_remote_version.return_value = Version('2.0.0')
-        mock_is_dirty.return_value = False
-
         upgrade(raise_exceptions=False, allow_reset=False)
-
         mock_check_upgrade_prerequisites.assert_called_once_with(exception_handler=mock_exit_or_raise, raise_exception=False)
         mock_get_local_version.assert_called_once()
         mock_get_remote_version.assert_called_once()
