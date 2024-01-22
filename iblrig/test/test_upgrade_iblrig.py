@@ -124,7 +124,7 @@ class TestUpgradeFunction(unittest.TestCase):
     @patch('iblrig.upgrade_iblrig.is_dirty', return_value=True)
     @patch('iblrig.upgrade_iblrig.ask_user', return_value=False)
     @patch('iblrig.upgrade_iblrig.call_subprocesses')
-    def test_upgrade_not_necessary(
+    def test_upgrade_dirty(
         self,
         mock_call_subprocesses,
         mock_ask_user,
