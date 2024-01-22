@@ -2,12 +2,14 @@ import unittest
 from subprocess import CalledProcessError
 from unittest.mock import patch
 
+from packaging.version import Version
+
 import iblrig.upgrade_iblrig
-from iblrig.upgrade_iblrig import _exit_or_raise, call_subprocesses
+from iblrig.upgrade_iblrig import _exit_or_raise, call_subprocesses, upgrade
 
 
 class TestExitOrRaise(unittest.TestCase):
-    @patch('iblrig.upgrade_iblrig.sys.exit')
+    @patch('sys.exit')
     @patch('iblrig.upgrade_iblrig.log.error')
     def test_raise_exception_true(self, mock_log_error, mock_sys_exit):
         error_message = 'Something went wrong!'
@@ -19,7 +21,7 @@ class TestExitOrRaise(unittest.TestCase):
         mock_log_error.assert_not_called()
         mock_sys_exit.assert_not_called()
 
-    @patch('iblrig.upgrade_iblrig.sys.exit')
+    @patch('sys.exit')
     @patch('iblrig.upgrade_iblrig.log.error')
     def test_exit_with_return_code(self, mock_log_error, mock_sys_exit):
         error_message = 'Something went wrong!'
@@ -28,7 +30,7 @@ class TestExitOrRaise(unittest.TestCase):
         mock_log_error.assert_called_once_with(error_message)
         mock_sys_exit.assert_called_once_with(return_code)
 
-    @patch('iblrig.upgrade_iblrig.sys.exit')
+    @patch('sys.exit')
     @patch('iblrig.upgrade_iblrig.log.error')
     def test_exit_without_return_code(self, mock_log_error, mock_sys_exit):
         error_message = CalledProcessError(cmd='OMG!', returncode=42)
@@ -72,3 +74,35 @@ class TestCallSubprocesses(unittest.TestCase):
         for call in calls:
             mock_log.warning.assert_any_call('\n' + ' '.join(call))
             mock_run.assert_any_call(call, **kwargs)
+
+
+class TestUpgradeFunction(unittest.TestCase):
+    @patch('iblrig.upgrade_iblrig.check_upgrade_prerequisites')
+    @patch('iblrig.upgrade_iblrig.get_local_version')
+    @patch('iblrig.upgrade_iblrig.get_remote_version')
+    @patch('iblrig.upgrade_iblrig.is_dirty')
+    @patch('iblrig.upgrade_iblrig.call_subprocesses')
+    @patch('iblrig.upgrade_iblrig._exit_or_raise')
+    @patch('sys.exit')
+    def test_upgrade(
+        self,
+        mock_exit,
+        mock_exit_or_raise,
+        mock_call_subprocesses,
+        mock_is_dirty,
+        mock_get_remote_version,
+        mock_get_local_version,
+        mock_check_upgrade_prerequisites,
+    ):
+        mock_get_local_version.return_value = Version('1.0.0')
+        mock_get_remote_version.return_value = Version('2.0.0')
+        mock_is_dirty.return_value = False
+
+        upgrade(raise_exceptions=False, allow_reset=False)
+
+        mock_check_upgrade_prerequisites.assert_called_once_with(exception_handler=mock_exit_or_raise, raise_exception=False)
+        mock_get_local_version.assert_called_once()
+        mock_get_remote_version.assert_called_once()
+        mock_is_dirty.assert_called_once()
+        mock_call_subprocesses.assert_called_once()
+        mock_exit.assert_called_once_with(0)
