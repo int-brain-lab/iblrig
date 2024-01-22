@@ -1,6 +1,13 @@
 Changelog
 ---------
 
+8.13.4
+------
+* pin iblutil to version 1.7.3 or later
+* reworked upgrade script and moved to separate file to avoid file-access issues
+* fixed display of version string in "about" tab
+* revert logging of task events to GUI only
+
 8.13.3
 ______
 * add tests with mock Bonsai to cover for task start methods

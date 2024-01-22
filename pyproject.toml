@@ -12,12 +12,13 @@ license = { file = "LICENSE" }
 dependencies = [
     "ONE-api",
     "PyYAML",
+    "colorlog",
     "graphviz",
     "iblbpod@git+https://github.com/int-brain-lab/iblbpod.git",
     "ibllib@git+https://github.com/int-brain-lab/ibllib.git",
     "iblpybpod@git+https://github.com/int-brain-lab/iblpybpod.git@no-gui",
     "iblscripts@git+https://github.com/int-brain-lab/iblscripts.git",
-    "iblutil >= 1.7.1",
+    "iblutil >= 1.7.3",
     "ipython",
     "numpy",
     "packaging",
@@ -57,7 +58,7 @@ transfer_ephys_data = "iblrig.commands:transfer_ephys_data_cli"
 flush               = "iblrig.commands:flush"
 remove-old-sessions = "iblrig.commands:remove_local_sessions"
 iblrig              = "iblrig.gui.wizard:main"
-upgrade_iblrig      = "iblrig.version_management:upgrade"
+upgrade_iblrig      = "iblrig.upgrade_iblrig:upgrade"
 install_spinnaker   = "iblrig.video:install_spinnaker"
 install_pyspin      = "iblrig.video:install_pyspin"
 start_video_session = "iblrig.video:prepare_video_session_cmd"
