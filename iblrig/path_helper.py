@@ -29,7 +29,7 @@ def iterate_previous_sessions(subject_name, task_name, n=1, **kwargs):
     matching protocols in the form of a dictionary
     :param subject_name:
     :param task_name: name of the protocol to look for in experiment description : '_iblrig_tasks_trainingChoiceWorld'
-    :param **kwargs: optional arguments to be passed to iblrig.path_helper.get_local_and_remote_paths
+    :param kwargs: optional arguments to be passed to iblrig.path_helper.get_local_and_remote_paths
     if not used, will use the arguments from iblrig/settings/iblrig_settings.yaml
     :return:
         list of dictionaries with keys: session_path, experiment_description, task_settings, file_task_data
@@ -216,11 +216,21 @@ def patch_settings(rs: dict, filename: str | Path) -> dict:
         The updated settings.
     """
     filename = Path(filename)
-    if filename.stem.startswith('hardware') and version.parse(rs.get('VERSION', '0.0.0')) < version.Version('1.0.0'):
-        if 'device_camera' in rs:
+    settings_version = version.parse(rs.get('VERSION', '0.0.0'))
+    if filename.stem.startswith('hardware'):
+        if settings_version < version.Version('1.0.0') and 'device_camera' in rs:
             log.info('Patching hardware settings; assuming left camera label')
             rs['device_cameras'] = {'left': rs.pop('device_camera')}
-        rs['VERSION'] = '1.0.0'
+            rs['VERSION'] = '1.0.0'
+        idx_missing = set(rs['device_cameras']) == {'left'} and 'INDEX' not in rs['device_cameras']['left']
+        if settings_version < version.Version('1.1.0') and idx_missing:
+            log.info('Patching hardware settings; assuming left camera index and training workflow')
+            workflow = rs['device_cameras']['left'].pop('BONSAI_WORKFLOW', None)
+            bonsai_workflows = {'setup': 'devices/camera_setup/EphysRig_SetupCameras.bonsai', 'recording': workflow}
+            rs['device_cameras'] = {
+                'training': {'BONSAI_WORKFLOW': bonsai_workflows, 'left': {'INDEX': 1}}
+            }
+            rs['VERSION'] = '1.1.0'
     return rs
 
 

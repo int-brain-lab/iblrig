@@ -31,7 +31,7 @@ from iblrig import frame2TTL, sound
 from iblrig.constants import BASE_PATH, BONSAI_EXE
 from iblrig.hardware import SOFTCODE, Bpod, MyRotaryEncoder, sound_device_factory
 from iblrig.path_helper import load_pydantic_yaml
-from iblrig.pydantic_definitions import HardwareSettings, HardwareSettingsCameras, RigSettings
+from iblrig.pydantic_definitions import HardwareSettings, HardwareSettingsCamera, RigSettings
 from iblrig.tools import call_bonsai
 from iblrig.transfer_experiments import BehaviorCopier
 from iblutil.spacer import Spacer
@@ -547,7 +547,7 @@ class BonsaiRecordingMixin:
         log.info('Bonsai microphone recording module loaded: OK')
 
     @staticmethod
-    def _camera_mixin_bonsai_get_workflow_file(cameras: HardwareSettingsCameras | dict | None) -> Path | None:
+    def _camera_mixin_bonsai_get_workflow_file(cameras: HardwareSettingsCamera | dict | None) -> Path | None:
         """
         Returns the first available bonsai workflow file for the cameras from the hardware_settings.yaml file
         :param device_cameras_key:

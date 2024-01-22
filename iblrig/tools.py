@@ -204,7 +204,7 @@ def call_bonsai(
     parameters : dict[str, str], optional
         Parameters to be passed to Bonsai workflow.
     start : bool, optional
-        Start execution of the workflow within Bonsai (default is True)
+        Start execution of the workflow within Bonsai (default is True).
     debug : bool, optional
         Enable debugging mode if True (default is False).
         Only applies if editor is True.

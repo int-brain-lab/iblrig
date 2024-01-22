@@ -1,7 +1,7 @@
 from collections import abc
 from datetime import date
 from pathlib import Path
-from typing import Literal, Optional
+from typing import Literal, Optional, Dict
 
 from pydantic import AnyUrl, BaseModel, ConfigDict, Field, field_validator
 
@@ -108,13 +108,35 @@ class HardwareSettingsValve(BunchModel):
 
 
 class HardwareSettingsCamera(BunchModel):
-    BONSAI_WORKFLOW: Path
+    INDEX: int
+    FPS: Optional[int] = Field(
+        title='Camera frame rate', omit_default=True, default=None,
+        description='An optional frame rate (for camera QC only)', ge=0)
+    WIDTH: Optional[int] = Field(
+        title='Camera frame width', omit_default=True, default=None,
+        description='An optional frame width (for camera QC only)', ge=0)
+    HEIGHT: Optional[int] = Field(
+        title='Camera frame hight', omit_default=True, default=None,
+        description='An optional frame hight (for camera QC only)', ge=0)
 
 
-class HardwareSettingsCameras(BunchModel):
-    left: HardwareSettingsCamera | None
-    right: HardwareSettingsCamera | None = None
-    body: HardwareSettingsCamera | None = None
+class HardwareSettingsCameraWorkflow(BunchModel):
+    setup: Optional[Path] = Field(
+        title='Optional camera setup workflow', omit_default=True, default=None,
+        description='An optional path to the camera setup Bonsai workflow.'
+    )
+    recording: Path = Field(
+        title='Camera recording workflow',
+        description='The path to the Bonsai workflow for camera recording.'
+    )
+
+    @field_validator('*')
+    def valid_path(cls, v):  # noqa: N805
+        if not v.is_absolute():  # assume relative to iblrig repo
+            v = Path(__file__).parents[1].joinpath(v)
+        if not v.exists():
+            raise FileNotFoundError(v)
+        return v
 
 
 class HardwareSettingsMicrophone(BunchModel):
@@ -131,6 +153,35 @@ class HardwareSettings(BunchModel):
     device_screen: HardwareSettingsScreen
     device_sound: HardwareSettingsSound
     device_valve: HardwareSettingsValve
-    device_cameras: HardwareSettingsCameras | None = None
+    device_cameras: Dict[str, Dict]
     device_microphone: HardwareSettingsMicrophone | None = None
-    VERSION: str = '1.0.0'
+    VERSION: str = '1.1.0'
+
+    @field_validator('device_cameras')
+    def validate_device_cameras(cls, field):  # noqa: N805
+        """
+        Validate camera devices field.
+
+        We expect this to be a map of configuration name, e.g. 'training', 'ephys'. Each value must
+        be a dict with either a camera name, e.g. 'body', or 'BONSAI_WORKFLOW'. The camera name
+        should map to a dict with at list the key INDEX (see `HardwareSettingsCamera`); the
+        'BONSAI_WORKFLOW' key must be a map of keys {'setup', 'recording'} to a path to the Bonsai
+        Workflow to run.
+
+        Parameters
+        ----------
+        field : dict
+            The 'device_cameras' field to validate.
+
+        Returns
+        -------
+        dict
+            The validated 'device_cameras' field.
+        """
+        for name, configuration in field.items():
+            if not isinstance(configuration, dict):
+                raise TypeError
+            for k, v in configuration.items():
+                model = HardwareSettingsCameraWorkflow if k == 'BONSAI_WORKFLOW' else HardwareSettingsCamera
+                configuration[k] = model.model_validate(v)
+        return field

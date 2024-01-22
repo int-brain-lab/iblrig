@@ -2,6 +2,7 @@
 import tempfile
 import unittest
 from pathlib import Path
+from copy import deepcopy
 
 from iblrig import path_helper
 from iblrig.base_tasks import BonsaiRecordingMixin
@@ -47,15 +48,30 @@ class TestIterateCollection(unittest.TestCase):
 
 
 class TestPatchSettings(unittest.TestCase):
-    """Test for iblrig.path_helper.patch_settings"""
+    """Test for iblrig.path_helper.patch_settings."""
 
     def test_patch_hardware_settings(self):
-        rs = {'RIG_NAME': 'foo_rig', 'MAIN_SYNC': True, 'device_camera': {'BONSAI_WORKFLOW': 'path/to/Workflow.bonsai'}}
-        updated = path_helper.patch_settings(rs.copy(), 'hardware_settings')
-        self.assertEqual('1.0.0', updated.get('VERSION'))
+        recording_workflow = 'devices/camera_recordings/TrainingRig_SaveVideo_TrainingTasks.bonsai'
+        setup_workflow = 'devices/camera_setup/EphysRig_SetupCameras.bonsai'
+        # Version 0 settings example
+        rs = {'RIG_NAME': 'foo_rig', 'MAIN_SYNC': True, 'device_camera': {'BONSAI_WORKFLOW': recording_workflow}}
+        updated = path_helper.patch_settings(deepcopy(rs), 'hardware_settings')
+        self.assertEqual('1.1.0', updated.get('VERSION'))
         self.assertNotIn('device_camera', updated)
-        self.assertEqual(rs['device_camera'], updated.get('device_cameras', {}).get('left'))
-        self.assertDictEqual(path_helper.patch_settings(updated.copy(), 'hardware_settings'), updated)
+        expected = {'BONSAI_WORKFLOW': {'setup': setup_workflow, 'recording': recording_workflow}, 'left': {'INDEX': 1}}
+        self.assertEqual(expected, updated.get('device_cameras', {}).get('training'))
+        # HardwareSettings.model_validate(updated)  # Should pass validation?
+        HardwareSettings.validate_device_cameras(updated['device_cameras'])
+        # Assert unchanged when all up to date
+        self.assertDictEqual(path_helper.patch_settings(deepcopy(updated), 'hardware_settings'), updated)
+        # Test v1.0 -> v1.1
+        v1 = deepcopy(rs)
+        v1['device_cameras'] = {'left': {'BONSAI_WORKFLOW': recording_workflow}}
+        v1['VERSION'] = '1.0.0'
+        v2 = path_helper.patch_settings(v1, 'hardware_settings')
+        self.assertEqual('1.1.0', v2.get('VERSION'))
+        self.assertEqual(expected, v2.get('device_cameras', {}).get('training'))
+        HardwareSettings.validate_device_cameras(v2['device_cameras'])
 
 
 class TestHardwareSettings(unittest.TestCase):
