@@ -1,6 +1,6 @@
 import logging
 import re
-import sys
+from collections.abc import Callable
 from pathlib import Path
 from subprocess import STDOUT, CalledProcessError, SubprocessError, check_call, check_output
 
@@ -8,8 +8,8 @@ import requests
 from packaging import version
 
 from iblrig import __version__
-from iblrig.constants import BASE_DIR, IS_GIT
-from iblrig.tools import ask_user, internet_available, static_vars
+from iblrig.constants import BASE_DIR, IS_GIT, IS_VENV
+from iblrig.tools import internet_available, static_vars
 
 log = logging.getLogger(__name__)
 
@@ -286,64 +286,45 @@ def is_dirty() -> bool:
         return True
 
 
-def upgrade() -> int:
-    """
-    Upgrade the IBLRIG software installation.
+def check_upgrade_prerequisites(exception_handler: Callable | None = None, *args, **kwargs) -> None:
+    """Check prerequisites for upgrading IBLRIG.
 
-    This function upgrades the IBLRIG software installation to the latest version
-    available in the Git repository. It checks the local and remote versions,
-    confirms the upgrade with the user if necessary, and performs the upgrade.
+    This function verifies the prerequisites necessary for upgrading IBLRIG. It checks for
+    internet connectivity, whether the IBLRIG installation is managed through Git, and
+    whether the script is running within the IBLRIG virtual environment.
 
-    Returns
-    -------
-    int
-        0 if the upgrade process is successfully completed.
+    Parameters
+    ----------
+    exception_handler : Callable, optional
+        An optional callable that handles exceptions if raised during the check.
+        If provided, it will be called with the exception as the first argument,
+        followed by any additional positional arguments (*args), and any
+        additional keyword arguments (**kwargs).
+
+    *args : Additional positional arguments
+        Any additional positional arguments needed by the `exception_handler` callable.
+
+    **kwargs : Additional keyword arguments
+        Any additional keyword arguments needed by the `exception_handler` callable.
+
 
     Raises
     ------
-    Exception
-        - If the installation is not managed through Git.
-        - If the upgrade is attempted outside the IBLRIG virtual environment.
-        - If the local version cannot be obtained.
-        - If the remote version cannot be obtained.
-
-    Notes
-    -----
-    This method requires that the installation is managed through Git and that
-    the user is in the IBLRIG virtual environment.
+    ConnectionError
+        If there is no connection to the internet.
+    RuntimeError
+        If the IBLRIG installation is not managed through Git, or
+        if the script is not running within the IBLRIG virtual environment.
     """
-    if not internet_available():
-        raise Exception('Connection to internet not available.')
-    if not IS_GIT:
-        raise Exception('This installation of IBLRIG is not managed through git.')
-    if sys.base_prefix == sys.prefix:
-        raise Exception('You need to be in the IBLRIG venv in order to upgrade.')
-
     try:
-        v_local = get_local_version()
-        assert v_local
-    except AssertionError as e:
-        raise Exception('Could not obtain local version.') from e
-
-    try:
-        v_remote = get_remote_version()
-        assert v_remote
-    except AssertionError as e:
-        raise Exception('Could not obtain remote version.') from e
-
-    print(f'Local version:  {v_local}')
-    print(f'Remote version: {v_remote}\n')
-
-    if v_local >= v_remote and not ask_user('No need to upgrade. Do you want to run the upgrade routine anyways?', False):
-        return 0
-
-    if is_dirty():
-        print('There are changes in your local copy of IBLRIG that will be lost when upgrading.')
-        if not ask_user('Do you want to proceed?', False):
-            return 0
-        check_call(['git', 'reset', '--hard'], cwd=BASE_DIR)
-
-    check_call(['git', 'pull', '--tags'], cwd=BASE_DIR)
-    check_call([sys.executable, '-m', 'pip', 'install', '-U', 'pip'], cwd=BASE_DIR)
-    check_call([sys.executable, '-m', 'pip', 'install', '-U', '-e', BASE_DIR], cwd=BASE_DIR)
-    return 0
+        if not internet_available():
+            raise ConnectionError('No connection to internet.')
+        if not IS_GIT:
+            raise RuntimeError('This installation of IBLRIG is not managed through Git.')
+        if not IS_VENV:
+            raise RuntimeError('You need to be in the IBLRIG virtual environment in order to upgrade.')
+    except (ConnectionError, RuntimeError) as e:
+        if callable(exception_handler):
+            exception_handler(e, *args, **kwargs)
+        else:
+            raise e
