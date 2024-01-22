@@ -1,6 +1,21 @@
 Changelog
 ---------
 
+8.13.4
+------
+* pin iblutil to version 1.7.3 or later
+* reworked upgrade script and moved to separate file to avoid file-access issues
+* fixed display of version string in "about" tab
+
+8.13.3
+______
+* add tests with mock Bonsai to cover for task start methods
+* hotfix: also log to PowerShell (for now)
+
+8.13.2
+------
+* hotfix: 'WindowsPath' object has no attribute 'split'
+
 8.13.1
 ------
 * hotfix: passing non-existent parameter to Bonsai workflow
