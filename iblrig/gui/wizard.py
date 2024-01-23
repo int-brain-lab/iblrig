@@ -319,6 +319,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.webEngineView.urlChanged.connect(self._on_doc_url_changed)
 
         # tab: about
+        self.uiLabelCopyright.setText(f'**IBLRIG v{iblrig.__version__}**\n\n© 2024, International Brain Laboratory')
         self.commandLinkButtonGitHub.clicked.connect(lambda: webbrowser.open(URL_REPO))
         self.commandLinkButtonDoc.clicked.connect(lambda: webbrowser.open(URL_DOC))
         self.commandLinkButtonIssues.clicked.connect(lambda: webbrowser.open(URL_ISSUES))
@@ -960,7 +961,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         in the QPlainTextEdit widget to indicate an error (Red), and appends
         the error message to the widget.
         """
-        text = self.running_task_process.readAllStandardError().data().decode()
+        text = self.running_task_process.readAllStandardError().data().decode('utf-8', 'ignore')
         self._set_plaintext_char_color(self.uiPlainTextEditLog, 'Red')
         self.uiPlainTextEditLog.appendPlainText(text.strip())
 

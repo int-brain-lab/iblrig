@@ -546,7 +546,7 @@ class BonsaiRecordingMixin:
             return  # Camera workflow defined; so no need to separately start microphone.
         if not self.task_params.RECORD_SOUND:
             return  # Sound should not be recorded
-        workflow_file = self.paths.IBLRIG_FOLDER.joinpath(*self.hardware_settings.device_microphone['BONSAI_WORKFLOW'].split('/'))
+        workflow_file = self.paths.IBLRIG_FOLDER.joinpath(*self.hardware_settings.device_microphone['BONSAI_WORKFLOW'].parts)
         parameters = {
             'FileNameMic': self.paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_micData.raw.wav'),
             'RecordSound': self.task_params.RECORD_SOUND,
