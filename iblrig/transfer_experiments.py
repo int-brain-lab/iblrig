@@ -17,6 +17,7 @@ from iblutil.io import hashfile
 import one.alf.files as alfiles
 
 import iblrig
+from iblrig.path_helper import load_pydantic_yaml, HardwareSettings
 from iblrig.raw_data_loaders import load_task_jsonable
 
 log = logging.getLogger(__name__)
@@ -370,23 +371,39 @@ class VideoCopier(SessionCopier):
     tag = 'video'
     assert_connect_on_init = True
 
-    def create_video_stub(self, n_videos=None):
-        n_videos = n_videos or len(list(self.session_path.joinpath('raw_video_data').glob('*.avi')))
-        match n_videos:
-            case 3:
-                stub_file = Path(iblrig.__file__).parent.joinpath('device_descriptions', 'cameras', 'body_left_right.yaml')
-            case 1:
-                stub_file = Path(iblrig.__file__).parent.joinpath('device_descriptions', 'cameras', 'left.yaml')
-            case _:
-                raise NotImplementedError(f'No template for {n_videos} videos')
-        acquisition_description = session_params.read_params(stub_file)
+    def create_video_stub(self, config, collection='raw_video_data'):
+        acquisition_description = self.config2stub(config, collection)
         session_params.write_params(self.session_path, acquisition_description)
+
+    @staticmethod
+    def config2stub(config: dict, collection: str = 'raw_video_data') -> dict:
+        """
+        Generate acquisition description stub from a camera config dict.
+
+        Parameters
+        ----------
+        config : dict
+            A cameras configuration dictionary, found in `device_cameras` of hardware_settings.yaml.
+        collection : str
+            The video output collection.
+
+        Returns
+        -------
+        dict
+            An acquisition description file stub.
+        """
+        cameras = {}
+        for label, settings in filter(lambda itms: itms[0] != 'BONSAI_WORKFLOW', config.items()):
+            settings = {k.lower(): v for k, v in settings.items() if v is not None and k != 'INDEX'}
+            cameras[label] = dict(collection=collection, **settings)
+        acq_desc = {'devices': {'cameras': cameras}, 'version': '1.0.0'}
+        return acq_desc
 
     def initialize_experiment(self, acquisition_description=None, **kwargs):
         if not acquisition_description:
             # creates the acquisition description stub if not found, and then read it
             if not self.file_experiment_description.exists():
-                self.create_video_stub(n_videos=kwargs.pop('n_videos'))
+                raise FileNotFoundError(self.file_experiment_description)
             acquisition_description = session_params.read_params(self.file_experiment_description)
         self._experiment_description = acquisition_description
         super().initialize_experiment(acquisition_description=acquisition_description, **kwargs)

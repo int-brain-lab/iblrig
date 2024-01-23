@@ -58,7 +58,8 @@ class TestPatchSettings(unittest.TestCase):
         updated = path_helper.patch_settings(deepcopy(rs), 'hardware_settings')
         self.assertEqual('1.1.0', updated.get('VERSION'))
         self.assertNotIn('device_camera', updated)
-        expected = {'BONSAI_WORKFLOW': {'setup': setup_workflow, 'recording': recording_workflow}, 'left': {'INDEX': 1}}
+        expected = {'BONSAI_WORKFLOW': {'setup': setup_workflow, 'recording': recording_workflow},
+                    'left': {'INDEX': 1, 'SYNC_LABEL': 'audio'}}
         self.assertEqual(expected, updated.get('device_cameras', {}).get('training'))
         # HardwareSettings.model_validate(updated)  # Should pass validation?
         HardwareSettings.validate_device_cameras(updated['device_cameras'])

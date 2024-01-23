@@ -47,4 +47,5 @@ device_cameras:  # remove the whole section if no camera is used on the rig
         setup: devices/camera_setup/EphysRig_SetupCameras.bonsai
         recording: devices/camera_recordings/TrainingRig_SaveVideo_TrainingTasks.bonsai
       INDEX: 1
+      SYNC_LABEL: 'audio'
 VERSION: 1.1.0

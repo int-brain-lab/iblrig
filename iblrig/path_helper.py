@@ -228,7 +228,7 @@ def patch_settings(rs: dict, filename: str | Path) -> dict:
             workflow = rs['device_cameras']['left'].pop('BONSAI_WORKFLOW', None)
             bonsai_workflows = {'setup': 'devices/camera_setup/EphysRig_SetupCameras.bonsai', 'recording': workflow}
             rs['device_cameras'] = {
-                'training': {'BONSAI_WORKFLOW': bonsai_workflows, 'left': {'INDEX': 1}}
+                'training': {'BONSAI_WORKFLOW': bonsai_workflows, 'left': {'INDEX': 1, 'SYNC_LABEL': 'audio'}}
             }
             rs['VERSION'] = '1.1.0'
     return rs

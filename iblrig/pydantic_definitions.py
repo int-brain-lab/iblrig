@@ -116,8 +116,11 @@ class HardwareSettingsCamera(BunchModel):
         title='Camera frame width', omit_default=True, default=None,
         description='An optional frame width (for camera QC only)', ge=0)
     HEIGHT: Optional[int] = Field(
-        title='Camera frame hight', omit_default=True, default=None,
+        title='Camera frame height', omit_default=True, default=None,
         description='An optional frame hight (for camera QC only)', ge=0)
+    SYNC_LABEL: Optional[str] = Field(
+        title='Camera DAQ sync label', omit_default=True, default=None,
+        description='The name of the DAQ channel wired to the camera GPIO')
 
 
 class HardwareSettingsCameraWorkflow(BunchModel):

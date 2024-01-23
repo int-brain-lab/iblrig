@@ -13,9 +13,11 @@ from iblutil.io import params
 from iblutil.io import hashfile  # type: ignore
 from one.webclient import AlyxClient, http_download_file  # type: ignore
 from ibllib.pipes.misc import load_params_dict
+from ibllib.io.video import get_video_meta, label_from_path
+from ibllib.io.raw_data_loaders import load_embedded_frame_data
 
 from iblrig.base_tasks import EmptySession
-from iblrig.constants import BASE_PATH, HAS_PYSPIN, HAS_SPINNAKER, HARDWARE_SETTINGS_YAML, RIG_SETTINGS_YAML
+from iblrig.constants import HAS_PYSPIN, HAS_SPINNAKER, HARDWARE_SETTINGS_YAML, RIG_SETTINGS_YAML
 from iblrig.tools import ask_user, call_bonsai
 from iblrig.transfer_experiments import VideoCopier
 
@@ -199,45 +201,6 @@ def patch_old_params(remove_old=False, update_paths=True):
         old_file.unlink()
 
 
-def create_videopc_params(force=False, silent=False):
-    from iblutil.io import params
-    from ibllib.pipes.misc import cli_ask_default
-
-    if Path(params.getfile('videopc_params')).exists() and not force:
-        print(f'{params.getfile("videopc_params")} exists already, exiting...')
-        print(Path(params.getfile('videopc_params')).exists())
-        return
-    if silent:
-        data_folder_path = r'D:\iblrig_data\Subjects'
-        remote_data_folder_path = r'\\iblserver.champalimaud.pt\ibldata\Subjects'
-        body_cam_idx = 0
-        left_cam_idx = 1
-        right_cam_idx = 2
-    else:
-        data_folder_path = cli_ask_default(
-            r'Where\'s your LOCAL "Subjects" data folder?', r'D:\iblrig_data\Subjects'
-        )
-        remote_data_folder_path = cli_ask_default(
-            r'Where\'s your REMOTE "Subjects" data folder?',
-            r'\\iblserver.champalimaud.pt\ibldata\Subjects',
-        )
-        body_cam_idx = cli_ask_default('Please select the index of the BODY camera', '0')
-        left_cam_idx = cli_ask_default('Please select the index of the LEFT camera', '1')
-        right_cam_idx = cli_ask_default("Please select the index of the RIGHT camera", '2')
-
-    param_dict = {
-        'DATA_FOLDER_PATH': data_folder_path,
-        'REMOTE_DATA_FOLDER_PATH': remote_data_folder_path,
-        'BODY_CAM_IDX': body_cam_idx,
-        'LEFT_CAM_IDX': left_cam_idx,
-        'RIGHT_CAM_IDX': right_cam_idx,
-    }
-    params.write('videopc_params', param_dict)
-    print(f'Created {params.getfile("videopc_params")}')
-    print(param_dict)
-    return param_dict
-
-
 def prepare_video_session_cmd():
     if not HAS_SPINNAKER:
         if ask_user("Spinnaker SDK doesn't seem to be installed. Do you want to install it now?"):
@@ -250,47 +213,108 @@ def prepare_video_session_cmd():
 
     parser = argparse.ArgumentParser(prog='start_video_session', description='Prepare video PC for video recording session')
     parser.add_argument('subject_name', help='name of subject')
-    parser.add_argument('-t', '--training', action='store_true', help='launch video workflow for training session')
+    parser.add_argument('profile', help='camera configuration name, found in "device_cameras" map of hardware_settings.yaml')
     args = parser.parse_args()
 
-    prepare_video_session(args.subject_name, training_session=args.training)
+    prepare_video_session(args.subject_name, args.profile)
 
 
-def prepare_video_session(subject_name: str, training_session: bool = False):
+def validate_video(video_path, config):
+    """
+    Check raw video file saved as expected.
+
+    Parameters
+    ----------
+    video_path : pathlib.Path
+        Path to the video file.
+    config : iblrig.pydantic_definitions.HardwareSettingsCamera
+        The expected video configuration.
+
+    Returns
+    -------
+    bool
+        True if all checks pass.
+    """
+    try:
+        meta = get_video_meta(video_path)
+        ok = meta.length > 0 and meta.duration > 0
+        log.log(20 if meta.length > 0 else 40, 'N frames = %i', meta.length)
+        log.log(20 if meta.duration > 0 else 40, 'Duration = %.2f', meta.duration)
+        if config.HEIGHT and config.HEIGHT != meta.height:
+            ok = False
+            log.warning('Frame height = %i; expected %i', config.HEIGHT, meta.height)
+        if config.WIDTH and config.WIDTH != meta.width:
+            log.warning('Frame width = %i; expected %i', config.WIDTH, meta.width)
+            ok = False
+        if config.FPS and config.FPS != meta.fps:
+            log.warning('Frame height = %i; expected %i', config.FPS, meta.fps)
+            ok = False
+    except FileNotFoundError:
+        log.critical('Raw video file does not exist: %s', video_path)
+        return False
+    except AssertionError:
+        log.critical('Failed to open video file: %s', video_path)
+        return False
+
+    # Check frame data
+    count, gpio = load_embedded_frame_data(video_path.parents[1], label_from_path(video_path))
+    if config.SYNC_LABEL:
+        # TODO Check 'Frame counter lengths' and 'GPIO state lengths'
+        ...
+    return ok
+
+
+def prepare_video_session(subject_name: str, config_name: str):
     assert HAS_SPINNAKER
     assert HAS_PYSPIN
 
+    # Initialize a session for paths and settings
     session = EmptySession(subject=subject_name, interactive=False)
-    session_folder = session.paths.SESSION_FOLDER
-    raw_data_folder = session_folder.joinpath('raw_video_data')
+    session_path = session.paths.SESSION_FOLDER
+    raw_data_folder = session_path.joinpath('raw_video_data')
+
+    # Fetch camera configuration from hardware settings file
+    try:
+        config = session.hardware_settings.device_cameras[config_name]
+    except AttributeError as ex:
+        if hasattr(value_error := ValueError('"No camera config in hardware_settings.yaml file."'), 'add_note'):
+            value_error.add_note(HARDWARE_SETTINGS_YAML)
+        raise value_error from ex
+    except KeyError as ex:
+        raise ValueError(f'Config "{config_name}" not in "device_cameras" hardware settings.') from ex
+    workflows = config.pop('BONSAI_WORKFLOW')
+    cameras = [k for k in config if k != 'BONSAI_WORKFLOW']
+    params = {f'{k}CameraIndex': config[k].INDEX for k in cameras}
     raw_data_folder.mkdir(parents=True, exist_ok=True)
-    cam_index = {'Body': 0, 'Left': 1, 'Right': 2}
 
     # align cameras
-    bonsai_workflow = BASE_PATH.joinpath('devices', 'camera_setup', 'EphysRig_SetupCameras.bonsai')
-    params = {}
-    for key, value in cam_index.items():
-        params[f'{key}CameraIndex'] = value
-    video_pyspin.enable_camera_trigger(enable=False)
-    call_bonsai(bonsai_workflow, params)
+    if workflows.setup:
+        video_pyspin.enable_camera_trigger(enable=False)
+        call_bonsai(workflows.setup, params)
 
     # record video
-    if training_session:
-        bonsai_workflow = BASE_PATH.joinpath('devices', 'camera_recordings', 'EphysRig_SaveVideo_TrainingTasks.bonsai')
-    else:
-        bonsai_workflow = BASE_PATH.joinpath('devices', 'camera_recordings', 'EphysRig_SaveVideo_EphysTasks.bonsai')
-    for key, _ in cam_index.items():
-        params[f'FileName{key}'] = raw_data_folder.joinpath(f'_iblrig_{key.lower()}Camera.raw.avi')
-        params[f'FileName{key}Data'] = raw_data_folder.joinpath(f'_iblrig_{key.lower()}Camera.frameData.bin')
+    filenamevideo = '_iblrig_{}Camera.raw.avi'
+    filenameframedata = '_iblrig_{}Camera.frameData.bin'
+    for k in map(str.capitalize, cameras):
+        params[f'FileName{k}'] = str(raw_data_folder / filenamevideo.format(k.lower()))
+        params[f'FileName{k}Data'] = str(raw_data_folder / filenameframedata.format(k.lower()))
     video_pyspin.enable_camera_trigger(enable=True)
-    bonsai_process = call_bonsai(bonsai_workflow, params, wait=False)
+    bonsai_process = call_bonsai(workflows.recording, params, wait=False)
     input('PRESS ENTER TO START CAMERAS')
-    video_pyspin.enable_camera_trigger(enable=False)
-    vc = VideoCopier(session_path=session_folder)
-    vc.create_video_stub(nvideos=1 if training_session else 3)
-    session_folder.joinpath('transfer_me.flag').touch()
-    bonsai_process.wait()
+    # Save the stub files locally and in the remote repo for future copy script to use
+    copier = VideoCopier(session_path=session_path, remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER)
+    copier.initialize_experiment(acquisition_description=copier.config2stub(config, raw_data_folder.name))
 
+    video_pyspin.enable_camera_trigger(enable=False)
+    log.info('To terminate video acquisition, please stop and close Bonsai workflow.')
+    bonsai_process.wait()
+    log.info('Video acquisition session finished.')
+
+    # Check video files were saved and configured correctly
+    for video_file in (Path(v) for v in params.values() if isinstance(v, str) and v.endswith('.avi')):
+        validate_video(video_file, config[label_from_path(video_file)])
+
+    session_path.joinpath('transfer_me.flag').touch()
     # remove empty-folders and parent-folders
     if not any(raw_data_folder.iterdir()):
         os.removedirs(raw_data_folder)
