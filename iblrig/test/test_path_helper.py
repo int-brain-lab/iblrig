@@ -5,7 +5,6 @@ from pathlib import Path
 from copy import deepcopy
 
 from iblrig import path_helper
-from iblrig.base_tasks import BonsaiRecordingMixin
 from iblrig.constants import BASE_DIR
 from iblrig.pydantic_definitions import HardwareSettings
 
@@ -73,15 +72,6 @@ class TestPatchSettings(unittest.TestCase):
         self.assertEqual('1.1.0', v2.get('VERSION'))
         self.assertEqual(expected, v2.get('device_cameras', {}).get('training'))
         HardwareSettings.validate_device_cameras(v2['device_cameras'])
-
-
-class TestHardwareSettings(unittest.TestCase):
-    def test_get_left_camera_workflow(self):
-        hws = path_helper.load_pydantic_yaml(HardwareSettings, 'hardware_settings_template.yaml')
-        config = hws['device_cameras']['training']
-        self.assertIsNotNone(BonsaiRecordingMixin._camera_mixin_bonsai_get_workflow_file(config, 'recording'))
-        self.assertIsNone(BonsaiRecordingMixin._camera_mixin_bonsai_get_workflow_file(None, 'recording'))
-        self.assertRaises(KeyError, BonsaiRecordingMixin._camera_mixin_bonsai_get_workflow_file, {}, 'recording')
 
 
 if __name__ == '__main__':

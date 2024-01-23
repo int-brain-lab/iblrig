@@ -1,6 +1,6 @@
 """
 Hardware Mixins are extensions to a Session object for specific hardware.
-Those can be instantiated lazily, ie. on any computer.
+Those can be instantiated lazily, i.e. on any computer.
 The start() methods of those mixins require the hardware to be connected.
 
 """
@@ -15,8 +15,12 @@ import yaml
 import ibllib.io.session_params as ses_params
 from ibllib.io.session_params import read_params
 from iblrig.base_choice_world import BiasedChoiceWorldSession, ChoiceWorldSession
-from iblrig.base_tasks import BaseSession, BpodMixin, Frame2TTLMixin, RotaryEncoderMixin, SoundMixin, ValveMixin
+from iblrig.base_tasks import (
+    BaseSession, BpodMixin, Frame2TTLMixin, RotaryEncoderMixin, SoundMixin, ValveMixin, BonsaiRecordingMixin
+)
 from iblrig.misc import _get_task_argument_parser, _post_parse_arguments
+from iblrig.path_helper import load_pydantic_yaml
+from iblrig.pydantic_definitions import HardwareSettings
 from iblrig.test.base import TASK_KWARGS
 
 
@@ -243,3 +247,12 @@ class TestTaskArguments(unittest.TestCase):
         self.assertTrue(kwargs['interactive'])
         self.assertEqual(kwargs['subject'], 'toto')
         self.assertEqual(kwargs['training_phase'], 4)
+
+
+class TestHardwareSettings(unittest.TestCase):
+    def test_get_left_camera_workflow(self):
+        hws = load_pydantic_yaml(HardwareSettings, 'hardware_settings_template.yaml')
+        config = hws['device_cameras']['default']
+        self.assertIsNotNone(BonsaiRecordingMixin._camera_mixin_bonsai_get_workflow_file(config, 'recording'))
+        self.assertIsNone(BonsaiRecordingMixin._camera_mixin_bonsai_get_workflow_file(None, 'recording'))
+        self.assertRaises(KeyError, BonsaiRecordingMixin._camera_mixin_bonsai_get_workflow_file, {}, 'recording')

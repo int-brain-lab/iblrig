@@ -29,7 +29,7 @@ class BunchModel(BaseModel, abc.MutableMapping):
         return (getattr(self, key) for key in self.keys())
 
     def __delitem__(self, key):
-        raise NotImplementedError()
+        raise NotImplementedError
 
 
 class RigSettings(BunchModel, validate_assignment=True):

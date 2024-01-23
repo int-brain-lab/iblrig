@@ -587,7 +587,6 @@ class BonsaiRecordingMixin:
             except StopIteration:
                 return
         configuration = self.hardware_settings.device_cameras[self.config]
-        # FIXME This seems to use setup_video.bonsai instead of EphysRig_SetupCameras. Update template?
         if (workflow_file := self._camera_mixin_bonsai_get_workflow_file(configuration, 'setup')) is None:
             return
         # FIXME Determine what below TODO is indicating
@@ -595,7 +594,7 @@ class BonsaiRecordingMixin:
         # if PYSPIN_AVAILABLE:
         #     from iblrig.video_pyspin import enable_camera_trigger
         #     enable_camera_trigger(True)
-        call_bonsai(workflow_file, wait=True)  # TODO pass in parameters??
+        call_bonsai(workflow_file, wait=True)  # TODO Parameterize using configuration cameras
         log.info('Bonsai cameras setup module loaded: OK')
 
     def trigger_bonsai_cameras(self):
@@ -612,6 +611,7 @@ class BonsaiRecordingMixin:
         if workflow_file is None:
             return
         iblrig.path_helper.create_bonsai_layout_from_template(workflow_file)  # FIXME What does this do?
+        # FIXME Use parameters in configuration map
         parameters = {
             'FileNameLeft': self.paths.SESSION_FOLDER.joinpath('raw_video_data', '_iblrig_leftCamera.raw.avi'),
             'FileNameLeftData': self.paths.SESSION_FOLDER.joinpath('raw_video_data', '_iblrig_leftCamera.frameData.bin'),

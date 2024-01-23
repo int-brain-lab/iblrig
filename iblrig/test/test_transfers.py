@@ -244,7 +244,7 @@ class TestUnitTransferExperiments(unittest.TestCase):
 
         vc = VideoCopier(session_path=folder_session_video, remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER)
         hws = load_pydantic_yaml(HardwareSettings, 'hardware_settings_template.yaml')
-        vc.create_video_stub(hws['device_cameras']['training'])
+        vc.create_video_stub(hws['device_cameras']['default'])
         self.assertEqual(0, vc.state)
         vc.initialize_experiment()
         self.assertEqual(1, vc.state)

@@ -235,6 +235,12 @@ def validate_video(video_path, config):
     bool
         True if all checks pass.
     """
+    if not video_path.exists():
+        log.critical('Raw video file does not exist: %s', video_path)
+        return False
+    elif video_path.stat().st_size == 0:
+        log.critical('Raw video file empty: %s', video_path)
+        return False
     try:
         meta = get_video_meta(video_path)
         ok = meta.length > 0 and meta.duration > 0
@@ -247,24 +253,43 @@ def validate_video(video_path, config):
             log.warning('Frame width = %i; expected %i', config.WIDTH, meta.width)
             ok = False
         if config.FPS and config.FPS != meta.fps:
-            log.warning('Frame height = %i; expected %i', config.FPS, meta.fps)
+            log.warning('Frame rate = %i; expected %i', config.FPS, meta.fps)
             ok = False
-    except FileNotFoundError:
-        log.critical('Raw video file does not exist: %s', video_path)
-        return False
     except AssertionError:
         log.critical('Failed to open video file: %s', video_path)
         return False
 
     # Check frame data
     count, gpio = load_embedded_frame_data(video_path.parents[1], label_from_path(video_path))
+    if count[-1] != meta.length - 1:
+        log.error('Frame count / video frame mismatch - frame counts = %i; video frames = %i', count[-1], meta.length)
+        ok = False
+    if len(count) != meta.length:
+        log.warning('Missed frames - frame data N = %i; video file N = %i', count[-1], meta.length)
+        ok = False
     if config.SYNC_LABEL:
-        # TODO Check 'Frame counter lengths' and 'GPIO state lengths'
-        ...
+        MIN_EVENTS = 10  # The minimum expected number of GPIO events
+        if all(ch is None for ch in gpio):
+            log.error('No GPIO events detected.')
+            ok = False
+        else:
+            for i, ch in enumerate(gpio):
+                if ch:
+                    log.log(30 if len(ch['indices']) < MIN_EVENTS else 20, '%i event(s) on GPIO #%i', len(ch['indices']), i + 1)
     return ok
 
 
 def prepare_video_session(subject_name: str, config_name: str):
+    """
+    Setup and record video.
+
+    Parameters
+    ----------
+    subject_name : str
+        A subject name.
+    config_name : str
+        Camera configuration name, found in "device_cameras" map of hardware_settings.yaml.
+    """
     assert HAS_SPINNAKER
     assert HAS_PYSPIN
 
@@ -278,7 +303,7 @@ def prepare_video_session(subject_name: str, config_name: str):
         config = session.hardware_settings.device_cameras[config_name]
     except AttributeError as ex:
         if hasattr(value_error := ValueError('"No camera config in hardware_settings.yaml file."'), 'add_note'):
-            value_error.add_note(HARDWARE_SETTINGS_YAML)
+            value_error.add_note(HARDWARE_SETTINGS_YAML)  # py 3.11
         raise value_error from ex
     except KeyError as ex:
         raise ValueError(f'Config "{config_name}" not in "device_cameras" hardware settings.') from ex
