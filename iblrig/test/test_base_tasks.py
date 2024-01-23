@@ -120,11 +120,11 @@ class TestExperimentDescription(unittest.TestCase):
         self.stub_path = ses_params.write_params(tempdir.name, self.stub)
 
     def test_new_description(self):
-        """Test creation of a brand new experiment description (no stub)"""
+        """Test creation of a brand new experiment description (no stub)."""
         hardware_settings = {
             'RIG_NAME': '_iblrig_cortexlab_behavior_3',
             'device_bpod': {'FOO': 10, 'BAR': 20},
-            'device_cameras': {'left': {'BAZ': 0}},
+            'device_cameras': {'default': {'left': {'SYNC_LABEL': 'audio'}}},
         }
         description = BaseSession.make_experiment_description_dict(
             'choiceWorld', 'raw_behavior_data', procedures=['Imaging'], projects=['foo'], hardware_settings=hardware_settings

@@ -1,6 +1,4 @@
-"""
-This modules extends the base_tasks modules by providing task logic around the Choice World protocol
-"""
+"""Extends the base_tasks modules by providing task logic around the Choice World protocol."""
 import abc
 import json
 import logging

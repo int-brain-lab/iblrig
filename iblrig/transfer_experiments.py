@@ -17,7 +17,6 @@ from iblutil.io import hashfile
 import one.alf.files as alfiles
 
 import iblrig
-from iblrig.path_helper import load_pydantic_yaml, HardwareSettings
 from iblrig.raw_data_loaders import load_task_jsonable
 
 log = logging.getLogger(__name__)

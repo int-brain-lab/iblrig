@@ -13,6 +13,7 @@ from ibllib.io import session_params
 from iblrig.test.base import TASK_KWARGS
 from iblrig.transfer_experiments import BehaviorCopier, EphysCopier, VideoCopier
 from iblrig_tasks._iblrig_tasks_trainingChoiceWorld.task import Session
+from iblrig.path_helper import load_pydantic_yaml, HardwareSettings
 
 
 def _create_behavior_session(temp_dir, ntrials=None, hard_crash=False, **kwargs):
@@ -242,7 +243,8 @@ class TestUnitTransferExperiments(unittest.TestCase):
         self.assertEqual(2, sc.state)  # here we still don't have all devices so we stay in state 2
 
         vc = VideoCopier(session_path=folder_session_video, remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER)
-        vc.create_video_stub()
+        hws = load_pydantic_yaml(HardwareSettings, 'hardware_settings_template.yaml')
+        vc.create_video_stub(hws['device_cameras']['training'])
         self.assertEqual(0, vc.state)
         vc.initialize_experiment()
         self.assertEqual(1, vc.state)
@@ -267,7 +269,7 @@ class TestUnitTransferExperiments(unittest.TestCase):
         self.assertEqual(3, sc.state)
         final_experiment_description = session_params.read_params(sc.remote_session_path)
         self.assertEqual(1, len(final_experiment_description['tasks']))
-        self.assertEqual(set(final_experiment_description['devices']['cameras'].keys()), {'body', 'left', 'right'})
+        self.assertEqual(set(final_experiment_description['devices']['cameras'].keys()), {'left'})
         self.assertEqual(set(final_experiment_description['sync'].keys()), {'nidq'})
 
 

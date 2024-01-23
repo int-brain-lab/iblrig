@@ -62,9 +62,6 @@ install_spinnaker     = "iblrig.video:install_spinnaker"
 install_pyspin        = "iblrig.video:install_pyspin"
 start_video_session   = "iblrig.video:prepare_video_session_cmd"
 convert_uis           = "iblrig.gui.tools:convert_uis"
-prepare_video_session = "iblrig.devices.camera_recordings.videopc.prepare_video_session:main"
-prepare_video_session_mesoscope = "iblrig.devices.camera_recordings.videopc.prepare_video_session_mescoscope:main"
-prepare_video_session_single_mesoscope = "iblrig.devices.camera_recordings.videopc.prepare_video_session_single_mesoscope:main"
 
 [tool.setuptools.dynamic]
 readme  = { file = "README.md", content-type = "text/markdown" }

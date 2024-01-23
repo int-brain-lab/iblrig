@@ -14,6 +14,7 @@ IBLRIG documentation
    installation
    description_file
    task_qc
+   video
    write_your_own_task
    developer_guide
    faq
