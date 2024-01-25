@@ -87,4 +87,4 @@ class TestIsDirty(unittest.TestCase):
 class TestChangeLog(unittest.TestCase):
     def test_change_log(self):
         with Path(BASE_DIR).joinpath('CHANGELOG.md').open() as f:
-            assert str(get_local_version()) in f.read()
+            assert str(get_local_version()) in f.read(), 'add your version changelog to CHANGELOG.md'
