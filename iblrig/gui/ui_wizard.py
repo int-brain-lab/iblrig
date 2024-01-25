@@ -437,7 +437,10 @@ class Ui_wizard(object):
         wizard.setMenuBar(self.uiMenuBar)
         self.uiActionTrainingLevelV7 = QtWidgets.QAction(wizard)
         self.uiActionTrainingLevelV7.setObjectName("uiActionTrainingLevelV7")
+        self.uiActionCalibrateFrame2ttl = QtWidgets.QAction(wizard)
+        self.uiActionCalibrateFrame2ttl.setObjectName("uiActionCalibrateFrame2ttl")
         self.uiMenuTools.addAction(self.uiActionTrainingLevelV7)
+        self.uiMenuTools.addAction(self.uiActionCalibrateFrame2ttl)
         self.uiMenuBar.addAction(self.uiMenuTools.menuAction())
         self.labelUser.setBuddy(self.uiLineEditUser)
         self.labelSubject.setBuddy(self.uiComboSubject)
@@ -507,6 +510,7 @@ class Ui_wizard(object):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabAbout), _translate("wizard", "About"))
         self.uiMenuTools.setTitle(_translate("wizard", "Tools"))
         self.uiActionTrainingLevelV7.setText(_translate("wizard", "Get Training Level"))
+        self.uiActionCalibrateFrame2ttl.setText(_translate("wizard", "Calibrate Frame2TTL"))
 from PyQt5 import QtWebEngineWidgets
 from iblrig.gui import resources_rc
 

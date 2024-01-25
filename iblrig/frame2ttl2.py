@@ -23,7 +23,7 @@ def _convert_bonsai_sync_pos(
 
 
 class Frame2TTL(SerialSingleton):
-    def __init__(self, port: str, **kwargs) -> None:
+    def __init__(self, port: str, threshold_dark: int | None = None, threshold_light: int | None = None, **kwargs) -> None:
         # identify micro-controller
         port_info = next((p for p in comports() if p.device == port), None)
         is_samd21mini = port_info.vid == 0x1B4F and port_info.pid in [0x8D21, 0x0D21]
@@ -97,33 +97,37 @@ class Frame2TTL(SerialSingleton):
             self.baudrate = 480000000
 
         # initialize members
-        self._dark_threshold = None
-        self._light_threshold = None
-        self._streaming = False
+        self._threshold_dark = None
+        self._threshold_light = None
+        self._is_streaming = False
         match self.hw_version:
             case 1:
                 self._unit_str = 'μs'
                 self._dtype_sensorval = np.uint32
                 self._dtype_streaming = np.uint32
-                self._dtype_threshold = np.int16
+                self._dtype_threshold = np.uint16
             case _:
                 self._unit_str = 'bits/ms'
                 self._dtype_rawsensor = np.uint16
                 self._dtype_streaming = np.uint16
                 self._dtype_threshold = np.int16
 
+        # set thresholds
+        if threshold_dark is not None and threshold_light is not None:
+            self.set_thresholds(dark=threshold_dark, light=threshold_light)
+
         # log status
         log.debug(f'Connected to Frame2TTL v{self.hw_version} on port {self.portstr}. ' f'Firmware Version: {self.fw_version}.')
 
     @property
     def streaming(self) -> bool:
-        return self._streaming
+        return self._is_streaming
 
     @streaming.setter
     def streaming(self, state: bool):
         self.write(struct.pack('<c?', b'S', state))
         self.reset_input_buffer()
-        self._streaming = state
+        self._is_streaming = state
 
     def handshake(self, raise_on_fail: bool = False) -> bool:
         self.flushInput()
@@ -171,27 +175,16 @@ class Frame2TTL(SerialSingleton):
 
     def set_thresholds(self, dark: int, light: int):
         self.write(struct.pack('<cHH' if self.hw_version == 1 else '<chh', b'T', dark, light))
-        self._dark_threshold = dark
-        self._light_threshold = light
-
-    def get_thresholds(self) -> tuple[int, int]:
-        pass
+        self._threshold_dark = dark
+        self._threshold_light = light
 
     @property
     def dark_threshold(self) -> int:
-        return self._dark_threshold
-
-    @dark_threshold.setter
-    def dark_threshold(self, value: int):
-        self.set_thresholds(dark=value, light=self._light_threshold)
+        return self._threshold_dark
 
     @property
     def light_threshold(self) -> int:
-        return self._dark_threshold
-
-    @light_threshold.setter
-    def light_threshold(self, value: int):
-        self.set_thresholds(dark=self._dark_threshold, light=value)
+        return self._threshold_dark
 
     def calibrate_single_color(
         self,
@@ -229,13 +222,16 @@ class _QtCalibrator(QDialog):
 
         # try to detect screen_index, get screen dimensions
         if screen_index is None:
-            for screen_index, screen in enumerate(QApplication.screens()):
-                if screen.size().width() == 2048 and screen.size().height() == 1536:
-                    break
-            else:
-                log.warning('Cannot identify iPad screen automatically. Defaulting to screen index 0.')
+            if len(QApplication.screens()) == 1:
                 screen_index = 0
-                screen = QApplication.screens()[0]
+            else:
+                for screen_index, screen in enumerate(QApplication.screens()):
+                    if screen.size().width() == 2048 and screen.size().height() == 1536:
+                        break
+                else:
+                    log.warning('Defaulting to screen index 0.')
+                    screen_index = 0
+                    screen = QApplication.screens()[0]
 
         # display frameless QDialog with given color
         super().__init__(**kwargs)
@@ -248,7 +244,6 @@ class _QtCalibrator(QDialog):
             QPoint(screen_geometry.x() + screen_geometry.width() - width, screen_geometry.y() + screen_geometry.height() - height)
         )
         self.show()
-        self.activateWindow()
 
         QtCore.QTimer.singleShot(500, self.measure)
 
@@ -267,4 +262,4 @@ class _QtCalibrator(QDialog):
         self.close()
 
 
-Frame2TTL('COM11').calibration()
+Frame2TTL('/dev/ttyACM0').calibration()

@@ -267,6 +267,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
 
         # connect widgets signals to slots
         self.uiActionTrainingLevelV7.triggered.connect(self._on_menu_training_level_v7)
+        self.uiActionCalibrateFrame2ttl.triggered.connect(self._on_calibrate_frame2ttl)
         self.uiComboTask.currentTextChanged.connect(self.controls_for_extra_parameters)
         self.uiComboSubject.currentTextChanged.connect(self.model.get_subject_details)
         self.uiPushStart.clicked.connect(self.start_stop)
@@ -449,6 +450,9 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
             self.uiGroupTaskParameters.findChild(QtWidgets.QWidget, '--adaptive_gain').setValue(stim_gain)
             self.uiGroupTaskParameters.findChild(QtWidgets.QWidget, '--adaptive_reward').setValue(reward_amount)
             self.uiGroupTaskParameters.findChild(QtWidgets.QWidget, '--training_phase').setValue(training_phase)
+
+    def _on_calibrate_frame2ttl(self) -> None:
+        target = CalibrationTarget(parent=self, width=500, height=500)
 
     def _on_check_update_result(self, result: tuple[bool, str]) -> None:
         """
@@ -1259,6 +1263,55 @@ class SubjectDetailsWorker(QThread):
 
     def run(self):
         self.result = get_subject_training_info(self.subject_name)
+
+
+class CalibrationTarget(QtWidgets.QDialog):
+
+    def __init__(
+        self,
+        color_rgb: tuple[int, int, int] = (0, 0, 0),
+        screen_index: int | None = None,
+        width: int = 50,
+        height: int = 50,
+        **kwargs,
+    ):
+        # try to detect screen_index, get screen dimensions
+        if screen_index is None:
+            if len(QtWidgets.QApplication.screens()) == 1:
+                screen_index = 0
+            else:
+                for screen_index, screen in enumerate(QtWidgets.QApplication.screens()):
+                    if screen.size().width() == 2048 and screen.size().height() == 1536:
+                        break
+                else:
+                    log.warning('Defaulting to screen index 0.')
+                    screen_index = 0
+                    screen = QtWidgets.QApplication.screens()[0]
+
+        # display frameless QDialog with given color
+        super().__init__(**kwargs)
+        self.setWindowModality(QtCore.Qt.ApplicationModal)
+        self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint | QtCore.Qt.FramelessWindowHint)
+        self.setAutoFillBackground(True)
+        self.color_rgb = color_rgb
+        self.setFixedSize(width, height)
+        screen_geometry = QtWidgets.QApplication.desktop().screenGeometry(screen_index)
+        self.show()
+        self.raise_()
+        self.move(
+            QtCore.QPoint(screen_geometry.x() + screen_geometry.width() - width,
+                          screen_geometry.y() + screen_geometry.height() - height)
+        )
+
+    @property
+    def color_rgb(self) -> tuple[int, int, int]:
+        return self.palette().color(QtGui.QPalette.Window).getRgb()[:3]
+
+    @color_rgb.setter
+    def color_rgb(self, color: tuple[int, int, int]):
+        palette = QtGui.QPalette()
+        palette.setColor(QtGui.QPalette.Window, QtGui.QColor.fromRgb(*color))
+        self.setPalette(palette)
 
 
 class CustomWebEnginePage(QWebEnginePage):
