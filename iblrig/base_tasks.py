@@ -91,7 +91,7 @@ class BaseSession(ABC):
         self._setup_loggers(level=log_level)
         if not isinstance(self, EmptySession):
             log.info(f'Running iblrig {iblrig.__version__}, pybpod version {pybpodapi.__version__}')
-        self.interactive = False if append else interactive
+        self.interactive = interactive
         self._one = one
         self.init_datetime = datetime.datetime.now()
 
@@ -402,14 +402,16 @@ class BaseSession(ABC):
 
     def run(self):
         """
-        Common pre-run instructions for all tasks: singint handler for a graceful exit
+        Common pre-run instructions for all tasks: sigint handler for a graceful exit
         :return:
         """
         # here we make sure we connect to the hardware before writing the session to disk
         # this prevents from incrementing endlessly the session number if the hardware fails to connect
         self.start_hardware()
         self.create_session()
-        if self.session_info.SUBJECT_WEIGHT is None and self.interactive:
+        # When not running the first chained protocol, we can skip the weighing dialog
+        first_protocol = int(self.paths.SESSION_RAW_DATA_FOLDER.name.split('_')[-1]) == 0
+        if self.session_info.SUBJECT_WEIGHT is None and self.interactive and first_protocol:
             self.session_info.SUBJECT_WEIGHT = graph.numinput(
                 'Subject weighing (gr)', f'{self.session_info.SUBJECT_NAME} weight (gr):', nullable=False
             )
@@ -440,8 +442,8 @@ class BaseSession(ABC):
     @abc.abstractmethod
     def start_hardware(self):
         """
-        This methods doesn't explicitly start the mixins as the order has to be defined in the child classes
-        This needs to be implemented in the child classes, and should start and connect to all hardware pieces
+        This method doesn't explicitly start the mixins as the order has to be defined in the child classes.
+        This needs to be implemented in the child classes, and should start and connect to all hardware pieces.
         """
         pass
 
