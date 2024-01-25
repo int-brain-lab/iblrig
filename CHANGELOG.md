@@ -1,5 +1,9 @@
 Changelog
 ---------
+8.14.0
+------
+* show dialog boxes and plots for appended sessions
+
 8.13.5
 ------
 * make sure unused arguments passed up to BaseChoiceWorld do not crash the task (example delay_secs in passiveChoiceWorld)
