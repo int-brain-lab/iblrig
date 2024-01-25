@@ -134,7 +134,7 @@ class Frame2TTLv1(Frame2TTL):
         self.serial.write(b'C')
         response = self.serial.read(1)
         if response[0] != 218:
-            raise (ConnectionError)
+            raise ConnectionError
 
         # Device wants light threshold before dark
         self.serial.write(struct.pack('<BHH', ord('T'), int(light), int(dark)))

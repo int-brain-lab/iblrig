@@ -3,6 +3,7 @@ import struct
 import time
 
 import numpy as np
+from matplotlib import pyplot as plt
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtCore import QPoint
 from PyQt5.QtWidgets import QApplication, QDialog
@@ -22,7 +23,14 @@ def _convert_bonsai_sync_pos(
 
 
 class Frame2TTL(SerialSingleton):
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, port: str, **kwargs) -> None:
+        # identify micro-controller
+        port_info = next((p for p in comports() if p.device == port), None)
+        is_samd21mini = port_info.vid == 0x1B4F and port_info.pid in [0x8D21, 0x0D21]
+        is_teensy = port_info.vid == 0x16C0 and port_info.pid == 0x0483
+        if not is_samd21mini and not is_teensy:
+            raise OSError(f'Device on {port} is not a Frame2TTL')
+
         # override default arguments of super-class
         if 'baudrate' not in kwargs:
             kwargs['baudrate'] = 115200
@@ -31,20 +39,12 @@ class Frame2TTL(SerialSingleton):
         if 'write_timeout' not in kwargs:
             kwargs['write_timeout'] = 0.5
 
-        super().__init__(*args, **kwargs)
+        # initialize super class
+        super().__init__(port=port, **kwargs)
         self.flushInput()
         self.flushOutput()
 
-        self._streaming = False
-        self._calibration_timer = QtCore.QBasicTimer()
-
-        # get more information on USB device
-        port_info = next((p for p in comports() if p.device == self.portstr), None)
-        if not port_info or not port_info.vid:
-            raise OSError(f'Device on {self.portstr} is not a Frame2TTL')
-
         # detect SAMD21 Mini Breakout (Frame2TTL v1)
-        is_samd21mini = port_info.vid == 0x1B4F and port_info.pid in [0x8D21, 0x0D21]
         if is_samd21mini and port_info.pid == 0x0D21:
             raise OSError(
                 f'SAMD21 Mini Breakout on {self.portstr} is in bootloader '
@@ -84,8 +84,36 @@ class Frame2TTL(SerialSingleton):
         if is_samd21mini:
             self.hw_version = 1
         else:
-            self.write('#')
-            self.hw_version = self.read()
+            self.hw_version = self.query('#', 'B')[0]
+
+        # get firmware version
+        try:
+            self.fw_version = self.query('F', 'B')[0]
+        except struct.error:
+            self.fw_version = 1
+
+        # set baud-rates
+        if self.hw_version == 3 and self.fw_version == 3:
+            self.baudrate = 480000000
+
+        # initialize members
+        self._dark_threshold = None
+        self._light_threshold = None
+        self._streaming = False
+        match self.hw_version:
+            case 1:
+                self._unit_str = 'μs'
+                self._dtype_sensorval = np.uint32
+                self._dtype_streaming = np.uint32
+                self._dtype_threshold = np.int16
+            case _:
+                self._unit_str = 'bits/ms'
+                self._dtype_rawsensor = np.uint16
+                self._dtype_streaming = np.uint16
+                self._dtype_threshold = np.int16
+
+        # log status
+        log.debug(f'Connected to Frame2TTL v{self.hw_version} on port {self.portstr}. ' f'Firmware Version: {self.fw_version}.')
 
     @property
     def streaming(self) -> bool:
@@ -93,7 +121,7 @@ class Frame2TTL(SerialSingleton):
 
     @streaming.setter
     def streaming(self, state: bool):
-        self.write(struct.pack('<c?', b'S', bool))
+        self.write(struct.pack('<c?', b'S', state))
         self.reset_input_buffer()
         self._streaming = state
 
@@ -106,25 +134,69 @@ class Frame2TTL(SerialSingleton):
         return status
 
     def sample(self, n_samples: int) -> np.array:
-        samples = np.array([])
-        bytes_to_read = min(n_samples * 4, 4096)
+        buffer = bytearray(n_samples * self._dtype_streaming().itemsize)
+        original_timeout = self.timeout
+        self.timeout = None
+        self.streaming = True
+        self.readinto(buffer)
+        self.streaming = False
+        self.timeout = original_timeout
+        return np.frombuffer(buffer, dtype=self._dtype_streaming)
 
-        # self.streaming = True
+    def calibration(self, n_samples: int = 500):
+        dark = self.calibrate_single_color(color_rgb=(0, 0, 0), n_samples=n_samples)
+        light = self.calibrate_single_color(color_rgb=(255, 255, 255), n_samples=n_samples)
+        print(len(light))
+        thresh_dark = int(np.floor(np.min(dark)))
+        thresh_light = int(np.ceil(np.max(light)))
+        self.set_thresholds(thresh_dark, thresh_light)
+        self.plot_calibration(dark_vals=dark, light_vals=light, dark_thresh=thresh_dark, light_thresh=thresh_light)
 
-        # self.reset_input_buffer()
-        while bytes_to_read > 0:
-            if self.in_waiting >= bytes_to_read:
-                samples = np.append(samples, np.frombuffer(self.read(bytes_to_read), 'uint32'))
-                bytes_to_read = min(len(samples) * 4 - bytes_to_read, 4096)
+    def plot_calibration(self, dark_vals: np.ndarray[int], light_vals: np.ndarray[int], dark_thresh: int, light_thresh: int):
+        plt.hist(dark_vals, orientation='horizontal', fc='black', ec='black', histtype='step', fill=True)
+        plt.hist(light_vals, orientation='horizontal', fc='white', ec='white', histtype='step', fill=True)
+        plt.axhline(light_thresh, color='red', ls='--')
+        plt.axhline(dark_thresh, color='red', ls='--')
+        x_center = np.mean(plt.gca().get_xlim())
+        y_extent = np.diff(plt.gca().get_ylim())
+        plt.text(x_center, light_thresh + y_extent / 100, f'Light Threshold: {light_thresh:.0f}', ha='center', va='top')
+        plt.text(x_center, dark_thresh - y_extent / 100, f'Dark Threshold: {dark_thresh:.0f}', ha='center', va='bottom')
+        plt.gca().invert_yaxis()
+        plt.gca().get_xaxis().set_visible(False)
+        plt.gca().set_facecolor((0.5, 0.5, 0.5))
+        plt.xlabel('Count')
+        plt.ylabel(f'Brightness Readings [{self._unit_str}]')
+        plt.title('Frame2TTL Calibration')
+        plt.show()
 
-        # self.streaming = False
-        # self.reset_input_buffer()
-        return samples[0:n_samples]
+    def set_thresholds(self, dark: int, light: int):
+        self.write(struct.pack('<cHH' if self.hw_version == 1 else '<chh', b'T', dark, light))
+        self._dark_threshold = dark
+        self._light_threshold = light
 
-    def calibration(
+    def get_thresholds(self) -> tuple[int, int]:
+        pass
+
+    @property
+    def dark_threshold(self) -> int:
+        return self._dark_threshold
+
+    @dark_threshold.setter
+    def dark_threshold(self, value: int):
+        self.set_thresholds(dark=value, light=self._light_threshold)
+
+    @property
+    def light_threshold(self) -> int:
+        return self._dark_threshold
+
+    @light_threshold.setter
+    def light_threshold(self, value: int):
+        self.set_thresholds(dark=self._dark_threshold, light=value)
+
+    def calibrate_single_color(
         self,
-        color: tuple[int, int, int] = (0, 0, 0),
-        screen: int | None = None,
+        color_rgb: tuple[int, int, int] = (0, 0, 0),
+        screen_index: int | None = None,
         width: int = _convert_bonsai_sync_pos()[0],
         height: int = _convert_bonsai_sync_pos()[1],
         n_samples: int = 2000,
@@ -132,7 +204,9 @@ class Frame2TTL(SerialSingleton):
         app = QApplication.instance()
         if app is None:
             app = QApplication([])
-        win = _QtCalibrator(frame2ttl=self, color_rgb=color, width=width, height=height)
+        win = _QtCalibrator(
+            frame2ttl=self, color_rgb=color_rgb, screen_index=screen_index, width=width, height=height, n_samples=n_samples
+        )
         app.exec_()
         return win.data
 
@@ -147,7 +221,7 @@ class _QtCalibrator(QDialog):
         screen_index: int | None = None,
         width: int | None = None,
         height: int | None = None,
-        n_samples: int = 50,
+        n_samples: int = 1000,
         **kwargs,
     ):
         self.frame2ttl = frame2ttl
@@ -176,7 +250,7 @@ class _QtCalibrator(QDialog):
         self.show()
         self.activateWindow()
 
-        QtCore.QTimer.singleShot(100, self.measure)
+        QtCore.QTimer.singleShot(500, self.measure)
 
     @property
     def color_rgb(self) -> tuple[int, int, int]:
@@ -189,14 +263,8 @@ class _QtCalibrator(QDialog):
         self.setPalette(palette)
 
     def measure(self) -> np.array:
-        self.frame2ttl.flushInput()
-        self.frame2ttl.streaming = True
         self.data = self.frame2ttl.sample(n_samples=self.n_samples)
-        self.frame2ttl.streaming = False
         self.close()
 
 
-a = Frame2TTL('COM11')
-x = a.calibration(screen=1)
-print(np.mean(x))
-# print(_convert_bonsai_sync_pos())
+Frame2TTL('COM11').calibration()
