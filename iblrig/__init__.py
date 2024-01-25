@@ -4,7 +4,7 @@
 # 3) Check CI and eventually wet lab test
 # 4) Pull request to iblrigv8
 # 5) git tag the release in accordance to the version number below (after merge!)
-__version__ = '8.13.4'
+__version__ = '8.13.5'
 
 from iblrig.version_management import get_detailed_version_string
 

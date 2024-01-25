@@ -68,6 +68,7 @@ class BaseSession(ABC):
         append=False,
         wizard=False,
         log_level='INFO',
+        **kwargs,
     ):
         """
         :param subject: The subject nickname. Required.

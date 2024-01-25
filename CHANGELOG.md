@@ -1,5 +1,8 @@
 Changelog
 ---------
+8.13.5
+------
+* make sure unused arguments passed up to BaseChoiceWorld do not crash the task (example delay_secs in passiveChoiceWorld)
 
 8.13.4
 ------
