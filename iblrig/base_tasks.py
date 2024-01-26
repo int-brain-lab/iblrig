@@ -27,8 +27,9 @@ import iblrig.alyx
 import iblrig.graphic as graph
 import iblrig.path_helper
 import pybpodapi
-from iblrig import frame2TTL, sound
+from iblrig import sound
 from iblrig.constants import BASE_PATH, BONSAI_EXE
+from iblrig.frame2ttl import Frame2TTL
 from iblrig.hardware import SOFTCODE, Bpod, MyRotaryEncoder, sound_device_factory
 from iblrig.path_helper import load_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings, HardwareSettingsCameras, RigSettings
@@ -708,29 +709,23 @@ class Frame2TTLMixin:
     """
 
     def init_mixin_frame2ttl(self, *args, **kwargs):
-        self.frame2ttl = None
+        pass
 
     def start_mixin_frame2ttl(self):
         # todo assert calibration
-        # todo release port on failure
         if self.hardware_settings['device_frame2ttl']['COM_F2TTL'] is None:
             raise ValueError(
                 'The value for device_frame2ttl:COM_F2TTL in '
                 'settings/hardware_settings.yaml is null. Please '
                 'provide a valid port name.'
             )
-        self.frame2ttl = frame2TTL.frame2ttl_factory(self.hardware_settings['device_frame2ttl']['COM_F2TTL'])
-        try:
-            self.frame2ttl.set_thresholds(
-                light=self.hardware_settings['device_frame2ttl']['F2TTL_LIGHT_THRESH'],
-                dark=self.hardware_settings['device_frame2ttl']['F2TTL_DARK_THRESH'],
-            )
-            log.info('Frame2TTL: Thresholds set.')
-        except serial.serialutil.SerialTimeoutException as e:
-            self.frame2ttl.close()
-            raise e
-        assert self.frame2ttl.connected
-        log.info('Frame2TTL module loaded: OK')
+        frame2ttl = Frame2TTL(
+            port=self.hardware_settings['device_frame2ttl']['COM_F2TTL'],
+            threshold_dark=self.hardware_settings['device_frame2ttl']['F2TTL_DARK_THRESH'],
+            threshold_light=self.hardware_settings['device_frame2ttl']['F2TTL_LIGHT_THRESH'],
+        )
+        log.info('Frame2TTL: Thresholds set.')
+        frame2ttl.close()
 
 
 class RotaryEncoderMixin:

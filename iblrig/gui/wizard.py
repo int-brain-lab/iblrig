@@ -14,10 +14,10 @@ from collections import OrderedDict
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from pydantic import ValidationError
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtCore, QtGui, QtTest, QtWidgets
 from PyQt5.QtCore import QThread, QThreadPool
 from PyQt5.QtWebEngineWidgets import QWebEnginePage
 from PyQt5.QtWidgets import QStyle
@@ -29,6 +29,7 @@ import iblrig_tasks
 from iblrig.base_tasks import EmptySession, ValveMixin
 from iblrig.choiceworld import get_subject_training_info, training_phase_from_contrast_set
 from iblrig.constants import BASE_DIR
+from iblrig.frame2ttl import Frame2TTL
 from iblrig.gui.ui_login import Ui_login
 from iblrig.gui.ui_update import Ui_update
 from iblrig.gui.ui_wizard import Ui_wizard
@@ -39,7 +40,6 @@ from iblrig.pydantic_definitions import HardwareSettings, RigSettings
 from iblrig.tools import alyx_reachable, get_anydesk_id, internet_available
 from iblrig.version_management import check_for_updates, get_changelog, is_dirty
 from iblutil.util import Bunch, setup_logger
-from one.api import ONE
 from one.webclient import AlyxClient
 from pybpodapi import exceptions
 from pybpodapi.protocol import StateMachine
@@ -93,7 +93,6 @@ def _set_list_view_from_string_list(ui_list: QtWidgets.QListView, string_list: l
 @dataclass
 class RigWizardModel:
     alyx: AlyxClient | None = None
-    one: Optional[ONE] = None
     procedures: list | None = None
     projects: list | None = None
     task_name: str | None = None
@@ -456,7 +455,30 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
             self.uiGroupTaskParameters.findChild(QtWidgets.QWidget, '--training_phase').setValue(training_phase)
 
     def _on_calibrate_frame2ttl(self) -> None:
-        target = CalibrationTarget(parent=self, width=500, height=500)
+        frame2ttl = Frame2TTL(self.model.hardware_settings.device_frame2ttl.COM_F2TTL)
+
+        progress_text = (f"Calibrating Frame2TTL v{frame2ttl.hw_version} on {frame2ttl.portstr}\n\n"
+                         "Light Threshold:  {light}\n"
+                         "Dark Threshold:   {dark}\n\n{final}")
+        progress_dialog = QtWidgets.QMessageBox(self, text=progress_text.format(light='', dark='',
+                                                                                final='Calibration in progress ...'))
+        progress_dialog.setWindowTitle('Frame2TTL Calibration')
+        progress_dialog.setWindowModality(QtCore.Qt.ApplicationModal)
+        progress_dialog.show()
+        progress_dialog.buttons()[0].setEnabled(False)
+
+        target = CalibrationTarget(parent=self, color=QtGui.QColorConstants.White)
+        light = frame2ttl.calibrate_light()
+        progress_dialog.setText(progress_text.format(light=light, dark='', final='Calibration in progress ...'))
+
+        target.color = QtGui.QColorConstants.Black
+        dark = frame2ttl.calibrate_dark()
+        progress_dialog.setText(progress_text.format(light=light, dark=dark, final='Calibration in progress ...'))
+
+        target.close()
+        progress_dialog.setText(progress_text.format(light=light, dark=dark, final='Calibration complete.'))
+        progress_dialog.buttons()[0].setEnabled(True)
+        del frame2ttl
 
     def _on_check_update_result(self, result: tuple[bool, str]) -> None:
         """
@@ -739,7 +761,6 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 continue
 
             # add custom widget properties
-            QtCore.QMetaProperty
             widget.setObjectName(param)
             widget.setProperty('parameter_name', param)
             widget.setProperty('parameter_dest', arg.dest)
@@ -1270,52 +1291,65 @@ class SubjectDetailsWorker(QThread):
 
 
 class CalibrationTarget(QtWidgets.QDialog):
-
     def __init__(
         self,
-        color_rgb: tuple[int, int, int] = (0, 0, 0),
+        color: QtGui.QColor = QtGui.QColorConstants.White,
         screen_index: int | None = None,
-        width: int = 50,
-        height: int = 50,
+        width: int | None = None,
+        height: int | None = None,
+        rel_pos_x: float = 1.33,
+        rel_pos_y: float = -1.03,
+        rel_extent_x: float = 0.2,
+        rel_extent_y: float = 0.2,
         **kwargs,
     ):
         # try to detect screen_index, get screen dimensions
         if screen_index is None:
-            if len(QtWidgets.QApplication.screens()) == 1:
-                screen_index = 0
+            for screen_index, screen in enumerate(QtWidgets.QApplication.screens()):
+                if screen.size().width() == 2048 and screen.size().height() == 1536:
+                    break
             else:
-                for screen_index, screen in enumerate(QtWidgets.QApplication.screens()):
-                    if screen.size().width() == 2048 and screen.size().height() == 1536:
-                        break
-                else:
-                    log.warning('Defaulting to screen index 0.')
-                    screen_index = 0
-                    screen = QtWidgets.QApplication.screens()[0]
+                log.warning('Defaulting to screen index 0.')
+                screen_index = 0
+                screen = QtWidgets.QApplication.screens()[0]
+
+        # convert relative parameters (used in bonsai scripts) to width and height
+        if width is None and height is None:
+            screen_width = screen.geometry().width()
+            screen_height = screen.geometry().height()
+            width = round(screen_width - (screen_width + (rel_pos_x - rel_extent_x / 2) * screen_height) / 2)
+            height = round(screen_height - (1 - rel_pos_y - rel_extent_y / 2) * screen_height / 2)
 
         # display frameless QDialog with given color
         super().__init__(**kwargs)
         self.setWindowModality(QtCore.Qt.ApplicationModal)
-        self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint | QtCore.Qt.FramelessWindowHint)
+        self.setWindowFlags(QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowStaysOnTopHint | QtCore.Qt.Dialog)
         self.setAutoFillBackground(True)
-        self.color_rgb = color_rgb
+        self._set_color(color)
         self.setFixedSize(width, height)
         screen_geometry = QtWidgets.QApplication.desktop().screenGeometry(screen_index)
-        self.show()
-        self.raise_()
         self.move(
-            QtCore.QPoint(screen_geometry.x() + screen_geometry.width() - width,
-                          screen_geometry.y() + screen_geometry.height() - height)
+            QtCore.QPoint(
+                screen_geometry.x() + screen_geometry.width() - width, screen_geometry.y() + screen_geometry.height() - height
+            )
         )
+        self.show()
+        QtTest.QTest.qWait(500)
+
+    def _set_color(self, color: QtGui.QColor):
+        palette = QtGui.QPalette()
+        palette.setColor(QtGui.QPalette.Window, color)
+        self.setPalette(palette)
 
     @property
-    def color_rgb(self) -> tuple[int, int, int]:
-        return self.palette().color(QtGui.QPalette.Window).getRgb()[:3]
+    def color(self) -> QtGui.QColor:
+        return self.palette().color(QtGui.QPalette.Window)
 
-    @color_rgb.setter
-    def color_rgb(self, color: tuple[int, int, int]):
-        palette = QtGui.QPalette()
-        palette.setColor(QtGui.QPalette.Window, QtGui.QColor.fromRgb(*color))
-        self.setPalette(palette)
+    @color.setter
+    def color(self, color: QtGui.QColor):
+        self._set_color(color)
+        self.update()
+        QtTest.QTest.qWait(500)
 
 
 class CustomWebEnginePage(QWebEnginePage):
