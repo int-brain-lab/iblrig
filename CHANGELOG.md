@@ -1,5 +1,10 @@
 Changelog
 ---------
+
+8.14.1
+------
+* hotfix: wrong return-type in _iterate_protocols
+
 8.14.0
 ------
 * show dialog boxes and plots for appended sessions
@@ -16,7 +21,7 @@ Changelog
 * revert logging of task events to GUI only
 
 8.13.3
-______
+------
 * add tests with mock Bonsai to cover for task start methods
 * hotfix: also log to PowerShell (for now)
 
