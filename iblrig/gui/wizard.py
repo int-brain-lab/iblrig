@@ -104,10 +104,14 @@ class RigWizardModel:
     subject_details_worker = None
     subject_details: tuple | None = None
     free_reward_time: float | None = None
+    file_iblrig_settings: Path | str | None = None
+    file_hardware_settings: Path | str | None = None
 
     def __post_init__(self):
-        self.iblrig_settings: RigSettings = load_pydantic_yaml(RigSettings, do_raise=True)
-        self.hardware_settings: HardwareSettings = load_pydantic_yaml(HardwareSettings, do_raise=True)
+        self.iblrig_settings: RigSettings = load_pydantic_yaml(
+            RigSettings, filename=self.file_iblrig_settings, do_raise=True)
+        self.hardware_settings: HardwareSettings = load_pydantic_yaml(
+            HardwareSettings, filename=self.file_hardware_settings, do_raise=True)
 
         # calculate free reward time
         class FakeSession(ValveMixin):
