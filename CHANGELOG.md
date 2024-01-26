@@ -1,6 +1,10 @@
 Changelog
 ---------
 
+8.14.2
+------
+* hotfix: wrong return-type in _iterate_protocols - pt 2
+
 8.14.1
 ------
 * hotfix: wrong return-type in _iterate_protocols
