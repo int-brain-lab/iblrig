@@ -70,7 +70,7 @@ def _iterate_protocols(subject_folder, task_name, n=1):
         for ad_task in reversed(ad['tasks']):
             adt = ad_task.get(task_name, None)
             if not adt:
-                return
+                return protocols
             task_settings = load_settings(session_path, task_collection=adt['collection'])
             if task_settings.get('NTRIALS', 43) < 42:  # we consider that under 42 trials it is a dud session
                 continue
