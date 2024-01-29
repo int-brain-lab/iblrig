@@ -15,6 +15,7 @@ from ibllib.io import session_params
 from ibllib.pipes.misc import sleepless
 from iblutil.io import hashfile
 import one.alf.files as alfiles
+from one.util import ensure_list
 
 import iblrig
 from iblrig.raw_data_loaders import load_task_jsonable
@@ -270,8 +271,8 @@ class SessionCopier:
     def copy_collections(self):
         """
         Recursively copies the collection folders into the remote session path.
-        Do not overload, overload _copy_collections instead
-        :return:
+
+        Do not overload, overload _copy_collections instead.
         """
         if self.glob_file_remote_copy_status('complete'):
             log.warning(
@@ -411,61 +412,76 @@ class VideoCopier(SessionCopier):
 class BehaviorCopier(SessionCopier):
     tag = 'behavior'
     assert_connect_on_init = False
+    min_required_trials = 42
+    """int: the minimum number of trials required for a session to be copied."""
 
     @property
     def experiment_description(self):
         return session_params.read_params(self.session_path)
 
     def _copy_collections(self):
-        """
-        Patch settings files before copy.
+        """Patch settings files before copy.
+
+        Before copying the collections, this method checks that the behaviour data are valid. The
+        following checks are made:
+
+        #. Check at least 1 task collection in experiment description. If not, return.
+        #. For each collection, check for task settings. If any are missing, return.
+        #. If SESSION_END_TIME is missing, assumes task crashed. If so and task data missing and
+           not a chained protocol (i.e. it is the only task collection), assume a dud and remove
+           the remote stub file.  Otherwise, patch settings with total trials, end time, etc.
+        #. Check if there are more than the minimum required number of trials.  If not return.
+           If this is the only collection, remove the remote stub first.
 
         Returns
         -------
         bool
             True if transfer successfully completed.
 
-        FIXME support chained protocols; currently only loads one settings file
         """
-        collection = 'raw_task_data_00'
-        task_settings = raw_data_loaders.load_settings(self.session_path, task_collection=collection)
-        if task_settings is None:
-            log.info(f'skipping: no task settings found for {self.session_path}')
+        collections = session_params.get_task_collection(self.experiment_description)
+        if not collections:
+            log.error(f'Skipping: no task collections defined for {self.session_path}')
             return False
-        # here if the session end time has not been labeled we assume that the session crashed, and patch the settings
-        if task_settings['SESSION_END_TIME'] is None:
-            jsonable = self.session_path.joinpath(collection, '_iblrig_taskData.raw.jsonable')
-            if not jsonable.exists():
-                log.info(f'skipping: no task data found for {self.session_path}')
-                if self.remote_session_path.exists():
-                    # No local data and only behaviour stub in remote; assume dud and remove entire session
-                    if len(list(self.file_remote_experiment_description.parent.glob('*.yaml'))) <= 1:
-                        shutil.rmtree(self.remote_session_path)
-                return False
-            trials, bpod_data = load_task_jsonable(jsonable)
-            ntrials = trials.shape[0]
-            # We have the case where the session hard crashed.
-            # Patch the settings file to wrap the session and continue the copying.
-            log.warning(f'recovering crashed session {self.session_path}')
-            settings_file = self.session_path.joinpath(collection, '_iblrig_taskSettings.raw.json')
-            with open(settings_file) as fid:
-                raw_settings = json.load(fid)
-            raw_settings['NTRIALS'] = int(ntrials)
-            raw_settings['NTRIALS_CORRECT'] = int(trials['trial_correct'].sum())
-            raw_settings['TOTAL_WATER_DELIVERED'] = int(trials['reward_amount'].sum())
-            # cast the timestamp in a datetime object and add the session length to it
-            end_time = datetime.datetime.strptime(raw_settings['SESSION_START_TIME'], '%Y-%m-%dT%H:%M:%S.%f')
-            end_time += datetime.timedelta(seconds=bpod_data[-1]['Trial end timestamp'])
-            raw_settings['SESSION_END_TIME'] = end_time.strftime('%Y-%m-%dT%H:%M:%S.%f')
-            with open(settings_file, 'w') as fid:
-                json.dump(raw_settings, fid)
+        for collection in (collections := ensure_list(collections)):
             task_settings = raw_data_loaders.load_settings(self.session_path, task_collection=collection)
-        # we check the number of trials accomplished. If the field is not there, we copy the session as is
-        if task_settings.get('NTRIALS', 43) < 42:
-            log.info(f'Skipping: not enough trials for {self.session_path}')
-            if self.remote_session_path.exists():
-                shutil.rmtree(self.remote_session_path)
-            return False
+            if task_settings is None:
+                log.info(f'Skipping: no task settings found for {self.session_path}')
+                return False  # may also want to remove session here if empty
+            # here if the session end time has not been labeled we assume that the session crashed, and patch the settings
+            if task_settings['SESSION_END_TIME'] is None:
+                jsonable = self.session_path.joinpath(collection, '_iblrig_taskData.raw.jsonable')
+                if not jsonable.exists():
+                    log.info(f'Skipping: no task data found for {self.session_path}')
+                    if self.remote_session_path.exists() and len(collections) == 1:
+                        # No local data and only behaviour stub in remote; assume dud and remove entire session
+                        if len(list(self.file_remote_experiment_description.parent.glob('*.yaml'))) <= 1:
+                            shutil.rmtree(self.remote_session_path)  # remove likely dud
+                    return False
+                trials, bpod_data = load_task_jsonable(jsonable)
+                ntrials = trials.shape[0]
+                # We have the case where the session hard crashed.
+                # Patch the settings file to wrap the session and continue the copying.
+                log.warning(f'Recovering crashed session {self.session_path}')
+                settings_file = self.session_path.joinpath(collection, '_iblrig_taskSettings.raw.json')
+                with open(settings_file) as fid:
+                    raw_settings = json.load(fid)
+                raw_settings['NTRIALS'] = int(ntrials)
+                raw_settings['NTRIALS_CORRECT'] = int(trials['trial_correct'].sum())
+                raw_settings['TOTAL_WATER_DELIVERED'] = int(trials['reward_amount'].sum())
+                # cast the timestamp in a datetime object and add the session length to it
+                end_time = datetime.datetime.strptime(raw_settings['SESSION_START_TIME'], '%Y-%m-%dT%H:%M:%S.%f')
+                end_time += datetime.timedelta(seconds=bpod_data[-1]['Trial end timestamp'])
+                raw_settings['SESSION_END_TIME'] = end_time.strftime('%Y-%m-%dT%H:%M:%S.%f')
+                with open(settings_file, 'w') as fid:
+                    json.dump(raw_settings, fid)
+                task_settings = raw_data_loaders.load_settings(self.session_path, task_collection=collection)
+            # we check the number of trials accomplished. If the field is not there, we copy the session as is
+            if 'NTRIALS' in task_settings and task_settings['NTRIALS'] < self.min_required_trials:
+                log.info(f'Skipping: not enough trials for {self.session_path}')
+                if self.remote_session_path.exists() and len(collections) == 1:
+                    shutil.rmtree(self.remote_session_path)
+                return False  # remove likely dud
         log.critical(f'{self.state}, {self.session_path}')
         return super()._copy_collections()  # proceed with copy
 

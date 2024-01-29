@@ -211,7 +211,7 @@ def prepare_video_session_cmd():
             install_pyspin()
         return
 
-    parser = argparse.ArgumentParser(prog='start_video_session', description='Prepare video PC for video recording session')
+    parser = argparse.ArgumentParser(prog='start_video_session', description='Prepare video PC for video recording session.')
     parser.add_argument('subject_name', help='name of subject')
     parser.add_argument('profile', help='camera configuration name, found in "device_cameras" map of hardware_settings.yaml')
     args = parser.parse_args()
