@@ -11,6 +11,7 @@ from urllib.error import URLError
 import yaml
 from iblutil.io import params
 from iblutil.io import hashfile  # type: ignore
+from iblutil.util import setup_logger
 from one.webclient import AlyxClient, http_download_file  # type: ignore
 from ibllib.pipes.misc import load_params_dict
 from ibllib.io.video import get_video_meta, label_from_path
@@ -167,8 +168,9 @@ def patch_old_params(remove_old=False, update_paths=True):
     else:
         hardware_settings = {}
     cams = hardware_settings.get('device_cameras', {})
-    for cam in ('left', 'right', 'body'):
-        cams[cam] = {**cams.get(cam, {}), **{'INDEX': old_settings.get(cam.upper() + '_CAM_IDX')}}
+    for v in cams.values():
+        for cam in filter(lambda k: k in v, ('left', 'right', 'body')):
+            v[cam]['INDEX'] = old_settings.get(cam.upper() + '_CAM_IDX')
 
     # Save hardware settings
     hardware_settings['device_cameras'] = cams
@@ -214,9 +216,10 @@ def prepare_video_session_cmd():
     parser = argparse.ArgumentParser(prog='start_video_session', description='Prepare video PC for video recording session.')
     parser.add_argument('subject_name', help='name of subject')
     parser.add_argument('profile', help='camera configuration name, found in "device_cameras" map of hardware_settings.yaml')
+    parser.add_argument('--debug', action='store_true', help='enable debugging mode')
     args = parser.parse_args()
-
-    prepare_video_session(args.subject_name, args.profile)
+    setup_logger(name='iblrig', level=10 if args.debug else 20)
+    prepare_video_session(args.subject_name, args.profile, debug=args.debug)
 
 
 def validate_video(video_path, config):
@@ -279,7 +282,7 @@ def validate_video(video_path, config):
     return ok
 
 
-def prepare_video_session(subject_name: str, config_name: str):
+def prepare_video_session(subject_name: str, config_name: str, debug: bool = False):
     """
     Setup and record video.
 
@@ -289,6 +292,8 @@ def prepare_video_session(subject_name: str, config_name: str):
         A subject name.
     config_name : str
         Camera configuration name, found in "device_cameras" map of hardware_settings.yaml.
+    debug : bool
+        Bonsai debug mode and verbose logging.
     """
     assert HAS_SPINNAKER
     assert HAS_PYSPIN
@@ -315,7 +320,7 @@ def prepare_video_session(subject_name: str, config_name: str):
     # align cameras
     if workflows.setup:
         video_pyspin.enable_camera_trigger(enable=False)
-        call_bonsai(workflows.setup, params)
+        call_bonsai(workflows.setup, params, debug=debug)
 
     # record video
     filenamevideo = '_iblrig_{}Camera.raw.avi'
@@ -324,7 +329,7 @@ def prepare_video_session(subject_name: str, config_name: str):
         params[f'FileName{k}'] = str(raw_data_folder / filenamevideo.format(k.lower()))
         params[f'FileName{k}Data'] = str(raw_data_folder / filenameframedata.format(k.lower()))
     video_pyspin.enable_camera_trigger(enable=True)
-    bonsai_process = call_bonsai(workflows.recording, params, wait=False)
+    bonsai_process = call_bonsai(workflows.recording, params, wait=False, debug=debug)
     input('PRESS ENTER TO START CAMERAS')
     # Save the stub files locally and in the remote repo for future copy script to use
     copier = VideoCopier(session_path=session_path, remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER)
