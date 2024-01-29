@@ -3,7 +3,7 @@ from datetime import date
 from pathlib import Path
 from typing import Literal
 
-from pydantic import AnyUrl, BaseModel, ConfigDict, Field, field_validator
+from pydantic import AnyUrl, BaseModel, ConfigDict, Field, field_validator, model_serializer
 
 
 class BunchModel(BaseModel, abc.MutableMapping):
@@ -69,7 +69,6 @@ class HardwareSettingsFrame2TTL(BunchModel):
     COM_F2TTL: str | None
     F2TTL_CALIBRATION_DATE: date | None
     F2TTL_DARK_THRESH: int
-    F2TTL_HW_VERSION: Literal[1, 2, 3, None]
     F2TTL_LIGHT_THRESH: int
 
 
@@ -99,7 +98,7 @@ class HardwareSettingsValve(BunchModel):
 
 
 class HardwareSettingsCamera(BunchModel):
-    BONSAI_WORKFLOW: Path
+    BONSAI_WORKFLOW: str
 
 
 class HardwareSettingsCameras(BunchModel):
@@ -109,7 +108,7 @@ class HardwareSettingsCameras(BunchModel):
 
 
 class HardwareSettingsMicrophone(BunchModel):
-    BONSAI_WORKFLOW: Path
+    BONSAI_WORKFLOW: str
 
 
 class HardwareSettings(BunchModel):
@@ -124,4 +123,4 @@ class HardwareSettings(BunchModel):
     device_valve: HardwareSettingsValve
     device_cameras: HardwareSettingsCameras | None = None
     device_microphone: HardwareSettingsMicrophone | None = None
-    VERSION: str = '1.0.0'
+    VERSION: str

@@ -188,6 +188,17 @@ def load_pydantic_yaml(model: type[T], filename: Path | str | None = None, do_ra
             raise e
 
 
+def save_pydantic_yaml(data: T) -> bool:
+    if isinstance(data, HardwareSettings):
+        filename = HARDWARE_SETTINGS_YAML
+    elif isinstance(data, RigSettings):
+        filename = RIG_SETTINGS_YAML
+    else:
+        raise TypeError(f'Unknown Pydantic model: `{type(model).__name__}`')
+    with open(filename, 'w') as f:
+        yaml.dump(data.model_dump(), f, sort_keys=False)
+
+
 def patch_settings(rs: dict, filename: str | Path) -> dict:
     """
     Update loaded settings files to ensure compatibility with latest version.
