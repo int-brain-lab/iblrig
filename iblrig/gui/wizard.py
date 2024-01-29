@@ -69,14 +69,14 @@ URL_REPO = 'https://github.com/int-brain-lab/iblrig/tree/iblrigv8'
 URL_ISSUES = 'https://github.com/int-brain-lab/iblrig/issues'
 URL_DISCUSSION = 'https://github.com/int-brain-lab/iblrig/discussions'
 
-ANSI_COLORS: dict[bytes, str] = {b'31': 'Red', b'32': 'Green', b'33': 'Yellow', b'35': 'Magenta', b'36': 'Cyan', b'37': 'White'}
+ANSI_COLORS: dict[bytes, str] = {'31': 'Red', '32': 'Green', '33': 'Yellow', '35': 'Magenta', '36': 'Cyan', '37': 'White'}
 REGEX_STDOUT = re.compile(
-    rb'^\x1b\[(?:\d;)?(?:\d+;)?'
-    rb'(?P<color>\d+)m[\d-]*\s+'
-    rb'(?P<time>[\d\:]+)\s+'
-    rb'(?P<level>\w+\s+)'
-    rb'(?P<file>[\w\:\.]+)\s+'
-    rb'(?P<message>[^\x1b]*)',
+    r'^\x1b\[(?:\d;)?(?:\d+;)?'
+    r'(?P<color>\d+)m[\d-]*\s+'
+    r'(?P<time>[\d\:]+)\s+'
+    r'(?P<level>\w+\s+)'
+    r'(?P<file>[\w\:\.]+)\s+'
+    r'(?P<message>[^\x1b]*)',
     re.MULTILINE,
 )
 
@@ -241,10 +241,11 @@ class RigWizardModel:
 
 
 class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, **kwargs):
+        super().__init__()
         self.setupUi(self)
 
+        self.debug = kwargs.get('debug', False)
         self.settings = QtCore.QSettings()
         self.move(self.settings.value('pos', self.pos(), QtCore.QPoint))
 
@@ -921,6 +922,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                     else:
                         cmd.extend([key, self.task_arguments[key]])
                 cmd.extend(['--weight', f'{weight}'])
+                cmd.extend(['--log-level', 'DEBUG' if self.debug else 'INFO'])
                 cmd.append('--wizard')
                 if self.uiCheckAppend.isChecked():
                     cmd.append('--append')
@@ -973,14 +975,16 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         extracts color information, sets character color in the QPlainTextEdit widget,
         and appends time and message information to the widget.
         """
-        data = self.running_task_process.readAllStandardOutput().data()
+        data = self.running_task_process.readAllStandardOutput().data().decode('utf-8', 'ignore').strip()
         entries = re.finditer(REGEX_STDOUT, data)
         for entry in entries:
-            color = ANSI_COLORS.get(entry.groupdict().get('color', b'37'), 'White')
+            color = ANSI_COLORS.get(entry.groupdict().get('color', '37'), 'White')
             self._set_plaintext_char_color(self.uiPlainTextEditLog, color)
-            time = entry.groupdict().get('time', b'').decode('utf-8', 'ignore')
-            msg = entry.groupdict().get('message', b'').decode('utf-8', 'ignore')
+            time = entry.groupdict().get('time', '')
+            msg = entry.groupdict().get('message', '')
             self.uiPlainTextEditLog.appendPlainText(f'{time} {msg}')
+        if self.debug:
+            print(data)
 
     def _on_read_standard_error(self):
         """
@@ -990,9 +994,11 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         in the QPlainTextEdit widget to indicate an error (Red), and appends
         the error message to the widget.
         """
-        text = self.running_task_process.readAllStandardError().data().decode('utf-8', 'ignore')
+        data = self.running_task_process.readAllStandardError().data().decode('utf-8', 'ignore').strip()
         self._set_plaintext_char_color(self.uiPlainTextEditLog, 'Red')
-        self.uiPlainTextEditLog.appendPlainText(text.strip())
+        self.uiPlainTextEditLog.appendPlainText(data)
+        if self.debug:
+            print(data)
 
     def _on_task_finished(self, exit_code, exit_status):
         self._set_plaintext_char_color(self.uiPlainTextEditLog, 'White')
@@ -1391,7 +1397,11 @@ class CustomWebEnginePage(QWebEnginePage):
 
 
 def main():
-    setup_logger('iblrig', level='INFO')
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--debug', action='store_true', dest='debug', help='increase logging verbosity')
+    args = parser.parse_args()
+
+    setup_logger('iblrig', level='DEBUG' if args.debug else 'INFO')
     QtCore.QCoreApplication.setOrganizationName('International Brain Laboratory')
     QtCore.QCoreApplication.setOrganizationDomain('internationalbrainlab.org')
     QtCore.QCoreApplication.setApplicationName('IBLRIG Wizard')
@@ -1401,7 +1411,7 @@ def main():
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(app_id)
     app = QtWidgets.QApplication(['', '--no-sandbox'])
     app.setStyle('Fusion')
-    w = RigWizard()
+    w = RigWizard(debug=args.debug)
     w.show()
     app.exec()
 
