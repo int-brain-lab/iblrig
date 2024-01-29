@@ -76,7 +76,7 @@ class TestHardwareMixins(unittest.TestCase):
 
     @mock.patch('iblrig.base_tasks.call_bonsai')
     def test_bonsai_recording_mixin(self, mock_call_bonsai):
-        # create an session with the bonsai recording mixin only and all tests parameters
+        # create a session with the bonsai recording mixin only and all tests parameters
         session = mixin_factory(BonsaiRecordingMixin)
         session.init_mixin_bonsai_recordings()
         # this will fail if the udp clients are not alive, which they should be
@@ -91,7 +91,7 @@ class TestHardwareMixins(unittest.TestCase):
         session.stop_mixin_bonsai_recordings()
 
     @mock.patch('iblrig.base_tasks.call_bonsai')
-    def test_bonsai_visual_stimulus_mixin(self, mock_call_bonsai):
+    def test_bonsai_visual_stimulus_mixin(self, _):
         session = mixin_factory(BonsaiVisualStimulusMixin)
         session.start_mixin_bonsai_visual_stimulus()
         session.init_mixin_bonsai_visual_stimulus()
@@ -221,22 +221,22 @@ class TestPathCreation(unittest.TestCase):
             task_parameter_file=ChoiceWorldSession.base_parameters_file,
         )
         first_task.create_session()
-        # append a new protocol the the current task
+        # append a new protocol to the current task
         second_task = EmptyHardwareSession(append=True, iblrig_settings={'iblrig_remote_data_path': False}, **task_kwargs)
         # unless the task has reached the create session stage, there is only one protocol in there
         self.assertEqual(
-            set([d.name for d in first_task.paths.SESSION_FOLDER.iterdir() if d.is_dir()]), set(['raw_task_data_00'])
+            set(d.name for d in first_task.paths.SESSION_FOLDER.iterdir() if d.is_dir()), {'raw_task_data_00'}
         )
         # this will create and add to the acquisition description file
         second_task.create_session()
         self.assertEqual(
-            set([d.name for d in first_task.paths.SESSION_FOLDER.iterdir() if d.is_dir()]),
-            set(['raw_task_data_00', 'raw_task_data_01']),
+            set(d.name for d in first_task.paths.SESSION_FOLDER.iterdir() if d.is_dir()),
+            {'raw_task_data_00', 'raw_task_data_01'},
         )
         description = read_params(second_task.paths['SESSION_FOLDER'])
         # we should also find the protocols in the acquisition description file
-        protocols = set([p[EmptyHardwareSession.protocol_name]['collection'] for p in description['tasks']])
-        self.assertEqual(protocols, set(['raw_task_data_00', 'raw_task_data_01']))
+        protocols = set(p[EmptyHardwareSession.protocol_name]['collection'] for p in description['tasks'])
+        self.assertEqual(protocols, {'raw_task_data_00', 'raw_task_data_01'})
 
     def test_create_session_with_remote(self):
         with tempfile.TemporaryDirectory() as td:
@@ -303,3 +303,40 @@ class TestHardwareSettings(unittest.TestCase):
         self.assertIsNotNone(BonsaiRecordingMixin._camera_mixin_bonsai_get_workflow_file(config, 'recording'))
         self.assertIsNone(BonsaiRecordingMixin._camera_mixin_bonsai_get_workflow_file(None, 'recording'))
         self.assertRaises(KeyError, BonsaiRecordingMixin._camera_mixin_bonsai_get_workflow_file, {}, 'recording')
+
+
+class TestRun(unittest.TestCase):
+    """Test BaseSession.run method and append kwarg."""
+
+    def setUp(self):
+        tmp = tempfile.TemporaryDirectory()
+        self.tmp = Path(tmp.name)
+        self.addCleanup(tmp.cleanup)
+        self.iblrig_settings = {'iblrig_remote_data_path': False, 'iblrig_local_data_path': self.tmp}
+
+        self.task_kwargs = copy.deepcopy(TASK_KWARGS)
+        self.task_kwargs['hardware_settings']['MAIN_SYNC'] = False
+        self.task_kwargs['interactive'] = True
+        self.task_kwargs['iblrig_settings'] = self.iblrig_settings
+        self.task_kwargs['task_parameter_file'] = ChoiceWorldSession.base_parameters_file
+
+    @mock.patch('iblrig.base_tasks.graph.numinput', side_effect=(23.5, 20, 35))
+    def test_dialogs(self, input_mock):
+        """Test that weighing dialog used only on first of chained protocols."""
+        first_task = EmptyHardwareSession(**self.task_kwargs)
+        # Logging to file causes tempdir cleanup issues so we simply don't call setup_loggers
+        with mock.patch.object(first_task, '_setup_loggers'):
+            # Check that weighing GUI created
+            first_task.run()
+        input_mock.assert_called()
+        self.assertEqual(23.5, first_task.session_info['SUBJECT_WEIGHT'])
+        self.assertEqual(20, first_task.session_info['POOP_COUNT'])
+
+        # Append a new protocol to the current task. Weighting GUI should not be instantiated
+        input_mock.reset_mock()
+        second_task = EmptyHardwareSession(append=True, **self.task_kwargs)
+        with mock.patch.object(second_task, '_setup_loggers'):
+            second_task.run()
+        input_mock.assert_called_once()
+        self.assertIsNone(second_task.session_info['SUBJECT_WEIGHT'])
+        self.assertEqual(35, second_task.session_info['POOP_COUNT'])
