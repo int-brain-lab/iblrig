@@ -1,7 +1,6 @@
 import logging
 import struct
 import time
-from functools import singledispatch
 
 import numpy as np
 from serial.serialutil import SerialTimeoutException
@@ -12,7 +11,7 @@ log = logging.getLogger(__name__)
 
 
 class Frame2TTL(SerialSingleton):
-    def __init__(self, port: str, threshold_dark: int = -150, threshold_light: int = 100, **kwargs) -> None:
+    def __init__(self, port: str, threshold_dark: int = None, threshold_light: int = None, **kwargs) -> None:
         # identify micro-controller
         port_info = next((p for p in comports() if p.device == port), None)
         if port_info is not None:
@@ -87,8 +86,10 @@ class Frame2TTL(SerialSingleton):
         self.timeout = 5
 
         # initialize members
-        self._threshold_dark = threshold_dark
-        self._threshold_light = threshold_light
+        if threshold_dark is None:
+            self._threshold_dark = -150 if self.hw_version > 1 else 40
+        if threshold_light is None:
+            self._threshold_light = 100 if self.hw_version > 1 else 80
         self.set_thresholds(self._threshold_dark, self._threshold_light)
         self._is_streaming = False
         match self.hw_version:
