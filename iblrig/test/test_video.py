@@ -48,51 +48,66 @@ class TestSettings(unittest.TestCase):
         self.addCleanup(params_dict_mock.stop)
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
-        self._settings = {}
+        self._settings = {}  # Store the unpatched settings (we'll use the template ones)
+        self.patched = {}  # Store the patched settings
         for file in ('iblrig', 'hardware'):
-            filepath = Path(video.__file__).parents[1].joinpath('settings', f'{file}_settings.yaml')
+            filepath = Path(video.__file__).parents[1].joinpath('settings', f'{file}_settings_template.yaml')
             if filepath.exists():
                 with open(filepath, 'r') as fp:
-                    self._settings[filepath] = fp.read()
+                    self._settings[file] = yaml.safe_load(fp.read())
+
+    def _return_settings(self, fp) -> dict:
+        """Return settings dict when yaml.safe_load mock called."""
+        return self._settings['hardware' if 'hardware' in Path(fp.name).name else 'iblrig']
 
     @patch('iblrig.video.params.getfile')
-    def test_patch_old_params(self, getfile_mock):
+    @patch('iblrig.video.yaml.safe_dump')
+    @patch('iblrig.video.yaml.safe_load')
+    def test_patch_old_params(self, safe_load_mock, safe_dump_mock, getfile_mock):
+        """Test iblrig.video.patch_old_params function."""
         (old_file := Path(self.tmp.name, '.videopc_params')).touch()
+        safe_load_mock.side_effect = self._return_settings
+        safe_dump_mock.side_effect = self._store_patched_settings
+        self._settings['hardware']['device_cameras']['ephys'] = {
+            'left': {}, 'right': {'FPS': 150}, 'body': {}, 'belly': {}
+        }
         getfile_mock.return_value = old_file
         video.patch_old_params(remove_old=False)
-        patched = self._load_patched_settings()  # Load the patched settings
-        self.assertIn('device_cameras', patched['hardware_settings'])
+
+        # Check the patched hardware settings
+        patched = self.patched['hardware']
+        self.assertIn('device_cameras', patched)
         for cam, idx in dict(left=3, right=2, body=0).items():
-            self.assertEqual(idx, patched['hardware_settings']['device_cameras'][cam]['INDEX'])
-        self.assertEqual(r'D:\iblrig_data', patched['iblrig_settings']['iblrig_local_data_path'])
-        self.assertEqual(r'\\iblserver.champalimaud.pt\ibldata', patched['iblrig_settings']['iblrig_remote_data_path'])
+            self.assertEqual(idx, patched['device_cameras']['ephys'][cam]['INDEX'])
+        self.assertEqual(3, self._settings['hardware']['device_cameras']['default']['left']['INDEX'])
+        # Check irrelevant fields unmodified
+        self.assertNotIn('right', self._settings['hardware']['device_cameras']['default'])
+        self.assertIn('belly', self._settings['hardware']['device_cameras']['ephys'])
+
+        # Check the patched iblrig settings
+        patched = self.patched['iblrig']
+        self.assertEqual(r'D:\iblrig_data', patched['iblrig_local_data_path'])
+        self.assertEqual(r'\\iblserver.champalimaud.pt\ibldata', patched['iblrig_remote_data_path'])
         self.assertTrue(old_file.exists(), 'failed to keep old settings file')
 
-        # Check this works without settings files
-        for filepath in self._settings:
-            filepath.unlink()
         # Test insertion of 'subjects' path key if old location doesn't end in 'Subjects'
         for key in ('DATA_FOLDER_PATH', 'REMOTE_DATA_FOLDER_PATH'):
             self.old_params[key] = self.old_params[key].replace('Subjects', 'foobar')
-        video.patch_old_params(remove_old=True)
-        patched = self._load_patched_settings()  # Load the patched settings
-        self.assertEqual(self.old_params['DATA_FOLDER_PATH'], patched['iblrig_settings']['iblrig_local_subjects_path'])
-        self.assertEqual(self.old_params['REMOTE_DATA_FOLDER_PATH'], patched['iblrig_settings']['iblrig_remote_subjects_path'])
+        with (patch('iblrig.video.HARDWARE_SETTINGS_YAML', Path(self.tmp.name, 'na')),
+              patch('iblrig.video.RIG_SETTINGS_YAML', Path(self.tmp.name, 'na'))):
+            # Check this works without settings files
+            video.patch_old_params(remove_old=True)
+        patched = self.patched['iblrig']  # Load the patched settings
+        self.assertEqual(self.old_params['DATA_FOLDER_PATH'], patched['iblrig_local_subjects_path'])
+        self.assertEqual(self.old_params['REMOTE_DATA_FOLDER_PATH'], patched['iblrig_remote_subjects_path'])
         self.assertFalse(old_file.exists(), 'failed to remove old settings file')
 
         video.patch_old_params()  # Shouldn't raise after removing old settings
 
-    def _load_patched_settings(self):
-        patched = {}
-        for settings_file in self._settings:
-            with open(settings_file, 'r') as fp:
-                patched[settings_file.stem] = yaml.safe_load(fp)
-        return patched
-
-    def tearDown(self):
-        for filepath, data in getattr(self, '_settings', {}).items():
-            with open(filepath, 'w') as fp:
-                fp.write(data)
+    def _store_patched_settings(self, settings, fp):
+        """Store settings passed to yaml.safe_dump mock."""
+        key = 'hardware' if 'hardware' in Path(fp.name).name else 'iblrig'
+        self.patched[key] = settings
 
 
 class TestPrepareVideoSession(unittest.TestCase):

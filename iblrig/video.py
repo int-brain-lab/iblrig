@@ -21,6 +21,7 @@ from iblrig.base_tasks import EmptySession
 from iblrig.constants import HAS_PYSPIN, HAS_SPINNAKER, HARDWARE_SETTINGS_YAML, RIG_SETTINGS_YAML
 from iblrig.tools import ask_user, call_bonsai
 from iblrig.transfer_experiments import VideoCopier
+from iblrig.path_helper import patch_settings
 
 with contextlib.suppress(ImportError):
     from iblrig import video_pyspin
@@ -164,7 +165,7 @@ def patch_old_params(remove_old=False, update_paths=True):
     # Update hardware settings
     if HARDWARE_SETTINGS_YAML.exists():
         with open(HARDWARE_SETTINGS_YAML, 'r') as fp:
-            hardware_settings = yaml.safe_load(fp)
+            hardware_settings = patch_settings(yaml.safe_load(fp), HARDWARE_SETTINGS_YAML)
     else:
         hardware_settings = {}
     cams = hardware_settings.get('device_cameras', {})
