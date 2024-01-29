@@ -194,9 +194,11 @@ def save_pydantic_yaml(data: T) -> bool:
     elif isinstance(data, RigSettings):
         filename = RIG_SETTINGS_YAML
     else:
-        raise TypeError(f'Unknown Pydantic model: `{type(model).__name__}`')
+        raise TypeError(f'Unknown Pydantic model: `{type(data).__name__}`')
+    yaml_data = data.model_dump()
+    data.model_validate(yaml_data)
     with open(filename, 'w') as f:
-        yaml.dump(data.model_dump(), f, sort_keys=False)
+        yaml.dump(yaml_data, f, sort_keys=False)
 
 
 def patch_settings(rs: dict, filename: str | Path) -> dict:

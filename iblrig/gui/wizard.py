@@ -1,5 +1,6 @@
 import argparse
 import ctypes
+import datetime
 import importlib
 import json
 import logging
@@ -35,7 +36,7 @@ from iblrig.gui.ui_update import Ui_update
 from iblrig.gui.ui_wizard import Ui_wizard
 from iblrig.hardware import Bpod
 from iblrig.misc import _get_task_argument_parser
-from iblrig.path_helper import load_pydantic_yaml
+from iblrig.path_helper import load_pydantic_yaml, save_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings, RigSettings
 from iblrig.tools import alyx_reachable, get_anydesk_id, internet_available
 from iblrig.version_management import check_for_updates, get_changelog, is_dirty
@@ -107,10 +108,10 @@ class RigWizardModel:
     file_hardware_settings: Path | str | None = None
 
     def __post_init__(self):
-        self.iblrig_settings: RigSettings = load_pydantic_yaml(
-            RigSettings, filename=self.file_iblrig_settings, do_raise=True)
+        self.iblrig_settings: RigSettings = load_pydantic_yaml(RigSettings, filename=self.file_iblrig_settings, do_raise=True)
         self.hardware_settings: HardwareSettings = load_pydantic_yaml(
-            HardwareSettings, filename=self.file_hardware_settings, do_raise=True)
+            HardwareSettings, filename=self.file_hardware_settings, do_raise=True
+        )
 
         # calculate free reward time
         class FakeSession(ValveMixin):
@@ -458,28 +459,53 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
     def _on_calibrate_frame2ttl(self) -> None:
         frame2ttl = Frame2TTL(self.model.hardware_settings.device_frame2ttl.COM_F2TTL)
 
-        progress_text = (f"Calibrating Frame2TTL v{frame2ttl.hw_version} on {frame2ttl.portstr}\n\n"
-                         "Light Threshold:  {light}\n"
-                         "Dark Threshold:   {dark}\n\n{final}")
-        progress_dialog = QtWidgets.QMessageBox(self, text=progress_text.format(light='', dark='',
-                                                                                final='Calibration in progress ...'))
+        # create dialog for showing calibration progress
+        progress_text = (
+            f'Calibrating Frame2TTL v{frame2ttl.hw_version} on {frame2ttl.portstr}\n\n'
+            'Light Threshold:  {light}\n'
+            'Dark Threshold:   {dark}\n\n{final}'
+        )
+        progress_dialog = QtWidgets.QMessageBox(
+            self, text=progress_text.format(light='', dark='', final='Calibration in progress ...\n')
+        )
         progress_dialog.setWindowTitle('Frame2TTL Calibration')
         progress_dialog.setWindowModality(QtCore.Qt.ApplicationModal)
         progress_dialog.show()
         progress_dialog.buttons()[0].setEnabled(False)
 
+        # obtain light threshold
         target = CalibrationTarget(parent=self, color=QtGui.QColorConstants.White)
         light = frame2ttl.calibrate_light()
-        progress_dialog.setText(progress_text.format(light=light, dark='', final='Calibration in progress ...'))
+        progress_dialog.setText(progress_text.format(light=light, dark='', final='Calibration in progress ...\n'))
 
+        # obtain dark threshold
         target.color = QtGui.QColorConstants.Black
         dark = frame2ttl.calibrate_dark()
-        progress_dialog.setText(progress_text.format(light=light, dark=dark, final='Calibration in progress ...'))
+        success = True
+        str_final = 'Calibration successful.\nSettings have been updated.'
 
+        # modify v1 dark threshold (TODO: taken from old routine - verify if this makes sense)
+        if frame2ttl.hw_version == 1:
+            if dark >= light + 40:
+                dark = light + 40
+            else:
+                dark = round(light + (dark - light) / 3)
+                if (dark - light) >= 5:
+                    frame2ttl.threshold_dark = dark
+                else:
+                    success = False
+                    str_final = 'Calibration failed.\nVerify that sensor is placed correctly.'
+
+        if success:
+            self.model.hardware_settings.device_frame2ttl.F2TTL_DARK_THRESH = dark
+            self.model.hardware_settings.device_frame2ttl.F2TTL_LIGHT_THRESH = light
+            self.model.hardware_settings.device_frame2ttl.F2TTL_CALIBRATION_DATE = datetime.date.today()
+            save_pydantic_yaml(self.model.hardware_settings)
+        progress_dialog.setText(progress_text.format(light=light, dark=dark, final=str_final))
         target.close()
-        progress_dialog.setText(progress_text.format(light=light, dark=dark, final='Calibration complete.'))
-        progress_dialog.buttons()[0].setEnabled(True)
         del frame2ttl
+        progress_dialog.setText(progress_text.format(light=light, dark=dark, final=str_final))
+        progress_dialog.buttons()[0].setEnabled(True)
 
     def _on_check_update_result(self, result: tuple[bool, str]) -> None:
         """

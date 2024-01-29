@@ -570,7 +570,7 @@ class BonsaiRecordingMixin:
         """
         if self._camera_mixin_bonsai_get_workflow_file(self.hardware_settings.device_cameras) is None:
             return
-        # TODO
+        # TODO: Disable Trigger in Bonsai workflow - PySpin won't help here
         # if PYSPIN_AVAILABLE:
         #     from iblrig.video_pyspin import enable_camera_trigger
         #     enable_camera_trigger(True)

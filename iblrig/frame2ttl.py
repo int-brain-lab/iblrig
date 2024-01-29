@@ -11,6 +11,9 @@ log = logging.getLogger(__name__)
 
 
 class Frame2TTL(SerialSingleton):
+    _threshold_dark: int | None = None
+    _threshold_light: int | None = None
+
     def __init__(self, port: str, threshold_dark: int = None, threshold_light: int = None, **kwargs) -> None:
         # identify micro-controller
         port_info = next((p for p in comports() if p.device == port), None)
@@ -87,10 +90,10 @@ class Frame2TTL(SerialSingleton):
 
         # initialize members
         if threshold_dark is None:
-            self._threshold_dark = -150 if self.hw_version > 1 else 40
+            threshold_dark = -150 if self.hw_version > 1 else 40
         if threshold_light is None:
-            self._threshold_light = 100 if self.hw_version > 1 else 80
-        self.set_thresholds(self._threshold_dark, self._threshold_light)
+            threshold_light = 100 if self.hw_version > 1 else 80
+        self.set_thresholds(threshold_dark, threshold_light)
         self._is_streaming = False
         match self.hw_version:
             case 1:

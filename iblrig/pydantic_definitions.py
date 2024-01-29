@@ -3,7 +3,7 @@ from datetime import date
 from pathlib import Path
 from typing import Literal
 
-from pydantic import AnyUrl, BaseModel, ConfigDict, Field, field_validator, model_serializer
+from pydantic import AnyUrl, BaseModel, ConfigDict, Field, field_serializer, field_validator
 
 
 class BunchModel(BaseModel, abc.MutableMapping):
@@ -98,7 +98,11 @@ class HardwareSettingsValve(BunchModel):
 
 
 class HardwareSettingsCamera(BunchModel):
-    BONSAI_WORKFLOW: str
+    BONSAI_WORKFLOW: Path
+
+    @field_serializer('BONSAI_WORKFLOW')
+    def serialize_path(self, bonsai_workflow: Path, _info):
+        return str(bonsai_workflow)
 
 
 class HardwareSettingsCameras(BunchModel):
@@ -108,7 +112,11 @@ class HardwareSettingsCameras(BunchModel):
 
 
 class HardwareSettingsMicrophone(BunchModel):
-    BONSAI_WORKFLOW: str
+    BONSAI_WORKFLOW: Path
+
+    @field_serializer('BONSAI_WORKFLOW')
+    def serialize_path(self, bonsai_workflow: Path, _info):
+        return str(bonsai_workflow)
 
 
 class HardwareSettings(BunchModel):
