@@ -1,6 +1,11 @@
 Changelog
 ---------
 
+8.15.0
+------
+* feature: calibration routine for frame2ttl
+* feature: debug-flag for IBLRIG Wizard
+
 8.14.2
 ------
 * hotfix: wrong return-type in _iterate_protocols - pt 2
