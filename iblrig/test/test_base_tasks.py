@@ -222,9 +222,7 @@ class TestPathCreation(unittest.TestCase):
         # append a new protocol to the current task
         second_task = EmptyHardwareSession(append=True, iblrig_settings={'iblrig_remote_data_path': False}, **task_kwargs)
         # unless the task has reached the create session stage, there is only one protocol in there
-        self.assertEqual(
-            set(d.name for d in first_task.paths.SESSION_FOLDER.iterdir() if d.is_dir()), {'raw_task_data_00'}
-        )
+        self.assertEqual(set(d.name for d in first_task.paths.SESSION_FOLDER.iterdir() if d.is_dir()), {'raw_task_data_00'})
         # this will create and add to the acquisition description file
         second_task.create_session()
         self.assertEqual(

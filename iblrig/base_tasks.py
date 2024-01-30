@@ -719,13 +719,12 @@ class Frame2TTLMixin:
                 'settings/hardware_settings.yaml is null. Please '
                 'provide a valid port name.'
             )
-        frame2ttl = Frame2TTL(
+        Frame2TTL(
             port=self.hardware_settings['device_frame2ttl']['COM_F2TTL'],
             threshold_dark=self.hardware_settings['device_frame2ttl']['F2TTL_DARK_THRESH'],
             threshold_light=self.hardware_settings['device_frame2ttl']['F2TTL_LIGHT_THRESH'],
-        )
+        ).close()
         log.info('Frame2TTL: Thresholds set.')
-        frame2ttl.close()
 
 
 class RotaryEncoderMixin:

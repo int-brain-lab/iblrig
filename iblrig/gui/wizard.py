@@ -31,6 +31,7 @@ from iblrig.base_tasks import EmptySession, ValveMixin
 from iblrig.choiceworld import get_subject_training_info, training_phase_from_contrast_set
 from iblrig.constants import BASE_DIR
 from iblrig.frame2ttl import Frame2TTL
+from iblrig.gui.ui_frame2ttl import Ui_frame2ttl
 from iblrig.gui.ui_login import Ui_login
 from iblrig.gui.ui_update import Ui_update
 from iblrig.gui.ui_wizard import Ui_wizard
@@ -457,55 +458,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
             self.uiGroupTaskParameters.findChild(QtWidgets.QWidget, '--training_phase').setValue(training_phase)
 
     def _on_calibrate_frame2ttl(self) -> None:
-        frame2ttl = Frame2TTL(self.model.hardware_settings.device_frame2ttl.COM_F2TTL)
-
-        # create dialog for showing calibration progress
-        progress_text = (
-            f'Calibrating Frame2TTL v{frame2ttl.hw_version} on {frame2ttl.portstr}\n\n'
-            'Light Threshold:  {light}\n'
-            'Dark Threshold:   {dark}\n\n{final}'
-        )
-        progress_dialog = QtWidgets.QMessageBox(
-            self, text=progress_text.format(light='', dark='', final='Calibration in progress ...\n')
-        )
-        progress_dialog.setWindowTitle('Frame2TTL Calibration')
-        progress_dialog.setWindowModality(QtCore.Qt.ApplicationModal)
-        progress_dialog.show()
-        progress_dialog.buttons()[0].setEnabled(False)
-
-        # obtain light threshold
-        target = CalibrationTarget(parent=self, color=QtGui.QColorConstants.White)
-        light = frame2ttl.calibrate_light()
-        progress_dialog.setText(progress_text.format(light=light, dark='', final='Calibration in progress ...\n'))
-
-        # obtain dark threshold
-        target.color = QtGui.QColorConstants.Black
-        dark = frame2ttl.calibrate_dark()
-        success = True
-        str_final = 'Calibration successful.\nSettings have been updated.'
-
-        # modify v1 dark threshold (TODO: taken from old routine - verify if this makes sense)
-        if frame2ttl.hw_version == 1:
-            if dark >= light + 40:
-                dark = light + 40
-            else:
-                dark = round(light + (dark - light) / 3)
-                if (dark - light) >= 5:
-                    frame2ttl.threshold_dark = dark
-                else:
-                    success = False
-                    str_final = 'Calibration failed.\nVerify that sensor is placed correctly.'
-
-        if success:
-            self.model.hardware_settings.device_frame2ttl.F2TTL_DARK_THRESH = dark
-            self.model.hardware_settings.device_frame2ttl.F2TTL_LIGHT_THRESH = light
-            self.model.hardware_settings.device_frame2ttl.F2TTL_CALIBRATION_DATE = datetime.date.today()
-            save_pydantic_yaml(self.model.hardware_settings)
-        progress_dialog.setText(progress_text.format(light=light, dark=dark, final=str_final))
-        target.close()
-        del frame2ttl
-        progress_dialog.setText(progress_text.format(light=light, dark=dark, final=str_final))
-        progress_dialog.buttons()[0].setEnabled(True)
+        Frame2TTLCalibrationDialog(self)
 
     def _on_check_update_result(self, result: tuple[bool, str]) -> None:
         """
@@ -1322,9 +1275,63 @@ class SubjectDetailsWorker(QThread):
         self.result = get_subject_training_info(self.subject_name)
 
 
-class CalibrationTarget(QtWidgets.QDialog):
+class Frame2TTLCalibrationDialog(QtWidgets.QDialog, Ui_frame2ttl):
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.setupUi(self)
+
+        hw_settings = self.parent().model.hardware_settings
+        self.frame2ttl = Frame2TTL(port=hw_settings.device_frame2ttl.COM_F2TTL)
+        self.target = Frame2TTLCalibrationTarget(self, color=QtGui.QColorConstants.White)
+        self.light = None
+        self.dark = None
+        self._success = True
+
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose, True)
+        self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
+        self.uiLabelPortValue.setText(self.frame2ttl.portstr)
+        self.uiLabelHardwareValue.setText(str(self.frame2ttl.hw_version))
+        self.uiLabelFirmwareValue.setText(str(self.frame2ttl.fw_version))
+        self.buttonBox.buttons()[0].setEnabled(False)
+
+        self.uiLabelLightValue.setText('calibrating ...')
+        QtCore.QTimer.singleShot(0, self.calibrate_light)
+
+        self.show()
+
+    @QtCore.pyqtSlot()
+    def calibrate_light(self):
+        self.light, self._success = self.frame2ttl.calibrate(condition='light')
+        self.uiLabelLightValue.setText(f'{self.light} {self.frame2ttl.unit_str}')
+        self.uiLabelDarkValue.setText('calibrating ...')
+        QtCore.QTimer.singleShot(0, self.calibrate_dark)
+
+    @QtCore.pyqtSlot()
+    def calibrate_dark(self):
+        self.target.color = QtGui.QColorConstants.Black
+        self.dark, self._success = self.frame2ttl.calibrate(condition='dark')
+        self.uiLabelDarkValue.setText(f'{self.dark} {self.frame2ttl.unit_str}')
+        QtCore.QTimer.singleShot(0, self.wrap_up)
+
+    @QtCore.pyqtSlot()
+    def wrap_up(self):
+        if self._success:
+            self.frame2ttl.set_thresholds(light=self.light, dark=self.dark)
+            self.parent().model.hardware_settings.device_frame2ttl.F2TTL_DARK_THRESH = self.dark
+            self.parent().model.hardware_settings.device_frame2ttl.F2TTL_LIGHT_THRESH = self.light
+            self.parent().model.hardware_settings.device_frame2ttl.F2TTL_CALIBRATION_DATE = datetime.date.today()
+            save_pydantic_yaml(self.parent().model.hardware_settings)
+            self.uiLabelResult.setText('Calibration successful.\nSettings have been updated.')
+        else:
+            self.uiLabelResult.setText('Calibration failed.\nVerify that sensor is placed correctly.')
+        self.buttonBox.buttons()[0].setEnabled(True)
+        self.frame2ttl.close()
+
+
+class Frame2TTLCalibrationTarget(QtWidgets.QDialog):
     def __init__(
         self,
+        parent,
         color: QtGui.QColor = QtGui.QColorConstants.White,
         screen_index: int | None = None,
         width: int | None = None,
@@ -1353,8 +1360,8 @@ class CalibrationTarget(QtWidgets.QDialog):
             height = round(screen_height - (1 - rel_pos_y - rel_extent_y / 2) * screen_height / 2)
 
         # display frameless QDialog with given color
-        super().__init__(**kwargs)
-        self.setWindowModality(QtCore.Qt.ApplicationModal)
+        super().__init__(parent, **kwargs)
+        self.setWindowModality(QtCore.Qt.WindowModality.NonModal)
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowStaysOnTopHint | QtCore.Qt.Dialog)
         self.setAutoFillBackground(True)
         self._set_color(color)
@@ -1427,7 +1434,10 @@ def main():
     parser.add_argument('--debug', action='store_true', dest='debug', help='increase logging verbosity')
     args = parser.parse_args()
 
-    setup_logger('iblrig', level='DEBUG' if args.debug else 'INFO')
+    if args.debug:
+        setup_logger(name=None, level='DEBUG')
+    else:
+        setup_logger(name='iblrig', level='INFO')
     QtCore.QCoreApplication.setOrganizationName('International Brain Laboratory')
     QtCore.QCoreApplication.setOrganizationDomain('internationalbrainlab.org')
     QtCore.QCoreApplication.setApplicationName('IBLRIG Wizard')

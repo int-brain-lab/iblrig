@@ -198,6 +198,7 @@ def save_pydantic_yaml(data: T) -> bool:
     yaml_data = data.model_dump()
     data.model_validate(yaml_data)
     with open(filename, 'w') as f:
+        log.debug(f'Dumping {type(data).__name__} to {filename.name}')
         yaml.dump(yaml_data, f, sort_keys=False)
 
 

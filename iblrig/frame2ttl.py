@@ -1,6 +1,7 @@
 import logging
 import struct
 import time
+from typing import Literal
 
 import numpy as np
 from serial.serialutil import SerialTimeoutException
@@ -13,8 +14,10 @@ log = logging.getLogger(__name__)
 class Frame2TTL(SerialSingleton):
     _threshold_dark: int | None = None
     _threshold_light: int | None = None
+    _calibration_stage: int = 0
+    _calibrate_light: int | None = None
 
-    def __init__(self, port: str, threshold_dark: int = None, threshold_light: int = None, **kwargs) -> None:
+    def __init__(self, port: str, threshold_light: int = None, threshold_dark: int = None, **kwargs) -> None:
         # identify micro-controller
         port_info = next((p for p in comports() if p.device == port), None)
         if port_info is not None:
@@ -88,23 +91,23 @@ class Frame2TTL(SerialSingleton):
         # increase timeout
         self.timeout = 5
 
+        # log status
+        log.debug(f'Connected to Frame2TTL v{self.hw_version} on port {self.portstr}. ' f'Firmware Version: {self.fw_version}.')
+
         # initialize members
+        match self.hw_version:
+            case 1:
+                self.unit_str = 'μs'
+                self._dtype_streaming = np.uint32
+            case _:
+                self.unit_str = 'bits/ms'
+                self._dtype_streaming = np.uint16
         if threshold_dark is None:
             threshold_dark = -150 if self.hw_version > 1 else 40
         if threshold_light is None:
             threshold_light = 100 if self.hw_version > 1 else 80
-        self.set_thresholds(threshold_dark, threshold_light)
+        self.set_thresholds(light=threshold_light, dark=threshold_dark)
         self._is_streaming = False
-        match self.hw_version:
-            case 1:
-                self._unit_str = 'μs'
-                self._dtype_streaming = np.uint32
-            case _:
-                self._unit_str = 'bits/ms'
-                self._dtype_streaming = np.uint16
-
-        # log status
-        log.debug(f'Connected to Frame2TTL v{self.hw_version} on port {self.portstr}. ' f'Firmware Version: {self.fw_version}.')
 
     @property
     def streaming(self) -> bool:
@@ -132,11 +135,11 @@ class Frame2TTL(SerialSingleton):
     def threshold_light(self, value: int) -> None:
         self.set_thresholds(dark=self._threshold_dark, light=value)
 
-    def set_thresholds(self, dark: int, light: int):
+    def set_thresholds(self, light: int, dark: int):
         self._threshold_dark = dark
         self._threshold_light = light
-        self.write(struct.pack('<cHH' if self.hw_version == 1 else '<chh', b'T', self._threshold_dark, self._threshold_light))
-        log.debug(f'Thresholds set to {self._threshold_dark} (dark) and {self._threshold_light} (light)')
+        self.write(struct.pack('<cHH' if self.hw_version == 1 else '<chh', b'T', self._threshold_light, self._threshold_dark))
+        log.debug(f'Thresholds set to {self._threshold_light} (light) and {self._threshold_dark} (dark)')
 
     def handshake(self, raise_on_fail: bool = False) -> bool:
         self.flushInput()
@@ -146,7 +149,7 @@ class Frame2TTL(SerialSingleton):
             raise OSError(f'Device on {self.portstr} is not a Frame2TTL')
         return status
 
-    def sample(self, n_samples: int) -> np.array:
+    def sample(self, n_samples: int) -> np.ndarray:
         buffer = bytearray(n_samples * self._dtype_streaming().itemsize)
         original_timeout = self.timeout
         self.timeout = None
@@ -156,18 +159,33 @@ class Frame2TTL(SerialSingleton):
         self.timeout = original_timeout
         return np.frombuffer(buffer, dtype=self._dtype_streaming)
 
-    def calibrate_dark(self, n_samples: int = 1000) -> int:
-        if self.hw_version > 1:
-            (self._threshold_dark,) = self.query('D', '<h')
-        else:
-            values = self.sample(n_samples=n_samples)
-            self.threshold_dark = int(np.floor(np.min(values)))
-        return self._threshold_dark
+    def calibrate(self, condition: Literal['light', 'dark'], n_samples: int = 1000) -> tuple[int, bool]:
+        assert condition in ['light', 'dark'], "stage must be 'light' or 'dark'"
+        success = True
+        log.debug(f'Calibrating for {condition} condition ...')
 
-    def calibrate_light(self, n_samples: int = 1000) -> int:
-        if self.hw_version > 1:
-            (self._threshold_light,) = self.query('L', '<h')
-        else:
+        if self.hw_version == 1:
+            # TODO: taken from old routine - verify if this makes sense
             values = self.sample(n_samples=n_samples)
-            self.threshold_light = int(np.ceil(np.min(values)))
-        return self._threshold_light
+            if condition == 'light':
+                value = int(np.ceil(np.max(values)))
+                self._calibrate_light = value
+            else:
+                if self._calibrate_light is None:
+                    raise ValueError('light threshold needs to be calibrated first')
+                value = int(np.floor(np.min(values)))
+                if value > self._calibrate_light + 40:
+                    value = self._calibrate_light + 40
+                else:
+                    value = round(self._calibrate_light + (value - self._calibrate_light) / 3)
+                    if value < self._calibrate_light + 5:
+                        success = False
+                self._calibrate_light = None
+        else:
+            value = self.query('L' if condition == 'light' else 'D', '<h')[0]
+            # TODO: check if readings are sufficiently different
+
+        log.debug(f'Suggested value for {condition} threshold: {value}{self.unit_str}')
+        if not success:
+            log.error('Calibration failed. Verify that sensor is placed correctly.')
+        return value, success
