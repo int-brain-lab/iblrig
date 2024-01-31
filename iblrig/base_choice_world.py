@@ -15,6 +15,7 @@ from typing import Annotated, Literal
 
 import numpy as np
 import pandas as pd
+from pybpodapi.exceptions.bpod_error import BpodErrorException
 from pydantic import BaseModel, Field
 
 import iblrig.base_tasks
@@ -182,7 +183,10 @@ class ChoiceWorldSession(
             if dt > 0:
                 time.sleep(dt)
             log.debug('running state machine')
-            self.bpod.run_state_machine(sma)  # Locks until state machine 'exit' is reached
+            try:
+                self.bpod.run_state_machine(sma)  # Locks until state machine 'exit' is reached
+            except BpodErrorException as e:
+                log.exception(e)
             time_last_trial_end = time.time()
             self.trial_completed(self.bpod.session.current_trial.export())
             self.show_trial_log()
