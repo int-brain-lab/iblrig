@@ -247,9 +247,10 @@ def validate_video(video_path, config):
         return False
     try:
         meta = get_video_meta(video_path)
-        ok = meta.length > 0 and meta.duration > 0
+        duration = meta.duration.total_seconds()
+        ok = meta.length > 0 and duration > 0.
         log.log(20 if meta.length > 0 else 40, 'N frames = %i', meta.length)
-        log.log(20 if meta.duration > 0 else 40, 'Duration = %.2f', meta.duration)
+        log.log(20 if duration > 0 else 40, 'Duration = %.2f', duration)
         if config.HEIGHT and config.HEIGHT != meta.height:
             ok = False
             log.warning('Frame height = %i; expected %i', config.HEIGHT, meta.height)
@@ -315,7 +316,7 @@ def prepare_video_session(subject_name: str, config_name: str, debug: bool = Fal
         raise ValueError(f'Config "{config_name}" not in "device_cameras" hardware settings.') from ex
     workflows = config.pop('BONSAI_WORKFLOW')
     cameras = [k for k in config if k != 'BONSAI_WORKFLOW']
-    params = {f'{k}CameraIndex': config[k].INDEX for k in cameras}
+    params = {f'{k.capitalize()}CameraIndex': config[k].INDEX for k in cameras}
     raw_data_folder.mkdir(parents=True, exist_ok=True)
 
     # align cameras

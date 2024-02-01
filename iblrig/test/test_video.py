@@ -1,5 +1,6 @@
 import unittest
 from pathlib import Path
+from datetime import timedelta
 from unittest.mock import patch, MagicMock, call, ANY
 import tempfile
 import sys
@@ -167,7 +168,7 @@ class TestValidateVideo(unittest.TestCase):
     def setUp(self):
         hws = load_pydantic_yaml(HardwareSettings, 'hardware_settings_template.yaml')
         self.config = hws['device_cameras']['default']['left']
-        self.meta = Bunch(length=1000, fps=30, height=1024, width=1280, duration=1000 * 30)
+        self.meta = Bunch(length=1000, fps=30, height=1024, width=1280, duration=timedelta(seconds=1000 * 30))
         self.count = np.arange(self.meta['length'])
         n = 300  # The number of GPIO events
         pin = {'indices': np.round(np.linspace(0, self.count.size, n)), 'polarities': np.ones(n)}
