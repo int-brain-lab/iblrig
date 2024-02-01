@@ -208,13 +208,13 @@ class TestValidateVideo(unittest.TestCase):
         with self.assertLogs(video.__name__, 30) as log:
             self.assertFalse(video.validate_video(self.video_path, self.config))
             expected = {'1 event(s) on GPIO #4',
-                        'Missed frames - frame data N = 999; video file N = 1000'}
+                        'Frame count / video frame mismatch - frame counts = 100; video frames = 1000'}
             self.assertCountEqual(set(x.getMessage() for x in log.records), expected)
         # Test frame data errors
-        load_embedded_frame_data.return_value = (self.count[:100], [None] * 4)
+        load_embedded_frame_data.return_value = (self.count + 100, [None] * 4)
         with self.assertLogs(video.__name__, 40) as log:
             self.assertFalse(video.validate_video(self.video_path, self.config))
-            expected = {'Frame count / video frame mismatch - frame counts = 99; video frames = 1000',
+            expected = {'Missed frames - frame data N = 1100; video file N = 1000',
                         'No GPIO events detected.'}
             self.assertCountEqual(set(x.getMessage() for x in log.records), expected)
 

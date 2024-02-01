@@ -76,7 +76,7 @@ To initiate the data transfer from the local server to the remote server, open a
 .. code:: powershell
 
    C:\iblrigv8\venv\scripts\Activate.ps1
-   transfer_data video
+   transfer_data --tag video
 
 The transfer local and remote directories are set in the
 ``iblrig/settings/iblrig_settings.py`` file.

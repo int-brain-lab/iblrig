@@ -266,11 +266,14 @@ def validate_video(video_path, config):
 
     # Check frame data
     count, gpio = load_embedded_frame_data(video_path.parents[1], label_from_path(video_path))
-    if count[-1] != meta.length - 1:
-        log.error('Frame count / video frame mismatch - frame counts = %i; video frames = %i', count[-1], meta.length)
+    dropped = count[-1] - (meta.length - 1)
+    if dropped != 0:  # Log ERROR if > .1% frames dropped, otherwise log WARN
+        pct_dropped = (dropped / (count[-1] + 1) * 100)
+        log.log(30 if pct_dropped < .1 else 40,
+                'Missed frames - frame data N = %i; video file N = %i', count[-1] + 1, meta.length)
         ok = False
     if len(count) != meta.length:
-        log.warning('Missed frames - frame data N = %i; video file N = %i', count[-1], meta.length)
+        log.critical('Frame count / video frame mismatch - frame counts = %i; video frames = %i', len(count), meta.length)
         ok = False
     if config.SYNC_LABEL:
         MIN_EVENTS = 10  # The minimum expected number of GPIO events
