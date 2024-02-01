@@ -14,17 +14,26 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_valve(object):
     def setupUi(self, valve):
         valve.setObjectName("valve")
-        valve.resize(400, 300)
+        valve.resize(518, 311)
         self.verticalLayout = QtWidgets.QVBoxLayout(valve)
         self.verticalLayout.setObjectName("verticalLayout")
+        self.horizontalLayout = QtWidgets.QHBoxLayout()
+        self.horizontalLayout.setObjectName("horizontalLayout")
         self.groupBox = QtWidgets.QGroupBox(valve)
         self.groupBox.setObjectName("groupBox")
-        self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.groupBox)
+        self.horizontalLayout.addWidget(self.groupBox)
+        self.frame = QtWidgets.QFrame(valve)
+        self.frame.setStyleSheet("background-color: rgb(255, 255, 255);")
+        self.frame.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        self.frame.setFrameShadow(QtWidgets.QFrame.Sunken)
+        self.frame.setObjectName("frame")
+        self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.frame)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
-        self.widget_2 = PlotWidget(self.groupBox)
-        self.widget_2.setObjectName("widget_2")
-        self.verticalLayout_2.addWidget(self.widget_2)
-        self.verticalLayout.addWidget(self.groupBox)
+        self.uiPlot = PlotWidget(self.frame)
+        self.uiPlot.setObjectName("uiPlot")
+        self.verticalLayout_2.addWidget(self.uiPlot)
+        self.horizontalLayout.addWidget(self.frame)
+        self.verticalLayout.addLayout(self.horizontalLayout)
         self.buttonBox = QtWidgets.QDialogButtonBox(valve)
         self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel|QtWidgets.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName("buttonBox")
@@ -36,7 +45,7 @@ class Ui_valve(object):
     def retranslateUi(self, valve):
         _translate = QtCore.QCoreApplication.translate
         valve.setWindowTitle(_translate("valve", "Dialog"))
-        self.groupBox.setTitle(_translate("valve", "Plot"))
+        self.groupBox.setTitle(_translate("valve", "GroupBox"))
 from pyqtgraph import PlotWidget
 
 

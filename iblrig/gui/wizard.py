@@ -17,6 +17,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+import pyqtgraph as pg
 from pydantic import ValidationError
 from PyQt5 import QtCore, QtGui, QtTest, QtWidgets
 from PyQt5.QtCore import QThread, QThreadPool
@@ -56,6 +57,7 @@ except ImportError:
     pass
 
 log = logging.getLogger(__name__)
+pg.setConfigOption('foreground', 'k')
 
 PROCEDURES = [
     'Behavior training/tasks',
@@ -1284,6 +1286,22 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.setupUi(self)
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose, True)
+        self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
+        self.setModal(QtCore.Qt.WindowModality.ApplicationModal)
+
+        x = [1, 54, 123]
+        y = [0.5, 4, 30]
+
+        # set up plot widget
+        self.scatter_plot = pg.ScatterPlotItem()
+        self.scatter_plot.setData(x, y)
+
+        self.uiPlot.setBackground(None)
+        self.uiPlot.addItem(self.scatter_plot)
+        self.uiPlot.setLabel('bottom', 'Opening Time [ms]')
+        self.uiPlot.setLabel('left', 'Volume [μL]')
+
         self.show()
 
 
