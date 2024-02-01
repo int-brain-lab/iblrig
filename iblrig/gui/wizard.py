@@ -1,5 +1,6 @@
 import argparse
 import ctypes
+import datetime
 import importlib
 import json
 import logging
@@ -14,10 +15,10 @@ from collections import OrderedDict
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from pydantic import ValidationError
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtCore, QtGui, QtTest, QtWidgets
 from PyQt5.QtCore import QThread, QThreadPool
 from PyQt5.QtWebEngineWidgets import QWebEnginePage
 from PyQt5.QtWidgets import QStyle
@@ -29,17 +30,18 @@ import iblrig_tasks
 from iblrig.base_tasks import EmptySession, ValveMixin
 from iblrig.choiceworld import get_subject_training_info, training_phase_from_contrast_set
 from iblrig.constants import BASE_DIR
+from iblrig.frame2ttl import Frame2TTL
+from iblrig.gui.ui_frame2ttl import Ui_frame2ttl
 from iblrig.gui.ui_login import Ui_login
 from iblrig.gui.ui_update import Ui_update
 from iblrig.gui.ui_wizard import Ui_wizard
 from iblrig.hardware import Bpod
 from iblrig.misc import _get_task_argument_parser
-from iblrig.path_helper import load_pydantic_yaml
+from iblrig.path_helper import load_pydantic_yaml, save_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings, RigSettings
 from iblrig.tools import alyx_reachable, get_anydesk_id, internet_available
 from iblrig.version_management import check_for_updates, get_changelog, is_dirty
 from iblutil.util import Bunch, setup_logger
-from one.api import ONE
 from one.webclient import AlyxClient
 from pybpodapi import exceptions
 from pybpodapi.protocol import StateMachine
@@ -69,14 +71,14 @@ URL_REPO = 'https://github.com/int-brain-lab/iblrig/tree/iblrigv8'
 URL_ISSUES = 'https://github.com/int-brain-lab/iblrig/issues'
 URL_DISCUSSION = 'https://github.com/int-brain-lab/iblrig/discussions'
 
-ANSI_COLORS: dict[bytes, str] = {b'31': 'Red', b'32': 'Green', b'33': 'Yellow', b'35': 'Magenta', b'36': 'Cyan', b'37': 'White'}
+ANSI_COLORS: dict[bytes, str] = {'31': 'Red', '32': 'Green', '33': 'Yellow', '35': 'Magenta', '36': 'Cyan', '37': 'White'}
 REGEX_STDOUT = re.compile(
-    rb'^\x1b\[(?:\d;)?(?:\d+;)?'
-    rb'(?P<color>\d+)m[\d-]*\s+'
-    rb'(?P<time>[\d\:]+)\s+'
-    rb'(?P<level>\w+\s+)'
-    rb'(?P<file>[\w\:\.]+)\s+'
-    rb'(?P<message>[^\x1b]*)',
+    r'^\x1b\[(?:\d;)?(?:\d+;)?'
+    r'(?P<color>\d+)m[\d-]*\s+'
+    r'(?P<time>[\d\:]+)\s+'
+    r'(?P<level>\w+\s+)'
+    r'(?P<file>[\w\:\.]+)\s+'
+    r'(?P<message>[^\x1b]*)',
     re.MULTILINE,
 )
 
@@ -93,7 +95,6 @@ def _set_list_view_from_string_list(ui_list: QtWidgets.QListView, string_list: l
 @dataclass
 class RigWizardModel:
     alyx: AlyxClient | None = None
-    one: Optional[ONE] = None
     procedures: list | None = None
     projects: list | None = None
     task_name: str | None = None
@@ -108,10 +109,10 @@ class RigWizardModel:
     file_hardware_settings: Path | str | None = None
 
     def __post_init__(self):
-        self.iblrig_settings: RigSettings = load_pydantic_yaml(
-            RigSettings, filename=self.file_iblrig_settings, do_raise=True)
+        self.iblrig_settings: RigSettings = load_pydantic_yaml(RigSettings, filename=self.file_iblrig_settings, do_raise=True)
         self.hardware_settings: HardwareSettings = load_pydantic_yaml(
-            HardwareSettings, filename=self.file_hardware_settings, do_raise=True)
+            HardwareSettings, filename=self.file_hardware_settings, do_raise=True
+        )
 
         # calculate free reward time
         class FakeSession(ValveMixin):
@@ -242,10 +243,11 @@ class RigWizardModel:
 
 
 class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, **kwargs):
+        super().__init__()
         self.setupUi(self)
 
+        self.debug = kwargs.get('debug', False)
         self.settings = QtCore.QSettings()
         self.move(self.settings.value('pos', self.pos(), QtCore.QPoint))
 
@@ -271,6 +273,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
 
         # connect widgets signals to slots
         self.uiActionTrainingLevelV7.triggered.connect(self._on_menu_training_level_v7)
+        self.uiActionCalibrateFrame2ttl.triggered.connect(self._on_calibrate_frame2ttl)
         self.uiComboTask.currentTextChanged.connect(self.controls_for_extra_parameters)
         self.uiComboSubject.currentTextChanged.connect(self.model.get_subject_details)
         self.uiPushStart.clicked.connect(self.start_stop)
@@ -453,6 +456,9 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
             self.uiGroupTaskParameters.findChild(QtWidgets.QWidget, '--adaptive_gain').setValue(stim_gain)
             self.uiGroupTaskParameters.findChild(QtWidgets.QWidget, '--adaptive_reward').setValue(reward_amount)
             self.uiGroupTaskParameters.findChild(QtWidgets.QWidget, '--training_phase').setValue(training_phase)
+
+    def _on_calibrate_frame2ttl(self) -> None:
+        Frame2TTLCalibrationDialog(self)
 
     def _on_check_update_result(self, result: tuple[bool, str]) -> None:
         """
@@ -735,7 +741,6 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 continue
 
             # add custom widget properties
-            QtCore.QMetaProperty
             widget.setObjectName(param)
             widget.setProperty('parameter_name', param)
             widget.setProperty('parameter_dest', arg.dest)
@@ -896,6 +901,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                     else:
                         cmd.extend([key, self.task_arguments[key]])
                 cmd.extend(['--weight', f'{weight}'])
+                cmd.extend(['--log-level', 'DEBUG' if self.debug else 'INFO'])
                 cmd.append('--wizard')
                 if self.uiCheckAppend.isChecked():
                     cmd.append('--append')
@@ -948,14 +954,16 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         extracts color information, sets character color in the QPlainTextEdit widget,
         and appends time and message information to the widget.
         """
-        data = self.running_task_process.readAllStandardOutput().data()
+        data = self.running_task_process.readAllStandardOutput().data().decode('utf-8', 'ignore').strip()
         entries = re.finditer(REGEX_STDOUT, data)
         for entry in entries:
-            color = ANSI_COLORS.get(entry.groupdict().get('color', b'37'), 'White')
+            color = ANSI_COLORS.get(entry.groupdict().get('color', '37'), 'White')
             self._set_plaintext_char_color(self.uiPlainTextEditLog, color)
-            time = entry.groupdict().get('time', b'').decode('utf-8', 'ignore')
-            msg = entry.groupdict().get('message', b'').decode('utf-8', 'ignore')
+            time = entry.groupdict().get('time', '')
+            msg = entry.groupdict().get('message', '')
             self.uiPlainTextEditLog.appendPlainText(f'{time} {msg}')
+        if self.debug:
+            print(data)
 
     def _on_read_standard_error(self):
         """
@@ -965,9 +973,11 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         in the QPlainTextEdit widget to indicate an error (Red), and appends
         the error message to the widget.
         """
-        text = self.running_task_process.readAllStandardError().data().decode('utf-8', 'ignore')
+        data = self.running_task_process.readAllStandardError().data().decode('utf-8', 'ignore').strip()
         self._set_plaintext_char_color(self.uiPlainTextEditLog, 'Red')
-        self.uiPlainTextEditLog.appendPlainText(text.strip())
+        self.uiPlainTextEditLog.appendPlainText(data)
+        if self.debug:
+            print(data)
 
     def _on_task_finished(self, exit_code, exit_status):
         self._set_plaintext_char_color(self.uiPlainTextEditLog, 'White')
@@ -1265,6 +1275,124 @@ class SubjectDetailsWorker(QThread):
         self.result = get_subject_training_info(self.subject_name)
 
 
+class Frame2TTLCalibrationDialog(QtWidgets.QDialog, Ui_frame2ttl):
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.setupUi(self)
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose, True)
+        self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
+        self.setModal(QtCore.Qt.WindowModality.ApplicationModal)
+
+        hw_settings = self.parent().model.hardware_settings
+        self.frame2ttl = Frame2TTL(port=hw_settings.device_frame2ttl.COM_F2TTL)
+        self.target = Frame2TTLCalibrationTarget(self, color=QtGui.QColorConstants.White)
+        self.light = None
+        self.dark = None
+        self._success = True
+
+        self.uiLabelPortValue.setText(self.frame2ttl.portstr)
+        self.uiLabelHardwareValue.setText(str(self.frame2ttl.hw_version))
+        self.uiLabelFirmwareValue.setText(str(self.frame2ttl.fw_version))
+        self.buttonBox.buttons()[0].setEnabled(False)
+        self.show()
+
+        # start worker for first calibration step: light condition
+        worker = Worker(self.frame2ttl.calibrate, condition='light')
+        worker.signals.result.connect(self._on_calibrate_light_result)
+        QThreadPool.globalInstance().tryStart(worker)
+        self.uiLabelLightValue.setText('calibrating ...')
+
+    def _on_calibrate_light_result(self, result: tuple[int, bool]):
+        (self.light, self._success) = result
+        self.uiLabelLightValue.setText(f'{self.light} {self.frame2ttl.unit_str}')
+
+        # start worker for second calibration step: dark condition
+        self.target.color = QtGui.QColorConstants.Black
+        worker = Worker(self.frame2ttl.calibrate, condition='dark')
+        worker.signals.result.connect(self._on_calibrate_dark_result)
+        QThreadPool.globalInstance().tryStart(worker)
+        self.uiLabelDarkValue.setText('calibrating ...')
+
+    def _on_calibrate_dark_result(self, result: tuple[int, bool]):
+        (self.dark, self._success) = result
+        self.uiLabelDarkValue.setText(f'{self.dark} {self.frame2ttl.unit_str}')
+
+        if self._success:
+            self.frame2ttl.set_thresholds(light=self.light, dark=self.dark)
+            self.parent().model.hardware_settings.device_frame2ttl.F2TTL_DARK_THRESH = self.dark
+            self.parent().model.hardware_settings.device_frame2ttl.F2TTL_LIGHT_THRESH = self.light
+            self.parent().model.hardware_settings.device_frame2ttl.F2TTL_CALIBRATION_DATE = datetime.date.today()
+            save_pydantic_yaml(self.parent().model.hardware_settings)
+            self.uiLabelResult.setText('Calibration successful.\nSettings have been updated.')
+        else:
+            self.uiLabelResult.setText('Calibration failed.\nVerify that sensor is placed correctly.')
+        self.buttonBox.buttons()[0].setEnabled(True)
+        self.frame2ttl.close()
+
+
+class Frame2TTLCalibrationTarget(QtWidgets.QDialog):
+    def __init__(
+        self,
+        parent,
+        color: QtGui.QColor = QtGui.QColorConstants.White,
+        screen_index: int | None = None,
+        width: int | None = None,
+        height: int | None = None,
+        rel_pos_x: float = 1.33,
+        rel_pos_y: float = -1.03,
+        rel_extent_x: float = 0.2,
+        rel_extent_y: float = 0.2,
+        **kwargs,
+    ):
+        # try to detect screen_index, get screen dimensions
+        if screen_index is None:
+            for screen_index, screen in enumerate(QtWidgets.QApplication.screens()):
+                if screen.size().width() == 2048 and screen.size().height() == 1536:
+                    break
+            else:
+                log.warning('Defaulting to screen index 0.')
+                screen_index = 0
+                screen = QtWidgets.QApplication.screens()[0]
+
+        # convert relative parameters (used in bonsai scripts) to width and height
+        if width is None and height is None:
+            screen_width = screen.geometry().width()
+            screen_height = screen.geometry().height()
+            width = round(screen_width - (screen_width + (rel_pos_x - rel_extent_x / 2) * screen_height) / 2)
+            height = round(screen_height - (1 - rel_pos_y - rel_extent_y / 2) * screen_height / 2)
+
+        # display frameless QDialog with given color
+        super().__init__(parent, **kwargs)
+        self.setWindowModality(QtCore.Qt.WindowModality.NonModal)
+        self.setWindowFlags(QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowStaysOnTopHint | QtCore.Qt.Dialog)
+        self.setAutoFillBackground(True)
+        self._set_color(color)
+        self.setFixedSize(width, height)
+        screen_geometry = QtWidgets.QApplication.desktop().screenGeometry(screen_index)
+        self.move(
+            QtCore.QPoint(
+                screen_geometry.x() + screen_geometry.width() - width, screen_geometry.y() + screen_geometry.height() - height
+            )
+        )
+        self.show()
+        QtTest.QTest.qWait(500)
+
+    def _set_color(self, color: QtGui.QColor):
+        palette = QtGui.QPalette()
+        palette.setColor(QtGui.QPalette.Window, color)
+        self.setPalette(palette)
+
+    @property
+    def color(self) -> QtGui.QColor:
+        return self.palette().color(QtGui.QPalette.Window)
+
+    @color.setter
+    def color(self, color: QtGui.QColor):
+        self._set_color(color)
+        self.update()
+        QtTest.QTest.qWait(500)
+
+
 class CustomWebEnginePage(QWebEnginePage):
     """
     Custom implementation of QWebEnginePage to handle navigation requests.
@@ -1304,7 +1432,14 @@ class CustomWebEnginePage(QWebEnginePage):
 
 
 def main():
-    setup_logger('iblrig', level='INFO')
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--debug', action='store_true', dest='debug', help='increase logging verbosity')
+    args = parser.parse_args()
+
+    if args.debug:
+        setup_logger(name=None, level='DEBUG')
+    else:
+        setup_logger(name='iblrig', level='INFO')
     QtCore.QCoreApplication.setOrganizationName('International Brain Laboratory')
     QtCore.QCoreApplication.setOrganizationDomain('internationalbrainlab.org')
     QtCore.QCoreApplication.setApplicationName('IBLRIG Wizard')
@@ -1314,7 +1449,7 @@ def main():
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(app_id)
     app = QtWidgets.QApplication(['', '--no-sandbox'])
     app.setStyle('Fusion')
-    w = RigWizard()
+    w = RigWizard(debug=args.debug)
     w.show()
     app.exec()
 

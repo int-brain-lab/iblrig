@@ -1,7 +1,7 @@
 import unittest
 
-from iblrig.constants import SETTINGS_PATH
 from ibllib.tests import TEST_DB
+from iblrig.constants import SETTINGS_PATH
 from iblrig.gui.wizard import PROJECTS, RigWizardModel
 from one.webclient import AlyxClient
 
@@ -10,7 +10,8 @@ class TestRigWizardModel(unittest.TestCase):
     def setUp(self):
         self.wizard = RigWizardModel(
             file_hardware_settings=SETTINGS_PATH.joinpath('hardware_settings_template.yaml'),
-            file_iblrig_settings=SETTINGS_PATH.joinpath('iblrig_settings_template.yaml'))
+            file_iblrig_settings=SETTINGS_PATH.joinpath('iblrig_settings_template.yaml'),
+        )
 
     def test_connect(self):
         self.wizard.login(username=TEST_DB['username'], alyx_client=AlyxClient(**TEST_DB))
