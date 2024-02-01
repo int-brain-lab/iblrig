@@ -148,13 +148,16 @@ class TestPrepareVideoSession(unittest.TestCase):
         enable_camera_trigger.assert_has_calls(expected)
         raw_data_folder = session_path / 'raw_video_data'
         expected_pars = {
-            'leftCameraIndex': 1, 'rightCameraIndex': 1,
+            'LeftCameraIndex': 1, 'RightCameraIndex': 1,
             'FileNameLeft': str(raw_data_folder / '_iblrig_leftCamera.raw.avi'),
             'FileNameLeftData': str(raw_data_folder / '_iblrig_leftCamera.frameData.bin'),
             'FileNameRight': str(raw_data_folder / '_iblrig_rightCamera.raw.avi'),
             'FileNameRightData': str(raw_data_folder / '_iblrig_rightCamera.frameData.bin')
         }
-        expected = [call(workflows.setup, ANY), call(workflows.recording, expected_pars, wait=False)]
+        expected = [
+            call(workflows.setup, ANY, debug=False),
+            call(workflows.recording, expected_pars, wait=False, debug=False)
+        ]
         call_bonsai.assert_has_calls(expected)
 
         # Test config validation

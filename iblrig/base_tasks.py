@@ -200,7 +200,7 @@ class BaseSession(ABC):
         )
         if append:
             # this is the case where we append a new protocol to an existing session
-            todays_sessions = sorted(filter(Path.is_dir(), date_folder.glob('*')), reverse=True)
+            todays_sessions = sorted(filter(Path.is_dir, date_folder.glob('*')), reverse=True)
             assert len(todays_sessions) > 0, f'Trying to chain a protocol, but no session folder found in {date_folder}'
             paths.SESSION_FOLDER = todays_sessions[0]
             paths.TASK_COLLECTION = iblrig.path_helper.iterate_collection(paths.SESSION_FOLDER)
