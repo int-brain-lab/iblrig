@@ -26,6 +26,12 @@ class Frame2TTL(SerialSingleton):
             if not is_samd21mini and not is_teensy:
                 raise OSError(f'Device on {port} is not a Frame2TTL')
 
+        # catch SAMD21 in bootloader mode (Frame2TTL v1)
+        if is_samd21mini and port_info.pid == 0x0D21:
+            raise OSError(
+                f'SAMD21 Mini Breakout on {port} is in bootloader mode. ' f'Replugging the device should alleviate the issue.'
+            )
+
         # override default arguments of super-class
         kwargs['baudrate'] = 115200
         kwargs['timeout'] = 0.5
@@ -33,17 +39,6 @@ class Frame2TTL(SerialSingleton):
 
         # initialize super class
         super().__init__(port=port, **kwargs)
-        self.flushInput()
-        self.flushOutput()
-
-        # detect SAMD21 Mini Breakout (Frame2TTL v1)
-        if is_samd21mini and port_info.pid == 0x0D21:
-            raise OSError(
-                f'SAMD21 Mini Breakout on {self.portstr} is in bootloader '
-                f'mode. Unplugging and replugging the device should '
-                f'alleviate the issue. If not, try reflashing the Frame2TTL '
-                f'firmware.'
-            )
 
         # try to connect and identify Frame2TTL
         try:

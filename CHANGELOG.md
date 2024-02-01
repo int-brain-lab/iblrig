@@ -3,7 +3,7 @@ Changelog
 
 8.15.0
 ------
-* feature: calibration routine for frame2ttl
+* feature: calibration routine for frame2ttl v1-3 in Tools menu
 * feature: debug-flag for IBLRIG Wizard
 
 8.14.2
