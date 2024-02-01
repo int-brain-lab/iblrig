@@ -17,7 +17,7 @@ class TestFrame2TTL(unittest.TestCase):
     def test_wrong_device(self, mock_super_init, mock_comports):
         self.mock_port_info.vid = 0x0000
         mock_comports.return_value = (self.mock_port_info,)
-        with self.assertRaises(OSError) as e:
+        with self.assertRaises(OSError):
             Frame2TTL(port='FakePort')
         mock_super_init.assert_not_called()
 
@@ -27,7 +27,7 @@ class TestFrame2TTL(unittest.TestCase):
         self.mock_port_info.vid = 0x1B4F
         self.mock_port_info.pid = 0x0D21
         mock_comports.return_value = (self.mock_port_info,)
-        with self.assertRaises(OSError) as e:
+        with self.assertRaises(OSError):
             Frame2TTL(port='FakePort')
         mock_super_init.assert_not_called()
 
