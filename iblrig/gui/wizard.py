@@ -34,6 +34,7 @@ from iblrig.frame2ttl import Frame2TTL
 from iblrig.gui.ui_frame2ttl import Ui_frame2ttl
 from iblrig.gui.ui_login import Ui_login
 from iblrig.gui.ui_update import Ui_update
+from iblrig.gui.ui_valve import Ui_valve
 from iblrig.gui.ui_wizard import Ui_wizard
 from iblrig.hardware import Bpod
 from iblrig.misc import _get_task_argument_parser
@@ -274,6 +275,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         # connect widgets signals to slots
         self.uiActionTrainingLevelV7.triggered.connect(self._on_menu_training_level_v7)
         self.uiActionCalibrateFrame2ttl.triggered.connect(self._on_calibrate_frame2ttl)
+        self.uiActionCalibrateValve.triggered.connect(self._on_calibrate_valve)
         self.uiComboTask.currentTextChanged.connect(self.controls_for_extra_parameters)
         self.uiComboSubject.currentTextChanged.connect(self.model.get_subject_details)
         self.uiPushStart.clicked.connect(self.start_stop)
@@ -459,6 +461,9 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
 
     def _on_calibrate_frame2ttl(self) -> None:
         Frame2TTLCalibrationDialog(self)
+
+    def _on_calibrate_valve(self) -> None:
+        ValveCalibrationDialog(self)
 
     def _on_check_update_result(self, result: tuple[bool, str]) -> None:
         """
@@ -1273,6 +1278,13 @@ class SubjectDetailsWorker(QThread):
 
     def run(self):
         self.result = get_subject_training_info(self.subject_name)
+
+
+class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.setupUi(self)
+        self.show()
 
 
 class Frame2TTLCalibrationDialog(QtWidgets.QDialog, Ui_frame2ttl):
