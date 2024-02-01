@@ -1,6 +1,15 @@
 Changelog
 ---------
 
+8.15.1
+------
+* hotfix: pin iblutil to >=1.7.4 to address unicode encoding issue during logging
+
+8.15.0
+------
+* feature: calibration routine for frame2ttl v1-3 in Tools menu
+* feature: debug-flag for IBLRIG Wizard
+
 8.14.2
 ------
 * hotfix: wrong return-type in _iterate_protocols - pt 2
