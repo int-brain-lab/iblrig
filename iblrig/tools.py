@@ -231,7 +231,7 @@ def call_bonsai(
 
     """
     if not BONSAI_EXE.exists():
-        FileNotFoundError(BONSAI_EXE)
+        raise FileNotFoundError(BONSAI_EXE)
     workflow_file = Path(workflow_file)
     if not workflow_file.exists():
         raise FileNotFoundError(workflow_file)

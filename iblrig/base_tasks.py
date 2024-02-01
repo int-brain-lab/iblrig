@@ -38,6 +38,7 @@ from iblrig.transfer_experiments import BehaviorCopier, VideoCopier
 from iblutil.spacer import Spacer
 from iblutil.util import Bunch, setup_logger
 from one.api import ONE
+from one.alf.io import next_num_folder
 from pybpodapi.protocol import StateMachine
 
 OSC_CLIENT_IP = '127.0.0.1'
@@ -198,7 +199,7 @@ class BaseSession(ABC):
         )
         if append:
             # this is the case where we append a new protocol to an existing session
-            todays_sessions = sorted([d for d in date_folder.glob('*') if d.is_dir()], reverse=True)
+            todays_sessions = sorted(filter(Path.is_dir(), date_folder.glob('*')), reverse=True)
             assert len(todays_sessions) > 0, f'Trying to chain a protocol, but no session folder found in {date_folder}'
             paths.SESSION_FOLDER = todays_sessions[0]
             paths.TASK_COLLECTION = iblrig.path_helper.iterate_collection(paths.SESSION_FOLDER)
@@ -213,9 +214,8 @@ class BaseSession(ABC):
                 raise RuntimeError('Chained protocols not supported for bpod-only sessions')
         else:
             # in this case the session path is created from scratch
-            numbers_folders = [int(f.name) for f in date_folder.rglob('*') if len(f.name) == 3 and f.name.isdigit()]
-            self.session_info.SESSION_NUMBER = 1 if len(numbers_folders) == 0 else max(numbers_folders) + 1
-            paths.SESSION_FOLDER = date_folder.joinpath(f'{self.session_info.SESSION_NUMBER:03d}')
+            paths.SESSION_FOLDER = date_folder / next_num_folder(date_folder)
+            self.session_info.SESSION_NUMBER = int(paths.SESSION_FOLDER.name)
             paths.TASK_COLLECTION = iblrig.path_helper.iterate_collection(paths.SESSION_FOLDER)
 
         paths.SESSION_RAW_DATA_FOLDER = paths.SESSION_FOLDER.joinpath(paths.TASK_COLLECTION)
