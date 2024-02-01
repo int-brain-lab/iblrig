@@ -1279,6 +1279,9 @@ class Frame2TTLCalibrationDialog(QtWidgets.QDialog, Ui_frame2ttl):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.setupUi(self)
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose, True)
+        self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
+        self.setModal(QtCore.Qt.WindowModality.ApplicationModal)
 
         hw_settings = self.parent().model.hardware_settings
         self.frame2ttl = Frame2TTL(port=hw_settings.device_frame2ttl.COM_F2TTL)
@@ -1287,34 +1290,33 @@ class Frame2TTLCalibrationDialog(QtWidgets.QDialog, Ui_frame2ttl):
         self.dark = None
         self._success = True
 
-        self.setAttribute(QtCore.Qt.WA_DeleteOnClose, True)
-        self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
         self.uiLabelPortValue.setText(self.frame2ttl.portstr)
         self.uiLabelHardwareValue.setText(str(self.frame2ttl.hw_version))
         self.uiLabelFirmwareValue.setText(str(self.frame2ttl.fw_version))
         self.buttonBox.buttons()[0].setEnabled(False)
-
-        self.uiLabelLightValue.setText('calibrating ...')
-        QtCore.QTimer.singleShot(0, self.calibrate_light)
-
         self.show()
 
-    @QtCore.pyqtSlot()
-    def calibrate_light(self):
-        self.light, self._success = self.frame2ttl.calibrate(condition='light')
+        # start worker for first calibration step: light condition
+        worker = Worker(self.frame2ttl.calibrate, condition='light')
+        worker.signals.result.connect(self._on_calibrate_light_result)
+        QThreadPool.globalInstance().tryStart(worker)
+        self.uiLabelLightValue.setText('calibrating ...')
+
+    def _on_calibrate_light_result(self, result: tuple[int, bool]):
+        (self.light, self._success) = result
         self.uiLabelLightValue.setText(f'{self.light} {self.frame2ttl.unit_str}')
-        self.uiLabelDarkValue.setText('calibrating ...')
-        QtCore.QTimer.singleShot(0, self.calibrate_dark)
 
-    @QtCore.pyqtSlot()
-    def calibrate_dark(self):
+        # start worker for second calibration step: dark condition
         self.target.color = QtGui.QColorConstants.Black
-        self.dark, self._success = self.frame2ttl.calibrate(condition='dark')
-        self.uiLabelDarkValue.setText(f'{self.dark} {self.frame2ttl.unit_str}')
-        QtCore.QTimer.singleShot(0, self.wrap_up)
+        worker = Worker(self.frame2ttl.calibrate, condition='dark')
+        worker.signals.result.connect(self._on_calibrate_dark_result)
+        QThreadPool.globalInstance().tryStart(worker)
+        self.uiLabelDarkValue.setText('calibrating ...')
 
-    @QtCore.pyqtSlot()
-    def wrap_up(self):
+    def _on_calibrate_dark_result(self, result: tuple[int, bool]):
+        (self.dark, self._success) = result
+        self.uiLabelDarkValue.setText(f'{self.dark} {self.frame2ttl.unit_str}')
+
         if self._success:
             self.frame2ttl.set_thresholds(light=self.light, dark=self.dark)
             self.parent().model.hardware_settings.device_frame2ttl.F2TTL_DARK_THRESH = self.dark
