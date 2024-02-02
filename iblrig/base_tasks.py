@@ -555,7 +555,7 @@ class BonsaiRecordingMixin:
             'FileNameMic': self.paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_micData.raw.wav'),
             'RecordSound': self.task_params.RECORD_SOUND,
         }
-        call_bonsai(workflow_file, parameters)
+        call_bonsai(workflow_file, parameters, wait=False)
         log.info('Bonsai microphone recording module loaded: OK')
 
     @staticmethod
