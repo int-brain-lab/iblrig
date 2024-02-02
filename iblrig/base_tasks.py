@@ -237,7 +237,7 @@ class BaseSession(ABC):
         hardware_settings: dict | HardwareSettings = None,
         stub: Path = None,
         extractors: list = None,
-        camera_config: str = None
+        camera_config: str = None,
     ):
         """
         Construct an experiment description dictionary.

@@ -4,11 +4,11 @@ from datetime import timedelta
 from unittest.mock import patch, MagicMock, call, ANY
 import tempfile
 import sys
-import shutil
 
 import yaml
 from iblutil.util import Bunch
 import numpy as np
+
 """In order to mock iblrig.video_pyspin.enable_camera_trigger we must mock PySpin here."""
 sys.modules['PySpin'] = MagicMock()
 
@@ -38,13 +38,15 @@ class TestDownloadFunction(unittest.TestCase):
 
 class TestSettings(unittest.TestCase):
     def setUp(self):
-        self.old_params = Bunch({
-            'DATA_FOLDER_PATH': r'D:\iblrig_data\Subjects',
-            'REMOTE_DATA_FOLDER_PATH': r'\\iblserver.champalimaud.pt\ibldata\Subjects',
-            'BODY_CAM_IDX': 0,
-            'LEFT_CAM_IDX': 3,
-            'RIGHT_CAM_IDX': 2,
-        })
+        self.old_params = Bunch(
+            {
+                'DATA_FOLDER_PATH': r'D:\iblrig_data\Subjects',
+                'REMOTE_DATA_FOLDER_PATH': r'\\iblserver.champalimaud.pt\ibldata\Subjects',
+                'BODY_CAM_IDX': 0,
+                'LEFT_CAM_IDX': 3,
+                'RIGHT_CAM_IDX': 2,
+            }
+        )
         params_dict_mock = patch('iblrig.video.load_params_dict', return_value=self.old_params)
         params_dict_mock.start()
         self.addCleanup(params_dict_mock.stop)
@@ -77,9 +79,7 @@ class TestSettings(unittest.TestCase):
         (old_file := Path(self.tmp.name, '.videopc_params')).touch()
         safe_load_mock.side_effect = self._return_settings
         safe_dump_mock.side_effect = self._store_patched_settings
-        self._settings['hardware']['device_cameras']['ephys'] = {
-            'left': {}, 'right': {'FPS': 150}, 'body': {}, 'belly': {}
-        }
+        self._settings['hardware']['device_cameras']['ephys'] = {'left': {}, 'right': {'FPS': 150}, 'body': {}, 'belly': {}}
         getfile_mock.return_value = old_file
         video.patch_old_params(remove_old=False)
 
@@ -102,8 +102,10 @@ class TestSettings(unittest.TestCase):
         # Test insertion of 'subjects' path key if old location doesn't end in 'Subjects'
         for key in ('DATA_FOLDER_PATH', 'REMOTE_DATA_FOLDER_PATH'):
             self.old_params[key] = self.old_params[key].replace('Subjects', 'foobar')
-        with (patch('iblrig.video.HARDWARE_SETTINGS_YAML', Path(self.tmp.name, 'na')),
-              patch('iblrig.video.RIG_SETTINGS_YAML', Path(self.tmp.name, 'na'))):
+        with (
+            patch('iblrig.video.HARDWARE_SETTINGS_YAML', Path(self.tmp.name, 'na')),
+            patch('iblrig.video.RIG_SETTINGS_YAML', Path(self.tmp.name, 'na')),
+        ):
             # Check this works without settings files
             video.patch_old_params(remove_old=True)
         patched = self.patched['iblrig']  # Load the patched settings
@@ -121,6 +123,7 @@ class TestSettings(unittest.TestCase):
 
 class TestPrepareVideoSession(unittest.TestCase):
     """Test for iblrig.video.prepare_video_session."""
+
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.subject = 'foobar'
@@ -156,16 +159,14 @@ class TestPrepareVideoSession(unittest.TestCase):
         enable_camera_trigger.assert_has_calls(expected)
         raw_data_folder = session_path / 'raw_video_data'
         expected_pars = {
-            'LeftCameraIndex': 1, 'RightCameraIndex': 1,
+            'LeftCameraIndex': 1,
+            'RightCameraIndex': 1,
             'FileNameLeft': str(raw_data_folder / '_iblrig_leftCamera.raw.avi'),
             'FileNameLeftData': str(raw_data_folder / '_iblrig_leftCamera.frameData.bin'),
             'FileNameRight': str(raw_data_folder / '_iblrig_rightCamera.raw.avi'),
-            'FileNameRightData': str(raw_data_folder / '_iblrig_rightCamera.frameData.bin')
+            'FileNameRightData': str(raw_data_folder / '_iblrig_rightCamera.frameData.bin'),
         }
-        expected = [
-            call(workflows.setup, ANY, debug=False),
-            call(workflows.recording, expected_pars, wait=False, debug=False)
-        ]
+        expected = [call(workflows.setup, ANY, debug=False), call(workflows.recording, expected_pars, wait=False, debug=False)]
         call_bonsai.assert_has_calls(expected)
 
         # Test config validation
@@ -176,6 +177,7 @@ class TestPrepareVideoSession(unittest.TestCase):
 
 class TestValidateVideo(unittest.TestCase):
     """Test for iblrig.video.validate_video."""
+
     def setUp(self):
         hws = load_pydantic_yaml(HardwareSettings, 'hardware_settings_template.yaml')
         self.config = hws['device_cameras']['default']['left']
@@ -186,8 +188,7 @@ class TestValidateVideo(unittest.TestCase):
         self.gpio = [None, None, None, pin]
         tmp = tempfile.TemporaryDirectory()
         self.addCleanup(tmp.cleanup)
-        self.video_path = Path(tmp.name).joinpath(
-            'subject', '2020-01-01', '001', 'raw_video_data', '_iblrig_leftCamera.raw.avi')
+        self.video_path = Path(tmp.name).joinpath('subject', '2020-01-01', '001', 'raw_video_data', '_iblrig_leftCamera.raw.avi')
         self.video_path.parent.mkdir(parents=True)
         with open(self.video_path, 'wb') as fp:
             np.save(fp, self.count)  # ensure raw video not 0 bytes
@@ -209,24 +210,20 @@ class TestValidateVideo(unittest.TestCase):
         config.FPS = 150
         with self.assertLogs(video.__name__, 30) as log:
             self.assertFalse(video.validate_video(self.video_path, config))
-            expected = {'Frame rate = 150; expected 30',
-                        'Frame height = 160; expected 1024',
-                        'Frame width = 160; expected 1280'}
+            expected = {'Frame rate = 150; expected 30', 'Frame height = 160; expected 1024', 'Frame width = 160; expected 1280'}
             self.assertCountEqual(set(x.getMessage() for x in log.records), expected)
         # Test frame data warnings
         gpio = [None, None, None, {k: v[:1] for k, v in self.gpio[-1].items()}]
         load_embedded_frame_data.return_value = (self.count[-100:], gpio)
         with self.assertLogs(video.__name__, 30) as log:
             self.assertFalse(video.validate_video(self.video_path, self.config))
-            expected = {'1 event(s) on GPIO #4',
-                        'Frame count / video frame mismatch - frame counts = 100; video frames = 1000'}
+            expected = {'1 event(s) on GPIO #4', 'Frame count / video frame mismatch - frame counts = 100; video frames = 1000'}
             self.assertCountEqual(set(x.getMessage() for x in log.records), expected)
         # Test frame data errors
         load_embedded_frame_data.return_value = (self.count + 100, [None] * 4)
         with self.assertLogs(video.__name__, 40) as log:
             self.assertFalse(video.validate_video(self.video_path, self.config))
-            expected = {'Missed frames - frame data N = 1100; video file N = 1000',
-                        'No GPIO events detected.'}
+            expected = {'Missed frames - frame data N = 1100; video file N = 1000', 'No GPIO events detected.'}
             self.assertCountEqual(set(x.getMessage() for x in log.records), expected)
 
     def test_validate_video_missing(self):

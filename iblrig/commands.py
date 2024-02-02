@@ -136,7 +136,7 @@ def _get_copiers(
     lab: str = None,
     glob_pattern: str = '*/*-*-*/*/transfer_me.flag',
     interactive: bool = False,
-    **kwargs
+    **kwargs,
 ) -> list[SessionCopier]:
     """
 
@@ -178,8 +178,7 @@ def _get_copiers(
     logger.log(level, 'Remote Path: %s', remote_subjects_folder)
 
     # get copiers
-    copiers = [copier(f.parent, remote_subjects_folder, **kwargs)
-               for f in local_subjects_folder.glob(glob_pattern)]
+    copiers = [copier(f.parent, remote_subjects_folder, **kwargs) for f in local_subjects_folder.glob(glob_pattern)]
     if len(copiers) == 0:
         print('Could not find any sessions to copy to the local server.')
     elif interactive:
@@ -231,8 +230,15 @@ def _build_glob_pattern(subject='*', date='*-*-*', number='*', flag_file='transf
     return kwargs.get('glob_pattern', '/'.join((subject, date, number, flag_file)))
 
 
-def transfer_data(tag=None, local_path: Path = None, remote_path: Path = None, dry: bool = False,
-                  interactive: bool = False, cleanup_weeks=2, **kwargs) -> list[SessionCopier]:
+def transfer_data(
+    tag=None,
+    local_path: Path = None,
+    remote_path: Path = None,
+    dry: bool = False,
+    interactive: bool = False,
+    cleanup_weeks=2,
+    **kwargs,
+) -> list[SessionCopier]:
     """
     Copies data from the rig to the local server.
 

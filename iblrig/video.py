@@ -186,12 +186,11 @@ def patch_old_params(remove_old=False, update_paths=True):
                 rig_settings = yaml.safe_load(fp)
         else:
             rig_settings = {}
-        path_map = {'iblrig_local_data_path': 'DATA_FOLDER_PATH',
-                    'iblrig_remote_data_path': 'REMOTE_DATA_FOLDER_PATH'}
+        path_map = {'iblrig_local_data_path': 'DATA_FOLDER_PATH', 'iblrig_remote_data_path': 'REMOTE_DATA_FOLDER_PATH'}
         for new_key, old_key in path_map.items():
             rig_settings[new_key] = old_settings[old_key].rstrip('\\')
             if rig_settings[new_key].endswith(r'\Subjects'):
-                rig_settings[new_key] = rig_settings[new_key][:-len(r'\Subjects')]
+                rig_settings[new_key] = rig_settings[new_key][: -len(r'\Subjects')]
             else:  # Add a 'subjects' key so that '\Subjects' is not incorrectly appended
                 rig_settings[new_key.replace('data', 'subjects')] = rig_settings[new_key]
         log.debug('Saving %s', RIG_SETTINGS_YAML)
@@ -248,7 +247,7 @@ def validate_video(video_path, config):
     try:
         meta = get_video_meta(video_path)
         duration = meta.duration.total_seconds()
-        ok = meta.length > 0 and duration > 0.
+        ok = meta.length > 0 and duration > 0.0
         log.log(20 if meta.length > 0 else 40, 'N frames = %i', meta.length)
         log.log(20 if duration > 0 else 40, 'Duration = %.2f', duration)
         if config.HEIGHT and config.HEIGHT != meta.height:
@@ -268,9 +267,10 @@ def validate_video(video_path, config):
     count, gpio = load_embedded_frame_data(video_path.parents[1], label_from_path(video_path))
     dropped = count[-1] - (meta.length - 1)
     if dropped != 0:  # Log ERROR if > .1% frames dropped, otherwise log WARN
-        pct_dropped = (dropped / (count[-1] + 1) * 100)
-        log.log(30 if pct_dropped < .1 else 40,
-                'Missed frames - frame data N = %i; video file N = %i', count[-1] + 1, meta.length)
+        pct_dropped = dropped / (count[-1] + 1) * 100
+        log.log(
+            30 if pct_dropped < 0.1 else 40, 'Missed frames - frame data N = %i; video file N = %i', count[-1] + 1, meta.length
+        )
         ok = False
     if len(count) != meta.length:
         log.critical('Frame count / video frame mismatch - frame counts = %i; video frames = %i', len(count), meta.length)

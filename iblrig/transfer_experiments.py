@@ -487,8 +487,7 @@ class BehaviorCopier(SessionCopier):
 
     def finalize_copy(self, number_of_expected_devices=None):
         """If main sync is bpod, expect a single stub file."""
-        if (number_of_expected_devices is None and
-                session_params.get_sync(self.remote_experiment_description_stub) == 'bpod'):
+        if number_of_expected_devices is None and session_params.get_sync(self.remote_experiment_description_stub) == 'bpod':
             number_of_expected_devices = 1
         super().finalize_copy(number_of_expected_devices=number_of_expected_devices)
 

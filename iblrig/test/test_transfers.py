@@ -118,18 +118,20 @@ class TestGenericTransfer(unittest.TestCase):
         self.session = 'test/2023-12-01/001'
 
         # Mock settings file
-        self.settings = Bunch({
-            # Standard settings
-            'iblrig_local_data_path': str(self.local),
-            'iblrig_local_subjects_path': str(self.local),
-            'iblrig_remote_data_path': str(self.remote),
-            'iblrig_remote_subjects_path': str(self.remote),
-            'ALYX_LAB': 'cortexlab',
-            # Hardware settings
-            'RIG_NAME': 'mesoscope_timeline',
-            'MAIN_SYNC': True,
-            'VERSION': '1.0.0'
-        })
+        self.settings = Bunch(
+            {
+                # Standard settings
+                'iblrig_local_data_path': str(self.local),
+                'iblrig_local_subjects_path': str(self.local),
+                'iblrig_remote_data_path': str(self.remote),
+                'iblrig_remote_subjects_path': str(self.remote),
+                'ALYX_LAB': 'cortexlab',
+                # Hardware settings
+                'RIG_NAME': 'mesoscope_timeline',
+                'MAIN_SYNC': True,
+                'VERSION': '1.0.0',
+            }
+        )
         self.settings_mock = mock.patch('iblrig.path_helper._load_settings_yaml', return_value=self.settings)
         self.settings_mock.start()
         self.addCleanup(self.settings_mock.stop)
@@ -151,8 +153,12 @@ version: 1.0.0
         # Write 'local' data
         folder = self.local.joinpath(self.session).parent.joinpath('1')
         folder.joinpath('raw_sync_data').mkdir(parents=True)
-        timeline_files = ('_timeline_DAQdata.meta.json', '_timeline_DAQdata.raw.npy',
-                          '_timeline_DAQdata.timestamps.npy', '_timeline_softwareEvents.log.htsv')
+        timeline_files = (
+            '_timeline_DAQdata.meta.json',
+            '_timeline_DAQdata.raw.npy',
+            '_timeline_DAQdata.timestamps.npy',
+            '_timeline_softwareEvents.log.htsv',
+        )
         for file in timeline_files:
             folder.joinpath('raw_sync_data', file).touch()
         src = self.remote.joinpath(self.session, '_devices', '2023-12-01_1_test@timeline.yaml')
@@ -177,6 +183,7 @@ class TestUnitTransferExperiments(unittest.TestCase):
 
     Unlike the integration test, the sessions here are made from scratch using an actual instantiated session.
     """
+
     def setUp(self):
         tmpdir = tempfile.TemporaryDirectory()
         self.addCleanup(tmpdir.cleanup)
@@ -189,9 +196,7 @@ class TestUnitTransferExperiments(unittest.TestCase):
         from 1 to 0.
         """
         session = _create_behavior_session(self.tmpdir)
-        sc = BehaviorCopier(
-            session_path=session.paths.SESSION_FOLDER, remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER
-        )
+        sc = BehaviorCopier(session_path=session.paths.SESSION_FOLDER, remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER)
         self.assertEqual(1, sc.state, 'expect remote stub file to return pending status')
         self.assertFalse(sc.copy_collections(), 'should fail as task data does not exist')
         self.assertEqual(0, sc.state, 'expect absent stub file to return unregistered status')
@@ -200,9 +205,9 @@ class TestUnitTransferExperiments(unittest.TestCase):
     def test_behavior_ephys_video_copy(self):
         # Create a behavior session
         # For ephys sessions the behaviour MAIN_SYNC value must be False
-        task_kwargs = {'hardware_settings': {
-            'RIG_NAME': '_iblrig_cortexlab_behavior_3', 'device_cameras': None, 'MAIN_SYNC': False
-        }}
+        task_kwargs = {
+            'hardware_settings': {'RIG_NAME': '_iblrig_cortexlab_behavior_3', 'device_cameras': None, 'MAIN_SYNC': False}
+        }
         session = _create_behavior_session(self.tmpdir, ntrials=50, hard_crash=False, **task_kwargs)
         # SESSION_RAW_DATA_FOLDER is the one that gets copied
         folder_session_video = self.tmpdir.joinpath('video', 'Subjects', *session.paths.SESSION_FOLDER.parts[-3:])
@@ -229,9 +234,7 @@ class TestUnitTransferExperiments(unittest.TestCase):
             folder_session_video.joinpath('raw_video_data', f'_iblrig_{vname}Camera.raw.avi').touch()
 
         # Test the copiers
-        sc = BehaviorCopier(
-            session_path=session.paths.SESSION_FOLDER, remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER
-        )
+        sc = BehaviorCopier(session_path=session.paths.SESSION_FOLDER, remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER)
         self.assertEqual('.status_pending', sc.glob_file_remote_copy_status().suffix)
         self.assertEqual(1, sc.state)
         sc.copy_collections()
@@ -275,6 +278,7 @@ class TestUnitTransferExperiments(unittest.TestCase):
 
 class TestBuildGlobPattern(unittest.TestCase):
     """Test iblrig.commands._build_glob_pattern function."""
+
     def test_build_glob_pattern(self):
         self.assertEqual('*/*-*-*/*/transfer_me.flag', iblrig.commands._build_glob_pattern())
         glob_pattern = iblrig.commands._build_glob_pattern(subject='SP*', date='2023-*', number='001')

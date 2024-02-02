@@ -568,7 +568,6 @@ class HabituationChoiceWorldSession(ChoiceWorldSession):
                 output_actions=[self.bpod.actions.bonsai_hide_stim, ('SoftCode', SOFTCODE.TRIGGER_CAMERA), ('BNC1', 255)],
             )  # start camera
         else:
-
             sma.add_state(
                 state_name='trial_start',
                 state_timer=1,  # Stim off for 1 sec

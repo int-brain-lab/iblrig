@@ -51,6 +51,7 @@ class TestMisc(unittest.TestCase):
 
 class TestPortSettings(unittest.TestCase):
     """Test settings/port_settings.py."""
+
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
@@ -74,16 +75,16 @@ class TestPortSettings(unittest.TestCase):
         with open(hw_settings_path, 'r') as fp:
             hw_settings = yaml.safe_load(fp)
         self.assertEqual(hw_settings['device_sound']['OUTPUT'], 'harp')
-        expected = {'FREE_REWARD_VOLUME_UL': 1.5,
-                    'WATER_CALIBRATION_DATE': datetime.date(2099, 12, 31),
-                    'WATER_CALIBRATION_OPEN_TIMES': [50.0, 100.0, 150.0, 200.0],
-                    'WATER_CALIBRATION_RANGE': [50.0, 150.0],
-                    'WATER_CALIBRATION_WEIGHT_PERDROP': [
-                        1.033333333333335, 3.333333333333333, 5.466666666666669, 7.5666666666666655]}
+        expected = {
+            'FREE_REWARD_VOLUME_UL': 1.5,
+            'WATER_CALIBRATION_DATE': datetime.date(2099, 12, 31),
+            'WATER_CALIBRATION_OPEN_TIMES': [50.0, 100.0, 150.0, 200.0],
+            'WATER_CALIBRATION_RANGE': [50.0, 150.0],
+            'WATER_CALIBRATION_WEIGHT_PERDROP': [1.033333333333335, 3.333333333333333, 5.466666666666669, 7.5666666666666655],
+        }
         self.assertDictEqual(hw_settings['device_valve'], expected)
         self.assertEqual(hw_settings['RIG_NAME'], self.v7_settings['NAME'])
-        expected = {k: v for k, v in self.v7_settings.items()
-                    if k.startswith('SCREEN') or k == 'DISPLAY_IDX'}
+        expected = {k: v for k, v in self.v7_settings.items() if k.startswith('SCREEN') or k == 'DISPLAY_IDX'}
         self.assertDictEqual(hw_settings['device_screen'], expected)
 
         settings_path = self.v8 / 'iblrig_settings.yaml'

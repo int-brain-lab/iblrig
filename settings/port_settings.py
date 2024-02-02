@@ -10,14 +10,18 @@ import one.params
 UPDATE_FIELDS = {
     None: {'RIG_NAME': 'NAME'},
     'device_bpod': {'COM_BPOD', 'BPOD_TTL_TEST_DATE', 'BPOD_TTL_TEST_STATUS'},
-    'device_frame2ttl': {'COM_F2TTL', 'F2TTL_CALIBRATION_DATE',
-                         'F2TTL_DARK_THRESH', 'F2TTL_HW_VERSION', 'F2TTL_LIGHT_THRESH'},
+    'device_frame2ttl': {'COM_F2TTL', 'F2TTL_CALIBRATION_DATE', 'F2TTL_DARK_THRESH', 'F2TTL_HW_VERSION', 'F2TTL_LIGHT_THRESH'},
     'device_rotary_encoder': {'COM_ROTARY_ENCODER'},
-    'device_screen': {'DISPLAY_IDX', 'SCREEN_FREQ_TARGET', 'SCREEN_FREQ_TEST_DATE',
-                      'SCREEN_FREQ_TEST_STATUS', 'SCREEN_LUX_DATE', 'SCREEN_LUX_VALUE'},
-    'device_valve': {'WATER_CALIBRATION_OPEN_TIMES', 'WATER_CALIBRATION_RANGE',
-                     'WATER_CALIBRATION_WEIGHT_PERDROP'},
-    'device_sound': {'OUTPUT'}
+    'device_screen': {
+        'DISPLAY_IDX',
+        'SCREEN_FREQ_TARGET',
+        'SCREEN_FREQ_TEST_DATE',
+        'SCREEN_FREQ_TEST_STATUS',
+        'SCREEN_LUX_DATE',
+        'SCREEN_LUX_VALUE',
+    },
+    'device_valve': {'WATER_CALIBRATION_OPEN_TIMES', 'WATER_CALIBRATION_RANGE', 'WATER_CALIBRATION_WEIGHT_PERDROP'},
+    'device_sound': {'OUTPUT'},
 }
 
 
@@ -74,7 +78,7 @@ def main(v7_path=None, v8_path=None):
     v8_settings['iblrig_remote_data_path'] = v7_settings['DATA_FOLDER_REMOTE']
     match = re.match(r'^_iblrig_(\w+)_.*$', v7_settings['NAME'])
     if match:
-        lab, = match.groups()
+        (lab,) = match.groups()
         print(f'Settings ALYX_LAB as "{lab}"')
         v8_settings['ALYX_LAB'] = lab
     else:
