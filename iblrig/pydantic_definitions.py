@@ -161,35 +161,6 @@ class HardwareSettings(BunchModel):
     device_screen: HardwareSettingsScreen
     device_sound: HardwareSettingsSound
     device_valve: HardwareSettingsValve
-    device_cameras: Optional[Dict[str, Dict]]
+    device_cameras: Optional[Dict[str, Dict[str, HardwareSettingsCameraWorkflow | HardwareSettingsCamera]]]
     device_microphone: HardwareSettingsMicrophone | None = None
     VERSION: str
-
-    @field_validator('device_cameras')
-    def validate_device_cameras(cls, field):  # noqa: N805
-        """
-        Validate camera devices field.
-
-        We expect this to be a map of configuration name, e.g. 'training', 'ephys'. Each value must
-        be a dict with either a camera name, e.g. 'body', or 'BONSAI_WORKFLOW'. The camera name
-        should map to a dict with at list the key INDEX (see `HardwareSettingsCamera`); the
-        'BONSAI_WORKFLOW' key must be a map of keys {'setup', 'recording'} to a path to the Bonsai
-        Workflow to run.
-
-        Parameters
-        ----------
-        field : dict
-            The 'device_cameras' field to validate.
-
-        Returns
-        -------
-        dict
-            The validated 'device_cameras' field.
-        """
-        for name, configuration in field.items():
-            if not isinstance(configuration, dict):
-                raise TypeError
-            for k, v in configuration.items():
-                model = HardwareSettingsCameraWorkflow if k == 'BONSAI_WORKFLOW' else HardwareSettingsCamera
-                configuration[k] = model.model_validate(v)
-        return field
