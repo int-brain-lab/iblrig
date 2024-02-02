@@ -247,6 +247,8 @@ def patch_settings(rs: dict, filename: str | Path) -> dict:
                     'training': {'BONSAI_WORKFLOW': bonsai_workflows, 'left': {'INDEX': 1, 'SYNC_LABEL': 'audio'}}
                 }
                 rs['VERSION'] = '1.1.0'
+        if 'device_cameras' not in rs:
+            rs['device_cameras'] = None
     return rs
 
 

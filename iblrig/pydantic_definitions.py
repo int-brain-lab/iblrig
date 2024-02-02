@@ -159,7 +159,7 @@ class HardwareSettings(BunchModel):
     device_screen: HardwareSettingsScreen
     device_sound: HardwareSettingsSound
     device_valve: HardwareSettingsValve
-    device_cameras: Dict[str, Dict]
+    device_cameras: Optional[Dict[str, Dict]]
     device_microphone: HardwareSettingsMicrophone | None = None
     VERSION: str
 
@@ -184,6 +184,8 @@ class HardwareSettings(BunchModel):
         dict
             The validated 'device_cameras' field.
         """
+        if field is None:
+            return
         for name, configuration in field.items():
             if not isinstance(configuration, dict):
                 raise TypeError

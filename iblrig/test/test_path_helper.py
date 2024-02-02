@@ -73,6 +73,10 @@ class TestPatchSettings(unittest.TestCase):
         self.assertEqual('1.1.0', v2.get('VERSION'))
         self.assertEqual(expected, v2.get('device_cameras', {}).get('training'))
         HardwareSettings.validate_device_cameras(v2['device_cameras'])
+        # Test without any device_cameras key (should be optional)
+        rs.pop('device_camera')
+        self.assertIn('device_cameras', path_helper.patch_settings(rs, 'hardware_settings'))
+        HardwareSettings.validate_device_cameras(None)
 
 
 if __name__ == '__main__':
