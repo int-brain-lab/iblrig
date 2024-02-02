@@ -4,7 +4,19 @@ from pathlib import Path
 from typing import Literal, Optional, Dict
 from typing_extensions import Annotated
 
-from pydantic import AnyUrl, BaseModel, ConfigDict, Field, field_serializer, field_validator, PlainSerializer, FilePath
+from pydantic import (
+    AnyUrl,
+    BaseModel,
+    ConfigDict,
+    Field,
+    field_serializer,
+    field_validator,
+    PlainSerializer,
+    FilePath,
+    DirectoryPath,
+)
+
+from iblrig.constants import BASE_PATH
 
 FilePath = Annotated[FilePath, PlainSerializer(lambda s: str(s), return_type=str)]
 """Validate that path exists and is file. Cast to str upon save."""
@@ -41,23 +53,26 @@ class RigSettings(BunchModel, validate_assignment=True):
     iblrig_local_data_path: Path | None = Field(
         title='IBLRIG local data path', description='The local folder IBLRIG should use for storing data'
     )
-    iblrig_local_subjects_path: Optional[Path] = Field(
-        title='IBLRIG full local data path', omit_default=True, default=None,
-        description='An optional full local data folder (including /Subjects)'
+    iblrig_local_subjects_path: DirectoryPath | None = Field(
+        title='IBLRIG full local data path',
+        omit_default=True,
+        default=None,
+        description='An optional full local data folder (including /Subjects)',
     )
-    iblrig_remote_data_path: Path | bool | None = Field(
-        title='IBLRIG remote data path',
-        description='The remote folder IBLRIG should use for storing data'
+    iblrig_remote_data_path: DirectoryPath | None = Field(
+        title='IBLRIG remote data path', description='The remote folder IBLRIG should use for storing data'
     )
-    iblrig_remote_subjects_path: Optional[Path] = Field(
-        title='IBLRIG full remote data path', omit_default=True, default=None,
-        description='An optional full remote data folder (including /Subjects)'
+    iblrig_remote_subjects_path: DirectoryPath | None = Field(
+        title='IBLRIG full remote data path',
+        omit_default=True,
+        default=None,
+        description='An optional full remote data folder (including /Subjects)',
     )
     ALYX_USER: str | None = Field(description='Your Alyx username')
     ALYX_URL: AnyUrl | None = Field(title='Alyx URL', description='The URL to your Alyx database')
     ALYX_LAB: str | None = Field(description="Your lab's name as registered on the Alyx database")
 
-    @field_validator('*')
+    @field_validator('ALYX_USER', 'ALYX_URL', 'ALYX_LAB')
     def str_must_not_contain_space(cls, v):  # noqa: N805
         if isinstance(v, str) and ' ' in v:
             raise ValueError('must not contain a space')
@@ -113,33 +128,49 @@ class HardwareSettingsValve(BunchModel):
 class HardwareSettingsCamera(BunchModel):
     INDEX: int
     FPS: Optional[int] = Field(
-        title='Camera frame rate', omit_default=True, default=None,
-        description='An optional frame rate (for camera QC only)', ge=0)
+        title='Camera frame rate',
+        omit_default=True,
+        default=None,
+        description='An optional frame rate (for camera QC only)',
+        ge=0,
+    )
     WIDTH: Optional[int] = Field(
-        title='Camera frame width', omit_default=True, default=None,
-        description='An optional frame width (for camera QC only)', ge=0)
+        title='Camera frame width',
+        omit_default=True,
+        default=None,
+        description='An optional frame width (for camera QC only)',
+        ge=0,
+    )
     HEIGHT: Optional[int] = Field(
-        title='Camera frame height', omit_default=True, default=None,
-        description='An optional frame hight (for camera QC only)', ge=0)
+        title='Camera frame height',
+        omit_default=True,
+        default=None,
+        description='An optional frame hight (for camera QC only)',
+        ge=0,
+    )
     SYNC_LABEL: Optional[str] = Field(
-        title='Camera DAQ sync label', omit_default=True, default=None,
-        description='The name of the DAQ channel wired to the camera GPIO')
+        title='Camera DAQ sync label',
+        omit_default=True,
+        default=None,
+        description='The name of the DAQ channel wired to the camera GPIO',
+    )
 
 
 class HardwareSettingsCameraWorkflow(BunchModel):
     setup: Optional[FilePath] = Field(
-        title='Optional camera setup workflow', omit_default=True, default=None,
-        description='An optional path to the camera setup Bonsai workflow.'
+        title='Optional camera setup workflow',
+        omit_default=True,
+        default=None,
+        description='An optional path to the camera setup Bonsai workflow.',
     )
     recording: FilePath = Field(
-        title='Camera recording workflow',
-        description='The path to the Bonsai workflow for camera recording.'
+        title='Camera recording workflow', description='The path to the Bonsai workflow for camera recording.'
     )
 
     @field_validator('*', mode='before')
     def valid_path(cls, v):  # noqa: N805
         if not Path(v).is_absolute():  # assume relative to iblrig repo
-            v = Path(__file__).parents[1].joinpath(v)
+            v = BASE_PATH.joinpath(v)
         return v
 
 

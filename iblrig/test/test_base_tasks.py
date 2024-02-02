@@ -216,13 +216,13 @@ class TestPathCreation(unittest.TestCase):
         task_kwargs = copy.deepcopy(TASK_KWARGS)
         task_kwargs['hardware_settings']['MAIN_SYNC'] = False
         first_task = EmptyHardwareSession(
-            iblrig_settings={'iblrig_remote_data_path': False},
+            iblrig_settings={'iblrig_remote_data_path': None},
             **task_kwargs,
             task_parameter_file=ChoiceWorldSession.base_parameters_file,
         )
         first_task.create_session()
         # append a new protocol to the current task
-        second_task = EmptyHardwareSession(append=True, iblrig_settings={'iblrig_remote_data_path': False}, **task_kwargs)
+        second_task = EmptyHardwareSession(append=True, iblrig_settings={'iblrig_remote_data_path': None}, **task_kwargs)
         # unless the task has reached the create session stage, there is only one protocol in there
         self.assertEqual(set(d.name for d in first_task.paths.SESSION_FOLDER.iterdir() if d.is_dir()), {'raw_task_data_00'})
         # this will create and add to the acquisition description file
@@ -310,7 +310,7 @@ class TestRun(unittest.TestCase):
         tmp = tempfile.TemporaryDirectory()
         self.tmp = Path(tmp.name)
         self.addCleanup(tmp.cleanup)
-        self.iblrig_settings = {'iblrig_remote_data_path': False, 'iblrig_local_data_path': self.tmp}
+        self.iblrig_settings = {'iblrig_remote_data_path': None, 'iblrig_local_data_path': self.tmp}
 
         self.task_kwargs = copy.deepcopy(TASK_KWARGS)
         self.task_kwargs['hardware_settings']['MAIN_SYNC'] = False
