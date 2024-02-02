@@ -248,7 +248,7 @@ def patch_settings(rs: dict, filename: str | Path) -> dict:
                 }
                 rs['VERSION'] = '1.1.0'
         if 'device_cameras' not in rs:
-            rs['device_cameras'] = None
+            rs['device_cameras'] = {}
     return rs
 
 

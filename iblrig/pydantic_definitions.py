@@ -184,8 +184,6 @@ class HardwareSettings(BunchModel):
         dict
             The validated 'device_cameras' field.
         """
-        if field is None:
-            return
         for name, configuration in field.items():
             if not isinstance(configuration, dict):
                 raise TypeError
