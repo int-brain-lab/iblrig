@@ -236,7 +236,8 @@ def patch_settings(rs: dict, filename: str | Path) -> dict:
             log.info('Patching hardware settings; assuming left camera label')
             rs['device_cameras'] = {'left': rs.pop('device_camera')}
             rs['VERSION'] = '1.0.0'
-        if 'device_cameras' in rs:
+        if 'device_cameras' in rs and rs['device_cameras'] is not None:
+            rs['device_cameras'] = {k: v for k, v in rs['device_cameras'].items() if v}  # remove empty keys
             idx_missing = set(rs['device_cameras']) == {'left'} and 'INDEX' not in rs['device_cameras']['left']
             if settings_version < version.Version('1.1.0') and idx_missing:
                 log.info('Patching hardware settings; assuming left camera index and training workflow')
