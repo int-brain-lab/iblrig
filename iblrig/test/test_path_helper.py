@@ -51,7 +51,7 @@ class TestPatchSettings(unittest.TestCase):
 
     def test_patch_hardware_settings(self):
         recording_workflow = 'devices/camera_recordings/TrainingRig_SaveVideo_TrainingTasks.bonsai'
-        setup_workflow = 'devices/camera_setup/EphysRig_SetupCameras.bonsai'
+        setup_workflow = 'devices/camera_setup/setup_video.bonsai'
         # Version 0 settings example
         rs = {'RIG_NAME': 'foo_rig', 'MAIN_SYNC': True, 'device_camera': {'BONSAI_WORKFLOW': recording_workflow}}
         updated = path_helper.patch_settings(deepcopy(rs), 'hardware_settings')
@@ -66,7 +66,8 @@ class TestPatchSettings(unittest.TestCase):
         self.assertDictEqual(path_helper.patch_settings(deepcopy(updated), 'hardware_settings'), updated)
         # Test v1.0 -> v1.1
         v1 = deepcopy(rs)
-        v1['device_cameras'] = {'left': {'BONSAI_WORKFLOW': recording_workflow}}
+        # Some settings files have empty camera fields
+        v1['device_cameras'] = {'left': {'BONSAI_WORKFLOW': recording_workflow}, 'right': None, 'body': None}
         v1['VERSION'] = '1.0.0'
         v2 = path_helper.patch_settings(v1, 'hardware_settings')
         self.assertEqual('1.1.0', v2.get('VERSION'))

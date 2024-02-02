@@ -242,7 +242,7 @@ def patch_settings(rs: dict, filename: str | Path) -> dict:
             if settings_version < version.Version('1.1.0') and idx_missing:
                 log.info('Patching hardware settings; assuming left camera index and training workflow')
                 workflow = rs['device_cameras']['left'].pop('BONSAI_WORKFLOW', None)
-                bonsai_workflows = {'setup': 'devices/camera_setup/EphysRig_SetupCameras.bonsai', 'recording': workflow}
+                bonsai_workflows = {'setup': 'devices/camera_setup/setup_video.bonsai', 'recording': workflow}
                 rs['device_cameras'] = {
                     'training': {'BONSAI_WORKFLOW': bonsai_workflows, 'left': {'INDEX': 1, 'SYNC_LABEL': 'audio'}}
                 }
