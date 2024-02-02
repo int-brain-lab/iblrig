@@ -4,6 +4,7 @@ from datetime import timedelta
 from unittest.mock import patch, MagicMock, call, ANY
 import tempfile
 import sys
+import shutil
 
 import yaml
 from iblutil.util import Bunch
@@ -12,7 +13,7 @@ import numpy as np
 sys.modules['PySpin'] = MagicMock()
 
 from iblrig import video  # noqa
-from iblrig.path_helper import load_pydantic_yaml  # noqa
+from iblrig.path_helper import load_pydantic_yaml, HARDWARE_SETTINGS_YAML, RIG_SETTINGS_YAML  # noqa
 from iblrig.pydantic_definitions import HardwareSettings  # noqa
 
 
@@ -49,6 +50,13 @@ class TestSettings(unittest.TestCase):
         self.addCleanup(params_dict_mock.stop)
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
+        # Some dummy files to open
+        for name in ('hardware_settings', 'iblrig_settings'):
+            (file := Path(self.tmp.name, name + '.yaml')).touch()
+            m = patch(f'iblrig.video.{name.replace("ibl", "").upper()}_YAML', file)
+            m.start()
+            self.addCleanup(m.stop)
+
         self._settings = {}  # Store the unpatched settings (we'll use the template ones)
         self.patched = {}  # Store the patched settings
         for file in ('iblrig', 'hardware'):

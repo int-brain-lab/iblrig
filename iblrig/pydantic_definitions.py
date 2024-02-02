@@ -2,8 +2,12 @@ from collections import abc
 from datetime import date
 from pathlib import Path
 from typing import Literal, Optional, Dict
+from typing_extensions import Annotated
 
-from pydantic import AnyUrl, BaseModel, ConfigDict, Field, field_serializer, field_validator
+from pydantic import AnyUrl, BaseModel, ConfigDict, Field, field_serializer, field_validator, PlainSerializer, FilePath
+
+FilePath = Annotated[FilePath, PlainSerializer(lambda s: str(s), return_type=str)]
+"""Validate that path exists and is file. Cast to str upon save."""
 
 
 class BunchModel(BaseModel, abc.MutableMapping):
@@ -123,21 +127,19 @@ class HardwareSettingsCamera(BunchModel):
 
 
 class HardwareSettingsCameraWorkflow(BunchModel):
-    setup: Optional[Path] = Field(
+    setup: Optional[FilePath] = Field(
         title='Optional camera setup workflow', omit_default=True, default=None,
         description='An optional path to the camera setup Bonsai workflow.'
     )
-    recording: Path = Field(
+    recording: FilePath = Field(
         title='Camera recording workflow',
         description='The path to the Bonsai workflow for camera recording.'
     )
 
-    @field_validator('*')
+    @field_validator('*', mode='before')
     def valid_path(cls, v):  # noqa: N805
-        if not v.is_absolute():  # assume relative to iblrig repo
+        if not Path(v).is_absolute():  # assume relative to iblrig repo
             v = Path(__file__).parents[1].joinpath(v)
-        if not v.exists():
-            raise FileNotFoundError(v)
         return v
 
 
