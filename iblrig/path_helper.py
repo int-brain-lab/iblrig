@@ -199,13 +199,16 @@ def load_pydantic_yaml(model: type[T], filename: Path | str | None = None, do_ra
             raise e
 
 
-def save_pydantic_yaml(data: T) -> bool:
-    if isinstance(data, HardwareSettings):
-        filename = HARDWARE_SETTINGS_YAML
-    elif isinstance(data, RigSettings):
-        filename = RIG_SETTINGS_YAML
+def save_pydantic_yaml(data: T, filename: Path | str | None = None) -> bool:
+    if filename is None:
+        if isinstance(data, HardwareSettings):
+            filename = HARDWARE_SETTINGS_YAML
+        elif isinstance(data, RigSettings):
+            filename = RIG_SETTINGS_YAML
+        else:
+            raise TypeError(f'Cannot deduce filename for model `{type(data).__name__}`.')
     else:
-        raise TypeError(f'Unknown Pydantic model: `{type(data).__name__}`')
+        filename = Path(filename)
     yaml_data = data.model_dump()
     data.model_validate(yaml_data)
     with open(filename, 'w') as f:

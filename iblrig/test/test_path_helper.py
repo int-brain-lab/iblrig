@@ -1,12 +1,15 @@
 """Tests for iblrig.path_helper module."""
+import logging
 import tempfile
 import unittest
 from pathlib import Path
 from copy import deepcopy
+from unittest.mock import patch, mock_open
 
 from iblrig import path_helper
 from iblrig.constants import BASE_DIR
 from iblrig.pydantic_definitions import HardwareSettings
+from iblrig.path_helper import load_pydantic_yaml, save_pydantic_yaml
 
 
 class TestPathHelper(unittest.TestCase):
@@ -79,6 +82,20 @@ class TestPatchSettings(unittest.TestCase):
         rs.pop('device_camera')
         self.assertIn('device_cameras', path_helper.patch_settings(rs, 'hardware_settings'))
         HardwareSettings.validate_device_cameras({})
+
+
+class TestYAML(unittest.TestCase):
+
+    def test_yaml_roundtrip(self):
+        with self.assertNoLogs(level=logging.ERROR):
+            hws1 = load_pydantic_yaml(HardwareSettings, 'hardware_settings_template.yaml')
+        with tempfile.NamedTemporaryFile(mode='w') as temp_file:
+            save_pydantic_yaml(hws1, temp_file.name)
+            with self.assertNoLogs(level=logging.ERROR):
+                hws2 = load_pydantic_yaml(HardwareSettings, temp_file.name)
+        assert hws1 == hws2
+
+
 
 
 if __name__ == '__main__':

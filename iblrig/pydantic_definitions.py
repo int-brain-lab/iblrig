@@ -12,6 +12,7 @@ from pydantic import (
     field_serializer,
     field_validator,
     PlainSerializer,
+    PositiveFloat,
     FilePath,
     DirectoryPath,
 )
@@ -59,7 +60,7 @@ class RigSettings(BunchModel, validate_assignment=True):
         default=None,
         description='An optional full local data folder (including /Subjects)',
     )
-    iblrig_remote_data_path: DirectoryPath | None = Field(
+    iblrig_remote_data_path: DirectoryPath | bool | None = Field(
         title='IBLRIG remote data path', description='The remote folder IBLRIG should use for storing data'
     )
     iblrig_remote_subjects_path: DirectoryPath | None = Field(
@@ -72,7 +73,7 @@ class RigSettings(BunchModel, validate_assignment=True):
     ALYX_URL: AnyUrl | None = Field(title='Alyx URL', description='The URL to your Alyx database')
     ALYX_LAB: str | None = Field(description="Your lab's name as registered on the Alyx database")
 
-    @field_validator('ALYX_USER', 'ALYX_URL', 'ALYX_LAB')
+    @field_validator('ALYX_USER', 'ALYX_LAB')
     def str_must_not_contain_space(cls, v):  # noqa: N805
         if isinstance(v, str) and ' ' in v:
             raise ValueError('must not contain a space')
@@ -119,10 +120,10 @@ class HardwareSettingsSound(BunchModel):
 
 class HardwareSettingsValve(BunchModel):
     WATER_CALIBRATION_DATE: date
-    WATER_CALIBRATION_RANGE: list[float] = Field(min_items=2, max_items=2)  # type: ignore
-    WATER_CALIBRATION_OPEN_TIMES: list[float] = Field(min_items=2)  # type: ignore
-    WATER_CALIBRATION_WEIGHT_PERDROP: list[float] = Field(min_items=2)  # type: ignore
-    FREE_REWARD_VOLUME_UL: float = 1.5
+    WATER_CALIBRATION_RANGE: list[PositiveFloat] = Field(min_items=2, max_items=2)  # type: ignore
+    WATER_CALIBRATION_OPEN_TIMES: list[PositiveFloat] = Field(min_items=2)  # type: ignore
+    WATER_CALIBRATION_WEIGHT_PERDROP: list[float] = Field(PositiveFloat, min_items=2)  # type: ignore
+    FREE_REWARD_VOLUME_UL: PositiveFloat = 1.5
 
 
 class HardwareSettingsCamera(BunchModel):
@@ -167,7 +168,7 @@ class HardwareSettingsCameraWorkflow(BunchModel):
         title='Camera recording workflow', description='The path to the Bonsai workflow for camera recording.'
     )
 
-    @field_validator('*', mode='before')
+    @field_validator('setup', 'recording', mode='before')
     def valid_path(cls, v):  # noqa: N805
         if not Path(v).is_absolute():  # assume relative to iblrig repo
             v = BASE_PATH.joinpath(v)
