@@ -24,6 +24,7 @@ dependencies = [
     "numpy",
     "packaging",
     "pandas",
+    "project_extraction@git+https://github.com/int-brain-lab/project_extraction.git",
     "pydantic",
     "python-osc",
     "pywin32; sys_platform == 'win32'",
