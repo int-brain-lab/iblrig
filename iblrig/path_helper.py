@@ -91,7 +91,7 @@ def _iterate_protocols(subject_folder, task_name, n=1):
     return protocols
 
 
-def get_local_and_remote_paths(local_path=None, remote_path=None, lab=None):
+def get_local_and_remote_paths(local_path: Path | str | None = None, remote_path: Path | str | None = None, lab: str = None):
     """
     Function used to parse input arguments to transfer commands.
 
@@ -108,13 +108,11 @@ def get_local_and_remote_paths(local_path=None, remote_path=None, lab=None):
         'remote_subjects_folder': PosixPath('Y:/Subjects')}
     """
     iblrig_settings = _load_settings_yaml()
+    if local_path is None:
+        local_path = p if (p := iblrig_settings['iblrig_local_data_path']) else Path.home().joinpath('iblrig_data')
+    if remote_path is None:
+        remote_path = p if (p := iblrig_settings['iblrig_remote_data_path']) else None
     paths = Bunch({'local_data_folder': local_path, 'remote_data_folder': remote_path})
-    if paths.local_data_folder is None:
-        paths.local_data_folder = (
-            Path(p) if (p := iblrig_settings['iblrig_local_data_path']) else Path.home().joinpath('iblrig_data')
-        )
-    if paths.remote_data_folder is None:
-        paths.remote_data_folder = Path(p) if (p := iblrig_settings['iblrig_remote_data_path']) else None
 
     # Get the subjects folder. If not defined in the settings, assume data path + /Subjects
     paths.local_subjects_folder = iblrig_settings.get('iblrig_local_subjects_path', None)
