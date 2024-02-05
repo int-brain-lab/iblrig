@@ -699,6 +699,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
 
             # create widget for string arguments
             elif arg.type in (str, None):
+                # string options (-> combo-box)
                 if isinstance(arg.choices, list):
                     widget = QtWidgets.QComboBox()
                     widget.addItems(arg.choices)
@@ -707,6 +708,17 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                     widget.currentTextChanged.connect(lambda val, p=param: self._set_task_arg(p, val))
                     widget.currentTextChanged.emit(widget.currentText())
 
+                # list of strings (-> line-edit)
+                elif arg.nargs == '+':
+                    widget = QtWidgets.QLineEdit()
+                    if arg.default:
+                        widget.setText(str(arg.default)[1:-1])
+                    widget.editingFinished.connect(
+                        lambda p=param, w=widget: self._set_task_arg(p, [x.strip() for x in w.text().split(',')])
+                    )
+                    widget.editingFinished.emit()
+
+                # single string (-> line-edit)
                 else:
                     widget = QtWidgets.QLineEdit()
                     if arg.default:
