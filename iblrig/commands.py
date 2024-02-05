@@ -134,7 +134,7 @@ def _get_copiers(
     local_folder: Path,
     remote_folder: Path,
     lab: str = None,
-    glob_pattern: str = '*/*-*-*/*/transfer_me.flag',
+    glob_pattern: str = '*/????-??-??/*/transfer_me.flag',
     interactive: bool = False,
     **kwargs,
 ) -> list[SessionCopier]:
