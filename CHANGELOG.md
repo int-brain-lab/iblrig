@@ -1,7 +1,7 @@
 Changelog
 ---------
 
-8.15.1
+8.16.0
 ------
 * hotfix: pin iblutil to >=1.7.4 to address unicode encoding issue during logging
 
