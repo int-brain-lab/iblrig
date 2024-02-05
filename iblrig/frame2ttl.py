@@ -25,6 +25,8 @@ class Frame2TTL(SerialSingleton):
             is_teensy = port_info.vid == 0x16C0 and port_info.pid == 0x0483
             if not is_samd21mini and not is_teensy:
                 raise OSError(f'Device on {port} is not a Frame2TTL')
+        else:
+            raise OSError(f"Couldn't initialize Frame2TTL on port `{port}` - port not found.")
 
         # catch SAMD21 in bootloader mode (Frame2TTL v1)
         if is_samd21mini and port_info.pid == 0x0D21:
