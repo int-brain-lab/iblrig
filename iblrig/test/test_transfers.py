@@ -31,6 +31,7 @@ def _create_behavior_session(temp_dir, ntrials=None, hard_crash=False, **kwargs)
         'iblrig_remote_data_path': Path(temp_dir).joinpath('remote'),
         'ALYX_LAB': 'testlab',
     }
+    iblrig_settings['iblrig_local_data_path'].mkdir()
     session = Session(iblrig_settings=iblrig_settings, **task_kwargs)
     session.create_session()
     session.paths.SESSION_FOLDER.joinpath('raw_video_data').mkdir(parents=True)
