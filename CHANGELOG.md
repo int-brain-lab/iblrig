@@ -1,6 +1,10 @@
 Changelog
 ---------
 
+8.15.1
+------
+* hotfix: correct parsing of description files and ignore junk sessions in iterate_protocols
+
 8.15.0
 ------
 * feature: calibration routine for frame2ttl v1-3 in Tools menu
