@@ -60,10 +60,10 @@ class RigSettings(BunchModel, validate_assignment=True):
         default=None,
         description='An optional full local data folder (including /Subjects)',
     )
-    iblrig_remote_data_path: DirectoryPath | bool | None = Field(
+    iblrig_remote_data_path: Path | bool | None = Field(
         title='IBLRIG remote data path', description='The remote folder IBLRIG should use for storing data'
     )
-    iblrig_remote_subjects_path: DirectoryPath | None = Field(
+    iblrig_remote_subjects_path: Path | None = Field(
         title='IBLRIG full remote data path',
         omit_default=True,
         default=None,
