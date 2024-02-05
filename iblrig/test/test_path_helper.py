@@ -4,7 +4,6 @@ import unittest
 from pathlib import Path
 
 import ibllib.tests.fixtures.utils as fu
-
 from iblrig import path_helper
 from iblrig.base_tasks import BonsaiRecordingMixin
 from iblrig.constants import BASE_DIR
@@ -63,32 +62,40 @@ class TestIterateProtocols(unittest.TestCase):
         self.settings = {'NTRIALS': 260}
         # First session has it all
         p = fu.create_fake_raw_behavior_data_folder(
-            self.session_paths[0], task=task, folder='raw_task_data_00', write_pars_stub=True)
+            self.session_paths[0], task=task, folder='raw_task_data_00', write_pars_stub=True
+        )
         fu.populate_task_settings(p, self.settings)
 
         # Second session has no settings file
         p = fu.create_fake_raw_behavior_data_folder(
-            self.session_paths[1], task=task, folder='raw_task_data_00', write_pars_stub=True)
+            self.session_paths[1], task=task, folder='raw_task_data_00', write_pars_stub=True
+        )
         p.joinpath('_iblrig_taskSettings.raw.json').unlink()
 
         # Third has two chained protocols
-        stub = {'tasks': [
-            {'ephysCW': {'collection': 'raw_task_data_00'}},
-            {'passiveCW': {'collection': 'raw_task_data_01'}},
-            {'ephysCW': {'collection': 'raw_task_data_02'}}
-        ]}
+        stub = {
+            'tasks': [
+                {'ephysCW': {'collection': 'raw_task_data_00'}},
+                {'passiveCW': {'collection': 'raw_task_data_01'}},
+                {'ephysCW': {'collection': 'raw_task_data_02'}},
+            ]
+        }
         p = fu.create_fake_raw_behavior_data_folder(
-            self.session_paths[2], task=task, folder='raw_task_data_00', write_pars_stub={'behaviour': stub})
+            self.session_paths[2], task=task, folder='raw_task_data_00', write_pars_stub={'behaviour': stub}
+        )
         fu.populate_task_settings(p, self.settings)
         fu.create_fake_raw_behavior_data_folder(
-            self.session_paths[2], task='passiveCW', folder='raw_task_data_01', write_pars_stub=False)
+            self.session_paths[2], task='passiveCW', folder='raw_task_data_01', write_pars_stub=False
+        )
         p = fu.create_fake_raw_behavior_data_folder(
-            self.session_paths[2], task='ephysCW', folder='raw_task_data_02', write_pars_stub=False)
+            self.session_paths[2], task='ephysCW', folder='raw_task_data_02', write_pars_stub=False
+        )
         fu.populate_task_settings(p, self.settings)
 
         # Forth has different task
         p = fu.create_fake_raw_behavior_data_folder(
-            self.session_paths[3], task='foobarCW', folder='raw_task_data_00', write_pars_stub=True)
+            self.session_paths[3], task='foobarCW', folder='raw_task_data_00', write_pars_stub=True
+        )
         fu.populate_task_settings(p, self.settings)
 
         # Filter by task name

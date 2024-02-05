@@ -10,14 +10,14 @@ import numpy as np
 import yaml
 from packaging import version
 from pydantic import BaseModel, ValidationError
-from one.alf.spec import is_session_path
-from iblutil.util import Bunch
-from ibllib.io import session_params
-from ibllib.io.raw_data_loaders import load_settings
 
 import iblrig
+from ibllib.io import session_params
+from ibllib.io.raw_data_loaders import load_settings
 from iblrig.constants import HARDWARE_SETTINGS_YAML, RIG_SETTINGS_YAML
 from iblrig.pydantic_definitions import HardwareSettings, RigSettings
+from iblutil.util import Bunch
+from one.alf.spec import is_session_path
 
 log = logging.getLogger(__name__)
 T = TypeVar('T', bound=BaseModel)
@@ -70,6 +70,7 @@ def _iterate_protocols(subject_folder, task_name, n=1, min_trials=43):
         list of dictionaries with keys: session_stub, session_path, experiment_description,
         task_settings, file_task_data.
     """
+
     def proc_num(x):
         """Return protocol number.
 
