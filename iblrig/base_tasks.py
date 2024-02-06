@@ -53,6 +53,8 @@ class BaseSession(ABC):
     base_parameters_file: Path | None = None
     is_mock = False
     extractor_tasks = None
+    logger: logging.Logger = None
+    """logging.Logger: Log instance used solely to keep track of log level passed to constructor."""
 
     def __init__(
         self,
@@ -224,9 +226,8 @@ class BaseSession(ABC):
         return paths
 
     def _setup_loggers(self, level='INFO', level_bpod='WARNING', file=None):
-        if self.logger is None:
-            self.logger = setup_logger('iblrig.task', level=level, file=file)
-            setup_logger('pybpodapi', level=level_bpod, file=file)
+        self.logger = setup_logger('iblrig', level=level, file=file)
+        setup_logger('pybpodapi', level=level_bpod, file=file)
 
     @staticmethod
     def make_experiment_description_dict(
