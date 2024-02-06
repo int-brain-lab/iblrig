@@ -1,6 +1,10 @@
 Changelog
 ---------
 
+8.15.3
+------
+* hotfix: don't wait for microphone workflow to finish
+
 8.15.2
 ------
 * hotfix: pin iblutil to >=1.7.4 to address unicode encoding issue during logging
