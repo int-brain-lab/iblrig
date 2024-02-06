@@ -14,14 +14,14 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_frame2ttl(object):
     def setupUi(self, frame2ttl):
         frame2ttl.setObjectName("frame2ttl")
-        frame2ttl.resize(184, 200)
+        frame2ttl.resize(200, 200)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(frame2ttl.sizePolicy().hasHeightForWidth())
         frame2ttl.setSizePolicy(sizePolicy)
-        frame2ttl.setMinimumSize(QtCore.QSize(190, 200))
-        frame2ttl.setMaximumSize(QtCore.QSize(190, 200))
+        frame2ttl.setMinimumSize(QtCore.QSize(200, 200))
+        frame2ttl.setMaximumSize(QtCore.QSize(200, 200))
         self.verticalLayout_2 = QtWidgets.QVBoxLayout(frame2ttl)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
         self.formLayout = QtWidgets.QFormLayout()
