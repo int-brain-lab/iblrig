@@ -708,6 +708,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
 
             # create widget for string arguments
             elif arg.type in (str, None):
+                # string options (-> combo-box)
                 if isinstance(arg.choices, list):
                     widget = QtWidgets.QComboBox()
                     widget.addItems(arg.choices)
@@ -716,6 +717,17 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                     widget.currentTextChanged.connect(lambda val, p=param: self._set_task_arg(p, val))
                     widget.currentTextChanged.emit(widget.currentText())
 
+                # list of strings (-> line-edit)
+                elif arg.nargs == '+':
+                    widget = QtWidgets.QLineEdit()
+                    if arg.default:
+                        widget.setText(', '.join(arg.default))
+                    widget.editingFinished.connect(
+                        lambda p=param, w=widget: self._set_task_arg(p, [x.strip() for x in w.text().split(',')])
+                    )
+                    widget.editingFinished.emit()
+
+                # single string (-> line-edit)
                 else:
                     widget = QtWidgets.QLineEdit()
                     if arg.default:
@@ -760,7 +772,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
 
             # some customizations
             match widget.property('parameter_dest'):
-                case 'probability_left':
+                case 'probability_left' | 'probability_opto_stim':
                     widget.setMinimum(0.0)
                     widget.setMaximum(1.0)
                     widget.setSingleStep(0.1)
@@ -823,9 +835,6 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         if layout.rowCount() == 0:
             layout.addRow(self.tr('(none)'), None)
             layout.itemAt(0, 0).widget().setEnabled(False)
-
-        # call timer to resize window
-        QtCore.QTimer.singleShot(1, lambda: self.resize(self.minimumSizeHint()))
 
     def _set_task_arg(self, key, value):
         self.task_arguments[key] = value

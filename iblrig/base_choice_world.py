@@ -274,8 +274,12 @@ class ChoiceWorldSession(
                 log.info('Graphviz system executable not found, cannot render the graph')
         return dot
 
+    def _instantiate_state_machine(self, *args, **kwargs):
+        return StateMachine(self.bpod)
+
     def get_state_machine_trial(self, i):
-        sma = StateMachine(self.bpod)
+        # we define the trial number here for subclasses that may need it
+        sma = self._instantiate_state_machine(trial_number=i)
         if i == 0:  # First trial exception start camera
             session_delay_start = self.task_params.get('SESSION_DELAY_START', 0)
             log.info('First trial initializing, will move to next trial only if:')
