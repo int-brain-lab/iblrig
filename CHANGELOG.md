@@ -1,6 +1,12 @@
 Changelog
 ---------
 
+8.16.0
+------
+* hotfix: pin iblutil to >=1.7.4 to address unicode encoding issue during logging
+* change: use QT workers for Frame2TTL calibration steps
+* extra task parameters: support list of strings
+
 8.15.1
 ------
 * hotfix: correct parsing of description files and ignore junk sessions in iterate_protocols
@@ -85,7 +91,7 @@ Changelog
 
 8.12.8
 ------
-* fix incorrect limits & unit for adaptive gain in trainingChoiceWorld  
+* fix incorrect limits & unit for adaptive gain in trainingChoiceWorld
 * usability improvements for "Show Training Level" tool
 
 8.12.7
@@ -96,7 +102,7 @@ Changelog
 8.12.6
 ------
 * reverting TTL on trial end introduced with PR #504, release 8.9.0
-* general code maintenance (unit-tests, doc-strings, type-hints, removal of dead code) 
+* general code maintenance (unit-tests, doc-strings, type-hints, removal of dead code)
 
 8.12.5
 ------
@@ -159,7 +165,7 @@ Changelog
 * add control for disabling Bpod status LED
 * skip initialization of existing Bpod singleton
 * remember settings for status LED and GUI position
-* move update-check to separate thread 
+* move update-check to separate thread
 * detect duds (less than 42 trials) and offer deletion
 * various small bugfixes
 

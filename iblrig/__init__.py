@@ -6,6 +6,7 @@
 # 5) git tag the release in accordance to the version number below (after merge!)
 __version__ = '8.15.2'
 
+
 from iblrig.version_management import get_detailed_version_string
 
 # The following method call will try to get post-release information (i.e. the number of commits since the last tagged
