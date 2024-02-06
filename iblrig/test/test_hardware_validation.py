@@ -42,4 +42,14 @@ class TestAlyxValidation(unittest.TestCase):
         kwargs['hardware_settings']['RIG_NAME'] = '_iblrig_carandinilab_ephys_0'
         v = iblrig.hardware_validation.ValidateAlyxLabLocation(**kwargs)
         result = v.run(alyx_client)
-        assert result.status == 'PASS'
+        self.assertEqual('PASS', result.status)
+
+        # Test failures
+        from unittest import mock
+        import requests
+        rep = requests.Response()
+        rep.status_code = 404
+        with mock.patch('one.webclient.requests.get', return_value=rep) as m:
+            m.__name__ = "get"
+            result2 = v.run(alyx_client)
+            self.assertEqual('FAIL', result2.status)
