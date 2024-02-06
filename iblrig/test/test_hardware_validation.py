@@ -1,9 +1,13 @@
 import unittest
+from unittest import mock
+import copy
+
+import requests
 
 import iblrig.hardware_validation
 from ibllib.tests import TEST_DB  # noqa
 from iblrig.path_helper import _load_settings_yaml
-from one.api import ONE
+from one.webclient import AlyxClient
 
 VALIDATORS_INIT_KWARGS = dict(
     iblrig_settings=_load_settings_yaml('iblrig_settings_template.yaml'),
@@ -35,11 +39,20 @@ class TestInstantiateClasses(unittest.TestCase):
 
 class TestAlyxValidation(unittest.TestCase):
     def test_lab_location(self):
-        alyx_client = ONE(**TEST_DB, mode='remote').alyx
-        import copy
+        alyx = AlyxClient(**TEST_DB, cache_rest=None)
 
         kwargs = copy.deepcopy(VALIDATORS_INIT_KWARGS)
         kwargs['hardware_settings']['RIG_NAME'] = '_iblrig_carandinilab_ephys_0'
         v = iblrig.hardware_validation.ValidateAlyxLabLocation(**kwargs)
-        result = v.run(alyx_client)
-        assert result.status == 'PASS'
+        result = v.run(alyx)
+        self.assertEqual('PASS', result.status)
+
+        # Test failures
+        rep = requests.Response()
+        with mock.patch('one.webclient.requests.get', return_value=rep) as m:
+            m.__name__ = 'get'
+            rep.status_code = 404  # When the lab is not found on Alyx the validation should raise
+            self.assertRaises(iblrig.hardware_validation.ValidateHardwareException, v.run, alyx)
+            rep.status_code = 500  # When Alyx is down for any reason, the failure should not raise
+            result = v.run(alyx)
+            self.assertEqual('FAIL', result.status)
