@@ -1,11 +1,14 @@
 Changelog
 ---------
 
-8.16.0
+8.15.2
 ------
 * hotfix: pin iblutil to >=1.7.4 to address unicode encoding issue during logging
+* hotfix: allow pass with warning in case where lab validation fails due to Alyx down / server issues
 * change: use QT workers for Frame2TTL calibration steps
 * extra task parameters: support list of strings
+* frame2ttl: raise exception on incorrect port setting
+* convert_ui: add argument for filename glob
 
 8.15.1
 ------

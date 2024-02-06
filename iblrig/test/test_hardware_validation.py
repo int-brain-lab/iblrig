@@ -46,10 +46,12 @@ class TestAlyxValidation(unittest.TestCase):
 
         # Test failures
         from unittest import mock
+
         import requests
+
         rep = requests.Response()
         rep.status_code = 404
         with mock.patch('one.webclient.requests.get', return_value=rep) as m:
-            m.__name__ = "get"
+            m.__name__ = 'get'
             result2 = v.run(alyx_client)
             self.assertEqual('FAIL', result2.status)
