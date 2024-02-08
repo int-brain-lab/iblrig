@@ -6,6 +6,7 @@ The start() methods of those mixins require the hardware to be connected.
 """
 import argparse
 import copy
+import logging
 import tempfile
 import unittest
 from pathlib import Path
@@ -322,10 +323,8 @@ class TestRun(unittest.TestCase):
     def test_dialogs(self, input_mock):
         """Test that weighing dialog used only on first of chained protocols."""
         first_task = EmptyHardwareSession(**self.task_kwargs)
-        # Logging to file causes tempdir cleanup issues so we simply don't call setup_loggers
-        with mock.patch.object(first_task, '_setup_loggers'):
-            # Check that weighing GUI created
-            first_task.run()
+        # Check that weighing GUI created
+        first_task.run()
         input_mock.assert_called()
         self.assertEqual(23.5, first_task.session_info['SUBJECT_WEIGHT'])
         self.assertEqual(20, first_task.session_info['POOP_COUNT'])
@@ -333,8 +332,16 @@ class TestRun(unittest.TestCase):
         # Append a new protocol to the current task. Weighting GUI should not be instantiated
         input_mock.reset_mock()
         second_task = EmptyHardwareSession(append=True, **self.task_kwargs)
-        with mock.patch.object(second_task, '_setup_loggers'):
-            second_task.run()
+        second_task.run()
         input_mock.assert_called_once()
         self.assertIsNone(second_task.session_info['SUBJECT_WEIGHT'])
         self.assertEqual(35, second_task.session_info['POOP_COUNT'])
+
+    def tearDown(self):
+        """Close log file handlers.
+
+        The tasks open log files within the temp session dir. Here we ensure files are closed
+        before removing file tree.
+        """
+        for name in ('iblrig', 'pybpodapi'):
+            next(h for h in logging.getLogger(name).handlers if h.name == f'{name}_file').close()

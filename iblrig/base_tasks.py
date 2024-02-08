@@ -92,7 +92,7 @@ class BaseSession(ABC):
         :param fmake: (DEPRECATED) if True, only create the raw_behavior_data folder.
         """
         assert self.protocol_name is not None, 'Protocol name must be defined by the child class'
-        self.logger = None
+        self._logger = None
         self._setup_loggers(level=log_level)
         if not isinstance(self, EmptySession):
             log.info(f'Running iblrig {iblrig.__version__}, pybpod version {pybpodapi.__version__}')
@@ -226,7 +226,7 @@ class BaseSession(ABC):
         return paths
 
     def _setup_loggers(self, level='INFO', level_bpod='WARNING', file=None):
-        self.logger = setup_logger('iblrig', level=level, file=file)
+        self._logger = setup_logger('iblrig', level=level, file=file)  # logger attr used by create_session to determine log level
         setup_logger('pybpodapi', level=level_bpod, file=file)
 
     @staticmethod
@@ -399,7 +399,7 @@ class BaseSession(ABC):
         self.save_task_parameters_to_json_file()
         # enable file logging
         logfile = self.paths.SESSION_RAW_DATA_FOLDER.joinpath('_ibl_log.info-acquisition.log')
-        self._setup_loggers(level=self.logger.level, file=logfile)
+        self._setup_loggers(level=self._logger.level, file=logfile)
         # copy the acquisition stub to the remote session folder
         sc = BehaviorCopier(self.paths.SESSION_FOLDER, remote_subjects_folder=self.paths['REMOTE_SUBJECT_FOLDER'])
         sc.initialize_experiment(self.experiment_description, overwrite=False)

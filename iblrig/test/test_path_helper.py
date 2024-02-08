@@ -4,11 +4,10 @@ import tempfile
 import unittest
 from pathlib import Path
 from copy import deepcopy
-from unittest.mock import patch, mock_open
 
 import ibllib.tests.fixtures.utils as fu
 from iblrig import path_helper
-from iblrig.constants import BASE_DIR, HARDWARE_SETTINGS_YAML, RIG_SETTINGS_YAML
+from iblrig.constants import BASE_DIR
 from iblrig.pydantic_definitions import HardwareSettings, RigSettings
 from iblrig.path_helper import load_pydantic_yaml, save_pydantic_yaml
 
