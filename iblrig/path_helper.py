@@ -113,11 +113,12 @@ def _iterate_protocols(subject_folder, task_name, n=1, min_trials=43):
     return protocols
 
 
-def get_local_and_remote_paths(local_path=None, remote_path=None, lab=None):
+def get_local_and_remote_paths(local_path: Path | str | None = None, remote_path: Path | str | None = None, lab: str = None):
     """
-    Function used to parse input arguments to transfer commands. If the arguments are None, reads in the settings
-    and returns the values from the files.
-    local_subects_path alwawys has a fallback on the home directory / ilbrig_data
+    Function used to parse input arguments to transfer commands.
+
+    If the arguments are None, reads in the settings and returns the values from the files.
+    local_subjects_path always has a fallback on the home directory / iblrig_data
     remote_subjects_path has no fallback and will return None when all options are exhausted
     :param local_path:
     :param remote_path:
@@ -129,15 +130,23 @@ def get_local_and_remote_paths(local_path=None, remote_path=None, lab=None):
         'remote_subjects_folder': PosixPath('Y:/Subjects')}
     """
     iblrig_settings = _load_settings_yaml()
+    if local_path is None:
+        local_path = p if (p := iblrig_settings['iblrig_local_data_path']) else Path.home().joinpath('iblrig_data')
+    if remote_path is None:
+        remote_path = p if (p := iblrig_settings['iblrig_remote_data_path']) else None
     paths = Bunch({'local_data_folder': local_path, 'remote_data_folder': remote_path})
-    if paths.local_data_folder is None:
-        paths.local_data_folder = (
-            Path(p) if (p := iblrig_settings['iblrig_local_data_path']) else Path.home().joinpath('iblrig_data')
-        )
-    if paths.remote_data_folder is None:
-        paths.remote_data_folder = Path(p) if (p := iblrig_settings['iblrig_remote_data_path']) else None
-    paths.local_subjects_folder = Path(paths.local_data_folder).joinpath(lab or iblrig_settings['ALYX_LAB'] or '', 'Subjects')
-    paths.remote_subjects_folder = Path(p).joinpath('Subjects') if (p := paths.remote_data_folder) else None
+
+    # Get the subjects folder. If not defined in the settings, assume data path + /Subjects
+    paths.local_subjects_folder = iblrig_settings.get('iblrig_local_subjects_path', None)
+    if paths.local_subjects_folder is None:
+        paths.local_subjects_folder = Path(paths.local_data_folder).joinpath(lab or iblrig_settings['ALYX_LAB'] or '', 'Subjects')
+    else:
+        paths.local_subjects_folder = Path(paths.local_subjects_folder)
+    paths.remote_subjects_folder = iblrig_settings.get('iblrig_remote_subjects_path', None)
+    if paths.remote_subjects_folder is None:
+        paths.remote_subjects_folder = Path(p).joinpath('Subjects') if (p := paths.remote_data_folder) else None
+    else:
+        paths.remote_subjects_folder = Path(paths.remote_subjects_folder)
     return paths
 
 
@@ -210,13 +219,16 @@ def load_pydantic_yaml(model: type[T], filename: Path | str | None = None, do_ra
             raise e
 
 
-def save_pydantic_yaml(data: T) -> bool:
-    if isinstance(data, HardwareSettings):
-        filename = HARDWARE_SETTINGS_YAML
-    elif isinstance(data, RigSettings):
-        filename = RIG_SETTINGS_YAML
+def save_pydantic_yaml(data: T, filename: Path | str | None = None) -> bool:
+    if filename is None:
+        if isinstance(data, HardwareSettings):
+            filename = HARDWARE_SETTINGS_YAML
+        elif isinstance(data, RigSettings):
+            filename = RIG_SETTINGS_YAML
+        else:
+            raise TypeError(f'Cannot deduce filename for model `{type(data).__name__}`.')
     else:
-        raise TypeError(f'Unknown Pydantic model: `{type(data).__name__}`')
+        filename = Path(filename)
     yaml_data = data.model_dump()
     data.model_validate(yaml_data)
     with open(filename, 'w') as f:
@@ -241,11 +253,25 @@ def patch_settings(rs: dict, filename: str | Path) -> dict:
         The updated settings.
     """
     filename = Path(filename)
-    if filename.stem.startswith('hardware') and version.parse(rs.get('VERSION', '0.0.0')) < version.Version('1.0.0'):
-        if 'device_camera' in rs:
+    settings_version = version.parse(rs.get('VERSION', '0.0.0'))
+    if filename.stem.startswith('hardware'):
+        if settings_version < version.Version('1.0.0') and 'device_camera' in rs:
             log.info('Patching hardware settings; assuming left camera label')
             rs['device_cameras'] = {'left': rs.pop('device_camera')}
-        rs['VERSION'] = '1.0.0'
+            rs['VERSION'] = '1.0.0'
+        if 'device_cameras' in rs and rs['device_cameras'] is not None:
+            rs['device_cameras'] = {k: v for k, v in rs['device_cameras'].items() if v}  # remove empty keys
+            idx_missing = set(rs['device_cameras']) == {'left'} and 'INDEX' not in rs['device_cameras']['left']
+            if settings_version < version.Version('1.1.0') and idx_missing:
+                log.info('Patching hardware settings; assuming left camera index and training workflow')
+                workflow = rs['device_cameras']['left'].pop('BONSAI_WORKFLOW', None)
+                bonsai_workflows = {'setup': 'devices/camera_setup/setup_video.bonsai', 'recording': workflow}
+                rs['device_cameras'] = {
+                    'training': {'BONSAI_WORKFLOW': bonsai_workflows, 'left': {'INDEX': 1, 'SYNC_LABEL': 'audio'}}
+                }
+                rs['VERSION'] = '1.1.0'
+        if 'device_cameras' not in rs:
+            rs['device_cameras'] = {}
     return rs
 
 

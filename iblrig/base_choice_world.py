@@ -1,6 +1,4 @@
-"""
-This modules extends the base_tasks modules by providing task logic around the Choice World protocol
-"""
+"""Extends the base_tasks modules by providing task logic around the Choice World protocol."""
 import abc
 import json
 import logging
@@ -477,10 +475,7 @@ class ChoiceWorldSession(
             fp.write(json.dumps(save_dict) + '\n')
         # this is a flag for the online plots. If online plots were in pyqt5, there is a file watcher functionality
         Path(self.paths['DATA_FILE_PATH']).parent.joinpath('new_trial.flag').touch()
-        # If more than 42 trials save transfer_me.flag
-        if self.trial_num == 42:
-            self.paths.SESSION_FOLDER.joinpath('transfer_me.flag').touch()
-            # todo: add number of devices in there
+        self.paths.SESSION_FOLDER.joinpath('transfer_me.flag').touch()
         self.check_sync_pulses(bpod_data=bpod_data)
 
     def check_sync_pulses(self, bpod_data):
@@ -489,11 +484,11 @@ class ChoiceWorldSession(
             return
         events = bpod_data['Events timestamps']
         if not misc.get_port_events(events, name='BNC1'):
-            self.logger.warning("NO FRAME2TTL PULSES RECEIVED ON BPOD'S TTL INPUT 1")
+            log.warning("NO FRAME2TTL PULSES RECEIVED ON BPOD'S TTL INPUT 1")
         if not misc.get_port_events(events, name='BNC2'):
-            self.logger.warning("NO SOUND SYNC PULSES RECEIVED ON BPOD'S TTL INPUT 2")
+            log.warning("NO SOUND SYNC PULSES RECEIVED ON BPOD'S TTL INPUT 2")
         if not misc.get_port_events(events, name='Port1'):
-            self.logger.warning("NO CAMERA SYNC PULSES RECEIVED ON BPOD'S BEHAVIOR PORT 1")
+            log.warning("NO CAMERA SYNC PULSES RECEIVED ON BPOD'S BEHAVIOR PORT 1")
 
     def show_trial_log(self, extra_info=''):
         trial_info = self.trials_table.iloc[self.trial_num]
@@ -572,7 +567,7 @@ class HabituationChoiceWorldSession(ChoiceWorldSession):
                 state_timer=3600,
                 state_change_conditions={'Port1In': 'stim_on'},
                 output_actions=[self.bpod.actions.bonsai_hide_stim, ('SoftCode', SOFTCODE.TRIGGER_CAMERA), ('BNC1', 255)],
-            )  # sart camera
+            )  # start camera
         else:
             sma.add_state(
                 state_name='trial_start',
@@ -771,22 +766,22 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
         super().__init__(**kwargs)
         inferred_training_phase, inferred_adaptive_reward, inferred_adaptive_gain = self.get_subject_training_info()
         if training_phase == -1:
-            self.logger.critical(f'Got training phase: {inferred_training_phase}')
+            log.critical(f'Got training phase: {inferred_training_phase}')
             self.training_phase = inferred_training_phase
         else:
-            self.logger.critical(f'Training phase manually set to: {training_phase}')
+            log.critical(f'Training phase manually set to: {training_phase}')
             self.training_phase = training_phase
         if adaptive_reward == -1:
-            self.logger.critical(f'Got Adaptive reward {inferred_adaptive_reward} uL')
+            log.critical(f'Got Adaptive reward {inferred_adaptive_reward} uL')
             self.session_info['ADAPTIVE_REWARD_AMOUNT_UL'] = inferred_adaptive_reward
         else:
-            self.logger.critical(f'Adaptive reward manually set to {adaptive_reward} uL')
+            log.critical(f'Adaptive reward manually set to {adaptive_reward} uL')
             self.session_info['ADAPTIVE_REWARD_AMOUNT_UL'] = adaptive_reward
         if adaptive_gain is None:
-            self.logger.critical(f'Got Adaptive gain {inferred_adaptive_gain} degrees/mm')
+            log.critical(f'Got Adaptive gain {inferred_adaptive_gain} degrees/mm')
             self.session_info['ADAPTIVE_GAIN_VALUE'] = inferred_adaptive_gain
         else:
-            self.logger.critical(f'Adaptive gain manually set to {adaptive_gain} degrees/mm')
+            log.critical(f'Adaptive gain manually set to {adaptive_gain} degrees/mm')
             self.session_info['ADAPTIVE_GAIN_VALUE'] = adaptive_gain
         self.var = {
             'training_phase_trial_counts': np.zeros(6),
@@ -816,13 +811,13 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
                 task_name=self.protocol_name,
             )
         except Exception:
-            self.logger.critical('Failed to get training information from previous subjects: %s', traceback.format_exc())
+            log.critical('Failed to get training information from previous subjects: %s', traceback.format_exc())
             tinfo = dict(
                 training_phase=iblrig.choiceworld.DEFAULT_TRAINING_PHASE,
                 adaptive_reward=iblrig.choiceworld.DEFAULT_REWARD_VOLUME,
                 adaptive_gain=self.task_params.AG_INIT_VALUE,
             )
-            self.logger.critical(
+            log.critical(
                 f"The mouse will train on level {tinfo['training_phase']}, "
                 f"with reward {tinfo['adaptive_reward']} uL and gain {tinfo['adaptive_gain']}"
             )

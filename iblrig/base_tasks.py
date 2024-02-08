@@ -1,7 +1,8 @@
 """
 This module is intended to provide commonalities for all tasks.
-It provides hardware mixins that can be used together with BaseSession to compose tasks
-This module tries to be exclude task related logic
+
+It provides hardware mixins that can be used together with BaseSession to compose tasks.
+This module tries to exclude task related logic.
 """
 import abc
 import argparse
@@ -32,12 +33,13 @@ from iblrig.constants import BASE_PATH, BONSAI_EXE
 from iblrig.frame2ttl import Frame2TTL
 from iblrig.hardware import SOFTCODE, Bpod, MyRotaryEncoder, sound_device_factory
 from iblrig.path_helper import load_pydantic_yaml
-from iblrig.pydantic_definitions import HardwareSettings, HardwareSettingsCameras, RigSettings
+from iblrig.pydantic_definitions import HardwareSettings, RigSettings
 from iblrig.tools import call_bonsai
-from iblrig.transfer_experiments import BehaviorCopier
+from iblrig.transfer_experiments import BehaviorCopier, VideoCopier
 from iblutil.spacer import Spacer
 from iblutil.util import Bunch, setup_logger
 from one.api import ONE
+from one.alf.io import next_num_folder
 from pybpodapi.protocol import StateMachine
 
 OSC_CLIENT_IP = '127.0.0.1'
@@ -51,6 +53,8 @@ class BaseSession(ABC):
     base_parameters_file: Path | None = None
     is_mock = False
     extractor_tasks = None
+    logger: logging.Logger = None
+    """logging.Logger: Log instance used solely to keep track of log level passed to constructor."""
 
     def __init__(
         self,
@@ -88,7 +92,7 @@ class BaseSession(ABC):
         :param fmake: (DEPRECATED) if True, only create the raw_behavior_data folder.
         """
         assert self.protocol_name is not None, 'Protocol name must be defined by the child class'
-        self.logger = None
+        self._logger = None
         self._setup_loggers(level=log_level)
         if not isinstance(self, EmptySession):
             log.info(f'Running iblrig {iblrig.__version__}, pybpod version {pybpodapi.__version__}')
@@ -198,7 +202,7 @@ class BaseSession(ABC):
         )
         if append:
             # this is the case where we append a new protocol to an existing session
-            todays_sessions = sorted([d for d in date_folder.glob('*') if d.is_dir()], reverse=True)
+            todays_sessions = sorted(filter(Path.is_dir, date_folder.glob('*')), reverse=True)
             assert len(todays_sessions) > 0, f'Trying to chain a protocol, but no session folder found in {date_folder}'
             paths.SESSION_FOLDER = todays_sessions[0]
             paths.TASK_COLLECTION = iblrig.path_helper.iterate_collection(paths.SESSION_FOLDER)
@@ -213,9 +217,8 @@ class BaseSession(ABC):
                 raise RuntimeError('Chained protocols not supported for bpod-only sessions')
         else:
             # in this case the session path is created from scratch
-            numbers_folders = [int(f.name) for f in date_folder.rglob('*') if len(f.name) == 3 and f.name.isdigit()]
-            self.session_info.SESSION_NUMBER = 1 if len(numbers_folders) == 0 else max(numbers_folders) + 1
-            paths.SESSION_FOLDER = date_folder.joinpath(f'{self.session_info.SESSION_NUMBER:03d}')
+            paths.SESSION_FOLDER = date_folder / next_num_folder(date_folder)
+            self.session_info.SESSION_NUMBER = int(paths.SESSION_FOLDER.name)
             paths.TASK_COLLECTION = iblrig.path_helper.iterate_collection(paths.SESSION_FOLDER)
 
         paths.SESSION_RAW_DATA_FOLDER = paths.SESSION_FOLDER.joinpath(paths.TASK_COLLECTION)
@@ -223,10 +226,8 @@ class BaseSession(ABC):
         return paths
 
     def _setup_loggers(self, level='INFO', level_bpod='WARNING', file=None):
-        logger = setup_logger('iblrig', level=level, file=file)
+        self._logger = setup_logger('iblrig', level=level, file=file)  # logger attr used by create_session to determine log level
         setup_logger('pybpodapi', level=level_bpod, file=file)
-        if self.logger is None:
-            self.logger = logger
 
     @staticmethod
     def make_experiment_description_dict(
@@ -237,6 +238,7 @@ class BaseSession(ABC):
         hardware_settings: dict | HardwareSettings = None,
         stub: Path = None,
         extractors: list = None,
+        camera_config: str = None,
     ):
         """
         Construct an experiment description dictionary.
@@ -257,6 +259,9 @@ class BaseSession(ABC):
             An optional experiment description stub to update.
         extractors: list
             An optional list of extractor names for the task.
+        camera_config : str
+            The camera configuration name in the hardware settings. Defaults to the first key in
+            'device_cameras'.
 
         Returns
         -------
@@ -273,9 +278,8 @@ class BaseSession(ABC):
             cams = hardware_settings.get('device_cameras', None)
             if cams:
                 devices['cameras'] = {}
-                for camera in cams:
-                    if hardware_settings['device_cameras'][camera]:
-                        devices['cameras'][camera] = {'collection': 'raw_video_data', 'sync_label': 'audio'}
+                camera_config = camera_config or next((k for k in cams), {})
+                devices.update(VideoCopier.config2stub(cams[camera_config])['devices'])
             if hardware_settings.get('device_microphone', None):
                 devices['microphone'] = {'microphone': {'collection': task_collection, 'sync_label': 'audio'}}
             ses_params.merge_params(description, {'devices': devices})
@@ -395,7 +399,7 @@ class BaseSession(ABC):
         self.save_task_parameters_to_json_file()
         # enable file logging
         logfile = self.paths.SESSION_RAW_DATA_FOLDER.joinpath('_ibl_log.info-acquisition.log')
-        self._setup_loggers(level=self.logger.level, file=logfile)
+        self._setup_loggers(level=self._logger.level, file=logfile)
         # copy the acquisition stub to the remote session folder
         sc = BehaviorCopier(self.paths.SESSION_FOLDER, remote_subjects_folder=self.paths['REMOTE_SUBJECT_FOLDER'])
         sc.initialize_experiment(self.experiment_description, overwrite=False)
@@ -530,6 +534,7 @@ class BonsaiRecordingMixin:
     def init_mixin_bonsai_recordings(self, *args, **kwargs):
         self.bonsai_camera = Bunch({'udp_client': OSCClient(port=7111)})
         self.bonsai_microphone = Bunch({'udp_client': OSCClient(port=7112)})
+        self.config = None  # the name of the configuration to run
 
     def stop_mixin_bonsai_recordings(self):
         log.info('Stopping Bonsai recordings')
@@ -537,53 +542,80 @@ class BonsaiRecordingMixin:
         self.bonsai_microphone.udp_client.exit()
 
     def start_mixin_bonsai_microphone(self):
-        # the camera workflow on the behaviour computer already contains the microphone recording
+        if not self.config:
+            # Use the first key in the device_cameras map
+            self.config = next((k for k in self.hardware_settings.device_cameras), None)
+        # The camera workflow on the behaviour computer already contains the microphone recording
         # so the device camera workflow and the microphone one are exclusive
-        if self._camera_mixin_bonsai_get_workflow_file(self.hardware_settings.device_cameras) is not None:
-            return
+        if self.config:
+            return  # Camera workflow defined; so no need to separately start microphone.
         if not self.task_params.RECORD_SOUND:
-            return
+            return  # Sound should not be recorded
         workflow_file = self.paths.IBLRIG_FOLDER.joinpath(*self.hardware_settings.device_microphone['BONSAI_WORKFLOW'].parts)
         parameters = {
             'FileNameMic': self.paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_micData.raw.wav'),
             'RecordSound': self.task_params.RECORD_SOUND,
         }
-        call_bonsai(workflow_file, parameters, wait=False)
+        call_bonsai(workflow_file, parameters, wait=False, editor=False)
         log.info('Bonsai microphone recording module loaded: OK')
 
     @staticmethod
-    def _camera_mixin_bonsai_get_workflow_file(cameras: HardwareSettingsCameras | dict | None) -> Path | None:
+    def _camera_mixin_bonsai_get_workflow_file(cameras: dict | None, name: str) -> Path | None:
         """
-        Returns the first available bonsai workflow file for the cameras from the hardware_settings.yaml file
-        :param device_cameras_key:
-        :return:
+        Returns the bonsai workflow file for the cameras from the hardware_settings.yaml file.
+
+        Parameters
+        ----------
+        cameras : dict
+            The hardware settings configuration.
+        name : {'setup', 'recording'} str
+            The workflow type.
+
+        Returns
+        -------
+        Path
+            The workflow path.
         """
         if cameras is None:
             return None
-        else:
-            return next((camera.BONSAI_WORKFLOW for camera in cameras.values() if camera is not None), None)
+        return cameras['BONSAI_WORKFLOW'][name]
 
     def start_mixin_bonsai_cameras(self):
         """
         This prepares the cameras by starting the pipeline that aligns the camera focus with the
-        desired borders of rig features, the actual triggering of the  cameras is done in the trigger_bonsai_cameras method.
+        desired borders of rig features, the actual triggering of the cameras is done in the trigger_bonsai_cameras method.
         """
-        if self._camera_mixin_bonsai_get_workflow_file(self.hardware_settings.device_cameras) is None:
+        if not self.config:
+            # Use the first key in the device_cameras map
+            try:
+                self.config = next(k for k in self.hardware_settings.device_cameras)
+            except StopIteration:
+                return
+        configuration = self.hardware_settings.device_cameras[self.config]
+        if (workflow_file := self._camera_mixin_bonsai_get_workflow_file(configuration, 'setup')) is None:
             return
         # TODO: Disable Trigger in Bonsai workflow - PySpin won't help here
         # if PYSPIN_AVAILABLE:
         #     from iblrig.video_pyspin import enable_camera_trigger
         #     enable_camera_trigger(True)
-        workflow_file = self.paths.IBLRIG_FOLDER.joinpath('devices', 'camera_setup', 'setup_video.bonsai')
-        call_bonsai(workflow_file, wait=True)
+        call_bonsai(workflow_file, wait=True)  # TODO Parameterize using configuration cameras
         log.info('Bonsai cameras setup module loaded: OK')
 
     def trigger_bonsai_cameras(self):
-        workflow_file = self._camera_mixin_bonsai_get_workflow_file(self.hardware_settings.device_cameras)
+        if not self.config:
+            # Use the first key in the device_cameras map
+            try:
+                self.config = next(k for k in self.hardware_settings.device_cameras)
+            except StopIteration:
+                return
+        configuration = self.hardware_settings.device_cameras[self.config]
+        if set(configuration.keys()) != {'BONSAI_WORKFLOW', 'left'}:
+            raise NotImplementedError
+        workflow_file = self._camera_mixin_bonsai_get_workflow_file(configuration, 'recording')
         if workflow_file is None:
             return
-        workflow_file = self.paths.IBLRIG_FOLDER.joinpath(workflow_file)
-        iblrig.path_helper.create_bonsai_layout_from_template(workflow_file)
+        iblrig.path_helper.create_bonsai_layout_from_template(workflow_file)  # FIXME What does this do?
+        # FIXME Use parameters in configuration map
         parameters = {
             'FileNameLeft': self.paths.SESSION_FOLDER.joinpath('raw_video_data', '_iblrig_leftCamera.raw.avi'),
             'FileNameLeftData': self.paths.SESSION_FOLDER.joinpath('raw_video_data', '_iblrig_leftCamera.frameData.bin'),
