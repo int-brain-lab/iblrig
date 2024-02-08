@@ -475,10 +475,7 @@ class ChoiceWorldSession(
             fp.write(json.dumps(save_dict) + '\n')
         # this is a flag for the online plots. If online plots were in pyqt5, there is a file watcher functionality
         Path(self.paths['DATA_FILE_PATH']).parent.joinpath('new_trial.flag').touch()
-        # If more than 42 trials save transfer_me.flag
-        if self.trial_num == 42:
-            self.paths.SESSION_FOLDER.joinpath('transfer_me.flag').touch()
-            # todo: add number of devices in there
+        self.paths.SESSION_FOLDER.joinpath('transfer_me.flag').touch()
         self.check_sync_pulses(bpod_data=bpod_data)
 
     def check_sync_pulses(self, bpod_data):
