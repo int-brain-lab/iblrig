@@ -86,7 +86,7 @@ class HardwareSettingsScreen(BunchModel):
 
 
 class HardwareSettingsSound(BunchModel):
-    OUTPUT: Literal['harp', 'xonar', 'sysdefault']
+    OUTPUT: Literal['harp', 'xonar', 'hifi', 'sysdefault']
 
 
 class HardwareSettingsValve(BunchModel):

@@ -863,15 +863,18 @@ class SoundMixin:
         """
         assert self.bpod.is_connected, 'The sound mixin depends on the bpod mixin being connected'
         # SoundCard config params
-        if self.hardware_settings.device_sound['OUTPUT'] == 'harp':
-            sound.configure_sound_card(
-                sounds=[self.sound.GO_TONE, self.sound.WHITE_NOISE],
-                indexes=[self.task_params.GO_TONE_IDX, self.task_params.WHITE_NOISE_IDX],
-                sample_rate=self.sound['samplerate'],
-            )
-            self.bpod.define_harp_sounds_actions(self.task_params.GO_TONE_IDX, self.task_params.WHITE_NOISE_IDX)
-        else:  # xonar or system default
-            self.bpod.define_xonar_sounds_actions()
+        match self.hardware_settings.device_sound['OUTPUT']:
+            case 'harp':
+                sound.configure_sound_card(
+                    sounds=[self.sound.GO_TONE, self.sound.WHITE_NOISE],
+                    indexes=[self.task_params.GO_TONE_IDX, self.task_params.WHITE_NOISE_IDX],
+                    sample_rate=self.sound['samplerate'],
+                )
+                self.bpod.define_harp_sounds_actions(self.task_params.GO_TONE_IDX, self.task_params.WHITE_NOISE_IDX)
+            case 'hifi':
+                pass
+            case _:
+                self.bpod.define_xonar_sounds_actions()
         log.info(f"Sound module loaded: OK: {self.hardware_settings.device_sound['OUTPUT']}")
 
     def sound_play_noise(self, state_timer=0.510, state_name='play_noise'):

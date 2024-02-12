@@ -11,6 +11,7 @@ import threading
 import time
 from enum import IntEnum
 from pathlib import Path
+from typing import Literal
 
 import numpy as np
 import serial
@@ -244,7 +245,7 @@ class MyRotaryEncoder:
         m.close()
 
 
-def sound_device_factory(output='sysdefault', samplerate=None):
+def sound_device_factory(output: Literal['xonar', 'harp', 'hifi', 'sysdefault'] = 'sysdefault', samplerate: int | None = None):
     """
     Will import, configure, and return sounddevice module to play sounds using onboard sound card.
     Parameters
@@ -254,27 +255,31 @@ def sound_device_factory(output='sysdefault', samplerate=None):
     samplerate
         audio sample rate, defaults to 44100
     """
-    if output == 'xonar':
-        samplerate = samplerate or 192000
-        devices = sd.query_devices()
-        sd.default.device = next((i for i, d in enumerate(devices) if 'XONAR SOUND CARD(64)' in d['name']), None)
-        sd.default.latency = 'low'
-        sd.default.channels = 2
-        channels = 'L+TTL'
-        sd.default.samplerate = samplerate
-    elif output == 'harp':
-        samplerate = samplerate or 96000
-        sd.default.samplerate = samplerate
-        sd.default.channels = 2
-        channels = 'stereo'
-    elif output == 'sysdefault':
-        samplerate = samplerate or 44100
-        sd.default.latency = 'low'
-        sd.default.channels = 2
-        sd.default.samplerate = samplerate
-        channels = 'stereo'
-    else:
-        raise ValueError(f'{output} soundcard is neither xonar, harp or sysdefault. Fix your hardware_settings.yam')
+    match output:
+        case 'xonar':
+            samplerate = samplerate if samplerate is not None else 192000
+            devices = sd.query_devices()
+            sd.default.device = next((i for i, d in enumerate(devices) if 'XONAR SOUND CARD(64)' in d['name']), None)
+            sd.default.latency = 'low'
+            sd.default.channels = 2
+            channels = 'L+TTL'
+            sd.default.samplerate = samplerate
+        case 'harp':
+            samplerate = samplerate if samplerate is not None else 96000
+            sd.default.samplerate = samplerate
+            sd.default.channels = 2
+            channels = 'stereo'
+        case 'hifi':
+            samplerate = samplerate if samplerate is not None else 192000
+            channels = 'stereo'
+        case 'sysdefault':
+            samplerate = samplerate if samplerate is not None else 44100
+            sd.default.latency = 'low'
+            sd.default.channels = 2
+            sd.default.samplerate = samplerate
+            channels = 'stereo'
+        case _:
+            raise ValueError()
     return sd, samplerate, channels
 
 
