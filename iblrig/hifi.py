@@ -14,18 +14,18 @@ class _HiFiInfo:
     bit_depth: int
     max_waves: int
     digital_attenuation: int
-    sampling_rate: int
+    sampling_rate_hz: int
     max_seconds_per_waveform: int
     max_envelope_size: int
 
 
 class HiFi(SerialSingleton):
-    def __init__(self, *args, sampling_rate: int = 192000, attenuation_db: int = 0, **kwargs) -> None:
+    def __init__(self, *args, sampling_rate_hz: int = 192000, attenuation_db: int = 0, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.handshake()
 
         self._info = self._get_info()
-        self.sampling_rate = sampling_rate
+        self.sampling_rate_hz = sampling_rate_hz
         self.attenuation_db = attenuation_db
 
         log.debug(f'Connected to BpodHifi {"HD" if self.is_hd else "SD"} on port {self.portstr}.')
@@ -41,16 +41,18 @@ class HiFi(SerialSingleton):
         return _HiFiInfo(*self.query(b'I', '<?BBBIII'))
 
     def _set_info_field(self, field_name: str, format_str: str, op_code: bytes, value: bool | int) -> bool:
+        if getattr(self._info, field_name) == value:
+            return True
         confirmation = self.query(struct.pack(format_str, op_code, value))
         self._info = self._get_info()
         return confirmation and getattr(self._info, field_name) == value
 
     @property
-    def sampling_rate(self) -> int:
-        return self._info.sampling_rate
+    def sampling_rate_hz(self) -> int:
+        return self._info.sampling_rate_hz
 
-    @sampling_rate.setter
-    def sampling_rate(self, sampling_rate: int) -> None:
+    @sampling_rate_hz.setter
+    def sampling_rate_hz(self, sampling_rate: int) -> None:
         if sampling_rate not in [44100, 48e3, 96e3, 192e3]:
             raise ValueError('Valid values are 44100, 48000, 96000 or 192000.')
         if not self._set_info_field('sampling_rate', '<cI', b'S', sampling_rate):
@@ -67,7 +69,7 @@ class HiFi(SerialSingleton):
             raise ValueError('Valid values are in range -120 - 0.')
         if not self._set_info_field('digital_attenuation', '<cB', b'A', round(attenuation_db * -2)):
             raise RuntimeError('Error setting Attenuation')
-        log.debug(f'Attenuation set to {attenuation_db} dB.')
+        log.debug(f'Attenuation set to {self.attenuation_db} dB.')
 
     @property
     def is_hd(self) -> bool:
@@ -81,13 +83,10 @@ class HiFi(SerialSingleton):
         pass
 
     def play(self, index: int):
-        self.write(struct.pack('<cB', b'P', index))
+        self.write([b'P', index], '<cB')
 
     def stop(self, index: int | None = None):
         if index is None:
             self.write('X')
         else:
             self.write(struct.pack('<cB', b'x', index))
-
-
-hf = HiFi('COM9', timeout=0.5, attenuation_db=-6)
