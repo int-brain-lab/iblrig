@@ -1,3 +1,4 @@
+import logging
 import sys
 import time
 from pathlib import Path
@@ -6,6 +7,8 @@ import pandas as pd
 
 import iblrig.misc
 from iblrig.base_choice_world import ChoiceWorldSession
+
+log = logging.getLogger('iblrig.task')
 
 
 class Session(ChoiceWorldSession):
@@ -40,13 +43,15 @@ class Session(ChoiceWorldSession):
         :return:
         """
         self.trigger_bonsai_cameras()
-        self.logger.info('Starting spontaneous activity followed by receptive field mapping')
+        log.info('Starting spontaneous activity followed by receptive field mapping')
         # Run the passive part i.e. spontaneous activity and RFMapping stim
         self.run_passive_visual_stim(sa_time='00:10:00')
         # Then run the replay of task events: V for valve, T for tone, N for noise, G for gratings
-        self.logger.info('Starting replay of task stims')
+        log.info('Starting replay of task stims')
+        if not self.is_mock:
+            self.start_mixin_bonsai_visual_stimulus()
         for self.trial_num, trial in self.trials_table.iterrows():
-            self.logger.info(f'Delay: {trial.stim_delay}; ID: {trial.stim_type}; Count: {self.trial_num}/300')
+            log.info(f'Delay: {trial.stim_delay}; ID: {trial.stim_type}; Count: {self.trial_num}/300')
             sys.stdout.flush()
             time.sleep(trial.stim_delay)
             if trial.stim_type == 'V':
