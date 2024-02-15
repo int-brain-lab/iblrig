@@ -155,6 +155,8 @@ class TestPatchSettings(unittest.TestCase):
         # Test without any device_cameras key (should be optional)
         rs.pop('device_camera')
         self.assertIn('device_cameras', path_helper.patch_settings(rs, 'hardware_settings'))
+        rs['device_cameras'] = None
+        self.assertEqual(path_helper.patch_settings(rs, 'hardware_settings').get('device_cameras'), {})
         HardwareSettings.validate_device_cameras({})
 
 

@@ -270,7 +270,7 @@ def patch_settings(rs: dict, filename: str | Path) -> dict:
                     'training': {'BONSAI_WORKFLOW': bonsai_workflows, 'left': {'INDEX': 1, 'SYNC_LABEL': 'audio'}}
                 }
                 rs['VERSION'] = '1.1.0'
-        if 'device_cameras' not in rs:
+        if rs.get('device_cameras') is None:
             rs['device_cameras'] = {}
     return rs
 
