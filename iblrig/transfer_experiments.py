@@ -412,8 +412,6 @@ class VideoCopier(SessionCopier):
 class BehaviorCopier(SessionCopier):
     tag = 'behavior'
     assert_connect_on_init = False
-    min_required_trials = 42
-    """int: the minimum number of trials required for a session to be copied."""
 
     @property
     def experiment_description(self):
@@ -476,12 +474,6 @@ class BehaviorCopier(SessionCopier):
                 with open(settings_file, 'w') as fid:
                     json.dump(raw_settings, fid)
                 task_settings = raw_data_loaders.load_settings(self.session_path, task_collection=collection)
-            # we check the number of trials accomplished. If the field is not there, we copy the session as is
-            if 'NTRIALS' in task_settings and task_settings['NTRIALS'] < self.min_required_trials:
-                log.info(f'Skipping: not enough trials for {self.session_path}')
-                if self.remote_session_path.exists() and len(collections) == 1:
-                    shutil.rmtree(self.remote_session_path)
-                return False  # remove likely dud
         log.critical(f'{self.state}, {self.session_path}')
         return super()._copy_collections()  # proceed with copy
 
