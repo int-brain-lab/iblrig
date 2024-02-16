@@ -333,7 +333,7 @@ def prepare_video_session(subject_name: str, config_name: str, debug: bool = Fal
     for k in map(str.capitalize, cameras):
         params[f'FileName{k}'] = str(raw_data_folder / filenamevideo.format(k.lower()))
         params[f'FileName{k}Data'] = str(raw_data_folder / filenameframedata.format(k.lower()))
-    video_pyspin.enable_camera_trigger(enable=True)
+    video_pyspin.disable_camera_trigger(enable=True)
     bonsai_process = call_bonsai(workflows.recording, params, wait=False, debug=debug)
     input('PRESS ENTER TO START CAMERAS')
     # Save the stub files locally and in the remote repo for future copy script to use
