@@ -1,6 +1,10 @@
 Changelog
 ---------
 
+8.15.4
+------
+* hotfix: disable prompt for deleting "duds" for appended sessions 
+
 8.15.3
 ------
 * hotfix: don't wait for microphone workflow to finish
