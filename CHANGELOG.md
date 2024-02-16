@@ -1,6 +1,10 @@
 Changelog
 ---------
 
+8.15.5
+------
+* hotfix: backup duds to tmp folder before deleting from GUI
+
 8.15.4
 ------
 * hotfix: disable prompt for deleting "duds" for appended sessions 
