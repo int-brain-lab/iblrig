@@ -333,14 +333,14 @@ def prepare_video_session(subject_name: str, config_name: str, debug: bool = Fal
     for k in map(str.capitalize, cameras):
         params[f'FileName{k}'] = str(raw_data_folder / filenamevideo.format(k.lower()))
         params[f'FileName{k}Data'] = str(raw_data_folder / filenameframedata.format(k.lower()))
-    video_pyspin.disable_camera_trigger(enable=True)
+    video_pyspin.enable_camera_trigger(enable=False)
     bonsai_process = call_bonsai(workflows.recording, params, wait=False, debug=debug)
     input('PRESS ENTER TO START CAMERAS')
     # Save the stub files locally and in the remote repo for future copy script to use
     copier = VideoCopier(session_path=session_path, remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER)
     copier.initialize_experiment(acquisition_description=copier.config2stub(config, raw_data_folder.name))
 
-    video_pyspin.enable_camera_trigger(enable=False)
+    video_pyspin.enable_camera_trigger(enable=True)
     log.info('To terminate video acquisition, please stop and close Bonsai workflow.')
     bonsai_process.wait()
     log.info('Video acquisition session finished.')
