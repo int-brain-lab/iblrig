@@ -30,6 +30,7 @@ class Session(ChoiceWorldSession):
             self.start_mixin_sound()
             self.start_mixin_bonsai_cameras()
             self.start_mixin_bonsai_microphone()
+            self.start_mixin_rotary_encoder()
 
     def get_state_machine_trial(self, *args, **kwargs):
         pass
@@ -48,7 +49,13 @@ class Session(ChoiceWorldSession):
         self.run_passive_visual_stim(sa_time='00:10:00')
         # Then run the replay of task events: V for valve, T for tone, N for noise, G for gratings
         log.info('Starting replay of task stims')
+
+        # extract rotary encoder port number and message for showing garbor stimulus
+        re_port_str, show_stim_value = self.bpod.actions.bonsai_show_stim
+        re_port = int(re_port_str[-1])
+
         if not self.is_mock:
+            self.task_params.BONSAI_EDITOR = True
             self.start_mixin_bonsai_visual_stimulus()
         for self.trial_num, trial in self.trials_table.iterrows():
             log.info(f'Delay: {trial.stim_delay}; ID: {trial.stim_type}; Count: {self.trial_num}/300')
@@ -62,10 +69,12 @@ class Session(ChoiceWorldSession):
                 self.sound_play_noise(state_timer=0.510)
             elif trial.stim_type == 'G':
                 # this will send the current trial info to the visual stim
+                # we need to make sure Bonsai is in a state to display stimuli
                 self.send_trial_info_to_bonsai()
-                self.bonsai_visual_udp_client.send_message('/re', 2)  # show_stim 2
+                self.bpod.manual_override(2, 'Serial', channel_number=re_port, value=show_stim_value)
+                self.bonsai_visual_udp_client.send_message(r'/re', 2)  # show_stim 2
                 time.sleep(0.3)
-                self.bonsai_visual_udp_client.send_message('/re', 1)  # stop_stim 1
+                self.bonsai_visual_udp_client.send_message(r'/re', 1)  # stop_stim 1
             if self.paths.SESSION_FOLDER.joinpath('.stop').exists():
                 self.paths.SESSION_FOLDER.joinpath('.stop').unlink()
                 break
