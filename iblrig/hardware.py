@@ -110,7 +110,7 @@ class Bpod(BpodIO):
         Parameters
         ----------
         module : BpodModule | int
-            The targeted module, defined as a BpodModule instance or the port index
+            The targeted module, defined as a BpodModule instance or the module's port index
         message : list[int]
             The message to be sent - a list of up to three 8-bit integers
 
