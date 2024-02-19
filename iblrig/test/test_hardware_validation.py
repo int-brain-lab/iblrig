@@ -1,6 +1,6 @@
+import copy
 import unittest
 from unittest import mock
-import copy
 
 import requests
 

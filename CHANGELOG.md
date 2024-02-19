@@ -1,13 +1,17 @@
 Changelog
 ---------
 
-8.15.5
+8.15.6
 ------
 * hotfix: backup duds to tmp folder before deleting from GUI
 
+8.15.5
+------
+* hotfix: show Garbor patch in passive choice-world, GUI option for session ID, no dud detection
+
 8.15.4
 ------
-* hotfix: disable prompt for deleting "duds" for appended sessions 
+* hotfix: disable prompt for deleting "duds" for appended sessions
 
 8.15.3
 ------
