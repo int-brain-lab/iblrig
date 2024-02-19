@@ -783,6 +783,8 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
 
                 case 'session_template_id':
                     label = 'Session Template ID'
+                    widget.setMinimum(0)
+                    widget.setMaximum(11)
 
                 case 'delay_secs':
                     label = 'Initial Delay, s'
@@ -1024,8 +1026,11 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 session_data = json.load(fid)
 
             # check if session was a dud
-            if ((ntrials := session_data['NTRIALS']) < 42 and 'spontaneous' not in self.model.task_name and
-                    not self.uiCheckAppend.isChecked()):
+            if (
+                (ntrials := session_data['NTRIALS']) < 42
+                and not any([x in self.model.task_name for x in ('spontaneous', 'passive')])
+                and not self.uiCheckAppend.isChecked()
+            ):
                 answer = QtWidgets.QMessageBox.question(
                     self,
                     'Is this a dud?',
