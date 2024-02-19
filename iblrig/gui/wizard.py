@@ -1017,20 +1017,21 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 session_data = json.load(fid)
 
             # check if session was a dud
-            if (
-                (ntrials := session_data['NTRIALS']) < 42
-                and not any([x in self.model.task_name for x in ('spontaneous', 'passive')])
-                and not self.uiCheckAppend.isChecked()
+            if (ntrials := session_data['NTRIALS']) < 42 and not any(
+                [x in self.model.task_name for x in ('spontaneous', 'passive')]
             ):
                 answer = QtWidgets.QMessageBox.question(
                     self,
                     'Is this a dud?',
                     f"The session consisted of only {ntrials:d} trial"
                     f"{'s' if ntrials > 1 else ''} and appears to be a dud.\n\n"
-                    f"Should it be deleted?",
+                    f"Should it be deleted?\n\nNote:A Backup will be created in a temporary folder",
                 )
                 if answer == QtWidgets.QMessageBox.Yes:
-                    shutil.rmtree(self.model.session_folder)
+                    if backup_session(self.model.raw_data_folder):
+                        print(f'Backup was successful, removing directory {session_path}...')
+                        shutil.rmtree(self.model.raw_data_folder)
+                    shutil.rmtree(self.model.raw_data_folder)
                     return
 
             # manage poop count
