@@ -104,10 +104,26 @@ class Bpod(BpodIO):
         if mod:
             return mod[0]
 
-    def _define_message(self, module: BpodModule | int, message):
-        """
-        This loads a message in the bpod interface and can then be defined as an output
-        state in the state machine
+    def _define_message(self, module: BpodModule | int, message: list[int]) -> int:
+        """Define a serial message to be sent to a Bpod module as an output action within a state
+
+        Parameters
+        ----------
+        module : BpodModule | int
+            The targeted module, defined as a BpodModule instance or the port index
+        message : list[int]
+            The message to be sent - a list of up to three 8-bit integers
+
+        Returns
+        -------
+        int
+            The index of the serial message (0-254)
+
+        Raises
+        ------
+        TypeError
+            If module is not an instance of BpodModule or int
+
         example
         >>> id_msg_bonsai_show_stim = self._define_message(self.rotary_encoder,[ord("#"), 2])
         will then be used as such in StateMachine:
@@ -121,7 +137,7 @@ class Bpod(BpodIO):
             module = module.serial_port
         else:
             raise TypeError
-        message_id = len(self.serial_messages) + 1
+        message_id = len(self.serial_messages)
         self.load_serial_message(module, message_id, message)
         self.serial_messages.update({message_id: {'target_module': module, 'message': message}})
         return message_id
