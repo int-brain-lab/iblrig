@@ -137,7 +137,7 @@ class Bpod(BpodIO):
             module = module.serial_port
         else:
             raise TypeError
-        message_id = len(self.serial_messages)
+        message_id = len(self.serial_messages) + 1
         self.load_serial_message(module, message_id, message)
         self.serial_messages.update({message_id: {'target_module': module, 'message': message}})
         return message_id
