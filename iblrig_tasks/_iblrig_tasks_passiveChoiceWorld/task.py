@@ -15,12 +15,26 @@ class Session(ChoiceWorldSession):
     protocol_name = '_iblrig_tasks_passiveChoiceWorld'
     extractor_tasks = ['PassiveRegisterRaw', 'PassiveTask']
 
-    def __init__(self, **kwargs):
+    def __init__(self, *args, session_template_id=0, **kwargs):
         super(ChoiceWorldSession, self).__init__(**kwargs)
         SESSION_IDX = 0
         all_trials = pd.read_parquet(Path(__file__).parent.joinpath('passiveChoiceWorld_trials_fixtures.pqt'))
         self.trials_table = all_trials[all_trials['session_id'] == SESSION_IDX].copy()
         self.trials_table['reward_valve_time'] = self.compute_reward_time(amount_ul=self.trials_table['reward_amount'])
+
+    @staticmethod
+    def extra_parser():
+        """:return: argparse.parser()"""
+        parser = super(Session, Session).extra_parser()
+        parser.add_argument(
+            '--session_template_id',
+            option_strings=['--session_template_id'],
+            dest='session_template_id',
+            default=0,
+            type=int,
+            help='pre-generated session index (zero-based)',
+        )
+        return parser
 
     def start_hardware(self):
         if not self.is_mock:
