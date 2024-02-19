@@ -69,7 +69,6 @@ class Session(ChoiceWorldSession):
         re_port = int(re_port_str[-1])
 
         if not self.is_mock:
-            self.task_params.BONSAI_EDITOR = True
             self.start_mixin_bonsai_visual_stimulus()
         for self.trial_num, trial in self.trials_table.iterrows():
             log.info(f'Delay: {trial.stim_delay}; ID: {trial.stim_type}; Count: {self.trial_num}/300')
