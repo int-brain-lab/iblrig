@@ -124,12 +124,11 @@ class Bpod(BpodIO):
         TypeError
             If module is not an instance of BpodModule or int
 
-        example
-        >>> id_msg_bonsai_show_stim = self._define_message(self.rotary_encoder,[ord("#"), 2])
+        Examples
+        --------
+        >>> id_msg_bonsai_show_stim = self._define_message(self.rotary_encoder, [ord("#"), 2])
         will then be used as such in StateMachine:
         >>> output_actions=[("Serial1", id_msg_bonsai_show_stim)]
-        :param message:
-        :return:
         """
         if isinstance(module, int):
             pass
