@@ -22,6 +22,7 @@ from iblutil.util import Bunch
 from pybpod_rotaryencoder_module.module import RotaryEncoder
 from pybpod_rotaryencoder_module.module_api import RotaryEncoderModule
 from pybpodapi.bpod.bpod_io import BpodIO
+from pybpodapi.bpod_modules.bpod_module import BpodModule
 
 SOFTCODE = IntEnum('SOFTCODE', ['STOP_SOUND', 'PLAY_TONE', 'PLAY_NOISE', 'TRIGGER_CAMERA'])
 
@@ -66,7 +67,7 @@ class Bpod(BpodIO):
                     'This is usually indicated by the device with a green light. '
                     'Please unplug the Bpod USB cable from the computer and plug it back in to start the task. '
                 ) from e
-        self.default_message_idx = 0
+        self.serial_messages = {}
         self.actions = Bunch({})
         self.can_control_led = self.set_status_led(True)
         self._is_initialized = True
@@ -103,7 +104,7 @@ class Bpod(BpodIO):
         if mod:
             return mod[0]
 
-    def _define_message(self, module, message):
+    def _define_message(self, module: BpodModule | int, message):
         """
         This loads a message in the bpod interface and can then be defined as an output
         state in the state machine
@@ -114,11 +115,16 @@ class Bpod(BpodIO):
         :param message:
         :return:
         """
-        if module is None:
-            return
-        self.load_serial_message(module, self.default_message_idx + 1, message)
-        self.default_message_idx += 1
-        return self.default_message_idx
+        if isinstance(module, int):
+            pass
+        elif isinstance(module, BpodModule):
+            module = module.serial_port
+        else:
+            raise TypeError
+        message_id = len(self.serial_messages) + 1
+        self.load_serial_message(module, message_id, message)
+        self.serial_messages.update({message_id: {'target_module': module, 'message': message}})
+        return message_id
 
     def define_xonar_sounds_actions(self):
         self.actions.update(
