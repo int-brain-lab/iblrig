@@ -117,7 +117,7 @@ class Bpod(BpodIO):
         Returns
         -------
         int
-            The index of the serial message (0-254)
+            The index of the serial message (1-255)
 
         Raises
         ------
