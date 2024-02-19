@@ -488,7 +488,7 @@ class EphysCopier(SessionCopier):
     tag = 'ephys'
     assert_connect_on_init = True
 
-    def initialize_experiment(self, acquisition_description=None, nprobes=None, **kwargs):
+    def initialize_experiment(self, acquisition_description=None, nprobes=None, main_sync=True, **kwargs):
         if not acquisition_description:
             acquisition_description = {'devices': {'neuropixel': {}}}
             neuropixel = acquisition_description['devices']['neuropixel']
@@ -499,7 +499,8 @@ class EphysCopier(SessionCopier):
                 neuropixel[name] = {'collection': f'raw_ephys_data/{name}', 'sync_label': 'imec_sync'}
             sync_file = Path(iblrig.__file__).parent.joinpath('device_descriptions', 'sync', 'nidq.yaml')
             acquisition_description = acquisition_description if neuropixel else {}
-            acquisition_description.update(session_params.read_params(sync_file))
+            if main_sync:
+                acquisition_description.update(session_params.read_params(sync_file))
 
         self._experiment_description = acquisition_description
         super().initialize_experiment(acquisition_description=acquisition_description, **kwargs)
