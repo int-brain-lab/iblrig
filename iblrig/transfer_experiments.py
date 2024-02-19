@@ -490,16 +490,17 @@ class EphysCopier(SessionCopier):
 
     def initialize_experiment(self, acquisition_description=None, nprobes=None, **kwargs):
         if not acquisition_description:
-            nprobes = nprobes or len(list(self.session_path.joinpath('raw_ephys_data').rglob('*.ap.bin')))
-            match nprobes:
-                case 1:
-                    stub_name = 'single_probe.yaml'
-                case 2:
-                    stub_name = 'dual_probe.yaml'
-            stub_file = Path(iblrig.__file__).parent.joinpath('device_descriptions', 'neuropixel', stub_name)
+            acquisition_description = {'devices': {'neuropixel': {}}}
+            neuropixel = acquisition_description['devices']['neuropixel']
+            if nprobes is None:
+                nprobes = len(list(self.session_path.glob('**/*.ap.bin')))
+            for n in range(nprobes):
+                name = f'probe{n:02}'
+                neuropixel[name] = {'collection': f'raw_ephys_data/{name}', 'sync_label': 'imec_sync'}
             sync_file = Path(iblrig.__file__).parent.joinpath('device_descriptions', 'sync', 'nidq.yaml')
-            acquisition_description = session_params.read_params(stub_file)
+            acquisition_description = acquisition_description if neuropixel else {}
             acquisition_description.update(session_params.read_params(sync_file))
+
         self._experiment_description = acquisition_description
         super().initialize_experiment(acquisition_description=acquisition_description, **kwargs)
 

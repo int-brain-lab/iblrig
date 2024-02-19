@@ -168,8 +168,8 @@ def _get_copiers(
     """
     # get local/remote subjects folder
     rig_paths = get_local_and_remote_paths(local_path=local_folder, remote_path=remote_folder, lab=lab)
-    local_subjects_folder = rig_paths.local_subjects_folder
-    remote_subjects_folder = rig_paths.remote_subjects_folder
+    local_subjects_folder = local_folder or rig_paths.local_subjects_folder
+    remote_subjects_folder = remote_folder or rig_paths.remote_subjects_folder
     assert isinstance(local_subjects_folder, Path)
     if remote_subjects_folder is None:
         raise Exception('Remote Path is not defined.')
@@ -273,7 +273,7 @@ def transfer_data(
     Copier = tag2copier.get(tag.lower(), SessionCopier)
     logger.info('Searching for %s sessions using %s class', tag.lower(), Copier.__name__)
     expected_devices = kwargs.pop('number_of_expected_devices', None)
-    copiers = _get_copiers(Copier, local_path, remote_path, interactive=interactive, tag=tag, **kwargs)
+    copiers = _get_copiers(Copier, local_subject_folder, remote_subject_folder, interactive=interactive, tag=tag, **kwargs)
 
     for copier in copiers:
         logger.critical(f'{copier.state}, {copier.session_path}')

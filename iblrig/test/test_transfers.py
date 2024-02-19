@@ -10,6 +10,7 @@ from iblutil.util import Bunch
 import iblrig.commands
 import iblrig.raw_data_loaders
 from ibllib.io import session_params
+from ibllib.tests.fixtures.utils import populate_raw_spikeglx
 from iblrig.test.base import TASK_KWARGS
 from iblrig.transfer_experiments import BehaviorCopier, EphysCopier, VideoCopier
 from iblrig_tasks._iblrig_tasks_trainingChoiceWorld.task import Session
@@ -215,18 +216,12 @@ class TestUnitTransferExperiments(unittest.TestCase):
         folder_session_ephys = self.tmpdir.joinpath('ephys', 'Subjects', *session.paths.SESSION_FOLDER.parts[-3:])
 
         # Create an ephys acquisition
-        for i in range(2):
-            pname = f'_spikeglx_ephysData_g0_t0.imec{str(i)}'
-            folder_probe = folder_session_ephys.joinpath('raw_ephys_data', '_spikeglx_ephysData_g0', pname)
-            folder_probe.mkdir(parents=True)
-            for suffix in ['.ap.meta', '.lf.meta', '.ap.bin', '.lf.bin']:
-                folder_probe.joinpath(f'{pname}{suffix}').touch()
-        folder_session_ephys.joinpath(
-            'raw_ephys_data', '_spikeglx_ephysData_g0', '_spikeglx_ephysData_g0_t0.imec0.nidq.bin'
-        ).touch()
-        folder_session_ephys.joinpath(
-            'raw_ephys_data', '_spikeglx_ephysData_g0', '_spikeglx_ephysData_g0_t0.imec0.nidq.meta'
-        ).touch()
+        n_probes = 2
+        # prepare_ephys_session.py creates these empty folders
+        folder_session_ephys.joinpath('raw_ephys_data').mkdir(parents=True)
+        [folder_session_ephys.joinpath(f'probe{n:02}').mkdir() for n in range(n_probes)]
+        # SpikeGLX then saves these files into the session folder
+        populate_raw_spikeglx(folder_session_ephys, model='3B', n_probes=n_probes)
 
         # Create a video acquisition
         folder_session_video.joinpath('raw_video_data').mkdir(parents=True)
