@@ -2,6 +2,7 @@ import random
 import shutil
 import tempfile
 import unittest
+import logging
 from pathlib import Path
 from unittest import mock
 
@@ -35,6 +36,12 @@ def _create_behavior_session(temp_dir, ntrials=None, hard_crash=False, **kwargs)
     iblrig_settings['iblrig_local_data_path'].mkdir()
     session = Session(iblrig_settings=iblrig_settings, **task_kwargs)
     session.create_session()
+    # This opens a log file in the session path for writing to. We immediately close it so it doesn't
+    # interfere with the copy routine.
+    for name in ('iblrig', 'pybpodapi'):
+        h = next(h for h in logging.getLogger(name).handlers if h.name == f'{name}_file')
+        h.close()
+        logging.getLogger(name).removeHandler(h)
     session.paths.SESSION_FOLDER.joinpath('raw_video_data').mkdir(parents=True)
     session.paths.SESSION_FOLDER.joinpath('raw_video_data', 'tutu.avi').touch()
     if ntrials is not None:
