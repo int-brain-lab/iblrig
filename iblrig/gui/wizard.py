@@ -774,6 +774,8 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
 
                 case 'session_template_id':
                     label = 'Session Template ID'
+                    widget.setMinimum(0)
+                    widget.setMaximum(11)
 
                 case 'delay_secs':
                     label = 'Initial Delay, s'
