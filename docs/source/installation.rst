@@ -213,26 +213,47 @@ Updating iblrigv8
 
 To update iblrigv8 to the newest version:
 
-   .. code-block:: powershell
+.. code-block:: powershell
 
-      C:\iblrigv8\venv\scripts\Activate.ps1
-      upgrade_iblrig
+  C:\iblrigv8\venv\scripts\Activate.ps1
+  upgrade_iblrig
 
 
 If you're on an older version of iblrigv8, the command above may not be available yet.
 You can then run the following instead:
 
-   .. code-block:: powershell
+.. code-block:: powershell
 
-      C:\iblrigv8\venv\scripts\Activate.ps1
-      cd C:\iblrigv8
-      git pull
-      pip install --upgrade -e .
+  C:\iblrigv8\venv\scripts\Activate.ps1
+  cd C:\iblrigv8
+  git pull
+  pip install --upgrade -e .
 
 
 To update the additional tasks and extractors (see :ref:`Installing iblrigv8`, point 5):
 
-   .. code-block:: powershell
+.. code-block:: powershell
 
-      cd C:\project_extraction
-      git pull
+  cd C:\project_extraction
+  git pull
+
+
+Switch to specific iblrig version
+---------------------------------
+First fetch all available version tags and list them:
+
+.. code-block:: powershell
+
+  C:\iblrigv8\venv\scripts\Activate.ps1
+  cd C:\iblrigv8
+  git fetch --all --tags --prune
+  git tag --list '8.*'
+
+Then switch to the desired version, for example `8.15.5`:
+
+.. code-block:: powershell
+
+  git checkout tag/8.15.5
+  pip install --upgrade -e .
+
+
