@@ -10,6 +10,7 @@ from pybpodapi.protocol import StateMachine
 REWARD_AMOUNTS_UL = (1, 3)
 log = logging.getLogger(__name__)
 
+
 class Session(BiasedChoiceWorldSession):
     protocol_name = '_iblrig_tasks_neuromodulatorChoiceWorld'
     extractor_tasks = ['TrialRegisterRaw', 'ChoiceWorldNeuromodulators', 'TrainingStatus']

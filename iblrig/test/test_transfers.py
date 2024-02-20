@@ -1,21 +1,20 @@
+import logging
 import random
 import shutil
 import tempfile
 import unittest
-import logging
 from pathlib import Path
 from unittest import mock
-
-from iblutil.util import Bunch
 
 import iblrig.commands
 import iblrig.raw_data_loaders
 from ibllib.io import session_params
 from ibllib.tests.fixtures.utils import populate_raw_spikeglx
+from iblrig.path_helper import HardwareSettings, load_pydantic_yaml
 from iblrig.test.base import TASK_KWARGS
 from iblrig.transfer_experiments import BehaviorCopier, EphysCopier, VideoCopier
 from iblrig_tasks._iblrig_tasks_trainingChoiceWorld.task import Session
-from iblrig.path_helper import load_pydantic_yaml, HardwareSettings
+from iblutil.util import Bunch
 
 
 def _create_behavior_session(temp_dir, ntrials=None, hard_crash=False, **kwargs):

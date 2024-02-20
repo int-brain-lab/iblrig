@@ -1,10 +1,11 @@
 import argparse
-from pathlib import Path
 import json
 import re
 import warnings
+from pathlib import Path
 
 import yaml
+
 import one.params
 
 UPDATE_FIELDS = {
@@ -49,11 +50,11 @@ def main(v7_path=None, v8_path=None):
     v8_path = v8_path / 'iblrig_settings_template.yaml'
     v8_path_hw = v8_path.with_name('hardware_settings_template.yaml')
 
-    with open(v7_path, 'r') as fp:
+    with open(v7_path) as fp:
         v7_settings = json.load(fp)
-    with open(v8_path_hw, 'r') as fp:
+    with open(v8_path_hw) as fp:
         v8_hw_settings = yaml.safe_load(fp)
-    with open(v8_path, 'r') as fp:
+    with open(v8_path) as fp:
         v8_settings = yaml.safe_load(fp)
 
     # Hardware settings

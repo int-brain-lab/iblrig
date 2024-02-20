@@ -15,7 +15,7 @@ class Session(BiasedChoiceWorldSession):
     extractor_tasks = ['TrialRegisterRaw', 'ChoiceWorldTrials', 'TrainingStatus']
 
     def __init__(self, *args, session_template_id=0, **kwargs):
-        super(Session, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.task_params.SESSION_TEMPLATE_ID = session_template_id
         trials_table = pd.read_parquet(Path(__file__).parent.joinpath('trials_fixtures.pqt'))
         self.trials_table = (

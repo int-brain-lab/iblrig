@@ -1,10 +1,10 @@
 import argparse
 import datetime
+import logging
 import shutil
+import warnings
 from collections.abc import Iterable
 from pathlib import Path
-import warnings
-import logging
 
 import yaml
 
@@ -12,7 +12,7 @@ import iblrig
 from iblrig.hardware import Bpod
 from iblrig.online_plots import OnlinePlots
 from iblrig.path_helper import get_local_and_remote_paths
-from iblrig.transfer_experiments import BehaviorCopier, EphysCopier, VideoCopier, SessionCopier
+from iblrig.transfer_experiments import BehaviorCopier, EphysCopier, SessionCopier, VideoCopier
 from iblutil.util import setup_logger
 
 logger = logging.getLogger(__name__)
@@ -270,10 +270,10 @@ def transfer_data(
     kwargs['glob_pattern'] = _build_glob_pattern(**kwargs)
     kwargs = {k: v for k, v in kwargs.items() if k not in ('subject', 'date', 'number', 'flag_file')}
     local_subject_folder, remote_subject_folder = _get_subjects_folders(local_path, remote_path)
-    Copier = tag2copier.get(tag.lower(), SessionCopier)
-    logger.info('Searching for %s sessions using %s class', tag.lower(), Copier.__name__)
+    copier = tag2copier.get(tag.lower(), SessionCopier)
+    logger.info('Searching for %s sessions using %s class', tag.lower(), copier.__name__)
     expected_devices = kwargs.pop('number_of_expected_devices', None)
-    copiers = _get_copiers(Copier, local_subject_folder, remote_subject_folder, interactive=interactive, tag=tag, **kwargs)
+    copiers = _get_copiers(copier, local_subject_folder, remote_subject_folder, interactive=interactive, tag=tag, **kwargs)
 
     for copier in copiers:
         logger.critical(f'{copier.state}, {copier.session_path}')

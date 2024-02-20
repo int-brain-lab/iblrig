@@ -1,24 +1,22 @@
+import datetime
+import json
 import logging
 import os
 import shutil
+import socket
 import traceback
+import uuid
 from os.path import samestat
 from pathlib import Path
-import socket
-import uuid
-import json
-import datetime
 
 import ibllib.pipes.misc
-from ibllib.io import raw_data_loaders
-from ibllib.io import session_params
-from ibllib.pipes.misc import sleepless
-from iblutil.io import hashfile
-import one.alf.files as alfiles
-from one.util import ensure_list
-
 import iblrig
+import one.alf.files as alfiles
+from ibllib.io import raw_data_loaders, session_params
+from ibllib.pipes.misc import sleepless
 from iblrig.raw_data_loaders import load_task_jsonable
+from iblutil.io import hashfile
+from one.util import ensure_list
 
 log = logging.getLogger(__name__)
 

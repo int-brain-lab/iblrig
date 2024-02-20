@@ -9,19 +9,21 @@ from pathlib import Path
 from urllib.error import URLError
 
 import yaml
-from iblutil.io import params
-from iblutil.io import hashfile  # type: ignore
-from iblutil.util import setup_logger
-from one.webclient import AlyxClient, http_download_file  # type: ignore
-from ibllib.pipes.misc import load_params_dict
-from ibllib.io.video import get_video_meta, label_from_path
-from ibllib.io.raw_data_loaders import load_embedded_frame_data
 
+from ibllib.io.raw_data_loaders import load_embedded_frame_data
+from ibllib.io.video import get_video_meta, label_from_path
+from ibllib.pipes.misc import load_params_dict
 from iblrig.base_tasks import EmptySession
-from iblrig.constants import HAS_PYSPIN, HAS_SPINNAKER, HARDWARE_SETTINGS_YAML, RIG_SETTINGS_YAML
+from iblrig.constants import HARDWARE_SETTINGS_YAML, HAS_PYSPIN, HAS_SPINNAKER, RIG_SETTINGS_YAML
+from iblrig.path_helper import patch_settings
 from iblrig.tools import ask_user, call_bonsai
 from iblrig.transfer_experiments import VideoCopier
-from iblrig.path_helper import patch_settings
+from iblutil.io import (
+    hashfile,  # type: ignore
+    params,
+)
+from iblutil.util import setup_logger
+from one.webclient import AlyxClient, http_download_file  # type: ignore
 
 with contextlib.suppress(ImportError):
     from iblrig import video_pyspin
@@ -164,7 +166,7 @@ def patch_old_params(remove_old=False, update_paths=True):
 
     # Update hardware settings
     if HARDWARE_SETTINGS_YAML.exists():
-        with open(HARDWARE_SETTINGS_YAML, 'r') as fp:
+        with open(HARDWARE_SETTINGS_YAML) as fp:
             hardware_settings = patch_settings(yaml.safe_load(fp), HARDWARE_SETTINGS_YAML)
     else:
         hardware_settings = {}
@@ -182,7 +184,7 @@ def patch_old_params(remove_old=False, update_paths=True):
     # Update other settings
     if update_paths:
         if RIG_SETTINGS_YAML.exists():
-            with open(RIG_SETTINGS_YAML, 'r') as fp:
+            with open(RIG_SETTINGS_YAML) as fp:
                 rig_settings = yaml.safe_load(fp)
         else:
             rig_settings = {}
@@ -250,13 +252,13 @@ def validate_video(video_path, config):
         ok = meta.length > 0 and duration > 0.0
         log.log(20 if meta.length > 0 else 40, 'N frames = %i', meta.length)
         log.log(20 if duration > 0 else 40, 'Duration = %.2f', duration)
-        if config.HEIGHT and config.HEIGHT != meta.height:
+        if config.HEIGHT and meta.height != config.HEIGHT:
             ok = False
             log.warning('Frame height = %i; expected %i', config.HEIGHT, meta.height)
-        if config.WIDTH and config.WIDTH != meta.width:
+        if config.WIDTH and meta.width != config.WIDTH:
             log.warning('Frame width = %i; expected %i', config.WIDTH, meta.width)
             ok = False
-        if config.FPS and config.FPS != meta.fps:
+        if config.FPS and meta.fps != config.FPS:
             log.warning('Frame rate = %i; expected %i', config.FPS, meta.fps)
             ok = False
     except AssertionError:

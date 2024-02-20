@@ -1,20 +1,19 @@
 from collections import abc
 from datetime import date
 from pathlib import Path
-from typing import Literal, Optional, Dict
-from typing_extensions import Annotated
+from typing import Annotated, Literal
 
 from pydantic import (
     AnyUrl,
     BaseModel,
     ConfigDict,
+    DirectoryPath,
     Field,
-    field_serializer,
-    field_validator,
+    FilePath,
     PlainSerializer,
     PositiveFloat,
-    FilePath,
-    DirectoryPath,
+    field_serializer,
+    field_validator,
 )
 
 from iblrig.constants import BASE_PATH
@@ -128,28 +127,28 @@ class HardwareSettingsValve(BunchModel):
 
 class HardwareSettingsCamera(BunchModel):
     INDEX: int
-    FPS: Optional[int] = Field(
+    FPS: int | None = Field(
         title='Camera frame rate',
         omit_default=True,
         default=None,
         description='An optional frame rate (for camera QC only)',
         ge=0,
     )
-    WIDTH: Optional[int] = Field(
+    WIDTH: int | None = Field(
         title='Camera frame width',
         omit_default=True,
         default=None,
         description='An optional frame width (for camera QC only)',
         ge=0,
     )
-    HEIGHT: Optional[int] = Field(
+    HEIGHT: int | None = Field(
         title='Camera frame height',
         omit_default=True,
         default=None,
         description='An optional frame hight (for camera QC only)',
         ge=0,
     )
-    SYNC_LABEL: Optional[str] = Field(
+    SYNC_LABEL: str | None = Field(
         title='Camera DAQ sync label',
         omit_default=True,
         default=None,
@@ -158,7 +157,7 @@ class HardwareSettingsCamera(BunchModel):
 
 
 class HardwareSettingsCameraWorkflow(BunchModel):
-    setup: Optional[FilePath] = Field(
+    setup: FilePath | None = Field(
         title='Optional camera setup workflow',
         omit_default=True,
         default=None,
@@ -193,6 +192,6 @@ class HardwareSettings(BunchModel):
     device_screen: HardwareSettingsScreen
     device_sound: HardwareSettingsSound
     device_valve: HardwareSettingsValve
-    device_cameras: Optional[Dict[str, Dict[str, HardwareSettingsCameraWorkflow | HardwareSettingsCamera]]]
+    device_cameras: dict[str, dict[str, HardwareSettingsCameraWorkflow | HardwareSettingsCamera]] | None
     device_microphone: HardwareSettingsMicrophone | None = None
     VERSION: str

@@ -1,17 +1,16 @@
-import unittest
-import json
-import yaml
-import tempfile
-from pathlib import Path
-import shutil
 import datetime
+import json
+import shutil
+import tempfile
+import unittest
+from pathlib import Path
 
 import numpy as np
+import yaml
 from scipy import stats
 
 from iblrig import misc
 from iblrig.misc import online_std
-
 from settings.port_settings import main  # FIXME This is not a module
 
 
@@ -62,7 +61,7 @@ class TestPortSettings(unittest.TestCase):
         for template in Path(misc.__file__).parent.parent.glob('settings/*_template.yaml'):
             shutil.copy(template, self.v8 / template.name)
         settings_fixture = Path(misc.__file__).parent.joinpath('test', 'fixtures', 'iblrig_params.json')
-        with open(settings_fixture, 'r') as fp:
+        with open(settings_fixture) as fp:
             self.v7_settings = json.load(fp)
         with open(self.v7 / '.iblrig_params.json', 'w') as fp:
             json.dump(self.v7_settings, fp)
@@ -72,7 +71,7 @@ class TestPortSettings(unittest.TestCase):
         main(self.v7, self.v8)
         hw_settings_path = self.v8 / 'hardware_settings.yaml'
         self.assertTrue(hw_settings_path.exists())
-        with open(hw_settings_path, 'r') as fp:
+        with open(hw_settings_path) as fp:
             hw_settings = yaml.safe_load(fp)
         self.assertEqual(hw_settings['device_sound']['OUTPUT'], 'harp')
         expected = {
@@ -89,7 +88,7 @@ class TestPortSettings(unittest.TestCase):
 
         settings_path = self.v8 / 'iblrig_settings.yaml'
         self.assertTrue(settings_path.exists())
-        with open(settings_path, 'r') as fp:
+        with open(settings_path) as fp:
             settings = yaml.safe_load(fp)
         self.assertEqual(settings['ALYX_LAB'], 'cortexlab')
 

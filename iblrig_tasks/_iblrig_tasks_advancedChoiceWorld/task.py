@@ -31,7 +31,7 @@ class Session(ActiveChoiceWorldSession):
         stim_gain: float = DEFAULTS['STIM_GAIN'],
         **kwargs,
     ):
-        super(Session, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.task_params['CONTRAST_SET'] = contrast_set
         self.task_params['CONTRAST_SET_PROBABILITY_TYPE'] = contrast_set_probability_type
         self.task_params['PROBABILITY_LEFT'] = probability_left

@@ -1,13 +1,14 @@
-import unittest
-from pathlib import Path
-from datetime import timedelta
-from unittest.mock import patch, MagicMock, call, ANY
-import tempfile
 import sys
+import tempfile
+import unittest
+from datetime import timedelta
+from pathlib import Path
+from unittest.mock import ANY, MagicMock, call, patch
 
-import yaml
-from iblutil.util import Bunch
 import numpy as np
+import yaml
+
+from iblutil.util import Bunch
 
 """In order to mock iblrig.video_pyspin.enable_camera_trigger we must mock PySpin here."""
 sys.modules['PySpin'] = MagicMock()
@@ -64,7 +65,7 @@ class TestSettings(unittest.TestCase):
         for file in ('iblrig', 'hardware'):
             filepath = Path(video.__file__).parents[1].joinpath('settings', f'{file}_settings_template.yaml')
             if filepath.exists():
-                with open(filepath, 'r') as fp:
+                with open(filepath) as fp:
                     self._settings[file] = yaml.safe_load(fp.read())
 
     def _return_settings(self, fp) -> dict:
