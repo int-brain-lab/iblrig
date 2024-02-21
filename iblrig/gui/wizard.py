@@ -41,7 +41,7 @@ from iblrig.path_helper import load_pydantic_yaml, save_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings, RigSettings
 from iblrig.tools import alyx_reachable, get_anydesk_id, internet_available
 from iblrig.version_management import check_for_updates, get_changelog, is_dirty
-from iblutil.util import Bunch, setup_logger
+from iblutil.util import setup_logger
 from one.webclient import AlyxClient
 from pybpodapi import exceptions
 from pybpodapi.protocol import StateMachine
@@ -115,11 +115,15 @@ class RigWizardModel:
         )
 
         # calculate free reward time
-        class FakeSession(ValveMixin):
-            hardware_settings = self.hardware_settings
-            task_params = Bunch({'AUTOMATIC_CALIBRATION': True, 'REWARD_AMOUNT_UL': 10})
+        class FakeSession(EmptySession, ValveMixin):
+            pass
 
-        fake_session = FakeSession()
+        fake_session = FakeSession(
+            subject='gui_init_subject',
+            file_hardware_settings=self.file_hardware_settings,
+            file_iblrig_settings=self.file_iblrig_settings
+        )
+        fake_session.task_params.update({'AUTOMATIC_CALIBRATION': True, 'REWARD_AMOUNT_UL': 10})
         fake_session.init_mixin_valve()
         self.free_reward_time = fake_session.compute_reward_time(self.hardware_settings.device_valve.FREE_REWARD_VOLUME_UL)
 

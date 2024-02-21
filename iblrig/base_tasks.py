@@ -534,7 +534,7 @@ class OSCClient(udp_client.SimpleUDPClient):
         self.send_message('/x', 1)
 
 
-class BonsaiRecordingMixin:
+class BonsaiRecordingMixin(BaseSession):
     def init_mixin_bonsai_recordings(self, *args, **kwargs):
         self.bonsai_camera = Bunch({'udp_client': OSCClient(port=7111)})
         self.bonsai_microphone = Bunch({'udp_client': OSCClient(port=7112)})
@@ -602,7 +602,7 @@ class BonsaiRecordingMixin:
         log.info('Bonsai camera recording process started')
 
 
-class BonsaiVisualStimulusMixin:
+class BonsaiVisualStimulusMixin(BaseSession):
     def init_mixin_bonsai_visual_stimulus(self, *args, **kwargs):
         # camera 7111, microphone 7112
         self.bonsai_visual_udp_client = OSCClient(port=7110)
@@ -662,7 +662,37 @@ class BonsaiVisualStimulusMixin:
         log.info('Bonsai visual stimulus module loaded: OK')
 
 
-class BpodMixin:
+class BpodMixin(BaseSession):
+
+    def softcode_dictionary(self):
+        """
+        Returns a softcode handler dict where each key corresponds to the softcode and each value to the
+        function to be called.
+
+        This needs to be wrapped this way because
+        1) we want to be able to inherit this and dynamically add softcode to the dictionry
+        2) we need to provide the Task object (self) at run time to have the functions with static args
+        This is tricky as it is unclear if the task object is a copy or a reference when passed here.
+        :return:
+        """
+        softcode_dict = {
+            SOFTCODE.STOP_SOUND: lambda: self.sound['sd'].stop,
+            SOFTCODE.PLAY_TONE: lambda: self.sound['sd'].play(self.sound['GO_TONE'], self.sound['samplerate']),
+            SOFTCODE.PLAY_NOISE: lambda: self.sound['sd'].play(self.sound['WHITE_NOISE'], self.sound['samplerate']),
+            SOFTCODE.TRIGGER_CAMERA: lambda: self.trigger_bonsai_cameras
+        }
+        return softcode_dict
+
+    def register_soft_codes(self):
+        """
+        Here we construct the dictionary of lambda functions to be called when a soft code is received
+        We define this dictionary at runtime to be able to use the task object (self) in the lambda functions
+        :return:
+        """
+        softcode_dict = self.softcode_dictionary()
+        self.bpod.softcode_handler_function = lambda code: softcode_dict[code]()
+        assert len(self.bpod.actions.keys()) == 6
+
     def init_mixin_bpod(self, *args, **kwargs):
         self.bpod = Bpod()
 
@@ -679,24 +709,7 @@ class BpodMixin:
         self.bpod = Bpod(self.hardware_settings['device_bpod']['COM_BPOD'], disable_behavior_ports=[1, 2, 3])
         self.bpod.define_rotary_encoder_actions()
         self.bpod.set_status_led(False)
-
-        def softcode_handler(code):
-            """
-            Soft codes should work with resasonable latency considering our limiting
-            factor is the refresh rate of the screen which should be 16.667ms @ a framerate of 60Hz
-            """
-            if code == SOFTCODE.STOP_SOUND:
-                self.sound['sd'].stop()
-            elif code == SOFTCODE.PLAY_TONE:
-                self.sound['sd'].play(self.sound['GO_TONE'], self.sound['samplerate'])
-            elif code == SOFTCODE.PLAY_NOISE:
-                self.sound['sd'].play(self.sound['WHITE_NOISE'], self.sound['samplerate'])
-            elif code == SOFTCODE.TRIGGER_CAMERA:
-                self.trigger_bonsai_cameras()
-
-        self.bpod.softcode_handler_function = softcode_handler
-
-        assert len(self.bpod.actions.keys()) == 6
+        self.register_soft_codes()
         assert self.bpod.is_connected
         log.info('Bpod hardware module loaded: OK')
         # self.send_spacers()
@@ -710,7 +723,7 @@ class BpodMixin:
         return self.bpod.session.current_trial.export()
 
 
-class Frame2TTLMixin:
+class Frame2TTLMixin(BaseSession):
     """
     Frame 2 TTL interface for state machine
     """
@@ -734,7 +747,7 @@ class Frame2TTLMixin:
         log.info('Frame2TTL: Thresholds set.')
 
 
-class RotaryEncoderMixin:
+class RotaryEncoderMixin(BaseSession):
     """
     Rotary encoder interface for state machine
     """
@@ -770,7 +783,7 @@ class RotaryEncoderMixin:
         log.info('Rotary encoder module loaded: OK')
 
 
-class ValveMixin:
+class ValveMixin(BaseSession):
     def init_mixin_valve(self: object):
         self.valve = Bunch({})
         # the template settings files have a date in 2099, so assume that the rig is not calibrated if that is the case
@@ -828,7 +841,7 @@ class ValveMixin:
         return self.bpod.session.current_trial.export()
 
 
-class SoundMixin:
+class SoundMixin(BaseSession):
     """
     Sound interface methods for state machine
     """

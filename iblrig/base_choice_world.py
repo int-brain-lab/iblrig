@@ -76,7 +76,6 @@ class ChoiceWorldParams(BaseModel):
 
 
 class ChoiceWorldSession(
-    iblrig.base_tasks.BaseSession,
     iblrig.base_tasks.BonsaiRecordingMixin,
     iblrig.base_tasks.BonsaiVisualStimulusMixin,
     iblrig.base_tasks.BpodMixin,
