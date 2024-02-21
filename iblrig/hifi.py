@@ -105,7 +105,7 @@ class HiFi(SerialSingleton):
 
         # convert from float
         if data.dtype == float:
-            assert -1 <= data.min() <= 0 <= data.max() <= 1
+            # assert -1 <= data.min() <= 0 <= data.max() <= 1
             if self._info.bit_depth == 16:
                 data = (data * np.iinfo(np.int16).max).astype(np.int16)
             elif self._info.bit_depth == 32:

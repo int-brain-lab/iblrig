@@ -31,6 +31,7 @@ from iblrig import sound
 from iblrig.constants import BASE_PATH, BONSAI_EXE
 from iblrig.frame2ttl import Frame2TTL
 from iblrig.hardware import SOFTCODE, Bpod, MyRotaryEncoder, sound_device_factory
+from iblrig.hifi import HiFi
 from iblrig.path_helper import load_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings, HardwareSettingsCameras, RigSettings
 from iblrig.tools import call_bonsai
@@ -57,9 +58,9 @@ class BaseSession(ABC):
         subject=None,
         task_parameter_file=None,
         file_hardware_settings=None,
-        hardware_settings=None,
+        hardware_settings: HardwareSettings = None,
         file_iblrig_settings=None,
-        iblrig_settings=None,
+        iblrig_settings: RigSettings = None,
         one=None,
         interactive=True,
         projects=None,
@@ -846,7 +847,6 @@ class SoundMixin:
             fade=0.01,
             chans=self.sound['channels'],
         )
-
         self.sound['WHITE_NOISE'] = iblrig.sound.make_sound(
             rate=self.sound['samplerate'],
             frequency=-1,
@@ -865,14 +865,34 @@ class SoundMixin:
         # SoundCard config params
         match self.hardware_settings.device_sound['OUTPUT']:
             case 'harp':
+                assert self.bpod.sound_card is not None, 'No harp sound-card connected to Bpod'
+                module_port = f'Serial{self.bpod.sound_card.serial_port}'
                 sound.configure_sound_card(
                     sounds=[self.sound.GO_TONE, self.sound.WHITE_NOISE],
                     indexes=[self.task_params.GO_TONE_IDX, self.task_params.WHITE_NOISE_IDX],
                     sample_rate=self.sound['samplerate'],
                 )
-                self.bpod.define_harp_sounds_actions(self.task_params.GO_TONE_IDX, self.task_params.WHITE_NOISE_IDX)
+                self.bpod.define_harp_sounds_actions(
+                    go_tone_index=self.task_params.GO_TONE_IDX,
+                    noise_index=self.task_params.WHITE_NOISE_IDX,
+                    sound_port=module_port,
+                )
             case 'hifi':
-                pass
+                module = self.bpod.get_module('^HiFi')
+                assert module is not None, 'No HiFi module connected to Bpod'
+                assert self.hardware_settings.device_sound.COM_SOUND is not None
+                hifi = HiFi(port=self.hardware_settings.device_sound.COM_SOUND)
+                hifi.load(index=self.task_params.GO_TONE_IDX, data=self.sound.GO_TONE)
+                hifi.load(index=self.task_params.WHITE_NOISE_IDX, data=self.sound.WHITE_NOISE)
+                hifi.push()
+                hifi.close()
+                module_port = f'Serial{module.serial_port}'
+                self.bpod.define_harp_sounds_actions(
+                    go_tone_index=self.task_params.GO_TONE_IDX,
+                    noise_index=self.task_params.WHITE_NOISE_IDX,
+                    sound_port=module_port,
+                    module=module,
+                )
             case _:
                 self.bpod.define_xonar_sounds_actions()
         log.info(f"Sound module loaded: OK: {self.hardware_settings.device_sound['OUTPUT']}")

@@ -23,6 +23,7 @@ from iblutil.util import Bunch
 from pybpod_rotaryencoder_module.module import RotaryEncoder
 from pybpod_rotaryencoder_module.module_api import RotaryEncoderModule
 from pybpodapi.bpod.bpod_io import BpodIO
+from pybpodapi.bpod_modules.bpod_module import BpodModule
 
 SOFTCODE = IntEnum('SOFTCODE', ['STOP_SOUND', 'PLAY_TONE', 'PLAY_NOISE', 'TRIGGER_CAMERA'])
 
@@ -93,16 +94,30 @@ class Bpod(BpodIO):
     def sound_card(self):
         return self.get_module('sound_card')
 
-    def get_module(self, module: str):
+    def get_module(self, module_name: str) -> BpodModule | None:
+        """Get module by name
+
+        Parameters
+        ----------
+        module_name : str
+            Regular Expression for matching a module name
+
+        Returns
+        -------
+        BpodModule | None
+            First matching module or None
+        """
         if self.modules is None:
             return None
-        if module in ['re', 'rotary_encoder', 'RotaryEncoder']:
-            mod_name = 'RotaryEncoder1'
-        elif module in ['sc', 'sound_card', 'SoundCard']:
-            mod_name = 'SoundCard1'
-        mod = [x for x in self.modules if x.name == mod_name]
-        if mod:
-            return mod[0]
+        if module_name in ['re', 'rotary_encoder']:
+            module_name = r'^RotaryEncoder'
+        elif module_name in ['sc', 'sound_card']:
+            module_name = r'^SoundCard'
+        modules = [x for x in self.modules if re.match(module_name, x.name)]
+        if len(modules) > 1:
+            log.critical(f'Found several Bpod modules matching `{module_name}`. Using first match: `{modules[0].name}`')
+        if len(modules) > 0:
+            return modules[0]
 
     def _define_message(self, module, message):
         """
@@ -130,11 +145,15 @@ class Bpod(BpodIO):
             }
         )
 
-    def define_harp_sounds_actions(self, go_tone_index=2, noise_index=3, sound_port='Serial3'):
+    def define_harp_sounds_actions(
+        self, go_tone_index: int = 2, noise_index: int = 3, sound_port: str = 'Serial3', module: BpodModule | None = None
+    ):
+        if module is None:
+            module = self.sound_card
         self.actions.update(
             {
-                'play_tone': (sound_port, self._define_message(self.sound_card, [ord('P'), go_tone_index])),
-                'play_noise': (sound_port, self._define_message(self.sound_card, [ord('P'), noise_index])),
+                'play_tone': (sound_port, self._define_message(module, [ord('P'), go_tone_index])),
+                'play_noise': (sound_port, self._define_message(module, [ord('P'), noise_index])),
                 'stop_sound': (sound_port, ord('X')),
             }
         )
