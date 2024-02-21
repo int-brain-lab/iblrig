@@ -185,6 +185,7 @@ class BaseSession(ABC):
             local_path=self.iblrig_settings['iblrig_local_data_path'],
             remote_path=self.iblrig_settings['iblrig_remote_data_path'],
             lab=self.iblrig_settings['ALYX_LAB'],
+            iblrig_settings=self.iblrig_settings,
         )
         paths = Bunch({'IBLRIG_FOLDER': BASE_PATH})
         paths.BONSAI = BONSAI_EXE
@@ -227,6 +228,13 @@ class BaseSession(ABC):
         setup_logger('pybpodapi', level=level_bpod, file=file)
         if self.logger is None:
             self.logger = logger
+
+    def _remove_file_loggers(self):
+        for logger_name in ['iblrig', 'pybpodapi']:
+            logger = logging.getLogger(logger_name)
+            file_handlers = [fh for fh in logger.handlers if isinstance(fh, logging.FileHandler)]
+            for fh in file_handlers:
+                logger.removeHandler(fh)
 
     @staticmethod
     def make_experiment_description_dict(

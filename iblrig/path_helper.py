@@ -113,7 +113,7 @@ def _iterate_protocols(subject_folder, task_name, n=1, min_trials=43):
     return protocols
 
 
-def get_local_and_remote_paths(local_path=None, remote_path=None, lab=None):
+def get_local_and_remote_paths(local_path=None, remote_path=None, lab=None, iblrig_settings=None):
     """
     Function used to parse input arguments to transfer commands. If the arguments are None, reads in the settings
     and returns the values from the files.
@@ -122,14 +122,17 @@ def get_local_and_remote_paths(local_path=None, remote_path=None, lab=None):
     :param local_path:
     :param remote_path:
     :param lab:
+    :param iblrig_settings: if provided, settings dictionary, otherwise will load the default settings files
     :return: dictionary, with following keys (example output)
        {'local_data_folder': PosixPath('C:/iblrigv8_data'),
         'remote_data_folder': PosixPath('Y:/'),
         'local_subjects_folder': PosixPath('C:/iblrigv8_data/mainenlab/Subjects'),
         'remote_subjects_folder': PosixPath('Y:/Subjects')}
     """
-    iblrig_settings = _load_settings_yaml()
     paths = Bunch({'local_data_folder': local_path, 'remote_data_folder': remote_path})
+    # we only want to attempt to load the settings file if necessary
+    if (local_path is None) or (remote_path is None) or (lab is None):
+        iblrig_settings = load_pydantic_yaml(RigSettings) if iblrig_settings is None else iblrig_settings
     if paths.local_data_folder is None:
         paths.local_data_folder = (
             Path(p) if (p := iblrig_settings['iblrig_local_data_path']) else Path.home().joinpath('iblrig_data')
