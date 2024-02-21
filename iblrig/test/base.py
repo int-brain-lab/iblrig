@@ -22,6 +22,7 @@ TASK_KWARGS = {
     'projects': ['ibl_neuropixel_brainwide_01', 'ibl_mainenlab'],
     'procedures': ['Behavior training/tasks', 'Imaging'],
     'hardware_settings': dict(RIG_NAME='_iblrig_cortexlab_behavior_3', MAIN_SYNC=True),
+    'iblrig_settings': dict(ALYX_LAB='cortexlab'),
 }
 
 
