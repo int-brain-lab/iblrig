@@ -28,7 +28,8 @@ class TestGetPreviousSession(unittest.TestCase):
         self.td = tempfile.TemporaryDirectory()
         self.root_path = Path(self.td.name)
         self.kwargs['iblrig_settings'] = dict(
-            iblrig_local_data_path=self.root_path, ALYX_LAB='cortexlab', iblrig_remote_data_path=None)
+            iblrig_local_data_path=self.root_path, ALYX_LAB='cortexlab', iblrig_remote_data_path=None
+        )
         self.sesa = SpontaneousSession(**self.kwargs)
         self.sesa.create_session()
         self.sesb = TrainingChoiceWorldSession(**self.kwargs)
@@ -98,8 +99,11 @@ class TestGetPreviousSession(unittest.TestCase):
         self.sesb.save_task_parameters_to_json_file()
         # test the function entry point
         tinfo, info = iblrig.choiceworld.get_subject_training_info(
-            self.kwargs['subject'], local_path=Path(self.root_path), lab='cortexlab', mode='raise',
-            iblrig_settings=self.sesb.iblrig_settings
+            self.kwargs['subject'],
+            local_path=Path(self.root_path),
+            lab='cortexlab',
+            mode='raise',
+            iblrig_settings=self.sesb.iblrig_settings,
         )
         self.assertEqual((2, 2.1), (tinfo['training_phase'], tinfo['adaptive_reward']))
         self.assertIsInstance(info, dict)
