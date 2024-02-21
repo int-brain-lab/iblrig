@@ -229,6 +229,13 @@ class BaseSession(ABC):
         if self.logger is None:
             self.logger = logger
 
+    def _remove_file_loggers(self):
+        for logger_name in ['iblrig', 'pybpodapi']:
+            logger = logging.getLogger(logger_name)
+            file_handlers = [fh for fh in logger.handlers if isinstance(fh, logging.FileHandler)]
+            for fh in file_handlers:
+                logger.removeHandler(fh)
+
     @staticmethod
     def make_experiment_description_dict(
         task_protocol: str,

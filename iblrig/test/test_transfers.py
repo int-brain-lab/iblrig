@@ -37,6 +37,8 @@ def _create_behavior_session(iblrig_settings, ntrials=None, hard_crash=False):
             session.session_info['NTRIALS'] = ntrials
             session.session_info['SESSION_END_TIME'] = session.session_info['SESSION_START_TIME']
             session.save_task_parameters_to_json_file()
+    # we need to remove the file logging otherwise the hash of the logfile will not match
+    session._remove_file_loggers()
     return session
 
 
@@ -74,13 +76,6 @@ class TestIntegrationTransferExperiments(unittest.TestCase):
         for hard_crash in [False, True]:
             session = _create_behavior_session(self.iblrig_settings, ntrials=50, hard_crash=hard_crash)
             session.paths.SESSION_FOLDER.joinpath('transfer_me.flag').touch()
-
-            # def side_effect(*args, filename=None, **kwargs):
-            #     if filename.name.endswith('hardware_settings.yaml'):
-            #         return self.hardware_settings
-            #     else:
-            #         return self.iblrig_settings
-
             with mock.patch('iblrig.path_helper._load_settings_yaml') as mocker:
                 mocker.side_effect = self.side_effect
                 iblrig.commands.transfer_data(
@@ -95,7 +90,8 @@ class TestIntegrationTransferExperiments(unittest.TestCase):
         session = _create_behavior_session(self.iblrig_settings, ntrials=50, hard_crash=hard_crash)
         session.paths.SESSION_FOLDER.joinpath('transfer_me.flag').touch()
 
-        with mock.patch('iblrig.path_helper._load_settings_yaml', return_value=self.iblrig_settings):
+        with mock.patch('iblrig.path_helper._load_settings_yaml') as mocker:
+            mocker.side_effect = self.side_effect
             iblrig.commands.transfer_data()
         sc = BehaviorCopier(session_path=session.paths.SESSION_FOLDER, remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER)
         self.assertEqual(sc.state, 3)
@@ -109,13 +105,8 @@ class TestIntegrationTransferExperiments(unittest.TestCase):
         for ntrials in [None, 41]:
             session = _create_behavior_session(self.iblrig_settings, ntrials=ntrials)
             session.paths.SESSION_FOLDER.joinpath('transfer_me.flag').touch()
-
-            # def side_effect(*args, filename=None, **kwargs):
-            #     if filename.name.endswith('hardware_settings.yaml'):
-            #         return session.hardware_settings
-            #     else:
-            #         return session.iblrig_settings
-            with mock.patch('iblrig.path_helper._load_settings_yaml', return_value=self.iblrig_settings):
+            with mock.patch('iblrig.path_helper._load_settings_yaml') as mocker:
+                mocker.side_effect = self.side_effect
                 iblrig.commands.transfer_data()
             sc = BehaviorCopier(
                 session_path=session.paths.SESSION_FOLDER, remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER
