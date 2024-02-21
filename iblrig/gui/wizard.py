@@ -189,7 +189,10 @@ class RigWizardModel:
                     raise e
 
         # since we are connecting to Alyx, validate some parameters to ensure a smooth extraction
-        result = iblrig.hardware_validation.ValidateAlyxLabLocation().run(self.alyx)
+        result = iblrig.hardware_validation.ValidateAlyxLabLocation(
+            iblrig_settings=self.iblrig_settings,
+            hardware_settings=self.hardware_settings,
+        ).run(self.alyx)
         if result.status == 'FAIL' and gui:
             QtWidgets.QMessageBox().critical(None, 'Error', f'{result.message}\n\n{result.solution}')
 
