@@ -1,6 +1,0 @@
-devices:
-  cameras:
-    left:
-        collection: raw_video_data
-        sync_label: audio
-version: 1.0.0
