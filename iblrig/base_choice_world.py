@@ -814,6 +814,7 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
                 remote_path=self.iblrig_settings['iblrig_remote_data_path'],
                 lab=self.iblrig_settings['ALYX_LAB'],
                 task_name=self.protocol_name,
+                iblrig_settings=self.iblrig_settings
             )
         except Exception:
             self.logger.critical('Failed to get training information from previous subjects: %s', traceback.format_exc())

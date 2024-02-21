@@ -185,6 +185,7 @@ class BaseSession(ABC):
             local_path=self.iblrig_settings['iblrig_local_data_path'],
             remote_path=self.iblrig_settings['iblrig_remote_data_path'],
             lab=self.iblrig_settings['ALYX_LAB'],
+            iblrig_settings=self.iblrig_settings,
         )
         paths = Bunch({'IBLRIG_FOLDER': BASE_PATH})
         paths.BONSAI = BONSAI_EXE

@@ -11,6 +11,6 @@ iblrig_local_data_path: null  # C:\iblrigv8_data
 # If null, you will be prompted for a valid remote server path in which to save the experiment description.
 # If not needed, set to False.
 iblrig_remote_data_path: false  # Y:\ for IBL, null: will prompt at session start, false: no transfer
-ALYX_LAB: cortexlab  # required
+ALYX_LAB: testlab  # required
 ALYX_USER: null  # your Alyx username - can be set as null if there is no Alyx database
 ALYX_URL: null  # https://alyx.internationalbrainlab.org - can be set as null if there is no Alyx database
