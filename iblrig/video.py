@@ -29,7 +29,6 @@ with contextlib.suppress(ImportError):
     from iblrig import video_pyspin
 
 log = logging.getLogger(__name__)
-log.setLevel(logging.DEBUG)
 
 
 def _download_from_alyx_or_flir(asset: int, filename: str, target_md5: str) -> Path:
@@ -220,7 +219,7 @@ def prepare_video_session_cmd():
     parser.add_argument('profile', help='camera configuration name, found in "device_cameras" map of hardware_settings.yaml')
     parser.add_argument('--debug', action='store_true', help='enable debugging mode')
     args = parser.parse_args()
-    setup_logger(name='iblrig', level=10 if args.debug else 20)
+    setup_logger(name='iblrig', level='DEBUG' if args.debug else 'INFO')
     prepare_video_session(args.subject_name, args.profile, debug=args.debug)
 
 
