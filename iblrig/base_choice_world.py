@@ -599,7 +599,7 @@ class HabituationChoiceWorldSession(ChoiceWorldSession):
         sma.add_state(
             state_name='reward',
             state_timer=self.reward_time,  # the length of time to leave reward valve open, i.e. reward size
-            state_change_conditions={'Tup': 'iti'},
+            state_change_conditions={'Tup': 'post_reward'},
             output_actions=[('Valve1', 255), ('BNC1', 255)],
         )
         # This state defines the period after reward where Bpod TTL is LOW.
