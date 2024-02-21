@@ -1,9 +1,11 @@
 import unittest
+from unittest.mock import patch
 
 from ibllib.tests import TEST_DB
 from iblrig.constants import SETTINGS_PATH
 from iblrig.gui.wizard import PROJECTS, RigWizardModel
 from one.webclient import AlyxClient
+from iblrig.hardware_validation import ValidateResult
 
 
 class TestRigWizardModel(unittest.TestCase):
@@ -13,8 +15,10 @@ class TestRigWizardModel(unittest.TestCase):
             file_iblrig_settings=SETTINGS_PATH.joinpath('iblrig_settings_template.yaml'),
         )
 
-    def test_connect(self):
+    @patch('iblrig.gui.wizard.iblrig.hardware_validation.ValidateAlyxLabLocation._run', return_value=ValidateResult('PASS'))
+    def test_connect(self, mock_validate_alyx):
         self.wizard.login(username=TEST_DB['username'], alyx_client=AlyxClient(**TEST_DB))
+        mock_validate_alyx.assert_called_once()
         assert len(self.wizard.all_projects) > len(PROJECTS)
 
     def test_get_task_extra_kwargs(self):
