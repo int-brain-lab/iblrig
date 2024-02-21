@@ -5,6 +5,7 @@ This module tries to be exclude task related logic
 """
 import abc
 import argparse
+from collections import OrderedDict
 import datetime
 import inspect
 import json
@@ -675,26 +676,26 @@ class BpodMixin(BaseSession):
         This is tricky as it is unclear if the task object is a copy or a reference when passed here.
         :return:
         """
-        softcode_dict = {
+        softcode_dict = OrderedDict({
             SOFTCODE.STOP_SOUND: lambda: self.sound['sd'].stop,
             SOFTCODE.PLAY_TONE: lambda: self.sound['sd'].play(self.sound['GO_TONE'], self.sound['samplerate']),
             SOFTCODE.PLAY_NOISE: lambda: self.sound['sd'].play(self.sound['WHITE_NOISE'], self.sound['samplerate']),
             SOFTCODE.TRIGGER_CAMERA: lambda: self.trigger_bonsai_cameras
-        }
+        })
         return softcode_dict
 
-    def register_soft_codes(self):
+    def register_softcode_handler(self, softcode_dict=None):
         """
         Here we construct the dictionary of lambda functions to be called when a soft code is received
         We define this dictionary at runtime to be able to use the task object (self) in the lambda functions
         :return:
         """
-        softcode_dict = self.softcode_dictionary()
-        self.bpod.softcode_handler_function = lambda code: softcode_dict[code]()
-        assert len(self.bpod.actions.keys()) == 6
+        softcode_dict = softcode_dict or self.softcode_dictionary()
+        self.bpod.register_softcodes(softcode_dict)
 
     def init_mixin_bpod(self, *args, **kwargs):
         self.bpod = Bpod()
+        self.register_softcode_handler()
 
     def stop_mixin_bpod(self):
         self.bpod.close()
@@ -709,7 +710,6 @@ class BpodMixin(BaseSession):
         self.bpod = Bpod(self.hardware_settings['device_bpod']['COM_BPOD'], disable_behavior_ports=[1, 2, 3])
         self.bpod.define_rotary_encoder_actions()
         self.bpod.set_status_led(False)
-        self.register_soft_codes()
         assert self.bpod.is_connected
         log.info('Bpod hardware module loaded: OK')
         # self.send_spacers()

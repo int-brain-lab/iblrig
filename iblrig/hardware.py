@@ -30,6 +30,7 @@ log = logging.getLogger(__name__)
 
 class Bpod(BpodIO):
     can_control_led = True
+    softcodes: dict = None
     _instances = {}
     _lock = threading.Lock()
     _is_initialized = False
@@ -211,6 +212,15 @@ class Bpod(BpodIO):
 
     def valve(self, valve_id: int, state: bool):
         self.manual_override(self.ChannelTypes.OUTPUT, self.ChannelNames.VALVE, valve_id, state)
+
+    def register_softcodes(self, softcode_dict):
+        """
+        Register softcodes to be used in the state machine
+        :param softcode_dict: dictionary of int keys with functions as values {int: function}
+        :return:
+        """
+        self.softcodes = softcode_dict
+        self.softcode_handler_function = lambda code: softcode_dict[code]()
 
 
 class MyRotaryEncoder:
