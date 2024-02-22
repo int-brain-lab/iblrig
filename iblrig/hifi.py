@@ -1,8 +1,6 @@
 import logging
-import struct
 from dataclasses import dataclass
 
-# from time import sleep
 import numpy as np
 from serial_singleton import SerialSingleton, SerialSingletonException
 
@@ -48,7 +46,7 @@ class HiFi(SerialSingleton):
     def _set_info_field(self, field_name: str, format_str: str, op_code: bytes, value: bool | int) -> bool:
         if getattr(self._info, field_name) == value:
             return True
-        confirmation = self.query(struct.pack(format_str, op_code, value)) == b'\x01'
+        confirmation = self.query(([op_code, value], format_str)) == b'\x01'
         self._info = self._get_info()
         return confirmation and getattr(self._info, field_name) == value
 
@@ -124,20 +122,19 @@ class HiFi(SerialSingleton):
         is_stereo = n_channels == 2
 
         log.debug(f'Loading {n_samples} {"stereo" if is_stereo else "mono"} samples to slot #{index}')
-        self.write('<cB??II', b'L', index, is_stereo, loop_mode, loop_duration, n_samples)
-        self.write(data)
-        if not self.read() == b'\x01':
-            raise HiFiException
+        self.write(([b'L', index, is_stereo, loop_mode, loop_duration, n_samples], '<cB??II'))
+        if not self.query(data) == b'\x01':
+            raise RuntimeError('Error loading data')
 
     def push(self) -> bool:
         log.debug('Pushing waveforms to playback buffers')
-        if not (success := self.query(b'*', '?')[0]):
+        if not (success := self.query(b'*') == b'\x01'):
             raise RuntimeError('Error pushing waveforms to playback buffers')
         return success
 
     def play(self, index: int) -> None:
         log.debug(f'Starting playback of sound #{index}')
-        self.write('<cB', b'P', index)
+        self.write(([b'P', index], '<cB'))
 
     def stop(self, index: int | None = None):
         if index is None:
@@ -145,48 +142,4 @@ class HiFi(SerialSingleton):
             self.write(b'X')
         else:
             log.debug(f'Stopping playback of sound #{index}')
-            self.write('<cB', b'x', index)
-
-
-#
-#
-# from iblutil.util import setup_logger
-#
-# setup_logger(__name__, level='DEBUG')
-#
-#
-# def upload_and_play_tone(hifi: HiFi,
-#                          sf: int = 192000,
-#                          f: int = 4000,
-#                          d: int = 1,
-#                          signal_type: str = 'tone',
-#                          channels: str = 'stereo') -> None:
-#     t = np.arange(0, int(d * sf)) / sf
-#     if signal_type=='tone':
-#         wave = np.sin(2 * np.pi * f * t).reshape(1, -1)
-#     else:
-#         wave = np.random.rand(1, d * sf) * 2 - 1
-#
-#     if channels=='stereo':  # identical signal on both channels
-#         wave = np.concatenate((wave, wave))
-#     elif channels=='inverted':  # inverted signal on both channels
-#         wave = np.concatenate((wave, -wave))
-#     elif channels=='left':
-#         wave = np.concatenate((wave, np.zeros(wave.shape)))
-#     elif channels=='right':
-#         wave = np.concatenate((np.zeros(wave.shape), wave))
-#
-#     hifi.sampling_rate_hz = sf
-#     hifi.load(0, wave)
-#     hifi.push()
-#     hifi.play(0)
-#     sleep(d + 0.1)
-#
-#
-# rate = 192000
-# hf = HiFi('COM9', sampling_rate_hz=rate, baudrate=115200, timeout=2, attenuation_db=-80)
-#
-# for channels in ('stereo', 'inverted', 'mono', 'left', 'right'):
-#     for sf in [44100, 192000]:
-#         upload_and_play_tone(hf, sf=sf, channels=channels, signal_type='noise')
-#         upload_and_play_tone(hf, sf=sf, channels=channels, signal_type='tone')
+            self.write(([b'x', index], '<cB'))
