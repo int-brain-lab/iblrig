@@ -2,8 +2,8 @@ import logging
 import struct
 from dataclasses import dataclass
 
-# from time import sleep
 import numpy as np
+from pydantic import validate_call
 from serial_singleton import SerialSingleton, SerialSingletonException
 
 log = logging.getLogger(__name__)
@@ -27,9 +27,9 @@ class HiFiException(SerialSingletonException):
 class HiFi(SerialSingleton):
     _info = _HiFiInfo
 
+    @validate_call
     def __init__(self, *args, sampling_rate_hz: int = 192000, attenuation_db: int = 0, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        # self.set_buffer_size(rx_size=1000000, tx_size=1000000)
         self.handshake()
         self._info = self._get_info()
         self._min_attenuation_db = -120 if self.is_hd else -103
@@ -57,6 +57,7 @@ class HiFi(SerialSingleton):
         return self._info.sampling_rate_hz
 
     @sampling_rate_hz.setter
+    @validate_call
     def sampling_rate_hz(self, sampling_rate: int) -> None:
         log.debug(f'Setting sampling rate to {sampling_rate} Hz')
         if sampling_rate not in [44100, 48e3, 96e3, 192e3]:
@@ -69,6 +70,7 @@ class HiFi(SerialSingleton):
         return self._info.digital_attenuation * -0.5
 
     @attenuation_db.setter
+    @validate_call
     def attenuation_db(self, attenuation_db: float) -> None:
         log.debug(f'Setting digital attenuation to {self.attenuation_db} dB')
         if not (self._min_attenuation_db <= attenuation_db <= 0):
@@ -92,8 +94,8 @@ class HiFi(SerialSingleton):
     def max_envelope_samples(self) -> int:
         return self._info.max_envelope_size
 
+    @validate_call
     def load(self, index: int, data: np.ndarray[float | int], loop_mode: bool = False, loop_duration: int = 0) -> None:
-        assert isinstance(data, np.ndarray)
         assert 1 <= data.ndim <= 2
         assert 0 <= index < self._info.max_waves
 
@@ -125,9 +127,8 @@ class HiFi(SerialSingleton):
 
         log.debug(f'Loading {n_samples} {"stereo" if is_stereo else "mono"} samples to slot #{index}')
         self.write('<cB??II', b'L', index, is_stereo, loop_mode, loop_duration, n_samples)
-        self.write(data)
-        if not self.read() == b'\x01':
-            raise HiFiException
+        if not self.query(data) == b'\x01':
+            raise RuntimeError('Error loading waveform')
 
     def push(self) -> bool:
         log.debug('Pushing waveforms to playback buffers')
@@ -146,47 +147,3 @@ class HiFi(SerialSingleton):
         else:
             log.debug(f'Stopping playback of sound #{index}')
             self.write('<cB', b'x', index)
-
-
-#
-#
-# from iblutil.util import setup_logger
-#
-# setup_logger(__name__, level='DEBUG')
-#
-#
-# def upload_and_play_tone(hifi: HiFi,
-#                          sf: int = 192000,
-#                          f: int = 4000,
-#                          d: int = 1,
-#                          signal_type: str = 'tone',
-#                          channels: str = 'stereo') -> None:
-#     t = np.arange(0, int(d * sf)) / sf
-#     if signal_type=='tone':
-#         wave = np.sin(2 * np.pi * f * t).reshape(1, -1)
-#     else:
-#         wave = np.random.rand(1, d * sf) * 2 - 1
-#
-#     if channels=='stereo':  # identical signal on both channels
-#         wave = np.concatenate((wave, wave))
-#     elif channels=='inverted':  # inverted signal on both channels
-#         wave = np.concatenate((wave, -wave))
-#     elif channels=='left':
-#         wave = np.concatenate((wave, np.zeros(wave.shape)))
-#     elif channels=='right':
-#         wave = np.concatenate((np.zeros(wave.shape), wave))
-#
-#     hifi.sampling_rate_hz = sf
-#     hifi.load(0, wave)
-#     hifi.push()
-#     hifi.play(0)
-#     sleep(d + 0.1)
-#
-#
-# rate = 192000
-# hf = HiFi('COM9', sampling_rate_hz=rate, baudrate=115200, timeout=2, attenuation_db=-80)
-#
-# for channels in ('stereo', 'inverted', 'mono', 'left', 'right'):
-#     for sf in [44100, 192000]:
-#         upload_and_play_tone(hf, sf=sf, channels=channels, signal_type='noise')
-#         upload_and_play_tone(hf, sf=sf, channels=channels, signal_type='tone')
