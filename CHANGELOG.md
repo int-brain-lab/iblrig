@@ -1,9 +1,11 @@
 Changelog
 ---------
-8.16.0
+
+8.15.6
 ------
 * Task specifications: The time from the stimulus offset to the quiescence period is targeted to 1 second instead of 1.5 seconds
 * Task specifications: The correct delay time starts running from the start of the reward state, not the end of the reward state.
+* Fixed unit-tests
 
 8.15.5
 ------
