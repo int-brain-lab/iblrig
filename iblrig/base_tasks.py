@@ -5,7 +5,6 @@ This module tries to be exclude task related logic
 """
 import abc
 import argparse
-from collections import OrderedDict
 import datetime
 import inspect
 import json
@@ -14,6 +13,7 @@ import signal
 import time
 import traceback
 from abc import ABC
+from collections import OrderedDict
 from pathlib import Path
 
 import numpy as np
@@ -664,7 +664,6 @@ class BonsaiVisualStimulusMixin(BaseSession):
 
 
 class BpodMixin(BaseSession):
-
     def softcode_dictionary(self):
         """
         Returns a softcode handler dict where each key corresponds to the softcode and each value to the
@@ -676,26 +675,18 @@ class BpodMixin(BaseSession):
         This is tricky as it is unclear if the task object is a copy or a reference when passed here.
         :return:
         """
-        softcode_dict = OrderedDict({
-            SOFTCODE.STOP_SOUND: lambda: self.sound['sd'].stop,
-            SOFTCODE.PLAY_TONE: lambda: self.sound['sd'].play(self.sound['GO_TONE'], self.sound['samplerate']),
-            SOFTCODE.PLAY_NOISE: lambda: self.sound['sd'].play(self.sound['WHITE_NOISE'], self.sound['samplerate']),
-            SOFTCODE.TRIGGER_CAMERA: lambda: self.trigger_bonsai_cameras
-        })
+        softcode_dict = OrderedDict(
+            {
+                SOFTCODE.STOP_SOUND: self.sound['sd'].stop,
+                SOFTCODE.PLAY_TONE: lambda: self.sound['sd'].play(self.sound['GO_TONE'], self.sound['samplerate']),
+                SOFTCODE.PLAY_NOISE: lambda: self.sound['sd'].play(self.sound['WHITE_NOISE'], self.sound['samplerate']),
+                SOFTCODE.TRIGGER_CAMERA: self.trigger_bonsai_cameras,
+            }
+        )
         return softcode_dict
-
-    def register_softcode_handler(self, softcode_dict=None):
-        """
-        Here we construct the dictionary of lambda functions to be called when a soft code is received
-        We define this dictionary at runtime to be able to use the task object (self) in the lambda functions
-        :return:
-        """
-        softcode_dict = softcode_dict or self.softcode_dictionary()
-        self.bpod.register_softcodes(softcode_dict)
 
     def init_mixin_bpod(self, *args, **kwargs):
         self.bpod = Bpod()
-        self.register_softcode_handler()
 
     def stop_mixin_bpod(self):
         self.bpod.close()

@@ -121,7 +121,7 @@ class RigWizardModel:
         fake_session = FakeSession(
             subject='gui_init_subject',
             file_hardware_settings=self.file_hardware_settings,
-            file_iblrig_settings=self.file_iblrig_settings
+            file_iblrig_settings=self.file_iblrig_settings,
         )
         fake_session.task_params.update({'AUTOMATIC_CALIBRATION': True, 'REWARD_AMOUNT_UL': 10})
         fake_session.init_mixin_valve()

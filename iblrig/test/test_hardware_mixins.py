@@ -37,6 +37,7 @@ def mixin_factory(*cls_mixin):
     :param cls_mixin:
     :return:
     """
+
     class TestMixin(EmptyHardwareSession, *cls_mixin):
         pass
 

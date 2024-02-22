@@ -97,6 +97,7 @@ class TestExperimentDescription(unittest.TestCase):
 
 class TestPathCreation(unittest.TestCase):
     """Test creation of experiment description dictionary."""
+
     def setUp(self):
         self.task_kwargs = copy.deepcopy(TASK_KWARGS)
 
