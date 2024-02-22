@@ -1,5 +1,4 @@
 import logging
-import struct
 from dataclasses import dataclass
 
 import numpy as np
@@ -48,7 +47,7 @@ class HiFi(SerialSingleton):
     def _set_info_field(self, field_name: str, format_str: str, op_code: bytes, value: bool | int) -> bool:
         if getattr(self._info, field_name) == value:
             return True
-        confirmation = self.query(struct.pack(format_str, op_code, value)) == b'\x01'
+        confirmation = self.query(([op_code, value], format_str)) == b'\x01'
         self._info = self._get_info()
         return confirmation and getattr(self._info, field_name) == value
 
@@ -126,19 +125,19 @@ class HiFi(SerialSingleton):
         is_stereo = n_channels == 2
 
         log.debug(f'Loading {n_samples} {"stereo" if is_stereo else "mono"} samples to slot #{index}')
-        self.write('<cB??II', b'L', index, is_stereo, loop_mode, loop_duration, n_samples)
+        self.write(([b'L', index, is_stereo, loop_mode, loop_duration, n_samples], '<cB??II'))
         if not self.query(data) == b'\x01':
-            raise RuntimeError('Error loading waveform')
+            raise RuntimeError('Error loading data')
 
     def push(self) -> bool:
         log.debug('Pushing waveforms to playback buffers')
-        if not (success := self.query(b'*', '?')[0]):
+        if not (success := self.query(b'*') == b'\x01'):
             raise RuntimeError('Error pushing waveforms to playback buffers')
         return success
 
     def play(self, index: int) -> None:
         log.debug(f'Starting playback of sound #{index}')
-        self.write('<cB', b'P', index)
+        self.write(([b'P', index], '<cB'))
 
     def stop(self, index: int | None = None):
         if index is None:
@@ -146,4 +145,4 @@ class HiFi(SerialSingleton):
             self.write(b'X')
         else:
             log.debug(f'Stopping playback of sound #{index}')
-            self.write('<cB', b'x', index)
+            self.write(([b'x', index], '<cB'))
