@@ -208,19 +208,17 @@ class TestExperimentDescription(unittest.TestCase):
 
 class TestPathCreation(unittest.TestCase):
     """Test creation of experiment description dictionary."""
+    def setUp(self):
+        self.task_kwargs = copy.deepcopy(TASK_KWARGS)
 
     def test_create_chained_protocols(self):
-        # creates a first task
-        task_kwargs = copy.deepcopy(TASK_KWARGS)
-        task_kwargs['hardware_settings']['MAIN_SYNC'] = False
-        first_task = EmptyHardwareSession(
-            iblrig_settings={'iblrig_remote_data_path': False},
-            **task_kwargs,
-            task_parameter_file=ChoiceWorldSession.base_parameters_file,
-        )
+        # creates a first task with no remote and main sync set to false
+        self.task_kwargs['iblrig_settings']['iblrig_remote_data_path'] = False
+        self.task_kwargs['hardware_settings']['MAIN_SYNC'] = False
+        first_task = EmptyHardwareSession(**self.task_kwargs, task_parameter_file=ChoiceWorldSession.base_parameters_file)
         first_task.create_session()
         # append a new protocol to the current task
-        second_task = EmptyHardwareSession(append=True, iblrig_settings={'iblrig_remote_data_path': False}, **task_kwargs)
+        second_task = EmptyHardwareSession(append=True, **self.task_kwargs)
         # unless the task has reached the create session stage, there is only one protocol in there
         self.assertEqual(set(d.name for d in first_task.paths.SESSION_FOLDER.iterdir() if d.is_dir()), {'raw_task_data_00'})
         # this will create and add to the acquisition description file
@@ -236,7 +234,8 @@ class TestPathCreation(unittest.TestCase):
 
     def test_create_session_with_remote(self):
         with tempfile.TemporaryDirectory() as td:
-            task = EmptyHardwareSession(iblrig_settings={'iblrig_remote_data_path': Path(td)}, **TASK_KWARGS)
+            self.task_kwargs['iblrig_settings']['iblrig_remote_data_path'] = Path(td)
+            task = EmptyHardwareSession(**self.task_kwargs)
             task.create_session()
             # when we create the session, the local session folder is created with the acquisition description file
             description_file_local = next(task.paths['SESSION_FOLDER'].glob('_ibl_experiment.description*.yaml'), None)
@@ -249,14 +248,16 @@ class TestPathCreation(unittest.TestCase):
             assert description_file_remote is not None
 
     def test_create_session_without_remote(self):
-        task = EmptyHardwareSession(iblrig_settings={'iblrig_remote_data_path': None}, **TASK_KWARGS)
+        self.task_kwargs['iblrig_settings']['iblrig_remote_data_path'] = None
+        task = EmptyHardwareSession(**self.task_kwargs)
         task.create_session()
         # when we create the session, the local session folder is created with the acquisition description file
         description_file_local = next(task.paths['SESSION_FOLDER'].glob('_ibl_experiment.description*.yaml'), None)
         assert description_file_local is not None
 
     def test_create_session_unavailable_remote(self):
-        task = EmptyHardwareSession(iblrig_settings={'iblrig_remote_data_path': '/path/that/doesnt/exist'}, **TASK_KWARGS)
+        self.task_kwargs['iblrig_settings']['iblrig_remote_data_path'] = '/path/that/doesnt/exist'
+        task = EmptyHardwareSession(**self.task_kwargs)
         task.create_session()
         # when we create the session, the local session folder is created with the acquisition description file
         description_file_local = next(task.paths['SESSION_FOLDER'].glob('_ibl_experiment.description*.yaml'), None)

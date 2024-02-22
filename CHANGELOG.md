@@ -1,6 +1,14 @@
 Changelog
 ---------
 
+8.15.5
+------
+* hotfix: show Garbor patch in passive choice-world, GUI option for session ID, no dud detection
+
+8.15.4
+------
+* hotfix: disable prompt for deleting "duds" for appended sessions 
+
 8.15.3
 ------
 * hotfix: don't wait for microphone workflow to finish
