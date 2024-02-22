@@ -408,7 +408,7 @@ class ChoiceWorldSession(
 
         sma.add_state(
             state_name='correct',
-            state_timer=self.task_params.FEEDBACK_CORRECT_DELAY_SECS,
+            state_timer=self.task_params.FEEDBACK_CORRECT_DELAY_SECS - self.reward_time,
             output_actions=[],
             state_change_conditions={'Tup': 'hide_stim'},
         )
