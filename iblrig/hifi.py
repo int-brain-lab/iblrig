@@ -93,7 +93,6 @@ class HiFi(SerialSingleton):
     def max_envelope_samples(self) -> int:
         return self._info.max_envelope_size
 
-    @validate_call
     def load(self, index: int, data: np.ndarray[float | int], loop_mode: bool = False, loop_duration: int = 0) -> None:
         assert 1 <= data.ndim <= 2
         assert 0 <= index < self._info.max_waves
