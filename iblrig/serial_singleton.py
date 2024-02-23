@@ -3,7 +3,7 @@ import logging
 import re
 import struct
 import threading
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable
 from typing import Any, overload
 
 import numpy as np
@@ -30,14 +30,12 @@ class SerialSingleton(serial.Serial):
         *args,
         **kwargs,
     ):
+        # identify the device by its serial number
         if port is None:
-            # identify the device by its serial number
             if serial_number is not None:
                 port = get_port_from_serial_number(serial_number)
                 if port is None:
-                    raise SerialSingletonException(
-                        f'No serial device matching serial number `{serial_number}`'
-                    )
+                    raise SerialSingletonException(f'No device matching serial number `{serial_number}`')
             else:
                 raise ValueError('Neither port nor serial number provided')
 
@@ -51,42 +49,35 @@ class SerialSingleton(serial.Serial):
             else:
                 instance_name = type(instance).__name__
                 if instance_name != cls.__name__:
-                    raise SerialSingletonException(
-                        f'{port} is already in use by an instance of {instance_name}'
-                    )
+                    raise SerialSingletonException(f'{port} is already in use by an instance of {instance_name}')
                 log.debug(f'Using existing {instance_name} instance on {port}')
             return instance
 
     def __init__(self, port: str | None = None, connect: bool = True, **kwargs) -> None:
-        if self._initialized:
-            return
-
-        super().__init__(**kwargs)
-
-        serial.Serial.port.fset(self, port)  # type: ignore[attr-defined]
-        if port is not None and connect is True:
+        if not self._initialized:
+            super().__init__(**kwargs)
+            serial.Serial.port.fset(self, port)  # type: ignore[attr-defined]
+            self.port_info = next((p for p in list_ports.comports() if p.device == self.port), None)
+            self._initialized = True
+        if not getattr(self, 'is_open', False) and connect is True:
             self.open()
-
-        self.port_info = next(
-            (p for p in list_ports.comports() if p.device == self.port), None
-        )
-
-        self._initialized = True
 
     def __del__(self) -> None:
         self.close()
         with self._lock:
-            if self.port in SerialSingleton._instances:
+            if hasattr(self, 'port') and self.port in SerialSingleton._instances:
                 log.debug(f'Deleting {type(self).__name__} instance on {self.port}')
                 SerialSingleton._instances.pop(self.port)
 
     def open(self) -> None:
-        super().open()
-        log.debug(f'Serial connection to {self.port} opened')
+        if self.port is not None:
+            super().open()
+            log.debug(f'Serial connection to {self.port} opened')
 
     def close(self) -> None:
-        super().close()
-        log.debug(f'Serial connection to {self.port} closed')
+        if getattr(self, 'is_open', False):
+            super().close()
+            log.debug(f'Serial connection to {self.port} closed')
 
     @property
     def port(self) -> str | None:
@@ -121,35 +112,36 @@ class SerialSingleton(serial.Serial):
             instantiated.
         """
         if self._initialized:
-            raise SerialSingletonException(
-                'Port cannot be changed after instantiation.'
-            )
+            raise SerialSingletonException('Port cannot be changed after instantiation.')
         if port is not None:
             serial.Serial.port.fset(self, port)  # type: ignore[attr-defined]
 
-    def write(self, *data: Any) -> int | None:
+    def write(self, data) -> int | None:
+        return super().write(self.to_bytes(data))
+
+    def write_packed(self, format_string: str, *data: Any) -> int | None:
         """
-        Write data to the serial device.
+        Pack values according to format string and write to serial device.
 
         Parameters
         ----------
-        data : any
-            Data to be written to the serial device.
+        format_string : str
+            Format string describing the data layout for packing the data
+            following the conventions of the :mod:`struct` module.
             See https://docs.python.org/3/library/struct.html#format-characters
+
+        data : Any
+            Data to be written to the serial device.
 
         Returns
         -------
         int or None
             Number of bytes written to the serial device.
         """
-        if len(data) > 1 and isinstance(data[0], str):
-            format_str, *data = data
-            size = struct.calcsize(format_str)
-            buff = ctypes.create_string_buffer(size)
-            struct.pack_into(format_str, buff, 0, *data)
-            return super().write(buff)
-        else:
-            return super().write(self.to_bytes(data[0]))
+        size = struct.calcsize(format_string)
+        buffer = ctypes.create_string_buffer(size)
+        struct.pack_into(format_string, buffer, 0, *data)
+        return super().write(buffer)
 
     @overload
     def read(self, data_specifier: int = 1) -> bytes:
@@ -170,7 +162,7 @@ class SerialSingleton(serial.Serial):
             for unpacking.
 
             When providing an integer, the specified number of bytes will be returned
-            as a bytestring. When providing a `format string`_, the data will be
+            as a bytestring. When providing a `format string`, the data will be
             unpacked into a tuple accordingly. Format strings follow the conventions of
             the :mod:`struct` module.
 
@@ -191,13 +183,11 @@ class SerialSingleton(serial.Serial):
             return super().read(data_specifier)
 
     @overload
-    def query(self, query: bytes | Sequence[Any], data_specifier: int = 1) -> bytes:
+    def query(self, query: Any, data_specifier: int = 1) -> bytes:
         ...
 
     @overload
-    def query(
-        self, query: bytes | Sequence[Any], data_specifier: str
-    ) -> tuple[Any, ...]:
+    def query(self, query: Any, data_specifier: str) -> tuple[Any, ...]:
         ...
 
     def query(self, query, data_specifier=1):

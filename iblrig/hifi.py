@@ -3,6 +3,7 @@ from dataclasses import dataclass
 
 import numpy as np
 from pydantic import validate_call
+
 from iblrig.serial_singleton import SerialSingleton, SerialSingletonException
 
 log = logging.getLogger(__name__)
@@ -24,11 +25,11 @@ class HiFiException(SerialSingletonException):
 
 
 class HiFi(SerialSingleton):
-    _info = _HiFiInfo
-
     @validate_call
     def __init__(self, *args, sampling_rate_hz: int = 192000, attenuation_db: int = 0, **kwargs) -> None:
         super().__init__(*args, **kwargs)
+        if not self.handshake():
+            raise OSError(f'Handshake with Bpod Hifi Module on {self.portstr} failed')
         self.handshake()
         self._info = self._get_info()
         self._min_attenuation_db = -120 if self.is_hd else -103
@@ -37,19 +38,21 @@ class HiFi(SerialSingleton):
         self.sampling_rate_hz = sampling_rate_hz
         self.attenuation_db = attenuation_db
 
-    def handshake(self) -> None:
-        if not self.query(bytes([243])) == bytes([244]):
-            raise OSError(f'Handshake with Bpod Hifi Module on {self.portstr} failed')
+    def handshake(self) -> bool:
+        return self.query(bytes([243])) == bytes([244])
 
     def _get_info(self) -> _HiFiInfo:
-        return _HiFiInfo(*self.query(b'I', '<?BBBIII'))
+        return _HiFiInfo(*self.query(query='I', data_specifier='<?BBBIII'))
 
     def _set_info_field(self, field_name: str, format_str: str, op_code: bytes, value: bool | int) -> bool:
         if getattr(self._info, field_name) == value:
             return True
-        confirmation = self.query(([op_code, value], format_str)) == b'\x01'
-        self._info = self._get_info()
-        return confirmation and getattr(self._info, field_name) == value
+        self.write_packed(format_str, op_code, value)
+        if self.read() == b'\x01':
+            setattr(self._info, field_name, value)
+        else:
+            self._info = self._get_info()
+        return getattr(self._info, field_name) == value
 
     @property
     def sampling_rate_hz(self) -> int:
@@ -124,7 +127,7 @@ class HiFi(SerialSingleton):
         is_stereo = n_channels == 2
 
         log.debug(f'Loading {n_samples} {"stereo" if is_stereo else "mono"} samples to slot #{index}')
-        self.write(([b'L', index, is_stereo, loop_mode, loop_duration, n_samples], '<cB??II'))
+        self.write_packed('<cB??II', b'L', index, is_stereo, loop_mode, loop_duration, n_samples)
         if not self.query(data) == b'\x01':
             raise RuntimeError('Error loading data')
 
@@ -136,7 +139,7 @@ class HiFi(SerialSingleton):
 
     def play(self, index: int) -> None:
         log.debug(f'Starting playback of sound #{index}')
-        self.write(([b'P', index], '<cB'))
+        self.write_packed('<cB', b'P', index)
 
     def stop(self, index: int | None = None):
         if index is None:
@@ -144,4 +147,4 @@ class HiFi(SerialSingleton):
             self.write(b'X')
         else:
             log.debug(f'Stopping playback of sound #{index}')
-            self.write(([b'x', index], '<cB'))
+            self.write_packed('<cB', b'x', index)
