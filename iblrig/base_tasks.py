@@ -892,7 +892,7 @@ class SoundMixin(BaseSession):
                 module = self.bpod.get_module('^HiFi')
                 assert module is not None, 'No HiFi module connected to Bpod'
                 assert self.hardware_settings.device_sound.COM_SOUND is not None
-                hifi = HiFi(port=self.hardware_settings.device_sound.COM_SOUND)
+                hifi = HiFi(port=self.hardware_settings.device_sound.COM_SOUND, sampling_rate_hz=self.sound['samplerate'])
                 hifi.load(index=self.task_params.GO_TONE_IDX, data=self.sound.GO_TONE)
                 hifi.load(index=self.task_params.WHITE_NOISE_IDX, data=self.sound.WHITE_NOISE)
                 hifi.push()

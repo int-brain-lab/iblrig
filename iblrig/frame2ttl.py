@@ -6,7 +6,8 @@ from typing import Literal
 import numpy as np
 from serial.serialutil import SerialTimeoutException
 from serial.tools.list_ports import comports
-from serial_singleton import SerialSingleton
+
+from iblrig.serial_singleton import SerialSingleton
 
 log = logging.getLogger(__name__)
 
@@ -73,11 +74,11 @@ class Frame2TTL(SerialSingleton):
         if is_samd21mini:
             self.hw_version = 1
         else:
-            self.hw_version = self.query('#', 'B')[0]
+            self.hw_version = self.query(query='#', data_specifier='B')[0]
 
         # get firmware version
         try:
-            self.fw_version = self.query('F', 'B')[0]
+            self.fw_version = self.query(query='F', data_specifier='B')[0]
         except struct.error:
             self.fw_version = 1
 
@@ -112,7 +113,7 @@ class Frame2TTL(SerialSingleton):
 
     @streaming.setter
     def streaming(self, state: bool):
-        self.write(struct.pack('<c?', b'S', state))
+        self.write_packed('<c?', b'S', state)
         self.reset_input_buffer()
         self._is_streaming = state
 
@@ -135,13 +136,12 @@ class Frame2TTL(SerialSingleton):
     def set_thresholds(self, light: int, dark: int):
         self._threshold_dark = dark
         self._threshold_light = light
-        self.write(struct.pack('<cHH' if self.hw_version == 1 else '<chh', b'T', self._threshold_light, self._threshold_dark))
+        self.write_packed('<cHH' if self.hw_version == 1 else '<chh', b'T', self._threshold_light, self._threshold_dark)
         log.debug(f'Thresholds set to {self._threshold_light} (light) and {self._threshold_dark} (dark)')
 
     def handshake(self, raise_on_fail: bool = False) -> bool:
         self.flushInput()
-        self.write(b'C')
-        status = self.read() == bytes([218])
+        status = self.query(query='C', data_specifier='B')[0] == 218
         if not status and raise_on_fail:
             raise OSError(f'Device on {self.portstr} is not a Frame2TTL')
         return status
@@ -179,7 +179,7 @@ class Frame2TTL(SerialSingleton):
                         success = False
                 self._calibrate_light = None
         else:
-            value = self.query('L' if condition == 'light' else 'D', '<h')[0]
+            value = self.query(query='L' if condition == 'light' else 'D', data_specifier='<h')[0]
             # TODO: check if readings are sufficiently different
 
         log.debug(f'Suggested value for {condition} threshold: {value}{self.unit_str}')
