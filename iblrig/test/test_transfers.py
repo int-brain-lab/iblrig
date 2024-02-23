@@ -57,11 +57,13 @@ class TestIntegrationTransferExperiments(unittest.TestCase):
         )
         self.td = tempfile.TemporaryDirectory()
         self.session_kwargs = copy.deepcopy(TASK_KWARGS)
-        self.iblrig_settings.update({
-            'iblrig_remote_data_path': Path(self.td.name).joinpath('remote'),
-            'iblrig_local_data_path': Path(self.td.name).joinpath('behavior'),
-            'ALYX_LAB': 'cortexlab'
-        })
+        self.iblrig_settings.update(
+            {
+                'iblrig_remote_data_path': Path(self.td.name).joinpath('remote'),
+                'iblrig_local_data_path': Path(self.td.name).joinpath('behavior'),
+                'ALYX_LAB': 'cortexlab',
+            }
+        )
         self.session_kwargs['iblrig_settings'] = self.iblrig_settings
 
     def tearDown(self):
@@ -128,9 +130,7 @@ class TestIntegrationTransferExperiments(unittest.TestCase):
         :return:
         """
         session = _create_behavior_session(kwargs=self.session_kwargs)
-        sc = BehaviorCopier(
-            session_path=session.paths.SESSION_FOLDER, remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER
-        )
+        sc = BehaviorCopier(session_path=session.paths.SESSION_FOLDER, remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER)
         assert sc.state == 1
         sc.copy_collections()
         assert sc.state == 2
