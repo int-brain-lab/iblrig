@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 import numpy as np
 from pydantic import validate_call
-from serial_singleton import SerialSingleton, SerialSingletonException
+from iblrig.serial_singleton import SerialSingleton, SerialSingletonException
 
 log = logging.getLogger(__name__)
 
