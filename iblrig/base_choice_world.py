@@ -49,7 +49,7 @@ class ChoiceWorldParams(BaseModel):
     FEEDBACK_ERROR_DELAY_SECS: float = 2
     FEEDBACK_NOGO_DELAY_SECS: float = 2
     INTERACTIVE_DELAY: float = 0.0
-    ITI_DELAY_SECS: float = 1
+    ITI_DELAY_SECS: float = 0.5
     NTRIALS: int = Field(2000, gt=0)
     POOP_COUNT: bool = True
     PROBABILITY_LEFT: Probability = 0.5
