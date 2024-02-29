@@ -17,6 +17,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+import numpy as np
 import pyqtgraph as pg
 from pydantic import ValidationError
 from PyQt5 import QtCore, QtGui, QtTest, QtWidgets
@@ -24,6 +25,7 @@ from PyQt5.QtCore import QThread, QThreadPool
 from PyQt5.QtWebEngineWidgets import QWebEnginePage
 from PyQt5.QtWidgets import QStyle
 from requests import HTTPError
+from serial import SerialException
 
 import iblrig.hardware_validation
 import iblrig.path_helper
@@ -41,7 +43,9 @@ from iblrig.hardware import Bpod
 from iblrig.misc import _get_task_argument_parser
 from iblrig.path_helper import load_pydantic_yaml, save_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings, RigSettings
+from iblrig.scale import Scale
 from iblrig.tools import alyx_reachable, get_anydesk_id, internet_available
+from iblrig.valve import Valve
 from iblrig.version_management import check_for_updates, get_changelog, is_dirty
 from iblutil.util import Bunch, setup_logger
 from one.webclient import AlyxClient
@@ -58,6 +62,7 @@ except ImportError:
 
 log = logging.getLogger(__name__)
 pg.setConfigOption('foreground', 'k')
+pg.setConfigOptions(antialias=True)
 
 PROCEDURES = [
     'Behavior training/tasks',
@@ -1290,19 +1295,59 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
         self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
         self.setModal(QtCore.Qt.WindowModality.ApplicationModal)
 
-        x = [1, 54, 123]
-        y = [0.5, 4, 30]
+        hw_settings: HardwareSettings = self.parent().model.hardware_settings
+        self.valve = Valve(hw_settings.device_valve)
+
+        # fill scale ports
+        if hw_settings.device_scale.COM_SCALE is not None:
+            try:
+                self.scale = Scale(hw_settings.device_scale.COM_SCALE)
+            except (AssertionError, SerialException):
+                log.error(f'Error initializing OHAUS scale on {hw_settings.device_scale.COM_SCALE}.')
+                self.scale = None
+        else:
+            self.scale = None
+
+        pass
 
         # set up plot widget
-        self.scatter_plot = pg.ScatterPlotItem()
-        self.scatter_plot.setData(x, y)
+        time_range = np.linspace(*self.valve.calibration_range, 100)
+        self.curve = pg.PlotCurveItem(name='Current Calibration')
+        self.curve.setData(x=list(time_range), y=self.valve.current_calibration.ms2ul(time_range), pen='gray')
+        self.curve.setPen('gray', width=2, style=QtCore.Qt.DashLine)
+        self.points = pg.ScatterPlotItem()
+        self.points.setData(x=self.valve.current_calibration.open_times_ms, y=self.valve.current_calibration.volumes_ul)
+        self.points.setPen('black')
+        self.points.setBrush('black')
 
+        self.uiPlot.hideButtons()
+        self.uiPlot.setMenuEnabled(False)
+        self.uiPlot.setMouseEnabled(x=False, y=False)
         self.uiPlot.setBackground(None)
-        self.uiPlot.addItem(self.scatter_plot)
+        self.uiPlot.addLegend()
+        self.uiPlot.addItem(self.curve)
+        self.uiPlot.addItem(self.points)
         self.uiPlot.setLabel('bottom', 'Opening Time [ms]')
         self.uiPlot.setLabel('left', 'Volume [μL]')
+        self.uiPlot.getViewBox().setLimits(xMin=0, yMin=0)
+        # self.uiPlot.showGrid(x=True, y=True)
 
         self.show()
+
+    # def add_calibration_plot(self, values: ValveValues) -> tuple[pg.PlotCurveItem, pg.ScatterPlotItem]:
+    #     time_range = np.linspace(*self.valve.calibration_range, 100)
+    #     curve = pg.PlotCurveItem()
+    #     curve.setData(x=list(time_range), y=self.valve.current_calibration.ms2ul(time_range), pen='gray')
+    #
+    #     points = pg.ScatterPlotItem()
+    #
+    #
+    #
+    #
+    #     return curve, points
+
+    # def add_data_point(self, open_time_ms: float, weight: float):
+    #     self.valve.
 
 
 class Frame2TTLCalibrationDialog(QtWidgets.QDialog, Ui_frame2ttl):
