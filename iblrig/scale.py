@@ -32,11 +32,15 @@ class Scale(SerialSingleton):
         return self.get_grams()[0]
 
     def get_grams(self) -> tuple[float, bool]:
-        self.assert_setting('1U')
+        try:
+            self.assert_setting('1U')
+        except AssertionError:
+            return float('nan'), False
         data = self.query_line('IP')
-        if (match := re.match(r'^(?P<grams>[\d\.]+)\s*g', data)) is not None:
+        if (match := re.match(r'^(?P<grams>[-\d\.]+)\s*g', data)) is not None:
             grams = float(match.group('grams'))
         else:
+            print(data)
             grams = float('nan')
         stable = not bool(re.search(r'\?$', data))
         return grams, stable

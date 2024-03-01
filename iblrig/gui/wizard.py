@@ -1298,17 +1298,20 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
         hw_settings: HardwareSettings = self.parent().model.hardware_settings
         self.valve = Valve(hw_settings.device_valve)
 
-        # fill scale ports
+        # set up scale reading
+        self.scale_timer = QtCore.QTimer()
         if hw_settings.device_scale.COM_SCALE is not None:
             try:
                 self.scale = Scale(hw_settings.device_scale.COM_SCALE)
+                self.groupBoxScale.setEnabled(True)
+                self.scale_timer.timeout.connect(self.display_scale_reading)
+                self.scale_timer.start(100)
+                QtCore.QTimer.singleShot(1, lambda: self.resize(self.minimumSizeHint()))
             except (AssertionError, SerialException):
                 log.error(f'Error initializing OHAUS scale on {hw_settings.device_scale.COM_SCALE}.')
                 self.scale = None
         else:
             self.scale = None
-
-        pass
 
         # set up plot widget
         time_range = np.linspace(*self.valve.calibration_range, 100)
@@ -1333,6 +1336,15 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
         # self.uiPlot.showGrid(x=True, y=True)
 
         self.show()
+
+    def display_scale_reading(self):
+        grams, stable = self.scale.get_grams()
+        self.lineEditGrams.setText(f'{grams:0.2f}')
+        self.radioButtonStable.setChecked(stable)
+
+    def close(self) -> bool:
+        self.scale_timer.stop()
+        return super().close()
 
     # def add_calibration_plot(self, values: ValveValues) -> tuple[pg.PlotCurveItem, pg.ScatterPlotItem]:
     #     time_range = np.linspace(*self.valve.calibration_range, 100)
