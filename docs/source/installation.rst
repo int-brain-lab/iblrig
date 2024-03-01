@@ -240,6 +240,8 @@ To update the additional tasks and extractors (see :ref:`Installing iblrigv8`, p
 
 Switch to specific iblrig version
 ---------------------------------
+.. warning:: Downgrading is not recommended and may not work as some releases break compatibility with earlier versions.
+
 First fetch all available version tags and list them:
 
 .. code-block:: powershell
@@ -255,5 +257,3 @@ Then switch to the desired version, for example `8.15.5`:
 
   git checkout tag/8.15.5
   pip install --upgrade -e .
-
-
