@@ -4,9 +4,9 @@ from iblrig.base_choice_world import BiasedChoiceWorldSession
 
 class Session(BiasedChoiceWorldSession):
     protocol_name = '_iblrig_tasks_imagingChoiceWorld'
-    extractor_tasks = ['TrialRegisterRaw', 'ChoiceWorldTrials']
 
-    def draw_quiescent_period(self):
+    @staticmethod
+    def draw_quiescent_period():
         """
         For this task we double the quiescence period texp draw and remove the absolute
         offset of 200ms. The resulting is a truncated exp distribution between 400ms and 1 sec

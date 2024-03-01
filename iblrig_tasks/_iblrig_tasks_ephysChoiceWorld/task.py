@@ -12,7 +12,6 @@ from iblrig.base_choice_world import BiasedChoiceWorldSession
 
 class Session(BiasedChoiceWorldSession):
     protocol_name = '_iblrig_tasks_ephysChoiceWorld'
-    extractor_tasks = ['TrialRegisterRaw', 'ChoiceWorldTrials', 'TrainingStatus']
 
     def __init__(self, *args, session_template_id=0, **kwargs):
         super().__init__(*args, **kwargs)

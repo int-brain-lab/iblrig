@@ -12,7 +12,6 @@ with open(Path(__file__).parent.joinpath('task_parameters.yaml')) as f:
 
 class Session(TrainingChoiceWorldSession):
     protocol_name = '_iblrig_tasks_trainingPhaseChoiceWorld'
-    extractor_tasks = ['TrialRegisterRaw', 'ChoiceWorldTrials', 'TrainingStatus']
 
     def __init__(self, *args, training_level=DEFAULTS['TRAINING_PHASE'], debias=DEFAULTS['DEBIAS'], **kwargs):
         super(Session, self).__init__(*args, training_phase=training_level, **kwargs)

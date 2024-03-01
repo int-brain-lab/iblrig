@@ -6,7 +6,6 @@ ADAPTIVE_REWARD = -1.0
 
 
 class Session(TrainingChoiceWorldSession):
-    extractor_tasks = ['TrialRegisterRaw', 'ChoiceWorldTrials', 'TrainingStatus']
 
     @staticmethod
     def extra_parser():
