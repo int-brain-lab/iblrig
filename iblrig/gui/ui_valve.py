@@ -14,7 +14,14 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_valve(object):
     def setupUi(self, valve):
         valve.setObjectName("valve")
-        valve.resize(656, 425)
+        valve.resize(600, 400)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(valve.sizePolicy().hasHeightForWidth())
+        valve.setSizePolicy(sizePolicy)
+        valve.setMinimumSize(QtCore.QSize(600, 400))
+        valve.setMaximumSize(QtCore.QSize(600, 400))
         self.verticalLayout = QtWidgets.QVBoxLayout(valve)
         self.verticalLayout.setObjectName("verticalLayout")
         self.horizontalLayout = QtWidgets.QHBoxLayout()

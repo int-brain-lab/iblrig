@@ -45,7 +45,7 @@ from iblrig.path_helper import load_pydantic_yaml, save_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings, RigSettings
 from iblrig.scale import Scale
 from iblrig.tools import alyx_reachable, get_anydesk_id, internet_available
-from iblrig.valve import Valve
+from iblrig.valve import Valve, get_valve_sample
 from iblrig.version_management import check_for_updates, get_changelog, is_dirty
 from iblutil.util import Bunch, setup_logger
 from one.webclient import AlyxClient
@@ -491,13 +491,12 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
 
     def _on_get_anydesk_result(self, result: str | None) -> None:
         """
-        Handle the result of checking for updates.
+        Handle the result of checking for the user's AnyDesk ID.
 
         Parameters
         ----------
-        result : tuple[bool, str | None]
-            A tuple containing a boolean flag indicating update availability (result[0])
-            and the remote version string (result[1]).
+        result : str | None
+            The user's AnyDesk ID, if available.
 
         Returns
         -------
@@ -1316,10 +1315,10 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
         # set up plot widget
         time_range = np.linspace(*self.valve.calibration_range, 100)
         self.curve = pg.PlotCurveItem(name='Current Calibration')
-        self.curve.setData(x=list(time_range), y=self.valve.current_calibration.ms2ul(time_range), pen='gray')
+        self.curve.setData(x=list(time_range), y=self.valve.values.ms2ul(time_range), pen='gray')
         self.curve.setPen('gray', width=2, style=QtCore.Qt.DashLine)
         self.points = pg.ScatterPlotItem()
-        self.points.setData(x=self.valve.current_calibration.open_times_ms, y=self.valve.current_calibration.volumes_ul)
+        self.points.setData(x=self.valve.values.open_times_ms, y=self.valve.values.volumes_ul)
         self.points.setPen('black')
         self.points.setBrush('black')
 
@@ -1335,12 +1334,24 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
         self.uiPlot.getViewBox().setLimits(xMin=0, yMin=0)
         # self.uiPlot.showGrid(x=True, y=True)
 
+        self.sample(open_time_ms=10, close_time_ms=10, repetitions=5)
         self.show()
 
     def display_scale_reading(self):
         grams, stable = self.scale.get_grams()
         self.lineEditGrams.setText(f'{grams:0.2f}')
         self.radioButtonStable.setChecked(stable)
+
+    def sample(self, open_time_ms: float, close_time_ms: float, repetitions: int) -> float:
+        hw_settings: HardwareSettings = self.parent().model.hardware_settings
+        bpod = Bpod(
+            hw_settings.device_bpod.COM_BPOD,
+            skip_initialization=True,
+            disable_behavior_ports=[0, 1, 2, 3],
+        )
+        count = get_valve_sample(bpod, open_time_ms=open_time_ms, close_time_ms=close_time_ms, repetitions=repetitions)
+        bpod.close()
+        return count
 
     def close(self) -> bool:
         self.scale_timer.stop()

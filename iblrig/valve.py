@@ -6,7 +6,9 @@ import scipy
 from numpy.polynomial import Polynomial
 from pydantic import PositiveFloat, validate_call
 
+from iblrig.hardware import Bpod
 from iblrig.pydantic_definitions import HardwareSettingsValve
+from pybpodapi.state_machine import StateMachine
 
 
 class ValveValues:
@@ -63,7 +65,7 @@ class ValveValues:
 class Valve:
     def __init__(self, settings: HardwareSettingsValve):
         self._settings = settings
-        self.current_calibration = ValveValues(settings.WATER_CALIBRATION_OPEN_TIMES, settings.WATER_CALIBRATION_WEIGHT_PERDROP)
+        self.values = ValveValues(settings.WATER_CALIBRATION_OPEN_TIMES, settings.WATER_CALIBRATION_WEIGHT_PERDROP)
 
     @property
     def calibration_date(self) -> datetime.date:
@@ -85,8 +87,55 @@ class Valve:
     def free_reward_time(self) -> float:
         return self._settings.FREE_REWARD_VOLUME_UL
 
-    def add_data_point(self, open_time_ms: float, weight: float):
-        pass
 
-    def clear_data(self):
-        self.new_calibration = {}
+def get_valve_sample(
+    bpod: Bpod, open_time_ms: float, close_time_ms: float = 0.1, repetitions: int = 100, valve: str = 'Valve1'
+) -> int:
+    """Repeatedly open a valve
+
+    Parameters
+    ----------
+    bpod
+    open_time_ms
+    close_time_ms
+    repetitions
+    valve
+
+    Returns
+    -------
+    int
+        The actual number of times the valve was opened. Due to implementation details this number may theoretically
+        differ from the requested number of repetitions.
+    """
+    counter = 0
+
+    def softcode_handler(_):
+        nonlocal counter
+        counter += 1
+
+    original_softcode_handler = bpod.softcode_handler_function
+    bpod.softcode_handler_function = softcode_handler
+
+    sma = StateMachine(bpod)
+    sma.set_global_timer(timer_id=1, timer_duration=(open_time_ms + close_time_ms) * repetitions / 1e3)
+    sma.add_state(
+        state_name='start_timer',
+        state_change_conditions={'Tup': 'open'},
+        output_actions=[('GlobalTimerTrig', 1)],
+    )
+    sma.add_state(
+        state_name='open',
+        state_timer=open_time_ms / 1e3,
+        state_change_conditions={'Tup': 'close'},
+        output_actions=[(valve, 255), ('SoftCode', 1)],
+    )
+    sma.add_state(
+        state_name='close',
+        state_timer=close_time_ms / 1e3,
+        state_change_conditions={'Tup': 'open', 'GlobalTimer1_End': 'exit'},
+    )
+    bpod.send_state_machine(sma)
+    bpod.run_state_machine(sma)
+
+    bpod.softcode_handler_function = original_softcode_handler
+    return counter
