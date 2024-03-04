@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="images">
+    <file alias="stable">resources/icon_stable.svg</file>
     <file alias="present">resources/icon_present.svg</file>
     <file alias="log">resources/icon_log.svg</file>
     <file alias="hide">resources/icon_hide.svg</file>
@@ -18,5 +19,8 @@
     <file alias="flush">resources/icon_flush.svg</file>
     <file alias="help">resources/icon_help.svg</file>
     <file alias="status_led">resources/icon_status_led.svg</file>
+  </qresource>
+  <qresource prefix="fonts">
+    <file alias="7-Segment">resources/7segment.ttf</file>
   </qresource>
 </RCC>

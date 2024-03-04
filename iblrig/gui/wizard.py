@@ -1287,9 +1287,17 @@ class SubjectDetailsWorker(QThread):
 
 
 class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
+    _grams = float('nan')
+    _stable = False
+
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.setupUi(self)
+
+        self.font_database = QtGui.QFontDatabase
+        self.font_database.addApplicationFont(':/fonts/7-Segment')
+        self.lineEditGrams.setFont(QtGui.QFont('7-Segment', 30))
+
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose, True)
         self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
         self.setModal(QtCore.Qt.WindowModality.ApplicationModal)
@@ -1309,8 +1317,10 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
             except (AssertionError, SerialException):
                 log.error(f'Error initializing OHAUS scale on {hw_settings.device_scale.COM_SCALE}.')
                 self.scale = None
+                self.lineEditGrams.setText('')
         else:
             self.scale = None
+            self.lineEditGrams.setText('')
 
         # set up plot widget
         time_range = np.linspace(*self.valve.calibration_range, 100)
@@ -1339,8 +1349,16 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
 
     def display_scale_reading(self):
         grams, stable = self.scale.get_grams()
-        self.lineEditGrams.setText(f'{grams:0.2f}')
-        self.radioButtonStable.setChecked(stable)
+        if grams != self._grams:
+            self._grams = grams
+            self.lineEditGrams.setText(f'{grams:0.2f}')
+        if stable != self._stable:
+            self._stable = stable
+            if stable and len(self.lineEditGrams.actions()) == 0:
+                self.lineEditGrams.addAction(QtGui.QIcon(':/images/stable'), QtWidgets.QLineEdit.ActionPosition.LeadingPosition)
+            elif not stable:
+                for action in self.lineEditGrams.actions():
+                    self.lineEditGrams.removeAction(action)
 
     def sample(self, open_time_ms: float, close_time_ms: float, repetitions: int) -> float:
         hw_settings: HardwareSettings = self.parent().model.hardware_settings
