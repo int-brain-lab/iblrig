@@ -133,7 +133,7 @@ class HardwareSettings(BunchModel):
     device_screen: HardwareSettingsScreen
     device_sound: HardwareSettingsSound
     device_valve: HardwareSettingsValve
-    device_scale: HardwareSettingsScale
+    device_scale: HardwareSettingsScale = HardwareSettingsScale()
     device_cameras: HardwareSettingsCameras | None = None
     device_microphone: HardwareSettingsMicrophone | None = None
     VERSION: str
