@@ -31,7 +31,31 @@ class Scale(SerialSingleton):
     def grams(self) -> float:
         return self.get_grams()[0]
 
+    def get_stable_grams(self) -> float:
+        """
+        Blocking function that will only return a weight reading once the scale is stable.
+
+        Returns
+        -------
+        float
+            Stable weight reading (grams)
+
+        """
+        while not (return_value := self.get_grams())[1]:
+            pass
+        return return_value[0]
+
     def get_grams(self) -> tuple[float, bool]:
+        """
+        Obtain weight reading and stability indicator
+
+        Returns
+        -------
+        float
+            Weight reading in grams
+        bool
+            Stability indicator: True if scale is stable, False if not
+        """
         try:
             self.assert_setting('1U')
         except AssertionError:
@@ -39,8 +63,8 @@ class Scale(SerialSingleton):
         data = self.query_line('IP')
         if (match := re.match(r'^(?P<grams>[-\d\.]+)\s*g', data)) is not None:
             grams = float(match.group('grams'))
+            stable = not bool(re.search(r'\?$', data))
         else:
-            print(data)
             grams = float('nan')
-        stable = not bool(re.search(r'\?$', data))
+            stable = False
         return grams, stable
