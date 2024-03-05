@@ -22,6 +22,7 @@ from iblutil.util import Bunch
 from pybpod_rotaryencoder_module.module import RotaryEncoder
 from pybpod_rotaryencoder_module.module_api import RotaryEncoderModule
 from pybpodapi.bpod.bpod_io import BpodIO
+from pybpodapi.state_machine import StateMachine
 
 SOFTCODE = IntEnum('SOFTCODE', ['STOP_SOUND', 'PLAY_TONE', 'PLAY_NOISE', 'TRIGGER_CAMERA'])
 
@@ -186,12 +187,61 @@ class Bpod(BpodIO):
         Flushes valve 1 for duration (seconds)
         :return:
         """
-        self.manual_override(self.ChannelTypes.OUTPUT, self.ChannelNames.VALVE, 1, 1)
         if duration is None:
+            self.open_valve(open=True, valve_number=1)
             input('Press ENTER when done.')
+            self.open_valve(open=False, valve_number=1)
         else:
-            time.sleep(duration)
-        self.manual_override(self.ChannelTypes.OUTPUT, self.ChannelNames.VALVE, 1, 0)
+            self.pulse_valve(open_time_s=duration)
+
+    def open_valve(self, open: bool, valve_number: int = 1):
+        self.manual_override(self.ChannelTypes.OUTPUT, self.ChannelNames.VALVE, valve_number, open)
+
+    def pulse_valve(self, open_time_s: float, valve: str = 'Valve1'):
+        sma = StateMachine(self)
+        sma.add_state(
+            state_name='flush',
+            state_timer=open_time_s,
+            state_change_conditions={'Tup': 'exit'},
+            output_actions=[(valve, 255)],
+        )
+        self.send_state_machine(sma)
+        self.run_state_machine(sma)
+
+    def pulse_valve_repeatedly(
+        self, repetitions: int, open_time_s: float, close_time_s: float = 0.2, valve: str = 'Valve1'
+    ) -> int:
+        counter = 0
+
+        def softcode_handler(_):
+            nonlocal counter
+            counter += 1
+
+        original_softcode_handler = self.softcode_handler_function
+        self.softcode_handler_function = softcode_handler
+
+        sma = StateMachine(self)
+        sma.set_global_timer(timer_id=1, timer_duration=(open_time_s + close_time_s) * repetitions)
+        sma.add_state(
+            state_name='start_timer',
+            state_change_conditions={'Tup': 'open'},
+            output_actions=[('GlobalTimerTrig', 1)],
+        )
+        sma.add_state(
+            state_name='open',
+            state_timer=open_time_s / 1e3,
+            state_change_conditions={'Tup': 'close'},
+            output_actions=[(valve, 255), ('SoftCode', 1)],
+        )
+        sma.add_state(
+            state_name='close',
+            state_timer=close_time_s / 1e3,
+            state_change_conditions={'Tup': 'open', 'GlobalTimer1_End': 'exit'},
+        )
+        self.send_state_machine(sma)
+        self.run_state_machine(sma)
+        self.softcode_handler_function = original_softcode_handler
+        return counter
 
     @static_vars(supported=True)
     def set_status_led(self, state: bool) -> bool:
