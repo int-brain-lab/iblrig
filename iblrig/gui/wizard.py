@@ -1,6 +1,7 @@
 import argparse
 import ctypes
 import datetime
+import functools
 import importlib
 import json
 import logging
@@ -45,11 +46,11 @@ from iblrig.path_helper import load_pydantic_yaml, save_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings, RigSettings
 from iblrig.scale import Scale
 from iblrig.tools import alyx_reachable, get_anydesk_id, internet_available
-from iblrig.valve import Valve, get_valve_sample
+from iblrig.valve import Valve
 from iblrig.version_management import check_for_updates, get_changelog, is_dirty
 from iblutil.util import Bunch, setup_logger
 from one.webclient import AlyxClient
-from pybpodapi import exceptions
+from pybpodapi.exceptions.bpod_error import BpodErrorException
 
 try:
     import iblrig_custom_tasks
@@ -228,7 +229,7 @@ class RigWizardModel:
                 disable_behavior_ports=[1, 2, 3],
             )
             bpod.pulse_valve(open_time_s=self.free_reward_time)
-        except (OSError, exceptions.bpod_error.BpodErrorException):
+        except (OSError, BpodErrorException):
             log.error('Cannot find bpod - is it connected?')
             return
 
@@ -1048,7 +1049,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 disable_behavior_ports=[1, 2, 3],
             )
             bpod.open_valve(self.uiPushFlush.isChecked())
-        except (OSError, exceptions.bpod_error.BpodErrorException):
+        except (OSError, BpodErrorException):
             print(traceback.format_exc())
             print('Cannot find bpod - is it connected?')
             self.uiPushFlush.setChecked(False)
@@ -1063,7 +1064,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         try:
             bpod = Bpod(self.model.hardware_settings['device_bpod']['COM_BPOD'], skip_initialization=True)
             bpod.set_status_led(is_toggled)
-        except (OSError, exceptions.bpod_error.BpodErrorException, AttributeError):
+        except (OSError, BpodErrorException, AttributeError):
             self.uiPushStatusLED.setChecked(False)
             self.uiPushStatusLED.setStyleSheet('')
 
@@ -1157,10 +1158,6 @@ class Worker(QtCore.QRunnable):
 
         **kwargs : dict
             Keyword arguments for the function.
-
-        Returns
-        -------
-        None
         """
         super().__init__()
         self.fn = fn
@@ -1279,9 +1276,23 @@ class SubjectDetailsWorker(QThread):
 
 class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
     scale: Scale | None = None
+    scale_text_changed = QtCore.pyqtSignal(str)
+    scale_stable_changed = QtCore.pyqtSignal(bool)
     _grams = float('nan')
     _stable = False
-    _next_calibration_step = 0
+    _next_calibration_step = 1
+    _scale_update_ms = 100
+    _guide_strings = {
+        1: (
+            'Place a small beaker on the scale and position the lick spout directly above it.\n\n'
+            'Make sure that neither the lick spout itself nor the tubing touch the beaker or the scale and that the '
+            'water drops can freely fall into the beaker.'
+        ),
+        2: (
+            'Use the valve controls above to advance the flow of the water until there are no visible pockets of air '
+            'within the tubing and first drops start falling into the beaker.'
+        ),
+    }
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -1301,6 +1312,8 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
         )
         self.action_grams.setVisible(False)
         self.action_stable.setVisible(False)
+        self.scale_text_changed.connect(self.display_scale_text)
+        self.scale_stable_changed.connect(self.display_scale_stable)
 
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose, True)
         self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
@@ -1339,13 +1352,41 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
         self.uiPlot.setLabel('left', 'Volume [μL]')
         self.uiPlot.getViewBox().setLimits(xMin=0, yMin=0)
 
-        self.commandLinkNext.clicked.connect(self.guided_calibration)
+        # self.commandLinkNext.clicked.connect(self.guided_calibration)
         self.pushButtonPulseValve.clicked.connect(self.pulse_valve)
         self.pushButtonToggleValve.clicked.connect(self.toggle_valve)
+        self.pushButtonTareScale.clicked.connect(self.tare)
 
         # self.sample(open_time_ms=50, close_time_ms=200, repetitions=100)
-        self.guided_calibration()
+        # self.guided_calibration()
+
+        self.machine = QtCore.QStateMachine()
+        self.states: list[QtCore.QState] = []
+
+        state = self._add_main_state()
+        state = self._add_main_state()
+        state.assignProperty(self.pushButtonTareScale, 'enabled', False)
+        state = self._add_main_state(final=True)
+
+        # self.machine.setInitialState(self.states[0])
+        self.machine.start()
         self.show()
+
+    def _add_main_state(self, final: bool = False) -> QtCore.QState:
+        idx = len(self.states)
+        if final:
+            state = QtCore.QFinalState()
+            self.states[-1].addTransition(self.states[-1].finished, state)
+        else:
+            state = QtCore.QState()
+            state.assignProperty(self.labelGuidedCalibration, 'text', self._guide_strings[idx + 1])
+            if idx > 0:
+                self.states[-1].addTransition(self.commandLinkNext.clicked, state)
+        self.machine.addState(state)
+        if idx == 0:
+            self.machine.setInitialState(state)
+        self.states.append(state)
+        return state
 
     def initialize_scale(self, port: str) -> bool:
         try:
@@ -1360,47 +1401,54 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
     def _on_initialize_scale_result(self, success: bool):
         if success:
             self.lineEditGrams.setEnabled(True)
+            self.pushButtonTareScale.setEnabled(True)
             self.lineEditGrams.setAlignment(QtCore.Qt.AlignRight)
             self.lineEditGrams.setText('')
-            self.scale_timer.timeout.connect(self.display_scale_reading)
+            self.scale_timer.timeout.connect(self.get_scale_reading)
             self.action_grams.setVisible(True)
-            self.display_scale_reading()
-            self.scale_timer.start(100)
+            self.get_scale_reading()
+            self.scale_timer.start(self._scale_update_ms)
         else:
             self.lineEditGrams.setAlignment(QtCore.Qt.AlignCenter)
             self.lineEditGrams.setText('Error')
 
-    def display_scale_reading(self):
+    def get_scale_reading(self):
         grams, stable = self.scale.get_grams()
         if grams != self._grams:
-            self._grams = grams
-            self.lineEditGrams.setText(f'{grams:0.2f}')
+            self.scale_text_changed.emit(f'{grams:0.2f}')
         if stable != self._stable:
-            self._stable = stable
-            self.action_stable.setVisible(stable)
+            self.scale_stable_changed.emit(stable)
+        self._grams = grams
+        self._stable = stable
 
-    def guided_calibration(self):
-        match self._next_calibration_step:
-            case 0:
-                help_string = (
-                    'Place a small beaker on the scale and position the lick spout directly above it.\n\n'
-                    'Make sure that neither the lick spout itself nor the tubing touch the beaker or the scale and '
-                    'that the water drops can freely fall into the beaker.'
-                )
-            case 1:
-                help_string = (
-                    'Use the valve controls to advance the flow of the water until there are no visible '
-                    'pockets of air within the tubing and first drops start falling into the beaker.'
-                )
-        self.labelGuidedCalibration.setText(help_string)
-        self._next_calibration_step += 1
+    @QtCore.pyqtSlot(str)
+    def display_scale_text(self, value: str):
+        self.lineEditGrams.setText(value)
+
+    @QtCore.pyqtSlot(bool)
+    def display_scale_stable(self, value: bool):
+        self.action_stable.setVisible(value)
+
+    # def guided_calibration(self):
+    #     guide_string = self._guide_strings.get(self._next_calibration_step, '')
+    #     self.labelGuidedCalibration.setText(guide_string)
+    #     match self._next_calibration_step:
+    #         case 3:
+    #             self.clear_drop()
+    #         case 4:
+    #             self.tare()
+    #             worker = Worker(self.bpod.pulse_valve_repeatedly, repetitions=100, open_time_s=0.05, close_time_s=0.05)
+    #             QThreadPool.globalInstance().tryStart(worker)
+    #             # worker.signals.result.connect(self._on_initialize_scale_result)
+    #             # self.bpod.pulse_valve_repeatedly(100, 0.05)
+    #     self._next_calibration_step += 1
 
     def toggle_valve(self):
         state = self.pushButtonToggleValve.isChecked()
         self.pushButtonToggleValve.setStyleSheet('QPushButton {background-color: rgb(128, 128, 255);}' if state else '')
         try:
             self.bpod.open_valve(open=state)
-        except (OSError, exceptions.bpod_error.BpodErrorException):
+        except (OSError, BpodErrorException):
             print(traceback.format_exc())
             print('Cannot find bpod - is it connected?')
             self.uiPushFlush.setChecked(False)
@@ -1411,23 +1459,47 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
 
     def clear_drop(self):
         initial_grams = self.scale.get_stable_grams()
-        while self.scale.get_stable_grams() < initial_grams + 0.02:
-            self.pulse_valve()
+        timer = QtCore.QTimer()
+        timer_callback = functools.partial(self.clear_crop_callback, initial_grams, timer)
+        timer.timeout.connect(timer_callback)
+        timer.start(500)
+
+    def clear_crop_callback(self, initial_grams: float, timer: QtCore.QTimer):
+        if self.scale.get_grams()[0] > initial_grams + 0.02:
+            timer.stop()
+            return
+        self.pulse_valve()
+
+    def tare(self):
+        if self.scale is not None:
+            self.scale_timer.stop()
+            self.scale_text_changed.emit('------')
+            self._grams = float('nan')
+            worker = Worker(self.scale.tare)
+            worker.signals.result.connect(self._on_tare_finished)
+            QThreadPool.globalInstance().tryStart(worker)
+
+    @QtCore.pyqtSlot(object)
+    def _on_tare_finished(self, value: bool):
+        QtCore.QTimer.singleShot(200, lambda: self.scale_timer.start(self._scale_update_ms))
 
     def sample(self, open_time_ms: float, close_time_ms: float, repetitions: int) -> float:
-        hw_settings: HardwareSettings = self.parent().model.hardware_settings
-        bpod = Bpod(
-            hw_settings.device_bpod.COM_BPOD,
-            skip_initialization=True,
-            disable_behavior_ports=[0, 1, 2, 3],
-        )
-        count = get_valve_sample(bpod, open_time_ms=open_time_ms, close_time_ms=close_time_ms, repetitions=repetitions)
-        bpod.close()
-        return count
+        pass
+        # hw_settings: HardwareSettings = self.parent().model.hardware_settings
+        # bpod = Bpod(
+        #     hw_settings.device_bpod.COM_BPOD,
+        #     skip_initialization=True,
+        #     disable_behavior_ports=[0, 1, 2, 3],
+        # )
+        # count = get_valve_sample(bpod, open_time_ms=open_time_ms, close_time_ms=close_time_ms, repetitions=repetitions)
+        # bpod.close()
+        # return count
 
     def closeEvent(self, event) -> bool:
         if self.scale is not None:
             self.scale_timer.stop()
+        if self.machine.started:
+            self.machine.stop()
 
     # def add_calibration_plot(self, values: ValveValues) -> tuple[pg.PlotCurveItem, pg.ScatterPlotItem]:
     #     time_range = np.linspace(*self.valve.calibration_range, 100)

@@ -1,14 +1,24 @@
 import logging
 import re
+from dataclasses import dataclass
 
 from serial_singleton import SerialSingleton
 
 log = logging.getLogger(__name__)
 
 
+@dataclass
+class ScaleData:
+    weight: float = float('nan')
+    unit: str = 'g'
+    stable: bool = False
+    mode: str = ''
+
+
 class Scale(SerialSingleton):
     # http://dmx.ohaus.com/WorkArea/downloadasset.aspx?id=3600
     # https://dmx.ohaus.com/WorkArea/showcontent.aspx?id=4294974227
+    _re_pattern = re.compile(rb'\s*(\S+)\s+(\w+)\s(.)\s{1,3}(\w{0,2})')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, baudrate=9600, timeout=5, **kwargs)
@@ -18,26 +28,33 @@ class Scale(SerialSingleton):
         self.assert_setting('1M')  # set current application mode to WEIGH
         self.assert_setting('1U')  # set unit to grams
         self.assert_setting('0FMT')  # use New Scout print format
-        self.handshake()
+        log.debug(f'Connected to OHAUS scale on {self.portstr}')
 
-    def assert_setting(self, query: str, expected_response: str = b'OK!') -> None:
-        assert self.query_line(query) == expected_response
+    def assert_setting(self, query: str, expected_response: str = b'OK!', do_raise: bool = True) -> bool:
+        success = self.query_line(query) == expected_response
+        if do_raise and not success:
+            raise AssertionError
+        return success
 
-    def query_line(self, query: str) -> str:
+    def query_line(self, query: str) -> bytes:
         self.reset_input_buffer()
         self.write(query + '\r\n')
         return self.readline().rstrip(b'\r\n')
 
-    def handshake(self) -> bool:
-        v = self.query_line('V')
-        sn = self.query_line('PSN')
-        log.debug(f'Connected to OHAUS scale on {self.portstr}, {v}, {sn}')
+    def zero(self) -> bool:
+        success = self.assert_setting('Z', do_raise=False)
+        if success:
+            self.get_stable_grams()
+        return success
 
-    def zero(self) -> None:
-        self.assert_setting('Z')
-
-    def tare(self) -> None:
-        self.assert_setting('T')
+    def tare(self) -> bool:
+        weight, _, _, mode = self._split_query()
+        if weight == b'0.00' and mode != b'N':
+            return True
+        success = self.assert_setting('T', do_raise=False)
+        if success:
+            self.get_stable_grams()
+        return success
 
     @property
     def grams(self) -> float:
@@ -57,9 +74,16 @@ class Scale(SerialSingleton):
             pass
         return return_value[0]
 
+    def _split_query(self, query: str = 'IP') -> tuple[bytes, ...]:
+        data = self.query_line(query)
+        if (match := re.fullmatch(self._re_pattern, data)) is None:
+            return b'nan', b'g', b'?', b''
+        else:
+            return match.groups()
+
     def get_grams(self) -> tuple[float, bool]:
         """
-        Obtain weight reading and stability indicator
+        Obtain weight reading in grams and stability indicator
 
         Returns
         -------
@@ -68,15 +92,8 @@ class Scale(SerialSingleton):
         bool
             Stability indicator: True if scale is stable, False if not
         """
-        data = self.query_line('IP')
-        match = re.match(rb'\s*([-\d\.]+)\s*(\w)\s(.)', data)
-        if match is None:
-            grams = float('nan')
-            stable = False
-        elif match.groups()[1] != b'g':
+        weight, unit, stable, _ = self._split_query('IP')
+        if unit != b'g':
             self.assert_setting('1U')
             return self.get_grams()
-        else:
-            grams = float(match.groups()[0])
-            stable = match.groups()[2] == b' '
-        return grams, stable
+        return float(weight), stable == b' '
