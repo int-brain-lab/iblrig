@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="images">
+    <file alias="restart">resources/icon_restart.svg</file>
     <file alias="grams">resources/icon_grams.svg</file>
     <file alias="stable">resources/icon_stable.svg</file>
     <file alias="present">resources/icon_present.svg</file>
