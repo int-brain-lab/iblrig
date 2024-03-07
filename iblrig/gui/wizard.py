@@ -1342,6 +1342,8 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
         self.uiPlot.getViewBox().setLimits(xMin=0, yMin=0)
 
         # self.commandLinkNext.clicked.connect(self.guided_calibration)
+        self.buttonBox.button(self.buttonBox.Ok).setText('Save')
+        self.buttonBox.button(self.buttonBox.Ok).setEnabled(False)
         self.pushButtonPulseValve.clicked.connect(self.pulse_valve)
         self.pushButtonToggleValve.clicked.connect(self.toggle_valve)
         self.pushButtonTareScale.clicked.connect(self.tare)
@@ -1355,9 +1357,10 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
         self._add_main_state(
             help_text=(
                 'This is a step-by-step guide for calibrating the valve of your rig. You can abort the process at any time by '
-                'pressing Cancel:'
+                'pressing Cancel.'
             )
         )
+
         self._add_main_state(
             help_text=(
                 'Place a small beaker on the scale and position the lick spout directly above it.\n\nMake sure that neither the '
@@ -1365,19 +1368,27 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
                 'the beaker.'
             )
         )
-        state = self._add_main_state(
+
+        self._add_main_state(
             help_text=(
                 'Use the valve controls above to advance the flow of the water until there are no visible pockets of air within '
                 'the tubing and first drops start falling into the beaker.'
-            ),
-            final=True,
+            )
         )
-        state.assignProperty(self.pushButtonTareScale, 'enabled', False)
+
+        state = self._add_main_state(
+            help_text=(
+                'Calibration is finished.\n\nClick Save to store the calibration or Cancel to discard it.'
+            ),
+            final_state=True
+        )
+        state.assignProperty(self.commandLinkNext, 'visible', False)
+        state.assignProperty(self.buttonBox.button(self.buttonBox.Ok), 'enabled', True)
 
         self.machine.start()
         self.show()
 
-    def _add_main_state(self, help_text: str | None = None, final: bool = False) -> QtCore.QState:
+    def _add_main_state(self, help_text: str | None = None, final_state: bool = False) -> QtCore.QState:
         idx = len(self.states)
         state = QtCore.QState()
         if help_text is not None:
@@ -1387,7 +1398,7 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
             self.machine.setInitialState(state)
         elif idx > 0:
             self.states[-1].addTransition(self.commandLinkNext.clicked, state)
-        if final:
+        if final_state:
             state.addTransition(state.finished, QtCore.QFinalState())
         self.states.append(state)
         return state
