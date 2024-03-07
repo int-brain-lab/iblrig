@@ -1341,15 +1341,11 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
         self.uiPlot.setLabel('left', 'Volume [μL]')
         self.uiPlot.getViewBox().setLimits(xMin=0, yMin=0)
 
-        # self.commandLinkNext.clicked.connect(self.guided_calibration)
         self.buttonBox.button(self.buttonBox.Ok).setText('Save')
         self.buttonBox.button(self.buttonBox.Ok).setEnabled(False)
         self.pushButtonPulseValve.clicked.connect(self.pulse_valve)
         self.pushButtonToggleValve.clicked.connect(self.toggle_valve)
         self.pushButtonTareScale.clicked.connect(self.tare)
-
-        # self.sample(open_time_ms=50, close_time_ms=200, repetitions=100)
-        # self.guided_calibration()
 
         self.machine = QtCore.QStateMachine()
         self.states: list[QtCore.QState] = []
@@ -1377,10 +1373,8 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
         )
 
         state = self._add_main_state(
-            help_text=(
-                'Calibration is finished.\n\nClick Save to store the calibration or Cancel to discard it.'
-            ),
-            final_state=True
+            help_text=('Calibration is finished.\n\nClick Save to store the calibration or Cancel to discard it.'),
+            final_state=True,
         )
         state.assignProperty(self.commandLinkNext, 'visible', False)
         state.assignProperty(self.buttonBox.button(self.buttonBox.Ok), 'enabled', True)
@@ -1498,38 +1492,11 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
     def _on_tare_finished(self, value: bool):
         QtCore.QTimer.singleShot(200, lambda: self.scale_timer.start(self._scale_update_ms))
 
-    def sample(self, open_time_ms: float, close_time_ms: float, repetitions: int) -> float:
-        pass
-        # hw_settings: HardwareSettings = self.parent().model.hardware_settings
-        # bpod = Bpod(
-        #     hw_settings.device_bpod.COM_BPOD,
-        #     skip_initialization=True,
-        #     disable_behavior_ports=[0, 1, 2, 3],
-        # )
-        # count = get_valve_sample(bpod, open_time_ms=open_time_ms, close_time_ms=close_time_ms, repetitions=repetitions)
-        # bpod.close()
-        # return count
-
     def closeEvent(self, event) -> bool:
         if self.scale is not None:
             self.scale_timer.stop()
         if self.machine.started:
             self.machine.stop()
-
-    # def add_calibration_plot(self, values: ValveValues) -> tuple[pg.PlotCurveItem, pg.ScatterPlotItem]:
-    #     time_range = np.linspace(*self.valve.calibration_range, 100)
-    #     curve = pg.PlotCurveItem()
-    #     curve.setData(x=list(time_range), y=self.valve.current_calibration.ms2ul(time_range), pen='gray')
-    #
-    #     points = pg.ScatterPlotItem()
-    #
-    #
-    #
-    #
-    #     return curve, points
-
-    # def add_data_point(self, open_time_ms: float, weight: float):
-    #     self.valve.
 
 
 class Frame2TTLCalibrationDialog(QtWidgets.QDialog, Ui_frame2ttl):
