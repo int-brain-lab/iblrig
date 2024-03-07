@@ -1282,17 +1282,6 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
     _stable = False
     _next_calibration_step = 1
     _scale_update_ms = 100
-    _guide_strings = {
-        1: (
-            'Place a small beaker on the scale and position the lick spout directly above it.\n\n'
-            'Make sure that neither the lick spout itself nor the tubing touch the beaker or the scale and that the '
-            'water drops can freely fall into the beaker.'
-        ),
-        2: (
-            'Use the valve controls above to advance the flow of the water until there are no visible pockets of air '
-            'within the tubing and first drops start falling into the beaker.'
-        ),
-    }
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -1363,28 +1352,43 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
         self.machine = QtCore.QStateMachine()
         self.states: list[QtCore.QState] = []
 
-        state = self._add_main_state()
-        state = self._add_main_state()
+        self._add_main_state(
+            help_text=(
+                'This is a step-by-step guide for calibrating the valve of your rig. You can abort the process at any time by '
+                'pressing Cancel:'
+            )
+        )
+        self._add_main_state(
+            help_text=(
+                'Place a small beaker on the scale and position the lick spout directly above it.\n\nMake sure that neither the '
+                'lick spout itself nor the tubing touch the beaker or the scale and that the water drops can freely fall into '
+                'the beaker.'
+            )
+        )
+        state = self._add_main_state(
+            help_text=(
+                'Use the valve controls above to advance the flow of the water until there are no visible pockets of air within '
+                'the tubing and first drops start falling into the beaker.'
+            ),
+            final=True,
+        )
         state.assignProperty(self.pushButtonTareScale, 'enabled', False)
-        state = self._add_main_state(final=True)
 
-        # self.machine.setInitialState(self.states[0])
         self.machine.start()
         self.show()
 
-    def _add_main_state(self, final: bool = False) -> QtCore.QState:
+    def _add_main_state(self, help_text: str | None = None, final: bool = False) -> QtCore.QState:
         idx = len(self.states)
-        if final:
-            state = QtCore.QFinalState()
-            self.states[-1].addTransition(self.states[-1].finished, state)
-        else:
-            state = QtCore.QState()
-            state.assignProperty(self.labelGuidedCalibration, 'text', self._guide_strings[idx + 1])
-            if idx > 0:
-                self.states[-1].addTransition(self.commandLinkNext.clicked, state)
+        state = QtCore.QState()
+        if help_text is not None:
+            state.assignProperty(self.labelGuidedCalibration, 'text', help_text)
         self.machine.addState(state)
         if idx == 0:
             self.machine.setInitialState(state)
+        elif idx > 0:
+            self.states[-1].addTransition(self.commandLinkNext.clicked, state)
+        if final:
+            state.addTransition(state.finished, QtCore.QFinalState())
         self.states.append(state)
         return state
 
