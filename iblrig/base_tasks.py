@@ -681,7 +681,7 @@ class BpodMixin(BaseSession):
                 SOFTCODE.STOP_SOUND: self.sound['sd'].stop,
                 SOFTCODE.PLAY_TONE: lambda: self.sound['sd'].play(self.sound['GO_TONE'], self.sound['samplerate']),
                 SOFTCODE.PLAY_NOISE: lambda: self.sound['sd'].play(self.sound['WHITE_NOISE'], self.sound['samplerate']),
-                SOFTCODE.TRIGGER_CAMERA: self.trigger_bonsai_cameras,
+                SOFTCODE.TRIGGER_CAMERA: getattr(self, 'trigger_bonsai_cameras', lambda *args: None),
             }
         )
         return softcode_dict
