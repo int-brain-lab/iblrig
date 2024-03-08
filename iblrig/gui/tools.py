@@ -11,6 +11,9 @@ from iblrig.constants import BASE_PATH
 
 
 def convert_uis():
+    """
+    A wrapper for PyQt5's pyuic5 and pyrcc5, set up for development on iblrig
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument('pattern', nargs='?', default='*.*', type=str)
     args = parser.parse_args()

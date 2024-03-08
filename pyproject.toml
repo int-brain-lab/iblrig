@@ -27,6 +27,8 @@ dependencies = [
     "project_extraction@git+https://github.com/int-brain-lab/project_extraction.git",
     "pydantic",
     "PyQt5",
+    "pyqtgraph",
+    "PyQtWebEngine",
     "python-osc",
     "pywin32; sys_platform == 'win32'",
     "scipy",
@@ -44,6 +46,7 @@ DEV = [
     "pylint",
     "pytest",
     "pytest-cov",
+    "ruff",
     "sphinx",
     "sphinx-autobuild",
     "sphinx_lesson",
@@ -83,11 +86,6 @@ minversion = "6.0"
 testpaths  = [ "iblrig/test", "iblrig/test/tasks" ]
 
 [tool.ruff]
-ignore = [
-    "PLR0912", # Too many branches
-    "PLR0915", # Too many statements
-    "PLR2004", # Magic value used in comparison, consider replacing with a constant variable
-]
 exclude = [
     ".mypy_cache",
     "dist",
@@ -110,6 +108,12 @@ select = [
     "PL",  # pylint
     "SIM", # flake8-simplify
     "UP",  # pyupgrade
+]
+ignore = [
+    "PLR0912", # Too many branches
+    "PLR0913", # Too many arguments
+    "PLR0915", # Too many statements
+    "PLR2004", # Magic value used in comparison, consider replacing with a constant variable
 ]
 
 [tool.ruff.format]

@@ -1,6 +1,6 @@
 import logging
+from datetime import date
 
-from dateutil.utils import today
 from PyQt5 import QtCore, QtGui, QtTest, QtWidgets
 
 from iblrig.frame2ttl import Frame2TTL
@@ -58,8 +58,8 @@ class Frame2TTLCalibrationDialog(QtWidgets.QDialog, Ui_frame2ttl):
             self.frame2ttl.set_thresholds(light=self.light, dark=self.dark)
             self.hardware_settings.device_frame2ttl.F2TTL_DARK_THRESH = self.dark
             self.hardware_settings.device_frame2ttl.F2TTL_LIGHT_THRESH = self.light
-            self.hardware_settings.device_frame2ttl.F2TTL_CALIBRATION_DATE = today()
-            save_pydantic_yaml(self.hardware_settings.hardware_settings)
+            self.hardware_settings.device_frame2ttl.F2TTL_CALIBRATION_DATE = date.today()
+            save_pydantic_yaml(self.hardware_settings)
             self.uiLabelResult.setText('Calibration successful.\nSettings have been updated.')
         else:
             self.uiLabelResult.setText('Calibration failed.\nVerify that sensor is placed correctly.')
