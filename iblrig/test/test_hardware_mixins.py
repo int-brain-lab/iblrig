@@ -18,6 +18,7 @@ from iblrig.base_tasks import (
     SoundMixin,
     ValveMixin,
 )
+from iblrig.hardware import SOFTCODE
 from iblrig.test.base import TASK_KWARGS
 
 
@@ -90,7 +91,9 @@ class TestBpodMixin(unittest.TestCase):
         session = mixin_factory(BpodMixin, SoundMixin)
         softcode_dict = session.softcode_dictionary()
         self.assertIsInstance(softcode_dict, dict)
-        # self.assertIsInstance(session.bpod.softcodes, dict)
+        self.assertIsNone(session.bpod.softcodes)  # will only be assigned a dict value in `start_hardware`
+        with self.assertRaises(ValueError):
+            softcode_dict[SOFTCODE.TRIGGER_CAMERA]()  # since we didn't instantiate with CameraMixin
 
 
 class TestOtherMixins(BaseTestHardwareMixins):

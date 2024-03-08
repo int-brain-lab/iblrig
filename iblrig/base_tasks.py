@@ -15,6 +15,7 @@ import traceback
 from abc import ABC
 from collections import OrderedDict
 from pathlib import Path
+from typing import Callable
 
 import numpy as np
 import scipy.interpolate
@@ -665,23 +666,33 @@ class BonsaiVisualStimulusMixin(BaseSession):
 
 
 class BpodMixin(BaseSession):
-    def softcode_dictionary(self):
+
+    def _raise_on_undefined_softcode_handler(self, byte: int):
+        raise ValueError(f'No handler defined for softcode #{byte}')
+
+    def softcode_dictionary(self) -> OrderedDict[int, Callable]:
         """
         Returns a softcode handler dict where each key corresponds to the softcode and each value to the
         function to be called.
 
         This needs to be wrapped this way because
-        1) we want to be able to inherit this and dynamically add softcode to the dictionry
-        2) we need to provide the Task object (self) at run time to have the functions with static args
+            1) we want to be able to inherit this and dynamically add softcode to the dictionry
+            2) we need to provide the Task object (self) at run time to have the functions with static args
         This is tricky as it is unclear if the task object is a copy or a reference when passed here.
-        :return:
+
+
+        Returns
+        -------
+        OrderedDict[int, Callable]
+            Softcode dictionary
         """
         softcode_dict = OrderedDict(
             {
                 SOFTCODE.STOP_SOUND: self.sound['sd'].stop,
                 SOFTCODE.PLAY_TONE: lambda: self.sound['sd'].play(self.sound['GO_TONE'], self.sound['samplerate']),
                 SOFTCODE.PLAY_NOISE: lambda: self.sound['sd'].play(self.sound['WHITE_NOISE'], self.sound['samplerate']),
-                SOFTCODE.TRIGGER_CAMERA: getattr(self, 'trigger_bonsai_cameras', lambda *args: None),
+                SOFTCODE.TRIGGER_CAMERA: getattr(self, 'trigger_bonsai_cameras',
+                                                 lambda: self._raise_on_undefined_softcode_handler(SOFTCODE.TRIGGER_CAMERA)),
             }
         )
         return softcode_dict

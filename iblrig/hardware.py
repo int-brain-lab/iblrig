@@ -11,11 +11,12 @@ import threading
 import time
 from enum import IntEnum
 from pathlib import Path
-from typing import Literal
+from typing import Literal, Callable
 
 import numpy as np
 import serial
 import sounddevice as sd
+from pydantic import validate_call
 from serial.tools import list_ports
 
 from iblrig.tools import static_vars
@@ -32,7 +33,7 @@ log = logging.getLogger(__name__)
 
 class Bpod(BpodIO):
     can_control_led = True
-    softcodes: dict = None
+    softcodes: dict[int, Callable] | None = None
     _instances = {}
     _lock = threading.Lock()
     _is_initialized = False
@@ -253,11 +254,15 @@ class Bpod(BpodIO):
     def valve(self, valve_id: int, state: bool):
         self.manual_override(self.ChannelTypes.OUTPUT, self.ChannelNames.VALVE, valve_id, state)
 
-    def register_softcodes(self, softcode_dict):
+    @validate_call
+    def register_softcodes(self, softcode_dict: dict[int, Callable]) -> None:
         """
         Register softcodes to be used in the state machine
-        :param softcode_dict: dictionary of int keys with functions as values {int: function}
-        :return:
+
+        Parameters
+        ----------
+        softcode_dict : dict[int, Callable]
+            dictionary of int keys with callables as values
         """
         self.softcodes = softcode_dict
         self.softcode_handler_function = lambda code: softcode_dict[code]()
