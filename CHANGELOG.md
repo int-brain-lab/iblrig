@@ -5,6 +5,7 @@ Changelog
 ------
 * Support for Bpod HiFi Module
 * Support for Zapit Optostim (NM)
+* more robust handling of Bpod's serial messages: iblrig.hardware._define_message
 
 8.15.6
 ------
