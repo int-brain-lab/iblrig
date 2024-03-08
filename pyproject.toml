@@ -24,12 +24,11 @@ dependencies = [
     "numpy",
     "packaging",
     "pandas",
-    "project_extraction@git+https://github.com/int-brain-lab/project_extraction.git",
+    "project_extraction@git+https://github.com/int-brain-lab/project_extraction.git@zapit",
     "pydantic",
     "python-osc",
     "pywin32; sys_platform == 'win32'",
     "scipy",
-    "serial_singleton@git+https://github.com/int-brain-lab/serial_singleton.git",
     "sounddevice",
 ]
 
