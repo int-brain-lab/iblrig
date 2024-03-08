@@ -6,6 +6,7 @@ import numpy as np
 import pyqtgraph as pg
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QThreadPool
+from pyqtgraph import PlotWidget
 from serial import SerialException
 
 from iblrig.gui.tools import Worker
@@ -13,10 +14,39 @@ from iblrig.gui.ui_valve import Ui_valve
 from iblrig.hardware import Bpod
 from iblrig.pydantic_definitions import HardwareSettings
 from iblrig.scale import Scale
-from iblrig.valve import Valve
+from iblrig.valve import Valve, ValveValues
 from pybpodapi.exceptions.bpod_error import BpodErrorException
 
 log = logging.getLogger(__name__)
+
+
+class CalibrationPlot:
+    def __init__(self, parent: PlotWidget, name: str, color: str, values: ValveValues | None = None):
+        self._values = values if values is not None else ValveValues([], [])
+        self._curve = pg.PlotCurveItem(name=name)
+        self._curve.setPen(color=color, width=3)
+        self._points = pg.ScatterPlotItem(name=name)
+        self._points.setPen(color=color)
+        self._points.setBrush(color=color)
+        parent.addItem(self._curve)
+        parent.addItem(self._points)
+        self._update()
+
+    @property
+    def values(self) -> ValveValues:
+        return self._values
+
+    @values.setter
+    def values(self, values: ValveValues):
+        self._values = values
+        self._update()
+
+    def _update(self):
+        if len(self.values.open_times_ms) == 0:
+            return
+        time_range = list(np.linspace(self.values.open_times_ms[0], self.values.open_times_ms[-1], 100))
+        self._curve.setData(x=time_range, y=self.values.ms2ul(time_range))
+        self._points.setData(x=self.values.open_times_ms, y=self.values.volumes_ul)
 
 
 class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
@@ -33,9 +63,12 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
         super().__init__(*args, **kwargs)
         self.setupUi(self)
 
+        # hardware
         hw_settings: HardwareSettings = self.parent().model.hardware_settings
         self.bpod = Bpod(hw_settings.device_bpod.COM_BPOD, skip_initialization=True, disable_behavior_ports=[0, 1, 2, 3])
+        self.valve = Valve(hw_settings.device_valve)
 
+        # UI related ...
         self.font_database = QtGui.QFontDatabase
         self.font_database.addApplicationFont(':/fonts/7-Segment')
         self.lineEditGrams.setFont(QtGui.QFont('7-Segment', 30))
@@ -47,14 +80,9 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
         )
         self.action_grams.setVisible(False)
         self.action_stable.setVisible(False)
-        self.scale_text_changed.connect(self.display_scale_text)
-        self.scale_stable_changed.connect(self.display_scale_stable)
-
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose, True)
         self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
         self.setModal(QtCore.Qt.WindowModality.ApplicationModal)
-
-        self.valve = Valve(hw_settings.device_valve)
 
         # set up scale reading
         self.scale_timer = QtCore.QTimer()
@@ -67,25 +95,19 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
             self.lineEditGrams.setText('no Scale')
 
         # set up plot widget
-        time_range = np.linspace(*self.valve.calibration_range, 100)
-        self.curve = pg.PlotCurveItem(name='Current Calibration')
-        self.curve.setData(x=list(time_range), y=self.valve.values.ms2ul(time_range), pen='gray')
-        self.curve.setPen('gray', width=2, style=QtCore.Qt.DashLine)
-        self.points = pg.ScatterPlotItem()
-        self.points.setData(x=self.valve.values.open_times_ms, y=self.valve.values.volumes_ul)
-        self.points.setPen('black')
-        self.points.setBrush('black')
-
+        self.old_calibration = CalibrationPlot(self.uiPlot, 'previous calibration', 'gray', self.valve.values)
+        self.new_calibration = CalibrationPlot(self.uiPlot, 'new calibration', 'gray')
         self.uiPlot.hideButtons()
         self.uiPlot.setMenuEnabled(False)
         self.uiPlot.setMouseEnabled(x=False, y=False)
         self.uiPlot.setBackground(None)
-        self.uiPlot.addItem(self.curve)
-        self.uiPlot.addItem(self.points)
         self.uiPlot.setLabel('bottom', 'Opening Time [ms]')
         self.uiPlot.setLabel('left', 'Volume [μL]')
         self.uiPlot.getViewBox().setLimits(xMin=0, yMin=0)
 
+        # signals & slots
+        self.scale_text_changed.connect(self.display_scale_text)
+        self.scale_stable_changed.connect(self.display_scale_stable)
         self.pushButtonPulseValve.clicked.connect(self.pulse_valve)
         self.pushButtonToggleValve.clicked.connect(self.toggle_valve)
         self.pushButtonTareScale.clicked.connect(self.tare)
@@ -101,22 +123,22 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
             name='start',
             head='Welcome',
             text='This is a step-by-step guide for calibrating the valve of your rig. You can abort the process at any '
-            'time by pressing Cancel or closing this window.',
+                 'time by pressing Cancel or closing this window.',
         )
 
         state = self._add_guide_state(
             name='preparation_beaker',
             head='Preparation',
             text='Place a small beaker on the scale and position the lick spout directly above it.\n\nMake sure that '
-            'neither the lick spout itself nor the tubing touch the beaker or the scale and that the water drops '
-            'can freely fall into the beaker.',
+                 'neither the lick spout itself nor the tubing touch the beaker or the scale and that the water drops '
+                 'can freely fall into the beaker.',
         )
 
         state = self._add_guide_state(
             name='preparation_flow',
             head='Preparation',
             text='Use the valve controls above to advance the flow of the water until there are no visible pockets of '
-            'air within the tubing and first drops start falling into the beaker.',
+                 'air within the tubing and first drops start falling into the beaker.',
         )
         state.assignProperty(self.commandLinkNext, 'visible', True)
         state.assignProperty(self.pushButtonRestart, 'visible', False)
@@ -129,7 +151,8 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
         state = self._add_guide_state(name='calibration_tare', transition_signal=self.drop_cleared)
         state.entered.connect(self.tare)
 
-        state = self._add_guide_state(name='calibration_finished', transition_signal=self.states['calibration_tare'].finished)
+        state = self._add_guide_state(name='calibration_finished', transition_signal=self.states[
+            'calibration_tare'].finished)
         state.assignProperty(self.commandLinkNext, 'enabled', True)
 
         # # Sub-State 3.1 --- Clear Drop
@@ -165,12 +188,12 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
         self.show()
 
     def _add_guide_state(
-        self,
-        name: str,
-        head: str | None = None,
-        text: str | None = None,
-        transition_from_previous: bool = True,
-        transition_signal: QtCore.pyqtSignal | None = None,
+            self,
+            name: str,
+            head: str | None = None,
+            text: str | None = None,
+            transition_from_previous: bool = True,
+            transition_signal: QtCore.pyqtSignal | None = None,
     ) -> QtCore.QState:
         assert name not in self.states.keys(), 'name of state needs to be unique'
 
