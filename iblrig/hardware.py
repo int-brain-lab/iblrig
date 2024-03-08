@@ -69,7 +69,7 @@ class Bpod(BpodIO):
                     'This is usually indicated by the device with a green light. '
                     'Please unplug the Bpod USB cable from the computer and plug it back in to start the task. '
                 ) from e
-        self.default_message_idx = 0
+        self.serial_messages = {}
         self.actions = Bunch({})
         self.can_control_led = self.set_status_led(True)
         self._is_initialized = True
@@ -120,22 +120,42 @@ class Bpod(BpodIO):
         if len(modules) > 0:
             return modules[0]
 
-    def _define_message(self, module, message):
-        """
-        This loads a message in the bpod interface and can then be defined as an output
-        state in the state machine
-        example
-        >>> id_msg_bonsai_show_stim = self._define_message(self.rotary_encoder,[ord("#"), 2])
+    def _define_message(self, module: BpodModule | int, message: list[int]) -> int:
+        """Define a serial message to be sent to a Bpod module as an output action within a state
+
+        Parameters
+        ----------
+        module : BpodModule | int
+            The targeted module, defined as a BpodModule instance or the module's port index
+        message : list[int]
+            The message to be sent - a list of up to three 8-bit integers
+
+        Returns
+        -------
+        int
+            The index of the serial message (1-255)
+
+        Raises
+        ------
+        TypeError
+            If module is not an instance of BpodModule or int
+
+        Examples
+        --------
+        >>> id_msg_bonsai_show_stim = self._define_message(self.rotary_encoder, [ord("#"), 2])
         will then be used as such in StateMachine:
         >>> output_actions=[("Serial1", id_msg_bonsai_show_stim)]
-        :param message:
-        :return:
         """
-        if module is None:
-            return
-        self.load_serial_message(module, self.default_message_idx + 1, message)
-        self.default_message_idx += 1
-        return self.default_message_idx
+        if isinstance(module, int):
+            pass
+        elif isinstance(module, BpodModule):
+            module = module.serial_port
+        else:
+            raise TypeError
+        message_id = len(self.serial_messages) + 1
+        self.load_serial_message(module, message_id, message)
+        self.serial_messages.update({message_id: {'target_module': module, 'message': message}})
+        return message_id
 
     def define_xonar_sounds_actions(self):
         self.actions.update(
