@@ -1,6 +1,5 @@
 import argparse
 import ctypes
-import datetime
 import functools
 import importlib
 import json
@@ -13,15 +12,14 @@ import sys
 import traceback
 import webbrowser
 from collections import OrderedDict
-from collections.abc import Callable, Iterable
+from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
 
 import numpy as np
 import pyqtgraph as pg
 from pydantic import ValidationError
-from PyQt5 import QtCore, QtGui, QtTest, QtWidgets
+from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QThread, QThreadPool
 from PyQt5.QtWebEngineWidgets import QWebEnginePage
 from PyQt5.QtWidgets import QStyle
@@ -34,15 +32,15 @@ import iblrig_tasks
 from iblrig.base_tasks import EmptySession, ValveMixin
 from iblrig.choiceworld import get_subject_training_info, training_phase_from_contrast_set
 from iblrig.constants import BASE_DIR
-from iblrig.frame2ttl import Frame2TTL
-from iblrig.gui.ui_frame2ttl import Ui_frame2ttl
+from iblrig.gui.frame2ttl import Frame2TTLCalibrationDialog
+from iblrig.gui.tools import Worker
 from iblrig.gui.ui_login import Ui_login
 from iblrig.gui.ui_update import Ui_update
 from iblrig.gui.ui_valve import Ui_valve
 from iblrig.gui.ui_wizard import Ui_wizard
 from iblrig.hardware import Bpod
 from iblrig.misc import _get_task_argument_parser
-from iblrig.path_helper import load_pydantic_yaml, save_pydantic_yaml
+from iblrig.path_helper import load_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings, RigSettings
 from iblrig.scale import Scale
 from iblrig.tools import alyx_reachable, get_anydesk_id, internet_available
@@ -1087,110 +1085,6 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.repaint()
 
 
-class WorkerSignals(QtCore.QObject):
-    """
-    Signals used by the Worker class to communicate with the main thread.
-
-    Attributes
-    ----------
-    finished : QtCore.pyqtSignal
-        Signal emitted when the worker has finished its task.
-
-    error : QtCore.pyqtSignal(tuple)
-        Signal emitted when an error occurs. The signal carries a tuple with the exception type,
-        exception value, and the formatted traceback.
-
-    result : QtCore.pyqtSignal(Any)
-        Signal emitted when the worker has successfully completed its task. The signal carries
-        the result of the task.
-
-    progress : QtCore.pyqtSignal(int)
-        Signal emitted to report progress during the task. The signal carries an integer value.
-    """
-
-    finished: QtCore.pyqtSignal = QtCore.pyqtSignal()
-    error: QtCore.pyqtSignal = QtCore.pyqtSignal(tuple)
-    result: QtCore.pyqtSignal = QtCore.pyqtSignal(object)
-    progress: QtCore.pyqtSignal = QtCore.pyqtSignal(int)
-
-
-class Worker(QtCore.QRunnable):
-    """
-    A generic worker class for executing functions concurrently in a separate thread.
-
-    This class is designed to run functions concurrently in a separate thread and emit signals
-    to communicate the results or errors back to the main thread.
-
-    Adapted from: https://www.pythonguis.com/tutorials/multithreading-pyqt-applications-qthreadpool/
-
-    Attributes
-    ----------
-    fn : Callable
-        The function to be executed concurrently.
-
-    args : tuple
-        Positional arguments for the function.
-
-    kwargs : dict
-        Keyword arguments for the function.
-
-    signals : WorkerSignals
-        An instance of WorkerSignals used to emit signals.
-
-    Methods
-    -------
-    run() -> None
-        The main entry point for running the worker. Executes the provided function and
-        emits signals accordingly.
-    """
-
-    def __init__(self, fn: Callable[..., Any], *args: Any, **kwargs: Any):
-        """
-        Initialize the Worker instance.
-
-        Parameters
-        ----------
-        fn : Callable
-            The function to be executed concurrently.
-
-        *args : tuple
-            Positional arguments for the function.
-
-        **kwargs : dict
-            Keyword arguments for the function.
-        """
-        super().__init__()
-        self.fn = fn
-        self.args = args
-        self.kwargs = kwargs
-        self.signals: WorkerSignals = WorkerSignals()
-
-    def run(self) -> None:
-        """
-        Execute the provided function and emit signals accordingly.
-
-        This method is the main entry point for running the worker. It executes the provided
-        function and emits signals to communicate the results or errors back to the main thread.
-
-        Returns
-        -------
-        None
-        """
-        try:
-            result = self.fn(*self.args, **self.kwargs)
-        except:  # noqa: E722
-            # Handle exceptions and emit error signal with exception details
-            traceback.print_exc()
-            exctype, value = sys.exc_info()[:2]
-            self.signals.error.emit((exctype, value, traceback.format_exc()))
-        else:
-            # Emit result signal with the result of the task
-            self.signals.result.emit(result)
-        finally:
-            # Emit the finished signal to indicate completion
-            self.signals.finished.emit()
-
-
 class LoginWindow(QtWidgets.QDialog, Ui_login):
     def __init__(self, parent: RigWizard, username: str = '', password: str = '', remember: bool = False):
         super().__init__(parent)
@@ -1519,10 +1413,8 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
         try:
             self.bpod.open_valve(open=state)
         except (OSError, BpodErrorException):
-            print(traceback.format_exc())
-            print('Cannot find bpod - is it connected?')
-            self.uiPushFlush.setChecked(False)
-            self.uiPushFlush.setStyleSheet('')
+            self.pushButtonToggleValve.setChecked(False)
+            self.pushButtonToggleValve.setStyleSheet('')
 
     def pulse_valve(self):
         self.bpod.pulse_valve(0.05)
@@ -1546,13 +1438,14 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
         self.pulse_valve()
 
     def tare(self):
-        if self.scale is not None:
-            self.scale_timer.stop()
-            self.scale_text_changed.emit('------')
-            self._grams = float('nan')
-            worker = Worker(self.scale.tare)
-            worker.signals.result.connect(self._on_tare_finished)
-            QThreadPool.globalInstance().tryStart(worker)
+        if self.scale is None:
+            return
+        self.scale_timer.stop()
+        self.scale_text_changed.emit('------')
+        self._grams = float('nan')
+        worker = Worker(self.scale.tare)
+        worker.signals.result.connect(self._on_tare_finished)
+        QThreadPool.globalInstance().tryStart(worker)
 
     @QtCore.pyqtSlot(object)
     def _on_tare_finished(self, value: bool):
@@ -1563,124 +1456,6 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
             self.scale_timer.stop()
         if self.machine.started:
             self.machine.stop()
-
-
-class Frame2TTLCalibrationDialog(QtWidgets.QDialog, Ui_frame2ttl):
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-        self.setupUi(self)
-        self.setAttribute(QtCore.Qt.WA_DeleteOnClose, True)
-        self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
-        self.setModal(QtCore.Qt.WindowModality.ApplicationModal)
-
-        hw_settings = self.parent().model.hardware_settings
-        self.frame2ttl = Frame2TTL(port=hw_settings.device_frame2ttl.COM_F2TTL)
-        self.target = Frame2TTLCalibrationTarget(self, color=QtGui.QColorConstants.White)
-        self.light = None
-        self.dark = None
-        self._success = True
-
-        self.uiLabelPortValue.setText(self.frame2ttl.portstr)
-        self.uiLabelHardwareValue.setText(str(self.frame2ttl.hw_version))
-        self.uiLabelFirmwareValue.setText(str(self.frame2ttl.fw_version))
-        self.buttonBox.buttons()[0].setEnabled(False)
-        self.show()
-
-        # start worker for first calibration step: light condition
-        worker = Worker(self.frame2ttl.calibrate, condition='light')
-        worker.signals.result.connect(self._on_calibrate_light_result)
-        QThreadPool.globalInstance().tryStart(worker)
-        self.uiLabelLightValue.setText('calibrating ...')
-
-    def _on_calibrate_light_result(self, result: tuple[int, bool]):
-        (self.light, self._success) = result
-        self.uiLabelLightValue.setText(f'{self.light} {self.frame2ttl.unit_str}')
-
-        # start worker for second calibration step: dark condition
-        self.target.color = QtGui.QColorConstants.Black
-        worker = Worker(self.frame2ttl.calibrate, condition='dark')
-        worker.signals.result.connect(self._on_calibrate_dark_result)
-        QThreadPool.globalInstance().tryStart(worker)
-        self.uiLabelDarkValue.setText('calibrating ...')
-
-    def _on_calibrate_dark_result(self, result: tuple[int, bool]):
-        (self.dark, self._success) = result
-        self.uiLabelDarkValue.setText(f'{self.dark} {self.frame2ttl.unit_str}')
-
-        if self._success:
-            self.frame2ttl.set_thresholds(light=self.light, dark=self.dark)
-            self.parent().model.hardware_settings.device_frame2ttl.F2TTL_DARK_THRESH = self.dark
-            self.parent().model.hardware_settings.device_frame2ttl.F2TTL_LIGHT_THRESH = self.light
-            self.parent().model.hardware_settings.device_frame2ttl.F2TTL_CALIBRATION_DATE = datetime.date.today()
-            save_pydantic_yaml(self.parent().model.hardware_settings)
-            self.uiLabelResult.setText('Calibration successful.\nSettings have been updated.')
-        else:
-            self.uiLabelResult.setText('Calibration failed.\nVerify that sensor is placed correctly.')
-        self.buttonBox.buttons()[0].setEnabled(True)
-        self.frame2ttl.close()
-
-
-class Frame2TTLCalibrationTarget(QtWidgets.QDialog):
-    def __init__(
-        self,
-        parent,
-        color: QtGui.QColor = QtGui.QColorConstants.White,
-        screen_index: int | None = None,
-        width: int | None = None,
-        height: int | None = None,
-        rel_pos_x: float = 1.33,
-        rel_pos_y: float = -1.03,
-        rel_extent_x: float = 0.2,
-        rel_extent_y: float = 0.2,
-        **kwargs,
-    ):
-        # try to detect screen_index, get screen dimensions
-        if screen_index is None:
-            for screen_index, screen in enumerate(QtWidgets.QApplication.screens()):
-                if screen.size().width() == 2048 and screen.size().height() == 1536:
-                    break
-            else:
-                log.warning('Defaulting to screen index 0.')
-                screen_index = 0
-                screen = QtWidgets.QApplication.screens()[0]
-
-        # convert relative parameters (used in bonsai scripts) to width and height
-        if width is None and height is None:
-            screen_width = screen.geometry().width()
-            screen_height = screen.geometry().height()
-            width = round(screen_width - (screen_width + (rel_pos_x - rel_extent_x / 2) * screen_height) / 2)
-            height = round(screen_height - (1 - rel_pos_y - rel_extent_y / 2) * screen_height / 2)
-
-        # display frameless QDialog with given color
-        super().__init__(parent, **kwargs)
-        self.setWindowModality(QtCore.Qt.WindowModality.NonModal)
-        self.setWindowFlags(QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowStaysOnTopHint | QtCore.Qt.Dialog)
-        self.setAutoFillBackground(True)
-        self._set_color(color)
-        self.setFixedSize(width, height)
-        screen_geometry = QtWidgets.QApplication.desktop().screenGeometry(screen_index)
-        self.move(
-            QtCore.QPoint(
-                screen_geometry.x() + screen_geometry.width() - width, screen_geometry.y() + screen_geometry.height() - height
-            )
-        )
-        self.show()
-        QtTest.QTest.qWait(500)
-
-    def _set_color(self, color: QtGui.QColor):
-        palette = QtGui.QPalette()
-        palette.setColor(QtGui.QPalette.Window, color)
-        self.setPalette(palette)
-
-    @property
-    def color(self) -> QtGui.QColor:
-        return self.palette().color(QtGui.QPalette.Window)
-
-    @color.setter
-    def color(self, color: QtGui.QColor):
-        self._set_color(color)
-        self.update()
-        QtTest.QTest.qWait(500)
 
 
 class CustomWebEnginePage(QWebEnginePage):

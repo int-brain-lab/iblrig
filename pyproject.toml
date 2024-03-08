@@ -26,6 +26,7 @@ dependencies = [
     "pandas",
     "project_extraction@git+https://github.com/int-brain-lab/project_extraction.git",
     "pydantic",
+    "PyQt5",
     "python-osc",
     "pywin32; sys_platform == 'win32'",
     "scipy",
