@@ -76,7 +76,6 @@ class ChoiceWorldParams(BaseModel):
 
 
 class ChoiceWorldSession(
-    iblrig.base_tasks.BaseSession,
     iblrig.base_tasks.BonsaiRecordingMixin,
     iblrig.base_tasks.BonsaiVisualStimulusMixin,
     iblrig.base_tasks.BpodMixin,
@@ -155,6 +154,7 @@ class ChoiceWorldSession(
             self.start_mixin_bonsai_cameras()
             self.start_mixin_bonsai_microphone()
             self.start_mixin_bonsai_visual_stimulus()
+            self.bpod.register_softcodes(self.softcode_dictionary())
 
     def _run(self):
         """
@@ -572,7 +572,7 @@ class HabituationChoiceWorldSession(ChoiceWorldSession):
                 state_timer=3600,
                 state_change_conditions={'Port1In': 'stim_on'},
                 output_actions=[self.bpod.actions.bonsai_hide_stim, ('SoftCode', SOFTCODE.TRIGGER_CAMERA), ('BNC1', 255)],
-            )  # sart camera
+            )  # start camera
         else:
             sma.add_state(
                 state_name='trial_start',

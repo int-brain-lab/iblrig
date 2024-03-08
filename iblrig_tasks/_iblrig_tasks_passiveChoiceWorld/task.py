@@ -64,9 +64,10 @@ class Session(ChoiceWorldSession):
         # Then run the replay of task events: V for valve, T for tone, N for noise, G for gratings
         log.info('Starting replay of task stims')
 
-        # extract rotary encoder port number and message for showing garbor stimulus
-        re_port_str, show_stim_value = self.bpod.actions.bonsai_show_stim
-        re_port = int(re_port_str[-1])
+        action_show_stim = self.bpod.actions['bonsai_show_stim'][1]
+        action_hide_stim = self.bpod.actions['bonsai_hide_stim'][1]
+        byte_show_stim = self.bpod.serial_messages[action_show_stim]['message'][-1]
+        byte_hide_stim = self.bpod.serial_messages[action_hide_stim]['message'][-1]
 
         if not self.is_mock:
             self.start_mixin_bonsai_visual_stimulus()
@@ -84,10 +85,9 @@ class Session(ChoiceWorldSession):
                 # this will send the current trial info to the visual stim
                 # we need to make sure Bonsai is in a state to display stimuli
                 self.send_trial_info_to_bonsai()
-                self.bpod.manual_override(2, 'Serial', channel_number=re_port, value=show_stim_value)
-                self.bonsai_visual_udp_client.send_message(r'/re', 2)  # show_stim 2
+                self.bonsai_visual_udp_client.send_message(r'/re', byte_show_stim)
                 time.sleep(0.3)
-                self.bonsai_visual_udp_client.send_message(r'/re', 1)  # stop_stim 1
+                self.bonsai_visual_udp_client.send_message(r'/re', byte_hide_stim)
             if self.paths.SESSION_FOLDER.joinpath('.stop').exists():
                 self.paths.SESSION_FOLDER.joinpath('.stop').unlink()
                 break

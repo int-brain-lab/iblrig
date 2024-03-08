@@ -1,6 +1,6 @@
 import re
 
-from serial_singleton import SerialSingleton
+from iblrig.serial_singleton import SerialSingleton
 
 
 class Scale(SerialSingleton):

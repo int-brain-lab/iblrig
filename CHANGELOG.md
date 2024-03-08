@@ -1,6 +1,12 @@
 Changelog
 ---------
 
+8.16.0
+------
+* Support for Bpod HiFi Module
+* Support for Zapit Optostim (NM)
+* more robust handling of Bpod's serial messages: iblrig.hardware._define_message
+
 8.15.6
 ------
 * Task specifications: The time from the stimulus offset to the quiescence period is targeted to 1 second instead of 1.5 seconds
