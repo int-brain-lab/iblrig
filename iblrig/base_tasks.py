@@ -13,7 +13,9 @@ import signal
 import time
 import traceback
 from abc import ABC
+from collections import OrderedDict
 from pathlib import Path
+from typing import Callable
 
 import numpy as np
 import scipy.interpolate
@@ -31,6 +33,7 @@ from iblrig import sound
 from iblrig.constants import BASE_PATH, BONSAI_EXE
 from iblrig.frame2ttl import Frame2TTL
 from iblrig.hardware import SOFTCODE, Bpod, MyRotaryEncoder, sound_device_factory
+from iblrig.hifi import HiFi
 from iblrig.path_helper import load_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings, HardwareSettingsCameras, RigSettings
 from iblrig.tools import call_bonsai
@@ -57,9 +60,9 @@ class BaseSession(ABC):
         subject=None,
         task_parameter_file=None,
         file_hardware_settings=None,
-        hardware_settings=None,
+        hardware_settings: HardwareSettings = None,
         file_iblrig_settings=None,
-        iblrig_settings=None,
+        iblrig_settings: RigSettings = None,
         one=None,
         interactive=True,
         projects=None,
@@ -185,6 +188,7 @@ class BaseSession(ABC):
             local_path=self.iblrig_settings['iblrig_local_data_path'],
             remote_path=self.iblrig_settings['iblrig_remote_data_path'],
             lab=self.iblrig_settings['ALYX_LAB'],
+            iblrig_settings=self.iblrig_settings,
         )
         paths = Bunch({'IBLRIG_FOLDER': BASE_PATH})
         paths.BONSAI = BONSAI_EXE
@@ -227,6 +231,13 @@ class BaseSession(ABC):
         setup_logger('pybpodapi', level=level_bpod, file=file)
         if self.logger is None:
             self.logger = logger
+
+    def _remove_file_loggers(self):
+        for logger_name in ['iblrig', 'pybpodapi']:
+            logger = logging.getLogger(logger_name)
+            file_handlers = [fh for fh in logger.handlers if isinstance(fh, logging.FileHandler)]
+            for fh in file_handlers:
+                logger.removeHandler(fh)
 
     @staticmethod
     def make_experiment_description_dict(
@@ -526,7 +537,7 @@ class OSCClient(udp_client.SimpleUDPClient):
         self.send_message('/x', 1)
 
 
-class BonsaiRecordingMixin:
+class BonsaiRecordingMixin(BaseSession):
     def init_mixin_bonsai_recordings(self, *args, **kwargs):
         self.bonsai_camera = Bunch({'udp_client': OSCClient(port=7111)})
         self.bonsai_microphone = Bunch({'udp_client': OSCClient(port=7112)})
@@ -548,7 +559,7 @@ class BonsaiRecordingMixin:
             'FileNameMic': self.paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_micData.raw.wav'),
             'RecordSound': self.task_params.RECORD_SOUND,
         }
-        call_bonsai(workflow_file, parameters)
+        call_bonsai(workflow_file, parameters, wait=False)
         log.info('Bonsai microphone recording module loaded: OK')
 
     @staticmethod
@@ -594,7 +605,7 @@ class BonsaiRecordingMixin:
         log.info('Bonsai camera recording process started')
 
 
-class BonsaiVisualStimulusMixin:
+class BonsaiVisualStimulusMixin(BaseSession):
     def init_mixin_bonsai_visual_stimulus(self, *args, **kwargs):
         # camera 7111, microphone 7112
         self.bonsai_visual_udp_client = OSCClient(port=7110)
@@ -650,12 +661,42 @@ class BonsaiVisualStimulusMixin:
             'Stim.sync_y': self.task_params.SYNC_SQUARE_Y,
             'Stim.TranslationZ': -self.task_params.STIM_TRANSLATION_Z,  # MINUS!!
         }
-        log.info('starting Bonsai visual stimulus')
         call_bonsai(workflow_file, parameters, wait=False, editor=self.task_params.BONSAI_EDITOR, bootstrap=False)
         log.info('Bonsai visual stimulus module loaded: OK')
 
 
-class BpodMixin:
+class BpodMixin(BaseSession):
+
+    def _raise_on_undefined_softcode_handler(self, byte: int):
+        raise ValueError(f'No handler defined for softcode #{byte}')
+
+    def softcode_dictionary(self) -> OrderedDict[int, Callable]:
+        """
+        Returns a softcode handler dict where each key corresponds to the softcode and each value to the
+        function to be called.
+
+        This needs to be wrapped this way because
+            1) we want to be able to inherit this and dynamically add softcode to the dictionry
+            2) we need to provide the Task object (self) at run time to have the functions with static args
+        This is tricky as it is unclear if the task object is a copy or a reference when passed here.
+
+
+        Returns
+        -------
+        OrderedDict[int, Callable]
+            Softcode dictionary
+        """
+        softcode_dict = OrderedDict(
+            {
+                SOFTCODE.STOP_SOUND: self.sound['sd'].stop,
+                SOFTCODE.PLAY_TONE: lambda: self.sound['sd'].play(self.sound['GO_TONE'], self.sound['samplerate']),
+                SOFTCODE.PLAY_NOISE: lambda: self.sound['sd'].play(self.sound['WHITE_NOISE'], self.sound['samplerate']),
+                SOFTCODE.TRIGGER_CAMERA: getattr(self, 'trigger_bonsai_cameras',
+                                                 lambda: self._raise_on_undefined_softcode_handler(SOFTCODE.TRIGGER_CAMERA)),
+            }
+        )
+        return softcode_dict
+
     def init_mixin_bpod(self, *args, **kwargs):
         self.bpod = Bpod()
 
@@ -672,24 +713,6 @@ class BpodMixin:
         self.bpod = Bpod(self.hardware_settings['device_bpod']['COM_BPOD'], disable_behavior_ports=[1, 2, 3])
         self.bpod.define_rotary_encoder_actions()
         self.bpod.set_status_led(False)
-
-        def softcode_handler(code):
-            """
-            Soft codes should work with resasonable latency considering our limiting
-            factor is the refresh rate of the screen which should be 16.667ms @ a framerate of 60Hz
-            """
-            if code == SOFTCODE.STOP_SOUND:
-                self.sound['sd'].stop()
-            elif code == SOFTCODE.PLAY_TONE:
-                self.sound['sd'].play(self.sound['GO_TONE'], self.sound['samplerate'])
-            elif code == SOFTCODE.PLAY_NOISE:
-                self.sound['sd'].play(self.sound['WHITE_NOISE'], self.sound['samplerate'])
-            elif code == SOFTCODE.TRIGGER_CAMERA:
-                self.trigger_bonsai_cameras()
-
-        self.bpod.softcode_handler_function = softcode_handler
-
-        assert len(self.bpod.actions.keys()) == 6
         assert self.bpod.is_connected
         log.info('Bpod hardware module loaded: OK')
         # self.send_spacers()
@@ -703,7 +726,7 @@ class BpodMixin:
         return self.bpod.session.current_trial.export()
 
 
-class Frame2TTLMixin:
+class Frame2TTLMixin(BaseSession):
     """
     Frame 2 TTL interface for state machine
     """
@@ -727,7 +750,7 @@ class Frame2TTLMixin:
         log.info('Frame2TTL: Thresholds set.')
 
 
-class RotaryEncoderMixin:
+class RotaryEncoderMixin(BaseSession):
     """
     Rotary encoder interface for state machine
     """
@@ -763,7 +786,7 @@ class RotaryEncoderMixin:
         log.info('Rotary encoder module loaded: OK')
 
 
-class ValveMixin:
+class ValveMixin(BaseSession):
     def init_mixin_valve(self: object):
         self.valve = Bunch({})
         # the template settings files have a date in 2099, so assume that the rig is not calibrated if that is the case
@@ -821,7 +844,7 @@ class ValveMixin:
         return self.bpod.session.current_trial.export()
 
 
-class SoundMixin:
+class SoundMixin(BaseSession):
     """
     Sound interface methods for state machine
     """
@@ -846,7 +869,6 @@ class SoundMixin:
             fade=0.01,
             chans=self.sound['channels'],
         )
-
         self.sound['WHITE_NOISE'] = iblrig.sound.make_sound(
             rate=self.sound['samplerate'],
             frequency=-1,
@@ -863,15 +885,38 @@ class SoundMixin:
         """
         assert self.bpod.is_connected, 'The sound mixin depends on the bpod mixin being connected'
         # SoundCard config params
-        if self.hardware_settings.device_sound['OUTPUT'] == 'harp':
-            sound.configure_sound_card(
-                sounds=[self.sound.GO_TONE, self.sound.WHITE_NOISE],
-                indexes=[self.task_params.GO_TONE_IDX, self.task_params.WHITE_NOISE_IDX],
-                sample_rate=self.sound['samplerate'],
-            )
-            self.bpod.define_harp_sounds_actions(self.task_params.GO_TONE_IDX, self.task_params.WHITE_NOISE_IDX)
-        else:  # xonar or system default
-            self.bpod.define_xonar_sounds_actions()
+        match self.hardware_settings.device_sound['OUTPUT']:
+            case 'harp':
+                assert self.bpod.sound_card is not None, 'No harp sound-card connected to Bpod'
+                module_port = f'Serial{self.bpod.sound_card.serial_port}'
+                sound.configure_sound_card(
+                    sounds=[self.sound.GO_TONE, self.sound.WHITE_NOISE],
+                    indexes=[self.task_params.GO_TONE_IDX, self.task_params.WHITE_NOISE_IDX],
+                    sample_rate=self.sound['samplerate'],
+                )
+                self.bpod.define_harp_sounds_actions(
+                    go_tone_index=self.task_params.GO_TONE_IDX,
+                    noise_index=self.task_params.WHITE_NOISE_IDX,
+                    sound_port=module_port,
+                )
+            case 'hifi':
+                module = self.bpod.get_module('^HiFi')
+                assert module is not None, 'No HiFi module connected to Bpod'
+                assert self.hardware_settings.device_sound.COM_SOUND is not None
+                hifi = HiFi(port=self.hardware_settings.device_sound.COM_SOUND, sampling_rate_hz=self.sound['samplerate'])
+                hifi.load(index=self.task_params.GO_TONE_IDX, data=self.sound.GO_TONE)
+                hifi.load(index=self.task_params.WHITE_NOISE_IDX, data=self.sound.WHITE_NOISE)
+                hifi.push()
+                hifi.close()
+                module_port = f'Serial{module.serial_port}'
+                self.bpod.define_harp_sounds_actions(
+                    go_tone_index=self.task_params.GO_TONE_IDX,
+                    noise_index=self.task_params.WHITE_NOISE_IDX,
+                    sound_port=module_port,
+                    module=module,
+                )
+            case _:
+                self.bpod.define_xonar_sounds_actions()
         log.info(f"Sound module loaded: OK: {self.hardware_settings.device_sound['OUTPUT']}")
 
     def sound_play_noise(self, state_timer=0.510, state_name='play_noise'):

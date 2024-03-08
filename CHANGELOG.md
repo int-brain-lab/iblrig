@@ -1,9 +1,42 @@
 Changelog
 ---------
 
-8.15.1
+8.16.0
+------
+* Support for Bpod HiFi Module
+* Support for Zapit Optostim (NM)
+* more robust handling of Bpod's serial messages: iblrig.hardware._define_message
+
+8.15.6
+------
+* Task specifications: The time from the stimulus offset to the quiescence period is targeted to 1 second instead of 1.5 seconds
+* Task specifications: The correct delay time starts running from the start of the reward state, not the end of the reward state.
+* Fixed unit-tests
+
+8.15.5
+------
+* hotfix: show Garbor patch in passive choice-world, GUI option for session ID, no dud detection
+
+8.15.4
+------
+* hotfix: disable prompt for deleting "duds" for appended sessions 
+
+8.15.3
+------
+* hotfix: don't wait for microphone workflow to finish
+
+8.15.2
 ------
 * hotfix: pin iblutil to >=1.7.4 to address unicode encoding issue during logging
+* hotfix: allow pass with warning in case where lab validation fails due to Alyx down / server issues
+* change: use QT workers for Frame2TTL calibration steps
+* extra task parameters: support list of strings
+* frame2ttl: raise exception on incorrect port setting
+* convert_ui: add argument for filename glob
+
+8.15.1
+------
+* hotfix: correct parsing of description files and ignore junk sessions in iterate_protocols
 
 8.15.0
 ------
@@ -85,7 +118,7 @@ Changelog
 
 8.12.8
 ------
-* fix incorrect limits & unit for adaptive gain in trainingChoiceWorld  
+* fix incorrect limits & unit for adaptive gain in trainingChoiceWorld
 * usability improvements for "Show Training Level" tool
 
 8.12.7
@@ -96,7 +129,7 @@ Changelog
 8.12.6
 ------
 * reverting TTL on trial end introduced with PR #504, release 8.9.0
-* general code maintenance (unit-tests, doc-strings, type-hints, removal of dead code) 
+* general code maintenance (unit-tests, doc-strings, type-hints, removal of dead code)
 
 8.12.5
 ------
@@ -159,7 +192,7 @@ Changelog
 * add control for disabling Bpod status LED
 * skip initialization of existing Bpod singleton
 * remember settings for status LED and GUI position
-* move update-check to separate thread 
+* move update-check to separate thread
 * detect duds (less than 42 trials) and offer deletion
 * various small bugfixes
 

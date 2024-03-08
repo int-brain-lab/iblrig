@@ -11,10 +11,12 @@ import threading
 import time
 from enum import IntEnum
 from pathlib import Path
+from typing import Literal, Callable
 
 import numpy as np
 import serial
 import sounddevice as sd
+from pydantic import validate_call
 from serial.tools import list_ports
 
 from iblrig.tools import static_vars
@@ -23,6 +25,7 @@ from pybpod_rotaryencoder_module.module import RotaryEncoder
 from pybpod_rotaryencoder_module.module_api import RotaryEncoderModule
 from pybpodapi.bpod.bpod_io import BpodIO
 from pybpodapi.state_machine import StateMachine
+from pybpodapi.bpod_modules.bpod_module import BpodModule
 
 SOFTCODE = IntEnum('SOFTCODE', ['STOP_SOUND', 'PLAY_TONE', 'PLAY_NOISE', 'TRIGGER_CAMERA'])
 
@@ -31,6 +34,7 @@ log = logging.getLogger(__name__)
 
 class Bpod(BpodIO):
     can_control_led = True
+    softcodes: dict[int, Callable] | None = None
     _instances = {}
     _lock = threading.Lock()
     _is_initialized = False
@@ -67,7 +71,7 @@ class Bpod(BpodIO):
                     'This is usually indicated by the device with a green light. '
                     'Please unplug the Bpod USB cable from the computer and plug it back in to start the task. '
                 ) from e
-        self.default_message_idx = 0
+        self.serial_messages = {}
         self.actions = Bunch({})
         self.can_control_led = self.set_status_led(True)
         self._is_initialized = True
@@ -93,33 +97,67 @@ class Bpod(BpodIO):
     def sound_card(self):
         return self.get_module('sound_card')
 
-    def get_module(self, module: str):
+    def get_module(self, module_name: str) -> BpodModule | None:
+        """Get module by name
+
+        Parameters
+        ----------
+        module_name : str
+            Regular Expression for matching a module name
+
+        Returns
+        -------
+        BpodModule | None
+            First matching module or None
+        """
         if self.modules is None:
             return None
-        if module in ['re', 'rotary_encoder', 'RotaryEncoder']:
-            mod_name = 'RotaryEncoder1'
-        elif module in ['sc', 'sound_card', 'SoundCard']:
-            mod_name = 'SoundCard1'
-        mod = [x for x in self.modules if x.name == mod_name]
-        if mod:
-            return mod[0]
+        if module_name in ['re', 'rotary_encoder']:
+            module_name = r'^RotaryEncoder'
+        elif module_name in ['sc', 'sound_card']:
+            module_name = r'^SoundCard'
+        modules = [x for x in self.modules if re.match(module_name, x.name)]
+        if len(modules) > 1:
+            log.critical(f'Found several Bpod modules matching `{module_name}`. Using first match: `{modules[0].name}`')
+        if len(modules) > 0:
+            return modules[0]
 
-    def _define_message(self, module, message):
-        """
-        This loads a message in the bpod interface and can then be defined as an output
-        state in the state machine
-        example
-        >>> id_msg_bonsai_show_stim = self._define_message(self.rotary_encoder,[ord("#"), 2])
+    def _define_message(self, module: BpodModule | int, message: list[int]) -> int:
+        """Define a serial message to be sent to a Bpod module as an output action within a state
+
+        Parameters
+        ----------
+        module : BpodModule | int
+            The targeted module, defined as a BpodModule instance or the module's port index
+        message : list[int]
+            The message to be sent - a list of up to three 8-bit integers
+
+        Returns
+        -------
+        int
+            The index of the serial message (1-255)
+
+        Raises
+        ------
+        TypeError
+            If module is not an instance of BpodModule or int
+
+        Examples
+        --------
+        >>> id_msg_bonsai_show_stim = self._define_message(self.rotary_encoder, [ord("#"), 2])
         will then be used as such in StateMachine:
         >>> output_actions=[("Serial1", id_msg_bonsai_show_stim)]
-        :param message:
-        :return:
         """
-        if module is None:
-            return
-        self.load_serial_message(module, self.default_message_idx + 1, message)
-        self.default_message_idx += 1
-        return self.default_message_idx
+        if isinstance(module, int):
+            pass
+        elif isinstance(module, BpodModule):
+            module = module.serial_port
+        else:
+            raise TypeError
+        message_id = len(self.serial_messages) + 1
+        self.load_serial_message(module, message_id, message)
+        self.serial_messages.update({message_id: {'target_module': module, 'message': message}})
+        return message_id
 
     def define_xonar_sounds_actions(self):
         self.actions.update(
@@ -130,11 +168,15 @@ class Bpod(BpodIO):
             }
         )
 
-    def define_harp_sounds_actions(self, go_tone_index=2, noise_index=3, sound_port='Serial3'):
+    def define_harp_sounds_actions(
+        self, go_tone_index: int = 2, noise_index: int = 3, sound_port: str = 'Serial3', module: BpodModule | None = None
+    ):
+        if module is None:
+            module = self.sound_card
         self.actions.update(
             {
-                'play_tone': (sound_port, self._define_message(self.sound_card, [ord('P'), go_tone_index])),
-                'play_noise': (sound_port, self._define_message(self.sound_card, [ord('P'), noise_index])),
+                'play_tone': (sound_port, self._define_message(module, [ord('P'), go_tone_index])),
+                'play_noise': (sound_port, self._define_message(module, [ord('P'), noise_index])),
                 'stop_sound': (sound_port, ord('X')),
             }
         )
@@ -262,6 +304,19 @@ class Bpod(BpodIO):
     def valve(self, valve_id: int, state: bool):
         self.manual_override(self.ChannelTypes.OUTPUT, self.ChannelNames.VALVE, valve_id, state)
 
+    @validate_call
+    def register_softcodes(self, softcode_dict: dict[int, Callable]) -> None:
+        """
+        Register softcodes to be used in the state machine
+
+        Parameters
+        ----------
+        softcode_dict : dict[int, Callable]
+            dictionary of int keys with callables as values
+        """
+        self.softcodes = softcode_dict
+        self.softcode_handler_function = lambda code: softcode_dict[code]()
+
 
 class MyRotaryEncoder:
     def __init__(self, all_thresholds, gain, com, connect=False):
@@ -294,7 +349,7 @@ class MyRotaryEncoder:
         m.close()
 
 
-def sound_device_factory(output='sysdefault', samplerate=None):
+def sound_device_factory(output: Literal['xonar', 'harp', 'hifi', 'sysdefault'] = 'sysdefault', samplerate: int | None = None):
     """
     Will import, configure, and return sounddevice module to play sounds using onboard sound card.
     Parameters
@@ -304,27 +359,31 @@ def sound_device_factory(output='sysdefault', samplerate=None):
     samplerate
         audio sample rate, defaults to 44100
     """
-    if output == 'xonar':
-        samplerate = samplerate or 192000
-        devices = sd.query_devices()
-        sd.default.device = next((i for i, d in enumerate(devices) if 'XONAR SOUND CARD(64)' in d['name']), None)
-        sd.default.latency = 'low'
-        sd.default.channels = 2
-        channels = 'L+TTL'
-        sd.default.samplerate = samplerate
-    elif output == 'harp':
-        samplerate = samplerate or 96000
-        sd.default.samplerate = samplerate
-        sd.default.channels = 2
-        channels = 'stereo'
-    elif output == 'sysdefault':
-        samplerate = samplerate or 44100
-        sd.default.latency = 'low'
-        sd.default.channels = 2
-        sd.default.samplerate = samplerate
-        channels = 'stereo'
-    else:
-        raise ValueError(f'{output} soundcard is neither xonar, harp or sysdefault. Fix your hardware_settings.yam')
+    match output:
+        case 'xonar':
+            samplerate = samplerate if samplerate is not None else 192000
+            devices = sd.query_devices()
+            sd.default.device = next((i for i, d in enumerate(devices) if 'XONAR SOUND CARD(64)' in d['name']), None)
+            sd.default.latency = 'low'
+            sd.default.channels = 2
+            channels = 'L+TTL'
+            sd.default.samplerate = samplerate
+        case 'harp':
+            samplerate = samplerate if samplerate is not None else 96000
+            sd.default.samplerate = samplerate
+            sd.default.channels = 2
+            channels = 'stereo'
+        case 'hifi':
+            samplerate = samplerate if samplerate is not None else 192000
+            channels = 'stereo'
+        case 'sysdefault':
+            samplerate = samplerate if samplerate is not None else 44100
+            sd.default.latency = 'low'
+            sd.default.channels = 2
+            sd.default.samplerate = samplerate
+            channels = 'stereo'
+        case _:
+            raise ValueError()
     return sd, samplerate, channels
 
 

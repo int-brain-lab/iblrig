@@ -7,9 +7,9 @@ from typing import Any, Literal
 import requests
 from serial import Serial, SerialException
 from serial.tools import list_ports
-from serial_singleton import SerialSingleton, filter_ports
 
 from iblrig.path_helper import _load_settings_yaml
+from iblrig.serial_singleton import SerialSingleton, filter_ports
 from iblrig.tools import alyx_reachable
 from one.webclient import AlyxClient
 
@@ -160,14 +160,24 @@ class ValidateAlyxLabLocation(ValidateHardware):
         try:
             alyx.rest('locations', 'read', id=self.hardware_settings['RIG_NAME'])
             results_kwargs = dict(status='PASS', message='')
-        except requests.exceptions.HTTPError:
-            error_message = f'Could not find rig name {self.hardware_settings["RIG_NAME"]} in Alyx'
-            solution = (
-                f'Please check the RIG_NAME key in the settings/hardware_settings.yaml file '
-                f'and make sure it is created in Alyx here: '
-                f'{self.iblrig_settings["ALYX_URL"]}/admin/misc/lablocation/'
-            )
-            results_kwargs = dict(status='FAIL', message=error_message, solution=solution)
+        except requests.exceptions.HTTPError as ex:
+            if ex.response.status_code not in (404, 400):  # file not found; auth error
+                # Likely Alyx is down or server-side issue
+                log.warning('Failed to determine lab location on Alyx.')
+                log.debug('%s', ex.response)
+                results_kwargs = dict(
+                    status='FAIL', message='Failed to determine lab location on Alyx.', solution='Check if Alyx is reachable.'
+                )
+                self.raise_fail_as_exception = False
+            else:
+                error_message = f'Could not find rig name {self.hardware_settings["RIG_NAME"]} in Alyx'
+                solution = (
+                    f'Please check the RIG_NAME key in the settings/hardware_settings.yaml file '
+                    f'and make sure it is created in Alyx here: '
+                    f'{self.iblrig_settings["ALYX_URL"]}/admin/misc/lablocation/'
+                )
+                results_kwargs = dict(status='FAIL', message=error_message, solution=solution)
+                self.raise_fail_as_exception = True
         return ValidateResult(**results_kwargs)
 
 

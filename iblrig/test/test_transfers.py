@@ -6,6 +6,7 @@ from pathlib import Path
 from unittest import mock
 
 import iblrig.commands
+import iblrig.path_helper
 import iblrig.raw_data_loaders
 from ibllib.io import session_params
 from iblrig.test.base import TASK_KWARGS
@@ -13,7 +14,7 @@ from iblrig.transfer_experiments import BehaviorCopier, EphysCopier, VideoCopier
 from iblrig_tasks._iblrig_tasks_trainingChoiceWorld.task import Session
 
 
-def _create_behavior_session(temp_dir, ntrials=None, hard_crash=False):
+def _create_behavior_session(ntrials=None, hard_crash=False, kwargs=None):
     """
     Creates a generic session in a tempdir. If ntrials is specified, create a jsonable file with ntrials
     and update the task settings
@@ -22,12 +23,8 @@ def _create_behavior_session(temp_dir, ntrials=None, hard_crash=False):
     :param hard_crash: if True, simulates a hardcrash by not labeling the session end time and ntrials
     :return:
     """
-    iblrig_settings = {
-        'iblrig_local_data_path': Path(temp_dir).joinpath('behavior'),
-        'iblrig_remote_data_path': Path(temp_dir).joinpath('remote'),
-        'ALYX_LAB': 'testlab',
-    }
-    session = Session(iblrig_settings=iblrig_settings, **TASK_KWARGS)
+    kwargs = kwargs or TASK_KWARGS
+    session = Session(**kwargs)
     session.create_session()
     session.paths.SESSION_FOLDER.joinpath('raw_video_data').mkdir(parents=True)
     session.paths.SESSION_FOLDER.joinpath('raw_video_data', 'tutu.avi').touch()
@@ -41,6 +38,8 @@ def _create_behavior_session(temp_dir, ntrials=None, hard_crash=False):
             session.session_info['NTRIALS'] = ntrials
             session.session_info['SESSION_END_TIME'] = session.session_info['SESSION_START_TIME']
             session.save_task_parameters_to_json_file()
+    # we need to remove the file logging otherwise the hash of the logfile will not match
+    session._remove_file_loggers()
     return session
 
 
@@ -49,6 +48,33 @@ class TestIntegrationTransferExperiments(unittest.TestCase):
     This test emulates the `transfer_data` command as run on the rig.
     """
 
+    def setUp(self):
+        self.iblrig_settings = iblrig.path_helper.load_pydantic_yaml(
+            iblrig.path_helper.RigSettings, 'iblrig_settings_template.yaml'
+        )
+        self.hardware_settings = iblrig.path_helper.load_pydantic_yaml(
+            iblrig.path_helper.HardwareSettings, 'hardware_settings_template.yaml'
+        )
+        self.td = tempfile.TemporaryDirectory()
+        self.session_kwargs = copy.deepcopy(TASK_KWARGS)
+        self.iblrig_settings.update(
+            {
+                'iblrig_remote_data_path': Path(self.td.name).joinpath('remote'),
+                'iblrig_local_data_path': Path(self.td.name).joinpath('behavior'),
+                'ALYX_LAB': 'cortexlab',
+            }
+        )
+        self.session_kwargs['iblrig_settings'] = self.iblrig_settings
+
+    def tearDown(self):
+        self.td.cleanup()
+
+    def side_effect(self, *args, filename=None, **kwargs):
+        if filename.name.endswith('hardware_settings.yaml'):
+            return self.hardware_settings
+        else:
+            return self.iblrig_settings
+
     def test_behavior_copy_complete_session(self):
         """
         Here there are 2 cases, one is about a complete session, the other is about a session that crashed
@@ -56,26 +82,27 @@ class TestIntegrationTransferExperiments(unittest.TestCase):
         In this case both sessions should end up on the remote path with a copy state of 3
         """
         for hard_crash in [False, True]:
-            with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as td:
-                session = _create_behavior_session(td, ntrials=50, hard_crash=hard_crash)
-                session.paths.SESSION_FOLDER.joinpath('transfer_me.flag').touch()
-                with mock.patch('iblrig.path_helper._load_settings_yaml', return_value=session.iblrig_settings):
-                    iblrig.commands.transfer_data()
-                sc = BehaviorCopier(
-                    session_path=session.paths.SESSION_FOLDER, remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER
-                )
-                self.assertEqual(sc.state, 3)
-
-        # Check that the settings file is used when no path passed
-        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as td:
-            session = _create_behavior_session(td, ntrials=50, hard_crash=hard_crash)
+            session = _create_behavior_session(ntrials=50, hard_crash=hard_crash, kwargs=self.session_kwargs)
             session.paths.SESSION_FOLDER.joinpath('transfer_me.flag').touch()
-            with mock.patch('iblrig.path_helper._load_settings_yaml', return_value=session.iblrig_settings):
-                iblrig.commands.transfer_data()
+            with mock.patch('iblrig.path_helper._load_settings_yaml') as mocker:
+                mocker.side_effect = self.side_effect
+                iblrig.commands.transfer_data(
+                    local_path=session.iblrig_settings['iblrig_local_data_path'],
+                    remote_path=session.iblrig_settings['iblrig_remote_data_path'],
+                )
             sc = BehaviorCopier(
                 session_path=session.paths.SESSION_FOLDER, remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER
             )
             self.assertEqual(sc.state, 3)
+        # Check that the settings file is used when no path passed
+        session = _create_behavior_session(ntrials=50, hard_crash=hard_crash, kwargs=self.session_kwargs)
+        session.paths.SESSION_FOLDER.joinpath('transfer_me.flag').touch()
+
+        with mock.patch('iblrig.path_helper._load_settings_yaml') as mocker:
+            mocker.side_effect = self.side_effect
+            iblrig.commands.transfer_data()
+        sc = BehaviorCopier(session_path=session.paths.SESSION_FOLDER, remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER)
+        self.assertEqual(sc.state, 3)
 
     def test_behavior_do_not_copy_dummy_sessions(self):
         """
@@ -83,59 +110,55 @@ class TestIntegrationTransferExperiments(unittest.TestCase):
         The expected behaviour is for the session folder on the remote session to be removed
         :return:
         """
-        for ntrials in [None, 41]:
-            with tempfile.TemporaryDirectory() as td:
-                session = _create_behavior_session(td, ntrials=ntrials)
-                session.paths.SESSION_FOLDER.joinpath('transfer_me.flag').touch()
-                with mock.patch('iblrig.path_helper._load_settings_yaml', return_value=session.iblrig_settings):
-                    iblrig.commands.transfer_data()
-                sc = BehaviorCopier(
-                    session_path=session.paths.SESSION_FOLDER, remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER
+        for ntrials in [41, None]:
+            session = _create_behavior_session(ntrials=ntrials, kwargs=self.session_kwargs)
+            session.paths.SESSION_FOLDER.joinpath('transfer_me.flag').touch()
+            with mock.patch('iblrig.path_helper._load_settings_yaml') as mocker:
+                mocker.side_effect = self.side_effect
+                iblrig.commands.transfer_data(
+                    local_path=session.iblrig_settings['iblrig_local_data_path'],
+                    remote_path=session.iblrig_settings['iblrig_remote_data_path'],
                 )
-                self.assertFalse(sc.remote_session_path.exists())
-
-
-class TestUnitTransferExperiments(unittest.TestCase):
-    """
-    UnitTest the BehaviorCopier, VideoCopier and EphysCopier classes and methods
-    Unlike the integration test, the sessions here are made from scratch using an actual instantiated session
-    """
-
-    def test_behavior_copy(self):
-        with tempfile.TemporaryDirectory() as td:
-            session = _create_behavior_session(td)
             sc = BehaviorCopier(
                 session_path=session.paths.SESSION_FOLDER, remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER
             )
-            assert sc.state == 1
-            sc.copy_collections()
-            assert sc.state == 2
-            sc.finalize_copy(number_of_expected_devices=1)
-            assert sc.state == 3  # this time it's all there and we move on
+            self.assertFalse(sc.remote_session_path.exists())
+
+    def test_behavior_copy(self):
+        """
+        Unlike the integration test, the sessions here are made from scratch using an actual instantiated session
+        :return:
+        """
+        session = _create_behavior_session(kwargs=self.session_kwargs)
+        sc = BehaviorCopier(session_path=session.paths.SESSION_FOLDER, remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER)
+        assert sc.state == 1
+        sc.copy_collections()
+        assert sc.state == 2
+        sc.finalize_copy(number_of_expected_devices=1)
+        assert sc.state == 3  # this time it's all there and we move on
 
     def test_behavior_ephys_video_copy(self):
+        """
+        Unlike the integration test, the sessions here are made from scratch using an actual instantiated session
+        :return:
+        """
         with tempfile.TemporaryDirectory() as td:
             """
             First create a behavior session
             """
-            iblrig_settings = {
-                'iblrig_local_data_path': Path(td).joinpath('behavior'),
-                'iblrig_remote_data_path': Path(td).joinpath('remote'),
-            }
-
-            task_kwargs = copy.deepcopy(TASK_KWARGS)
+            task_kwargs = copy.deepcopy(self.session_kwargs)
             task_kwargs['hardware_settings'].update(
                 {
                     'device_cameras': None,
                     'MAIN_SYNC': False,  # this is quite important for ephys sessions
                 }
             )
-            session = Session(iblrig_settings=iblrig_settings, **task_kwargs)
+            session = Session(**task_kwargs)
             session.create_session()
+            session._remove_file_loggers()
             # SESSION_RAW_DATA_FOLDER is the one that gets copied
             folder_session_video = Path(td).joinpath('video', 'Subjects', *session.paths.SESSION_FOLDER.parts[-3:])
             folder_session_ephys = Path(td).joinpath('ephys', 'Subjects', *session.paths.SESSION_FOLDER.parts[-3:])
-
             """
             Create an ephys acquisition
             """

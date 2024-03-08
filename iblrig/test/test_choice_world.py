@@ -27,7 +27,9 @@ class TestGetPreviousSession(unittest.TestCase):
         self.kwargs.update({'subject_weight_grams': 25})
         self.td = tempfile.TemporaryDirectory()
         self.root_path = Path(self.td.name)
-        self.kwargs['iblrig_settings'] = dict(iblrig_local_data_path=self.root_path, ALYX_LAB='cortexlab')
+        self.kwargs['iblrig_settings'] = dict(
+            iblrig_local_data_path=self.root_path, ALYX_LAB='cortexlab', iblrig_remote_data_path=None
+        )
         self.sesa = SpontaneousSession(**self.kwargs)
         self.sesa.create_session()
         self.sesb = TrainingChoiceWorldSession(**self.kwargs)
@@ -47,6 +49,7 @@ class TestGetPreviousSession(unittest.TestCase):
             local_path=Path(self.root_path),
             lab='cortexlab',
             n=2,
+            iblrig_settings=self.kwargs['iblrig_settings'],
         )
         self.assertEqual(len(previous_sessions), 1)
         # here we create a remote path, and copy over the sessions
@@ -96,7 +99,11 @@ class TestGetPreviousSession(unittest.TestCase):
         self.sesb.save_task_parameters_to_json_file()
         # test the function entry point
         tinfo, info = iblrig.choiceworld.get_subject_training_info(
-            self.kwargs['subject'], local_path=Path(self.root_path), lab='cortexlab', mode='raise'
+            self.kwargs['subject'],
+            local_path=Path(self.root_path),
+            lab='cortexlab',
+            mode='raise',
+            iblrig_settings=self.sesb.iblrig_settings,
         )
         self.assertEqual((2, 2.1), (tinfo['training_phase'], tinfo['adaptive_reward']))
         self.assertIsInstance(info, dict)

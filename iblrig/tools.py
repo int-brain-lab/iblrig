@@ -238,20 +238,19 @@ def call_bonsai(
     cwd = workflow_file.parent
     create_bonsai_layout_from_template(workflow_file)
 
-    cmd = [BONSAI_EXE, workflow_file]
+    cmd = [str(BONSAI_EXE), str(workflow_file)]
     if start:
         cmd.append('--start' if debug else '--start-no-debug')
     if not editor:
         cmd.append('--no-editor')
     if not bootstrap:
         cmd.append('--no-boot')
-    cmd = [str(x) for x in cmd]
     if parameters is not None:
         for key, value in parameters.items():
             cmd.append(f'-p:{key}={str(value)}')
 
     log.info(f'Starting Bonsai workflow `{workflow_file.name}`')
-    log.debug(' '.join(cmd))
+    log.debug(' '.join(str(cmd)))
     if wait:
         return subprocess.run(args=cmd, cwd=cwd, check=check)
     else:

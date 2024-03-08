@@ -49,7 +49,7 @@ class ChoiceWorldParams(BaseModel):
     FEEDBACK_ERROR_DELAY_SECS: float = 2
     FEEDBACK_NOGO_DELAY_SECS: float = 2
     INTERACTIVE_DELAY: float = 0.0
-    ITI_DELAY_SECS: float = 1
+    ITI_DELAY_SECS: float = 0.5
     NTRIALS: int = Field(2000, gt=0)
     POOP_COUNT: bool = True
     PROBABILITY_LEFT: Probability = 0.5
@@ -76,7 +76,6 @@ class ChoiceWorldParams(BaseModel):
 
 
 class ChoiceWorldSession(
-    iblrig.base_tasks.BaseSession,
     iblrig.base_tasks.BonsaiRecordingMixin,
     iblrig.base_tasks.BonsaiVisualStimulusMixin,
     iblrig.base_tasks.BpodMixin,
@@ -155,6 +154,7 @@ class ChoiceWorldSession(
             self.start_mixin_bonsai_cameras()
             self.start_mixin_bonsai_microphone()
             self.start_mixin_bonsai_visual_stimulus()
+            self.bpod.register_softcodes(self.softcode_dictionary())
 
     def _run(self):
         """
@@ -276,8 +276,12 @@ class ChoiceWorldSession(
                 log.info('Graphviz system executable not found, cannot render the graph')
         return dot
 
+    def _instantiate_state_machine(self, *args, **kwargs):
+        return StateMachine(self.bpod)
+
     def get_state_machine_trial(self, i):
-        sma = StateMachine(self.bpod)
+        # we define the trial number here for subclasses that may need it
+        sma = self._instantiate_state_machine(trial_number=i)
         if i == 0:  # First trial exception start camera
             session_delay_start = self.task_params.get('SESSION_DELAY_START', 0)
             log.info('First trial initializing, will move to next trial only if:')
@@ -404,7 +408,7 @@ class ChoiceWorldSession(
 
         sma.add_state(
             state_name='correct',
-            state_timer=self.task_params.FEEDBACK_CORRECT_DELAY_SECS,
+            state_timer=self.task_params.FEEDBACK_CORRECT_DELAY_SECS - self.reward_time,
             output_actions=[],
             state_change_conditions={'Tup': 'hide_stim'},
         )
@@ -568,7 +572,7 @@ class HabituationChoiceWorldSession(ChoiceWorldSession):
                 state_timer=3600,
                 state_change_conditions={'Port1In': 'stim_on'},
                 output_actions=[self.bpod.actions.bonsai_hide_stim, ('SoftCode', SOFTCODE.TRIGGER_CAMERA), ('BNC1', 255)],
-            )  # sart camera
+            )  # start camera
         else:
             sma.add_state(
                 state_name='trial_start',
@@ -810,6 +814,7 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
                 remote_path=self.iblrig_settings['iblrig_remote_data_path'],
                 lab=self.iblrig_settings['ALYX_LAB'],
                 task_name=self.protocol_name,
+                iblrig_settings=self.iblrig_settings,
             )
         except Exception:
             self.logger.critical('Failed to get training information from previous subjects: %s', traceback.format_exc())

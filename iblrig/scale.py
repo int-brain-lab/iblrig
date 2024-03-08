@@ -2,7 +2,7 @@ import logging
 import re
 from dataclasses import dataclass
 
-from serial_singleton import SerialSingleton
+from iblrig.serial_singleton import SerialSingleton
 
 log = logging.getLogger(__name__)
 

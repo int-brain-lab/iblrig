@@ -41,7 +41,7 @@ from iblrig.path_helper import load_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings, RigSettings
 from iblrig.tools import alyx_reachable, get_anydesk_id, internet_available
 from iblrig.version_management import check_for_updates, get_changelog, is_dirty
-from iblutil.util import Bunch, setup_logger
+from iblutil.util import setup_logger
 from one.webclient import AlyxClient
 from pybpodapi.exceptions.bpod_error import BpodErrorException
 
@@ -116,11 +116,15 @@ class RigWizardModel:
         )
 
         # calculate free reward time
-        class FakeSession(ValveMixin):
-            hardware_settings = self.hardware_settings
-            task_params = Bunch({'AUTOMATIC_CALIBRATION': True, 'REWARD_AMOUNT_UL': 10})
+        class FakeSession(EmptySession, ValveMixin):
+            pass
 
-        fake_session = FakeSession()
+        fake_session = FakeSession(
+            subject='gui_init_subject',
+            file_hardware_settings=self.file_hardware_settings,
+            file_iblrig_settings=self.file_iblrig_settings,
+        )
+        fake_session.task_params.update({'AUTOMATIC_CALIBRATION': True, 'REWARD_AMOUNT_UL': 10})
         fake_session.init_mixin_valve()
         self.free_reward_time = fake_session.compute_reward_time(self.hardware_settings.device_valve.FREE_REWARD_VOLUME_UL)
 
@@ -190,7 +194,10 @@ class RigWizardModel:
                     raise e
 
         # since we are connecting to Alyx, validate some parameters to ensure a smooth extraction
-        result = iblrig.hardware_validation.ValidateAlyxLabLocation().run(self.alyx)
+        result = iblrig.hardware_validation.ValidateAlyxLabLocation(
+            iblrig_settings=self.iblrig_settings,
+            hardware_settings=self.hardware_settings,
+        ).run(self.alyx)
         if result.status == 'FAIL' and gui:
             QtWidgets.QMessageBox().critical(None, 'Error', f'{result.message}\n\n{result.solution}')
 
@@ -695,6 +702,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
 
             # create widget for string arguments
             elif arg.type in (str, None):
+                # string options (-> combo-box)
                 if isinstance(arg.choices, list):
                     widget = QtWidgets.QComboBox()
                     widget.addItems(arg.choices)
@@ -703,6 +711,17 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                     widget.currentTextChanged.connect(lambda val, p=param: self._set_task_arg(p, val))
                     widget.currentTextChanged.emit(widget.currentText())
 
+                # list of strings (-> line-edit)
+                elif arg.nargs == '+':
+                    widget = QtWidgets.QLineEdit()
+                    if arg.default:
+                        widget.setText(', '.join(arg.default))
+                    widget.editingFinished.connect(
+                        lambda p=param, w=widget: self._set_task_arg(p, [x.strip() for x in w.text().split(',')])
+                    )
+                    widget.editingFinished.emit()
+
+                # single string (-> line-edit)
                 else:
                     widget = QtWidgets.QLineEdit()
                     if arg.default:
@@ -747,7 +766,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
 
             # some customizations
             match widget.property('parameter_dest'):
-                case 'probability_left':
+                case 'probability_left' | 'probability_opto_stim':
                     widget.setMinimum(0.0)
                     widget.setMaximum(1.0)
                     widget.setSingleStep(0.1)
@@ -758,6 +777,8 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
 
                 case 'session_template_id':
                     label = 'Session Template ID'
+                    widget.setMinimum(0)
+                    widget.setMaximum(11)
 
                 case 'delay_secs':
                     label = 'Initial Delay, s'
@@ -810,9 +831,6 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         if layout.rowCount() == 0:
             layout.addRow(self.tr('(none)'), None)
             layout.itemAt(0, 0).widget().setEnabled(False)
-
-        # call timer to resize window
-        QtCore.QTimer.singleShot(1, lambda: self.resize(self.minimumSizeHint()))
 
     def _set_task_arg(self, key, value):
         self.task_arguments[key] = value
@@ -1002,7 +1020,11 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 session_data = json.load(fid)
 
             # check if session was a dud
-            if (ntrials := session_data['NTRIALS']) < 42 and 'spontaneous' not in self.model.task_name:
+            if (
+                (ntrials := session_data['NTRIALS']) < 42
+                and not any([x in self.model.task_name for x in ('spontaneous', 'passive')])
+                and not self.uiCheckAppend.isChecked()
+            ):
                 answer = QtWidgets.QMessageBox.question(
                     self,
                     'Is this a dud?',
