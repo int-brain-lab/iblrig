@@ -1,5 +1,8 @@
 Changelog
 ---------
+8.16.1 (not yet released)
+------
+* Hoferlab: when bpod returns inconsistent error | time-out | correct, throw the excetion after logging
 
 8.16.0
 ------
