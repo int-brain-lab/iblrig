@@ -113,7 +113,7 @@ def _iterate_protocols(subject_folder, task_name, n=1, min_trials=43):
     return protocols
 
 
-def get_local_and_remote_paths(local_path: Path | str | None = None, remote_path: Path | str | None = None, lab: str = None):
+def get_local_and_remote_paths(local_path=None, remote_path=None, lab=None, iblrig_settings=None):
     """
     Function used to parse input arguments to transfer commands.
 
@@ -123,30 +123,25 @@ def get_local_and_remote_paths(local_path: Path | str | None = None, remote_path
     :param local_path:
     :param remote_path:
     :param lab:
+    :param iblrig_settings: if provided, settings dictionary, otherwise will load the default settings files
     :return: dictionary, with following keys (example output)
        {'local_data_folder': PosixPath('C:/iblrigv8_data'),
         'remote_data_folder': PosixPath('Y:/'),
         'local_subjects_folder': PosixPath('C:/iblrigv8_data/mainenlab/Subjects'),
         'remote_subjects_folder': PosixPath('Y:/Subjects')}
     """
-    iblrig_settings = _load_settings_yaml()
-    if local_path is None:
-        local_path = p if (p := iblrig_settings['iblrig_local_data_path']) else Path.home().joinpath('iblrig_data')
-    if remote_path is None:
-        remote_path = p if (p := iblrig_settings['iblrig_remote_data_path']) else None
     paths = Bunch({'local_data_folder': local_path, 'remote_data_folder': remote_path})
-
-    # Get the subjects folder. If not defined in the settings, assume data path + /Subjects
-    paths.local_subjects_folder = iblrig_settings.get('iblrig_local_subjects_path', None)
-    if paths.local_subjects_folder is None:
-        paths.local_subjects_folder = Path(paths.local_data_folder).joinpath(lab or iblrig_settings['ALYX_LAB'] or '', 'Subjects')
-    else:
-        paths.local_subjects_folder = Path(paths.local_subjects_folder)
-    paths.remote_subjects_folder = iblrig_settings.get('iblrig_remote_subjects_path', None)
-    if paths.remote_subjects_folder is None:
-        paths.remote_subjects_folder = Path(p).joinpath('Subjects') if (p := paths.remote_data_folder) else None
-    else:
-        paths.remote_subjects_folder = Path(paths.remote_subjects_folder)
+    # we only want to attempt to load the settings file if necessary
+    if (local_path is None) or (remote_path is None) or (lab is None):
+        iblrig_settings = load_pydantic_yaml(RigSettings) if iblrig_settings is None else iblrig_settings
+    if paths.local_data_folder is None:
+        paths.local_data_folder = (
+            Path(p) if (p := iblrig_settings['iblrig_local_data_path']) else Path.home().joinpath('iblrig_data')
+        )
+    if paths.remote_data_folder is None:
+        paths.remote_data_folder = Path(p) if (p := iblrig_settings['iblrig_remote_data_path']) else None
+    paths.local_subjects_folder = Path(paths.local_data_folder).joinpath(lab or iblrig_settings['ALYX_LAB'] or '', 'Subjects')
+    paths.remote_subjects_folder = Path(p).joinpath('Subjects') if (p := paths.remote_data_folder) else None
     return paths
 
 

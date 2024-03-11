@@ -7,9 +7,9 @@ from typing import Any, Literal
 import requests
 from serial import Serial, SerialException
 from serial.tools import list_ports
-from serial_singleton import SerialSingleton, filter_ports
 
 from iblrig.path_helper import _load_settings_yaml
+from iblrig.serial_singleton import SerialSingleton, filter_ports
 from iblrig.tools import alyx_reachable
 from one.webclient import AlyxClient
 

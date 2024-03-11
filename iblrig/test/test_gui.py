@@ -4,6 +4,7 @@ from unittest.mock import patch
 from ibllib.tests import TEST_DB
 from iblrig.constants import SETTINGS_PATH
 from iblrig.gui.wizard import PROJECTS, RigWizardModel
+from iblrig.hardware_validation import ValidateResult
 from one.webclient import AlyxClient
 from iblrig.hardware_validation import ValidateResult
 

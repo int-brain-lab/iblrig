@@ -46,18 +46,6 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: sudo apt-get install -y libportaudio2
 
-      - name: Create config files (Ubuntu)
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          cp settings/hardware_settings_template.yaml settings/hardware_settings.yaml
-          cp settings/iblrig_settings_template.yaml settings/iblrig_settings.yaml
-
-      - name: Create config files (Windows)
-        if: matrix.os == 'windows-latest'
-        run: |
-          copy settings\hardware_settings_template.yaml settings\hardware_settings.yaml
-          copy settings\iblrig_settings_template.yaml settings\iblrig_settings.yaml
-
       - name: iblrig unit tests
         run: |
           coverage run -m unittest discover -s ./iblrig/test -t .
