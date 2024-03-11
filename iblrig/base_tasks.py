@@ -861,7 +861,7 @@ class SoundMixin(BaseSession):
         # additional gain factor for bringing the different combinations of sound-cards and amps to the same output level
         # TODO: this needs proper calibration and refactoring
         if self.hardware_settings.device_sound.OUTPUT == 'hifi' and self.hardware_settings.device_sound.AMP_TYPE == 'AMP2X15':
-            amp_gain_factor = 0.5
+            amp_gain_factor = 0.25
         else:
             amp_gain_factor = 1.0
         self.task_params.GO_TONE_AMPLITUDE *= amp_gain_factor
