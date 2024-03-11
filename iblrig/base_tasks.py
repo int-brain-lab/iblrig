@@ -15,6 +15,7 @@ import time
 import traceback
 from abc import ABC
 from pathlib import Path
+import importlib.metadata
 
 import numpy as np
 import scipy.interpolate
@@ -317,6 +318,10 @@ class BaseSession(ABC):
             'ALYX_USER': self.iblrig_settings.ALYX_USER,
             'ALYX_LAB': self.iblrig_settings.ALYX_LAB,
         }
+        try:  # If 'project_extraction' repository is installed, record the version
+            patch_dict['PROJECT_EXTRACTION_VERSION'] = importlib.metadata.version('project_extraction')
+        except importlib.metadata.PackageNotFoundError:
+            pass
         output_dict.update(patch_dict)
         return output_dict
 
