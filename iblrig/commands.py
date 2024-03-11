@@ -11,9 +11,7 @@ import yaml
 import iblrig
 from iblrig.hardware import Bpod
 from iblrig.online_plots import OnlinePlots
-from iblrig.path_helper import get_local_and_remote_paths, load_pydantic_yaml
-from iblrig.pydantic_definitions import HardwareSettings
-from iblrig.raw_data_loaders import load_task_jsonable
+from iblrig.path_helper import get_local_and_remote_paths
 from iblrig.transfer_experiments import BehaviorCopier, EphysCopier, SessionCopier, VideoCopier
 from iblutil.util import setup_logger
 
@@ -276,7 +274,6 @@ def transfer_data(
     logger.info('Searching for %s sessions using %s class', tag.lower(), copier.__name__)
     expected_devices = kwargs.pop('number_of_expected_devices', None)
     copiers = _get_copiers(copier, local_subject_folder, remote_subject_folder, interactive=interactive, tag=tag, **kwargs)
-    hardware_settings = load_pydantic_yaml(HardwareSettings)
 
     for copier in copiers:
         logger.critical(f'{copier.state}, {copier.session_path}')

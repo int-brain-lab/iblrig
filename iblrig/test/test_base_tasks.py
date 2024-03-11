@@ -17,7 +17,7 @@ import yaml
 import ibllib.io.session_params as ses_params
 from ibllib.io.session_params import read_params
 from iblrig.base_choice_world import BiasedChoiceWorldSession, ChoiceWorldSession
-from iblrig.base_tasks import BaseSession
+from iblrig.base_tasks import BaseSession, BonsaiRecordingMixin
 from iblrig.misc import _get_task_argument_parser, _post_parse_arguments
 from iblrig.path_helper import load_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings

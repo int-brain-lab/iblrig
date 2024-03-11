@@ -7,6 +7,7 @@ import string
 import unittest
 from pathlib import Path
 
+from ibllib.io.extractors.base import get_task_extractor_type
 import ibllib.pipes.dynamic_pipeline
 import iblrig
 from ibllib.tests import TEST_DB  # noqa
@@ -63,7 +64,13 @@ class BaseTestCases:
         def test_acquisition_description(self) -> None:
             # This makes sure that the task has a defined set of extractors
             description_task = self.task.experiment_description['tasks'][0][self.task.protocol_name]
-            self.assertEqual(description_task['extractors'], self.task.extractor_tasks)
+            # there are 2 ways to define extractors, either in the `extractor_tasks` attribute, in which
+            # case this is hard-coded in the task parameters, or at extraction runtime using ibllib.io.extractors.base
+            # here we check that either of these methods is used and yields a valid extractor
+            if self.task.extractor_tasks is not None:
+                self.assertEqual(description_task['extractors'], self.task.extractor_tasks)
+            else:
+                self.assertIsNotNone(get_task_extractor_type(self.task.protocol_name))
 
         def test_pipeline(self) -> None:
             self.task.create_session()
