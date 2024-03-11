@@ -88,7 +88,7 @@ class HardwareSettingsScreen(BunchModel):
 class HardwareSettingsSound(BunchModel):
     OUTPUT: Literal['harp', 'xonar', 'hifi', 'sysdefault']
     COM_SOUND: str | None = None
-    # AMP_TYPE: Literal['harp', 'AMP2X15'] | None = None
+    AMP_TYPE: Literal['harp', 'AMP2X15'] | None = None
     # ATTENUATION_DB: float = Field(default=0, le=0)
 
 
