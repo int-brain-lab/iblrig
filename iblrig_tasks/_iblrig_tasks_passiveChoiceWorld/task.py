@@ -13,10 +13,10 @@ log = logging.getLogger('iblrig.task')
 
 class Session(ChoiceWorldSession):
     protocol_name = '_iblrig_tasks_passiveChoiceWorld'
-    extractor_tasks = ['PassiveRegisterRaw', 'PassiveTask']
 
     def __init__(self, *args, session_template_id=0, **kwargs):
         super(ChoiceWorldSession, self).__init__(**kwargs)
+        self.extractor_tasks = ['PassiveRegisterRaw', 'PassiveTask']
         self.task_params.SESSION_TEMPLATE_ID = session_template_id
         all_trials = pd.read_parquet(Path(__file__).parent.joinpath('passiveChoiceWorld_trials_fixtures.pqt'))
         self.trials_table = all_trials[all_trials['session_id'] == self.task_params.SESSION_TEMPLATE_ID].copy()

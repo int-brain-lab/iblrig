@@ -54,6 +54,7 @@ class BaseSession(ABC):
     base_parameters_file: Path | None = None
     is_mock = False
     extractor_tasks = None
+    """list of str: One or more ibllib.pipes.tasks.Task names for task extraction."""
     logger: logging.Logger = None
     """logging.Logger: Log instance used solely to keep track of log level passed to constructor."""
 
@@ -100,6 +101,7 @@ class BaseSession(ABC):
         self.interactive = interactive
         self._one = one
         self.init_datetime = datetime.datetime.now()
+        self.extractor_tasks = None
 
         # loads in the settings: first load the files, then update with the input argument if provided
         self.hardware_settings = load_pydantic_yaml(HardwareSettings, file_hardware_settings)
