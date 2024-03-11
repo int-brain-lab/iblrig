@@ -664,9 +664,8 @@ NTRIALS ERROR:        {self.trial_num - self.session_info.NTRIALS_CORRECT}
         self.trials_table.at[self.trial_num, 'response_time'] = response_time
         # get the trial outcome
         state_names = ['correct', 'error', 'no_go', 'omit_correct', 'omit_error', 'omit_no_go']
-        outcome = {sn: ~np.isnan(bpod_data['States timestamps'].get(sn, [[np.NaN]])[0][0]) for sn in state_names}
-        assert np.sum(list(outcome.values())) == 1
-        outcome = next(k for k in outcome if outcome[k])
+        raw_outcome = {sn: ~np.isnan(bpod_data['States timestamps'].get(sn, [[np.NaN]])[0][0]) for sn in state_names}
+        outcome = next(k for k in raw_outcome if raw_outcome[k])
         # Update response buffer -1 for left, 0 for nogo, and 1 for rightward
         position = self.trials_table.at[self.trial_num, 'position']
         if 'correct' in outcome:
@@ -677,11 +676,10 @@ NTRIALS ERROR:        {self.trial_num - self.session_info.NTRIALS_CORRECT}
             self.trials_table.at[self.trial_num, 'response_side'] = np.sign(position)
         elif 'no_go' in outcome:
             self.trials_table.at[self.trial_num, 'response_side'] = 0
-        else:
-            ValueError("The task outcome doesn't contain no_go, error or correct")
-        assert position != 0, 'the position value should be either 35 or -35'
-
         super().trial_completed(bpod_data)
+        # here we throw potential errors after having written the trial to disk
+        assert np.sum(list(raw_outcome.values())) == 1
+        assert position != 0, 'the position value should be either 35 or -35'
 
 
 class BiasedChoiceWorldSession(ActiveChoiceWorldSession):
