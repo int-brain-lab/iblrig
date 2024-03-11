@@ -1,8 +1,11 @@
 Changelog
 ---------
-8.16.1 (not yet released)
+
+
+8.16.1
 ------
-* Hoferlab: when bpod returns inconsistent error | time-out | correct, throw the excetion after logging
+* Hoferlab: when bpod returns inconsistent error, time-out or correct, throw the exception after logging
+* add AMP_TYPE field to hardware_settings.yaml (device_sound) to handle the combination of HiFi module and AMP2x15 amplifier
 
 8.16.0
 ------
