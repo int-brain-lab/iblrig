@@ -100,7 +100,7 @@ class BaseSession(ABC):
         self.init_datetime = datetime.datetime.now()
 
         # loads in the settings: first load the files, then update with the input argument if provided
-        self.hardware_settings = load_pydantic_yaml(HardwareSettings, file_hardware_settings)
+        self.hardware_settings: HardwareSettings = load_pydantic_yaml(HardwareSettings, file_hardware_settings)
         if hardware_settings is not None:
             self.hardware_settings.update(hardware_settings)
             HardwareSettings.model_validate(self.hardware_settings)
@@ -857,6 +857,16 @@ class SoundMixin(BaseSession):
             }
         )
         sound_output = self.hardware_settings.device_sound['OUTPUT']
+
+        # additional gain factor for bringing the different combinations of sound-cards and amps to the same output level
+        # TODO: this needs proper calibration and refactoring
+        if self.hardware_settings.device_sound.OUTPUT == 'hifi' and self.hardware_settings.device_sound.AMP_TYPE == 'AMP2X15':
+            amp_gain_factor = 0.5
+        else:
+            amp_gain_factor = 1.0
+        self.task_params.GO_TONE_AMPLITUDE *= amp_gain_factor
+        self.task_params.WHITE_NOISE_AMPLITUDE *= amp_gain_factor
+
         # sound device sd is actually the module soundevice imported above.
         # not sure how this plays out when referenced outside of this python file
         self.sound['sd'], self.sound['samplerate'], self.sound['channels'] = sound_device_factory(output=sound_output)
@@ -865,7 +875,7 @@ class SoundMixin(BaseSession):
             rate=self.sound['samplerate'],
             frequency=self.task_params.GO_TONE_FREQUENCY,
             duration=self.task_params.GO_TONE_DURATION,
-            amplitude=self.task_params.GO_TONE_AMPLITUDE,
+            amplitude=self.task_params.GO_TONE_AMPLITUDE * amp_gain_factor,
             fade=0.01,
             chans=self.sound['channels'],
         )
@@ -873,7 +883,7 @@ class SoundMixin(BaseSession):
             rate=self.sound['samplerate'],
             frequency=-1,
             duration=self.task_params.WHITE_NOISE_DURATION,
-            amplitude=self.task_params.WHITE_NOISE_AMPLITUDE,
+            amplitude=self.task_params.WHITE_NOISE_AMPLITUDE * amp_gain_factor,
             fade=0.01,
             chans=self.sound['channels'],
         )
