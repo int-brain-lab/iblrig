@@ -66,6 +66,8 @@ upgrade_iblrig      = "iblrig.upgrade_iblrig:upgrade"
 install_spinnaker   = "iblrig.video:install_spinnaker"
 install_pyspin      = "iblrig.video:install_pyspin"
 start_video_session = "iblrig.video:prepare_video_session_cmd"
+start_ephys_session = "iblrig.ephys:prepare_ephys_session_cmd"
+
 convert_uis         = "iblrig.gui.tools:convert_uis"
 
 [tool.setuptools.dynamic]
