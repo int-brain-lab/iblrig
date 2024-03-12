@@ -14,12 +14,11 @@ class Session(ActiveChoiceWorldSession):
     """
     Advanced Choice World is the ChoiceWorld task using fixed 50/50 probability for the side
     and contrasts defined in the parameters.
-    It differs from TraininChoiceWorld in that it does not implement adaptive contrasts or debiasing,
+    It differs from TrainingChoiceWorld in that it does not implement adaptive contrasts or debiasing,
     and it differs from BiasedChoiceWorld in that it does not implement biased blocks.
     """
 
     protocol_name = '_iblrig_tasks_advancedChoiceWorld'
-    extractor_tasks = ['TrialRegisterRaw', 'ChoiceWorldTrials', 'TrainingStatus']
 
     def __init__(
         self,
@@ -31,7 +30,7 @@ class Session(ActiveChoiceWorldSession):
         stim_gain: float = DEFAULTS['STIM_GAIN'],
         **kwargs,
     ):
-        super(Session, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.task_params['CONTRAST_SET'] = contrast_set
         self.task_params['CONTRAST_SET_PROBABILITY_TYPE'] = contrast_set_probability_type
         self.task_params['PROBABILITY_LEFT'] = probability_left

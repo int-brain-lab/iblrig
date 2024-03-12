@@ -1,13 +1,17 @@
 """Tests for iblrig.path_helper module."""
+import logging
 import tempfile
 import unittest
+from copy import deepcopy
 from pathlib import Path
+
+import yaml
 
 import ibllib.tests.fixtures.utils as fu
 from iblrig import path_helper
-from iblrig.base_tasks import BonsaiRecordingMixin
 from iblrig.constants import BASE_DIR
-from iblrig.pydantic_definitions import HardwareSettings
+from iblrig.path_helper import load_pydantic_yaml, save_pydantic_yaml
+from iblrig.pydantic_definitions import HardwareSettings, RigSettings
 
 
 class TestPathHelper(unittest.TestCase):
@@ -122,23 +126,63 @@ class TestIterateProtocols(unittest.TestCase):
 
 
 class TestPatchSettings(unittest.TestCase):
-    """Test for iblrig.path_helper.patch_settings"""
+    """Test for iblrig.path_helper.patch_settings."""
+
+    def setUp(self):
+        file = Path(__file__).parents[2].joinpath('settings', 'hardware_settings_template.yaml')
+        with open(file) as fp:
+            self.rs = yaml.safe_load(fp)
+        self.rs.pop('device_cameras')
 
     def test_patch_hardware_settings(self):
-        rs = {'RIG_NAME': 'foo_rig', 'MAIN_SYNC': True, 'device_camera': {'BONSAI_WORKFLOW': 'path/to/Workflow.bonsai'}}
-        updated = path_helper.patch_settings(rs.copy(), 'hardware_settings')
-        self.assertEqual('1.0.0', updated.get('VERSION'))
+        recording_workflow = 'devices/camera_recordings/TrainingRig_SaveVideo_TrainingTasks.bonsai'
+        setup_workflow = 'devices/camera_setup/setup_video.bonsai'
+        # Version 0 settings example
+        # rs = {'RIG_NAME': 'foo_rig', 'MAIN_SYNC': True,
+        rs = deepcopy(self.rs)
+        rs['VERSION'] = '0.1.0'
+        rs['device_camera'] = {'BONSAI_WORKFLOW': recording_workflow}
+        updated = path_helper.patch_settings(rs, 'hardware_settings')
+        self.assertEqual('1.1.0', updated.get('VERSION'))
         self.assertNotIn('device_camera', updated)
-        self.assertEqual(rs['device_camera'], updated.get('device_cameras', {}).get('left'))
-        self.assertDictEqual(path_helper.patch_settings(updated.copy(), 'hardware_settings'), updated)
+        expected = {
+            'BONSAI_WORKFLOW': {'setup': setup_workflow, 'recording': recording_workflow},
+            'left': {'INDEX': 1, 'SYNC_LABEL': 'audio'},
+        }
+        self.assertEqual(expected, updated.get('device_cameras', {}).get('training'))
+        HardwareSettings.model_validate(updated)  # Should pass validation?
+        # Assert unchanged when all up to date
+        self.assertDictEqual(path_helper.patch_settings(deepcopy(updated), 'hardware_settings'), updated)
+        # Test v1.0 -> v1.1
+        v1 = deepcopy(rs)
+        # Some settings files have empty camera fields
+        v1['device_cameras'] = {'left': {'BONSAI_WORKFLOW': recording_workflow}, 'right': None, 'body': None}
+        v1['VERSION'] = '1.0.0'
+        v2 = path_helper.patch_settings(v1, 'hardware_settings')
+        self.assertEqual('1.1.0', v2.get('VERSION'))
+        self.assertEqual(expected, v2.get('device_cameras', {}).get('training'))
+        HardwareSettings.model_validate(v2)
+        # Test without any device_cameras key (should be optional)
+        rs.pop('device_cameras')
+        self.assertIn('device_cameras', path_helper.patch_settings(rs, 'hardware_settings'))
+        rs['device_cameras'] = None
+        self.assertEqual(path_helper.patch_settings(rs, 'hardware_settings').get('device_cameras'), {})
+        HardwareSettings.model_validate(rs)  # Test model validation when device_cameras is empty dict
 
 
-class TestHardwareSettings(unittest.TestCase):
-    def test_get_left_camera_workflow(self):
-        hws = path_helper.load_pydantic_yaml(HardwareSettings, 'hardware_settings_template.yaml')
-        self.assertIsNotNone(BonsaiRecordingMixin._camera_mixin_bonsai_get_workflow_file(hws['device_cameras']))
-        self.assertIsNone(BonsaiRecordingMixin._camera_mixin_bonsai_get_workflow_file(None))
-        self.assertIsNone(BonsaiRecordingMixin._camera_mixin_bonsai_get_workflow_file({}))
+class TestYAML(unittest.TestCase):
+    def test_yaml_roundtrip(self):
+        for model, filename in [
+            (HardwareSettings, 'hardware_settings_template.yaml'),
+            (RigSettings, 'iblrig_settings_template.yaml'),
+        ]:
+            with self.assertNoLogs(level=logging.ERROR):
+                settings1 = load_pydantic_yaml(model, filename)
+            with tempfile.NamedTemporaryFile(mode='w') as temp_file:
+                save_pydantic_yaml(settings1, temp_file.name)
+                with self.assertNoLogs(level=logging.ERROR):
+                    settings2 = load_pydantic_yaml(model, temp_file.name)
+            assert settings1 == settings2
 
 
 if __name__ == '__main__':

@@ -122,7 +122,7 @@ class TestInstantiationTraining(BaseTestCases.CommonTestInstantiateTask):
                     '_iblrig_tasks_trainingChoiceWorld': {
                         'collection': 'raw_task_data_00',
                         'sync_label': 'bpod',
-                        'extractors': ['TrialRegisterRaw', 'ChoiceWorldTrials', 'TrainingStatus'],
+                        # 'extractors': ['TrialRegisterRaw', 'ChoiceWorldTrials', 'TrainingStatus'],
                     }
                 }
             ],

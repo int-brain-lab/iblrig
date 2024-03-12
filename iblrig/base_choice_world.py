@@ -1,6 +1,4 @@
-"""
-This modules extends the base_tasks modules by providing task logic around the Choice World protocol
-"""
+"""Extends the base_tasks modules by providing task logic around the Choice World protocol."""
 import abc
 import json
 import logging
@@ -176,11 +174,14 @@ class ChoiceWorldSession(
             # Send state machine description to Bpod device
             self.bpod.send_state_machine(sma)
             # t_overhead = time.time() - t_overhead
-            # Run state machine
-            dt = self.task_params.ITI_DELAY_SECS - 0.5 - (time.time() - time_last_trial_end)
+            # The ITI_DELAY_SECS defines the grey screen period within the state machine, where the
+            # Bpod TTL is HIGH. The DEAD_TIME param defines the time between last trial and the next
+            dead_time = self.task_params.get('DEAD_TIME', 0.5)
+            dt = self.task_params.ITI_DELAY_SECS - dead_time - (time.time() - time_last_trial_end)
             # wait to achieve the desired ITI duration
             if dt > 0:
                 time.sleep(dt)
+            # Run state machine
             log.debug('running state machine')
             self.bpod.run_state_machine(sma)  # Locks until state machine 'exit' is reached
             time_last_trial_end = time.time()
@@ -477,10 +478,7 @@ class ChoiceWorldSession(
             fp.write(json.dumps(save_dict) + '\n')
         # this is a flag for the online plots. If online plots were in pyqt5, there is a file watcher functionality
         Path(self.paths['DATA_FILE_PATH']).parent.joinpath('new_trial.flag').touch()
-        # If more than 42 trials save transfer_me.flag
-        if self.trial_num == 42:
-            self.paths.SESSION_FOLDER.joinpath('transfer_me.flag').touch()
-            # todo: add number of devices in there
+        self.paths.SESSION_FOLDER.joinpath('transfer_me.flag').touch()
         self.check_sync_pulses(bpod_data=bpod_data)
 
     def check_sync_pulses(self, bpod_data):
@@ -489,11 +487,11 @@ class ChoiceWorldSession(
             return
         events = bpod_data['Events timestamps']
         if not misc.get_port_events(events, name='BNC1'):
-            self.logger.warning("NO FRAME2TTL PULSES RECEIVED ON BPOD'S TTL INPUT 1")
+            log.warning("NO FRAME2TTL PULSES RECEIVED ON BPOD'S TTL INPUT 1")
         if not misc.get_port_events(events, name='BNC2'):
-            self.logger.warning("NO SOUND SYNC PULSES RECEIVED ON BPOD'S TTL INPUT 2")
+            log.warning("NO SOUND SYNC PULSES RECEIVED ON BPOD'S TTL INPUT 2")
         if not misc.get_port_events(events, name='Port1'):
-            self.logger.warning("NO CAMERA SYNC PULSES RECEIVED ON BPOD'S BEHAVIOR PORT 1")
+            log.warning("NO CAMERA SYNC PULSES RECEIVED ON BPOD'S BEHAVIOR PORT 1")
 
     def show_trial_log(self, extra_info=''):
         trial_info = self.trials_table.iloc[self.trial_num]
@@ -568,19 +566,22 @@ class HabituationChoiceWorldSession(ChoiceWorldSession):
         if i == 0:  # First trial exception start camera
             log.info('Waiting for camera pulses...')
             sma.add_state(
-                state_name='trial_start',
+                state_name='iti',
                 state_timer=3600,
                 state_change_conditions={'Port1In': 'stim_on'},
                 output_actions=[self.bpod.actions.bonsai_hide_stim, ('SoftCode', SOFTCODE.TRIGGER_CAMERA), ('BNC1', 255)],
             )  # start camera
         else:
+            # NB: This state actually the inter-trial interval, i.e. the period of grey screen between stim off and stim on.
+            # During this period the Bpod TTL is HIGH and there are no stimuli. The onset of this state is trial end;
+            # the offset of this state is trial start!
             sma.add_state(
-                state_name='trial_start',
+                state_name='iti',
                 state_timer=1,  # Stim off for 1 sec
                 state_change_conditions={'Tup': 'stim_on'},
                 output_actions=[self.bpod.actions.bonsai_hide_stim, ('BNC1', 255)],
             )
-
+        # This stim_on state is considered the actual trial start
         sma.add_state(
             state_name='stim_on',
             state_timer=self.trials_table.at[self.trial_num, 'delay_to_stim_center'],
@@ -597,14 +598,16 @@ class HabituationChoiceWorldSession(ChoiceWorldSession):
 
         sma.add_state(
             state_name='reward',
-            state_timer=self.reward_time,
-            state_change_conditions={'Tup': 'iti'},
+            state_timer=self.reward_time,  # the length of time to leave reward valve open, i.e. reward size
+            state_change_conditions={'Tup': 'post_reward'},
             output_actions=[('Valve1', 255), ('BNC1', 255)],
         )
-
+        # This state defines the period after reward where Bpod TTL is LOW.
+        # NB: The stimulus is on throughout this period. The stim off trigger occurs upon exit.
+        # The stimulus thus remains in the screen centre for 0.5 + ITI_DELAY_SECS seconds.
         sma.add_state(
-            state_name='iti',
-            state_timer=self.task_params.ITI_DELAY_SECS,
+            state_name='post_reward',
+            state_timer=self.task_params.ITI_DELAY_SECS - self.reward_time,
             state_change_conditions={'Tup': 'exit'},
             output_actions=[],
         )
@@ -769,22 +772,22 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
         super().__init__(**kwargs)
         inferred_training_phase, inferred_adaptive_reward, inferred_adaptive_gain = self.get_subject_training_info()
         if training_phase == -1:
-            self.logger.critical(f'Got training phase: {inferred_training_phase}')
+            log.critical(f'Got training phase: {inferred_training_phase}')
             self.training_phase = inferred_training_phase
         else:
-            self.logger.critical(f'Training phase manually set to: {training_phase}')
+            log.critical(f'Training phase manually set to: {training_phase}')
             self.training_phase = training_phase
         if adaptive_reward == -1:
-            self.logger.critical(f'Got Adaptive reward {inferred_adaptive_reward} uL')
+            log.critical(f'Got Adaptive reward {inferred_adaptive_reward} uL')
             self.session_info['ADAPTIVE_REWARD_AMOUNT_UL'] = inferred_adaptive_reward
         else:
-            self.logger.critical(f'Adaptive reward manually set to {adaptive_reward} uL')
+            log.critical(f'Adaptive reward manually set to {adaptive_reward} uL')
             self.session_info['ADAPTIVE_REWARD_AMOUNT_UL'] = adaptive_reward
         if adaptive_gain is None:
-            self.logger.critical(f'Got Adaptive gain {inferred_adaptive_gain} degrees/mm')
+            log.critical(f'Got Adaptive gain {inferred_adaptive_gain} degrees/mm')
             self.session_info['ADAPTIVE_GAIN_VALUE'] = inferred_adaptive_gain
         else:
-            self.logger.critical(f'Adaptive gain manually set to {adaptive_gain} degrees/mm')
+            log.critical(f'Adaptive gain manually set to {adaptive_gain} degrees/mm')
             self.session_info['ADAPTIVE_GAIN_VALUE'] = adaptive_gain
         self.var = {
             'training_phase_trial_counts': np.zeros(6),
@@ -815,13 +818,13 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
                 iblrig_settings=self.iblrig_settings,
             )
         except Exception:
-            self.logger.critical('Failed to get training information from previous subjects: %s', traceback.format_exc())
+            log.critical('Failed to get training information from previous subjects: %s', traceback.format_exc())
             tinfo = dict(
                 training_phase=iblrig.choiceworld.DEFAULT_TRAINING_PHASE,
                 adaptive_reward=iblrig.choiceworld.DEFAULT_REWARD_VOLUME,
                 adaptive_gain=self.task_params.AG_INIT_VALUE,
             )
-            self.logger.critical(
+            log.critical(
                 f"The mouse will train on level {tinfo['training_phase']}, "
                 f"with reward {tinfo['adaptive_reward']} uL and gain {tinfo['adaptive_gain']}"
             )

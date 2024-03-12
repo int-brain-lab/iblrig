@@ -17,5 +17,8 @@ HAS_SPINNAKER = (
     and (_spin_exe := which('SpinUpdateConsole_v140')) is not None
     and Path(_spin_exe).parents[2].joinpath('src').exists()
 )
-HAS_PYSPIN = find_spec('PySpin') is not None
+try:
+    HAS_PYSPIN = find_spec('PySpin') is not None
+except ValueError:
+    HAS_PYSPIN = False
 PYSPIN_AVAILABLE = HAS_SPINNAKER and HAS_PYSPIN
