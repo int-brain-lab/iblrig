@@ -226,7 +226,7 @@ class OnlinePlots:
         h.ax_water = h.fig.add_subplot(h.gs[1, nc - 1])
 
         h.ax_psych.set(title='psychometric curve', xlim=[-1, 1], ylim=[0, 1])
-        h.ax_reaction.set(title='reaction times', xlim=[-1, 1], ylim=[0.001, 10], yscale='log', xlabel='signed contrast')
+        h.ax_reaction.set(title='reaction times', xlim=[-1, 1], ylim=[0.1, 100], yscale='log', xlabel='signed contrast')
         xticks = np.arange(-1, 1.1, 0.25)
         xticklabels = np.array([f'{x:g}' for x in xticks])
         xticklabels[1::2] = ''
