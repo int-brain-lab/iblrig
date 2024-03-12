@@ -885,6 +885,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                     'Subject Weight (g):',
                     value=0,
                     min=0,
+                    decimals=2,
                     flags=dlg.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint,
                 )
                 if not ok or weight == 0:
