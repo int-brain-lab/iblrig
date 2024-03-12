@@ -30,5 +30,6 @@ def prepare_ephys_session(subject_name: str, nprobes: int = 2):
     # Initialize a session for paths and settings
     session = EmptySession(subject=subject_name, interactive=False)
     session_path = session.paths.SESSION_FOLDER
-    copier = EphysCopier(session_path)
+    copier = EphysCopier(session_path=session_path, remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER)
+
     copier.initialize_experiment(nprobes=nprobes)
