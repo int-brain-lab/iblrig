@@ -426,8 +426,6 @@ class BehaviorCopier(SessionCopier):
         #. If SESSION_END_TIME is missing, assumes task crashed. If so and task data missing and
            not a chained protocol (i.e. it is the only task collection), assume a dud and remove
            the remote stub file.  Otherwise, patch settings with total trials, end time, etc.
-        #. Check if there are more than the minimum required number of trials.  If not return.
-           If this is the only collection, remove the remote stub first.
 
         Returns
         -------
@@ -471,7 +469,6 @@ class BehaviorCopier(SessionCopier):
                 raw_settings['SESSION_END_TIME'] = end_time.strftime('%Y-%m-%dT%H:%M:%S.%f')
                 with open(settings_file, 'w') as fid:
                     json.dump(raw_settings, fid)
-                task_settings = raw_data_loaders.load_settings(self.session_path, task_collection=collection)
         log.critical(f'{self.state}, {self.session_path}')
         return super()._copy_collections()  # proceed with copy
 

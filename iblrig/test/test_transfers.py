@@ -1,4 +1,3 @@
-import logging
 import random
 import copy
 import tempfile
@@ -31,10 +30,7 @@ def _create_behavior_session(ntrials=None, hard_crash=False, kwargs=None):
     session.create_session()
     # This opens a log file in the session path for writing to. We immediately close it so it doesn't
     # interfere with the copy routine.
-    for name in ('iblrig', 'pybpodapi'):
-        h = next(h for h in logging.getLogger(name).handlers if h.name == f'{name}_file')
-        h.close()
-        logging.getLogger(name).removeHandler(h)
+    session._remove_file_loggers()
     session.paths.SESSION_FOLDER.joinpath('raw_video_data').mkdir(parents=True)
     session.paths.SESSION_FOLDER.joinpath('raw_video_data', 'tutu.avi').touch()
     if ntrials is not None:
@@ -113,39 +109,27 @@ class TestIntegrationTransferExperiments(unittest.TestCase):
         sc = BehaviorCopier(session_path=session.paths.SESSION_FOLDER, remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER)
         self.assertEqual(sc.state, 3)
 
-    def test_behavior_do_not_copy_dummy_sessions(self):
-        """
-        Here we test the case when an aborted session or a session with less than 42 trials attempts to be copied
-        The expected behaviour is for the session folder on the remote session to be removed
-        :return:
-        """
-        for ntrials in [41, None]:
-            session = _create_behavior_session(ntrials=ntrials, kwargs=self.session_kwargs)
-            session.paths.SESSION_FOLDER.joinpath('transfer_me.flag').touch()
-            with mock.patch('iblrig.path_helper._load_settings_yaml') as mocker:
-                mocker.side_effect = self.side_effect
-                iblrig.commands.transfer_data(
-                    local_path=session.iblrig_settings['iblrig_local_data_path'],
-                    remote_path=session.iblrig_settings['iblrig_remote_data_path'],
-                    tag='behavior',
-                )
-            sc = BehaviorCopier(
-                session_path=session.paths.SESSION_FOLDER, remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER
-            )
-            self.assertFalse(sc.remote_session_path.exists())
-
     def test_behavior_copy(self):
-        """
-        Unlike the integration test, the sessions here are made from scratch using an actual instantiated session
-        :return:
-        """
+        """Unlike the integration test, the sessions here are made from scratch using an actual instantiated session."""
+        # Create without task data
         session = _create_behavior_session(kwargs=self.session_kwargs)
         sc = BehaviorCopier(session_path=session.paths.SESSION_FOLDER, remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER)
-        assert sc.state == 1
-        sc.copy_collections()
-        assert sc.state == 2
+        self.assertEqual(1, sc.state)
+        expected = ['2024-03-12_1_iblrig_test_subject@behavior.status_pending', '2024-03-12_1_iblrig_test_subject@behavior.yaml']
+        remote_files = map(lambda x: x.name, filter(Path.is_file, session.paths.REMOTE_SUBJECT_FOLDER.rglob('*')))
+        self.assertCountEqual(expected, remote_files)
+        self.assertFalse(sc.copy_collections())  # fails because of missing task data
+        self.assertEqual(0, sc.state)
+        self.assertEqual([], list(filter(Path.is_file, session.paths.REMOTE_SUBJECT_FOLDER.rglob('*'))))
+
+        # Create with task data
+        session = _create_behavior_session(kwargs=self.session_kwargs, ntrials=50)
+        sc = BehaviorCopier(session_path=session.paths.SESSION_FOLDER, remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER)
+        self.assertEqual(1, sc.state)
+        self.assertTrue(sc.copy_collections())
+        self.assertEqual(2, sc.state)
         sc.finalize_copy(number_of_expected_devices=1)
-        assert sc.state == 3  # this time it's all there and we move on
+        self.assertEqual(3, sc.state)  # this time it's all there and we move on
 
     def test_behavior_ephys_video_copy(self):
         """
@@ -153,9 +137,7 @@ class TestIntegrationTransferExperiments(unittest.TestCase):
         :return:
         """
         with tempfile.TemporaryDirectory() as td:
-            """
-            First create a behavior session
-            """
+            # First create a behavior session
             task_kwargs = copy.deepcopy(self.session_kwargs)
             task_kwargs['hardware_settings'].update(
                 {
@@ -163,9 +145,7 @@ class TestIntegrationTransferExperiments(unittest.TestCase):
                     'MAIN_SYNC': False,  # this is quite important for ephys sessions
                 }
             )
-            session = Session(**task_kwargs)
-            session.create_session()
-            session._remove_file_loggers()
+            session = _create_behavior_session(kwargs=task_kwargs, ntrials=50)
             # SESSION_RAW_DATA_FOLDER is the one that gets copied
             folder_session_video = Path(td).joinpath('video', 'Subjects', *session.paths.SESSION_FOLDER.parts[-3:])
             folder_session_ephys = Path(td).joinpath('ephys', 'Subjects', *session.paths.SESSION_FOLDER.parts[-3:])

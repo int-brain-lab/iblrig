@@ -5,6 +5,8 @@ import unittest
 from copy import deepcopy
 from pathlib import Path
 
+import yaml
+
 import ibllib.tests.fixtures.utils as fu
 from iblrig import path_helper
 from iblrig.constants import BASE_DIR
@@ -125,13 +127,21 @@ class TestIterateProtocols(unittest.TestCase):
 
 class TestPatchSettings(unittest.TestCase):
     """Test for iblrig.path_helper.patch_settings."""
+    def setUp(self):
+        file = Path(__file__).parents[2].joinpath('settings', 'hardware_settings_template.yaml')
+        with open(file, 'r') as fp:
+            self.rs = yaml.safe_load(fp)
+        self.rs.pop('device_cameras')
 
     def test_patch_hardware_settings(self):
         recording_workflow = 'devices/camera_recordings/TrainingRig_SaveVideo_TrainingTasks.bonsai'
         setup_workflow = 'devices/camera_setup/setup_video.bonsai'
         # Version 0 settings example
-        rs = {'RIG_NAME': 'foo_rig', 'MAIN_SYNC': True, 'device_camera': {'BONSAI_WORKFLOW': recording_workflow}}
-        updated = path_helper.patch_settings(deepcopy(rs), 'hardware_settings')
+        # rs = {'RIG_NAME': 'foo_rig', 'MAIN_SYNC': True,
+        rs = deepcopy(self.rs)
+        rs['VERSION'] = '0.1.0'
+        rs['device_camera'] = {'BONSAI_WORKFLOW': recording_workflow}
+        updated = path_helper.patch_settings(rs, 'hardware_settings')
         self.assertEqual('1.1.0', updated.get('VERSION'))
         self.assertNotIn('device_camera', updated)
         expected = {
@@ -139,8 +149,7 @@ class TestPatchSettings(unittest.TestCase):
             'left': {'INDEX': 1, 'SYNC_LABEL': 'audio'},
         }
         self.assertEqual(expected, updated.get('device_cameras', {}).get('training'))
-        # HardwareSettings.model_validate(updated)  # Should pass validation?
-        HardwareSettings.validate_device_cameras(updated['device_cameras'])
+        HardwareSettings.model_validate(updated)  # Should pass validation?
         # Assert unchanged when all up to date
         self.assertDictEqual(path_helper.patch_settings(deepcopy(updated), 'hardware_settings'), updated)
         # Test v1.0 -> v1.1
@@ -151,13 +160,13 @@ class TestPatchSettings(unittest.TestCase):
         v2 = path_helper.patch_settings(v1, 'hardware_settings')
         self.assertEqual('1.1.0', v2.get('VERSION'))
         self.assertEqual(expected, v2.get('device_cameras', {}).get('training'))
-        HardwareSettings.validate_device_cameras(v2['device_cameras'])
+        HardwareSettings.model_validate(v2)
         # Test without any device_cameras key (should be optional)
-        rs.pop('device_camera')
+        rs.pop('device_cameras')
         self.assertIn('device_cameras', path_helper.patch_settings(rs, 'hardware_settings'))
         rs['device_cameras'] = None
         self.assertEqual(path_helper.patch_settings(rs, 'hardware_settings').get('device_cameras'), {})
-        HardwareSettings.validate_device_cameras({})
+        HardwareSettings.model_validate(rs)  # Test model validation when device_cameras is empty dict
 
 
 class TestYAML(unittest.TestCase):
