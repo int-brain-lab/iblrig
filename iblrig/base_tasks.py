@@ -77,7 +77,6 @@ class BaseSession(ABC):
         append=False,
         wizard=False,
         log_level='INFO',
-        extractor_tasks=None,
         **kwargs,
     ):
         """
