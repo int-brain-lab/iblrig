@@ -15,6 +15,7 @@ IBLRIG documentation
    description_file
    task_qc
    video
+   neuropixel
    write_your_own_task
    developer_guide
    faq
