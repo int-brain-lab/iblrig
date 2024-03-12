@@ -56,7 +56,6 @@ class BaseSession(ABC):
     protocol_name: str | None = None
     base_parameters_file: Path | None = None
     is_mock = False
-    extractor_tasks = None
     """list of str: One or more ibllib.pipes.tasks.Task names for task extraction."""
     logger: logging.Logger = None
     """logging.Logger: Log instance used solely to keep track of log level passed to constructor."""
@@ -78,6 +77,7 @@ class BaseSession(ABC):
         append=False,
         wizard=False,
         log_level='INFO',
+        extractor_tasks=None,
         **kwargs,
     ):
         """
@@ -94,8 +94,8 @@ class BaseSession(ABC):
         :param subject_weight_grams: weight of the subject
         :param stub: A full path to an experiment description file containing experiment information.
         :param append: bool, if True, append to the latest existing session of the same subject for the same day
-        :param fmake: (DEPRECATED) if True, only create the raw_behavior_data folder.
         """
+        self.extractor_tasks = getattr(self, 'extractor_tasks', None)
         assert self.protocol_name is not None, 'Protocol name must be defined by the child class'
         self._logger = None
         self._setup_loggers(level=log_level)
@@ -104,7 +104,6 @@ class BaseSession(ABC):
         self.interactive = interactive
         self._one = one
         self.init_datetime = datetime.datetime.now()
-        self.extractor_tasks = None
 
         # loads in the settings: first load the files, then update with the input argument if provided
         self.hardware_settings: HardwareSettings = load_pydantic_yaml(HardwareSettings, file_hardware_settings)

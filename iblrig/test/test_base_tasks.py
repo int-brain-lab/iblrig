@@ -27,6 +27,10 @@ from iblrig.test.base import TASK_KWARGS
 class EmptyHardwareSession(BaseSession):
     protocol_name = 'empty_hardware_session_for_testing'
 
+    def __init__(self, *args, **kwargs):
+        self.extractor_tasks = ['Tutu', 'Tata']
+        super(EmptyHardwareSession, self).__init__(*args, **kwargs)
+
     def start_hardware(self):
         pass
 
@@ -45,6 +49,18 @@ class TestHierarchicalParameters(unittest.TestCase):
         assert len(sess2.task_params.keys()) == len(sess.task_params.keys()) + 1
         assert sess2.task_params['TITI'] == 1
         assert sess2.task_params['REWARD_AMOUNT_UL'] == -2
+
+
+class TestExtractorTypes(unittest.TestCase):
+    """
+    EmptyHardwareSession sepcifies the extractors in the __init__ method, and the extractors
+    are reflected in the experiment description file
+    """
+    def test_overriden_extractor_types(self):
+        sess = EmptyHardwareSession(**TASK_KWARGS)
+        self.assertEqual(
+            sess.experiment_description['tasks'][0][sess.protocol_name]['extractors'],
+            ['Tutu', 'Tata'])
 
 
 class TestExperimentDescription(unittest.TestCase):
