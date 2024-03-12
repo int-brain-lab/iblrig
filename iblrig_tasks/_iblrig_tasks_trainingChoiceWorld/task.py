@@ -6,7 +6,6 @@ ADAPTIVE_REWARD = -1.0
 
 
 class Session(TrainingChoiceWorldSession):
-
     @staticmethod
     def extra_parser():
         """:return: argparse.parser()"""

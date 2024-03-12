@@ -127,9 +127,10 @@ class TestIterateProtocols(unittest.TestCase):
 
 class TestPatchSettings(unittest.TestCase):
     """Test for iblrig.path_helper.patch_settings."""
+
     def setUp(self):
         file = Path(__file__).parents[2].joinpath('settings', 'hardware_settings_template.yaml')
-        with open(file, 'r') as fp:
+        with open(file) as fp:
             self.rs = yaml.safe_load(fp)
         self.rs.pop('device_cameras')
 

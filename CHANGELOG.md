@@ -2,6 +2,12 @@ Changelog
 ---------
 
 
+8.17.0
+------
+* consolidated data transfer routine across all rig computers
+* new video workflow with support for multiple named camera setups
+* various small fixes, work on documentation, unit-tests
+
 8.16.1
 ------
 * Hoferlab: when bpod returns inconsistent error, time-out or correct, throw the exception after logging

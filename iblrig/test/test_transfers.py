@@ -1,5 +1,5 @@
-import random
 import copy
+import random
 import tempfile
 import unittest
 from pathlib import Path

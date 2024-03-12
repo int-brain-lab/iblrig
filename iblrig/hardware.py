@@ -9,9 +9,10 @@ import struct
 import subprocess
 import threading
 import time
+from collections.abc import Callable
 from enum import IntEnum
 from pathlib import Path
-from typing import Literal, Callable
+from typing import Literal
 
 import numpy as np
 import serial

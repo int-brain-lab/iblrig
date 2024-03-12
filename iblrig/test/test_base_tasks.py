@@ -56,11 +56,10 @@ class TestExtractorTypes(unittest.TestCase):
     EmptyHardwareSession sepcifies the extractors in the __init__ method, and the extractors
     are reflected in the experiment description file
     """
+
     def test_overriden_extractor_types(self):
         sess = EmptyHardwareSession(**TASK_KWARGS)
-        self.assertEqual(
-            sess.experiment_description['tasks'][0][sess.protocol_name]['extractors'],
-            ['Tutu', 'Tata'])
+        self.assertEqual(sess.experiment_description['tasks'][0][sess.protocol_name]['extractors'], ['Tutu', 'Tata'])
 
 
 class TestExperimentDescription(unittest.TestCase):

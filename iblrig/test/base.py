@@ -7,9 +7,9 @@ import string
 import unittest
 from pathlib import Path
 
-from ibllib.io.extractors.base import protocol2extractor
 import ibllib.pipes.dynamic_pipeline
 import iblrig
+from ibllib.io.extractors.base import protocol2extractor
 from ibllib.tests import TEST_DB  # noqa
 from one.api import ONE
 

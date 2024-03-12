@@ -1,8 +1,8 @@
 import argparse
-from iblrig.base_tasks import EmptySession
 
-from iblutil.util import setup_logger
+from iblrig.base_tasks import EmptySession
 from iblrig.transfer_experiments import EphysCopier
+from iblutil.util import setup_logger
 
 
 def prepare_ephys_session_cmd():

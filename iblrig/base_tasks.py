@@ -7,6 +7,7 @@ This module tries to exclude task related logic.
 import abc
 import argparse
 import datetime
+import importlib.metadata
 import inspect
 import json
 import logging
@@ -15,9 +16,8 @@ import time
 import traceback
 from abc import ABC
 from collections import OrderedDict
+from collections.abc import Callable
 from pathlib import Path
-import importlib.metadata
-from typing import Callable
 
 import numpy as np
 import scipy.interpolate
@@ -703,7 +703,6 @@ class BonsaiVisualStimulusMixin(BaseSession):
 
 
 class BpodMixin(BaseSession):
-
     def _raise_on_undefined_softcode_handler(self, byte: int):
         raise ValueError(f'No handler defined for softcode #{byte}')
 
@@ -728,8 +727,9 @@ class BpodMixin(BaseSession):
                 SOFTCODE.STOP_SOUND: self.sound['sd'].stop,
                 SOFTCODE.PLAY_TONE: lambda: self.sound['sd'].play(self.sound['GO_TONE'], self.sound['samplerate']),
                 SOFTCODE.PLAY_NOISE: lambda: self.sound['sd'].play(self.sound['WHITE_NOISE'], self.sound['samplerate']),
-                SOFTCODE.TRIGGER_CAMERA: getattr(self, 'trigger_bonsai_cameras',
-                                                 lambda: self._raise_on_undefined_softcode_handler(SOFTCODE.TRIGGER_CAMERA)),
+                SOFTCODE.TRIGGER_CAMERA: getattr(
+                    self, 'trigger_bonsai_cameras', lambda: self._raise_on_undefined_softcode_handler(SOFTCODE.TRIGGER_CAMERA)
+                ),
             }
         )
         return softcode_dict
