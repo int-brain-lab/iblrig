@@ -115,7 +115,7 @@ class TestIntegrationTransferExperiments(unittest.TestCase):
         session = _create_behavior_session(kwargs=self.session_kwargs)
         sc = BehaviorCopier(session_path=session.paths.SESSION_FOLDER, remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER)
         self.assertEqual(1, sc.state)
-        expected = ['2024-03-12_1_iblrig_test_subject@behavior.status_pending', '2024-03-12_1_iblrig_test_subject@behavior.yaml']
+        expected = ['2024-03-13_1_iblrig_test_subject@behavior.status_pending', '2024-03-13_1_iblrig_test_subject@behavior.yaml']
         remote_files = map(lambda x: x.name, filter(Path.is_file, session.paths.REMOTE_SUBJECT_FOLDER.rglob('*')))
         self.assertCountEqual(expected, remote_files)
         self.assertFalse(sc.copy_collections())  # fails because of missing task data
