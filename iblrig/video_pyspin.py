@@ -32,7 +32,7 @@ def enable_camera_trigger(enable: bool, camera: PySpin.CameraPtr | None = None):
     if camera is None:
         with Cameras() as cameras:
             for camera in cameras:
-                enable_camera_trigger(enable=False, camera=camera)
+                enable_camera_trigger(enable=enable, camera=camera)
             del camera
     else:
         node_map = camera.GetNodeMap()

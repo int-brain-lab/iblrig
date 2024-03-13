@@ -261,9 +261,18 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 if 'iblrig' in e.title
                 else 'Settings File'
             )
-            loc = '.'.join(e.errors()[0]['loc'])
-            msg = e.errors()[0]['msg']
-            self._show_error_dialog(title=f'Error validating {yml}', description=f'{loc}:\n{msg}.')
+            description = ''
+            for error in e.errors():
+                key = '.'.join(error.get('loc', ''))
+                val = error.get('input', '')
+                msg = error.get('msg', '')
+                description += (
+                    f'<table>'
+                    f'<tr><td><b>key:</b></td><td><td>{key}</td></tr>\n'
+                    f'<tr><td><b>value:</b></td><td><td>{val}</td></tr>\n'
+                    f'<tr><td><b>error:</b></td><td><td>{msg}</td></tr></table><br>\n'
+                )
+            self._show_error_dialog(title=f'Error validating {yml}', description=description.strip())
             raise e
         self.model2view()
 
@@ -872,6 +881,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                     'Subject Weight (g):',
                     value=0,
                     min=0,
+                    decimals=2,
                     flags=dlg.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint,
                 )
                 if not ok or weight == 0:

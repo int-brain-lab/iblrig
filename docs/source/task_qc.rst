@@ -1,18 +1,19 @@
 Quality check the task post-usage
 =================================
 
-Once a session is acquired, you can verify whether the acquired sequence of events matches the expected logic of
-the task. For example, is it expected to acquire one and only one goCue per trial.
+Once a session is acquired, you can verify whether the trials data is extracted properly and that the sequence of events matches the expected logic of
+the task.
 
 Metrics definitions
 -------------------
 All the metrics computed as part of the Task logic integrity QC (Task QC) are implemented in
 `ibllib <https://github.com/int-brain-lab/ibllib/blob/master/ibllib/qc/task_metrics.py>`__.
-They are computed using either the Bpod or FGPA/PXI data, depending on the rig used.
+When run at a behavior rig, they are computed using the Bpod data, without alignment to another DAQ's clock.
 
 .. tip::
 
-     The Task QC metrics definitions can be found in this `documentation page <https://int-brain-lab.github.io/iblenv/_autosummary/ibllib.qc.task_metrics.html>`__
+     The Task QC metrics definitions can be found in this `documentation page <https://int-brain-lab.github.io/iblenv/_autosummary/ibllib.qc.task_metrics.html>`__.
+     See `this page <write_your_own_task.html>`__ on how to write QC checks for a custom task protocol.
 
 
 Some are essential, i.e. if they fail you should immediately take action and verify your rig,
@@ -72,6 +73,16 @@ The criteria is defined at
 How to check the task QC outcome
 --------------------------------
 
+Immediately after acquiring a session
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+At the behaviour PC, before the data have been copied, use the `task_qc` command with the session path:
+
+.. code-block:: shell-session
+
+    task_qc C:\iblrigv8_data\Subjects\KS022\2019-12-10\001 --local
+
+More information can be found `here <https://github.com/int-brain-lab/ibllib/tree/master/ibllib/qc/task_qc_viewer#readme>`__, or by running `task_qc --help`.
+
 Once the session is registered on Alyx
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 1. **Check on the Alyx webpage**
@@ -93,42 +104,17 @@ Once the session is registered on Alyx
 
 2. **Run the taskQC Viewer to investigate**
 
-    The application `Task QC Viewer <https://github.com/int-brain-lab/iblapps/blob/develop/task_qc_viewer/README.md>`__
+    The application `Task QC Viewer <https://github.com/int-brain-lab/ibllib/tree/master/ibllib/qc/task_qc_viewer#readme>`__
     enables to visualise the data streams of problematic trials.
 
     .. tip::
-        Make sure you are up-to-date on the following branches:
-
-        * develop on ibllib
-        * master on iblapps
+        Unlike when run at the behaviour PC, after registration the QC is run on the final time-aligned data (if applicable).
 
 
     .. exercise:: Run the task QC metrics and viewer
 
-       Select the ``eid`` for your session to inspect, and run the following Python code:
+       Select the ``eid`` for your session to inspect, and run the following within the iblrig env:
 
-       .. code-block:: python
+        .. code-block:: shell-session
 
-          """
-          Plot the task QC for a session.
-          """
-          ### RUN QC FROM ANYWHERE AFTER THE SESSION HAD BEEN REGISTERED ###
-
-
-          from one.api import ONE
-          from ibllib.io.session_params import read_params
-          import ibllib.pipes.dynamic_pipeline as dyn
-          from ibllib.io.extractors.base import get_pipeline, get_session_extractor_type
-          from ibllib.pipes.dynamic_pipeline import get_trials_tasks
-          from task_qc_viewer.task_qc import show_session_task_qc
-
-
-          EID = 'baecbddc-2b86-4eaf-a6f2-b30923225609'
-          one = ONE()
-
-          # Get first none passive task run
-          task = next(t for t in get_trials_tasks(one.eid2path(EID), one) if 'passive' not in t.name.lower())
-          task.location = 'remote'
-          task.setUp()  # Download the task data
-          qc = task._run_qc(update=False)
-          show_session_task_qc(qc_or_session=qc)
+            task_qc baecbddc-2b86-4eaf-a6f2-b30923225609

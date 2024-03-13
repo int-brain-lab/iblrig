@@ -62,7 +62,10 @@ Also, in this case we can leverage the IBL infrastructure to perform extraction 
 
         class Session(BiasedChoiceWorldSession):
             protocol_name = "_iblrig_tasks_imagingChoiceWorld"
-            extractor_tasks = ['TrialRegisterRaw', 'ChoiceWorldTrials']
+
+            def __init__(self, *args, **kwargs):
+                self.extractor_tasks = ['TrialRegisterRaw', 'ChoiceWorldTrials']
+                super().__init__(*args, **kwargs)
 
         if __name__ == "__main__":  # pragma: no cover
             kwargs = iblrig.misc.get_task_arguments(parents=[Session.extra_parser()])

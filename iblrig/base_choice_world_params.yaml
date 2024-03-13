@@ -12,6 +12,7 @@
 'FEEDBACK_ERROR_DELAY_SECS': 2
 'FEEDBACK_NOGO_DELAY_SECS': 2
 'INTERACTIVE_DELAY': 0.0
+'DEAD_TIME': 0.5  # the length of time before entering the next trial. This plus ITI_DELAY_SECS define period of closed-loop grey screen
 'ITI_DELAY_SECS': 0.5  # this is the length of the ITI state at the end of the session. 0.5 seconds are added to it until the next trial start
 'NTRIALS': 2000
 'POOP_COUNT': true

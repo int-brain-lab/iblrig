@@ -1,6 +1,18 @@
 Changelog
 ---------
 
+
+8.17.0
+------
+* consolidated data transfer routine across all rig computers
+* new video workflow with support for multiple named camera setups
+* various small fixes, work on documentation, unit-tests
+
+8.16.1
+------
+* Hoferlab: when bpod returns inconsistent error, time-out or correct, throw the exception after logging
+* add AMP_TYPE field to hardware_settings.yaml (device_sound) to handle the combination of HiFi module and AMP2x15 amplifier
+
 8.16.0
 ------
 * Support for Bpod HiFi Module

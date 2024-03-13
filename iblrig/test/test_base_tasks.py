@@ -1,5 +1,12 @@
+"""
+Hardware Mixins are extensions to a Session object for specific hardware.
+Those can be instantiated lazily, i.e. on any computer.
+The start() methods of those mixins require the hardware to be connected.
+
+"""
 import argparse
 import copy
+import logging
 import tempfile
 import unittest
 from pathlib import Path
@@ -10,13 +17,19 @@ import yaml
 import ibllib.io.session_params as ses_params
 from ibllib.io.session_params import read_params
 from iblrig.base_choice_world import BiasedChoiceWorldSession, ChoiceWorldSession
-from iblrig.base_tasks import BaseSession
+from iblrig.base_tasks import BaseSession, BonsaiRecordingMixin
 from iblrig.misc import _get_task_argument_parser, _post_parse_arguments
+from iblrig.path_helper import load_pydantic_yaml
+from iblrig.pydantic_definitions import HardwareSettings
 from iblrig.test.base import TASK_KWARGS
 
 
 class EmptyHardwareSession(BaseSession):
     protocol_name = 'empty_hardware_session_for_testing'
+
+    def __init__(self, *args, **kwargs):
+        self.extractor_tasks = ['Tutu', 'Tata']
+        super(EmptyHardwareSession, self).__init__(*args, **kwargs)
 
     def start_hardware(self):
         pass
@@ -36,6 +49,17 @@ class TestHierarchicalParameters(unittest.TestCase):
         assert len(sess2.task_params.keys()) == len(sess.task_params.keys()) + 1
         assert sess2.task_params['TITI'] == 1
         assert sess2.task_params['REWARD_AMOUNT_UL'] == -2
+
+
+class TestExtractorTypes(unittest.TestCase):
+    """
+    EmptyHardwareSession sepcifies the extractors in the __init__ method, and the extractors
+    are reflected in the experiment description file
+    """
+
+    def test_overriden_extractor_types(self):
+        sess = EmptyHardwareSession(**TASK_KWARGS)
+        self.assertEqual(sess.experiment_description['tasks'][0][sess.protocol_name]['extractors'], ['Tutu', 'Tata'])
 
 
 class TestExperimentDescription(unittest.TestCase):
@@ -58,11 +82,11 @@ class TestExperimentDescription(unittest.TestCase):
         self.stub_path = ses_params.write_params(tempdir.name, self.stub)
 
     def test_new_description(self):
-        """Test creation of a brand new experiment description (no stub)"""
+        """Test creation of a brand new experiment description (no stub)."""
         hardware_settings = {
             'RIG_NAME': '_iblrig_cortexlab_behavior_3',
             'device_bpod': {'FOO': 10, 'BAR': 20},
-            'device_cameras': {'left': {'BAZ': 0}},
+            'device_cameras': {'default': {'left': {'SYNC_LABEL': 'audio'}}},
         }
         description = BaseSession.make_experiment_description_dict(
             'choiceWorld', 'raw_behavior_data', procedures=['Imaging'], projects=['foo'], hardware_settings=hardware_settings
@@ -183,6 +207,15 @@ class TestTaskArguments(unittest.TestCase):
         self.assertEqual(kwargs['training_phase'], 4)
 
 
+class TestHardwareSettings(unittest.TestCase):
+    def test_get_left_camera_workflow(self):
+        hws = load_pydantic_yaml(HardwareSettings, 'hardware_settings_template.yaml')
+        config = hws['device_cameras']['default']
+        self.assertIsNotNone(BonsaiRecordingMixin._camera_mixin_bonsai_get_workflow_file(config, 'recording'))
+        self.assertIsNone(BonsaiRecordingMixin._camera_mixin_bonsai_get_workflow_file(None, 'recording'))
+        self.assertRaises(KeyError, BonsaiRecordingMixin._camera_mixin_bonsai_get_workflow_file, {}, 'recording')
+
+
 class TestRun(unittest.TestCase):
     """Test BaseSession.run method and append kwarg."""
 
@@ -190,7 +223,7 @@ class TestRun(unittest.TestCase):
         tmp = tempfile.TemporaryDirectory()
         self.tmp = Path(tmp.name)
         self.addCleanup(tmp.cleanup)
-        self.iblrig_settings = {'iblrig_remote_data_path': False, 'iblrig_local_data_path': self.tmp}
+        self.iblrig_settings = {'iblrig_remote_data_path': None, 'iblrig_local_data_path': self.tmp}
 
         self.task_kwargs = copy.deepcopy(TASK_KWARGS)
         self.task_kwargs['hardware_settings']['MAIN_SYNC'] = False
@@ -202,10 +235,8 @@ class TestRun(unittest.TestCase):
     def test_dialogs(self, input_mock):
         """Test that weighing dialog used only on first of chained protocols."""
         first_task = EmptyHardwareSession(**self.task_kwargs)
-        # Logging to file causes tempdir cleanup issues so we simply don't call setup_loggers
-        with mock.patch.object(first_task, '_setup_loggers'):
-            # Check that weighing GUI created
-            first_task.run()
+        # Check that weighing GUI created
+        first_task.run()
         input_mock.assert_called()
         self.assertEqual(23.5, first_task.session_info['SUBJECT_WEIGHT'])
         self.assertEqual(20, first_task.session_info['POOP_COUNT'])
@@ -213,8 +244,16 @@ class TestRun(unittest.TestCase):
         # Append a new protocol to the current task. Weighting GUI should not be instantiated
         input_mock.reset_mock()
         second_task = EmptyHardwareSession(append=True, **self.task_kwargs)
-        with mock.patch.object(second_task, '_setup_loggers'):
-            second_task.run()
+        second_task.run()
         input_mock.assert_called_once()
         self.assertIsNone(second_task.session_info['SUBJECT_WEIGHT'])
         self.assertEqual(35, second_task.session_info['POOP_COUNT'])
+
+    def tearDown(self):
+        """Close log file handlers.
+
+        The tasks open log files within the temp session dir. Here we ensure files are closed
+        before removing file tree.
+        """
+        for name in ('iblrig', 'pybpodapi'):
+            next(h for h in logging.getLogger(name).handlers if h.name == f'{name}_file').close()

@@ -204,7 +204,7 @@ def call_bonsai(
     parameters : dict[str, str], optional
         Parameters to be passed to Bonsai workflow.
     start : bool, optional
-        Start execution of the workflow within Bonsai (default is True)
+        Start execution of the workflow within Bonsai (default is True).
     debug : bool, optional
         Enable debugging mode if True (default is False).
         Only applies if editor is True.
@@ -231,7 +231,7 @@ def call_bonsai(
 
     """
     if not BONSAI_EXE.exists():
-        FileNotFoundError(BONSAI_EXE)
+        raise FileNotFoundError(BONSAI_EXE)
     workflow_file = Path(workflow_file)
     if not workflow_file.exists():
         raise FileNotFoundError(workflow_file)
@@ -250,7 +250,7 @@ def call_bonsai(
             cmd.append(f'-p:{key}={str(value)}')
 
     log.info(f'Starting Bonsai workflow `{workflow_file.name}`')
-    log.debug(' '.join(str(cmd)))
+    log.debug(' '.join([str(x) for x in cmd]))
     if wait:
         return subprocess.run(args=cmd, cwd=cwd, check=check)
     else:
