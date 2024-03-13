@@ -40,18 +40,22 @@ Starting a Task
 3. Click the *Start* button to initiate the task.
 
 
-Supplementary Controls
-~~~~~~~~~~~~~~~~~~~~~~
+Appending a protocol to the current task
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 -  If you check the *Append* option before clicking *Start*, the task
    you initiate will be linked to the preceding task, creating a
    sequence of connected tasks.
 
+
+Flushing the Valve
+~~~~~~~~~~~~~~~~~~
+
 -  The *Flush* button serves to toggle the valve for cleaning purposes.
 
 .. note::
-   IBLRIG's Graphical User Interface is still work-in-progress. If you have any suggestions to make the GUI
-   more usable, please add an `issue on GitHub <https://github.com/int-brain-lab/iblrig/issues>`_ or approach the dev-team on Slack!
+   Any suggestions to make the GUI more usable are welcome !
+   Please add an `issue on GitHub <https://github.com/int-brain-lab/iblrig/issues>`_ or approach the dev-team on Slack!
    We are happy to discuss possible changes with you!
 
 
