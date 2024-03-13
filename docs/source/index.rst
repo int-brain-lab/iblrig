@@ -7,15 +7,10 @@ IBLRIG documentation
 ====================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    :caption: Contents:
 
-   usage
    installation
-   description_file
-   task_qc
-   video
-   neuropixel
-   write_your_own_task
-   developer_guide
+   usage
+   reference
    faq

@@ -1,15 +1,14 @@
-************************************
-Running video on a separate computer
-************************************
+Video acquisition computer
+==========================
 
 Video can be run on a separate computer, which is recommended when recording multiple cameras.
 
 
 Setup
-=====
+-----
 
 Installing drivers
-------------------
+~~~~~~~~~~~~~~~~~~
 
 Both spinnaker and pyspin must be installed before running an experiment:
 
@@ -22,7 +21,7 @@ Both spinnaker and pyspin must be installed before running an experiment:
 
 
 Settings config
----------------
+~~~~~~~~~~~~~~~
 
 The camera acquisition is configured by parameters in the 'device_cameras' key  of the `hardware_settings.yaml` file.
 Below is an overview of the parameters:
@@ -55,7 +54,7 @@ each camera requires an `INDEX` key.
 
 
 Starting a task
-===============
+---------------
 
 Below shows how to start the cameras for the subject 'example' with configuration 'default':
 
@@ -66,10 +65,10 @@ Below shows how to start the cameras for the subject 'example' with configuratio
    start_video_session example default
 
 Copy command
-=============
+------------
 
 Usage
------
+~~~~~
 
 To initiate the data transfer from the local server to the remote server, open a terminal and type.
 

@@ -1,9 +1,8 @@
-===============
 Developer Guide
 ===============
 
 Release Checklist
-=================
+-----------------
 
 1) update CHANGELOG.md including changes from the last tag
 2) Pull request to ``iblrigv8dev``
@@ -13,7 +12,7 @@ Release Checklist
 6) git tag the release in accordance to the version number below (after merge!)
 
 Versioning Scheme
-=================
+-----------------
 
 IBLRIG v8 uses `Semantic Versioning 2.0.0 <https://semver.org/spec/v2.0.0.html>`_.
 Its version string (currently "|version|") is a combination of three fields, separated by dots:
@@ -46,7 +45,7 @@ Both of these fields are inferred by means of git describe and do not require ma
 
 
 Running Tests Locally
-=====================
+---------------------
 
 .. code-block:: console
 
@@ -55,7 +54,7 @@ Running Tests Locally
 
 
 Building the documentation
-==========================
+--------------------------
 
 .. code-block:: console
 
@@ -83,36 +82,3 @@ To release the documentation onto the `website <https://int-brain-lab.github.io/
 
 * Wait for the next release, or
 * Manually trigger the GitHub action by clicking "Run Workflow" (select ``master``) here: https://github.com/int-brain-lab/iblrig/actions/workflows/docs.yaml
-
-Guide to Creating Your Own Task
-===============================
-
-What Happens When Running an IBL Task?
---------------------------------------
-
-1. The task constructor is invoked, executing the following steps:
-
-   -  Reading of settings: hardware and IBLRIG configurations.
-   -  Reading of task parameters.
-   -  Instantiation of hardware mixins.
-
-2. The task initiates the ``run()`` method. Prior to execution, this
-   method:
-
-   -  Launches the hardware modules.
-   -  Establishes a session folder.
-   -  Saves the parameters to disk.
-
-3. The experiment unfolds: the ``run()`` method triggers the ``_run()``
-   method within the child class:
-
-   -  Typically, this involves a loop that generates a Bpod state
-      machine for each trial and runs it.
-
-4. Upon SIGINT or when the maximum trial count is reached, the
-   experiment concludes. The end of the ``run()`` method includes:
-
-   -  Saving the final parameter file.
-   -  Recording administered water and session performance on Alyx.
-   -  Halting the mixins.
-   -  Initiating local server transfer.
