@@ -3,9 +3,36 @@ Video acquisition computer
 
 Video can be run on a separate computer, which is recommended when recording multiple cameras.
 
+Starting a task
+---------------
 
-Setup
------
+Below shows how to start the cameras for the subject 'example' with configuration 'default':
+
+.. code:: powershell
+
+   cd C:\iblrigv8\
+   venv\scripts\Activate.ps1
+   start_video_session example default
+
+Copy command
+------------
+
+Usage
+~~~~~
+
+To initiate the data transfer from the local server to the remote server, open a terminal and type.
+
+.. code:: powershell
+
+   C:\iblrigv8\venv\scripts\Activate.ps1
+   transfer_data --tag video
+
+The transfer local and remote directories are set in the
+``iblrig/settings/iblrig_settings.py`` file.
+
+
+Setup and configuration
+-----------------------
 
 Installing drivers
 ~~~~~~~~~~~~~~~~~~
@@ -51,31 +78,3 @@ Below is an overview of the parameters:
 Multiple configurations can be added, e.g. 'default', 'training', 'ephys', etc. and within each, multiple cameras
 can be added, e.g. 'left', 'right', 'body', etc.  Each configuration requires a `BONSAI_WORKFLOW: recording` key;
 each camera requires an `INDEX` key.
-
-
-Starting a task
----------------
-
-Below shows how to start the cameras for the subject 'example' with configuration 'default':
-
-.. code:: powershell
-
-   cd C:\iblrigv8\
-   venv\scripts\Activate.ps1
-   start_video_session example default
-
-Copy command
-------------
-
-Usage
-~~~~~
-
-To initiate the data transfer from the local server to the remote server, open a terminal and type.
-
-.. code:: powershell
-
-   C:\iblrigv8\venv\scripts\Activate.ps1
-   transfer_data --tag video
-
-The transfer local and remote directories are set in the
-``iblrig/settings/iblrig_settings.py`` file.
