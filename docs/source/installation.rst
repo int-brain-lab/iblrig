@@ -87,7 +87,7 @@ Check that everything worked by running the following command:
 
 .. code-block:: powershell
 
-   &C:\Users\$env:USERNAME\AppData\Local\Programs\Python\Python310\python.exe --version
+   &$env:UserProfile\AppData\Local\Programs\Python\Python310\python.exe --version
 
 The command should return ``Python 3.10.11``
 
