@@ -795,6 +795,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
 
                 case 'delay_secs':
                     label = 'Initial Delay, s'
+                    widget.setMaximum(86400)
 
                 case 'training_phase':
                     widget.setSpecialValueText('automatic')
