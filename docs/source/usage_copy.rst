@@ -11,7 +11,7 @@ server, open a terminal and type.
 .. code:: powershell
 
    C:\iblrigv8\venv\scripts\Activate.ps1
-   transfer_data --tag behavior
+   transfer_data
 
 The transfer local and remote directories are set in the
 ``iblrig/settings/iblrig_settings.py`` file.
@@ -22,6 +22,11 @@ To copy data at another acquisition PC, such as video and ephys, use the relevan
 
    C:\iblrigv8\venv\scripts\Activate.ps1
    transfer_data --tag video
+
+.. code:: powershell
+
+   C:\iblrigv8\venv\scripts\Activate.ps1
+   transfer_data --tag ephys
 
 NB: By default the local data that was copied over 2 weeks ago will be automatically removed. To
 avoid this set the cleanup-weeks argument to -1:

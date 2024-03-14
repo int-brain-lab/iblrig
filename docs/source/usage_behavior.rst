@@ -59,6 +59,22 @@ Flushing the Valve
    We are happy to discuss possible changes with you!
 
 
+Copy command
+------------
+
+Usage
+~~~~~
+
+To initiate the data transfer from the local server to the remote server, open a terminal and type.
+
+.. code:: powershell
+
+   C:\iblrigv8\venv\scripts\Activate.ps1
+   transfer_data
+
+The transfer local and remote directories are set in the
+``iblrig/settings/iblrig_settings.py`` file.
+
 The Command Line Interface
 --------------------------
 
