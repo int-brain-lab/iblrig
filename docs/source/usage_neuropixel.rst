@@ -46,10 +46,10 @@ The transfer local and remote directories are set in the
 ``iblrig/settings/iblrig_settings.py`` file.
 
 
-Look at the raw data
---------------------
+View ephys data
+---------------
 
-This will launch the viewephys GUI, you can then use file -> open and navigate
+This will launch the viewephys GUI, you can then use file -> open live recording and navigate
 to open the raw data file you wish to display.
 
 .. code:: powershell
@@ -64,3 +64,11 @@ to open the raw data file you wish to display.
 
 
 More information on the viewephys package can be found at: https://github.com/int-brain-lab/viewephys
+
+In a nutshell:
+- left click: pan
+- right click: zoom in and out
+- ctrl + z: -3dB gain
+- ctrl + a: +3dB gain
+- ctrl + p: in multi-windows mode, link the displays (pan, zoom and gain)
+
