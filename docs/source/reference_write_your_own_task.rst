@@ -1,9 +1,8 @@
-==============================
 Guide to develop a custom task
 ==============================
 
-The basics
-==========
+iblrigv8 design: inheritance
+----------------------------
 
 During the lifetime of the IBL project, we realized that multiple task variants combine with multiple hardware configurations and acquisition modalities, leading to a combinatorial explosion of possible tasks and related hardware.
 
@@ -23,9 +22,40 @@ Additionally the ``iblrig.base_tasks`` module provides "hardware mixins". Those 
     Forecasting all possible tasks and hardware add-ons and modification is fool's errand, however we can go through specific examples of task implementations.
 
 
+Guide to Creating Your Own Task
+-------------------------------
+
+What Happens When Running an IBL Task?
+
+1. The task constructor is invoked, executing the following steps:
+
+   -  Reading of settings: hardware and IBLRIG configurations.
+   -  Reading of task parameters.
+   -  Instantiation of hardware mixins.
+
+2. The task initiates the ``run()`` method. Prior to execution, this
+   method:
+
+   -  Launches the hardware modules.
+   -  Establishes a session folder.
+   -  Saves the parameters to disk.
+
+3. The experiment unfolds: the ``run()`` method triggers the ``_run()``
+   method within the child class:
+
+   -  Typically, this involves a loop that generates a Bpod state
+      machine for each trial and runs it.
+
+4. Upon SIGINT or when the maximum trial count is reached, the
+   experiment concludes. The end of the ``run()`` method includes:
+
+   -  Saving the final parameter file.
+   -  Recording administered water and session performance on Alyx.
+   -  Halting the mixins.
+   -  Initiating local server transfer.
 
 Examples
-========
+--------
 
 .. admonition:: Where to write your task
     :class: seealso
@@ -44,7 +74,7 @@ Examples
 
 
 Example 1: variation on biased choice world
--------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 We will create a a choice world task that modifies a the quiescence period duration random draw policy.
 In the `task.py` file, the first step is to create a new task class that inherits from the ``BiasedChoiceWorldSession`` class.
@@ -93,7 +123,7 @@ The full code is available `here <https://github.com/int-brain-lab/iblrig/tree/i
 
 
 Example 2: re-writing a state-machine for a biased choice world task
---------------------------------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In some instances changes in the task logic require to go deeper and re-write the sequence of task events. In bpod parlance, we are talking about rewritng the state-machine code.
 

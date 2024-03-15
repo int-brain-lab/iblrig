@@ -24,6 +24,7 @@ from iblutil.io import (
 )
 from iblutil.util import setup_logger
 from one.webclient import AlyxClient, http_download_file  # type: ignore
+from one.converters import ConversionMixin
 
 with contextlib.suppress(ImportError):
     from iblrig import video_pyspin
@@ -239,6 +240,8 @@ def validate_video(video_path, config):
     bool
         True if all checks pass.
     """
+    ref = ConversionMixin.path2ref(video_path, as_dict=False)
+    log.info('Checking %s camera for session %s', label_from_path(video_path), ref)
     if not video_path.exists():
         log.critical('Raw video file does not exist: %s', video_path)
         return False
@@ -269,9 +272,8 @@ def validate_video(video_path, config):
     dropped = count[-1] - (meta.length - 1)
     if dropped != 0:  # Log ERROR if > .1% frames dropped, otherwise log WARN
         pct_dropped = dropped / (count[-1] + 1) * 100
-        log.log(
-            30 if pct_dropped < 0.1 else 40, 'Missed frames - frame data N = %i; video file N = %i', count[-1] + 1, meta.length
-        )
+        level = 30 if pct_dropped < 0.1 else 40
+        log.log(level, 'Missed frames (%.2f%%) - frame data N = %i; video file N = %i', pct_dropped, count[-1] + 1, meta.length)
         ok = False
     if len(count) != meta.length:
         log.critical('Frame count / video frame mismatch - frame counts = %i; video frames = %i', len(count), meta.length)
