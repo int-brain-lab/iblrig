@@ -32,15 +32,19 @@ class TestGetPreviousSession(unittest.TestCase):
         )
         self.sesa = SpontaneousSession(**self.kwargs)
         self.sesa.create_session()
+        self.sesa._remove_file_loggers()
         self.sesb = TrainingChoiceWorldSession(**self.kwargs)
         # we make sure that the session has more than 42 trials in the settings, here sesd
         # is not returned as it is a dud with no trial and we expect 1 session in history: sesb
         self.sesb.session_info['NTRIALS'] = 400
         self.sesb.create_session()
+        self.sesb._remove_file_loggers()
         self.sesc = PassiveChoiceWorldSession(**self.kwargs)
         self.sesc.create_session()
+        self.sesc._remove_file_loggers()
         self.sesd = TrainingChoiceWorldSession(**self.kwargs)
         self.sesd.create_session()
+        self.sesd._remove_file_loggers()
 
     def test_iterate_previous_sessions(self):
         previous_sessions = iterate_previous_sessions(
