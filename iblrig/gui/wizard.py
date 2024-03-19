@@ -16,10 +16,10 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import pyqtgraph as pg
-from PyQt5.QtWebEngineWidgets import QWebEnginePage
 from pydantic import ValidationError
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QThread, QThreadPool
+from PyQt5.QtWebEngineWidgets import QWebEnginePage
 from PyQt5.QtWidgets import QStyle
 from requests import HTTPError
 

@@ -25,8 +25,8 @@ from iblutil.util import Bunch
 from pybpod_rotaryencoder_module.module import RotaryEncoder
 from pybpod_rotaryencoder_module.module_api import RotaryEncoderModule
 from pybpodapi.bpod.bpod_io import BpodIO
-from pybpodapi.state_machine import StateMachine
 from pybpodapi.bpod_modules.bpod_module import BpodModule
+from pybpodapi.state_machine import StateMachine
 
 SOFTCODE = IntEnum('SOFTCODE', ['STOP_SOUND', 'PLAY_TONE', 'PLAY_NOISE', 'TRIGGER_CAMERA'])
 

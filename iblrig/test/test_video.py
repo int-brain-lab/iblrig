@@ -205,7 +205,10 @@ class TestValidateVideo(unittest.TestCase):
             self.assertTrue(video.validate_video(self.video_path, self.config))
             expected = {
                 'Checking left camera for session 2020-01-01_001_subject',
-                '300 event(s) on GPIO #4', 'Duration = 30000.00', 'N frames = 1000'}
+                '300 event(s) on GPIO #4',
+                'Duration = 30000.00',
+                'N frames = 1000',
+            }
             self.assertCountEqual(set(x.getMessage() for x in log.records), expected)
         # Test video meta warnings
         config = self.config.copy()

@@ -24,10 +24,10 @@ class CalibrationPlot:
     def __init__(self, parent: PlotWidget, name: str, color: str, values: ValveValues | None = None):
         self._values = values if values is not None else ValveValues([], [])
         self._curve = pg.PlotCurveItem(name=name)
-        self._curve.setPen(color=color, width=3)
+        self._curve.setPen(color, width=3)
         self._points = pg.ScatterPlotItem(name=name)
-        self._points.setPen(color=color)
-        self._points.setBrush(color=color)
+        self._points.setPen(color)
+        self._points.setBrush(color)
         parent.addItem(self._curve)
         parent.addItem(self._points)
         self._update()
@@ -116,44 +116,39 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
         self.pushButtonRestart.setVisible(False)
 
         # Definition of state machine for guided calibration ===========================================================
-        self.machine = QtCore.QStateMachine()
         self.states: OrderedDict[str, QtCore.QState] = OrderedDict()
 
-        state = self._add_guide_state(
-            name='start',
+        self.states['start'] = self._add_guide_state(
             head='Welcome',
             text='This is a step-by-step guide for calibrating the valve of your rig. You can abort the process at any '
-                 'time by pressing Cancel or closing this window.',
+            'time by pressing Cancel or closing this window.',
         )
 
-        state = self._add_guide_state(
-            name='preparation_beaker',
+        self.states['preparation_beaker'] = self._add_guide_state(
             head='Preparation',
             text='Place a small beaker on the scale and position the lick spout directly above it.\n\nMake sure that '
-                 'neither the lick spout itself nor the tubing touch the beaker or the scale and that the water drops '
-                 'can freely fall into the beaker.',
+            'neither the lick spout itself nor the tubing touch the beaker or the scale and that the water drops '
+            'can freely fall into the beaker.',
         )
 
-        state = self._add_guide_state(
-            name='preparation_flow',
+        self.states['preparation_flow'] = self._add_guide_state(
             head='Preparation',
             text='Use the valve controls above to advance the flow of the water until there are no visible pockets of '
-                 'air within the tubing and first drops start falling into the beaker.',
+            'air within the tubing and first drops start falling into the beaker.',
         )
-        state.assignProperty(self.commandLinkNext, 'visible', True)
-        state.assignProperty(self.pushButtonRestart, 'visible', False)
-        state.assignProperty(self.pushButtonSave, 'enabled', False)
+        self.states['preparation_flow'].assignProperty(self.commandLinkNext, 'visible', True)
+        self.states['preparation_flow'].assignProperty(self.pushButtonRestart, 'visible', False)
+        self.states['preparation_flow'].assignProperty(self.pushButtonSave, 'enabled', False)
 
-        state = self._add_guide_state(name='calibration_clear', text='hello')
-        state.entered.connect(self.clear_drop)
-        state.assignProperty(self.commandLinkNext, 'enabled', False)
+        self.states['calibration_clear'] = self._add_guide_state(text='hello')
+        self.states['calibration_clear'].entered.connect(self.clear_drop)
+        self.states['calibration_clear'].assignProperty(self.commandLinkNext, 'enabled', False)
 
-        state = self._add_guide_state(name='calibration_tare', transition_signal=self.drop_cleared)
-        state.entered.connect(self.tare)
+        self.states['calibration_tare'] = self._add_guide_state(transition_signal=self.drop_cleared)
+        self.states['calibration_tare'].entered.connect(self.tare)
 
-        state = self._add_guide_state(name='calibration_finished', transition_signal=self.states[
-            'calibration_tare'].finished)
-        state.assignProperty(self.commandLinkNext, 'enabled', True)
+        self.states['calibration_finished'] = self._add_guide_state(transition_signal=self.states['calibration_tare'].finished)
+        self.states['calibration_finished'].assignProperty(self.commandLinkNext, 'enabled', True)
 
         # # Sub-State 3.1 --- Clear Drop
         # sub_states = [sub_state := QtCore.QState(state)]
@@ -169,48 +164,46 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
         # state.setInitialState(sub_state[0])
 
         # State 4: Finish
-        state = self._add_guide_state(
-            name='finished',
+        self.states['finished'] = self._add_guide_state(
             head='Calibration is finished',
             text='Click Save to store the calibration. Close this window or click Cancel to discard the calibration.',
         )
-        state.assignProperty(self.commandLinkNext, 'visible', False)
-        state.assignProperty(self.pushButtonSave, 'enabled', True)
-        state.assignProperty(self.pushButtonRestart, 'visible', True)
-        state.addTransition(self.pushButtonRestart.clicked, self.states['preparation_flow'])
+        self.states['finished'].assignProperty(self.commandLinkNext, 'visible', False)
+        self.states['finished'].assignProperty(self.pushButtonSave, 'enabled', True)
+        self.states['finished'].assignProperty(self.pushButtonRestart, 'visible', True)
+        self.states['finished'].addTransition(self.pushButtonRestart.clicked, self.states['preparation_flow'])
 
         # Step 5: Save and exit
-        state = self._add_guide_state(name='save', transition_signal=self.pushButtonSave.clicked)
-        state.addTransition(self.states['save'].finished, QtCore.QFinalState())
+        # self.states['save'] = self._add_guide_state(transition_signal=self.pushButtonSave.clicked)
+        # self.states['save'].addTransition(self.states['save'].finished, QtCore.QFinalState())
 
+        # Define state-transitions
+
+        # Define state-machine
+        self.machine = QtCore.QStateMachine()
+        for state in self.states.values():
+            self.machine.addState(state)
         self.machine.setInitialState(self.states['start'])
         self.machine.start()
+
         self.show()
 
     def _add_guide_state(
-            self,
-            name: str,
-            head: str | None = None,
-            text: str | None = None,
-            transition_from_previous: bool = True,
-            transition_signal: QtCore.pyqtSignal | None = None,
+        self,
+        head: str | None = None,
+        text: str | None = None,
+        transition_from_previous: bool = True,
+        transition_signal: QtCore.pyqtSignal | None = None,
     ) -> QtCore.QState:
-        assert name not in self.states.keys(), 'name of state needs to be unique'
-
         this_state = QtCore.QState()
-
         if head is not None:
             this_state.assignProperty(self.labelGuideHead, 'text', head)
         if text is not None:
             this_state.assignProperty(self.labelGuideText, 'text', text)
-
         if transition_from_previous and len(self.states) > 0:
             prev_state = list(self.states.values())[-1]
             signal = self.commandLinkNext.clicked if transition_signal is None else transition_signal
             prev_state.addTransition(signal, this_state)
-
-        self.states[name] = this_state
-        self.machine.addState(this_state)
         return this_state
 
     def initialize_scale(self, port: str) -> bool:

@@ -23,8 +23,8 @@ from iblutil.io import (
     params,
 )
 from iblutil.util import setup_logger
-from one.webclient import AlyxClient, http_download_file  # type: ignore
 from one.converters import ConversionMixin
+from one.webclient import AlyxClient, http_download_file  # type: ignore
 
 with contextlib.suppress(ImportError):
     from iblrig import video_pyspin
