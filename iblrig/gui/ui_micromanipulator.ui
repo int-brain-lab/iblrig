@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>869</width>
+    <height>443</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Micro-Manipulator coordinates</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="resources.qrc">
+    <normaloff>:/images/iblrig_logo</normaloff>:/images/iblrig_logo</iconset>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="1" column="5">
+     <widget class="QLineEdit" name="uiLine_phi"/>
+    </item>
+    <item row="1" column="1">
+     <widget class="QLineEdit" name="uiLine_y"/>
+    </item>
+    <item row="1" column="3">
+     <widget class="QLineEdit" name="uiLine_depth"/>
+    </item>
+    <item row="1" column="4">
+     <widget class="QLineEdit" name="uiLine_theta"/>
+    </item>
+    <item row="0" column="4">
+     <widget class="QLabel" name="label_5">
+      <property name="text">
+       <string>THETA (degrees)</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="0">
+     <widget class="QLabel" name="label">
+      <property name="text">
+       <string>X-ML (UM)</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="5">
+     <widget class="QLabel" name="label_6">
+      <property name="text">
+       <string>PHI (degrees)</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="2">
+     <widget class="QLabel" name="label_3">
+      <property name="text">
+       <string>Z-DV (UM)</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="1">
+     <widget class="QLabel" name="label_2">
+      <property name="text">
+       <string>Y-AP (UM)</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="2">
+     <widget class="QLineEdit" name="uiLine_z"/>
+    </item>
+    <item row="4" column="5">
+     <widget class="QPushButton" name="uiPush_submit">
+      <property name="text">
+       <string>Submit</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="3">
+     <widget class="QPushButton" name="uiPush_np24">
+      <property name="text">
+       <string>NP2.4 compute</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="4">
+     <widget class="QPushButton" name="uiPush_show">
+      <property name="text">
+       <string>Show location</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0">
+     <widget class="QLineEdit" name="uiLine_x"/>
+    </item>
+    <item row="0" column="3">
+     <widget class="QLabel" name="label_4">
+      <property name="text">
+       <string>DEPTH (UM)</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="0" colspan="6">
+     <widget class="MplWidget" name="uiMpl"/>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>869</width>
+     <height>24</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>MplWidget</class>
+   <extends>QGraphicsView</extends>
+   <header>iblrig.gui.micromanipulator</header>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="resources.qrc"/>
+ </resources>
+ <connections/>
+</ui>
