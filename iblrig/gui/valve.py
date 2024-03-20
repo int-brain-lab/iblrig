@@ -1,6 +1,7 @@
 import functools
 import logging
 from collections import OrderedDict
+from datetime import date
 
 import numpy as np
 import pyqtgraph as pg
@@ -12,6 +13,7 @@ from serial import SerialException
 from iblrig.gui.tools import Worker
 from iblrig.gui.ui_valve import Ui_valve
 from iblrig.hardware import Bpod
+from iblrig.path_helper import save_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings
 from iblrig.scale import Scale
 from iblrig.valve import Valve, ValveValues
@@ -25,12 +27,13 @@ class CalibrationPlot:
         self._values = values if values is not None else ValveValues([], [])
         self._curve = pg.PlotCurveItem(name=name)
         self._curve.setPen(color, width=3)
-        self._points = pg.ScatterPlotItem(name=name)
+        self._points = pg.ScatterPlotItem()
         self._points.setPen(color)
         self._points.setBrush(color)
+        self._parent = parent
         parent.addItem(self._curve)
         parent.addItem(self._points)
-        self._update()
+        self.update()
 
     @property
     def values(self) -> ValveValues:
@@ -39,34 +42,52 @@ class CalibrationPlot:
     @values.setter
     def values(self, values: ValveValues):
         self._values = values
-        self._update()
+        self.update()
 
-    def _update(self):
-        if len(self.values.open_times_ms) == 0:
-            return
-        time_range = list(np.linspace(self.values.open_times_ms[0], self.values.open_times_ms[-1], 100))
-        self._curve.setData(x=time_range, y=self.values.ms2ul(time_range))
+    def update(self):
         self._points.setData(x=self.values.open_times_ms, y=self.values.volumes_ul)
+        if len(self.values.open_times_ms) < 2:
+            self._curve.setData(x=[], y=[])
+        else:
+            time_range = list(np.linspace(self.values.open_times_ms[0], self.values.open_times_ms[-1], 100))
+            self._curve.setData(x=time_range, y=self.values.ms2ul(time_range))
+
+    def clear(self):
+        self.values.clear_data()
+        self.update()
 
 
 class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
     scale: Scale | None = None
     scale_text_changed = QtCore.pyqtSignal(str)
     scale_stable_changed = QtCore.pyqtSignal(bool)
-    drop_cleared = QtCore.pyqtSignal()
+    drop_cleared = QtCore.pyqtSignal(int)
+    tared = QtCore.pyqtSignal(bool)
+    calibration_finished = QtCore.pyqtSignal()
+    start_next_calibration = QtCore.pyqtSignal()
     _grams = float('nan')
     _stable = False
     _next_calibration_step = 1
     _scale_update_ms = 100
+    _clear_drop_counter = 0
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.setupUi(self)
 
+        # state machine for GUI logic
+        self.machine = QtCore.QStateMachine()
+        self.states: OrderedDict[str, QtCore.QStateMachine] = OrderedDict({})
+
+        # timers
+        self.scale_timer = QtCore.QTimer()
+        self.clear_timer = QtCore.QTimer()
+        self.clear_timer.setTimerType(QtCore.Qt.TimerType.PreciseTimer)
+
         # hardware
-        hw_settings: HardwareSettings = self.parent().model.hardware_settings
-        self.bpod = Bpod(hw_settings.device_bpod.COM_BPOD, skip_initialization=True, disable_behavior_ports=[0, 1, 2, 3])
-        self.valve = Valve(hw_settings.device_valve)
+        self.hw_settings: HardwareSettings = self.parent().model.hardware_settings
+        self.bpod = Bpod(self.hw_settings.device_bpod.COM_BPOD, skip_initialization=True, disable_behavior_ports=[0, 1, 2, 3])
+        self.valve = Valve(self.hw_settings.device_valve)
 
         # UI related ...
         self.font_database = QtGui.QFontDatabase
@@ -85,18 +106,21 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
         self.setModal(QtCore.Qt.WindowModality.ApplicationModal)
 
         # set up scale reading
-        self.scale_timer = QtCore.QTimer()
-        if hw_settings.device_scale.COM_SCALE is not None:
-            worker = Worker(self.initialize_scale, port=hw_settings.device_scale.COM_SCALE)
+        if self.hw_settings.device_scale.COM_SCALE is not None:
+            worker = Worker(self.initialize_scale, port=self.hw_settings.device_scale.COM_SCALE)
             worker.signals.result.connect(self._on_initialize_scale_result)
             QThreadPool.globalInstance().tryStart(worker)
         else:
             self.lineEditGrams.setAlignment(QtCore.Qt.AlignCenter)
             self.lineEditGrams.setText('no Scale')
+            self.define_and_start_state_machine()
 
         # set up plot widget
-        self.old_calibration = CalibrationPlot(self.uiPlot, 'previous calibration', 'gray', self.valve.values)
-        self.new_calibration = CalibrationPlot(self.uiPlot, 'new calibration', 'gray')
+        self.uiPlot.addLegend()
+        self.old_calibration = CalibrationPlot(
+            self.uiPlot, f'previous calibration ({self.valve.calibration_date})', 'gray', self.valve.values
+        )
+        self.new_calibration = CalibrationPlot(self.uiPlot, 'new calibration', 'black')
         self.uiPlot.hideButtons()
         self.uiPlot.setMenuEnabled(False)
         self.uiPlot.setMouseEnabled(x=False, y=False)
@@ -104,6 +128,7 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
         self.uiPlot.setLabel('bottom', 'Opening Time [ms]')
         self.uiPlot.setLabel('left', 'Volume [μL]')
         self.uiPlot.getViewBox().setLimits(xMin=0, yMin=0)
+        self.uiPlot.getViewBox().enableAutoRange(True)
 
         # signals & slots
         self.scale_text_changed.connect(self.display_scale_text)
@@ -115,96 +140,108 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
         self.pushButtonCancel.clicked.connect(self.close)
         self.pushButtonRestart.setVisible(False)
 
-        # Definition of state machine for guided calibration ===========================================================
-        self.states: OrderedDict[str, QtCore.QState] = OrderedDict()
+        self.show()
 
-        self.states['start'] = self._add_guide_state(
-            head='Welcome',
-            text='This is a step-by-step guide for calibrating the valve of your rig. You can abort the process at any '
-            'time by pressing Cancel or closing this window.',
+    def define_and_start_state_machine(self) -> None:
+        for state_name in ['start', 'beaker', 'flow', 'clear', 'tare', 'calibrate', 'finished', 'save']:
+            self.states[state_name] = QtCore.QState(self.machine)
+        self.machine.setInitialState(self.states['start'])
+
+        # state 'start': welcome the user and explain what's going on --------------------------------------------------
+        self.states['start'].assignProperty(self.labelGuideHead, 'text', 'Welcome')
+        self.states['start'].assignProperty(
+            self.labelGuideText,
+            'text',
+            'This is a step-by-step guide for calibrating the valve of your rig. You can abort the process at any time by '
+            'pressing Cancel or closing this window.',
         )
+        self.states['start'].addTransition(self.commandLinkNext.clicked, self.states['beaker'])
 
-        self.states['preparation_beaker'] = self._add_guide_state(
-            head='Preparation',
-            text='Place a small beaker on the scale and position the lick spout directly above it.\n\nMake sure that '
-            'neither the lick spout itself nor the tubing touch the beaker or the scale and that the water drops '
-            'can freely fall into the beaker.',
+        # state 'beaker': ask user to position beaker on scale ---------------------------------------------------------
+        self.states['beaker'].assignProperty(self.labelGuideHead, 'text', 'Preparation')
+        self.states['beaker'].assignProperty(
+            self.labelGuideText,
+            'text',
+            'Fill the water reservoir to the level used during experiments.\n\n'
+            'Place a small beaker on the scale and position the lick spout directly above.\n\n'
+            'Make sure that neither lick spout nor tubing touch the beaker or the scale and that water drops can freely fall '
+            'into the beaker.',
         )
+        self.states['beaker'].entered.connect(self.clear_calibration)
+        self.states['beaker'].assignProperty(self.pushButtonRestart, 'visible', False)
+        self.states['beaker'].assignProperty(self.commandLinkNext, 'visible', True)
+        self.states['beaker'].assignProperty(self.commandLinkNext, 'enabled', True)
+        self.states['beaker'].assignProperty(self.pushButtonSave, 'enabled', False)
+        self.states['beaker'].assignProperty(self.pushButtonTareScale, 'enabled', True)
+        self.states['beaker'].assignProperty(self.pushButtonToggleValve, 'enabled', True)
+        self.states['beaker'].assignProperty(self.pushButtonPulseValve, 'enabled', True)
+        self.states['beaker'].addTransition(self.commandLinkNext.clicked, self.states['flow'])
 
-        self.states['preparation_flow'] = self._add_guide_state(
-            head='Preparation',
-            text='Use the valve controls above to advance the flow of the water until there are no visible pockets of '
-            'air within the tubing and first drops start falling into the beaker.',
+        # state 'flow': prepare flow of water --------------------------------------------------------------------------
+        self.states['flow'].assignProperty(self.labelGuideHead, 'text', 'Preparation')
+        self.states['flow'].assignProperty(
+            self.labelGuideText,
+            'text',
+            'Use the valve controls above to advance the flow of the water until there are no visible pockets of air within the '
+            'tubing and first drops start falling into the beaker.',
         )
-        self.states['preparation_flow'].assignProperty(self.commandLinkNext, 'visible', True)
-        self.states['preparation_flow'].assignProperty(self.pushButtonRestart, 'visible', False)
-        self.states['preparation_flow'].assignProperty(self.pushButtonSave, 'enabled', False)
+        self.states['flow'].addTransition(self.commandLinkNext.clicked, self.states['clear'])
 
-        self.states['calibration_clear'] = self._add_guide_state(text='hello')
-        self.states['calibration_clear'].entered.connect(self.clear_drop)
-        self.states['calibration_clear'].assignProperty(self.commandLinkNext, 'enabled', False)
+        # state 'clear': try to clear one drop of water to set a defined start point for calibration -------------------
+        self.states['clear'].entered.connect(self.clear_drop)
+        self.states['clear'].assignProperty(self.pushButtonTareScale, 'enabled', False)
+        self.states['clear'].assignProperty(self.pushButtonToggleValve, 'enabled', False)
+        if self.scale is None:
+            self.states['clear'].assignProperty(self.pushButtonPulseValve, 'enabled', True)
+            self.states['clear'].assignProperty(self.commandLinkNext, 'enabled', True)
+            self.states['clear'].addTransition(self.commandLinkNext.clicked, self.states['tare'])
+        else:
+            self.states['clear'].assignProperty(self.pushButtonPulseValve, 'enabled', False)
+            self.states['clear'].assignProperty(self.commandLinkNext, 'enabled', False)
+            self.states['clear'].addTransition(self.drop_cleared, self.states['tare'])
 
-        self.states['calibration_tare'] = self._add_guide_state(transition_signal=self.drop_cleared)
-        self.states['calibration_tare'].entered.connect(self.tare)
+        # state 'tare': tare the scale ---------------------------------------------------------------------------------
+        self.states['tare'].assignProperty(self.pushButtonPulseValve, 'enabled', False)
+        self.states['tare'].entered.connect(self.tare)
+        self.states['tare'].addTransition(self.commandLinkNext.clicked, self.states['calibrate'])
+        self.states['tare'].addTransition(self.tared, self.states['calibrate'])
 
-        self.states['calibration_finished'] = self._add_guide_state(transition_signal=self.states['calibration_tare'].finished)
-        self.states['calibration_finished'].assignProperty(self.commandLinkNext, 'enabled', True)
+        # state 'calibrate': perform the actual measurement ------------------------------------------------------------
+        self.states['calibrate'].entered.connect(self.calibrate)
+        self.states['calibrate'].addTransition(self.start_next_calibration, self.states['clear'])
+        self.states['calibrate'].addTransition(self.calibration_finished, self.states['finished'])
 
-        # # Sub-State 3.1 --- Clear Drop
-        # sub_states = [sub_state := QtCore.QState(state)]
-        # sub_state.assignProperty(self.commandLinkNext, 'enabled', False)
-        # sub_state.entered.connect(self.clear_drop)
-        #
-        # # Sub-State 3.2 --- Final Sub-State
-        # sub_states.append(sub_state := QtCore.QState(state))
-        # sub_state.addTransition(self.drop_cleared, sub_state)
-        # sub_state.assignProperty(self.commandLinkNext, 'enabled', True)
-        # sub_state.addTransition(sub_state.finished, QtCore.QFinalState())
-        #
-        # state.setInitialState(sub_state[0])
-
-        # State 4: Finish
-        self.states['finished'] = self._add_guide_state(
-            head='Calibration is finished',
-            text='Click Save to store the calibration. Close this window or click Cancel to discard the calibration.',
+        # state 'finished': ask user to save or discard the calibration ------------------------------------------------
+        self.states['finished'].assignProperty(self.labelGuideHead, 'text', 'Calibration is finished')
+        self.states['finished'].assignProperty(
+            self.labelGuideText,
+            'text',
+            'Click Save to store the calibration. Close this window or click Cancel to discard the calibration.',
         )
         self.states['finished'].assignProperty(self.commandLinkNext, 'visible', False)
         self.states['finished'].assignProperty(self.pushButtonSave, 'enabled', True)
         self.states['finished'].assignProperty(self.pushButtonRestart, 'visible', True)
-        self.states['finished'].addTransition(self.pushButtonRestart.clicked, self.states['preparation_flow'])
+        self.states['finished'].addTransition(self.pushButtonRestart.clicked, self.states['beaker'])
+        self.states['finished'].addTransition(self.pushButtonSave.clicked, self.states['save'])
 
-        # Step 5: Save and exit
-        # self.states['save'] = self._add_guide_state(transition_signal=self.pushButtonSave.clicked)
-        # self.states['save'].addTransition(self.states['save'].finished, QtCore.QFinalState())
+        # state 'save': save calibration and quit ----------------------------------------------------------------------
+        self.states['save'].entered.connect(self.save)
+        self.states['save'].assignProperty(self, 'enabled', False)
 
-        # Define state-transitions
-
-        # Define state-machine
-        self.machine = QtCore.QStateMachine()
-        for state in self.states.values():
-            self.machine.addState(state)
-        self.machine.setInitialState(self.states['start'])
         self.machine.start()
 
-        self.show()
+    def clear_calibration(self):
+        self.new_calibration.clear()
+        self._next_calibration_time = self.get_next_calibration_time()
 
-    def _add_guide_state(
-        self,
-        head: str | None = None,
-        text: str | None = None,
-        transition_from_previous: bool = True,
-        transition_signal: QtCore.pyqtSignal | None = None,
-    ) -> QtCore.QState:
-        this_state = QtCore.QState()
-        if head is not None:
-            this_state.assignProperty(self.labelGuideHead, 'text', head)
-        if text is not None:
-            this_state.assignProperty(self.labelGuideText, 'text', text)
-        if transition_from_previous and len(self.states) > 0:
-            prev_state = list(self.states.values())[-1]
-            signal = self.commandLinkNext.clicked if transition_signal is None else transition_signal
-            prev_state.addTransition(signal, this_state)
-        return this_state
+    def get_next_calibration_time(self) -> float | None:
+        remaining_calibration_times = [
+            t for t in self.valve.new_calibration_open_times if t not in self.new_calibration.values.open_times_ms
+        ]
+        if len(remaining_calibration_times) > 0:
+            return max(remaining_calibration_times)
+        else:
+            return None
 
     def initialize_scale(self, port: str) -> bool:
         try:
@@ -229,6 +266,7 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
         else:
             self.lineEditGrams.setAlignment(QtCore.Qt.AlignCenter)
             self.lineEditGrams.setText('Error')
+        self.define_and_start_state_machine()
 
     def get_scale_reading(self):
         grams, stable = self.scale.get_grams()
@@ -247,20 +285,6 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
     def display_scale_stable(self, value: bool):
         self.action_stable.setVisible(value)
 
-    # def guided_calibration(self):
-    #     guide_string = self._guide_strings.get(self._next_calibration_step, '')
-    #     self.labelGuideText.setText(guide_string)
-    #     match self._next_calibration_step:
-    #         case 3:
-    #             self.clear_drop()
-    #         case 4:
-    #             self.tare()
-    #             worker = Worker(self.bpod.pulse_valve_repeatedly, repetitions=100, open_time_s=0.05, close_time_s=0.05)
-    #             QThreadPool.globalInstance().tryStart(worker)
-    #             # worker.signals.result.connect(self._on_initialize_scale_result)
-    #             # self.bpod.pulse_valve_repeatedly(100, 0.05)
-    #     self._next_calibration_step += 1
-
     def toggle_valve(self):
         state = self.pushButtonToggleValve.isChecked()
         self.pushButtonToggleValve.setStyleSheet('QPushButton {background-color: rgb(128, 128, 255);}' if state else '')
@@ -274,25 +298,33 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
         self.bpod.pulse_valve(0.05)
 
     def clear_drop(self):
+        self.labelGuideHead.setText('Calibration')
         if self.scale is None:
-            pass
+            self.labelGuideText.setText(
+                "Use the 'Pulse Valve' button above to clear one drop of water in order to obtain a defined starting point for "
+                'calibration.'
+            )
         else:
+            self.labelGuideText.setText(
+                'Trying to automatically clear one drop of water to obtain a defined starting point for calibration.'
+            )
             initial_grams = self.scale.get_stable_grams()
-            timer = QtCore.QTimer()
-            timer.setTimerType(QtCore.Qt.TimerType.PreciseTimer)
-            timer_callback = functools.partial(self.clear_crop_callback, initial_grams, timer)
-            timer.timeout.connect(timer_callback)
-            timer.start(500)
+            self._clear_drop_counter = 0
+            timer_callback = functools.partial(self.clear_crop_callback, initial_grams)
+            self.clear_timer.timeout.connect(timer_callback)
+            self.clear_timer.start(500)
 
-    def clear_crop_callback(self, initial_grams: float, timer: QtCore.QTimer):
+    def clear_crop_callback(self, initial_grams: float, duration_s: float = 0.05):
         if self.scale.get_grams()[0] > initial_grams + 0.02:
-            timer.stop()
-            self.drop_cleared.emit()
+            self.clear_timer.stop()
+            self.drop_cleared.emit(self._clear_drop_counter)
             return
-        self.pulse_valve()
+        self._clear_drop_counter += 1
+        self.bpod.pulse_valve(duration_s)
 
     def tare(self):
         if self.scale is None:
+            self.labelGuideText.setText('Tare the scale.')
             return
         self.scale_timer.stop()
         self.scale_text_changed.emit('------')
@@ -302,11 +334,56 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
         QThreadPool.globalInstance().tryStart(worker)
 
     @QtCore.pyqtSlot(object)
-    def _on_tare_finished(self, value: bool):
-        QtCore.QTimer.singleShot(200, lambda: self.scale_timer.start(self._scale_update_ms))
+    def _on_tare_finished(self, success: bool):
+        self.scale_timer.start(self._scale_update_ms)
+        self.tared.emit(success)
 
-    def closeEvent(self, event) -> bool:
-        if self.scale is not None:
-            self.scale_timer.stop()
+    @QtCore.pyqtSlot()
+    def calibrate(self):
+        n_samples = int(np.ceil(50 * max(self.valve.new_calibration_open_times) / self._next_calibration_time))
+        self.labelGuideText.setText(
+            f'Getting {n_samples} samples for a valve opening time of {self._next_calibration_time} ms ...'
+        )
+        worker = Worker(self.bpod.pulse_valve_repeatedly, n_samples, self._next_calibration_time / 1e3, 0.2)
+        worker.signals.result.connect(self._on_repeated_pulse_finished)
+        QThreadPool.globalInstance().tryStart(worker)
+
+    @QtCore.pyqtSlot(object)
+    def _on_repeated_pulse_finished(self, n_pulses: int):
+        if self.scale is None:
+            ok = False
+            scale_reading = 0
+            while not ok or scale_reading <= 0:
+                scale_reading, ok = QtWidgets.QInputDialog().getDouble(
+                    self, 'Enter Scale Reading', 'Enter measured weight in grams:', max=float('inf'), decimals=2
+                )
+            grams_per_pulse = scale_reading / n_pulses
+        else:
+            scale_reading = self.scale.get_stable_grams()
+            grams_per_pulse = scale_reading / n_pulses
+        self.new_calibration.values.add_samples([self._next_calibration_time], [grams_per_pulse])
+        self.new_calibration.update()
+        self._next_calibration_time = self.get_next_calibration_time()
+        if self._next_calibration_time is None:
+            self.calibration_finished.emit()
+        else:
+            self.start_next_calibration.emit()
+
+    def save(self) -> None:
+        valve_settings = self.hw_settings.device_valve
+        valve_settings.WATER_CALIBRATION_OPEN_TIMES = [float(x) for x in self.new_calibration.values.open_times_ms]
+        valve_settings.WATER_CALIBRATION_WEIGHT_PERDROP = [float(x) for x in self.new_calibration.values.volumes_ul]
+        valve_settings.WATER_CALIBRATION_DATE = date.today()
+        self.parent().model.hardware_settings.device_valve = valve_settings
+        save_pydantic_yaml(self.parent().model.hardware_settings)
+        self.labelGuideHead.setText('Settings saved.')
+        self.labelGuideText.setText('')
+        QtCore.QTimer.singleShot(1000, lambda: self.close())
+
+    def closeEvent(self, event):
+        self.clear_timer.stop()
+        self.scale_timer.stop()
         if self.machine.started:
             self.machine.stop()
+        self.bpod.stop_trial()
+        self.deleteLater()

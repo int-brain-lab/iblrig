@@ -13,7 +13,7 @@ from pydantic import (
     PlainSerializer,
     PositiveFloat,
     field_serializer,
-    field_validator,
+    field_validator, PositiveInt,
 )
 
 from iblrig.constants import BASE_PATH
@@ -123,6 +123,7 @@ class HardwareSettingsSound(BunchModel):
 class HardwareSettingsValve(BunchModel):
     WATER_CALIBRATION_DATE: date
     WATER_CALIBRATION_RANGE: list[PositiveFloat] = Field(min_items=2, max_items=2)  # type: ignore
+    WATER_CALIBRATION_N: PositiveInt = Field(ge=3, default=5)
     WATER_CALIBRATION_OPEN_TIMES: list[PositiveFloat] = Field(min_items=2)  # type: ignore
     WATER_CALIBRATION_WEIGHT_PERDROP: list[float] = Field(PositiveFloat, min_items=2)  # type: ignore
     FREE_REWARD_VOLUME_UL: PositiveFloat = 1.5

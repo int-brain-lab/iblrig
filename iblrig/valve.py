@@ -1,4 +1,5 @@
 import datetime
+import warnings
 from collections.abc import Sequence
 
 import numpy as np
@@ -26,6 +27,7 @@ class ValveValues:
     def add_samples(self, open_times_ms: Sequence[PositiveFloat], weights_g: Sequence[PositiveFloat]):
         incoming = np.rec.fromarrays([open_times_ms, weights_g], dtype=self._dtype)
         self._data = np.append(self._data, incoming)
+        self._data = np.sort(self._data)
         self._update_fit()
 
     def clear_data(self):
@@ -45,11 +47,13 @@ class ValveValues:
         return self._data['weights_g'] * 1e3
 
     def _update_fit(self) -> None:
-        if len(self._data) >= 3:
-            coef, _ = scipy.optimize.curve_fit(self._fcn, self.open_times_ms, self.volumes_ul, bounds=([-np.inf, 0, 0], np.inf))
+        if len(self._data) >= 2:
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore')
+                c, _ = scipy.optimize.curve_fit(self._fcn, self.open_times_ms, self.volumes_ul, bounds=([-np.inf, 0, 0], np.inf))
         else:
-            coef = [np.nan, np.nan, np.nan]
-        self._polynomial = Polynomial(coef=coef)
+            c = [np.nan, np.nan, np.nan]
+        self._polynomial = Polynomial(coef=c)
 
     @validate_call
     def ul2ms(self, volume_ul: PositiveFloat) -> PositiveFloat:
@@ -63,24 +67,29 @@ class ValveValues:
 class Valve:
     def __init__(self, settings: HardwareSettingsValve):
         self._settings = settings
-        self.values = ValveValues(settings.WATER_CALIBRATION_OPEN_TIMES, settings.WATER_CALIBRATION_WEIGHT_PERDROP)
+        volumes_ul = settings.WATER_CALIBRATION_WEIGHT_PERDROP
+        weights_g = [volume / 1e3 for volume in volumes_ul]
+        self.values = ValveValues(settings.WATER_CALIBRATION_OPEN_TIMES, weights_g)
 
     @property
     def calibration_date(self) -> datetime.date:
         return self._settings.WATER_CALIBRATION_DATE
 
     @property
-    def calibration_range(self) -> tuple[float, float]:
+    def calibration_range(self) -> list[float, float]:
         return self._settings.WATER_CALIBRATION_RANGE
 
     @property
-    def calibration_open_times(self) -> list[float]:
-        return self.values.open_times_ms
-
-    @property
-    def calibration_weights(self) -> list[float]:
-        return self._settings.WATER_CALIBRATION_WEIGHT_PERDROP
+    def new_calibration_open_times(self) -> set[float]:
+        return set(np.linspace(self.calibration_range[0], self.calibration_range[1], self._settings.WATER_CALIBRATION_N))
 
     @property
     def free_reward_time(self) -> float:
         return self._settings.FREE_REWARD_VOLUME_UL
+
+    @property
+    def settings(self) -> HardwareSettingsValve:
+        settings = self._settings
+        settings.WATER_CALIBRATION_OPEN_TIMES = self.values.open_times_ms
+        settings.WATER_CALIBRATION_WEIGHT_PERDROP = self.values.volumes_ul
+        return settings

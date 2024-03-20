@@ -57,10 +57,10 @@ class WorkerSignals(QObject):
         Signal emitted to report progress during the task. The signal carries an integer value.
     """
 
-    finished: pyqtSignal = pyqtSignal()
-    error: pyqtSignal = pyqtSignal(tuple)
-    result: pyqtSignal = pyqtSignal(object)
-    progress: pyqtSignal = pyqtSignal(int)
+    finished = pyqtSignal()
+    error = pyqtSignal(tuple)
+    result = pyqtSignal(object)
+    progress = pyqtSignal(int)
 
 
 class Worker(QRunnable):
