@@ -50,7 +50,12 @@ class ValveValues:
         if len(self._data) >= 2:
             with warnings.catch_warnings():
                 warnings.simplefilter('ignore')
-                c, _ = scipy.optimize.curve_fit(self._fcn, self.open_times_ms, self.volumes_ul, bounds=([-np.inf, 0, 0], np.inf))
+                try:
+                    c, _ = scipy.optimize.curve_fit(
+                        self._fcn, self.open_times_ms, self.volumes_ul, bounds=([-np.inf, 0, 0], np.inf)
+                    )
+                except RuntimeError:
+                    c = [np.nan, np.nan, np.nan]
         else:
             c = [np.nan, np.nan, np.nan]
         self._polynomial = Polynomial(coef=c)
