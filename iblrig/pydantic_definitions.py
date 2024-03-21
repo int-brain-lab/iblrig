@@ -12,8 +12,9 @@ from pydantic import (
     FilePath,
     PlainSerializer,
     PositiveFloat,
+    PositiveInt,
     field_serializer,
-    field_validator, PositiveInt,
+    field_validator,
 )
 
 from iblrig.constants import BASE_PATH
