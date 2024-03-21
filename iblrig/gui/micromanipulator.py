@@ -1,17 +1,15 @@
 # convert_uis *micro*
 import argparse
 
-from PyQt5 import QtCore, QtWidgets
-
+import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as Canvas
-import matplotlib
+from PyQt5 import QtCore, QtWidgets
 
 from iblatlas.atlas import NeedlesAtlas
+from iblrig.ephys import neuropixel24_micromanipulator_coordinates
 from iblrig.gui.ui_micromanipulator import Ui_MainWindow
 from iblrig.gui.wizard import RigWizardModel
-from iblrig.ephys import neuropixel24_micromanipulator_coordinates
-
 
 matplotlib.use('QT5Agg')
 
@@ -50,7 +48,8 @@ class GuiMicroManipulator(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def on_push_np24(self):
         self.model.trajectories = neuropixel24_micromanipulator_coordinates(
-            self.model.trajectory, self.model.pname, ba=self.atlas)
+            self.model.trajectory, self.model.pname, ba=self.atlas
+        )
 
     def on_push_show(self):
         self.uiMpl.canvas.ax[1].clear()
@@ -66,6 +65,7 @@ class MplCanvas(Canvas):
     """
     Matplotlib canvas class to create figure
     """
+
     def __init__(self):
         self.fig, self.ax = plt.subplots(1, 2, gridspec_kw={'width_ratios': [1, 2]})
         Canvas.__init__(self, self.fig)
@@ -75,9 +75,9 @@ class MplCanvas(Canvas):
 
 class MplWidget(QtWidgets.QWidget):
     def __init__(self, parent=None):
-        QtWidgets.QWidget.__init__(self, parent)   # Inherit from QWidget
-        self.canvas = MplCanvas()                  # Create canvas object
-        self.vbl = QtWidgets.QVBoxLayout()         # Set box for plotting
+        QtWidgets.QWidget.__init__(self, parent)  # Inherit from QWidget
+        self.canvas = MplCanvas()  # Create canvas object
+        self.vbl = QtWidgets.QVBoxLayout()  # Set box for plotting
         self.vbl.addWidget(self.canvas)
         self.setLayout(self.vbl)
 
