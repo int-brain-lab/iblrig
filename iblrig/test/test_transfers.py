@@ -2,6 +2,7 @@ import copy
 import random
 import tempfile
 import unittest
+from datetime import datetime
 from pathlib import Path
 from unittest import mock
 
@@ -110,12 +111,13 @@ class TestIntegrationTransferExperiments(unittest.TestCase):
         self.assertEqual(sc.state, 3)
 
     def test_behavior_copy(self):
-        """Unlike the integration test, the sessions here are made from scratch using an actual instantiated session."""
+        """Test behaviour copy with both dud and correct data."""
         # Create without task data
         session = _create_behavior_session(kwargs=self.session_kwargs)
         sc = BehaviorCopier(session_path=session.paths.SESSION_FOLDER, remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER)
         self.assertEqual(1, sc.state)
-        expected = ['2024-03-13_1_iblrig_test_subject@behavior.status_pending', '2024-03-13_1_iblrig_test_subject@behavior.yaml']
+        today = datetime.today().isoformat()[:10]
+        expected = [f'{today}_1_iblrig_test_subject@behavior.status_pending', f'{today}_1_iblrig_test_subject@behavior.yaml']
         remote_files = map(lambda x: x.name, filter(Path.is_file, session.paths.REMOTE_SUBJECT_FOLDER.rglob('*')))
         self.assertCountEqual(expected, remote_files)
         self.assertFalse(sc.copy_collections())  # fails because of missing task data

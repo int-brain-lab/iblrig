@@ -32,6 +32,8 @@ device_valve:
   WATER_CALIBRATION_RANGE: [40, 140]
   WATER_CALIBRATION_WEIGHT_PERDROP: [1.25, 2.75]
   FREE_REWARD_VOLUME_UL: 1.5
+device_scale:
+  COM_SCALE: null
 device_cameras:  # set to null if no camera is used on the rig
   default:
     BONSAI_WORKFLOW:

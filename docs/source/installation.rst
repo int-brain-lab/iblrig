@@ -87,7 +87,7 @@ Check that everything worked by running the following command:
 
 .. code-block:: powershell
 
-   &C:\Users\$env:USERNAME\AppData\Local\Programs\Python\Python310\python.exe --version
+   &$env:UserProfile\AppData\Local\Programs\Python\Python310\python.exe --version
 
 The command should return ``Python 3.10.11``
 
@@ -113,7 +113,7 @@ Installing iblrigv8
 
    .. code-block:: powershell
 
-      &C:\Users\$env:USERNAME\AppData\Local\Programs\Python\Python310\python.exe -m venv C:\iblrigv8\venv
+      &$env:UserProfile\AppData\Local\Programs\Python\Python310\python.exe -m venv C:\iblrigv8\venv
       C:\iblrigv8\venv\scripts\python.exe -m pip install --upgrade pip wheel
 
 

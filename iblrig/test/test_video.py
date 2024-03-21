@@ -203,7 +203,12 @@ class TestValidateVideo(unittest.TestCase):
         # Test everything in order
         with self.assertLogs(video.__name__, 20) as log:
             self.assertTrue(video.validate_video(self.video_path, self.config))
-            expected = {'300 event(s) on GPIO #4', 'Duration = 30000.00', 'N frames = 1000'}
+            expected = {
+                'Checking left camera for session 2020-01-01_001_subject',
+                '300 event(s) on GPIO #4',
+                'Duration = 30000.00',
+                'N frames = 1000',
+            }
             self.assertCountEqual(set(x.getMessage() for x in log.records), expected)
         # Test video meta warnings
         config = self.config.copy()
@@ -224,7 +229,7 @@ class TestValidateVideo(unittest.TestCase):
         load_embedded_frame_data.return_value = (self.count + 100, [None] * 4)
         with self.assertLogs(video.__name__, 40) as log:
             self.assertFalse(video.validate_video(self.video_path, self.config))
-            expected = {'Missed frames - frame data N = 1100; video file N = 1000', 'No GPIO events detected.'}
+            expected = {'Missed frames (9.09%) - frame data N = 1100; video file N = 1000', 'No GPIO events detected.'}
             self.assertCountEqual(set(x.getMessage() for x in log.records), expected)
 
     def test_validate_video_missing(self):

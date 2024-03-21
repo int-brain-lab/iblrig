@@ -115,6 +115,12 @@ select = [
     "SIM", # flake8-simplify
     "UP",  # pyupgrade
 ]
+ignore = [
+    "PLR0912", # Too many branches
+    "PLR0913", # Too many arguments
+    "PLR0915", # Too many statements
+    "PLR2004", # Magic value used in comparison, consider replacing with a constant variable
+]
 
 [tool.ruff.format]
 quote-style = "single"

@@ -2,6 +2,10 @@ Changelog
 ---------
 
 
+8.18.0
+------
+* valve calibration routine
+
 8.17.0
 ------
 * consolidated data transfer routine across all rig computers
