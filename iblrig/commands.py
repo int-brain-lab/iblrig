@@ -42,15 +42,15 @@ def _transfer_parser(description: str) -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=description, formatter_class=argparse.ArgumentDefaultsHelpFormatter, argument_default=argparse.SUPPRESS
     )
-    parser.add_argument('--tag', default='behavior', type=str, help='data type to transfer, e.g. "behavior", "video"')
+    parser.add_argument('-t', '--tag', default='behavior', type=str, help='data type to transfer, e.g. "behavior", "video"')
     parser.add_argument('-l', '--local', action='store', type=dir_path, dest='local_path', help='define local data path')
     parser.add_argument('-r', '--remote', action='store', type=dir_path, dest='remote_path', help='define remote data path')
     parser.add_argument('-d', '--dry', action='store_true', dest='dry', help='do not remove local data after copying')
     parser.add_argument(
-        '--cleanup-weeks', type=int, help='cleanup data older than this many weeks (-1 for no cleanup)', default=2
+        '-c', '--cleanup-weeks', type=int, help='cleanup data older than this many weeks (-1 for no cleanup)', default=2
     )
     parser.add_argument(
-        '--subject', type=str, help='an optional subject name to filter sessions by. Wildcards accepted.', default='*'
+        '-s', '--subject', type=str, help='an optional subject name to filter sessions by. Wildcards accepted.', default='*'
     )
     parser.add_argument(
         '--date', type=str, help='an optional date pattern to filter sessions by. Wildcards accepted.', default='*-*-*'
