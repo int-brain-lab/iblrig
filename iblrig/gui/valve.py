@@ -59,6 +59,7 @@ class CalibrationPlot:
 
 class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
     scale: Scale | None = None
+    scale_initialized = QtCore.pyqtSignal()
     scale_text_changed = QtCore.pyqtSignal(str)
     scale_stable_changed = QtCore.pyqtSignal(bool)
     drop_cleared = QtCore.pyqtSignal(int)
@@ -134,6 +135,7 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
         self.pushButtonSave.setEnabled(False)
         self.pushButtonCancel.clicked.connect(self.close)
         self.pushButtonRestart.setVisible(False)
+        self.scale_initialized.connect(self.define_and_start_state_machine)
 
         self.show()
 
@@ -265,7 +267,7 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
         else:
             self.lineEditGrams.setAlignment(QtCore.Qt.AlignCenter)
             self.lineEditGrams.setText('Error')
-        self.define_and_start_state_machine()
+        self.scale_initialized.emit()
 
     def get_scale_reading(self):
         grams, stable = self.scale.get_grams()
