@@ -138,10 +138,35 @@ def get_local_and_remote_paths(local_path=None, remote_path=None, lab=None, iblr
         paths.local_data_folder = (
             Path(p) if (p := iblrig_settings['iblrig_local_data_path']) else Path.home().joinpath('iblrig_data')
         )
+    elif isinstance(paths.local_data_folder, str):
+        paths.local_data_folder = Path(paths.local_data_folder)
     if paths.remote_data_folder is None:
         paths.remote_data_folder = Path(p) if (p := iblrig_settings['iblrig_remote_data_path']) else None
-    paths.local_subjects_folder = Path(paths.local_data_folder).joinpath(lab or iblrig_settings['ALYX_LAB'] or '', 'Subjects')
-    paths.remote_subjects_folder = Path(p).joinpath('Subjects') if (p := paths.remote_data_folder) else None
+    elif isinstance(paths.remote_data_folder, str):
+        paths.remote_data_folder = Path(paths.remote_data_folder)
+
+    # Get the subjects folders. If not defined in the settings, assume data path + /Subjects
+    paths.local_subjects_folder = (iblrig_settings or {}).get('iblrig_local_subjects_path', None)
+    lab = lab or (iblrig_settings or {}).get('ALYX_LAB', None)
+    if paths.local_subjects_folder is None:
+        if paths.local_data_folder.name == 'Subjects':
+            paths.local_subjects_folder = paths.local_data_folder
+        elif lab:  # append lab/Subjects part
+            paths.local_subjects_folder = paths.local_data_folder.joinpath(lab, 'Subjects')
+        else:  # NB: case is important here. ALF spec expects lab folder before 'Subjects' (capitalized)
+            paths.local_subjects_folder = paths.local_data_folder.joinpath('subjects')
+    else:
+        paths.local_subjects_folder = Path(paths.local_subjects_folder)
+    # Same for remote subjects folder
+    paths.remote_subjects_folder = (iblrig_settings or {}).get('iblrig_remote_subjects_path', None)
+    if paths.remote_subjects_folder is None:
+        if paths.remote_data_folder:
+            if paths.remote_data_folder.name == 'Subjects':
+                paths.remote_subjects_folder = paths.remote_data_folder
+            else:
+                paths.remote_subjects_folder = paths.remote_data_folder.joinpath('Subjects')
+    else:
+        paths.remote_subjects_folder = Path(paths.remote_subjects_folder)
     return paths
 
 
