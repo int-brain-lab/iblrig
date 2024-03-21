@@ -89,6 +89,11 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
         self.bpod = Bpod(self.hw_settings.device_bpod.COM_BPOD, skip_initialization=True, disable_behavior_ports=[0, 1, 2, 3])
         self.valve = Valve(self.hw_settings.device_valve)
 
+        # scale
+        worker = Worker(self.initialize_scale, port=self.hw_settings.device_scale.COM_SCALE)
+        worker.signals.result.connect(self._on_initialize_scale_result)
+        QThreadPool.globalInstance().tryStart(worker)
+
         # UI related ...
         self.font_database = QtGui.QFontDatabase
         self.font_database.addApplicationFont(':/fonts/7-Segment')
@@ -104,16 +109,6 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose, True)
         self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
         self.setModal(QtCore.Qt.WindowModality.ApplicationModal)
-
-        # set up scale reading
-        if self.hw_settings.device_scale.COM_SCALE is not None:
-            worker = Worker(self.initialize_scale, port=self.hw_settings.device_scale.COM_SCALE)
-            worker.signals.result.connect(self._on_initialize_scale_result)
-            QThreadPool.globalInstance().tryStart(worker)
-        else:
-            self.lineEditGrams.setAlignment(QtCore.Qt.AlignCenter)
-            self.lineEditGrams.setText('no Scale')
-            self.define_and_start_state_machine()
 
         # set up plot widget
         self.uiPlot.addLegend()
@@ -244,6 +239,10 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
             return None
 
     def initialize_scale(self, port: str) -> bool:
+        if port is None:
+            self.groupBoxScale.setVisible(False)
+            self.define_and_start_state_machine()
+            return False
         try:
             self.lineEditGrams.setAlignment(QtCore.Qt.AlignCenter)
             self.lineEditGrams.setText('Starting')
