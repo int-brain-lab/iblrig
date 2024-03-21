@@ -35,14 +35,15 @@ class TestPathHelper(unittest.TestCase):
             iblrig_remote_data_path=None,
             ALYX_USER='foo',
             ALYX_URL='https://test.alyx.internationalbrainlab.org',
-            ALYX_LAB='barlab'
+            ALYX_LAB='barlab',
         )
         iblrig_settings = RigSettings.model_validate(settings)
         paths = path_helper.get_local_and_remote_paths(iblrig_settings=iblrig_settings)
         expected = {
             'local_subjects_folder': tmp / 'iblrigv8_data' / 'barlab' / 'Subjects',
             'remote_subjects_folder': None,
-            **{k[7:-4] + 'folder': v for k, v in settings.items() if k.startswith('iblrig')}}
+            **{k[7:-4] + 'folder': v for k, v in settings.items() if k.startswith('iblrig')},
+        }
         self.assertDictEqual(expected, paths)
 
         # Test lab arg
@@ -89,7 +90,8 @@ class TestPathHelper(unittest.TestCase):
 
         # Test paths args
         paths = path_helper.get_local_and_remote_paths(
-            local_path=str(tmp / 'local'), remote_path=str(tmp / 'other'), iblrig_settings=iblrig_settings)
+            local_path=str(tmp / 'local'), remote_path=str(tmp / 'other'), iblrig_settings=iblrig_settings
+        )
         self.assertEqual(tmp / 'other', paths['remote_data_folder'])
         self.assertEqual(tmp / 'local', paths['local_data_folder'])
 
