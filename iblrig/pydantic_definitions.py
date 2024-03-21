@@ -12,6 +12,7 @@ from pydantic import (
     FilePath,
     PlainSerializer,
     PositiveFloat,
+    PositiveInt,
     field_serializer,
     field_validator,
 )
@@ -123,9 +124,14 @@ class HardwareSettingsSound(BunchModel):
 class HardwareSettingsValve(BunchModel):
     WATER_CALIBRATION_DATE: date
     WATER_CALIBRATION_RANGE: list[PositiveFloat] = Field(min_items=2, max_items=2)  # type: ignore
+    WATER_CALIBRATION_N: PositiveInt = Field(ge=3, default=5)
     WATER_CALIBRATION_OPEN_TIMES: list[PositiveFloat] = Field(min_items=2)  # type: ignore
     WATER_CALIBRATION_WEIGHT_PERDROP: list[float] = Field(PositiveFloat, min_items=2)  # type: ignore
     FREE_REWARD_VOLUME_UL: PositiveFloat = 1.5
+
+
+class HardwareSettingsScale(BunchModel):
+    COM_SCALE: str | None = None
 
 
 class HardwareSettingsCamera(BunchModel):
@@ -195,6 +201,7 @@ class HardwareSettings(BunchModel):
     device_screen: HardwareSettingsScreen
     device_sound: HardwareSettingsSound
     device_valve: HardwareSettingsValve
+    device_scale: HardwareSettingsScale = HardwareSettingsScale()
     device_cameras: dict[str, dict[str, HardwareSettingsCameraWorkflow | HardwareSettingsCamera]] | None
     device_microphone: HardwareSettingsMicrophone | None = None
     VERSION: str

@@ -1113,6 +1113,7 @@
     </property>
     <addaction name="uiActionTrainingLevelV7"/>
     <addaction name="uiActionCalibrateFrame2ttl"/>
+    <addaction name="uiActionCalibrateValve"/>
    </widget>
    <addaction name="uiMenuTools"/>
   </widget>
@@ -1124,6 +1125,11 @@
   <action name="uiActionCalibrateFrame2ttl">
    <property name="text">
     <string>Calibrate Frame2TTL</string>
+   </property>
+  </action>
+  <action name="uiActionCalibrateValve">
+   <property name="text">
+    <string>Calibrate Valve</string>
    </property>
   </action>
  </widget>
