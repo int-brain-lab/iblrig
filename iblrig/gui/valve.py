@@ -59,7 +59,7 @@ class CalibrationPlot:
 
 class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
     scale: Scale | None = None
-    scale_initialized = QtCore.pyqtSignal()
+    scale_initialized = QtCore.pyqtSignal(bool)
     scale_text_changed = QtCore.pyqtSignal(str)
     scale_stable_changed = QtCore.pyqtSignal(bool)
     drop_cleared = QtCore.pyqtSignal(int)
@@ -69,6 +69,7 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
     _grams = float('nan')
     _stable = False
     _next_calibration_step = 1
+    _next_calibration_time = float('nan')
     _scale_update_ms = 100
     _clear_drop_counter = 0
 
@@ -139,7 +140,8 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
 
         self.show()
 
-    def define_and_start_state_machine(self) -> None:
+    @QtCore.pyqtSlot(bool)
+    def define_and_start_state_machine(self, use_scale: bool = False) -> None:
         for state_name in ['start', 'beaker', 'flow', 'clear', 'tare', 'calibrate', 'finished', 'save']:
             self.states[state_name] = QtCore.QState(self.machine)
         self.machine.setInitialState(self.states['start'])
@@ -152,6 +154,7 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
             'This is a step-by-step guide for calibrating the valve of your rig. You can abort the process at any time by '
             'pressing Cancel or closing this window.',
         )
+        self.states['start'].assignProperty(self.commandLinkNext, 'enabled', True)
         self.states['start'].addTransition(self.commandLinkNext.clicked, self.states['beaker'])
 
         # state 'beaker': ask user to position beaker on scale ---------------------------------------------------------
@@ -169,7 +172,7 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
         self.states['beaker'].assignProperty(self.commandLinkNext, 'visible', True)
         self.states['beaker'].assignProperty(self.commandLinkNext, 'enabled', True)
         self.states['beaker'].assignProperty(self.pushButtonSave, 'enabled', False)
-        self.states['beaker'].assignProperty(self.pushButtonTareScale, 'enabled', True)
+        self.states['beaker'].assignProperty(self.pushButtonTareScale, 'enabled', use_scale)
         self.states['beaker'].assignProperty(self.pushButtonToggleValve, 'enabled', True)
         self.states['beaker'].assignProperty(self.pushButtonPulseValve, 'enabled', True)
         self.states['beaker'].addTransition(self.commandLinkNext.clicked, self.states['flow'])
@@ -188,23 +191,27 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
         self.states['clear'].entered.connect(self.clear_drop)
         self.states['clear'].assignProperty(self.pushButtonTareScale, 'enabled', False)
         self.states['clear'].assignProperty(self.pushButtonToggleValve, 'enabled', False)
-        if self.scale is None:
-            self.states['clear'].assignProperty(self.pushButtonPulseValve, 'enabled', True)
-            self.states['clear'].assignProperty(self.commandLinkNext, 'enabled', True)
-            self.states['clear'].addTransition(self.commandLinkNext.clicked, self.states['tare'])
-        else:
+        if use_scale:
             self.states['clear'].assignProperty(self.pushButtonPulseValve, 'enabled', False)
             self.states['clear'].assignProperty(self.commandLinkNext, 'enabled', False)
             self.states['clear'].addTransition(self.drop_cleared, self.states['tare'])
+        else:
+            self.states['clear'].assignProperty(self.pushButtonPulseValve, 'enabled', True)
+            self.states['clear'].assignProperty(self.commandLinkNext, 'enabled', True)
+            self.states['clear'].addTransition(self.commandLinkNext.clicked, self.states['tare'])
 
         # state 'tare': tare the scale ---------------------------------------------------------------------------------
         self.states['tare'].assignProperty(self.pushButtonPulseValve, 'enabled', False)
-        self.states['tare'].entered.connect(self.tare)
-        self.states['tare'].addTransition(self.commandLinkNext.clicked, self.states['calibrate'])
-        self.states['tare'].addTransition(self.tared, self.states['calibrate'])
+        if use_scale:
+            self.states['tare'].entered.connect(self.tare)
+            self.states['tare'].addTransition(self.tared, self.states['calibrate'])
+        else:
+            self.states['tare'].assignProperty(self.labelGuideText, 'text', 'Tare the scale.')
+            self.states['tare'].addTransition(self.commandLinkNext.clicked, self.states['calibrate'])
 
         # state 'calibrate': perform the actual measurement ------------------------------------------------------------
         self.states['calibrate'].entered.connect(self.calibrate)
+        self.states['calibrate'].assignProperty(self.commandLinkNext, 'enabled', False)
         self.states['calibrate'].addTransition(self.start_next_calibration, self.states['clear'])
         self.states['calibrate'].addTransition(self.calibration_finished, self.states['finished'])
 
@@ -243,7 +250,7 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
     def initialize_scale(self, port: str) -> bool:
         if port is None:
             self.groupBoxScale.setVisible(False)
-            self.define_and_start_state_machine()
+            self.define_and_start_state_machine(use_scale=False)
             return False
         try:
             self.lineEditGrams.setAlignment(QtCore.Qt.AlignCenter)
@@ -267,7 +274,7 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
         else:
             self.lineEditGrams.setAlignment(QtCore.Qt.AlignCenter)
             self.lineEditGrams.setText('Error')
-        self.scale_initialized.emit()
+        self.scale_initialized.emit(success)
 
     def get_scale_reading(self):
         grams, stable = self.scale.get_grams()
@@ -324,9 +331,6 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
         self.bpod.pulse_valve(duration_s)
 
     def tare(self):
-        if self.scale is None:
-            self.labelGuideText.setText('Tare the scale.')
-            return
         self.scale_timer.stop()
         self.scale_text_changed.emit('------')
         self._grams = float('nan')
@@ -356,7 +360,13 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
             scale_reading = 0
             while not ok or scale_reading <= 0:
                 scale_reading, ok = QtWidgets.QInputDialog().getDouble(
-                    self, 'Enter Scale Reading', 'Enter measured weight in grams:', max=float('inf'), decimals=2
+                    self,
+                    'Enter Scale Reading',
+                    'Enter measured weight in grams:',
+                    min=0,
+                    max=float('inf'),
+                    decimals=2,
+                    flags=(QtWidgets.QInputDialog().windowFlags() & ~QtCore.Qt.WindowType.WindowContextHelpButtonHint),
                 )
             grams_per_pulse = scale_reading / n_pulses
         else:
@@ -379,7 +389,7 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
         save_pydantic_yaml(self.parent().model.hardware_settings)
         self.labelGuideHead.setText('Settings saved.')
         self.labelGuideText.setText('')
-        QtCore.QTimer.singleShot(1000, lambda: self.close())
+        QtCore.QTimer.singleShot(1000, self.close)
 
     def closeEvent(self, event):
         self.clear_timer.stop()

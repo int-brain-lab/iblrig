@@ -199,6 +199,9 @@
             </item>
             <item>
              <widget class="QCommandLinkButton" name="commandLinkNext">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
               <property name="text">
                <string>Next Step</string>
               </property>
