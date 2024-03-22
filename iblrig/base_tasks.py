@@ -429,6 +429,7 @@ class BaseSession(ABC):
             log.error(traceback.format_exc())
             log.error('Could not register water administration to Alyx')
             return
+        return ses
 
     def _execute_mixins_shared_function(self, pattern):
         """

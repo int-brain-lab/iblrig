@@ -1,5 +1,6 @@
 """Test iblrig.alyx module."""
 import unittest
+from unittest.mock import patch
 import tempfile
 import random
 import string
@@ -40,14 +41,18 @@ class TestRegisterSession(unittest.TestCase):
     def test_register_session(self):
         task = TrainingChoiceWorldSession(**self.task_settings, one=self.one)
         self.addCleanup(task._remove_file_loggers)
+        task.session_info.SUBJECT_WEIGHT = 31.43
         task.create_session()  # calls register_to_alyx
 
         ses, = self.one.alyx.rest('sessions', 'list', subject=self.subject)
         self.assertEqual(self.lab, ses['lab'])
         self.assertEqual(task.session_info['SESSION_START_TIME'], ses['start_time'])
-        # self.assertEqual(task.session_info['SESSION_END_TIME'], ses['end_time'])
         self.assertCountEqual(task.session_info['PROJECTS'], ses['projects'])
         self.assertEqual(task.protocol_name + __version__, ses['task_protocol'])
+        # Check weight registered
+        weights = self.one.alyx.rest('weighings', 'list', subject=self.subject)
+        self.assertEqual(1, len(weights))
+        self.assertEqual(task.session_info.SUBJECT_WEIGHT, weights[0]['weight'])
 
         # Test with chained protocol
         task_settings = deepcopy(self.task_settings)
@@ -56,6 +61,7 @@ class TestRegisterSession(unittest.TestCase):
         chained = TrainingChoiceWorldSession(**task_settings, one=self.one, append=True)
         # Add n trials, etc. This simulates the call to register_to_alyx in the run method
         chained.session_info.SESSION_END_TIME = (datetime.datetime.now() + datetime.timedelta(hours=60)).isoformat()
+        chained.session_info.SUBJECT_WEIGHT = 28.
         chained.session_info.POOP_COUNT = 83
         chained.session_info['NTRIALS'], chained.session_info['NTRIALS_CORRECT'] = 100, 65
         chained.session_info['TOTAL_WATER_DELIVERED'] = 535
@@ -74,6 +80,27 @@ class TestRegisterSession(unittest.TestCase):
         self.assertEqual(1, len(ses['wateradmin_session_related']))
         expected = chained.session_info['TOTAL_WATER_DELIVERED'] / 1e3
         self.assertEqual(expected, ses['wateradmin_session_related'][0]['water_administered'])
+        # Expect new weight not added; this behaviour may change in the future if required
+        self.assertEqual(1, len(self.one.alyx.rest('weighings', 'list', subject=self.subject)))
+
+        # Test handling of errors
+        with patch('iblrig.base_tasks.IBLRegistrationClient.register_session', side_effect=AssertionError), \
+                self.assertLogs('iblrig.base_tasks', 'ERROR') as log:
+            self.assertIsNone(chained.register_to_alyx())
+            self.assertIn('AssertionError', log.output[0])
+            self.assertIn('Could not register session to Alyx', log.output[1])
+
+        # An empty session record should cause an error when attempting to register weight
+        with patch('iblrig.base_tasks.IBLRegistrationClient.register_session', return_value=({}, None)), \
+                self.assertLogs('iblrig.base_tasks', 'ERROR') as log:
+            self.assertIsNone(chained.register_to_alyx())
+            self.assertIn('Could not register water administration to Alyx', log.output[1])
+
+        # ONE in offline mode should simply return
+        self.one.mode = 'local'
+        with patch('iblrig.base_tasks.IBLRegistrationClient') as mock_client:
+            self.assertIsNone(chained.register_to_alyx())
+            mock_client.assert_not_called()
 
 
 if __name__ == '__main__':
