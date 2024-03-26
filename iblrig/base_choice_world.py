@@ -49,7 +49,6 @@ class ChoiceWorldParams(BaseModel):
     INTERACTIVE_DELAY: float = 0.0
     ITI_DELAY_SECS: float = 0.5
     NTRIALS: int = Field(2000, gt=0)
-    POOP_COUNT: bool = True
     PROBABILITY_LEFT: Probability = 0.5
     QUIESCENCE_THRESHOLDS: list[float] = Field(default=[-2, 2], min_length=2, max_length=2)
     QUIESCENT_PERIOD: float = 0.2
