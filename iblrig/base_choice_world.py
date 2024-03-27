@@ -187,10 +187,19 @@ class ChoiceWorldSession(
             time_last_trial_end = time.time()
             self.trial_completed(self.bpod.session.current_trial.export())
             self.show_trial_log()
-            while self.paths.SESSION_FOLDER.joinpath('.pause').exists():
-                time.sleep(1)
-            if self.paths.SESSION_FOLDER.joinpath('.stop').exists():
-                self.paths.SESSION_FOLDER.joinpath('.stop').unlink()
+
+            # handle pause and stop events
+            flag_pause = self.paths.SESSION_FOLDER.joinpath('.pause')
+            flag_stop = self.paths.SESSION_FOLDER.joinpath('.stop')
+            if flag_pause.exists() and i < (self.task_params.NTRIALS - 1):
+                log.info(f'Pausing session inbetween trials {i} and {i + 1}')
+                while flag_pause.exists() and not flag_stop.exists():
+                    time.sleep(1)
+                if not flag_stop.exists():
+                    log.info('Resuming session')
+            if flag_stop.exists():
+                log.info('Stopping session after trial {i}')
+                flag_stop.unlink()
                 break
 
     def mock(self, file_jsonable_fixture=None):
