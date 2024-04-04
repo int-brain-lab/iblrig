@@ -142,7 +142,7 @@ def configure_sound_card(card=None, sounds=None, indexes=None, sample_rate=96):
         raise (ValueError)
 
     sounds = [format_sound(s, flat=True) for s in sounds]
-    for sound, index in zip(sounds, indexes):
+    for sound, index in zip(sounds, indexes, strict=False):
         card.send_sound(sound, index, sample_rate, DataType.INT32)
 
     if close_card:

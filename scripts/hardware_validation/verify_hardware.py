@@ -78,8 +78,7 @@ ports = {k: v for k, v in ports.items() if v is not None}
 seen = set()
 for p in [x for x in ports.values() if x in seen or seen.add(x)]:
     log_fun('fail', f'duplicate serial port: "{p}"')
-else:
-    log_fun('pass', 'no duplicate serial ports found')
+log_fun('pass', 'no duplicate serial ports found')
 
 # collect valid ports
 match platform.system():
@@ -93,8 +92,7 @@ match platform.system():
 # check for invalid port-strings
 for p in [(k, v) for k, v in ports.items() if v not in valid_ports]:
     log_fun('fail', f'invalid serial port: "{p[1]}"', last=True)
-else:
-    log_fun('pass', 'no invalid port-strings found', last=True)
+log_fun('pass', 'no invalid port-strings found', last=True)
 
 # check individual serial ports
 port_info = [i for i in serial.tools.list_ports.comports()]

@@ -84,7 +84,7 @@ def make_stims_for_passiveCW_pcs(seed_num=None):  # XXX
     pos.extend(positions * int(zero_repeats / len(positions)))
     cont.extend(zero_contrasts * int(zero_repeats))
     sphase = [np.random.uniform(0, 2 * math.pi) for x in cont]
-    gabors = np.array([[int(p), c, s] for p, c, s in zip(pos, cont, sphase)])
+    gabors = np.array([[int(p), c, s] for p, c, s in zip(pos, cont, sphase, strict=False)])
 
     np.random.shuffle(gabors)
     # Make into strings for saving
