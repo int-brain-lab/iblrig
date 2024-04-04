@@ -7,6 +7,7 @@ This module tries to exclude task related logic.
 
 import abc
 import argparse
+import contextlib
 import datetime
 import importlib.metadata
 import inspect
@@ -329,10 +330,8 @@ class BaseSession(ABC):
             'ALYX_USER': self.iblrig_settings.ALYX_USER,
             'ALYX_LAB': self.iblrig_settings.ALYX_LAB,
         }
-        try:  # If 'project_extraction' repository is installed, record the version
+        with contextlib.suppress(importlib.metadata.PackageNotFoundError):
             patch_dict['PROJECT_EXTRACTION_VERSION'] = importlib.metadata.version('project_extraction')
-        except importlib.metadata.PackageNotFoundError:
-            pass
         output_dict.update(patch_dict)
         return output_dict
 

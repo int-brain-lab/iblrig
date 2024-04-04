@@ -86,12 +86,6 @@ minversion = "6.0"
 testpaths  = [ "iblrig/test", "iblrig/test/tasks" ]
 
 [tool.ruff]
-ignore = [
-    "PLR0912", # Too many branches
-    "PLR0913", # Too many arguments in function definition
-    "PLR0915", # Too many statements
-    "PLR2004", # Magic value used in comparison, consider replacing with a constant variable
-]
 exclude = [
     ".mypy_cache",
     "dist",
@@ -107,7 +101,7 @@ target-version = "py310"
 [tool.ruff.lint]
 select = [
     "B",   # flake8-bugbear
-    "E",   # pycodestyle
+    "E",   # pycodestyle Error
     "F",   # Pyflakes
     "I",   # isort
     "N",   # pep8-naming

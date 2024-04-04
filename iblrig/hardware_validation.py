@@ -26,7 +26,7 @@ class ValidateResult:
     exception: Exception | None = None
 
 
-class ValidateHardwareException(Exception):
+class ValidateHardwareError(Exception):
     def __init__(self, results: ValidateResult):
         super().__init__(results.message)
         self.results = results
@@ -69,9 +69,9 @@ class ValidateHardware(ABC):
 
         if self.raise_fail_as_exception and results.status == 'FAIL':
             if results.exception is not None:
-                raise ValidateHardwareException(results) from results.exception
+                raise ValidateHardwareError(results) from results.exception
             else:
-                raise ValidateHardwareException(results)
+                raise ValidateHardwareError(results)
 
 
 class ValidateHardwareDevice(ValidateHardware):
