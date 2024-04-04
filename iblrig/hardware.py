@@ -244,10 +244,7 @@ class Bpod(BpodIO):
     def pulse_valve(self, open_time_s: float, valve: str = 'Valve1'):
         sma = StateMachine(self)
         sma.add_state(
-            state_name='flush',
-            state_timer=open_time_s,
-            state_change_conditions={'Tup': 'exit'},
-            output_actions=[(valve, 255)],
+            state_name='flush', state_timer=open_time_s, state_change_conditions={'Tup': 'exit'}, output_actions=[(valve, 255)]
         )
         self.send_state_machine(sma)
         self.run_state_machine(sma)
@@ -266,11 +263,7 @@ class Bpod(BpodIO):
 
         sma = StateMachine(self)
         sma.set_global_timer(timer_id=1, timer_duration=(open_time_s + close_time_s) * repetitions)
-        sma.add_state(
-            state_name='start_timer',
-            state_change_conditions={'Tup': 'open'},
-            output_actions=[('GlobalTimerTrig', 1)],
-        )
+        sma.add_state(state_name='start_timer', state_change_conditions={'Tup': 'open'}, output_actions=[('GlobalTimerTrig', 1)])
         sma.add_state(
             state_name='open',
             state_timer=open_time_s,
@@ -278,9 +271,7 @@ class Bpod(BpodIO):
             output_actions=[(valve, 255), ('SoftCode', 1)],
         )
         sma.add_state(
-            state_name='close',
-            state_timer=close_time_s,
-            state_change_conditions={'Tup': 'open', 'GlobalTimer1_End': 'exit'},
+            state_name='close', state_timer=close_time_s, state_change_conditions={'Tup': 'open', 'GlobalTimer1_End': 'exit'}
         )
         self.send_state_machine(sma)
         self.run_state_machine(sma)

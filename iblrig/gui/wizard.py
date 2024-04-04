@@ -195,8 +195,7 @@ class RigWizardModel:
 
         # since we are connecting to Alyx, validate some parameters to ensure a smooth extraction
         result = iblrig.hardware_validation.ValidateAlyxLabLocation(
-            iblrig_settings=self.iblrig_settings,
-            hardware_settings=self.hardware_settings,
+            iblrig_settings=self.iblrig_settings, hardware_settings=self.hardware_settings
         ).run(self.alyx)
         if result.status == 'FAIL' and gui:
             QtWidgets.QMessageBox().critical(None, 'Error', f'{result.message}\n\n{result.solution}')
@@ -224,9 +223,7 @@ class RigWizardModel:
     def free_reward(self):
         try:
             bpod = Bpod(
-                self.hardware_settings['device_bpod']['COM_BPOD'],
-                skip_initialization=True,
-                disable_behavior_ports=[1, 2, 3],
+                self.hardware_settings['device_bpod']['COM_BPOD'], skip_initialization=True, disable_behavior_ports=[1, 2, 3]
             )
             bpod.pulse_valve(open_time_s=self.free_reward_time)
         except (OSError, BpodErrorException):

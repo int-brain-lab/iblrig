@@ -63,10 +63,7 @@ if __name__ == '__main__':
     parser.add_argument('folder', help='Local iblrig_data folder')
     parser.add_argument('file', help='File name to search and destroy for every session')
     parser.add_argument(
-        '-lab',
-        required=False,
-        default=None,
-        help='Lab name, in case sessions conflict between labs. default: None',
+        '-lab', required=False, default=None, help='Lab name, in case sessions conflict between labs. default: None'
     )
     parser.add_argument('--dry', required=False, default=False, action='store_true', help='Dry run? default: False')
     args = parser.parse_args()

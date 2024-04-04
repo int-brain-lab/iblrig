@@ -96,11 +96,7 @@ class Session(BiasedChoiceWorldSession):
             state_name='stim_on',
             state_timer=0.1,
             output_actions=[self.bpod.actions.bonsai_show_stim],
-            state_change_conditions={
-                'Tup': 'interactive_delay',
-                'BNC1High': 'interactive_delay',
-                'BNC1Low': 'interactive_delay',
-            },
+            state_change_conditions={'Tup': 'interactive_delay', 'BNC1High': 'interactive_delay', 'BNC1Low': 'interactive_delay'},
         )
 
         sma.add_state(
@@ -114,10 +110,7 @@ class Session(BiasedChoiceWorldSession):
             state_name='play_tone',
             state_timer=0.1,
             output_actions=[self.bpod.actions.play_tone, ('BNC1', 255)],
-            state_change_conditions={
-                'Tup': 'reset2_rotary_encoder',
-                'BNC2High': 'reset2_rotary_encoder',
-            },
+            state_change_conditions={'Tup': 'reset2_rotary_encoder', 'BNC2High': 'reset2_rotary_encoder'},
         )
 
         sma.add_state(
@@ -132,11 +125,7 @@ class Session(BiasedChoiceWorldSession):
                 state_name='closed_loop',
                 state_timer=self.task_params.RESPONSE_WINDOW,
                 output_actions=[self.bpod.actions.bonsai_closed_loop],
-                state_change_conditions={
-                    'Tup': 'omit_no_go',
-                    self.event_error: 'omit_error',
-                    self.event_reward: 'omit_correct',
-                },
+                state_change_conditions={'Tup': 'omit_no_go', self.event_error: 'omit_error', self.event_reward: 'omit_correct'},
             )
         else:
             sma.add_state(
@@ -232,18 +221,11 @@ class Session(BiasedChoiceWorldSession):
             state_name='hide_stim',
             state_timer=0.1,
             output_actions=[self.bpod.actions.bonsai_hide_stim],
-            state_change_conditions={
-                'Tup': 'exit_state',
-                'BNC1High': 'exit_state',
-                'BNC1Low': 'exit_state',
-            },
+            state_change_conditions={'Tup': 'exit_state', 'BNC1High': 'exit_state', 'BNC1Low': 'exit_state'},
         )
 
         sma.add_state(
-            state_name='exit_state',
-            state_timer=0.5,
-            output_actions=[('BNC1', 255)],
-            state_change_conditions={'Tup': 'exit'},
+            state_name='exit_state', state_timer=0.5, output_actions=[('BNC1', 255)], state_change_conditions={'Tup': 'exit'}
         )
         return sma
 
