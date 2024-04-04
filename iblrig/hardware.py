@@ -1,6 +1,7 @@
 """
 This modules contains hardware classes used to interact with modules.
 """
+
 import logging
 import os
 import re

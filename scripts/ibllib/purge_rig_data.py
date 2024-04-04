@@ -3,6 +3,7 @@ Purge data from RIG
 - looks for datasets matching filename pattern
 - datasets that exist in ONE cache are removed
 """
+
 import argparse
 import logging
 from fnmatch import fnmatch

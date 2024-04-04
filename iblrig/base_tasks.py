@@ -4,6 +4,7 @@ This module is intended to provide commonalities for all tasks.
 It provides hardware mixins that can be used together with BaseSession to compose tasks.
 This module tries to exclude task related logic.
 """
+
 import abc
 import argparse
 import datetime

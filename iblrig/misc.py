@@ -5,6 +5,7 @@ Assortment of functions, frequently used, but without a great deal of commonalit
 and should, be broken out into their own files and/or classes as the organizational needs of this
 repo change over time.
 """
+
 import argparse
 import datetime
 import logging

@@ -1,6 +1,7 @@
 """
 Validation script intended to aid in troubleshooting harp soundcard issues
 """
+
 import logging
 
 from iblrig import path_helper

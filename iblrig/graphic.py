@@ -6,6 +6,7 @@
 """
 Popup and string input prompts
 """
+
 import tkinter as tk
 from tkinter import simpledialog
 
