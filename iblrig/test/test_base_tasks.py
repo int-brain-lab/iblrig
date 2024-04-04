@@ -30,7 +30,7 @@ class EmptyHardwareSession(BaseSession):
 
     def __init__(self, *args, **kwargs):
         self.extractor_tasks = ['Tutu', 'Tata']
-        super(EmptyHardwareSession, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def start_hardware(self):
         pass

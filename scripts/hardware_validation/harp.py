@@ -3,6 +3,7 @@ Validation script intended to aid in troubleshooting harp soundcard issues
 """
 
 import logging
+import sys
 
 from iblrig import path_helper
 from iblrig.base_choice_world import BiasedChoiceWorldSession
@@ -19,7 +20,7 @@ if hardware_settings['device_bpod']['COM_BPOD'] is None:
         "No COM port assigned for bpod, edit the 'settings/hardware_settings.yaml' file to add a bpod COM port; skipping "
         'harp validation.'
     )
-    exit()
+    sys.exit()
 
 # verify harp is set in the 'settings/hardware_settings.yaml' file
 if hardware_settings['device_sound']['OUTPUT'] != 'harp':
@@ -27,7 +28,7 @@ if hardware_settings['device_sound']['OUTPUT'] != 'harp':
         f"The sound device specified in 'settings/hardware_settings.yaml' is not 'harp', edit the settings file to change "
         f"this.\nCurrently assigned soundcard: {hardware_settings['device_sound']['OUTPUT']}"
     )
-    exit()
+    sys.exit()
 
 # TODO: check device manager for lib-usb32 entries if on Windows system
 

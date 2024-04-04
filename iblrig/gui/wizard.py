@@ -23,6 +23,7 @@ from PyQt5.QtWebEngineWidgets import QWebEnginePage
 from PyQt5.QtWidgets import QStyle
 from requests import HTTPError
 from serial import SerialException
+from typing_extensions import override
 
 import iblrig.hardware_validation
 import iblrig.path_helper
@@ -606,6 +607,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
             self.model2view()
         return logged_in
 
+    @override
     def eventFilter(self, obj, event):
         if obj == self.uiPushStart and event.type() in [QtCore.QEvent.HoverEnter, QtCore.QEvent.HoverLeave]:
             for widget in [self.uiListProcedures, self.uiListProjects]:
@@ -619,6 +621,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
             return True
         return False
 
+    @override
     def closeEvent(self, event) -> None:
         def accept() -> None:
             self.settings.setValue('pos', self.pos())
@@ -1140,8 +1143,8 @@ class LoginWindow(QtWidgets.QDialog, Ui_login):
         self.lineEditUsername.setText(username)
         self.lineEditPassword.setText(password)
         self.checkBoxRememberMe.setChecked(remember)
-        self.lineEditUsername.textChanged.connect(self._onTextChanged)
-        self.lineEditPassword.textChanged.connect(self._onTextChanged)
+        self.lineEditUsername.textChanged.connect(self._on_text_changed)
+        self.lineEditPassword.textChanged.connect(self._on_text_changed)
         self.toggle_password = self.lineEditPassword.addAction(
             QtGui.QIcon(':/images/hide'), QtWidgets.QLineEdit.ActionPosition.TrailingPosition
         )
@@ -1149,10 +1152,10 @@ class LoginWindow(QtWidgets.QDialog, Ui_login):
         self.toggle_password.setCheckable(True)
         if len(username) > 0:
             self.lineEditPassword.setFocus()
-        self._onTextChanged()
+        self._on_text_changed()
         self.exec()
 
-    def _onTextChanged(self):
+    def _on_text_changed(self):
         enable_ok = len(self.lineEditUsername.text()) > 0 and len(self.lineEditPassword.text()) > 0
         self.buttonBox.button(self.buttonBox.Ok).setEnabled(enable_ok)
 
@@ -1214,6 +1217,7 @@ class CustomWebEnginePage(QWebEnginePage):
     Adapted from: https://www.pythonguis.com/faq/qwebengineview-open-links-new-window/
     """
 
+    @override
     def acceptNavigationRequest(self, url: QtCore.QUrl, navigation_type: QWebEnginePage.NavigationType, is_main_frame: bool):
         """
         Decide whether to allow or block a navigation request.

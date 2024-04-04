@@ -9,6 +9,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QThreadPool
 from pyqtgraph import PlotWidget
 from serial import SerialException
+from typing_extensions import override
 
 from iblrig.gui.tools import Worker
 from iblrig.gui.ui_valve import Ui_valve
@@ -391,6 +392,7 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
         self.labelGuideText.setText('')
         QtCore.QTimer.singleShot(1000, self.close)
 
+    @override
     def closeEvent(self, event):
         self.clear_timer.stop()
         self.scale_timer.stop()

@@ -15,12 +15,12 @@ class Session(BiasedChoiceWorldSession):
     protocol_name = '_iblrig_tasks_neuromodulatorChoiceWorld'
 
     def __init__(self, *args, **kwargs):
-        super(Session, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.trials_table['omit_feedback'] = np.zeros(self.trials_table.shape[0], dtype=bool)
         self.trials_table['choice_delay'] = np.zeros(self.trials_table.shape[0], dtype=np.float32)
 
     def next_trial(self):
-        super(Session, self).next_trial()
+        super().next_trial()
         # then there is a probability of omitting feedback regardless of the choice
         self.trials_table.at[self.trial_num, 'omit_feedback'] = np.random.random() < self.task_params.OMIT_FEEDBACK_PROBABILITY
 
@@ -241,7 +241,7 @@ class SessionRelatedBlocks(Session):
     # from iblrig_tasks._iblrig_tasks_neuroModulatorChoiceWorld.task import SessionRelatedBlocks
     # sess = SessionRelatedBlocks()
     def __init__(self, *args, **kwargs):
-        super(SessionRelatedBlocks, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.trials_table['omit_feedback'] = np.zeros(self.trials_table.shape[0], dtype=bool)
         self.trials_table['choice_delay'] = np.zeros(self.trials_table.shape[0], dtype=np.float32)
         self.trials_table['probability_left_rich'] = np.zeros(self.trials_table.shape[0], dtype=np.float32)
@@ -259,7 +259,7 @@ class SessionRelatedBlocks(Session):
         self.blocks_table.at[self.block_num, 'probability_left_rich'] = probability_left_rich
 
     def next_trial(self):
-        super(SessionRelatedBlocks, self).next_trial()
+        super().next_trial()
         self.trials_table.at[self.trial_num, 'reward_amount'] = self.draw_reward_amount()
         prich = self.blocks_table.loc[self.block_num, 'probability_left_rich']
         self.trials_table.at[self.trial_num, 'probability_left_rich'] = prich

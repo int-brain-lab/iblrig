@@ -14,7 +14,7 @@ class Session(TrainingChoiceWorldSession):
     protocol_name = '_iblrig_tasks_trainingPhaseChoiceWorld'
 
     def __init__(self, *args, training_level=DEFAULTS['TRAINING_PHASE'], debias=DEFAULTS['DEBIAS'], **kwargs):
-        super(Session, self).__init__(*args, training_phase=training_level, **kwargs)
+        super().__init__(*args, training_phase=training_level, **kwargs)
         self.task_params['TRAINING_PHASE'] = training_level
         self.task_params['DEBIAS'] = debias
 
