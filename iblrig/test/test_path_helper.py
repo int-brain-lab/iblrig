@@ -1,4 +1,5 @@
 """Tests for iblrig.path_helper module."""
+
 import logging
 import tempfile
 import unittest

@@ -1,6 +1,7 @@
 """
 Creates sessions, pre-generates stim and ephys sessions
 """
+
 import math
 
 import numpy as np

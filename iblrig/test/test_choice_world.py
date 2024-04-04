@@ -1,6 +1,7 @@
 """
 Unit tests for task logic functions
 """
+
 import copy
 import json
 import shutil

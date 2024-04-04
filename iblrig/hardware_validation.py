@@ -41,8 +41,7 @@ class ValidateHardware(ABC):
         self.hardware_settings = hardware_settings or _load_settings_yaml('hardware_settings.yaml')
 
     @abstractmethod
-    def _run(self, *args, **kwargs) -> ValidateResult:
-        ...
+    def _run(self, *args, **kwargs) -> ValidateResult: ...
 
     def run(self, *args, **kwargs):
         self.process(result := self._run(*args, **kwargs))
@@ -79,8 +78,7 @@ class ValidateHardwareDevice(ValidateHardware):
     device_name: str
 
     @abstractmethod
-    def _run(self):
-        ...
+    def _run(self): ...
 
     def __init__(self, *args, **kwargs):
         if self.log_results:

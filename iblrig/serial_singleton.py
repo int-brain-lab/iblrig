@@ -144,12 +144,10 @@ class SerialSingleton(serial.Serial):
         return super().write(buffer)
 
     @overload
-    def read(self, data_specifier: int = 1) -> bytes:
-        ...
+    def read(self, data_specifier: int = 1) -> bytes: ...
 
     @overload
-    def read(self, data_specifier: str) -> tuple[Any, ...]:
-        ...
+    def read(self, data_specifier: str) -> tuple[Any, ...]: ...
 
     def read(self, data_specifier=1):
         r"""
@@ -183,12 +181,10 @@ class SerialSingleton(serial.Serial):
             return super().read(data_specifier)
 
     @overload
-    def query(self, query: Any, data_specifier: int = 1) -> bytes:
-        ...
+    def query(self, query: Any, data_specifier: int = 1) -> bytes: ...
 
     @overload
-    def query(self, query: Any, data_specifier: str) -> tuple[Any, ...]:
-        ...
+    def query(self, query: Any, data_specifier: str) -> tuple[Any, ...]: ...
 
     def query(self, query, data_specifier=1):
         r"""
