@@ -100,7 +100,11 @@ class Validator(ABC):
         if bpod is None:
             return
 
-        module = next((m for m in bpod.modules if m.name.startswith(module_name)), None)
+        if bpod.modules is None:
+            module = None
+        else:
+            module = next((m for m in bpod.modules if m.name.startswith(module_name)), None)
+
         if module is not None:
             yield Result(Status.PASS, f'{self.name} is connected to Bpod on module port #{module.serial_port}')
             yield Result(Status.INFO, f'Firmware Version: {module.firmware_version}')
@@ -141,7 +145,8 @@ class ValidatorSerial(Validator):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.port_info = next(list_ports.grep(self.port), None)
+        if self.port is not None:
+            self.port_info = next(list_ports.grep(self.port), None)
 
     @property
     @abstractmethod
