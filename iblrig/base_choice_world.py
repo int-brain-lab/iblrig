@@ -231,12 +231,7 @@ class ChoiceWorldSession(
         self.bpod.run_state_machine = lambda k: time.sleep(1.2)
 
         daction = ('dummy', 'action')
-        self.sound = Bunch(
-            {
-                'GO_TONE': daction,
-                'WHITE_NOISE': daction,
-            }
-        )
+        self.sound = Bunch({'GO_TONE': daction, 'WHITE_NOISE': daction})
 
         self.bpod.actions.update(
             {
@@ -340,11 +335,7 @@ class ChoiceWorldSession(
             state_name='stim_on',
             state_timer=0.1,
             output_actions=[self.bpod.actions.bonsai_show_stim],
-            state_change_conditions={
-                'Tup': 'interactive_delay',
-                'BNC1High': 'interactive_delay',
-                'BNC1Low': 'interactive_delay',
-            },
+            state_change_conditions={'Tup': 'interactive_delay', 'BNC1High': 'interactive_delay', 'BNC1Low': 'interactive_delay'},
         )
         # this is a feature that can eventually add a delay between visual and auditory cue
         sma.add_state(
@@ -358,10 +349,7 @@ class ChoiceWorldSession(
             state_name='play_tone',
             state_timer=0.1,
             output_actions=[self.bpod.actions.play_tone],
-            state_change_conditions={
-                'Tup': 'reset2_rotary_encoder',
-                'BNC2High': 'reset2_rotary_encoder',
-            },
+            state_change_conditions={'Tup': 'reset2_rotary_encoder', 'BNC2High': 'reset2_rotary_encoder'},
         )
 
         sma.add_state(
@@ -375,11 +363,7 @@ class ChoiceWorldSession(
             state_name='closed_loop',
             state_timer=self.task_params.RESPONSE_WINDOW,
             output_actions=[self.bpod.actions.bonsai_closed_loop],
-            state_change_conditions={
-                'Tup': 'no_go',
-                self.event_error: 'freeze_error',
-                self.event_reward: 'freeze_reward',
-            },
+            state_change_conditions={'Tup': 'no_go', self.event_error: 'freeze_error', self.event_reward: 'freeze_reward'},
         )
 
         sma.add_state(
@@ -428,11 +412,7 @@ class ChoiceWorldSession(
             state_name='hide_stim',
             state_timer=0.1,
             output_actions=[self.bpod.actions.bonsai_hide_stim],
-            state_change_conditions={
-                'Tup': 'exit_state',
-                'BNC1High': 'exit_state',
-                'BNC1Low': 'exit_state',
-            },
+            state_change_conditions={'Tup': 'exit_state', 'BNC1High': 'exit_state', 'BNC1Low': 'exit_state'},
         )
 
         sma.add_state(
@@ -707,10 +687,7 @@ class BiasedChoiceWorldSession(ActiveChoiceWorldSession):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.blocks_table = pd.DataFrame(
-            {
-                'probability_left': np.zeros(NBLOCKS_INIT) * np.NaN,
-                'block_length': np.zeros(NBLOCKS_INIT, dtype=np.int16) * -1,
-            }
+            {'probability_left': np.zeros(NBLOCKS_INIT) * np.NaN, 'block_length': np.zeros(NBLOCKS_INIT, dtype=np.int16) * -1}
         )
         self.trials_table['block_num'] = np.zeros(NTRIALS_INIT, dtype=np.int16)
         self.trials_table['block_trial_num'] = np.zeros(NTRIALS_INIT, dtype=np.int16)
@@ -799,10 +776,7 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
         else:
             log.critical(f'Adaptive gain manually set to {adaptive_gain} degrees/mm')
             self.session_info['ADAPTIVE_GAIN_VALUE'] = adaptive_gain
-        self.var = {
-            'training_phase_trial_counts': np.zeros(6),
-            'last_10_responses_sides': np.zeros(10),
-        }
+        self.var = {'training_phase_trial_counts': np.zeros(6), 'last_10_responses_sides': np.zeros(10)}
         self.trials_table['training_phase'] = np.zeros(NTRIALS_INIT, dtype=np.int8)
         self.trials_table['debias_trial'] = np.zeros(NTRIALS_INIT, dtype=bool)
 

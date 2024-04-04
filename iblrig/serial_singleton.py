@@ -23,13 +23,7 @@ class SerialSingleton(serial.Serial):
     _initialized = False
     _lock = threading.Lock()
 
-    def __new__(
-        cls,
-        port: str | None = None,
-        serial_number: str | None = None,
-        *args,
-        **kwargs,
-    ):
+    def __new__(cls, port: str | None = None, serial_number: str | None = None, *args, **kwargs):
         # identify the device by its serial number
         if port is None:
             if serial_number is not None:

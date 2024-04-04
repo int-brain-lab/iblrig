@@ -14,12 +14,7 @@ from typing import Literal
 
 import numpy as np
 
-FLAG_FILE_NAMES = [
-    'transfer_me.flag',
-    'create_me.flag',
-    'poop_count.flag',
-    'passive_data_for_ephys.flag',
-]
+FLAG_FILE_NAMES = ['transfer_me.flag', 'create_me.flag', 'poop_count.flag', 'passive_data_for_ephys.flag']
 
 log = logging.getLogger(__name__)
 

@@ -203,8 +203,7 @@ class BaseSession(ABC):
         paths.REMOTE_SUBJECT_FOLDER = rig_computer_paths['remote_subjects_folder']
         # initialize the session path
         date_folder = paths.LOCAL_SUBJECT_FOLDER.joinpath(
-            self.session_info.SUBJECT_NAME,
-            self.session_info.SESSION_START_TIME[:10],
+            self.session_info.SUBJECT_NAME, self.session_info.SESSION_START_TIME[:10]
         )
         if append:
             # this is the case where we append a new protocol to an existing session
@@ -888,12 +887,7 @@ class SoundMixin(BaseSession):
     """
 
     def init_mixin_sound(self):
-        self.sound = Bunch(
-            {
-                'GO_TONE': None,
-                'WHITE_NOISE': None,
-            }
-        )
+        self.sound = Bunch({'GO_TONE': None, 'WHITE_NOISE': None})
         sound_output = self.hardware_settings.device_sound['OUTPUT']
 
         # additional gain factor for bringing the different combinations of sound-cards and amps to the same output level

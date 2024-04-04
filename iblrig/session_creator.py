@@ -117,12 +117,7 @@ def make_passiveCW_session_delays_ids(seed_num=None):  # XXX
 
     # Calculate when they all should happen
     sess_delays_cumsum = np.concatenate(
-        [
-            np.cumsum(g_delay_dist),
-            np.cumsum(n_delay_dist),
-            np.cumsum(t_delay_dist),
-            np.cumsum(v_delay_dist),
-        ]
+        [np.cumsum(g_delay_dist), np.cumsum(n_delay_dist), np.cumsum(t_delay_dist), np.cumsum(v_delay_dist)]
     )
     sess_labels_out = np.array(g_labels + n_labels + t_labels + v_labels)
 

@@ -19,13 +19,5 @@ def numinput(title, prompt, default=None, minval=None, maxval=None, nullable=Fal
     if ans == 0:
         return ans
     elif not ans and not nullable:
-        return numinput(
-            title,
-            prompt,
-            default=default,
-            minval=minval,
-            maxval=maxval,
-            nullable=nullable,
-            askint=askint,
-        )
+        return numinput(title, prompt, default=default, minval=minval, maxval=maxval, nullable=nullable, askint=askint)
     return ans

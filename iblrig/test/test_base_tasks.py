@@ -139,8 +139,7 @@ class TestPathCreation(unittest.TestCase):
         # this will create and add to the acquisition description file
         second_task.create_session()
         self.assertEqual(
-            set(d.name for d in first_task.paths.SESSION_FOLDER.iterdir() if d.is_dir()),
-            {'raw_task_data_00', 'raw_task_data_01'},
+            set(d.name for d in first_task.paths.SESSION_FOLDER.iterdir() if d.is_dir()), {'raw_task_data_00', 'raw_task_data_01'}
         )
         description = read_params(second_task.paths['SESSION_FOLDER'])
         # we should also find the protocols in the acquisition description file

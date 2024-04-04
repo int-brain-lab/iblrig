@@ -46,11 +46,7 @@ class TestTrainingPhaseChoiceWorld(BaseTestCases.CommonTestInstantiateTask):
                     assert not np.isnan(task.reward_time)
                 trials_table = task.trials_table[: task.trial_num].copy()
                 contrasts = (
-                    trials_table.groupby(['contrast'])
-                    .agg(
-                        count=pd.NamedAgg(column='contrast', aggfunc='count'),
-                    )
-                    .reset_index()
+                    trials_table.groupby(['contrast']).agg(count=pd.NamedAgg(column='contrast', aggfunc='count')).reset_index()
                 )
                 np.testing.assert_equal(trials_table['stim_probability_left'].values, 0.5)
                 np.testing.assert_equal(np.unique(trials_table['reward_amount'].values), np.array([0, ADAPTIVE_REWARD]))
