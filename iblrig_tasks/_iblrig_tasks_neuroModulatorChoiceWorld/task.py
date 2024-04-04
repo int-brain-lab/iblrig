@@ -252,11 +252,10 @@ class SessionRelatedBlocks(Session):
         super(Session, self).new_block()
         if self.block_num == 0:
             probability_left_rich = 0.5
+        elif int((self.block_num + self.BLOCK_REWARD_STAGGER) / 2 % 2):
+            probability_left_rich = 0.8
         else:
-            if int((self.block_num + self.BLOCK_REWARD_STAGGER) / 2 % 2):
-                probability_left_rich = 0.8
-            else:
-                probability_left_rich = 0.2
+            probability_left_rich = 0.2
         self.blocks_table.at[self.block_num, 'probability_left_rich'] = probability_left_rich
 
     def next_trial(self):
