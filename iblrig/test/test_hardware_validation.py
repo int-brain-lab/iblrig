@@ -15,12 +15,12 @@ VALIDATORS_INIT_KWARGS = dict(
 )
 
 
-class DummyValidateHardware(iblrig.hardware_validation.ValidateHardware):
+class DummyValidateHardware(iblrig.hardware_validation.Validator):
     def _run(self, passes=True):
         if passes:
-            return iblrig.hardware_validation.ValidateResult(status='PASS', message='Dummy test passed')
+            return iblrig.hardware_validation.Result(status='PASS', message='Dummy test passed')
         else:
-            return iblrig.hardware_validation.ValidateResult(status='FAIL', message='Dummy test failed')
+            return iblrig.hardware_validation.Result(status='FAIL', message='Dummy test failed')
 
 
 class TestHardwareValidationBase(unittest.TestCase):
@@ -43,7 +43,7 @@ class TestAlyxValidation(unittest.TestCase):
 
         kwargs = copy.deepcopy(VALIDATORS_INIT_KWARGS)
         kwargs['hardware_settings']['RIG_NAME'] = '_iblrig_carandinilab_ephys_0'
-        v = iblrig.hardware_validation.ValidateAlyxLabLocation(**kwargs)
+        v = iblrig.hardware_validation.ValidatorAlyxLabLocation(**kwargs)
         result = v.run(alyx)
         self.assertEqual('PASS', result.status)
 
@@ -52,7 +52,7 @@ class TestAlyxValidation(unittest.TestCase):
         with mock.patch('one.webclient.requests.get', return_value=rep) as m:
             m.__name__ = 'get'
             rep.status_code = 404  # When the lab is not found on Alyx the validation should raise
-            self.assertRaises(iblrig.hardware_validation.ValidateHardwareException, v.run, alyx)
+            self.assertRaises(iblrig.hardware_validation.ValidateHardwareError, v.run, alyx)
             rep.status_code = 500  # When Alyx is down for any reason, the failure should not raise
             result = v.run(alyx)
             self.assertEqual('FAIL', result.status)

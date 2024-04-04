@@ -1,5 +1,11 @@
 <RCC>
   <qresource prefix="images">
+    <file alias="validation_warn">resources/icon_validation_warn.svg</file>
+    <file alias="validation_suggestion">resources/icon_validation_suggestion.svg</file>
+    <file alias="validation_skip">resources/icon_validation_skip.svg</file>
+    <file alias="validation_fail">resources/icon_validation_fail.svg</file>
+    <file alias="validation_info">resources/icon_validation_info.svg</file>
+    <file alias="validation_pass">resources/icon_validation_pass.svg</file>
     <file alias="restart">resources/icon_restart.svg</file>
     <file alias="grams">resources/icon_grams.svg</file>
     <file alias="stable">resources/icon_stable.svg</file>

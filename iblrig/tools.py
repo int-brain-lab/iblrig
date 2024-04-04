@@ -6,7 +6,7 @@ import socket
 import subprocess
 from collections.abc import Callable
 from pathlib import Path
-from typing import Any
+from typing import Any, TypeVar
 
 from iblrig.constants import BONSAI_EXE
 from iblrig.path_helper import create_bonsai_layout_from_template, load_pydantic_yaml
@@ -255,3 +255,16 @@ def call_bonsai(
         return subprocess.run(args=cmd, cwd=cwd, check=check)
     else:
         return subprocess.Popen(args=cmd, cwd=cwd)
+
+
+T = TypeVar('T', bound=object)
+
+
+def get_inheritors(cls: T) -> set[T]:
+    """
+    Obtain a set of all direct inheritors of a class
+    """
+    subclasses = set(cls.__subclasses__())
+    for child in subclasses:
+        subclasses = subclasses.union(get_inheritors(child))
+    return subclasses
