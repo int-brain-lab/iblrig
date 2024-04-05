@@ -104,7 +104,9 @@ def transfer_video_data_cli():
     Command-line interface for transferring video data to the local server.
     """
     setup_logger('iblrig', level='INFO')
-    warnings.warn('transfer_video_data will be removed in the future. Use "transfer_data video" instead.', FutureWarning)
+    warnings.warn(
+        'transfer_video_data will be removed in the future. Use "transfer_data video" instead.', FutureWarning, stacklevel=2
+    )
     args = _transfer_parser('Copy video data to the local server.').parse_args()
     transfer_data(**{**vars(args), 'tag': 'video'}, interactive=True)
 
@@ -114,7 +116,9 @@ def transfer_ephys_data_cli():
     Command-line interface for transferring ephys data to the local server.
     """
     setup_logger('iblrig', level='INFO')
-    warnings.warn('transfer_ephys_data will be removed in the future. Use "transfer_data ephys" instead.', FutureWarning)
+    warnings.warn(
+        'transfer_ephys_data will be removed in the future. Use "transfer_data ephys" instead.', FutureWarning, stacklevel=2
+    )
     args = _transfer_parser('Copy ephys data to the local server.').parse_args()
     transfer_data(**{**vars(args), 'tag': 'ephys'}, interactive=True)
 

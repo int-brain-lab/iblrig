@@ -23,13 +23,13 @@ class TestTrainingPhaseChoiceWorld(BaseTestCases.CommonTestInstantiateTask):
         :return:
         """
         trial_fixtures = get_fixtures()
-        ADAPTIVE_REWARD = 1.9
+        adaptive_reward = 1.9
         nt = 800
         for training_phase in np.arange(6):
             with self.subTest(training_phase=training_phase):
                 np.random.seed(12354)
                 task = TrainingPhaseChoiceWorldSession(
-                    **TASK_KWARGS, adaptive_reward=ADAPTIVE_REWARD, training_level=training_phase
+                    **TASK_KWARGS, adaptive_reward=adaptive_reward, training_level=training_phase
                 )
                 assert task.training_phase == training_phase
                 task.create_session()
@@ -40,7 +40,7 @@ class TestTrainingPhaseChoiceWorld(BaseTestCases.CommonTestInstantiateTask):
                     task.trial_completed(trial_fixtures[trial_type])
                     if trial_type == 'correct':
                         self.assertTrue(task.trials_table['trial_correct'][task.trial_num])
-                        self.assertEqual(task.trials_table['reward_amount'][task.trial_num], ADAPTIVE_REWARD)
+                        self.assertEqual(task.trials_table['reward_amount'][task.trial_num], adaptive_reward)
                     else:
                         assert not task.trials_table['trial_correct'][task.trial_num]
                     assert not np.isnan(task.reward_time)
@@ -49,7 +49,7 @@ class TestTrainingPhaseChoiceWorld(BaseTestCases.CommonTestInstantiateTask):
                     trials_table.groupby(['contrast']).agg(count=pd.NamedAgg(column='contrast', aggfunc='count')).reset_index()
                 )
                 np.testing.assert_equal(trials_table['stim_probability_left'].values, 0.5)
-                np.testing.assert_equal(np.unique(trials_table['reward_amount'].values), np.array([0, ADAPTIVE_REWARD]))
+                np.testing.assert_equal(np.unique(trials_table['reward_amount'].values), np.array([0, adaptive_reward]))
                 np.testing.assert_equal(trials_table['training_phase'].values, training_phase)
                 debias = True
                 probas = 1
@@ -87,9 +87,9 @@ class TestInstantiationTraining(BaseTestCases.CommonTestInstantiateTask):
 
     def test_task(self):
         trial_fixtures = get_fixtures()
-        ADAPTIVE_REWARD = 1.9
+        adaptive_reward = 1.9
         nt = 800
-        task = TrainingChoiceWorldSession(**TASK_KWARGS, adaptive_reward=ADAPTIVE_REWARD)
+        task = TrainingChoiceWorldSession(**TASK_KWARGS, adaptive_reward=adaptive_reward)
         task.create_session()
         for i in np.arange(nt):
             task.next_trial()
@@ -98,7 +98,7 @@ class TestInstantiationTraining(BaseTestCases.CommonTestInstantiateTask):
             task.trial_completed(trial_fixtures[trial_type])
             if trial_type == 'correct':
                 self.assertTrue(task.trials_table['trial_correct'][task.trial_num])
-                self.assertEqual(task.trials_table['reward_amount'][task.trial_num], ADAPTIVE_REWARD)
+                self.assertEqual(task.trials_table['reward_amount'][task.trial_num], adaptive_reward)
             else:
                 assert not task.trials_table['trial_correct'][task.trial_num]
             if i == 245:

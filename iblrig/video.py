@@ -279,14 +279,14 @@ def validate_video(video_path, config):
         log.critical('Frame count / video frame mismatch - frame counts = %i; video frames = %i', len(count), meta.length)
         ok = False
     if config.SYNC_LABEL:
-        MIN_EVENTS = 10  # The minimum expected number of GPIO events
+        min_events = 10  # The minimum expected number of GPIO events
         if all(ch is None for ch in gpio):
             log.error('No GPIO events detected.')
             ok = False
         else:
             for i, ch in enumerate(gpio):
                 if ch:
-                    log.log(30 if len(ch['indices']) < MIN_EVENTS else 20, '%i event(s) on GPIO #%i', len(ch['indices']), i + 1)
+                    log.log(30 if len(ch['indices']) < min_events else 20, '%i event(s) on GPIO #%i', len(ch['indices']), i + 1)
     return ok
 
 
