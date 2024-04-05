@@ -30,7 +30,7 @@ import iblrig.path_helper
 import iblrig_tasks
 from iblrig.base_tasks import EmptySession, ValveMixin
 from iblrig.choiceworld import get_subject_training_info, training_phase_from_contrast_set
-from iblrig.constants import BASE_DIR
+from iblrig.constants import BASE_DIR, COPYRIGHT_YEAR
 from iblrig.gui.frame2ttl import Frame2TTLCalibrationDialog
 from iblrig.gui.tools import Worker
 from iblrig.gui.ui_login import Ui_login
@@ -337,7 +337,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.webEngineView.urlChanged.connect(self._on_doc_url_changed)
 
         # tab: about
-        self.uiLabelCopyright.setText(f'**IBLRIG v{iblrig.__version__}**\n\n© 2024, International Brain Laboratory')
+        self.uiLabelCopyright.setText(f'**IBLRIG v{iblrig.__version__}**\n\n© {COPYRIGHT_YEAR}, International Brain Laboratory')
         self.commandLinkButtonGitHub.clicked.connect(lambda: webbrowser.open(URL_REPO))
         self.commandLinkButtonDoc.clicked.connect(lambda: webbrowser.open(URL_DOC))
         self.commandLinkButtonIssues.clicked.connect(lambda: webbrowser.open(URL_ISSUES))

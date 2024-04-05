@@ -21,7 +21,7 @@ from iblrig.hardware import Bpod
 from iblrig.path_helper import load_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings, RigSettings
 from iblrig.serial_singleton import SerialSingleton, filter_ports
-from iblrig.tools import internet_available, ANSI
+from iblrig.tools import ANSI, internet_available
 from one.webclient import AlyxClient
 from pybpodapi.bpod_modules.bpod_module import BpodModule
 from pybpodapi.state_machine import StateMachine
@@ -510,4 +510,4 @@ def run_all_validators_cli():
     if warn > 0:
         print(ANSI.YELLOW + ANSI.BOLD + f'Validations passed with {warn} warning{"s" if warn > 1 else ""}.')
     if warn == 0 and fail == 0:
-        print(ANSI.GREEN + ANSI.BOLD + f'All validations were passed - no issues found.')
+        print(ANSI.GREEN + ANSI.BOLD + 'All validations were passed - no issues found.')
