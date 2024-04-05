@@ -10,7 +10,7 @@ class _SoundCheckTask(BpodMixin, SoundMixin):
 
     def __init__(self, *args, **kwargs):
         param_file = Path(iblrig.__file__).parent.joinpath('base_choice_world_params.yaml')
-        super(_SoundCheckTask, self).__init__(*args, task_parameter_file=param_file, **kwargs)
+        super().__init__(*args, task_parameter_file=param_file, **kwargs)
 
     def start_hardware(self):
         self.start_mixin_bpod()

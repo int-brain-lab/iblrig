@@ -21,7 +21,7 @@ from iblrig.hardware import Bpod
 from iblrig.path_helper import load_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings, RigSettings
 from iblrig.serial_singleton import SerialSingleton, filter_ports
-from iblrig.tools import internet_available
+from iblrig.tools import internet_available, ANSI
 from one.webclient import AlyxClient
 from pybpodapi.bpod_modules.bpod_module import BpodModule
 from pybpodapi.state_machine import StateMachine
@@ -100,10 +100,7 @@ class Validator(ABC):
         if bpod is None:
             return
 
-        if bpod.modules is None:
-            module = None
-        else:
-            module = next((m for m in bpod.modules if m.name.startswith(module_name)), None)
+        module = None if bpod.modules is None else next((m for m in bpod.modules if m.name.startswith(module_name)), None)
 
         if module is not None:
             yield Result(Status.PASS, f'{self.name} is connected to Bpod on module port #{module.serial_port}')
@@ -486,3 +483,31 @@ def run_all_validators(
     validators = get_all_validators()
     for validator in validators:
         yield from validator(iblrig_settings=iblrig_settings, hardware_settings=hardware_settings, interactive=interactive).run()
+
+
+def run_all_validators_cli():
+    validators = get_all_validators()
+    fail = 0
+    warn = 0
+    for validator in validators:
+        v = validator()
+        print(f'{ANSI.BOLD + ANSI.UNDERLINE + v.name + ANSI.END}')
+        for result in v.run():
+            if result.status == Status.FAIL:
+                color = ANSI.RED + ANSI.BOLD
+                fail += 1
+            elif result.status == Status.WARN:
+                color = ANSI.YELLOW + ANSI.BOLD
+                warn += 1
+            else:
+                color = ANSI.END
+            print(f'{color}- {result.message}{ANSI.END}')
+            if result.solution is not None and len(result.solution) > 0:
+                print(f'{color}  Suggestion: {result.solution}{ANSI.END}')
+        print('')
+    if fail > 0:
+        print(ANSI.RED + ANSI.BOLD + f'{fail} validation{"s" if fail > 1 else ""} failed.')
+    if warn > 0:
+        print(ANSI.YELLOW + ANSI.BOLD + f'Validations passed with {warn} warning{"s" if warn > 1 else ""}.')
+    if warn == 0 and fail == 0:
+        print(ANSI.GREEN + ANSI.BOLD + f'All validations were passed - no issues found.')
