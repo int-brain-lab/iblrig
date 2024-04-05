@@ -65,29 +65,9 @@ class Splash(QDialog, Ui_splash):
 
     @override
     def close(self):
-        print(self.validation_results)
         super().close()
 
     @override
     def eventFilter(self, obj, event):
         """Disregard all key-presses"""
         return obj is self and event.type() == QtCore.QEvent.KeyPress
-
-
-class MainWindow(QMainWindow):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        a = Splash(self)
-        a.exec()
-
-
-def main():
-    app = QApplication(sys.argv)
-    # app.setStyle('Fusion')
-    window = MainWindow()
-    window.show()
-    app.exec()
-
-
-if __name__ == '__main__':
-    main()

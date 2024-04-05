@@ -32,6 +32,7 @@ from iblrig.base_tasks import EmptySession, ValveMixin
 from iblrig.choiceworld import get_subject_training_info, training_phase_from_contrast_set
 from iblrig.constants import BASE_DIR, COPYRIGHT_YEAR
 from iblrig.gui.frame2ttl import Frame2TTLCalibrationDialog
+from iblrig.gui.splash import Splash
 from iblrig.gui.tools import Worker
 from iblrig.gui.ui_login import Ui_login
 from iblrig.gui.ui_update import Ui_update
@@ -247,6 +248,11 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         super().__init__()
         self.setupUi(self)
 
+        # show splash-screen and store validation results to member
+        splash_screen = Splash()
+        splash_screen.exec()
+        self.validation_results = splash_screen.validation_results
+
         self.debug = kwargs.get('debug', False)
         self.settings = QtCore.QSettings()
         self.move(self.settings.value('pos', self.pos(), QtCore.QPoint))
@@ -388,6 +394,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         dirty_worker = Worker(is_dirty)
         dirty_worker.signals.result.connect(self._on_check_dirty_result)
         QThreadPool.globalInstance().start(dirty_worker)
+
 
     def _show_error_dialog(
         self,
