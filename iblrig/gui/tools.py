@@ -22,17 +22,17 @@ def convert_uis():
     files = set([f for f in gui_path.glob(args.pattern)])
 
     for filename_in in files.intersection(gui_path.glob('*.qrc')):
-        filename_in = filename_in.relative_to(BASE_PATH)
-        filename_out = filename_in.with_stem(filename_in.stem + '_rc').with_suffix('.py')
-        print(filename_out)
-        args = ['pyrcc5', str(filename_in), '-o', filename_out]
+        rel_path_in = filename_in.relative_to(BASE_PATH)
+        rel_path_out = rel_path_in.with_stem(rel_path_in.stem + '_rc').with_suffix('.py')
+        args = ['pyrcc5', str(rel_path_in), '-o', str(rel_path_out)]
+        print(' '.join(args))
         subprocess.check_output(args, cwd=BASE_PATH)
 
     for filename_in in files.intersection(gui_path.glob('*.ui')):
-        filename_in = filename_in.relative_to(BASE_PATH)
-        filename_out = filename_in.with_suffix('.py')
-        print(filename_out)
-        args = ['pyuic5', str(filename_in), '-o', filename_out, '-x', '--import-from=iblrig.gui']
+        rel_path_in = filename_in.relative_to(BASE_PATH)
+        rel_path_out = rel_path_in.with_suffix('.py')
+        args = ['pyuic5', str(rel_path_in), '-o', str(rel_path_out), '-x', '--import-from=iblrig.gui']
+        print(' '.join(args))
         subprocess.check_output(args, cwd=BASE_PATH)
 
 
