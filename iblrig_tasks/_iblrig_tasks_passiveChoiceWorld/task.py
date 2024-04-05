@@ -71,7 +71,8 @@ class Session(ChoiceWorldSession):
 
         if not self.is_mock:
             self.start_mixin_bonsai_visual_stimulus()
-        for self.trial_num, trial in self.trials_table.iterrows():
+        for trial_num, trial in self.trials_table.iterrows():
+            self.trial_num = trial_num
             log.info(f'Delay: {trial.stim_delay}; ID: {trial.stim_type}; Count: {self.trial_num}/300')
             sys.stdout.flush()
             time.sleep(trial.stim_delay)

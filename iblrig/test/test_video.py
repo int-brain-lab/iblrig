@@ -240,10 +240,9 @@ class TestValidateVideo(unittest.TestCase):
             self.assertFalse(video.validate_video(video_path, self.config))
             self.assertTrue(log.records[-1].getMessage().startswith('Raw video file does not exist'))
         # Test with empty file
-        with tempfile.NamedTemporaryFile(suffix=self.video_path.name) as video_path:
-            with self.assertLogs(video.__name__, 50) as log:
-                self.assertFalse(video.validate_video(Path(video_path.name), self.config))
-                self.assertTrue(log.records[-1].getMessage().startswith('Raw video file empty'))
+        with tempfile.NamedTemporaryFile(suffix=self.video_path.name) as video_path, self.assertLogs(video.__name__, 50) as log:
+            self.assertFalse(video.validate_video(Path(video_path.name), self.config))
+            self.assertTrue(log.records[-1].getMessage().startswith('Raw video file empty'))
         # Test with non-empty, unreadable video file
         with self.assertLogs(video.__name__, 50) as log:
             self.assertFalse(video.validate_video(self.video_path, self.config))
