@@ -71,7 +71,7 @@ jobs:
           path: requirements_frozen.txt
 
   finish:
-    needs: tests
+    needs: [ruff, tests]
     if: ${{ always() }}
     runs-on: ubuntu-latest
     steps:
