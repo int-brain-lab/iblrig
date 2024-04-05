@@ -17,7 +17,9 @@ class TestInstantiationBiased(BaseTestCases.CommonTestInstantiateTask):
         self.task = BiasedChoiceWorldSession(**TASK_KWARGS)
         np.random.seed(12345)
 
-    def test_task(self, reward_set=np.array([0, 1.5])):
+    def test_task(self, reward_set=None):
+        if reward_set is None:
+            reward_set = np.array([0, 1.5])
         task = self.task
         task.create_session()
         trial_fixtures = get_fixtures()

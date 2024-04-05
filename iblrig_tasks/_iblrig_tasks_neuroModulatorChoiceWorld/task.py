@@ -266,13 +266,13 @@ class SessionRelatedBlocks(Session):
 
     def draw_reward_amount(self):
         # FIXME check: this has 0.5 probability of being correct !!!
-        REWARD_AMOUNTS = (1, 3)  # poor and rich
+        reward_amounts = (1, 3)  # poor and rich
         plr = self.blocks_table.at[self.block_num, 'probability_left_rich']
-        if np.sign(self.position):
+        if np.sign(self.position):  # noqa: SIM108
             probas = [plr, (1 - plr)]  # right
         else:
             probas = [(1 - plr), plr]  # left
-        return np.random.choice(REWARD_AMOUNTS, p=probas)
+        return np.random.choice(reward_amounts, p=probas)
 
 
 if __name__ == '__main__':  # pragma: no cover

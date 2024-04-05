@@ -38,11 +38,9 @@ dependencies = [
 [project.optional-dependencies]
 DEV = [
     "coverage[toml]",
-    "flake8",
     "mypy",
     "myst-parser",
     "pre-commit",
-    "pylint",
     "pytest",
     "pytest-cov",
     "ruff",

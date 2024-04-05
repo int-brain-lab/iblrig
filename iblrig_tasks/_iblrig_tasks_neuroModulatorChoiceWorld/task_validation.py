@@ -21,7 +21,7 @@ task_data['bpod_valve_time'] = 0
 task_data['bpod_delay'] = 0
 for i, bp in enumerate(bpod_data):
     sts = bp['States timestamps']
-    task_data.at[i, 'bpod_valve_time'] = np.diff(sts['reward'] if 'reward' in sts else np.NaN)
+    task_data.at[i, 'bpod_valve_time'] = np.diff(sts.get('reward', np.NaN))
     task_data.at[i, 'bpod_delay'] = np.nansum(
         np.r_[
             np.diff(sts['delay_reward'])[0] if 'delay_reward' in sts else 0,

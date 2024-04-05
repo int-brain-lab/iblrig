@@ -500,13 +500,11 @@ class ChoiceWorldSession(
         )
 
     @property
-    def iti_reward(self, assert_calibration=True):
+    def iti_reward(self):
         """
         Returns the ITI time that needs to be set in order to achieve the desired ITI,
         by subtracting the time it takes to give a reward from the desired ITI.
         """
-        if assert_calibration:
-            assert 'REWARD_VALVE_TIME' in self.calibration, 'Reward valve time not calibrated'
         return self.task_params.ITI_CORRECT - self.calibration.get('REWARD_VALVE_TIME', None)
 
     """

@@ -104,7 +104,9 @@ def transfer_video_data_cli():
     Command-line interface for transferring video data to the local server.
     """
     setup_logger('iblrig', level='INFO')
-    warnings.warn('transfer_video_data will be removed in the future. Use "transfer_data video" instead.', FutureWarning)
+    warnings.warn(
+        'transfer_video_data will be removed in the future. Use "transfer_data video" instead.', FutureWarning, stacklevel=2
+    )
     args = _transfer_parser('Copy video data to the local server.').parse_args()
     transfer_data(**{**vars(args), 'tag': 'video'}, interactive=True)
 
@@ -114,7 +116,9 @@ def transfer_ephys_data_cli():
     Command-line interface for transferring ephys data to the local server.
     """
     setup_logger('iblrig', level='INFO')
-    warnings.warn('transfer_ephys_data will be removed in the future. Use "transfer_data ephys" instead.', FutureWarning)
+    warnings.warn(
+        'transfer_ephys_data will be removed in the future. Use "transfer_data ephys" instead.', FutureWarning, stacklevel=2
+    )
     args = _transfer_parser('Copy ephys data to the local server.').parse_args()
     transfer_data(**{**vars(args), 'tag': 'ephys'}, interactive=True)
 
@@ -315,14 +319,14 @@ def remove_local_sessions(weeks=2, local_path=None, remote_path=None, dry=False,
     """
     local_subject_folder, remote_subject_folder = _get_subjects_folders(local_path, remote_path)
     size = 0
-    Copier = tag2copier.get(tag.lower(), SessionCopier)
+    copier = tag2copier.get(tag.lower(), SessionCopier)
     removed = []
     for flag in sorted(list(local_subject_folder.rglob(f'_ibl_experiment.description_{tag}.yaml')), reverse=True):
         session_path = flag.parent
         days_elapsed = (datetime.datetime.now() - datetime.datetime.strptime(session_path.parts[-2], '%Y-%m-%d')).days
         if days_elapsed < (weeks * 7):
             continue
-        sc = Copier(session_path, remote_subjects_folder=remote_subject_folder)
+        sc = copier(session_path, remote_subjects_folder=remote_subject_folder)
         if sc.state == 3:
             session_size = sum(f.stat().st_size for f in session_path.rglob('*') if f.is_file()) / 1024**3
             logger.info(f'{sc.session_path}, {session_size:0.02f} Go')

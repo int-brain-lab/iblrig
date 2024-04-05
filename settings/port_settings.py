@@ -83,7 +83,7 @@ def main(v7_path=None, v8_path=None):
         print(f'Settings ALYX_LAB as "{lab}"')
         v8_settings['ALYX_LAB'] = lab
     else:
-        warnings.warn('Unknown lab name, please manually update ALYX_LAB field.')
+        warnings.warn('Unknown lab name, please manually update ALYX_LAB field.', stacklevel=2)
 
     v8_settings['ALYX_URL'] = one.params.get_default_client()
     v8_settings['ALYX_USER'] = one.params.get(client=v8_settings['ALYX_URL'], silent=True).ALYX_LOGIN

@@ -392,8 +392,8 @@ class VideoCopier(SessionCopier):
         """
         cameras = {}
         for label, settings in filter(lambda itms: itms[0] != 'BONSAI_WORKFLOW', config.items()):
-            settings = {k.lower(): v for k, v in settings.items() if v is not None and k != 'INDEX'}
-            cameras[label] = dict(collection=collection, **settings)
+            settings_mod = {k.lower(): v for k, v in settings.items() if v is not None and k != 'INDEX'}
+            cameras[label] = dict(collection=collection, **settings_mod)
         acq_desc = {'devices': {'cameras': cameras}, 'version': '1.0.0'}
         return acq_desc
 
@@ -447,10 +447,13 @@ class BehaviorCopier(SessionCopier):
                 jsonable = self.session_path.joinpath(collection, '_iblrig_taskData.raw.jsonable')
                 if not jsonable.exists():
                     log.info(f'Skipping: no task data found for {self.session_path}')
-                    if self.remote_session_path.exists() and len(collections) == 1:
-                        # No local data and only behaviour stub in remote; assume dud and remove entire session
-                        if len(list(self.file_remote_experiment_description.parent.glob('*.yaml'))) <= 1:
-                            shutil.rmtree(self.remote_session_path)  # remove likely dud
+                    # No local data and only behaviour stub in remote; assume dud and remove entire session
+                    if (
+                        self.remote_session_path.exists()
+                        and len(collections) == 1
+                        and len(list(self.file_remote_experiment_description.parent.glob('*.yaml'))) <= 1
+                    ):
+                        shutil.rmtree(self.remote_session_path)  # remove likely dud
                     return False
                 trials, bpod_data = load_task_jsonable(jsonable)
                 ntrials = trials.shape[0]
