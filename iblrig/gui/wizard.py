@@ -40,6 +40,7 @@ from iblrig.gui.ui_wizard import Ui_wizard
 from iblrig.gui.validation import SystemValidationDialog
 from iblrig.gui.valve import ValveCalibrationDialog
 from iblrig.hardware import Bpod
+from iblrig.hardware_validation import Status
 from iblrig.misc import _get_task_argument_parser
 from iblrig.path_helper import load_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings, RigSettings
@@ -248,7 +249,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         super().__init__()
         self.setupUi(self)
 
-        # show splash-screen and store validation results to member
+        # show splash-screen / store validation results
         splash_screen = Splash()
         splash_screen.exec()
         self.validation_results = splash_screen.validation_results
@@ -380,6 +381,25 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         except SerialException:
             pass
 
+        self.show()
+
+        # show validation errors / warnings:
+        if any(results := [r for r in self.validation_results if r.status in (Status.FAIL, Status.WARN)]):
+            msg_box = QtWidgets.QMessageBox(parent=self)
+            msg_box.setWindowTitle('IBLRIG System Validation')
+            msg_box.setIcon(QtWidgets.QMessageBox().Warning)
+            msg_box.setTextFormat(QtCore.Qt.TextFormat.RichText)
+            text = f"The following issue{'s were' if len(results) > 1 else ' was'} detected:"
+            for result in results:
+                text = (
+                    text + f"<br><br>\n"
+                    f"<b>{'Warning' if result.status == Status.WARN else 'Failure'}:</b> {result.message}<br>\n"
+                    f"{('<b>Suggestion:</b> ' + result.solution) if result.solution is not None else ''}"
+                )
+            text = text + '<br><br>\nPlease refer to the System Validation tool for more details.'
+            msg_box.setText(text)
+            msg_box.exec()
+
         # get AnyDesk ID
         anydesk_worker = Worker(get_anydesk_id, True)
         anydesk_worker.signals.result.connect(self._on_get_anydesk_result)
@@ -394,7 +414,6 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         dirty_worker = Worker(is_dirty)
         dirty_worker.signals.result.connect(self._on_check_dirty_result)
         QThreadPool.globalInstance().start(dirty_worker)
-
 
     def _show_error_dialog(
         self,

@@ -110,7 +110,7 @@ class Validator(ABC):
             yield Result(
                 Status.FAIL,
                 f"{self.name} is not connected to Bpod's module port",
-                solution=f"Connect {self.name} to one of Bpod's module ports using an ethernet cable.",
+                solution=f"Connect {self.name} to one of Bpod's module ports",
             )
 
     def process(self, results: Result) -> Result:
@@ -426,8 +426,8 @@ class ValidatorValve(Validator):
     def _run(self):
         calibration_date = self.hardware_settings.device_valve.WATER_CALIBRATION_DATE
         today = date.today()
-        delta_warn = relativedelta(weeks=2)
-        delta_fail = relativedelta(weeks=4)
+        delta_warn = relativedelta(months=1)
+        delta_fail = relativedelta(months=3)
         days_passed = (today - calibration_date).days
         if calibration_date > date.today():
             yield Result(Status.FAIL, 'Date of last valve calibration is in the future', solution='Calibrate valve')

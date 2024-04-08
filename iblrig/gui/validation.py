@@ -1,5 +1,5 @@
 from PyQt5 import QtCore, QtWidgets
-from PyQt5.QtCore import QThreadPool
+from PyQt5.QtCore import QMutex, QThreadPool
 from PyQt5.QtGui import QFont, QIcon, QStandardItem, QStandardItemModel
 from PyQt5.QtWidgets import QHeaderView
 
@@ -59,6 +59,7 @@ class ValidatorItem(QStandardItem):
         self.setIcon(QIcon(STATUS_ICON[Status.PEND]))
         self.setText(self.validator.name)
         self.setFont(SECTION_FONT)
+        self.mutex = QMutex()
 
     def run(self) -> Status:
         self.clear()

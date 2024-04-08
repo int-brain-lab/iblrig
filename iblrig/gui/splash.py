@@ -1,8 +1,6 @@
-import sys
-
 from PyQt5 import QtCore
-from PyQt5.QtCore import QEasingCurve, QPoint, QPropertyAnimation, QSequentialAnimationGroup, QThreadPool, QTimer
-from PyQt5.QtWidgets import QApplication, QDialog, QMainWindow
+from PyQt5.QtCore import QEasingCurve, QPoint, QPropertyAnimation, QThreadPool, QTimer
+from PyQt5.QtWidgets import QDialog
 from typing_extensions import override
 
 from iblrig import __version__ as version
@@ -42,9 +40,12 @@ class Splash(QDialog, Ui_splash):
         # start timer for force close
         QTimer.singleShot(20000, self.stop_and_close)
 
+        # start validation worker
         worker = Worker(self.validation)
         worker.signals.finished.connect(self.close)
         QThreadPool.globalInstance().tryStart(worker)
+
+        self.show()
 
     def validation(self):
         for validator in get_all_validators():
