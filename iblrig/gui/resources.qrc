@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="images">
+    <file alias="validation_pending">resources/icon_validation_pending.svg</file>
     <file alias="logo_ibl">resources/logo_ibl.svg</file>
     <file alias="validation_warn">resources/icon_validation_warn.svg</file>
     <file alias="validation_suggestion">resources/icon_validation_suggestion.svg</file>

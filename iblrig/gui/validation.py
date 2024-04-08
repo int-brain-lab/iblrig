@@ -15,6 +15,7 @@ STATUS_ICON: dict[Status, QIcon()] = {
     Status.FAIL: QIcon(':/images/validation_fail'),
     Status.INFO: QIcon(':/images/validation_info'),
     Status.SKIP: QIcon(':/images/validation_skip'),
+    Status.PEND: QIcon(':/images/validation_pending'),
 }
 
 
@@ -55,6 +56,7 @@ class ValidatorItem(QStandardItem):
     def __init__(self, validator: type[Validator], hardware_settings: HardwareSettings, rig_settings: RigSettings):
         super().__init__()
         self.validator = validator(hardware_settings=hardware_settings, iblrig_settings=rig_settings)
+        self.setIcon(QIcon(STATUS_ICON[Status.PEND]))
         self.setText(self.validator.name)
         self.setFont(SECTION_FONT)
 
@@ -87,6 +89,7 @@ class ValidatorItem(QStandardItem):
         return return_status
 
     def clear(self):
+        self.setIcon(QIcon(STATUS_ICON[Status.PEND]))
         while self.hasChildren():
             self.removeRow(0)
 
@@ -99,6 +102,11 @@ class SystemValidationDialog(QtWidgets.QDialog, Ui_validation):
         super().__init__(*args, **kwargs)
         self.setupUi(self)
         self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowType.WindowContextHelpButtonHint)
+
+        self.worker = Worker(self.run_subprocess)
+        self.worker.setAutoDelete(False)
+        self.worker.signals.finished.connect(lambda: self.pushButtonRerun.setEnabled(True))
+        self.worker.signals.finished.connect(lambda: self.pushButtonOK.setEnabled(True))
 
         self.treeModel = QStandardItemModel()
         self.treeModel.setColumnCount(2)
@@ -116,15 +124,12 @@ class SystemValidationDialog(QtWidgets.QDialog, Ui_validation):
 
         self.pushButtonOK.clicked.connect(self.close)
         self.pushButtonRerun.clicked.connect(self.run)
-        self.show()
 
+        self.show()
         self.run()
 
     def run(self):
-        worker = Worker(self.run_subprocess)
-        worker.signals.finished.connect(lambda: self.pushButtonRerun.setEnabled(True))
-        worker.signals.finished.connect(lambda: self.pushButtonOK.setEnabled(True))
-        QThreadPool.globalInstance().tryStart(worker)
+        QThreadPool.globalInstance().tryStart(self.worker)
 
     def run_subprocess(self):
         self.pushButtonOK.setEnabled(False)

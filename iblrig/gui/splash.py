@@ -33,18 +33,11 @@ class Splash(QDialog, Ui_splash):
 
         # extremely important animation
         self.hat.setProperty('pos', QPoint(0, -250))
-        animation_1 = QPropertyAnimation(self, b'windowOpacity')
-        animation_1.setStartValue(0.0)
-        animation_1.setEndValue(1.0)
-        animation_1.setDuration(200)
-        animation_2 = QPropertyAnimation(self.hat, b'pos')
-        animation_2.setEasingCurve(QEasingCurve.InQuad)
-        animation_2.setEndValue(QPoint(0, 40))
-        animation_2.setDuration(500)
-        self.animation_group = QSequentialAnimationGroup()
-        self.animation_group.addAnimation(animation_1)
-        self.animation_group.addAnimation(animation_2)
-        self.animation_group.start()
+        self.animation = QPropertyAnimation(self.hat, b'pos')
+        self.animation.setEasingCurve(QEasingCurve.InQuad)
+        self.animation.setEndValue(QPoint(0, 40))
+        self.animation.setDuration(500)
+        self.animation.start()
 
         # start timer for force close
         QTimer.singleShot(20000, self.stop_and_close)
