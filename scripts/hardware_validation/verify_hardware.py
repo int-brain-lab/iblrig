@@ -3,17 +3,15 @@ import platform
 import time
 from glob import glob
 from pathlib import Path
-from struct import unpack
 
 import numpy as np
 import serial.tools.list_ports
-import usb.core
 from serial import Serial
 
 import iblrig.base_tasks
 
 # import pandas as pd
-from pybpodapi.protocol import Bpod, StateMachine
+from pybpodapi.protocol import Bpod
 
 # set up logging
 log = logging.getLogger(__name__)
@@ -187,69 +185,6 @@ if 'COM_ROTARY_ENCODER' in ports:
         log_fun('pass', 'rotary encoder is wired correctly', last=True)
     s.close()
 
-if 'device_sound' in hw_settings and 'OUTPUT' in hw_settings['device_sound']:
-    match hw_settings['device_sound']['OUTPUT']:
-        case 'harp':
-            log_fun('head', 'Checking Harp Sound Card:')
-
-            dev = usb.core.find(idVendor=0x04D8, idProduct=0xEE6A)
-            if not dev:
-                log_fun('fail', 'Cannot find Harp Sound Card')
-            else:
-                log_fun('pass', f'found USB device {dev.idVendor:04X}:{dev.idProduct:04X} (Harp Sound Card)')
-
-            dev = next((p for p in serial.tools.list_ports.comports() if (p.vid == 1027 and p.pid == 24577)), None)
-            if not dev:
-                log_fun('fail', "cannot find Harp Sound Card's Serial port - did you plug in *both* USB ports of the device?")
-            else:
-                log_fun('pass', f'found USB device {dev.vid:04X}:{dev.pid:04X} (FT232 UART), serial port: {dev.name}')
-
-            module = [m for m in modules if m.name.startswith('SoundCard')]
-            if len(module) == 0:
-                log_fun('fail', 'Harp Sound Card is not connected to the Bpod', last=True)
-            elif len(module) > 1:
-                log_fun('fail', 'more than one Harp Sound Card connected to the Bpod', last=True)
-            else:
-                log_fun(
-                    'pass',
-                    f'module "{module[0].name}" is connected to the Bpod\'s module port #{module[0].serial_port}',
-                    last=True,
-                )
-        case _:
-            pass
-
-log_fun('head', 'Checking Ambient Module:')
-module = next((m for m in modules if m.name.startswith('AmbientModule')), None)
-if module:
-    log_fun('pass', f'module "{module.name}" is connected to the Bpod\'s module port #{module.serial_port}')
-    log_fun('info', f'firmware version: {module.firmware_version}')
-    module.start_module_relay()
-    bpod.bpod_modules.module_write(module, 'R')
-    (t, p, h) = unpack('3f', bytes(bpod.bpod_modules.module_read(module, 12)))
-    module.stop_module_relay()
-    log_fun('info', f'temperature: {t:.1f} °C')
-    log_fun('info', f'air pressure: {p / 100:.1f} mbar')
-    log_fun('info', f'rel. humidity: {h:.1f}%')
-else:
-    log_fun('fail', 'Could not find Ambient Module', last=True)
-
-if 'device_cameras' in hw_settings and isinstance(hw_settings['device_cameras'], dict):
-    log_fun('head', 'Checking Camera Trigger:')
-    sma = StateMachine(bpod)
-    sma.add_state(
-        state_name='collect',
-        state_timer=1,
-        state_change_conditions={'Tup': 'exit'},
-    )
-    bpod.send_state_machine(sma)
-    bpod.run_state_machine(sma)
-    triggers = [i.host_timestamp for i in bpod.session.current_trial.events_occurrences if i.content == 'Port1In']
-    np.mean(np.diff(triggers))
-    if len(triggers) == 0:
-        log_fun('fail', 'could not read camera trigger', last=True)
-    else:
-        log_fun('pass', 'successfully read camera trigger')
-        log_fun('info', f'average frame-rate: {np.mean(np.diff(triggers)) * 1E3:.3f} Hz', last=True)
 
 bpod.close()
 

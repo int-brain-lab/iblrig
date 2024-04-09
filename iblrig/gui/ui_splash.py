@@ -28,7 +28,7 @@ class Ui_splash(object):
         self.verticalLayout.setSpacing(0)
         self.verticalLayout.setObjectName("verticalLayout")
         self.containerWidget = QtWidgets.QWidget(splash)
-        self.containerWidget.setStyleSheet("QWidget#containerWidget { background-color: qradialgradient(spread:pad, cx:0.5, cy:0.5, radius:0.5, fx:0.5, fy:0.5, stop:0 rgba(255, 255, 255, 0), stop:1 rgba(200, 200, 200, )) };")
+        self.containerWidget.setStyleSheet("QWidget#containerWidget { background-color: qradialgradient(spread:pad, cx:0.5, cy:0.5, radius:0.5, fx:0.5, fy:0.5, stop:0 rgba(255, 255, 255, 0), stop:1 rgba(200, 200, 200, 255)) };")
         self.containerWidget.setObjectName("containerWidget")
         self.verticalLayout_3 = QtWidgets.QVBoxLayout(self.containerWidget)
         self.verticalLayout_3.setContentsMargins(0, 0, 0, 0)

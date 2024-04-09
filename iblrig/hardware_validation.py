@@ -11,6 +11,7 @@ from typing import Any
 
 import numpy as np
 import requests
+import usb
 from dateutil.relativedelta import relativedelta
 from serial import Serial, SerialException
 from serial.tools import list_ports
@@ -136,18 +137,19 @@ class Validator(ABC):
 
 
 class ValidatorSerial(Validator):
-    port_properties: None | dict[str, Any]
-    serial_queries: None | dict[tuple[object, int], bytes]
-    port_info: ListPortInfo | None
+    port_properties: None | dict[str, Any] = None
+    serial_queries: None | dict[tuple[object, int], bytes] = None
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if self.port is not None:
-            self.port_info = next(list_ports.grep(self.port), None)
 
     @property
     @abstractmethod
     def port(self) -> str: ...
+
+    @property
+    def port_info(self) -> ListPortInfo | None:
+        return next(list_ports.grep(self.port), None) if self.port is not None else None
 
     def _run(self):
         if self.port is None:
@@ -159,7 +161,6 @@ class ValidatorSerial(Validator):
         else:
             try:
                 Serial(self.port, timeout=1).close()
-                self.port_info = next(list_ports.grep(self.port), None)
                 yield Result(Status.PASS, f'Serial device on {self.port} can be connected to')
                 yield Result(
                     Status.INFO,
@@ -171,10 +172,12 @@ class ValidatorSerial(Validator):
                 return False
 
         # first, test for properties of the serial port without opening the latter (VID, PID, etc)
-        passed = self.port in filter_ports(**self.port_properties) if self.port_properties is not None else False
+        passed = (
+            self.port in filter_ports(**self.port_properties) if getattr(self, 'port_properties', None) is not None else False
+        )
 
         # query the devices for characteristic responses
-        if passed and self.serial_queries is not None:
+        if passed and getattr(self, 'serial_queries', None) is not None:
             with SerialSingleton(self.port, timeout=1) as ser:
                 for query, regex_pattern in self.serial_queries.items():
                     return_string = ser.query(*query)
@@ -190,7 +193,7 @@ class ValidatorSerial(Validator):
 
 
 class ValidatorRotaryEncoderModule(ValidatorSerial):
-    _name = 'Rotary Encoder Module'
+    _name = 'Bpod Rotary Encoder Module'
     port_properties = {'vid': 0x16C0}
     serial_queries = {(b'Q', 2): b'^..$', (b'P00', 1): b'\x01'}
 
@@ -254,7 +257,7 @@ class ValidatorScreen(Validator):
 
 
 class ValidatorAmbientModule(Validator):
-    _name = 'Ambient Module'
+    _name = 'Bpod Ambient Module'
 
     def _run(self):
         # yield Bpod's connection status
@@ -438,7 +441,86 @@ class ValidatorValve(Validator):
         elif days_passed > 1:
             yield Result(Status.PASS, f'Valve has been calibrated {days_passed} days ago')
         else:
-            yield Result(Status.PASS, f'Valve has been calibrated {"yesterday" if days_passed == 1 else "today"}')
+            yield Result(Status.PASS, f'Valve has been calibrated {"yesterday" if days_passed==1 else "today"}')
+
+
+class ValidatorSound(ValidatorSerial):
+    _name = 'Sound'
+    _module_name: str | None = None
+
+    def __init__(self, *args, **kwargs):
+        output_type = kwargs['hardware_settings'].device_sound.OUTPUT
+        match output_type:
+            case 'harp':
+                self._name = 'HARP Sound Card'
+                self._module_name = 'SoundCard'
+                self.port_properties = {'vid': 0x0403, 'pid': 0x6001}
+            case 'hifi':
+                self._name = 'Bpod HiFi Module'
+                self._module_name = 'HiFi'
+            case 'xonar':
+                self._name = 'Xonar Sound Card'
+        if output_type in ['harp', 'hifi']:
+            super().__init__(*args, **kwargs)  # call ValidatorSerial.__init__()
+        else:
+            super(ValidatorSerial, self).__init__(*args, **kwargs)  # call Validator.__init__()
+
+    @property
+    def port(self) -> str | None:
+        match self.hardware_settings.device_sound.OUTPUT:
+            case 'harp':
+                return (
+                    com_port
+                    if (com_port := self.hardware_settings.device_sound.COM_SOUND) is not None
+                    else next(filter_ports(**self.port_properties), None)
+                )
+            case 'hifi':
+                return self.hardware_settings.device_sound.COM_SOUND
+            case _:
+                return None
+
+    def _run(self):
+        if (success := self.hardware_settings.device_sound.OUTPUT) == 'sysdefault':
+            yield Result(
+                Status.FAIL,
+                "Sound output device 'sysdefault' is intended for testing purposes only",
+                solution="Set device_sound.OUTPUT to 'hifi', 'harp' or 'xonar'",
+            )
+            return False
+
+        # check serial device
+        if self.hardware_settings.device_sound.OUTPUT in ['harp', 'hifi']:
+            success = yield from super()._run()
+            if not success:
+                return False
+
+        # device-specific validations
+        match self.hardware_settings.device_sound.OUTPUT:
+            case 'harp':
+                if (dev := usb.core.find(manufacturer='Champalimaud Foundation', product='Harp Sound Card')) is None:
+                    yield Result(
+                        Status.FAIL,
+                        'Cannot find USB sound device',
+                        solution="Connect both of the sound card's USB ports and make sure that the HARP drivers are "
+                        'installed',
+                    )
+                    return False
+                else:
+                    yield Result(Status.PASS, 'Found USB sound device')
+                    yield Result(Status.INFO, f'USB ID: {dev.idVendor:04X}:{dev.idProduct:04X}')
+
+        # yield Bpod's connection status
+        bpod = yield from self._get_bpod()
+        if bpod is None:
+            return False
+
+        # yield module's connection status
+        if self._module_name is not None:
+            module = yield from self._get_module(self._module_name, bpod)
+            if module is None:
+                return False
+
+        return True
 
 
 class ValidatorAlyxLabLocation(Validator):
@@ -474,7 +556,15 @@ class ValidatorAlyxLabLocation(Validator):
 
 def get_all_validators() -> list[type[Validator]]:
     # return [x for x in get_inheritors(Validator) if not isabstract(x)]
-    return [ValidatorRotaryEncoderModule, ValidatorBpod, ValidatorAmbientModule, ValidatorAlyx, ValidatorCamera, ValidatorValve]
+    return [
+        ValidatorRotaryEncoderModule,
+        ValidatorBpod,
+        ValidatorAmbientModule,
+        ValidatorAlyx,
+        ValidatorCamera,
+        ValidatorValve,
+        ValidatorSound,
+    ]
 
 
 def run_all_validators(

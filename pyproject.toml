@@ -30,6 +30,7 @@ dependencies = [
     "pydantic",
     "pyqtgraph",
     "python-osc",
+    "pyusb",
     "pywin32; sys_platform == 'win32'",
     "scipy",
     "sounddevice",

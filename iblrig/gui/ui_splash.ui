@@ -53,7 +53,7 @@
    <item>
     <widget class="QWidget" name="containerWidget" native="true">
      <property name="styleSheet">
-      <string notr="true">QWidget#containerWidget { background-color: qradialgradient(spread:pad, cx:0.5, cy:0.5, radius:0.5, fx:0.5, fy:0.5, stop:0 rgba(255, 255, 255, 0), stop:1 rgba(200, 200, 200, )) };</string>
+      <string notr="true">QWidget#containerWidget { background-color: qradialgradient(spread:pad, cx:0.5, cy:0.5, radius:0.5, fx:0.5, fy:0.5, stop:0 rgba(255, 255, 255, 0), stop:1 rgba(200, 200, 200, 255)) };</string>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_3">
       <property name="spacing">
