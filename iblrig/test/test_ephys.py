@@ -1,9 +1,37 @@
 import unittest
 
 import iblrig.ephys
+from iblrig.gui.models import MicroManipulatorModel, Trajectory
 
 
-class TestFinalizeEphysSession(unittest.TestCase):
+class TestMicromanipulator(unittest.TestCase):
+
+    def test_micro_manipulator_slice_type(self):
+        trajectory = Trajectory(
+            **{'x': -1200.1, 'y': -4131.3, 'z': 901.1, 'phi': 12, 'theta': 15, 'depth': 3300.7, 'roll': 0})
+        self.assertEqual(trajectory.get_slice_type(), 'sagittal')
+        trajectory = Trajectory(
+            **{'x': -1200.1, 'y': -4131.3, 'z': 901.1, 'phi': 87, 'theta': 15, 'depth': 3300.7, 'roll': 0})
+        self.assertEqual(trajectory.get_slice_type(), 'coronal')
+
+    def test_micro_manipulator_trajectory_validation(self):
+        """
+        We make sure the validation of probe insertions coordinates is working properly:
+        we want no None values, a positive z and proper angles
+        :return:
+        """
+        model = MicroManipulatorModel()
+        model.pname = 'probe01'
+        model.trajectory = Trajectory(
+            **{'x': -1200.1, 'y': -4131.3, 'z': 901.1, 'phi': 270, 'theta': 15, 'depth': 3300.7, 'roll': 0})
+        self.assertTrue(model.trajectory.validate())
+        model.trajectory = Trajectory(
+            **{'x': -1200.1, 'y': -4131.3, 'z': -901.1, 'phi': 270, 'theta': 15, 'depth': 3300.7, 'roll': 0})
+        self.assertFalse(model.trajectory.validate())
+        model.trajectory = Trajectory(
+            **{'x': -1200.1, 'y': -4131.3, 'z': 901.1, 'phi': 768, 'theta': 15, 'depth': 3300.7, 'roll': 0})
+        self.assertFalse(model.trajectory.validate())
+
     def test_neuropixel24_micromanipulator(self):
         probe_dict = {
             'x': 2594.2,
