@@ -24,6 +24,8 @@ class GuiMicroManipulator(QtWidgets.QMainWindow, Ui_MainWindow):
         self.uiPush_np24.clicked.connect(self.on_push_np24)
         self.uiPush_show.clicked.connect(self.on_push_show)
         self.update_view()
+        self.make_plots()
+        self.uiMpl.canvas.fig.tight_layout()
 
     def make_plots(self):
         """
@@ -38,19 +40,17 @@ class GuiMicroManipulator(QtWidgets.QMainWindow, Ui_MainWindow):
         # update slice
         self.uiMpl.canvas.ax[1].clear()
         if self.model.trajectory.get_slice_type() == 'coronal':
-            self.atlas.plot_cslice(ap_coordinate=traj['y'] / 1e6, ax=self.uiMpl.canvas.ax[1], volume='annotation')
+            self.atlas.plot_cslice(ap_coordinate=self.model.trajectory.y / 1e6, ax=self.uiMpl.canvas.ax[1], volume='annotation')
             for shank, traj in self.model.trajectories.items():
                 self.uiMpl.canvas.ax[1].plot(traj['x'], traj['z'], 'xr', label=shank)
                 self.uiMpl.canvas.ax[1].text(traj['x'], traj['z'], shank[-1], color='w', fontweight=800)
         elif self.model.trajectory.get_slice_type() == 'sagittal':
-            self.atlas.plot_sslice(ml_coordinate=traj['x'] / 1e6, ax=self.uiMpl.canvas.ax[1], volume='annotation')
+            self.atlas.plot_sslice(ml_coordinate=self.model.trajectory.x / 1e6, ax=self.uiMpl.canvas.ax[1], volume='annotation')
             for shank, traj in self.model.trajectories.items():
                 self.uiMpl.canvas.ax[1].plot(traj['y'], traj['z'], 'xr', label=shank)
                 self.uiMpl.canvas.ax[1].text(traj['y'], traj['z'], shank[-1], color='w', fontweight=800)
         else:  # if the validation yields nothing, plot a sagittal slice by default
             self.atlas.plot_sslice(ml_coordinate=0, ax=self.uiMpl.canvas.ax[1], volume='annotation')
-        # set figure parameters
-        self.uiMpl.canvas.fig.tight_layout()
         self.uiMpl.canvas.draw()
 
     def update_view(self):
