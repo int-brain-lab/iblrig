@@ -1,7 +1,5 @@
-from pathlib import Path
-
-import iblrig
 from iblrig.base_tasks import BpodMixin, SoundMixin
+from iblrig.constants import BASE_PATH
 from pybpodapi.protocol import StateMachine
 
 
@@ -9,7 +7,7 @@ class _SoundCheckTask(BpodMixin, SoundMixin):
     protocol_name = 'hardware_check_harp'
 
     def __init__(self, *args, **kwargs):
-        param_file = Path(iblrig.__file__).parent.joinpath('base_choice_world_params.yaml')
+        param_file = BASE_PATH.joinpath('iblrig', 'base_choice_world_params.yaml')
         super().__init__(*args, task_parameter_file=param_file, **kwargs)
 
     def start_hardware(self):
@@ -18,19 +16,8 @@ class _SoundCheckTask(BpodMixin, SoundMixin):
 
     def get_state_machine(self):
         sma = StateMachine(self.bpod)
-        # play tone, move on to next state if sound is detected, with a time-out of 0.1s
-        sma.add_state(
-            state_name='play_tone',
-            state_timer=0.5,
-            output_actions=[self.bpod.actions.play_tone],
-            state_change_conditions={'Tup': 'error'},
-        )
-        sma.add_state(
-            state_name='error',
-            state_timer=1,
-            output_actions=[self.bpod.actions.play_noise],
-            state_change_conditions={'Tup': 'exit'},
-        )
+        sma.add_state('tone', 0.5, {'Tup': 'noise'}, [self.bpod.actions.play_tone])
+        sma.add_state('noise', 1, {'Tup': 'exit'}, [self.bpod.actions.play_noise])
         return sma
 
     def play_sounds(self):

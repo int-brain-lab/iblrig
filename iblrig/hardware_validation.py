@@ -11,13 +11,15 @@ from typing import Any
 
 import numpy as np
 import requests
+import sounddevice
 import usb
 from dateutil.relativedelta import relativedelta
 from serial import Serial, SerialException
 from serial.tools import list_ports
 from serial.tools.list_ports_common import ListPortInfo
 
-from iblrig.constants import HAS_PYSPIN, HAS_SPINNAKER
+from iblrig.base_tasks import BpodMixin, SoundMixin
+from iblrig.constants import BASE_PATH, HAS_PYSPIN, HAS_SPINNAKER
 from iblrig.hardware import Bpod
 from iblrig.path_helper import load_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings, RigSettings
@@ -381,16 +383,16 @@ class ValidatorCamera(Validator):
         bpod.run_state_machine(sma)
         triggers = [i.host_timestamp for i in bpod.session.current_trial.events_occurrences if i.content == 'Port1In']
         if len(triggers) == 0:
-            yield Result(Status.FAIL, 'No triggers detected on Bpod' 's behavior port #1')
+            yield Result(Status.FAIL, "No TTL detected on Bpod's behavior port #1")
             return False
         else:
-            yield Result(Status.PASS, "Detected camera triggers on Bpod's behavior port #1")
+            yield Result(Status.PASS, "Detected camera TTL on Bpod's behavior port #1")
             trigger_rate = np.mean(1 / np.diff(triggers))
             target_rate = 30
             if isclose(trigger_rate, target_rate, rel_tol=0.1):
-                yield Result(Status.PASS, f'Measured trigger rate: {trigger_rate:.1f} Hz')
+                yield Result(Status.PASS, f'Measured TTL rate: {trigger_rate:.1f} Hz')
             else:
-                yield Result(Status.WARN, f'Measured trigger rate: {trigger_rate:.1f} Hz')
+                yield Result(Status.WARN, f'Measured TTL rate: {trigger_rate:.1f} Hz')
         return True
 
 
@@ -444,6 +446,51 @@ class ValidatorValve(Validator):
             yield Result(Status.PASS, f'Valve has been calibrated {"yesterday" if days_passed==1 else "today"}')
 
 
+class ValidatorMic(Validator):
+    _name = 'Microphone'
+
+    def _run(self):
+        if self.hardware_settings.device_microphone is None:
+            yield Result(Status.SKIP, 'No workflow defined for microphone')
+            return False
+
+        sounddevice._terminate()
+        sounddevice._initialize()
+
+        devices = [d for d in sounddevice.query_devices() if 'UltraMic 200K' in d.get('name', '')]
+        if len(devices) > 0:
+            yield Result(Status.PASS, 'Found UltraMic 200K microphone')
+            return True
+        else:
+            yield Result(
+                Status.FAIL, 'Could not find UltraMic 200K microphone', solution='Make sure that the microphone is plugged in'
+            )
+            return False
+
+
+class _SoundCheckTask(BpodMixin, SoundMixin):
+    protocol_name = 'hardware_check_harp'
+
+    def __init__(self, *args, **kwargs):
+        param_file = BASE_PATH.joinpath('iblrig', 'base_choice_world_params.yaml')
+        super().__init__(*args, task_parameter_file=param_file, **kwargs)
+
+    def start_hardware(self):
+        self.start_mixin_bpod()
+        self.start_mixin_sound()
+
+    def get_state_machine(self):
+        sma = StateMachine(self.bpod)
+        sma.add_state('tone', 0.5, {'Tup': 'exit'}, [self.bpod.actions.play_tone])
+        return sma
+
+    def _run(self):
+        pass
+
+    def create_session(self):
+        pass
+
+
 class ValidatorSound(ValidatorSerial):
     _name = 'Sound'
     _module_name: str | None = None
@@ -458,6 +505,8 @@ class ValidatorSound(ValidatorSerial):
             case 'hifi':
                 self._name = 'Bpod HiFi Module'
                 self._module_name = 'HiFi'
+                self.serial_queries = {(b'\xf3', 1): b'\xf4'}
+                self.port_properties = {'vid': 0x16C0, 'pid': 0x0483}
             case 'xonar':
                 self._name = 'Xonar Sound Card'
         if output_type in ['harp', 'hifi']:
@@ -509,18 +558,35 @@ class ValidatorSound(ValidatorSerial):
                     yield Result(Status.PASS, 'Found USB sound device')
                     yield Result(Status.INFO, f'USB ID: {dev.idVendor:04X}:{dev.idProduct:04X}')
 
-        # yield Bpod's connection status
-        bpod = yield from self._get_bpod()
-        if bpod is None:
-            return False
-
         # yield module's connection status
         if self._module_name is not None:
-            module = yield from self._get_module(self._module_name, bpod)
+            module = yield from self._get_module(self._module_name)
             if module is None:
                 return False
 
-        return True
+        # run state machine
+        if self.interactive:
+            task = _SoundCheckTask(subject='toto')
+            task.start_hardware()
+            sma = task.get_state_machine()
+            task.bpod.send_state_machine(sma)
+            yield Result(Status.INFO, 'Playing audible sound - can you hear it?')
+            task.bpod.run_state_machine(sma)
+            bpod_data = task.bpod.session.current_trial.export()
+            if (n_events := len(bpod_data['Events timestamps'].get('BNC2High', []))) == 0:
+                yield Result(
+                    Status.FAIL,
+                    "No event detected on Bpod's BNC In 2",
+                    solution="Make sure to connect the sound-card to Bpod's TTL Input 2",
+                )
+            elif n_events == 1:
+                yield Result(Status.PASS, "Detected Event on Bpod's TTL Input 2")
+            else:
+                yield Result(
+                    Status.FAIL,
+                    "Multiple events detected on Bpod's BNC Input 2",
+                    solution="Make sure to connect the sound-card to Bpod's TTL Input 2",
+                )
 
 
 class ValidatorAlyxLabLocation(Validator):
@@ -564,6 +630,7 @@ def get_all_validators() -> list[type[Validator]]:
         ValidatorCamera,
         ValidatorValve,
         ValidatorSound,
+        ValidatorMic,
     ]
 
 

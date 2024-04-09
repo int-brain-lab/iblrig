@@ -55,7 +55,7 @@ class ValidatorItem(QStandardItem):
 
     def __init__(self, validator: type[Validator], hardware_settings: HardwareSettings, rig_settings: RigSettings):
         super().__init__()
-        self.validator = validator(hardware_settings=hardware_settings, iblrig_settings=rig_settings)
+        self.validator = validator(hardware_settings=hardware_settings, iblrig_settings=rig_settings, interactive=True)
         self.setIcon(QIcon(STATUS_ICON[Status.PEND]))
         self.setText(self.validator.name)
         self.setFont(SECTION_FONT)
