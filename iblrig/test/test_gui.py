@@ -36,9 +36,7 @@ class TestRigWizardModel(unittest.TestCase):
                 match task_name:
                     case '_iblrig_tasks_advancedChoiceWorld':
                         expect = 6
-                    case '_iblrig_tasks_trainingPhaseChoiceWorld':
-                        expect = 3
-                    case '_iblrig_tasks_trainingChoiceWorld':
+                    case '_iblrig_tasks_trainingChoiceWorld' | '_iblrig_tasks_trainingPhaseChoiceWorld':
                         expect = 4
                     case '_iblrig_tasks_ephysChoiceWorld':
                         expect = 2

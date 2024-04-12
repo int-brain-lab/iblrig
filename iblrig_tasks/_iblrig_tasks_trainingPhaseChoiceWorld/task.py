@@ -41,6 +41,14 @@ class Session(TrainingChoiceWorldSession):
             type=bool,
             help='uses the debiasing protocol (only applies to levels 0-4)',
         )
+        parser.add_argument(
+            '--adaptive_reward',
+            option_strings=['--adaptive_reward'],
+            dest='adaptive_reward',
+            default=-1.,
+            type=float,
+            help='reward volume in microliters',
+        )
         return parser
 
 
