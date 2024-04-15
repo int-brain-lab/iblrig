@@ -91,6 +91,9 @@ class Validator(ABC):
         return success
 
     def _get_bpod(self) -> Generator[Result, None, Bpod | None]:
+        if self.hardware_settings.device_bpod.COM_BPOD is None:
+            yield Result(Status.INFO, f'Cannot complete validation of {self.name} without Bpod')
+            return None
         try:
             return Bpod(self.hardware_settings.device_bpod.COM_BPOD, skip_initialization=True)
         except Exception as e:
@@ -351,7 +354,7 @@ class ValidatorCamera(Validator):
         if HAS_PYSPIN:
             yield Result(Status.PASS, 'PySpin is installed')
         else:
-            yield Result(Status.WARN, 'Spinnaker SDK is not installed', solution='Use install_pyspin command to install PySpin')
+            yield Result(Status.WARN, 'PySpin is not installed', solution='Use install_pyspin command to install PySpin')
 
         if HAS_SPINNAKER and HAS_PYSPIN:
             from iblrig.video_pyspin import Cameras, enable_camera_trigger
@@ -404,16 +407,16 @@ class ValidatorAlyx(Validator):
         if self.iblrig_settings.ALYX_URL is None:
             yield Result(Status.SKIP, 'ALYX_URL has not been set in hardware_settings.yaml - skipping validation')
             raise StopIteration(False)
-        elif not internet_available(timeout=3, force_update=True):
+        elif not internet_available(timeout=2, force_update=True):
             yield Result(
                 Status.FAIL, f'Cannot connect to {self.iblrig_settings.ALYX_URL.host}', solution='Check your Internet connection'
             )
             return False
-        elif not internet_available(host=self.iblrig_settings.ALYX_URL.host, port=443, timeout=3, force_update=True):
+        elif not internet_available(host=self.iblrig_settings.ALYX_URL.host, port=443, timeout=2, force_update=True):
             yield Result(
                 Status.FAIL,
                 f'Cannot connect to {self.iblrig_settings.ALYX_URL.host}',
-                solution='Check ALYX_URL in hardware_settings.yaml and make sure that your computer is allowed to connect to it',
+                solution='Check ALYX_URL in hardware_settings.yaml and make sure that your computer is allowed to connect',
             )
             return False
         else:
