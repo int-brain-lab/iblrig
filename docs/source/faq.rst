@@ -9,13 +9,13 @@ First Aid
 
 If your rig is acting up:
 
-*  Employ the **automated test-script** bundled with IBLRIG. This script helps identify common issues.
+*  Employ the **automated test-script** bundled with IBLRIG. This script helps identify common configuration issues.
    Execute it using PowerShell:
 
    .. code:: powershell
 
       C:\iblrigv8\venv\scripts\Activate.ps1
-      python C:\iblrigv8\scripts\hardware_validation\verify_hardware.py
+      validate_iblrig
 
 *  Check `the comprehensive user manual <https://doi.org/10.6084/m9.figshare.11634732.v6>`__ ("Appendix 3" on GoogleDrive).
    Verify if all connections are secure, and configurations align with the manual's guidelines.
