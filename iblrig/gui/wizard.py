@@ -199,11 +199,20 @@ class RigWizardModel:
                     raise e
 
         # since we are connecting to Alyx, validate some parameters to ensure a smooth extraction
-        result = iblrig.hardware_validation.ValidatorAlyxLabLocation(
-            iblrig_settings=self.iblrig_settings, hardware_settings=self.hardware_settings
-        ).run(self.alyx)
-        if result.status == 'FAIL' and gui:
-            QtWidgets.QMessageBox().critical(None, 'Error', f'{result.message}\n\n{result.solution}')
+        try:
+            self.alyx.rest('locations', 'read', id=self.hardware_settings['RIG_NAME'])
+        except HTTPError as ex:
+            if ex.response.status_code not in (404, 400):  # file not found; auth error
+                # Likely Alyx is down or server-side issue
+                message = 'Failed to determine lab location on Alyx'
+                solution = 'Check if Alyx is reachable'
+            else:
+                message = f'Could not find rig name {self.hardware_settings["RIG_NAME"]} in Alyx'
+                solution = (
+                    f"Please check the RIG_NAME key in hardware_settings.yaml and make sure it is created in Alyx here: "
+                    f'{self.iblrig_settings["ALYX_URL"]}/admin/misc/lablocation/'
+                )
+            QtWidgets.QMessageBox().critical(None, 'Error', f'{message}\n\n{solution}')
 
         # get subjects from Alyx: this is the set of subjects that are alive and not stock in the lab defined in settings
         rest_subjects = self.alyx.rest('subjects', 'list', alive=True, stock=False, lab=self.iblrig_settings['ALYX_LAB'])

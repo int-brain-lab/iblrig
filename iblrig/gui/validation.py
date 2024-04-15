@@ -98,6 +98,8 @@ class ValidatorItem(QStandardItem):
 class SystemValidationDialog(QtWidgets.QDialog, Ui_validation):
     validator_items: list[ValidatorItem] = []
     status_items: list[StatusItem] = []
+    item_started = QtCore.pyqtSignal(int)
+    item_finished = QtCore.pyqtSignal(int, Status)
 
     def __init__(self, *args, hardware_settings: HardwareSettings, rig_settings: RigSettings, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -125,26 +127,34 @@ class SystemValidationDialog(QtWidgets.QDialog, Ui_validation):
 
         self.pushButtonOK.clicked.connect(self.close)
         self.pushButtonRerun.clicked.connect(self.run)
+        self.item_started.connect(self.on_item_started)
+        self.item_finished.connect(self.on_item_finished)
 
         self.show()
         self.run()
 
     def run(self):
-        QThreadPool.globalInstance().tryStart(self.worker)
-
-    def run_subprocess(self):
         self.pushButtonOK.setEnabled(False)
         self.pushButtonRerun.setEnabled(False)
         self.treeView.expandAll()
-
         for idx, validator_item in enumerate(self.validator_items):
             validator_item.clear()
             self.status_items[idx].status = Status.PEND
             self.treeView.scrollToTop()
+        QThreadPool.globalInstance().tryStart(self.worker)
+
+    def run_subprocess(self):
         for idx, validator_item in enumerate(self.validator_items):
-            self.status_items[idx].setText('running')
+            self.item_started.emit(idx)
             status = validator_item.run()
-            self.status_items[idx].status = status
-            if status == Status.PASS:
-                self.treeView.collapse(validator_item.index())
-            self.treeView.scrollToBottom()
+            self.item_finished.emit(idx, status)
+
+    def on_item_started(self, idx: int):
+        self.status_items[idx].setText('running')
+
+    def on_item_finished(self, idx: int, status: Status):
+        self.status_items[idx].status = status
+        if status == Status.PASS:
+            self.treeView.collapse(self.validator_items[idx].index())
+        self.treeView.scrollToBottom()
+        self.update()

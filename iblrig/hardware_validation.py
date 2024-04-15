@@ -5,12 +5,12 @@ from collections.abc import Generator
 from dataclasses import dataclass
 from datetime import date
 from enum import IntEnum
+from inspect import isabstract
 from math import isclose
 from struct import unpack
 from typing import Any
 
 import numpy as np
-import requests
 import sounddevice
 import usb
 from dateutil.relativedelta import relativedelta
@@ -24,8 +24,7 @@ from iblrig.hardware import Bpod
 from iblrig.path_helper import load_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings, RigSettings
 from iblrig.serial_singleton import SerialSingleton, filter_ports
-from iblrig.tools import ANSI, internet_available
-from one.webclient import AlyxClient
+from iblrig.tools import ANSI, get_inheritors, internet_available
 from pybpodapi.bpod_modules.bpod_module import BpodModule
 from pybpodapi.state_machine import StateMachine
 
@@ -241,24 +240,24 @@ class ValidatorRotaryEncoderModule(ValidatorSerial):
         # s.close()
 
 
-class ValidatorScreen(Validator):
-    device_name = 'Screen'
-
-    def _run(self):
-        pass
-        # if os.name == 'nt':
-        #     import ctypes
-        #
-        #     from win32api import EnumDisplayMonitors, EnumDisplaySettingsEx, GetMonitorInfo
-        #
-        #     display_idx = self.hardware_settings.device_screen.DISPLAY_IDX
-        #     monitors = EnumDisplayMonitors()
-        #     monitor = monitors[display_idx]
-        #     display_handle = monitor[0]
-        #     scale_factor = ctypes.windll.shcore.GetScaleFactorForDevice(display_idx)
-        #     display_info = GetMonitorInfo(display_handle)
-        #     display_settings = EnumDisplaySettingsEx(display_info['Device'])
-        #     # TODO: Implementation ...
+# class ValidatorScreen(Validator):
+#     device_name = 'Screen'
+#
+#     def _run(self):
+#         pass
+#         # if os.name == 'nt':
+#         #     import ctypes
+#         #
+#         #     from win32api import EnumDisplayMonitors, EnumDisplaySettingsEx, GetMonitorInfo
+#         #
+#         #     display_idx = self.hardware_settings.device_screen.DISPLAY_IDX
+#         #     monitors = EnumDisplayMonitors()
+#         #     monitor = monitors[display_idx]
+#         #     display_handle = monitor[0]
+#         #     scale_factor = ctypes.windll.shcore.GetScaleFactorForDevice(display_idx)
+#         #     display_info = GetMonitorInfo(display_handle)
+#         #     display_settings = EnumDisplaySettingsEx(display_info['Device'])
+#         #     # TODO: Implementation ...
 
 
 class ValidatorAmbientModule(Validator):
@@ -592,49 +591,8 @@ class ValidatorSound(ValidatorSerial):
                 )
 
 
-class ValidatorAlyxLabLocation(Validator):
-    """
-    This class validates that the rig name in hardware_settings.yaml does exist in Alyx.
-    """
-
-    def _run(self, alyx: AlyxClient | None = None):
-        try:
-            if alyx is None:
-                alyx = AlyxClient()
-            alyx.rest('locations', 'read', id=self.hardware_settings['RIG_NAME'])
-            results_kwargs = dict(status=Status.PASS, message='')
-        except requests.exceptions.HTTPError as ex:
-            if ex.response.status_code not in (404, 400):  # file not found; auth error
-                # Likely Alyx is down or server-side issue
-                log.warning('Failed to determine lab location on Alyx')
-                log.debug('%s', ex.response)
-                results_kwargs = dict(
-                    status=Status.FAIL, message='Failed to determine lab location on Alyx', solution='Check if Alyx is reachable'
-                )
-                self.raise_fail_as_exception = False
-            else:
-                error_message = f'Could not find rig name {self.hardware_settings["RIG_NAME"]} in Alyx'
-                solution = (
-                    f"Please check the RIG_NAME key in hardware_settings.yaml and make sure it is created in Alyx here: "
-                    f'{self.iblrig_settings["ALYX_URL"]}/admin/misc/lablocation/'
-                )
-                results_kwargs = dict(status=Status.FAIL, message=error_message, solution=solution)
-                self.raise_fail_as_exception = True
-        return Result(**results_kwargs)
-
-
 def get_all_validators() -> list[type[Validator]]:
-    # return [x for x in get_inheritors(Validator) if not isabstract(x)]
-    return [
-        ValidatorRotaryEncoderModule,
-        ValidatorBpod,
-        ValidatorAmbientModule,
-        ValidatorAlyx,
-        ValidatorCamera,
-        ValidatorValve,
-        ValidatorSound,
-        ValidatorMic,
-    ]
+    return [x for x in get_inheritors(Validator) if not isabstract(x)]
 
 
 def run_all_validators(
