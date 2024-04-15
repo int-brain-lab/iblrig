@@ -432,6 +432,11 @@ class ChoiceWorldSession(
         return self.task_params.REWARD_AMOUNT_UL
 
     def draw_next_trial_info(self, pleft=0.5, contrast=None, position=None):
+        """Draw next trial variables.
+
+        This is called by the `next_trial` method before updating the Bpod state machine. This also
+        calls :meth:`send_trial_info_to_bonsai`.
+        """
         if contrast is None:
             contrast = misc.draw_contrast(self.task_params.CONTRAST_SET, self.task_params.CONTRAST_SET_PROBABILITY_TYPE)
         assert len(self.task_params.STIM_POSITIONS) == 2, 'Only two positions are supported'
