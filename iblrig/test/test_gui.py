@@ -15,7 +15,10 @@ class TestRigWizardModel(unittest.TestCase):
             file_iblrig_settings=SETTINGS_PATH.joinpath('iblrig_settings_template.yaml'),
         )
 
-    @patch('iblrig.gui.wizard.iblrig.hardware_validation.ValidateAlyxLabLocation._run', return_value=Result('PASS'))
+    @patch(
+        'iblrig.gui.wizard.iblrig.hardware_validation.ValidateAlyxLabLocation._run',
+        return_value=Result(status='PASS', message=''),
+    )
     def test_connect(self, mock_validate_alyx):
         self.wizard.login(username=TEST_DB['username'], alyx_client=AlyxClient(**TEST_DB))
         mock_validate_alyx.assert_called_once()
