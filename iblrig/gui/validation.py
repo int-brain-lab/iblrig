@@ -1,5 +1,5 @@
 from PyQt5 import QtCore, QtWidgets
-from PyQt5.QtCore import QThreadPool
+from PyQt5.QtCore import QThreadPool, pyqtSlot
 from PyQt5.QtGui import QFont, QIcon, QStandardItem, QStandardItemModel
 from PyQt5.QtWidgets import QHeaderView
 
@@ -8,8 +8,8 @@ from iblrig.gui.ui_validation import Ui_validation
 from iblrig.hardware_validation import Result, Status, Validator, get_all_validators
 from iblrig.pydantic_definitions import HardwareSettings, RigSettings
 
-SECTION_FONT = QFont(None, -1, QFont.Bold, False)
-STATUS_ICON: dict[Status, QIcon()] = {
+SECTION_FONT = QFont('', -1, QFont.Bold, False)
+STATUS_ICON: dict[Status, QIcon] = {
     Status.PASS: QIcon(':/images/validation_pass'),
     Status.WARN: QIcon(':/images/validation_warn'),
     Status.FAIL: QIcon(':/images/validation_fail'),
@@ -83,6 +83,21 @@ class SystemValidationDialog(QtWidgets.QDialog, Ui_validation):
     item_finished = QtCore.pyqtSignal(int, Status)
 
     def __init__(self, *args, hardware_settings: HardwareSettings, rig_settings: RigSettings, **kwargs) -> None:
+        """
+        Dialog for system validation.
+
+        Parameters
+        ----------
+        *args
+            Arguments to pass to the QDialog constructor.
+        hardware_settings : HardwareSettings
+            Pydantic model with data parsed from hardware_settings.yaml
+        rig_settings : RigSettings
+            Pydantic model with data parsed from iblrig_settings.yaml
+        **kwargs
+            Keyword arguments to pass to the QDialog constructor.
+
+        """
         super().__init__(*args, **kwargs)
         self.setupUi(self)
         self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowType.WindowContextHelpButtonHint)
@@ -116,6 +131,9 @@ class SystemValidationDialog(QtWidgets.QDialog, Ui_validation):
         self.run()
 
     def run(self):
+        """
+        Prepare GUI and start worker thread for running validators
+        """
         self.pushButtonOK.setEnabled(False)
         self.pushButtonRerun.setEnabled(False)
         self.treeView.expandAll()
@@ -123,10 +141,13 @@ class SystemValidationDialog(QtWidgets.QDialog, Ui_validation):
             self.validator_items[idx].clear()
             self.status_items[idx].status = Status.PEND
             self.treeView.scrollToTop()
-        QThreadPool.globalInstance().tryStart(self.worker)
         self.update()
+        QThreadPool.globalInstance().tryStart(self.worker)
 
     def run_subprocess(self):
+        """
+        Run all validators in a subprocess
+        """
         for idx, validator_item in enumerate(self.validator_items):
             self.item_started.emit(idx)
             results = []
@@ -145,9 +166,11 @@ class SystemValidationDialog(QtWidgets.QDialog, Ui_validation):
                 status = Status.PASS
             self.item_finished.emit(idx, status)
 
+    @pyqtSlot(int)
     def on_item_started(self, idx: int):
         self.status_items[idx].setText('running')
 
+    @pyqtSlot(int, Result)
     def on_item_result(self, idx: int, result: Result):
         result_item = QStandardItem(result.message)
         result_item.setToolTip(result.message)
@@ -159,6 +182,7 @@ class SystemValidationDialog(QtWidgets.QDialog, Ui_validation):
             self.validator_items[idx].appendRow(solution_item)
         self.update()
 
+    @pyqtSlot(int, Status)
     def on_item_finished(self, idx: int, status: Status):
         self.validator_items[idx].status = status
         self.status_items[idx].status = status

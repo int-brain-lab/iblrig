@@ -51,6 +51,7 @@ DEV = [
     "sphinx_rtd_theme",
     "types-PyYAML",
     "types-requests",
+    "types-python-dateutil",
 ]
 
 [project.scripts]

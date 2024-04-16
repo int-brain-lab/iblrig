@@ -8,7 +8,7 @@ from enum import IntEnum
 from inspect import isabstract
 from math import isclose
 from struct import unpack
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 import sounddevice
@@ -103,7 +103,7 @@ class Validator(ABC):
         if bpod is None:
             bpod = yield from self._get_bpod()
         if bpod is None:
-            return
+            return None
 
         module = None if bpod.modules is None else next((m for m in bpod.modules if m.name.startswith(module_name)), None)
 
@@ -117,6 +117,7 @@ class Validator(ABC):
                 f"{self.name} is not connected to Bpod's module port",
                 solution=f"Connect {self.name} to one of Bpod's module ports",
             )
+            return None
 
     def process(self, results: Result) -> Result:
         if self.log_results:
@@ -141,7 +142,7 @@ class Validator(ABC):
 
 
 class ValidatorSerial(Validator):
-    port_properties: None | dict[str, Any] = None
+    port_properties: dict[str, Any] = {}
     serial_queries: None | dict[tuple[object, int], bytes] = None
 
     def __init__(self, *args, **kwargs):
@@ -149,7 +150,7 @@ class ValidatorSerial(Validator):
 
     @property
     @abstractmethod
-    def port(self) -> str: ...
+    def port(self) -> str | None: ...
 
     @property
     def port_info(self) -> ListPortInfo | None:
@@ -592,7 +593,7 @@ class ValidatorSound(ValidatorSerial):
 
 
 def get_all_validators() -> list[type[Validator]]:
-    return [x for x in get_inheritors(Validator) if not isabstract(x)]
+    return [cast(type[Validator], x) for x in get_inheritors(Validator) if not isabstract(x)]
 
 
 def run_all_validators(
