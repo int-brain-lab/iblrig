@@ -17,7 +17,6 @@ dependencies = [
     "colorlog",
     "graphviz",
     "iblbpod@git+https://github.com/int-brain-lab/iblbpod.git",
-    "iblbpod@git+https://github.com/int-brain-lab/iblbpod.git",
     "ibllib@git+https://github.com/int-brain-lab/ibllib.git",
     "iblpybpod@git+https://github.com/int-brain-lab/iblpybpod.git@no-gui",
     "iblscripts@git+https://github.com/int-brain-lab/iblscripts.git",
@@ -33,6 +32,7 @@ dependencies = [
     "pywin32; sys_platform == 'win32'",
     "scipy",
     "sounddevice",
+    "tk",
 ]
 
 [project.optional-dependencies]
