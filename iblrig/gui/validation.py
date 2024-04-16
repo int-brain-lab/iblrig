@@ -1,5 +1,5 @@
 from PyQt5 import QtCore, QtWidgets
-from PyQt5.QtCore import QMutex, QThreadPool
+from PyQt5.QtCore import QThreadPool
 from PyQt5.QtGui import QFont, QIcon, QStandardItem, QStandardItemModel
 from PyQt5.QtWidgets import QHeaderView
 
@@ -51,46 +51,26 @@ class StatusItem(QStandardItem):
 
 class ValidatorItem(QStandardItem):
     validator: Validator
-    status: Status
+    _status: Status
 
     def __init__(self, validator: type[Validator], hardware_settings: HardwareSettings, rig_settings: RigSettings):
         super().__init__()
+        self.status = Status.PEND
         self.validator = validator(hardware_settings=hardware_settings, iblrig_settings=rig_settings, interactive=True)
-        self.setIcon(QIcon(STATUS_ICON[Status.PEND]))
         self.setText(self.validator.name)
         self.setFont(SECTION_FONT)
-        self.mutex = QMutex()
 
-    def run(self) -> Status:
-        self.clear()
-        results: list[Result] = []
-        for result in self.validator.run():
-            results.append(result)
-            result_item = QStandardItem(result.message)
-            result_item.setToolTip(result.message)
-            result_item.setIcon(STATUS_ICON[result.status])
-            self.appendRow([result_item, QStandardItem('')])
-            if result.solution is not None and len(result.solution) > 0:
-                solution_item = QStandardItem(f'Suggestion: {result.solution}')
-                solution_item.setIcon(QIcon(':/images/validation_suggestion'))
-                self.appendRow(solution_item)
+    @property
+    def status(self) -> Status:
+        return self._status
 
-        # determine return value
-        statuses = [r.status for r in results]
-        if Status.SKIP in statuses:
-            return_status = Status.SKIP
-        elif Status.FAIL in statuses:
-            return_status = Status.FAIL
-        elif Status.WARN in statuses:
-            return_status = Status.WARN
-        else:
-            return_status = Status.PASS
-
-        self.setIcon(STATUS_ICON[return_status])
-        return return_status
+    @status.setter
+    def status(self, status: Status):
+        self._status = status
+        self.setIcon(QIcon(STATUS_ICON[status]))
 
     def clear(self):
-        self.setIcon(QIcon(STATUS_ICON[Status.PEND]))
+        self.status = Status.PEND
         while self.hasChildren():
             self.removeRow(0)
 
@@ -99,6 +79,7 @@ class SystemValidationDialog(QtWidgets.QDialog, Ui_validation):
     validator_items: list[ValidatorItem] = []
     status_items: list[StatusItem] = []
     item_started = QtCore.pyqtSignal(int)
+    item_result = QtCore.pyqtSignal(int, Result)
     item_finished = QtCore.pyqtSignal(int, Status)
 
     def __init__(self, *args, hardware_settings: HardwareSettings, rig_settings: RigSettings, **kwargs) -> None:
@@ -128,6 +109,7 @@ class SystemValidationDialog(QtWidgets.QDialog, Ui_validation):
         self.pushButtonOK.clicked.connect(self.close)
         self.pushButtonRerun.clicked.connect(self.run)
         self.item_started.connect(self.on_item_started)
+        self.item_result.connect(self.on_item_result)
         self.item_finished.connect(self.on_item_finished)
 
         self.show()
@@ -137,22 +119,48 @@ class SystemValidationDialog(QtWidgets.QDialog, Ui_validation):
         self.pushButtonOK.setEnabled(False)
         self.pushButtonRerun.setEnabled(False)
         self.treeView.expandAll()
-        for idx, validator_item in enumerate(self.validator_items):
-            validator_item.clear()
+        for idx, _ in enumerate(self.validator_items):
+            self.validator_items[idx].clear()
             self.status_items[idx].status = Status.PEND
             self.treeView.scrollToTop()
         QThreadPool.globalInstance().tryStart(self.worker)
+        self.update()
 
     def run_subprocess(self):
         for idx, validator_item in enumerate(self.validator_items):
             self.item_started.emit(idx)
-            status = validator_item.run()
+            results = []
+            for result in validator_item.validator.run():
+                results.append(result)
+                self.item_result.emit(idx, result)
+
+            statuses = [r.status for r in results]
+            if Status.SKIP in statuses:
+                status = Status.SKIP
+            elif Status.FAIL in statuses:
+                status = Status.FAIL
+            elif Status.WARN in statuses:
+                status = Status.WARN
+            else:
+                status = Status.PASS
             self.item_finished.emit(idx, status)
 
     def on_item_started(self, idx: int):
         self.status_items[idx].setText('running')
 
+    def on_item_result(self, idx: int, result: Result):
+        result_item = QStandardItem(result.message)
+        result_item.setToolTip(result.message)
+        result_item.setIcon(STATUS_ICON[result.status])
+        self.validator_items[idx].appendRow([result_item, QStandardItem('')])
+        if result.solution is not None and len(result.solution) > 0:
+            solution_item = QStandardItem(f'Suggestion: {result.solution}')
+            solution_item.setIcon(QIcon(':/images/validation_suggestion'))
+            self.validator_items[idx].appendRow(solution_item)
+        self.update()
+
     def on_item_finished(self, idx: int, status: Status):
+        self.validator_items[idx].status = status
         self.status_items[idx].status = status
         if status == Status.PASS:
             self.treeView.collapse(self.validator_items[idx].index())
