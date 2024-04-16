@@ -9,7 +9,7 @@ import yaml
 
 import ibllib.tests.fixtures.utils as fu
 from iblrig import path_helper
-from iblrig.constants import BASE_DIR
+from iblrig.constants import BASE_DIR, SETTINGS_PATH
 from iblrig.path_helper import load_pydantic_yaml, save_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings, RigSettings
 
@@ -195,7 +195,7 @@ class TestPatchSettings(unittest.TestCase):
     """Test for iblrig.path_helper.patch_settings."""
 
     def setUp(self):
-        file = Path(__file__).parents[2].joinpath('settings', 'hardware_settings_template.yaml')
+        file = SETTINGS_PATH.joinpath('hardware_settings_template.yaml')
         with open(file) as fp:
             self.rs = yaml.safe_load(fp)
         self.rs.pop('device_cameras')

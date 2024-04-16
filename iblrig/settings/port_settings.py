@@ -7,6 +7,7 @@ from pathlib import Path
 import yaml
 
 import one.params
+from iblrig.constants import SETTINGS_PATH
 
 UPDATE_FIELDS = {
     None: {'RIG_NAME': 'NAME'},
@@ -46,15 +47,15 @@ def main(v7_path=None, v8_path=None):
     """
     v7_path = v7_path or Path(Path.home().drive, '/', 'iblrig_params')
     v7_path = v7_path / '.iblrig_params.json'
-    v8_path = v8_path or Path(Path.home().drive, '/', 'iblrigv8', 'settings')
-    v8_path = v8_path / 'iblrig_settings_template.yaml'
-    v8_path_hw = v8_path.with_name('hardware_settings_template.yaml')
+    v8_path = v8_path or SETTINGS_PATH
+    file_iblrig_v8 = v8_path.joinpath('iblrig_settings_template.yaml')
+    file_hardware_v8 = v8_path.joinpath('hardware_settings_template.yaml')
 
     with open(v7_path) as fp:
         v7_settings = json.load(fp)
-    with open(v8_path_hw) as fp:
+    with open(file_hardware_v8) as fp:
         v8_hw_settings = yaml.safe_load(fp)
-    with open(v8_path) as fp:
+    with open(file_iblrig_v8) as fp:
         v8_settings = yaml.safe_load(fp)
 
     # Hardware settings
@@ -71,7 +72,7 @@ def main(v7_path=None, v8_path=None):
             for field in fields:
                 v8_hw_settings[device][field] = v7_settings[field]
 
-    with open(v8_path_hw.with_name('hardware_settings.yaml'), 'w') as fp:
+    with open(file_hardware_v8.with_name('hardware_settings.yaml'), 'w') as fp:
         yaml.safe_dump(v8_hw_settings, fp)
 
     # IBL rig settings
@@ -88,7 +89,7 @@ def main(v7_path=None, v8_path=None):
     v8_settings['ALYX_URL'] = one.params.get_default_client()
     v8_settings['ALYX_USER'] = one.params.get(client=v8_settings['ALYX_URL'], silent=True).ALYX_LOGIN
 
-    with open(v8_path.with_name('iblrig_settings.yaml'), 'w') as fp:
+    with open(file_iblrig_v8.with_name('iblrig_settings.yaml'), 'w') as fp:
         yaml.safe_dump(v8_settings, fp)
     return v8_settings, v8_hw_settings
 
@@ -109,7 +110,7 @@ if __name__ == '__main__':
         default=None,
         required=False,
         type=Path,
-        help=r'The path to iblrigv8 settings (default is C:\iblrigv8\settings).',
+        help=r'The path to iblrigv8 settings (default is C:\iblrigv8\iblrig\settings).',
     )
     args = parser.parse_args()
     main(**vars(args))

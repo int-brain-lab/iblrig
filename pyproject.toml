@@ -10,7 +10,7 @@ keywords = [ "IBL", "neuro-science" ]
 requires-python = "~=3.10"
 license = { file = "LICENSE" }
 dependencies = [
-    "ONE-api",
+    "ONE-api >= 2.7.0",
     "PyQt5",
     "PyQtWebEngine",
     "PyYAML",

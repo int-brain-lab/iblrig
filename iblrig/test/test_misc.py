@@ -11,7 +11,7 @@ from scipy import stats
 
 from iblrig import misc
 from iblrig.misc import online_std
-from settings.port_settings import main  # FIXME This is not a module
+from iblrig.settings.port_settings import main  # FIXME This is not a module
 
 
 class TestMisc(unittest.TestCase):
@@ -52,13 +52,14 @@ class TestPortSettings(unittest.TestCase):
     """Test settings/port_settings.py."""
 
     def setUp(self):
+        from iblrig.constants import SETTINGS_PATH, BASE_PATH
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.v7 = Path(self.temp.name).joinpath('iblrig_params')
         self.v7.mkdir()
-        self.v8 = Path(self.temp.name).joinpath('iblrigv8', 'settings')
+        self.v8 = Path(self.temp.name).joinpath('iblrigv8', *SETTINGS_PATH.relative_to(BASE_PATH).parts)
         self.v8.mkdir(parents=True)
-        for template in Path(misc.__file__).parent.parent.glob('settings/*_template.yaml'):
+        for template in SETTINGS_PATH.glob('*_template.yaml'):
             shutil.copy(template, self.v8 / template.name)
         settings_fixture = Path(misc.__file__).parent.joinpath('test', 'fixtures', 'iblrig_params.json')
         with open(settings_fixture) as fp:

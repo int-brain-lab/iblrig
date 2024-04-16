@@ -8,6 +8,7 @@ from unittest.mock import ANY, MagicMock, call, patch
 import numpy as np
 import yaml
 
+from iblrig.constants import SETTINGS_PATH
 from iblutil.util import Bunch
 
 """In order to mock iblrig.video_pyspin.enable_camera_trigger we must mock PySpin here."""
@@ -59,11 +60,10 @@ class TestSettings(unittest.TestCase):
             m = patch(f'iblrig.video.{name.replace("ibl", "").upper()}_YAML', file)
             m.start()
             self.addCleanup(m.stop)
-
         self._settings = {}  # Store the unpatched settings (we'll use the template ones)
         self.patched = {}  # Store the patched settings
         for file in ('iblrig', 'hardware'):
-            filepath = Path(video.__file__).parents[1].joinpath('settings', f'{file}_settings_template.yaml')
+            filepath = SETTINGS_PATH.joinpath(f'{file}_settings_template.yaml')
             if filepath.exists():
                 with open(filepath) as fp:
                     self._settings[file] = yaml.safe_load(fp.read())

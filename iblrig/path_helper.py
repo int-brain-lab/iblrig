@@ -11,10 +11,9 @@ import yaml
 from packaging import version
 from pydantic import BaseModel, ValidationError
 
-import iblrig
 from ibllib.io import session_params
 from ibllib.io.raw_data_loaders import load_settings
-from iblrig.constants import HARDWARE_SETTINGS_YAML, RIG_SETTINGS_YAML
+from iblrig.constants import HARDWARE_SETTINGS_YAML, RIG_SETTINGS_YAML, SETTINGS_PATH
 from iblrig.pydantic_definitions import HardwareSettings, RigSettings
 from iblutil.util import Bunch
 from one.alf.spec import is_session_path
@@ -173,7 +172,7 @@ def get_local_and_remote_paths(local_path=None, remote_path=None, lab=None, iblr
 def _load_settings_yaml(filename: Path | str = RIG_SETTINGS_YAML, do_raise: bool = True) -> Bunch:
     filename = Path(filename)
     if not filename.is_absolute():
-        filename = Path(iblrig.__file__).parents[1].joinpath('settings', filename)
+        filename = SETTINGS_PATH.joinpath(filename)
     if not filename.exists() and not do_raise:
         log.error(f'File not found: {filename}')
         return Bunch()
