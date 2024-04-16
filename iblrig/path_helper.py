@@ -353,3 +353,27 @@ def create_bonsai_layout_from_template(workflow_file: Path) -> None:
             shutil.copy(template_file, layout_file)
         else:
             log.debug(f'No template layout for {workflow_file.name}')
+
+
+def create_settings_stand_alone():
+    """
+    Creates the settings files from the template in order to be able to run iblrig task logic code for
+    analysis purposes.
+    Currently the pyddantic validation forbids the use of task files without a full Bonsai installation.
+    :return:
+    """
+    if not (file_hardware := SETTINGS_PATH.joinpath('hardware_settings.yaml')).exists():
+        shutil.copyfile(SETTINGS_PATH.joinpath('hardware_settings_template.yaml'), file_hardware)
+        with file_hardware.open('r') as f:
+            hardware = yaml.safe_load(f)
+        hardware.pop('device_cameras')
+        with file_hardware.open('w') as f:
+            yaml.safe_dump(hardware, f)
+        log.info(f'{file_hardware} created')
+    else:
+        log.warning(f'{file_hardware} already exists')
+    if not (file_iblrig := SETTINGS_PATH.joinpath('iblrig_settings.yaml')).exists():
+        shutil.copyfile(SETTINGS_PATH.joinpath('iblrig_settings_template.yaml'), file_iblrig)
+        log.info(f'{file_iblrig} created')
+    else:
+        log.info(f'{file_iblrig} already exists')
