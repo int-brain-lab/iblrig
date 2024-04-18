@@ -22,6 +22,7 @@ from PyQt5.QtCore import QThread, QThreadPool
 from PyQt5.QtWebEngineWidgets import QWebEnginePage
 from PyQt5.QtWidgets import QStyle
 from requests import HTTPError
+from serial import SerialException
 from typing_extensions import override
 
 import iblrig.hardware_validation
@@ -29,14 +30,17 @@ import iblrig.path_helper
 import iblrig_tasks
 from iblrig.base_tasks import EmptySession, ValveMixin
 from iblrig.choiceworld import get_subject_training_info, training_phase_from_contrast_set
-from iblrig.constants import BASE_DIR
+from iblrig.constants import BASE_DIR, COPYRIGHT_YEAR
 from iblrig.gui.frame2ttl import Frame2TTLCalibrationDialog
+from iblrig.gui.splash import Splash
 from iblrig.gui.tools import Worker
 from iblrig.gui.ui_login import Ui_login
 from iblrig.gui.ui_update import Ui_update
 from iblrig.gui.ui_wizard import Ui_wizard
+from iblrig.gui.validation import SystemValidationDialog
 from iblrig.gui.valve import ValveCalibrationDialog
 from iblrig.hardware import Bpod
+from iblrig.hardware_validation import Status
 from iblrig.misc import _get_task_argument_parser
 from iblrig.path_helper import load_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings, RigSettings
@@ -194,12 +198,21 @@ class RigWizardModel:
                 else:
                     raise e
 
-        # since we are connecting to Alyx, validate some parameters to ensure a smooth extraction
-        result = iblrig.hardware_validation.ValidateAlyxLabLocation(
-            iblrig_settings=self.iblrig_settings, hardware_settings=self.hardware_settings
-        ).run(self.alyx)
-        if result.status == 'FAIL' and gui:
-            QtWidgets.QMessageBox().critical(None, 'Error', f'{result.message}\n\n{result.solution}')
+        # validate connection and some parameters now that we're connected
+        try:
+            self.alyx.rest('locations', 'read', id=self.hardware_settings.RIG_NAME)
+        except HTTPError as ex:
+            if ex.response.status_code not in (404, 400):  # file not found; auth error
+                # Likely Alyx is down or server-side issue
+                message = 'Failed to determine lab location on Alyx'
+                solution = 'Check if Alyx is reachable'
+            else:
+                message = f'Could not find rig name {self.hardware_settings.RIG_NAME} in Alyx'
+                solution = (
+                    f'Please check the RIG_NAME key in hardware_settings.yaml and make sure it is created in Alyx here: '
+                    f'{self.iblrig_settings.ALYX_URL}/admin/misc/lablocation/'
+                )
+            QtWidgets.QMessageBox().critical(None, 'Error', f'{message}\n\n{solution}')
 
         # get subjects from Alyx: this is the set of subjects that are alive and not stock in the lab defined in settings
         rest_subjects = self.alyx.rest('subjects', 'list', alive=True, stock=False, lab=self.iblrig_settings['ALYX_LAB'])
@@ -245,6 +258,11 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         super().__init__()
         self.setupUi(self)
 
+        # show splash-screen / store validation results
+        splash_screen = Splash()
+        splash_screen.exec()
+        self.validation_results = splash_screen.validation_results
+
         self.debug = kwargs.get('debug', False)
         self.settings = QtCore.QSettings()
         self.move(self.settings.value('pos', self.pos(), QtCore.QPoint))
@@ -279,9 +297,10 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
             self.uiComboTask.setCurrentIndex(idx)
 
         # connect widgets signals to slots
-        self.uiActionTrainingLevelV7.triggered.connect(self._on_menu_training_level_v7)
+        self.uiActionValidateHardware.triggered.connect(self._on_validate_hardware)
         self.uiActionCalibrateFrame2ttl.triggered.connect(self._on_calibrate_frame2ttl)
         self.uiActionCalibrateValve.triggered.connect(self._on_calibrate_valve)
+        self.uiActionTrainingLevelV7.triggered.connect(self._on_menu_training_level_v7)
         self.uiComboTask.currentTextChanged.connect(self.controls_for_extra_parameters)
         self.uiComboSubject.currentTextChanged.connect(self.model.get_subject_details)
         self.uiPushStart.clicked.connect(self.start_stop)
@@ -334,7 +353,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.webEngineView.urlChanged.connect(self._on_doc_url_changed)
 
         # tab: about
-        self.uiLabelCopyright.setText(f'**IBLRIG v{iblrig.__version__}**\n\n© 2024, International Brain Laboratory')
+        self.uiLabelCopyright.setText(f'**IBLRIG v{iblrig.__version__}**\n\n© {COPYRIGHT_YEAR}, International Brain Laboratory')
         self.commandLinkButtonGitHub.clicked.connect(lambda: webbrowser.open(URL_REPO))
         self.commandLinkButtonDoc.clicked.connect(lambda: webbrowser.open(URL_DOC))
         self.commandLinkButtonIssues.clicked.connect(lambda: webbrowser.open(URL_ISSUES))
@@ -349,7 +368,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.uiProgressDiskSpace.setMaximumWidth(70)
         self.uiProgressDiskSpace.setValue(round(total_used / total_space * 100))
         self.uiProgressDiskSpace.setStatusTip(
-            f'local IBLRIG data: {v8data_size / 1024 ** 3 : .1f} GB  •  ' f'available space: {total_free / 1024 ** 3 : .1f} GB'
+            f'local IBLRIG data: {v8data_size / 1024**3: .1f} GB  •  ' f'available space: {total_free / 1024**3: .1f} GB'
         )
         if self.uiProgressDiskSpace.value() > 90:
             p = self.uiProgressDiskSpace.palette()
@@ -365,8 +384,30 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowFullscreenButtonHint)
 
         # disable control of LED if Bpod does not have the respective capability
-        bpod = Bpod(self.model.hardware_settings['device_bpod']['COM_BPOD'], skip_initialization=True)
-        self.uiPushStatusLED.setEnabled(bpod.can_control_led)
+        try:
+            bpod = Bpod(self.model.hardware_settings['device_bpod']['COM_BPOD'], skip_initialization=True)
+            self.uiPushStatusLED.setEnabled(bpod.can_control_led)
+        except SerialException:
+            pass
+
+        self.show()
+
+        # show validation errors / warnings:
+        if any(results := [r for r in self.validation_results if r.status in (Status.FAIL, Status.WARN)]):
+            msg_box = QtWidgets.QMessageBox(parent=self)
+            msg_box.setWindowTitle('IBLRIG System Validation')
+            msg_box.setIcon(QtWidgets.QMessageBox().Warning)
+            msg_box.setTextFormat(QtCore.Qt.TextFormat.RichText)
+            text = f"The following issue{'s were' if len(results) > 1 else ' was'} detected:"
+            for result in results:
+                text = (
+                    text + f"<br><br>\n"
+                    f"<b>{'Warning' if result.status == Status.WARN else 'Failure'}:</b> {result.message}<br>\n"
+                    f"{('<b>Suggestion:</b> ' + result.solution) if result.solution is not None else ''}"
+                )
+            text = text + '<br><br>\nPlease refer to the System Validation tool for more details.'
+            msg_box.setText(text)
+            msg_box.exec()
 
         # get AnyDesk ID
         anydesk_worker = Worker(get_anydesk_id, True)
@@ -418,6 +459,15 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         # self.adjustSize()
         pass
 
+    def _on_validate_hardware(self) -> None:
+        SystemValidationDialog(self, hardware_settings=self.model.hardware_settings, rig_settings=self.model.iblrig_settings)
+
+    def _on_calibrate_frame2ttl(self) -> None:
+        Frame2TTLCalibrationDialog(self, hardware_settings=self.model.hardware_settings)
+
+    def _on_calibrate_valve(self) -> None:
+        ValveCalibrationDialog(self)
+
     def _on_menu_training_level_v7(self) -> None:
         """
         Prompt user for a session path to get v7 training level.
@@ -464,12 +514,6 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
             self.uiGroupTaskParameters.findChild(QtWidgets.QWidget, '--adaptive_gain').setValue(stim_gain)
             self.uiGroupTaskParameters.findChild(QtWidgets.QWidget, '--adaptive_reward').setValue(reward_amount)
             self.uiGroupTaskParameters.findChild(QtWidgets.QWidget, '--training_phase').setValue(training_phase)
-
-    def _on_calibrate_frame2ttl(self) -> None:
-        Frame2TTLCalibrationDialog(self, hardware_settings=self.model.hardware_settings)
-
-    def _on_calibrate_valve(self) -> None:
-        ValveCalibrationDialog(self)
 
     def _on_check_update_result(self, result: tuple[bool, str]) -> None:
         """

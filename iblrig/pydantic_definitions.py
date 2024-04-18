@@ -136,26 +136,23 @@ class HardwareSettingsScale(BunchModel):
 
 class HardwareSettingsCamera(BunchModel):
     INDEX: int
-    FPS: int | None = Field(
+    FPS: PositiveInt | None = Field(
         title='Camera frame rate',
         omit_default=True,
         default=None,
         description='An optional frame rate (for camera QC only)',
-        ge=0,
     )
-    WIDTH: int | None = Field(
+    WIDTH: PositiveInt | None = Field(
         title='Camera frame width',
         omit_default=True,
         default=None,
         description='An optional frame width (for camera QC only)',
-        ge=0,
     )
-    HEIGHT: int | None = Field(
+    HEIGHT: PositiveInt | None = Field(
         title='Camera frame height',
         omit_default=True,
         default=None,
         description='An optional frame hight (for camera QC only)',
-        ge=0,
     )
     SYNC_LABEL: str | None = Field(
         title='Camera DAQ sync label',

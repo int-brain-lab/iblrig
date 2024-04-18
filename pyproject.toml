@@ -30,6 +30,7 @@ dependencies = [
     "pydantic",
     "pyqtgraph",
     "python-osc",
+    "pyusb",
     "pywin32; sys_platform == 'win32'",
     "scipy",
     "sounddevice",
@@ -50,6 +51,7 @@ DEV = [
     "sphinx_rtd_theme",
     "types-PyYAML",
     "types-requests",
+    "types-python-dateutil",
 ]
 
 [project.scripts]
@@ -66,6 +68,7 @@ install_pyspin      = "iblrig.video:install_pyspin"
 start_video_session = "iblrig.video:prepare_video_session_cmd"
 start_ephys_session = "iblrig.ephys:prepare_ephys_session_cmd"
 convert_uis         = "iblrig.gui.tools:convert_uis"
+validate_iblrig     = "iblrig.hardware_validation:run_all_validators_cli"
 
 [tool.setuptools.dynamic]
 readme  = { file = "README.md", content-type = "text/markdown" }

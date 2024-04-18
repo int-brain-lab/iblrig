@@ -79,7 +79,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>3</number>
       </property>
       <widget class="QWidget" name="tabSession">
        <property name="sizePolicy">
@@ -529,8 +529,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>339</width>
-                <height>110</height>
+                <width>357</width>
+                <height>161</height>
                </rect>
               </property>
               <layout class="QFormLayout" name="formLayout_2"/>
@@ -732,19 +732,19 @@
          <number>0</number>
         </property>
         <item>
-         <widget class="QWebEngineView" name="webEngineView">
+         <widget class="QWebEngineView" name="webEngineView" native="true">
           <property name="contextMenuPolicy">
            <enum>Qt::NoContextMenu</enum>
           </property>
           <property name="acceptDrops">
            <bool>false</bool>
           </property>
-          <property name="url">
+          <property name="url" stdset="0">
            <url>
             <string>https://int-brain-lab.github.io/iblrig/</string>
            </url>
           </property>
-          <property name="zoomFactor">
+          <property name="zoomFactor" stdset="0">
            <double>0.900000000000000</double>
           </property>
          </widget>
@@ -1104,16 +1104,17 @@
      <x>0</x>
      <y>0</y>
      <width>450</width>
-     <height>24</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="uiMenuTools">
     <property name="title">
      <string>Tools</string>
     </property>
-    <addaction name="uiActionTrainingLevelV7"/>
+    <addaction name="uiActionValidateHardware"/>
     <addaction name="uiActionCalibrateFrame2ttl"/>
     <addaction name="uiActionCalibrateValve"/>
+    <addaction name="uiActionTrainingLevelV7"/>
    </widget>
    <addaction name="uiMenuTools"/>
   </widget>
@@ -1130,6 +1131,11 @@
   <action name="uiActionCalibrateValve">
    <property name="text">
     <string>Calibrate Valve</string>
+   </property>
+  </action>
+  <action name="uiActionValidateHardware">
+   <property name="text">
+    <string>Validate System</string>
    </property>
   </action>
  </widget>

@@ -126,7 +126,15 @@ Installing iblrigv8
       pip install -e .
 
 
-4. Install Bonsai in portable mode:
+4. Install Spinnaker SDK and PySpin:
+
+   .. code-block:: powershell
+
+      install_spinnaker
+      install_pyspin
+
+
+5. Install Bonsai in portable mode:
 
    .. code-block:: powershell
 
@@ -135,7 +143,7 @@ Installing iblrigv8
       cd ..
 
 
-5. Install additional tasks and extractors for personal projects (optional):
+6. Install additional tasks and extractors for personal projects (optional):
 
    .. code-block:: powershell
 
@@ -144,7 +152,7 @@ Installing iblrigv8
       pip install -e .
 
 
-6. Continue with :ref:`the next section<Configuration instructions>`.
+7. Continue with :ref:`the next section<Configuration instructions>`.
 
 
 Configuration Instructions

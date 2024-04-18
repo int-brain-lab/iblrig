@@ -45,7 +45,7 @@ class Session(TrainingChoiceWorldSession):
             '--adaptive_reward',
             option_strings=['--adaptive_reward'],
             dest='adaptive_reward',
-            default=-1.,
+            default=-1.0,
             type=float,
             help='reward volume in microliters',
         )
