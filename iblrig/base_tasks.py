@@ -28,8 +28,8 @@ import yaml
 from pythonosc import udp_client
 
 import ibllib.io.session_params as ses_params
+from ibllib.oneibl.registration import IBLRegistrationClient
 import iblrig
-import iblrig.alyx
 import iblrig.graphic as graph
 import iblrig.path_helper
 import pybpodapi
@@ -55,6 +55,7 @@ log = logging.getLogger(__name__)
 
 class BaseSession(ABC):
     version = None
+    """str: !!CURRENTLY UNUSED!! task version string."""
     protocol_name: str | None = None
     base_parameters_file: Path | None = None
     is_mock = False
@@ -224,9 +225,9 @@ class BaseSession(ABC):
         else:
             # in this case the session path is created from scratch
             paths.SESSION_FOLDER = date_folder / next_num_folder(date_folder)
-            self.session_info.SESSION_NUMBER = int(paths.SESSION_FOLDER.name)
             paths.TASK_COLLECTION = iblrig.path_helper.iterate_collection(paths.SESSION_FOLDER)
 
+        self.session_info.SESSION_NUMBER = int(paths.SESSION_FOLDER.name)
         paths.SESSION_RAW_DATA_FOLDER = paths.SESSION_FOLDER.joinpath(paths.TASK_COLLECTION)
         paths.DATA_FILE_PATH = paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_taskData.raw.jsonable')
         return paths
@@ -378,17 +379,56 @@ class BaseSession(ABC):
     def register_to_alyx(self):
         """
         Registers the session to Alyx.
-        To make sure the registration is the same from the settings files and from the instantiated class
-        we output the settings dictionary and register from this format directly.
-        Alternatively, this function
-        :return:
+
+        This registers the session using the IBLRegistrationClient class.  This uses the settings
+        file(s) and experiment description file to extract the session data.  This may be called
+        any number of times and if the session record already exists in Alyx it will be updated.
+        If session registration fails, it will be done before extraction in the ibllib pipeline.
+
+        Note that currently the subject weight is registered once and only once.  The recorded
+        weight of the first protocol run is used.
+
+        Water administrations are added separately by this method: it is expected that
+        `register_session` is first called with no recorded total water. This method will then add
+        a water administration each time it is called, and should therefore be called only once
+        after protocol is run. If water administration registration fails for all protocols, this
+        will be done before extraction in the ibllib pipline, however, if a water administration is
+        successfully registered for one protocol and subsequent ones fail to register, these will
+        not be added before extraction in ibllib and therefore must be manually added to Alyx.
+
+        Returns
+        -------
+        dict
+            The registered session record.
+
+        See Also
+        --------
+        ibllib.oneibl.IBLRegistrationClient.register_session - The registration method.
         """
-        settings_dictionary = self._make_task_parameters_dict()
+        if not self.one or self.one.offline:
+            return
         try:
-            iblrig.alyx.register_session(self.paths.SESSION_FOLDER, settings_dictionary, one=self.one)
+            ses, _ = IBLRegistrationClient(self.one).register_session(self.paths.SESSION_FOLDER)
         except Exception:
             log.error(traceback.format_exc())
             log.error('Could not register session to Alyx')
+            return
+        # add the water administration if there was water administered
+        try:
+            if self.session_info['TOTAL_WATER_DELIVERED']:
+                wa_data = dict(
+                    session=ses['url'][-36:],
+                    subject=self.session_info.SUBJECT_NAME,
+                    water_type=self.task_params.get('REWARD_TYPE', None),
+                    water_administered=self.session_info['TOTAL_WATER_DELIVERED'] / 1000)
+                self.one.alyx.rest('water-administrations', 'create', data=wa_data)
+                log.info(f"Water administered registered in Alyx database: {ses['subject']},"
+                         f"{wa_data['water_administered']}mL")
+        except Exception:
+            log.error(traceback.format_exc())
+            log.error('Could not register water administration to Alyx')
+            return
+        return ses
 
     def _execute_mixins_shared_function(self, pattern):
         """
