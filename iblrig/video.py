@@ -228,20 +228,25 @@ def prepare_video_session_cmd():
 def validate_video_cmd():
     parser = argparse.ArgumentParser(prog='validate_video', description='Validate video session.')
     parser.add_argument('video_path', help='Path to the video file', type=str)
-    parser.add_argument('configuration', help='name of the configuration', nargs='?', default='default', type=str)
+    parser.add_argument('configuration', help='name of the configuration (default: default)', nargs='?', default='default', type=str)
+    parser.add_argument('camera_name', help='name of the camera (default: left)', nargs='?', default='left', type=str)
     args = parser.parse_args()
 
     hwsettings: HardwareSettings = load_pydantic_yaml(HardwareSettings)
     file_path = Path(args.video_path)
+    configuration = hwsettings.device_cameras.get(args.configuration, None)
+    camera = configuration.get(args.camera_name, None) if configuration is not None else None
 
     if not file_path.exists():
         print(f'File not found: {file_path}')
     elif not file_path.is_file() or file_path.suffix != '.avi':
         print(f'Not a video file: {file_path}')
-    elif hwsettings.device_cameras.get(args.configuration, None) is None:
-        print(f'Configuration not found: {args.configuration}')
+    elif configuration is None:
+        print(f'No such configuration: {configuration}')
+    elif configuration is None:
+        print(f'No such camera: {camera}')
     else:
-        validate_video(video_path=file_path, config=args.configuration)
+        validate_video(video_path=file_path, config=camera)
 
 
 def validate_video(video_path, config):
