@@ -15,7 +15,8 @@ from ibllib.io.video import get_video_meta, label_from_path
 from ibllib.pipes.misc import load_params_dict
 from iblrig.base_tasks import EmptySession
 from iblrig.constants import HARDWARE_SETTINGS_YAML, HAS_PYSPIN, HAS_SPINNAKER, RIG_SETTINGS_YAML
-from iblrig.path_helper import patch_settings
+from iblrig.path_helper import load_pydantic_yaml, patch_settings
+from iblrig.pydantic_definitions import HardwareSettings
 from iblrig.tools import ask_user, call_bonsai
 from iblrig.transfer_experiments import VideoCopier
 from iblutil.io import (
@@ -222,6 +223,25 @@ def prepare_video_session_cmd():
     args = parser.parse_args()
     setup_logger(name='iblrig', level='DEBUG' if args.debug else 'INFO')
     prepare_video_session(args.subject_name, args.profile, debug=args.debug)
+
+
+def validate_video_cmd():
+    parser = argparse.ArgumentParser(prog='validate_video', description='Validate video session.')
+    parser.add_argument('video_path', help='Path to the video file', type=str)
+    parser.add_argument('configuration', help='name of the configuration', nargs='?', default='default', type=str)
+    args = parser.parse_args()
+
+    hwsettings: HardwareSettings = load_pydantic_yaml(HardwareSettings)
+    file_path = Path(args.video_path)
+
+    if not file_path.exists():
+        print(f'File not found: {file_path}')
+    elif not file_path.is_file() or file_path.suffix != '.avi':
+        print(f'Not a video file: {file_path}')
+    elif hwsettings.device_cameras.get(args.configuration, None) is None:
+        print(f'Configuration not found: {args.configuration}')
+    else:
+        validate_video(video_path=file_path, config=args.configuration)
 
 
 def validate_video(video_path, config):

@@ -2,6 +2,12 @@ Changelog
 ---------
 
 
+8.19.0
+------
+* automated validation of rig components
+* adaptive reward parameter for trainingPhaseChoiceWorld
+* add validate_video entry-point
+
 8.18.0
 ------
 * valve calibration routine
