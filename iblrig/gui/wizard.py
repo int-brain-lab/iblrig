@@ -198,19 +198,19 @@ class RigWizardModel:
                 else:
                     raise e
 
-        # since we are connecting to Alyx, validate some parameters to ensure a smooth extraction
+        # validate connection and some parameters now that we're connected
         try:
-            self.alyx.rest('locations', 'read', id=self.hardware_settings['RIG_NAME'])
+            self.alyx.rest('locations', 'read', id=self.hardware_settings.RIG_NAME)
         except HTTPError as ex:
             if ex.response.status_code not in (404, 400):  # file not found; auth error
                 # Likely Alyx is down or server-side issue
                 message = 'Failed to determine lab location on Alyx'
                 solution = 'Check if Alyx is reachable'
             else:
-                message = f'Could not find rig name {self.hardware_settings["RIG_NAME"]} in Alyx'
+                message = f'Could not find rig name {self.hardware_settings.RIG_NAME} in Alyx'
                 solution = (
-                    f"Please check the RIG_NAME key in hardware_settings.yaml and make sure it is created in Alyx here: "
-                    f'{self.iblrig_settings["ALYX_URL"]}/admin/misc/lablocation/'
+                    f'Please check the RIG_NAME key in hardware_settings.yaml and make sure it is created in Alyx here: '
+                    f'{self.iblrig_settings.ALYX_URL}/admin/misc/lablocation/'
                 )
             QtWidgets.QMessageBox().critical(None, 'Error', f'{message}\n\n{solution}')
 

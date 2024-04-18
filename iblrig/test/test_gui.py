@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import patch
 
 from ibllib.tests import TEST_DB
 from iblrig.constants import SETTINGS_PATH
@@ -14,8 +15,16 @@ class TestRigWizardModel(unittest.TestCase):
         )
 
     def test_connect(self):
-        self.wizard.login(username=TEST_DB['username'], alyx_client=AlyxClient(**TEST_DB))
-        assert len(self.wizard.all_projects) > len(PROJECTS)
+        client = AlyxClient(**TEST_DB)
+        original_rest = client.rest
+
+        def wrapped(*args, **kwargs):
+            if 'locations' not in args:
+                return original_rest(*args, **kwargs)
+
+        with patch('iblrig.gui.wizard.AlyxClient.rest', wraps=wrapped):
+            self.wizard.login(username=TEST_DB['username'], alyx_client=client)
+            assert len(self.wizard.all_projects) > len(PROJECTS)
 
     def test_get_task_extra_kwargs(self):
         """
