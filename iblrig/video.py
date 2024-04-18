@@ -228,7 +228,9 @@ def prepare_video_session_cmd():
 def validate_video_cmd():
     parser = argparse.ArgumentParser(prog='validate_video', description='Validate video session.')
     parser.add_argument('video_path', help='Path to the video file', type=str)
-    parser.add_argument('configuration', help='name of the configuration (default: default)', nargs='?', default='default', type=str)
+    parser.add_argument(
+        'configuration', help='name of the configuration (default: default)', nargs='?', default='default', type=str
+    )
     parser.add_argument('camera_name', help='name of the camera (default: left)', nargs='?', default='left', type=str)
     args = parser.parse_args()
 
