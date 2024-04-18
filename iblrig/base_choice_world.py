@@ -82,6 +82,7 @@ class ChoiceWorldSession(
     iblrig.base_tasks.RotaryEncoderMixin,
     iblrig.base_tasks.SoundMixin,
     iblrig.base_tasks.ValveMixin,
+    iblrig.base_tasks.NetworkMixin
 ):
     # task_params = ChoiceWorldParams()
     base_parameters_file = Path(__file__).parent.joinpath('base_choice_world_params.yaml')
@@ -136,6 +137,13 @@ class ChoiceWorldSession(
             type=int,
             required=False,
             help='initial delay before starting the first trial (default: 0s)',
+        )
+        parser.add_argument(
+            '--remote',
+            dest='remote_rigs',
+            type=str,
+            required=False,
+            help='specify one of the remote rigs to interact with over the network',
         )
         return parser
 

@@ -8,9 +8,6 @@ from iblrig_tasks._iblrig_tasks_trainingPhaseChoiceWorld.task import Session as 
 
 
 class TestTrainingPhaseChoiceWorld(BaseTestCases.CommonTestInstantiateTask):
-    def setUp(self) -> None:
-        self.task = TrainingChoiceWorldSession(**TASK_KWARGS)
-
     def test_task(self):
         """
         This test loops over training phases described in the mice training protocol and runs full
@@ -82,9 +79,6 @@ class TestTrainingPhaseChoiceWorld(BaseTestCases.CommonTestInstantiateTask):
 
 
 class TestInstantiationTraining(BaseTestCases.CommonTestInstantiateTask):
-    def setUp(self) -> None:
-        self.task = TrainingChoiceWorldSession(**TASK_KWARGS)
-
     def test_task(self):
         trial_fixtures = get_fixtures()
         adaptive_reward = 1.9
@@ -106,7 +100,8 @@ class TestInstantiationTraining(BaseTestCases.CommonTestInstantiateTask):
             assert not np.isnan(task.reward_time)
 
     def test_acquisition_description(self):
-        ad = self.task.experiment_description
+        task = TrainingChoiceWorldSession(**TASK_KWARGS)
+        ad = task.experiment_description
         ed = {
             'sync': {'bpod': {'collection': 'raw_task_data_00', 'extension': '.jsonable', 'acquisition_software': 'pybpod'}},
             'devices': {

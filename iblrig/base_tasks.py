@@ -16,6 +16,8 @@ import logging
 import signal
 import time
 import traceback
+import threading
+import asyncio
 from abc import ABC
 from collections import OrderedDict
 from collections.abc import Callable
@@ -33,7 +35,7 @@ import iblrig.alyx
 import iblrig.graphic as graph
 import iblrig.path_helper
 import pybpodapi
-from iblrig import sound
+from iblrig import sound, net
 from iblrig.constants import BASE_PATH, BONSAI_EXE
 from iblrig.frame2ttl import Frame2TTL
 from iblrig.hardware import SOFTCODE, Bpod, MyRotaryEncoder, sound_device_factory
@@ -44,6 +46,8 @@ from iblrig.tools import call_bonsai
 from iblrig.transfer_experiments import BehaviorCopier, VideoCopier
 from iblutil.spacer import Spacer
 from iblutil.util import Bunch, setup_logger
+from iblutil.io.net.base import ExpMessage
+from one.converters import ConversionMixin
 from one.alf.io import next_num_folder
 from one.api import ONE
 from pybpodapi.protocol import StateMachine
@@ -160,7 +164,7 @@ class BaseSession(ABC):
         # Prepare the experiment description dictionary
         self.experiment_description = self.make_experiment_description_dict(
             self.protocol_name,
-            self.paths.TASK_COLLECTION,
+            self.paths.get('TASK_COLLECTION'),
             procedures,
             projects,
             self.hardware_settings,
@@ -170,26 +174,33 @@ class BaseSession(ABC):
 
     def _init_paths(self, append: bool = False):
         """
-        :param existing_session_path: if we append a protocol to an existing session, this is the path
-        of the session in the form of /path/to/./lab/Subjects/[subject]/[date]/[number]
-        :return: Bunch with keys:
-        BONSAI: full path to the bonsai executable
-            >>> C:\iblrigv8\Bonsai\Bonsai.exe  # noqa
-        VISUAL_STIM_FOLDER: full path to the visual stim
-            >>> C:\iblrigv8\visual_stim  # noqa
-        LOCAL_SUBJECT_FOLDER: full path to the local subject folder
-            >>> C:\iblrigv8_data\mainenlab\Subjects  # noqa
-        REMOTE_SUBJECT_FOLDER: full path to the remote subject folder
-            >>> Y:\Subjects  # noqa
-        SESSION_FOLDER: full path to the current session:
-            >>> C:\iblrigv8_data\mainenlab\Subjects\SWC_043\2019-01-01\001  # noqa
-        TASK_COLLECTION: folder name of the current task
-            >>> raw_task_data_00  # noqa
-        SESSION_RAW_DATA_FOLDER: concatenation of the session folder and the task collection. This is where
-        the task data gets written
-            >>> C:\iblrigv8_data\mainenlab\Subjects\SWC_043\2019-01-01\001\raw_task_data_00  # noqa
-        DATA_FILE_PATH: contains the bpod trials
-            >>> C:\iblrigv8_data\mainenlab\Subjects\SWC_043\2019-01-01\001\raw_task_data_00\_iblrig_taskData.raw.jsonable  # noqa
+        Determine session paths.
+
+        Paths keys:
+
+        - BONSAI: full path to the bonsai executable, e.g. C:\\iblrigv8\\Bonsai\\Bonsai.exe
+        - VISUAL_STIM_FOLDER: full path to the visual stim, e.g. C:\\iblrigv8\\visual_stim
+        - LOCAL_SUBJECT_FOLDER: full path to the local subject folder, e.g. C:\\iblrigv8_data\\mainenlab\\Subjects
+        - REMOTE_SUBJECT_FOLDER: full path to the remote subject folder, e.g. Y:\\Subjects
+        - SESSION_FOLDER: full path to the current session, e.g.
+          C:\\iblrigv8_data\\mainenlab\\Subjects\\SWC_043\\2019-01-01\\001
+        - TASK_COLLECTION: folder name of the current task, e.g. raw_task_data_00
+        - SESSION_RAW_DATA_FOLDER: concatenation of the session folder and the task collection.
+          This is where the task data gets written, e.g.
+          C:\\iblrigv8_data\\mainenlab\\Subjects\\SWC_043\\2019-01-01\\001\\raw_task_data_00
+        - DATA_FILE_PATH: contains the bpod trials, e.g.
+          C:\\iblrigv8_data\\mainenlab\\Subjects\\SWC_043\\2019-01-01\\001\\raw_task_data_00\\_iblrig_taskData.raw.jsonable  # noqa
+
+        Parameters
+        ----------
+        append : bool
+            Iterate task collection within today's most recent session folder for the selected subject, instead of
+            iterating session number.
+
+        Returns
+        -------
+        iblutil.util.Bunch
+            A bunch of paths.
         """
         rig_computer_paths = iblrig.path_helper.get_local_and_remote_paths(
             local_path=self.iblrig_settings['iblrig_local_data_path'],
@@ -300,13 +311,16 @@ class BaseSession(ABC):
         # Add projects and procedures
         description['procedures'] = list(set(description.get('procedures', []) + (procedures or [])))
         description['projects'] = list(set(description.get('projects', []) + (projects or [])))
+        is_main_sync = (hardware_settings or {}).get('MAIN_SYNC', False)
         # Add sync key if required
-        if (hardware_settings or {}).get('MAIN_SYNC', False) and 'sync' not in description:
+        if is_main_sync and 'sync' not in description:
             description['sync'] = {
                 'bpod': {'collection': task_collection, 'acquisition_software': 'pybpod', 'extension': '.jsonable'}
             }
         # Add task
-        task = {task_protocol: {'collection': task_collection, 'sync_label': 'bpod'}}
+        task = {task_protocol: {'collection': task_collection}}
+        if is_main_sync:
+            task[task_protocol]['sync_label'] = 'bpod'
         if extractors:
             assert isinstance(extractors, list), 'extractors parameter must be a list of strings'
             task[task_protocol].update({'extractors': extractors})
@@ -367,7 +381,8 @@ class BaseSession(ABC):
             )
             try:
                 self._one = ONE(
-                    base_url=str(self.iblrig_settings['ALYX_URL']), username=self.iblrig_settings['ALYX_USER'], mode='remote'
+                    base_url=str(self.iblrig_settings['ALYX_URL']), username=self.iblrig_settings['ALYX_USER'],
+                    mode='remote', silent=True
                 )
                 log.info('instantiated ' + info_str)
             except Exception:
@@ -384,6 +399,9 @@ class BaseSession(ABC):
         :return:
         """
         settings_dictionary = self._make_task_parameters_dict()
+        if self.session_info['SUBJECT_NAME'] == 'iblrig_test_subject':
+            log.warning('Not registering test subject to Alyx')
+            return
         try:
             iblrig.alyx.register_session(self.paths.SESSION_FOLDER, settings_dictionary, one=self.one)
         except Exception:
@@ -446,7 +464,7 @@ class BaseSession(ABC):
             self.paths.SESSION_FOLDER.joinpath('.stop').unlink()
 
         signal.signal(signal.SIGINT, sigint_handler)
-        self._run()  # runs the specific task logic ie. trial loop etc...
+        self._run()  # runs the specific task logic i.e. trial loop etc...
         # post task instructions
         log.critical('Graceful exit')
         log.info(f'Session {self.paths.SESSION_RAW_DATA_FOLDER}')
@@ -458,6 +476,7 @@ class BaseSession(ABC):
         self.save_task_parameters_to_json_file()
         self.register_to_alyx()
         self._execute_mixins_shared_function('stop_mixin')
+        self._execute_mixins_shared_function('cleanup_mixin')
 
     @abc.abstractmethod
     def start_hardware(self):
@@ -495,7 +514,7 @@ class EmptySession(BaseSession):
 
 class OSCClient(udp_client.SimpleUDPClient):
     """
-    Handles communication to Bonsai using an UDP Client
+    Handles communication to Bonsai using a UDP Client
     OSC channels:
         USED:
         /t  -> (int)    trial number current
@@ -992,9 +1011,179 @@ class SoundMixin(BaseSession):
         return self.bpod.session.current_trial.export()
 
 
+class NetworkMixin(BaseSession):
+    """A mixin for communicating to auxiliary acquisition PC over a network."""
+
+    remote_rigs = None
+
+    def __init__(self, *args, remote_rigs=None, **kwargs):
+        """
+        A mixin for communicating to auxiliary acquisition PC over a network.
+
+        This should retrieve the services list, i.e. the list of available auxiliary rigs,
+        and determine which is the main sync. The main sync is the rig that determines the
+        experiment.
+
+        The services list is in a yaml file somewhere, called 'remote_rigs.yaml' and should
+        be a map of device name to URI. These are then selectable in the GUI and the URI of
+        those selected are added to the experiment description.
+
+        Subclasses should add their callbacks within init by calling :meth:`self.remote_rigs.services.assign_callback`.
+
+        Attributes
+        ----------
+        TODO Document attributes
+        """
+        if isinstance(remote_rigs, list):
+            remote_path = kwargs.get('iblrig_settings', {}).get('remote_data_folder')
+            if not remote_path:
+                remote_path = load_pydantic_yaml(RigSettings, kwargs.get('file_iblrig_settings'))['remote_data_folder']
+                if not remote_path:  # TODO add cause to error
+                    raise FileNotFoundError('Remote data folder not found in settings')
+                with open(remote_path.joinpath('remote_rigs.yaml'), 'r') as fp:
+                    all_remote_rigs = yaml.safe_load(fp)
+                if not set(remote_rigs).issubset(all_remote_rigs.keys()):
+                    raise ValueError('Selected remote rigs not in remote rigs list')
+                remote_rigs = {k: v for k, v in all_remote_rigs.items() if k in remote_rigs}
+        # Load and connect to remote services
+        self.connect(remote_rigs)
+        self.exp_ref = {}
+        try:
+            super().__init__(**kwargs)
+        except Exception as e:
+            self.remote_rigs.stop_event.set()
+            raise e
+
+    def connect(self, remote_rigs):
+        self.remote_rigs = net.Auxiliaries(remote_rigs or {})
+        # asyncio.to_thread(self.remote_rigs.listen)
+        # Handle keyboard interrupt event by graciously completing thread
+        # FIXME This may overwrite handler in base class!
+        signal.signal(signal.SIGINT, lambda sig, frame: self.remote_rigs.stop_event.set())
+        _thread = threading.Thread(target=asyncio.run, args=(self.remote_rigs.listen(),))
+        _thread.start()
+        # _thread.join()  TODO run as daemon and handle end signal
+
+    def _init_paths(self, append: bool = False):
+        """
+        Determine session paths.
+
+        Unlike :meth:`BaseSession._init_paths`, this method determined the session number from the remote main sync if
+        connected.
+
+        Parameters
+        ----------
+        append : bool
+            Iterate task collection within today's most recent session folder for the selected subject, instead of
+            iterating session number.
+
+        Returns
+        -------
+        iblutil.util.Bunch
+            A bunch of paths.
+        """
+        if self.hardware_settings.MAIN_SYNC:
+            return BaseSession._init_paths(self, append)
+        # Check if we have rigs connected
+        if not self.remote_rigs or len(self.remote_rigs.services) == 0:
+            log.warning('No remote rigs; experiment reference may not match the main sync.')
+            return BaseSession._init_paths(self, append)
+        # Set paths in a similar way to the super class
+        rig_computer_paths = iblrig.path_helper.get_local_and_remote_paths(
+            local_path=self.iblrig_settings['iblrig_local_data_path'],
+            remote_path=self.iblrig_settings['iblrig_remote_data_path'],
+            lab=self.iblrig_settings['ALYX_LAB'],
+            iblrig_settings=self.iblrig_settings,
+        )
+        paths = Bunch({'IBLRIG_FOLDER': BASE_PATH})
+        paths.BONSAI = BONSAI_EXE
+        paths.VISUAL_STIM_FOLDER = paths.IBLRIG_FOLDER.joinpath('visual_stim')
+        paths.LOCAL_SUBJECT_FOLDER = rig_computer_paths['local_subjects_folder']
+        paths.REMOTE_SUBJECT_FOLDER = rig_computer_paths['remote_subjects_folder']
+        date_folder = paths.LOCAL_SUBJECT_FOLDER.joinpath(
+            self.session_info.SUBJECT_NAME, self.session_info.SESSION_START_TIME[:10]
+        )
+        assert self.exp_ref
+        paths.SESSION_FOLDER = date_folder / f'{self.exp_ref["sequence"]:03}'
+        paths.TASK_COLLECTION = iblrig.path_helper.iterate_collection(paths.SESSION_FOLDER)
+        if append == paths.TASK_COLLECTION.endswith('00'):
+            raise ValueError(f'Append value incorrect. Either remove previous task collections from '
+                             f'{paths.SESSION_FOLDER}, or select append in GUI (--append arg in cli)')
+
+        paths.SESSION_RAW_DATA_FOLDER = paths.SESSION_FOLDER.joinpath(paths.TASK_COLLECTION)
+        paths.DATA_FILE_PATH = paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_taskData.raw.jsonable')
+        return paths
+
+    def run(self):
+        """Run session and report exceptions to remote services."""
+        try:
+            return super().run()
+        except Exception as e:
+            # Communicate error to services
+            if self.remote_rigs and any(self.remote_rigs.services):
+                tb = e.__traceback__  # TODO maybe go one level down with tb_next?
+                details = {
+                    'error': e.__class__.__name__,  # exception name str
+                    'message': str(e),  # error str
+                    'traceback': traceback.format_exc(),  # stack str
+                    'file': tb.tb_frame.f_code.co_filename,  # filename str
+                    'line_no': (tb.tb_lineno, tb.tb_lasti)  # (int, int)
+                }
+                # TODO This would stop all other services. Could instead send exp update?
+                self.remote_rigs.send(ExpMessage.EXPINTERRUPT, details, wait=True)
+                # TODO Set stop event flag in self.remote_rigs
+            raise e
+
+    def init_mixin_network(self):
+        """Initialize remote services"""
+        # Determine experiment reference from main sync
+        # TODO Add iblrig_version, iblutil_proc_version
+        is_main_sync = self.hardware_settings.get('MAIN_SYNC', False)
+        if is_main_sync:
+            raise NotImplementedError
+        assert self.one
+        r = self.remote_rigs.send('EXPINFO', {'subject': self.session_info['SUBJECT_NAME']}, wait=True)
+        if isinstance(r, Exception):
+            log.error('Error initializing network mixin: %s', r)
+            self.remote_rigs.stop_event.set()
+            raise r
+        assert sum(x[-1]['main_sync'] for x in r.values()) == 1, 'one main sync expected'
+        main_rig_name, (status, info) = next((k, v) for k, v in r.items() if v[-1]['main_sync'])
+        # TODO What is the behaviour when subject doesn't match? Should an error be raised on the remote rig or here?
+        # FIXME What to do if DAQ not started?
+        self.exp_ref = self.one.ref2dict(info['exp_ref']) if isinstance(info['exp_ref'], str) else info['exp_ref']
+        if self.exp_ref['subject'] != self.session_info['SUBJECT_NAME']:
+            log.error('Running task for "%s" but main sync returned exp ref for "%s".', self.session_info['SUBJECT_NAME'], self.exp_ref['subject'])
+            raise ValueError('Subject name doesn\'t match remote session on ' + main_rig_name)
+        if str(self.exp_ref['date']) != self.session_info['SESSION_START_TIME'][:10]:
+            raise RuntimeError(f'Session dates do not match between this rig and {main_rig_name}. \n'
+                               f'Running past or future sessions not currently supported. \n'
+                               f'Please check the system date time settings on each rig.')
+
+        # exp_ref = ConversionMixin.path2ref(self.paths['SESSION_FOLDER'], as_dict=False)
+        exp_ref = self.one.dict2ref(self.exp_ref)
+        r = self.remote_rigs.send('EXPINIT', {'exp_ref': exp_ref}, wait=True)
+        if isinstance(r, Exception):
+            log.error('Error initializing network mixin: %s', r)
+            self.remote_rigs.stop_event.set()
+            raise r
+
+    def start_mixin_network(self):
+        exp_ref = ConversionMixin.path2ref(self.paths['SESSION_FOLDER'], as_dict=False)
+        r = self.remote_rigs.send('EXPSTART', exp_ref, wait=True)
+
+    def stop_mixin_network(self):
+        r = self.remote_rigs.send('EXPEND', wait=True)
+
+    def cleanup_mixin_network(self):
+        self.remote_rigs.stop_event.set()
+        self.remote_rigs.cleanup(notify_services=False)
+
+
 class SpontaneousSession(BaseSession):
     """
-    A Spontaneous task doesn't have trials, it just runs until the user stops it
+    A Spontaneous task doesn't have trials, it just runs until the user stops it.
+
     It is used to get extraction structure for data streams
     """
 

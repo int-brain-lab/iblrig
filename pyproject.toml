@@ -79,7 +79,7 @@ files                  = [ "iblrig/**/*.py", "iblrig_tasks/**/*.py" ]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
-addopts    = "-ra --cov-report xml --cov=iblrig --cov=iblrig_tasks --tb=native"
+addopts    = "-ra --tb=native"
 minversion = "6.0"
 testpaths  = [ "iblrig/test", "iblrig/test/tasks" ]
 

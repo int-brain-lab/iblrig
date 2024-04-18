@@ -1,4 +1,5 @@
 import logging
+import asyncio
 import os
 import re
 import shutil
@@ -184,6 +185,64 @@ def alyx_reachable() -> bool:
     return False
 
 
+def _build_bonsai_cmd(
+        workflow_file: str | Path,
+        parameters: dict[str, Any] | None = None,
+        start: bool = True,
+        debug: bool = False,
+        bootstrap: bool = True,
+        editor: bool = True,
+) -> list[str]:
+    """
+    Execute a Bonsai workflow within a subprocess call.
+
+    Parameters
+    ----------
+    workflow_file : str | Path
+        Path to the Bonsai workflow file.
+    parameters : dict[str, str], optional
+        Parameters to be passed to Bonsai workflow.
+    start : bool, optional
+        Start execution of the workflow within Bonsai (default is True).
+    debug : bool, optional
+        Enable debugging mode if True (default is False).
+        Only applies if editor is True.
+    bootstrap : bool, optional
+        Enable Bonsai bootstrapping if True (default is True).
+    editor : bool, optional
+        Enable Bonsai editor if True (default is True).
+
+    Returns
+    -------
+    list of str
+        The Bonsai command to pass to subprocess.
+
+    Raises
+    ------
+    FileNotFoundError
+        If the Bonsai executable does not exist.
+        If the specified workflow file does not exist.
+    """
+    if not BONSAI_EXE.exists():
+        raise FileNotFoundError(BONSAI_EXE)
+    workflow_file = Path(workflow_file)
+    if not workflow_file.exists():
+        raise FileNotFoundError(workflow_file)
+    create_bonsai_layout_from_template(workflow_file)
+
+    cmd = [str(BONSAI_EXE), str(workflow_file)]
+    if start:
+        cmd.append('--start' if debug else '--start-no-debug')
+    if not editor:
+        cmd.append('--no-editor')
+    if not bootstrap:
+        cmd.append('--no-boot')
+    if parameters is not None:
+        for key, value in parameters.items():
+            cmd.append(f'-p:{key}={str(value)}')
+    return cmd
+
+
 def call_bonsai(
     workflow_file: str | Path,
     parameters: dict[str, Any] | None = None,
@@ -230,28 +289,58 @@ def call_bonsai(
         If the specified workflow file does not exist.
 
     """
-    if not BONSAI_EXE.exists():
-        raise FileNotFoundError(BONSAI_EXE)
-    workflow_file = Path(workflow_file)
-    if not workflow_file.exists():
-        raise FileNotFoundError(workflow_file)
-    cwd = workflow_file.parent
-    create_bonsai_layout_from_template(workflow_file)
-
-    cmd = [str(BONSAI_EXE), str(workflow_file)]
-    if start:
-        cmd.append('--start' if debug else '--start-no-debug')
-    if not editor:
-        cmd.append('--no-editor')
-    if not bootstrap:
-        cmd.append('--no-boot')
-    if parameters is not None:
-        for key, value in parameters.items():
-            cmd.append(f'-p:{key}={str(value)}')
-
+    cmd = _build_bonsai_cmd(workflow_file, parameters, start, debug, bootstrap, editor)
+    cwd = Path(workflow_file).parent
     log.info(f'Starting Bonsai workflow `{workflow_file.name}`')
-    log.debug(' '.join([str(x) for x in cmd]))
+    log.debug(' '.join(map(str, cmd)))
     if wait:
         return subprocess.run(args=cmd, cwd=cwd, check=check)
     else:
         return subprocess.Popen(args=cmd, cwd=cwd)
+
+
+async def call_bonsai_async(
+    workflow_file: str | Path,
+    parameters: dict[str, Any] | None = None,
+    start: bool = True,
+    debug: bool = False,
+    bootstrap: bool = True,
+    editor: bool = True
+) -> asyncio.subprocess.Process:
+    """
+    Asynchronously execute a Bonsai workflow within a subprocess call.
+
+    Parameters
+    ----------
+    workflow_file : str | Path
+        Path to the Bonsai workflow file.
+    parameters : dict[str, str], optional
+        Parameters to be passed to Bonsai workflow.
+    start : bool, optional
+        Start execution of the workflow within Bonsai (default is True).
+    debug : bool, optional
+        Enable debugging mode if True (default is False).
+        Only applies if editor is True.
+    bootstrap : bool, optional
+        Enable Bonsai bootstrapping if True (default is True).
+    editor : bool, optional
+        Enable Bonsai editor if True (default is True).
+
+    Returns
+    -------
+    asyncio.subprocess.Process
+        Pointer to the Bonsai subprocess if wait is False, otherwise subprocess.CompletedProcess.
+
+    Raises
+    ------
+    FileNotFoundError
+        If the Bonsai executable does not exist.
+        If the specified workflow file does not exist.
+
+    """
+    program, *cmd = _build_bonsai_cmd(workflow_file, parameters, start, debug, bootstrap, editor)
+    log.info(f'Starting Bonsai workflow `{workflow_file.name}`')
+    log.debug(' '.join(map(str, cmd)))
+    working_dir = Path(workflow_file).parent
+    return await asyncio.create_subprocess_exec(
+        program, *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE, cwd=working_dir)
