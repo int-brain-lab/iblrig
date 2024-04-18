@@ -340,7 +340,9 @@ class ValidatorCamera(Validator):
     _name = 'Camera'
 
     def _run(self):
-        if self.hardware_settings.device_cameras is None:
+        if self.hardware_settings.device_cameras is None or (
+            isinstance(self.hardware_settings.device_cameras, dict) and len(self.hardware_settings.device_cameras) == 0
+        ):
             yield Result(Status.SKIP, 'No cameras defined in hardware_settings.yaml - skipping validation')
             return False
 
