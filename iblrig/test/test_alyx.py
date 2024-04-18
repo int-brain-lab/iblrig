@@ -1,19 +1,19 @@
 """Test iblrig.alyx module."""
-import unittest
-from unittest.mock import patch
-import tempfile
+
+import datetime
 import random
 import string
-from pathlib import Path
-import datetime
+import tempfile
+import unittest
 from copy import deepcopy
-
-from one.tests import TEST_DB_1
-from one.api import ONE
+from pathlib import Path
+from unittest.mock import patch
 
 from iblrig import __version__
 from iblrig.test.base import TASK_KWARGS
 from iblrig_tasks._iblrig_tasks_trainingChoiceWorld.task import Session as TrainingChoiceWorldSession
+from one.api import ONE
+from one.tests import TEST_DB_1
 
 
 class TestRegisterSession(unittest.TestCase):
@@ -35,8 +35,12 @@ class TestRegisterSession(unittest.TestCase):
         # Task settings
         iblrig_settings = {'ALYX_LAB': self.lab, 'iblrig_local_subjects_path': self.tmpdir, 'iblrig_local_data_path': self.tmpdir}
         hardware_settings = {'RIG_NAME': self.one.alyx.rest('locations', 'list', lab=self.lab)[0]['name']}
-        self.task_settings = {**TASK_KWARGS, 'subject': self.subject,
-                              'iblrig_settings': iblrig_settings, 'hardware_settings': hardware_settings}
+        self.task_settings = {
+            **TASK_KWARGS,
+            'subject': self.subject,
+            'iblrig_settings': iblrig_settings,
+            'hardware_settings': hardware_settings,
+        }
 
     def test_register_session(self):
         task = TrainingChoiceWorldSession(**self.task_settings, one=self.one)
@@ -44,7 +48,7 @@ class TestRegisterSession(unittest.TestCase):
         task.session_info.SUBJECT_WEIGHT = 31.43
         task.create_session()  # calls register_to_alyx
 
-        ses, = self.one.alyx.rest('sessions', 'list', subject=self.subject)
+        (ses,) = self.one.alyx.rest('sessions', 'list', subject=self.subject)
         self.assertEqual(self.lab, ses['lab'])
         self.assertEqual(task.session_info['SESSION_START_TIME'], ses['start_time'])
         self.assertCountEqual(task.session_info['PROJECTS'], ses['projects'])
@@ -61,7 +65,7 @@ class TestRegisterSession(unittest.TestCase):
         chained = TrainingChoiceWorldSession(**task_settings, one=self.one, append=True)
         # Add n trials, etc. This simulates the call to register_to_alyx in the run method
         chained.session_info.SESSION_END_TIME = (datetime.datetime.now() + datetime.timedelta(hours=60)).isoformat()
-        chained.session_info.SUBJECT_WEIGHT = 28.
+        chained.session_info.SUBJECT_WEIGHT = 28.0
         chained.session_info.POOP_COUNT = 83
         chained.session_info['NTRIALS'], chained.session_info['NTRIALS_CORRECT'] = 100, 65
         chained.session_info['TOTAL_WATER_DELIVERED'] = 535
@@ -84,15 +88,19 @@ class TestRegisterSession(unittest.TestCase):
         self.assertEqual(1, len(self.one.alyx.rest('weighings', 'list', subject=self.subject)))
 
         # Test handling of errors
-        with patch('iblrig.base_tasks.IBLRegistrationClient.register_session', side_effect=AssertionError), \
-                self.assertLogs('iblrig.base_tasks', 'ERROR') as log:
+        with (
+            patch('iblrig.base_tasks.IBLRegistrationClient.register_session', side_effect=AssertionError),
+            self.assertLogs('iblrig.base_tasks', 'ERROR') as log,
+        ):
             self.assertIsNone(chained.register_to_alyx())
             self.assertIn('AssertionError', log.output[0])
             self.assertIn('Could not register session to Alyx', log.output[1])
 
         # An empty session record should cause an error when attempting to register weight
-        with patch('iblrig.base_tasks.IBLRegistrationClient.register_session', return_value=({}, None)), \
-                self.assertLogs('iblrig.base_tasks', 'ERROR') as log:
+        with (
+            patch('iblrig.base_tasks.IBLRegistrationClient.register_session', return_value=({}, None)),
+            self.assertLogs('iblrig.base_tasks', 'ERROR') as log,
+        ):
             self.assertIsNone(chained.register_to_alyx())
             self.assertIn('Could not register water administration to Alyx', log.output[1])
 

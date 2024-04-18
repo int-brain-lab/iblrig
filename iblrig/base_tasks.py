@@ -28,11 +28,11 @@ import yaml
 from pythonosc import udp_client
 
 import ibllib.io.session_params as ses_params
-from ibllib.oneibl.registration import IBLRegistrationClient
 import iblrig
 import iblrig.graphic as graph
 import iblrig.path_helper
 import pybpodapi
+from ibllib.oneibl.registration import IBLRegistrationClient
 from iblrig import sound
 from iblrig.constants import BASE_PATH, BONSAI_EXE
 from iblrig.frame2ttl import Frame2TTL
@@ -420,10 +420,12 @@ class BaseSession(ABC):
                     session=ses['url'][-36:],
                     subject=self.session_info.SUBJECT_NAME,
                     water_type=self.task_params.get('REWARD_TYPE', None),
-                    water_administered=self.session_info['TOTAL_WATER_DELIVERED'] / 1000)
+                    water_administered=self.session_info['TOTAL_WATER_DELIVERED'] / 1000,
+                )
                 self.one.alyx.rest('water-administrations', 'create', data=wa_data)
-                log.info(f"Water administered registered in Alyx database: {ses['subject']},"
-                         f"{wa_data['water_administered']}mL")
+                log.info(
+                    f"Water administered registered in Alyx database: {ses['subject']}," f"{wa_data['water_administered']}mL"
+                )
         except Exception:
             log.error(traceback.format_exc())
             log.error('Could not register water administration to Alyx')
