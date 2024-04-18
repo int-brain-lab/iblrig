@@ -6,7 +6,6 @@ on:
     paths-ignore:
       - 'docs/**'
   pull_request:
-    branches: [iblrigv8]
     paths-ignore:
       - 'docs/**'
 
