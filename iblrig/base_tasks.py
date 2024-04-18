@@ -33,7 +33,7 @@ import iblrig.alyx
 import iblrig.graphic as graph
 import iblrig.path_helper
 import pybpodapi
-from iblrig import sound
+from iblrig import sound, net
 from iblrig.constants import BASE_PATH, BONSAI_EXE
 from iblrig.frame2ttl import Frame2TTL
 from iblrig.hardware import SOFTCODE, Bpod, MyRotaryEncoder, sound_device_factory
@@ -44,6 +44,7 @@ from iblrig.tools import call_bonsai
 from iblrig.transfer_experiments import BehaviorCopier, VideoCopier
 from iblutil.spacer import Spacer
 from iblutil.util import Bunch, setup_logger
+from iblutil.io.net.base import ExpStatus
 from one.alf.io import next_num_folder
 from one.api import ONE
 from pybpodapi.protocol import StateMachine
@@ -992,9 +993,74 @@ class SoundMixin(BaseSession):
         return self.bpod.session.current_trial.export()
 
 
+class NetworkMixin(BaseSession):
+    """A mixin for communicating to auxiliary acquisition PC over a network."""
+
+    remote_rigs = None
+
+    def __init__(self, *args, remote_rigs=None, **kwargs):
+        """
+        A mixin for communicating to auxiliary acquisition PC over a network.
+
+        This should retrieve the services list, i.e. the list of available auxiliary rigs,
+        and determine which is the main sync. The main sync is the rig that determines the
+        experiment.
+
+        The services list is in a yaml file somewhere, called 'remote_rigs.yaml' and should
+        be a map of device name to URI. These are then selectable in the GUI and the URI of
+        those selected are added to the experiment description.
+
+        Attributes
+        ----------
+        """
+        super().__init__(**kwargs)
+        # Load and connect to remote services
+        self.connect(remote_rigs)
+
+    def connect(self, remote_rigs):
+        self.remote_rigs = net.Auxiliaries(remote_rigs or {})
+
+    def _init_paths(self, append: bool = False):
+        if self.hardware_settings.MAIN_SYNC:
+            return BaseSession._init_paths(self, **kwargs)
+        # Check if we have rigs connected
+        if not self.remote_rigs or len(self.remote_rigs.services) == 0:
+            log.warning('No remote rigs; experiment reference may not match the main sync.')
+            return BaseSession._init_paths(self, **kwargs)
+        # Determine experiment reference from main sync
+        r = self.remote_rigs.send('EXPINFO', {'subject': self.session_info['SUBJECT_NAME']}, wait=True)
+        assert sum(x[-1]['main_sync'] for x in r.values()), 'one main sync expected'
+        main_rig_name, (status, info) = next((k, v) for k, v in r.items() if v[-1]['main_sync'])
+        # TODO handle cases where experiment interrupted
+        if status is ExpStatus.RUNNING and append:
+            # TODO init paths with exp ref
+            ...
+        elif status is ExpStatus.RUNNING and not append:
+            # TODO Stop main sync and request new exp ref?
+            raise NotImplementedError('select append or manually stop ' + main_rig_name)
+        else:
+            raise RuntimeError(f'expected status RUNNING from {main_rig_name}, got {status.name}')
+
+    # def is_main_sync
+
+
+    def init_mixin_network(self):
+        ...
+
+    def start_mixin_network(self):
+        ...
+
+    def stop_mixin_network(self):
+        ...
+
+    def cleanup_mixin_network(self):
+        ...
+
+
 class SpontaneousSession(BaseSession):
     """
-    A Spontaneous task doesn't have trials, it just runs until the user stops it
+    A Spontaneous task doesn't have trials, it just runs until the user stops it.
+
     It is used to get extraction structure for data streams
     """
 
