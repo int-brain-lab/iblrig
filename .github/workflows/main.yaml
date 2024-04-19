@@ -18,6 +18,9 @@ jobs:
         name: ruff check
         with:
           args: 'check --output-format=github'
+      - uses: chartboost/ruff-action@v1
+        with:
+          args: 'format --check'
   tests:
     name: build (${{ matrix.python-version }}, ${{ matrix.os }})
     needs: ruff
