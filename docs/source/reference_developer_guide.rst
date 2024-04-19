@@ -49,7 +49,8 @@ Running Tests Locally
 
 .. code-block:: console
 
-   flake8
+   ruff check .
+   ruff format .
    python -m unittest discover ./iblrig/test
 
 
