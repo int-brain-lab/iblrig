@@ -25,10 +25,9 @@ from iblrig.path_helper import load_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings, RigSettings
 from iblrig.serial_singleton import SerialSingleton, filter_ports
 from iblrig.tools import ANSI, get_inheritors, internet_available
+from iblrig.version_management import get_branch, is_dirty
 from pybpodapi.bpod_modules.bpod_module import BpodModule
 from pybpodapi.state_machine import StateMachine
-
-from iblrig.version_management import is_dirty, get_branch
 
 log = logging.getLogger(__name__)
 
@@ -163,7 +162,11 @@ class ValidatorSerial(Validator):
             yield Result(Status.SKIP, f'No serial port defined for {self.name}')
             return False
         elif next((p for p in list_ports.comports() if p.device == self.port), None) is None:
-            yield Result(Status.FAIL, f'{self.port} is not a valid serial port', solution='Double check!')
+            yield Result(
+                Status.FAIL,
+                f'{self.port} is not a valid serial port',
+                solution='Check serial port setting in hardware_settings.yaml',
+            )
             return False
         else:
             try:
@@ -175,7 +178,12 @@ class ValidatorSerial(Validator):
                     f'Serial Number: {self.port_info.serial_number}',
                 )
             except SerialException as e:
-                yield Result(Status.FAIL, f'Serial device on {self.port} cannot be connected to', exception=e)
+                yield Result(
+                    Status.FAIL,
+                    f'Serial device on {self.port} cannot be connected to',
+                    solution='Try power-cycling the device',
+                    exception=e,
+                )
                 return False
 
         # first, test for properties of the serial port without opening the latter (VID, PID, etc)
@@ -195,7 +203,11 @@ class ValidatorSerial(Validator):
             yield Result(Status.PASS, f'Serial device positively identified as {self.name}')
             return True
         else:
-            yield Result(Status.FAIL, f'Serial device on {self.port} does NOT seem to be a {self.name}')
+            yield Result(
+                Status.FAIL,
+                f'Serial device on {self.port} does NOT seem to be a {self.name}',
+                solution='Check serial port setting in hardware_settings.yaml',
+            )
             return False
 
 
@@ -328,7 +340,9 @@ class ValidatorBpod(ValidatorSerial):
             bpod = Bpod(self.hardware_settings.device_bpod.COM_BPOD, skip_initialization=False)
             yield Result(Status.PASS, 'Successfully connected to Bpod using pybpod')
         except Exception as e:
-            yield Result(Status.FAIL, 'Could not connect to Bpod using pybpod', exception=e)
+            yield Result(
+                Status.FAIL, 'Could not connect to Bpod using pybpod', solution='Try power-cycling the Bpod', exception=e
+            )
             return False
 
         # return connected modules
@@ -365,7 +379,11 @@ class ValidatorCamera(Validator):
 
             with Cameras() as cameras:
                 if len(cameras) == 0:
-                    yield Result(Status.FAIL, 'Could not find a camera connected to the computer')
+                    yield Result(
+                        Status.FAIL,
+                        'Could not find a camera connected to the computer',
+                        solution='Connect a camera on one of the computers USB ports',
+                    )
                     return False
                 else:
                     yield Result(
@@ -390,7 +408,12 @@ class ValidatorCamera(Validator):
         bpod.run_state_machine(sma)
         triggers = [i.host_timestamp for i in bpod.session.current_trial.events_occurrences if i.content == 'Port1In']
         if len(triggers) == 0:
-            yield Result(Status.FAIL, "No TTL detected on Bpod's behavior port #1")
+            yield Result(
+                Status.FAIL,
+                "No TTL detected on Bpod's behavior port #1",
+                solution='Check the wiring between camera and valve driver board and make sure the latter is connected '
+                "to Bpod's behavior port #1",
+            )
             return False
         else:
             yield Result(Status.PASS, "Detected camera TTL on Bpod's behavior port #1")
@@ -399,7 +422,7 @@ class ValidatorCamera(Validator):
             if isclose(trigger_rate, target_rate, rel_tol=0.1):
                 yield Result(Status.PASS, f'Measured TTL rate: {trigger_rate:.1f} Hz')
             else:
-                yield Result(Status.WARN, f'Measured TTL rate: {trigger_rate:.1f} Hz')
+                yield Result(Status.WARN, f'Measured TTL rate: {trigger_rate:.1f} Hz (expecting {target_rate} Hz)')
         return True
 
 
@@ -470,12 +493,14 @@ class ValidatorMic(Validator):
             return True
         else:
             yield Result(
-                Status.FAIL, 'Could not find UltraMic 200K microphone', solution='Make sure that the microphone is plugged in'
+                Status.FAIL,
+                'Could not find UltraMic 200K microphone',
+                solution='Make sure that the microphone is connected to the PC via USB',
             )
             return False
 
 
-class GitValidator(Validator):
+class ValidatorGit(Validator):
     _name = 'Git'
 
     def _run(self):
@@ -489,19 +514,19 @@ class GitValidator(Validator):
         if this_branch != main_branch:
             yield Result(
                 Status.WARN,
-                f'Working tree of IBLRIG is on Git branch `{this_branch}`',
-                solution=f'Issue `git checkout {main_branch}` to switch to `{main_branch}` branch'
+                f"Working tree of IBLRIG is on Git branch '{this_branch}'",
+                solution=f"Issue 'git checkout {main_branch}' to switch to '{main_branch}' branch",
             )
             return_status = False
         else:
-            yield Result(Status.PASS, f'Working tree of IBLRIG is on Git branch `{main_branch}`')
+            yield Result(Status.PASS, f"Working tree of IBLRIG is on Git branch '{main_branch}'")
 
         if is_dirty():
             yield Result(
                 Status.WARN,
                 "Working tree of IBLRIG contains local changes - don't expect things to work as intended!",
-                solution='To list files that have been changed locally, issue `git diff --name-only`. '
-                'Issue `git reset --hard` to reset the repository to its default state',
+                solution="To list files that have been changed locally, issue 'git diff --name-only'. "
+                "Issue 'git reset --hard' to reset the repository to its default state",
             )
             return_status = False
         else:

@@ -45,7 +45,7 @@ from iblrig.misc import _get_task_argument_parser
 from iblrig.path_helper import load_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings, RigSettings
 from iblrig.tools import alyx_reachable, get_anydesk_id, internet_available
-from iblrig.version_management import check_for_updates, get_changelog, is_dirty
+from iblrig.version_management import check_for_updates, get_changelog
 from iblutil.util import setup_logger
 from one.webclient import AlyxClient
 from pybpodapi.exceptions.bpod_error import BpodErrorException
