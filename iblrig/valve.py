@@ -5,7 +5,7 @@ from collections.abc import Sequence
 import numpy as np
 import scipy
 from numpy.polynomial import Polynomial
-from pydantic import PositiveFloat, validate_call
+from pydantic import PositiveFloat, validate_call, NonNegativeFloat
 
 from iblrig.pydantic_definitions import HardwareSettingsValve
 
@@ -34,7 +34,7 @@ class ValveValues:
         self.add_samples(open_times_ms, weights_g)
 
     @staticmethod
-    def _fcn(x: np.ndarray, a: float, b: float, c: float) -> np.ndarray:
+    def _fcn(x: np.ndarray, b: float, c: float) -> np.ndarray:
         """
         Function for fitting a quadratic curve.
 
@@ -42,8 +42,6 @@ class ValveValues:
         ----------
         x : np.ndarray
             Input data.
-        a : float
-            Coefficient for constant term.
         b : float
             Coefficient for lineaer term.
         c : float
@@ -54,7 +52,7 @@ class ValveValues:
         np.ndarray
             The result of the polynomial curve fitting.
         """
-        return a + b * x + c * np.square(x)
+        return b * x + c * np.square(x)
 
     @validate_call
     def add_samples(self, open_times_ms: Sequence[PositiveFloat], weights_g: Sequence[PositiveFloat]):
@@ -113,16 +111,16 @@ class ValveValues:
                 warnings.simplefilter('ignore')
                 try:
                     c, _ = scipy.optimize.curve_fit(
-                        self._fcn, self.open_times_ms, self.volumes_ul, bounds=([-np.inf, 0, 0], np.inf)
+                        self._fcn, self.open_times_ms, self.volumes_ul, bounds=([0, 0], np.inf)
                     )
                 except RuntimeError:
-                    c = [np.nan, np.nan, np.nan]
+                    c = [np.nan, np.nan]
         else:
-            c = [np.nan, np.nan, np.nan]
-        self._polynomial = Polynomial(coef=c)
+            c = [np.nan, np.nan]
+        self._polynomial = Polynomial(coef=np.append(0, c))
 
     @validate_call
-    def ul2ms(self, volume_ul: PositiveFloat) -> PositiveFloat:
+    def ul2ms(self, volume_ul: NonNegativeFloat) -> NonNegativeFloat:
         """
         Convert from volume to opening time.
 
@@ -139,7 +137,7 @@ class ValveValues:
         return max((self._polynomial - volume_ul).roots())
 
     @validate_call
-    def ms2ul(self, volume_ul: PositiveFloat | list[PositiveFloat]) -> PositiveFloat | np.ndarray:
+    def ms2ul(self, volume_ul: NonNegativeFloat | list[NonNegativeFloat]) -> NonNegativeFloat | np.ndarray:
         """
         Convert from opening time to volume.
 

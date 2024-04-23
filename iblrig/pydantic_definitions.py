@@ -125,7 +125,7 @@ class HardwareSettingsValve(BunchModel):
     WATER_CALIBRATION_DATE: date
     WATER_CALIBRATION_RANGE: list[PositiveFloat] = Field(min_items=2, max_items=2)  # type: ignore
     WATER_CALIBRATION_MAX_OPEN_TIME_MS: PositiveInt = Field(
-        default=200, description='Longest opening time to start calibration with'
+        default=100, description='Longest opening time to start calibration with'
     )
     WATER_CALIBRATION_LOWER_VOLUME_THRESHOLD_UL: PositiveFloat = Field(
         default=1.0, description='Lower volume threshold to reach in order to finish calibration'
