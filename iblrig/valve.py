@@ -188,7 +188,7 @@ class Valve:
         return self._settings.WATER_CALIBRATION_DATE
 
     @property
-    def calibration_range(self) -> list[float, float]:
+    def calibration_range(self) -> list[float]:
         """
         Get the calibration range of the valve.
 
@@ -222,6 +222,6 @@ class Valve:
             The current hardware settings.
         """
         settings = self._settings
-        settings.WATER_CALIBRATION_OPEN_TIMES = self.values.open_times_ms
-        settings.WATER_CALIBRATION_WEIGHT_PERDROP = self.values.volumes_ul
+        settings.WATER_CALIBRATION_OPEN_TIMES = list(self.values.open_times_ms)
+        settings.WATER_CALIBRATION_WEIGHT_PERDROP = list(self.values.volumes_us)
         return settings
