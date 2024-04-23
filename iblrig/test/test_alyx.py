@@ -13,7 +13,14 @@ from iblrig import __version__
 from iblrig.test.base import TASK_KWARGS
 from iblrig_tasks._iblrig_tasks_trainingChoiceWorld.task import Session as TrainingChoiceWorldSession
 from one.api import ONE
-from one.tests import TEST_DB_1
+
+
+TEST_DB = {
+    'base_url': 'https://test.alyx.internationalbrainlab.org',
+    'username': 'test_user',
+    'password': 'TapetesBloc18',
+    'silent': True
+}
 
 
 class TestRegisterSession(unittest.TestCase):
@@ -26,7 +33,7 @@ class TestRegisterSession(unittest.TestCase):
         self.tmpdir = Path(tmp.name)
 
         # Create a random new subject
-        self.one = ONE(**TEST_DB_1, cache_rest=None)
+        self.one = ONE(**TEST_DB, cache_rest=None)
         self.subject = ''.join(random.choices(string.ascii_letters, k=10))
         self.lab = 'mainenlab'
         self.one.alyx.rest('subjects', 'create', data={'lab': self.lab, 'nickname': self.subject})
