@@ -19,7 +19,7 @@ from serial.tools import list_ports
 from serial.tools.list_ports_common import ListPortInfo
 
 from iblrig.base_tasks import BpodMixin, SoundMixin
-from iblrig.constants import BASE_PATH, HAS_PYSPIN, HAS_SPINNAKER
+from iblrig.constants import BASE_PATH, HAS_PYSPIN, HAS_SPINNAKER, IS_GIT
 from iblrig.hardware import Bpod
 from iblrig.path_helper import load_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings, RigSettings
@@ -27,6 +27,8 @@ from iblrig.serial_singleton import SerialSingleton, filter_ports
 from iblrig.tools import ANSI, get_inheritors, internet_available
 from pybpodapi.bpod_modules.bpod_module import BpodModule
 from pybpodapi.state_machine import StateMachine
+
+from iblrig.version_management import is_dirty, get_branch
 
 log = logging.getLogger(__name__)
 
@@ -471,6 +473,41 @@ class ValidatorMic(Validator):
                 Status.FAIL, 'Could not find UltraMic 200K microphone', solution='Make sure that the microphone is plugged in'
             )
             return False
+
+
+class GitValidator(Validator):
+    _name = 'Git'
+
+    def _run(self):
+        if not IS_GIT:
+            yield Result(Status.SKIP, 'Your copy of IBLRIG is not managed through Git')
+            return False
+
+        return_status = True
+        main_branch = 'iblrigv8'
+        this_branch = get_branch()
+        if this_branch != main_branch:
+            yield Result(
+                Status.WARN,
+                f'Working tree of IBLRIG is on Git branch `{this_branch}`',
+                solution=f'Issue `git checkout {main_branch}` to switch to `{main_branch}` branch'
+            )
+            return_status = False
+        else:
+            yield Result(Status.PASS, f'Working tree of IBLRIG is on Git branch `{main_branch}`')
+
+        if is_dirty():
+            yield Result(
+                Status.WARN,
+                "Working tree of IBLRIG contains local changes - don't expect things to work as intended!",
+                solution='To list files that have been changed locally, issue `git diff --name-only`. '
+                'Issue `git reset --hard` to reset the repository to its default state',
+            )
+            return_status = False
+        else:
+            yield Result(Status.PASS, 'Working tree of IBLRIG does not contain local changes')
+
+        return return_status
 
 
 class _SoundCheckTask(BpodMixin, SoundMixin):

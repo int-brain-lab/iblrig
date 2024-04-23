@@ -419,11 +419,6 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         update_worker.signals.result.connect(self._on_check_update_result)
         QThreadPool.globalInstance().start(update_worker)
 
-        # check dirty state
-        dirty_worker = Worker(is_dirty)
-        dirty_worker.signals.result.connect(self._on_check_dirty_result)
-        QThreadPool.globalInstance().start(dirty_worker)
-
     def _show_error_dialog(
         self,
         title: str,
@@ -551,32 +546,6 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
     def _on_doc_url_changed(self):
         self.uiPushWebBack.setEnabled(len(self.webEngineView.history().backItems(1)) > 0)
         self.uiPushWebForward.setEnabled(len(self.webEngineView.history().forwardItems(1)) > 0)
-
-    def _on_check_dirty_result(self, repository_is_dirty: bool) -> None:
-        """
-        Handle the result of checking for local changes in the repository.
-
-        Parameters
-        ----------
-        repository_is_dirty : bool
-            A boolean flag indicating whether the repository contains local changes.
-
-        Returns
-        -------
-        None
-        """
-        if repository_is_dirty:
-            msg_box = QtWidgets.QMessageBox(parent=self)
-            msg_box.setWindowTitle('Warning')
-            msg_box.setIcon(QtWidgets.QMessageBox().Warning)
-            msg_box.setText("Your copy of iblrig contains local changes.\nDon't expect things to work as intended!")
-            msg_box.setDetailedText(
-                'To list all files that have been changed locally:\n\n'
-                '    git diff --name-only\n\n'
-                'To reset the repository to its default state:\n\n'
-                '    git reset --hard'
-            )
-            msg_box.exec()
 
     def _log_in_or_out(self, username: str) -> bool:
         # Routine for logging out:
