@@ -28,6 +28,8 @@ from iblrig.tools import ANSI, get_inheritors, internet_available
 from pybpodapi.bpod_modules.bpod_module import BpodModule
 from pybpodapi.state_machine import StateMachine
 
+from iblrig.version_management import is_dirty
+
 log = logging.getLogger(__name__)
 
 
@@ -471,6 +473,24 @@ class ValidatorMic(Validator):
                 Status.FAIL, 'Could not find UltraMic 200K microphone', solution='Make sure that the microphone is plugged in'
             )
             return False
+
+
+class IblrigValidator(Validator):
+    _name = 'IBLRIG'
+
+    def _run(self):
+        return_status = True
+        if return_status := not (return_status and not is_dirty()):
+            yield Result(
+                Status.WARN,
+                "Working tree of IBLRIG contains local changes - don't expect things to work as intended!",
+                solution='To list files that have been changed locally, issue `git diff --name-only`. '
+                'Issue `git reset --hard` to reset the repository to its default state',
+            )
+        else:
+            yield Result(Status.PASS, 'Working tree of IBLRIG does not contain local changes')
+
+        return return_status
 
 
 class _SoundCheckTask(BpodMixin, SoundMixin):
