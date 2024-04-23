@@ -14,12 +14,11 @@ from iblrig.test.base import TASK_KWARGS
 from iblrig_tasks._iblrig_tasks_trainingChoiceWorld.task import Session as TrainingChoiceWorldSession
 from one.api import ONE
 
-
 TEST_DB = {
     'base_url': 'https://test.alyx.internationalbrainlab.org',
     'username': 'test_user',
     'password': 'TapetesBloc18',
-    'silent': True
+    'silent': True,
 }
 
 
