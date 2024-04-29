@@ -172,7 +172,7 @@ class TestPrepareVideoSession(unittest.TestCase):
 
         # Test config validation
         self.assertRaises(ValueError, video.prepare_video_session, self.subject, 'training')
-        session().hardware_settings = hws.construct()
+        session().hardware_settings = hws.model_construct()
         self.assertRaises(ValueError, video.prepare_video_session, self.subject, 'training')
 
 
@@ -211,7 +211,7 @@ class TestValidateVideo(unittest.TestCase):
             }
             self.assertCountEqual(set(x.getMessage() for x in log.records), expected)
         # Test video meta warnings
-        config = self.config.copy()
+        config = self.config.model_copy()
         config.HEIGHT = config.WIDTH = 160
         config.FPS = 150
         with self.assertLogs(video.__name__, 30) as log:
