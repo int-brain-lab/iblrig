@@ -7,6 +7,7 @@ Changelog
 * automated validation of rig components
 * adaptive reward parameter for trainingPhaseChoiceWorld
 * add validate_video entry-point
+* switch from flake8 to ruff for linting & code-checks
 
 8.18.0
 ------
