@@ -8,6 +8,8 @@ Changelog
 * adaptive reward parameter for trainingPhaseChoiceWorld
 * add validate_video entry-point
 * switch from flake8 to ruff for linting & code-checks
+* automatically set correct trigger-mode for setting up the cameras
+* support rotary encoder on arbitrary module port 
 
 8.18.0
 ------
