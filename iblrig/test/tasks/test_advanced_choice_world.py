@@ -9,7 +9,6 @@ from iblrig_tasks._iblrig_tasks_advancedChoiceWorld.task import Session as Advan
 
 
 class TestDefaultParameters(TestCase):
-
     def test_params_yaml(self):
         # just make sure the parameter file is
         task = AdvancedChoiceWorldSession(**TASK_KWARGS)
@@ -18,14 +17,13 @@ class TestDefaultParameters(TestCase):
 
 
 class TestInstantiationAdvanced(BaseTestCases.CommonTestInstantiateTask):
-
     def setUp(self) -> None:
         self.task = AdvancedChoiceWorldSession(
             probability_set=[2, 2, 2, 1, 1, 1],
-            contrast_set=[-1, -.5, 0, 0, .5, 1],
+            contrast_set=[-1, -0.5, 0, 0, 0.5, 1],
             reward_set_ul=[1, 1.5, 2, 2, 2.5, 2.6],
             position_set=[-35, -35, -35, 35, 35, 35],
-            **TASK_KWARGS
+            **TASK_KWARGS,
         )
 
     def test_task(self):
@@ -52,12 +50,17 @@ class TestInstantiationAdvanced(BaseTestCases.CommonTestInstantiateTask):
             assert not np.isnan(task.reward_time)
 
         # check the contrasts and positions by aggregating the trials table
-        df_contrasts = task.trials_table.iloc[:nt, :].groupby(['contrast', 'position']).agg(
-            count=pd.NamedAgg(column="reward_amount", aggfunc="count"),
-            n_unique_rewards=pd.NamedAgg(column="reward_amount", aggfunc="nunique"),
-            max_reward=pd.NamedAgg(column="reward_amount", aggfunc="max"),
-            min_reward=pd.NamedAgg(column="reward_amount", aggfunc="min"),
-        ).reset_index()
+        df_contrasts = (
+            task.trials_table.iloc[:nt, :]
+            .groupby(['contrast', 'position'])
+            .agg(
+                count=pd.NamedAgg(column='reward_amount', aggfunc='count'),
+                n_unique_rewards=pd.NamedAgg(column='reward_amount', aggfunc='nunique'),
+                max_reward=pd.NamedAgg(column='reward_amount', aggfunc='max'),
+                min_reward=pd.NamedAgg(column='reward_amount', aggfunc='min'),
+            )
+            .reset_index()
+        )
         # the error trials have 0 reward while the correct trials have their assigned reward amount
         np.testing.assert_array_equal(df_contrasts['n_unique_rewards'], 2)
         np.testing.assert_array_equal(df_contrasts['min_reward'], 0)

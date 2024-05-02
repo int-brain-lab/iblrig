@@ -435,6 +435,7 @@ class ChoiceWorldSession(
         calls :meth:`send_trial_info_to_bonsai`.
         This is called by the `next_trial` method before updating the Bpod state machine. This also
         """
+
     def draw_next_trial_info(self, pleft=0.5, contrast=None, position=None, reward_amount=None):
         if contrast is None:
             contrast = misc.draw_contrast(self.task_params.CONTRAST_SET, self.task_params.CONTRAST_SET_PROBABILITY_TYPE)
