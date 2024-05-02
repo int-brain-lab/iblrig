@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import numpy as np
+import pandas as pd
 import yaml
 
 import iblrig.misc
@@ -24,18 +26,31 @@ class Session(ActiveChoiceWorldSession):
         self,
         *args,
         contrast_set: list[float] = DEFAULTS['CONTRAST_SET'],
-        contrast_set_probability_type: str = DEFAULTS['CONTRAST_SET_PROBABILITY_TYPE'],
-        probability_left: float = DEFAULTS['PROBABILITY_LEFT'],
-        reward_amount_ul: float = DEFAULTS['REWARD_AMOUNT_UL'],
+        probability_set: float | list[float] = DEFAULTS['PROBABILITY_SET'],
+        reward_set_ul: float | list[float] = DEFAULTS['REWARD_SET_UL'],
+        position_set: list[float] = DEFAULTS['POSITION_SET'],
         stim_gain: float = DEFAULTS['STIM_GAIN'],
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
         self.task_params['CONTRAST_SET'] = contrast_set
-        self.task_params['CONTRAST_SET_PROBABILITY_TYPE'] = contrast_set_probability_type
-        self.task_params['PROBABILITY_LEFT'] = probability_left
-        self.task_params['REWARD_AMOUNT_UL'] = reward_amount_ul
+        self.task_params['PROBABILITY_SET'] = probability_set
+        self.task_params['REWARD_SET_UL'] = reward_set_ul
+        self.task_params['POSITION_SET'] = position_set
         self.task_params['STIM_GAIN'] = stim_gain
+        nc = len(self.task_params['CONTRAST_SET'])
+        self.df_contrasts = pd.DataFrame(columns=['contrast', 'probability', 'reward_amount_ul', 'position'])
+        self.df_contrasts['contrast'] = self.task_params['CONTRAST_SET']
+
+    def draw_next_trial_info(self, **kwargs):
+        nc = len(self.task_params['CONTRAST_SET'])
+        ic = np.random.choice(np.arange(nc), p=self.task_params['PROBABILITY_SET'])
+        self.task_params['PROBABILITY_SET']
+        pleft, contrast, position= (0.5, 0, -35)
+        super().draw_next_trial_info(pleft=pleft, contrast=contrast, position=position)
+    @property
+    def reward_amount(self):
+        return self.task_params.REWARD_AMOUNTS_UL[0]
 
     @staticmethod
     def extra_parser():
@@ -47,33 +62,34 @@ class Session(ActiveChoiceWorldSession):
             dest='contrast_set',
             default=DEFAULTS['CONTRAST_SET'],
             nargs='+',
-            type=float,
+            type=list[float],
             help='set of contrasts to present',
         )
         parser.add_argument(
-            '--contrast_set_probability_type',
-            option_strings=['--contrast_set_probability_type'],
-            dest='contrast_set_probability_type',
-            default=DEFAULTS['CONTRAST_SET_PROBABILITY_TYPE'],
-            type=str,
-            choices=['skew_zero', 'uniform'],
-            help=f'probability type for contrast set ' f'(default: {DEFAULTS["CONTRAST_SET_PROBABILITY_TYPE"]})',
+            '--probability_set',
+            option_strings=['--probability_set'],
+            dest='probability_set',
+            default=DEFAULTS['PROBABILITY_SET'],
+            nargs='+',
+            type=float | list[float],
+            help='probabilities of each contrast in contrast_set. If scalar all contrasts are equiprobable',
         )
         parser.add_argument(
-            '--probability_left',
-            option_strings=['--probability_left'],
-            dest='probability_left',
-            default=DEFAULTS['PROBABILITY_LEFT'],
-            type=float,
-            help=f'probability for stimulus to appear on the left ' f'(default: {DEFAULTS["PROBABILITY_LEFT"]:.1f})',
+            '--reward_set_ul',
+            option_strings=['--reward_set_ul'],
+            dest='reward_set_ul',
+            default=DEFAULTS['REWARD_SET_UL'],
+            type=float | list[float],
+            help=f'reward amount (default: {DEFAULTS["REWARD_SET_UL"]}μl), can be a vector of n contrasts or a scalar',
         )
         parser.add_argument(
-            '--reward_amount_ul',
-            option_strings=['--reward_amount_ul'],
-            dest='reward_amount_ul',
-            default=DEFAULTS['REWARD_AMOUNT_UL'],
-            type=float,
-            help=f'reward amount (default: {DEFAULTS["REWARD_AMOUNT_UL"]}μl)',
+            '--position_set',
+            option_strings=['--position_set'],
+            dest='probability_set',
+            default=DEFAULTS['PROBABILITY_SET'],
+            nargs='+',
+            type=list[float],
+            help='Position for each contrast in contrast set.',
         )
         parser.add_argument(
             '--stim_gain',

@@ -7,7 +7,13 @@ from iblrig_tasks._iblrig_tasks_advancedChoiceWorld.task import Session as Advan
 
 class TestInstantiationAdvanced(BaseTestCases.CommonTestInstantiateTask):
     def setUp(self) -> None:
-        self.task = AdvancedChoiceWorldSession(**TASK_KWARGS)
+        self.task = AdvancedChoiceWorldSession(
+            probability_set=[1, 1, 1, 1, 1, 1],
+            contrast_set=[-1, -.5, 0, 0, .5, 1],
+            reward_set_ul=[1, 1.5, 2, 2, 2.5, 2.6],
+            position_set=[-35, -35, -35, 35, 35, 35],
+            **TASK_KWARGS
+        )
 
     def test_task(self):
         task = self.task
