@@ -33,10 +33,10 @@ class Session(ActiveChoiceWorldSession):
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
-        nc = len(self.task_params['CONTRAST_SET'])
-        assert np.isscalar(probability_set) or (self.task_params['PROBABILITY_SET'] == nc), \
+        nc = len(contrast_set)
+        assert np.isscalar(probability_set) or (len(probability_set) == nc), \
             'probability_set must be a scalar or have the same length as contrast_set'
-        assert np.isscalar(reward_set_ul) or (self.task_params['REWARD_SET_UL'] == nc), \
+        assert np.isscalar(reward_set_ul) or (len(reward_set_ul) == nc), \
             'reward_set_ul must be a scalar or have the same length as contrast_set'
         assert len(position_set) == nc, 'position_set must have the same length as contrast_set'
         self.task_params['CONTRAST_SET'] = contrast_set
@@ -45,19 +45,28 @@ class Session(ActiveChoiceWorldSession):
         self.task_params['POSITION_SET'] = position_set
         self.task_params['STIM_GAIN'] = stim_gain
         # it is easier to work with parameters as a dataframe
-        self.df_contrasts = pd.DataFrame(columns=['contrast', 'probability', 'reward_amount_ul', 'position'])
-        self.df_contrasts['contrast'] = contrast_set
-        self.df_contrasts['probability'] = probability_set
-        self.df_contrasts['reward_amount_ul'] = reward_set_ul
-        self.df_contrasts['position'] = position_set
-
+        self.df_contingencies = pd.DataFrame(columns=['contrast', 'probability', 'reward_amount_ul', 'position'])
+        self.df_contingencies['contrast'] = contrast_set
+        self.df_contingencies['probability'] = probability_set
+        self.df_contingencies['reward_amount_ul'] = reward_set_ul
+        self.df_contingencies['position'] = position_set
+        # normalize the probabilities
+        self.df_contingencies.loc[:, 'probability'] = (
+                self.df_contingencies.loc[:, 'probability'] / np.sum(self.df_contingencies.loc[:, 'probability']))
+        # update the PROBABILITY LEFT field to reflect the probabilities in the parameters above
+        self.task_params['PROBABILITY_LEFT'] = np.sum(self.df_contingencies['probability'] * (self.df_contingencies['position'] < 0))
 
     def draw_next_trial_info(self, **kwargs):
-        nc = len(self.task_params['CONTRAST_SET'])
-        ic = np.random.choice(np.arange(nc), p=self.task_params['PROBABILITY_SET'])
-        self.task_params['PROBABILITY_SET']
-        pleft, contrast, position= (0.5, 0, -35)
-        super().draw_next_trial_info(pleft=pleft, contrast=contrast, position=position)
+        nc = self.df_contingencies.shape[0]
+        ic = np.random.choice(np.arange(nc), p=self.df_contingencies['probability'])
+        # now calling the super class with the proper parameters
+        super().draw_next_trial_info(
+            pleft=self.task_params.PROBABILITY_LEFT,
+            contrast=self.df_contingencies.at[ic, 'contrast'],
+            position=self.df_contingencies.at[ic, 'position'],
+            reward_amount=self.df_contingencies.at[ic, 'reward_amount_ul'],
+        )
+
     @property
     def reward_amount(self):
         return self.task_params.REWARD_AMOUNTS_UL[0]
@@ -81,7 +90,7 @@ class Session(ActiveChoiceWorldSession):
             dest='probability_set',
             default=DEFAULTS['PROBABILITY_SET'],
             nargs='+',
-            type=float | list[float],
+            # type=float | list[float],
             help='probabilities of each contrast in contrast_set. If scalar all contrasts are equiprobable',
         )
         parser.add_argument(
@@ -89,7 +98,7 @@ class Session(ActiveChoiceWorldSession):
             option_strings=['--reward_set_ul'],
             dest='reward_set_ul',
             default=DEFAULTS['REWARD_SET_UL'],
-            type=float | list[float],
+            # type=float | list[float],
             help=f'reward amount (default: {DEFAULTS["REWARD_SET_UL"]}μl), can be a vector of n contrasts or a scalar',
         )
         parser.add_argument(
