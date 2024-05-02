@@ -825,6 +825,9 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                     )
                     widget.valueChanged.emit(widget.value())
 
+                case 'reward_set_ul':
+                    label = 'Reward Set, μl'
+
                 case 'adaptive_gain':
                     label = 'Stimulus Gain'
                     minimum = 0

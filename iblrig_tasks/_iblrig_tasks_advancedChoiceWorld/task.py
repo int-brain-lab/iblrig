@@ -83,7 +83,7 @@ class Session(ActiveChoiceWorldSession):
             default=DEFAULTS['CONTRAST_SET'],
             nargs='+',
             type=float,
-            help='set of contrasts to present',
+            help='Set of contrasts to present',
         )
         parser.add_argument(
             '--probability_set',
@@ -92,7 +92,7 @@ class Session(ActiveChoiceWorldSession):
             default=DEFAULTS['PROBABILITY_SET'],
             nargs='+',
             type=float,
-            help='probabilities of each contrast in contrast_set. If scalar all contrasts are equiprobable',
+            help='Probabilities of each contrast in contrast_set. If scalar all contrasts are equiprobable',
         )
         parser.add_argument(
             '--reward_set_ul',
@@ -101,7 +101,7 @@ class Session(ActiveChoiceWorldSession):
             default=DEFAULTS['REWARD_SET_UL'],
             nargs='+',
             type=float,
-            help=f'reward amount (default: {DEFAULTS["REWARD_SET_UL"]}μl), can be a vector of n contrasts or a scalar',
+            help=f'Reward for contrast in contrast set.',
         )
         parser.add_argument(
             '--position_set',
@@ -118,7 +118,7 @@ class Session(ActiveChoiceWorldSession):
             dest='stim_gain',
             default=DEFAULTS['STIM_GAIN'],
             type=float,
-            help=f'visual angle/wheel displacement ' f'(deg/mm, default: {DEFAULTS["STIM_GAIN"]})',
+            help=f'Visual angle/wheel displacement ' f'(deg/mm, default: {DEFAULTS["STIM_GAIN"]})',
         )
         return parser
 
