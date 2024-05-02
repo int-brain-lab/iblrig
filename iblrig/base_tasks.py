@@ -34,7 +34,7 @@ import iblrig.path_helper
 import pybpodapi
 from ibllib.oneibl.registration import IBLRegistrationClient
 from iblrig import sound
-from iblrig.constants import BASE_PATH, BONSAI_EXE
+from iblrig.constants import BASE_PATH, BONSAI_EXE, PYSPIN_AVAILABLE
 from iblrig.frame2ttl import Frame2TTL
 from iblrig.hardware import SOFTCODE, Bpod, MyRotaryEncoder, sound_device_factory
 from iblrig.hifi import HiFi
@@ -651,10 +651,13 @@ class BonsaiRecordingMixin(BaseSession):
         configuration = self.hardware_settings.device_cameras[self.config]
         if (workflow_file := self._camera_mixin_bonsai_get_workflow_file(configuration, 'setup')) is None:
             return
-        # TODO: Disable Trigger in Bonsai workflow - PySpin won't help here
-        # if PYSPIN_AVAILABLE:
-        #     from iblrig.video_pyspin import enable_camera_trigger
-        #     enable_camera_trigger(True)
+
+        # enable trigger of cameras (so Bonsai can disable it again ... sigh)
+        if PYSPIN_AVAILABLE:
+            from iblrig.video_pyspin import enable_camera_trigger
+
+            enable_camera_trigger(True)
+
         call_bonsai(workflow_file, wait=True)  # TODO Parameterize using configuration cameras
         log.info('Bonsai cameras setup module loaded: OK')
 
