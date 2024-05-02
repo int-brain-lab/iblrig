@@ -15,6 +15,16 @@ class TestDefaultParameters(TestCase):
         self.assertEqual(12, task.df_contingencies.shape[0])
         self.assertEqual(task.task_params['PROBABILITY_LEFT'], 0.5)
 
+    def test_stim_positions_overload(self):
+        task = AdvancedChoiceWorldSession(
+            probability_set=[2, 2, 2, 1, 1, 1],
+            contrast_set=[-1, -0.5, 0, 0, 0.5, 1],
+            reward_set_ul=[1, 1.5, 2, 2, 2.5, 2.6],
+            position_set=[-35, -35, -35, 10, 10, 10],
+            **TASK_KWARGS,
+        )
+        np.testing.assert_array_equal(task.task_params['STIM_POSITIONS'], [-35, 10])
+
 
 class TestInstantiationAdvanced(BaseTestCases.CommonTestInstantiateTask):
     def setUp(self) -> None:

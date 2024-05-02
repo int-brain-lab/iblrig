@@ -67,6 +67,7 @@ class BaseSession(ABC):
         self,
         subject=None,
         task_parameter_file=None,
+        task_parameters_overload=None,
         file_hardware_settings=None,
         hardware_settings: HardwareSettings = None,
         file_iblrig_settings=None,
@@ -85,6 +86,8 @@ class BaseSession(ABC):
         """
         :param subject: The subject nickname. Required.
         :param task_parameter_file: an optional path to the task_parameters.yaml file
+        :param task_parameters_overload: optional dictionary that will overload the parameter file. Useful for GUI
+        accessible parameters.
         :param file_hardware_settings: name of the hardware file in the settings folder, or full file path
         :param hardware_settings: an optional dictionary of hardware settings. Keys will override any keys in the file
         :param file_iblrig_settings: name of the iblrig file in the settings folder, or full file path
@@ -137,6 +140,9 @@ class BaseSession(ABC):
                     params = yaml.safe_load(fp)
                 if params is not None:
                     self.task_params.update(Bunch(params))
+        # then we add / overload the keys that may have been provided by the GUI
+        if task_parameters_overload is not None:
+            self.task_params.update(**task_parameters_overload)
         # at last sort the dictionary so itś easier for a human to navigate the many keys
         self.task_params = Bunch(dict(sorted(self.task_params.items())))
         self.session_info = Bunch(

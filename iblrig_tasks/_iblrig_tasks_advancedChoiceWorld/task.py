@@ -32,16 +32,19 @@ class Session(ActiveChoiceWorldSession):
         stim_gain: float = DEFAULTS['STIM_GAIN'],
         **kwargs,
     ):
-        super().__init__(*args, **kwargs)
+        task_parameters_overload = {
+            'CONTRAST_SET': contrast_set,
+            'PROBABILITY_SET': probability_set,
+            'REWARD_SET_UL': reward_set_ul,
+            'POSITION_SET': position_set,
+            'STIM_GAIN': stim_gain,
+            'STIM_POSITIONS': sorted(list(set(position_set))),
+        }
+        super().__init__(*args, task_parameters_overload=task_parameters_overload, **kwargs)
         nc = len(contrast_set)
         assert len(probability_set) in [nc, 1], 'probability_set must be a scalar or have the same length as contrast_set'
         assert len(reward_set_ul) in [nc, 1], 'reward_set_ul must be a scalar or have the same length as contrast_set'
         assert len(position_set) == nc, 'position_set must have the same length as contrast_set'
-        self.task_params['CONTRAST_SET'] = contrast_set
-        self.task_params['PROBABILITY_SET'] = probability_set
-        self.task_params['REWARD_SET_UL'] = reward_set_ul
-        self.task_params['POSITION_SET'] = position_set
-        self.task_params['STIM_GAIN'] = stim_gain
         # it is easier to work with parameters as a dataframe
         self.df_contingencies = pd.DataFrame(columns=['contrast', 'probability', 'reward_amount_ul', 'position'])
         self.df_contingencies['contrast'] = contrast_set
@@ -83,7 +86,7 @@ class Session(ActiveChoiceWorldSession):
             default=DEFAULTS['CONTRAST_SET'],
             nargs='+',
             type=float,
-            help='Set of contrasts to present',
+            help='Contrast for each contingency',
         )
         parser.add_argument(
             '--probability_set',
@@ -92,7 +95,7 @@ class Session(ActiveChoiceWorldSession):
             default=DEFAULTS['PROBABILITY_SET'],
             nargs='+',
             type=float,
-            help='Probabilities of each contrast in contrast_set. If scalar all contrasts are equiprobable',
+            help='Probabilities of each contingency. If scalar all contingencies are equiprobable',
         )
         parser.add_argument(
             '--reward_set_ul',
@@ -101,7 +104,7 @@ class Session(ActiveChoiceWorldSession):
             default=DEFAULTS['REWARD_SET_UL'],
             nargs='+',
             type=float,
-            help=f'Reward for contrast in contrast set.',
+            help=f'Reward for each contingency.',
         )
         parser.add_argument(
             '--position_set',
@@ -110,7 +113,7 @@ class Session(ActiveChoiceWorldSession):
             default=DEFAULTS['POSITION_SET'],
             nargs='+',
             type=float,
-            help='Position for each contrast in contrast set.',
+            help='Position for each contingency in degrees.',
         )
         parser.add_argument(
             '--stim_gain',
