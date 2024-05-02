@@ -101,7 +101,7 @@ class Session(ActiveChoiceWorldSession):
             default=DEFAULTS['REWARD_SET_UL'],
             nargs='+',
             type=float,
-            help=f'Reward for contrast in contrast set.',
+            help='Reward for contrast in contrast set.',
         )
         parser.add_argument(
             '--position_set',
