@@ -34,10 +34,12 @@ class Session(ActiveChoiceWorldSession):
     ):
         super().__init__(*args, **kwargs)
         nc = len(contrast_set)
-        assert np.isscalar(probability_set) or (len(probability_set) == nc), \
-            'probability_set must be a scalar or have the same length as contrast_set'
-        assert np.isscalar(reward_set_ul) or (len(reward_set_ul) == nc), \
-            'reward_set_ul must be a scalar or have the same length as contrast_set'
+        assert np.isscalar(probability_set) or (
+            len(probability_set) == nc
+        ), 'probability_set must be a scalar or have the same length as contrast_set'
+        assert np.isscalar(reward_set_ul) or (
+            len(reward_set_ul) == nc
+        ), 'reward_set_ul must be a scalar or have the same length as contrast_set'
         assert len(position_set) == nc, 'position_set must have the same length as contrast_set'
         self.task_params['CONTRAST_SET'] = contrast_set
         self.task_params['PROBABILITY_SET'] = probability_set
@@ -51,10 +53,13 @@ class Session(ActiveChoiceWorldSession):
         self.df_contingencies['reward_amount_ul'] = reward_set_ul
         self.df_contingencies['position'] = position_set
         # normalize the probabilities
-        self.df_contingencies.loc[:, 'probability'] = (
-                self.df_contingencies.loc[:, 'probability'] / np.sum(self.df_contingencies.loc[:, 'probability']))
+        self.df_contingencies.loc[:, 'probability'] = self.df_contingencies.loc[:, 'probability'] / np.sum(
+            self.df_contingencies.loc[:, 'probability']
+        )
         # update the PROBABILITY LEFT field to reflect the probabilities in the parameters above
-        self.task_params['PROBABILITY_LEFT'] = np.sum(self.df_contingencies['probability'] * (self.df_contingencies['position'] < 0))
+        self.task_params['PROBABILITY_LEFT'] = np.sum(
+            self.df_contingencies['probability'] * (self.df_contingencies['position'] < 0)
+        )
 
     def draw_next_trial_info(self, **kwargs):
         nc = self.df_contingencies.shape[0]
@@ -90,7 +95,6 @@ class Session(ActiveChoiceWorldSession):
             dest='probability_set',
             default=DEFAULTS['PROBABILITY_SET'],
             nargs='+',
-            # type=float | list[float],
             help='probabilities of each contrast in contrast_set. If scalar all contrasts are equiprobable',
         )
         parser.add_argument(
@@ -98,7 +102,6 @@ class Session(ActiveChoiceWorldSession):
             option_strings=['--reward_set_ul'],
             dest='reward_set_ul',
             default=DEFAULTS['REWARD_SET_UL'],
-            # type=float | list[float],
             help=f'reward amount (default: {DEFAULTS["REWARD_SET_UL"]}μl), can be a vector of n contrasts or a scalar',
         )
         parser.add_argument(
