@@ -13,7 +13,7 @@ import time
 from collections.abc import Callable
 from enum import IntEnum
 from pathlib import Path
-from typing import Literal, Annotated
+from typing import Annotated, Literal
 
 import numpy as np
 import serial
