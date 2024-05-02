@@ -26,20 +26,16 @@ class Session(ActiveChoiceWorldSession):
         self,
         *args,
         contrast_set: list[float] = DEFAULTS['CONTRAST_SET'],
-        probability_set: float | list[float] = DEFAULTS['PROBABILITY_SET'],
-        reward_set_ul: float | list[float] = DEFAULTS['REWARD_SET_UL'],
+        probability_set: list[float] = DEFAULTS['PROBABILITY_SET'],
+        reward_set_ul: list[float] = DEFAULTS['REWARD_SET_UL'],
         position_set: list[float] = DEFAULTS['POSITION_SET'],
         stim_gain: float = DEFAULTS['STIM_GAIN'],
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
         nc = len(contrast_set)
-        assert np.isscalar(probability_set) or (
-            len(probability_set) == nc
-        ), 'probability_set must be a scalar or have the same length as contrast_set'
-        assert np.isscalar(reward_set_ul) or (
-            len(reward_set_ul) == nc
-        ), 'reward_set_ul must be a scalar or have the same length as contrast_set'
+        assert len(probability_set) in [nc, 1], 'probability_set must be a scalar or have the same length as contrast_set'
+        assert len(reward_set_ul) in [nc, 1], 'reward_set_ul must be a scalar or have the same length as contrast_set'
         assert len(position_set) == nc, 'position_set must have the same length as contrast_set'
         self.task_params['CONTRAST_SET'] = contrast_set
         self.task_params['PROBABILITY_SET'] = probability_set
@@ -49,8 +45,8 @@ class Session(ActiveChoiceWorldSession):
         # it is easier to work with parameters as a dataframe
         self.df_contingencies = pd.DataFrame(columns=['contrast', 'probability', 'reward_amount_ul', 'position'])
         self.df_contingencies['contrast'] = contrast_set
-        self.df_contingencies['probability'] = probability_set
-        self.df_contingencies['reward_amount_ul'] = reward_set_ul
+        self.df_contingencies['probability'] = probability_set if len(probability_set) == nc else probability_set[0]
+        self.df_contingencies['reward_amount_ul'] = reward_set_ul if len(reward_set_ul) == nc else reward_set_ul[0]
         self.df_contingencies['position'] = position_set
         # normalize the probabilities
         self.df_contingencies.loc[:, 'probability'] = self.df_contingencies.loc[:, 'probability'] / np.sum(
@@ -86,7 +82,7 @@ class Session(ActiveChoiceWorldSession):
             dest='contrast_set',
             default=DEFAULTS['CONTRAST_SET'],
             nargs='+',
-            type=list[float],
+            type=float,
             help='set of contrasts to present',
         )
         parser.add_argument(
@@ -95,6 +91,7 @@ class Session(ActiveChoiceWorldSession):
             dest='probability_set',
             default=DEFAULTS['PROBABILITY_SET'],
             nargs='+',
+            type=float,
             help='probabilities of each contrast in contrast_set. If scalar all contrasts are equiprobable',
         )
         parser.add_argument(
@@ -102,15 +99,17 @@ class Session(ActiveChoiceWorldSession):
             option_strings=['--reward_set_ul'],
             dest='reward_set_ul',
             default=DEFAULTS['REWARD_SET_UL'],
+            nargs='+',
+            type=float,
             help=f'reward amount (default: {DEFAULTS["REWARD_SET_UL"]}μl), can be a vector of n contrasts or a scalar',
         )
         parser.add_argument(
             '--position_set',
             option_strings=['--position_set'],
-            dest='probability_set',
-            default=DEFAULTS['PROBABILITY_SET'],
+            dest='position_set',
+            default=DEFAULTS['POSITION_SET'],
             nargs='+',
-            type=list[float],
+            type=float,
             help='Position for each contrast in contrast set.',
         )
         parser.add_argument(
