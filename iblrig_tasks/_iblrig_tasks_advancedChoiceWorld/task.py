@@ -33,14 +33,24 @@ class Session(ActiveChoiceWorldSession):
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
+        nc = len(self.task_params['CONTRAST_SET'])
+        assert np.isscalar(probability_set) or (self.task_params['PROBABILITY_SET'] == nc), \
+            'probability_set must be a scalar or have the same length as contrast_set'
+        assert np.isscalar(reward_set_ul) or (self.task_params['REWARD_SET_UL'] == nc), \
+            'reward_set_ul must be a scalar or have the same length as contrast_set'
+        assert len(position_set) == nc, 'position_set must have the same length as contrast_set'
         self.task_params['CONTRAST_SET'] = contrast_set
         self.task_params['PROBABILITY_SET'] = probability_set
         self.task_params['REWARD_SET_UL'] = reward_set_ul
         self.task_params['POSITION_SET'] = position_set
         self.task_params['STIM_GAIN'] = stim_gain
-        nc = len(self.task_params['CONTRAST_SET'])
+        # it is easier to work with parameters as a dataframe
         self.df_contrasts = pd.DataFrame(columns=['contrast', 'probability', 'reward_amount_ul', 'position'])
-        self.df_contrasts['contrast'] = self.task_params['CONTRAST_SET']
+        self.df_contrasts['contrast'] = contrast_set
+        self.df_contrasts['probability'] = probability_set
+        self.df_contrasts['reward_amount_ul'] = reward_set_ul
+        self.df_contrasts['position'] = position_set
+
 
     def draw_next_trial_info(self, **kwargs):
         nc = len(self.task_params['CONTRAST_SET'])
