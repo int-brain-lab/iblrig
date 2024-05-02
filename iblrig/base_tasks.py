@@ -971,16 +971,15 @@ class SoundMixin(BaseSession):
         match self.hardware_settings.device_sound['OUTPUT']:
             case 'harp':
                 assert self.bpod.sound_card is not None, 'No harp sound-card connected to Bpod'
-                module_port = f'Serial{self.bpod.sound_card.serial_port}'
                 sound.configure_sound_card(
                     sounds=[self.sound.GO_TONE, self.sound.WHITE_NOISE],
                     indexes=[self.task_params.GO_TONE_IDX, self.task_params.WHITE_NOISE_IDX],
                     sample_rate=self.sound['samplerate'],
                 )
                 self.bpod.define_harp_sounds_actions(
+                    module=self.bpod.sound_card,
                     go_tone_index=self.task_params.GO_TONE_IDX,
                     noise_index=self.task_params.WHITE_NOISE_IDX,
-                    sound_port=module_port,
                 )
             case 'hifi':
                 module = self.bpod.get_module('^HiFi')
@@ -991,12 +990,10 @@ class SoundMixin(BaseSession):
                 hifi.load(index=self.task_params.WHITE_NOISE_IDX, data=self.sound.WHITE_NOISE)
                 hifi.push()
                 hifi.close()
-                module_port = f'Serial{module.serial_port}'
                 self.bpod.define_harp_sounds_actions(
+                    module=module,
                     go_tone_index=self.task_params.GO_TONE_IDX,
                     noise_index=self.task_params.WHITE_NOISE_IDX,
-                    sound_port=module_port,
-                    module=module,
                 )
             case _:
                 self.bpod.define_xonar_sounds_actions()
