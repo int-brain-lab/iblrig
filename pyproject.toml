@@ -119,7 +119,6 @@ ignore = [
 ]
 
 [tool.ruff.format]
-line-ending = "lf"
 quote-style = "single"
 
 [tool.ruff.lint.pydocstyle]
