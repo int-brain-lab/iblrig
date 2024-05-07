@@ -338,17 +338,19 @@ def remove_local_sessions(weeks=2, local_path=None, remote_path=None, dry=False,
     return removed
 
 
-def viewsession():
+def view_session():
     """
     Entry point for command line: usage as below
-    >>> viewsession /full/path/to/jsonable/_iblrig_taskData.raw.jsonable
+    >>> view_session /full/path/to/jsonable/_iblrig_taskData.raw.jsonable
     :return: None
     """
     parser = argparse.ArgumentParser()
     parser.add_argument('file_jsonable', help='full file path to jsonable file')
+    parser.add_argument('file_settings', help='full file path to settings file', nargs='?', default=None)
     args = parser.parse_args()
-    self = OnlinePlots()
-    self.run(Path(args.file_jsonable))
+
+    online_plots = OnlinePlots(task_file=args.file_jsonable, settings_file=args.file_settings)
+    online_plots.run(task_file=args.file_jsonable)
 
 
 def flush():

@@ -630,7 +630,9 @@ class ActiveChoiceWorldSession(ChoiceWorldSession):
         # starts online plotting
         if self.interactive:
             subprocess.Popen(
-                ['viewsession', str(self.paths['DATA_FILE_PATH'])], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT
+                ['view_session', str(self.paths['DATA_FILE_PATH']), str(self.paths['SETTINGS_FILE_PATH'])],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.STDOUT,
             )
         super()._run()
 
