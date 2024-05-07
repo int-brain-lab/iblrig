@@ -368,7 +368,10 @@ class BaseSession(ABC):
             )
             try:
                 self._one = ONE(
-                    base_url=str(self.iblrig_settings['ALYX_URL']), username=self.iblrig_settings['ALYX_USER'], mode='remote'
+                    base_url=str(self.iblrig_settings['ALYX_URL']),
+                    username=self.iblrig_settings['ALYX_USER'],
+                    mode='remote',
+                    cache_rest=None,
                 )
                 log.info('instantiated ' + info_str)
             except Exception:
