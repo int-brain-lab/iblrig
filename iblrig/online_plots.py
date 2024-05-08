@@ -47,10 +47,11 @@ class DataModel:
     water_delivered = 0.0
     time_elapsed = 0.0
 
-    def __init__(self, task_file: Path | None, settings_file: Path | None):
+    def __init__(self, settings_file: Path | str, task_file: Path | str, ):
         """
-        Can be instantiated empty or from an existing jsonable file from any rig version
-        :param task_file:
+
+        :param task_file: full path to the _iblrig_taskData.raw.jsonable file
+        :param settings_file:full path to the _iblrig_taskSettings.raw.json file
         """
         self.session_path = one.alf.files.get_session_path(task_file) or ''
         self.last_trials = pd.DataFrame(
@@ -62,20 +63,22 @@ class DataModel:
             settings_file = task_file.parent.joinpath('_iblrig_taskSettings.raw.json')
 
         if settings_file is not None and settings_file.exists():
+            # most of the IBL tasks have a predefined set of probabilities (0.2, 0.5, 0.8), but in the
+            # case of the advanced choice world task, the probabilities are defined in the task settings
             with open(settings_file) as fid:
                 self.task_settings = json.load(fid)
-            self.probability_set = np.unique(self.task_settings.get('PROBABILITY_SET', self.probability_set))
+            self.probability_set = [self.task_settings['PROBABILITY_LEFT']] + self.task_settings.get('BLOCK_PROBABILITY_SET', [])
         else:
             log.warning('Settings file not found - using default settings')
 
         if task_file is None or not task_file.exists():
             self.psychometrics = pd.DataFrame(
                 columns=['count', 'response_time', 'choice', 'response_time_std', 'choice_std'],
-                index=pd.MultiIndex.from_product([self.probability_set, np.r_[-np.flipud(CONTRAST_SET[1:]), CONTRAST_SET]]),
+                index=pd.MultiIndex.from_product(
+                    [self.probability_set, np.r_[-np.flipud(CONTRAST_SET[1:]), CONTRAST_SET]]),
             )
             self.psychometrics['count'] = 0
             self.trials_table = pd.DataFrame(columns=['response_time'], index=np.arange(NTRIALS_INIT))
-
         else:
             trials_table, bpod_data = load_task_jsonable(task_file)
             # here we take the end time of the first trial as reference to avoid factoring in the delay
@@ -146,6 +149,9 @@ class DataModel:
 
         # update psychometrics using online statistics method
         indexer = (trial_data.stim_probability_left, signed_contrast)
+        if indexer not in self.psychometrics.index:
+            self.psychometrics.loc[indexer, :] = np.NaN
+            self.psychometrics.loc[indexer, ('count')] = 0
         self.psychometrics.loc[indexer, ('count')] += 1
         self.psychometrics.loc[indexer, ('response_time')], self.psychometrics.loc[indexer, ('response_time_std')] = online_std(
             new_sample=trial_data.response_time,
@@ -164,10 +170,10 @@ class DataModel:
         i = NTRIALS_PLOT - 1
         self.last_trials.at[i, 'correct'] = trial_data.trial_correct
         self.last_trials.at[i, 'signed_contrast'] = signed_contrast
-        self.last_trials.at[i, 'stim_on'] = bpod_data['States timestamps']['stim_on'][0][0]
-        self.last_trials.at[i, 'play_tone'] = bpod_data['States timestamps']['play_tone'][0][0]
-        self.last_trials.at[i, 'reward_time'] = bpod_data['States timestamps']['reward'][0][0]
-        self.last_trials.at[i, 'error_time'] = bpod_data['States timestamps']['error'][0][0]
+        self.last_trials.at[i, 'stim_on'] = bpod_data['States timestamps'].get('stim_on', [[np.nan]])[0][0]
+        self.last_trials.at[i, 'play_tone'] = bpod_data['States timestamps'].get('play_tone', [[np.nan]])[0][0]
+        self.last_trials.at[i, 'reward_time'] = bpod_data['States timestamps'].get('reward', [[np.nan]])[0][0]
+        self.last_trials.at[i, 'error_time'] = bpod_data['States timestamps'].get('error', [[np.nan]])[0][0]
         self.last_trials.at[i, 'response_time'] = trial_data.response_time
         # update rgb image
         self.rgb_background = np.roll(self.rgb_background, -1, axis=0)

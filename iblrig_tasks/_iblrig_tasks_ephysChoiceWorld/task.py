@@ -17,16 +17,25 @@ class Session(BiasedChoiceWorldSession):
     def __init__(self, *args, session_template_id=0, **kwargs):
         super().__init__(*args, **kwargs)
         self.task_params.SESSION_TEMPLATE_ID = session_template_id
-        trials_table = pd.read_parquet(Path(__file__).parent.joinpath('trials_fixtures.pqt'))
-        self.trials_table = (
-            trials_table.loc[trials_table['session_id'] == session_template_id].reindex().drop(columns=['session_id'])
-        )
-        self.trials_table = self.trials_table.reset_index()
+        self.trials_table = self.get_session_template(session_template_id)
         # reconstruct the block dataframe from the trials table
         self.blocks_table = self.trials_table.groupby('block_num').agg(
             probability_left=pd.NamedAgg(column='stim_probability_left', aggfunc='first'),
             block_length=pd.NamedAgg(column='stim_probability_left', aggfunc='count'),
         )
+
+    @staticmethod
+    def get_session_template(session_template_id: int) -> pd.DataFrame:
+        """
+        Returns the pre-generated trials dataframe from the 12 fixtures according to the template iD
+        :param session_template_id: int 0-11
+        :return:
+        """
+        trials_table = pd.read_parquet(Path(__file__).parent.joinpath('trials_fixtures.pqt'))
+        trials_table = (
+            trials_table.loc[trials_table['session_id'] == session_template_id].reindex().drop(columns=['session_id'])
+        ).reset_index()
+        return trials_table
 
     @staticmethod
     def extra_parser():

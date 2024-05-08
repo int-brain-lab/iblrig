@@ -20,7 +20,7 @@ class TestInstantiationAdvanced(BaseTestCases.CommonTestInstantiateTask):
     def setUp(self) -> None:
         self.task = AdvancedChoiceWorldSession(
             probability_set=[2, 2, 2, 1, 1, 1],
-            contrast_set=[-1, -0.5, 0, 0, 0.5, 1],
+            contrast_set=[1, 0.5, 0, 0, 0.5, 1],
             reward_set_ul=[1, 1.5, 2, 2, 2.5, 2.6],
             position_set=[-35, -35, -35, 35, 35, 35],
             **TASK_KWARGS,
@@ -35,16 +35,16 @@ class TestInstantiationAdvanced(BaseTestCases.CommonTestInstantiateTask):
         trial_fixtures = get_fixtures()
         nt = 800
         np.random.seed(65432)
+
         for i in np.arange(nt):
             task.next_trial()
             # pc = task.psychometric_curve()
             trial_type = np.random.choice(['correct', 'error', 'no_go'], p=[0.9, 0.05, 0.05])
-            task.trial_completed(trial_fixtures[trial_type])
+            task.trial_completed(bpod_data=trial_fixtures[trial_type])
             if trial_type == 'correct':
                 assert task.trials_table['trial_correct'][task.trial_num]
             else:
                 assert not task.trials_table['trial_correct'][task.trial_num]
-
             if i == 245:
                 task.show_trial_log()
             assert not np.isnan(task.reward_time)
@@ -64,7 +64,7 @@ class TestInstantiationAdvanced(BaseTestCases.CommonTestInstantiateTask):
         # the error trials have 0 reward while the correct trials have their assigned reward amount
         np.testing.assert_array_equal(df_contrasts['n_unique_rewards'], 2)
         np.testing.assert_array_equal(df_contrasts['min_reward'], 0)
-        np.testing.assert_array_equal(df_contrasts['max_reward'], [1, 1.5, 2, 2, 2.5, 2.6])
+        np.testing.assert_array_equal(df_contrasts['max_reward'], [2, 2, 1.5, 2.5, 1, 2.6])
 
         n_left = np.sum(df_contrasts['count'][df_contrasts['position'] < 0])
         n_right = np.sum(df_contrasts['count'][df_contrasts['position'] > 0])
