@@ -18,7 +18,6 @@ from iblutil.util import Bunch
 
 NTRIALS_INIT = 2000
 NTRIALS_PLOT = 20  # do not edit - this is used also to enforce the completion criteria
-CONTRAST_SET = np.array([0, 1 / 16, 1 / 8, 1 / 4, 1 / 2, 1])
 # if the mouse does less than 400 trials in the first 45mins it's disengaged
 ENGAGED_CRITIERION = {'secs': 45 * 60, 'trial_count': 400}
 
@@ -37,6 +36,7 @@ class DataModel:
     """
 
     task_settings = None
+    contrast_set = np.array([0, 1 / 16, 1 / 8, 1 / 4, 1 / 2, 1])
     probability_set = np.array([0.2, 0.5, 0.8])
     ntrials = 0
     ntrials_correct = 0
@@ -65,13 +65,14 @@ class DataModel:
             with open(settings_file) as fid:
                 self.task_settings = json.load(fid)
             self.probability_set = np.unique(self.task_settings.get('PROBABILITY_SET', self.probability_set))
+            self.contrast_set = np.unique(self.task_settings.get('CONTRAST_SET', self.contrast_set))
         else:
             log.warning('Settings file not found - using default settings')
 
         if task_file is None or not task_file.exists():
             self.psychometrics = pd.DataFrame(
                 columns=['count', 'response_time', 'choice', 'response_time_std', 'choice_std'],
-                index=pd.MultiIndex.from_product([self.probability_set, np.r_[-np.flipud(CONTRAST_SET[1:]), CONTRAST_SET]]),
+                index=pd.MultiIndex.from_product([self.probability_set, np.r_[-np.flipud(self.contrast_set[1:]), self.contrast_set]]),
             )
             self.psychometrics['count'] = 0
             self.trials_table = pd.DataFrame(columns=['response_time'], index=np.arange(NTRIALS_INIT))
@@ -84,7 +85,7 @@ class DataModel:
             trials_table['choice'] = trials_table['position'] > 0
             trials_table.loc[~trials_table.trial_correct, 'choice'] = ~trials_table['choice'][~trials_table.trial_correct]
             trials_table['contrast'] = trials_table['contrast'].astype(
-                CategoricalDtype(categories=np.unique(np.r_[-CONTRAST_SET, CONTRAST_SET]), ordered=True)
+                CategoricalDtype(categories=np.unique(np.r_[-1 * self.contrast_set, self.contrast_set]), ordered=True)
             )
             trials_table['stim_probability_left'] = trials_table['stim_probability_left'].astype(
                 CategoricalDtype(categories=self.probability_set, ordered=True)
