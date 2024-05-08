@@ -55,7 +55,7 @@ DEV = [
 ]
 
 [project.scripts]
-viewsession         = "iblrig.commands:viewsession"
+view_session         = "iblrig.commands:view_session"
 transfer_data       = "iblrig.commands:transfer_data_cli"
 transfer_video_data = "iblrig.commands:transfer_video_data_cli"
 transfer_ephys_data = "iblrig.commands:transfer_ephys_data_cli"
@@ -119,7 +119,6 @@ ignore = [
 ]
 
 [tool.ruff.format]
-line-ending = "lf"
 quote-style = "single"
 
 [tool.ruff.lint.pydocstyle]
