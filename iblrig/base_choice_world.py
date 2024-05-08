@@ -186,6 +186,7 @@ class ChoiceWorldSession(
             self.bpod.run_state_machine(sma)  # Locks until state machine 'exit' is reached
             time_last_trial_end = time.time()
             self.trial_completed(self.bpod.session.current_trial.export())
+            self.ambient_sensor_table.loc[i] = self.bpod.get_ambient_sensor_reading()
             self.show_trial_log()
 
             # handle pause and stop events
