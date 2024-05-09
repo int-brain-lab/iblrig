@@ -25,7 +25,6 @@ from iblutil.io import (
 )
 from iblutil.util import setup_logger
 from one.converters import ConversionMixin
-from one.params import default as one_params_default
 from one.webclient import AlyxClient, http_download_file  # type: ignore
 
 with contextlib.suppress(ImportError):
@@ -64,8 +63,7 @@ def _download_from_alyx_or_flir(asset: int, filename: str, target_md5: str) -> P
     if out_file.exists() and hashfile.md5(out_file) == target_md5:
         return out_file
     try:
-        base_url = one_params_default().ALYX_URL
-        tmp_file, md5_sum = AlyxClient(base_url=base_url, silent=True).download_file(f'resources/spinnaker/{filename}', **options)
+        tmp_file, md5_sum = AlyxClient().download_file(f'resources/spinnaker/{filename}', **options)
     except (OSError, AttributeError, URLError) as e1:
         try:
             url = f'https://flir.netx.net/file/asset/{asset}/original/attachment'
