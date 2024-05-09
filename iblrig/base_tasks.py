@@ -803,7 +803,8 @@ class BpodMixin(BaseSession):
         self.bpod.set_status_led(False)
         assert self.bpod.is_connected
         log.info('Bpod hardware module loaded: OK')
-        # self.send_spacers()
+        # make the bpod send spacer signals to the main sync clock for protocol discovery
+        self.send_spacers()
 
     def send_spacers(self):
         log.info('Starting task by sending a spacer signal on BNC1')
