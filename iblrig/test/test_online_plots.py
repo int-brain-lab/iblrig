@@ -19,7 +19,6 @@ class TestOnlinePlots(unittest.TestCase):
             cls.task_file = Path(zip.extract('online_plots.jsonable', path=zip_jsonable.parent))
 
     def test_during_task(self):
-
         myop = op.OnlinePlots()
         trials_table, bpod_data = load_task_jsonable(self.task_file)
         for i in np.arange(trials_table.shape[0]):

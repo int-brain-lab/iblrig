@@ -47,11 +47,7 @@ class DataModel:
     water_delivered = 0.0
     time_elapsed = 0.0
 
-    def __init__(
-        self,
-        settings_file: Path | str,
-        task_file: Path | str,
-    ):
+    def __init__(self, settings_file: Path | str, task_file: Path | str):
         """
 
         :param task_file: full path to the _iblrig_taskData.raw.jsonable file
