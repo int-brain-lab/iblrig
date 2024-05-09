@@ -104,6 +104,10 @@ class Bpod(BpodIO):
     def sound_card(self):
         return self.get_module('sound_card')
 
+    @property
+    def ambient_module(self):
+        return self.get_module('^AmbientModule')
+
     def get_module(self, module_name: str) -> BpodModule | None:
         """Get module by name
 
@@ -202,11 +206,16 @@ class Bpod(BpodIO):
         )
 
     def get_ambient_sensor_reading(self):
-        ambient_module = [x for x in self.modules if x.name == 'AmbientModule1'][0]
-        ambient_module.start_module_relay()
-        self.bpod_modules.module_write(ambient_module, 'R')
-        reply = self.bpod_modules.module_read(ambient_module, 12)
-        ambient_module.stop_module_relay()
+        if self.ambient_module is None:
+            return {
+                'Temperature_C': np.NaN,
+                'AirPressure_mb': np.NaN,
+                'RelativeHumidity': np.NaN,
+            }
+        self.ambient_module.start_module_relay()
+        self.bpod_modules.module_write(self.ambient_module, 'R')
+        reply = self.bpod_modules.module_read(self.ambient_module, 12)
+        self.ambient_module.stop_module_relay()
 
         return {
             'Temperature_C': np.frombuffer(bytes(reply[:4]), np.float32)[0],
