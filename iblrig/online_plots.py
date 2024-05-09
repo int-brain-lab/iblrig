@@ -47,7 +47,11 @@ class DataModel:
     water_delivered = 0.0
     time_elapsed = 0.0
 
-    def __init__(self, settings_file: Path | str, task_file: Path | str, ):
+    def __init__(
+        self,
+        settings_file: Path | str,
+        task_file: Path | str,
+    ):
         """
 
         :param task_file: full path to the _iblrig_taskData.raw.jsonable file
@@ -74,8 +78,7 @@ class DataModel:
         if task_file is None or not task_file.exists():
             self.psychometrics = pd.DataFrame(
                 columns=['count', 'response_time', 'choice', 'response_time_std', 'choice_std'],
-                index=pd.MultiIndex.from_product(
-                    [self.probability_set, np.r_[-np.flipud(CONTRAST_SET[1:]), CONTRAST_SET]]),
+                index=pd.MultiIndex.from_product([self.probability_set, np.r_[-np.flipud(CONTRAST_SET[1:]), CONTRAST_SET]]),
             )
             self.psychometrics['count'] = 0
             self.trials_table = pd.DataFrame(columns=['response_time'], index=np.arange(NTRIALS_INIT))
