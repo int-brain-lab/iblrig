@@ -30,13 +30,13 @@ from one.webclient import AlyxClient, http_download_file  # type: ignore
 with contextlib.suppress(ImportError):
     from iblrig import video_pyspin
 
-SPINNAKER_ASSET = 54386
-SPINNAKER_FILENAME = 'SpinnakerSDK_FULL_3.1.0.79_x64.exe'
-SPINNAKER_MD5 = 'd9d83772f852e5369da2fbcc248c9c81'
+SPINNAKER_ASSET = 59586
+SPINNAKER_FILENAME = 'SpinnakerSDK_FULL_3.2.0.57_x64.exe'
+SPINNAKER_MD5 = 'aafc07c858dc2ab2e2a7d6ef900ca9a7'
 
-PYSPIN_ASSET = 54396
-PYSPIN_FILENAME = 'spinnaker_python-3.1.0.79-cp310-cp310-win_amd64.zip'
-PYSPIN_MD5 = 'e00148800757d0ed7171348d850947ac'
+PYSPIN_ASSET = 59584111
+PYSPIN_FILENAME = 'spinnaker_python-3.2.0.57-cp310-cp310-win_amd64.zip'
+PYSPIN_MD5 = 'f93294208e0ecec042adb2f75cb72609'
 
 log = logging.getLogger(__name__)
 
@@ -80,7 +80,7 @@ def _download_from_alyx_or_flir(asset: int, filename: str, target_md5: str) -> P
             raise e2 from e1
     os.rename(tmp_file, out_file)
     if md5_sum != target_md5:
-        raise Exception(f'`{filename}` does not match the expected MD5 - please try running the script again or')
+        raise Exception(f'`{filename}` does not match the expected MD5')
     return out_file
 
 

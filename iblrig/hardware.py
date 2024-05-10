@@ -178,7 +178,7 @@ class Bpod(BpodIO):
         )
 
     def define_harp_sounds_actions(self, module: BpodModule, go_tone_index: int = 2, noise_index: int = 3) -> None:
-        module_port = f'Serial{module.serial_port}'
+        module_port = f"Serial{module.serial_port if module is not None else ''}"
         self.actions.update(
             {
                 'play_tone': (module_port, self._define_message(module, [ord('P'), go_tone_index])),
@@ -190,7 +190,7 @@ class Bpod(BpodIO):
     def define_rotary_encoder_actions(self, module: BpodModule | None = None) -> None:
         if module is None:
             module = self.rotary_encoder
-        module_port = f'Serial{module.serial_port}'
+        module_port = f"Serial{module.serial_port if module is not None else ''}"
         self.actions.update(
             {
                 'rotary_encoder_reset': (
