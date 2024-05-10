@@ -30,6 +30,14 @@ from one.webclient import AlyxClient, http_download_file  # type: ignore
 with contextlib.suppress(ImportError):
     from iblrig import video_pyspin
 
+SPINNAKER_ASSET = 54386
+SPINNAKER_FILENAME = 'SpinnakerSDK_FULL_3.1.0.79_x64.exe'
+SPINNAKER_MD5 = 'd9d83772f852e5369da2fbcc248c9c81'
+
+PYSPIN_ASSET = 54396
+PYSPIN_FILENAME = 'spinnaker_python-3.1.0.79-cp310-cp310-win_amd64.zip'
+PYSPIN_MD5 = 'e00148800757d0ed7171348d850947ac'
+
 log = logging.getLogger(__name__)
 
 
@@ -99,7 +107,7 @@ def install_spinnaker():
         return
 
     # Download & install Spinnaker SDK
-    file_winsdk = _download_from_alyx_or_flir(54386, 'SpinnakerSDK_FULL_3.1.0.79_x64.exe', 'd9d83772f852e5369da2fbcc248c9c81')
+    file_winsdk = _download_from_alyx_or_flir(SPINNAKER_ASSET, SPINNAKER_FILENAME, SPINNAKER_MD5)
     print('Installing Spinnaker SDK for Windows ...')
     input(
         'Please select the "Application Development" Installation Profile. Everything else can be left at '
@@ -136,9 +144,7 @@ def install_pyspin():
     if HAS_PYSPIN:
         print('PySpin is already installed.')
     else:
-        file_zip = _download_from_alyx_or_flir(
-            54396, 'spinnaker_python-3.1.0.79-cp310-cp310-win_amd64.zip', 'e00148800757d0ed7171348d850947ac'
-        )
+        file_zip = _download_from_alyx_or_flir(PYSPIN_ASSET, PYSPIN_FILENAME, PYSPIN_MD5)
         print('Installing PySpin ...')
         with zipfile.ZipFile(file_zip, 'r') as f:
             file_whl = f.extract(file_zip.stem + '.whl', file_zip.parent)
