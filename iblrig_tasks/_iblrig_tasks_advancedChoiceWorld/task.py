@@ -5,7 +5,7 @@ import pandas as pd
 import yaml
 
 import iblrig.misc
-from iblrig.base_choice_world import ActiveChoiceWorldSession
+from iblrig.base_choice_world import NTRIALS_INIT, ActiveChoiceWorldSession
 
 # read defaults from task_parameters.yaml
 with open(Path(__file__).parent.joinpath('task_parameters.yaml')) as f:
