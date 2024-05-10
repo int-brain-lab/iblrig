@@ -56,6 +56,7 @@ class Session(ActiveChoiceWorldSession):
         self.task_params['PROBABILITY_LEFT'] = np.sum(
             self.df_contingencies['probability'] * (self.df_contingencies['position'] < 0)
         )
+        self.trials_table['debias_trial'] = np.zeros(NTRIALS_INIT, dtype=bool)
 
     def draw_next_trial_info(self, **kwargs):
         nc = self.df_contingencies.shape[0]
