@@ -2,8 +2,7 @@ import iblrig.misc
 from iblrig.base_choice_world import HabituationChoiceWorldSession
 
 
-class Session(HabituationChoiceWorldSession):
-    ...
+class Session(HabituationChoiceWorldSession): ...
 
 
 if __name__ == '__main__':  # pragma: no cover

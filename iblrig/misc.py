@@ -5,6 +5,7 @@ Assortment of functions, frequently used, but without a great deal of commonalit
 and should, be broken out into their own files and/or classes as the organizational needs of this
 repo change over time.
 """
+
 import argparse
 import datetime
 import logging
@@ -13,12 +14,7 @@ from typing import Literal
 
 import numpy as np
 
-FLAG_FILE_NAMES = [
-    'transfer_me.flag',
-    'create_me.flag',
-    'poop_count.flag',
-    'passive_data_for_ephys.flag',
-]
+FLAG_FILE_NAMES = ['transfer_me.flag', 'create_me.flag', 'poop_count.flag', 'passive_data_for_ephys.flag']
 
 log = logging.getLogger(__name__)
 

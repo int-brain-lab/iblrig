@@ -83,7 +83,8 @@ class Frame2TTLCalibrationTarget(QtWidgets.QDialog):
     ):
         # try to detect screen_index, get screen dimensions
         if screen_index is None:
-            for screen_index, screen in enumerate(QtWidgets.QApplication.screens()):
+            for idx, screen in enumerate(QtWidgets.QApplication.screens()):
+                screen_index = idx
                 if screen.size().width() == 2048 and screen.size().height() == 1536:
                     break
             else:

@@ -2,6 +2,7 @@
 Choice World Task related logic and functions that translate the task description in
 Appendix 2 of the paper into code.
 """
+
 import logging
 
 import numpy as np

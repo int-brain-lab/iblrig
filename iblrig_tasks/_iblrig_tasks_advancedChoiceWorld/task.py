@@ -1,9 +1,11 @@
 from pathlib import Path
 
+import numpy as np
+import pandas as pd
 import yaml
 
 import iblrig.misc
-from iblrig.base_choice_world import ActiveChoiceWorldSession
+from iblrig.base_choice_world import NTRIALS_INIT, ActiveChoiceWorldSession
 
 # read defaults from task_parameters.yaml
 with open(Path(__file__).parent.joinpath('task_parameters.yaml')) as f:
@@ -24,18 +26,52 @@ class Session(ActiveChoiceWorldSession):
         self,
         *args,
         contrast_set: list[float] = DEFAULTS['CONTRAST_SET'],
-        contrast_set_probability_type: str = DEFAULTS['CONTRAST_SET_PROBABILITY_TYPE'],
-        probability_left: float = DEFAULTS['PROBABILITY_LEFT'],
-        reward_amount_ul: float = DEFAULTS['REWARD_AMOUNT_UL'],
+        probability_set: list[float] = DEFAULTS['PROBABILITY_SET'],
+        reward_set_ul: list[float] = DEFAULTS['REWARD_SET_UL'],
+        position_set: list[float] = DEFAULTS['POSITION_SET'],
         stim_gain: float = DEFAULTS['STIM_GAIN'],
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
+        nc = len(contrast_set)
+        assert len(probability_set) in [nc, 1], 'probability_set must be a scalar or have the same length as contrast_set'
+        assert len(reward_set_ul) in [nc, 1], 'reward_set_ul must be a scalar or have the same length as contrast_set'
+        assert len(position_set) == nc, 'position_set must have the same length as contrast_set'
         self.task_params['CONTRAST_SET'] = contrast_set
-        self.task_params['CONTRAST_SET_PROBABILITY_TYPE'] = contrast_set_probability_type
-        self.task_params['PROBABILITY_LEFT'] = probability_left
-        self.task_params['REWARD_AMOUNT_UL'] = reward_amount_ul
+        self.task_params['PROBABILITY_SET'] = probability_set
+        self.task_params['REWARD_SET_UL'] = reward_set_ul
+        self.task_params['POSITION_SET'] = position_set
         self.task_params['STIM_GAIN'] = stim_gain
+        # it is easier to work with parameters as a dataframe
+        self.df_contingencies = pd.DataFrame(columns=['contrast', 'probability', 'reward_amount_ul', 'position'])
+        self.df_contingencies['contrast'] = contrast_set
+        self.df_contingencies['probability'] = probability_set if len(probability_set) == nc else probability_set[0]
+        self.df_contingencies['reward_amount_ul'] = reward_set_ul if len(reward_set_ul) == nc else reward_set_ul[0]
+        self.df_contingencies['position'] = position_set
+        # normalize the probabilities
+        self.df_contingencies.loc[:, 'probability'] = self.df_contingencies.loc[:, 'probability'] / np.sum(
+            self.df_contingencies.loc[:, 'probability']
+        )
+        # update the PROBABILITY LEFT field to reflect the probabilities in the parameters above
+        self.task_params['PROBABILITY_LEFT'] = np.sum(
+            self.df_contingencies['probability'] * (self.df_contingencies['position'] < 0)
+        )
+        self.trials_table['debias_trial'] = np.zeros(NTRIALS_INIT, dtype=bool)
+
+    def draw_next_trial_info(self, **kwargs):
+        nc = self.df_contingencies.shape[0]
+        ic = np.random.choice(np.arange(nc), p=self.df_contingencies['probability'])
+        # now calling the super class with the proper parameters
+        super().draw_next_trial_info(
+            pleft=self.task_params.PROBABILITY_LEFT,
+            contrast=self.df_contingencies.at[ic, 'contrast'],
+            position=self.df_contingencies.at[ic, 'position'],
+            reward_amount=self.df_contingencies.at[ic, 'reward_amount_ul'],
+        )
+
+    @property
+    def reward_amount(self):
+        return self.task_params.REWARD_AMOUNTS_UL[0]
 
     @staticmethod
     def extra_parser():
@@ -48,32 +84,34 @@ class Session(ActiveChoiceWorldSession):
             default=DEFAULTS['CONTRAST_SET'],
             nargs='+',
             type=float,
-            help='set of contrasts to present',
+            help='Set of contrasts to present',
         )
         parser.add_argument(
-            '--contrast_set_probability_type',
-            option_strings=['--contrast_set_probability_type'],
-            dest='contrast_set_probability_type',
-            default=DEFAULTS['CONTRAST_SET_PROBABILITY_TYPE'],
-            type=str,
-            choices=['skew_zero', 'uniform'],
-            help=f'probability type for contrast set ' f'(default: {DEFAULTS["CONTRAST_SET_PROBABILITY_TYPE"]})',
-        )
-        parser.add_argument(
-            '--probability_left',
-            option_strings=['--probability_left'],
-            dest='probability_left',
-            default=DEFAULTS['PROBABILITY_LEFT'],
+            '--probability_set',
+            option_strings=['--probability_set'],
+            dest='probability_set',
+            default=DEFAULTS['PROBABILITY_SET'],
+            nargs='+',
             type=float,
-            help=f'probability for stimulus to appear on the left ' f'(default: {DEFAULTS["PROBABILITY_LEFT"]:.1f})',
+            help='Probabilities of each contrast in contrast_set. If scalar all contrasts are equiprobable',
         )
         parser.add_argument(
-            '--reward_amount_ul',
-            option_strings=['--reward_amount_ul'],
-            dest='reward_amount_ul',
-            default=DEFAULTS['REWARD_AMOUNT_UL'],
+            '--reward_set_ul',
+            option_strings=['--reward_set_ul'],
+            dest='reward_set_ul',
+            default=DEFAULTS['REWARD_SET_UL'],
+            nargs='+',
             type=float,
-            help=f'reward amount (default: {DEFAULTS["REWARD_AMOUNT_UL"]}μl)',
+            help='Reward for contrast in contrast set.',
+        )
+        parser.add_argument(
+            '--position_set',
+            option_strings=['--position_set'],
+            dest='position_set',
+            default=DEFAULTS['POSITION_SET'],
+            nargs='+',
+            type=float,
+            help='Position for each contrast in contrast set.',
         )
         parser.add_argument(
             '--stim_gain',
@@ -81,7 +119,7 @@ class Session(ActiveChoiceWorldSession):
             dest='stim_gain',
             default=DEFAULTS['STIM_GAIN'],
             type=float,
-            help=f'visual angle/wheel displacement ' f'(deg/mm, default: {DEFAULTS["STIM_GAIN"]})',
+            help=f'Visual angle/wheel displacement ' f'(deg/mm, default: {DEFAULTS["STIM_GAIN"]})',
         )
         return parser
 

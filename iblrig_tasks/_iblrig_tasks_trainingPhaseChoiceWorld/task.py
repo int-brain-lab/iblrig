@@ -14,7 +14,7 @@ class Session(TrainingChoiceWorldSession):
     protocol_name = '_iblrig_tasks_trainingPhaseChoiceWorld'
 
     def __init__(self, *args, training_level=DEFAULTS['TRAINING_PHASE'], debias=DEFAULTS['DEBIAS'], **kwargs):
-        super(Session, self).__init__(*args, training_phase=training_level, **kwargs)
+        super().__init__(*args, training_phase=training_level, **kwargs)
         self.task_params['TRAINING_PHASE'] = training_level
         self.task_params['DEBIAS'] = debias
 
@@ -40,6 +40,14 @@ class Session(TrainingChoiceWorldSession):
             default=DEFAULTS['DEBIAS'],
             type=bool,
             help='uses the debiasing protocol (only applies to levels 0-4)',
+        )
+        parser.add_argument(
+            '--adaptive_reward',
+            option_strings=['--adaptive_reward'],
+            dest='adaptive_reward',
+            default=-1.0,
+            type=float,
+            help='reward volume in microliters',
         )
         return parser
 

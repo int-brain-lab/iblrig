@@ -17,7 +17,9 @@ class TestInstantiationBiased(BaseTestCases.CommonTestInstantiateTask):
         self.task = BiasedChoiceWorldSession(**TASK_KWARGS)
         np.random.seed(12345)
 
-    def test_task(self, reward_set=np.array([0, 1.5])):
+    def test_task(self, reward_set=None):
+        if reward_set is None:
+            reward_set = np.array([0, 1.5])
         task = self.task
         task.create_session()
         trial_fixtures = get_fixtures()
@@ -104,9 +106,7 @@ class TestIntegrationFullRun(IntegrationFullRuns):
         :return:
         """
         task = self.task
-        task.mock(
-            file_jsonable_fixture=PATH_FIXTURES.joinpath('task_data_short.jsonable'),
-        )
+        task.mock(file_jsonable_fixture=PATH_FIXTURES.joinpath('task_data_short.jsonable'))
         task.task_params.NTRIALS = 3
         task.session_info['SUBJECT_WEIGHT'] = 24.2  # manually add a weighing
         # manually add water delivered since we test with few trials, there is a chance that this

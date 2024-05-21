@@ -81,7 +81,7 @@ class TestUpgradeFunction(unittest.TestCase):
     @patch('iblrig.upgrade_iblrig.get_local_version', return_value=None)
     @patch('iblrig.upgrade_iblrig.call_subprocesses')
     def test_upgrade_no_local_version(self, mock_call_subprocesses, mock_get_local_version, mock_check_upgrade_prerequisites):
-        with self.assertRaises(Exception):
+        with self.assertRaises(Exception):  # noqa: B017
             upgrade(raise_exceptions=True)
         mock_check_upgrade_prerequisites.assert_called_once()
         mock_get_local_version.assert_called_once()
@@ -91,7 +91,7 @@ class TestUpgradeFunction(unittest.TestCase):
     @patch('iblrig.upgrade_iblrig.get_remote_version', return_value=None)
     @patch('iblrig.upgrade_iblrig.call_subprocesses')
     def test_upgrade_no_remote_version(self, mock_call_subprocesses, mock_get_remote_version, mock_check_upgrade_prerequisites):
-        with self.assertRaises(Exception):
+        with self.assertRaises(Exception):  # noqa: B017
             upgrade(raise_exceptions=True)
         mock_check_upgrade_prerequisites.assert_called_once()
         mock_get_remote_version.assert_called_once()

@@ -239,7 +239,7 @@ def load_pydantic_yaml(model: type[T], filename: Path | str | None = None, do_ra
             raise e
 
 
-def save_pydantic_yaml(data: T, filename: Path | str | None = None) -> bool:
+def save_pydantic_yaml(data: T, filename: Path | str | None = None) -> None:
     if filename is None:
         if isinstance(data, HardwareSettings):
             filename = HARDWARE_SETTINGS_YAML

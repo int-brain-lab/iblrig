@@ -27,7 +27,6 @@ class GuiMicroManipulator(QtWidgets.QMainWindow, Ui_MainWindow):
         self.atlas.plot_sslice(ml_coordinate=0, ax=self.uiMpl.canvas.ax[1], volume='annotation')
         self.uiMpl.canvas.fig.tight_layout()
         self.uiPush_np24.clicked.connect(self.on_push_np24)
-        self.uiPush
         self.update_view()
 
     def update_view(self):

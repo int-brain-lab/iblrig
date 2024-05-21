@@ -89,6 +89,7 @@ class Ui_valve(object):
         spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout_5.addItem(spacerItem)
         self.commandLinkNext = QtWidgets.QCommandLinkButton(self.groupBoxCalibration)
+        self.commandLinkNext.setEnabled(False)
         self.commandLinkNext.setObjectName("commandLinkNext")
         self.verticalLayout_5.addWidget(self.commandLinkNext)
         self.verticalLayout_3.addWidget(self.groupBoxCalibration)

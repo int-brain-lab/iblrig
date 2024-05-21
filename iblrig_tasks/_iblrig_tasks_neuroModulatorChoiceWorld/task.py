@@ -15,12 +15,12 @@ class Session(BiasedChoiceWorldSession):
     protocol_name = '_iblrig_tasks_neuromodulatorChoiceWorld'
 
     def __init__(self, *args, **kwargs):
-        super(Session, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.trials_table['omit_feedback'] = np.zeros(self.trials_table.shape[0], dtype=bool)
         self.trials_table['choice_delay'] = np.zeros(self.trials_table.shape[0], dtype=np.float32)
 
     def next_trial(self):
-        super(Session, self).next_trial()
+        super().next_trial()
         # then there is a probability of omitting feedback regardless of the choice
         self.trials_table.at[self.trial_num, 'omit_feedback'] = np.random.random() < self.task_params.OMIT_FEEDBACK_PROBABILITY
 
@@ -96,11 +96,7 @@ class Session(BiasedChoiceWorldSession):
             state_name='stim_on',
             state_timer=0.1,
             output_actions=[self.bpod.actions.bonsai_show_stim],
-            state_change_conditions={
-                'Tup': 'interactive_delay',
-                'BNC1High': 'interactive_delay',
-                'BNC1Low': 'interactive_delay',
-            },
+            state_change_conditions={'Tup': 'interactive_delay', 'BNC1High': 'interactive_delay', 'BNC1Low': 'interactive_delay'},
         )
 
         sma.add_state(
@@ -114,10 +110,7 @@ class Session(BiasedChoiceWorldSession):
             state_name='play_tone',
             state_timer=0.1,
             output_actions=[self.bpod.actions.play_tone, ('BNC1', 255)],
-            state_change_conditions={
-                'Tup': 'reset2_rotary_encoder',
-                'BNC2High': 'reset2_rotary_encoder',
-            },
+            state_change_conditions={'Tup': 'reset2_rotary_encoder', 'BNC2High': 'reset2_rotary_encoder'},
         )
 
         sma.add_state(
@@ -132,11 +125,7 @@ class Session(BiasedChoiceWorldSession):
                 state_name='closed_loop',
                 state_timer=self.task_params.RESPONSE_WINDOW,
                 output_actions=[self.bpod.actions.bonsai_closed_loop],
-                state_change_conditions={
-                    'Tup': 'omit_no_go',
-                    self.event_error: 'omit_error',
-                    self.event_reward: 'omit_correct',
-                },
+                state_change_conditions={'Tup': 'omit_no_go', self.event_error: 'omit_error', self.event_reward: 'omit_correct'},
             )
         else:
             sma.add_state(
@@ -232,18 +221,11 @@ class Session(BiasedChoiceWorldSession):
             state_name='hide_stim',
             state_timer=0.1,
             output_actions=[self.bpod.actions.bonsai_hide_stim],
-            state_change_conditions={
-                'Tup': 'exit_state',
-                'BNC1High': 'exit_state',
-                'BNC1Low': 'exit_state',
-            },
+            state_change_conditions={'Tup': 'exit_state', 'BNC1High': 'exit_state', 'BNC1Low': 'exit_state'},
         )
 
         sma.add_state(
-            state_name='exit_state',
-            state_timer=0.5,
-            output_actions=[('BNC1', 255)],
-            state_change_conditions={'Tup': 'exit'},
+            state_name='exit_state', state_timer=0.5, output_actions=[('BNC1', 255)], state_change_conditions={'Tup': 'exit'}
         )
         return sma
 
@@ -259,7 +241,7 @@ class SessionRelatedBlocks(Session):
     # from iblrig_tasks._iblrig_tasks_neuroModulatorChoiceWorld.task import SessionRelatedBlocks
     # sess = SessionRelatedBlocks()
     def __init__(self, *args, **kwargs):
-        super(SessionRelatedBlocks, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.trials_table['omit_feedback'] = np.zeros(self.trials_table.shape[0], dtype=bool)
         self.trials_table['choice_delay'] = np.zeros(self.trials_table.shape[0], dtype=np.float32)
         self.trials_table['probability_left_rich'] = np.zeros(self.trials_table.shape[0], dtype=np.float32)
@@ -270,28 +252,27 @@ class SessionRelatedBlocks(Session):
         super(Session, self).new_block()
         if self.block_num == 0:
             probability_left_rich = 0.5
+        elif int((self.block_num + self.BLOCK_REWARD_STAGGER) / 2 % 2):
+            probability_left_rich = 0.8
         else:
-            if int((self.block_num + self.BLOCK_REWARD_STAGGER) / 2 % 2):
-                probability_left_rich = 0.8
-            else:
-                probability_left_rich = 0.2
+            probability_left_rich = 0.2
         self.blocks_table.at[self.block_num, 'probability_left_rich'] = probability_left_rich
 
     def next_trial(self):
-        super(SessionRelatedBlocks, self).next_trial()
+        super().next_trial()
         self.trials_table.at[self.trial_num, 'reward_amount'] = self.draw_reward_amount()
         prich = self.blocks_table.loc[self.block_num, 'probability_left_rich']
         self.trials_table.at[self.trial_num, 'probability_left_rich'] = prich
 
     def draw_reward_amount(self):
         # FIXME check: this has 0.5 probability of being correct !!!
-        REWARD_AMOUNTS = (1, 3)  # poor and rich
+        reward_amounts = (1, 3)  # poor and rich
         plr = self.blocks_table.at[self.block_num, 'probability_left_rich']
-        if np.sign(self.position):
+        if np.sign(self.position):  # noqa: SIM108
             probas = [plr, (1 - plr)]  # right
         else:
             probas = [(1 - plr), plr]  # left
-        return np.random.choice(REWARD_AMOUNTS, p=probas)
+        return np.random.choice(reward_amounts, p=probas)
 
 
 if __name__ == '__main__':  # pragma: no cover

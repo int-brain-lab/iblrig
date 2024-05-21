@@ -3,7 +3,7 @@ import logging
 import re
 import struct
 import threading
-from collections.abc import Iterable
+from collections.abc import Generator
 from typing import Any, overload
 
 import numpy as np
@@ -23,13 +23,7 @@ class SerialSingleton(serial.Serial):
     _initialized = False
     _lock = threading.Lock()
 
-    def __new__(
-        cls,
-        port: str | None = None,
-        serial_number: str | None = None,
-        *args,
-        **kwargs,
-    ):
+    def __new__(cls, port: str | None = None, serial_number: str | None = None, *args, **kwargs):
         # identify the device by its serial number
         if port is None:
             if serial_number is not None:
@@ -144,12 +138,10 @@ class SerialSingleton(serial.Serial):
         return super().write(buffer)
 
     @overload
-    def read(self, data_specifier: int = 1) -> bytes:
-        ...
+    def read(self, data_specifier: int = 1) -> bytes: ...
 
     @overload
-    def read(self, data_specifier: str) -> tuple[Any, ...]:
-        ...
+    def read(self, data_specifier: str) -> tuple[Any, ...]: ...
 
     def read(self, data_specifier=1):
         r"""
@@ -183,12 +175,10 @@ class SerialSingleton(serial.Serial):
             return super().read(data_specifier)
 
     @overload
-    def query(self, query: Any, data_specifier: int = 1) -> bytes:
-        ...
+    def query(self, query: Any, data_specifier: int = 1) -> bytes: ...
 
     @overload
-    def query(self, query: Any, data_specifier: str) -> tuple[Any, ...]:
-        ...
+    def query(self, query: Any, data_specifier: str) -> tuple[Any, ...]: ...
 
     def query(self, query, data_specifier=1):
         r"""
@@ -253,7 +243,7 @@ class SerialSingleton(serial.Serial):
                 return to_bytes(data)  # type: ignore[no-any-return]
 
 
-def filter_ports(**kwargs: dict[str, Any]) -> Iterable[str]:
+def filter_ports(**kwargs: dict[str, Any]) -> Generator[str, None, None]:
     """
     Filter serial ports based on specified criteria.
 

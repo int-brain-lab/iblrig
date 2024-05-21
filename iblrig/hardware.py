@@ -1,6 +1,7 @@
 """
 This modules contains hardware classes used to interact with modules.
 """
+
 import logging
 import os
 import re
@@ -12,11 +13,12 @@ import time
 from collections.abc import Callable
 from enum import IntEnum
 from pathlib import Path
-from typing import Literal
+from typing import Annotated, Literal
 
 import numpy as np
 import serial
 import sounddevice as sd
+from annotated_types import Ge, Le
 from pydantic import validate_call
 from serial.tools import list_ports
 
@@ -29,6 +31,10 @@ from pybpodapi.bpod_modules.bpod_module import BpodModule
 from pybpodapi.state_machine import StateMachine
 
 SOFTCODE = IntEnum('SOFTCODE', ['STOP_SOUND', 'PLAY_TONE', 'PLAY_NOISE', 'TRIGGER_CAMERA'])
+
+# some annotated types
+Uint8 = Annotated[int, Ge(0), Le(255)]
+ActionIdx = Annotated[int, Ge(1), Le(255)]
 
 log = logging.getLogger(__name__)
 
@@ -98,6 +104,10 @@ class Bpod(BpodIO):
     def sound_card(self):
         return self.get_module('sound_card')
 
+    @property
+    def ambient_module(self):
+        return self.get_module('^AmbientModule')
+
     def get_module(self, module_name: str) -> BpodModule | None:
         """Get module by name
 
@@ -123,7 +133,8 @@ class Bpod(BpodIO):
         if len(modules) > 0:
             return modules[0]
 
-    def _define_message(self, module: BpodModule | int, message: list[int]) -> int:
+    @validate_call(config={'arbitrary_types_allowed': True})
+    def _define_message(self, module: BpodModule | int, message: list[Uint8]) -> ActionIdx:
         """Define a serial message to be sent to a Bpod module as an output action within a state
 
         Parameters
@@ -149,17 +160,14 @@ class Bpod(BpodIO):
         will then be used as such in StateMachine:
         >>> output_actions=[("Serial1", id_msg_bonsai_show_stim)]
         """
-        if isinstance(module, int):
-            pass
-        elif isinstance(module, BpodModule):
+        if isinstance(module, BpodModule):
             module = module.serial_port
-        else:
-            raise TypeError
         message_id = len(self.serial_messages) + 1
         self.load_serial_message(module, message_id, message)
         self.serial_messages.update({message_id: {'target_module': module, 'message': message}})
         return message_id
 
+    @validate_call(config={'arbitrary_types_allowed': True})
     def define_xonar_sounds_actions(self):
         self.actions.update(
             {
@@ -169,48 +177,45 @@ class Bpod(BpodIO):
             }
         )
 
-    def define_harp_sounds_actions(
-        self, go_tone_index: int = 2, noise_index: int = 3, sound_port: str = 'Serial3', module: BpodModule | None = None
-    ):
-        if module is None:
-            module = self.sound_card
+    def define_harp_sounds_actions(self, module: BpodModule, go_tone_index: int = 2, noise_index: int = 3) -> None:
+        module_port = f"Serial{module.serial_port if module is not None else ''}"
         self.actions.update(
             {
-                'play_tone': (sound_port, self._define_message(module, [ord('P'), go_tone_index])),
-                'play_noise': (sound_port, self._define_message(module, [ord('P'), noise_index])),
-                'stop_sound': (sound_port, ord('X')),
+                'play_tone': (module_port, self._define_message(module, [ord('P'), go_tone_index])),
+                'play_noise': (module_port, self._define_message(module, [ord('P'), noise_index])),
+                'stop_sound': (module_port, ord('X')),
             }
         )
 
-    def define_rotary_encoder_actions(self, re_port='Serial1'):
-        """
-        Each output action is a tuple with the port and the message id
-        :param go_tone_index:
-        :param noise_index:
-        :return:
-        """
+    def define_rotary_encoder_actions(self, module: BpodModule | None = None) -> None:
+        if module is None:
+            module = self.rotary_encoder
+        module_port = f"Serial{module.serial_port if module is not None else ''}"
         self.actions.update(
             {
                 'rotary_encoder_reset': (
-                    re_port,
-                    self._define_message(
-                        self.rotary_encoder, [RotaryEncoder.COM_SETZEROPOS, RotaryEncoder.COM_ENABLE_ALLTHRESHOLDS]
-                    ),
+                    module_port,
+                    self._define_message(module, [RotaryEncoder.COM_SETZEROPOS, RotaryEncoder.COM_ENABLE_ALLTHRESHOLDS]),
                 ),
-                'bonsai_hide_stim': (re_port, self._define_message(self.rotary_encoder, [ord('#'), 1])),
-                'bonsai_show_stim': (re_port, self._define_message(self.rotary_encoder, [ord('#'), 8])),
-                'bonsai_closed_loop': (re_port, self._define_message(self.rotary_encoder, [ord('#'), 3])),
-                'bonsai_freeze_stim': (re_port, self._define_message(self.rotary_encoder, [ord('#'), 4])),
-                'bonsai_show_center': (re_port, self._define_message(self.rotary_encoder, [ord('#'), 5])),
+                'bonsai_hide_stim': (module_port, self._define_message(module, [ord('#'), 1])),
+                'bonsai_show_stim': (module_port, self._define_message(module, [ord('#'), 8])),
+                'bonsai_closed_loop': (module_port, self._define_message(module, [ord('#'), 3])),
+                'bonsai_freeze_stim': (module_port, self._define_message(module, [ord('#'), 4])),
+                'bonsai_show_center': (module_port, self._define_message(module, [ord('#'), 5])),
             }
         )
 
     def get_ambient_sensor_reading(self):
-        ambient_module = [x for x in self.modules if x.name == 'AmbientModule1'][0]
-        ambient_module.start_module_relay()
-        self.bpod_modules.module_write(ambient_module, 'R')
-        reply = self.bpod_modules.module_read(ambient_module, 12)
-        ambient_module.stop_module_relay()
+        if self.ambient_module is None:
+            return {
+                'Temperature_C': np.NaN,
+                'AirPressure_mb': np.NaN,
+                'RelativeHumidity': np.NaN,
+            }
+        self.ambient_module.start_module_relay()
+        self.bpod_modules.module_write(self.ambient_module, 'R')
+        reply = self.bpod_modules.module_read(self.ambient_module, 12)
+        self.ambient_module.stop_module_relay()
 
         return {
             'Temperature_C': np.frombuffer(bytes(reply[:4]), np.float32)[0],
@@ -243,10 +248,7 @@ class Bpod(BpodIO):
     def pulse_valve(self, open_time_s: float, valve: str = 'Valve1'):
         sma = StateMachine(self)
         sma.add_state(
-            state_name='flush',
-            state_timer=open_time_s,
-            state_change_conditions={'Tup': 'exit'},
-            output_actions=[(valve, 255)],
+            state_name='flush', state_timer=open_time_s, state_change_conditions={'Tup': 'exit'}, output_actions=[(valve, 255)]
         )
         self.send_state_machine(sma)
         self.run_state_machine(sma)
@@ -265,11 +267,7 @@ class Bpod(BpodIO):
 
         sma = StateMachine(self)
         sma.set_global_timer(timer_id=1, timer_duration=(open_time_s + close_time_s) * repetitions)
-        sma.add_state(
-            state_name='start_timer',
-            state_change_conditions={'Tup': 'open'},
-            output_actions=[('GlobalTimerTrig', 1)],
-        )
+        sma.add_state(state_name='start_timer', state_change_conditions={'Tup': 'open'}, output_actions=[('GlobalTimerTrig', 1)])
         sma.add_state(
             state_name='open',
             state_timer=open_time_s,
@@ -277,9 +275,7 @@ class Bpod(BpodIO):
             output_actions=[(valve, 255), ('SoftCode', 1)],
         )
         sma.add_state(
-            state_name='close',
-            state_timer=close_time_s,
-            state_change_conditions={'Tup': 'open', 'GlobalTimer1_End': 'exit'},
+            state_name='close', state_timer=close_time_s, state_change_conditions={'Tup': 'open', 'GlobalTimer1_End': 'exit'}
         )
         self.send_state_machine(sma)
         self.run_state_machine(sma)
@@ -335,7 +331,7 @@ class MyRotaryEncoder:
         # Names of the RE events generated by Bpod
         self.ENCODER_EVENTS = [f'RotaryEncoder1_{x}' for x in list(range(1, len(all_thresholds) + 1))]
         # Dict mapping threshold crossings with name ov RE event
-        self.THRESHOLD_EVENTS = dict(zip(all_thresholds, self.ENCODER_EVENTS))
+        self.THRESHOLD_EVENTS = dict(zip(all_thresholds, self.ENCODER_EVENTS, strict=False))
         if connect:
             self.connect()
 
