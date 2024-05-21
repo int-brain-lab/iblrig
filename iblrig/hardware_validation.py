@@ -180,7 +180,7 @@ class ValidatorSerial(Validator):
             except SerialException as e:
                 yield Result(
                     Status.FAIL,
-                    f'Serial device on {self.port} cannot be connected to',
+                    f'{self.name} on {self.port} cannot be connected to',
                     solution='Try power-cycling the device',
                     exception=e,
                 )
