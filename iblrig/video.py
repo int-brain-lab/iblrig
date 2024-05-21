@@ -6,7 +6,6 @@ import subprocess
 import sys
 import zipfile
 from pathlib import Path
-from urllib.error import URLError
 
 import yaml
 
@@ -25,7 +24,8 @@ from iblutil.io import (
 )
 from iblutil.util import setup_logger
 from one.converters import ConversionMixin
-from one.webclient import AlyxClient, http_download_file  # type: ignore
+from one.remote import aws
+from one.webclient import http_download_file  # type: ignore
 
 with contextlib.suppress(ImportError):
     from iblrig import video_pyspin
@@ -68,19 +68,28 @@ def _download_from_alyx_or_flir(asset: int, filename: str, target_md5: str) -> P
     out_dir = Path.home().joinpath('Downloads')
     out_file = out_dir.joinpath(filename)
     options = {'target_dir': out_dir, 'clobber': True, 'return_md5': True}
+
+    # if the file already exists skip all downloads
     if out_file.exists() and hashfile.md5(out_file) == target_md5:
         return out_file
-    try:
-        tmp_file, md5_sum = AlyxClient().download_file(f'resources/spinnaker/{filename}', **options)
-    except (OSError, AttributeError, URLError) as e1:
+
+    # first try to download from public s3 bucket
+    tmp_file = aws.s3_download_file(source=f'resources/{filename}', destination=out_file)
+    if tmp_file is not None:
+        md5_sum = hashfile.md5(tmp_file)
+
+    # if that fails try to download from flir server
+    else:
         try:
             url = f'https://flir.netx.net/file/asset/{asset}/original/attachment'
             tmp_file, md5_sum = http_download_file(url, **options)
-        except OSError as e2:
-            raise e2 from e1
+        except OSError as e:
+            raise Exception(f'`{filename}` could not be downloaded - manual intervention is necessary') from e
+
+    # finally
     os.rename(tmp_file, out_file)
     if md5_sum != target_md5:
-        raise Exception(f'`{filename}` does not match the expected MD5')
+        raise Exception(f'`{filename}` does not match the expected MD5 - manual intervention is necessary')
     return out_file
 
 
