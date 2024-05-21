@@ -47,10 +47,10 @@ class CalibrationPlot:
 
     def update(self):
         self._points.setData(x=self.values.open_times_ms, y=self.values.volumes_ul)
-        if len(self.values.open_times_ms) < 2:
+        if len(self.values.open_times_ms) < 1:
             self._curve.setData(x=[], y=[])
         else:
-            time_range = list(np.linspace(self.values.open_times_ms[0], self.values.open_times_ms[-1], 100))
+            time_range = list(np.linspace(0, self.values.open_times_ms[-1], 100))
             self._curve.setData(x=time_range, y=self.values.ms2ul(time_range))
 
     def clear(self):
@@ -240,13 +240,21 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
         self._next_calibration_time = self.get_next_calibration_time()
 
     def get_next_calibration_time(self) -> float | None:
-        remaining_calibration_times = [
-            t for t in self.valve.new_calibration_open_times if t not in self.new_calibration.values.open_times_ms
-        ]
-        if len(remaining_calibration_times) > 0:
-            return max(remaining_calibration_times)
-        else:
+        if len(self.new_calibration.values.open_times_ms) == 0:
+            # we start with the longest opening time ...
+            return self.hw_settings.device_valve.WATER_CALIBRATION_MAX_OPEN_TIME_MS
+        elif (
+            # ... and stop, once we reached the defined lower volume threshold
+            min(self.new_calibration.values.volumes_ul)
+            <= self.hw_settings.device_valve.WATER_CALIBRATION_LOWER_VOLUME_THRESHOLD_UL
+        ):
             return None
+        else:
+            # calibration times are given by the previous time, multiplied by a reduction factor
+            return round(
+                min(self.new_calibration.values.open_times_ms)
+                * self.hw_settings.device_valve.WATER_CALIBRATION_OPEN_TIME_REDUCTION_FACTOR
+            )
 
     def initialize_scale(self, port: str) -> bool:
         if port is None:
@@ -346,7 +354,9 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
 
     @QtCore.pyqtSlot()
     def calibrate(self):
-        n_samples = int(np.ceil(50 * max(self.valve.new_calibration_open_times) / self._next_calibration_time))
+        n_samples = int(
+            np.ceil(50 * self.hw_settings.device_valve.WATER_CALIBRATION_MAX_OPEN_TIME_MS / self._next_calibration_time)
+        )
         self.labelGuideText.setText(
             f'Getting {n_samples} samples for a valve opening time of {self._next_calibration_time} ms ...'
         )
