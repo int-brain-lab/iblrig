@@ -15,6 +15,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
 
+import numpy as np
 import pyqtgraph as pg
 from pydantic import ValidationError
 from PyQt5 import QtCore, QtGui, QtWidgets
@@ -847,6 +848,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
 
                 case 'stim_gain':
                     label = 'Stimulus Gain'
+                    widget.setMinimum(-np.inf)
 
             widget.wheelEvent = lambda event: None
             layout.addRow(self.tr(label), widget)

@@ -529,12 +529,16 @@ class ChoiceWorldSession(
         return self.trials_table.at[self.trial_num, 'position']
 
     @property
+    def reverse_wheel(self):
+        return self.task_params.STIM_GAIN < 0
+
+    @property
     def event_error(self):
-        return self.device_rotary_encoder.THRESHOLD_EVENTS[self.position]
+        return self.device_rotary_encoder.THRESHOLD_EVENTS[-self.position if self.reverse_wheel else self.position]
 
     @property
     def event_reward(self):
-        return self.device_rotary_encoder.THRESHOLD_EVENTS[-self.position]
+        return self.device_rotary_encoder.THRESHOLD_EVENTS[self.position if self.reverse_wheel else -self.position]
 
 
 class HabituationChoiceWorldSession(ChoiceWorldSession):
