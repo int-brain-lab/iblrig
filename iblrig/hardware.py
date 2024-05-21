@@ -19,7 +19,7 @@ import numpy as np
 import serial
 import sounddevice as sd
 from annotated_types import Ge, Le
-from pydantic import validate_call
+from pydantic import PositiveFloat, PositiveInt, validate_call
 from serial.tools import list_ports
 
 from iblrig.tools import static_vars
@@ -253,32 +253,38 @@ class Bpod(BpodIO):
         self.send_state_machine(sma)
         self.run_state_machine(sma)
 
+    @validate_call()
     def pulse_valve_repeatedly(
-        self, repetitions: int, open_time_s: float, close_time_s: float = 0.2, valve: str = 'Valve1'
+        self, repetitions: PositiveInt, open_time_s: PositiveFloat, close_time_s: PositiveFloat = 0.2, valve: str = 'Valve1'
     ) -> int:
         counter = 0
 
-        def softcode_handler(_):
-            nonlocal counter
-            counter += 1
+        def softcode_handler(softcode: int):
+            nonlocal counter, repetitions
+            if softcode == 1:
+                counter += 1
+            elif softcode == 2 and counter >= repetitions:
+                self.stop_trial()
 
         original_softcode_handler = self.softcode_handler_function
         self.softcode_handler_function = softcode_handler
 
         sma = StateMachine(self)
-        sma.set_global_timer(timer_id=1, timer_duration=(open_time_s + close_time_s) * repetitions)
-        sma.add_state(state_name='start_timer', state_change_conditions={'Tup': 'open'}, output_actions=[('GlobalTimerTrig', 1)])
         sma.add_state(
             state_name='open',
             state_timer=open_time_s,
-            state_change_conditions={'Tup': 'close', 'GlobalTimer1_End': 'exit'},
+            state_change_conditions={'Tup': 'close'},
             output_actions=[(valve, 255), ('SoftCode', 1)],
         )
         sma.add_state(
-            state_name='close', state_timer=close_time_s, state_change_conditions={'Tup': 'open', 'GlobalTimer1_End': 'exit'}
+            state_name='close',
+            state_timer=close_time_s,
+            state_change_conditions={'Tup': 'open'},
+            output_actions=[('SoftCode', 2)],
         )
         self.send_state_machine(sma)
         self.run_state_machine(sma)
+
         self.softcode_handler_function = original_softcode_handler
         return counter
 
