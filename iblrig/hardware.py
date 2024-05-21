@@ -271,7 +271,7 @@ class Bpod(BpodIO):
         sma.add_state(
             state_name='open',
             state_timer=open_time_s,
-            state_change_conditions={'Tup': 'close'},
+            state_change_conditions={'Tup': 'close', 'GlobalTimer1_End': 'exit'},
             output_actions=[(valve, 255), ('SoftCode', 1)],
         )
         sma.add_state(
