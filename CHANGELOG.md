@@ -2,6 +2,11 @@ Changelog
 ---------
 
 
+8.19.1
+------
+* hotfix: threading warnings during valve calibration (when used without scale)
+* hotfix: unreliable exit condition for state machine during valve calibration
+
 8.19.0
 ------
 * automated validation of rig components
