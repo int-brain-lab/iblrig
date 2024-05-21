@@ -19,9 +19,10 @@ from iblrig.pydantic_definitions import HardwareSettings  # noqa
 
 
 class TestDownloadFunction(unittest.TestCase):
-    @patch('one.webclient.AlyxClient.download_file', return_value=('mocked_tmp_file', 'mocked_md5_checksum'))
+    @patch('iblrig.video.aws.s3_download_file', return_value=Path('mocked_tmp_file'))
+    @patch('iblrig.video.hashfile.md5', return_value='mocked_md5_checksum')
     @patch('os.rename', return_value=None)
-    def test_download_from_alyx_or_flir(self, mock_os_rename, mock_alyx_download):
+    def test_download_from_alyx_or_flir(self, mock_os_rename, mock_hashfile, mock_aws_download):
         asset = 123
         filename = 'test_file.txt'
 
@@ -31,10 +32,9 @@ class TestDownloadFunction(unittest.TestCase):
         # Assertions
         expected_out_file = Path.home().joinpath('Downloads', filename)
         self.assertEqual(result, expected_out_file)
-        mock_alyx_download.assert_called_once_with(
-            f'resources/spinnaker/{filename}', target_dir=Path(expected_out_file.parent), clobber=True, return_md5=True
-        )
-        mock_os_rename.assert_called_once_with('mocked_tmp_file', expected_out_file)
+        mock_hashfile.assert_called()
+        mock_aws_download.assert_called_once_with(source=f'resources/{filename}', destination=Path(expected_out_file))
+        mock_os_rename.assert_called_once_with(Path('mocked_tmp_file'), expected_out_file)
 
 
 class TestSettings(unittest.TestCase):
@@ -172,7 +172,7 @@ class TestPrepareVideoSession(unittest.TestCase):
 
         # Test config validation
         self.assertRaises(ValueError, video.prepare_video_session, self.subject, 'training')
-        session().hardware_settings = hws.construct()
+        session().hardware_settings = hws.model_construct()
         self.assertRaises(ValueError, video.prepare_video_session, self.subject, 'training')
 
 
@@ -211,7 +211,7 @@ class TestValidateVideo(unittest.TestCase):
             }
             self.assertCountEqual(set(x.getMessage() for x in log.records), expected)
         # Test video meta warnings
-        config = self.config.copy()
+        config = self.config.model_copy()
         config.HEIGHT = config.WIDTH = 160
         config.FPS = 150
         with self.assertLogs(video.__name__, 30) as log:

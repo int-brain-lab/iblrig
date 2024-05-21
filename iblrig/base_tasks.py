@@ -34,7 +34,7 @@ import iblrig.path_helper
 import pybpodapi
 from ibllib.oneibl.registration import IBLRegistrationClient
 from iblrig import sound
-from iblrig.constants import BASE_PATH, BONSAI_EXE
+from iblrig.constants import BASE_PATH, BONSAI_EXE, PYSPIN_AVAILABLE
 from iblrig.frame2ttl import Frame2TTL
 from iblrig.hardware import SOFTCODE, Bpod, MyRotaryEncoder, sound_device_factory
 from iblrig.hifi import HiFi
@@ -191,6 +191,8 @@ class BaseSession(ABC):
             >>> C:\iblrigv8_data\mainenlab\Subjects\SWC_043\2019-01-01\001\raw_task_data_00  # noqa
         DATA_FILE_PATH: contains the bpod trials
             >>> C:\iblrigv8_data\mainenlab\Subjects\SWC_043\2019-01-01\001\raw_task_data_00\_iblrig_taskData.raw.jsonable  # noqa
+        SETTINGS_FILE_PATH: contains the task settings
+            >>>C:\iblrigv8_data\mainenlab\Subjects\SWC_043\2019-01-01\001\raw_task_data_00\_iblrig_taskSettings.raw.json  # noqa
         """
         rig_computer_paths = iblrig.path_helper.get_local_and_remote_paths(
             local_path=self.iblrig_settings['iblrig_local_data_path'],
@@ -230,6 +232,7 @@ class BaseSession(ABC):
         self.session_info.SESSION_NUMBER = int(paths.SESSION_FOLDER.name)
         paths.SESSION_RAW_DATA_FOLDER = paths.SESSION_FOLDER.joinpath(paths.TASK_COLLECTION)
         paths.DATA_FILE_PATH = paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_taskData.raw.jsonable')
+        paths.SETTINGS_FILE_PATH = paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_taskSettings.raw.json')
         return paths
 
     def _setup_loggers(self, level='INFO', level_bpod='WARNING', file=None):
@@ -336,18 +339,19 @@ class BaseSession(ABC):
         output_dict.update(patch_dict)
         return output_dict
 
-    def save_task_parameters_to_json_file(self, destination_folder=None) -> Path:
+    def save_task_parameters_to_json_file(self, destination_folder: Path | None = None) -> Path:
         """
-        Given a session object, collects the various settings and parameters of the session and outputs them to a JSON file
+        Collects the various settings and parameters of the session and outputs them to a JSON file
 
         Returns
         -------
         Path to the resultant JSON file
         """
         output_dict = self._make_task_parameters_dict()
-        destination_folder = destination_folder or self.paths.SESSION_RAW_DATA_FOLDER
-        # Output dict to json file
-        json_file = destination_folder.joinpath('_iblrig_taskSettings.raw.json')
+        if destination_folder:
+            json_file = destination_folder.joinpath('_iblrig_taskSettings.raw.json')
+        else:
+            json_file = self.paths['SETTINGS_FILE_PATH']
         json_file.parent.mkdir(parents=True, exist_ok=True)
         with open(json_file, 'w') as outfile:
             json.dump(output_dict, outfile, indent=4, sort_keys=True, default=str)  # converts datetime objects to string
@@ -368,7 +372,10 @@ class BaseSession(ABC):
             )
             try:
                 self._one = ONE(
-                    base_url=str(self.iblrig_settings['ALYX_URL']), username=self.iblrig_settings['ALYX_USER'], mode='remote'
+                    base_url=str(self.iblrig_settings['ALYX_URL']),
+                    username=self.iblrig_settings['ALYX_USER'],
+                    mode='remote',
+                    cache_rest=None,
                 )
                 log.info('instantiated ' + info_str)
             except Exception:
@@ -453,7 +460,7 @@ class BaseSession(ABC):
     def create_session(self):
         # create the session path and save json parameters in the task collection folder
         # this will also create the protocol folder
-        self.save_task_parameters_to_json_file()
+        self.paths['TASK_PARAMETERS_FILE'] = self.save_task_parameters_to_json_file()
         # enable file logging
         logfile = self.paths.SESSION_RAW_DATA_FOLDER.joinpath('_ibl_log.info-acquisition.log')
         self._setup_loggers(level=self._logger.level, file=logfile)
@@ -651,10 +658,13 @@ class BonsaiRecordingMixin(BaseSession):
         configuration = self.hardware_settings.device_cameras[self.config]
         if (workflow_file := self._camera_mixin_bonsai_get_workflow_file(configuration, 'setup')) is None:
             return
-        # TODO: Disable Trigger in Bonsai workflow - PySpin won't help here
-        # if PYSPIN_AVAILABLE:
-        #     from iblrig.video_pyspin import enable_camera_trigger
-        #     enable_camera_trigger(True)
+
+        # enable trigger of cameras (so Bonsai can disable it again ... sigh)
+        if PYSPIN_AVAILABLE:
+            from iblrig.video_pyspin import enable_camera_trigger
+
+            enable_camera_trigger(True)
+
         call_bonsai(workflow_file, wait=True)  # TODO Parameterize using configuration cameras
         log.info('Bonsai cameras setup module loaded: OK')
 
@@ -793,7 +803,8 @@ class BpodMixin(BaseSession):
         self.bpod.set_status_led(False)
         assert self.bpod.is_connected
         log.info('Bpod hardware module loaded: OK')
-        # self.send_spacers()
+        # make the bpod send spacer signals to the main sync clock for protocol discovery
+        self.send_spacers()
 
     def send_spacers(self):
         log.info('Starting task by sending a spacer signal on BNC1')
@@ -971,16 +982,15 @@ class SoundMixin(BaseSession):
         match self.hardware_settings.device_sound['OUTPUT']:
             case 'harp':
                 assert self.bpod.sound_card is not None, 'No harp sound-card connected to Bpod'
-                module_port = f'Serial{self.bpod.sound_card.serial_port}'
                 sound.configure_sound_card(
                     sounds=[self.sound.GO_TONE, self.sound.WHITE_NOISE],
                     indexes=[self.task_params.GO_TONE_IDX, self.task_params.WHITE_NOISE_IDX],
                     sample_rate=self.sound['samplerate'],
                 )
                 self.bpod.define_harp_sounds_actions(
+                    module=self.bpod.sound_card,
                     go_tone_index=self.task_params.GO_TONE_IDX,
                     noise_index=self.task_params.WHITE_NOISE_IDX,
-                    sound_port=module_port,
                 )
             case 'hifi':
                 module = self.bpod.get_module('^HiFi')
@@ -991,12 +1001,10 @@ class SoundMixin(BaseSession):
                 hifi.load(index=self.task_params.WHITE_NOISE_IDX, data=self.sound.WHITE_NOISE)
                 hifi.push()
                 hifi.close()
-                module_port = f'Serial{module.serial_port}'
                 self.bpod.define_harp_sounds_actions(
+                    module=module,
                     go_tone_index=self.task_params.GO_TONE_IDX,
                     noise_index=self.task_params.WHITE_NOISE_IDX,
-                    sound_port=module_port,
-                    module=module,
                 )
             case _:
                 self.bpod.define_xonar_sounds_actions()

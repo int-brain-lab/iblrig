@@ -15,6 +15,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
 
+import numpy as np
 import pyqtgraph as pg
 from pydantic import ValidationError
 from PyQt5 import QtCore, QtGui, QtWidgets
@@ -45,7 +46,7 @@ from iblrig.misc import _get_task_argument_parser
 from iblrig.path_helper import load_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings, RigSettings
 from iblrig.tools import alyx_reachable, get_anydesk_id, internet_available
-from iblrig.version_management import check_for_updates, get_changelog, is_dirty
+from iblrig.version_management import check_for_updates, get_changelog
 from iblutil.util import setup_logger
 from one.webclient import AlyxClient
 from pybpodapi.exceptions.bpod_error import BpodErrorException
@@ -825,6 +826,9 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                     )
                     widget.valueChanged.emit(widget.value())
 
+                case 'reward_set_ul':
+                    label = 'Reward Set, μl'
+
                 case 'adaptive_gain':
                     label = 'Stimulus Gain'
                     minimum = 0
@@ -844,6 +848,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
 
                 case 'stim_gain':
                     label = 'Stimulus Gain'
+                    widget.setMinimum(-np.inf)
 
             widget.wheelEvent = lambda event: None
             layout.addRow(self.tr(label), widget)
