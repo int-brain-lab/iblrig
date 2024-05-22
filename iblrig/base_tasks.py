@@ -398,10 +398,11 @@ class BaseSession(ABC):
         Water administrations are added separately by this method: it is expected that
         `register_session` is first called with no recorded total water. This method will then add
         a water administration each time it is called, and should therefore be called only once
-        after protocol is run. If water administration registration fails for all protocols, this
-        will be done before extraction in the ibllib pipline, however, if a water administration is
-        successfully registered for one protocol and subsequent ones fail to register, these will
-        not be added before extraction in ibllib and therefore must be manually added to Alyx.
+        after each protocol is run. If water administration registration fails for all protocols,
+        this will be done before extraction in the ibllib pipline, however, if a water
+        administration is successfully registered for one protocol and subsequent ones fail to
+        register, these will not be added before extraction in ibllib and therefore must be
+        manually added to Alyx.
 
         Returns
         -------
@@ -415,7 +416,8 @@ class BaseSession(ABC):
         if not self.one or self.one.offline:
             return
         try:
-            ses, _ = IBLRegistrationClient(self.one).register_session(self.paths.SESSION_FOLDER)
+            client = IBLRegistrationClient(self.one)
+            ses, _ = client.register_session(self.paths.SESSION_FOLDER, register_reward=False)
         except Exception:
             log.error(traceback.format_exc())
             log.error('Could not register session to Alyx')
@@ -423,16 +425,13 @@ class BaseSession(ABC):
         # add the water administration if there was water administered
         try:
             if self.session_info['TOTAL_WATER_DELIVERED']:
-                wa_data = dict(
+                wa = client.register_water_administration(
+                    self.session_info.SUBJECT_NAME,
+                    self.session_info['TOTAL_WATER_DELIVERED'] / 1000,
                     session=ses['url'][-36:],
-                    subject=self.session_info.SUBJECT_NAME,
                     water_type=self.task_params.get('REWARD_TYPE', None),
-                    water_administered=self.session_info['TOTAL_WATER_DELIVERED'] / 1000,
                 )
-                self.one.alyx.rest('water-administrations', 'create', data=wa_data)
-                log.info(
-                    f"Water administered registered in Alyx database: {ses['subject']}," f"{wa_data['water_administered']}mL"
-                )
+                log.info(f"Water administered registered in Alyx database: {ses['subject']}, " f"{wa['water_administered']}mL")
         except Exception:
             log.error(traceback.format_exc())
             log.error('Could not register water administration to Alyx')

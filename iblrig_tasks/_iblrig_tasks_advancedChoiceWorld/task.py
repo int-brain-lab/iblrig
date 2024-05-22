@@ -128,7 +128,7 @@ class Session(ActiveChoiceWorldSession):
             option_strings=['--stim_reverse'],
             action='store_true',
             dest='stim_reverse',
-            help=f'Inverse relationship of wheel to stimulus movement'
+            help='Inverse relationship of wheel to stimulus movement',
         )
         return parser
 

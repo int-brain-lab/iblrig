@@ -4,6 +4,7 @@ Changelog
 
 8.19.2
 ------
+* hotfix: only register water administrations once per protocol
 * hotfix: reverse wheel contingency now controlled through task parameter STIM_REVERSE
 
 8.19.1
