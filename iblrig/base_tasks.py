@@ -568,7 +568,7 @@ class OSCClient(udp_client.SimpleUDPClient):
         'stim_angle': dict(mess='/a', type=float),
         'stim_gain': dict(mess='/g', type=float),
         'stim_sigma': dict(mess='/s', type=float),
-        'stim_reverse': dict(mess='/r', type=int),
+        # 'stim_reverse': dict(mess='/r', type=int),  # this is not handled by Bonsai
     }
 
     def __init__(self, port, ip='127.0.0.1'):
@@ -715,6 +715,11 @@ class BonsaiVisualStimulusMixin(BaseSession):
             for k in self.bonsai_visual_udp_client.OSC_PROTOCOL
             if k in self.trials_table.columns
         }
+
+        # reverse wheel contingency: if stim_reverse is True we invert stim_gain
+        if self.trials_table.get('stim_reverse', {}).get(self.trial_num, False):
+            bonsai_dict['stim_gain'] = -bonsai_dict['stim_gain']
+
         self.bonsai_visual_udp_client.send2bonsai(**bonsai_dict)
         log.debug(bonsai_dict)
 

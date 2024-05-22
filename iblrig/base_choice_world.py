@@ -64,6 +64,7 @@ class ChoiceWorldParams(BaseModel):
     STIM_POSITIONS: list[float] = [-35, 35]
     STIM_SIGMA: float = 7.0
     STIM_TRANSLATION_Z: Literal[7, 8] = 7  # 7 for ephys, 8 otherwise. -p:Stim.TranslationZ-{STIM_TRANSLATION_Z} bonsai parameter
+    STIM_REVERSE: bool = False
     SYNC_SQUARE_X: float = 1.33
     SYNC_SQUARE_Y: float = -1.03
     USE_AUTOMATIC_STOPPING_CRITERIONS: bool = True
@@ -451,6 +452,7 @@ class ChoiceWorldSession(
         self.trials_table.at[self.trial_num, 'stim_angle'] = self.task_params.STIM_ANGLE
         self.trials_table.at[self.trial_num, 'stim_gain'] = self.task_params.STIM_GAIN
         self.trials_table.at[self.trial_num, 'stim_freq'] = self.task_params.STIM_FREQ
+        self.trials_table.at[self.trial_num, 'stim_reverse'] = self.task_params.STIM_REVERSE
         self.trials_table.at[self.trial_num, 'trial_num'] = self.trial_num
         self.trials_table.at[self.trial_num, 'position'] = position
         self.trials_table.at[self.trial_num, 'reward_amount'] = reward_amount
@@ -529,16 +531,12 @@ class ChoiceWorldSession(
         return self.trials_table.at[self.trial_num, 'position']
 
     @property
-    def reverse_wheel(self):
-        return self.task_params.STIM_GAIN < 0
-
-    @property
     def event_error(self):
-        return self.device_rotary_encoder.THRESHOLD_EVENTS[-self.position if self.reverse_wheel else self.position]
+        return self.device_rotary_encoder.THRESHOLD_EVENTS[(-1 if self.task_params.STIM_REVERSE else 1) * self.position]
 
     @property
     def event_reward(self):
-        return self.device_rotary_encoder.THRESHOLD_EVENTS[self.position if self.reverse_wheel else -self.position]
+        return self.device_rotary_encoder.THRESHOLD_EVENTS[(1 if self.task_params.STIM_REVERSE else -1) * self.position]
 
 
 class HabituationChoiceWorldSession(ChoiceWorldSession):

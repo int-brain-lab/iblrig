@@ -30,6 +30,7 @@ class Session(ActiveChoiceWorldSession):
         reward_set_ul: list[float] = DEFAULTS['REWARD_SET_UL'],
         position_set: list[float] = DEFAULTS['POSITION_SET'],
         stim_gain: float = DEFAULTS['STIM_GAIN'],
+        stim_reverse: float = DEFAULTS['STIM_REVERSE'],
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
@@ -42,6 +43,7 @@ class Session(ActiveChoiceWorldSession):
         self.task_params['REWARD_SET_UL'] = reward_set_ul
         self.task_params['POSITION_SET'] = position_set
         self.task_params['STIM_GAIN'] = stim_gain
+        self.task_params['STIM_REVERSE'] = stim_reverse
         # it is easier to work with parameters as a dataframe
         self.df_contingencies = pd.DataFrame(columns=['contrast', 'probability', 'reward_amount_ul', 'position'])
         self.df_contingencies['contrast'] = contrast_set
@@ -120,6 +122,13 @@ class Session(ActiveChoiceWorldSession):
             default=DEFAULTS['STIM_GAIN'],
             type=float,
             help=f'Visual angle/wheel displacement ' f'(deg/mm, default: {DEFAULTS["STIM_GAIN"]})',
+        )
+        parser.add_argument(
+            '--stim_reverse',
+            option_strings=['--stim_reverse'],
+            action='store_true',
+            dest='stim_reverse',
+            help=f'Inverse relationship of wheel to stimulus movement'
         )
         return parser
 
