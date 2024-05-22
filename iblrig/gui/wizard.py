@@ -11,11 +11,9 @@ import sys
 import traceback
 import webbrowser
 from collections import OrderedDict
-from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
 
-import numpy as np
 import pyqtgraph as pg
 from pydantic import ValidationError
 from PyQt5 import QtCore, QtGui, QtWidgets
@@ -848,7 +846,9 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
 
                 case 'stim_gain':
                     label = 'Stimulus Gain'
-                    widget.setMinimum(-np.inf)
+
+                case 'stim_reverse':
+                    label = 'Reverse Stimulus'
 
             widget.wheelEvent = lambda event: None
             layout.addRow(self.tr(label), widget)
@@ -934,13 +934,16 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                     cmd.extend(['--procedures', *self.model.procedures])
                 if self.model.projects:
                     cmd.extend(['--projects', *self.model.projects])
-                for key in self.task_arguments:
-                    if isinstance(self.task_arguments[key], Iterable) and not isinstance(self.task_arguments[key], str):
-                        cmd.extend([str(key)])
-                        for value in self.task_arguments[key]:
-                            cmd.extend([value])
+                for key, value in self.task_arguments.items():
+                    if isinstance(value, list):
+                        cmd.extend([key] + value)
+                    elif isinstance(value, bool):
+                        if value is True:
+                            cmd.append(key)
+                        else:
+                            pass
                     else:
-                        cmd.extend([key, self.task_arguments[key]])
+                        cmd.extend([key, value])
                 cmd.extend(['--weight', f'{weight}'])
                 cmd.extend(['--log-level', 'DEBUG' if self.debug else 'INFO'])
                 cmd.append('--wizard')

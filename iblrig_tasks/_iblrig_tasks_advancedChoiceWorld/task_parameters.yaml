@@ -3,4 +3,5 @@
 'REWARD_SET_UL': [1.5]  # scalar or list of Ncontrast values
 'POSITION_SET': [-35, -35, -35, -35, -35, -35, 35, 35, 35, 35, 35, 35]  # position set
 'STIM_GAIN': 4.0  # wheel to stimulus relationship
+'STIM_REVERSE': False
 #'DEBIAS': True  # Whether to use debiasing rule or not by repeating error trials  # todo
