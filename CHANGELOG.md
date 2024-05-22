@@ -1,6 +1,8 @@
 Changelog
 ---------
-
+8.19.2
+------
+* hotfix: only register water administrations once per protocol
 
 8.19.1
 ------
