@@ -13,4 +13,5 @@ IBLRIG documentation
    installation
    usage
    reference
+   reference_developer_guide
    faq

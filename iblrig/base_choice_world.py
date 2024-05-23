@@ -38,7 +38,7 @@ class ChoiceWorldParams(BaseModel):
     ADAPTIVE_REWARD: bool = False
     BONSAI_EDITOR: bool = False
     CALIBRATION_VALUE: float = 0.067
-    CONTRAST_SET: list[Probability] = Field([1.0, 0.25, 0.125, 0.0625, 0.0], min_items=1)
+    CONTRAST_SET: list[Probability] = Field([1.0, 0.25, 0.125, 0.0625, 0.0], min_length=1)
     CONTRAST_SET_PROBABILITY_TYPE: Literal['uniform', 'skew_zero'] = 'uniform'
     GO_TONE_AMPLITUDE: float = 0.0272
     GO_TONE_DURATION: float = 0.11

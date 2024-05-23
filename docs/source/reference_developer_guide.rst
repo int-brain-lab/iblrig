@@ -1,15 +1,6 @@
 Developer Guide
 ===============
 
-Release Checklist
------------------
-
-1) update CHANGELOG.md including changes from the last tag
-2) Pull request to ``iblrigv8dev``
-3) Check CI and eventually wet lab test
-4) Pull request to ``iblrigv8``
-5) Merge PR
-6) git tag the release in accordance to the version number below (after merge!)
 
 Versioning Scheme
 -----------------
@@ -44,14 +35,55 @@ Here,
 Both of these fields are inferred by means of git describe and do not require manual interaction from the developer.
 
 
-Running Tests Locally
----------------------
+Running Unit Tests Locally
+--------------------------
+
+To run unit tests locally, run the following within IBLRIG's venv:
+
+.. code-block:: console
+
+   pytest
+
+This will also generate a coverage report which can be found in the ``htmlcov`` directory.
+
+
+Linting & Formatting
+--------------------
+
+To lint your code, run the following within IBLRIG's venv:
 
 .. code-block:: console
 
    ruff check .
+
+Adding the ``--fix`` prefix will automatically fix issues that are deemed safe to handle:
+
+.. code-block:: console
+
+   ruff check . --fix
+
+To check if your code conforms to the Black code style, run:
+
+.. code-block:: console
+
+   ruff format . --check
+
+To format your code according to the Black code style, run:
+
+.. code-block:: console
+
    ruff format .
-   python -m unittest discover ./iblrig/test
+
+
+Release Checklist
+-----------------
+
+1) update CHANGELOG.md including changes from the last tag
+2) Pull request to ``iblrigv8dev``
+3) Check CI and eventually wet lab test
+4) Pull request to ``iblrigv8``
+5) Merge PR
+6) git tag the release in accordance to the version number below (after merge!)
 
 
 Building the documentation
