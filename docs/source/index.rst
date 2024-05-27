@@ -13,5 +13,6 @@ IBLRIG documentation
    installation
    usage
    reference
+   hardware
    reference_developer_guide
    faq
