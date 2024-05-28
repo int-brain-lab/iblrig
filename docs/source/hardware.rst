@@ -5,6 +5,9 @@ Hardware Guide
 Upgrading Xonar AE to Bpod HiFi Module
 ------------------------------------------------
 
+.. note:: The following guide only concerns behavior rigs using `Asus Xonar AE` sound cards.
+   The `Harp` sound cards used in our Ephys and Mesoscope rigs work fine and do not require replacing!
+
 Background
 """"""""""
 
