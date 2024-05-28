@@ -18,7 +18,9 @@ In their original design, IBL’s behavioral training rigs relied on a consumer-
 *  The soundcard’s driver has been causing issues with specific Windows updates that require manual intervention / rollback of the respective updates.
 *  There is no Windows 11 specific driver available.
 
-For these reasons, we decided to replace the Xonar AE with the `Bpod HiFi Module HD <https://sanworks.io/shop/viewproduct?productID=1033>`_ by Sanworks.
+For these reasons, we decided to replace the Xonar AE with the `Bpod HiFi Module HD <https://sanworks.io/shop/viewproduct?productID=1033>`_ by Sanworks:
+The HiFi Module is capable of delivering high fidelity sound stimuli at low latencies, supports proper TTL signaling as well as serial communication with the Bpod Finite State Machine and does not require any dedicated drivers.
+The upgrade procedure is straightforward and should take no longer than 5-10 minutes.
 
 Requirements
 """"""""""""
