@@ -1,15 +1,16 @@
-from abc import abstractmethod
+from abc import abstractmethod, ABC
+
+from pydantic import BaseModel
 
 from iblrig.hardware_validation import Validator
-from iblrig.pydantic_definitions import BunchModel
 
 
-class RigComponent:
-    @abstractmethod
+class RigComponent(ABC):
     @property
+    @abstractmethod
     def pretty_name(self) -> str:
         """
-        Get the pretty name of the component.
+        Get the component's pretty name.
 
         Returns
         -------
@@ -18,11 +19,11 @@ class RigComponent:
         """
         ...
 
-    @abstractmethod
     @property
+    @abstractmethod
     def validator(self) -> Validator:
         """
-        Get the validator for the component.
+        Get the component's validator.
 
         Returns
         -------
@@ -31,15 +32,15 @@ class RigComponent:
         """
         ...
 
-    @abstractmethod
     @property
-    def settings(self) -> BunchModel:
+    @abstractmethod
+    def settings(self) -> BaseModel:
         """
-        Get the settings for the component.
+        Get the component's settings.
 
         Returns
         -------
-        BunchModel
+        BaseModel
             The pydantic model for the component's settings.
         """
         ...
