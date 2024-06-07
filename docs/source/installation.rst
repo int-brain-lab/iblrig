@@ -224,15 +224,6 @@ To update iblrigv8 to the newest version:
 .. code-block:: powershell
 
   C:\iblrigv8\venv\scripts\Activate.ps1
-  upgrade_iblrig
-
-
-If you're on an older version of iblrigv8, the command above may not be available yet.
-You can then run the following instead:
-
-.. code-block:: powershell
-
-  C:\iblrigv8\venv\scripts\Activate.ps1
   cd C:\iblrigv8
   git pull
   pip install --upgrade -e .

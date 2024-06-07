@@ -77,6 +77,12 @@
      </item>
      <item>
       <widget class="QTextBrowser" name="uiTextBrowserChanges">
+       <property name="sizeIncrement">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
+       </property>
        <property name="verticalScrollBarPolicy">
         <enum>Qt::ScrollBarAlwaysOn</enum>
        </property>
@@ -100,7 +106,7 @@
         </sizepolicy>
        </property>
        <property name="text">
-        <string>To update, close IBL Rig Wizard and run the following command within the iblrigv8 Python environment:</string>
+        <string>To update, close IBL Rig Wizard and run the following commands within the iblrigv8 Python environment:</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignJustify|Qt::AlignVCenter</set>
@@ -127,54 +133,25 @@
       </spacer>
      </item>
      <item>
-      <layout class="QHBoxLayout" name="uiLayoutCommand">
-       <item>
-        <spacer name="horizontalSpacer_2">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>1</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item>
-        <widget class="QLineEdit" name="uiLineEditCommand">
-         <property name="styleSheet">
-          <string notr="true">background-color: rgb(1, 36, 86);
+      <widget class="QPlainTextEdit" name="plainTextEdit">
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>37</height>
+        </size>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">background-color: rgb(1, 36, 86);
 color: rgb(255, 255, 255);</string>
-         </property>
-         <property name="text">
-          <string>upgrade_iblrig</string>
-         </property>
-         <property name="frame">
-          <bool>false</bool>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-         <property name="readOnly">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <spacer name="horizontalSpacer_3">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>1</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-      </layout>
+       </property>
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+       <property name="plainText">
+        <string>git pull
+pip install --upgrade -e .</string>
+       </property>
+      </widget>
      </item>
      <item>
       <spacer name="verticalSpacer_3">

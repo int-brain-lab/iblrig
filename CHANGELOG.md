@@ -5,6 +5,7 @@ Changelog
 8.19.4
 ------
 * hotfix: fix validation for Alyx when no Alyx URL has been set
+* adapted update instructions in update notification & documentation
 
 8.19.3
 ------
