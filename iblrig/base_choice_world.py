@@ -389,7 +389,7 @@ class ChoiceWorldSession(
         sma.add_state(
             state_name='freeze_reward',
             state_timer=0,
-            output_actions=[self.bpod.actions.bonsai_freeze_stim],
+            output_actions=[self.bpod.actions.bonsai_show_center],
             state_change_conditions={'Tup': 'reward'},
         )
 

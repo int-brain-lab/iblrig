@@ -2,6 +2,10 @@ Changelog
 ---------
 
 
+8.19.3
+------
+* hotfix: force stimulus to freeze in center of screen during "freeze_reward" state
+
 8.19.2
 ------
 * hotfix: only register water administrations once per protocol
