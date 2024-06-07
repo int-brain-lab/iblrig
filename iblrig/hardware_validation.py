@@ -433,7 +433,7 @@ class ValidatorAlyx(Validator):
         # Validate ALYX_URL
         if self.iblrig_settings.ALYX_URL is None:
             yield Result(Status.SKIP, 'ALYX_URL has not been set in hardware_settings.yaml - skipping validation')
-            raise StopIteration(False)
+            return False
         elif not internet_available(timeout=2, force_update=True):
             yield Result(
                 Status.FAIL, f'Cannot connect to {self.iblrig_settings.ALYX_URL.host}', solution='Check your Internet connection'

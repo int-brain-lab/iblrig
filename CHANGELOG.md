@@ -2,6 +2,10 @@ Changelog
 ---------
 
 
+8.19.4
+------
+* hotfix: fix validation for Alyx when no Alyx URL has been set
+
 8.19.3
 ------
 * hotfix: force stimulus to freeze in center of screen during "freeze_reward" state
