@@ -5,6 +5,8 @@ Changelog
 8.19.3
 ------
 * hotfix: force stimulus to freeze in center of screen during "freeze_reward" state
+* method for copying snapshots to the local server using the SessionCopier
+* documentation for transition to Bpod HiFi
 
 8.19.2
 ------
