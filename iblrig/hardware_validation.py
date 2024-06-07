@@ -199,6 +199,9 @@ class ValidatorSerial(Validator):
                     ser.flush()
                     if not (passed := bool(re.search(regex_pattern, return_string))):
                         break
+            ser.__del__()
+            del ser
+
         if passed:
             yield Result(Status.PASS, f'Serial device positively identified as {self.name}')
             return True
