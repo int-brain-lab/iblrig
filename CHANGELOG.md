@@ -2,6 +2,12 @@ Changelog
 ---------
 
 
+8.19.4
+------
+* hotfix: fix validation for Alyx when no Alyx URL has been set
+* hotfix: fix validation for Bpod HiFi module
+* adapted update instructions in update notification & documentation
+
 8.19.3
 ------
 * hotfix: force stimulus to freeze in center of screen during "freeze_reward" state
