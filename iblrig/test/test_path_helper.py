@@ -1,6 +1,7 @@
 """Tests for iblrig.path_helper module."""
 
 import logging
+import os
 import tempfile
 import unittest
 from copy import deepcopy
@@ -245,10 +246,12 @@ class TestYAML(unittest.TestCase):
         ]:
             with self.assertNoLogs(level=logging.ERROR):
                 settings1 = load_pydantic_yaml(model, filename)
-            with tempfile.NamedTemporaryFile(mode='w') as temp_file:
+            with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp_file:
                 save_pydantic_yaml(settings1, temp_file.name)
                 with self.assertNoLogs(level=logging.ERROR):
                     settings2 = load_pydantic_yaml(model, temp_file.name)
+                temp_file.file.close()
+                os.unlink(temp_file.name)
             assert settings1 == settings2
 
 

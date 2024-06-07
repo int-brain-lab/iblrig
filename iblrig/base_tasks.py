@@ -680,7 +680,7 @@ class BonsaiRecordingMixin(BaseSession):
         workflow_file = self._camera_mixin_bonsai_get_workflow_file(configuration, 'recording')
         if workflow_file is None:
             return
-        iblrig.path_helper.create_bonsai_layout_from_template(workflow_file)  # FIXME What does this do?
+        iblrig.path_helper.create_bonsai_layout_from_template(workflow_file)
         # FIXME Use parameters in configuration map
         parameters = {
             'FileNameLeft': self.paths.SESSION_FOLDER.joinpath('raw_video_data', '_iblrig_leftCamera.raw.avi'),

@@ -16,8 +16,6 @@ dependencies = [
     "PyYAML",
     "colorlog",
     "graphviz",
-    "iblbpod@git+https://github.com/int-brain-lab/iblbpod.git",
-    "iblbpod@git+https://github.com/int-brain-lab/iblbpod.git",
     "ibllib@git+https://github.com/int-brain-lab/ibllib.git",
     "iblpybpod@git+https://github.com/int-brain-lab/iblpybpod.git@no-gui",
     "iblscripts@git+https://github.com/int-brain-lab/iblscripts.git",
@@ -83,9 +81,9 @@ files                  = [ "iblrig/**/*.py", "iblrig_tasks/**/*.py" ]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
-addopts    = "-ra --cov-report xml --cov=iblrig --cov=iblrig_tasks --tb=native"
+addopts    = "-ra --showlocals --cov=iblrig --cov=iblrig_tasks --cov-report=html --cov-report=xml --tb=short"
 minversion = "6.0"
-testpaths  = [ "iblrig/test", "iblrig/test/tasks" ]
+testpaths  = [ "iblrig/test" ]
 
 [tool.ruff]
 exclude = [

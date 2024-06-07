@@ -345,6 +345,31 @@ def iterate_collection(session_path: str, collection_name='raw_task_data') -> st
 
 
 def create_bonsai_layout_from_template(workflow_file: Path) -> None:
+    """
+    Create a Bonsai layout file from a template if it does not already exist.
+
+    If the file with the suffix `.bonsai.layout` does not exist for the given
+    workflow file, this function will attempt to create it from a template
+    file with the suffix `.bonsai.layout_template`. If the template file also
+    does not exist, the function logs that no template layout is available.
+
+    Background: Bonsai stores dialog settings (window position, control
+    visibility, etc.) in an XML file with the suffix `.bonsai.layout`. These
+    layout files are user-specific and may be overwritten locally by the user
+    according to their preferences. To ensure that a default layout is
+    available, a template file with the suffix `.bonsai.layout_template` can
+    be provided as a starting point.
+
+    Parameters
+    ----------
+    workflow_file : Path
+        The path to the Bonsai workflow for which the layout is to be created.
+
+    Raises
+    ------
+    FileNotFoundError
+        If the provided workflow_file does not exist.
+    """
     if not workflow_file.exists():
         FileNotFoundError(workflow_file)
     if not (layout_file := workflow_file.with_suffix('.bonsai.layout')).exists():
