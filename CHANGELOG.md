@@ -2,6 +2,10 @@ Changelog
 ---------
 
 
+8.19.5
+------
+* hotfix: move serial validation from SerialSingleton to Serial
+
 8.19.4
 ------
 * hotfix: fix validation for Alyx when no Alyx URL has been set
