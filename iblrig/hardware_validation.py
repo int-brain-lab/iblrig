@@ -193,14 +193,13 @@ class ValidatorSerial(Validator):
 
         # query the devices for characteristic responses
         if passed and getattr(self, 'serial_queries', None) is not None:
-            with SerialSingleton(self.port, timeout=1) as ser:
+            with Serial(self.port, timeout=1) as ser:
                 for query, regex_pattern in self.serial_queries.items():
-                    return_string = ser.query(*query)
+                    ser.write(query[0])
+                    return_string = ser.read(query[1])
                     ser.flush()
                     if not (passed := bool(re.search(regex_pattern, return_string))):
                         break
-            ser.__del__()
-            del ser
 
         if passed:
             yield Result(Status.PASS, f'Serial device positively identified as {self.name}')
