@@ -19,13 +19,14 @@ class TestOnlinePlots(unittest.TestCase):
             cls.task_file = Path(zip.extract('online_plots.jsonable', path=zip_jsonable.parent))
 
     def test_during_task(self):
-        myop = op.OnlinePlots()
+        myop = op.OnlinePlots()  # the canonical way is to provide a settings file, but this should run without
         trials_table, bpod_data = load_task_jsonable(self.task_file)
         for i in np.arange(trials_table.shape[0]):
             myop.update_trial(trials_table.iloc[i], bpod_data[i])
 
     def test_from_existing_file(self):
-        op.OnlinePlots(task_file=self.task_file)
+        op.OnlinePlots()
+        op.load_task_jsonable(jsonable_file=self.task_file)
 
     @classmethod
     def tearDownClass(cls) -> None:
