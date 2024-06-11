@@ -353,21 +353,25 @@ class OnlinePlots:
             self.h.bar_water[0].set(height=self.data.water_delivered)
 
     def _set_session_string(self) -> None:
-        if isinstance(self.data.task_settings, dict):
-            training_info, _ = get_subject_training_info(
-                subject_name=self.data.task_settings['SUBJECT_NAME'],
-                task_name=self.data.task_settings['PYBPOD_PROTOCOL'],
-                lab=self.data.task_settings['ALYX_LAB'],
-            )
-            self._session_string = (
-                f'subject: {self.data.task_settings["SUBJECT_NAME"]}  ·  '
-                f'weight: {self.data.task_settings["SUBJECT_WEIGHT"]}g  ·  '
-                f'training phase: {training_info["training_phase"]}  ·  '
-                f'stimulus gain: {self.data.task_settings["STIM_GAIN"]}  ·  '
-                f'reward amount: {self.data.task_settings["REWARD_AMOUNT_UL"]}µl'
-            )
-        else:
-            self._session_string = ''
+        self._session_string = ''
+        try:
+            if isinstance(self.data.task_settings, dict):
+                training_info, _ = get_subject_training_info(
+                    subject_name=self.data.task_settings['SUBJECT_NAME'],
+                    task_name=self.data.task_settings['PYBPOD_PROTOCOL'],
+                    lab=self.data.task_settings['ALYX_LAB'],
+                )
+                self._session_string = (
+                    f'subject: {self.data.task_settings["SUBJECT_NAME"]}  ·  '
+                    f'weight: {self.data.task_settings["SUBJECT_WEIGHT"]}g  ·  '
+                    f'training phase: {training_info["training_phase"]}  ·  '
+                    f'stimulus gain: {self.data.task_settings["STIM_GAIN"]}  ·  '
+                    f'reward amount: {self.data.task_settings["REWARD_AMOUNT_UL"]}µl'
+                )
+        except FileNotFoundError:
+            # there is a chance that people run this directly on another computer for looking at a session,
+            # in which case the iblrig_settings.yaml are not necessarily on the machine
+            pass
 
     def run(self, task_file: Path | str) -> None:
         """
