@@ -344,13 +344,16 @@ def view_session():
     >>> view_session /full/path/to/jsonable/_iblrig_taskData.raw.jsonable
     :return: None
     """
+    from iblutil.util import setup_logger
+
+    setup_logger('iblrig', level='INFO')
     parser = argparse.ArgumentParser()
     parser.add_argument('file_jsonable', help='full file path to jsonable file')
     parser.add_argument('file_settings', help='full file path to settings file', nargs='?', default=None)
     args = parser.parse_args()
 
-    online_plots = OnlinePlots(task_file=args.file_jsonable, settings_file=args.file_settings)
-    online_plots.run(task_file=args.file_jsonable)
+    online_plots = OnlinePlots(settings_file=args.file_settings)
+    online_plots.run(file_jsonable=args.file_jsonable)
 
 
 def flush():
