@@ -2,6 +2,10 @@ Changelog
 ---------
 
 
+8.19.6
+------
+* hotfix: fix race-condition that caused scrambled online-plots
+
 8.19.5
 ------
 * hotfix: move serial validation from SerialSingleton to Serial
