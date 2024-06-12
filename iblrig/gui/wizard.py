@@ -29,7 +29,7 @@ import iblrig.path_helper
 import iblrig_tasks
 from iblrig.base_tasks import EmptySession, ValveMixin
 from iblrig.choiceworld import get_subject_training_info, training_phase_from_contrast_set
-from iblrig.constants import BASE_DIR, COPYRIGHT_YEAR
+from iblrig.constants import BASE_DIR, URL_DOC
 from iblrig.gui.frame2ttl import Frame2TTLCalibrationDialog
 from iblrig.gui.splash import Splash
 from iblrig.gui.tools import Worker
@@ -43,7 +43,7 @@ from iblrig.hardware_validation import Status
 from iblrig.misc import _get_task_argument_parser
 from iblrig.path_helper import load_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings, RigSettings
-from iblrig.tools import alyx_reachable, get_anydesk_id, internet_available
+from iblrig.tools import alyx_reachable, internet_available
 from iblrig.version_management import check_for_updates, get_changelog
 from iblutil.util import setup_logger
 from one.webclient import AlyxClient
@@ -70,11 +70,6 @@ PROCEDURES = [
     'Imaging',
 ]
 PROJECTS = ['ibl_neuropixel_brainwide_01', 'practice']
-
-URL_DOC = 'https://int-brain-lab.github.io/iblrig'
-URL_REPO = 'https://github.com/int-brain-lab/iblrig/tree/iblrigv8'
-URL_ISSUES = 'https://github.com/int-brain-lab/iblrig/issues'
-URL_DISCUSSION = 'https://github.com/int-brain-lab/iblrig/discussions'
 
 ANSI_COLORS: dict[bytes, str] = {'31': 'Red', '32': 'Green', '33': 'Yellow', '35': 'Magenta', '36': 'Cyan', '37': 'White'}
 REGEX_STDOUT = re.compile(
@@ -351,13 +346,6 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.webEngineView.setUrl(QtCore.QUrl(URL_DOC))
         self.webEngineView.urlChanged.connect(self._on_doc_url_changed)
 
-        # tab: about
-        self.uiLabelCopyright.setText(f'**IBLRIG v{iblrig.__version__}**\n\n© {COPYRIGHT_YEAR}, International Brain Laboratory')
-        self.commandLinkButtonGitHub.clicked.connect(lambda: webbrowser.open(URL_REPO))
-        self.commandLinkButtonDoc.clicked.connect(lambda: webbrowser.open(URL_DOC))
-        self.commandLinkButtonIssues.clicked.connect(lambda: webbrowser.open(URL_ISSUES))
-        self.commandLinkButtonDiscussion.clicked.connect(lambda: webbrowser.open(URL_DISCUSSION))
-
         # disk stats
         local_data = self.model.iblrig_settings['iblrig_local_data_path']
         local_data = Path(local_data) if local_data else Path.home().joinpath('iblrig_data')
@@ -407,11 +395,6 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
             text = text + '<br><br>\nPlease refer to the System Validation tool for more details.'
             msg_box.setText(text)
             msg_box.exec()
-
-        # get AnyDesk ID
-        anydesk_worker = Worker(get_anydesk_id, True)
-        anydesk_worker.signals.result.connect(self._on_get_anydesk_result)
-        QThreadPool.globalInstance().tryStart(anydesk_worker)
 
         # check for update
         update_worker = Worker(check_for_updates)
@@ -525,22 +508,6 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         """
         if result[0]:
             UpdateNotice(parent=self, version=result[1])
-
-    def _on_get_anydesk_result(self, result: str | None) -> None:
-        """
-        Handle the result of checking for the user's AnyDesk ID.
-
-        Parameters
-        ----------
-        result : str | None
-            The user's AnyDesk ID, if available.
-
-        Returns
-        -------
-        None
-        """
-        if result is not None:
-            self.uiLabelAnyDesk.setText(f'Your AnyDesk ID: {result}')
 
     def _on_doc_url_changed(self):
         self.uiPushWebBack.setEnabled(len(self.webEngineView.history().backItems(1)) > 0)

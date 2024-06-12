@@ -79,7 +79,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>3</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="tabSession">
        <property name="sizePolicy">
@@ -707,7 +707,7 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="tab">
+      <widget class="QWidget" name="tabData">
        <attribute name="icon">
         <iconset resource="resources.qrc">
          <normaloff>:/images/sessions</normaloff>:/images/sessions</iconset>
@@ -887,7 +887,7 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="tabAbout">
+      <widget class="TabAbout" name="tabAbout">
        <attribute name="icon">
         <iconset resource="resources.qrc">
          <normaloff>:/images/about</normaloff>:/images/about</iconset>
@@ -895,202 +895,6 @@
        <attribute name="title">
         <string>About</string>
        </attribute>
-       <layout class="QGridLayout" name="gridLayout_3" rowstretch="2,0,0,0,0,2,0,0,0,0,0,0,0,3,0">
-        <property name="verticalSpacing">
-         <number>0</number>
-        </property>
-        <item row="7" column="0" rowspan="5">
-         <spacer name="horizontalSpacer_2">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>40</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item row="4" column="0" colspan="5">
-         <widget class="QLabel" name="uiLabelCopyright">
-          <property name="text">
-           <string>**IBLRIG v8.13.0**
-
-© 2024, International Brain Laboratory</string>
-          </property>
-          <property name="textFormat">
-           <enum>Qt::MarkdownText</enum>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="3" colspan="2">
-         <spacer name="horizontalSpacer_6">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>40</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item row="7" column="1" colspan="3">
-         <widget class="QCommandLinkButton" name="commandLinkButtonGitHub">
-          <property name="statusTip">
-           <string>Click to open the IBLRIG GitHub repository</string>
-          </property>
-          <property name="text">
-           <string>&amp;GitHub</string>
-          </property>
-          <property name="icon">
-           <iconset resource="resources.qrc">
-            <normaloff>:/images/github</normaloff>:/images/github</iconset>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="0" colspan="2">
-         <spacer name="horizontalSpacer_7">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>40</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item row="1" column="2">
-         <widget class="QLabel" name="uiLabelLogo">
-          <property name="maximumSize">
-           <size>
-            <width>90</width>
-            <height>90</height>
-           </size>
-          </property>
-          <property name="text">
-           <string/>
-          </property>
-          <property name="pixmap">
-           <pixmap resource="resources.qrc">:/images/iblrig_logo</pixmap>
-          </property>
-          <property name="scaledContents">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item row="8" column="1" colspan="3">
-         <widget class="QCommandLinkButton" name="commandLinkButtonDoc">
-          <property name="statusTip">
-           <string>Click to open the IBLRIG documentation</string>
-          </property>
-          <property name="text">
-           <string>&amp;Documentation</string>
-          </property>
-          <property name="icon">
-           <iconset resource="resources.qrc">
-            <normaloff>:/images/help</normaloff>:/images/help</iconset>
-          </property>
-         </widget>
-        </item>
-        <item row="10" column="1" colspan="3">
-         <widget class="QCommandLinkButton" name="commandLinkButtonIssues">
-          <property name="statusTip">
-           <string>Click to open the IBLRIG issue tracker</string>
-          </property>
-          <property name="text">
-           <string>&amp;Issue Tracker</string>
-          </property>
-          <property name="icon">
-           <iconset resource="resources.qrc">
-            <normaloff>:/images/bug</normaloff>:/images/bug</iconset>
-          </property>
-         </widget>
-        </item>
-        <item row="9" column="1" colspan="3">
-         <widget class="QCommandLinkButton" name="commandLinkButtonDiscussion">
-          <property name="statusTip">
-           <string>Click to open the IBLRIG discussion board</string>
-          </property>
-          <property name="text">
-           <string>Discussion &amp;Board</string>
-          </property>
-          <property name="icon">
-           <iconset resource="resources.qrc">
-            <normaloff>:/images/discussion</normaloff>:/images/discussion</iconset>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="2">
-         <spacer name="verticalSpacer">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>40</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item row="6" column="4" rowspan="7">
-         <spacer name="horizontalSpacer_3">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>40</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item row="13" column="0" colspan="5">
-         <spacer name="verticalSpacer_2">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>40</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item row="5" column="0" colspan="5">
-         <spacer name="verticalSpacer_3">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>40</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item row="14" column="0" colspan="5">
-         <widget class="QLabel" name="uiLabelAnyDesk">
-          <property name="text">
-           <string/>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-         </widget>
-        </item>
-       </layout>
       </widget>
      </widget>
     </item>
@@ -1153,6 +957,12 @@
    <class>QWebEngineView</class>
    <extends>QWidget</extends>
    <header location="global">QtWebEngineWidgets/QWebEngineView</header>
+  </customwidget>
+  <customwidget>
+   <class>TabAbout</class>
+   <extends>QWidget</extends>
+   <header location="global">iblrig/gui/tab_about</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources>
