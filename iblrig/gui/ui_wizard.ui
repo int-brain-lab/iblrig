@@ -707,6 +707,15 @@
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="tab">
+       <attribute name="icon">
+        <iconset resource="resources.qrc">
+         <normaloff>:/images/sessions</normaloff>:/images/sessions</iconset>
+       </attribute>
+       <attribute name="title">
+        <string>Data</string>
+       </attribute>
+      </widget>
       <widget class="QWidget" name="tabDocumentation">
        <attribute name="icon">
         <iconset resource="resources.qrc">
