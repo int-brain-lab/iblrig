@@ -716,7 +716,7 @@
         <string>Data</string>
        </attribute>
       </widget>
-      <widget class="QWidget" name="tabDocumentation">
+      <widget class="TabDocs" name="tabDocumentation">
        <attribute name="icon">
         <iconset resource="resources.qrc">
          <normaloff>:/images/help</normaloff>:/images/help</iconset>
@@ -724,168 +724,6 @@
        <attribute name="title">
         <string>Docs</string>
        </attribute>
-       <layout class="QVBoxLayout" name="verticalLayoutDoc" stretch="1,0,0">
-        <property name="spacing">
-         <number>0</number>
-        </property>
-        <property name="leftMargin">
-         <number>0</number>
-        </property>
-        <property name="topMargin">
-         <number>0</number>
-        </property>
-        <property name="rightMargin">
-         <number>0</number>
-        </property>
-        <property name="bottomMargin">
-         <number>0</number>
-        </property>
-        <item>
-         <widget class="QWebEngineView" name="webEngineView" native="true">
-          <property name="contextMenuPolicy">
-           <enum>Qt::NoContextMenu</enum>
-          </property>
-          <property name="acceptDrops">
-           <bool>false</bool>
-          </property>
-          <property name="url" stdset="0">
-           <url>
-            <string>https://int-brain-lab.github.io/iblrig/</string>
-           </url>
-          </property>
-          <property name="zoomFactor" stdset="0">
-           <double>0.900000000000000</double>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="Line" name="line">
-          <property name="frameShadow">
-           <enum>QFrame::Sunken</enum>
-          </property>
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QFrame" name="frame">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="frameShape">
-           <enum>QFrame::NoFrame</enum>
-          </property>
-          <property name="lineWidth">
-           <number>0</number>
-          </property>
-          <layout class="QHBoxLayout" name="horizontalLayout_5">
-           <item>
-            <widget class="QPushButton" name="uiPushWebBack">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>24</width>
-               <height>16777215</height>
-              </size>
-             </property>
-             <property name="statusTip">
-              <string>Click to go back</string>
-             </property>
-             <property name="text">
-              <string/>
-             </property>
-             <property name="icon">
-              <iconset resource="resources.qrc">
-               <normaloff>:/images/previous</normaloff>:/images/previous</iconset>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="uiPushWebForward">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>24</width>
-               <height>16777215</height>
-              </size>
-             </property>
-             <property name="statusTip">
-              <string>Click to go forward</string>
-             </property>
-             <property name="text">
-              <string/>
-             </property>
-             <property name="icon">
-              <iconset resource="resources.qrc">
-               <normaloff>:/images/next</normaloff>:/images/next</iconset>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="uiPushWebHome">
-             <property name="maximumSize">
-              <size>
-               <width>24</width>
-               <height>16777215</height>
-              </size>
-             </property>
-             <property name="statusTip">
-              <string>Click to go to home page</string>
-             </property>
-             <property name="text">
-              <string/>
-             </property>
-             <property name="icon">
-              <iconset resource="resources.qrc">
-               <normaloff>:/images/home</normaloff>:/images/home</iconset>
-             </property>
-             <property name="iconSize">
-              <size>
-               <width>16</width>
-               <height>16</height>
-              </size>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <spacer name="horizontalSpacer">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>40</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item>
-            <widget class="QPushButton" name="uiPushWebBrowser">
-             <property name="statusTip">
-              <string>Click to open the current page in your web browser</string>
-             </property>
-             <property name="text">
-              <string> Open in Browser</string>
-             </property>
-             <property name="icon">
-              <iconset resource="resources.qrc">
-               <normaloff>:/images/globe</normaloff>:/images/globe</iconset>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
-       </layout>
       </widget>
       <widget class="TabAbout" name="tabAbout">
        <attribute name="icon">
@@ -954,54 +792,22 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>QWebEngineView</class>
-   <extends>QWidget</extends>
-   <header location="global">QtWebEngineWidgets/QWebEngineView</header>
-  </customwidget>
-  <customwidget>
    <class>TabAbout</class>
    <extends>QWidget</extends>
    <header location="global">iblrig/gui/tab_about</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>TabDocs</class>
+   <extends>QWidget</extends>
+   <header location="global">iblrig/gui/tab_docs</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
  <resources>
   <include location="resources.qrc"/>
  </resources>
- <connections>
-  <connection>
-   <sender>uiPushWebForward</sender>
-   <signal>released()</signal>
-   <receiver>webEngineView</receiver>
-   <slot>forward()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>156</x>
-     <y>683</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>249</x>
-     <y>368</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>uiPushWebBack</sender>
-   <signal>released()</signal>
-   <receiver>webEngineView</receiver>
-   <slot>back()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>63</x>
-     <y>683</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>249</x>
-     <y>368</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
  <designerdata>
   <property name="gridDeltaX">
    <number>10</number>

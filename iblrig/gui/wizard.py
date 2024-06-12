@@ -9,7 +9,6 @@ import shutil
 import subprocess
 import sys
 import traceback
-import webbrowser
 from collections import OrderedDict
 from dataclasses import dataclass
 from pathlib import Path
@@ -18,7 +17,6 @@ import pyqtgraph as pg
 from pydantic import ValidationError
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QThread, QThreadPool
-from PyQt5.QtWebEngineWidgets import QWebEnginePage
 from PyQt5.QtWidgets import QStyle
 from requests import HTTPError
 from serial import SerialException
@@ -29,7 +27,7 @@ import iblrig.path_helper
 import iblrig_tasks
 from iblrig.base_tasks import EmptySession, ValveMixin
 from iblrig.choiceworld import get_subject_training_info, training_phase_from_contrast_set
-from iblrig.constants import BASE_DIR, URL_DOC
+from iblrig.constants import BASE_DIR
 from iblrig.gui.frame2ttl import Frame2TTLCalibrationDialog
 from iblrig.gui.splash import Splash
 from iblrig.gui.tools import Worker
@@ -339,13 +337,6 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         font.setPointSize(9)
         self.uiPlainTextEditLog.setFont(font)
 
-        # tab: documentation
-        self.uiPushWebHome.clicked.connect(lambda: self.webEngineView.load(QtCore.QUrl(URL_DOC)))
-        self.uiPushWebBrowser.clicked.connect(lambda: webbrowser.open(str(self.webEngineView.url().url())))
-        self.webEngineView.setPage(CustomWebEnginePage(self))
-        self.webEngineView.setUrl(QtCore.QUrl(URL_DOC))
-        self.webEngineView.urlChanged.connect(self._on_doc_url_changed)
-
         # disk stats
         local_data = self.model.iblrig_settings['iblrig_local_data_path']
         local_data = Path(local_data) if local_data else Path.home().joinpath('iblrig_data')
@@ -508,10 +499,6 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         """
         if result[0]:
             UpdateNotice(parent=self, version=result[1])
-
-    def _on_doc_url_changed(self):
-        self.uiPushWebBack.setEnabled(len(self.webEngineView.history().backItems(1)) > 0)
-        self.uiPushWebForward.setEnabled(len(self.webEngineView.history().forwardItems(1)) > 0)
 
     def _log_in_or_out(self, username: str) -> bool:
         # Routine for logging out:
@@ -1180,45 +1167,6 @@ class UpdateNotice(QtWidgets.QDialog, Ui_update):
         self.uiTextBrowserChanges.setMarkdown(get_changelog())
         self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
         self.exec()
-
-
-class CustomWebEnginePage(QWebEnginePage):
-    """
-    Custom implementation of QWebEnginePage to handle navigation requests.
-
-    This class overrides the acceptNavigationRequest method to handle link clicks.
-    If the navigation type is a link click and the clicked URL does not start with
-    a specific prefix (URL_DOC), it opens the URL in the default web browser.
-    Otherwise, it delegates the handling to the base class.
-
-    Adapted from: https://www.pythonguis.com/faq/qwebengineview-open-links-new-window/
-    """
-
-    @override
-    def acceptNavigationRequest(self, url: QtCore.QUrl, navigation_type: QWebEnginePage.NavigationType, is_main_frame: bool):
-        """
-        Decide whether to allow or block a navigation request.
-
-        Parameters
-        ----------
-        url : QUrl
-            The URL being navigated to.
-
-        navigation_type : QWebEnginePage.NavigationType
-            The type of navigation request.
-
-        is_main_frame : bool
-            Indicates whether the request is for the main frame.
-
-        Returns
-        -------
-        bool
-            True if the navigation request is accepted, False otherwise.
-        """
-        if navigation_type == QWebEnginePage.NavigationTypeLinkClicked and not url.url().startswith(URL_DOC):
-            webbrowser.open(url.url())
-            return False
-        return super().acceptNavigationRequest(url, navigation_type, is_main_frame)
 
 
 def main():
