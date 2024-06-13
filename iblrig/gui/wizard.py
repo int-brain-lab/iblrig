@@ -266,8 +266,8 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.tabAbout = TabAbout()
         self.tabWidget.addTab(self.tabLog, QtGui.QIcon(':/images/log'), 'Log')
         self.tabWidget.addTab(self.tabData, QtGui.QIcon(':/images/sessions'), 'Data')
-        self.tabWidget.addTab(self.tabDocs, QtGui.QIcon(':/images/help'), 'About')
-        self.tabWidget.addTab(self.tabAbout, QtGui.QIcon(':/images/about'), 'Docs')
+        self.tabWidget.addTab(self.tabDocs, QtGui.QIcon(':/images/help'), 'Docs')
+        self.tabWidget.addTab(self.tabAbout, QtGui.QIcon(':/images/about'), 'About')
         self.tabWidget.setCurrentIndex(0)
 
         self.debug = kwargs.get('debug', False)
