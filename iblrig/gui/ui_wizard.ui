@@ -707,33 +707,6 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="tabData">
-       <attribute name="icon">
-        <iconset resource="resources.qrc">
-         <normaloff>:/images/sessions</normaloff>:/images/sessions</iconset>
-       </attribute>
-       <attribute name="title">
-        <string>Data</string>
-       </attribute>
-      </widget>
-      <widget class="TabDocs" name="tabDocumentation">
-       <attribute name="icon">
-        <iconset resource="resources.qrc">
-         <normaloff>:/images/help</normaloff>:/images/help</iconset>
-       </attribute>
-       <attribute name="title">
-        <string>Docs</string>
-       </attribute>
-      </widget>
-      <widget class="TabAbout" name="tabAbout">
-       <attribute name="icon">
-        <iconset resource="resources.qrc">
-         <normaloff>:/images/about</normaloff>:/images/about</iconset>
-       </attribute>
-       <attribute name="title">
-        <string>About</string>
-       </attribute>
-      </widget>
      </widget>
     </item>
    </layout>
@@ -790,20 +763,6 @@
    </property>
   </action>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>TabAbout</class>
-   <extends>QWidget</extends>
-   <header location="global">iblrig/gui/tab_about</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>TabDocs</class>
-   <extends>QWidget</extends>
-   <header location="global">iblrig/gui/tab_docs</header>
-   <container>1</container>
-  </customwidget>
- </customwidgets>
  <resources>
   <include location="resources.qrc"/>
  </resources>

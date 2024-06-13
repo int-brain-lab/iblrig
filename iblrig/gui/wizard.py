@@ -30,6 +30,9 @@ from iblrig.choiceworld import get_subject_training_info, training_phase_from_co
 from iblrig.constants import BASE_DIR
 from iblrig.gui.frame2ttl import Frame2TTLCalibrationDialog
 from iblrig.gui.splash import Splash
+from iblrig.gui.tab_about import TabAbout
+from iblrig.gui.tab_data import TabData
+from iblrig.gui.tab_docs import TabDocs
 from iblrig.gui.tools import Worker
 from iblrig.gui.ui_login import Ui_login
 from iblrig.gui.ui_update import Ui_update
@@ -254,6 +257,15 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         splash_screen = Splash()
         splash_screen.exec()
         self.validation_results = splash_screen.validation_results
+
+        # load tabs
+        self.tabData = TabData()
+        self.tabDocs = TabDocs()
+        self.tabAbout = TabAbout()
+        self.tabWidget.addTab(self.tabData, QtGui.QIcon(':/images/data'), 'Data')
+        self.tabWidget.addTab(self.tabDocs, QtGui.QIcon(':/images/help'), 'About')
+        self.tabWidget.addTab(self.tabAbout, QtGui.QIcon(':/images/about'), 'Docs')
+        self.tabWidget.setCurrentIndex(0)
 
         self.debug = kwargs.get('debug', False)
         self.settings = QtCore.QSettings()

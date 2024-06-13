@@ -288,21 +288,6 @@ class Ui_wizard(object):
         icon5 = QtGui.QIcon()
         icon5.addPixmap(QtGui.QPixmap(":/images/log"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.tabWidget.addTab(self.tabLog, icon5, "")
-        self.tabData = QtWidgets.QWidget()
-        self.tabData.setObjectName("tabData")
-        icon6 = QtGui.QIcon()
-        icon6.addPixmap(QtGui.QPixmap(":/images/sessions"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.tabWidget.addTab(self.tabData, icon6, "")
-        self.tabDocumentation = TabDocs()
-        self.tabDocumentation.setObjectName("tabDocumentation")
-        icon7 = QtGui.QIcon()
-        icon7.addPixmap(QtGui.QPixmap(":/images/help"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.tabWidget.addTab(self.tabDocumentation, icon7, "")
-        self.tabAbout = TabAbout()
-        self.tabAbout.setObjectName("tabAbout")
-        icon8 = QtGui.QIcon()
-        icon8.addPixmap(QtGui.QPixmap(":/images/about"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.tabWidget.addTab(self.tabAbout, icon8, "")
         self.horizontalLayout_2.addWidget(self.tabWidget)
         wizard.setCentralWidget(self.widget)
         self.statusbar = QtWidgets.QStatusBar(wizard)
@@ -376,16 +361,11 @@ class Ui_wizard(object):
         self.uiPushPause.setText(_translate("wizard", "Pause"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabSession), _translate("wizard", "Session"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabLog), _translate("wizard", "Log"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabData), _translate("wizard", "Data"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabDocumentation), _translate("wizard", "Docs"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabAbout), _translate("wizard", "About"))
         self.uiMenuTools.setTitle(_translate("wizard", "Tools"))
         self.uiActionTrainingLevelV7.setText(_translate("wizard", "Get Training Level"))
         self.uiActionCalibrateFrame2ttl.setText(_translate("wizard", "Calibrate Frame2TTL"))
         self.uiActionCalibrateValve.setText(_translate("wizard", "Calibrate Valve"))
         self.uiActionValidateHardware.setText(_translate("wizard", "Validate System"))
-from iblrig.gui.tab_about import TabAbout
-from iblrig.gui.tab_docs import TabDocs
 from iblrig.gui import resources_rc
 
 
