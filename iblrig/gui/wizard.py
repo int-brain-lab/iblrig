@@ -33,6 +33,7 @@ from iblrig.gui.splash import Splash
 from iblrig.gui.tab_about import TabAbout
 from iblrig.gui.tab_data import TabData
 from iblrig.gui.tab_docs import TabDocs
+from iblrig.gui.tab_log import TabLog
 from iblrig.gui.tools import Worker
 from iblrig.gui.ui_login import Ui_login
 from iblrig.gui.ui_update import Ui_update
@@ -259,9 +260,11 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.validation_results = splash_screen.validation_results
 
         # load tabs
+        self.tabLog = TabLog()
         self.tabData = TabData()
         self.tabDocs = TabDocs()
         self.tabAbout = TabAbout()
+        self.tabWidget.addTab(self.tabLog, QtGui.QIcon(':/images/log'), 'Log')
         self.tabWidget.addTab(self.tabData, QtGui.QIcon(':/images/sessions'), 'Data')
         self.tabWidget.addTab(self.tabDocs, QtGui.QIcon(':/images/help'), 'About')
         self.tabWidget.addTab(self.tabAbout, QtGui.QIcon(':/images/about'), 'Docs')
@@ -342,12 +345,6 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.uiPushStatusLED.setChecked(self.settings.value('bpod_status_led', True, bool))
         self.uiPushStatusLED.toggled.connect(self.toggle_status_led)
         self.toggle_status_led(self.uiPushStatusLED.isChecked())
-
-        # tab: log
-        font = QtGui.QFont('Monospace')
-        font.setStyleHint(QtGui.QFont.TypeWriter)
-        font.setPointSize(9)
-        self.uiPlainTextEditLog.setFont(font)
 
         # disk stats
         local_data = self.model.iblrig_settings['iblrig_local_data_path']
@@ -916,9 +913,8 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 if self.uiCheckAppend.isChecked():
                     cmd.append('--append')
                 if self.running_task_process is None:
-                    self.uiPlainTextEditLog.clear()
-                    self._set_plaintext_char_color(self.uiPlainTextEditLog, 'White')
-                    self.uiPlainTextEditLog.appendPlainText(f'Starting subprocess: {self.model.task_name} ...\n')
+                    self.tabLog.clear()
+                    self.tabLog.appendText(f'Starting subprocess: {self.model.task_name} ...\n', 'White')
                     log.info('Starting subprocess')
                     log.info(subprocess.list2cmdline(cmd))
                     self.running_task_process = QtCore.QProcess()
@@ -936,26 +932,6 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 if self.model.session_folder and self.model.session_folder.exists():
                     self.model.session_folder.joinpath('.stop').touch()
 
-    @staticmethod
-    def _set_plaintext_char_color(widget: QtWidgets.QPlainTextEdit, color: str = 'White') -> None:
-        """
-        Set the foreground color of characters in a QPlainTextEdit widget.
-
-        Parameters
-        ----------
-        widget : QtWidgets.QPlainTextEdit
-            The QPlainTextEdit widget whose character color is to be set.
-
-        color : str, optional
-            The name of the color to set. Default is 'White'. Should be a valid color name
-            recognized by QtGui.QColorConstants. If the provided color name is not found,
-            it defaults to QtGui.QColorConstants.White.
-        """
-        color = getattr(QtGui.QColorConstants, color, QtGui.QColorConstants.White)
-        char_format = widget.currentCharFormat()
-        char_format.setForeground(QtGui.QBrush(color))
-        widget.setCurrentCharFormat(char_format)
-
     def _on_read_standard_output(self):
         """
         Read and process standard output entries.
@@ -968,10 +944,9 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         entries = re.finditer(REGEX_STDOUT, data)
         for entry in entries:
             color = ANSI_COLORS.get(entry.groupdict().get('color', '37'), 'White')
-            self._set_plaintext_char_color(self.uiPlainTextEditLog, color)
             time = entry.groupdict().get('time', '')
             msg = entry.groupdict().get('message', '')
-            self.uiPlainTextEditLog.appendPlainText(f'{time} {msg}')
+            self.tabLog.appendText(f'{time} {msg}', color)
         if self.debug:
             print(data)
 
@@ -984,14 +959,12 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         the error message to the widget.
         """
         data = self.running_task_process.readAllStandardError().data().decode('utf-8', 'ignore').strip()
-        self._set_plaintext_char_color(self.uiPlainTextEditLog, 'Red')
-        self.uiPlainTextEditLog.appendPlainText(data)
+        self.tabLog.appendText(data, 'Red')
         if self.debug:
             print(data)
 
     def _on_task_finished(self, exit_code, exit_status):
-        self._set_plaintext_char_color(self.uiPlainTextEditLog, 'White')
-        self.uiPlainTextEditLog.appendPlainText('\nSubprocess finished.')
+        self.tabLog.appendText('\nSubprocess finished.', 'White')
         if exit_code:
             msg_box = QtWidgets.QMessageBox(parent=self)
             msg_box.setWindowTitle('Oh no!')
