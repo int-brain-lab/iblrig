@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="800"
+   height="800"
+   viewBox="0 0 211.66666 211.66667"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.3 (0e150ed6c4, 2023-07-21)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     inkscape:zoom="0.51213161"
+     inkscape:cx="447.15068"
+     inkscape:cy="190.38075"
+     inkscape:window-width="1920"
+     inkscape:window-height="1009"
+     inkscape:window-x="-8"
+     inkscape:window-y="194"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs1" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       id="path1"
+       style="fill:#6699ff;stroke-width:0.314788"
+       d="M 105.83333 0 A 105.83332 105.83332 0 0 0 0 105.83333 A 105.83332 105.83332 0 0 0 105.83333 211.66667 A 105.83332 105.83332 0 0 0 211.66667 105.83333 A 105.83332 105.83332 0 0 0 105.83333 0 z M 105.78682 41.620199 C 109.7963 41.620199 113.18923 43.038797 115.96501 45.87627 C 118.74081 48.652058 120.12858 52.013655 120.12858 55.961442 C 120.12858 59.90923 118.70998 63.271343 115.87251 66.047131 C 113.09672 68.82292 109.73461 70.210701 105.78682 70.210701 C 101.83904 70.210701 98.47744 68.82292 95.701652 66.047131 C 92.925863 63.271343 91.538082 59.90923 91.538082 55.961442 C 91.538082 52.013655 92.925863 48.652058 95.701652 45.87627 C 98.47744 43.038797 101.83904 41.620199 105.78682 41.620199 z M 82.470418 83.534436 L 118.74056 83.534436 L 118.74056 152.09666 C 118.74056 158.20339 119.45038 162.12021 120.86911 163.84736 C 122.28785 165.51284 125.06341 166.46919 129.19625 166.71592 L 129.19625 170.04647 L 82.470418 170.04647 L 82.470418 166.71592 C 86.294838 166.59256 89.132552 165.48212 90.983077 163.38486 C 92.21676 161.96613 92.83361 158.20339 92.83361 152.09666 L 92.83361 101.57726 C 92.83361 95.470526 92.123794 91.584015 90.705058 89.918542 C 89.286321 88.191386 86.541574 87.204736 82.470418 86.958 L 82.470418 83.534436 z " />
+  </g>
+</svg>

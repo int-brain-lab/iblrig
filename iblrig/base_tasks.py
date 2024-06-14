@@ -31,12 +31,12 @@ from pythonosc import udp_client
 
 import ibllib.io.session_params as ses_params
 import iblrig
-import iblrig.alyx
 import iblrig.graphic as graph
 import iblrig.path_helper
 import pybpodapi
 from iblrig import sound, net
-from iblrig.constants import BASE_PATH, BONSAI_EXE
+from ibllib.oneibl.registration import IBLRegistrationClient
+from iblrig.constants import BASE_PATH, BONSAI_EXE, PYSPIN_AVAILABLE
 from iblrig.frame2ttl import Frame2TTL
 from iblrig.hardware import SOFTCODE, Bpod, MyRotaryEncoder, sound_device_factory
 from iblrig.hifi import HiFi
@@ -59,6 +59,7 @@ log = logging.getLogger(__name__)
 
 class BaseSession(ABC):
     version = None
+    """str: !!CURRENTLY UNUSED!! task version string."""
     protocol_name: str | None = None
     base_parameters_file: Path | None = None
     is_mock = False
@@ -235,11 +236,12 @@ class BaseSession(ABC):
         else:
             # in this case the session path is created from scratch
             paths.SESSION_FOLDER = date_folder / next_num_folder(date_folder)
-            self.session_info.SESSION_NUMBER = int(paths.SESSION_FOLDER.name)
             paths.TASK_COLLECTION = iblrig.path_helper.iterate_collection(paths.SESSION_FOLDER)
 
+        self.session_info.SESSION_NUMBER = int(paths.SESSION_FOLDER.name)
         paths.SESSION_RAW_DATA_FOLDER = paths.SESSION_FOLDER.joinpath(paths.TASK_COLLECTION)
         paths.DATA_FILE_PATH = paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_taskData.raw.jsonable')
+        paths.SETTINGS_FILE_PATH = paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_taskSettings.raw.json')
         return paths
 
     def _setup_loggers(self, level='INFO', level_bpod='WARNING', file=None):
@@ -349,18 +351,19 @@ class BaseSession(ABC):
         output_dict.update(patch_dict)
         return output_dict
 
-    def save_task_parameters_to_json_file(self, destination_folder=None) -> Path:
+    def save_task_parameters_to_json_file(self, destination_folder: Path | None = None) -> Path:
         """
-        Given a session object, collects the various settings and parameters of the session and outputs them to a JSON file
+        Collects the various settings and parameters of the session and outputs them to a JSON file
 
         Returns
         -------
         Path to the resultant JSON file
         """
         output_dict = self._make_task_parameters_dict()
-        destination_folder = destination_folder or self.paths.SESSION_RAW_DATA_FOLDER
-        # Output dict to json file
-        json_file = destination_folder.joinpath('_iblrig_taskSettings.raw.json')
+        if destination_folder:
+            json_file = destination_folder.joinpath('_iblrig_taskSettings.raw.json')
+        else:
+            json_file = self.paths['SETTINGS_FILE_PATH']
         json_file.parent.mkdir(parents=True, exist_ok=True)
         with open(json_file, 'w') as outfile:
             json.dump(output_dict, outfile, indent=4, sort_keys=True, default=str)  # converts datetime objects to string
@@ -381,8 +384,10 @@ class BaseSession(ABC):
             )
             try:
                 self._one = ONE(
-                    base_url=str(self.iblrig_settings['ALYX_URL']), username=self.iblrig_settings['ALYX_USER'],
-                    mode='remote', silent=True
+                    base_url=str(self.iblrig_settings['ALYX_URL']),
+                    username=self.iblrig_settings['ALYX_USER'],
+                    mode='remote',
+                    cache_rest=None,
                 )
                 log.info('instantiated ' + info_str)
             except Exception:
@@ -393,20 +398,60 @@ class BaseSession(ABC):
     def register_to_alyx(self):
         """
         Registers the session to Alyx.
-        To make sure the registration is the same from the settings files and from the instantiated class
-        we output the settings dictionary and register from this format directly.
-        Alternatively, this function
-        :return:
+
+        This registers the session using the IBLRegistrationClient class.  This uses the settings
+        file(s) and experiment description file to extract the session data.  This may be called
+        any number of times and if the session record already exists in Alyx it will be updated.
+        If session registration fails, it will be done before extraction in the ibllib pipeline.
+
+        Note that currently the subject weight is registered once and only once.  The recorded
+        weight of the first protocol run is used.
+
+        Water administrations are added separately by this method: it is expected that
+        `register_session` is first called with no recorded total water. This method will then add
+        a water administration each time it is called, and should therefore be called only once
+        after each protocol is run. If water administration registration fails for all protocols,
+        this will be done before extraction in the ibllib pipline, however, if a water
+        administration is successfully registered for one protocol and subsequent ones fail to
+        register, these will not be added before extraction in ibllib and therefore must be
+        manually added to Alyx.
+
+        Returns
+        -------
+        dict
+            The registered session record.
+
+        See Also
+        --------
+        ibllib.oneibl.IBLRegistrationClient.register_session - The registration method.
         """
-        settings_dictionary = self._make_task_parameters_dict()
-        if self.session_info['SUBJECT_NAME'] == 'iblrig_test_subject':
+        if self.session_info['SUBJECT_NAME'] in ('iblrig_test_subject', 'test', 'test_subject'):
             log.warning('Not registering test subject to Alyx')
             return
+        if not self.one or self.one.offline:
+            return
         try:
-            iblrig.alyx.register_session(self.paths.SESSION_FOLDER, settings_dictionary, one=self.one)
+            client = IBLRegistrationClient(self.one)
+            ses, _ = client.register_session(self.paths.SESSION_FOLDER, register_reward=False)
         except Exception:
             log.error(traceback.format_exc())
             log.error('Could not register session to Alyx')
+            return
+        # add the water administration if there was water administered
+        try:
+            if self.session_info['TOTAL_WATER_DELIVERED']:
+                wa = client.register_water_administration(
+                    self.session_info.SUBJECT_NAME,
+                    self.session_info['TOTAL_WATER_DELIVERED'] / 1000,
+                    session=ses['url'][-36:],
+                    water_type=self.task_params.get('REWARD_TYPE', None),
+                )
+                log.info(f"Water administered registered in Alyx database: {ses['subject']}, " f"{wa['water_administered']}mL")
+        except Exception:
+            log.error(traceback.format_exc())
+            log.error('Could not register water administration to Alyx')
+            return
+        return ses
 
     def _execute_mixins_shared_function(self, pattern):
         """
@@ -429,7 +474,7 @@ class BaseSession(ABC):
     def create_session(self):
         # create the session path and save json parameters in the task collection folder
         # this will also create the protocol folder
-        self.save_task_parameters_to_json_file()
+        self.paths['TASK_PARAMETERS_FILE'] = self.save_task_parameters_to_json_file()
         # enable file logging
         logfile = self.paths.SESSION_RAW_DATA_FOLDER.joinpath('_ibl_log.info-acquisition.log')
         self._setup_loggers(level=self._logger.level, file=logfile)
@@ -538,7 +583,7 @@ class OSCClient(udp_client.SimpleUDPClient):
         'stim_angle': dict(mess='/a', type=float),
         'stim_gain': dict(mess='/g', type=float),
         'stim_sigma': dict(mess='/s', type=float),
-        'stim_reverse': dict(mess='/r', type=int),
+        # 'stim_reverse': dict(mess='/r', type=int),  # this is not handled by Bonsai
     }
 
     def __init__(self, port, ip='127.0.0.1'):
@@ -628,10 +673,13 @@ class BonsaiRecordingMixin(BaseSession):
         configuration = self.hardware_settings.device_cameras[self.config]
         if (workflow_file := self._camera_mixin_bonsai_get_workflow_file(configuration, 'setup')) is None:
             return
-        # TODO: Disable Trigger in Bonsai workflow - PySpin won't help here
-        # if PYSPIN_AVAILABLE:
-        #     from iblrig.video_pyspin import enable_camera_trigger
-        #     enable_camera_trigger(True)
+
+        # enable trigger of cameras (so Bonsai can disable it again ... sigh)
+        if PYSPIN_AVAILABLE:
+            from iblrig.video_pyspin import enable_camera_trigger
+
+            enable_camera_trigger(True)
+
         call_bonsai(workflow_file, wait=True)  # TODO Parameterize using configuration cameras
         log.info('Bonsai cameras setup module loaded: OK')
 
@@ -648,7 +696,7 @@ class BonsaiRecordingMixin(BaseSession):
         workflow_file = self._camera_mixin_bonsai_get_workflow_file(configuration, 'recording')
         if workflow_file is None:
             return
-        iblrig.path_helper.create_bonsai_layout_from_template(workflow_file)  # FIXME What does this do?
+        iblrig.path_helper.create_bonsai_layout_from_template(workflow_file)
         # FIXME Use parameters in configuration map
         parameters = {
             'FileNameLeft': self.paths.SESSION_FOLDER.joinpath('raw_video_data', '_iblrig_leftCamera.raw.avi'),
@@ -682,6 +730,11 @@ class BonsaiVisualStimulusMixin(BaseSession):
             for k in self.bonsai_visual_udp_client.OSC_PROTOCOL
             if k in self.trials_table.columns
         }
+
+        # reverse wheel contingency: if stim_reverse is True we invert stim_gain
+        if self.trials_table.get('stim_reverse', {}).get(self.trial_num, False):
+            bonsai_dict['stim_gain'] = -bonsai_dict['stim_gain']
+
         self.bonsai_visual_udp_client.send2bonsai(**bonsai_dict)
         log.debug(bonsai_dict)
 
@@ -770,7 +823,8 @@ class BpodMixin(BaseSession):
         self.bpod.set_status_led(False)
         assert self.bpod.is_connected
         log.info('Bpod hardware module loaded: OK')
-        # self.send_spacers()
+        # make the bpod send spacer signals to the main sync clock for protocol discovery
+        self.send_spacers()
 
     def send_spacers(self):
         log.info('Starting task by sending a spacer signal on BNC1')
@@ -948,16 +1002,15 @@ class SoundMixin(BaseSession):
         match self.hardware_settings.device_sound['OUTPUT']:
             case 'harp':
                 assert self.bpod.sound_card is not None, 'No harp sound-card connected to Bpod'
-                module_port = f'Serial{self.bpod.sound_card.serial_port}'
                 sound.configure_sound_card(
                     sounds=[self.sound.GO_TONE, self.sound.WHITE_NOISE],
                     indexes=[self.task_params.GO_TONE_IDX, self.task_params.WHITE_NOISE_IDX],
                     sample_rate=self.sound['samplerate'],
                 )
                 self.bpod.define_harp_sounds_actions(
+                    module=self.bpod.sound_card,
                     go_tone_index=self.task_params.GO_TONE_IDX,
                     noise_index=self.task_params.WHITE_NOISE_IDX,
-                    sound_port=module_port,
                 )
             case 'hifi':
                 module = self.bpod.get_module('^HiFi')
@@ -968,12 +1021,10 @@ class SoundMixin(BaseSession):
                 hifi.load(index=self.task_params.WHITE_NOISE_IDX, data=self.sound.WHITE_NOISE)
                 hifi.push()
                 hifi.close()
-                module_port = f'Serial{module.serial_port}'
                 self.bpod.define_harp_sounds_actions(
+                    module=module,
                     go_tone_index=self.task_params.GO_TONE_IDX,
                     noise_index=self.task_params.WHITE_NOISE_IDX,
-                    sound_port=module_port,
-                    module=module,
                 )
             case _:
                 self.bpod.define_xonar_sounds_actions()

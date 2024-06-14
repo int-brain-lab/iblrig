@@ -6,7 +6,6 @@ on:
     paths-ignore:
       - 'docs/**'
   pull_request:
-    branches: [iblrigv8]
     paths-ignore:
       - 'docs/**'
 
@@ -19,6 +18,10 @@ jobs:
         name: ruff check
         with:
           args: 'check --output-format=github'
+      - uses: chartboost/ruff-action@v1
+        name: ruff format
+        with:
+          args: 'format --check'
   tests:
     name: build (${{ matrix.python-version }}, ${{ matrix.os }})
     needs: ruff
@@ -50,9 +53,7 @@ jobs:
         run: sudo apt-get install -y libportaudio2
 
       - name: iblrig unit tests
-        run: |
-          coverage run -m unittest discover -s ./iblrig/test -t .
-          coverage xml
+        run: pytest
 
       - name: coveralls.io
         uses: coverallsapp/github-action@v2

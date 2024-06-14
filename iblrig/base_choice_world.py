@@ -38,7 +38,7 @@ class ChoiceWorldParams(BaseModel):
     ADAPTIVE_REWARD: bool = False
     BONSAI_EDITOR: bool = False
     CALIBRATION_VALUE: float = 0.067
-    CONTRAST_SET: list[Probability] = Field([1.0, 0.25, 0.125, 0.0625, 0.0], min_items=1)
+    CONTRAST_SET: list[Probability] = Field([1.0, 0.25, 0.125, 0.0625, 0.0], min_length=1)
     CONTRAST_SET_PROBABILITY_TYPE: Literal['uniform', 'skew_zero'] = 'uniform'
     GO_TONE_AMPLITUDE: float = 0.0272
     GO_TONE_DURATION: float = 0.11
@@ -50,7 +50,6 @@ class ChoiceWorldParams(BaseModel):
     INTERACTIVE_DELAY: float = 0.0
     ITI_DELAY_SECS: float = 0.5
     NTRIALS: int = Field(2000, gt=0)
-    POOP_COUNT: bool = True
     PROBABILITY_LEFT: Probability = 0.5
     QUIESCENCE_THRESHOLDS: list[float] = Field(default=[-2, 2], min_length=2, max_length=2)
     QUIESCENT_PERIOD: float = 0.2
@@ -65,6 +64,7 @@ class ChoiceWorldParams(BaseModel):
     STIM_POSITIONS: list[float] = [-35, 35]
     STIM_SIGMA: float = 7.0
     STIM_TRANSLATION_Z: Literal[7, 8] = 7  # 7 for ephys, 8 otherwise. -p:Stim.TranslationZ-{STIM_TRANSLATION_Z} bonsai parameter
+    STIM_REVERSE: bool = False
     SYNC_SQUARE_X: float = 1.33
     SYNC_SQUARE_Y: float = -1.03
     USE_AUTOMATIC_STOPPING_CRITERIONS: bool = True
@@ -170,8 +170,6 @@ class ChoiceWorldSession(
         This is the method that runs the task with the actual state machine
         :return:
         """
-        # make the bpod send spacer signals to the main sync clock for protocol discovery
-        self.send_spacers()
         time_last_trial_end = time.time()
         for i in range(self.task_params.NTRIALS):  # Main loop
             # t_overhead = time.time()
@@ -197,6 +195,7 @@ class ChoiceWorldSession(
             self.bpod.run_state_machine(sma)  # Locks until state machine 'exit' is reached
             time_last_trial_end = time.time()
             self.trial_completed(self.bpod.session.current_trial.export())
+            self.ambient_sensor_table.loc[i] = self.bpod.get_ambient_sensor_reading()
             self.show_trial_log()
 
             # handle pause and stop events
@@ -400,7 +399,7 @@ class ChoiceWorldSession(
         sma.add_state(
             state_name='freeze_reward',
             state_timer=0,
-            output_actions=[self.bpod.actions.bonsai_freeze_stim],
+            output_actions=[self.bpod.actions.bonsai_show_center],
             state_change_conditions={'Tup': 'reward'},
         )
 
@@ -438,15 +437,16 @@ class ChoiceWorldSession(
         pass
 
     @property
-    def reward_amount(self):
+    def default_reward_amount(self):
         return self.task_params.REWARD_AMOUNT_UL
 
-    def draw_next_trial_info(self, pleft=0.5, contrast=None, position=None):
         """Draw next trial variables.
 
-        This is called by the `next_trial` method before updating the Bpod state machine. This also
         calls :meth:`send_trial_info_to_bonsai`.
+        This is called by the `next_trial` method before updating the Bpod state machine. This also
         """
+
+    def draw_next_trial_info(self, pleft=0.5, contrast=None, position=None, reward_amount=None):
         if contrast is None:
             contrast = misc.draw_contrast(self.task_params.CONTRAST_SET, self.task_params.CONTRAST_SET_PROBABILITY_TYPE)
         assert len(self.task_params.STIM_POSITIONS) == 2, 'Only two positions are supported'
@@ -454,6 +454,7 @@ class ChoiceWorldSession(
         quiescent_period = self.task_params.QUIESCENT_PERIOD + misc.truncated_exponential(
             scale=0.35, min_value=0.2, max_value=0.5
         )
+        reward_amount = self.default_reward_amount if reward_amount is None else reward_amount
         self.trials_table.at[self.trial_num, 'quiescent_period'] = quiescent_period
         self.trials_table.at[self.trial_num, 'contrast'] = contrast
         self.trials_table.at[self.trial_num, 'stim_phase'] = random.uniform(0, 2 * math.pi)
@@ -461,9 +462,10 @@ class ChoiceWorldSession(
         self.trials_table.at[self.trial_num, 'stim_angle'] = self.task_params.STIM_ANGLE
         self.trials_table.at[self.trial_num, 'stim_gain'] = self.task_params.STIM_GAIN
         self.trials_table.at[self.trial_num, 'stim_freq'] = self.task_params.STIM_FREQ
+        self.trials_table.at[self.trial_num, 'stim_reverse'] = self.task_params.STIM_REVERSE
         self.trials_table.at[self.trial_num, 'trial_num'] = self.trial_num
         self.trials_table.at[self.trial_num, 'position'] = position
-        self.trials_table.at[self.trial_num, 'reward_amount'] = self.reward_amount
+        self.trials_table.at[self.trial_num, 'reward_amount'] = reward_amount
         self.trials_table.at[self.trial_num, 'stim_probability_left'] = pleft
         self.send_trial_info_to_bonsai()
 
@@ -540,11 +542,11 @@ class ChoiceWorldSession(
 
     @property
     def event_error(self):
-        return self.device_rotary_encoder.THRESHOLD_EVENTS[self.position]
+        return self.device_rotary_encoder.THRESHOLD_EVENTS[(-1 if self.task_params.STIM_REVERSE else 1) * self.position]
 
     @property
     def event_reward(self):
-        return self.device_rotary_encoder.THRESHOLD_EVENTS[-self.position]
+        return self.device_rotary_encoder.THRESHOLD_EVENTS[(1 if self.task_params.STIM_REVERSE else -1) * self.position]
 
 
 class HabituationChoiceWorldSession(ChoiceWorldSession):
@@ -639,7 +641,9 @@ class ActiveChoiceWorldSession(ChoiceWorldSession):
         # starts online plotting
         if self.interactive:
             subprocess.Popen(
-                ['viewsession', str(self.paths['DATA_FILE_PATH'])], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT
+                ['view_session', str(self.paths['DATA_FILE_PATH']), str(self.paths['SETTINGS_FILE_PATH'])],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.STDOUT,
             )
         super()._run()
 
@@ -794,7 +798,7 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
         self.trials_table['debias_trial'] = np.zeros(NTRIALS_INIT, dtype=bool)
 
     @property
-    def reward_amount(self):
+    def default_reward_amount(self):
         return self.session_info.get('ADAPTIVE_REWARD_AMOUNT_UL', self.task_params.REWARD_AMOUNT_UL)
 
     def get_subject_training_info(self):

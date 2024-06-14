@@ -7,7 +7,6 @@ import sys
 import zipfile
 import asyncio
 from pathlib import Path
-from urllib.error import URLError
 
 import yaml
 
@@ -16,8 +15,9 @@ from ibllib.io.video import get_video_meta, label_from_path
 from ibllib.pipes.misc import load_params_dict
 from iblrig.base_tasks import EmptySession
 from iblrig.constants import HARDWARE_SETTINGS_YAML, HAS_PYSPIN, HAS_SPINNAKER, RIG_SETTINGS_YAML
-from iblrig.path_helper import patch_settings
 from iblrig.tools import ask_user, call_bonsai, call_bonsai_async
+from iblrig.path_helper import load_pydantic_yaml, patch_settings
+from iblrig.pydantic_definitions import HardwareSettings
 from iblrig.transfer_experiments import VideoCopier
 from iblrig.net import get_server_communicator, update_alyx_token, read_stdin
 from iblutil.io import (
@@ -29,9 +29,18 @@ from iblutil.util import setup_logger
 from one.converters import ConversionMixin
 from one.api import OneAlyx
 from one.webclient import AlyxClient, http_download_file  # type: ignore
+from one.remote import aws
 
 with contextlib.suppress(ImportError):
     from iblrig import video_pyspin
+
+SPINNAKER_ASSET = 59586
+SPINNAKER_FILENAME = 'SpinnakerSDK_FULL_3.2.0.57_x64.exe'
+SPINNAKER_MD5 = 'aafc07c858dc2ab2e2a7d6ef900ca9a7'
+
+PYSPIN_ASSET = 59584
+PYSPIN_FILENAME = 'spinnaker_python-3.2.0.57-cp310-cp310-win_amd64.zip'
+PYSPIN_MD5 = 'f93294208e0ecec042adb2f75cb72609'
 
 log = logging.getLogger(__name__)
 
@@ -63,19 +72,28 @@ def _download_from_alyx_or_flir(asset: int, filename: str, target_md5: str) -> P
     out_dir = Path.home().joinpath('Downloads')
     out_file = out_dir.joinpath(filename)
     options = {'target_dir': out_dir, 'clobber': True, 'return_md5': True}
+
+    # if the file already exists skip all downloads
     if out_file.exists() and hashfile.md5(out_file) == target_md5:
         return out_file
-    try:
-        tmp_file, md5_sum = AlyxClient().download_file(f'resources/spinnaker/{filename}', **options)
-    except (OSError, AttributeError, URLError) as e1:
+
+    # first try to download from public s3 bucket
+    tmp_file = aws.s3_download_file(source=f'resources/{filename}', destination=out_file)
+    if tmp_file is not None:
+        md5_sum = hashfile.md5(tmp_file)
+
+    # if that fails try to download from flir server
+    else:
         try:
             url = f'https://flir.netx.net/file/asset/{asset}/original/attachment'
             tmp_file, md5_sum = http_download_file(url, **options)
-        except OSError as e2:
-            raise e2 from e1
+        except OSError as e:
+            raise Exception(f'`{filename}` could not be downloaded - manual intervention is necessary') from e
+
+    # finally
     os.rename(tmp_file, out_file)
     if md5_sum != target_md5:
-        raise Exception(f'`{filename}` does not match the expected MD5 - please try running the script again or')
+        raise Exception(f'`{filename}` does not match the expected MD5 - manual intervention is necessary')
     return out_file
 
 
@@ -102,7 +120,7 @@ def install_spinnaker():
         return
 
     # Download & install Spinnaker SDK
-    file_winsdk = _download_from_alyx_or_flir(54386, 'SpinnakerSDK_FULL_3.1.0.79_x64.exe', 'd9d83772f852e5369da2fbcc248c9c81')
+    file_winsdk = _download_from_alyx_or_flir(SPINNAKER_ASSET, SPINNAKER_FILENAME, SPINNAKER_MD5)
     print('Installing Spinnaker SDK for Windows ...')
     input(
         'Please select the "Application Development" Installation Profile. Everything else can be left at '
@@ -139,9 +157,7 @@ def install_pyspin():
     if HAS_PYSPIN:
         print('PySpin is already installed.')
     else:
-        file_zip = _download_from_alyx_or_flir(
-            54396, 'spinnaker_python-3.1.0.79-cp310-cp310-win_amd64.zip', 'e00148800757d0ed7171348d850947ac'
-        )
+        file_zip = _download_from_alyx_or_flir(PYSPIN_ASSET, PYSPIN_FILENAME, PYSPIN_MD5)
         print('Installing PySpin ...')
         with zipfile.ZipFile(file_zip, 'r') as f:
             file_whl = f.extract(file_zip.stem + '.whl', file_zip.parent)
@@ -238,6 +254,32 @@ def prepare_video_session_cmd():
         log_level = 'DEBUG' if args.debug else 'INFO'
         session = CameraSessionNetworked(subject=args.subject_name, config_name=args.profile, log_level=log_level)
         asyncio.run(session.run(service_uri))
+
+
+def validate_video_cmd():
+    parser = argparse.ArgumentParser(prog='validate_video', description='Validate video session.')
+    parser.add_argument('video_path', help='Path to the video file', type=str)
+    parser.add_argument(
+        'configuration', help='name of the configuration (default: default)', nargs='?', default='default', type=str
+    )
+    parser.add_argument('camera_name', help='name of the camera (default: left)', nargs='?', default='left', type=str)
+    args = parser.parse_args()
+
+    hwsettings: HardwareSettings = load_pydantic_yaml(HardwareSettings)
+    file_path = Path(args.video_path)
+    configuration = hwsettings.device_cameras.get(args.configuration, None)
+    camera = configuration.get(args.camera_name, None) if configuration is not None else None
+
+    if not file_path.exists():
+        print(f'File not found: {file_path}')
+    elif not file_path.is_file() or file_path.suffix != '.avi':
+        print(f'Not a video file: {file_path}')
+    elif configuration is None:
+        print(f'No such configuration: {configuration}')
+    elif configuration is None:
+        print(f'No such camera: {camera}')
+    else:
+        validate_video(video_path=file_path, config=camera)
 
 
 def validate_video(video_path, config):

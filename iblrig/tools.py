@@ -7,7 +7,7 @@ import socket
 import subprocess
 from collections.abc import Callable
 from pathlib import Path
-from typing import Any
+from typing import Any, TypeVar
 
 from iblrig.constants import BONSAI_EXE
 from iblrig.path_helper import create_bonsai_layout_from_template, load_pydantic_yaml
@@ -344,3 +344,31 @@ async def call_bonsai_async(
     working_dir = Path(workflow_file).parent
     return await asyncio.create_subprocess_exec(
         program, *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE, cwd=working_dir)
+
+
+T = TypeVar('T', bound=object)
+
+
+def get_inheritors(cls: T) -> set[T]:
+    """
+    Obtain a set of all direct inheritors of a class
+    """
+    subclasses = set(cls.__subclasses__())
+    for child in subclasses:
+        subclasses = subclasses.union(get_inheritors(child))
+    return subclasses
+
+
+class ANSI:
+    """ANSI Codes for formatting text on the CLI"""
+
+    PURPLE = '\033[95m'
+    CYAN = '\033[96m'
+    DARKCYAN = '\033[36m'
+    BLUE = '\033[94m'
+    GREEN = '\033[92m'
+    YELLOW = '\033[93m'
+    RED = '\033[91m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+    END = '\033[0m'

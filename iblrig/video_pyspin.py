@@ -39,4 +39,4 @@ def enable_camera_trigger(enable: bool, camera: PySpin.CameraPtr | None = None):
         node_trigger_mode = PySpin.CEnumerationPtr(node_map.GetNode('TriggerMode'))
         node_trigger_mode_value = node_trigger_mode.GetEntryByName('On' if enable else 'Off').GetValue()
         node_trigger_mode.SetIntValue(node_trigger_mode_value)
-        log.info(('Enabled' if enable else 'Disabled') + f' trigger for camera #{camera.DeviceID.ToString()}.')
+        log.debug(('Enabled' if enable else 'Disabled') + f' trigger for camera #{camera.DeviceID.ToString()}.')

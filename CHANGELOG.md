@@ -2,6 +2,43 @@ Changelog
 ---------
 
 
+8.19.5
+------
+* hotfix: move serial validation from SerialSingleton to Serial
+
+8.19.4
+------
+* hotfix: fix validation for Alyx when no Alyx URL has been set
+* hotfix: fix validation for Bpod HiFi module
+* adapted update instructions in update notification & documentation
+
+8.19.3
+------
+* hotfix: force stimulus to freeze in center of screen during "freeze_reward" state
+* method for copying snapshots to the local server using the SessionCopier
+* documentation for transition to Bpod HiFi
+
+8.19.2
+------
+* hotfix: only register water administrations once per protocol
+* hotfix: reverse wheel contingency now controlled through task parameter STIM_REVERSE
+
+8.19.1
+------
+* hotfix: threading warnings during valve calibration (when used without scale)
+* hotfix: unreliable exit condition for state machine during valve calibration
+
+8.19.0
+------
+* automated validation of rig components
+* adaptive reward parameter for trainingPhaseChoiceWorld
+* add validate_video entry-point
+* switch from flake8 to ruff for linting & code-checks
+* automatically set correct trigger-mode when setting up the cameras
+* support rotary encoder on arbitrary module port
+* add ambient sensor reading back to trial log
+* allow negative stimulus gain (reverse wheel contingency)
+
 8.18.0
 ------
 * valve calibration routine
