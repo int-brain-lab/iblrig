@@ -82,7 +82,7 @@ class ChoiceWorldSession(
     iblrig.base_tasks.RotaryEncoderMixin,
     iblrig.base_tasks.SoundMixin,
     iblrig.base_tasks.ValveMixin,
-    iblrig.base_tasks.NetworkMixin
+    iblrig.base_tasks.NetworkMixin,
 ):
     # task_params = ChoiceWorldParams()
     base_parameters_file = Path(__file__).parent.joinpath('base_choice_world_params.yaml')

@@ -1,11 +1,11 @@
 import argparse
+import asyncio
 import contextlib
 import logging
 import os
 import subprocess
 import sys
 import zipfile
-import asyncio
 from pathlib import Path
 
 import yaml
@@ -15,21 +15,21 @@ from ibllib.io.video import get_video_meta, label_from_path
 from ibllib.pipes.misc import load_params_dict
 from iblrig.base_tasks import EmptySession
 from iblrig.constants import HARDWARE_SETTINGS_YAML, HAS_PYSPIN, HAS_SPINNAKER, RIG_SETTINGS_YAML
-from iblrig.tools import ask_user, call_bonsai, call_bonsai_async
+from iblrig.net import get_server_communicator, read_stdin, update_alyx_token
 from iblrig.path_helper import load_pydantic_yaml, patch_settings
 from iblrig.pydantic_definitions import HardwareSettings
+from iblrig.tools import ask_user, call_bonsai, call_bonsai_async
 from iblrig.transfer_experiments import VideoCopier
-from iblrig.net import get_server_communicator, update_alyx_token, read_stdin
 from iblutil.io import (
     hashfile,  # type: ignore
+    net,
     params,
-    net
 )
 from iblutil.util import setup_logger
-from one.converters import ConversionMixin
 from one.api import OneAlyx
-from one.webclient import AlyxClient, http_download_file  # type: ignore
+from one.converters import ConversionMixin
 from one.remote import aws
+from one.webclient import http_download_file  # type: ignore
 
 with contextlib.suppress(ImportError):
     from iblrig import video_pyspin
@@ -237,10 +237,16 @@ def prepare_video_session_cmd():
 
     parser = argparse.ArgumentParser(prog='start_video_session', description='Prepare video PC for video recording session.')
     parser.add_argument('--subject_name', help='name of subject (optional if service_uri provided)', type=str)
-    parser.add_argument('--profile', default='default',
-                        help='camera configuration name, found in "device_cameras" map of hardware_settings.yaml')
-    parser.add_argument('--service_uri', required=False, nargs='?', default=None,
-                        help='the service URI to listen to messages on. pass ":<port>" to specify port only.')
+    parser.add_argument(
+        '--profile', default='default', help='camera configuration name, found in "device_cameras" map of hardware_settings.yaml'
+    )
+    parser.add_argument(
+        '--service_uri',
+        required=False,
+        nargs='?',
+        default=None,
+        help='the service URI to listen to messages on. pass ":<port>" to specify port only.',
+    )
     parser.add_argument('--debug', action='store_true', help='enable debugging mode')
     args = parser.parse_args()
     setup_logger(name='iblrig', level='DEBUG' if args.debug else 'INFO')
@@ -468,7 +474,8 @@ async def prepare_video_service(config_name: str, debug: bool = False, service_u
             exp_ref = ConversionMixin.ref2dict(exp_ref)
         assert not subject_name or (subject_name == exp_ref['subject'])
         session_path = session.paths.LOCAL_SUBJECT_FOLDER.joinpath(
-            exp_ref['subject'], str(exp_ref['date']), f'{exp_ref["sequence"]:03}')
+            exp_ref['subject'], str(exp_ref['date']), f'{exp_ref["sequence"]:03}'
+        )
     else:
         session_path = session.paths.SESSION_FOLDER
 
@@ -516,7 +523,6 @@ async def prepare_video_service(config_name: str, debug: bool = False, service_u
 
 
 class CameraSession(EmptySession):
-
     def __init__(self, subject=None, config_name='default', **kwargs):
         """
 
@@ -558,13 +564,15 @@ class CameraSession(EmptySession):
                 del self.paths[key]
         else:
             self.paths['SESSION_FOLDER'] = self.paths['LOCAL_SUBJECT_FOLDER'].joinpath(
-                exp_ref['subject'], str(exp_ref['date']), f'{exp_ref["sequence"]:03}')
+                exp_ref['subject'], str(exp_ref['date']), f'{exp_ref["sequence"]:03}'
+            )
             # Update session info
             self.session_info['SESSION_NUMBER'] = int(exp_ref['sequence'])
             self.session_info['SUBJECT_NAME'] = exp_ref['subject']
         self.paths['SESSION_RAW_DATA_FOLDER'] = self.paths['SESSION_FOLDER'].joinpath('raw_video_data')
-        self.copier = VideoCopier(session_path=self.paths['SESSION_FOLDER'],
-                                  remote_subjects_folder=self.paths['REMOTE_SUBJECT_FOLDER'])
+        self.copier = VideoCopier(
+            session_path=self.paths['SESSION_FOLDER'], remote_subjects_folder=self.paths['REMOTE_SUBJECT_FOLDER']
+        )
         return self.paths
 
     @property
@@ -590,7 +598,7 @@ class CameraSession(EmptySession):
     @property
     def exp_ref(self):
         """Construct an experiment reference string from the session info attribute."""
-        subject, date, number = [self.session_info[k] for k in ('SUBJECT_NAME', 'SESSION_START_TIME', 'SESSION_NUMBER')]
+        subject, date, number = (self.session_info[k] for k in ('SUBJECT_NAME', 'SESSION_START_TIME', 'SESSION_NUMBER'))
         if not all([subject, date, number]):
             return None
         return self.one.dict2ref(dict(subject=subject, date=date[:10], sequence=str(number)))
@@ -672,7 +680,6 @@ class CameraSession(EmptySession):
 
 
 class CameraSessionNetworked(CameraSession):
-
     def __init__(self, subject=None, config_name='default', **kwargs):
         """
 
@@ -814,7 +821,8 @@ class CameraSessionNetworked(CameraSession):
             case 'START':
                 if not self.exp_ref:
                     self.logger.error(
-                        'No subject name provided. Please re-instantiate with subject param or await INIT message from remote rig.')
+                        'No subject name provided. Please re-instantiate with subject param or await INIT message from remote rig.'
+                    )
                     return
                 else:
                     await self.on_start([self.exp_ref, {}], None)
@@ -913,8 +921,12 @@ class CameraSessionNetworked(CameraSession):
 
     async def on_info(self, _, addr):
         self.logger.info('INFO message received')
-        data = {'status': self.status, 'exp_ref': self.exp_ref, 'main_sync': False,
-                'acquisition_description': self.experiment_description}
+        data = {
+            'status': self.status,
+            'exp_ref': self.exp_ref,
+            'main_sync': False,
+            'acquisition_description': self.experiment_description,
+        }
         await self.communicator.info(self.status, data, addr=addr)
 
     async def on_alyx(self, data, addr):

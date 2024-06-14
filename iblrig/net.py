@@ -63,24 +63,25 @@ NB: use with causion: can cause infinite loops if both not correctly configured
 >>> services['cameras'].send([ExpMessage.EXPSTATUS])
 
 """
+
 import asyncio
 import logging
+import sys
 import threading
+import time
+from dataclasses import dataclass
+
 # from threading import Thread
 from urllib.parse import urlparse
-from dataclasses import dataclass
-import time
-import sys
 
 import yaml
+
+import one.params
+from iblrig.path_helper import get_local_and_remote_paths
 from iblutil.io import net
 from iblutil.io.params import FileLock
-from iblutil.util import setup_logger
 from one.api import OneAlyx
-import one.params
 from one.webclient import AlyxClient
-
-from iblrig.path_helper import get_local_and_remote_paths
 
 log = logging.getLogger(__name__)
 log.setLevel(10)
@@ -88,6 +89,7 @@ log.setLevel(10)
 
 class Singleton(type):
     """A singleton class."""
+
     _instances = {}
 
     def __call__(cls, *args, **kwargs):
@@ -123,7 +125,7 @@ class Auxiliaries(metaclass=Singleton):
         """
         # Load clients
         self._clients = clients or {}
-        self.refresh_rate = .2  # how long to wait between checking message queue
+        self.refresh_rate = 0.2  # how long to wait between checking message queue
 
     def cleanup(self, notify_services=False):
         if notify_services:
@@ -254,14 +256,13 @@ def update_alyx_token(data, _, alyx=None, one=None):
     if not alyx:
         alyx = one._web_client or AlyxClient(base_url=base_url, username=username, silent=True)
     # Update alyx object
-    alyx._par = (alyx._par
-                 .set('ALYX_URL', base_url)
-                 .set('ALYX_LOGIN', username)
-                 .set('TOKEN', {**alyx._par.as_dict().get('TOKEN', {}), **token}))
+    alyx._par = (
+        alyx._par.set('ALYX_URL', base_url)
+        .set('ALYX_LOGIN', username)
+        .set('TOKEN', {**alyx._par.as_dict().get('TOKEN', {}), **token})
+    )
     alyx._token = alyx._par.TOKEN[username]
-    alyx._headers = {
-        'Authorization': f'Token {list(alyx._token.values())[0]}',
-        'Accept': 'application/json'}
+    alyx._headers = {'Authorization': f'Token {list(alyx._token.values())[0]}', 'Accept': 'application/json'}
     alyx.user = username
     alyx.base_url = base_url
     alyx.silent = True  # ensure Alyx doesn't attempt to prompt user for input
@@ -275,6 +276,7 @@ def update_alyx_token(data, _, alyx=None, one=None):
 @dataclass
 class ExpInfo:
     """A standard experiment information structure."""
+
     main_sync: bool
     exp_ref: str
     experiment_description: dict
@@ -307,7 +309,7 @@ def get_remote_devices():
     """
     remote_devices = {}
     if (remote_devices_file := get_remote_devices_file()) and remote_devices_file.exists():
-        with open(remote_devices_file, 'r') as f:
+        with open(remote_devices_file) as f:
             remote_devices = yaml.safe_load(f)
     return remote_devices
 
@@ -369,8 +371,9 @@ async def check_uri_match(com: net.app.EchoProtocol, update=None) -> (net.app.Ec
         ip, _, port = urlparse(expected).netloc.rpartition(':')
         match = (ip, int(port)) == (com.hostname, com.port)
         if not match:
-            log.warning('remote devices specifies %s as %s:%s, communicator listening on %s:%s.',
-                        com.name, ip, port, com.hostname, port)
+            log.warning(
+                'remote devices specifies %s as %s:%s, communicator listening on %s:%s.', com.name, ip, port, com.hostname, port
+            )
 
     if update is not False and not match:
         remote_devices_file = get_remote_devices_file()

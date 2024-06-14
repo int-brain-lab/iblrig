@@ -1,15 +1,16 @@
 """Tests for iblrig.net module."""
-import unittest
-from unittest.mock import patch, Mock, ANY
-from pathlib import Path
+
 import tempfile
+import unittest
+from pathlib import Path
+from unittest.mock import ANY, Mock, patch
 
 import yaml
-from iblutil.io import net
-from one.api import OneAlyx, One
-import one.params
 
 import iblrig.net
+import one.params
+from iblutil.io import net
+from one.api import One, OneAlyx
 
 
 class TestRemoteDeviceFunctions(unittest.IsolatedAsyncioTestCase):
@@ -58,7 +59,7 @@ class TestRemoteDeviceFunctions(unittest.IsolatedAsyncioTestCase):
         self.assertIs(com, communicator_mock)
         self.assertTrue(match)
 
-        with open(self.tmpdir / 'remote_devices.yaml', 'r') as f:
+        with open(self.tmpdir / 'remote_devices.yaml') as f:
             remote_devices = yaml.safe_load(f)
         self.assertEqual({'foo': 'udp://127.0.0.1:11001'}, remote_devices)
 
@@ -92,7 +93,7 @@ class TestRemoteDeviceFunctions(unittest.IsolatedAsyncioTestCase):
             self.assertIs(com, communicator_mock)
             check_uri_mock.assert_called_once()
             server_mock.assert_called_once_with(ANY, name='foo')
-            uri, = server_mock.call_args.args
+            (uri,) = server_mock.call_args.args
             self.assertTrue(uri.startswith('udp://') and uri.endswith(':11001'))
             server_mock.reset_mock(), check_uri_mock.reset_mock()
         _, match = await iblrig.net.get_server_communicator('tcp://192.168.0.88', 'foobar')
@@ -108,7 +109,7 @@ class TestTokenCallbacks(unittest.TestCase):
         one = OneAlyx(base_url='https://localhost:8000', silent=True, mode='local')
         one.alyx.logout()
         assert not one.alyx.is_logged_in
-        token = ('https://test.alyx.internationalbrainlab.org',  {'j.doe': {'token': '123tok3n321'}})
+        token = ('https://test.alyx.internationalbrainlab.org', {'j.doe': {'token': '123tok3n321'}})
         success = iblrig.net.update_alyx_token(token, ('localhost', 11001), one=one)
         self.assertTrue(success)
         self.assertTrue(one.alyx.is_logged_in)

@@ -7,6 +7,7 @@ This module tries to exclude task related logic.
 
 import abc
 import argparse
+import asyncio
 import contextlib
 import datetime
 import importlib.metadata
@@ -14,10 +15,9 @@ import inspect
 import json
 import logging
 import signal
+import threading
 import time
 import traceback
-import threading
-import asyncio
 from abc import ABC
 from collections import OrderedDict
 from collections.abc import Callable
@@ -34,8 +34,8 @@ import iblrig
 import iblrig.graphic as graph
 import iblrig.path_helper
 import pybpodapi
-from iblrig import sound, net
 from ibllib.oneibl.registration import IBLRegistrationClient
+from iblrig import net, sound
 from iblrig.constants import BASE_PATH, BONSAI_EXE, PYSPIN_AVAILABLE
 from iblrig.frame2ttl import Frame2TTL
 from iblrig.hardware import SOFTCODE, Bpod, MyRotaryEncoder, sound_device_factory
@@ -44,12 +44,12 @@ from iblrig.path_helper import load_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings, RigSettings
 from iblrig.tools import call_bonsai
 from iblrig.transfer_experiments import BehaviorCopier, VideoCopier
+from iblutil.io.net.base import ExpMessage
 from iblutil.spacer import Spacer
 from iblutil.util import Bunch, setup_logger
-from iblutil.io.net.base import ExpMessage
-from one.converters import ConversionMixin
 from one.alf.io import next_num_folder
 from one.api import ONE
+from one.converters import ConversionMixin
 from pybpodapi.protocol import StateMachine
 
 OSC_CLIENT_IP = '127.0.0.1'
@@ -1091,7 +1091,7 @@ class NetworkMixin(BaseSession):
                 remote_path = load_pydantic_yaml(RigSettings, kwargs.get('file_iblrig_settings'))['remote_data_folder']
                 if not remote_path:  # TODO add cause to error
                     raise FileNotFoundError('Remote data folder not found in settings')
-                with open(remote_path.joinpath('remote_rigs.yaml'), 'r') as fp:
+                with open(remote_path.joinpath('remote_rigs.yaml')) as fp:
                     all_remote_rigs = yaml.safe_load(fp)
                 if not set(remote_rigs).issubset(all_remote_rigs.keys()):
                     raise ValueError('Selected remote rigs not in remote rigs list')
@@ -1158,8 +1158,10 @@ class NetworkMixin(BaseSession):
         paths.SESSION_FOLDER = date_folder / f'{self.exp_ref["sequence"]:03}'
         paths.TASK_COLLECTION = iblrig.path_helper.iterate_collection(paths.SESSION_FOLDER)
         if append == paths.TASK_COLLECTION.endswith('00'):
-            raise ValueError(f'Append value incorrect. Either remove previous task collections from '
-                             f'{paths.SESSION_FOLDER}, or select append in GUI (--append arg in cli)')
+            raise ValueError(
+                f'Append value incorrect. Either remove previous task collections from '
+                f'{paths.SESSION_FOLDER}, or select append in GUI (--append arg in cli)'
+            )
 
         paths.SESSION_RAW_DATA_FOLDER = paths.SESSION_FOLDER.joinpath(paths.TASK_COLLECTION)
         paths.DATA_FILE_PATH = paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_taskData.raw.jsonable')
@@ -1178,7 +1180,7 @@ class NetworkMixin(BaseSession):
                     'message': str(e),  # error str
                     'traceback': traceback.format_exc(),  # stack str
                     'file': tb.tb_frame.f_code.co_filename,  # filename str
-                    'line_no': (tb.tb_lineno, tb.tb_lasti)  # (int, int)
+                    'line_no': (tb.tb_lineno, tb.tb_lasti),  # (int, int)
                 }
                 # TODO This would stop all other services. Could instead send exp update?
                 self.remote_rigs.send(ExpMessage.EXPINTERRUPT, details, wait=True)
@@ -1204,12 +1206,18 @@ class NetworkMixin(BaseSession):
         # FIXME What to do if DAQ not started?
         self.exp_ref = self.one.ref2dict(info['exp_ref']) if isinstance(info['exp_ref'], str) else info['exp_ref']
         if self.exp_ref['subject'] != self.session_info['SUBJECT_NAME']:
-            log.error('Running task for "%s" but main sync returned exp ref for "%s".', self.session_info['SUBJECT_NAME'], self.exp_ref['subject'])
-            raise ValueError('Subject name doesn\'t match remote session on ' + main_rig_name)
+            log.error(
+                'Running task for "%s" but main sync returned exp ref for "%s".',
+                self.session_info['SUBJECT_NAME'],
+                self.exp_ref['subject'],
+            )
+            raise ValueError("Subject name doesn't match remote session on " + main_rig_name)
         if str(self.exp_ref['date']) != self.session_info['SESSION_START_TIME'][:10]:
-            raise RuntimeError(f'Session dates do not match between this rig and {main_rig_name}. \n'
-                               f'Running past or future sessions not currently supported. \n'
-                               f'Please check the system date time settings on each rig.')
+            raise RuntimeError(
+                f'Session dates do not match between this rig and {main_rig_name}. \n'
+                f'Running past or future sessions not currently supported. \n'
+                f'Please check the system date time settings on each rig.'
+            )
 
         # exp_ref = ConversionMixin.path2ref(self.paths['SESSION_FOLDER'], as_dict=False)
         exp_ref = self.one.dict2ref(self.exp_ref)

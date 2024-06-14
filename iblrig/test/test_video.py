@@ -2,16 +2,17 @@ import asyncio
 import sys
 import tempfile
 import unittest
-from unittest import mock
 from copy import deepcopy
-from datetime import timedelta, date
+from datetime import date, timedelta
 from pathlib import Path
+from unittest import mock
 from unittest.mock import ANY, MagicMock, call, patch
 
 import numpy as np
 import yaml
-from iblutil.util import Bunch
+
 from iblutil.io import net
+from iblutil.util import Bunch
 
 """In order to mock iblrig.video_pyspin.enable_camera_trigger we must mock PySpin here."""
 sys.modules['PySpin'] = MagicMock()
@@ -233,8 +234,10 @@ class TestCameraSession(unittest.TestCase):
             'FileNameRight': str(raw_data_folder / '_iblrig_rightCamera.raw.avi'),
             'FileNameRightData': str(raw_data_folder / '_iblrig_rightCamera.frameData.bin'),
         }
-        expected = [call(workflows.setup, ANY, debug=False, wait=True),
-                    call(workflows.recording, expected_pars, debug=False, wait=False)]
+        expected = [
+            call(workflows.setup, ANY, debug=False, wait=True),
+            call(workflows.recording, expected_pars, debug=False, wait=False),
+        ]
         call_bonsai.assert_has_calls(expected)
 
         # Test validation
@@ -338,7 +341,9 @@ class TestCameraSessionNetworked(unittest.IsolatedAsyncioTestCase):
             'FileNameRight': str(raw_data_folder / '_iblrig_rightCamera.raw.avi'),
             'FileNameRightData': str(raw_data_folder / '_iblrig_rightCamera.frameData.bin'),
         }
-        call_bonsai.assert_called_once_with(workflows.setup, {'LeftCameraIndex': 1, 'RightCameraIndex': 1}, debug=False, wait=True)
+        call_bonsai.assert_called_once_with(
+            workflows.setup, {'LeftCameraIndex': 1, 'RightCameraIndex': 1}, debug=False, wait=True
+        )
         call_bonsai_async.assert_awaited_once_with(workflows.recording, expected_pars, debug=False)
 
 

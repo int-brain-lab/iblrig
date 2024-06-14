@@ -1,5 +1,5 @@
-import logging
 import asyncio
+import logging
 import os
 import re
 import shutil
@@ -186,12 +186,12 @@ def alyx_reachable() -> bool:
 
 
 def _build_bonsai_cmd(
-        workflow_file: str | Path,
-        parameters: dict[str, Any] | None = None,
-        start: bool = True,
-        debug: bool = False,
-        bootstrap: bool = True,
-        editor: bool = True,
+    workflow_file: str | Path,
+    parameters: dict[str, Any] | None = None,
+    start: bool = True,
+    debug: bool = False,
+    bootstrap: bool = True,
+    editor: bool = True,
 ) -> list[str]:
     """
     Execute a Bonsai workflow within a subprocess call.
@@ -305,7 +305,7 @@ async def call_bonsai_async(
     start: bool = True,
     debug: bool = False,
     bootstrap: bool = True,
-    editor: bool = True
+    editor: bool = True,
 ) -> asyncio.subprocess.Process:
     """
     Asynchronously execute a Bonsai workflow within a subprocess call.
@@ -343,7 +343,8 @@ async def call_bonsai_async(
     log.debug(' '.join(map(str, cmd)))
     working_dir = Path(workflow_file).parent
     return await asyncio.create_subprocess_exec(
-        program, *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE, cwd=working_dir)
+        program, *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE, cwd=working_dir
+    )
 
 
 T = TypeVar('T', bound=object)
