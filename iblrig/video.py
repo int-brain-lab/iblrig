@@ -236,12 +236,12 @@ def prepare_video_session_cmd():
         return
 
     parser = argparse.ArgumentParser(prog='start_video_session', description='Prepare video PC for video recording session.')
-    parser.add_argument('--subject_name', help='name of subject (optional if service_uri provided)', type=str)
+    parser.add_argument('--subject_name', help='name of subject (optional if service-uri provided)', type=str)
     parser.add_argument(
         '--profile', default='default', help='camera configuration name, found in "device_cameras" map of hardware_settings.yaml'
     )
     parser.add_argument(
-        '--service_uri',
+        '--service-uri',
         required=False,
         nargs='?',
         default=None,
