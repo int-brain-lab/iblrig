@@ -1034,7 +1034,7 @@ class NetworkMixin(BaseSession):
         ----------
         TODO Document attributes
         """
-        if isinstance(remote_rigs, list):
+        if isinstance(remote_rigs, list):  # FIXME use net.get_remote_devices()
             remote_path = kwargs.get('iblrig_settings', {}).get('remote_data_folder')
             if not remote_path:
                 remote_path = load_pydantic_yaml(RigSettings, kwargs.get('file_iblrig_settings'))['remote_data_folder']

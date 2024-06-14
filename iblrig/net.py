@@ -64,6 +64,7 @@ NB: use with causion: can cause infinite loops if both not correctly configured
 
 """
 import asyncio
+import logging
 import threading
 # from threading import Thread
 from urllib.parse import urlparse
@@ -81,7 +82,8 @@ from one.webclient import AlyxClient
 
 from iblrig.path_helper import get_local_and_remote_paths
 
-log = setup_logger('iblrig.net', level=10)
+log = logging.getLogger(__name__)
+log.setLevel(10)
 
 
 class Singleton(type):

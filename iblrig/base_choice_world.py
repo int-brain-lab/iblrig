@@ -143,6 +143,8 @@ class ChoiceWorldSession(
             dest='remote_rigs',
             type=str,
             required=False,
+            action='append',
+            nargs='+',
             help='specify one of the remote rigs to interact with over the network',
         )
         return parser
