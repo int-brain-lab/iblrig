@@ -902,7 +902,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                     cmd.append('--append')
                 if self.running_task_process is None:
                     self.tabLog.clear()
-                    self.tabLog.appendText(f'Starting subprocess: {self.model.task_name} ...\n', 'White')
+                    self.tabLog.append_text(f'Starting subprocess: {self.model.task_name} ...\n', 'White')
                     log.info('Starting subprocess')
                     log.info(subprocess.list2cmdline(cmd))
                     self.running_task_process = QtCore.QProcess()
@@ -934,7 +934,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
             color = ANSI_COLORS.get(entry.groupdict().get('color', '37'), 'White')
             time = entry.groupdict().get('time', '')
             msg = entry.groupdict().get('message', '')
-            self.tabLog.appendText(f'{time} {msg}', color)
+            self.tabLog.append_text(f'{time} {msg}', color)
         if self.debug:
             print(data)
 
@@ -947,12 +947,12 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         the error message to the widget.
         """
         data = self.running_task_process.readAllStandardError().data().decode('utf-8', 'ignore').strip()
-        self.tabLog.appendText(data, 'Red')
+        self.tabLog.append_text(data, 'Red')
         if self.debug:
             print(data)
 
     def _on_task_finished(self, exit_code, exit_status):
-        self.tabLog.appendText('\nSubprocess finished.', 'White')
+        self.tabLog.append_text('\nSubprocess finished.', 'White')
         if exit_code:
             msg_box = QtWidgets.QMessageBox(parent=self)
             msg_box.setWindowTitle('Oh no!')

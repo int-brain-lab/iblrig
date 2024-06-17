@@ -1,6 +1,6 @@
 from PyQt5.QtCore import pyqtSlot
-from PyQt5.QtGui import QColorConstants, QBrush, QFont
-from PyQt5.QtWidgets import QWidget, QApplication
+from PyQt5.QtGui import QBrush, QColorConstants, QFont
+from PyQt5.QtWidgets import QApplication, QWidget
 
 from iblrig.gui.ui_tab_log import Ui_TabLog
 
@@ -22,11 +22,11 @@ class TabLog(QWidget, Ui_TabLog):
         self.plainTextEditLog.clear()
 
     @pyqtSlot(str, str)
-    def appendText(self, text: str, color: str = 'White'):
-        self.setLogColor(color)
+    def append_text(self, text: str, color: str = 'White'):
+        self.set_log_color(color)
         self.plainTextEditLog.appendPlainText(text)
 
-    def setLogColor(self, color: str):
+    def set_log_color(self, color: str):
         """
         Set the foreground color of characters in the log widget.
 
