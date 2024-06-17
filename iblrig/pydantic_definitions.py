@@ -56,7 +56,6 @@ class RigSettings(BunchModel, validate_assignment=True):
     )
     iblrig_local_subjects_path: DirectoryPath | None = Field(
         title='IBLRIG full local data path',
-        omit_default=True,
         default=None,
         description='An optional full local data folder (including /Subjects)',
     )
@@ -65,7 +64,6 @@ class RigSettings(BunchModel, validate_assignment=True):
     )
     iblrig_remote_subjects_path: Path | None = Field(
         title='IBLRIG full remote data path',
-        omit_default=True,
         default=None,
         description='An optional full remote data folder (including /Subjects)',
     )
@@ -138,25 +136,21 @@ class HardwareSettingsCamera(BunchModel):
     INDEX: int
     FPS: PositiveInt | None = Field(
         title='Camera frame rate',
-        omit_default=True,
         default=None,
         description='An optional frame rate (for camera QC only)',
     )
     WIDTH: PositiveInt | None = Field(
         title='Camera frame width',
-        omit_default=True,
         default=None,
         description='An optional frame width (for camera QC only)',
     )
     HEIGHT: PositiveInt | None = Field(
         title='Camera frame height',
-        omit_default=True,
         default=None,
         description='An optional frame hight (for camera QC only)',
     )
     SYNC_LABEL: str | None = Field(
         title='Camera DAQ sync label',
-        omit_default=True,
         default=None,
         description='The name of the DAQ channel wired to the camera GPIO',
     )
@@ -165,7 +159,6 @@ class HardwareSettingsCamera(BunchModel):
 class HardwareSettingsCameraWorkflow(BunchModel):
     setup: FilePath | None = Field(
         title='Optional camera setup workflow',
-        omit_default=True,
         default=None,
         description='An optional path to the camera setup Bonsai workflow.',
     )
