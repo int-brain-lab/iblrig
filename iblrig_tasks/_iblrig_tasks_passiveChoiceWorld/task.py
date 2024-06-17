@@ -91,7 +91,6 @@ class Session(ChoiceWorldSession):
         self.trigger_bonsai_cameras()
 
         # Run the passive part i.e. spontaneous activity and RFMapping stim
-        log.info('Starting spontaneous activity followed by receptive field mapping')
         self.run_passive_visual_stim(sa_time=timedelta(seconds=self.task_params['SPONTANEOUS_ACTIVITY_SECONDS']))
 
         if self.task_params['SKIP_EVENT_REPLAY'] is True:
