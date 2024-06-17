@@ -68,36 +68,58 @@ class WorkerSignals(QObject):
 
 
 class DiskSpaceIndicator(QProgressBar):
-    def __init__(self, *args, directory: Path, threshold_percent: int = 90, **kwargs):
+    """A custom progress bar widget that indicates the disk space usage of a specified directory."""
+
+    def __init__(self, *args, directory: Path | None, percent_threshold: int = 90, **kwargs):
+        """
+        Initialize the DiskSpaceIndicator with the specified directory and threshold percentage.
+
+        Parameters
+        ----------
+        *args : tuple
+            Variable length argument list (passed to QProgressBar).
+        directory : Path or None
+            The directory path to monitor for disk space usage.
+        percent_threshold : int, optional
+            The threshold percentage at which the progress bar changes color to red. Default is 90.
+        **kwargs : dict
+            Arbitrary keyword arguments (passed to QProgressBar).
+        """
         super().__init__(*args, **kwargs)
         self._directory = directory
-        self._threshold_percent = threshold_percent
-        self._percent_full = None
+        self._percent_threshold = percent_threshold
+        self._percent_full = float('nan')
         self.setEnabled(False)
-        self.update()
+        if self._directory is not None:
+            self.update()
 
     def update(self):
+        """Update the disk space information."""
         worker = Worker(self._get_size)
         worker.signals.result.connect(self._on_get_size_result)
         QThreadPool.globalInstance().start(worker)
 
+    @property
+    def critical(self) -> bool:
+        """True if the disk space usage is above the given threshold percentage."""
+        return self._percent_full > self._percent_threshold
+
     def _get_size(self):
+        """Get the disk usage information for the specified directory."""
         total_space, total_used, total_free = shutil.disk_usage(self._directory.anchor)
         self._percent_full = total_used / total_space * 100
-        self._gigs_directory = sum(file.stat().st_size for file in Path(self._directory).rglob('*') if file.is_file()) / 1024**3
+        self._gigs_dir = sum(f.stat().st_size for f in Path(self._directory).rglob('*') if f.is_file()) / 1024**3
         self._gigs_free = total_free / 1024**3
 
     def _on_get_size_result(self, result):
+        """Handle the result of getting disk usage information and update the progress bar accordingly."""
         self.setEnabled(True)
         self.setValue(round(self._percent_full))
-        if self.value() > self._threshold_percent:
+        if self.critical:
             p = self.palette()
             p.setColor(QtGui.QPalette.Highlight, QtGui.QColor('red'))
             self.setPalette(p)
-        self.setStatusTip(
-            f'{self._directory}: {self._gigs_directory:.1f} GB  •  '
-            f'available space on drive {self._directory.drive} {self._gigs_free:.1f} GB'
-        )
+        self.setStatusTip(f'{self._directory}: {self._gigs_dir:.1f} GB  •  ' f'available space: {self._gigs_free:.1f} GB')
 
 
 class Worker(QRunnable):

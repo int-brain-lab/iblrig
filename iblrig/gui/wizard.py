@@ -347,7 +347,9 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.toggle_status_led(self.uiPushStatusLED.isChecked())
 
         # statusbar / disk stats
-        self.uiDiskSpaceIndicator = DiskSpaceIndicator(directory=self.model.iblrig_settings['iblrig_local_data_path'])
+        local_data = self.model.iblrig_settings['iblrig_local_data_path']
+        local_data = Path(local_data) if local_data else Path.home().joinpath('iblrig_data')
+        self.uiDiskSpaceIndicator = DiskSpaceIndicator(directory=local_data)
         self.uiDiskSpaceIndicator.setMaximumWidth(70)
         self.statusbar.setContentsMargins(0, 0, 6, 0)
         self.statusbar.addPermanentWidget(self.uiDiskSpaceIndicator)
