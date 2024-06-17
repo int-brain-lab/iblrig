@@ -625,7 +625,7 @@ class ActiveChoiceWorldSession(ChoiceWorldSession):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.trials_table['stim_probability_left'] = np.zeros(NTRIALS_INIT, dtype=np.float32)
+        self.trials_table['stim_probability_left'] = np.zeros(NTRIALS_INIT, dtype=np.float64)
 
     def _run(self):
         # starts online plotting

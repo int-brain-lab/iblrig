@@ -262,7 +262,8 @@ class OnlinePlots:
 
         self.h = h
         self.update_titles()
-        plt.show(block=False)
+        if plt.rcParams['backend'] != 'agg':
+            plt.show(block=False)
         plt.draw()
 
     def update_titles(self):

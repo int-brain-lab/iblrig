@@ -19,9 +19,9 @@ class TestDefaultParameters(TestCase):
 class TestInstantiationAdvanced(BaseTestCases.CommonTestInstantiateTask):
     def setUp(self) -> None:
         self.task = AdvancedChoiceWorldSession(
-            probability_set=[2, 2, 2, 1, 1, 1],
-            contrast_set=[1, 0.5, 0, 0, 0.5, 1],
-            reward_set_ul=[1, 1.5, 2, 2, 2.5, 2.6],
+            probability_set=[2.0, 2.0, 2.0, 1.0, 1.0, 1.0],
+            contrast_set=[1.0, 0.5, 0.0, 0.0, 0.5, 1.0],
+            reward_set_ul=[1.0, 1.5, 2.0, 2.0, 2.5, 2.6],
             position_set=[-35, -35, -35, 35, 35, 35],
             **TASK_KWARGS,
         )
