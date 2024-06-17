@@ -1,11 +1,15 @@
 import argparse
+import shutil
 import subprocess
 import sys
 import traceback
 from collections.abc import Callable
+from pathlib import Path
 from typing import Any
 
-from PyQt5.QtCore import QObject, QRunnable, pyqtSignal
+from PyQt5 import QtGui
+from PyQt5.QtCore import QObject, QRunnable, QThreadPool, pyqtSignal
+from PyQt5.QtWidgets import QProgressBar
 
 from iblrig.constants import BASE_PATH
 
@@ -61,6 +65,39 @@ class WorkerSignals(QObject):
     error = pyqtSignal(tuple)
     result = pyqtSignal(object)
     progress = pyqtSignal(int)
+
+
+class DiskSpaceIndicator(QProgressBar):
+    def __init__(self, *args, directory: Path, threshold_percent: int = 90, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._directory = directory
+        self._threshold_percent = threshold_percent
+        self._percent_full = None
+        self.setEnabled(False)
+        self.update()
+
+    def update(self):
+        worker = Worker(self._get_size)
+        worker.signals.result.connect(self._on_get_size_result)
+        QThreadPool.globalInstance().start(worker)
+
+    def _get_size(self):
+        total_space, total_used, total_free = shutil.disk_usage(self._directory.anchor)
+        self._percent_full = total_used / total_space * 100
+        self._gigs_directory = sum(file.stat().st_size for file in Path(self._directory).rglob('*') if file.is_file()) / 1024**3
+        self._gigs_free = total_free / 1024**3
+
+    def _on_get_size_result(self, result):
+        self.setEnabled(True)
+        self.setValue(round(self._percent_full))
+        if self.value() > self._threshold_percent:
+            p = self.palette()
+            p.setColor(QtGui.QPalette.Highlight, QtGui.QColor('red'))
+            self.setPalette(p)
+        self.setStatusTip(
+            f'{self._directory}: {self._gigs_directory:.1f} GB  •  '
+            f'available space on drive {self._directory.drive} {self._gigs_free:.1f} GB'
+        )
 
 
 class Worker(QRunnable):

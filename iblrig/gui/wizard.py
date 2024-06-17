@@ -34,7 +34,7 @@ from iblrig.gui.tab_about import TabAbout
 from iblrig.gui.tab_data import TabData
 from iblrig.gui.tab_docs import TabDocs
 from iblrig.gui.tab_log import TabLog
-from iblrig.gui.tools import Worker
+from iblrig.gui.tools import DiskSpaceIndicator, Worker
 from iblrig.gui.ui_login import Ui_login
 from iblrig.gui.ui_update import Ui_update
 from iblrig.gui.ui_wizard import Ui_wizard
@@ -346,25 +346,11 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.uiPushStatusLED.toggled.connect(self.toggle_status_led)
         self.toggle_status_led(self.uiPushStatusLED.isChecked())
 
-        # disk stats
-        local_data = self.model.iblrig_settings['iblrig_local_data_path']
-        local_data = Path(local_data) if local_data else Path.home().joinpath('iblrig_data')
-        v8data_size = sum(file.stat().st_size for file in Path(local_data).rglob('*'))
-        total_space, total_used, total_free = shutil.disk_usage(local_data.anchor)
-        self.uiProgressDiskSpace = QtWidgets.QProgressBar(self)
-        self.uiProgressDiskSpace.setMaximumWidth(70)
-        self.uiProgressDiskSpace.setValue(round(total_used / total_space * 100))
-        self.uiProgressDiskSpace.setStatusTip(
-            f'local IBLRIG data: {v8data_size / 1024**3: .1f} GB  •  ' f'available space: {total_free / 1024**3: .1f} GB'
-        )
-        if self.uiProgressDiskSpace.value() > 90:
-            p = self.uiProgressDiskSpace.palette()
-            p.setColor(QtGui.QPalette.Highlight, QtGui.QColor('red'))
-            self.uiProgressDiskSpace.setPalette(p)
-
-        # statusbar
+        # statusbar / disk stats
+        self.uiDiskSpaceIndicator = DiskSpaceIndicator(directory=self.model.iblrig_settings['iblrig_local_data_path'])
+        self.uiDiskSpaceIndicator.setMaximumWidth(70)
         self.statusbar.setContentsMargins(0, 0, 6, 0)
-        self.statusbar.addPermanentWidget(self.uiProgressDiskSpace)
+        self.statusbar.addPermanentWidget(self.uiDiskSpaceIndicator)
         self.controls_for_extra_parameters()
 
         # self.layout().setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
