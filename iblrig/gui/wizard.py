@@ -850,6 +850,13 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 case 'stim_reverse':
                     label = 'Reverse Stimulus'
 
+                case 'duration_spontaneous':
+                    label = 'Spontaneous Activity, s'
+                    widget.setMinimum(0)
+                    widget.setMaximum(60*60*24-1)
+                    widget.setValue(arg.default)
+
+
             widget.wheelEvent = lambda event: None
             layout.addRow(self.tr(label), widget)
 
