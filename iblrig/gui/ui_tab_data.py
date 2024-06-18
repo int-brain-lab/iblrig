@@ -25,9 +25,19 @@ class Ui_TabData(object):
         self.tableView.setSortingEnabled(True)
         self.tableView.setObjectName("tableView")
         self.tableView.horizontalHeader().setCascadingSectionResizes(True)
-        self.tableView.horizontalHeader().setStretchLastSection(True)
         self.tableView.verticalHeader().setVisible(False)
         self.verticalLayout.addWidget(self.tableView)
+        self.horizontalWidget = QtWidgets.QWidget(TabData)
+        self.horizontalWidget.setObjectName("horizontalWidget")
+        self.horizontalLayout = QtWidgets.QHBoxLayout(self.horizontalWidget)
+        self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout.setObjectName("horizontalLayout")
+        spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout.addItem(spacerItem)
+        self.pushButtonUpdate = QtWidgets.QPushButton(self.horizontalWidget)
+        self.pushButtonUpdate.setObjectName("pushButtonUpdate")
+        self.horizontalLayout.addWidget(self.pushButtonUpdate)
+        self.verticalLayout.addWidget(self.horizontalWidget)
 
         self.retranslateUi(TabData)
         QtCore.QMetaObject.connectSlotsByName(TabData)
@@ -35,6 +45,7 @@ class Ui_TabData(object):
     def retranslateUi(self, TabData):
         _translate = QtCore.QCoreApplication.translate
         TabData.setWindowTitle(_translate("TabData", "Form"))
+        self.pushButtonUpdate.setText(_translate("TabData", "Update"))
 
 
 if __name__ == "__main__":

@@ -116,6 +116,13 @@ ignore = [
     "PLR2004", # Magic value used in comparison, consider replacing with a constant variable
 ]
 
+[tool.ruff.lint.per-file-ignores]
+"iblrig/gui/**" = [
+    "N802", # Invalid function name
+    "N803", # Argument name should be lowercase
+    "N815", # Mixed case variable in class scope
+]
+
 [tool.ruff.format]
 quote-style = "single"
 

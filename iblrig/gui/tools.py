@@ -7,8 +7,9 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
+import pandas as pd
 from PyQt5 import QtGui
-from PyQt5.QtCore import QObject, QRunnable, QThreadPool, pyqtSignal
+from PyQt5.QtCore import QAbstractTableModel, QModelIndex, QObject, QRunnable, Qt, QThreadPool, QVariant, pyqtProperty, pyqtSignal
 from PyQt5.QtWidgets import QProgressBar
 
 from iblrig.constants import BASE_PATH
@@ -198,3 +199,133 @@ class Worker(QRunnable):
         finally:
             # Emit the finished signal to indicate completion
             self.signals.finished.emit()
+
+
+class DataFrameTableModel(QAbstractTableModel):
+    def __init__(self, *args, df: pd.DataFrame, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._dataFrame = df
+
+    def dataFrame(self):
+        return self._dataFrame
+
+    def setDataFrame(self, data_frame: pd.DataFrame):
+        self.beginResetModel()
+        self._dataFrame = data_frame.copy()
+        self.endResetModel()
+
+    dataFrame = pyqtProperty(pd.DataFrame, fget=dataFrame, fset=setDataFrame)
+
+    def appendRows(self, dataFrame: pd.DataFrame):
+        """
+        Append rows to the DataFrameTableModel.
+
+        Parameters:
+        -----------
+        dataFrame : pd.DataFrame
+            The DataFrame containing rows to be appended.
+        """
+        self.beginInsertRows(QModelIndex(), first := len(self._dataFrame), first + len(dataFrame) - 1)
+        self._dataFrame = pd.concat([self._dataFrame, dataFrame], ignore_index=True)
+        self._dataFrame.reset_index(drop=True, inplace=True)
+        self.endInsertRows()
+
+    def headerData(self, section: int, orientation: Qt.Orientation, role: int = ...):
+        """
+        Get the header data for the specified section.
+
+        Parameters
+        ----------
+        section : int
+            The section index.
+        orientation : Qt.Orientation
+            The orientation of the header.
+        role : int, optional
+            The role of the header data.
+
+        Returns
+        -------
+        QVariant
+            The header data.
+        """
+        if role == Qt.DisplayRole:
+            if orientation == Qt.Horizontal:
+                return self._dataFrame.columns[section]
+            else:
+                return str(self._dataFrame.index[section])
+        return QVariant()
+
+    def rowCount(self, parent: QModelIndex = ...):
+        """
+        Get the number of rows in the model.
+
+        Parameters
+        ----------
+        parent : QModelIndex, optional
+            The parent index.
+
+        Returns
+        -------
+        int
+            The number of rows.
+        """
+        if parent.isValid():
+            return 0
+        return len(self._dataFrame.index)
+
+    def columnCount(self, parent: QModelIndex = ...):
+        """
+        Get the number of columns in the model.
+
+        Parameters
+        ----------
+        parent : QModelIndex, optional
+            The parent index.
+
+        Returns
+        -------
+        int
+            The number of columns.
+        """
+        if parent.isValid():
+            return 0
+        return self._dataFrame.columns.size
+
+    def data(self, index: QModelIndex, role: int = ...):
+        """
+        Get the data for the specified index.
+
+        Parameters
+        ----------
+        index : QModelIndex
+            The index of the data.
+        role : int, optional
+            The role of the data.
+
+        Returns
+        -------
+        QVariant
+            The data for the specified index.
+        """
+        if role == Qt.DisplayRole:
+            row = self._dataFrame.index[index.row()]
+            col = self._dataFrame.columns[index.column()]
+            return str(self._dataFrame.iloc[row][col])
+        return QVariant()
+
+    def sort(self, column: int, order: Qt.SortOrder = ...):
+        """
+        Sort the data based on the specified column and order.
+
+        Parameters
+        ----------
+        column : int
+            The column index to sort by.
+        order : Qt.SortOrder, optional
+            The sort order.
+        """
+        self.layoutAboutToBeChanged.emit()
+        col_name = self._dataFrame.columns.values[column]
+        self._dataFrame.sort_values(by=col_name, ascending=order == Qt.AscendingOrder, inplace=True)
+        self._dataFrame.reset_index(inplace=True, drop=True)
+        self.layoutChanged.emit()
