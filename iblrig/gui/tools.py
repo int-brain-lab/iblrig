@@ -12,6 +12,7 @@ from PyQt5.QtCore import QObject, QRunnable, QThreadPool, pyqtSignal
 from PyQt5.QtWidgets import QProgressBar
 
 from iblrig.constants import BASE_PATH
+from iblutil.util import dir_size
 
 
 def convert_uis():
@@ -108,7 +109,7 @@ class DiskSpaceIndicator(QProgressBar):
         """Get the disk usage information for the specified directory."""
         total_space, total_used, total_free = shutil.disk_usage(self._directory.anchor)
         self._percent_full = total_used / total_space * 100
-        self._gigs_dir = sum(f.stat().st_size for f in Path(self._directory).rglob('*') if f.is_file()) / 1024**3
+        self._gigs_dir = dir_size(self._directory) / 1024**3
         self._gigs_free = total_free / 1024**3
 
     def _on_get_size_result(self, result):

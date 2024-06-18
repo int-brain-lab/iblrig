@@ -19,7 +19,7 @@ dependencies = [
     "ibllib@git+https://github.com/int-brain-lab/ibllib.git",
     "iblpybpod@git+https://github.com/int-brain-lab/iblpybpod.git@no-gui",
     "iblscripts@git+https://github.com/int-brain-lab/iblscripts.git",
-    "iblutil >= 1.7.4",
+    "iblutil >= 1.10.0",
     "ipython",
     "numpy",
     "packaging",
