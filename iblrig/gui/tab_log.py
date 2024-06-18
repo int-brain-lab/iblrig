@@ -1,5 +1,5 @@
-from PyQt5.QtCore import pyqtSlot, QSettings
-from PyQt5.QtGui import QBrush, QColorConstants, QFont, QPalette, QColor
+from PyQt5.QtCore import QSettings, pyqtSlot
+from PyQt5.QtGui import QBrush, QColorConstants, QFont
 from PyQt5.QtWidgets import QApplication, QWidget
 
 from iblrig.gui.ui_tab_log import Ui_TabLog
