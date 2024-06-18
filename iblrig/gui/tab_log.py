@@ -1,5 +1,5 @@
-from PyQt5.QtCore import pyqtSlot
-from PyQt5.QtGui import QBrush, QColorConstants, QFont
+from PyQt5.QtCore import pyqtSlot, QSettings
+from PyQt5.QtGui import QBrush, QColorConstants, QFont, QPalette, QColor
 from PyQt5.QtWidgets import QApplication, QWidget
 
 from iblrig.gui.ui_tab_log import Ui_TabLog
@@ -9,20 +9,26 @@ class TabLog(QWidget, Ui_TabLog):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
+        self.settings = QSettings()
 
         font = QFont('Monospace')
         font.setStyleHint(QFont.TypeWriter)
-        font.setPointSize(9)
         self.plainTextEditLog.setFont(font)
 
+        self.pushButtonClipboard.setEnabled(False)
         self.pushButtonClipboard.clicked.connect(self._copy_to_clipboard)
+
+        self.spinBoxFontSize.valueChanged.connect(self._set_font_size)
+        self.spinBoxFontSize.setValue(self.settings.value('font_size', 11, int))
 
     @pyqtSlot()
     def clear(self):
+        self.pushButtonClipboard.setEnabled(False)
         self.plainTextEditLog.clear()
 
     @pyqtSlot(str, str)
     def append_text(self, text: str, color: str = 'White'):
+        self.pushButtonClipboard.setEnabled(True)
         self.set_log_color(color)
         self.plainTextEditLog.appendPlainText(text)
 
@@ -43,4 +49,13 @@ class TabLog(QWidget, Ui_TabLog):
         self.plainTextEditLog.setCurrentCharFormat(char_format)
 
     def _copy_to_clipboard(self):
-        QApplication.clipboard().setText(self.plainTextEditLog.toPlainText())
+        """Copies the log contents to the clipboard (as a markdown code-block)"""
+        text = f'"""\n{self.plainTextEditLog.toPlainText()}\n"""'
+        QApplication.clipboard().setText(text)
+
+    @pyqtSlot(int)
+    def _set_font_size(self, value: int):
+        font = self.plainTextEditLog.font()
+        font.setPointSize(value)
+        self.plainTextEditLog.setFont(font)
+        self.settings.setValue('font_size', value)

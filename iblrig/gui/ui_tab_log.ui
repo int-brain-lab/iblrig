@@ -17,7 +17,7 @@
    <item>
     <widget class="QPlainTextEdit" name="plainTextEditLog">
      <property name="styleSheet">
-      <string notr="true">QPlainTextEdit { background-color: rgb(0, 0, 0) }</string>
+      <string notr="true">QPlainTextEdit {background-color: rgb(0, 0, 0)};</string>
      </property>
      <property name="lineWrapMode">
       <enum>QPlainTextEdit::NoWrap</enum>
@@ -43,6 +43,44 @@
        <number>0</number>
       </property>
       <item>
+       <widget class="QLabel" name="labelFontSize">
+        <property name="statusTip">
+         <string>Set the log's font size</string>
+        </property>
+        <property name="text">
+         <string>&amp;Font Size</string>
+        </property>
+        <property name="buddy">
+         <cstring>spinBoxFontSize</cstring>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QSpinBox" name="spinBoxFontSize">
+        <property name="statusTip">
+         <string>Set the log's font size</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+        <property name="buttonSymbols">
+         <enum>QAbstractSpinBox::PlusMinus</enum>
+        </property>
+        <property name="accelerated">
+         <bool>false</bool>
+        </property>
+        <property name="minimum">
+         <number>7</number>
+        </property>
+        <property name="maximum">
+         <number>99</number>
+        </property>
+        <property name="value">
+         <number>11</number>
+        </property>
+       </widget>
+      </item>
+      <item>
        <spacer name="horizontalSpacer">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -57,17 +95,11 @@
       </item>
       <item>
        <widget class="QPushButton" name="pushButtonClipboard">
-        <property name="maximumSize">
-         <size>
-          <width>24</width>
-          <height>24</height>
-         </size>
-        </property>
         <property name="statusTip">
          <string>Copy log to clipboard</string>
         </property>
         <property name="text">
-         <string/>
+         <string> &amp;Copy</string>
         </property>
         <property name="icon">
          <iconset resource="resources.qrc">
