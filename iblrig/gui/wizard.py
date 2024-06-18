@@ -260,10 +260,10 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.validation_results = splash_screen.validation_results
 
         # load tabs
-        self.tabLog = TabLog()
-        self.tabData = TabData()
-        self.tabDocs = TabDocs()
-        self.tabAbout = TabAbout()
+        self.tabLog = TabLog(parent=self.tabWidget)
+        self.tabData = TabData(parent=self.tabWidget)
+        self.tabDocs = TabDocs(parent=self.tabWidget)
+        self.tabAbout = TabAbout(parent=self.tabWidget)
         self.tabWidget.addTab(self.tabLog, QtGui.QIcon(':/images/log'), 'Log')
         self.tabWidget.addTab(self.tabData, QtGui.QIcon(':/images/sessions'), 'Data')
         self.tabWidget.addTab(self.tabDocs, QtGui.QIcon(':/images/help'), 'Docs')
@@ -349,10 +349,10 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         # statusbar / disk stats
         local_data = self.model.iblrig_settings['iblrig_local_data_path']
         local_data = Path(local_data) if local_data else Path.home().joinpath('iblrig_data')
-        self.uiDiskSpaceIndicator = DiskSpaceIndicator(directory=local_data)
+        self.uiDiskSpaceIndicator = DiskSpaceIndicator(parent=self.statusbar, directory=local_data)
         self.uiDiskSpaceIndicator.setMaximumWidth(70)
-        self.statusbar.setContentsMargins(0, 0, 6, 0)
         self.statusbar.addPermanentWidget(self.uiDiskSpaceIndicator)
+        self.statusbar.setContentsMargins(0, 0, 6, 0)
         self.controls_for_extra_parameters()
 
         # self.layout().setSizeConstraint(QtWidgets.QLayout.SetFixedSize)

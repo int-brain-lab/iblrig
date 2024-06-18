@@ -11,8 +11,8 @@ from iblrig.tools import get_anydesk_id
 
 
 class TabAbout(QWidget, Ui_TabAbout):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.setupUi(self)
 
         # set version & copyright strings

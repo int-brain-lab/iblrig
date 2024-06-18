@@ -10,8 +10,8 @@ from iblrig.gui.ui_tab_docs import Ui_TabDocs
 
 
 class TabDocs(QWidget, Ui_TabDocs):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.setupUi(self)
 
         # connect signals to slots

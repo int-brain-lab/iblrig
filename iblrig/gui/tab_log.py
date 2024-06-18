@@ -6,8 +6,8 @@ from iblrig.gui.ui_tab_log import Ui_TabLog
 
 
 class TabLog(QWidget, Ui_TabLog):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.setupUi(self)
         self.settings = QSettings()
 
