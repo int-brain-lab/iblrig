@@ -1,18 +1,20 @@
+
+from pathlib import Path
+
 import pandas as pd
 from PyQt5.QtCore import QThreadPool
 from PyQt5.QtWidgets import QAbstractScrollArea, QHeaderView, QWidget
 
 from iblrig.gui.tools import DataFrameTableModel, Worker
 from iblrig.gui.ui_tab_data import Ui_TabData
-from iblrig.path_helper import load_pydantic_yaml
-from iblrig.pydantic_definitions import RigSettings
+from iblrig.path_helper import get_local_and_remote_paths
 
 
 class TabData(QWidget, Ui_TabData):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setupUi(self)
-        self.rigSettings = load_pydantic_yaml(RigSettings)
+        self.localSubjectsDir = get_local_and_remote_paths().local_subjects_folder
 
         data = pd.DataFrame({'Subject': [], 'Date': [], 'Index': [], 'Task(s)': [], 'Status': []})
         data = pd.DataFrame(data)
@@ -37,11 +39,16 @@ class TabData(QWidget, Ui_TabData):
         QThreadPool.globalInstance().start(worker)
 
     def _updateData(self) -> pd.DataFrame:
-        from random import Random
-
-        return pd.DataFrame(
-            {'Subject': ['Mickey'], 'Date': ['blah'], 'Index': [1], 'Task(s)': [Random().random()], 'Status': ['All Good']}
-        )
+        rows = []
+        dirs = Path(self.localSubjectsDir).glob('*/*/*/')
+        for d in dirs:
+            if not d.is_dir():
+                continue
+            idx = int(d.name)
+            date = d.parents[0].name
+            subject = d.parents[1].name
+            rows += [pd.DataFrame({'Subject': [subject], 'Date': [date], 'Index': [idx], 'Task(s)': [None], 'Status': [None]})]
+        return pd.concat(rows)
 
     def _onUpdateDataResult(self, result: pd.DataFrame):
-        self.model.dataFrame = result
+        self.model.setDataFrame(result)
