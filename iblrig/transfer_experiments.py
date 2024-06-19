@@ -67,7 +67,7 @@ def _copy2_checksum(src: str, dst: str, *args, **kwargs) -> str:
     if os.path.exists(dst) and samestat(os.stat(src), os.stat(dst)):
         log.info('  - file already exists at destination')
         log.info('  - calculating hash of remote file')
-        if src_md5==hashfile.blake2b(dst, False):
+        if src_md5 == hashfile.blake2b(dst, False):
             log.info('  - local and remote BLAKE2B hashes match, skipping copy')
             return dst
         else:
@@ -75,7 +75,7 @@ def _copy2_checksum(src: str, dst: str, *args, **kwargs) -> str:
     log.info(f'  - copying file to `{dst}`')
     return_val = shutil.copy2(src, dst, *args, **kwargs)
     log.info('  - calculating hash of remote file')
-    if not src_md5==hashfile.blake2b(dst, False):
+    if not src_md5 == hashfile.blake2b(dst, False):
         raise OSError(f'Error copying {src}: hash mismatch.')
     log.info('  - local and remote hashes match, copy successful')
     return return_val
@@ -163,23 +163,23 @@ class SessionCopier:
         return earlier if the process can't be completed.
         :return:
         """
-        if self.state==CopyState.HARD_RESET:  # this case is not implemented automatically and corresponds to a hard reset
+        if self.state == CopyState.HARD_RESET:  # this case is not implemented automatically and corresponds to a hard reset
             log.info(f'{self.state}, {self.session_path}')
             shutil.rmtree(self.remote_session_path)
             self.initialize_experiment()
-        if self.state==CopyState.NOT_REGISTERED:  # the session hasn't even been initialized: copy the stub to the remote
+        if self.state == CopyState.NOT_REGISTERED:  # the session hasn't even been initialized: copy the stub to the remote
             log.info(f'{self.state}, {self.session_path}')
             self.initialize_experiment()
-        if self.state==CopyState.PENDING:  # the session is ready for copy
+        if self.state == CopyState.PENDING:  # the session is ready for copy
             log.info(f'{self.state}, {self.session_path}')
             self.copy_collections()
-        if self.state==CopyState.COMPLETE:
+        if self.state == CopyState.COMPLETE:
             log.info(f'{self.state}, {self.session_path}')
             self.finalize_copy(number_of_expected_devices=number_of_expected_devices)
-        if self.state==CopyState.FINALIZED:
+        if self.state == CopyState.FINALIZED:
             log.info(f'{self.state}, {self.session_path}')
 
-    def get_state(self) -> tuple[CopyState, str]:
+    def get_state(self) -> tuple[CopyState | None, str]:
         """
         Gets the current copier state.
         State 0: this device experiment has not been initialized for this device
@@ -396,7 +396,7 @@ class SessionCopier:
             ready_to_finalize += int(file_stub.with_suffix('.status_complete').exists())
             ad_stub = session_params.read_params(file_stub)
             # here we check the sync field of the device files
-            if next(iter(ad_stub.get('sync', {})), None)!='bpod' and number_of_expected_devices==1:
+            if next(iter(ad_stub.get('sync', {})), None) != 'bpod' and number_of_expected_devices == 1:
                 log.warning(
                     'Only bpod is supported for single device sessions, it seems you are '
                     'attempting to transfer a session with more than one device.'
@@ -407,7 +407,7 @@ class SessionCopier:
             log.error('More stub files (%i) than expected devices (%i)', ready_to_finalize, number_of_expected_devices)
             return
         log.info(f'{ready_to_finalize}/{number_of_expected_devices} copy completion status')
-        if ready_to_finalize==number_of_expected_devices:
+        if ready_to_finalize == number_of_expected_devices:
             for file_stub in files_stub:
                 session_params.aggregate_device(file_stub, self.remote_session_path.joinpath('_ibl_experiment.description.yaml'))
                 file_stub.with_suffix('.status_complete').rename(file_stub.with_suffix('.status_final'))
@@ -440,8 +440,8 @@ class VideoCopier(SessionCopier):
             An acquisition description file stub.
         """
         cameras = {}
-        for label, settings in filter(lambda itms: itms[0]!='BONSAI_WORKFLOW', config.items()):
-            settings_mod = {k.lower(): v for k, v in settings.items() if v is not None and k!='INDEX'}
+        for label, settings in filter(lambda itms: itms[0] != 'BONSAI_WORKFLOW', config.items()):
+            settings_mod = {k.lower(): v for k, v in settings.items() if v is not None and k != 'INDEX'}
             cameras[label] = dict(collection=collection, **settings_mod)
         acq_desc = {'devices': {'cameras': cameras}, 'version': '1.0.0'}
         return acq_desc
@@ -498,9 +498,9 @@ class BehaviorCopier(SessionCopier):
                     log.info(f'Skipping: no task data found for {self.session_path}')
                     # No local data and only behaviour stub in remote; assume dud and remove entire session
                     if (
-                            self.remote_session_path.exists()
-                            and len(collections)==1
-                            and len(list(self.file_remote_experiment_description.parent.glob('*.yaml'))) <= 1
+                        self.remote_session_path.exists()
+                        and len(collections) == 1
+                        and len(list(self.file_remote_experiment_description.parent.glob('*.yaml'))) <= 1
                     ):
                         shutil.rmtree(self.remote_session_path)  # remove likely dud
                     return False
@@ -526,7 +526,7 @@ class BehaviorCopier(SessionCopier):
 
     def finalize_copy(self, number_of_expected_devices=None):
         """If main sync is bpod, expect a single stub file."""
-        if number_of_expected_devices is None and session_params.get_sync(self.remote_experiment_description_stub)=='bpod':
+        if number_of_expected_devices is None and session_params.get_sync(self.remote_experiment_description_stub) == 'bpod':
             number_of_expected_devices = 1
         super().finalize_copy(number_of_expected_devices=number_of_expected_devices)
 
