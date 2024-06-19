@@ -2,6 +2,10 @@ Changelog
 =========
 
 
+8.19.7
+------
+* additional task parameters for passiveChoiceWorld
+
 8.19.6
 ------
 * hotfix: fix race-condition that caused scrambled online-plots
