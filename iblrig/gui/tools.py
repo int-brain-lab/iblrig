@@ -3,6 +3,7 @@ import subprocess
 import sys
 import traceback
 from collections.abc import Callable
+from inspect import signature
 from pathlib import Path
 from shutil import disk_usage
 from typing import Any
@@ -174,6 +175,8 @@ class Worker(QRunnable):
         self.args = args
         self.kwargs = kwargs
         self.signals: WorkerSignals = WorkerSignals()
+        if 'progress_callback' in signature(fn).parameters.keys():
+            self.kwargs['progress_callback'] = self.signals.progress
 
     def run(self) -> None:
         """
@@ -215,20 +218,6 @@ class DataFrameTableModel(QAbstractTableModel):
         self.endResetModel()
 
     dataFrame = pyqtProperty(pd.DataFrame, fget=dataFrame, fset=setDataFrame)
-
-    def appendRows(self, dataFrame: pd.DataFrame):
-        """
-        Append rows to the DataFrameTableModel.
-
-        Parameters:
-        -----------
-        dataFrame : pd.DataFrame
-            The DataFrame containing rows to be appended.
-        """
-        self.beginInsertRows(QModelIndex(), first := len(self._dataFrame), first + len(dataFrame) - 1)
-        self._dataFrame = pd.concat([self._dataFrame, dataFrame], ignore_index=True)
-        self._dataFrame.reset_index(drop=True, inplace=True)
-        self.endInsertRows()
 
     def headerData(self, section: int, orientation: Qt.Orientation, role: int = ...):
         """
