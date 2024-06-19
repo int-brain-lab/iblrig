@@ -17,10 +17,10 @@ class TabData(QWidget, Ui_TabData):
         self.setupUi(self)
         self.localSubjectsDir = get_local_and_remote_paths().local_subjects_folder
 
-        self._columns = ['Subject', 'Date', 'Index', 'Task(s)', 'Status']
-        data = pd.DataFrame(None, index=[], columns=self._columns)
-        self.model = DataFrameTableModel(df=data)
-        self.tableView.setModel(self.model)
+        self._display_columns = ['Subject', 'Date', 'Index', 'Task(s)', 'Status']
+        self._data = pd.DataFrame(None, index=[], columns=self._display_columns)
+        self.tableModel = DataFrameTableModel(df=self._data)
+        self.tableView.setModel(self.tableModel)
 
         header = self.tableView.horizontalHeader()
         header.setSectionResizeMode(3, QHeaderView.Stretch)  # Column 0 will stretch
@@ -31,12 +31,16 @@ class TabData(QWidget, Ui_TabData):
 
         # self.updateData()
 
+    def showEvent(self, a0):
+        if len(self._data) == 0:
+            self.updateData()
+
     def updateData(self):
         worker = Worker(self._updateData)
         worker.signals.result.connect(self._onUpdateDataResult)
         QThreadPool.globalInstance().start(worker)
 
-    def _updateData(self) -> pd.DataFrame:
+    def _updateData(self):
         dirs = [str(d) for d in Path(self.localSubjectsDir).glob('*/*/[0-9][0-9][0-9]/') if d.is_dir()]
         data = []
 
@@ -44,12 +48,12 @@ class TabData(QWidget, Ui_TabData):
             idx = int(path.basename(dir_path))
             date = path.basename(path.dirname(dir_path))
             subject = path.basename(path.dirname(path.dirname(dir_path)))
-            return {'Subject': subject, 'Date': date, 'Index': idx, 'Task(s)': None, 'Status': None}
+            return {'Directory': dir_path, 'Subject': subject, 'Date': date, 'Index': idx, 'Task(s)': None, 'Status': None}
 
         with ThreadPoolExecutor() as executor:
             for result in executor.map(process_directory, dirs):
                 data.append(result)
-        return pd.DataFrame(data)
+        self._data = pd.DataFrame(data)
 
-    def _onUpdateDataResult(self, result: pd.DataFrame):
-        self.model.setDataFrame(result)
+    def _onUpdateDataResult(self):
+        self.tableModel.setDataFrame(self._data[self._display_columns])

@@ -175,7 +175,7 @@ class Worker(QRunnable):
         self.args = args
         self.kwargs = kwargs
         self.signals: WorkerSignals = WorkerSignals()
-        if 'progress_callback' in signature(fn).parameters.keys():
+        if 'progress_callback' in signature(fn).parameters:
             self.kwargs['progress_callback'] = self.signals.progress
 
     def run(self) -> None:

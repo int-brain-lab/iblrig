@@ -25,7 +25,7 @@ class TabAbout(QWidget, Ui_TabAbout):
         self.commandLinkButtonDiscussion.clicked.connect(lambda: webbrowser.open(URL_DISCUSSION))
 
         # try to obtain AnyDesk ID
-        anydesk_worker = Worker(get_anydesk_id, True)
+        anydesk_worker = Worker(get_anydesk_id, silent=True)
         anydesk_worker.signals.result.connect(self._on_get_anydesk_result)
         QThreadPool.globalInstance().tryStart(anydesk_worker)
 
