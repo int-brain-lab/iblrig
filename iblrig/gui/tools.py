@@ -1,10 +1,10 @@
 import argparse
-import shutil
 import subprocess
 import sys
 import traceback
 from collections.abc import Callable
 from pathlib import Path
+from shutil import disk_usage
 from typing import Any
 
 import pandas as pd
@@ -93,9 +93,9 @@ class DiskSpaceIndicator(QProgressBar):
         self._percent_full = float('nan')
         self.setEnabled(False)
         if self._directory is not None:
-            self.update()
+            self.update_data()
 
-    def update(self):
+    def update_data(self):
         """Update the disk space information."""
         worker = Worker(self._get_size)
         worker.signals.result.connect(self._on_get_size_result)
@@ -108,10 +108,10 @@ class DiskSpaceIndicator(QProgressBar):
 
     def _get_size(self):
         """Get the disk usage information for the specified directory."""
-        total_space, total_used, total_free = shutil.disk_usage(self._directory.anchor)
-        self._percent_full = total_used / total_space * 100
+        usage = disk_usage(self._directory.anchor)
+        self._percent_full = usage.used / usage.total * 100
         self._gigs_dir = dir_size(self._directory) / 1024**3
-        self._gigs_free = total_free / 1024**3
+        self._gigs_free = usage.free / 1024**3
 
     def _on_get_size_result(self, result):
         """Handle the result of getting disk usage information and update the progress bar accordingly."""
