@@ -10,10 +10,11 @@ Just make sure iblrigv8 is installed according to the instructions and that the 
 file is configured with the local folder and remote folder for the data transfer.
 
 .. code:: yaml
-
+    RIG_NAME: photometry
+    MAIN_SYNC: False
     device_neurophotometrics:
-      BONSAI_WORKFLOW: devices/neurophotometrics/photometry_NP3002.bonsai
-
+      BONSAI_WORKFLOW: devices/neurophotometrics/FP3002.bonsai
+    VERSION: 1.0.0
 
 
 Starting a task
