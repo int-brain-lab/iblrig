@@ -239,10 +239,9 @@ class DataFrameTableModel(QAbstractTableModel):
         """
         if role == Qt.DisplayRole:
             if orientation == Qt.Horizontal:
-                return self._dataFrame.columns[section]
+                return str(self._dataFrame.columns[section])
             else:
                 return str(self._dataFrame.index[section])
-        return QVariant()
 
     def rowCount(self, parent: QModelIndex = ...):
         """
@@ -258,9 +257,9 @@ class DataFrameTableModel(QAbstractTableModel):
         int
             The number of rows.
         """
-        if parent.isValid():
+        if isinstance(parent, QModelIndex) and parent.isValid():
             return 0
-        return len(self._dataFrame.index)
+        return self.dataFrame.shape[0]
 
     def columnCount(self, parent: QModelIndex = ...):
         """
@@ -276,9 +275,9 @@ class DataFrameTableModel(QAbstractTableModel):
         int
             The number of columns.
         """
-        if parent.isValid():
+        if isinstance(parent, QModelIndex) and parent.isValid():
             return 0
-        return self._dataFrame.columns.size
+        return self.dataFrame.shape[1]
 
     def data(self, index: QModelIndex, role: int = ...):
         """
@@ -296,7 +295,7 @@ class DataFrameTableModel(QAbstractTableModel):
         QVariant
             The data for the specified index.
         """
-        if role == Qt.DisplayRole:
+        if index.isValid() and role == Qt.DisplayRole:
             row = self._dataFrame.index[index.row()]
             col = self._dataFrame.columns[index.column()]
             return self._dataFrame.iloc[row][col]

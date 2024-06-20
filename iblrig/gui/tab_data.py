@@ -2,6 +2,7 @@ import platform
 import subprocess
 from datetime import datetime
 from os import startfile
+from pathlib import Path
 from typing import NamedTuple
 
 import pandas as pd
@@ -22,6 +23,8 @@ COPY_STATE_STRINGS = {
     CopyState.COMPLETE: 'Copy Complete',
     CopyState.FINALIZED: 'Copy Finalized',
 }
+
+SESSIONS_GLOB = r'*/[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]/[0-9][0-9][0-9]/'
 
 
 def sizeof_fmt(num, suffix="B"):
@@ -62,17 +65,15 @@ class TabData(QWidget, Ui_TabData):
             Column(name='Size'),
         )
 
-        # create empty model and apply to view
+        # create empty DataFrameTableModel
         data = pd.DataFrame(None, index=[], columns=[c.name for c in self._columns])
         self.tableModel = DataFrameTableModel(df=data)
-
-        # create filter proxy
-        self._proxy = QSortFilterProxyModel()
-        self._proxy.setSourceModel(self.tableModel)
-        self._proxy.setFilterKeyColumn(1)
-
-        # set view to use filter proxy
-        self.tableView.setModel(self._proxy)
+        #
+        # # create filter proxy & assign it to view
+        # self.tableProxy = QSortFilterProxyModel()
+        # self.tableProxy.setSourceModel(self.tableModel)
+        # self.tableProxy.setFilterKeyColumn(1)
+        self.tableView.setModel(self.tableModel)
 
         # set properties of view's columns
         for idx, column in enumerate(self._columns):
@@ -88,10 +89,10 @@ class TabData(QWidget, Ui_TabData):
 
     @pyqtSlot(str)
     def _filter(self, text):
-        self._proxy.setFilterRegExp(QRegExp(text, Qt.CaseInsensitive))
+        self.tableProxy.setFilterRegExp(QRegExp(text, Qt.CaseInsensitive))
 
     def showEvent(self, a0):
-        if len(self.tableModel.dataFrame) == 0:
+        if self.tableModel.rowCount() == 0:
             self.updateData()
 
     def updateData(self):
@@ -101,7 +102,7 @@ class TabData(QWidget, Ui_TabData):
 
     def _updateData(self):
         data = []
-        for session_dir in (d for d in self._localSubjectsPath.glob('*/????-??-??/[0-9][0-9][0-9]/') if d.is_dir()):
+        for session_dir in (d for d in self._localSubjectsPath.glob(SESSIONS_GLOB) if d.is_dir()):
             subject = session_dir.parents[1].name
             size = dir_size(session_dir)
             copy_state = SessionCopier(session_dir).state
@@ -129,7 +130,7 @@ class TabData(QWidget, Ui_TabData):
     def _onUpdateDataResult(self, data: pd.DataFrame):
         self.tableModel.setDataFrame(data)
         header = self.tableView.horizontalHeader()
-        self.tableModel.sort(column=header.sortIndicatorSection(), order=header.sortIndicatorOrder())
+        self.tableView.sortByColumn(header.sortIndicatorSection(), header.sortIndicatorOrder())
 
     def _openDir(self, index: QModelIndex):
         directory = self.tableView.model().itemData(index.siblingAtColumn(0))[0]
