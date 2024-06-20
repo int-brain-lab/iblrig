@@ -18,8 +18,8 @@ class Ui_TabData(object):
         self.verticalLayout = QtWidgets.QVBoxLayout(TabData)
         self.verticalLayout.setObjectName("verticalLayout")
         self.tableView = QtWidgets.QTableView(TabData)
-        self.tableView.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContents)
         self.tableView.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+        self.tableView.setTabKeyNavigation(False)
         self.tableView.setProperty("showDropIndicator", False)
         self.tableView.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
         self.tableView.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
@@ -37,11 +37,15 @@ class Ui_TabData(object):
         self.horizontalLayout = QtWidgets.QHBoxLayout(self.horizontalWidget)
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout.setObjectName("horizontalLayout")
+        self.lineEditFilter = QtWidgets.QLineEdit(self.horizontalWidget)
+        self.lineEditFilter.setObjectName("lineEditFilter")
+        self.horizontalLayout.addWidget(self.lineEditFilter)
         spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout.addItem(spacerItem)
         self.pushButtonUpdate = QtWidgets.QPushButton(self.horizontalWidget)
         self.pushButtonUpdate.setObjectName("pushButtonUpdate")
         self.horizontalLayout.addWidget(self.pushButtonUpdate)
+        self.horizontalLayout.setStretch(1, 1)
         self.verticalLayout.addWidget(self.horizontalWidget)
 
         self.retranslateUi(TabData)
@@ -50,6 +54,7 @@ class Ui_TabData(object):
     def retranslateUi(self, TabData):
         _translate = QtCore.QCoreApplication.translate
         TabData.setWindowTitle(_translate("TabData", "Form"))
+        self.lineEditFilter.setPlaceholderText(_translate("TabData", "Filter by Subject"))
         self.pushButtonUpdate.setText(_translate("TabData", "Update"))
 
 

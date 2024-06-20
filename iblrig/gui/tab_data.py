@@ -5,7 +5,8 @@ from os import startfile
 from typing import NamedTuple
 
 import pandas as pd
-from PyQt5.QtCore import QModelIndex, Qt, QThreadPool
+from PyQt5.Qt import pyqtSlot
+from PyQt5.QtCore import QModelIndex, Qt, QThreadPool, QDateTime, QSortFilterProxyModel, QRegExp
 from PyQt5.QtWidgets import QHeaderView, QStyledItemDelegate, QWidget
 
 from iblrig.gui.tools import DataFrameTableModel, Worker
@@ -23,6 +24,14 @@ COPY_STATE_STRINGS = {
 }
 
 
+def sizeof_fmt(num, suffix="B"):
+    for unit in ("", "K", "M", "G", "T", "P", "E", "Z"):
+        if abs(num) < 1024.0:
+            return f"{num:3.1f} {unit}{suffix}"
+        num /= 1024.0
+    return f"{num:.1f} Y{suffix}"
+
+
 class Column(NamedTuple):
     name: str
     hidden: bool = False
@@ -34,6 +43,7 @@ class DataItemDelegate(QStyledItemDelegate):
         super().initStyleOption(option, index)
         header_text = index.model().headerData(index.column(), Qt.Horizontal, Qt.DisplayRole)
         if 'Size' in header_text:
+            option.text = sizeof_fmt(index.data())
             option.displayAlignment = Qt.AlignRight | Qt.AlignVCenter
 
 
@@ -46,16 +56,23 @@ class TabData(QWidget, Ui_TabData):
         # define columns
         self._columns = (
             Column(name='Directory', hidden=True),
+            Column(name='Subject', resizeMode=QHeaderView.Stretch),
             Column(name='Date'),
-            Column(name='Subject'),
-            Column(name='Size / MB'),
-            Column(name='Copy Status', resizeMode=QHeaderView.Stretch),
+            Column(name='Copy Status'),
+            Column(name='Size'),
         )
 
         # create empty model and apply to view
         data = pd.DataFrame(None, index=[], columns=[c.name for c in self._columns])
         self.tableModel = DataFrameTableModel(df=data)
-        self.tableView.setModel(self.tableModel)
+
+        # create filter proxy
+        self._proxy = QSortFilterProxyModel()
+        self._proxy.setSourceModel(self.tableModel)
+        self._proxy.setFilterKeyColumn(1)
+
+        # set view to use filter proxy
+        self.tableView.setModel(self._proxy)
 
         # set properties of view's columns
         for idx, column in enumerate(self._columns):
@@ -67,6 +84,11 @@ class TabData(QWidget, Ui_TabData):
         # connect signals to slots
         self.tableView.doubleClicked.connect(self._openDir)
         self.pushButtonUpdate.clicked.connect(self.updateData)
+        self.lineEditFilter.textChanged.connect(self._filter)
+
+    @pyqtSlot(str)
+    def _filter(self, text):
+        self._proxy.setFilterRegExp(QRegExp(text, Qt.CaseInsensitive))
 
     def showEvent(self, a0):
         if len(self.tableModel.dataFrame) == 0:
@@ -80,30 +102,28 @@ class TabData(QWidget, Ui_TabData):
     def _updateData(self):
         data = []
         for session_dir in (d for d in self._localSubjectsPath.glob('*/????-??-??/[0-9][0-9][0-9]/') if d.is_dir()):
+            subject = session_dir.parents[1].name
+            size = dir_size(session_dir)
             copy_state = SessionCopier(session_dir).state
             copy_state_string = COPY_STATE_STRINGS.get(copy_state, 'N/A')
 
             # try to get folder creation time (cross-check with date-string of directory)
             date = datetime.strptime(session_dir.parent.name, '%Y-%m-%d')
-            ctime = datetime.fromtimestamp(session_dir.stat().st_ctime)
-            date = ctime if ctime.date() == date.date() else date
-            date_string = date.strftime('%Y-%m-%d %H:%M:%S')
+            time = datetime.fromtimestamp(session_dir.stat().st_ctime)
+            date = time if time.date() == date.date() else date
+            date = QDateTime.fromTime_t(int(date.timestamp()))
 
-            # get size
-            size_mb = round(dir_size(session_dir) / 1024**2 * 10) / 10
-
-            subject = session_dir.parents[1].name
             data.append(
                 {
                     'Directory': session_dir,
                     'Subject': subject,
-                    'Date': date_string,
-                    'Size / MB': size_mb,
+                    'Date': date,
                     'Copy Status': copy_state_string,
+                    'Size': size,
                 }
             )
         data = pd.DataFrame(data)
-        assert sorted([c for c in data.columns]) == sorted([c.name for c in self._columns])
+        assert [c for c in data.columns] == [c.name for c in self._columns]
         return data
 
     def _onUpdateDataResult(self, data: pd.DataFrame):
@@ -112,7 +132,7 @@ class TabData(QWidget, Ui_TabData):
         self.tableModel.sort(column=header.sortIndicatorSection(), order=header.sortIndicatorOrder())
 
     def _openDir(self, index: QModelIndex):
-        directory = self.tableModel.dataFrame.iloc[index.row()]['Directory']
+        directory = self.tableView.model().itemData(index.siblingAtColumn(0))[0]
         if platform.system() == 'Windows':
             startfile(directory)
         elif platform.system() == 'Darwin':

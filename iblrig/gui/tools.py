@@ -299,7 +299,7 @@ class DataFrameTableModel(QAbstractTableModel):
         if role == Qt.DisplayRole:
             row = self._dataFrame.index[index.row()]
             col = self._dataFrame.columns[index.column()]
-            return str(self._dataFrame.iloc[row][col])
+            return self._dataFrame.iloc[row][col]
         return QVariant()
 
     def sort(self, column: int, order: Qt.SortOrder = ...):
