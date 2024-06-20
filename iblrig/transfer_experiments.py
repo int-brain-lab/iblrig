@@ -580,3 +580,16 @@ class EphysCopier(SessionCopier):
             remote_folder=self.remote_session_path.joinpath('raw_ephys_data'),
             overwrite=True,
         )
+
+
+class NeurophotometricsCopier(SessionCopier):
+    tag = 'neurophotometrics'
+    assert_connect_on_init = True
+
+    def initialize_experiment(self, acquisition_description=None, **kwargs):
+        if not acquisition_description:
+            acquisition_description = dict(devices={'neurophotometrics': {'NP3002': None}})
+            # TODO add the sync file with DAQami
+            # sync_file = Path(iblrig.__file__).parent.joinpath('device_descriptions', 'sync', 'daqami.yaml')
+            self._experiment_description = acquisition_description
+            super().initialize_experiment(acquisition_description=acquisition_description, **kwargs)

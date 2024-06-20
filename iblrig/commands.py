@@ -12,13 +12,18 @@ import iblrig
 from iblrig.hardware import Bpod
 from iblrig.online_plots import OnlinePlots
 from iblrig.path_helper import get_local_and_remote_paths
-from iblrig.transfer_experiments import BehaviorCopier, EphysCopier, SessionCopier, VideoCopier
+from iblrig.transfer_experiments import BehaviorCopier, EphysCopier, NeurophotometricsCopier, SessionCopier, VideoCopier
 from iblutil.util import setup_logger
 
 logger = logging.getLogger(__name__)
 
 
-tag2copier = {'behavior': BehaviorCopier, 'video': VideoCopier, 'ephys': EphysCopier}
+tag2copier = {
+    'behavior': BehaviorCopier,
+    'video': VideoCopier,
+    'ephys': EphysCopier,
+    'neurophotometrics': NeurophotometricsCopier,
+}
 
 
 def _transfer_parser(description: str) -> argparse.ArgumentParser:
@@ -102,7 +107,7 @@ def transfer_video_data_cli():
     setup_logger('iblrig', level='INFO')
     warnings.warn(
         'transfer_video_data will be removed in the future. Use "transfer_data video" instead.', FutureWarning, stacklevel=2
-    )
+    )  # see transfer_data_cli above
     args = _transfer_parser('Copy video data to the local server.').parse_args()
     transfer_data(**{**vars(args), 'tag': 'video'}, interactive=True)
 
