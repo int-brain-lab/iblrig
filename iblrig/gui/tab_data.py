@@ -1,8 +1,8 @@
 import platform
 import subprocess
-from dataclasses import dataclass
 from datetime import datetime
 from os import startfile
+from typing import NamedTuple
 
 import pandas as pd
 from PyQt5.QtCore import QModelIndex, Qt, QThreadPool
@@ -23,8 +23,7 @@ COPY_STATE_STRINGS = {
 }
 
 
-@dataclass
-class Column:
+class Column(NamedTuple):
     name: str
     hidden: bool = False
     resizeMode: QHeaderView.ResizeMode = QHeaderView.ResizeToContents
@@ -45,20 +44,20 @@ class TabData(QWidget, Ui_TabData):
         self._localSubjectsPath = get_local_and_remote_paths().local_subjects_folder
 
         # define columns
-        self._columns = [
+        self._columns = (
             Column(name='Directory', hidden=True),
             Column(name='Date'),
             Column(name='Subject'),
             Column(name='Size / MB'),
             Column(name='Copy Status', resizeMode=QHeaderView.Stretch),
-        ]
+        )
 
-        # create empty model and view
+        # create empty model and apply to view
         data = pd.DataFrame(None, index=[], columns=[c.name for c in self._columns])
         self.tableModel = DataFrameTableModel(df=data)
         self.tableView.setModel(self.tableModel)
 
-        # set properties of columns in view
+        # set properties of view's columns
         for idx, column in enumerate(self._columns):
             self.tableView.setColumnHidden(idx, column.hidden)
             if not column.hidden:
@@ -103,7 +102,9 @@ class TabData(QWidget, Ui_TabData):
                     'Copy Status': copy_state_string,
                 }
             )
-        return pd.DataFrame(data)
+        data = pd.DataFrame(data)
+        assert sorted([c for c in data.columns]) == sorted([c.name for c in self._columns])
+        return data
 
     def _onUpdateDataResult(self, data: pd.DataFrame):
         self.tableModel.setDataFrame(data)
