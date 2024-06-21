@@ -37,7 +37,8 @@ def sizeof_fmt(num, suffix='B'):
 class Column(NamedTuple):
     name: str
     hidden: bool = False
-    resizeMode: QHeaderView.ResizeMode = QHeaderView.ResizeToContents
+    resizeMode: QHeaderView.ResizeMode = QHeaderView.Fixed
+    sectionWidth: int = 120
 
 
 class DataItemDelegate(QStyledItemDelegate):
@@ -62,7 +63,7 @@ class TabData(QWidget, Ui_TabData):
             Column(name='Subject', resizeMode=QHeaderView.Stretch),
             Column(name='Date'),
             Column(name='Copy Status'),
-            Column(name='Size'),
+            Column(name='Size', sectionWidth=60),
         )
 
         # create empty DataFrameTableModel
@@ -76,10 +77,15 @@ class TabData(QWidget, Ui_TabData):
 
         # define view
         self.tableView.setModel(self.tableProxy)
+        header = self.tableView.horizontalHeader()
+        header.setDefaultAlignment(Qt.AlignLeft)
         for idx, column in enumerate(self._columns):
             self.tableView.setColumnHidden(idx, column.hidden)
             if not column.hidden:
-                self.tableView.horizontalHeader().setSectionResizeMode(idx, column.resizeMode)
+                if column.resizeMode == QHeaderView.Fixed:
+                    header.resizeSection(idx, column.sectionWidth)
+                else:
+                    header.setSectionResizeMode(idx, column.resizeMode)
         self.tableView.setItemDelegate(DataItemDelegate(self.tableView))
         self.tableView.sortByColumn(
             self.settings.value('sortColumn', 1, int), self.settings.value('sortOrder', Qt.AscendingOrder, Qt.SortOrder)
@@ -133,7 +139,6 @@ class TabData(QWidget, Ui_TabData):
 
     def _onUpdateDataResult(self, data: pd.DataFrame):
         self.tableModel.setDataFrame(data)
-        header = self.tableView.horizontalHeader()
 
     def _openDir(self, index: QModelIndex):
         directory = self.tableView.model().itemData(index.siblingAtColumn(0))[0]
