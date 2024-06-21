@@ -2,8 +2,6 @@ import platform
 import subprocess
 from datetime import datetime
 from typing import NamedTuple
-if platform.system() == 'Windows':
-    from os import startfile
 
 import pandas as pd
 from PyQt5.Qt import pyqtSlot
@@ -26,6 +24,9 @@ from iblrig.gui.ui_tab_data import Ui_TabData
 from iblrig.path_helper import get_local_and_remote_paths
 from iblrig.transfer_experiments import CopyState, SessionCopier
 from iblutil.util import dir_size
+
+if platform.system() == 'Windows':
+    from os import startfile
 
 COPY_STATE_STRINGS = {
     CopyState.HARD_RESET: 'Hard Reset',
