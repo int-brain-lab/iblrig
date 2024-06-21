@@ -9,7 +9,6 @@ import shutil
 import subprocess
 import sys
 import traceback
-import webbrowser
 from collections import OrderedDict
 from dataclasses import dataclass
 from pathlib import Path
@@ -18,7 +17,6 @@ import pyqtgraph as pg
 from pydantic import ValidationError
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QThread, QThreadPool
-from PyQt5.QtWebEngineWidgets import QWebEnginePage
 from PyQt5.QtWidgets import QStyle
 from requests import HTTPError
 from serial import SerialException
@@ -29,10 +27,14 @@ import iblrig.path_helper
 import iblrig_tasks
 from iblrig.base_tasks import EmptySession, ValveMixin
 from iblrig.choiceworld import get_subject_training_info, training_phase_from_contrast_set
-from iblrig.constants import BASE_DIR, COPYRIGHT_YEAR
+from iblrig.constants import BASE_DIR
 from iblrig.gui.frame2ttl import Frame2TTLCalibrationDialog
 from iblrig.gui.splash import Splash
-from iblrig.gui.tools import Worker
+from iblrig.gui.tab_about import TabAbout
+from iblrig.gui.tab_data import TabData
+from iblrig.gui.tab_docs import TabDocs
+from iblrig.gui.tab_log import TabLog
+from iblrig.gui.tools import DiskSpaceIndicator, Worker
 from iblrig.gui.ui_login import Ui_login
 from iblrig.gui.ui_update import Ui_update
 from iblrig.gui.ui_wizard import Ui_wizard
@@ -43,7 +45,7 @@ from iblrig.hardware_validation import Status
 from iblrig.misc import _get_task_argument_parser
 from iblrig.path_helper import load_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings, RigSettings
-from iblrig.tools import alyx_reachable, get_anydesk_id, internet_available
+from iblrig.tools import alyx_reachable, internet_available
 from iblrig.version_management import check_for_updates, get_changelog
 from iblutil.util import setup_logger
 from one.webclient import AlyxClient
@@ -70,11 +72,6 @@ PROCEDURES = [
     'Imaging',
 ]
 PROJECTS = ['ibl_neuropixel_brainwide_01', 'practice']
-
-URL_DOC = 'https://int-brain-lab.github.io/iblrig'
-URL_REPO = 'https://github.com/int-brain-lab/iblrig/tree/iblrigv8'
-URL_ISSUES = 'https://github.com/int-brain-lab/iblrig/issues'
-URL_DISCUSSION = 'https://github.com/int-brain-lab/iblrig/discussions'
 
 ANSI_COLORS: dict[bytes, str] = {'31': 'Red', '32': 'Green', '33': 'Yellow', '35': 'Magenta', '36': 'Cyan', '37': 'White'}
 REGEX_STDOUT = re.compile(
@@ -262,6 +259,17 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         splash_screen.exec()
         self.validation_results = splash_screen.validation_results
 
+        # load tabs
+        self.tabLog = TabLog(parent=self.tabWidget)
+        self.tabData = TabData(parent=self.tabWidget)
+        self.tabDocs = TabDocs(parent=self.tabWidget)
+        self.tabAbout = TabAbout(parent=self.tabWidget)
+        self.tabWidget.addTab(self.tabLog, QtGui.QIcon(':/images/log'), 'Log')
+        self.tabWidget.addTab(self.tabData, QtGui.QIcon(':/images/sessions'), 'Data')
+        self.tabWidget.addTab(self.tabDocs, QtGui.QIcon(':/images/help'), 'Docs')
+        self.tabWidget.addTab(self.tabAbout, QtGui.QIcon(':/images/about'), 'About')
+        self.tabWidget.setCurrentIndex(0)
+
         self.debug = kwargs.get('debug', False)
         self.settings = QtCore.QSettings()
         self.move(self.settings.value('pos', self.pos(), QtCore.QPoint))
@@ -338,45 +346,13 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.uiPushStatusLED.toggled.connect(self.toggle_status_led)
         self.toggle_status_led(self.uiPushStatusLED.isChecked())
 
-        # tab: log
-        font = QtGui.QFont('Monospace')
-        font.setStyleHint(QtGui.QFont.TypeWriter)
-        font.setPointSize(9)
-        self.uiPlainTextEditLog.setFont(font)
-
-        # tab: documentation
-        self.uiPushWebHome.clicked.connect(lambda: self.webEngineView.load(QtCore.QUrl(URL_DOC)))
-        self.uiPushWebBrowser.clicked.connect(lambda: webbrowser.open(str(self.webEngineView.url().url())))
-        self.webEngineView.setPage(CustomWebEnginePage(self))
-        self.webEngineView.setUrl(QtCore.QUrl(URL_DOC))
-        self.webEngineView.urlChanged.connect(self._on_doc_url_changed)
-
-        # tab: about
-        self.uiLabelCopyright.setText(f'**IBLRIG v{iblrig.__version__}**\n\n© {COPYRIGHT_YEAR}, International Brain Laboratory')
-        self.commandLinkButtonGitHub.clicked.connect(lambda: webbrowser.open(URL_REPO))
-        self.commandLinkButtonDoc.clicked.connect(lambda: webbrowser.open(URL_DOC))
-        self.commandLinkButtonIssues.clicked.connect(lambda: webbrowser.open(URL_ISSUES))
-        self.commandLinkButtonDiscussion.clicked.connect(lambda: webbrowser.open(URL_DISCUSSION))
-
-        # disk stats
+        # statusbar / disk stats
         local_data = self.model.iblrig_settings['iblrig_local_data_path']
         local_data = Path(local_data) if local_data else Path.home().joinpath('iblrig_data')
-        v8data_size = sum(file.stat().st_size for file in Path(local_data).rglob('*'))
-        total_space, total_used, total_free = shutil.disk_usage(local_data.anchor)
-        self.uiProgressDiskSpace = QtWidgets.QProgressBar(self)
-        self.uiProgressDiskSpace.setMaximumWidth(70)
-        self.uiProgressDiskSpace.setValue(round(total_used / total_space * 100))
-        self.uiProgressDiskSpace.setStatusTip(
-            f'local IBLRIG data: {v8data_size / 1024**3: .1f} GB  •  ' f'available space: {total_free / 1024**3: .1f} GB'
-        )
-        if self.uiProgressDiskSpace.value() > 90:
-            p = self.uiProgressDiskSpace.palette()
-            p.setColor(QtGui.QPalette.Highlight, QtGui.QColor('red'))
-            self.uiProgressDiskSpace.setPalette(p)
-
-        # statusbar
+        self.uiDiskSpaceIndicator = DiskSpaceIndicator(parent=self.statusbar, directory=local_data)
+        self.uiDiskSpaceIndicator.setMaximumWidth(70)
+        self.statusbar.addPermanentWidget(self.uiDiskSpaceIndicator)
         self.statusbar.setContentsMargins(0, 0, 6, 0)
-        self.statusbar.addPermanentWidget(self.uiProgressDiskSpace)
         self.controls_for_extra_parameters()
 
         # self.layout().setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
@@ -407,11 +383,6 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
             text = text + '<br><br>\nPlease refer to the System Validation tool for more details.'
             msg_box.setText(text)
             msg_box.exec()
-
-        # get AnyDesk ID
-        anydesk_worker = Worker(get_anydesk_id, True)
-        anydesk_worker.signals.result.connect(self._on_get_anydesk_result)
-        QThreadPool.globalInstance().tryStart(anydesk_worker)
 
         # check for update
         update_worker = Worker(check_for_updates)
@@ -525,26 +496,6 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         """
         if result[0]:
             UpdateNotice(parent=self, version=result[1])
-
-    def _on_get_anydesk_result(self, result: str | None) -> None:
-        """
-        Handle the result of checking for the user's AnyDesk ID.
-
-        Parameters
-        ----------
-        result : str | None
-            The user's AnyDesk ID, if available.
-
-        Returns
-        -------
-        None
-        """
-        if result is not None:
-            self.uiLabelAnyDesk.setText(f'Your AnyDesk ID: {result}')
-
-    def _on_doc_url_changed(self):
-        self.uiPushWebBack.setEnabled(len(self.webEngineView.history().backItems(1)) > 0)
-        self.uiPushWebForward.setEnabled(len(self.webEngineView.history().forwardItems(1)) > 0)
 
     def _log_in_or_out(self, username: str) -> bool:
         # Routine for logging out:
@@ -956,9 +907,8 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 if self.uiCheckAppend.isChecked():
                     cmd.append('--append')
                 if self.running_task_process is None:
-                    self.uiPlainTextEditLog.clear()
-                    self._set_plaintext_char_color(self.uiPlainTextEditLog, 'White')
-                    self.uiPlainTextEditLog.appendPlainText(f'Starting subprocess: {self.model.task_name} ...\n')
+                    self.tabLog.clear()
+                    self.tabLog.append_text(f'Starting subprocess: {self.model.task_name} ...\n', 'White')
                     log.info('Starting subprocess')
                     log.info(subprocess.list2cmdline(cmd))
                     self.running_task_process = QtCore.QProcess()
@@ -976,26 +926,6 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 if self.model.session_folder and self.model.session_folder.exists():
                     self.model.session_folder.joinpath('.stop').touch()
 
-    @staticmethod
-    def _set_plaintext_char_color(widget: QtWidgets.QPlainTextEdit, color: str = 'White') -> None:
-        """
-        Set the foreground color of characters in a QPlainTextEdit widget.
-
-        Parameters
-        ----------
-        widget : QtWidgets.QPlainTextEdit
-            The QPlainTextEdit widget whose character color is to be set.
-
-        color : str, optional
-            The name of the color to set. Default is 'White'. Should be a valid color name
-            recognized by QtGui.QColorConstants. If the provided color name is not found,
-            it defaults to QtGui.QColorConstants.White.
-        """
-        color = getattr(QtGui.QColorConstants, color, QtGui.QColorConstants.White)
-        char_format = widget.currentCharFormat()
-        char_format.setForeground(QtGui.QBrush(color))
-        widget.setCurrentCharFormat(char_format)
-
     def _on_read_standard_output(self):
         """
         Read and process standard output entries.
@@ -1008,10 +938,9 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         entries = re.finditer(REGEX_STDOUT, data)
         for entry in entries:
             color = ANSI_COLORS.get(entry.groupdict().get('color', '37'), 'White')
-            self._set_plaintext_char_color(self.uiPlainTextEditLog, color)
             time = entry.groupdict().get('time', '')
             msg = entry.groupdict().get('message', '')
-            self.uiPlainTextEditLog.appendPlainText(f'{time} {msg}')
+            self.tabLog.append_text(f'{time} {msg}', color)
         if self.debug:
             print(data)
 
@@ -1024,14 +953,12 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         the error message to the widget.
         """
         data = self.running_task_process.readAllStandardError().data().decode('utf-8', 'ignore').strip()
-        self._set_plaintext_char_color(self.uiPlainTextEditLog, 'Red')
-        self.uiPlainTextEditLog.appendPlainText(data)
+        self.tabLog.append_text(data, 'Red')
         if self.debug:
             print(data)
 
     def _on_task_finished(self, exit_code, exit_status):
-        self._set_plaintext_char_color(self.uiPlainTextEditLog, 'White')
-        self.uiPlainTextEditLog.appendPlainText('\nSubprocess finished.')
+        self.tabLog.append_text('\nSubprocess finished.', 'White')
         if exit_code:
             msg_box = QtWidgets.QMessageBox(parent=self)
             msg_box.setWindowTitle('Oh no!')
@@ -1219,45 +1146,6 @@ class UpdateNotice(QtWidgets.QDialog, Ui_update):
         self.uiTextBrowserChanges.setMarkdown(get_changelog())
         self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
         self.exec()
-
-
-class CustomWebEnginePage(QWebEnginePage):
-    """
-    Custom implementation of QWebEnginePage to handle navigation requests.
-
-    This class overrides the acceptNavigationRequest method to handle link clicks.
-    If the navigation type is a link click and the clicked URL does not start with
-    a specific prefix (URL_DOC), it opens the URL in the default web browser.
-    Otherwise, it delegates the handling to the base class.
-
-    Adapted from: https://www.pythonguis.com/faq/qwebengineview-open-links-new-window/
-    """
-
-    @override
-    def acceptNavigationRequest(self, url: QtCore.QUrl, navigation_type: QWebEnginePage.NavigationType, is_main_frame: bool):
-        """
-        Decide whether to allow or block a navigation request.
-
-        Parameters
-        ----------
-        url : QUrl
-            The URL being navigated to.
-
-        navigation_type : QWebEnginePage.NavigationType
-            The type of navigation request.
-
-        is_main_frame : bool
-            Indicates whether the request is for the main frame.
-
-        Returns
-        -------
-        bool
-            True if the navigation request is accepted, False otherwise.
-        """
-        if navigation_type == QWebEnginePage.NavigationTypeLinkClicked and not url.url().startswith(URL_DOC):
-            webbrowser.open(url.url())
-            return False
-        return super().acceptNavigationRequest(url, navigation_type, is_main_frame)
 
 
 def main():
