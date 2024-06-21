@@ -322,3 +322,10 @@ class DataFrameTableModel(QAbstractTableModel):
         self._dataFrame.sort_values(by=col_name, ascending=order == Qt.AscendingOrder, inplace=True)
         self._dataFrame.reset_index(inplace=True, drop=True)
         self.layoutChanged.emit()
+
+    def setData(self, index, value, role=...):
+        if index.isValid():
+            row = self._dataFrame.index[index.row()]
+            col = self._dataFrame.columns[index.column()]
+            self._dataFrame.at[row, col] = value
+            self.dataChanged.emit(index, index, [Qt.DisplayRole])

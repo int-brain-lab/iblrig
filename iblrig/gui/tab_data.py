@@ -6,7 +6,18 @@ from typing import NamedTuple
 
 import pandas as pd
 from PyQt5.Qt import pyqtSlot
-from PyQt5.QtCore import QDateTime, QModelIndex, QRegExp, QSettings, QSortFilterProxyModel, Qt, QThreadPool
+from PyQt5.QtCore import (
+    QAbstractTableModel,
+    QDateTime,
+    QModelIndex,
+    QRegExp,
+    QSettings,
+    QSortFilterProxyModel,
+    Qt,
+    QThread,
+    QThreadPool,
+    pyqtSignal,
+)
 from PyQt5.QtWidgets import QHeaderView, QStyledItemDelegate, QWidget
 
 from iblrig.gui.tools import DataFrameTableModel, Worker
@@ -41,6 +52,15 @@ class Column(NamedTuple):
     sectionWidth: int = 120
 
 
+COLUMNS = (
+    Column(name='Directory', hidden=True),
+    Column(name='Subject', resizeMode=QHeaderView.Stretch),
+    Column(name='Date'),
+    Column(name='Copy Status'),
+    Column(name='Size', sectionWidth=60),
+)
+
+
 class DataItemDelegate(QStyledItemDelegate):
     def initStyleOption(self, option, index):
         super().initStyleOption(option, index)
@@ -56,18 +76,10 @@ class TabData(QWidget, Ui_TabData):
         self.setupUi(self)
         self.settings = QSettings()
         self._localSubjectsPath = get_local_and_remote_paths().local_subjects_folder
-
-        # define columns
-        self._columns = (
-            Column(name='Directory', hidden=True),
-            Column(name='Subject', resizeMode=QHeaderView.Stretch),
-            Column(name='Date'),
-            Column(name='Copy Status'),
-            Column(name='Size', sectionWidth=60),
-        )
+        self._sessionStatesThread = None
 
         # create empty DataFrameTableModel
-        data = pd.DataFrame(None, index=[], columns=[c.name for c in self._columns])
+        data = pd.DataFrame(None, index=[], columns=[c.name for c in COLUMNS])
         self.tableModel = DataFrameTableModel(df=data)
 
         # create filter proxy & assign it to view
@@ -79,7 +91,7 @@ class TabData(QWidget, Ui_TabData):
         self.tableView.setModel(self.tableProxy)
         header = self.tableView.horizontalHeader()
         header.setDefaultAlignment(Qt.AlignLeft)
-        for idx, column in enumerate(self._columns):
+        for idx, column in enumerate(COLUMNS):
             self.tableView.setColumnHidden(idx, column.hidden)
             if not column.hidden:
                 if column.resizeMode == QHeaderView.Fixed:
@@ -88,7 +100,8 @@ class TabData(QWidget, Ui_TabData):
                     header.setSectionResizeMode(idx, column.resizeMode)
         self.tableView.setItemDelegate(DataItemDelegate(self.tableView))
         self.tableView.sortByColumn(
-            self.settings.value('sortColumn', 1, int), self.settings.value('sortOrder', Qt.AscendingOrder, Qt.SortOrder)
+            self.settings.value('sortColumn', [c.name for c in COLUMNS].index('Date'), int),
+            self.settings.value('sortOrder', Qt.AscendingOrder, Qt.SortOrder),
         )
 
         # connect signals to slots
@@ -134,11 +147,17 @@ class TabData(QWidget, Ui_TabData):
                 }
             )
         data = pd.DataFrame(data)
-        assert [c for c in data.columns] == [c.name for c in self._columns]
+        assert [c for c in data.columns] == [c.name for c in COLUMNS]
         return data
 
     def _onUpdateDataResult(self, data: pd.DataFrame):
         self.tableModel.setDataFrame(data)
+        self._sessionStatesThread = SessionStatesWorker(self.tableModel)
+        self._sessionStatesThread.update.connect(self._updateTableModel)
+        self._sessionStatesThread.start()
+
+    def _updateTableModel(self, index: QModelIndex, state: str):
+        self.tableModel.setData(index, state)
 
     def _openDir(self, index: QModelIndex):
         directory = self.tableView.model().itemData(index.siblingAtColumn(0))[0]
@@ -153,3 +172,21 @@ class TabData(QWidget, Ui_TabData):
     def _storeSort(self, index: int):
         self.settings.setValue('sortColumn', self.tableView.horizontalHeader().sortIndicatorSection())
         self.settings.setValue('sortOrder', self.tableView.horizontalHeader().sortIndicatorOrder())
+
+
+class SessionStatesWorker(QThread):
+    update = pyqtSignal(QModelIndex, str)
+
+    def __init__(self, model):
+        super().__init__()
+        self._model: QAbstractTableModel = model
+
+    def run(self):
+        self._model.headerData(0, Qt.Horizontal, Qt.DisplayRole)
+        for row in range(self._model.rowCount()):
+            index = self._model.index(row, [c.name for c in COLUMNS].index('Directory'))
+            directory = self._model.data(index, Qt.DisplayRole)
+            state = SessionCopier(directory).state
+            state = COPY_STATE_STRINGS.get(state, 'N/A')
+            index = self._model.index(row, [c.name for c in COLUMNS].index('Copy Status'))
+            self.update.emit(index, state)
