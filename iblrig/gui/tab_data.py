@@ -2,12 +2,11 @@ import platform
 import subprocess
 from datetime import datetime
 from os import startfile
-from pathlib import Path
 from typing import NamedTuple
 
 import pandas as pd
 from PyQt5.Qt import pyqtSlot
-from PyQt5.QtCore import QModelIndex, Qt, QThreadPool, QDateTime, QSortFilterProxyModel, QRegExp
+from PyQt5.QtCore import QDateTime, QModelIndex, QRegExp, QSettings, QSortFilterProxyModel, Qt, QThreadPool
 from PyQt5.QtWidgets import QHeaderView, QStyledItemDelegate, QWidget
 
 from iblrig.gui.tools import DataFrameTableModel, Worker
@@ -27,12 +26,12 @@ COPY_STATE_STRINGS = {
 SESSIONS_GLOB = r'*/[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]/[0-9][0-9][0-9]/'
 
 
-def sizeof_fmt(num, suffix="B"):
-    for unit in ("", "K", "M", "G", "T", "P", "E", "Z"):
+def sizeof_fmt(num, suffix='B'):
+    for unit in ('', 'K', 'M', 'G', 'T', 'P', 'E', 'Z'):
         if abs(num) < 1024.0:
-            return f"{num:3.1f} {unit}{suffix}"
+            return f'{num:3.1f} {unit}{suffix}'
         num /= 1024.0
-    return f"{num:.1f} Y{suffix}"
+    return f'{num:.1f} Y{suffix}'
 
 
 class Column(NamedTuple):
@@ -54,6 +53,7 @@ class TabData(QWidget, Ui_TabData):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setupUi(self)
+        self.settings = QSettings()
         self._localSubjectsPath = get_local_and_remote_paths().local_subjects_folder
 
         # define columns
@@ -73,40 +73,44 @@ class TabData(QWidget, Ui_TabData):
         self.tableProxy = QSortFilterProxyModel()
         self.tableProxy.setSourceModel(self.tableModel)
         self.tableProxy.setFilterKeyColumn(1)
-        self.tableView.setModel(self.tableProxy)
 
-        # set properties of view's columns
+        # define view
+        self.tableView.setModel(self.tableProxy)
         for idx, column in enumerate(self._columns):
             self.tableView.setColumnHidden(idx, column.hidden)
             if not column.hidden:
                 self.tableView.horizontalHeader().setSectionResizeMode(idx, column.resizeMode)
         self.tableView.setItemDelegate(DataItemDelegate(self.tableView))
+        self.tableView.sortByColumn(
+            self.settings.value('sortColumn', 1, int), self.settings.value('sortOrder', Qt.AscendingOrder, Qt.SortOrder)
+        )
 
         # connect signals to slots
         self.tableView.doubleClicked.connect(self._openDir)
-        self.pushButtonUpdate.clicked.connect(self.updateData)
+        self.tableView.horizontalHeader().sectionClicked.connect(self._storeSort)
+        self.pushButtonUpdate.clicked.connect(self._initializeData)
         self.lineEditFilter.textChanged.connect(self._filter)
 
     @pyqtSlot(str)
-    def _filter(self, text):
+    def _filter(self, text: str):
         self.tableProxy.setFilterRegExp(QRegExp(text, Qt.CaseInsensitive))
 
     def showEvent(self, a0):
         if self.tableModel.rowCount() == 0:
-            self.updateData()
+            self._initializeData()
 
-    def updateData(self):
-        worker = Worker(self._updateData)
+    def _initializeData(self):
+        worker = Worker(self._initializeDataJob)
         worker.signals.result.connect(self._onUpdateDataResult)
         QThreadPool.globalInstance().start(worker)
 
-    def _updateData(self):
+    def _initializeDataJob(self):
         data = []
         for session_dir in (d for d in self._localSubjectsPath.glob(SESSIONS_GLOB) if d.is_dir()):
             subject = session_dir.parents[1].name
-            size = dir_size(session_dir)
-            copy_state = SessionCopier(session_dir).state
-            copy_state_string = COPY_STATE_STRINGS.get(copy_state, 'N/A')
+            size = float(dir_size(session_dir))  # save as float as int seems to cause issues with sorting
+            # copy_state = SessionCopier(session_dir).state
+            # copy_state_string = COPY_STATE_STRINGS.get(copy_state, 'N/A')
 
             # try to get folder creation time (cross-check with date-string of directory)
             date = datetime.strptime(session_dir.parent.name, '%Y-%m-%d')
@@ -119,19 +123,17 @@ class TabData(QWidget, Ui_TabData):
                     'Directory': session_dir,
                     'Subject': subject,
                     'Date': date,
-                    'Copy Status': copy_state_string,
+                    'Copy Status': '',
                     'Size': size,
                 }
             )
         data = pd.DataFrame(data)
-        data['Size'] = data['Size'].astype(float)
         assert [c for c in data.columns] == [c.name for c in self._columns]
         return data
 
     def _onUpdateDataResult(self, data: pd.DataFrame):
         self.tableModel.setDataFrame(data)
         header = self.tableView.horizontalHeader()
-        self.tableView.sortByColumn(header.sortIndicatorSection(), header.sortIndicatorOrder())
 
     def _openDir(self, index: QModelIndex):
         directory = self.tableView.model().itemData(index.siblingAtColumn(0))[0]
@@ -141,3 +143,8 @@ class TabData(QWidget, Ui_TabData):
             subprocess.Popen(['open', directory])
         else:
             subprocess.Popen(['xdg-open', directory])
+
+    @pyqtSlot(int)
+    def _storeSort(self, index: int):
+        self.settings.setValue('sortColumn', self.tableView.horizontalHeader().sortIndicatorSection())
+        self.settings.setValue('sortOrder', self.tableView.horizontalHeader().sortIndicatorOrder())

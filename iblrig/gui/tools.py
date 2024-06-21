@@ -296,13 +296,14 @@ class DataFrameTableModel(QAbstractTableModel):
         QVariant
             The data for the specified index.
         """
-        if index.isValid() and role == Qt.DisplayRole:
+        if index.isValid():
             row = self._dataFrame.index[index.row()]
             col = self._dataFrame.columns[index.column()]
             dat = self._dataFrame.iloc[row][col]
-            if isinstance(dat, np.generic):
-                return dat.item()
-            return self._dataFrame.iloc[row][col]
+            if role == Qt.DisplayRole:
+                if isinstance(dat, np.generic):
+                    return dat.item()
+                return dat
         return QVariant()
 
     def sort(self, column: int, order: Qt.SortOrder = ...):
