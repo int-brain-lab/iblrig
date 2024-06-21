@@ -8,6 +8,7 @@ from pathlib import Path
 from shutil import disk_usage
 from typing import Any
 
+import numpy as np
 import pandas as pd
 from PyQt5 import QtGui
 from PyQt5.QtCore import QAbstractTableModel, QModelIndex, QObject, QRunnable, Qt, QThreadPool, QVariant, pyqtProperty, pyqtSignal
@@ -298,6 +299,9 @@ class DataFrameTableModel(QAbstractTableModel):
         if index.isValid() and role == Qt.DisplayRole:
             row = self._dataFrame.index[index.row()]
             col = self._dataFrame.columns[index.column()]
+            dat = self._dataFrame.iloc[row][col]
+            if isinstance(dat, np.generic):
+                return dat.item()
             return self._dataFrame.iloc[row][col]
         return QVariant()
 

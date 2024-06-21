@@ -68,12 +68,12 @@ class TabData(QWidget, Ui_TabData):
         # create empty DataFrameTableModel
         data = pd.DataFrame(None, index=[], columns=[c.name for c in self._columns])
         self.tableModel = DataFrameTableModel(df=data)
-        #
-        # # create filter proxy & assign it to view
-        # self.tableProxy = QSortFilterProxyModel()
-        # self.tableProxy.setSourceModel(self.tableModel)
-        # self.tableProxy.setFilterKeyColumn(1)
-        self.tableView.setModel(self.tableModel)
+
+        # create filter proxy & assign it to view
+        self.tableProxy = QSortFilterProxyModel()
+        self.tableProxy.setSourceModel(self.tableModel)
+        self.tableProxy.setFilterKeyColumn(1)
+        self.tableView.setModel(self.tableProxy)
 
         # set properties of view's columns
         for idx, column in enumerate(self._columns):
@@ -124,6 +124,7 @@ class TabData(QWidget, Ui_TabData):
                 }
             )
         data = pd.DataFrame(data)
+        data['Size'] = data['Size'].astype(float)
         assert [c for c in data.columns] == [c.name for c in self._columns]
         return data
 
