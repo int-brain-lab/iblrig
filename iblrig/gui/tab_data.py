@@ -1,8 +1,9 @@
 import platform
 import subprocess
 from datetime import datetime
-from os import startfile
 from typing import NamedTuple
+if platform.system() == 'Windows':
+    from os import startfile
 
 import pandas as pd
 from PyQt5.Qt import pyqtSlot
