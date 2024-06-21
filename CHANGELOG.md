@@ -2,8 +2,9 @@ Changelog
 =========
 
 
-8.19.7
+8.20.0
 ------
+* tab for displaying local sessions and their respective status
 * additional task parameters for passiveChoiceWorld
 
 8.19.6
