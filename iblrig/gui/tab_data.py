@@ -1,13 +1,11 @@
 import platform
 import subprocess
 from datetime import datetime
-from pathlib import Path
-from typing import NamedTuple, Any
+from typing import NamedTuple
 
 import pandas as pd
 from PyQt5.Qt import pyqtSlot
 from PyQt5.QtCore import (
-    QAbstractTableModel,
     QDateTime,
     QModelIndex,
     QRegExp,
@@ -15,12 +13,11 @@ from PyQt5.QtCore import (
     QSortFilterProxyModel,
     Qt,
     QThread,
-    QThreadPool,
     pyqtSignal,
 )
 from PyQt5.QtWidgets import QHeaderView, QStyledItemDelegate, QWidget
 
-from iblrig.gui.tools import DataFrameTableModel, Worker
+from iblrig.gui.tools import DataFrameTableModel
 from iblrig.gui.ui_tab_data import Ui_TabData
 from iblrig.path_helper import get_local_and_remote_paths
 from iblrig.transfer_experiments import CopyState, SessionCopier
