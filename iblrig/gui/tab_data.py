@@ -1,7 +1,8 @@
 import platform
 import subprocess
 from datetime import datetime
-from typing import NamedTuple
+from pathlib import Path
+from typing import NamedTuple, Any
 
 import pandas as pd
 from PyQt5.Qt import pyqtSlot
@@ -51,15 +52,15 @@ class Column(NamedTuple):
     name: str
     hidden: bool = False
     resizeMode: QHeaderView.ResizeMode = QHeaderView.Fixed
-    sectionWidth: int = 120
+    sectionWidth: int = 130
 
 
 COLUMNS = (
     Column(name='Directory', hidden=True),
     Column(name='Subject', resizeMode=QHeaderView.Stretch),
     Column(name='Date'),
-    Column(name='Copy Status'),
-    Column(name='Size', sectionWidth=60),
+    Column(name='Copy Status', sectionWidth=100),
+    Column(name='Size', sectionWidth=75),
 )
 
 
@@ -77,8 +78,7 @@ class TabData(QWidget, Ui_TabData):
         super().__init__(*args, **kwargs)
         self.setupUi(self)
         self.settings = QSettings()
-        self._localSubjectsPath = get_local_and_remote_paths().local_subjects_folder
-        self._sessionStatesThread = None
+        self.localSubjectsPath = get_local_and_remote_paths().local_subjects_folder
 
         # create empty DataFrameTableModel
         data = pd.DataFrame(None, index=[], columns=[c.name for c in COLUMNS])
@@ -106,10 +106,17 @@ class TabData(QWidget, Ui_TabData):
             self.settings.value('sortOrder', Qt.AscendingOrder, Qt.SortOrder),
         )
 
+        # define worker for assembling data
+        self.dataWorker = DataWorker(self)
+
         # connect signals to slots
+        self.dataWorker.initialized.connect(self.tableModel.setDataFrame)
+        self.dataWorker.update.connect(self.tableModel.setData)
+        self.dataWorker.started.connect(lambda: self.pushButtonUpdate.setEnabled(False))
+        self.dataWorker.lazyLoadComplete.connect(lambda: self.pushButtonUpdate.setEnabled(True))
         self.tableView.doubleClicked.connect(self._openDir)
         self.tableView.horizontalHeader().sectionClicked.connect(self._storeSort)
-        self.pushButtonUpdate.clicked.connect(self._initializeData)
+        self.pushButtonUpdate.clicked.connect(self.dataWorker.start)
         self.lineEditFilter.textChanged.connect(self._filter)
 
     @pyqtSlot(str)
@@ -118,49 +125,9 @@ class TabData(QWidget, Ui_TabData):
 
     def showEvent(self, a0):
         if self.tableModel.rowCount() == 0:
-            self._initializeData()
+            self.dataWorker.start()
 
-    def _initializeData(self):
-        worker = Worker(self._initializeDataJob)
-        worker.signals.result.connect(self._onUpdateDataResult)
-        QThreadPool.globalInstance().start(worker)
-
-    def _initializeDataJob(self):
-        data = []
-        for session_dir in (d for d in self._localSubjectsPath.glob(SESSIONS_GLOB) if d.is_dir()):
-            subject = session_dir.parents[1].name
-            size = float(dir_size(session_dir))  # save as float as int seems to cause issues with sorting
-            # copy_state = SessionCopier(session_dir).state
-            # copy_state_string = COPY_STATE_STRINGS.get(copy_state, 'N/A')
-
-            # try to get folder creation time (cross-check with date-string of directory)
-            date = datetime.strptime(session_dir.parent.name, '%Y-%m-%d')
-            time = datetime.fromtimestamp(session_dir.stat().st_ctime)
-            date = time if time.date() == date.date() else date
-            date = QDateTime.fromTime_t(int(date.timestamp()))
-
-            data.append(
-                {
-                    'Directory': session_dir,
-                    'Subject': subject,
-                    'Date': date,
-                    'Copy Status': '',
-                    'Size': size,
-                }
-            )
-        data = pd.DataFrame(data)
-        assert [c for c in data.columns] == [c.name for c in COLUMNS]
-        return data
-
-    def _onUpdateDataResult(self, data: pd.DataFrame):
-        self.tableModel.setDataFrame(data)
-        self._sessionStatesThread = SessionStatesWorker(self.tableModel)
-        self._sessionStatesThread.update.connect(self._updateTableModel)
-        self._sessionStatesThread.start()
-
-    def _updateTableModel(self, index: QModelIndex, state: str):
-        self.tableModel.setData(index, state)
-
+    @pyqtSlot(QModelIndex)
     def _openDir(self, index: QModelIndex):
         directory = self.tableView.model().itemData(index.siblingAtColumn(0))[0]
         if platform.system() == 'Windows':
@@ -176,19 +143,47 @@ class TabData(QWidget, Ui_TabData):
         self.settings.setValue('sortOrder', self.tableView.horizontalHeader().sortIndicatorOrder())
 
 
-class SessionStatesWorker(QThread):
-    update = pyqtSignal(QModelIndex, str)
+class DataWorker(QThread):
+    initialized = pyqtSignal(pd.DataFrame)
+    update = pyqtSignal(QModelIndex, object)
+    lazyLoadComplete = pyqtSignal()
 
-    def __init__(self, model):
-        super().__init__()
-        self._model: QAbstractTableModel = model
+    def __init__(self, parent: TabData):
+        super().__init__(parent)
+        self.localSubjectsPath = parent.localSubjectsPath
+        self.tableModel = parent.tableModel
+        self.tableModel.modelReset.connect(self.lazyLoadStatus)
 
     def run(self):
-        self._model.headerData(0, Qt.Horizontal, Qt.DisplayRole)
-        for row in range(self._model.rowCount()):
-            index = self._model.index(row, [c.name for c in COLUMNS].index('Directory'))
-            directory = self._model.data(index, Qt.DisplayRole)
-            state = SessionCopier(directory).state
+        data = []
+        for session_dir in self.localSubjectsPath.glob(SESSIONS_GLOB):
+            # make sure we're dealing with a directory
+            if not session_dir.is_dir():
+                continue
+
+            # get folder creation time (cross-check with name of directory)
+            date = datetime.strptime(session_dir.parent.name, '%Y-%m-%d')
+            time = datetime.fromtimestamp(session_dir.stat().st_ctime)
+            date = time if time.date() == date.date() else date
+
+            # append data
+            data.append(
+                [
+                    session_dir,
+                    session_dir.parents[1].name,
+                    QDateTime.fromTime_t(int(date.timestamp())),
+                    '',  # will be lazy-loaded in a separate step
+                    float(dir_size(session_dir)),
+                ]
+            )
+        data = pd.DataFrame(data=data, columns=[c.name for c in COLUMNS])
+        self.initialized.emit(data)
+
+    def lazyLoadStatus(self):
+        col_status = self.tableModel.dataFrame.columns.get_loc('Copy Status')
+        for row, row_data in self.tableModel.dataFrame.iterrows():
+            state = SessionCopier(row_data['Directory']).state
             state = COPY_STATE_STRINGS.get(state, 'N/A')
-            index = self._model.index(row, [c.name for c in COLUMNS].index('Copy Status'))
+            index = self.tableModel.index(row, col_status)
             self.update.emit(index, state)
+        self.lazyLoadComplete.emit()
