@@ -54,7 +54,10 @@ class Ui_TabData(object):
     def retranslateUi(self, TabData):
         _translate = QtCore.QCoreApplication.translate
         TabData.setWindowTitle(_translate("TabData", "Form"))
+        self.tableView.setStatusTip(_translate("TabData", "Double-click a row to open the respective folder"))
+        self.lineEditFilter.setStatusTip(_translate("TabData", "Filter table by subject"))
         self.lineEditFilter.setPlaceholderText(_translate("TabData", "Filter by Subject"))
+        self.pushButtonUpdate.setStatusTip(_translate("TabData", "Update table"))
         self.pushButtonUpdate.setText(_translate("TabData", "Update"))
 
 

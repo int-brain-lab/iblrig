@@ -16,6 +16,9 @@
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <widget class="QTableView" name="tableView">
+     <property name="statusTip">
+      <string>Double-click a row to open the respective folder</string>
+     </property>
      <property name="editTriggers">
       <set>QAbstractItemView::NoEditTriggers</set>
      </property>
@@ -71,6 +74,9 @@
       </property>
       <item>
        <widget class="QLineEdit" name="lineEditFilter">
+        <property name="statusTip">
+         <string>Filter table by subject</string>
+        </property>
         <property name="placeholderText">
          <string>Filter by Subject</string>
         </property>
@@ -91,6 +97,9 @@
       </item>
       <item>
        <widget class="QPushButton" name="pushButtonUpdate">
+        <property name="statusTip">
+         <string>Update table</string>
+        </property>
         <property name="text">
          <string>Update</string>
         </property>
