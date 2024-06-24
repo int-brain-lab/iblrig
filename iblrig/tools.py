@@ -201,7 +201,10 @@ def _build_bonsai_cmd(
     debug: bool = False,
     bootstrap: bool = True,
     editor: bool = True,
-) -> list[str]:
+    wait: bool = True,
+    check: bool = False,
+    bonsai_executable: str | Path = None,
+) -> subprocess.Popen[bytes] | subprocess.Popen[str | bytes | Any] | subprocess.CompletedProcess:
     """
     Execute a Bonsai workflow within a subprocess call.
 
@@ -232,14 +235,15 @@ def _build_bonsai_cmd(
         If the Bonsai executable does not exist.
         If the specified workflow file does not exist.
     """
-    if not BONSAI_EXE.exists():
-        raise FileNotFoundError(BONSAI_EXE)
+    bonsai_executable = BONSAI_EXE if bonsai_executable is None else bonsai_executable
+    if not bonsai_executable.exists():
+        raise FileNotFoundError(bonsai_executable)
     workflow_file = Path(workflow_file)
     if not workflow_file.exists():
         raise FileNotFoundError(workflow_file)
     create_bonsai_layout_from_template(workflow_file)
 
-    cmd = [str(BONSAI_EXE), str(workflow_file)]
+    cmd = [str(bonsai_executable), str(workflow_file)]
     if start:
         cmd.append('--start' if debug else '--start-no-debug')
     if not editor:

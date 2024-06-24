@@ -22,14 +22,15 @@ def start_workflow(debug: bool = False):
     folder_neurophotometrics = dict_paths['local_data_folder'].joinpath('neurophotometrics', datestr, timestr)
     _logger.info(f'Creating folder for neurophotometrics data: {folder_neurophotometrics}')
     bonsai_params = {
-        'FilenamePhotometry': str(folder_neurophotometrics.joinpath('raw_photometry.csv')),
-        'FilenameDO0': str(folder_neurophotometrics.joinpath('bonsai_DO0.csv')),
-        'FilenameDO1': str(folder_neurophotometrics.joinpath('bonsai_DO1.csv')),
-        'FilenameDI0': str(folder_neurophotometrics.joinpath('bonsai_DI0.csv')),
+        'FileNamePhotometry': str(folder_neurophotometrics.joinpath('raw_photometry.csv')),
     }
     hardware_settings = iblrig.path_helper.load_pydantic_yaml(HardwareSettings)
-    workflow_file = Path(iblrig.__file__).parents[1].joinpath(hardware_settings['device_neurophotometrics']['BONSAI_WORKFLOW'])
-    call_bonsai(workflow_file, debug=debug, parameters=bonsai_params)
+    # workflow_file = Path(iblrig.__file__).parents[1].joinpath(hardware_settings['device_neurophotometrics']['BONSAI_WORKFLOW'])
+    call_bonsai(
+        workflow_file=Path(iblrig.__file__).parents[1].joinpath('devices', 'neurophotometrics', 'FP3002.bonsai'),
+        parameters=bonsai_params,
+        bonsai_executable=Path(r"C:\Users\IBLuser\AppData\Local\Bonsai\Bonsai.exe"),
+    )
 
 
 def init_neurophotometrics_session():
