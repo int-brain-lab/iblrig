@@ -6,6 +6,7 @@ Changelog
 ------
 * tab for displaying local sessions and their respective status
 * additional task parameters for passiveChoiceWorld
+* work on making the GUI code more modular
 
 8.19.6
 ------
