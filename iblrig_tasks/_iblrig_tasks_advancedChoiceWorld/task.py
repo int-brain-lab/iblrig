@@ -47,7 +47,7 @@ class Session(ActiveChoiceWorldSession):
         # it is easier to work with parameters as a dataframe
         self.df_contingencies = pd.DataFrame(columns=['contrast', 'probability', 'reward_amount_ul', 'position'])
         self.df_contingencies['contrast'] = contrast_set
-        self.df_contingencies['probability'] = probability_set if len(probability_set) == nc else probability_set[0]
+        self.df_contingencies['probability'] = np.float64(probability_set if len(probability_set) == nc else probability_set[0])
         self.df_contingencies['reward_amount_ul'] = reward_set_ul if len(reward_set_ul) == nc else reward_set_ul[0]
         self.df_contingencies['position'] = position_set
         # normalize the probabilities

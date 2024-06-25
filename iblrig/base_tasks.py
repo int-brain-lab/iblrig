@@ -22,6 +22,7 @@ from collections.abc import Callable
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 import scipy.interpolate
 import serial
 import yaml
@@ -732,7 +733,9 @@ class BonsaiVisualStimulusMixin(BaseSession):
             'Stim.ReceptiveFieldMappingStim.MappingTime': map_time,
             'Stim.ReceptiveFieldMappingStim.Rate': rate,
         }
-        log.info('Starting spontaneous activity and RF mapping stims')
+        map_seconds = pd.to_timedelta(map_time).seconds
+        sa_seconds = pd.to_timedelta(sa_time).seconds
+        log.info(f'Starting spontaneous activity ({sa_seconds} s) and RF mapping stims ({map_seconds} s)')
         s = call_bonsai(workflow_file, parameters, editor=False)
         log.info('Spontaneous activity and RF mapping stims finished')
         return s

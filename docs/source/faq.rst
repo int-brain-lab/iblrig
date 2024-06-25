@@ -75,6 +75,23 @@ session? To redefine the default position and size of the Bonsai visualizer:
 #. Save the workflow.
 
 
+Camera Issues
+=============
+
+*  If a camera is not detected by the computer or causes intermittent issues it might be an issue with the USB connection.
+
+   *  Ensure that the camera is connected to the computer on a USB3 port (usually indicated by a blue plastic tab in the port).
+      USB2 (black tabs) neither provides the necessary transfer rates nor sufficient current to power the camera.
+   *  Use the `original USB3.1 cable <https://www.flir.com/products/usb-3.1-locking-cable>`_ provided by FLIR.
+      It comes in 3 m or 5 m - stick with the shorter version if possible.
+   *  Try to avoid USB extensions.
+      The original cable (see above) should be sufficiently long in most situations.
+   *  Ideally, use one of the onboard USB3 ports of your computer facing to the back of the machine.
+      Front-facing ports may not be able to provide enough power.
+   *  If you use a USB 3.1 Host Controller Card check if it requires additional powering through a SATA or Molex cable.
+      FLIR offers `a few models <https://www.flir.com/products/usb-3.1-host-controller-card>`_ that should work fine.
+
+
 Frame2TTL
 =========
 

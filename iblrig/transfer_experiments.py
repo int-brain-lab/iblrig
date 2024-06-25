@@ -6,6 +6,7 @@ import shutil
 import socket
 import traceback
 import uuid
+from enum import IntEnum
 from os.path import samestat
 from pathlib import Path
 
@@ -22,6 +23,14 @@ log = logging.getLogger(__name__)
 
 ES_CONTINUOUS = 0x80000000
 ES_SYSTEM_REQUIRED = 0x00000001
+
+
+class CopyState(IntEnum):
+    HARD_RESET = -1
+    NOT_REGISTERED = 0
+    PENDING = 1
+    COMPLETE = 2
+    FINALIZED = 3
 
 
 @sleepless
@@ -154,23 +163,23 @@ class SessionCopier:
         return earlier if the process can't be completed.
         :return:
         """
-        if self.state == -1:  # this case is not implemented automatically and corresponds to a hard reset
+        if self.state == CopyState.HARD_RESET:  # this case is not implemented automatically and corresponds to a hard reset
             log.info(f'{self.state}, {self.session_path}')
             shutil.rmtree(self.remote_session_path)
             self.initialize_experiment()
-        if self.state == 0:  # the session hasn't even been initialized: copy the stub to the remote
+        if self.state == CopyState.NOT_REGISTERED:  # the session hasn't even been initialized: copy the stub to the remote
             log.info(f'{self.state}, {self.session_path}')
             self.initialize_experiment()
-        if self.state == 1:  # the session is ready for copy
+        if self.state == CopyState.PENDING:  # the session is ready for copy
             log.info(f'{self.state}, {self.session_path}')
             self.copy_collections()
-        if self.state == 2:
+        if self.state == CopyState.COMPLETE:
             log.info(f'{self.state}, {self.session_path}')
             self.finalize_copy(number_of_expected_devices=number_of_expected_devices)
-        if self.state == 3:
+        if self.state == CopyState.FINALIZED:
             log.info(f'{self.state}, {self.session_path}')
 
-    def get_state(self):
+    def get_state(self) -> tuple[CopyState | None, str]:
         """
         Gets the current copier state.
         State 0: this device experiment has not been initialized for this device
@@ -182,18 +191,21 @@ class SessionCopier:
         if self.remote_subjects_folder is None or not self.remote_subjects_folder.exists():
             return None, f'Remote subjects folder {self.remote_subjects_folder} set to Null or unreachable'
         if not self.file_remote_experiment_description.exists():
-            return 0, f'Copy object not registered on server: {self.file_remote_experiment_description} does not exist'
+            return (
+                CopyState.NOT_REGISTERED,
+                f'Copy object not registered on server: {self.file_remote_experiment_description} does not exist',
+            )
         status_file = self.glob_file_remote_copy_status()
         if status_file is None:
             status_file = self.file_remote_experiment_description.with_suffix('.status_pending')
             status_file.touch()
             log.warning(f'{status_file} not found and created')
         if status_file.name.endswith('pending'):
-            return 1, f'Copy pending {self.file_remote_experiment_description}'
+            return CopyState.PENDING, f'Copy pending {self.file_remote_experiment_description}'
         elif status_file.name.endswith('complete'):
-            return 2, f'Copy complete {self.file_remote_experiment_description}'
+            return CopyState.COMPLETE, f'Copy complete {self.file_remote_experiment_description}'
         elif status_file.name.endswith('final'):
-            return 3, f'Copy finalized {self.file_remote_experiment_description}'
+            return CopyState.FINALIZED, f'Copy finalized {self.file_remote_experiment_description}'
 
     @property
     def experiment_description(self):

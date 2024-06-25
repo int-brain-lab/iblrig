@@ -1,13 +1,8 @@
-.. iblrig documentation master file, created by
-   sphinx-quickstart on Tue Jun 20 15:51:34 2023.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 IBLRIG documentation
 ====================
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
    :caption: Contents:
 
    installation
@@ -16,3 +11,8 @@ IBLRIG documentation
    hardware
    reference_developer_guide
    faq
+
+.. toctree::
+   :maxdepth: 1
+
+   changelog
