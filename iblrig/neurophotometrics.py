@@ -3,7 +3,7 @@ import datetime
 import logging
 from pathlib import Path
 
-from iblutil.util import setup_logger
+from iblutil.util import setup_logger, rrmdir
 import iblrig
 from iblrig.tools import call_bonsai
 import iblrig.path_helper
@@ -20,23 +20,44 @@ def start_workflow(debug: bool = False):
     timestr = datetime.datetime.now().strftime('T%H%M%S')
     dict_paths = iblrig.path_helper.get_local_and_remote_paths()
     folder_neurophotometrics = dict_paths['local_data_folder'].joinpath('neurophotometrics', datestr, timestr)
-    _logger.info(f'Creating folder for neurophotometrics data: {folder_neurophotometrics}')
     bonsai_params = {
         'FileNamePhotometry': str(folder_neurophotometrics.joinpath('raw_photometry.csv')),
+        'FileNameDigitalInput': str(folder_neurophotometrics.joinpath('digital_inputs.csv')),
+        'PortName': 'COM3'  # TODO: hardware settings
     }
+    _logger.info(f'Creating folder for neurophotometrics data: {folder_neurophotometrics}')
+    rrmdir(folder_neurophotometrics)
+    folder_neurophotometrics.mkdir(parents=True, exist_ok=True)
     hardware_settings = iblrig.path_helper.load_pydantic_yaml(HardwareSettings)
     # workflow_file = Path(iblrig.__file__).parents[1].joinpath(hardware_settings['device_neurophotometrics']['BONSAI_WORKFLOW'])
     call_bonsai(
-        workflow_file=Path(iblrig.__file__).parents[1].joinpath('devices', 'neurophotometrics', 'FP3002.bonsai'),
+        workflow_file=Path(iblrig.__file__).parents[1].joinpath('devices', 'neurophotometrics', 'FP3002_digital_inputs.bonsai'),
         parameters=bonsai_params,
-        bonsai_executable=Path(r"C:\Users\IBLuser\AppData\Local\Bonsai\Bonsai.exe"),
+        bonsai_executable=Path(r"C:\Users\IBLuser\AppData\Local\Bonsai\Bonsai.exe"), # TODO: hardware settings
+        start=False,
     )
-
+    rrmdir(folder_neurophotometrics)
+    # TODO we call the init sessions here
 
 def init_neurophotometrics_session():
     # TODO this needs to link the session (subject/date/number) to a photometry recording
+    # this means 
+    # 1) link from one session to possibly several regions (ie. columns of the datafile)
+    # 2) link one session to a digital input number
+    # we use a single entry point for both modes of acquisition (ie. with or without a daq)
+
+    # first read in the columns name from the photometry file
+    # then locate the sessions acquired from the same day on the local server
+    # for the case without a DAQ
+    #   at last the digital input is hardcoded from input1 input0
+    # for the case with a DAQ
+    #   we need a hardware setting linking the rig name to a daq channel
+    #   we get the rig name from the stub file on the server / UDP or ask for it in the GUI
+
     # copier = NeurophotometricsCopier(session_path=session_path, remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER)
     # copier.initialize_experiment(acquisition_description=copier.config2stub(config, raw_data_folder.name))
+    
+
     pass
 
 
