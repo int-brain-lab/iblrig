@@ -55,6 +55,18 @@ Supplementary Controls
    We are happy to discuss possible changes with you!
 
 
+Interfacing with Alyx
+---------------------
+
+Although this is not mandatory, the IBLRIG GUI is designed to interface with `Alyx <https://github.com/cortex-lab/alyx>`_, the International Brain Laboratory's database.
+This feature allows users to access their subjects and projects directly from the GUI, without the need to manually enter this information.
+
+To enable this feature, you must have an Alyx account and have configured your database URL and credentials as mentioned  :doc:`installation`.
+
+- The *subjects* available are the set of alyx subjects that are alive, not stock, and belong to the lab defined in the `iblrig_settings.py` file.
+- The *projects* available are the set of projects of which the current user is a participant. Login to Alyx > Subjects > Projects to check your projects.
+
+
 The Command Line Interface
 --------------------------
 
