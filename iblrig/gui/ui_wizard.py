@@ -68,7 +68,7 @@ class Ui_wizard(object):
         self.horizontalLayout_4 = QtWidgets.QHBoxLayout(self.widget_2)
         self.horizontalLayout_4.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout_4.setObjectName("horizontalLayout_4")
-        self.uiLineEditUser = QtWidgets.QLineEdit(self.widget_2)
+        self.uiLineEditUser = LineEditAlyxUser(self.widget_2)
         self.uiLineEditUser.setObjectName("uiLineEditUser")
         self.horizontalLayout_4.addWidget(self.uiLineEditUser)
         self.uiPushButtonLogIn = QtWidgets.QPushButton(self.widget_2)
@@ -203,7 +203,7 @@ class Ui_wizard(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setObjectName("scrollArea")
         self.uiGroupTaskParameters = QtWidgets.QWidget()
-        self.uiGroupTaskParameters.setGeometry(QtCore.QRect(0, 0, 357, 161))
+        self.uiGroupTaskParameters.setGeometry(QtCore.QRect(0, 0, 339, 110))
         self.uiGroupTaskParameters.setObjectName("uiGroupTaskParameters")
         self.formLayout_2 = QtWidgets.QFormLayout(self.uiGroupTaskParameters)
         self.formLayout_2.setObjectName("formLayout_2")
@@ -284,7 +284,7 @@ class Ui_wizard(object):
         self.statusbar.setObjectName("statusbar")
         wizard.setStatusBar(self.statusbar)
         self.uiMenuBar = QtWidgets.QMenuBar(wizard)
-        self.uiMenuBar.setGeometry(QtCore.QRect(0, 0, 450, 21))
+        self.uiMenuBar.setGeometry(QtCore.QRect(0, 0, 450, 24))
         self.uiMenuBar.setObjectName("uiMenuBar")
         self.uiMenuTools = QtWidgets.QMenu(self.uiMenuBar)
         self.uiMenuTools.setObjectName("uiMenuTools")
@@ -352,6 +352,7 @@ class Ui_wizard(object):
         self.uiActionCalibrateFrame2ttl.setText(_translate("wizard", "Calibrate Frame2TTL"))
         self.uiActionCalibrateValve.setText(_translate("wizard", "Calibrate Valve"))
         self.uiActionValidateHardware.setText(_translate("wizard", "Validate System"))
+from iblrig.gui.tools import LineEditAlyxUser
 from iblrig.gui import resources_rc
 
 

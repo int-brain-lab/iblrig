@@ -329,12 +329,12 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.tabWidget.currentChanged.connect(self._on_switch_tab)
 
         # username
-        if self.model.iblrig_settings.ALYX_URL is not None:
-            self.uiLineEditUser.returnPressed.connect(lambda w=self.uiLineEditUser: self._log_in_or_out(username=w.text()))
-            self.uiPushButtonLogIn.released.connect(lambda w=self.uiLineEditUser: self._log_in_or_out(username=w.text()))
-        else:
-            self.uiLineEditUser.setPlaceholderText('')
-            self.uiPushButtonLogIn.setEnabled(False)
+        # if self.model.iblrig_settings.ALYX_URL is not None:
+        #     self.uiLineEditUser.returnPressed.connect(lambda w=self.uiLineEditUser: self._log_in_or_out(username=w.text()))
+        #     self.uiPushButtonLogIn.released.connect(lambda w=self.uiLineEditUser: self._log_in_or_out(username=w.text()))
+        # else:
+        #     self.uiLineEditUser.setPlaceholderText('')
+        #     self.uiPushButtonLogIn.setEnabled(False)
 
         # tools
         self.uiPushFlush.clicked.connect(self.flush)

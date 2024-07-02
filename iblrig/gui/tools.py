@@ -11,8 +11,9 @@ from typing import Any
 import numpy as np
 import pandas as pd
 from PyQt5 import QtGui
+from PyQt5.Qt import pyqtSlot
 from PyQt5.QtCore import QAbstractTableModel, QModelIndex, QObject, QRunnable, Qt, QThreadPool, QVariant, pyqtProperty, pyqtSignal
-from PyQt5.QtWidgets import QProgressBar
+from PyQt5.QtWidgets import QProgressBar, QLineEdit, QAction
 
 from iblrig.constants import BASE_PATH
 from iblutil.util import dir_size
@@ -341,3 +342,37 @@ class DataFrameTableModel(QAbstractTableModel):
             col = self._dataFrame.columns[index.column()]
             self._dataFrame.at[row, col] = value
             self.dataChanged.emit(index, index, [role])
+
+
+class LineEditAlyxUser(QLineEdit):
+    loggedIn = pyqtSignal(str)
+    loggedOut = pyqtSignal()
+
+
+    def __init__(self, *args, alyxURL: str | None = None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.logInAction = self.addAction(AlyxAction,
+                                          self.ActionPosition.TrailingPosition)
+        self.logInAction.setVisible(False)
+        self.returnPressed.connect(self.logIn)
+
+    @pyqtSlot()
+    def logIn(self):
+        print('log in')
+        self.logInAction.setIcon(QtGui.QIcon(':/images/check'))
+        self.setReadOnly(True)
+
+    @pyqtSlot()
+    def logOut(self):
+        self.setText('')
+        self.setReadOnly(False)
+        self.logInAction.setIcon(QtGui.QIcon.isNull())
+        pass
+
+    @property
+    def loggedIn(self) -> bool:
+        return True
+
+
+class AlyxAction(QAction):
+    pass

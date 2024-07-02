@@ -146,7 +146,7 @@
                <number>0</number>
               </property>
               <item>
-               <widget class="QLineEdit" name="uiLineEditUser">
+               <widget class="LineEditAlyxUser" name="uiLineEditUser">
                 <property name="statusTip">
                  <string>Enter your user name</string>
                 </property>
@@ -529,8 +529,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>357</width>
-                <height>161</height>
+                <width>339</width>
+                <height>110</height>
                </rect>
               </property>
               <layout class="QFormLayout" name="formLayout_2"/>
@@ -704,7 +704,7 @@
      <x>0</x>
      <y>0</y>
      <width>450</width>
-     <height>21</height>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="uiMenuTools">
@@ -739,6 +739,13 @@
    </property>
   </action>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>LineEditAlyxUser</class>
+   <extends>QLineEdit</extends>
+   <header>iblrig.gui.tools</header>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="resources.qrc"/>
  </resources>
