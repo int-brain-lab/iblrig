@@ -702,7 +702,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                     widget.editingFinished.emit()
 
             # create widget for list of floats
-            elif isinstance(arg, float) and arg.nargs == '+':
+            elif arg.type is float and arg.nargs == '+':
                 widget = QtWidgets.QLineEdit()
                 if arg.default:
                     widget.setText(str(arg.default)[1:-1])
@@ -712,8 +712,8 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 widget.editingFinished.emit()
 
             # create widget for numerical arguments
-            elif isinstance(arg, float | int):
-                if isinstance(arg, float):
+            elif arg.type in [float, int]:
+                if arg.type is float:
                     widget = QtWidgets.QDoubleSpinBox()
                     widget.setDecimals(1)
                 else:
