@@ -35,26 +35,18 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - name: Set up PDM
+        uses: pdm-project/setup-pdm@v4
         with:
           python-version: ${{ matrix.python-version }}
-          cache: 'pip'
-          cache-dependency-path: 'pyproject.toml'
-
-      - name: install requirements
-        shell: bash -l {0}
+      - name: Install requirements
         run: |
-          pip install --editable .[DEV]
-
+          pdm sync -d
       - name: Install audio library (Ubuntu only)
         if: matrix.os == 'ubuntu-latest'
         run: sudo apt-get install -y libportaudio2
-
       - name: iblrig unit tests
-        run: pytest
-
+        run: pdm run pytest
       - name: coveralls.io
         uses: coverallsapp/github-action@v2
         with:
@@ -62,15 +54,6 @@ jobs:
           parallel: true
           file: coverage.xml
           compare-ref: iblrigv8
-
-      - name: Generate requirements_frozen.txt
-        run: pip freeze > requirements_frozen.txt
-
-      - name: Store frozen requirements as artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: requirements_frozen
-          path: requirements_frozen.txt
 
   finish:
     needs: [ruff, tests]
