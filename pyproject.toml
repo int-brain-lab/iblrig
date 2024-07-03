@@ -42,6 +42,7 @@ DEV = [
     "pre-commit",
     "pytest",
     "pytest-cov",
+    "PyQt5-stubs",
     "ruff",
     "sphinx",
     "sphinx-autobuild",
