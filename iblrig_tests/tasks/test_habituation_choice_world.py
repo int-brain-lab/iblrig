@@ -2,8 +2,8 @@ import time
 
 import numpy as np
 
-from iblrig.test.base import TASK_KWARGS, BaseTestCases
 from iblrig_tasks._iblrig_tasks_habituationChoiceWorld.task import Session as HabituationChoiceWorldSession
+from iblrig_tests.base import TASK_KWARGS, BaseTestCases
 
 
 class TestInstantiateHabituationChoiceWorld(BaseTestCases.CommonTestInstantiateTask):

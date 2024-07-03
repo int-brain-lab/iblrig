@@ -10,6 +10,7 @@ import yaml
 from scipy import stats
 
 from iblrig import misc
+from iblrig.constants import BASE_PATH, SETTINGS_PATH
 from iblrig.misc import online_std
 from settings.port_settings import main  # FIXME This is not a module
 
@@ -58,9 +59,9 @@ class TestPortSettings(unittest.TestCase):
         self.v7.mkdir()
         self.v8 = Path(self.temp.name).joinpath('iblrigv8', 'settings')
         self.v8.mkdir(parents=True)
-        for template in Path(misc.__file__).parent.parent.glob('settings/*_template.yaml'):
+        for template in SETTINGS_PATH.glob('*_template.yaml'):
             shutil.copy(template, self.v8 / template.name)
-        settings_fixture = Path(misc.__file__).parent.joinpath('test', 'fixtures', 'iblrig_params.json')
+        settings_fixture = BASE_PATH.joinpath('iblrig_tests', 'fixtures', 'iblrig_params.json')
         with open(settings_fixture) as fp:
             self.v7_settings = json.load(fp)
         with open(self.v7 / '.iblrig_params.json', 'w') as fp:

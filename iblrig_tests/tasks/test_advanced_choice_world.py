@@ -3,9 +3,9 @@ from unittest import TestCase
 import numpy as np
 import pandas as pd
 
-from iblrig.test.base import TASK_KWARGS, BaseTestCases
-from iblrig.test.tasks.test_biased_choice_world_family import get_fixtures
 from iblrig_tasks._iblrig_tasks_advancedChoiceWorld.task import Session as AdvancedChoiceWorldSession
+from iblrig_tests.base import TASK_KWARGS, BaseTestCases
+from iblrig_tests.tasks.test_biased_choice_world_family import get_fixtures
 
 
 class TestDefaultParameters(TestCase):

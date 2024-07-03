@@ -12,9 +12,9 @@ import iblrig.raw_data_loaders
 from ibllib.io import session_params
 from ibllib.tests.fixtures.utils import populate_raw_spikeglx
 from iblrig.path_helper import HardwareSettings, load_pydantic_yaml
-from iblrig.test.base import TASK_KWARGS
 from iblrig.transfer_experiments import BehaviorCopier, EphysCopier, SessionCopier, VideoCopier
 from iblrig_tasks._iblrig_tasks_trainingChoiceWorld.task import Session
+from iblrig_tests.base import TASK_KWARGS
 
 
 def _create_behavior_session(ntrials=None, hard_crash=False, kwargs=None):

@@ -5,11 +5,11 @@ import numpy as np
 import pandas as pd
 
 from iblrig.raw_data_loaders import load_task_jsonable
-from iblrig.test.base import PATH_FIXTURES, TASK_KWARGS, BaseTestCases, IntegrationFullRuns
 from iblrig_tasks._iblrig_tasks_biasedChoiceWorld.task import Session as BiasedChoiceWorldSession
 from iblrig_tasks._iblrig_tasks_ephysChoiceWorld.task import Session as EphysChoiceWorldSession
 from iblrig_tasks._iblrig_tasks_ImagingChoiceWorld.task import Session as ImagingChoiceWorldSession
 from iblrig_tasks._iblrig_tasks_neuroModulatorChoiceWorld.task import Session as NeuroModulatorChoiceWorldSession
+from iblrig_tests.base import PATH_FIXTURES, TASK_KWARGS, BaseTestCases, IntegrationFullRuns
 
 
 class TestInstantiationBiased(BaseTestCases.CommonTestInstantiateTask):

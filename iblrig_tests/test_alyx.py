@@ -10,9 +10,9 @@ from pathlib import Path
 from unittest.mock import patch
 
 from iblrig import __version__
-from iblrig.test.base import TASK_KWARGS
 from iblrig_tasks._iblrig_tasks_trainingChoiceWorld.task import Session as TrainingChoiceWorldSession
 from one.api import ONE
+from iblrig_tests.base import TASK_KWARGS
 
 TEST_DB = {
     'base_url': 'https://test.alyx.internationalbrainlab.org',

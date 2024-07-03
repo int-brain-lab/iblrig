@@ -1,5 +1,5 @@
-from iblrig.test.base import IntegrationFullRuns
 from iblrig_tasks._iblrig_tasks_spontaneous.task import Session as SpontaneousSession
+from iblrig_tests.base import IntegrationFullRuns
 
 
 class Spontaneous(IntegrationFullRuns):

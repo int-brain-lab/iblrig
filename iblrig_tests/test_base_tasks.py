@@ -22,7 +22,7 @@ from iblrig.base_tasks import BaseSession, BonsaiRecordingMixin
 from iblrig.misc import _get_task_argument_parser, _post_parse_arguments
 from iblrig.path_helper import load_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings
-from iblrig.test.base import TASK_KWARGS
+from iblrig_tests.base import TASK_KWARGS
 
 
 class EmptyHardwareSession(BaseSession):

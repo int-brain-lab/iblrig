@@ -1,10 +1,10 @@
 import numpy as np
 import pandas as pd
 
-from iblrig.test.base import TASK_KWARGS, BaseTestCases
-from iblrig.test.tasks.test_biased_choice_world_family import get_fixtures
 from iblrig_tasks._iblrig_tasks_trainingChoiceWorld.task import Session as TrainingChoiceWorldSession
 from iblrig_tasks._iblrig_tasks_trainingPhaseChoiceWorld.task import Session as TrainingPhaseChoiceWorldSession
+from iblrig_tests.base import TASK_KWARGS, BaseTestCases
+from iblrig_tests.tasks.test_biased_choice_world_family import get_fixtures
 
 
 class TestTrainingPhaseChoiceWorld(BaseTestCases.CommonTestInstantiateTask):

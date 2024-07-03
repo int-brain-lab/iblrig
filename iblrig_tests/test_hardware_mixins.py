@@ -19,7 +19,7 @@ from iblrig.base_tasks import (
     ValveMixin,
 )
 from iblrig.hardware import SOFTCODE
-from iblrig.test.base import TASK_KWARGS
+from iblrig_tests.base import TASK_KWARGS
 
 
 class EmptyHardwareSession(BaseSession):
