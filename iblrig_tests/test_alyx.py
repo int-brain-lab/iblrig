@@ -11,8 +11,8 @@ from unittest.mock import patch
 
 from iblrig import __version__
 from iblrig_tasks._iblrig_tasks_trainingChoiceWorld.task import Session as TrainingChoiceWorldSession
-from one.api import ONE
 from iblrig_tests.base import TASK_KWARGS
+from one.api import ONE
 
 TEST_DB = {
     'base_url': 'https://test.alyx.internationalbrainlab.org',
