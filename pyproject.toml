@@ -16,7 +16,7 @@ dependencies = [
     "PyYAML",
     "colorlog",
     "graphviz",
-    "ibllib@git+https://github.com/int-brain-lab/ibllib.git",
+    "ibllib >= 2.37.0",
     "iblpybpod@git+https://github.com/int-brain-lab/iblpybpod.git@no-gui",
     "iblscripts@git+https://github.com/int-brain-lab/iblscripts.git",
     "iblutil >= 1.10.0",
