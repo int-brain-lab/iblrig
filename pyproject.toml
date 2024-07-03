@@ -11,9 +11,11 @@ requires-python = "==3.10.*"
 license = { file = "LICENSE" }
 readme = "README.md"
 dependencies = [
+    "PyQt5==5.15.10",  # PINNED!
+    "PyQt5-Qt5==5.15.2",  # PINNED!
+    "PyQtWebEngine==5.15.6",  # PINNED!
+    "PyQtWebEngine-Qt5==5.15.2",  # PINNED!
     "ONE-api>=2.8.0",
-    "PyQt5>=5.15",
-    "PyQtWebEngine>=5.15",
     "PyYAML>=6.0.1",
     "colorlog>=6.8.2",
     "graphviz>=0.20.3",
@@ -30,7 +32,6 @@ dependencies = [
     "pyqtgraph>=0.13.7",
     "python-osc>=1.8.3",
     "pyusb>=1.2.1",
-    "pywin32; sys_platform == 'win32'",
     "scipy>=1.14.0",
     "sounddevice>=0.4.7",
 ]
