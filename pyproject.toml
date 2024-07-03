@@ -59,7 +59,7 @@ path = 'iblrig/__init__.py'
 
 [tool.pdm.build]
 excludes = [ "docs/build" ]
-source-includes = [ "docs/", "tests/" ]
+source-includes = [ "docs/", "iblrig_tests/" ]
 
 [tool.pdm.dev-dependencies]
 dev = [
@@ -85,7 +85,7 @@ ignore_missing_imports = true
 [tool.pytest.ini_options]
 addopts    = "-ra --showlocals --cov=iblrig --cov=iblrig_tasks --cov-report=html --cov-report=xml --tb=short"
 minversion = "6.0"
-testpaths  = [ "tests" ]
+testpaths  = [ "iblrig_tests" ]
 filterwarnings = [ "ignore::DeprecationWarning:nptyping.*" ]
 
 [tool.ruff]
