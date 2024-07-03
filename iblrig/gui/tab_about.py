@@ -25,10 +25,10 @@ class TabAbout(QWidget, Ui_TabAbout):
         self.commandLinkButtonDiscussion.clicked.connect(lambda: webbrowser.open(URL_DISCUSSION))
 
         # try to obtain AnyDesk ID
-        anydesk_worker = Worker(get_anydesk_id, silent=True)
-        anydesk_worker.signals.result.connect(self._on_get_anydesk_result)
-        QThreadPool.globalInstance().tryStart(anydesk_worker)
+        worker = Worker(get_anydesk_id, silent=True)
+        worker.signals.result.connect(self.onGetAnydeskResult)
+        QThreadPool.globalInstance().tryStart(worker)
 
-    def _on_get_anydesk_result(self, result: str | None) -> None:
+    def onGetAnydeskResult(self, result: str | None) -> None:
         if result is not None:
             self.uiLabelAnyDesk.setText(f'Your AnyDesk ID: {result}')
