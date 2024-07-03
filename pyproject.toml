@@ -7,7 +7,7 @@ name = "iblrig"
 description = "The International Brain Laboratory's decision making task"
 dynamic = [ "version" ]
 keywords = [ "IBL", "neuro-science" ]
-requires-python = "~=3.10"
+requires-python = "==3.10.*"
 license = { file = "LICENSE" }
 readme = "README.md"
 dependencies = [
