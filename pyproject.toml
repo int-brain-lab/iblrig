@@ -43,7 +43,7 @@ DEV = [
     "pytest",
     "pytest-cov",
     "PyQt5-stubs",
-    "ruff",
+    "ruff >= 0.5.0",
     "sphinx",
     "sphinx-autobuild",
     "sphinx_lesson",

@@ -371,7 +371,7 @@ def create_bonsai_layout_from_template(workflow_file: Path) -> None:
         If the provided workflow_file does not exist.
     """
     if not workflow_file.exists():
-        FileNotFoundError(workflow_file)
+        raise FileNotFoundError(workflow_file)
     if not (layout_file := workflow_file.with_suffix('.bonsai.layout')).exists():
         template_file = workflow_file.with_suffix('.bonsai.layout_template')
         if template_file.exists():
