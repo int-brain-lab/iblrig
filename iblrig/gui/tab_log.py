@@ -16,46 +16,71 @@ class TabLog(QWidget, Ui_TabLog):
         self.plainTextEditLog.setFont(font)
 
         self.pushButtonClipboard.setEnabled(False)
-        self.pushButtonClipboard.clicked.connect(self._copy_to_clipboard)
+        self.pushButtonClipboard.clicked.connect(self.copyToClipboard)
 
-        self.spinBoxFontSize.valueChanged.connect(self._set_font_size)
+        self.spinBoxFontSize.valueChanged.connect(self.setFontSize)
         self.spinBoxFontSize.setValue(self.settings.value('font_size', 11, int))
 
     @pyqtSlot()
     def clear(self):
+        """Clear the log"""
         self.pushButtonClipboard.setEnabled(False)
         self.plainTextEditLog.clear()
 
     @pyqtSlot(str, str)
-    def append_text(self, text: str, color: str = 'White'):
+    def appendText(self, text: str, color: str = 'White'):
+        """
+        Append text to the log.
+
+        Parameters
+        ----------
+        text : str
+            The text to append.
+        color : str, optional
+            The color of the text. Should be a valid color name recognized by
+            QtGui.QColorConstants. Defaults to 'White'.
+
+        Returns
+        -------
+
+        """
         self.pushButtonClipboard.setEnabled(True)
-        self.set_log_color(color)
+        self.setLogColor(color)
         self.plainTextEditLog.appendPlainText(text)
 
-    def set_log_color(self, color: str):
+    @pyqtSlot()
+    def copyToClipboard(self):
+        """Copy the log contents to the clipboard as a markdown code-block."""
+        text = f'"""\n{self.plainTextEditLog.toPlainText()}\n"""'
+        QApplication.clipboard().setText(text)
+
+    @pyqtSlot(int)
+    def setFontSize(self, fontSize: int):
+        """
+        Set the font size of the log-widget's contents.
+
+        Parameters
+        ----------
+        fontSize : int
+            Font size of the log-widget's contents in points.
+        """
+        font = self.plainTextEditLog.font()
+        font.setPointSize(fontSize)
+        self.plainTextEditLog.setFont(font)
+        self.settings.setValue('font_size', fontSize)
+
+    def setLogColor(self, colorName: str):
         """
         Set the foreground color of characters in the log widget.
 
         Parameters
         ----------
-        color : str, optional
+        colorName : str, optional
             The name of the color to set. Default is 'White'. Should be a valid color name
             recognized by QtGui.QColorConstants. If the provided color name is not found,
             it defaults to QtGui.QColorConstants.White.
         """
-        color = getattr(QColorConstants, color, QColorConstants.White)
+        color = getattr(QColorConstants, colorName, QColorConstants.White)
         char_format = self.plainTextEditLog.currentCharFormat()
         char_format.setForeground(QBrush(color))
         self.plainTextEditLog.setCurrentCharFormat(char_format)
-
-    def _copy_to_clipboard(self):
-        """Copies the log contents to the clipboard (as a markdown code-block)"""
-        text = f'"""\n{self.plainTextEditLog.toPlainText()}\n"""'
-        QApplication.clipboard().setText(text)
-
-    @pyqtSlot(int)
-    def _set_font_size(self, value: int):
-        font = self.plainTextEditLog.font()
-        font.setPointSize(value)
-        self.plainTextEditLog.setFont(font)
-        self.settings.setValue('font_size', value)
