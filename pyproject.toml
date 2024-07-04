@@ -1,60 +1,47 @@
 [build-system]
-requires      = [ "setuptools>=64", "wheel" ]
-build-backend = "setuptools.build_meta"
+requires      = ["pdm-backend"]
+build-backend = "pdm.backend"
 
 [project]
 name = "iblrig"
 description = "The International Brain Laboratory's decision making task"
-dynamic = [ "readme", "version" ]
+dynamic = [ "version" ]
 keywords = [ "IBL", "neuro-science" ]
-requires-python = "~=3.10"
+requires-python = "==3.10.*"
 license = { file = "LICENSE" }
+readme = "README.md"
 dependencies = [
-    "ONE-api",
-    "PyQt5",
-    "PyQtWebEngine",
-    "PyYAML",
-    "colorlog",
-    "graphviz",
-    "ibllib >= 2.37.0",
+    # PLEASE DO NOT ADD / UPDATE DEPENDENCIES MANUALLY.
+    # Instead, use `pdm add [package-name]` / `pdm update [package-name]`.
+    # This is to ensure that the lock-file is in sync with pyproject.toml
+    # See https://pdm-project.org/en/latest/usage/dependency/ for details.
+    "PyQt5>=5.15.10",
+    "PyQt5-Qt5==5.15.2",            # PINNED due to lack of windows bdist
+    "PyQtWebEngine>=5.15.6",
+    "PyQtWebEngine-Qt5==5.15.2",    # PINNED due to lack of windows bdist
+    "ONE-api>=2.8.0",
+    "PyYAML>=6.0.1",
+    "colorlog>=6.8.2",
+    "graphviz>=0.20.3",
+    "ibllib>=2.37.0",
     "iblpybpod@git+https://github.com/int-brain-lab/iblpybpod.git@no-gui",
     "iblscripts@git+https://github.com/int-brain-lab/iblscripts.git",
-    "iblutil >= 1.10.0",
-    "ipython",
-    "numpy",
-    "packaging",
-    "pandas",
+    "iblutil>=1.10.0",
+    "ipython>=8.26.0",
+    "numpy>=1.26.4",
+    "packaging>=24.1",
+    "pandas>=2.2.2",
     "project_extraction@git+https://github.com/int-brain-lab/project_extraction.git",
-    "pydantic",
-    "pyqtgraph",
-    "python-osc",
-    "pyusb",
-    "pywin32; sys_platform == 'win32'",
-    "scipy",
-    "sounddevice",
-]
-
-[project.optional-dependencies]
-DEV = [
-    "coverage[toml]",
-    "mypy",
-    "myst-parser",
-    "pre-commit",
-    "pytest",
-    "pytest-cov",
-    "PyQt5-stubs",
-    "ruff >= 0.5.0",
-    "sphinx",
-    "sphinx-autobuild",
-    "sphinx_lesson",
-    "sphinx_rtd_theme",
-    "types-PyYAML",
-    "types-requests",
-    "types-python-dateutil",
+    "pydantic>=2.8.0",
+    "pyqtgraph>=0.13.7",
+    "python-osc>=1.8.3",
+    "pyusb>=1.2.1",
+    "scipy>=1.14.0",
+    "sounddevice>=0.4.7",
 ]
 
 [project.scripts]
-view_session         = "iblrig.commands:view_session"
+view_session        = "iblrig.commands:view_session"
 transfer_data       = "iblrig.commands:transfer_data_cli"
 transfer_video_data = "iblrig.commands:transfer_video_data_cli"
 transfer_ephys_data = "iblrig.commands:transfer_ephys_data_cli"
@@ -70,15 +57,38 @@ convert_uis         = "iblrig.gui.tools:convert_uis"
 validate_iblrig     = "iblrig.hardware_validation:run_all_validators_cli"
 validate_video      = "iblrig.video:validate_video_cmd"
 
-[tool.setuptools.dynamic]
-readme  = { file = "README.md", content-type = "text/markdown" }
-version = { attr = "iblrig.__version__" }
+[tool.pdm.version]
+source = "file"
+path = 'iblrig/__init__.py'
 
-[tool.setuptools.packages]
-find = {}
+[tool.pdm.build]
+includes = [ "iblrig/[!test]**", "iblrig_tasks" ]
+excludes = [ "docs/build" ]
+source-includes = [ "docs", "iblrig/test" ]
 
+[tool.pdm.dev-dependencies]
+dev = [
+    # PLEASE DO NOT ADD / UPDATE DEV DEPENDENCIES MANUALLY.
+    # Instead, use `pdm add -d [package-name]` / `pdm update [package-name]`.
+    # This is to ensure that the lock-file is in sync with pyproject.toml
+    # See https://pdm-project.org/en/latest/usage/dependency/ for details.
+    "mypy>=1.10.1",
+    "myst-parser>=3.0.1",
+    "pre-commit>=3.7.1",
+    "pytest>=8.2.2",
+    "pytest-cov>=5.0.0",
+    "PyQt5-stubs>=5.15",
+    "ruff>=0.5.0",
+    "sphinx>=7.3.7",
+    "sphinx-autobuild>=2024.4.16",
+    "sphinx-lesson>=0.8.16",
+    "sphinx-rtd-theme>=2.0.0",
+    "types-PyYAML>=6.0.12.20240311",
+    "types-requests>=2.32.0.20240622",
+    "types-python-dateutil>=2.9.0.20240316",
+]
 [tool.mypy]
-files                  = [ "iblrig/**/*.py", "iblrig_tasks/**/*.py" ]
+files                  = [ "iblrig/[!test]**/*.py", "iblrig_tasks/**/*.py" ]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
