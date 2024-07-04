@@ -17,7 +17,7 @@ class TestInstantiatePassiveChoiceWorld(BaseTestCases.CommonTestInstantiateTask)
         with self.assertLogs('iblrig.task', 40):
             PassiveChoiceWorldSession(**kwargs, session_template_id=session_id)
         kwargs['hardware_settings']['MAIN_SYNC'] = False
-        with self.assertNotLogs('iblrig.task', 40):
+        with self.assertNoLogs('iblrig.task', 40):
             self.task = PassiveChoiceWorldSession(**kwargs, session_template_id=session_id)
         self.task.mock()
         assert np.unique(self.task.trials_table['session_id']) == [session_id]

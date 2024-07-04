@@ -2,6 +2,10 @@ Changelog
 =========
 
 
+8.20.1
+------
+* use PDM for managing requirements
+
 8.20.0
 ------
 * tab for displaying local sessions and their respective status
