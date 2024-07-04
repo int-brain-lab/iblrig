@@ -57,6 +57,7 @@ jobs:
       - name: Generate requirements_frozen.txt
         run: pdm export -o requirements_frozen.txt --no-hashes
       - name: Store frozen requirements as artifacts
+        if: matrix.os == 'ubuntu-latest'
         uses: actions/upload-artifact@v4
         with:
           name: requirements_frozen
