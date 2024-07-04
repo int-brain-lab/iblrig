@@ -62,9 +62,8 @@ source = "file"
 path = 'iblrig/__init__.py'
 
 [tool.pdm.build]
-includes = [ "iblrig/[!test]**", "iblrig_tasks" ]
-excludes = [ "docs/build" ]
 source-includes = [ "docs", "iblrig/test" ]
+excludes = [ "docs/build" ]
 
 [tool.pdm.dev-dependencies]
 dev = [
