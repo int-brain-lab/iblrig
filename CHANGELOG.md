@@ -317,5 +317,6 @@ Changelog
 8.9.0
 -----
 * major rework of the GUI
+* allow pausing between trials
 * task-specific settings
 * new dialogs for weight & droppings

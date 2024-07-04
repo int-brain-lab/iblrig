@@ -37,6 +37,8 @@ class Session(ChoiceWorldSession):
         assert duration_spontaneous < 60 * 60 * 24
         self.task_params['SPONTANEOUS_ACTIVITY_SECONDS'] = duration_spontaneous
         self.task_params['SKIP_EVENT_REPLAY'] = skip_event_replay
+        if self.hardware_settings['MAIN_SYNC']:
+            log.error('PassiveChoiceWorld extraction not supported for Bpod-only sessions!')
 
     @staticmethod
     def extra_parser():
