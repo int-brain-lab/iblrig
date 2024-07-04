@@ -1,7 +1,6 @@
 import logging
 
 import numpy as np
-from scipy.signal import chirp
 
 from pybpod_soundcard_module.module_api import DataType, SampleRate, SoundCardModule
 
