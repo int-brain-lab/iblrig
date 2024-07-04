@@ -114,6 +114,7 @@ class ChoiceWorldSession(
                 'stim_sigma': np.zeros(NTRIALS_INIT) * np.NaN,
                 'trial_correct': np.zeros(NTRIALS_INIT, dtype=bool),
                 'trial_num': np.zeros(NTRIALS_INIT, dtype=np.int16),
+                'pause_duration': np.zeros(NTRIALS_INIT, dtype=float),
             }
         )
 
@@ -184,27 +185,30 @@ class ChoiceWorldSession(
             log.debug('running state machine')
             self.bpod.run_state_machine(sma)  # Locks until state machine 'exit' is reached
             time_last_trial_end = time.time()
-            self.trial_completed(self.bpod.session.current_trial.export())
-            self.ambient_sensor_table.loc[i] = self.bpod.get_ambient_sensor_reading()
-            self.show_trial_log()
-
-            # handle pause and stop events
+            # handle pause event
             flag_pause = self.paths.SESSION_FOLDER.joinpath('.pause')
             flag_stop = self.paths.SESSION_FOLDER.joinpath('.stop')
             if flag_pause.exists() and i < (self.task_params.NTRIALS - 1):
                 log.info(f'Pausing session inbetween trials {i} and {i + 1}')
                 while flag_pause.exists() and not flag_stop.exists():
                     time.sleep(1)
+                self.trials_table.at[self.trial_num, 'pause_duration'] = time.time() - time_last_trial_end
                 if not flag_stop.exists():
                     log.info('Resuming session')
+            # save trial and update log
+            self.trial_completed(self.bpod.session.current_trial.export())
+            self.ambient_sensor_table.loc[i] = self.bpod.get_ambient_sensor_reading()
+            self.show_trial_log()
+
+            # handle stop event
             if flag_stop.exists():
-                log.info('Stopping session after trial {i}')
+                log.info('Stopping session after trial %d', i)
                 flag_stop.unlink()
                 break
 
     def mock(self, file_jsonable_fixture=None):
         """
-        This methods serves to instantiate a state machine and bpod object to simulate a taks run.
+        This methods serves to instantiate a state machine and bpod object to simulate a task's run.
         This is useful to test or display the state machine flow
         """
         super().mock()
@@ -430,13 +434,12 @@ class ChoiceWorldSession(
     def default_reward_amount(self):
         return self.task_params.REWARD_AMOUNT_UL
 
+    def draw_next_trial_info(self, pleft=0.5, contrast=None, position=None, reward_amount=None):
         """Draw next trial variables.
 
         calls :meth:`send_trial_info_to_bonsai`.
-        This is called by the `next_trial` method before updating the Bpod state machine. This also
+        This is called by the `next_trial` method before updating the Bpod state machine.
         """
-
-    def draw_next_trial_info(self, pleft=0.5, contrast=None, position=None, reward_amount=None):
         if contrast is None:
             contrast = misc.draw_contrast(self.task_params.CONTRAST_SET, self.task_params.CONTRAST_SET_PROBABILITY_TYPE)
         assert len(self.task_params.STIM_POSITIONS) == 2, 'Only two positions are supported'
