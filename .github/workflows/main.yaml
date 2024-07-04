@@ -55,7 +55,7 @@ jobs:
           file: coverage.xml
           compare-ref: iblrigv8
       - name: Generate requirements_frozen.txt
-        run: pdm export -o requirements_frozen --no-hashes
+        run: pdm export -o requirements_frozen.txt --no-hashes
       - name: Store frozen requirements as artifacts
         uses: actions/upload-artifact@v3
         with:
