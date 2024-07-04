@@ -41,8 +41,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: true
       - name: Install requirements
-        run: |
-          pdm sync -d
+        run: pdm sync -d
       - name: Install audio library (Ubuntu only)
         if: matrix.os == 'ubuntu-latest'
         run: sudo apt-get install -y libportaudio2
@@ -55,6 +54,13 @@ jobs:
           parallel: true
           file: coverage.xml
           compare-ref: iblrigv8
+      - name: Generate requirements_frozen.txt
+        run: pdm export -o requirements_frozen --no-hashes
+      - name: Store frozen requirements as artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: requirements_frozen
+          path: requirements_frozen.txt
 
   finish:
     needs: [ruff, tests]
