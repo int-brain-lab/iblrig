@@ -9,13 +9,13 @@ First Aid
 
 If your rig is acting up:
 
-*  Employ the **automated test-script** bundled with IBLRIG. This script helps identify common issues.
+*  Employ the **automated test-script** bundled with IBLRIG. This script helps identify common configuration issues.
    Execute it using PowerShell:
 
    .. code:: powershell
 
       C:\iblrigv8\venv\scripts\Activate.ps1
-      python C:\iblrigv8\scripts\hardware_validation\verify_hardware.py
+      validate_iblrig
 
 *  Check `the comprehensive user manual <https://doi.org/10.6084/m9.figshare.11634732.v6>`__ ("Appendix 3" on GoogleDrive).
    Verify if all connections are secure, and configurations align with the manual's guidelines.
@@ -80,3 +80,25 @@ Frame2TTL
 
 *  Version 1 of Frame2TTL won't be detected after restarting the computer.
    Unplugging and replugging the USB cable should make it responsive again.
+*  If IBLRIG complains about not receiving any TTL signals from Frame2TTL:
+
+   *  Ensure Frame2TTL's sensor is positioned over the bottom-right corner of the rig's screen.
+      Secure the sensor's cable to the screen mount with a zip-tie to prevent it from slipping off the screen.
+      Additionally, use a piece of electrical tape to hold the sensor in place.
+
+   *  Verify that the sensor is connected to Frame2TTL with the correct polarity
+
+      *  Version 1: GND = black cable, SIG = white cable
+      *  Version 2 and 3: BLK = black cable, WHT = white cable
+   *  Ensure that Frame2TTL's TTL Output is plugged into Bpod's TTL Input #1.
+      Note that versions 2 and 3 of Frame2TTL have a second BNC output labeled "analog" - this is *not* the TTL output.
+   *  Recalibrate Frame2TTL using the calibration routine in IBLRIG's Tools menu and check for any errors.
+
+*  If the above steps do not resolve the issue, try the following:
+
+   #. Swap out the BNC cable between Frame2TTL and Bpod.
+      Use a single cable without any branches.
+   #. Connect an oscilloscope to the Bpod end of the cable and run a calibration.
+      Look for a voltage step in Frame2TTL's output when the calibration routine switches from dark to light.
+   #. If you *do* see the change in the TTL signal, the Bpod might be faulty. Try using a different Bpod unit.
+   #. If you do *not* see the voltage step, the Frame2TTL might be faulty. Try using a different Frame2TTL unit.

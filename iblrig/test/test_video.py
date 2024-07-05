@@ -1,27 +1,33 @@
+import asyncio
 import sys
 import tempfile
 import unittest
-from datetime import timedelta
+from copy import deepcopy
+from datetime import date, timedelta
 from pathlib import Path
+from unittest import mock
 from unittest.mock import ANY, MagicMock, call, patch
 
 import numpy as np
 import yaml
 
+from iblutil.io import net
 from iblutil.util import Bunch
 
 """In order to mock iblrig.video_pyspin.enable_camera_trigger we must mock PySpin here."""
 sys.modules['PySpin'] = MagicMock()
 
 from iblrig import video  # noqa
+from iblrig.test.base import TASK_KWARGS
 from iblrig.path_helper import load_pydantic_yaml, HARDWARE_SETTINGS_YAML, RIG_SETTINGS_YAML  # noqa
 from iblrig.pydantic_definitions import HardwareSettings  # noqa
 
 
 class TestDownloadFunction(unittest.TestCase):
-    @patch('one.webclient.AlyxClient.download_file', return_value=('mocked_tmp_file', 'mocked_md5_checksum'))
+    @patch('iblrig.video.aws.s3_download_file', return_value=Path('mocked_tmp_file'))
+    @patch('iblrig.video.hashfile.md5', return_value='mocked_md5_checksum')
     @patch('os.rename', return_value=None)
-    def test_download_from_alyx_or_flir(self, mock_os_rename, mock_alyx_download):
+    def test_download_from_alyx_or_flir(self, mock_os_rename, mock_hashfile, mock_aws_download):
         asset = 123
         filename = 'test_file.txt'
 
@@ -31,10 +37,9 @@ class TestDownloadFunction(unittest.TestCase):
         # Assertions
         expected_out_file = Path.home().joinpath('Downloads', filename)
         self.assertEqual(result, expected_out_file)
-        mock_alyx_download.assert_called_once_with(
-            f'resources/spinnaker/{filename}', target_dir=Path(expected_out_file.parent), clobber=True, return_md5=True
-        )
-        mock_os_rename.assert_called_once_with('mocked_tmp_file', expected_out_file)
+        mock_hashfile.assert_called()
+        mock_aws_download.assert_called_once_with(source=f'resources/{filename}', destination=Path(expected_out_file))
+        mock_os_rename.assert_called_once_with(Path('mocked_tmp_file'), expected_out_file)
 
 
 class TestSettings(unittest.TestCase):
@@ -172,8 +177,174 @@ class TestPrepareVideoSession(unittest.TestCase):
 
         # Test config validation
         self.assertRaises(ValueError, video.prepare_video_session, self.subject, 'training')
-        session().hardware_settings = hws.construct()
+        session().hardware_settings = hws.model_construct()
         self.assertRaises(ValueError, video.prepare_video_session, self.subject, 'training')
+
+
+class TestCameraSession(unittest.TestCase):
+    """Test for iblrig.video.CameraSession class."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        Path(self.tmp.name, 'remote').mkdir()
+        Path(self.tmp.name, 'local').mkdir()
+        (input_mock := patch('builtins.input')).start()
+        self.addCleanup(input_mock.stop)
+
+    @staticmethod
+    def get_task_kwargs(tmpdir):
+        """Generate test task kwargs for typical video PC."""
+        task_kwargs = deepcopy(TASK_KWARGS)
+        # Some test hardware settings
+        hws = task_kwargs['hardware_settings']
+        hws['device_cameras'] = load_pydantic_yaml(HardwareSettings, 'hardware_settings_template.yaml')['device_cameras']
+        hws['device_cameras']['default']['right'] = hws['device_cameras']['default']['left']
+        hws['MAIN_SYNC'] = False
+        # Some test rig settings
+        settings = task_kwargs['iblrig_settings']
+        settings['iblrig_remote_data_path'] = settings['iblrig_remote_subjects_path'] = Path(tmpdir, 'remote')
+        settings['iblrig_local_data_path'] = settings['iblrig_local_subjects_path'] = Path(tmpdir, 'local')
+        return task_kwargs
+
+    @patch('iblrig.video.HAS_PYSPIN', True)
+    @patch('iblrig.video.HAS_SPINNAKER', True)
+    @patch('iblrig.video.call_bonsai')
+    @patch('iblrig.video_pyspin.enable_camera_trigger')
+    def test_run_video_session(self, enable_camera_trigger, call_bonsai):
+        """Test iblrig.video.CameraSession.run method."""
+        task_kwargs = self.get_task_kwargs(self.tmp.name)
+        config = task_kwargs['hardware_settings']['device_cameras']['default']
+        workflows = config['BONSAI_WORKFLOW']
+
+        session = video.CameraSession(**task_kwargs)
+        self.assertEqual(session.config, config)
+        session.run()
+
+        # Validate calls
+        expected = [call(enable=False), call(enable=True), call(enable=False)]
+        enable_camera_trigger.assert_has_calls(expected)
+        raw_data_folder = session.paths['SESSION_RAW_DATA_FOLDER']
+        self.assertTrue(str(raw_data_folder).startswith(str(self.tmp.name)))
+        expected_pars = {
+            'LeftCameraIndex': 1,
+            'RightCameraIndex': 1,
+            'FileNameLeft': str(raw_data_folder / '_iblrig_leftCamera.raw.avi'),
+            'FileNameLeftData': str(raw_data_folder / '_iblrig_leftCamera.frameData.bin'),
+            'FileNameRight': str(raw_data_folder / '_iblrig_rightCamera.raw.avi'),
+            'FileNameRightData': str(raw_data_folder / '_iblrig_rightCamera.frameData.bin'),
+        }
+        expected = [
+            call(workflows.setup, ANY, debug=False, wait=True),
+            call(workflows.recording, expected_pars, debug=False, wait=False),
+        ]
+        call_bonsai.assert_has_calls(expected)
+
+        # Test validation
+        self.assertRaises(NotImplementedError, video.CameraSession, append=True)
+        self.assertRaises(ValueError, video.CameraSession, config_name='training')
+
+
+class TestCameraSessionNetworked(unittest.IsolatedAsyncioTestCase):
+    """Tests for the iblrig.video.CameraSessionNetworked class."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        Path(self.tmp.name, 'remote').mkdir()
+        Path(self.tmp.name, 'local').mkdir()
+
+    async def asyncSetUp(self):
+        self.communicator = mock.AsyncMock(spec=video.net.app.EchoProtocol)
+        self.communicator.is_connected = True
+
+    @patch('iblrig.video.HAS_PYSPIN', True)
+    @patch('iblrig.video.HAS_SPINNAKER', True)
+    @patch('iblrig.video.call_bonsai_async')
+    @patch('iblrig.video.call_bonsai')
+    @patch('iblrig.video_pyspin.enable_camera_trigger')
+    async def test_run_video_session(self, enable_camera_trigger, call_bonsai, call_bonsai_async):
+        """Test iblrig.video.CameraSessionNetworked.run method."""
+        # Some test hardware settings
+        task_kwargs = TestCameraSession.get_task_kwargs(self.tmp.name)
+        del task_kwargs['subject']
+        config = task_kwargs['hardware_settings']['device_cameras']['default']
+        workflows = config['BONSAI_WORKFLOW']
+
+        session = video.CameraSessionNetworked(**task_kwargs)
+        # These two lines replace a call to `session.listen`
+        session.communicator = self.communicator
+        session._status = net.base.ExpStatus.CONNECTED
+        self.assertEqual(session.config, config)
+
+        self.bonsai_subprocess_future = asyncio.get_event_loop().create_future()
+        self.addCleanup(self.bonsai_subprocess_future.cancel)
+
+        async def _wait():
+            return await self.bonsai_subprocess_future
+
+        call_bonsai_async.return_value = mock.AsyncMock(spec=asyncio.subprocess.Process)
+        # call_bonsai_future = asyncio.Future()
+        call_bonsai_async.return_value.wait.side_effect = _wait
+
+        def _end_bonsai_proc():
+            """Return args with added side effect of signalling Bonsai subprocess termination."""
+            addr = '192.168.0.5:99998'
+            info_msg = ((net.base.ExpStatus.CONNECTED, {'subject_name': 'foo'}), addr, net.base.ExpMessage.EXPINFO)
+            init_msg = ({'exp_ref': f'{date.today()}_1_foo'}, addr, net.base.ExpMessage.EXPINIT)
+            start_msg = ((f'{date.today()}_1_foo', {}), addr, net.base.ExpMessage.EXPSTART)
+            status_msg = (net.base.ExpStatus.RUNNING, addr, net.base.ExpMessage.EXPSTATUS)
+            for call_number, msg in enumerate((info_msg, init_msg, start_msg, status_msg, status_msg)):
+                match call_number:  # before yielding each message, make some assertions on the current state of the session
+                    # Before any messages processed
+                    case 0:
+                        self.assertIs(session.status, net.base.ExpStatus.CONNECTED)
+                        self.assertIsNone(session.exp_ref)
+                    # After info message processed
+                    case 1:
+                        self.assertIs(session.status, net.base.ExpStatus.CONNECTED)
+                    # After init message processed
+                    case 2:
+                        self.assertIs(session.status, net.base.ExpStatus.INITIALIZED)
+                        self.assertEqual(f'{date.today()}_1_foo', session.exp_ref)
+                        bonsai_task = next((t for t in session._async_tasks if t.get_name() == 'bonsai'), None)
+                        self.assertIsNotNone(bonsai_task, 'failed to add named bonsai wait task to task set')
+                        self.assertFalse(bonsai_task.done(), 'bonsai task unexpectedly cancelled')
+                        call_bonsai_async.return_value.wait.assert_awaited_once()
+                    # After start message processed
+                    case 3:
+                        self.assertIs(session.status, net.base.ExpStatus.RUNNING)
+                        # Simulate user ending bonsai subprocess
+                        self.bonsai_subprocess_future.set_result(0)
+                        # End loop by simulating communicator object disconnecting
+                        self.communicator.is_connected = False
+                    # case _:
+                    #     self.assertIs(session.status, net.base.ExpStatus.STOPPED)
+                yield msg
+
+        reponses = _end_bonsai_proc()
+        self.communicator.on_event.side_effect = lambda evt: next(reponses)
+        await session.run()
+        self.communicator.on_event.assert_awaited_with(net.base.ExpMessage.any())
+        self.assertEqual(net.base.ExpStatus.STOPPED, session.status)
+
+        # Validate calls
+        expected = [call(enable=False), call(enable=True), call(enable=False)]
+        enable_camera_trigger.assert_has_calls(expected)
+        raw_data_folder = session.paths['SESSION_RAW_DATA_FOLDER']
+        self.assertTrue(str(raw_data_folder).startswith(str(self.tmp.name)))
+        expected_pars = {
+            'LeftCameraIndex': 1,
+            'RightCameraIndex': 1,
+            'FileNameLeft': str(raw_data_folder / '_iblrig_leftCamera.raw.avi'),
+            'FileNameLeftData': str(raw_data_folder / '_iblrig_leftCamera.frameData.bin'),
+            'FileNameRight': str(raw_data_folder / '_iblrig_rightCamera.raw.avi'),
+            'FileNameRightData': str(raw_data_folder / '_iblrig_rightCamera.frameData.bin'),
+        }
+        call_bonsai.assert_called_once_with(
+            workflows.setup, {'LeftCameraIndex': 1, 'RightCameraIndex': 1}, debug=False, wait=True
+        )
+        call_bonsai_async.assert_awaited_once_with(workflows.recording, expected_pars, debug=False)
 
 
 class TestValidateVideo(unittest.TestCase):
@@ -211,7 +382,7 @@ class TestValidateVideo(unittest.TestCase):
             }
             self.assertCountEqual(set(x.getMessage() for x in log.records), expected)
         # Test video meta warnings
-        config = self.config.copy()
+        config = self.config.model_copy()
         config.HEIGHT = config.WIDTH = 160
         config.FPS = 150
         with self.assertLogs(video.__name__, 30) as log:

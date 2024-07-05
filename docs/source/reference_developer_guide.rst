@@ -1,15 +1,6 @@
 Developer Guide
 ===============
 
-Release Checklist
------------------
-
-1) update CHANGELOG.md including changes from the last tag
-2) Pull request to ``iblrigv8dev``
-3) Check CI and eventually wet lab test
-4) Pull request to ``iblrigv8``
-5) Merge PR
-6) git tag the release in accordance to the version number below (after merge!)
 
 Versioning Scheme
 -----------------
@@ -44,13 +35,67 @@ Here,
 Both of these fields are inferred by means of git describe and do not require manual interaction from the developer.
 
 
-Running Tests Locally
----------------------
+Installing Developer Dependencies
+---------------------------------
+
+To install additional dependencies needed for working on IBLRIG's code-base, run the following within the venv:
 
 .. code-block:: console
 
-   flake8
-   python -m unittest discover ./iblrig/test
+   pip install -U -e .[DEV]
+
+
+Running Unit Tests Locally
+--------------------------
+
+To run unit tests locally, run the following within IBLRIG's venv:
+
+.. code-block:: console
+
+   pytest
+
+This will also generate a coverage report which can be found in the ``htmlcov`` directory.
+
+
+Linting & Formatting
+--------------------
+
+To lint your code, run the following within IBLRIG's venv:
+
+.. code-block:: console
+
+   ruff check .
+
+Adding the commandline flag ``--fix`` will automatically fix issues that are deemed safe to handle:
+
+.. code-block:: console
+
+   ruff check . --fix
+
+To *check* if your code conforms to the `Black code style <https://black.readthedocs.io/en/stable/the_black_code_style/current_style.html>`_, run:
+
+.. code-block:: console
+
+   ruff format . --check
+
+To reformat your code according to the `Black code style <https://black.readthedocs.io/en/stable/the_black_code_style/current_style.html>`_, run:
+
+.. code-block:: console
+
+   ruff format .
+
+Refer to `Ruff Formater's documentation <https://docs.astral.sh/ruff/formatter/>`_ for further details.
+
+
+Release Checklist
+-----------------
+
+1) update CHANGELOG.md including changes from the last tag
+2) Pull request to ``iblrigv8dev``
+3) Check CI and eventually wet lab test
+4) Pull request to ``iblrigv8``
+5) Merge PR
+6) git tag the release in accordance to the version number below (after merge!)
 
 
 Building the documentation
@@ -78,7 +123,7 @@ To write the documentation:
 * If you are writing in a new file, add it to the ``index.rst`` so it appears in the table of content
 * Push all your changes to the ``iblrigv8dev`` branch ; if this branch does not exist, create it first
 
-To release the documentation onto the `website <https://int-brain-lab.github.io/iblrig>`__:
+To release the documentation onto the `website <https://int-brain-lab.github.io/iblrig>`_:
 
 * Wait for the next release, or
-* Manually trigger the GitHub action by clicking "Run Workflow" (select ``master``) here: https://github.com/int-brain-lab/iblrig/actions/workflows/docs.yaml
+* Manually trigger the GitHub action by clicking "Run Workflow" (select ``master``) `here <https://github.com/int-brain-lab/iblrig/actions/workflows/docs.yaml>`_

@@ -13,7 +13,7 @@ from ibllib.io import session_params
 from ibllib.tests.fixtures.utils import populate_raw_spikeglx
 from iblrig.path_helper import HardwareSettings, load_pydantic_yaml
 from iblrig.test.base import TASK_KWARGS
-from iblrig.transfer_experiments import BehaviorCopier, EphysCopier, VideoCopier
+from iblrig.transfer_experiments import BehaviorCopier, EphysCopier, SessionCopier, VideoCopier
 from iblrig_tasks._iblrig_tasks_trainingChoiceWorld.task import Session
 
 
@@ -138,19 +138,19 @@ class TestIntegrationTransferExperiments(unittest.TestCase):
         Unlike the integration test, the sessions here are made from scratch using an actual instantiated session
         :return:
         """
-        with tempfile.TemporaryDirectory() as td:
-            # First create a behavior session
-            task_kwargs = copy.deepcopy(self.session_kwargs)
-            task_kwargs['hardware_settings'].update(
-                {
-                    'device_cameras': None,
-                    'MAIN_SYNC': False,  # this is quite important for ephys sessions
-                }
-            )
-            session = _create_behavior_session(kwargs=task_kwargs, ntrials=50)
-            # SESSION_RAW_DATA_FOLDER is the one that gets copied
-            folder_session_video = Path(td).joinpath('video', 'Subjects', *session.paths.SESSION_FOLDER.parts[-3:])
-            folder_session_ephys = Path(td).joinpath('ephys', 'Subjects', *session.paths.SESSION_FOLDER.parts[-3:])
+        # First create a behavior session
+        task_kwargs = copy.deepcopy(self.session_kwargs)
+        task_kwargs['hardware_settings'].update(
+            {
+                'device_cameras': None,
+                'MAIN_SYNC': False,  # this is quite important for ephys sessions
+            }
+        )
+        session = _create_behavior_session(kwargs=task_kwargs, ntrials=50)
+        # SESSION_RAW_DATA_FOLDER is the one that gets copied
+        folder_session_video = Path(self.td.name).joinpath('video', 'Subjects', *session.paths.SESSION_FOLDER.parts[-3:])
+        folder_session_ephys = Path(self.td.name).joinpath('ephys', 'Subjects', *session.paths.SESSION_FOLDER.parts[-3:])
+        folder_session_imaging = Path(self.td.name).joinpath('imaging', 'Subjects', *session.paths.SESSION_FOLDER.parts[-3:])
 
         # Create an ephys acquisition
         n_probes = 2
@@ -165,6 +165,21 @@ class TestIntegrationTransferExperiments(unittest.TestCase):
             folder_session_video.joinpath('raw_video_data', f'_iblrig_{vname}Camera.frameData.bin').touch()
             folder_session_video.joinpath('raw_video_data', f'_iblrig_{vname}Camera.raw.avi').touch()
 
+        # imaging computer (testing generic copier)
+        folder_session_imaging.mkdir(parents=True)
+        ic = SessionCopier(session_path=folder_session_imaging, remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER)
+        description = {'mesoscope': {'mesoscope': {'collection': 'raw_imaging_data*', 'sync_label': 'chrono'}}}
+
+        for i in range(2):
+            collection = folder_session_imaging.joinpath(f'raw_imaging_data_{i:02}')
+            collection.mkdir()
+            for j in range(2):
+                file = collection.joinpath(f'{datetime.today().isoformat()[:10]}_1_iblrig_test_subject_{j:02}.tif')
+                with open(file, 'wb') as fp:
+                    fp.write(j.to_bytes(24, byteorder='big', signed=False))
+        self.assertEqual(0, ic.state)
+        ic.initialize_experiment(description)
+
         # Test the copiers
         sc = BehaviorCopier(session_path=session.paths.SESSION_FOLDER, remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER)
         self.assertEqual('.status_pending', sc.glob_file_remote_copy_status().suffix)
@@ -174,7 +189,7 @@ class TestIntegrationTransferExperiments(unittest.TestCase):
         self.assertEqual('.status_complete', sc.glob_file_remote_copy_status().suffix)
         sc.copy_collections()
         self.assertEqual(2, sc.state)
-        sc.finalize_copy(number_of_expected_devices=3)
+        sc.finalize_copy(number_of_expected_devices=None)
         self.assertEqual(2, sc.state)  # here we still don't have all devices so we stay in state 2
 
         vc = VideoCopier(session_path=folder_session_video, remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER)
@@ -185,7 +200,7 @@ class TestIntegrationTransferExperiments(unittest.TestCase):
         self.assertEqual(1, vc.state)
         vc.copy_collections()
         self.assertEqual(2, vc.state)
-        sc.finalize_copy(number_of_expected_devices=3)
+        sc.finalize_copy(number_of_expected_devices=None)
         self.assertEqual(2, vc.state)  # here we still don't have all devices so we stay in state 2
 
         ec = EphysCopier(session_path=folder_session_ephys, remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER)
@@ -200,12 +215,75 @@ class TestIntegrationTransferExperiments(unittest.TestCase):
         sc.finalize_copy(number_of_expected_devices=1)
         self.assertEqual(2, ec.state)
         # this time it's all there and we move on
-        sc.finalize_copy(number_of_expected_devices=3)
-        self.assertEqual(3, sc.state)
-        final_experiment_description = session_params.read_params(sc.remote_session_path)
+        sc.finalize_copy(number_of_expected_devices=None)
+
+        self.assertEqual(1, ic.state)
+        ic.copy_collections()
+        self.assertEqual(2, ic.state)
+        # this time it's all there and we move on
+        ic.finalize_copy(number_of_expected_devices=None)
+        self.assertEqual(3, ic.state)
+        final_experiment_description = session_params.read_params(ic.remote_session_path)
         self.assertEqual(1, len(final_experiment_description['tasks']))
         self.assertEqual(set(final_experiment_description['devices']['cameras'].keys()), {'left'})
         self.assertEqual(set(final_experiment_description['sync'].keys()), {'nidq'})
+
+    def test_copy_snapshots(self):
+        """Test copy of snapshots folder(s)."""
+        # Create without task data
+        session = _create_behavior_session(kwargs=self.session_kwargs)
+        snapshots = session.paths.SESSION_FOLDER.joinpath('snapshots')
+
+        # Should log and return True when local snapshots folder does not exist
+        sc = SessionCopier(session_path=session.paths.SESSION_FOLDER, remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER)
+        with self.assertLogs('iblrig.transfer_experiments', 'DEBUG'):
+            self.assertTrue(sc.copy_snapshots())
+
+        # Create some files in local folder 1
+        snapshots.mkdir(parents=True)
+        # Should log and return True when local snapshots folder is empty
+        with self.assertLogs('iblrig.transfer_experiments', 'DEBUG'):
+            self.assertTrue(sc.copy_snapshots())
+        for i in range(2):
+            file = snapshots.joinpath(f'snapshot_{i:02}.png')
+            with open(file, 'wb') as fp:
+                fp.write(i.to_bytes(24, byteorder='big', signed=False))
+        # Create some subdirs to check copy is recursive
+        snapshots.joinpath('_old').mkdir()
+        file = snapshots.joinpath('_old', 'snapshot_0.jpg')
+        with open(file, 'wb') as fp:  # numbers are garbage just for testing hash checks
+            fp.write((42).to_bytes(24, byteorder='big', signed=False))
+
+        # Should copy files recursively
+        self.assertTrue(sc.copy_snapshots())
+        remote_snapshots = sc.remote_session_path.joinpath('snapshots')
+        self.assertTrue(remote_snapshots.exists())
+        expected = ['snapshot_00.png', 'snapshot_01.png', '_old/snapshot_0.jpg']
+        copied = [x.relative_to(remote_snapshots).as_posix() for x in filter(Path.is_file, remote_snapshots.rglob('*'))]
+        self.assertCountEqual(expected, copied)
+
+        # Create a file in local folder 2
+        folder_session_video = Path(self.td.name).joinpath('video', 'Subjects', *session.paths.SESSION_FOLDER.parts[-3:])
+        video_snapshots = folder_session_video.joinpath('snapshots')
+        video_snapshots.mkdir(parents=True)
+        # Another unique filename to copy
+        file = snapshots.joinpath(expected[0]).rename(video_snapshots.joinpath(expected[0]).with_suffix('.jpeg'))
+
+        # Should copy the file without removing those already in the remote snapshots folder
+        sc = SessionCopier(session_path=folder_session_video, remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER)
+        self.assertTrue(sc.copy_snapshots())
+        expected.append(file.name)
+        copied = [x.relative_to(remote_snapshots).as_posix() for x in filter(Path.is_file, remote_snapshots.rglob('*'))]
+        self.assertCountEqual(expected, copied)
+
+        # Create another local snapshots file in a subdir
+        video_snapshots.joinpath('_old').mkdir()
+        file.rename(video_snapshots.joinpath('_old', file.name))
+        self.assertTrue(sc.copy_snapshots())
+        # Calling copy method again should cause error log as remote duplicates found
+        with self.assertLogs('iblrig.transfer_experiments', 'ERROR') as lg:
+            self.assertFalse(sc.copy_snapshots())
+        self.assertTrue(lg.output[-1].endswith('_old/snapshot_00.jpeg'))
 
 
 class TestBuildGlobPattern(unittest.TestCase):

@@ -1,5 +1,6 @@
 import datetime
 import json
+import logging
 import time
 from pathlib import Path
 
@@ -18,9 +19,10 @@ from iblutil.util import Bunch
 NTRIALS_INIT = 2000
 NTRIALS_PLOT = 20  # do not edit - this is used also to enforce the completion criteria
 CONTRAST_SET = np.array([0, 1 / 16, 1 / 8, 1 / 4, 1 / 2, 1])
-PROBABILITY_SET = np.array([0.2, 0.5, 0.8])
 # if the mouse does less than 400 trials in the first 45mins it's disengaged
 ENGAGED_CRITIERION = {'secs': 45 * 60, 'trial_count': 400}
+
+log = logging.getLogger(__name__)
 sns.set_style('darkgrid')
 
 
@@ -35,11 +37,21 @@ class DataModel:
     """
 
     task_settings = None
+    probability_set = np.array([0.2, 0.5, 0.8])
+    ntrials = 0
+    ntrials_correct = 0
+    ntrials_nan = np.nan
+    ntrials_engaged = 0  # trials happening within the first 400s
+    percent_correct = np.nan
+    percent_error = np.nan
+    water_delivered = 0.0
+    time_elapsed = 0.0
 
-    def __init__(self, task_file):
+    def __init__(self, settings_file: Path | str, task_file: Path | str):
         """
-        Can be instantiated empty or from an existing jsonable file from any rig version
-        :param task_file:
+
+        :param task_file: full path to the _iblrig_taskData.raw.jsonable file
+        :param settings_file:full path to the _iblrig_taskSettings.raw.json file
         """
         self.session_path = one.alf.files.get_session_path(task_file) or ''
         self.last_trials = pd.DataFrame(
@@ -47,23 +59,26 @@ class DataModel:
             index=np.arange(NTRIALS_PLOT),
         )
 
-        if task_file is None or not Path(task_file).exists():
+        if settings_file is None and task_file is not None and task_file.exists():
+            settings_file = task_file.parent.joinpath('_iblrig_taskSettings.raw.json')
+
+        if settings_file is not None and settings_file.exists():
+            # most of the IBL tasks have a predefined set of probabilities (0.2, 0.5, 0.8), but in the
+            # case of the advanced choice world task, the probabilities are defined in the task settings
+            with open(settings_file) as fid:
+                self.task_settings = json.load(fid)
+            self.probability_set = [self.task_settings['PROBABILITY_LEFT']] + self.task_settings.get('BLOCK_PROBABILITY_SET', [])
+        else:
+            log.warning('Settings file not found - using default settings')
+
+        if task_file is None or not task_file.exists():
             self.psychometrics = pd.DataFrame(
                 columns=['count', 'response_time', 'choice', 'response_time_std', 'choice_std'],
-                index=pd.MultiIndex.from_product([PROBABILITY_SET, np.r_[-np.flipud(CONTRAST_SET[1:]), CONTRAST_SET]]),
+                index=pd.MultiIndex.from_product([self.probability_set, np.r_[-np.flipud(CONTRAST_SET[1:]), CONTRAST_SET]]),
             )
             self.psychometrics['count'] = 0
             self.trials_table = pd.DataFrame(columns=['response_time'], index=np.arange(NTRIALS_INIT))
-            self.ntrials = 0
-            self.ntrials_correct = 0
-            self.ntrials_nan = np.nan
-            self.percent_correct = np.nan
-            self.percent_error = np.nan
-            self.water_delivered = 0
-            self.time_elapsed = 0
-            self.ntrials_engaged = 0  # those are the trials happening within the first 400s
         else:
-            self.get_task_settings(Path(task_file).parent)
             trials_table, bpod_data = load_task_jsonable(task_file)
             # here we take the end time of the first trial as reference to avoid factoring in the delay
             self.time_elapsed = bpod_data[-1]['Trial end timestamp'] - bpod_data[0]['Trial end timestamp']
@@ -74,7 +89,7 @@ class DataModel:
                 CategoricalDtype(categories=np.unique(np.r_[-CONTRAST_SET, CONTRAST_SET]), ordered=True)
             )
             trials_table['stim_probability_left'] = trials_table['stim_probability_left'].astype(
-                CategoricalDtype(categories=PROBABILITY_SET, ordered=True)
+                CategoricalDtype(categories=self.probability_set, ordered=True)
             )
             self.psychometrics = trials_table.groupby(['stim_probability_left', 'signed_contrast']).agg(
                 count=pd.NamedAgg(column='signed_contrast', aggfunc='count'),
@@ -119,13 +134,6 @@ class DataModel:
         self.last_contrasts[ileft, 0] = np.abs(self.last_trials.signed_contrast[ileft])
         self.last_contrasts[iright, 1] = np.abs(self.last_trials.signed_contrast[iright])
 
-    def get_task_settings(self, session_directory: str | Path) -> None:
-        task_settings_file = Path(session_directory).joinpath('_iblrig_taskSettings.raw.json')
-        if not task_settings_file.exists():
-            return
-        with open(task_settings_file) as fid:
-            self.task_settings = json.load(fid)
-
     def update_trial(self, trial_data, bpod_data) -> None:
         # update counters
         self.time_elapsed = bpod_data['Trial end timestamp'] - bpod_data['Bpod start timestamp']
@@ -140,6 +148,9 @@ class DataModel:
 
         # update psychometrics using online statistics method
         indexer = (trial_data.stim_probability_left, signed_contrast)
+        if indexer not in self.psychometrics.index:
+            self.psychometrics.loc[indexer, :] = np.NaN
+            self.psychometrics.loc[indexer, ('count')] = 0
         self.psychometrics.loc[indexer, ('count')] += 1
         self.psychometrics.loc[indexer, ('response_time')], self.psychometrics.loc[indexer, ('response_time_std')] = online_std(
             new_sample=trial_data.response_time,
@@ -158,10 +169,10 @@ class DataModel:
         i = NTRIALS_PLOT - 1
         self.last_trials.at[i, 'correct'] = trial_data.trial_correct
         self.last_trials.at[i, 'signed_contrast'] = signed_contrast
-        self.last_trials.at[i, 'stim_on'] = bpod_data['States timestamps']['stim_on'][0][0]
-        self.last_trials.at[i, 'play_tone'] = bpod_data['States timestamps']['play_tone'][0][0]
-        self.last_trials.at[i, 'reward_time'] = bpod_data['States timestamps']['reward'][0][0]
-        self.last_trials.at[i, 'error_time'] = bpod_data['States timestamps']['error'][0][0]
+        self.last_trials.at[i, 'stim_on'] = bpod_data['States timestamps'].get('stim_on', [[np.nan]])[0][0]
+        self.last_trials.at[i, 'play_tone'] = bpod_data['States timestamps'].get('play_tone', [[np.nan]])[0][0]
+        self.last_trials.at[i, 'reward_time'] = bpod_data['States timestamps'].get('reward', [[np.nan]])[0][0]
+        self.last_trials.at[i, 'error_time'] = bpod_data['States timestamps'].get('error', [[np.nan]])[0][0]
         self.last_trials.at[i, 'response_time'] = trial_data.response_time
         # update rgb image
         self.rgb_background = np.roll(self.rgb_background, -1, axis=0)
@@ -208,8 +219,10 @@ class OnlinePlots:
     >>> OnlinePlots().run(task_file)
     """
 
-    def __init__(self, task_file=None):
-        self.data = DataModel(task_file=task_file)
+    def __init__(self, task_file=None, settings_file=None):
+        task_file = Path(task_file) if task_file is not None else None
+        settings_file = Path(settings_file) if settings_file is not None else None
+        self.data = DataModel(task_file=task_file, settings_file=settings_file)
 
         # create figure and axes
         h = Bunch({})
@@ -241,7 +254,7 @@ class OnlinePlots:
         # create psych curves
         h.curve_psych = {}
         h.curve_reaction = {}
-        for p in PROBABILITY_SET:
+        for p in self.data.probability_set:
             h.curve_psych[p] = h.ax_psych.plot(
                 self.data.psychometrics.loc[p].index,
                 self.data.psychometrics.loc[p]['choice'],
@@ -322,7 +335,7 @@ class OnlinePlots:
         h = self.h
         h.fig.set_facecolor(background_color)
         self.update_titles()
-        for p in PROBABILITY_SET:
+        for p in self.data.probability_set:
             if pupdate is not None and p != pupdate:
                 continue
             # update psychometric curves
@@ -363,7 +376,6 @@ class OnlinePlots:
         :return:
         """
         task_file = Path(task_file)
-        self.data.get_task_settings(task_file.parent)
         self._set_session_string()
         self.update_titles()
         self.h.fig.canvas.flush_events()

@@ -121,8 +121,8 @@ class TestIntegrationFullRun(IntegrationFullRuns):
         dt = datetime.datetime.now() - datetime.datetime.fromisoformat(settings['SESSION_END_TIME'])
         self.assertLess(dt.seconds, 600)  # leaves some time for debugging
         trials_table, bpod_data = load_task_jsonable(task.paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_taskData.raw.jsonable'))
-        assert trials_table.shape[0] == task.task_params.NTRIALS
-        assert len(bpod_data) == task.task_params.NTRIALS
+        self.assertEqual(trials_table.shape[0], task.task_params.NTRIALS)
+        self.assertEqual(len(bpod_data), task.task_params.NTRIALS)
         # test that Alyx registration went well, we should find the session
         ses = self.one.alyx.rest(
             'sessions',
@@ -135,12 +135,12 @@ class TestIntegrationFullRun(IntegrationFullRuns):
         self.assertEqual(set(full_session['projects']), set(self.kwargs['projects']))
         self.assertEqual(set(full_session['procedures']), set(self.kwargs['procedures']))
         # and the water administered
-        assert full_session['wateradmin_session_related'][0]['water_administered'] == init_water / 1000
+        np.testing.assert_almost_equal(full_session['wateradmin_session_related'][0]['water_administered'], init_water / 1000)
         # and the related weighing
         wei = self.one.alyx.rest(
             'weighings', 'list', nickname=self.kwargs['subject'], date=task.session_info['SESSION_START_TIME'][:10]
         )
-        assert wei[0]['weight'] == task.session_info['SUBJECT_WEIGHT']
+        self.assertEqual(wei[0]['weight'], task.session_info['SUBJECT_WEIGHT'])
 
 
 def get_fixtures():

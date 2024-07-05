@@ -123,10 +123,10 @@ class HardwareSettingsSound(BunchModel):
 
 class HardwareSettingsValve(BunchModel):
     WATER_CALIBRATION_DATE: date
-    WATER_CALIBRATION_RANGE: list[PositiveFloat] = Field(min_items=2, max_items=2)  # type: ignore
+    WATER_CALIBRATION_RANGE: list[PositiveFloat] = Field(min_length=2, max_length=2)  # type: ignore
     WATER_CALIBRATION_N: PositiveInt = Field(ge=3, default=5)
-    WATER_CALIBRATION_OPEN_TIMES: list[PositiveFloat] = Field(min_items=2)  # type: ignore
-    WATER_CALIBRATION_WEIGHT_PERDROP: list[float] = Field(PositiveFloat, min_items=2)  # type: ignore
+    WATER_CALIBRATION_OPEN_TIMES: list[PositiveFloat] = Field(min_length=2)  # type: ignore
+    WATER_CALIBRATION_WEIGHT_PERDROP: list[float] = Field(PositiveFloat, min_length=2)  # type: ignore
     FREE_REWARD_VOLUME_UL: PositiveFloat = 1.5
 
 
@@ -136,26 +136,23 @@ class HardwareSettingsScale(BunchModel):
 
 class HardwareSettingsCamera(BunchModel):
     INDEX: int
-    FPS: int | None = Field(
+    FPS: PositiveInt | None = Field(
         title='Camera frame rate',
         omit_default=True,
         default=None,
         description='An optional frame rate (for camera QC only)',
-        ge=0,
     )
-    WIDTH: int | None = Field(
+    WIDTH: PositiveInt | None = Field(
         title='Camera frame width',
         omit_default=True,
         default=None,
         description='An optional frame width (for camera QC only)',
-        ge=0,
     )
-    HEIGHT: int | None = Field(
+    HEIGHT: PositiveInt | None = Field(
         title='Camera frame height',
         omit_default=True,
         default=None,
         description='An optional frame hight (for camera QC only)',
-        ge=0,
     )
     SYNC_LABEL: str | None = Field(
         title='Camera DAQ sync label',

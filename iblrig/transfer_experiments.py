@@ -264,7 +264,44 @@ class SessionCopier:
                 log.warning(f'Collection {remote_collection} already exists, removing')
                 shutil.rmtree(remote_collection)
             status &= copy_folders(local_collection, remote_collection)
+        status &= self.copy_snapshots()  # special case: copy snapshots without deleting or overwriting remote files
         return status
+
+    def copy_snapshots(self):
+        """
+        Copy snapshots files from root session path.
+
+        Unlike the collection folders defined in the experiment description folder, the snapshots folder is optional and
+        may exist on multiple acquisition PCs.  This method will copy any files over if the snapshots folder exists,
+        however it will fail if a file of the same name already exists. This ensures snapshots from multiple computers
+        don't get overwritten.
+
+        Returns
+        -------
+        bool
+            True if transfer successfully completed.
+        """
+        snapshots = self.session_path.joinpath('snapshots')
+        if not snapshots.exists():
+            log.debug('Snapshots folder %s does not exist', snapshots.as_posix())
+            return True
+        log.info(f'transferring {self.session_path} - {snapshots.name}')
+        remote_snapshots = self.remote_session_path.joinpath(snapshots.name)
+        # Get set of local and remote snapshot filenames
+        local_files, remote_files = (
+            set(map(lambda x: x.relative_to(p).as_posix(), filter(Path.is_file, p.rglob('*'))))
+            for p in (snapshots, remote_snapshots)
+        )
+        if not any(local_files):
+            log.debug('Snapshots folder %s is empty', snapshots.as_posix())
+            return True
+        if any(duplicates := local_files.intersection(remote_files)):
+            log.error('The following snapshots already exist in %s\n%s', remote_snapshots.as_posix(), ', '.join(duplicates))
+            log.info('Could not copy %s to %s', snapshots.as_posix(), remote_snapshots.as_posix())
+            return False
+        # 'overwrite' actually means 'don't raise if remote folder exists'.
+        # We've already checked that filenames don't conflict.
+        return copy_folders(snapshots, remote_snapshots, overwrite=True)
 
     def copy_collections(self):
         """

@@ -3,7 +3,7 @@ import logging
 import re
 import struct
 import threading
-from collections.abc import Iterable
+from collections.abc import Generator
 from typing import Any, overload
 
 import numpy as np
@@ -243,7 +243,7 @@ class SerialSingleton(serial.Serial):
                 return to_bytes(data)  # type: ignore[no-any-return]
 
 
-def filter_ports(**kwargs: dict[str, Any]) -> Iterable[str]:
+def filter_ports(**kwargs: dict[str, Any]) -> Generator[str, None, None]:
     """
     Filter serial ports based on specified criteria.
 

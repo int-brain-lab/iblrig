@@ -1,8 +1,0 @@
-[run]
-include = ./iblrig/*, ./iblrig_tasks/*
-omit = ./iblrig/test/*
-command_line = coverage run -m unittest
-
-[report]
-include = ./iblrig/*, ./iblrig_tasks/*
-omit = ./iblrig/test/*
