@@ -83,8 +83,6 @@ class IntegrationFullRuns(BaseTestCases.CommonTestTask):
     the full registration / run / register results cycle
     """
 
-    create_subject = True
-
     @classmethod
     def setUpClass(cls) -> None:
         """
@@ -95,10 +93,8 @@ class IntegrationFullRuns(BaseTestCases.CommonTestTask):
         cls.one = ONE(**TEST_DB, mode='remote')
         cls.kwargs = copy.deepcopy(TASK_KWARGS)
         cls.kwargs.update({'subject': 'iblrig_unit_test_' + ''.join(random.choices(string.ascii_letters, k=8))})
-        if cls.create_subject:
-            cls.one.alyx.rest('subjects', 'create', data=dict(nickname=cls.kwargs['subject'], lab='cortexlab'))
+        cls.one.alyx.rest('subjects', 'create', data=dict(nickname=cls.kwargs['subject'], lab='cortexlab'))
 
     @classmethod
     def tearDownClass(cls) -> None:
-        if cls.create_subject:
-            cls.one.alyx.rest('subjects', 'delete', id=cls.kwargs['subject'])
+        cls.one.alyx.rest('subjects', 'delete', id=cls.kwargs['subject'])
