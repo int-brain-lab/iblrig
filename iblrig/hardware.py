@@ -43,7 +43,7 @@ class Bpod(BpodIO):
     can_control_led = True
     softcodes: dict[int, Callable] | None = None
     _instances = {}
-    _lock = threading.Lock()
+    _lock = threading.RLock()
     _is_initialized = False
 
     def __new__(cls, *args, **kwargs):
