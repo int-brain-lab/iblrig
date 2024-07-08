@@ -1,5 +1,5 @@
 """Tests for iblrig.net module."""
-
+import asyncio
 import tempfile
 import unittest
 from pathlib import Path
@@ -142,6 +142,74 @@ class TestTokenCallbacks(unittest.TestCase):
             token['j.doe']['token'] = 'abctok3ncba'
             self.assertFalse(iblrig.net.install_alyx_token(base_url, token))
             self.assertEqual(token, one.params.get(base_url).TOKEN)
+
+
+class TestAuxiliaries(unittest.IsolatedAsyncioTestCase):
+    """Test for net.Auxiliaries class."""
+
+    @patch('iblrig.net.net.app.EchoProtocol.client')
+    @patch('iblrig.net.net.app.Services', spec=net.app.Services)
+    def setUp(self, services, com):
+        self.services, self.com = services, com
+        self.clients = {'rig_1': 'udp://192.168.0.1', 'rig_2': 'udp://192.168.0.2'}
+        self.aux = iblrig.net.Auxiliaries(self.clients)
+        self.addCleanup(self.aux.close)  # ensure threads joined
+        assert getattr(self.aux, 'connected', False)
+        with self.aux.connected:  # don't start testing until thread set up
+            self.aux.connected.wait(timeout=0.5)
+
+    def test_net(self):
+        """Test creation of services."""
+        self.services.assert_called()
+        for name, uri in self.clients.items():
+            self.com.assert_any_await(uri, name)
+
+    @patch('iblrig.net.asyncio.sleep')
+    def test_push(self, _):
+        """Test Auxiliaries.push method.
+
+        The async thread calls asyncio.sleep between message queue checks.
+        Mocking this reduces overall execution time.
+        """
+        # Test without wait
+        message = ['EXPINFO', {'subject': 'foobar'}]
+        self.services().info.return_value = {'rig_1': ['EXPINFO'], 'rig_2': ['EXPINFO']}
+        with self.aux.response_received:  # acquire lock
+            r = self.aux.push(*message, wait=False)
+            self.assertIsInstance(r, float)
+            self.assertIn(r, self.aux._queued)
+            self.aux.response_received.wait(1)
+        self.assertIn(r, self.aux._log)
+        self.services().info.assert_awaited()
+
+        # Test with wait
+        self.services().timeout = 1  # Need a timeout value
+        message = ['EXPSTART', '2024-01-01_1_foo']
+        response = {'rig_1': message, 'rig_2': message}
+        self.services().start.return_value = response
+        r = self.aux.push(*message, wait=True)
+        self.assertEqual(response, r)
+        self.assertFalse(self.aux._queued, 'failed to remove message from queue')
+        self.assertIn(r, self.aux._log.values(), 'failed to add response to log')
+        self.services().start.assert_awaited()
+
+        # Test with errors
+        # Bad message
+        self.assertRaises(ValueError, self.aux.push, 'EXPBAR')
+        self.services().init.side_effect = asyncio.TimeoutError('blah')
+        with self.assertLogs(iblrig.net.__name__, 'ERROR'):
+            r = self.aux.push('EXPINIT', wait=True)
+        self.assertIsInstance(r, asyncio.TimeoutError)
+        self.services().init.reset_mock(side_effect=True)
+        # Push method won't allow compound messages so we add it directly in order to test NotImplemented response
+        with self.aux.response_received:
+            message = [net.base.ExpMessage.ALYX & net.base.ExpMessage.EXPEND, (), {}]
+            self.aux._queued[1] = message
+            self.aux.response_received.wait(timeout=0.5)
+            self.assertIsInstance(self.aux._log[1], NotImplementedError)
+        # Test RuntimeError raised when thread otherwise fails
+        self.aux.refresh_rate = self.services().timeout = 0  # Wait for 0 seconds
+        self.assertRaises(RuntimeError, self.aux.push, 'EXPINIT', wait=True)
 
 
 if __name__ == '__main__':

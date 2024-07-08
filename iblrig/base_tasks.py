@@ -7,7 +7,6 @@ This module tries to exclude task related logic.
 
 import abc
 import argparse
-import asyncio
 import contextlib
 import datetime
 import importlib.metadata
@@ -15,7 +14,6 @@ import inspect
 import json
 import logging
 import signal
-import threading
 import time
 import traceback
 from abc import ABC
@@ -1066,8 +1064,11 @@ class NetworkMixin(BaseSession):
     """A mixin for communicating to auxiliary acquisition PC over a network."""
 
     remote_rigs = None
+    """net.Auxiliaries: An auxiliary services object for communicating with remote devices."""
+    exp_ref = None
+    """dict: The experiment reference (i.e. subject, date, sequence) as returned by main remote service."""
 
-    def __init__(self, *args, remote_rigs=None, **kwargs):
+    def __init__(self, *_, remote_rigs=None, **kwargs):
         """
         A mixin for communicating to auxiliary acquisition PC over a network.
 
@@ -1081,9 +1082,14 @@ class NetworkMixin(BaseSession):
 
         Subclasses should add their callbacks within init by calling :meth:`self.remote_rigs.services.assign_callback`.
 
-        Attributes
+        Parameters
         ----------
-        TODO Document attributes
+        remote_rigs : list, dict
+            Either a list of remote device names (in which case URI is looked up from remote devices
+            file), or a map of device name to URI.
+        kwargs
+            Optional args such as 'file_iblrig_settings' for defining location of remote data folder
+            when loading remote devices file.
         """
         if isinstance(remote_rigs, list):  # FIXME use net.get_remote_devices()
             remote_path = kwargs.get('iblrig_settings', {}).get('remote_data_folder')
@@ -1106,20 +1112,28 @@ class NetworkMixin(BaseSession):
             raise e
 
     def connect(self, remote_rigs):
+        """
+        Connect to remote services.
+
+        Instantiates the Communicator objects that establish connections with each remote device.
+        This also creates the thread that uses asynchronous callbacks.
+
+        Parameters
+        ----------
+        remote_rigs : dict
+            A map of name to URI.
+        """
         self.remote_rigs = net.Auxiliaries(remote_rigs or {})
         # asyncio.to_thread(self.remote_rigs.listen)
         # Handle keyboard interrupt event by graciously completing thread
         # FIXME This may overwrite handler in base class!
         signal.signal(signal.SIGINT, lambda sig, frame: self.remote_rigs.stop_event.set())
-        _thread = threading.Thread(target=asyncio.run, args=(self.remote_rigs.listen(),))
-        _thread.start()
-        # _thread.join()  TODO run as daemon and handle end signal
 
     def _init_paths(self, append: bool = False):
         """
         Determine session paths.
 
-        Unlike :meth:`BaseSession._init_paths`, this method determined the session number from the remote main sync if
+        Unlike :meth:`BaseSession._init_paths`, this method determines the session number from the remote main sync if
         connected.
 
         Parameters
@@ -1182,24 +1196,64 @@ class NetworkMixin(BaseSession):
                     'file': tb.tb_frame.f_code.co_filename,  # filename str
                     'line_no': (tb.tb_lineno, tb.tb_lasti),  # (int, int)
                 }
-                # TODO This would stop all other services. Could instead send exp update?
-                self.remote_rigs.send(ExpMessage.EXPINTERRUPT, details, wait=True)
-                # TODO Set stop event flag in self.remote_rigs
+                self.remote_rigs.push(ExpMessage.EXPINTERRUPT, details, wait=True)
+                self.cleanup_mixin_network()
             raise e
 
+    def communicate(self, message, *args, raise_on_exception=True):
+        """
+        Communicate message to remote services.
+
+        This method is blocking and by default will raise if not all responses received in time.
+
+        Parameters
+        ----------
+        message : iblutil.io.net.base.ExpMessage, str, int
+            An experiment message to send to remote services.
+        args
+            One or more optional variables to send.
+        raise_on_exception : bool
+            If true, exceptions arising from message timeouts will be re-raised in main thread and
+            services will be cleaned up. Only applies when wait is true.
+
+        Returns
+        -------
+        Exception | dict
+            If raise_on_exception is False, returns an exception if failed to receive all responses
+            in time, otherwise a map of service name to response is returned.
+        """
+        r = self.remote_rigs.push(message, *args, wait=True)
+        if raise_on_exception and isinstance(r, Exception):
+            log.error('Error on %s network mixin: %s', r)
+            self.cleanup_mixin_network()
+            raise r
+        return r
+
+    def _print_response(self, responses, level=10):
+        # https://stackoverflow.com/a/9536084
+        # responses = {'foo': {'status': 'EXPINIT'}, 'bar': {'status': 'EXPSTART'}}
+        # TODO This could be services callback?
+        fields = ('status',)
+        row_format = '{:>15}' * (len(fields) + 1)
+        outputs = [row_format.format('', *fields)]
+        for service, row in responses.items():
+            outputs.append(row_format.format(service, *[row.get(field, 'Unknown') for field in fields]))
+        log.log(level, msg='\n' + '\n'.join(outputs))
+
     def init_mixin_network(self):
-        """Initialize remote services"""
+        """Initialize remote services.
+
+        This method sends an EXPINFO message to all services, expecting exactly one of the responses
+        to contain main_sync: True, along with the experiment reference to use. It then sends an
+        EXPINIT message to all services.
+        """
         # Determine experiment reference from main sync
         # TODO Add iblrig_version, iblutil_proc_version
         is_main_sync = self.hardware_settings.get('MAIN_SYNC', False)
         if is_main_sync:
             raise NotImplementedError
         assert self.one
-        r = self.remote_rigs.send('EXPINFO', {'subject': self.session_info['SUBJECT_NAME']}, wait=True)
-        if isinstance(r, Exception):
-            log.error('Error initializing network mixin: %s', r)
-            self.remote_rigs.stop_event.set()
-            raise r
+        r = self.communicate('EXPINFO', 'CONNECTED', {'subject': self.session_info['SUBJECT_NAME']})
         assert sum(x[-1]['main_sync'] for x in r.values()) == 1, 'one main sync expected'
         main_rig_name, (status, info) = next((k, v) for k, v in r.items() if v[-1]['main_sync'])
         # TODO What is the behaviour when subject doesn't match? Should an error be raised on the remote rig or here?
@@ -1221,22 +1275,20 @@ class NetworkMixin(BaseSession):
 
         # exp_ref = ConversionMixin.path2ref(self.paths['SESSION_FOLDER'], as_dict=False)
         exp_ref = self.one.dict2ref(self.exp_ref)
-        r = self.remote_rigs.send('EXPINIT', {'exp_ref': exp_ref}, wait=True)
-        if isinstance(r, Exception):
-            log.error('Error initializing network mixin: %s', r)
-            self.remote_rigs.stop_event.set()
-            raise r
+        self.communicate('EXPINIT', {'exp_ref': exp_ref})
 
     def start_mixin_network(self):
         exp_ref = ConversionMixin.path2ref(self.paths['SESSION_FOLDER'], as_dict=False)
-        r = self.remote_rigs.send('EXPSTART', exp_ref, wait=True)
+        self.communicate('EXPSTART', exp_ref)
 
     def stop_mixin_network(self):
-        r = self.remote_rigs.send('EXPEND', wait=True)
+        self.communicate('EXPEND')
 
     def cleanup_mixin_network(self):
-        self.remote_rigs.stop_event.set()
-        self.remote_rigs.cleanup(notify_services=False)
+        """Clean up services."""
+        self.remote_rigs.close()
+        if self.remote_rigs.is_connected:
+            log.warning('Failed to properly clean up network mixin')
 
 
 class SpontaneousSession(BaseSession):

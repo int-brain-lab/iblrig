@@ -73,6 +73,7 @@ from dataclasses import dataclass
 
 # from threading import Thread
 from urllib.parse import urlparse
+from weakref import WeakValueDictionary
 
 import yaml
 
@@ -90,7 +91,7 @@ log.setLevel(10)
 class Singleton(type):
     """A singleton class."""
 
-    _instances = {}
+    _instances = WeakValueDictionary()  # instance automatically destroyed when no longer referenced
 
     def __call__(cls, *args, **kwargs):
         """Ensure the same instance is returned."""
@@ -101,22 +102,29 @@ class Singleton(type):
 
 class Auxiliaries(metaclass=Singleton):
     services = None
-    connected = False
-    started = False
-    waiting = False
-    _remote_rigs = []
+    """iblutil.io.net.app.Services: A map of remote services."""
+    refresh_rate = 0.2
+    """float: How long to wait between checking message queue."""
+    _clients = {}
+    """dict: Map of remote service names and their corresponding URI."""
     _queued: dict[float, list] = {}
+    """dict: The messages queued for delivery by async thread."""
+    _awaiting: dict[threading.Event]
     _log: dict[float, dict] = {}
+    """dict: Map of request times and the remote responses."""
+    stop_event = None
+    """threading.Event: A thread event. Once set, thread stops listening and clean up services."""
 
     def __new__(cls, *args, **kwargs):
-        # FIXME Is this necessary?
-        cls.check = threading.Condition()  # todo for checking that services still up and connected
+        # FIXME Singleton pattern most likely not necessary
+        cls.response_received = threading.Condition()
+        cls.connected = threading.Condition()
         cls.stop_event = threading.Event()
         return super().__new__(cls)
 
     def __init__(self, clients):
         """
-        Connect to and communicate with one or more remote rigs.
+        Connect to and communicate with one or more remote rigs synchronously.
 
         Parameters
         ----------
@@ -125,31 +133,78 @@ class Auxiliaries(metaclass=Singleton):
         """
         # Load clients
         self._clients = clients or {}
-        self.refresh_rate = 0.2  # how long to wait between checking message queue
+        self.thread = threading.Thread(target=asyncio.run, args=(self.listen(),), name='network_coms')
+        self.thread.start()
 
-    def cleanup(self, notify_services=False):
-        if notify_services:
-            for rig in self.services:  # Notify all rigs?
-                rig.send([net.base.ExpMessage.EXPCLEANUP])
+    @property
+    def is_connected(self) -> bool:
+        """bool: True if successfully connected to services."""
+        return any(self.services or []) and self.services.is_connected
+
+    @property
+    def is_running(self) -> bool:
+        """bool: True if listen is running on another thread."""
+        return self.stop_event and not self.stop_event.is_set()
+
+    def clear_message_queue(self):
+        """
+        Clear queued messages.
+
+        Returns
+        -------
+        int
+            The number of aborted messages.
+        """
+        n_aborted = len(self._queued)
+        self._queued.clear()
+        log.debug('%i remote services messages aborted', n_aborted)
+        return n_aborted
+
+    async def cleanup(self, notify_services=False):
+        """
+        Close connections and cleanup services.
+
+        This method closes all service communicators and cancels any pending callbacks.
+
+        Parameters
+        ----------
+        notify_services : bool
+            If true, send EXPCLEANUP message to remote devices before cleanup.
+        """
+        self._queued.clear()
+        if notify_services:  # Send cleanup message to services without await response
+            await self.services._signal(net.base.ExpMessage.EXPCLEANUP, 'cleanup', reverse=True, concurrent=True)
         self.services.close()
 
-    async def create(self):
-        self._remote_rigs = [await net.app.EchoProtocol.client(uri, name) for name, uri in self._clients.items()]
-        self.services = net.app.Services(self._remote_rigs, timeout=10)
-        log.debug('Connected...')
-        self.connected = True
-        # Assign a callback to all clients
-        callback = lambda _, addr: print('{}:{} started'.format(*addr))
-        self.services.assign_callback('EXPSTART', callback)
+    def close(self):
+        """Close communicators and wait for thread to terminate."""
+        self.clear_message_queue()
+        self.stop_event.set()
+        self.thread.join(timeout=5)  # wait for thread to exit
 
-    async def start(self):
-        responses = await self.services.start('2022-01-01_1_subject', concurrent=False)
-        self.started = True
+    async def create(self):
+        """
+        Create remote services object.
+
+        Instantiates communicator objects which establish the UDP connections, wraps them in the
+        Service class for bulk messaging, sets connected property to True and assigns some logging
+        callbacks. This should be called from a daemon thread.
+        """
+        with self.connected:
+            remote_rigs = [await net.app.EchoProtocol.client(uri, name) for name, uri in self._clients.items()]
+            self.services = net.app.Services(remote_rigs, timeout=10)
+            self.connected.notify()
+        log.debug('Connected...')
+        # Assign a callback to all clients
+        self.services.assign_callback('EXPSTART', lambda _, addr: print('{}:{} started'.format(*addr)))
 
     async def listen(self):
-        """This should be called from another thread.
-        TODO Handle cleanup; disconnect before thread destroyed
-        TODO Use asyncio.Queue?
+        """
+        Listen for messages in queue and push to remote services.
+
+        Creates service communicators then awaits messages added to the queue. Once added, these
+        are sent to the remote services and the collated responses are added to the log.
+        Exits only after stop event is set. This should be called from a daemon thread.
         """
         await self.create()
         while not self.stop_event.is_set():
@@ -163,8 +218,7 @@ class Auxiliaries(metaclass=Singleton):
                 try:
                     match event:
                         case net.base.ExpMessage.EXPSTART:
-                            exp_ref, data = args
-                            responses = await self.services.start(exp_ref, data)
+                            responses = await self.services.start(*args)
                         case net.base.ExpMessage.EXPINIT:
                             responses = await self.services.init(*args)
                         case net.base.ExpMessage.EXPEND | net.base.ExpMessage.EXPINTERRUPT:
@@ -178,30 +232,69 @@ class Auxiliaries(metaclass=Singleton):
                             #             yield x
                             #
                             # res = await anext(first(asyncio.as_completed(tasks), lambda r: r[-1]['main_sync']))
-                            responses = await self.services._signal(event, 'confirmed_send', [event, *args])
+                            responses = await self.services.info(event, *args)
                         case net.base.ExpMessage.ALYX:
                             responses = await self.services.alyx(*args)
                         case _:
-                            raise NotImplementedError
-                except asyncio.TimeoutError as ex:
+                            responses = NotImplementedError(event)
+                except asyncio.TimeoutError as ex:  # TODO broaden exception
                     log.error('Timeout error: %s', ex)
                     responses = ex
-                self._log[request_time] = responses
-                del self._queued[request_time]
+                with self.response_received:
+                    self._log[request_time] = responses
+                    if request_time in self._queued:  # may have been removed if `close` called
+                        del self._queued[request_time]  # remove from queue
+                    self.response_received.notify()
             if not self.stop_event.is_set():
                 await asyncio.sleep(self.refresh_rate)
-        self.cleanup()
+        await self.cleanup()
 
-    def send(self, message: net.base.ExpMessage, *args, wait=False, **kwargs):
-        # TODO Rename to push or queue?
-        # TODO Handle timeouts
+    def push(self, message: net.base.ExpMessage, *args, wait=False, **kwargs):
+        """Queue message for dispatch to remote services.
+
+        This method synchronously logs the request time and pushes the message to the queue for the
+        asynchronous thread to handle.
+
+        Parameters
+        ----------
+        message : iblutil.io.net.base.ExpMessage
+            An experiment message to send to remote services.
+        args : any
+            One or more optional variables to send.
+        wait : bool
+            If True, this method is blocking and once all messages are received (or timed out) the
+            collated responses are returned. Otherwise the request timestamp is returned for use as
+            a log key when fetching the responses in a non-blocking manner.
+        kwargs
+            Optional keyword arguments to use in calling communicator methods (currently unused).
+
+        Returns
+        -------
+        Exception | dict | float
+            An exception if failed to receive all responses in time, otherwise a map of service
+            name and response if wait is true, or the request time if wait is false.
+
+        Raises
+        ------
+        RuntimeError
+            The async thread failed to return a response, most likely due to an error in the listen
+            method.
+        """
         request_time = time.time()
         message = net.base.ExpMessage.validate(message, allow_bitwise=False)
-        self._queued[request_time] = [message, args, kwargs]
-        refresh_rate = self.refresh_rate if wait is True else float(wait)
-        while wait and request_time in self._queued:
-            time.sleep(refresh_rate)
-        return self._log[request_time] if wait else request_time
+        assert request_time not in self._queued, 'too many requests sent at once'
+        assert self.is_running
+        # The expected max time for the thread to return control
+        thread_timeout = self.services.timeout + self.refresh_rate
+        with self.response_received:  # lock thread so it can't process the message before we can wait on it (very unlikely)
+            self._queued[request_time] = [message, args, kwargs]
+            if not wait:
+                return request_time
+            success = self.response_received.wait_for(lambda: request_time in self._log, timeout=thread_timeout)
+            if not success:
+                # probably a timeout or other failure
+                raise RuntimeError('Thread failed to return')
+            return self._log[request_time]
 
 
 def install_alyx_token(base_url, token):
@@ -415,15 +508,11 @@ async def read_stdin(loop=None):
 if __name__ == '__main__':
     lan_ip = net.base.hostname2ip()
     remote_rigs = Auxiliaries({'cameras': str(lan_ip) + ':99998', 'timeline': '192.168.1.236:99998'})
-    # Thread(target=remote_rigs.create).start()
-    # TODO switch to asyncio.to_thread?
-    _thread = threading.Thread(target=asyncio.run, args=(remote_rigs.listen(),))
-    _thread.start()
     alyx = AlyxClient()
     alyx.authenticate('miles')
     assert alyx.is_logged_in
-    r = remote_rigs.send('ALYX', alyx, wait=True)
-    r = remote_rigs.send('EXPINFO', dict(subject='subject'), wait=True)
+    r = remote_rigs.push('ALYX', alyx, wait=True)
+    r = remote_rigs.push('EXPINFO', dict(subject='subject'), wait=True)
     # assert sum(x[-1]['main_sync'] for x in r.values()), 'one main sync expected'
     #
     #
