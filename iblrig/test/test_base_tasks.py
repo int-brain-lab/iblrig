@@ -9,9 +9,9 @@ import argparse
 import copy
 import logging
 import tempfile
-import time
 import unittest
 from pathlib import Path
+from threading import Timer
 from unittest import mock
 
 import numpy as np
@@ -271,9 +271,6 @@ class _PauseChoiceWorldSession(ChoiceWorldSession):
 
     def _delete_pause_flag(self):
         if self.trial_num == self.pause_trial and self.pause_flag.exists():
-            t0 = time.time()
-            while time.time() - t0 < 0.1:
-                pass  # actually sleep at this point to ensure we have non-zero pause duration
             self.pause_flag.unlink()
 
     @property
@@ -284,6 +281,7 @@ class _PauseChoiceWorldSession(ChoiceWorldSession):
         # simulate pause button press by user
         if self.pause_trial is not None and self.pause_trial == self.trial_num:
             self.pause_flag.touch()
+            Timer(0.1, self._delete_pause_flag).start()
         if self.stop_trial is not None and self.stop_trial == self.trial_num:
             self.pause_flag.with_name('.stop').touch()
 
@@ -302,8 +300,7 @@ class TestBaseChoiceWorld(IntegrationFullRuns):
 
     create_subject = False  # don't create dummy subject on Alyx during super class setup
 
-    @mock.patch('iblrig.base_choice_world.time.sleep')
-    def test_pause_and_stop(self, sleep_mock):
+    def test_pause_and_stop(self):
         """Test choice world pause and stop flag behaviour in _run method."""
         # Instantiate special task that touches pause and stop flags on specified trials
         self.task = _PauseChoiceWorldSession(**self.kwargs)
@@ -312,8 +309,6 @@ class TestBaseChoiceWorld(IntegrationFullRuns):
         self.task.pause_trial = 3  # simulate pause on 3rd trial
         self.task.stop_trial = 5  # simulate stop on 5th trial
 
-        # When time.sleep called during pause, make sure we delete the flag to simulate unpause
-        sleep_mock.side_effect = lambda _: self.task._delete_pause_flag()
         with self.assertLogs('iblrig.base_choice_world', 20) as lg:
             self.task.run()
 
@@ -322,6 +317,7 @@ class TestBaseChoiceWorld(IntegrationFullRuns):
         pause_log = next((x for x in lg.records if x.getMessage().startswith('Pausing')), None)
         self.assertIsNotNone(pause_log)
         self.assertRegex(pause_log.getMessage(), r'Pausing [\w\s]+ ' + str(self.task.pause_trial))
+
         # Check we stopped after the expected trial
         self.assertEqual(self.task.session_info.NTRIALS, self.task.stop_trial + 1, 'failed to stop early')
         stop_flag = self.task.paths.SESSION_FOLDER.joinpath('.stop')
