@@ -78,7 +78,6 @@ test = [
     "pytest>=8.2.2",
     "pytest-cov>=5.0.0",
     "ruff>=0.5.1",
-    "mypy>=1.10.1",
 ]
 doc = [
     "sphinx>=7.3.7",
@@ -86,7 +85,8 @@ doc = [
     "sphinx-lesson>=0.8.16",
     "myst-parser>=3.0.1",
 ]
-types = [
+typing = [
+    "mypy>=1.10.1",
     "PyQt5-stubs>=5.15",
     "types-PyYAML>=6.0.12.20240311",
     "types-requests>=2.32.0.20240622",
