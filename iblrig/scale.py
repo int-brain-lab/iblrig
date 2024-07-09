@@ -20,7 +20,6 @@ class ScaleData:
 
 
 class Scale(SerialSingleton):
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, baudrate=9600, timeout=5, **kwargs)
         self.assert_setting('ON')
