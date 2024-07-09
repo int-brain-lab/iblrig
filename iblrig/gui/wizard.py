@@ -327,7 +327,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.tabWidget.currentChanged.connect(self._on_switch_tab)
 
         # username
-        if self.model.iblrig_settings.ALYX_URL is not None:
+        if self.iblrig_settings.ALYX_URL is not None:
             self.uiLineEditUser.returnPressed.connect(lambda w=self.uiLineEditUser: self._log_in_or_out(username=w.text()))
             self.uiPushButtonLogIn.released.connect(lambda w=self.uiLineEditUser: self._log_in_or_out(username=w.text()))
         else:
@@ -338,14 +338,14 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.uiPushFlush.clicked.connect(self.flush)
         self.uiPushReward.clicked.connect(self.model.free_reward)
         self.uiPushReward.setStatusTip(
-            f'Click to grant a free reward ({self.model.hardware_settings.device_valve.FREE_REWARD_VOLUME_UL:.1f} μL)'
+            f'Click to grant a free reward ({self.hardware_settings.device_valve.FREE_REWARD_VOLUME_UL:.1f} μL)'
         )
         self.uiPushStatusLED.setChecked(self.settings.value('bpod_status_led', True, bool))
         self.uiPushStatusLED.toggled.connect(self.toggle_status_led)
         self.toggle_status_led(self.uiPushStatusLED.isChecked())
 
         # statusbar / disk stats
-        local_data = self.model.iblrig_settings['iblrig_local_data_path']
+        local_data = self.iblrig_settings['iblrig_local_data_path']
         local_data = Path(local_data) if local_data else Path.home().joinpath('iblrig_data')
         self.uiDiskSpaceIndicator = DiskSpaceIndicator(parent=self.statusbar, directory=local_data)
         self.uiDiskSpaceIndicator.setMaximumWidth(70)
@@ -358,7 +358,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
 
         # disable control of LED if Bpod does not have the respective capability
         try:
-            bpod = Bpod(self.model.hardware_settings['device_bpod']['COM_BPOD'], skip_initialization=True)
+            bpod = Bpod(self.hardware_settings['device_bpod']['COM_BPOD'], skip_initialization=True)
             self.uiPushStatusLED.setEnabled(bpod.can_control_led)
         except SerialException:
             pass
@@ -386,6 +386,14 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         update_worker = Worker(check_for_updates)
         update_worker.signals.result.connect(self._on_check_update_result)
         QThreadPool.globalInstance().start(update_worker)
+
+    @property
+    def iblrig_settings(self) -> RigSettings:
+        return self.model.iblrig_settings
+
+    @property
+    def hardware_settings(self) -> HardwareSettings:
+        return self.model.hardware_settings
 
     def _get_subject_details(self, subject):
         worker = Worker(lambda: get_subject_training_info(subject))
@@ -432,10 +440,10 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         pass
 
     def _on_validate_hardware(self) -> None:
-        SystemValidationDialog(self, hardware_settings=self.model.hardware_settings, rig_settings=self.model.iblrig_settings)
+        SystemValidationDialog(self, hardware_settings=self.hardware_settings, rig_settings=self.iblrig_settings)
 
     def _on_calibrate_frame2ttl(self) -> None:
-        Frame2TTLCalibrationDialog(self, hardware_settings=self.model.hardware_settings)
+        Frame2TTLCalibrationDialog(self, hardware_settings=self.hardware_settings)
 
     def _on_calibrate_valve(self) -> None:
         ValveCalibrationDialog(self)
@@ -447,7 +455,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         This code will be removed and is here only for convenience while users transition from v7 to v8
         """
         if not (local_path := Path(r'C:\iblrig_data\Subjects')).exists():
-            local_path = self.model.iblrig_settings['iblrig_local_data_path']
+            local_path = self.iblrig_settings['iblrig_local_data_path']
         session_path = QtWidgets.QFileDialog.getExistingDirectory(
             self, 'Select Session Path', str(local_path), QtWidgets.QFileDialog.ShowDirsOnly
         )
@@ -532,7 +540,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
             elif not alyx_reachable():
                 self._show_error_dialog(
                     title='Error connecting to Alyx',
-                    description=f'Cannot connect to {self.model.iblrig_settings.ALYX_URL}',
+                    description=f'Cannot connect to {self.iblrig_settings.ALYX_URL}',
                     leads=[
                         'Is `ALYX_URL` in `iblrig_settings.yaml` set correctly?',
                         'Is your machine allowed to connect to Alyx?',
@@ -588,7 +596,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
             self.settings.setValue('pos', self.pos())
             self.settings.setValue('bpod_status_led', self.uiPushStatusLED.isChecked())
             self.toggle_status_led(is_toggled=True)
-            bpod = Bpod(self.model.hardware_settings['device_bpod']['COM_BPOD'])  # bpod is a singleton
+            bpod = Bpod(self.hardware_settings['device_bpod']['COM_BPOD'])  # bpod is a singleton
             bpod.close()
             event.accept()
 
@@ -897,7 +905,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 self.model.raw_data_folder = task.paths['SESSION_RAW_DATA_FOLDER']
 
                 # disable Bpod status LED
-                bpod = Bpod(self.model.hardware_settings['device_bpod']['COM_BPOD'])
+                bpod = Bpod(self.hardware_settings['device_bpod']['COM_BPOD'])
                 bpod.set_status_led(False)
 
                 # close Bpod singleton so subprocess can access use the port
@@ -1000,7 +1008,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self._enable_ui_elements()
 
         # recall state of Bpod status LED
-        bpod = Bpod(self.model.hardware_settings['device_bpod']['COM_BPOD'])
+        bpod = Bpod(self.hardware_settings['device_bpod']['COM_BPOD'])
         bpod.set_status_led(self.uiPushStatusLED.isChecked())
 
         if (task_settings_file := Path(self.model.raw_data_folder).joinpath('_iblrig_taskSettings.raw.json')).exists():
@@ -1047,7 +1055,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
 
         try:
             bpod = Bpod(
-                self.model.hardware_settings['device_bpod']['COM_BPOD'],
+                self.hardware_settings['device_bpod']['COM_BPOD'],
                 skip_initialization=True,
                 disable_behavior_ports=[1, 2, 3],
             )
@@ -1065,7 +1073,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self._enable_ui_elements()
 
         try:
-            bpod = Bpod(self.model.hardware_settings['device_bpod']['COM_BPOD'], skip_initialization=True)
+            bpod = Bpod(self.hardware_settings['device_bpod']['COM_BPOD'], skip_initialization=True)
             bpod.set_status_led(is_toggled)
         except (OSError, BpodErrorException, AttributeError):
             self.uiPushStatusLED.setChecked(False)
@@ -1095,7 +1103,7 @@ class LoginWindow(QtWidgets.QDialog, Ui_login):
         super().__init__(parent)
         self.setupUi(self)
         self.layout().setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
-        self.labelServer.setText(str(parent.model.iblrig_settings['ALYX_URL']))
+        self.labelServer.setText(str(parent.iblrig_settings['ALYX_URL']))
         self.lineEditUsername.setText(username)
         self.lineEditPassword.setText(password)
         self.checkBoxRememberMe.setChecked(remember)
