@@ -166,7 +166,7 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
             'Fill the water reservoir to the level used during experiments.\n\n'
             'Place a small beaker on the scale and position the lick spout directly above.\n\n'
             'The opening of the spout should be placed at a vertical position identical to the one used during '
-            'experiments.'
+            'experiments.',
         )
         self.states['beaker'].entered.connect(self.clear_calibration)
         self.states['beaker'].assignProperty(self.pushButtonRestart, 'visible', False)
