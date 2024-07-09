@@ -8,6 +8,7 @@ Changelog
 * fixed potential deadlock with SerialSingleton
 * log session call / commandline parameters to disk
 * store pause durations to trial info
+* fix "galopping" valve during valve calibration
 
 8.20.0
 ------
