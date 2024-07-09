@@ -902,8 +902,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 # close Bpod singleton so subprocess can access use the port
                 bpod.close()
 
-                # runs the python command
-                # cmd = [shutil.which('python')]
+                # build the argument list for the subprocess
                 cmd = []
                 if self.model.task_name:
                     cmd.extend([str(self.model.all_tasks[self.model.task_name])])
