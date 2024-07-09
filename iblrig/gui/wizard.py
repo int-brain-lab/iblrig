@@ -16,7 +16,7 @@ from pathlib import Path
 import pyqtgraph as pg
 from pydantic import ValidationError
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import QThread, QThreadPool
+from PyQt5.QtCore import QThreadPool
 from PyQt5.QtWidgets import QStyle
 from requests import HTTPError
 from serial import SerialException
@@ -104,8 +104,6 @@ class RigWizardModel:
     subject: str | None = None
     session_folder: Path | None = None
     test_subject_name = 'test_subject'
-    subject_details_worker = None
-    subject_details: tuple | None = None
     free_reward_time: float | None = None
     file_iblrig_settings: Path | str | None = None
     file_hardware_settings: Path | str | None = None
@@ -240,16 +238,11 @@ class RigWizardModel:
             log.error('Cannot find bpod - is it connected?')
             return
 
-    def get_subject_details(self, subject):
-        self.subject_details_worker = SubjectDetailsWorker(subject)
-        self.subject_details_worker.finished.connect(self.process_subject_details)
-        self.subject_details_worker.start()
-
-    def process_subject_details(self):
-        self.subject_details = SubjectDetailsWorker.result
-
 
 class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
+    subject_details: tuple[dict, dict] | None = None
+    new_subject_details = QtCore.pyqtSignal(dict, object)
+
     def __init__(self, **kwargs):
         super().__init__()
         self.setupUi(self)
@@ -309,12 +302,17 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.uiActionCalibrateValve.triggered.connect(self._on_calibrate_valve)
         self.uiActionTrainingLevelV7.triggered.connect(self._on_menu_training_level_v7)
         self.uiComboTask.currentTextChanged.connect(self.controls_for_extra_parameters)
-        self.uiComboSubject.currentTextChanged.connect(self.model.get_subject_details)
+
+        self.uiComboSubject.currentTextChanged.connect(self._get_subject_details)
         self.uiPushStart.clicked.connect(self.start_stop)
         self.uiPushPause.clicked.connect(self.pause)
         self.uiListProjects.clicked.connect(self._enable_ui_elements)
         self.uiListProcedures.clicked.connect(self._enable_ui_elements)
         self.lineEditSubject.textChanged.connect(self._filter_subjects)
+
+        self._get_subject_details(self.uiComboSubject.currentText())
+        self.new_subject_details.connect(self._set_automatic_values)
+        self.uiComboTask.currentTextChanged.connect(lambda: self._set_automatic_values(*self.subject_details))
 
         self.running_task_process = None
         self.task_arguments = dict()
@@ -388,6 +386,15 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         update_worker = Worker(check_for_updates)
         update_worker.signals.result.connect(self._on_check_update_result)
         QThreadPool.globalInstance().start(update_worker)
+
+    def _get_subject_details(self, subject):
+        worker = Worker(lambda: get_subject_training_info(subject))
+        worker.signals.result.connect(self._on_subject_details_result)
+        QThreadPool.globalInstance().start(worker)
+
+    def _on_subject_details_result(self, result):
+        self.subject_details = result
+        self.new_subject_details.emit(*result)
 
     def _show_error_dialog(
         self,
@@ -761,6 +768,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                     widget.setMaximum(5)
                     widget.setMinimum(-1)
                     widget.setValue(-1)
+                    widget.setObjectName('training_phase')
 
                 case 'adaptive_reward':
                     label = 'Reward Amount, μl'
@@ -774,6 +782,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                         lambda val, a=arg, m=minimum: self._set_task_arg(a.option_strings[0], str(val if val > m else -1))
                     )
                     widget.valueChanged.emit(widget.value())
+                    widget.setObjectName('adaptive_reward')
 
                 case 'reward_set_ul':
                     label = 'Reward Set, μl'
@@ -789,6 +798,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                         lambda val, a=arg, m=minimum: self._set_task_arg(a.option_strings[0], str(val if val > m else -1))
                     )
                     widget.valueChanged.emit(widget.value())
+                    widget.setObjectName('adaptive_gain')
 
                 case 'reward_amount_ul':
                     label = 'Reward Amount, μl'
@@ -814,6 +824,21 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         if layout.rowCount() == 0:
             layout.addRow(self.tr('(none)'), None)
             layout.itemAt(0, 0).widget().setEnabled(False)
+
+    def _set_automatic_values(self, training_info: dict, session_info: dict | None):
+        def _helper(name: str, format: str):
+            value = training_info.get(name)
+            if (widget := self.uiGroupTaskParameters.findChild(QtWidgets.QWidget, name)) is not None:
+                if value is None:
+                    default = ' (default)' if session_info is None else ''
+                    widget.setSpecialValueText(f'automatic{default}')
+                else:
+                    default = ', default' if session_info is None else ''
+                    widget.setSpecialValueText(f'automatic ({value:{format}}{default})')
+
+        _helper('training_phase', 'd')
+        _helper('adaptive_reward', '0.1f')
+        _helper('adaptive_gain', '0.1f')
 
     def _set_task_arg(self, key, value):
         self.task_arguments[key] = value
@@ -1063,18 +1088,6 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.uiGroupTaskParameters.setEnabled(not is_running)
         self.uiGroupTools.setEnabled(not is_running)
         self.repaint()
-
-
-class SubjectDetailsWorker(QThread):
-    subject_name: str | None = None
-    result: tuple[dict, dict] | None = None
-
-    def __init__(self, subject_name):
-        super().__init__()
-        self.subject_name = subject_name
-
-    def run(self):
-        self.result = get_subject_training_info(self.subject_name)
 
 
 class LoginWindow(QtWidgets.QDialog, Ui_login):

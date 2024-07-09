@@ -9,6 +9,7 @@ Changelog
 * log session call / commandline parameters to disk
 * store pause durations to trial info
 * fix "galopping" valve during valve calibration
+* display values of automatically inferred task parameters
 
 8.20.0
 ------
