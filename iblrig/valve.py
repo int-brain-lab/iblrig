@@ -89,7 +89,11 @@ class Valve:
         return set(np.linspace(self.calibration_range[0], self.calibration_range[1], self._settings.WATER_CALIBRATION_N))
 
     @property
-    def free_reward_time(self) -> float:
+    def free_reward_time_sec(self) -> float:
+        return self.values.ul2ms(self._settings.FREE_REWARD_VOLUME_UL) / 1000.0
+
+    @property
+    def free_reward_volume_ul(self) -> float:
         return self._settings.FREE_REWARD_VOLUME_UL
 
     @property

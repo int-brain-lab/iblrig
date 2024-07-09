@@ -47,6 +47,7 @@ from iblrig.path_helper import load_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings, RigSettings
 from iblrig.raw_data_loaders import load_task_jsonable
 from iblrig.tools import alyx_reachable, internet_available
+from iblrig.valve import Valve
 from iblrig.version_management import check_for_updates, get_changelog
 from iblutil.util import setup_logger
 from one.webclient import AlyxClient
@@ -115,18 +116,7 @@ class RigWizardModel:
             HardwareSettings, filename=self.file_hardware_settings, do_raise=True
         )
 
-        # calculate free reward time
-        class FakeSession(EmptySession, ValveMixin):
-            pass
-
-        fake_session = FakeSession(
-            subject='gui_init_subject',
-            file_hardware_settings=self.file_hardware_settings,
-            file_iblrig_settings=self.file_iblrig_settings,
-        )
-        fake_session.task_params.update({'AUTOMATIC_CALIBRATION': True, 'REWARD_AMOUNT_UL': 10})
-        fake_session.init_mixin_valve()
-        self.free_reward_time = fake_session.compute_reward_time(self.hardware_settings.device_valve.FREE_REWARD_VOLUME_UL)
+        self.free_reward_time = Valve(self.hardware_settings.device_valve).free_reward_time_sec
 
         if self.iblrig_settings.ALYX_URL is not None:
             self.alyx = AlyxClient(base_url=str(self.iblrig_settings.ALYX_URL), silent=True)
@@ -248,11 +238,6 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         super().__init__()
         self.setupUi(self)
 
-        # show splash-screen / store validation results
-        splash_screen = Splash()
-        splash_screen.exec()
-        self.validation_results = splash_screen.validation_results
-
         # load tabs
         self.tabLog = TabLog(parent=self.tabWidget)
         self.tabData = TabData(parent=self.tabWidget)
@@ -266,7 +251,6 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
 
         self.debug = kwargs.get('debug', False)
         self.settings = QtCore.QSettings()
-        self.move(self.settings.value('pos', self.pos(), QtCore.QPoint))
 
         try:
             self.model = RigWizardModel()
@@ -354,9 +338,6 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.statusbar.setContentsMargins(0, 0, 6, 0)
         self.controls_for_extra_parameters()
 
-        # self.layout().setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
-        self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowFullscreenButtonHint)
-
         # disable control of LED if Bpod does not have the respective capability
         try:
             bpod = Bpod(self.hardware_settings['device_bpod']['COM_BPOD'], skip_initialization=True)
@@ -364,6 +345,20 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         except SerialException:
             pass
 
+        # show splash-screen / store validation results
+        splash_screen = Splash(parent=self)
+        splash_screen.exec()
+        self.validation_results = splash_screen.validation_results
+
+        # check for update
+        update_worker = Worker(check_for_updates)
+        update_worker.signals.result.connect(self._on_check_update_result)
+        QThreadPool.globalInstance().start(update_worker)
+
+        # show GUI
+        self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowFullscreenButtonHint)
+        self.move(self.settings.value('pos', self.pos(), QtCore.QPoint))
+        self.resize(self.settings.value('size', self.size(), QtCore.QSize))
         self.show()
 
         # show validation errors / warnings:
@@ -383,10 +378,6 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
             msg_box.setText(text)
             msg_box.exec()
 
-        # check for update
-        update_worker = Worker(check_for_updates)
-        update_worker.signals.result.connect(self._on_check_update_result)
-        QThreadPool.globalInstance().start(update_worker)
 
     @property
     def iblrig_settings(self) -> RigSettings:
@@ -595,6 +586,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
     def closeEvent(self, event) -> None:
         def accept() -> None:
             self.settings.setValue('pos', self.pos())
+            self.settings.setValue('size', self.size())
             self.settings.setValue('bpod_status_led', self.uiPushStatusLED.isChecked())
             self.toggle_status_led(is_toggled=True)
             bpod = Bpod(self.hardware_settings['device_bpod']['COM_BPOD'])  # bpod is a singleton
