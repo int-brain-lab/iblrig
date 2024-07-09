@@ -25,7 +25,7 @@ from typing_extensions import override
 import iblrig.hardware_validation
 import iblrig.path_helper
 import iblrig_tasks
-from iblrig.base_tasks import EmptySession, ValveMixin
+from iblrig.base_tasks import EmptySession
 from iblrig.choiceworld import get_subject_training_info, training_phase_from_contrast_set
 from iblrig.constants import BASE_DIR
 from iblrig.gui.frame2ttl import Frame2TTLCalibrationDialog
@@ -377,7 +377,6 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
             text = text + '<br><br>\nPlease refer to the System Validation tool for more details.'
             msg_box.setText(text)
             msg_box.exec()
-
 
     @property
     def iblrig_settings(self) -> RigSettings:
@@ -887,7 +886,10 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                     return
 
                 self.controller2model()
+
+                logging.disable(logging.INFO)
                 task = EmptySession(subject=self.model.subject, append=self.uiCheckAppend.isChecked(), interactive=False)
+                logging.disable(logging.NOTSET)
                 self.model.session_folder = task.paths['SESSION_FOLDER']
                 if self.model.session_folder.joinpath('.stop').exists():
                     self.model.session_folder.joinpath('.stop').unlink()
