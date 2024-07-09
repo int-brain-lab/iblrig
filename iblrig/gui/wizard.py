@@ -1,6 +1,5 @@
 import argparse
 import ctypes
-import importlib
 import json
 import logging
 import os
@@ -11,6 +10,7 @@ import sys
 import traceback
 from collections import OrderedDict
 from dataclasses import dataclass
+from importlib.util import module_from_spec, spec_from_file_location
 from pathlib import Path
 
 import pyqtgraph as pg
@@ -45,6 +45,7 @@ from iblrig.hardware_validation import Status
 from iblrig.misc import _get_task_argument_parser
 from iblrig.path_helper import load_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings, RigSettings
+from iblrig.raw_data_loaders import load_task_jsonable
 from iblrig.tools import alyx_reachable, internet_available
 from iblrig.version_management import check_for_updates, get_changelog
 from iblutil.util import setup_logger
@@ -73,7 +74,7 @@ PROCEDURES = [
 ]
 PROJECTS = ['ibl_neuropixel_brainwide_01', 'practice']
 
-ANSI_COLORS: dict[bytes, str] = {'31': 'Red', '32': 'Green', '33': 'Yellow', '35': 'Magenta', '36': 'Cyan', '37': 'White'}
+ANSI_COLORS: dict[str, str] = {'31': 'Red', '32': 'Green', '33': 'Yellow', '35': 'Magenta', '36': 'Cyan', '37': 'White'}
 REGEX_STDOUT = re.compile(
     r'^\x1b\[(?:\d;)?(?:\d+;)?'
     r'(?P<color>\d+)m[\d-]*\s+'
@@ -158,8 +159,8 @@ class RigWizardModel:
         :return:
         """
         assert task_name
-        spec = importlib.util.spec_from_file_location('task', self.all_tasks[task_name])
-        task = importlib.util.module_from_spec(spec)
+        spec = spec_from_file_location('task', self.all_tasks[task_name])
+        task = module_from_spec(spec)
         sys.modules[spec.name] = task
         spec.loader.exec_module(task)
         return task.Session.extra_parser()
@@ -465,7 +466,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         if file_jsonable is None:
             QtWidgets.QMessageBox().critical(self, 'Error', f'No jsonable found in {session_path}')
             return
-        trials_table, _ = iblrig.raw_data_loaders.load_task_jsonable(file_jsonable)
+        trials_table, _ = load_task_jsonable(file_jsonable)
         if trials_table.empty:
             QtWidgets.QMessageBox().critical(self, 'Error', f'No trials found in {session_path}')
             return
@@ -675,7 +676,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
             layout.removeRow(0)
 
         for arg in args:
-            param = max(arg.option_strings, key=len)
+            param = str(max(arg.option_strings, key=len))
             label = param.replace('_', ' ').replace('--', '').title()
 
             # create widget for bool arguments
@@ -850,10 +851,6 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
 
     def _set_task_arg(self, key, value):
         self.task_arguments[key] = value
-
-    def alyx_connect(self):
-        self.model.connect(gui=True)
-        self.model2view()
 
     def _filter_subjects(self):
         filter_str = self.lineEditSubject.text().lower()
@@ -1149,14 +1146,6 @@ class UpdateNotice(QtWidgets.QDialog, Ui_update):
 
     version : str
         The version of the available update.
-
-    Attributes
-    ----------
-    None
-
-    Methods
-    -------
-    None
     """
 
     def __init__(self, parent: QtWidgets.QWidget, version: str) -> None:
