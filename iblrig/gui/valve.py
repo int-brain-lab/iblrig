@@ -143,7 +143,7 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
 
     @QtCore.pyqtSlot(bool)
     def define_and_start_state_machine(self, use_scale: bool = False) -> None:
-        for state_name in ['start', 'beaker', 'flow', 'clear', 'tare', 'calibrate', 'finished', 'save']:
+        for state_name in ['start', 'beaker', 'beaker2', 'flow', 'clear', 'tare', 'calibrate', 'finished', 'save']:
             self.states[state_name] = QtCore.QState(self.machine)
         self.machine.setInitialState(self.states['start'])
 
@@ -165,8 +165,8 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
             'text',
             'Fill the water reservoir to the level used during experiments.\n\n'
             'Place a small beaker on the scale and position the lick spout directly above.\n\n'
-            'Make sure that neither lick spout nor tubing touch the beaker or the scale and that water drops can freely fall '
-            'into the beaker.',
+            'The opening of the spout should be placed at a vertical position identical to the one used during '
+            'experiments.'
         )
         self.states['beaker'].entered.connect(self.clear_calibration)
         self.states['beaker'].assignProperty(self.pushButtonRestart, 'visible', False)
@@ -176,7 +176,17 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
         self.states['beaker'].assignProperty(self.pushButtonTareScale, 'enabled', use_scale)
         self.states['beaker'].assignProperty(self.pushButtonToggleValve, 'enabled', True)
         self.states['beaker'].assignProperty(self.pushButtonPulseValve, 'enabled', True)
-        self.states['beaker'].addTransition(self.commandLinkNext.clicked, self.states['flow'])
+        self.states['beaker'].addTransition(self.commandLinkNext.clicked, self.states['beaker2'])
+
+        # state 'beaker': ask user to position beaker on scale ---------------------------------------------------------
+        self.states['beaker2'].assignProperty(self.labelGuideHead, 'text', 'Preparation')
+        self.states['beaker2'].assignProperty(
+            self.labelGuideText,
+            'text',
+            'Make sure that neither lick spout nor tubing touch the beaker or the scale and that water drops can '
+            'freely fall into the beaker.',
+        )
+        self.states['beaker2'].addTransition(self.commandLinkNext.clicked, self.states['flow'])
 
         # state 'flow': prepare flow of water --------------------------------------------------------------------------
         self.states['flow'].assignProperty(self.labelGuideHead, 'text', 'Preparation')
@@ -397,5 +407,6 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
         self.scale_timer.stop()
         if self.machine.started:
             self.machine.stop()
-        self.bpod.stop_trial()
+        if self.bpod.is_connected:
+            self.bpod.stop_trial()
         self.deleteLater()
