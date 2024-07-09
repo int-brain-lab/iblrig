@@ -1,30 +1,22 @@
 repos:
 
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v4.6.0
     hooks:
     -   id: end-of-file-fixer
         types_or: [python, yaml, json, toml]
     -   id: trailing-whitespace
         types_or: [python, yaml, json, toml]
-    -   id: check-case-conflict
-    -   id: check-ast
     -   id: check-yaml
     -   id: check-json
     -   id: check-toml
     -   id: check-xml
-    -   id: check-vcs-permalinks
-    -   id: detect-private-key
-
--   repo: https://github.com/pre-commit/pygrep-hooks
-    rev: v1.10.0
-    hooks:
-    -   id: python-use-type-annotations
-    -   id: python-no-log-warn
-    -   id: text-unicode-replacement-char
 
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.3.5
+    rev: v0.5.1
     hooks:
     -   id: ruff
+        types_or: [ python, pyi ]
+        args: [ --fix ]
     -   id: ruff-format
+        types_or: [ python, pyi ]
