@@ -14,6 +14,7 @@ import inspect
 import json
 import logging
 import signal
+import sys
 import time
 import traceback
 from abc import ABC
@@ -104,6 +105,7 @@ class BaseSession(ABC):
         self._setup_loggers(level=log_level)
         if not isinstance(self, EmptySession):
             log.info(f'Running iblrig {iblrig.__version__}, pybpod version {pybpodapi.__version__}')
+        log.info(f'Session call: {" ".join(sys.argv)}')
         self.interactive = interactive
         self._one = one
         self.init_datetime = datetime.datetime.now()
@@ -158,7 +160,7 @@ class BaseSession(ABC):
         self._execute_mixins_shared_function('init_mixin')
         self.paths = self._init_paths(append=append)
         if not isinstance(self, EmptySession):
-            log.info(f'Session {self.paths.SESSION_RAW_DATA_FOLDER}')
+            log.info(f'Session raw data: {self.paths.SESSION_RAW_DATA_FOLDER}')
         # Prepare the experiment description dictionary
         self.experiment_description = self.make_experiment_description_dict(
             self.protocol_name,

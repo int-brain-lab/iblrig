@@ -4,7 +4,10 @@ Changelog
 
 8.20.1
 ------
-* use PDM for managing requirements
+* use PDM for managing dependencies
+* fixed potential deadlock with SerialSingleton
+* log session call / commandline parameters to disk
+* store pause durations to trial info
 
 8.20.0
 ------
