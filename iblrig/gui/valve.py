@@ -1,4 +1,3 @@
-import functools
 import logging
 from collections import OrderedDict
 from datetime import date
@@ -326,15 +325,16 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
             self.labelGuideText.setText(
                 'Trying to automatically clear one drop of water to obtain a defined starting point for calibration.'
             )
+            open_time_s = 0.05
             initial_grams = self.scale.get_stable_grams()
             self._clear_drop_counter = 0
-            timer_callback = functools.partial(self.clear_crop_callback, initial_grams)
-            self.clear_timer.timeout.connect(timer_callback)
-            self.clear_timer.start(500)
+            self.clear_timer.timeout.connect(lambda: self.clear_crop_callback(initial_grams, open_time_s))
+            self.clear_timer.start(500 + int(open_time_s * 1000))
 
     def clear_crop_callback(self, initial_grams: float, duration_s: float = 0.05):
         if self.scale.get_grams()[0] > initial_grams + 0.02:
             self.clear_timer.stop()
+            self.clear_timer.disconnect()
             self.drop_cleared.emit(self._clear_drop_counter)
             return
         self._clear_drop_counter += 1
