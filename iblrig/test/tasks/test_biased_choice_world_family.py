@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 from iblrig.raw_data_loaders import load_task_jsonable
-from iblrig.test.base import PATH_FIXTURES, TaskArgsMixin, BaseTestCases, IntegrationFullRuns
+from iblrig.test.base import PATH_FIXTURES, BaseTestCases, IntegrationFullRuns
 from iblrig_tasks._iblrig_tasks_biasedChoiceWorld.task import Session as BiasedChoiceWorldSession
 from iblrig_tasks._iblrig_tasks_ephysChoiceWorld.task import Session as EphysChoiceWorldSession
 from iblrig_tasks._iblrig_tasks_ImagingChoiceWorld.task import Session as ImagingChoiceWorldSession
@@ -101,7 +101,7 @@ class TestNeuroModulatorBiasedChoiceWorld(TestInstantiationBiased):
 class TestIntegrationFullRun(IntegrationFullRuns):
     def setUp(self) -> None:
         super().setUp()
-        self.task = BiasedChoiceWorldSession(one=self.one, **self.kwargs)
+        self.task = BiasedChoiceWorldSession(one=self.one, **self.task_kwargs)
 
     def test_task_biased(self):
         """
@@ -131,18 +131,18 @@ class TestIntegrationFullRun(IntegrationFullRuns):
         ses = self.one.alyx.rest(
             'sessions',
             'list',
-            subject=self.kwargs['subject'],
+            subject=self.task_kwargs['subject'],
             date=task.session_info['SESSION_START_TIME'][:10],
             number=task.session_info['SESSION_NUMBER'],
         )
         full_session = self.one.alyx.rest('sessions', 'read', id=ses[0]['id'])
-        self.assertEqual(set(full_session['projects']), set(self.kwargs['projects']))
-        self.assertEqual(set(full_session['procedures']), set(self.kwargs['procedures']))
+        self.assertEqual(set(full_session['projects']), set(self.task_kwargs['projects']))
+        self.assertEqual(set(full_session['procedures']), set(self.task_kwargs['procedures']))
         # and the water administered
         np.testing.assert_almost_equal(full_session['wateradmin_session_related'][0]['water_administered'], init_water / 1000)
         # and the related weighing
         wei = self.one.alyx.rest(
-            'weighings', 'list', nickname=self.kwargs['subject'], date=task.session_info['SESSION_START_TIME'][:10]
+            'weighings', 'list', nickname=self.task_kwargs['subject'], date=task.session_info['SESSION_START_TIME'][:10]
         )
         self.assertEqual(wei[0]['weight'], task.session_info['SUBJECT_WEIGHT'])
 

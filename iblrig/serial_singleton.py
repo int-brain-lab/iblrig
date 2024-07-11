@@ -21,7 +21,7 @@ class SerialSingletonException(serial.SerialException):
 class SerialSingleton(serial.Serial):
     _instances: dict[str | None, serial.Serial] = dict()
     _initialized = False
-    _lock = threading.Lock()
+    _lock = threading.RLock()
 
     def __new__(cls, port: str | None = None, serial_number: str | None = None, *args, **kwargs):
         # identify the device by its serial number

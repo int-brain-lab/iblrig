@@ -1,0 +1,2 @@
+'SPONTANEOUS_ACTIVITY_SECONDS': 600  # duration of spontaneous activity in seconds
+'SKIP_EVENT_REPLAY': False  # skip the event replay block

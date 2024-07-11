@@ -52,7 +52,7 @@ class ValveValues:
                 warnings.simplefilter('ignore')
                 try:
                     c, _ = scipy.optimize.curve_fit(
-                        self._fcn, self.open_times_ms, self.volumes_ul, bounds=([-np.inf, 0, 0], np.inf)
+                        self._fcn, self.open_times_ms, self.volumes_ul, p0=[0, 0, 0], bounds=([-np.inf, 0, 0], np.inf)
                     )
                 except RuntimeError:
                     c = [np.nan, np.nan, np.nan]
@@ -89,7 +89,11 @@ class Valve:
         return set(np.linspace(self.calibration_range[0], self.calibration_range[1], self._settings.WATER_CALIBRATION_N))
 
     @property
-    def free_reward_time(self) -> float:
+    def free_reward_time_sec(self) -> float:
+        return self.values.ul2ms(self._settings.FREE_REWARD_VOLUME_UL) / 1000.0
+
+    @property
+    def free_reward_volume_ul(self) -> float:
         return self._settings.FREE_REWARD_VOLUME_UL
 
     @property

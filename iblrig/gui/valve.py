@@ -1,4 +1,3 @@
-import functools
 import logging
 from collections import OrderedDict
 from datetime import date
@@ -143,7 +142,7 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
 
     @QtCore.pyqtSlot(bool)
     def define_and_start_state_machine(self, use_scale: bool = False) -> None:
-        for state_name in ['start', 'beaker', 'flow', 'clear', 'tare', 'calibrate', 'finished', 'save']:
+        for state_name in ['start', 'beaker', 'beaker2', 'flow', 'clear', 'tare', 'calibrate', 'finished', 'save']:
             self.states[state_name] = QtCore.QState(self.machine)
         self.machine.setInitialState(self.states['start'])
 
@@ -165,8 +164,8 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
             'text',
             'Fill the water reservoir to the level used during experiments.\n\n'
             'Place a small beaker on the scale and position the lick spout directly above.\n\n'
-            'Make sure that neither lick spout nor tubing touch the beaker or the scale and that water drops can freely fall '
-            'into the beaker.',
+            'The opening of the spout should be placed at a vertical position identical to the one used during '
+            'experiments.',
         )
         self.states['beaker'].entered.connect(self.clear_calibration)
         self.states['beaker'].assignProperty(self.pushButtonRestart, 'visible', False)
@@ -176,7 +175,17 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
         self.states['beaker'].assignProperty(self.pushButtonTareScale, 'enabled', use_scale)
         self.states['beaker'].assignProperty(self.pushButtonToggleValve, 'enabled', True)
         self.states['beaker'].assignProperty(self.pushButtonPulseValve, 'enabled', True)
-        self.states['beaker'].addTransition(self.commandLinkNext.clicked, self.states['flow'])
+        self.states['beaker'].addTransition(self.commandLinkNext.clicked, self.states['beaker2'])
+
+        # state 'beaker': ask user to position beaker on scale ---------------------------------------------------------
+        self.states['beaker2'].assignProperty(self.labelGuideHead, 'text', 'Preparation')
+        self.states['beaker2'].assignProperty(
+            self.labelGuideText,
+            'text',
+            'Make sure that neither lick spout nor tubing touch the beaker or the scale and that water drops can '
+            'freely fall into the beaker.',
+        )
+        self.states['beaker2'].addTransition(self.commandLinkNext.clicked, self.states['flow'])
 
         # state 'flow': prepare flow of water --------------------------------------------------------------------------
         self.states['flow'].assignProperty(self.labelGuideHead, 'text', 'Preparation')
@@ -316,15 +325,16 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
             self.labelGuideText.setText(
                 'Trying to automatically clear one drop of water to obtain a defined starting point for calibration.'
             )
+            open_time_s = 0.05
             initial_grams = self.scale.get_stable_grams()
             self._clear_drop_counter = 0
-            timer_callback = functools.partial(self.clear_crop_callback, initial_grams)
-            self.clear_timer.timeout.connect(timer_callback)
-            self.clear_timer.start(500)
+            self.clear_timer.timeout.connect(lambda: self.clear_crop_callback(initial_grams, open_time_s))
+            self.clear_timer.start(500 + int(open_time_s * 1000))
 
     def clear_crop_callback(self, initial_grams: float, duration_s: float = 0.05):
         if self.scale.get_grams()[0] > initial_grams + 0.02:
             self.clear_timer.stop()
+            self.clear_timer.disconnect()
             self.drop_cleared.emit(self._clear_drop_counter)
             return
         self._clear_drop_counter += 1
@@ -397,5 +407,6 @@ class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
         self.scale_timer.stop()
         if self.machine.started:
             self.machine.stop()
-        self.bpod.stop_trial()
+        if self.bpod.is_connected:
+            self.bpod.stop_trial()
         self.deleteLater()

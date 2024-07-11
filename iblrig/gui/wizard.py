@@ -1,6 +1,5 @@
 import argparse
 import ctypes
-import importlib
 import json
 import logging
 import os
@@ -9,16 +8,15 @@ import shutil
 import subprocess
 import sys
 import traceback
-import webbrowser
 from collections import OrderedDict
 from dataclasses import dataclass
+from importlib.util import module_from_spec, spec_from_file_location
 from pathlib import Path
 
 import pyqtgraph as pg
 from pydantic import ValidationError
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import QThread, QThreadPool
-from PyQt5.QtWebEngineWidgets import QWebEnginePage
+from PyQt5.QtCore import QThreadPool
 from PyQt5.QtWidgets import QStyle
 from requests import HTTPError
 from serial import SerialException
@@ -27,12 +25,16 @@ from typing_extensions import override
 import iblrig.hardware_validation
 import iblrig.path_helper
 import iblrig_tasks
-from iblrig.base_tasks import EmptySession, ValveMixin
+from iblrig.base_tasks import EmptySession
 from iblrig.choiceworld import get_subject_training_info, training_phase_from_contrast_set
-from iblrig.constants import BASE_DIR, COPYRIGHT_YEAR
+from iblrig.constants import BASE_DIR
 from iblrig.gui.frame2ttl import Frame2TTLCalibrationDialog
 from iblrig.gui.splash import Splash
-from iblrig.gui.tools import Worker
+from iblrig.gui.tab_about import TabAbout
+from iblrig.gui.tab_data import TabData
+from iblrig.gui.tab_docs import TabDocs
+from iblrig.gui.tab_log import TabLog
+from iblrig.gui.tools import DiskSpaceIndicator, Worker
 from iblrig.gui.ui_login import Ui_login
 from iblrig.gui.ui_update import Ui_update
 from iblrig.gui.ui_wizard import Ui_wizard
@@ -43,7 +45,9 @@ from iblrig.hardware_validation import Status
 from iblrig.misc import _get_task_argument_parser
 from iblrig.path_helper import load_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings, RigSettings
-from iblrig.tools import alyx_reachable, get_anydesk_id, internet_available
+from iblrig.raw_data_loaders import load_task_jsonable
+from iblrig.tools import alyx_reachable, internet_available
+from iblrig.valve import Valve
 from iblrig.version_management import check_for_updates, get_changelog
 from iblutil.util import setup_logger
 from one.webclient import AlyxClient
@@ -71,12 +75,7 @@ PROCEDURES = [
 ]
 PROJECTS = ['ibl_neuropixel_brainwide_01', 'practice']
 
-URL_DOC = 'https://int-brain-lab.github.io/iblrig'
-URL_REPO = 'https://github.com/int-brain-lab/iblrig/tree/iblrigv8'
-URL_ISSUES = 'https://github.com/int-brain-lab/iblrig/issues'
-URL_DISCUSSION = 'https://github.com/int-brain-lab/iblrig/discussions'
-
-ANSI_COLORS: dict[bytes, str] = {'31': 'Red', '32': 'Green', '33': 'Yellow', '35': 'Magenta', '36': 'Cyan', '37': 'White'}
+ANSI_COLORS: dict[str, str] = {'31': 'Red', '32': 'Green', '33': 'Yellow', '35': 'Magenta', '36': 'Cyan', '37': 'White'}
 REGEX_STDOUT = re.compile(
     r'^\x1b\[(?:\d;)?(?:\d+;)?'
     r'(?P<color>\d+)m[\d-]*\s+'
@@ -107,8 +106,6 @@ class RigWizardModel:
     subject: str | None = None
     session_folder: Path | None = None
     test_subject_name = 'test_subject'
-    subject_details_worker = None
-    subject_details: tuple | None = None
     free_reward_time: float | None = None
     file_iblrig_settings: Path | str | None = None
     file_hardware_settings: Path | str | None = None
@@ -119,18 +116,7 @@ class RigWizardModel:
             HardwareSettings, filename=self.file_hardware_settings, do_raise=True
         )
 
-        # calculate free reward time
-        class FakeSession(EmptySession, ValveMixin):
-            pass
-
-        fake_session = FakeSession(
-            subject='gui_init_subject',
-            file_hardware_settings=self.file_hardware_settings,
-            file_iblrig_settings=self.file_iblrig_settings,
-        )
-        fake_session.task_params.update({'AUTOMATIC_CALIBRATION': True, 'REWARD_AMOUNT_UL': 10})
-        fake_session.init_mixin_valve()
-        self.free_reward_time = fake_session.compute_reward_time(self.hardware_settings.device_valve.FREE_REWARD_VOLUME_UL)
+        self.free_reward_time = Valve(self.hardware_settings.device_valve).free_reward_time_sec
 
         if self.iblrig_settings.ALYX_URL is not None:
             self.alyx = AlyxClient(base_url=str(self.iblrig_settings.ALYX_URL), silent=True)
@@ -163,8 +149,8 @@ class RigWizardModel:
         :return:
         """
         assert task_name
-        spec = importlib.util.spec_from_file_location('task', self.all_tasks[task_name])
-        task = importlib.util.module_from_spec(spec)
+        spec = spec_from_file_location('task', self.all_tasks[task_name])
+        task = module_from_spec(spec)
         sys.modules[spec.name] = task
         spec.loader.exec_module(task)
         return task.Session.extra_parser()
@@ -243,28 +229,28 @@ class RigWizardModel:
             log.error('Cannot find bpod - is it connected?')
             return
 
-    def get_subject_details(self, subject):
-        self.subject_details_worker = SubjectDetailsWorker(subject)
-        self.subject_details_worker.finished.connect(self.process_subject_details)
-        self.subject_details_worker.start()
-
-    def process_subject_details(self):
-        self.subject_details = SubjectDetailsWorker.result
-
 
 class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
+    subject_details: tuple[dict, dict] | None = None
+    new_subject_details = QtCore.pyqtSignal(dict, object)
+
     def __init__(self, **kwargs):
         super().__init__()
         self.setupUi(self)
 
-        # show splash-screen / store validation results
-        splash_screen = Splash()
-        splash_screen.exec()
-        self.validation_results = splash_screen.validation_results
+        # load tabs
+        self.tabLog = TabLog(parent=self.tabWidget)
+        self.tabData = TabData(parent=self.tabWidget)
+        self.tabDocs = TabDocs(parent=self.tabWidget)
+        self.tabAbout = TabAbout(parent=self.tabWidget)
+        self.tabWidget.addTab(self.tabLog, QtGui.QIcon(':/images/log'), 'Log')
+        self.tabWidget.addTab(self.tabData, QtGui.QIcon(':/images/sessions'), 'Data')
+        self.tabWidget.addTab(self.tabDocs, QtGui.QIcon(':/images/help'), 'Docs')
+        self.tabWidget.addTab(self.tabAbout, QtGui.QIcon(':/images/about'), 'About')
+        self.tabWidget.setCurrentIndex(0)
 
         self.debug = kwargs.get('debug', False)
         self.settings = QtCore.QSettings()
-        self.move(self.settings.value('pos', self.pos(), QtCore.QPoint))
 
         try:
             self.model = RigWizardModel()
@@ -301,12 +287,17 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.uiActionCalibrateValve.triggered.connect(self._on_calibrate_valve)
         self.uiActionTrainingLevelV7.triggered.connect(self._on_menu_training_level_v7)
         self.uiComboTask.currentTextChanged.connect(self.controls_for_extra_parameters)
-        self.uiComboSubject.currentTextChanged.connect(self.model.get_subject_details)
+
+        self.uiComboSubject.currentTextChanged.connect(self._get_subject_details)
         self.uiPushStart.clicked.connect(self.start_stop)
         self.uiPushPause.clicked.connect(self.pause)
         self.uiListProjects.clicked.connect(self._enable_ui_elements)
         self.uiListProcedures.clicked.connect(self._enable_ui_elements)
         self.lineEditSubject.textChanged.connect(self._filter_subjects)
+
+        self._get_subject_details(self.uiComboSubject.currentText())
+        self.new_subject_details.connect(self._set_automatic_values)
+        self.uiComboTask.currentTextChanged.connect(lambda: self._set_automatic_values(*self.subject_details))
 
         self.running_task_process = None
         self.task_arguments = dict()
@@ -321,7 +312,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.tabWidget.currentChanged.connect(self._on_switch_tab)
 
         # username
-        if self.model.iblrig_settings.ALYX_URL is not None:
+        if self.iblrig_settings.ALYX_URL is not None:
             self.uiLineEditUser.returnPressed.connect(lambda w=self.uiLineEditUser: self._log_in_or_out(username=w.text()))
             self.uiPushButtonLogIn.released.connect(lambda w=self.uiLineEditUser: self._log_in_or_out(username=w.text()))
         else:
@@ -332,63 +323,42 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.uiPushFlush.clicked.connect(self.flush)
         self.uiPushReward.clicked.connect(self.model.free_reward)
         self.uiPushReward.setStatusTip(
-            f'Click to grant a free reward ({self.model.hardware_settings.device_valve.FREE_REWARD_VOLUME_UL:.1f} μL)'
+            f'Click to grant a free reward ({self.hardware_settings.device_valve.FREE_REWARD_VOLUME_UL:.1f} μL)'
         )
         self.uiPushStatusLED.setChecked(self.settings.value('bpod_status_led', True, bool))
         self.uiPushStatusLED.toggled.connect(self.toggle_status_led)
         self.toggle_status_led(self.uiPushStatusLED.isChecked())
 
-        # tab: log
-        font = QtGui.QFont('Monospace')
-        font.setStyleHint(QtGui.QFont.TypeWriter)
-        font.setPointSize(9)
-        self.uiPlainTextEditLog.setFont(font)
-
-        # tab: documentation
-        self.uiPushWebHome.clicked.connect(lambda: self.webEngineView.load(QtCore.QUrl(URL_DOC)))
-        self.uiPushWebBrowser.clicked.connect(lambda: webbrowser.open(str(self.webEngineView.url().url())))
-        self.webEngineView.setPage(CustomWebEnginePage(self))
-        self.webEngineView.setUrl(QtCore.QUrl(URL_DOC))
-        self.webEngineView.urlChanged.connect(self._on_doc_url_changed)
-
-        # tab: about
-        self.uiLabelCopyright.setText(f'**IBLRIG v{iblrig.__version__}**\n\n© {COPYRIGHT_YEAR}, International Brain Laboratory')
-        self.commandLinkButtonGitHub.clicked.connect(lambda: webbrowser.open(URL_REPO))
-        self.commandLinkButtonDoc.clicked.connect(lambda: webbrowser.open(URL_DOC))
-        self.commandLinkButtonIssues.clicked.connect(lambda: webbrowser.open(URL_ISSUES))
-        self.commandLinkButtonDiscussion.clicked.connect(lambda: webbrowser.open(URL_DISCUSSION))
-
-        # disk stats
-        local_data = self.model.iblrig_settings['iblrig_local_data_path']
+        # statusbar / disk stats
+        local_data = self.iblrig_settings['iblrig_local_data_path']
         local_data = Path(local_data) if local_data else Path.home().joinpath('iblrig_data')
-        v8data_size = sum(file.stat().st_size for file in Path(local_data).rglob('*'))
-        total_space, total_used, total_free = shutil.disk_usage(local_data.anchor)
-        self.uiProgressDiskSpace = QtWidgets.QProgressBar(self)
-        self.uiProgressDiskSpace.setMaximumWidth(70)
-        self.uiProgressDiskSpace.setValue(round(total_used / total_space * 100))
-        self.uiProgressDiskSpace.setStatusTip(
-            f'local IBLRIG data: {v8data_size / 1024**3: .1f} GB  •  ' f'available space: {total_free / 1024**3: .1f} GB'
-        )
-        if self.uiProgressDiskSpace.value() > 90:
-            p = self.uiProgressDiskSpace.palette()
-            p.setColor(QtGui.QPalette.Highlight, QtGui.QColor('red'))
-            self.uiProgressDiskSpace.setPalette(p)
-
-        # statusbar
+        self.uiDiskSpaceIndicator = DiskSpaceIndicator(parent=self.statusbar, directory=local_data)
+        self.uiDiskSpaceIndicator.setMaximumWidth(70)
+        self.statusbar.addPermanentWidget(self.uiDiskSpaceIndicator)
         self.statusbar.setContentsMargins(0, 0, 6, 0)
-        self.statusbar.addPermanentWidget(self.uiProgressDiskSpace)
         self.controls_for_extra_parameters()
-
-        # self.layout().setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
-        self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowFullscreenButtonHint)
 
         # disable control of LED if Bpod does not have the respective capability
         try:
-            bpod = Bpod(self.model.hardware_settings['device_bpod']['COM_BPOD'], skip_initialization=True)
+            bpod = Bpod(self.hardware_settings['device_bpod']['COM_BPOD'], skip_initialization=True)
             self.uiPushStatusLED.setEnabled(bpod.can_control_led)
         except SerialException:
             pass
 
+        # show splash-screen / store validation results
+        splash_screen = Splash(parent=self)
+        splash_screen.exec()
+        self.validation_results = splash_screen.validation_results
+
+        # check for update
+        update_worker = Worker(check_for_updates)
+        update_worker.signals.result.connect(self._on_check_update_result)
+        QThreadPool.globalInstance().start(update_worker)
+
+        # show GUI
+        self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowFullscreenButtonHint)
+        self.move(self.settings.value('pos', self.pos(), QtCore.QPoint))
+        self.resize(self.settings.value('size', self.size(), QtCore.QSize))
         self.show()
 
         # show validation errors / warnings:
@@ -408,15 +378,22 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
             msg_box.setText(text)
             msg_box.exec()
 
-        # get AnyDesk ID
-        anydesk_worker = Worker(get_anydesk_id, True)
-        anydesk_worker.signals.result.connect(self._on_get_anydesk_result)
-        QThreadPool.globalInstance().tryStart(anydesk_worker)
+    @property
+    def iblrig_settings(self) -> RigSettings:
+        return self.model.iblrig_settings
 
-        # check for update
-        update_worker = Worker(check_for_updates)
-        update_worker.signals.result.connect(self._on_check_update_result)
-        QThreadPool.globalInstance().start(update_worker)
+    @property
+    def hardware_settings(self) -> HardwareSettings:
+        return self.model.hardware_settings
+
+    def _get_subject_details(self, subject):
+        worker = Worker(lambda: get_subject_training_info(subject))
+        worker.signals.result.connect(self._on_subject_details_result)
+        QThreadPool.globalInstance().start(worker)
+
+    def _on_subject_details_result(self, result):
+        self.subject_details = result
+        self.new_subject_details.emit(*result)
 
     def _show_error_dialog(
         self,
@@ -454,10 +431,10 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         pass
 
     def _on_validate_hardware(self) -> None:
-        SystemValidationDialog(self, hardware_settings=self.model.hardware_settings, rig_settings=self.model.iblrig_settings)
+        SystemValidationDialog(self, hardware_settings=self.hardware_settings, rig_settings=self.iblrig_settings)
 
     def _on_calibrate_frame2ttl(self) -> None:
-        Frame2TTLCalibrationDialog(self, hardware_settings=self.model.hardware_settings)
+        Frame2TTLCalibrationDialog(self, hardware_settings=self.hardware_settings)
 
     def _on_calibrate_valve(self) -> None:
         ValveCalibrationDialog(self)
@@ -469,7 +446,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         This code will be removed and is here only for convenience while users transition from v7 to v8
         """
         if not (local_path := Path(r'C:\iblrig_data\Subjects')).exists():
-            local_path = self.model.iblrig_settings['iblrig_local_data_path']
+            local_path = self.iblrig_settings['iblrig_local_data_path']
         session_path = QtWidgets.QFileDialog.getExistingDirectory(
             self, 'Select Session Path', str(local_path), QtWidgets.QFileDialog.ShowDirsOnly
         )
@@ -479,7 +456,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         if file_jsonable is None:
             QtWidgets.QMessageBox().critical(self, 'Error', f'No jsonable found in {session_path}')
             return
-        trials_table, _ = iblrig.raw_data_loaders.load_task_jsonable(file_jsonable)
+        trials_table, _ = load_task_jsonable(file_jsonable)
         if trials_table.empty:
             QtWidgets.QMessageBox().critical(self, 'Error', f'No trials found in {session_path}')
             return
@@ -526,26 +503,6 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         if result[0]:
             UpdateNotice(parent=self, version=result[1])
 
-    def _on_get_anydesk_result(self, result: str | None) -> None:
-        """
-        Handle the result of checking for the user's AnyDesk ID.
-
-        Parameters
-        ----------
-        result : str | None
-            The user's AnyDesk ID, if available.
-
-        Returns
-        -------
-        None
-        """
-        if result is not None:
-            self.uiLabelAnyDesk.setText(f'Your AnyDesk ID: {result}')
-
-    def _on_doc_url_changed(self):
-        self.uiPushWebBack.setEnabled(len(self.webEngineView.history().backItems(1)) > 0)
-        self.uiPushWebForward.setEnabled(len(self.webEngineView.history().forwardItems(1)) > 0)
-
     def _log_in_or_out(self, username: str) -> bool:
         # Routine for logging out:
         if self.uiPushButtonLogIn.text() == 'Log Out':
@@ -574,7 +531,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
             elif not alyx_reachable():
                 self._show_error_dialog(
                     title='Error connecting to Alyx',
-                    description=f'Cannot connect to {self.model.iblrig_settings.ALYX_URL}',
+                    description=f'Cannot connect to {self.iblrig_settings.ALYX_URL}',
                     leads=[
                         'Is `ALYX_URL` in `iblrig_settings.yaml` set correctly?',
                         'Is your machine allowed to connect to Alyx?',
@@ -628,9 +585,10 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
     def closeEvent(self, event) -> None:
         def accept() -> None:
             self.settings.setValue('pos', self.pos())
+            self.settings.setValue('size', self.size())
             self.settings.setValue('bpod_status_led', self.uiPushStatusLED.isChecked())
             self.toggle_status_led(is_toggled=True)
-            bpod = Bpod(self.model.hardware_settings['device_bpod']['COM_BPOD'])  # bpod is a singleton
+            bpod = Bpod(self.hardware_settings['device_bpod']['COM_BPOD'])  # bpod is a singleton
             bpod.close()
             event.accept()
 
@@ -709,7 +667,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
             layout.removeRow(0)
 
         for arg in args:
-            param = max(arg.option_strings, key=len)
+            param = str(max(arg.option_strings, key=len))
             label = param.replace('_', ' ').replace('--', '').title()
 
             # create widget for bool arguments
@@ -751,7 +709,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                     widget.editingFinished.emit()
 
             # create widget for list of floats
-            elif arg.type == float and arg.nargs == '+':
+            elif arg.type is float and arg.nargs == '+':
                 widget = QtWidgets.QLineEdit()
                 if arg.default:
                     widget.setText(str(arg.default)[1:-1])
@@ -762,7 +720,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
 
             # create widget for numerical arguments
             elif arg.type in [float, int]:
-                if arg.type == float:
+                if arg.type is float:
                     widget = QtWidgets.QDoubleSpinBox()
                     widget.setDecimals(1)
                 else:
@@ -810,6 +768,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                     widget.setMaximum(5)
                     widget.setMinimum(-1)
                     widget.setValue(-1)
+                    widget.setObjectName('training_phase')
 
                 case 'adaptive_reward':
                     label = 'Reward Amount, μl'
@@ -823,6 +782,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                         lambda val, a=arg, m=minimum: self._set_task_arg(a.option_strings[0], str(val if val > m else -1))
                     )
                     widget.valueChanged.emit(widget.value())
+                    widget.setObjectName('adaptive_reward')
 
                 case 'reward_set_ul':
                     label = 'Reward Set, μl'
@@ -838,6 +798,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                         lambda val, a=arg, m=minimum: self._set_task_arg(a.option_strings[0], str(val if val > m else -1))
                     )
                     widget.valueChanged.emit(widget.value())
+                    widget.setObjectName('adaptive_gain')
 
                 case 'reward_amount_ul':
                     label = 'Reward Amount, μl'
@@ -850,6 +811,12 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 case 'stim_reverse':
                     label = 'Reverse Stimulus'
 
+                case 'duration_spontaneous':
+                    label = 'Spontaneous Activity, s'
+                    widget.setMinimum(0)
+                    widget.setMaximum(60 * 60 * 24 - 1)
+                    widget.setValue(arg.default)
+
             widget.wheelEvent = lambda event: None
             layout.addRow(self.tr(label), widget)
 
@@ -858,12 +825,23 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
             layout.addRow(self.tr('(none)'), None)
             layout.itemAt(0, 0).widget().setEnabled(False)
 
+    def _set_automatic_values(self, training_info: dict, session_info: dict | None):
+        def _helper(name: str, format: str):
+            value = training_info.get(name)
+            if (widget := self.uiGroupTaskParameters.findChild(QtWidgets.QWidget, name)) is not None:
+                if value is None:
+                    default = ' (default)' if session_info is None else ''
+                    widget.setSpecialValueText(f'automatic{default}')
+                else:
+                    default = ', default' if session_info is None else ''
+                    widget.setSpecialValueText(f'automatic ({value:{format}}{default})')
+
+        _helper('training_phase', 'd')
+        _helper('adaptive_reward', '0.1f')
+        _helper('adaptive_gain', '0.1f')
+
     def _set_task_arg(self, key, value):
         self.task_arguments[key] = value
-
-    def alyx_connect(self):
-        self.model.connect(gui=True)
-        self.model2view()
 
     def _filter_subjects(self):
         filter_str = self.lineEditSubject.text().lower()
@@ -908,21 +886,23 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                     return
 
                 self.controller2model()
+
+                logging.disable(logging.INFO)
                 task = EmptySession(subject=self.model.subject, append=self.uiCheckAppend.isChecked(), interactive=False)
+                logging.disable(logging.NOTSET)
                 self.model.session_folder = task.paths['SESSION_FOLDER']
                 if self.model.session_folder.joinpath('.stop').exists():
                     self.model.session_folder.joinpath('.stop').unlink()
                 self.model.raw_data_folder = task.paths['SESSION_RAW_DATA_FOLDER']
 
                 # disable Bpod status LED
-                bpod = Bpod(self.model.hardware_settings['device_bpod']['COM_BPOD'])
+                bpod = Bpod(self.hardware_settings['device_bpod']['COM_BPOD'])
                 bpod.set_status_led(False)
 
                 # close Bpod singleton so subprocess can access use the port
                 bpod.close()
 
-                # runs the python command
-                # cmd = [shutil.which('python')]
+                # build the argument list for the subprocess
                 cmd = []
                 if self.model.task_name:
                     cmd.extend([str(self.model.all_tasks[self.model.task_name])])
@@ -950,9 +930,8 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 if self.uiCheckAppend.isChecked():
                     cmd.append('--append')
                 if self.running_task_process is None:
-                    self.uiPlainTextEditLog.clear()
-                    self._set_plaintext_char_color(self.uiPlainTextEditLog, 'White')
-                    self.uiPlainTextEditLog.appendPlainText(f'Starting subprocess: {self.model.task_name} ...\n')
+                    self.tabLog.clear()
+                    self.tabLog.appendText(f'Starting subprocess: {self.model.task_name} ...\n', 'White')
                     log.info('Starting subprocess')
                     log.info(subprocess.list2cmdline(cmd))
                     self.running_task_process = QtCore.QProcess()
@@ -970,26 +949,6 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 if self.model.session_folder and self.model.session_folder.exists():
                     self.model.session_folder.joinpath('.stop').touch()
 
-    @staticmethod
-    def _set_plaintext_char_color(widget: QtWidgets.QPlainTextEdit, color: str = 'White') -> None:
-        """
-        Set the foreground color of characters in a QPlainTextEdit widget.
-
-        Parameters
-        ----------
-        widget : QtWidgets.QPlainTextEdit
-            The QPlainTextEdit widget whose character color is to be set.
-
-        color : str, optional
-            The name of the color to set. Default is 'White'. Should be a valid color name
-            recognized by QtGui.QColorConstants. If the provided color name is not found,
-            it defaults to QtGui.QColorConstants.White.
-        """
-        color = getattr(QtGui.QColorConstants, color, QtGui.QColorConstants.White)
-        char_format = widget.currentCharFormat()
-        char_format.setForeground(QtGui.QBrush(color))
-        widget.setCurrentCharFormat(char_format)
-
     def _on_read_standard_output(self):
         """
         Read and process standard output entries.
@@ -1002,10 +961,9 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         entries = re.finditer(REGEX_STDOUT, data)
         for entry in entries:
             color = ANSI_COLORS.get(entry.groupdict().get('color', '37'), 'White')
-            self._set_plaintext_char_color(self.uiPlainTextEditLog, color)
             time = entry.groupdict().get('time', '')
             msg = entry.groupdict().get('message', '')
-            self.uiPlainTextEditLog.appendPlainText(f'{time} {msg}')
+            self.tabLog.appendText(f'{time} {msg}', color)
         if self.debug:
             print(data)
 
@@ -1018,14 +976,12 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         the error message to the widget.
         """
         data = self.running_task_process.readAllStandardError().data().decode('utf-8', 'ignore').strip()
-        self._set_plaintext_char_color(self.uiPlainTextEditLog, 'Red')
-        self.uiPlainTextEditLog.appendPlainText(data)
+        self.tabLog.appendText(data, 'Red')
         if self.debug:
             print(data)
 
     def _on_task_finished(self, exit_code, exit_status):
-        self._set_plaintext_char_color(self.uiPlainTextEditLog, 'White')
-        self.uiPlainTextEditLog.appendPlainText('\nSubprocess finished.')
+        self.tabLog.appendText('\nSubprocess finished.', 'White')
         if exit_code:
             msg_box = QtWidgets.QMessageBox(parent=self)
             msg_box.setWindowTitle('Oh no!')
@@ -1042,7 +998,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self._enable_ui_elements()
 
         # recall state of Bpod status LED
-        bpod = Bpod(self.model.hardware_settings['device_bpod']['COM_BPOD'])
+        bpod = Bpod(self.hardware_settings['device_bpod']['COM_BPOD'])
         bpod.set_status_led(self.uiPushStatusLED.isChecked())
 
         if (task_settings_file := Path(self.model.raw_data_folder).joinpath('_iblrig_taskSettings.raw.json')).exists():
@@ -1089,7 +1045,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
 
         try:
             bpod = Bpod(
-                self.model.hardware_settings['device_bpod']['COM_BPOD'],
+                self.hardware_settings['device_bpod']['COM_BPOD'],
                 skip_initialization=True,
                 disable_behavior_ports=[1, 2, 3],
             )
@@ -1107,7 +1063,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self._enable_ui_elements()
 
         try:
-            bpod = Bpod(self.model.hardware_settings['device_bpod']['COM_BPOD'], skip_initialization=True)
+            bpod = Bpod(self.hardware_settings['device_bpod']['COM_BPOD'], skip_initialization=True)
             bpod.set_status_led(is_toggled)
         except (OSError, BpodErrorException, AttributeError):
             self.uiPushStatusLED.setChecked(False)
@@ -1132,24 +1088,12 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.repaint()
 
 
-class SubjectDetailsWorker(QThread):
-    subject_name: str | None = None
-    result: tuple[dict, dict] | None = None
-
-    def __init__(self, subject_name):
-        super().__init__()
-        self.subject_name = subject_name
-
-    def run(self):
-        self.result = get_subject_training_info(self.subject_name)
-
-
 class LoginWindow(QtWidgets.QDialog, Ui_login):
     def __init__(self, parent: RigWizard, username: str = '', password: str = '', remember: bool = False):
         super().__init__(parent)
         self.setupUi(self)
         self.layout().setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
-        self.labelServer.setText(str(parent.model.iblrig_settings['ALYX_URL']))
+        self.labelServer.setText(str(parent.iblrig_settings['ALYX_URL']))
         self.lineEditUsername.setText(username)
         self.lineEditPassword.setText(password)
         self.checkBoxRememberMe.setChecked(remember)
@@ -1195,14 +1139,6 @@ class UpdateNotice(QtWidgets.QDialog, Ui_update):
 
     version : str
         The version of the available update.
-
-    Attributes
-    ----------
-    None
-
-    Methods
-    -------
-    None
     """
 
     def __init__(self, parent: QtWidgets.QWidget, version: str) -> None:
@@ -1213,45 +1149,6 @@ class UpdateNotice(QtWidgets.QDialog, Ui_update):
         self.uiTextBrowserChanges.setMarkdown(get_changelog())
         self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
         self.exec()
-
-
-class CustomWebEnginePage(QWebEnginePage):
-    """
-    Custom implementation of QWebEnginePage to handle navigation requests.
-
-    This class overrides the acceptNavigationRequest method to handle link clicks.
-    If the navigation type is a link click and the clicked URL does not start with
-    a specific prefix (URL_DOC), it opens the URL in the default web browser.
-    Otherwise, it delegates the handling to the base class.
-
-    Adapted from: https://www.pythonguis.com/faq/qwebengineview-open-links-new-window/
-    """
-
-    @override
-    def acceptNavigationRequest(self, url: QtCore.QUrl, navigation_type: QWebEnginePage.NavigationType, is_main_frame: bool):
-        """
-        Decide whether to allow or block a navigation request.
-
-        Parameters
-        ----------
-        url : QUrl
-            The URL being navigated to.
-
-        navigation_type : QWebEnginePage.NavigationType
-            The type of navigation request.
-
-        is_main_frame : bool
-            Indicates whether the request is for the main frame.
-
-        Returns
-        -------
-        bool
-            True if the navigation request is accepted, False otherwise.
-        """
-        if navigation_type == QWebEnginePage.NavigationTypeLinkClicked and not url.url().startswith(URL_DOC):
-            webbrowser.open(url.url())
-            return False
-        return super().acceptNavigationRequest(url, navigation_type, is_main_frame)
 
 
 def main():

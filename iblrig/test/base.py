@@ -30,6 +30,7 @@ TASK_KWARGS = {
 
 
 class TaskArgsMixin:
+    task_kwargs = {}
     _tmp = None
 
     def get_task_kwargs(self, tmpdir=True):
@@ -51,13 +52,14 @@ class TaskArgsMixin:
             self._tmp = tmpdir
             if isinstance(tmpdir, tempfile.TemporaryDirectory):
                 self.tmp = Path(tmpdir.name)
-                self.addCleanup(self.cleanup)
+                handler = self.addClassCleanup if inspect.isclass(self) else self.addCleanup
+                handler(self._cleanup_handlers)
             else:
                 self.tmp = Path(tmpdir)
             self.task_kwargs['iblrig_settings'].update(
                 iblrig_remote_data_path=None, iblrig_local_data_path=self.tmp)
 
-    def cleanup(self):
+    def _cleanup_handlers(self):
         """Close log file handlers before cleaning up temp dir.
 
         The tasks open log files within the temp session dir. Here we ensure files are closed
@@ -127,6 +129,8 @@ class IntegrationFullRuns(BaseTestCases.CommonTestTask):
     the full registration / run / register results cycle
     """
 
+    create_subject = True
+
     @classmethod
     def setUpClass(cls) -> None:
         """
@@ -135,10 +139,12 @@ class IntegrationFullRuns(BaseTestCases.CommonTestTask):
         :return:
         """
         cls.one = ONE(**TEST_DB, mode='remote')
-        cls.kwargs = copy.deepcopy(TASK_KWARGS)
-        cls.kwargs.update({'subject': 'iblrig_unit_test_' + ''.join(random.choices(string.ascii_letters, k=8))})
-        cls.one.alyx.rest('subjects', 'create', data=dict(nickname=cls.kwargs['subject'], lab='cortexlab'))
+        TaskArgsMixin.get_task_kwargs(cls)
+        cls.task_kwargs.update({'subject': 'iblrig_unit_test_' + ''.join(random.choices(string.ascii_letters, k=8))})
+        if cls.create_subject:
+            cls.one.alyx.rest('subjects', 'create', data=dict(nickname=cls.task_kwargs['subject'], lab='cortexlab'))
 
     @classmethod
     def tearDownClass(cls) -> None:
-        cls.one.alyx.rest('subjects', 'delete', id=cls.kwargs['subject'])
+        if cls.create_subject:
+            cls.one.alyx.rest('subjects', 'delete', id=cls.task_kwargs['subject'])

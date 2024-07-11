@@ -14,6 +14,7 @@ import inspect
 import json
 import logging
 import signal
+import sys
 import time
 import traceback
 from abc import ABC
@@ -22,6 +23,7 @@ from collections.abc import Callable
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 import scipy.interpolate
 import serial
 import yaml
@@ -106,6 +108,7 @@ class BaseSession(ABC):
         self._setup_loggers(level=log_level)
         if not isinstance(self, EmptySession):
             log.info(f'Running iblrig {iblrig.__version__}, pybpod version {pybpodapi.__version__}')
+        log.info(f'Session call: {" ".join(sys.argv)}')
         self.interactive = interactive
         self._one = one
         self.init_datetime = datetime.datetime.now()
@@ -115,7 +118,7 @@ class BaseSession(ABC):
         if hardware_settings is not None:
             self.hardware_settings.update(hardware_settings)
             HardwareSettings.model_validate(self.hardware_settings)
-        self.iblrig_settings = load_pydantic_yaml(RigSettings, file_iblrig_settings)
+        self.iblrig_settings: RigSettings = load_pydantic_yaml(RigSettings, file_iblrig_settings)
         if iblrig_settings is not None:
             self.iblrig_settings.update(iblrig_settings)
             RigSettings.model_validate(self.iblrig_settings)
@@ -160,7 +163,7 @@ class BaseSession(ABC):
         self._execute_mixins_shared_function('init_mixin')
         self.paths = self._init_paths(append=append)
         if not isinstance(self, EmptySession):
-            log.info(f'Session {self.paths.SESSION_RAW_DATA_FOLDER}')
+            log.info(f'Session raw data: {self.paths.SESSION_RAW_DATA_FOLDER}')
         # Prepare the experiment description dictionary
         self.experiment_description = self.make_experiment_description_dict(
             self.protocol_name,
@@ -172,24 +175,9 @@ class BaseSession(ABC):
             extractors=self.extractor_tasks,
         )
 
-    def _init_paths(self, append: bool = False):
-        """
-        Determine session paths.
-
-        Paths keys:
-
-        - BONSAI: full path to the bonsai executable, e.g. C:\\iblrigv8\\Bonsai\\Bonsai.exe
-        - VISUAL_STIM_FOLDER: full path to the visual stim, e.g. C:\\iblrigv8\\visual_stim
-        - LOCAL_SUBJECT_FOLDER: full path to the local subject folder, e.g. C:\\iblrigv8_data\\mainenlab\\Subjects
-        - REMOTE_SUBJECT_FOLDER: full path to the remote subject folder, e.g. Y:\\Subjects
-        - SESSION_FOLDER: full path to the current session, e.g.
-          C:\\iblrigv8_data\\mainenlab\\Subjects\\SWC_043\\2019-01-01\\001
-        - TASK_COLLECTION: folder name of the current task, e.g. raw_task_data_00
-        - SESSION_RAW_DATA_FOLDER: concatenation of the session folder and the task collection.
-          This is where the task data gets written, e.g.
-          C:\\iblrigv8_data\\mainenlab\\Subjects\\SWC_043\\2019-01-01\\001\\raw_task_data_00
-        - DATA_FILE_PATH: contains the bpod trials, e.g.
-          C:\\iblrigv8_data\\mainenlab\\Subjects\\SWC_043\\2019-01-01\\001\\raw_task_data_00\\_iblrig_taskData.raw.jsonable  # noqa
+    def _init_paths(self, append: bool = False) -> Bunch:
+        r"""
+        Initialize session paths
 
         Parameters
         ----------
@@ -199,18 +187,38 @@ class BaseSession(ABC):
 
         Returns
         -------
-        iblutil.util.Bunch
-            A bunch of paths.
+        Bunch
+            Bunch with keys:
+
+            *   BONSAI: full path to the bonsai executable
+                `C:\iblrigv8\Bonsai\Bonsai.exe`
+            *   VISUAL_STIM_FOLDER: full path to the visual stimulus folder
+                `C:\iblrigv8\visual_stim`
+            *   LOCAL_SUBJECT_FOLDER: full path to the local subject folder
+                `C:\iblrigv8_data\mainenlab\Subjects`
+            *   REMOTE_SUBJECT_FOLDER: full path to the remote subject folder
+                `Y:\Subjects`
+            *   SESSION_FOLDER: full path to the current session:
+                `C:\iblrigv8_data\mainenlab\Subjects\SWC_043\2019-01-01\001`
+            *   TASK_COLLECTION: folder name of the current task
+                `raw_task_data_00`
+            *   SESSION_RAW_DATA_FOLDER: concatenation of the session folder and the task collection.
+                This is where the task data gets written
+                `C:\iblrigv8_data\mainenlab\Subjects\SWC_043\2019-01-01\001\raw_task_data_00`
+            *   DATA_FILE_PATH: contains the bpod trials
+                `C:\iblrigv8_data\mainenlab\Subjects\SWC_043\2019-01-01\001\raw_task_data_00\_iblrig_taskData.raw.jsonable`
+            *   SETTINGS_FILE_PATH: contains the task settings
+                `C:\iblrigv8_data\mainenlab\Subjects\SWC_043\2019-01-01\001\raw_task_data_00\_iblrig_taskSettings.raw.json`
         """
         rig_computer_paths = iblrig.path_helper.get_local_and_remote_paths(
-            local_path=self.iblrig_settings['iblrig_local_data_path'],
-            remote_path=self.iblrig_settings['iblrig_remote_data_path'],
-            lab=self.iblrig_settings['ALYX_LAB'],
+            local_path=self.iblrig_settings.iblrig_local_data_path,
+            remote_path=self.iblrig_settings.iblrig_remote_data_path,
+            lab=self.iblrig_settings.ALYX_LAB,
             iblrig_settings=self.iblrig_settings,
         )
         paths = Bunch({'IBLRIG_FOLDER': BASE_PATH})
         paths.BONSAI = BONSAI_EXE
-        paths.VISUAL_STIM_FOLDER = paths.IBLRIG_FOLDER.joinpath('visual_stim')
+        paths.VISUAL_STIM_FOLDER = BASE_PATH.joinpath('visual_stim')
         paths.LOCAL_SUBJECT_FOLDER = rig_computer_paths['local_subjects_folder']
         paths.REMOTE_SUBJECT_FOLDER = rig_computer_paths['remote_subjects_folder']
         # initialize the session path
@@ -757,7 +765,9 @@ class BonsaiVisualStimulusMixin(BaseSession):
             'Stim.ReceptiveFieldMappingStim.MappingTime': map_time,
             'Stim.ReceptiveFieldMappingStim.Rate': rate,
         }
-        log.info('Starting spontaneous activity and RF mapping stims')
+        map_seconds = pd.to_timedelta(map_time).seconds
+        sa_seconds = pd.to_timedelta(sa_time).seconds
+        log.info(f'Starting spontaneous activity ({sa_seconds} s) and RF mapping stims ({map_seconds} s)')
         s = call_bonsai(workflow_file, parameters, editor=False)
         log.info('Spontaneous activity and RF mapping stims finished')
         return s

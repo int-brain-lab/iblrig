@@ -35,24 +35,31 @@ Here,
 Both of these fields are inferred by means of git describe and do not require manual interaction from the developer.
 
 
+PDM
+---
+
+We use `PDM <https://pdm-project.org/en/latest/>`_ to manage dependencies of IBLRIG.
+See `PDM's documentation <https://pdm-project.org/en/latest/#installation>` for help with installing PDM.
+
+
 Installing Developer Dependencies
 ---------------------------------
 
-To install additional dependencies needed for working on IBLRIG's code-base, run the following within the venv:
+To install additional dependencies needed for working on IBLRIG's code-base, run:
 
 .. code-block:: console
 
-   pip install -U -e .[DEV]
+   pdm sync -d
 
 
 Running Unit Tests Locally
 --------------------------
 
-To run unit tests locally, run the following within IBLRIG's venv:
+To run unit tests locally, run:
 
 .. code-block:: console
 
-   pytest
+   pdm run pytest
 
 This will also generate a coverage report which can be found in the ``htmlcov`` directory.
 
@@ -60,29 +67,29 @@ This will also generate a coverage report which can be found in the ``htmlcov`` 
 Linting & Formatting
 --------------------
 
-To lint your code, run the following within IBLRIG's venv:
+To lint your code, run the:
 
 .. code-block:: console
 
-   ruff check .
+   pdm run ruff check
 
 Adding the commandline flag ``--fix`` will automatically fix issues that are deemed safe to handle:
 
 .. code-block:: console
 
-   ruff check . --fix
+   pdm run ruff check --fix
 
 To *check* if your code conforms to the `Black code style <https://black.readthedocs.io/en/stable/the_black_code_style/current_style.html>`_, run:
 
 .. code-block:: console
 
-   ruff format . --check
+   pdm run ruff format --check
 
 To reformat your code according to the `Black code style <https://black.readthedocs.io/en/stable/the_black_code_style/current_style.html>`_, run:
 
 .. code-block:: console
 
-   ruff format .
+   pdm run ruff format
 
 Refer to `Ruff Formater's documentation <https://docs.astral.sh/ruff/formatter/>`_ for further details.
 
@@ -103,17 +110,8 @@ Building the documentation
 
 .. code-block:: console
 
-   # make sure pre-requisites are installed
-   pip install --upgrade -e .[DEV]
-   # create the static directory
-   rm -rf ./docs/build
-   mkdir -p ./docs/build/html/_static
-   # unit tests generate task diagrams
-   python -m unittest discover ./iblrig/test
-   # generate class diagrams
-   pyreverse -o png -m y --ignore iblrig.test -A --output-directory ./docs/build/html/_static ./iblrig_tasks
-   # build and serve the docs locally
-   sphinx-autobuild ./docs/source ./docs/build/html/
+   pdm run sphinx-autobuild ./docs/source ./docs/build
+
 
 Contribute to the documentation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

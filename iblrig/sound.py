@@ -1,7 +1,6 @@
 import logging
 
 import numpy as np
-from scipy.signal import chirp
 
 from pybpod_soundcard_module.module_api import DataType, SampleRate, SoundCardModule
 
@@ -71,26 +70,6 @@ def make_sound(rate=44100, frequency=5000, duration=0.1, amplitude=1, fade=0.01,
     return sound
 
 
-def make_chirp(f0=80, f1=160, length=0.1, amp=0.1, fade=0.01, sf=96000):
-    t0 = 0
-    t1 = length
-    t = np.linspace(t0, t1, sf)
-
-    c = amp * chirp(t, f0=f0, f1=f1, t1=t1, method='linear')
-
-    len_fade = int(fade * sf)
-    fade_io = np.hanning(len_fade * 2)
-    fadein = fade_io[:len_fade]
-    fadeout = fade_io[len_fade:]
-    win = np.ones(len(t))
-    win[:len_fade] = fadein
-    win[-len_fade:] = fadeout
-
-    c = c * win
-    out = np.array([c, c]).T
-    return out
-
-
 def format_sound(sound, file_path=None, flat=False):
     """
     Format sound to send to sound card.
@@ -144,33 +123,6 @@ def configure_sound_card(card=None, sounds=None, indexes=None, sample_rate=96):
     sounds = [format_sound(s, flat=True) for s in sounds]
     for sound, index in zip(sounds, indexes, strict=False):
         card.send_sound(sound, index, sample_rate, DataType.INT32)
-
-    if close_card:
-        card.close()
-
-
-# FIXME: in _passiveCW use SoundCardModule to give to this v instead of finding device yourself
-def trigger_sc_sound(sound_idx, card=None):
-    if card is None:
-        card = SoundCardModule()
-        close_card = True
-    # [MessageType] [Length] [Address] [Port] [PayloadType] [Payload] [Checksum]
-    # write=2 LEN=6 addr=32 port=255 payloadType=2 payload=[index 0]U16 checksum=43
-
-    # 2 6 32 255 2 [2 0] 43 --> play tone
-    # 2 6 32 255 2 [3 0] 44 --> play noise
-
-    # 2 LEN=5 33 255 1 [index]U8 checksum
-
-    def _calc_checksum(data):
-        return sum(data) & 0xFF
-
-    sound_idx = int(sound_idx)
-    message = [2, 6, 32, 255, 2, sound_idx, 0]
-    message.append(_calc_checksum(message))
-    message = bytes(np.array(message, dtype=np.int8))
-    # usb.write(port, message, timeout)
-    card._dev.write(1, message, 200)
 
     if close_card:
         card.close()

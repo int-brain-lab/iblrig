@@ -1,5 +1,6 @@
 import json
 import logging
+from pathlib import Path
 from typing import Any
 
 import pandas as pd
@@ -7,7 +8,7 @@ import pandas as pd
 log = logging.getLogger(__name__)
 
 
-def load_task_jsonable(jsonable_file: str, offset: int | None = None) -> tuple[pd.DataFrame, list[Any]]:
+def load_task_jsonable(jsonable_file: str | Path, offset: int | None = None) -> tuple[pd.DataFrame, list[Any]]:
     """
     Reads in a task data jsonable file and returns a trials dataframe and a bpod data list.
 

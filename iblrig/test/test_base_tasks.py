@@ -10,8 +10,10 @@ import logging
 import tempfile
 import unittest
 from pathlib import Path
+from threading import Timer
 from unittest import mock
 
+import numpy as np
 import yaml
 
 import ibllib.io.session_params as ses_params
@@ -21,7 +23,7 @@ from iblrig.base_tasks import BaseSession, BonsaiRecordingMixin
 from iblrig.misc import _get_task_argument_parser, _post_parse_arguments
 from iblrig.path_helper import load_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings
-from iblrig.test.base import TaskArgsMixin
+from iblrig.test.base import PATH_FIXTURES, TaskArgsMixin, IntegrationFullRuns
 
 
 class EmptyHardwareSession(BaseSession):
@@ -242,3 +244,70 @@ class TestRun(unittest.TestCase, TaskArgsMixin):
         input_mock.assert_called_once()
         self.assertIsNone(second_task.session_info['SUBJECT_WEIGHT'])
         self.assertEqual(35, second_task.session_info['POOP_COUNT'])
+
+
+class _PauseChoiceWorldSession(ChoiceWorldSession):
+    protocol_name = 'pause_session_for_testing'
+    pause_trial = None  # trial on which to simulate pause message
+    stop_trial = None  # trial on which to stimulate stop message
+
+    def start_hardware(self):
+        pass
+
+    def _delete_pause_flag(self):
+        if self.trial_num == self.pause_trial and self.pause_flag.exists():
+            self.pause_flag.unlink()
+
+    @property
+    def pause_flag(self):
+        return self.paths.SESSION_FOLDER.joinpath('.pause')
+
+    def run_state_machine(self, _):
+        # simulate pause button press by user
+        if self.pause_trial is not None and self.pause_trial == self.trial_num:
+            self.pause_flag.touch()
+            Timer(0.1, self._delete_pause_flag).start()
+        if self.stop_trial is not None and self.stop_trial == self.trial_num:
+            self.pause_flag.with_name('.stop').touch()
+
+    def mock(self, **kwargs):
+        super().mock(**kwargs)
+        # restore run_state_machine method (mock replaces this with a lambda)
+        self.bpod.run_state_machine = self.run_state_machine
+
+    def next_trial(self):
+        self.trial_num += 1
+        self.draw_next_trial_info()
+
+
+class TestBaseChoiceWorld(unittest.TestCase, TaskArgsMixin):
+    """Test base_choice_world.ChoiceWorldSession class."""
+
+    def setUp(self):
+        self.get_task_kwargs()
+
+    def test_pause_and_stop(self):
+        """Test choice world pause and stop flag behaviour in _run method."""
+        # Instantiate special task that touches pause and stop flags on specified trials
+        self.task = _PauseChoiceWorldSession(**self.task_kwargs)
+        self.task.mock(file_jsonable_fixture=PATH_FIXTURES.joinpath('task_data_short.jsonable'))
+        self.task.task_params.NTRIALS = 10  # run for 10 trials max
+        self.task.pause_trial = 3  # simulate pause on 3rd trial
+        self.task.stop_trial = 5  # simulate stop on 5th trial
+
+        with self.assertLogs('iblrig.base_choice_world', 20) as lg:
+            self.task.run()
+
+        # Check pause and stop are correctly logged
+        self.assertRegex(lg.records[-1].getMessage(), r'Stopping [\w\s]+ ' + str(self.task.stop_trial))
+        pause_log = next((x for x in lg.records if x.getMessage().startswith('Pausing')), None)
+        self.assertIsNotNone(pause_log)
+        self.assertRegex(pause_log.getMessage(), r'Pausing [\w\s]+ ' + str(self.task.pause_trial))
+
+        # Check we stopped after the expected trial
+        self.assertEqual(self.task.session_info.NTRIALS, self.task.stop_trial + 1, 'failed to stop early')
+        stop_flag = self.task.paths.SESSION_FOLDER.joinpath('.stop')
+        self.assertFalse(stop_flag.exists(), 'failed to remove stop flag')
+        # Check trials updated with pause duration
+        (idx,) = np.where(self.task.trials_table['pause_duration'][: self.task.task_params.NTRIALS] > 0)
+        self.assertCountEqual(idx, [self.task.pause_trial], 'failed to correctly update pause_duration field')

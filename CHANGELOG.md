@@ -1,6 +1,25 @@
 Changelog
----------
+=========
 
+
+8.20.1
+------
+* use PDM for managing dependencies
+* fixed potential deadlock with SerialSingleton
+* log session call / commandline parameters to disk
+* store pause durations to trial info
+* fix "galopping" valve during valve calibration
+* display values of automatically inferred task parameters
+
+8.20.0
+------
+* tab for displaying local sessions and their respective status
+* additional task parameters for passiveChoiceWorld
+* work on making the GUI code more modular
+
+8.19.6
+------
+* hotfix: fix race-condition that caused scrambled online-plots
 
 8.19.5
 ------
@@ -39,15 +58,21 @@ Changelog
 * add ambient sensor reading back to trial log
 * allow negative stimulus gain (reverse wheel contingency)
 
+-------------------------------
+
 8.18.0
 ------
 * valve calibration routine
+
+-------------------------------
 
 8.17.0
 ------
 * consolidated data transfer routine across all rig computers
 * new video workflow with support for multiple named camera setups
 * various small fixes, work on documentation, unit-tests
+
+-------------------------------
 
 8.16.1
 ------
@@ -59,6 +84,8 @@ Changelog
 * Support for Bpod HiFi Module
 * Support for Zapit Optostim (NM)
 * more robust handling of Bpod's serial messages: iblrig.hardware._define_message
+
+-------------------------------
 
 8.15.6
 ------
@@ -96,6 +123,8 @@ Changelog
 * feature: calibration routine for frame2ttl v1-3 in Tools menu
 * feature: debug-flag for IBLRIG Wizard
 
+-------------------------------
+
 8.14.2
 ------
 * hotfix: wrong return-type in _iterate_protocols - pt 2
@@ -107,6 +136,8 @@ Changelog
 8.14.0
 ------
 * show dialog boxes and plots for appended sessions
+
+-------------------------------
 
 8.13.5
 ------
@@ -142,6 +173,8 @@ Changelog
 * added button for triggering a free reward (only available outside of running task for now)
 * cleaned-up logging
 * various improvements under the hood, clean-up and unit-tests
+
+-------------------------------
 
 8.12.13
 -------
@@ -293,5 +326,6 @@ Changelog
 8.9.0
 -----
 * major rework of the GUI
+* allow pausing between trials
 * task-specific settings
 * new dialogs for weight & droppings

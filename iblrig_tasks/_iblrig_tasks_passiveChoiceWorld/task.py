@@ -1,26 +1,44 @@
 import logging
 import sys
 import time
+from datetime import timedelta
 from pathlib import Path
 
 import pandas as pd
+import yaml
 
 import iblrig.misc
 from iblrig.base_choice_world import ChoiceWorldSession
 
 log = logging.getLogger('iblrig.task')
 
+# read defaults from task_parameters.yaml
+with open(Path(__file__).parent.joinpath('task_parameters.yaml')) as f:
+    DEFAULTS = yaml.safe_load(f)
+
 
 class Session(ChoiceWorldSession):
     protocol_name = '_iblrig_tasks_passiveChoiceWorld'
 
-    def __init__(self, *args, session_template_id=0, **kwargs):
+    def __init__(
+        self,
+        *args,
+        session_template_id=0,
+        duration_spontaneous: int = DEFAULTS['SPONTANEOUS_ACTIVITY_SECONDS'],
+        skip_event_replay: bool = DEFAULTS['SKIP_EVENT_REPLAY'],
+        **kwargs,
+    ):
         self.extractor_tasks = ['PassiveRegisterRaw', 'PassiveTask']
         super(ChoiceWorldSession, self).__init__(**kwargs)
         self.task_params.SESSION_TEMPLATE_ID = session_template_id
         all_trials = pd.read_parquet(Path(__file__).parent.joinpath('passiveChoiceWorld_trials_fixtures.pqt'))
         self.trials_table = all_trials[all_trials['session_id'] == self.task_params.SESSION_TEMPLATE_ID].copy()
         self.trials_table['reward_valve_time'] = self.compute_reward_time(amount_ul=self.trials_table['reward_amount'])
+        assert duration_spontaneous < 60 * 60 * 24
+        self.task_params['SPONTANEOUS_ACTIVITY_SECONDS'] = duration_spontaneous
+        self.task_params['SKIP_EVENT_REPLAY'] = skip_event_replay
+        if self.hardware_settings['MAIN_SYNC']:
+            log.error('PassiveChoiceWorld extraction not supported for Bpod-only sessions!')
 
     @staticmethod
     def extra_parser():
@@ -33,6 +51,21 @@ class Session(ChoiceWorldSession):
             default=0,
             type=int,
             help='pre-generated session index (zero-based)',
+        )
+        parser.add_argument(
+            '--duration_spontaneous',
+            option_strings=['--duration_spontaneous'],
+            dest='duration_spontaneous',
+            default=DEFAULTS['SPONTANEOUS_ACTIVITY_SECONDS'],
+            type=int,
+            help=f'duration of spontaneous activity in seconds ' f'(default: {DEFAULTS["SPONTANEOUS_ACTIVITY_SECONDS"]} s)',
+        )
+        parser.add_argument(
+            '--skip_event_replay',
+            option_strings=['--skip_event_replay'],
+            action='store_true',
+            dest='skip_event_replay',
+            help='skip replay of events',
         )
         return parser
 
@@ -58,12 +91,16 @@ class Session(ChoiceWorldSession):
         :return:
         """
         self.trigger_bonsai_cameras()
-        log.info('Starting spontaneous activity followed by receptive field mapping')
-        # Run the passive part i.e. spontaneous activity and RFMapping stim
-        self.run_passive_visual_stim(sa_time='00:10:00')
-        # Then run the replay of task events: V for valve, T for tone, N for noise, G for gratings
-        log.info('Starting replay of task stims')
 
+        # Run the passive part i.e. spontaneous activity and RFMapping stim
+        self.run_passive_visual_stim(sa_time=timedelta(seconds=self.task_params['SPONTANEOUS_ACTIVITY_SECONDS']))
+
+        if self.task_params['SKIP_EVENT_REPLAY'] is True:
+            log.info('Skipping replay of task events')
+            return
+
+        # run the replay of task events: V for valve, T for tone, N for noise, G for gratings
+        log.info('Starting replay of task events')
         action_show_stim = self.bpod.actions['bonsai_show_stim'][1]
         action_hide_stim = self.bpod.actions['bonsai_hide_stim'][1]
         byte_show_stim = self.bpod.serial_messages[action_show_stim]['message'][-1]
