@@ -10,6 +10,7 @@ from iblrig_tasks._iblrig_tasks_trainingPhaseChoiceWorld.task import Session as 
 class TestTrainingPhaseChoiceWorld(BaseTestCases.CommonTestInstantiateTask):
     def setUp(self):
         self.get_task_kwargs()
+        self.task = TrainingPhaseChoiceWorldSession(**self.task_kwargs)
 
     def test_task(self):
         """
@@ -84,6 +85,7 @@ class TestTrainingPhaseChoiceWorld(BaseTestCases.CommonTestInstantiateTask):
 class TestInstantiationTraining(BaseTestCases.CommonTestInstantiateTask):
     def setUp(self):
         self.get_task_kwargs()
+        self.task = TrainingChoiceWorldSession(**self.task_kwargs)
 
     def test_task(self):
         trial_fixtures = get_fixtures()

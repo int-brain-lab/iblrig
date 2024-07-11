@@ -48,7 +48,7 @@ from iblutil.io.net.base import ExpMessage
 from iblutil.spacer import Spacer
 from iblutil.util import Bunch, setup_logger
 from one.alf.io import next_num_folder
-from one.api import ONE
+from one.api import ONE, OneAlyx
 from pybpodapi.protocol import StateMachine
 
 OSC_CLIENT_IP = '127.0.0.1'
@@ -525,7 +525,6 @@ class BaseSession(ABC):
             self.paths.SESSION_FOLDER.joinpath('.stop').unlink()
 
         signal.signal(signal.SIGINT, sigint_handler)
-        self._execute_mixins_shared_function('start_mixin')
         self._run()  # runs the specific task logic i.e. trial loop etc...
         # post task instructions
         log.critical('Graceful exit')
@@ -1126,6 +1125,22 @@ class NetworkSession(BaseSession):
             self.cleanup_mixin_network()
             raise ex
 
+    @property
+    def one(self):
+        """Return ONE instance
+
+        Unlike super class getter, this method will always instantiate ONE, allowing subclasses to update with an Alyx
+        token from a remotely connected rig.  This instance is used for formatting the experiment reference string.
+
+        Returns
+        -------
+        one.api.One
+            An instance of ONE.
+        """
+        if super().one is None:
+            self._one = OneAlyx(silent=True, mode='local')
+        return self._one
+
     def connect(self, remote_rigs):
         """
         Connect to remote services.
@@ -1200,6 +1215,7 @@ class NetworkSession(BaseSession):
     def run(self):
         """Run session and report exceptions to remote services."""
         try:
+            self.start_mixin_network()
             return super().run()
         except Exception as e:
             # Communicate error to services

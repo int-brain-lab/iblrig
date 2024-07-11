@@ -15,13 +15,13 @@ import iblrig.choiceworld
 from iblrig import session_creator
 from iblrig.path_helper import iterate_previous_sessions
 from iblrig.raw_data_loaders import load_task_jsonable
-from iblrig.test.base import TaskArgsMixin
+from iblrig.test.base import BaseTestCases
 from iblrig_tasks._iblrig_tasks_passiveChoiceWorld.task import Session as PassiveChoiceWorldSession
 from iblrig_tasks._iblrig_tasks_spontaneous.task import Session as SpontaneousSession
 from iblrig_tasks._iblrig_tasks_trainingChoiceWorld.task import Session as TrainingChoiceWorldSession
 
 
-class TestGetPreviousSession(unittest.TestCase, TaskArgsMixin):
+class TestGetPreviousSession(BaseTestCases.CommonTestTask):
     def setUp(self) -> None:
         self.get_task_kwargs()
         self.task_kwargs.update({'subject_weight_grams': 25})

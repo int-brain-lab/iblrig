@@ -1,14 +1,12 @@
-from unittest import TestCase
-
 import numpy as np
 import pandas as pd
 
-from iblrig.test.base import BaseTestCases, TaskArgsMixin
+from iblrig.test.base import BaseTestCases
 from iblrig.test.tasks.test_biased_choice_world_family import get_fixtures
 from iblrig_tasks._iblrig_tasks_advancedChoiceWorld.task import Session as AdvancedChoiceWorldSession
 
 
-class TestDefaultParameters(TestCase, TaskArgsMixin):
+class TestDefaultParameters(BaseTestCases.CommonTestTask):
     def test_params_yaml(self):
         # just make sure the parameter file is
         self.get_task_kwargs(tmpdir=False)

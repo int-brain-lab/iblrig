@@ -33,9 +33,10 @@ class TaskArgsMixin:
     task_kwargs = {}
     _tmp = None
 
-    def get_task_kwargs(self, tmpdir=True):
+    @staticmethod
+    def create_task_kwargs(tmpdir=True):
         """
-        Copy task keyword arguments.
+        Copy task keyword arguments and create a temporary directory.
 
         Parameters
         ----------
@@ -45,21 +46,34 @@ class TaskArgsMixin:
             teardown routine.
 
         """
-        self.task_kwargs = copy.deepcopy(TASK_KWARGS)
+        task_kwargs = copy.deepcopy(TASK_KWARGS)
         if tmpdir is True:
             tmpdir = tempfile.TemporaryDirectory()
         if tmpdir:
-            self._tmp = tmpdir
-            if isinstance(tmpdir, tempfile.TemporaryDirectory):
-                self.tmp = Path(tmpdir.name)
-                handler = self.addClassCleanup if inspect.isclass(self) else self.addCleanup
-                handler(self._cleanup_handlers)
-            else:
-                self.tmp = Path(tmpdir)
-            self.task_kwargs['iblrig_settings'].update(
-                iblrig_remote_data_path=None, iblrig_local_data_path=self.tmp)
+            p = Path(tmpdir.name if isinstance(tmpdir, tempfile.TemporaryDirectory) else tmpdir)
+            task_kwargs['iblrig_settings'].update(iblrig_remote_data_path=None, iblrig_local_data_path=p)
+        return task_kwargs, tmpdir
 
-    def _cleanup_handlers(self):
+    def get_task_kwargs(self, tmpdir=True):
+        """
+        Copy task keyword arguments and create a temporary directory.
+
+        Parameters
+        ----------
+        tmpdir : bool, tempfile.TemporaryDirectory, pathlib.Path
+            An optional temporary directory to add to kwargs as iblrig settings local data path.
+            If False, the default location is used. If True, a new tempdir is created and added to
+            teardown routine.
+
+        """
+        self.task_kwargs, tmp = self.create_task_kwargs(tmpdir)
+        self.tmp = Path(tmp.name if isinstance(tmp, tempfile.TemporaryDirectory) else tmp)
+        if isinstance(tmp, tempfile.TemporaryDirectory):
+            self.addCleanup(tmp.cleanup)
+        self.addCleanup(self.cleanup_handlers)
+
+    @staticmethod
+    def cleanup_handlers():
         """Close log file handlers before cleaning up temp dir.
 
         The tasks open log files within the temp session dir. Here we ensure files are closed
@@ -69,8 +83,6 @@ class TaskArgsMixin:
             for fh in filter(lambda h: h.name == f'{name}_file', logging.getLogger(name).handlers):
                 fh.close()
                 logging.getLogger(name).removeHandler(fh)
-        if self._tmp:
-            self._tmp.cleanup()
 
 
 class BaseTestCases:
@@ -130,6 +142,8 @@ class IntegrationFullRuns(BaseTestCases.CommonTestTask):
     """
 
     create_subject = True
+    _tmp = None  # a temporary directory
+    one = None
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -139,12 +153,15 @@ class IntegrationFullRuns(BaseTestCases.CommonTestTask):
         :return:
         """
         cls.one = ONE(**TEST_DB, mode='remote')
-        TaskArgsMixin.get_task_kwargs(cls)
+        cls.task_kwargs, cls._tmp = TaskArgsMixin.create_task_kwargs()
         cls.task_kwargs.update({'subject': 'iblrig_unit_test_' + ''.join(random.choices(string.ascii_letters, k=8))})
         if cls.create_subject:
             cls.one.alyx.rest('subjects', 'create', data=dict(nickname=cls.task_kwargs['subject'], lab='cortexlab'))
 
     @classmethod
     def tearDownClass(cls) -> None:
-        if cls.create_subject:
+        if cls.create_subject and cls.one:
             cls.one.alyx.rest('subjects', 'delete', id=cls.task_kwargs['subject'])
+        cls.cleanup_handlers()
+        if cls._tmp:
+            cls._tmp.cleanup()

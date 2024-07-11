@@ -8,7 +8,7 @@ from copy import deepcopy
 from unittest.mock import patch
 
 from iblrig import __version__
-from iblrig.test.base import TaskArgsMixin
+from iblrig.test.base import BaseTestCases
 from iblrig_tasks._iblrig_tasks_trainingChoiceWorld.task import Session as TrainingChoiceWorldSession
 from one.api import ONE
 
@@ -20,7 +20,7 @@ TEST_DB = {
 }
 
 
-class TestRegisterSession(unittest.TestCase, TaskArgsMixin):
+class TestRegisterSession(BaseTestCases.CommonTestTask):
     """Test iblrig.alyx.register_session function."""
 
     def setUp(self):

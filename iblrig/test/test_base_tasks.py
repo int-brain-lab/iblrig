@@ -6,7 +6,6 @@ The start() methods of those mixins require the hardware to be connected.
 """
 
 import argparse
-import logging
 import tempfile
 import unittest
 from pathlib import Path
@@ -23,7 +22,7 @@ from iblrig.base_tasks import BaseSession, BonsaiRecordingMixin
 from iblrig.misc import _get_task_argument_parser, _post_parse_arguments
 from iblrig.path_helper import load_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings
-from iblrig.test.base import PATH_FIXTURES, TaskArgsMixin, IntegrationFullRuns
+from iblrig.test.base import PATH_FIXTURES, BaseTestCases
 
 
 class EmptyHardwareSession(BaseSession):
@@ -40,7 +39,7 @@ class EmptyHardwareSession(BaseSession):
         pass
 
 
-class TestHierarchicalParameters(unittest.TestCase, TaskArgsMixin):
+class TestHierarchicalParameters(BaseTestCases.CommonTestTask):
     def test_default_params(self):
         self.get_task_kwargs()
         sess = BiasedChoiceWorldSession(**self.task_kwargs)
@@ -53,7 +52,7 @@ class TestHierarchicalParameters(unittest.TestCase, TaskArgsMixin):
         assert sess2.task_params['REWARD_AMOUNT_UL'] == -2
 
 
-class TestExtractorTypes(unittest.TestCase, TaskArgsMixin):
+class TestExtractorTypes(BaseTestCases.CommonTestTask):
     """
     EmptyHardwareSession sepcifies the extractors in the __init__ method, and the extractors
     are reflected in the experiment description file
@@ -122,7 +121,7 @@ class TestExperimentDescription(unittest.TestCase):
         self.assertCountEqual(expected, description.get('tasks', []))
 
 
-class TestPathCreation(unittest.TestCase, TaskArgsMixin):
+class TestPathCreation(BaseTestCases.CommonTestTask):
     """Test creation of experiment description dictionary."""
 
     def setUp(self):
@@ -218,7 +217,7 @@ class TestHardwareSettings(unittest.TestCase):
         self.assertRaises(KeyError, BonsaiRecordingMixin._camera_mixin_bonsai_get_workflow_file, {}, 'recording')
 
 
-class TestRun(unittest.TestCase, TaskArgsMixin):
+class TestRun(BaseTestCases.CommonTestTask):
     """Test BaseSession.run method and append kwarg."""
 
     def setUp(self):
@@ -280,7 +279,7 @@ class _PauseChoiceWorldSession(ChoiceWorldSession):
         self.draw_next_trial_info()
 
 
-class TestBaseChoiceWorld(unittest.TestCase, TaskArgsMixin):
+class TestBaseChoiceWorld(BaseTestCases.CommonTestTask):
     """Test base_choice_world.ChoiceWorldSession class."""
 
     def setUp(self):

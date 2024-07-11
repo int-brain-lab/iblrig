@@ -9,7 +9,7 @@ from iblrig.test.base import TaskArgsMixin
 from iblutil.io import net
 
 
-class NetworkSession(EmptySession, NetworkSession):
+class Session(EmptySession, NetworkSession):
     protocol_name = '_ibl_network_session'
 
     def register_to_alyx(self):
@@ -49,13 +49,13 @@ class TestNetworkTask(unittest.TestCase, TaskArgsMixin):
         aux.is_connected = True
         # Should raise NotImplementedError
         self.task_kwargs['hardware_settings']['MAIN_SYNC'] = True
-        self.assertRaises(NotImplementedError, NetworkSession, **self.task_kwargs)
+        self.assertRaises(NotImplementedError, Session, **self.task_kwargs)
 
     @patch('iblrig.net.Auxiliaries', autospec=True)
     def test_communicate(self, aux_mock):
         """Test communicate method, namely the raise_on_exception kwarg."""
         aux = self._prepare_mock(aux_mock)
-        task = NetworkSession(**self.task_kwargs)
+        task = Session(**self.task_kwargs)
         aux.push.return_value = TimeoutError('FOO')
         with self.assertLogs('iblrig.base_tasks', 'ERROR'):
             r = task.communicate('EXPSTART', self.exp_ref, raise_on_exception=False)
@@ -68,7 +68,7 @@ class TestNetworkTask(unittest.TestCase, TaskArgsMixin):
     def test_network_init(self, aux_mock):
         """Test init routine, namely the update of paths from remote rig."""
         aux = self._prepare_mock(aux_mock)
-        task = NetworkSession(**self.task_kwargs)
+        task = Session(**self.task_kwargs)
         aux_mock.assert_called_with(self.clients)
         expected = {'date': (date.today()), 'subject': self.task_kwargs['subject'], 'sequence': self.sequence}
         self.assertEqual(expected, task.exp_ref)
@@ -81,34 +81,34 @@ class TestNetworkTask(unittest.TestCase, TaskArgsMixin):
         aux_mock.reset_mock()
         task_kwargs = self.task_kwargs | {'remote_rigs': list(self.clients)}
         # Should raise when list of rig names provided with no remote devices file to determine URIs
-        self.assertRaises(ValueError, NetworkSession, **task_kwargs)
+        self.assertRaises(ValueError, Session, **task_kwargs)
         # With a remote devices file, the subject of names provided should be sent to Auxiliaries object
         with patch('iblrig.net.get_remote_devices', return_value={'foo': 'udp://192.168.0.5', **self.clients}):
-            task = NetworkSession(**self.task_kwargs)
+            task = Session(**self.task_kwargs)
             aux_mock.assert_called_with(self.clients)
 
         # Check errors
         # Remote subject doesn't match
         task_kwargs = self.task_kwargs | {'subject': 'foobar'}
-        self.assertRaises(ValueError, NetworkSession, **task_kwargs)
+        self.assertRaises(ValueError, Session, **task_kwargs)
         # Append doesn't match
         task_kwargs = self.task_kwargs | {'append': True}
-        self.assertRaises(ValueError, NetworkSession, **task_kwargs)  # append should be False
+        self.assertRaises(ValueError, Session, **task_kwargs)  # append should be False
         task.paths.SESSION_FOLDER.mkdir(parents=True)
         task.paths.SESSION_FOLDER.joinpath(task.paths.TASK_COLLECTION).mkdir()
-        self.assertRaises(ValueError, NetworkSession, **self.task_kwargs)  # append should be True
-        task_2 = NetworkSession(**task_kwargs)
+        self.assertRaises(ValueError, Session, **self.task_kwargs)  # append should be True
+        task_2 = Session(**task_kwargs)
         self.assertEqual('raw_task_data_01', task_2.paths.TASK_COLLECTION)
         task.paths.SESSION_FOLDER.joinpath(task.paths.TASK_COLLECTION).rmdir()
         # Date doesn't match
         aux.push.return_value['ZcanImage'][1]['exp_ref'] = '2020-01-01' + self.exp_ref[10:]
-        self.assertRaises(RuntimeError, NetworkSession, **self.task_kwargs)
+        self.assertRaises(RuntimeError, Session, **self.task_kwargs)
 
     @patch('iblrig.net.Auxiliaries', autospec=True)
     def test_full_run(self, aux_mock):
         """Test network activity over entire session."""
         aux = self._prepare_mock(aux_mock)
-        task = NetworkSession(**self.task_kwargs)
+        task = Session(**self.task_kwargs)
         task.run()
         expected = [call('EXPINFO', 'CONNECTED', ANY, wait=True),
                     call('EXPINIT', {'exp_ref': self.exp_ref}, wait=True),
@@ -141,7 +141,7 @@ class TestNetworkTask(unittest.TestCase, TaskArgsMixin):
     def test_inactive_networks(self, push_mock):
         """Test behaviour when no remote rigs provided."""
         task_kwargs = self.task_kwargs | {'remote_rigs': {}}
-        task = NetworkSession(**task_kwargs)
+        task = Session(**task_kwargs)
         self.assertFalse(task.remote_rigs.is_connected)
         self.assertTrue(task.remote_rigs.is_running)
         task.run()

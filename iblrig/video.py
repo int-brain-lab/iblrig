@@ -724,13 +724,16 @@ class CameraSessionNetworked(CameraSession):
         assert task and not task.done(), 'No Bonsai process found!'
         return super().start_recording()
 
+    def is_connected(self):
+        return self.communicator and self.communicator.is_connected
+
     async def run(self, service_uri=None):
         """Main loop networked with behaviour rig."""
-        if not (self.communicator and self.communicator.is_connected):
+        if not self.is_connected:
             # raise RuntimeError('Not connected. Please run `listen` first.')
             await self.listen(service_uri)
         self.run_setup_workflow()
-        while self.communicator and self.communicator.is_connected:
+        while self.is_connected:
             # FIXME Run this as worker for asynchronicity
             # Ensure we are awaiting a message from the remote rig.
             # This task must be re-added each time a message is received.
@@ -769,6 +772,7 @@ class CameraSessionNetworked(CameraSession):
         if self.communicator:
             self.communicator.close()  # Ensure closed and callbacks cancelled
         for task in self._async_tasks:
+            self.logger.info('Cancelling %s', task)
             task.cancel()
         self._async_tasks.clear()
 
@@ -778,6 +782,7 @@ class CameraSessionNetworked(CameraSession):
         This should be called before destroying the session object.
         """
         for task in self._async_tasks:
+            self.logger.info('Cancelling %s', task)
             task.cancel()
         self._async_tasks.clear()
         self.communicator.close()

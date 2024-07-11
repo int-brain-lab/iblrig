@@ -17,7 +17,7 @@ from iblutil.util import Bunch
 sys.modules['PySpin'] = MagicMock()
 
 from iblrig import video  # noqa
-from iblrig.test.base import TASK_KWARGS, TaskArgsMixin
+from iblrig.test.base import BaseTestCases
 from iblrig.path_helper import load_pydantic_yaml, HARDWARE_SETTINGS_YAML, RIG_SETTINGS_YAML  # noqa
 from iblrig.pydantic_definitions import HardwareSettings  # noqa
 
@@ -180,7 +180,7 @@ class TestPrepareVideoSession(unittest.TestCase):
         self.assertRaises(ValueError, video.prepare_video_session, self.subject, 'training')
 
 
-class BaseCameraTest(unittest.TestCase, TaskArgsMixin):
+class BaseCameraTest(BaseTestCases.CommonTestTask):
     """A base class for camera hardware test fixtures."""
 
     def setUp(self):
@@ -260,6 +260,7 @@ class TestCameraSessionNetworked(unittest.IsolatedAsyncioTestCase, BaseCameraTes
     @patch('iblrig.video_pyspin.enable_camera_trigger')
     async def test_run_video_session(self, enable_camera_trigger, call_bonsai, call_bonsai_async):
         """Test iblrig.video.CameraSessionNetworked.run method."""
+        # FIXME must mock read_stdin
         # Some test hardware settings
         task_kwargs = self.task_kwargs
         del task_kwargs['subject']
@@ -341,8 +342,6 @@ class TestCameraSessionNetworked(unittest.IsolatedAsyncioTestCase, BaseCameraTes
             workflows.setup, {'LeftCameraIndex': 1, 'RightCameraIndex': 1}, debug=False, wait=True
         )
         call_bonsai_async.assert_awaited_once_with(workflows.recording, expected_pars, debug=False)
-        del session
-        self.communicator.reset_mock()
 
 
 class TestValidateVideo(unittest.TestCase):
