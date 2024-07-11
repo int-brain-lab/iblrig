@@ -54,7 +54,6 @@ class ValveValues:
                     c, _ = scipy.optimize.curve_fit(
                         self._fcn, self.open_times_ms, self.volumes_ul, p0=[0, 0, 0], bounds=([-np.inf, 0, 0], np.inf)
                     )
-                    print(c)
                 except RuntimeError:
                     c = [np.nan, np.nan, np.nan]
         else:
