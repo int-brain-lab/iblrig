@@ -115,7 +115,7 @@ class BaseSession(ABC):
         if hardware_settings is not None:
             self.hardware_settings.update(hardware_settings)
             HardwareSettings.model_validate(self.hardware_settings)
-        self.iblrig_settings = load_pydantic_yaml(RigSettings, file_iblrig_settings)
+        self.iblrig_settings: RigSettings = load_pydantic_yaml(RigSettings, file_iblrig_settings)
         if iblrig_settings is not None:
             self.iblrig_settings.update(iblrig_settings)
             RigSettings.model_validate(self.iblrig_settings)
@@ -172,7 +172,7 @@ class BaseSession(ABC):
             extractors=self.extractor_tasks,
         )
 
-    def _init_paths(self, append: bool = False):
+    def _init_paths(self, append: bool = False) -> Bunch:
         r"""
         Initialize session paths
 
@@ -207,14 +207,14 @@ class BaseSession(ABC):
                 `C:\iblrigv8_data\mainenlab\Subjects\SWC_043\2019-01-01\001\raw_task_data_00\_iblrig_taskSettings.raw.json`
         """
         rig_computer_paths = iblrig.path_helper.get_local_and_remote_paths(
-            local_path=self.iblrig_settings['iblrig_local_data_path'],
-            remote_path=self.iblrig_settings['iblrig_remote_data_path'],
-            lab=self.iblrig_settings['ALYX_LAB'],
+            local_path=self.iblrig_settings.iblrig_local_data_path,
+            remote_path=self.iblrig_settings.iblrig_remote_data_path,
+            lab=self.iblrig_settings.ALYX_LAB,
             iblrig_settings=self.iblrig_settings,
         )
         paths = Bunch({'IBLRIG_FOLDER': BASE_PATH})
         paths.BONSAI = BONSAI_EXE
-        paths.VISUAL_STIM_FOLDER = paths.IBLRIG_FOLDER.joinpath('visual_stim')
+        paths.VISUAL_STIM_FOLDER = BASE_PATH.joinpath('visual_stim')
         paths.LOCAL_SUBJECT_FOLDER = rig_computer_paths['local_subjects_folder']
         paths.REMOTE_SUBJECT_FOLDER = rig_computer_paths['remote_subjects_folder']
         # initialize the session path
