@@ -1,13 +1,16 @@
 import numpy as np
 import pandas as pd
 
-from iblrig.test.base import TASK_KWARGS, BaseTestCases
+from iblrig.test.base import BaseTestCases
 from iblrig.test.tasks.test_biased_choice_world_family import get_fixtures
 from iblrig_tasks._iblrig_tasks_trainingChoiceWorld.task import Session as TrainingChoiceWorldSession
 from iblrig_tasks._iblrig_tasks_trainingPhaseChoiceWorld.task import Session as TrainingPhaseChoiceWorldSession
 
 
 class TestTrainingPhaseChoiceWorld(BaseTestCases.CommonTestInstantiateTask):
+    def setUp(self):
+        self.get_task_kwargs()
+
     def test_task(self):
         """
         This test loops over training phases described in the mice training protocol and runs full
@@ -26,7 +29,7 @@ class TestTrainingPhaseChoiceWorld(BaseTestCases.CommonTestInstantiateTask):
             with self.subTest(training_phase=training_phase):
                 np.random.seed(12354)
                 task = TrainingPhaseChoiceWorldSession(
-                    **TASK_KWARGS, adaptive_reward=adaptive_reward, training_level=training_phase
+                    **self.task_kwargs, adaptive_reward=adaptive_reward, training_level=training_phase
                 )
                 assert task.training_phase == training_phase
                 task.create_session()
@@ -79,11 +82,14 @@ class TestTrainingPhaseChoiceWorld(BaseTestCases.CommonTestInstantiateTask):
 
 
 class TestInstantiationTraining(BaseTestCases.CommonTestInstantiateTask):
+    def setUp(self):
+        self.get_task_kwargs()
+
     def test_task(self):
         trial_fixtures = get_fixtures()
         adaptive_reward = 1.9
         nt = 800
-        task = TrainingChoiceWorldSession(**TASK_KWARGS, adaptive_reward=adaptive_reward)
+        task = TrainingChoiceWorldSession(**self.task_kwargs, adaptive_reward=adaptive_reward)
         task.create_session()
         for i in np.arange(nt):
             task.next_trial()
@@ -100,7 +106,8 @@ class TestInstantiationTraining(BaseTestCases.CommonTestInstantiateTask):
             assert not np.isnan(task.reward_time)
 
     def test_acquisition_description(self):
-        task = TrainingChoiceWorldSession(**TASK_KWARGS)
+
+        task = TrainingChoiceWorldSession(**self.task_kwargs)
         ad = task.experiment_description
         ed = {
             'sync': {'bpod': {'collection': 'raw_task_data_00', 'extension': '.jsonable', 'acquisition_software': 'pybpod'}},

@@ -3,14 +3,12 @@
 import datetime
 import random
 import string
-import tempfile
 import unittest
 from copy import deepcopy
-from pathlib import Path
 from unittest.mock import patch
 
 from iblrig import __version__
-from iblrig.test.base import TASK_KWARGS
+from iblrig.test.base import TaskArgsMixin
 from iblrig_tasks._iblrig_tasks_trainingChoiceWorld.task import Session as TrainingChoiceWorldSession
 from one.api import ONE
 
@@ -22,14 +20,12 @@ TEST_DB = {
 }
 
 
-class TestRegisterSession(unittest.TestCase):
+class TestRegisterSession(unittest.TestCase, TaskArgsMixin):
     """Test iblrig.alyx.register_session function."""
 
     def setUp(self):
         # Create a temporary directory for task to write settings files to
-        tmp = tempfile.TemporaryDirectory()
-        self.addCleanup(tmp.cleanup)
-        self.tmpdir = Path(tmp.name)
+        self.get_task_kwargs()
 
         # Create a random new subject
         self.one = ONE(**TEST_DB, cache_rest=None)
@@ -39,10 +35,10 @@ class TestRegisterSession(unittest.TestCase):
         self.addCleanup(self.one.alyx.rest, 'subjects', 'delete', id=self.subject)
 
         # Task settings
-        iblrig_settings = {'ALYX_LAB': self.lab, 'iblrig_local_subjects_path': self.tmpdir, 'iblrig_local_data_path': self.tmpdir}
+        iblrig_settings = {'ALYX_LAB': self.lab, 'iblrig_local_subjects_path': self.tmp, 'iblrig_local_data_path': self.tmp}
         hardware_settings = {'RIG_NAME': self.one.alyx.rest('locations', 'list', lab=self.lab)[0]['name']}
         self.task_settings = {
-            **TASK_KWARGS,
+            **self.task_kwargs,
             'subject': self.subject,
             'iblrig_settings': iblrig_settings,
             'hardware_settings': hardware_settings,
@@ -50,7 +46,6 @@ class TestRegisterSession(unittest.TestCase):
 
     def test_register_session(self):
         task = TrainingChoiceWorldSession(**self.task_settings, one=self.one)
-        self.addCleanup(task._remove_file_loggers)
         task.session_info.SUBJECT_WEIGHT = 31.43
         task.create_session()  # calls register_to_alyx
 

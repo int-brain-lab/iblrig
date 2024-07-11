@@ -5,6 +5,8 @@ import json
 import random
 import string
 import unittest
+import tempfile
+import logging
 from pathlib import Path
 
 import ibllib.pipes.dynamic_pipeline
@@ -27,12 +29,54 @@ TASK_KWARGS = {
 }
 
 
+class TaskArgsMixin:
+    _tmp = None
+
+    def get_task_kwargs(self, tmpdir=True):
+        """
+        Copy task keyword arguments.
+
+        Parameters
+        ----------
+        tmpdir : bool, tempfile.TemporaryDirectory, pathlib.Path
+            An optional temporary directory to add to kwargs as iblrig settings local data path.
+            If False, the default location is used. If True, a new tempdir is created and added to
+            teardown routine.
+
+        """
+        self.task_kwargs = copy.deepcopy(TASK_KWARGS)
+        if tmpdir is True:
+            tmpdir = tempfile.TemporaryDirectory()
+        if tmpdir:
+            self._tmp = tmpdir
+            if isinstance(tmpdir, tempfile.TemporaryDirectory):
+                self.tmp = Path(tmpdir.name)
+                self.addCleanup(self.cleanup)
+            else:
+                self.tmp = Path(tmpdir)
+            self.task_kwargs['iblrig_settings'].update(
+                iblrig_remote_data_path=None, iblrig_local_data_path=self.tmp)
+
+    def cleanup(self):
+        """Close log file handlers before cleaning up temp dir.
+
+        The tasks open log files within the temp session dir. Here we ensure files are closed
+        before removing file tree.
+        """
+        for name in ('iblrig', 'pybpodapi'):
+            for fh in filter(lambda h: h.name == f'{name}_file', logging.getLogger(name).handlers):
+                fh.close()
+                logging.getLogger(name).removeHandler(fh)
+        if self._tmp:
+            self._tmp.cleanup()
+
+
 class BaseTestCases:
     """
     We wrap the base class in a blank class to avoid it being called or discovered by unittest
     """
 
-    class CommonTestTask(unittest.TestCase):
+    class CommonTestTask(unittest.TestCase, TaskArgsMixin):
         task = None
 
         def read_and_assert_json_settings(self, json_file):

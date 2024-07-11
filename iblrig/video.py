@@ -15,7 +15,7 @@ from ibllib.io.video import get_video_meta, label_from_path
 from ibllib.pipes.misc import load_params_dict
 from iblrig.base_tasks import EmptySession
 from iblrig.constants import HARDWARE_SETTINGS_YAML, HAS_PYSPIN, HAS_SPINNAKER, RIG_SETTINGS_YAML
-from iblrig.net import get_server_communicator, read_stdin, update_alyx_token
+from iblrig.net import get_server_communicator, read_stdin, update_alyx_token, ExpInfo
 from iblrig.path_helper import load_pydantic_yaml, patch_settings
 from iblrig.pydantic_definitions import HardwareSettings
 from iblrig.tools import ask_user, call_bonsai, call_bonsai_async
@@ -405,7 +405,7 @@ def prepare_video_session(subject_name: str, config_name: str, debug: bool = Fal
     input('PRESS ENTER TO START CAMERAS')
     # Save the stub files locally and in the remote repo for future copy script to use
     copier = VideoCopier(session_path=session_path, remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER)
-    copier.initialize_experiment(acquisition_description=copier.config2stub(config, raw_data_folder.name))
+    copier.initialize_experiment(experiment_description=copier.config2stub(config, raw_data_folder.name))
 
     video_pyspin.enable_camera_trigger(enable=False)
     log.info('To terminate video acquisition, please stop and close Bonsai workflow.')
@@ -494,7 +494,7 @@ async def prepare_video_service(config_name: str, debug: bool = False, service_u
     copier = VideoCopier(session_path=session_path, remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER)
     description = copier.config2stub(config, raw_data_folder.name)
     if com:
-        await com.init({'acquisition_description': description}, addr=addr)
+        await com.init({'experiment_description': description}, addr=addr)
         log.info('initialized.')
         # Wait for task to begin
         data, addr = await com.on_event(net.base.ExpMessage.EXPSTART)
@@ -502,7 +502,7 @@ async def prepare_video_service(config_name: str, debug: bool = False, service_u
         input('PRESS ENTER TO START CAMERAS')
 
     # Save the stub files locally and in the remote repo for future copy script to use
-    copier.initialize_experiment(acquisition_description=copier.config2stub(config, raw_data_folder.name))
+    copier.initialize_experiment(experiment_description=copier.config2stub(config, raw_data_folder.name))
 
     video_pyspin.enable_camera_trigger(enable=False)
     if com:
@@ -595,14 +595,6 @@ class CameraSession(EmptySession):
             self._one = OneAlyx(silent=True, mode='local')
         return self._one
 
-    @property
-    def exp_ref(self):
-        """Construct an experiment reference string from the session info attribute."""
-        subject, date, number = (self.session_info[k] for k in ('SUBJECT_NAME', 'SESSION_START_TIME', 'SESSION_NUMBER'))
-        if not all([subject, date, number]):
-            return None
-        return self.one.dict2ref(dict(subject=subject, date=date[:10], sequence=str(number)))
-
     def _setup_loggers(self, level='INFO', **_):
         self.logger = setup_logger(name='iblrig', level=level)
 
@@ -682,6 +674,7 @@ class CameraSession(EmptySession):
 class CameraSessionNetworked(CameraSession):
     def __init__(self, subject=None, config_name='default', **kwargs):
         """
+        A camera session that listens for run commands from a remote computer.
 
         Parameters
         ----------
@@ -775,6 +768,9 @@ class CameraSessionNetworked(CameraSession):
 
         if self.communicator:
             self.communicator.close()  # Ensure closed and callbacks cancelled
+        for task in self._async_tasks:
+            task.cancel()
+        self._async_tasks.clear()
 
     def close(self):
         """End experiment and cleanup object.
@@ -832,8 +828,6 @@ class CameraSessionNetworked(CameraSession):
     async def on_init(self, data, addr):
         """Process init command from remote rig."""
         self.logger.info('INIT message received')
-        if data:
-            data = data[0]
         assert (exp_ref := (data or {}).get('exp_ref')), 'No experiment reference found'
         if isinstance(exp_ref, str):
             exp_ref = self.one.ref2dict(exp_ref)
@@ -865,8 +859,8 @@ class CameraSessionNetworked(CameraSession):
                 self.logger.error('received init message after experiment ended. Please restart.')
             case _:
                 raise NotImplementedError(f'Unexpected status "{self.status}"')
-        data = {'status': self.status, 'exp_ref': self.exp_ref, 'acquisition_description': self.experiment_description}
-        await self.communicator.init(data, addr=addr)
+        data = ExpInfo(self.exp_ref, False, self.experiment_description)
+        await self.communicator.init(self.status, data.to_dict(), addr=addr)
 
     async def on_start(self, data, addr):
         """Process init command from remote rig."""
@@ -896,23 +890,23 @@ class CameraSessionNetworked(CameraSession):
                 self.logger.error('received start message after experiment ended. Please restart.')
             case _:
                 raise NotImplementedError
-        data = {'status': self.status, 'exp_ref': self.exp_ref, 'acquisition_description': self.experiment_description}
+        data = ExpInfo(self.exp_ref, False, self.experiment_description).to_dict() | {'status': self.status}
         if addr:
             await self.communicator.start(self.exp_ref, data, addr=addr)  # Let behaviour PC know acquisition has started
 
     async def on_end(self, data, addr):
         self.logger.info('STOP message received')
-        data = {'status': self.status, 'exp_ref': self.exp_ref, 'acquisition_description': self.experiment_description}
+        data = ExpInfo(self.exp_ref, False, self.experiment_description).to_dict() | {'status': self.status}
         await self.communicator.stop(data, addr=addr, immediately=False)
 
     async def on_interrupt(self, data, addr):
         self.logger.info('STOP message received')
-        data = {'status': self.status, 'exp_ref': self.exp_ref, 'acquisition_description': self.experiment_description}
+        data = ExpInfo(self.exp_ref, False, self.experiment_description).to_dict() | {'status': self.status}
         await self.communicator.stop(data, addr=addr, immediately=True)
 
     async def on_cleanup(self, data, addr):
         self.logger.info('CLEANUP message received')
-        data = {'status': self.status, 'exp_ref': self.exp_ref, 'acquisition_description': self.experiment_description}
+        data = ExpInfo(self.exp_ref, False, self.experiment_description).to_dict() | {'status': self.status}
         await self.communicator.stop(data, addr=addr, immediately=True)
 
     async def on_status(self, _, addr):
@@ -921,13 +915,8 @@ class CameraSessionNetworked(CameraSession):
 
     async def on_info(self, _, addr):
         self.logger.info('INFO message received')
-        data = {
-            'status': self.status,
-            'exp_ref': self.exp_ref,
-            'main_sync': False,
-            'acquisition_description': self.experiment_description,
-        }
-        await self.communicator.info(self.status, data, addr=addr)
+        data = ExpInfo(self.exp_ref, False, self.experiment_description)
+        await self.communicator.info(self.status, data.to_dict(), addr=addr)
 
     async def on_alyx(self, data, addr):
         base_url, token = data

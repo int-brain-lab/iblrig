@@ -3,27 +3,29 @@ from unittest import TestCase
 import numpy as np
 import pandas as pd
 
-from iblrig.test.base import TASK_KWARGS, BaseTestCases
+from iblrig.test.base import BaseTestCases, TaskArgsMixin
 from iblrig.test.tasks.test_biased_choice_world_family import get_fixtures
 from iblrig_tasks._iblrig_tasks_advancedChoiceWorld.task import Session as AdvancedChoiceWorldSession
 
 
-class TestDefaultParameters(TestCase):
+class TestDefaultParameters(TestCase, TaskArgsMixin):
     def test_params_yaml(self):
         # just make sure the parameter file is
-        task = AdvancedChoiceWorldSession(**TASK_KWARGS)
+        self.get_task_kwargs(tmpdir=False)
+        task = AdvancedChoiceWorldSession(**self.task_kwargs)
         self.assertEqual(12, task.df_contingencies.shape[0])
         self.assertEqual(task.task_params['PROBABILITY_LEFT'], 0.5)
 
 
 class TestInstantiationAdvanced(BaseTestCases.CommonTestInstantiateTask):
     def setUp(self) -> None:
+        self.get_task_kwargs()
         self.task = AdvancedChoiceWorldSession(
             probability_set=[2, 2, 2, 1, 1, 1],
             contrast_set=[1, 0.5, 0, 0, 0.5, 1],
             reward_set_ul=[1, 1.5, 2, 2, 2.5, 2.6],
             position_set=[-35, -35, -35, 35, 35, 35],
-            **TASK_KWARGS,
+            **self.task_kwargs,
         )
 
     def test_task(self):

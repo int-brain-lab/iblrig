@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 from iblrig.raw_data_loaders import load_task_jsonable
-from iblrig.test.base import PATH_FIXTURES, TASK_KWARGS, BaseTestCases, IntegrationFullRuns
+from iblrig.test.base import PATH_FIXTURES, TaskArgsMixin, BaseTestCases, IntegrationFullRuns
 from iblrig_tasks._iblrig_tasks_biasedChoiceWorld.task import Session as BiasedChoiceWorldSession
 from iblrig_tasks._iblrig_tasks_ephysChoiceWorld.task import Session as EphysChoiceWorldSession
 from iblrig_tasks._iblrig_tasks_ImagingChoiceWorld.task import Session as ImagingChoiceWorldSession
@@ -14,7 +14,8 @@ from iblrig_tasks._iblrig_tasks_neuroModulatorChoiceWorld.task import Session as
 
 class TestInstantiationBiased(BaseTestCases.CommonTestInstantiateTask):
     def setUp(self) -> None:
-        self.task = BiasedChoiceWorldSession(**TASK_KWARGS)
+        self.get_task_kwargs()
+        self.task = BiasedChoiceWorldSession(**self.task_kwargs)
         np.random.seed(12345)
 
     def test_task(self, reward_set=None):
@@ -76,17 +77,20 @@ class TestInstantiationBiased(BaseTestCases.CommonTestInstantiateTask):
 
 class TestImagingChoiceWorld(TestInstantiationBiased):
     def setUp(self) -> None:
-        self.task = ImagingChoiceWorldSession(**TASK_KWARGS)
+        self.get_task_kwargs()
+        self.task = ImagingChoiceWorldSession(**self.task_kwargs)
 
 
 class TestInstantiationEphys(TestInstantiationBiased):
     def setUp(self) -> None:
-        self.task = EphysChoiceWorldSession(**TASK_KWARGS)
+        self.get_task_kwargs()
+        self.task = EphysChoiceWorldSession(**self.task_kwargs)
 
 
 class TestNeuroModulatorBiasedChoiceWorld(TestInstantiationBiased):
     def setUp(self) -> None:
-        self.task = NeuroModulatorChoiceWorldSession(**TASK_KWARGS)
+        self.get_task_kwargs()
+        self.task = NeuroModulatorChoiceWorldSession(**self.task_kwargs)
 
     def test_task(self):
         super().test_task(reward_set=np.array([0, 1.0, 1.5, 3.0]))

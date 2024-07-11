@@ -15,12 +15,7 @@ TODO case study: starts services but times out due to one service.
  warning if the status is running but continue on anyway?
 TODO perhaps confirmed_send should ensure that data is list with
  element 1 being an exp message
-TODO handle message timeouts in thread
-TODO Version service protocol
-TODO Send version info with exp info
-TODO Signal thread stop in mixin run method
 TODO Rewrite video session function with loop
-TODO Test for file lock context manager
 TODO Implement video end and cleanups
 TODO tests for clear_callbacks cancel future
 TODO test error_received and connection_lost
@@ -30,7 +25,6 @@ TODO test individual CammeraSession methods
 TODO Test for keyboard input
 TODO Process keyboard input
 TODO Document read stdin
-TODO Use queue for async run loop
 TODO Finish prep ephys session
 
 Examples
@@ -69,15 +63,13 @@ import logging
 import sys
 import threading
 import time
-from dataclasses import dataclass
-
-# from threading import Thread
+from dataclasses import dataclass, KW_ONLY, field
 from urllib.parse import urlparse
-from weakref import WeakValueDictionary
 
 import yaml
 
 import one.params
+from iblrig import __version__
 from iblrig.path_helper import get_local_and_remote_paths
 from iblutil.io import net
 from iblutil.io.params import FileLock
@@ -88,19 +80,7 @@ log = logging.getLogger(__name__)
 log.setLevel(10)
 
 
-class Singleton(type):
-    """A singleton class."""
-
-    _instances = WeakValueDictionary()  # instance automatically destroyed when no longer referenced
-
-    def __call__(cls, *args, **kwargs):
-        """Ensure the same instance is returned."""
-        if cls not in cls._instances:
-            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
-        return cls._instances[cls]
-
-
-class Auxiliaries(metaclass=Singleton):
+class Auxiliaries:
     services = None
     """iblutil.io.net.app.Services: A map of remote services."""
     refresh_rate = 0.2
@@ -114,9 +94,14 @@ class Auxiliaries(metaclass=Singleton):
     """dict: Map of request times and the remote responses."""
     stop_event = None
     """threading.Event: A thread event. Once set, thread stops listening and clean up services."""
+    response_received = None
+    """threading.Event: A thread event. Notified each time the async thread receives all responses."""
+    connected = None
+    """threading.Event: A thread event. Set by async thread once all services connected."""
+    _thread = None
+    """threading.Thread: An async thread handle."""
 
     def __new__(cls, *args, **kwargs):
-        # FIXME Singleton pattern most likely not necessary
         cls.response_received = threading.Condition()
         cls.connected = threading.Condition()
         cls.stop_event = threading.Event()
@@ -133,8 +118,9 @@ class Auxiliaries(metaclass=Singleton):
         """
         # Load clients
         self._clients = clients or {}
-        self.thread = threading.Thread(target=asyncio.run, args=(self.listen(),), name='network_coms')
-        self.thread.start()
+        if any(self._clients):
+            self._thread = threading.Thread(target=asyncio.run, args=(self.listen(),), name='network_coms')
+            self._thread.start()
 
     @property
     def is_connected(self) -> bool:
@@ -157,7 +143,7 @@ class Auxiliaries(metaclass=Singleton):
         """
         n_aborted = len(self._queued)
         self._queued.clear()
-        log.debug('%i remote services messages aborted', n_aborted)
+        log.debug('%i remote service messages aborted', n_aborted)
         return n_aborted
 
     async def cleanup(self, notify_services=False):
@@ -179,8 +165,9 @@ class Auxiliaries(metaclass=Singleton):
     def close(self):
         """Close communicators and wait for thread to terminate."""
         self.clear_message_queue()
-        self.stop_event.set()
-        self.thread.join(timeout=5)  # wait for thread to exit
+        if self._thread:
+            self.stop_event.set()
+            self._thread.join(timeout=5)  # wait for thread to exit
 
     async def create(self):
         """
@@ -370,10 +357,15 @@ def update_alyx_token(data, _, alyx=None, one=None):
 class ExpInfo:
     """A standard experiment information structure."""
 
-    main_sync: bool
     exp_ref: str
-    experiment_description: dict
-    master: bool
+    main_sync: bool
+    experiment_description: dict = field(default_factory=dict)
+    master: bool = False
+    rig_version: str = __version__
+    spec_version: str = net.base.ExpMessage.__version__
+
+    def to_dict(self):
+        return self.__dict__
 
 
 def get_remote_devices_file():
@@ -389,19 +381,26 @@ def get_remote_devices_file():
         return remote_data_folder.joinpath('remote_devices.yaml')
 
 
-def get_remote_devices():
+def get_remote_devices(remote_devices_file=None):
     """
     Return map of device name to network URI.
+
+    Parameters
+    ----------
+    remote_devices_file : pathlib.Path
+        Optional remote data path.
 
     Returns
     -------
     dict[str, str]
         A map of device name to network URI, e.g. {'cameras': 'udp://127.0.0.1:11001'}.
-
-    TODO Move to pathhelper?
     """
     remote_devices = {}
-    if (remote_devices_file := get_remote_devices_file()) and remote_devices_file.exists():
+    if not remote_devices_file:
+        remote_devices_file = get_remote_devices_file()
+    elif remote_devices_file.is_dir():
+        remote_devices_file /= 'remote_devices.yaml'
+    if remote_devices_file and remote_devices_file.exists():
         with open(remote_devices_file) as f:
             remote_devices = yaml.safe_load(f)
     return remote_devices

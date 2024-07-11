@@ -6,7 +6,6 @@ The start() methods of those mixins require the hardware to be connected.
 """
 
 import argparse
-import copy
 import logging
 import tempfile
 import unittest
@@ -22,7 +21,7 @@ from iblrig.base_tasks import BaseSession, BonsaiRecordingMixin
 from iblrig.misc import _get_task_argument_parser, _post_parse_arguments
 from iblrig.path_helper import load_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings
-from iblrig.test.base import TASK_KWARGS
+from iblrig.test.base import TaskArgsMixin
 
 
 class EmptyHardwareSession(BaseSession):
@@ -39,27 +38,28 @@ class EmptyHardwareSession(BaseSession):
         pass
 
 
-class TestHierarchicalParameters(unittest.TestCase):
+class TestHierarchicalParameters(unittest.TestCase, TaskArgsMixin):
     def test_default_params(self):
-        sess = BiasedChoiceWorldSession(**TASK_KWARGS)
-        with tempfile.TemporaryDirectory() as td:
-            file_params = Path(td).joinpath('params.yaml')
-            with open(file_params, 'w+') as fp:
-                yaml.safe_dump(data={'TITI': 1, 'REWARD_AMOUNT_UL': -2}, stream=fp)
-            sess2 = BiasedChoiceWorldSession(task_parameter_file=file_params, **TASK_KWARGS)
+        self.get_task_kwargs()
+        sess = BiasedChoiceWorldSession(**self.task_kwargs)
+        file_params = self.tmp.joinpath('params.yaml')
+        with open(file_params, 'w+') as fp:
+            yaml.safe_dump(data={'TITI': 1, 'REWARD_AMOUNT_UL': -2}, stream=fp)
+        sess2 = BiasedChoiceWorldSession(task_parameter_file=file_params, **self.task_kwargs)
         assert len(sess2.task_params.keys()) == len(sess.task_params.keys()) + 1
         assert sess2.task_params['TITI'] == 1
         assert sess2.task_params['REWARD_AMOUNT_UL'] == -2
 
 
-class TestExtractorTypes(unittest.TestCase):
+class TestExtractorTypes(unittest.TestCase, TaskArgsMixin):
     """
     EmptyHardwareSession sepcifies the extractors in the __init__ method, and the extractors
     are reflected in the experiment description file
     """
 
     def test_overriden_extractor_types(self):
-        sess = EmptyHardwareSession(**TASK_KWARGS)
+        self.get_task_kwargs(tmpdir=False)
+        sess = EmptyHardwareSession(**self.task_kwargs)
         self.assertEqual(sess.experiment_description['tasks'][0][sess.protocol_name]['extractors'], ['Tutu', 'Tata'])
 
 
@@ -120,26 +120,26 @@ class TestExperimentDescription(unittest.TestCase):
         self.assertCountEqual(expected, description.get('tasks', []))
 
 
-class TestPathCreation(unittest.TestCase):
+class TestPathCreation(unittest.TestCase, TaskArgsMixin):
     """Test creation of experiment description dictionary."""
 
     def setUp(self):
-        self.task_kwargs = copy.deepcopy(TASK_KWARGS)
+        self.get_task_kwargs()
 
     def test_create_chained_protocols(self):
         # creates a first task with no remote and main sync set to false
         self.task_kwargs['iblrig_settings']['iblrig_remote_data_path'] = False
         self.task_kwargs['hardware_settings']['MAIN_SYNC'] = False
-        first_task = EmptyHardwareSession(**self.task_kwargs, task_parameter_file=ChoiceWorldSession.base_parameters_file)
-        first_task.create_session()
+        self.task = EmptyHardwareSession(**self.task_kwargs, task_parameter_file=ChoiceWorldSession.base_parameters_file)
+        self.task.create_session()
         # append a new protocol to the current task
         second_task = EmptyHardwareSession(append=True, **self.task_kwargs)
         # unless the task has reached the create session stage, there is only one protocol in there
-        self.assertEqual(set(d.name for d in first_task.paths.SESSION_FOLDER.iterdir() if d.is_dir()), {'raw_task_data_00'})
+        self.assertEqual(set(d.name for d in self.task.paths.SESSION_FOLDER.iterdir() if d.is_dir()), {'raw_task_data_00'})
         # this will create and add to the acquisition description file
         second_task.create_session()
         self.assertEqual(
-            set(d.name for d in first_task.paths.SESSION_FOLDER.iterdir() if d.is_dir()), {'raw_task_data_00', 'raw_task_data_01'}
+            set(d.name for d in self.task.paths.SESSION_FOLDER.iterdir() if d.is_dir()), {'raw_task_data_00', 'raw_task_data_01'}
         )
         description = read_params(second_task.paths['SESSION_FOLDER'])
         # we should also find the protocols in the acquisition description file
@@ -163,18 +163,18 @@ class TestPathCreation(unittest.TestCase):
 
     def test_create_session_without_remote(self):
         self.task_kwargs['iblrig_settings']['iblrig_remote_data_path'] = None
-        task = EmptyHardwareSession(**self.task_kwargs)
-        task.create_session()
+        self.task = EmptyHardwareSession(**self.task_kwargs)
+        self.task.create_session()
         # when we create the session, the local session folder is created with the acquisition description file
-        description_file_local = next(task.paths['SESSION_FOLDER'].glob('_ibl_experiment.description*.yaml'), None)
+        description_file_local = next(self.task.paths['SESSION_FOLDER'].glob('_ibl_experiment.description*.yaml'), None)
         assert description_file_local is not None
 
     def test_create_session_unavailable_remote(self):
         self.task_kwargs['iblrig_settings']['iblrig_remote_data_path'] = '/path/that/doesnt/exist'
-        task = EmptyHardwareSession(**self.task_kwargs)
-        task.create_session()
+        self.task = EmptyHardwareSession(**self.task_kwargs)
+        self.task.create_session()
         # when we create the session, the local session folder is created with the acquisition description file
-        description_file_local = next(task.paths['SESSION_FOLDER'].glob('_ibl_experiment.description*.yaml'), None)
+        description_file_local = next(self.task.paths['SESSION_FOLDER'].glob('_ibl_experiment.description*.yaml'), None)
         assert description_file_local is not None
 
 
@@ -216,30 +216,24 @@ class TestHardwareSettings(unittest.TestCase):
         self.assertRaises(KeyError, BonsaiRecordingMixin._camera_mixin_bonsai_get_workflow_file, {}, 'recording')
 
 
-class TestRun(unittest.TestCase):
+class TestRun(unittest.TestCase, TaskArgsMixin):
     """Test BaseSession.run method and append kwarg."""
 
     def setUp(self):
-        tmp = tempfile.TemporaryDirectory()
-        self.tmp = Path(tmp.name)
-        self.addCleanup(tmp.cleanup)
-        self.iblrig_settings = {'iblrig_remote_data_path': None, 'iblrig_local_data_path': self.tmp}
-
-        self.task_kwargs = copy.deepcopy(TASK_KWARGS)
+        self.get_task_kwargs()
         self.task_kwargs['hardware_settings']['MAIN_SYNC'] = False
         self.task_kwargs['interactive'] = True
-        self.task_kwargs['iblrig_settings'] = self.iblrig_settings
         self.task_kwargs['task_parameter_file'] = ChoiceWorldSession.base_parameters_file
 
     @mock.patch('iblrig.base_tasks.graph.numinput', side_effect=(23.5, 20, 35))
     def test_dialogs(self, input_mock):
         """Test that weighing dialog used only on first of chained protocols."""
-        first_task = EmptyHardwareSession(**self.task_kwargs)
+        self.task = EmptyHardwareSession(**self.task_kwargs)
         # Check that weighing GUI created
-        first_task.run()
+        self.task.run()
         input_mock.assert_called()
-        self.assertEqual(23.5, first_task.session_info['SUBJECT_WEIGHT'])
-        self.assertEqual(20, first_task.session_info['POOP_COUNT'])
+        self.assertEqual(23.5, self.task.session_info['SUBJECT_WEIGHT'])
+        self.assertEqual(20, self.task.session_info['POOP_COUNT'])
 
         # Append a new protocol to the current task. Weighting GUI should not be instantiated
         input_mock.reset_mock()
@@ -248,12 +242,3 @@ class TestRun(unittest.TestCase):
         input_mock.assert_called_once()
         self.assertIsNone(second_task.session_info['SUBJECT_WEIGHT'])
         self.assertEqual(35, second_task.session_info['POOP_COUNT'])
-
-    def tearDown(self):
-        """Close log file handlers.
-
-        The tasks open log files within the temp session dir. Here we ensure files are closed
-        before removing file tree.
-        """
-        for name in ('iblrig', 'pybpodapi'):
-            next(h for h in logging.getLogger(name).handlers if h.name == f'{name}_file').close()

@@ -2,7 +2,6 @@ import asyncio
 import sys
 import tempfile
 import unittest
-from copy import deepcopy
 from datetime import date, timedelta
 from pathlib import Path
 from unittest import mock
@@ -18,7 +17,7 @@ from iblutil.util import Bunch
 sys.modules['PySpin'] = MagicMock()
 
 from iblrig import video  # noqa
-from iblrig.test.base import TASK_KWARGS
+from iblrig.test.base import TASK_KWARGS, TaskArgsMixin
 from iblrig.path_helper import load_pydantic_yaml, HARDWARE_SETTINGS_YAML, RIG_SETTINGS_YAML  # noqa
 from iblrig.pydantic_definitions import HardwareSettings  # noqa
 
@@ -181,43 +180,45 @@ class TestPrepareVideoSession(unittest.TestCase):
         self.assertRaises(ValueError, video.prepare_video_session, self.subject, 'training')
 
 
-class TestCameraSession(unittest.TestCase):
-    """Test for iblrig.video.CameraSession class."""
+class BaseCameraTest(unittest.TestCase, TaskArgsMixin):
+    """A base class for camera hardware test fixtures."""
 
     def setUp(self):
-        self.tmp = tempfile.TemporaryDirectory()
-        self.addCleanup(self.tmp.cleanup)
-        Path(self.tmp.name, 'remote').mkdir()
-        Path(self.tmp.name, 'local').mkdir()
-        (input_mock := patch('builtins.input')).start()
-        self.addCleanup(input_mock.stop)
+        self.get_task_kwargs()
+        self.tmp.joinpath('remote').mkdir()
+        self.tmp.joinpath('local').mkdir()
 
-    @staticmethod
-    def get_task_kwargs(tmpdir):
+    def get_task_kwargs(self, tmpdir=True):
         """Generate test task kwargs for typical video PC."""
-        task_kwargs = deepcopy(TASK_KWARGS)
+        super().get_task_kwargs(tmpdir=tmpdir)
         # Some test hardware settings
-        hws = task_kwargs['hardware_settings']
+        hws = self.task_kwargs['hardware_settings']
         hws['device_cameras'] = load_pydantic_yaml(HardwareSettings, 'hardware_settings_template.yaml')['device_cameras']
         hws['device_cameras']['default']['right'] = hws['device_cameras']['default']['left']
         hws['MAIN_SYNC'] = False
         # Some test rig settings
-        settings = task_kwargs['iblrig_settings']
-        settings['iblrig_remote_data_path'] = settings['iblrig_remote_subjects_path'] = Path(tmpdir, 'remote')
-        settings['iblrig_local_data_path'] = settings['iblrig_local_subjects_path'] = Path(tmpdir, 'local')
-        return task_kwargs
+        settings = self.task_kwargs['iblrig_settings']
+        settings['iblrig_remote_data_path'] = settings['iblrig_remote_subjects_path'] = self.tmp / 'remote'
+        settings['iblrig_local_data_path'] = settings['iblrig_local_subjects_path'] = self.tmp / 'local'
+
+
+class TestCameraSession(BaseCameraTest):
+    """Test for iblrig.video.CameraSession class."""
 
     @patch('iblrig.video.HAS_PYSPIN', True)
     @patch('iblrig.video.HAS_SPINNAKER', True)
+    @patch('builtins.input')
     @patch('iblrig.video.call_bonsai')
     @patch('iblrig.video_pyspin.enable_camera_trigger')
-    def test_run_video_session(self, enable_camera_trigger, call_bonsai):
+    def test_run_video_session(self, enable_camera_trigger, call_bonsai, _):
         """Test iblrig.video.CameraSession.run method."""
-        task_kwargs = self.get_task_kwargs(self.tmp.name)
-        config = task_kwargs['hardware_settings']['device_cameras']['default']
+        (input_mock := patch('builtins.input')).start()
+        self.addCleanup(input_mock.stop)
+
+        config = self.task_kwargs['hardware_settings']['device_cameras']['default']
         workflows = config['BONSAI_WORKFLOW']
 
-        session = video.CameraSession(**task_kwargs)
+        session = video.CameraSession(**self.task_kwargs)
         self.assertEqual(session.config, config)
         session.run()
 
@@ -225,7 +226,7 @@ class TestCameraSession(unittest.TestCase):
         expected = [call(enable=False), call(enable=True), call(enable=False)]
         enable_camera_trigger.assert_has_calls(expected)
         raw_data_folder = session.paths['SESSION_RAW_DATA_FOLDER']
-        self.assertTrue(str(raw_data_folder).startswith(str(self.tmp.name)))
+        self.assertTrue(str(raw_data_folder).startswith(str(self.tmp)))
         expected_pars = {
             'LeftCameraIndex': 1,
             'RightCameraIndex': 1,
@@ -245,14 +246,8 @@ class TestCameraSession(unittest.TestCase):
         self.assertRaises(ValueError, video.CameraSession, config_name='training')
 
 
-class TestCameraSessionNetworked(unittest.IsolatedAsyncioTestCase):
+class TestCameraSessionNetworked(unittest.IsolatedAsyncioTestCase, BaseCameraTest):
     """Tests for the iblrig.video.CameraSessionNetworked class."""
-
-    def setUp(self):
-        self.tmp = tempfile.TemporaryDirectory()
-        self.addCleanup(self.tmp.cleanup)
-        Path(self.tmp.name, 'remote').mkdir()
-        Path(self.tmp.name, 'local').mkdir()
 
     async def asyncSetUp(self):
         self.communicator = mock.AsyncMock(spec=video.net.app.EchoProtocol)
@@ -266,7 +261,7 @@ class TestCameraSessionNetworked(unittest.IsolatedAsyncioTestCase):
     async def test_run_video_session(self, enable_camera_trigger, call_bonsai, call_bonsai_async):
         """Test iblrig.video.CameraSessionNetworked.run method."""
         # Some test hardware settings
-        task_kwargs = TestCameraSession.get_task_kwargs(self.tmp.name)
+        task_kwargs = self.task_kwargs
         del task_kwargs['subject']
         config = task_kwargs['hardware_settings']['device_cameras']['default']
         workflows = config['BONSAI_WORKFLOW']
@@ -325,6 +320,7 @@ class TestCameraSessionNetworked(unittest.IsolatedAsyncioTestCase):
         reponses = _end_bonsai_proc()
         self.communicator.on_event.side_effect = lambda evt: next(reponses)
         await session.run()
+        self.communicator.close.assert_called_once()
         self.communicator.on_event.assert_awaited_with(net.base.ExpMessage.any())
         self.assertEqual(net.base.ExpStatus.STOPPED, session.status)
 
@@ -332,7 +328,7 @@ class TestCameraSessionNetworked(unittest.IsolatedAsyncioTestCase):
         expected = [call(enable=False), call(enable=True), call(enable=False)]
         enable_camera_trigger.assert_has_calls(expected)
         raw_data_folder = session.paths['SESSION_RAW_DATA_FOLDER']
-        self.assertTrue(str(raw_data_folder).startswith(str(self.tmp.name)))
+        self.assertTrue(str(raw_data_folder).startswith(str(self.tmp)))
         expected_pars = {
             'LeftCameraIndex': 1,
             'RightCameraIndex': 1,
@@ -345,6 +341,8 @@ class TestCameraSessionNetworked(unittest.IsolatedAsyncioTestCase):
             workflows.setup, {'LeftCameraIndex': 1, 'RightCameraIndex': 1}, debug=False, wait=True
         )
         call_bonsai_async.assert_awaited_once_with(workflows.recording, expected_pars, debug=False)
+        del session
+        self.communicator.reset_mock()
 
 
 class TestValidateVideo(unittest.TestCase):

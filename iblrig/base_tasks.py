@@ -47,7 +47,6 @@ from iblutil.spacer import Spacer
 from iblutil.util import Bunch, setup_logger
 from one.alf.io import next_num_folder
 from one.api import ONE
-from one.converters import ConversionMixin
 from pybpodapi.protocol import StateMachine
 
 OSC_CLIENT_IP = '127.0.0.1'
@@ -64,6 +63,8 @@ class BaseSession(ABC):
     """list of str: One or more ibllib.pipes.tasks.Task names for task extraction."""
     logger: logging.Logger = None
     """logging.Logger: Log instance used solely to keep track of log level passed to constructor."""
+    experiment_description: dict = {}
+    """dict: The experiment description."""
 
     def __init__(
         self,
@@ -242,6 +243,14 @@ class BaseSession(ABC):
         paths.SETTINGS_FILE_PATH = paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_taskSettings.raw.json')
         return paths
 
+    @property
+    def exp_ref(self):
+        """Construct an experiment reference string from the session info attribute."""
+        subject, date, number = (self.session_info[k] for k in ('SUBJECT_NAME', 'SESSION_START_TIME', 'SESSION_NUMBER'))
+        if not all([subject, date, number]):
+            return None
+        return self.one.dict2ref(dict(subject=subject, date=date[:10], sequence=str(number)))
+
     def _setup_loggers(self, level='INFO', level_bpod='WARNING', file=None):
         self._logger = setup_logger('iblrig', level=level, file=file)  # logger attr used by create_session to determine log level
         setup_logger('pybpodapi', level=level_bpod, file=file)
@@ -251,6 +260,7 @@ class BaseSession(ABC):
             logger = logging.getLogger(logger_name)
             file_handlers = [fh for fh in logger.handlers if isinstance(fh, logging.FileHandler)]
             for fh in file_handlers:
+                fh.close()
                 logger.removeHandler(fh)
 
     @staticmethod
@@ -454,7 +464,7 @@ class BaseSession(ABC):
     def _execute_mixins_shared_function(self, pattern):
         """
         Loop over all methods of the class that start with pattern and execute them
-        :param pattern:'init_mixin', 'start_mixin' or 'stop_mixin'
+        :param pattern:'init_mixin', 'start_mixin', 'stop_mixin', or 'cleanup_mixin'
         :return:
         """
         method_names = [method for method in dir(self) if method.startswith(pattern)]
@@ -507,6 +517,7 @@ class BaseSession(ABC):
             self.paths.SESSION_FOLDER.joinpath('.stop').unlink()
 
         signal.signal(signal.SIGINT, sigint_handler)
+        self._execute_mixins_shared_function('start_mixin')
         self._run()  # runs the specific task logic i.e. trial loop etc...
         # post task instructions
         log.critical('Graceful exit')
@@ -1060,7 +1071,7 @@ class SoundMixin(BaseSession):
         return self.bpod.session.current_trial.export()
 
 
-class NetworkMixin(BaseSession):
+class NetworkSession(BaseSession):
     """A mixin for communicating to auxiliary acquisition PC over a network."""
 
     remote_rigs = None
@@ -1091,25 +1102,19 @@ class NetworkMixin(BaseSession):
             Optional args such as 'file_iblrig_settings' for defining location of remote data folder
             when loading remote devices file.
         """
-        if isinstance(remote_rigs, list):  # FIXME use net.get_remote_devices()
-            remote_path = kwargs.get('iblrig_settings', {}).get('remote_data_folder')
-            if not remote_path:
-                remote_path = load_pydantic_yaml(RigSettings, kwargs.get('file_iblrig_settings'))['remote_data_folder']
-                if not remote_path:  # TODO add cause to error
-                    raise FileNotFoundError('Remote data folder not found in settings')
-                with open(remote_path.joinpath('remote_rigs.yaml')) as fp:
-                    all_remote_rigs = yaml.safe_load(fp)
-                if not set(remote_rigs).issubset(all_remote_rigs.keys()):
-                    raise ValueError('Selected remote rigs not in remote rigs list')
-                remote_rigs = {k: v for k, v in all_remote_rigs.items() if k in remote_rigs}
+        if isinstance(remote_rigs, list):
+            all_remote_rigs = net.get_remote_devices(kwargs.get('iblrig_settings', {}).get('remote_data_folder'))
+            if not set(remote_rigs).issubset(all_remote_rigs.keys()):
+                raise ValueError('Selected remote rigs not in remote rigs list')
+            remote_rigs = {k: v for k, v in all_remote_rigs.items() if k in remote_rigs}
         # Load and connect to remote services
         self.connect(remote_rigs)
         self.exp_ref = {}
         try:
             super().__init__(**kwargs)
-        except Exception as e:
-            self.remote_rigs.stop_event.set()
-            raise e
+        except Exception as ex:
+            self.cleanup_mixin_network()
+            raise ex
 
     def connect(self, remote_rigs):
         """
@@ -1124,10 +1129,9 @@ class NetworkMixin(BaseSession):
             A map of name to URI.
         """
         self.remote_rigs = net.Auxiliaries(remote_rigs or {})
-        # asyncio.to_thread(self.remote_rigs.listen)
-        # Handle keyboard interrupt event by graciously completing thread
-        # FIXME This may overwrite handler in base class!
-        signal.signal(signal.SIGINT, lambda sig, frame: self.remote_rigs.stop_event.set())
+        assert not remote_rigs or self.remote_rigs.is_connected
+        # Handle termination event by graciously completing thread
+        signal.signal(signal.SIGTERM, lambda sig, frame: self.cleanup_mixin_network())
 
     def _init_paths(self, append: bool = False):
         """
@@ -1150,7 +1154,7 @@ class NetworkMixin(BaseSession):
         if self.hardware_settings.MAIN_SYNC:
             return BaseSession._init_paths(self, append)
         # Check if we have rigs connected
-        if not self.remote_rigs or len(self.remote_rigs.services) == 0:
+        if not self.remote_rigs.is_connected:
             log.warning('No remote rigs; experiment reference may not match the main sync.')
             return BaseSession._init_paths(self, append)
         # Set paths in a similar way to the super class
@@ -1179,6 +1183,8 @@ class NetworkMixin(BaseSession):
 
         paths.SESSION_RAW_DATA_FOLDER = paths.SESSION_FOLDER.joinpath(paths.TASK_COLLECTION)
         paths.DATA_FILE_PATH = paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_taskData.raw.jsonable')
+        paths.SETTINGS_FILE_PATH = paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_taskSettings.raw.json')
+        self.session_info.SESSION_NUMBER = int(paths.SESSION_FOLDER.name)
         return paths
 
     def run(self):
@@ -1187,7 +1193,7 @@ class NetworkMixin(BaseSession):
             return super().run()
         except Exception as e:
             # Communicate error to services
-            if self.remote_rigs and any(self.remote_rigs.services):
+            if self.remote_rigs.is_connected:
                 tb = e.__traceback__  # TODO maybe go one level down with tb_next?
                 details = {
                     'error': e.__class__.__name__,  # exception name str
@@ -1223,22 +1229,20 @@ class NetworkMixin(BaseSession):
             in time, otherwise a map of service name to response is returned.
         """
         r = self.remote_rigs.push(message, *args, wait=True)
-        if raise_on_exception and isinstance(r, Exception):
-            log.error('Error on %s network mixin: %s', r)
-            self.cleanup_mixin_network()
-            raise r
+        if isinstance(r, Exception):
+            log.error('Error on %s network mixin: %s', message, r)
+            if raise_on_exception:
+                self.cleanup_mixin_network()
+                raise r
         return r
 
-    def _print_response(self, responses, level=10):
-        # https://stackoverflow.com/a/9536084
-        # responses = {'foo': {'status': 'EXPINIT'}, 'bar': {'status': 'EXPSTART'}}
-        # TODO This could be services callback?
-        fields = ('status',)
-        row_format = '{:>15}' * (len(fields) + 1)
-        outputs = [row_format.format('', *fields)]
-        for service, row in responses.items():
-            outputs.append(row_format.format(service, *[row.get(field, 'Unknown') for field in fields]))
-        log.log(level, msg='\n' + '\n'.join(outputs))
+    def get_exp_info(self):
+        ref = self.exp_ref or None
+        if isinstance(ref, dict) and self.one:
+            ref = self.one.dict2ref(ref)
+        is_main_sync = self.hardware_settings.get('MAIN_SYNC', False)
+        info = net.ExpInfo(ref, is_main_sync, self.experiment_description, master=is_main_sync)
+        return info.to_dict()
 
     def init_mixin_network(self):
         """Initialize remote services.
@@ -1247,17 +1251,18 @@ class NetworkMixin(BaseSession):
         to contain main_sync: True, along with the experiment reference to use. It then sends an
         EXPINIT message to all services.
         """
+        if not self.remote_rigs.is_connected:
+            return
         # Determine experiment reference from main sync
-        # TODO Add iblrig_version, iblutil_proc_version
         is_main_sync = self.hardware_settings.get('MAIN_SYNC', False)
         if is_main_sync:
             raise NotImplementedError
         assert self.one
-        r = self.communicate('EXPINFO', 'CONNECTED', {'subject': self.session_info['SUBJECT_NAME']})
+
+        expinfo = self.get_exp_info() | {'subject': self.session_info['SUBJECT_NAME']}
+        r = self.communicate('EXPINFO', 'CONNECTED', expinfo)
         assert sum(x[-1]['main_sync'] for x in r.values()) == 1, 'one main sync expected'
         main_rig_name, (status, info) = next((k, v) for k, v in r.items() if v[-1]['main_sync'])
-        # TODO What is the behaviour when subject doesn't match? Should an error be raised on the remote rig or here?
-        # FIXME What to do if DAQ not started?
         self.exp_ref = self.one.ref2dict(info['exp_ref']) if isinstance(info['exp_ref'], str) else info['exp_ref']
         if self.exp_ref['subject'] != self.session_info['SUBJECT_NAME']:
             log.error(
@@ -1278,10 +1283,22 @@ class NetworkMixin(BaseSession):
         self.communicate('EXPINIT', {'exp_ref': exp_ref})
 
     def start_mixin_network(self):
-        exp_ref = ConversionMixin.path2ref(self.paths['SESSION_FOLDER'], as_dict=False)
-        self.communicate('EXPSTART', exp_ref)
+        """Start remote services.
+
+        This method sends an EXPSTART message to all services, along with an exp_ref string.
+        Responses are required but ignored.
+        """
+        if not self.remote_rigs.is_connected:
+            return
+        self.communicate('EXPSTART', self.exp_ref)
 
     def stop_mixin_network(self):
+        """Start remote services.
+
+        This method sends an EXPEND message to all services. Responses are required but ignored.
+        """
+        if not self.remote_rigs.is_connected:
+            return
         self.communicate('EXPEND')
 
     def cleanup_mixin_network(self):
