@@ -173,29 +173,38 @@ class BaseSession(ABC):
         )
 
     def _init_paths(self, append: bool = False):
-        """
-        :param existing_session_path: if we append a protocol to an existing session, this is the path
-        of the session in the form of /path/to/./lab/Subjects/[subject]/[date]/[number]
-        :return: Bunch with keys:
-        BONSAI: full path to the bonsai executable
-            >>> C:\iblrigv8\Bonsai\Bonsai.exe  # noqa
-        VISUAL_STIM_FOLDER: full path to the visual stim
-            >>> C:\iblrigv8\visual_stim  # noqa
-        LOCAL_SUBJECT_FOLDER: full path to the local subject folder
-            >>> C:\iblrigv8_data\mainenlab\Subjects  # noqa
-        REMOTE_SUBJECT_FOLDER: full path to the remote subject folder
-            >>> Y:\Subjects  # noqa
-        SESSION_FOLDER: full path to the current session:
-            >>> C:\iblrigv8_data\mainenlab\Subjects\SWC_043\2019-01-01\001  # noqa
-        TASK_COLLECTION: folder name of the current task
-            >>> raw_task_data_00  # noqa
-        SESSION_RAW_DATA_FOLDER: concatenation of the session folder and the task collection. This is where
-        the task data gets written
-            >>> C:\iblrigv8_data\mainenlab\Subjects\SWC_043\2019-01-01\001\raw_task_data_00  # noqa
-        DATA_FILE_PATH: contains the bpod trials
-            >>> C:\iblrigv8_data\mainenlab\Subjects\SWC_043\2019-01-01\001\raw_task_data_00\_iblrig_taskData.raw.jsonable  # noqa
-        SETTINGS_FILE_PATH: contains the task settings
-            >>>C:\iblrigv8_data\mainenlab\Subjects\SWC_043\2019-01-01\001\raw_task_data_00\_iblrig_taskSettings.raw.json  # noqa
+        r"""
+        Initialize session paths
+
+        Parameters
+        ----------
+        append : bool
+            If True, append to the latest existing session of the same subject for the same day
+
+        Returns
+        -------
+        Bunch
+            Bunch with keys:
+
+            *   BONSAI: full path to the bonsai executable
+                `C:\iblrigv8\Bonsai\Bonsai.exe`
+            *   VISUAL_STIM_FOLDER: full path to the visual stimulus folder
+                `C:\iblrigv8\visual_stim`
+            *   LOCAL_SUBJECT_FOLDER: full path to the local subject folder
+                `C:\iblrigv8_data\mainenlab\Subjects`
+            *   REMOTE_SUBJECT_FOLDER: full path to the remote subject folder
+                `Y:\Subjects`
+            *   SESSION_FOLDER: full path to the current session:
+                `C:\iblrigv8_data\mainenlab\Subjects\SWC_043\2019-01-01\001`
+            *   TASK_COLLECTION: folder name of the current task
+                `raw_task_data_00`
+            *   SESSION_RAW_DATA_FOLDER: concatenation of the session folder and the task collection.
+                This is where the task data gets written
+                `C:\iblrigv8_data\mainenlab\Subjects\SWC_043\2019-01-01\001\raw_task_data_00`
+            *   DATA_FILE_PATH: contains the bpod trials
+                `C:\iblrigv8_data\mainenlab\Subjects\SWC_043\2019-01-01\001\raw_task_data_00\_iblrig_taskData.raw.jsonable`
+            *   SETTINGS_FILE_PATH: contains the task settings
+                `C:\iblrigv8_data\mainenlab\Subjects\SWC_043\2019-01-01\001\raw_task_data_00\_iblrig_taskSettings.raw.json`
         """
         rig_computer_paths = iblrig.path_helper.get_local_and_remote_paths(
             local_path=self.iblrig_settings['iblrig_local_data_path'],
