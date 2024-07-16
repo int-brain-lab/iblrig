@@ -1,12 +1,13 @@
 """Tests for NetworkSession class."""
-import unittest
-from unittest.mock import patch, call, ANY
-from datetime import date
 
-from one.api import ONE
-from iblrig.base_tasks import NetworkSession, EmptySession
+import unittest
+from datetime import date
+from unittest.mock import ANY, call, patch
+
+from iblrig.base_tasks import EmptySession, NetworkSession
 from iblrig.test.base import TaskArgsMixin
 from iblutil.io import net
+from one.api import ONE
 
 
 class Session(EmptySession, NetworkSession):
@@ -35,7 +36,7 @@ class TestNetworkTask(unittest.TestCase, TaskArgsMixin):
         aux.is_connected = True
         aux.push.return_value = {
             'ZcanImage': [int(net.base.ExpStatus.RUNNING), {'main_sync': True, 'exp_ref': self.exp_ref}],
-            'cameras': [int(net.base.ExpStatus.CONNECTED), {'main_sync': False, 'exp_ref': None}]
+            'cameras': [int(net.base.ExpStatus.CONNECTED), {'main_sync': False, 'exp_ref': None}],
         }
         aux_mock.reset_mock()  # reset previous call
         return aux
@@ -110,10 +111,12 @@ class TestNetworkTask(unittest.TestCase, TaskArgsMixin):
         aux = self._prepare_mock(aux_mock)
         task = Session(**self.task_kwargs)
         task.run()
-        expected = [call('EXPINFO', 'CONNECTED', ANY, wait=True),
-                    call('EXPINIT', {'exp_ref': self.exp_ref}, wait=True),
-                    call('EXPSTART', self.task_kwargs['one'].ref2dict(self.exp_ref), wait=True),
-                    call('EXPEND', wait=True)]
+        expected = [
+            call('EXPINFO', 'CONNECTED', ANY, wait=True),
+            call('EXPINIT', {'exp_ref': self.exp_ref}, wait=True),
+            call('EXPSTART', self.task_kwargs['one'].ref2dict(self.exp_ref), wait=True),
+            call('EXPEND', wait=True),
+        ]
         aux.push.assert_has_calls(expected, any_order=True)
         # Expect subject key in exp info structure
         ((*_, info), _), *_ = aux.push.call_args_list

@@ -2,11 +2,11 @@ import copy
 import datetime
 import inspect
 import json
+import logging
 import random
 import string
-import unittest
 import tempfile
-import logging
+import unittest
 from pathlib import Path
 
 import ibllib.pipes.dynamic_pipeline
@@ -67,9 +67,10 @@ class TaskArgsMixin:
 
         """
         self.task_kwargs, tmp = self.create_task_kwargs(tmpdir)
-        self.tmp = Path(tmp.name if isinstance(tmp, tempfile.TemporaryDirectory) else tmp)
-        if isinstance(tmp, tempfile.TemporaryDirectory):
-            self.addCleanup(tmp.cleanup)
+        if tmp:
+            self.tmp = Path(tmp.name if isinstance(tmp, tempfile.TemporaryDirectory) else tmp)
+            if isinstance(tmp, tempfile.TemporaryDirectory):
+                self.addCleanup(tmp.cleanup)
         self.addCleanup(self.cleanup_handlers)
 
     @staticmethod

@@ -15,7 +15,7 @@ from ibllib.io.video import get_video_meta, label_from_path
 from ibllib.pipes.misc import load_params_dict
 from iblrig.base_tasks import EmptySession
 from iblrig.constants import HARDWARE_SETTINGS_YAML, HAS_PYSPIN, HAS_SPINNAKER, RIG_SETTINGS_YAML
-from iblrig.net import get_server_communicator, read_stdin, update_alyx_token, ExpInfo
+from iblrig.net import ExpInfo, get_server_communicator, read_stdin, update_alyx_token
 from iblrig.path_helper import load_pydantic_yaml, patch_settings
 from iblrig.pydantic_definitions import HardwareSettings
 from iblrig.tools import ask_user, call_bonsai, call_bonsai_async
@@ -254,9 +254,9 @@ def prepare_video_session_cmd():
     # Technically `prepare_video_service` should behave the same as `prepare_video_session` if the service_uri arg is
     # False but until fully tested, let's call the old function
     if service_uri is False:
+        # TODO Use CameraSession object and remove prepare_video_session and prepare_video_service
         prepare_video_session(args.subject_name, args.profile, debug=args.debug)
     else:
-        # asyncio.run(prepare_video_service(args.profile, debug=args.debug, service_uri=service_uri, subject_name=args.subject_name))
         log_level = 'DEBUG' if args.debug else 'INFO'
         session = CameraSessionNetworked(subject=args.subject_name, config_name=args.profile, log_level=log_level)
         asyncio.run(session.run(service_uri))
@@ -405,7 +405,7 @@ def prepare_video_session(subject_name: str, config_name: str, debug: bool = Fal
     input('PRESS ENTER TO START CAMERAS')
     # Save the stub files locally and in the remote repo for future copy script to use
     copier = VideoCopier(session_path=session_path, remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER)
-    copier.initialize_experiment(experiment_description=copier.config2stub(config, raw_data_folder.name))
+    copier.initialize_experiment(acquisition_description=copier.config2stub(config, raw_data_folder.name))
 
     video_pyspin.enable_camera_trigger(enable=False)
     log.info('To terminate video acquisition, please stop and close Bonsai workflow.')
@@ -502,7 +502,7 @@ async def prepare_video_service(config_name: str, debug: bool = False, service_u
         input('PRESS ENTER TO START CAMERAS')
 
     # Save the stub files locally and in the remote repo for future copy script to use
-    copier.initialize_experiment(experiment_description=copier.config2stub(config, raw_data_folder.name))
+    copier.initialize_experiment(acquisition_description=copier.config2stub(config, raw_data_folder.name))
 
     video_pyspin.enable_camera_trigger(enable=False)
     if com:
@@ -720,11 +720,14 @@ class CameraSessionNetworked(CameraSession):
         self._status = net.base.ExpStatus.INITIALIZED
 
     def start_recording(self):
+        """Start cameras (i.e. spawn Bonsai process)."""
         task = next((t for t in self._async_tasks if t.get_name() == 'bonsai'), None)
         assert task and not task.done(), 'No Bonsai process found!'
         return super().start_recording()
 
-    def is_connected(self):
+    @property
+    def is_connected(self) -> bool:
+        """bool: True if communicator is connected."""
         return self.communicator and self.communicator.is_connected
 
     async def run(self, service_uri=None):
@@ -768,13 +771,7 @@ class CameraSessionNetworked(CameraSession):
                     case _:
                         raise NotImplementedError(f'Unexpected task "{task.get_name()}"')
                 self._async_tasks.remove(task)
-
-        if self.communicator:
-            self.communicator.close()  # Ensure closed and callbacks cancelled
-        for task in self._async_tasks:
-            self.logger.info('Cancelling %s', task)
-            task.cancel()
-        self._async_tasks.clear()
+        self.close()
 
     def close(self):
         """End experiment and cleanup object.
@@ -785,15 +782,17 @@ class CameraSessionNetworked(CameraSession):
             self.logger.info('Cancelling %s', task)
             task.cancel()
         self._async_tasks.clear()
-        self.communicator.close()
-        self._status = None
+        if self.communicator:
+            self.communicator.close()
 
     def reset(self):
         """Reset object for next session."""
         self.close()
         assert self.communicator
-        if not self.communicator.is_connected:
+        if not self.is_connected:
             self.listen(service_uri=self.communicator.service_uri)
+        else:
+            self._status = net.base.ExpStatus.CONNECTED
         self.session_info['SESSION_NUMBER'] = 0  # Ensure previous exp ref invalid
         assert self.exp_ref is None
         if self.bonsai_process and self.bonsai_process.returncode is None:
@@ -822,7 +821,8 @@ class CameraSessionNetworked(CameraSession):
             case 'START':
                 if not self.exp_ref:
                     self.logger.error(
-                        'No subject name provided. Please re-instantiate with subject param or await INIT message from remote rig.'
+                        'No subject name provided. '
+                        'Please re-instantiate with subject param or await INIT message from remote rig.'
                     )
                     return
                 else:
@@ -870,7 +870,7 @@ class CameraSessionNetworked(CameraSession):
     async def on_start(self, data, addr):
         """Process init command from remote rig."""
         exp_ref, data = data
-        S = net.base.ExpStatus  # shorten for readability in match-case
+        S = net.base.ExpStatus  # noqa - shorten for readability in match-case
         if isinstance(exp_ref, str):
             exp_ref = self.one.ref2dict(exp_ref)
         match self.status:

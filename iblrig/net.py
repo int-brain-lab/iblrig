@@ -63,7 +63,7 @@ import logging
 import sys
 import threading
 import time
-from dataclasses import dataclass, KW_ONLY, field
+from dataclasses import dataclass, field
 from urllib.parse import urlparse
 
 import yaml

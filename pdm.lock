@@ -5,7 +5,7 @@
 groups = ["default", "dev", "doc", "test", "typing"]
 strategy = ["cross_platform", "inherit_metadata"]
 lock_version = "4.4.2"
-content_hash = "sha256:1b3e566dd611915aa7ebdca0d6ffb38712a7c283e963bfe1b6cc0459a25fbf58"
+content_hash = "sha256:0360a24d4751538768d668ba269a915b5c7dde3b060e586eb6327e90a7877630"
 
 [[package]]
 name = "aenum"
@@ -756,7 +756,7 @@ dependencies = [
 
 [[package]]
 name = "iblutil"
-version = "1.10.0"
+version = "1.11.0"
 requires_python = ">=3.8"
 summary = "IBL utilities"
 groups = ["default", "dev"]
@@ -764,13 +764,14 @@ dependencies = [
     "colorlog>=6.0.0",
     "numba",
     "numpy>=1.18",
+    "packaging",
     "pandas>=0.24.2",
     "pyarrow",
     "tqdm>=4.32.1",
 ]
 files = [
-    {file = "iblutil-1.10.0-py3-none-any.whl", hash = "sha256:58c970a2c017ad671367663aa7af1e631c788963ddf8728ca8c67906eb81214c"},
-    {file = "iblutil-1.10.0.tar.gz", hash = "sha256:8c065167be5bdd34fad68b3a299cb7b74fa68e7367b9f91c96668b08584e16fd"},
+    {file = "iblutil-1.11.0-py3-none-any.whl", hash = "sha256:a5622c02571d1098f7fab09b7e58f6eb02335b6783cc0cc62579fc73553f8e5b"},
+    {file = "iblutil-1.11.0.tar.gz", hash = "sha256:498fc6f998d1c225555a7589c1c9a1c419d30a049ec415eb6d90bdcd04da30d8"},
 ]
 
 [[package]]

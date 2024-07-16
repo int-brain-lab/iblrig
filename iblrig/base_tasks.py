@@ -337,7 +337,7 @@ class BaseSession(ABC):
             }
         # Add task
         task = {task_protocol: {'collection': task_collection}}
-        if is_main_sync:
+        if not is_main_sync:
             task[task_protocol]['sync_label'] = 'bpod'
         if extractors:
             assert isinstance(extractors, list), 'extractors parameter must be a list of strings'
@@ -1214,8 +1214,8 @@ class NetworkSession(BaseSession):
 
     def run(self):
         """Run session and report exceptions to remote services."""
+        self.start_mixin_network()
         try:
-            self.start_mixin_network()
             return super().run()
         except Exception as e:
             # Communicate error to services

@@ -1,4 +1,5 @@
 """Tests for iblrig.net module."""
+
 import asyncio
 import tempfile
 import unittest

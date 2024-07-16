@@ -108,7 +108,6 @@ class TestInstantiationTraining(BaseTestCases.CommonTestInstantiateTask):
             assert not np.isnan(task.reward_time)
 
     def test_acquisition_description(self):
-
         task = TrainingChoiceWorldSession(**self.task_kwargs)
         ad = task.experiment_description
         ed = {

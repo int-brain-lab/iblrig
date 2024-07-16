@@ -17,7 +17,7 @@ from iblutil.util import Bunch
 sys.modules['PySpin'] = MagicMock()
 
 from iblrig import video  # noqa
-from iblrig.test.base import BaseTestCases
+from iblrig.test.base import BaseTestCases  # noqa
 from iblrig.path_helper import load_pydantic_yaml, HARDWARE_SETTINGS_YAML, RIG_SETTINGS_YAML  # noqa
 from iblrig.pydantic_definitions import HardwareSettings  # noqa
 
@@ -249,18 +249,43 @@ class TestCameraSession(BaseCameraTest):
 class TestCameraSessionNetworked(unittest.IsolatedAsyncioTestCase, BaseCameraTest):
     """Tests for the iblrig.video.CameraSessionNetworked class."""
 
+    def setUp(self):
+        super().setUp()
+        # Set up keyboad input mock - simply return empty string as await appears to be blocking
+        self.keyboard = ''
+        read_stdin = patch('iblrig.video.read_stdin')
+        self.addCleanup(read_stdin.stop)
+        read_stdin_mock = read_stdin.start()
+
+        async def _stdin():
+            yield self.keyboard
+
+        read_stdin_mock.side_effect = _stdin
+
     async def asyncSetUp(self):
         self.communicator = mock.AsyncMock(spec=video.net.app.EchoProtocol)
         self.communicator.is_connected = True
 
+        # Mock the call_bonsai_async function to return an async subprocess mock that awaits a
+        # future that we can access via self.bonsai_subprocess_future
+        self.bonsai_subprocess_future = asyncio.get_event_loop().create_future()
+        self.addCleanup(self.bonsai_subprocess_future.cancel)
+
+        async def _wait():
+            return await self.bonsai_subprocess_future
+
+        call_bonsai_async = patch('iblrig.video.call_bonsai_async')
+        self.addCleanup(call_bonsai_async.stop)
+        self.call_bonsai_async = call_bonsai_async.start()
+        self.call_bonsai_async.return_value = mock.AsyncMock(spec=asyncio.subprocess.Process)
+        self.call_bonsai_async.return_value.wait.side_effect = _wait
+
     @patch('iblrig.video.HAS_PYSPIN', True)
     @patch('iblrig.video.HAS_SPINNAKER', True)
-    @patch('iblrig.video.call_bonsai_async')
     @patch('iblrig.video.call_bonsai')
     @patch('iblrig.video_pyspin.enable_camera_trigger')
-    async def test_run_video_session(self, enable_camera_trigger, call_bonsai, call_bonsai_async):
+    async def test_run_video_session(self, enable_camera_trigger, call_bonsai):
         """Test iblrig.video.CameraSessionNetworked.run method."""
-        # FIXME must mock read_stdin
         # Some test hardware settings
         task_kwargs = self.task_kwargs
         del task_kwargs['subject']
@@ -272,16 +297,6 @@ class TestCameraSessionNetworked(unittest.IsolatedAsyncioTestCase, BaseCameraTes
         session.communicator = self.communicator
         session._status = net.base.ExpStatus.CONNECTED
         self.assertEqual(session.config, config)
-
-        self.bonsai_subprocess_future = asyncio.get_event_loop().create_future()
-        self.addCleanup(self.bonsai_subprocess_future.cancel)
-
-        async def _wait():
-            return await self.bonsai_subprocess_future
-
-        call_bonsai_async.return_value = mock.AsyncMock(spec=asyncio.subprocess.Process)
-        # call_bonsai_future = asyncio.Future()
-        call_bonsai_async.return_value.wait.side_effect = _wait
 
         def _end_bonsai_proc():
             """Return args with added side effect of signalling Bonsai subprocess termination."""
@@ -306,7 +321,7 @@ class TestCameraSessionNetworked(unittest.IsolatedAsyncioTestCase, BaseCameraTes
                         bonsai_task = next((t for t in session._async_tasks if t.get_name() == 'bonsai'), None)
                         self.assertIsNotNone(bonsai_task, 'failed to add named bonsai wait task to task set')
                         self.assertFalse(bonsai_task.done(), 'bonsai task unexpectedly cancelled')
-                        call_bonsai_async.return_value.wait.assert_awaited_once()
+                        self.call_bonsai_async.return_value.wait.assert_awaited_once()
                     # After start message processed
                     case 3:
                         self.assertIs(session.status, net.base.ExpStatus.RUNNING)
@@ -341,7 +356,7 @@ class TestCameraSessionNetworked(unittest.IsolatedAsyncioTestCase, BaseCameraTes
         call_bonsai.assert_called_once_with(
             workflows.setup, {'LeftCameraIndex': 1, 'RightCameraIndex': 1}, debug=False, wait=True
         )
-        call_bonsai_async.assert_awaited_once_with(workflows.recording, expected_pars, debug=False)
+        self.call_bonsai_async.assert_awaited_once_with(workflows.recording, expected_pars, debug=False)
 
 
 class TestValidateVideo(unittest.TestCase):

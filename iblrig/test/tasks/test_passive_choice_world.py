@@ -1,10 +1,8 @@
-import copy
-
 import numpy as np
 
-from iblrig.test.base import BaseTestCases
 import ibllib.pipes.dynamic_pipeline as dyn
 from ibllib.pipes.behavior_tasks import PassiveTaskNidq
+from iblrig.test.base import BaseTestCases
 from iblrig_tasks._iblrig_tasks_passiveChoiceWorld.task import Session as PassiveChoiceWorldSession
 
 
