@@ -818,7 +818,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                     widget.setMinimum(minimum)
                     widget.setValue(widget.minimum())
                     widget.valueChanged.connect(
-                        lambda val, a=arg, m=minimum: self._set_task_arg(a.option_strings[0], str(val if val > m else -1))
+                        lambda val, a=arg, m=minimum: self._set_task_arg(a.option_strings[0], str(val) if val > m else 'None')
                     )
                     widget.valueChanged.emit(widget.value())
                     widget.setObjectName('adaptive_gain')
