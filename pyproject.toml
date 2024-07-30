@@ -15,10 +15,10 @@ dependencies = [
     # Instead, use `pdm add [package-name]` / `pdm update [package-name]`.
     # This is to ensure that the lock-file is in sync with pyproject.toml
     # See https://pdm-project.org/en/latest/usage/dependency/ for details.
-    "PyQt5==5.15.10",
-    "PyQt5-Qt5==5.15.2",            # PINNED due to lack of windows bdist
-    "PyQtWebEngine==5.15.6",
-    "PyQtWebEngine-Qt5==5.15.2",    # PINNED due to lack of windows bdist
+    "PyQt5==5.15.10",               # These packages are currently PINNED!
+    "PyQt5-Qt5==5.15.2",            #
+    "PyQtWebEngine==5.15.6",        #
+    "PyQtWebEngine-Qt5==5.15.2",    #
     "ONE-api>=2.8.1",
     "PyYAML>=6.0.1",
     "colorlog>=6.8.2",

@@ -25,8 +25,9 @@ from typing_extensions import override
 import iblrig.hardware_validation
 import iblrig.path_helper
 import iblrig_tasks
+from ibllib.io.raw_data_loaders import load_settings
 from iblrig.base_tasks import EmptySession
-from iblrig.choiceworld import get_subject_training_info, training_phase_from_contrast_set
+from iblrig.choiceworld import compute_adaptive_reward_volume, get_subject_training_info, training_phase_from_contrast_set
 from iblrig.constants import BASE_DIR
 from iblrig.gui.frame2ttl import Frame2TTLCalibrationDialog
 from iblrig.gui.splash import Splash
@@ -445,13 +446,17 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
 
         This code will be removed and is here only for convenience while users transition from v7 to v8
         """
+
+        # get session path
         if not (local_path := Path(r'C:\iblrig_data\Subjects')).exists():
-            local_path = self.iblrig_settings['iblrig_local_data_path']
+            local_path = self.iblrig_settings.iblrig_local_data_path
         session_path = QtWidgets.QFileDialog.getExistingDirectory(
             self, 'Select Session Path', str(local_path), QtWidgets.QFileDialog.ShowDirsOnly
         )
         if session_path is None or session_path == '':
             return
+
+        # get trials table
         file_jsonable = next(Path(session_path).glob('raw_behavior_data/_iblrig_taskData.raw.jsonable'), None)
         if file_jsonable is None:
             QtWidgets.QMessageBox().critical(self, 'Error', f'No jsonable found in {session_path}')
@@ -461,12 +466,29 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
             QtWidgets.QMessageBox().critical(self, 'Error', f'No trials found in {session_path}')
             return
 
+        # get task settings
+        task_settings = load_settings(session_path, task_collection='raw_behavior_data')
+        if task_settings is None:
+            QtWidgets.QMessageBox().critical(self, 'Error', f'No task settings found in {session_path}')
+            return
+
+        # compute values
         contrast_set = trials_table['signed_contrast'].abs().unique()
         training_phase = training_phase_from_contrast_set(contrast_set)
-        last_trial = trials_table.iloc[-1]
-        reward_amount = last_trial['reward_amount']
-        stim_gain = last_trial['stim_gain']
+        previous_reward_volume = (
+            task_settings.get('ADAPTIVE_REWARD_AMOUNT_UL')
+            or task_settings.get('REWARD_AMOUNT_UL')
+            or task_settings.get('REWARD_AMOUNT')
+        )
+        reward_amount = compute_adaptive_reward_volume(
+            subject_weight_g=task_settings['SUBJECT_WEIGHT'],
+            reward_volume_ul=previous_reward_volume,
+            delivered_volume_ul=trials_table['reward_amount'].sum(),
+            ntrials=trials_table.shape[0],
+        )
+        stim_gain = trials_table['stim_gain'].values[-1]
 
+        # display results
         box = QtWidgets.QMessageBox(parent=self)
         box.setIcon(QtWidgets.QMessageBox.Information)
         box.setModal(False)
@@ -474,7 +496,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         box.setText(
             f'{session_path}\n\n'
             f'training phase:\t{training_phase}\n'
-            f'reward:\t{reward_amount} uL\n'
+            f'reward:\t{reward_amount:.2f} uL\n'
             f'stimulus gain:\t{stim_gain}'
         )
         if self.uiComboTask.currentText() == '_iblrig_tasks_trainingChoiceWorld':
