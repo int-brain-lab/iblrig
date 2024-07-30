@@ -461,8 +461,9 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
             QtWidgets.QMessageBox().critical(self, 'Error', f'No trials found in {session_path}')
             return
 
+        contrast_set = trials_table['signed_contrast'].abs().unique()
+        training_phase = training_phase_from_contrast_set(contrast_set)
         last_trial = trials_table.iloc[-1]
-        training_phase = training_phase_from_contrast_set(last_trial['contrast_set'])
         reward_amount = last_trial['reward_amount']
         stim_gain = last_trial['stim_gain']
 
