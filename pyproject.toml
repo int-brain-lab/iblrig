@@ -72,7 +72,7 @@ dev = [
     # This is to ensure that the lock-file is in sync with pyproject.toml
     # See https://pdm-project.org/en/latest/usage/dependency/ for details.
     "pre-commit>=3.7.1",
-    "iblrig[test, doc, types]",
+    "iblrig[test, doc, typing]",
 ]
 test = [
     "pytest>=8.2.2",
