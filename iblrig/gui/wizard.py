@@ -741,6 +741,11 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 )
                 widget.editingFinished.emit()
 
+            # create widget for adaptive gain
+            if arg.dest == 'adaptive_gain':
+                widget = QtWidgets.QDoubleSpinBox()
+                widget.setDecimals(1)
+
             # create widget for numerical arguments
             elif arg.type in [float, int]:
                 if arg.type is float:
