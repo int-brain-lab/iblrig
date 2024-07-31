@@ -10,6 +10,8 @@ Changelog
 * store pause durations to trial info
 * fix "galopping" valve during valve calibration
 * display values of automatically inferred task parameters
+* fix values computed by "Get Training Phase" tool
+* fix default adaptive gain value in trainingChoiceWorld
 
 8.20.0
 ------
