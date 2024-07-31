@@ -10,11 +10,9 @@ import time
 import traceback
 from pathlib import Path
 from string import ascii_letters
-from typing import Annotated, Literal
 
 import numpy as np
 import pandas as pd
-from pydantic import BaseModel, Field
 
 import iblrig.base_tasks
 import iblrig.graphic
@@ -30,48 +28,49 @@ log = logging.getLogger(__name__)
 NTRIALS_INIT = 2000
 NBLOCKS_INIT = 100
 
-Probability = Annotated[float, Field(ge=0.0, le=1.0)]
-
-
-class ChoiceWorldParams(BaseModel):
-    AUTOMATIC_CALIBRATION: bool = True
-    ADAPTIVE_REWARD: bool = False
-    BONSAI_EDITOR: bool = False
-    CALIBRATION_VALUE: float = 0.067
-    CONTRAST_SET: list[Probability] = Field([1.0, 0.25, 0.125, 0.0625, 0.0], min_length=1)
-    CONTRAST_SET_PROBABILITY_TYPE: Literal['uniform', 'skew_zero'] = 'uniform'
-    GO_TONE_AMPLITUDE: float = 0.0272
-    GO_TONE_DURATION: float = 0.11
-    GO_TONE_IDX: int = Field(2, ge=0)
-    GO_TONE_FREQUENCY: float = Field(5000, gt=0)
-    FEEDBACK_CORRECT_DELAY_SECS: float = 1
-    FEEDBACK_ERROR_DELAY_SECS: float = 2
-    FEEDBACK_NOGO_DELAY_SECS: float = 2
-    INTERACTIVE_DELAY: float = 0.0
-    ITI_DELAY_SECS: float = 0.5
-    NTRIALS: int = Field(2000, gt=0)
-    PROBABILITY_LEFT: Probability = 0.5
-    QUIESCENCE_THRESHOLDS: list[float] = Field(default=[-2, 2], min_length=2, max_length=2)
-    QUIESCENT_PERIOD: float = 0.2
-    RECORD_AMBIENT_SENSOR_DATA: bool = True
-    RECORD_SOUND: bool = True
-    RESPONSE_WINDOW: float = 60
-    REWARD_AMOUNT_UL: float = 1.5
-    REWARD_TYPE: str = 'Water 10% Sucrose'
-    STIM_ANGLE: float = 0.0
-    STIM_FREQ: float = 0.1
-    STIM_GAIN: float = 4.0  # wheel to stimulus relationship (degrees visual angle per mm of wheel displacement)
-    STIM_POSITIONS: list[float] = [-35, 35]
-    STIM_SIGMA: float = 7.0
-    STIM_TRANSLATION_Z: Literal[7, 8] = 7  # 7 for ephys, 8 otherwise. -p:Stim.TranslationZ-{STIM_TRANSLATION_Z} bonsai parameter
-    STIM_REVERSE: bool = False
-    SYNC_SQUARE_X: float = 1.33
-    SYNC_SQUARE_Y: float = -1.03
-    USE_AUTOMATIC_STOPPING_CRITERIONS: bool = True
-    VISUAL_STIMULUS: str = 'GaborIBLTask / Gabor2D.bonsai'  # null / passiveChoiceWorld_passive.bonsai
-    WHITE_NOISE_AMPLITUDE: float = 0.05
-    WHITE_NOISE_DURATION: float = 0.5
-    WHITE_NOISE_IDX: int = 3
+# TODO: task parameters should be verified through a pydantic model
+#
+# Probability = Annotated[float, Field(ge=0.0, le=1.0)]
+#
+# class ChoiceWorldParams(BaseModel):
+#     AUTOMATIC_CALIBRATION: bool = True
+#     ADAPTIVE_REWARD: bool = False
+#     BONSAI_EDITOR: bool = False
+#     CALIBRATION_VALUE: float = 0.067
+#     CONTRAST_SET: list[Probability] = Field([1.0, 0.25, 0.125, 0.0625, 0.0], min_length=1)
+#     CONTRAST_SET_PROBABILITY_TYPE: Literal['uniform', 'skew_zero'] = 'uniform'
+#     GO_TONE_AMPLITUDE: float = 0.0272
+#     GO_TONE_DURATION: float = 0.11
+#     GO_TONE_IDX: int = Field(2, ge=0)
+#     GO_TONE_FREQUENCY: float = Field(5000, gt=0)
+#     FEEDBACK_CORRECT_DELAY_SECS: float = 1
+#     FEEDBACK_ERROR_DELAY_SECS: float = 2
+#     FEEDBACK_NOGO_DELAY_SECS: float = 2
+#     INTERACTIVE_DELAY: float = 0.0
+#     ITI_DELAY_SECS: float = 0.5
+#     NTRIALS: int = Field(2000, gt=0)
+#     PROBABILITY_LEFT: Probability = 0.5
+#     QUIESCENCE_THRESHOLDS: list[float] = Field(default=[-2, 2], min_length=2, max_length=2)
+#     QUIESCENT_PERIOD: float = 0.2
+#     RECORD_AMBIENT_SENSOR_DATA: bool = True
+#     RECORD_SOUND: bool = True
+#     RESPONSE_WINDOW: float = 60
+#     REWARD_AMOUNT_UL: float = 1.5
+#     REWARD_TYPE: str = 'Water 10% Sucrose'
+#     STIM_ANGLE: float = 0.0
+#     STIM_FREQ: float = 0.1
+#     STIM_GAIN: float = 4.0  # wheel to stimulus relationship (degrees visual angle per mm of wheel displacement)
+#     STIM_POSITIONS: list[float] = [-35, 35]
+#     STIM_SIGMA: float = 7.0
+#     STIM_TRANSLATION_Z: Literal[7, 8] = 7  # 7 for ephys, 8 otherwise. -p:Stim.TranslationZ-{STIM_TRANSLATION_Z} bonsai param
+#     STIM_REVERSE: bool = False
+#     SYNC_SQUARE_X: float = 1.33
+#     SYNC_SQUARE_Y: float = -1.03
+#     USE_AUTOMATIC_STOPPING_CRITERIONS: bool = True
+#     VISUAL_STIMULUS: str = 'GaborIBLTask / Gabor2D.bonsai'  # null / passiveChoiceWorld_passive.bonsai
+#     WHITE_NOISE_AMPLITUDE: float = 0.05
+#     WHITE_NOISE_DURATION: float = 0.5
+#     WHITE_NOISE_IDX: int = 3
 
 
 class ChoiceWorldSession(

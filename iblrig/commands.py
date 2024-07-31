@@ -326,7 +326,10 @@ def remove_local_sessions(weeks=2, local_path=None, remote_path=None, dry=False,
         days_elapsed = (datetime.datetime.now() - datetime.datetime.strptime(session_path.parts[-2], '%Y-%m-%d')).days
         if days_elapsed < (weeks * 7):
             continue
-        sc = copier(session_path, remote_subjects_folder=remote_subject_folder)
+        if copier == SessionCopier:
+            sc = copier(session_path, remote_subjects_folder=remote_subject_folder, tag=tag)
+        else:
+            sc = copier(session_path, remote_subjects_folder=remote_subject_folder)
         if sc.state == 3:
             session_size = sum(f.stat().st_size for f in session_path.rglob('*') if f.is_file()) / 1024**3
             logger.info(f'{sc.session_path}, {session_size:0.02f} Go')
