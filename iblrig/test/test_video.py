@@ -243,7 +243,8 @@ class TestCameraSession(BaseCameraTest):
 
         # Test validation
         self.assertRaises(NotImplementedError, video.CameraSession, append=True)
-        self.assertRaises(ValueError, video.CameraSession, config_name='training')
+        # Pass in config name not defined in hardware camera settings
+        self.assertRaises(ValueError, video.CameraSession, config_name='training', **self.task_kwargs)
 
 
 class TestCameraSessionNetworked(unittest.IsolatedAsyncioTestCase, BaseCameraTest):

@@ -1116,7 +1116,7 @@ class NetworkSession(BaseSession):
             when loading remote devices file.
         """
         if isinstance(remote_rigs, list):
-            all_remote_rigs = net.get_remote_devices(kwargs.get('iblrig_settings', {}).get('remote_data_folder'))
+            all_remote_rigs = net.get_remote_devices(iblrig_settings=kwargs.get('iblrig_settings', None))
             if not set(remote_rigs).issubset(all_remote_rigs.keys()):
                 raise ValueError('Selected remote rigs not in remote rigs list')
             remote_rigs = {k: v for k, v in all_remote_rigs.items() if k in remote_rigs}

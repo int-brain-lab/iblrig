@@ -368,20 +368,25 @@ class ExpInfo:
         return self.__dict__
 
 
-def get_remote_devices_file():
+def get_remote_devices_file(iblrig_settings=None):
     """
     Return the location of the remote devices YAML file.
+
+    Parameters
+    ----------
+    iblrig_settings : dict
+        A settings dictionary, otherwise will load the default settings from file.
 
     Returns
     -------
     pathlib.Path, None
         The full path to the remote devices YAML file in the remote data folder, or None if the folder is not defined.
     """
-    if remote_data_folder := get_local_and_remote_paths()['remote_data_folder']:
+    if remote_data_folder := get_local_and_remote_paths(iblrig_settings=iblrig_settings)['remote_data_folder']:
         return remote_data_folder.joinpath('remote_devices.yaml')
 
 
-def get_remote_devices(remote_devices_file=None):
+def get_remote_devices(remote_devices_file=None, iblrig_settings=None):
     """
     Return map of device name to network URI.
 
@@ -389,6 +394,9 @@ def get_remote_devices(remote_devices_file=None):
     ----------
     remote_devices_file : pathlib.Path
         Optional remote data path.
+    iblrig_settings : dict
+        A settings dictionary, otherwise will load the default settings from file. Used to
+        determine the remote data path (the remote_data_folder param).
 
     Returns
     -------
@@ -397,7 +405,7 @@ def get_remote_devices(remote_devices_file=None):
     """
     remote_devices = {}
     if not remote_devices_file:
-        remote_devices_file = get_remote_devices_file()
+        remote_devices_file = get_remote_devices_file(iblrig_settings=iblrig_settings)
     elif remote_devices_file.is_dir():
         remote_devices_file /= 'remote_devices.yaml'
     if remote_devices_file and remote_devices_file.exists():
