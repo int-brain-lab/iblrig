@@ -60,13 +60,17 @@ class BaseSession(ABC):
     version = None
     """str: !!CURRENTLY UNUSED!! task version string."""
     protocol_name: str | None = None
+    """str: The name of the task protocol (NB: avoid spaces)."""
     base_parameters_file: Path | None = None
+    """Path: A YAML file containing base, default task parameters."""
     is_mock = False
     """list of str: One or more ibllib.pipes.tasks.Task names for task extraction."""
     logger: logging.Logger = None
     """logging.Logger: Log instance used solely to keep track of log level passed to constructor."""
     experiment_description: dict = {}
     """dict: The experiment description."""
+    extractor_tasks: list | None = None
+    """list of str: An optional list of pipeline task class names to instantiate when preprocessing task data."""
 
     def __init__(
         self,
