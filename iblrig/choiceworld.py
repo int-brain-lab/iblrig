@@ -59,7 +59,7 @@ def get_subject_training_info(
     stim_gain: float, optional
         Default stimulus gain if no previous session is available, default to None
     stim_gain_on_error: float, optional
-        Default stimulus gain if there was an exception whilst obtaining the previous sessions's info, default to None
+        Default stimulus gain if there was an exception whilst obtaining the previous sessions' info, default to None
     default_reward : float, optional
         Default reward volume in uL if no previous session is available.
     mode : str, optional

@@ -236,7 +236,9 @@ class TestRun(unittest.TestCase):
     @mock.patch('iblrig.base_tasks.graph.numinput', side_effect=(23.5, 20, 35))
     def test_dialogs(self, input_mock):
         """Test that weighing dialog used only on first of chained protocols."""
-        first_task = EmptyHardwareSession(**self.task_kwargs)
+        if 'subject_weight_grams' in (kwargs := self.task_kwargs.copy()):
+            del kwargs['subject_weight_grams']
+        first_task = EmptyHardwareSession(**kwargs)
         # Check that weighing GUI created
         first_task.run()
         input_mock.assert_called()
@@ -245,7 +247,7 @@ class TestRun(unittest.TestCase):
 
         # Append a new protocol to the current task. Weighting GUI should not be instantiated
         input_mock.reset_mock()
-        second_task = EmptyHardwareSession(append=True, **self.task_kwargs)
+        second_task = EmptyHardwareSession(append=True, **kwargs)
         second_task.run()
         input_mock.assert_called_once()
         self.assertIsNone(second_task.session_info['SUBJECT_WEIGHT'])

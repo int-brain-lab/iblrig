@@ -19,6 +19,7 @@ TASK_KWARGS = {
     'file_iblrig_settings': 'iblrig_settings_template.yaml',
     'file_hardware_settings': 'hardware_settings_template.yaml',
     'subject': 'iblrig_test_subject',
+    'subject_weight_grams': 42,
     'interactive': False,
     'projects': ['ibl_neuropixel_brainwide_01', 'ibl_mainenlab'],
     'procedures': ['Behavior training/tasks', 'Imaging'],

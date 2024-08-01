@@ -101,6 +101,7 @@ ignore_missing_imports = true
 addopts    = "-ra --showlocals --cov=iblrig --cov=iblrig_tasks --cov-report=html --cov-report=xml --tb=short"
 minversion = "6.0"
 testpaths  = [ "iblrig/test" ]
+python_files = [ "test_*.py" ]
 filterwarnings = [ "ignore::DeprecationWarning:nptyping.*" ]
 
 [tool.ruff]
