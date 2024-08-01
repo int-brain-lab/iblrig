@@ -7,7 +7,6 @@ import math
 import random
 import subprocess
 import time
-import traceback
 from pathlib import Path
 from string import ascii_letters
 
@@ -797,31 +796,24 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
         """
         Get the previous session's according to this session parameters and deduce the
         training level, adaptive reward amount and adaptive gain value
-        :return:
+
+        Returns
+        -------
+        training_info: dict
+            Dictionary with keys: training_phase, adaptive_reward, adaptive_gain
         """
-        try:
-            tinfo, _ = choiceworld.get_subject_training_info(
-                subject_name=self.session_info.SUBJECT_NAME,
-                default_reward=self.task_params.REWARD_AMOUNT_UL,
-                stim_gain=self.task_params.STIM_GAIN,
-                local_path=self.iblrig_settings['iblrig_local_data_path'],
-                remote_path=self.iblrig_settings['iblrig_remote_data_path'],
-                lab=self.iblrig_settings['ALYX_LAB'],
-                task_name=self.protocol_name,
-                iblrig_settings=self.iblrig_settings,
-            )
-        except Exception:
-            log.critical('Failed to get training information from previous subjects: %s', traceback.format_exc())
-            tinfo = dict(
-                training_phase=iblrig.choiceworld.DEFAULT_TRAINING_PHASE,
-                adaptive_reward=iblrig.choiceworld.DEFAULT_REWARD_VOLUME,
-                adaptive_gain=self.task_params.AG_INIT_VALUE,
-            )
-            log.critical(
-                f"The mouse will train on level {tinfo['training_phase']}, "
-                f"with reward {tinfo['adaptive_reward']} uL and gain {tinfo['adaptive_gain']}"
-            )
-        return tinfo['training_phase'], tinfo['adaptive_reward'], tinfo['adaptive_gain']
+        training_info, _ = choiceworld.get_subject_training_info(
+            subject_name=self.session_info.SUBJECT_NAME,
+            task_name=self.protocol_name,
+            stim_gain=self.task_params.AG_INIT_VALUE,
+            stim_gain_on_error=self.task_params.STIM_GAIN,
+            default_reward=self.task_params.REWARD_AMOUNT_UL,
+            local_path=self.iblrig_settings['iblrig_local_data_path'],
+            remote_path=self.iblrig_settings['iblrig_remote_data_path'],
+            lab=self.iblrig_settings['ALYX_LAB'],
+            iblrig_settings=self.iblrig_settings,
+        )
+        return training_info['training_phase'], training_info['adaptive_reward'], training_info['adaptive_gain']
 
     def compute_performance(self):
         """
