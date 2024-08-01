@@ -250,6 +250,10 @@ def prepare_video_session_cmd():
     )
     parser.add_argument('--debug', action='store_true', help='enable debugging mode')
     args = parser.parse_args()
+
+    if args.subject_name is None and args.service_uri is False:
+        parser.error('--subject-name is mandatory if --service-uri has not been provided.')
+
     setup_logger(name='iblrig', level='DEBUG' if args.debug else 'INFO')
     service_uri = args.service_uri
     # Technically `prepare_video_service` should behave the same as `prepare_video_session` if the service_uri arg is
