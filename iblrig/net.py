@@ -143,7 +143,8 @@ class Auxiliaries:
         """
         n_aborted = len(self._queued)
         self._queued.clear()
-        log.debug('%i remote service messages aborted', n_aborted)
+        if n_aborted:
+            log.debug('%i remote service messages aborted', n_aborted)
         return n_aborted
 
     async def cleanup(self, notify_services=False):
