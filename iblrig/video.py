@@ -244,13 +244,14 @@ def prepare_video_session_cmd():
         '--service-uri',
         required=False,
         nargs='?',
-        default=None,
+        default=False,
+        type=str,
         help='the service URI to listen to messages on. pass ":<port>" to specify port only.',
     )
     parser.add_argument('--debug', action='store_true', help='enable debugging mode')
     args = parser.parse_args()
     setup_logger(name='iblrig', level='DEBUG' if args.debug else 'INFO')
-    service_uri = getattr(args, 'service_uri', 'service_uri' in args)
+    service_uri = args.service_uri
     # Technically `prepare_video_service` should behave the same as `prepare_video_session` if the service_uri arg is
     # False but until fully tested, let's call the old function
     if service_uri is False:
