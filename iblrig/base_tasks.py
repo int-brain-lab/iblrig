@@ -46,7 +46,7 @@ from iblrig.tools import call_bonsai
 from iblrig.transfer_experiments import BehaviorCopier, VideoCopier
 from iblutil.io.net.base import ExpMessage
 from iblutil.spacer import Spacer
-from iblutil.util import Bunch, setup_logger, flatten
+from iblutil.util import Bunch, flatten, setup_logger
 from one.alf.io import next_num_folder
 from one.api import ONE, OneAlyx
 from pybpodapi.protocol import StateMachine
