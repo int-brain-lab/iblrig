@@ -121,27 +121,10 @@ class BaseSession(ABC):
             RigSettings.model_validate(self.iblrig_settings)
 
         self.wizard = wizard
+
         # Load the tasks settings, from the task folder or override with the input argument
-        base_parameters_files = [
-            task_parameter_file or Path(inspect.getfile(self.__class__)).parent.joinpath('task_parameters.yaml')
-        ]
-        # loop through the task hierarchy to gather parameter files
-        for cls in self.__class__.__mro__:
-            base_file = getattr(cls, 'base_parameters_file', None)
-            if base_file is not None:
-                base_parameters_files.append(base_file)
-        # this is a trick to remove list duplicates while preserving order, we want the highest order first
-        base_parameters_files = list(reversed(list(dict.fromkeys(base_parameters_files))))
-        # now we loop into the files and update the dictionary, the latest files in the hierarchy have precedence
-        self.task_params = Bunch({})
-        for param_file in base_parameters_files:
-            if Path(param_file).exists():
-                with open(param_file) as fp:
-                    params = yaml.safe_load(fp)
-                if params is not None:
-                    self.task_params.update(Bunch(params))
-        # at last sort the dictionary so itś easier for a human to navigate the many keys
-        self.task_params = Bunch(dict(sorted(self.task_params.items())))
+        self.task_params = self._get_task_parameters(task_parameter_file)
+
         self.session_info = Bunch(
             {
                 'NTRIALS': 0,
@@ -171,6 +154,50 @@ class BaseSession(ABC):
             stub,
             extractors=self.extractor_tasks,
         )
+
+    @classmethod
+    def task_file(cls) -> Path:
+        return Path(inspect.getfile(cls))
+
+    @classmethod
+    def _get_task_parameters(cls, task_parameter_file: str | Path | None = None) -> Bunch:
+        """
+        Class method to get task parameters
+
+        Parameters
+        ----------
+        task_parameter_file : str or Path, optional
+            Path to override the task parameter file
+
+        Returns
+        -------
+        Bunch
+            Task parameters
+        """
+
+        # Load the tasks settings, from the task folder or override with the input argument
+        base_parameters_files = [task_parameter_file or cls.task_file().parent.joinpath('task_parameters.yaml')]
+
+        # loop through the task hierarchy to gather parameter files
+        for c in cls.__mro__:
+            base_file = getattr(c, 'base_parameters_file', None)
+            if base_file is not None:
+                base_parameters_files.append(base_file)
+
+        # remove list duplicates while preserving order, we want the highest order first
+        base_parameters_files = list(reversed(list(dict.fromkeys(base_parameters_files))))
+
+        # loop through files and update the dictionary, the latest files in the hierarchy have precedence
+        task_params = dict()
+        for param_file in base_parameters_files:
+            if Path(param_file).exists():
+                with open(param_file) as fp:
+                    params = yaml.safe_load(fp)
+                if params is not None:
+                    task_params.update(params)
+
+        # at last sort the dictionary so itś easier for a human to navigate the many keys, return as a Bunch
+        return Bunch(sorted(task_params.items()))
 
     def _init_paths(self, append: bool = False) -> Bunch:
         r"""
