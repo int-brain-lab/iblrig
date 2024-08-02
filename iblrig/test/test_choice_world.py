@@ -124,7 +124,7 @@ class TestGetPreviousSession(unittest.TestCase):
         result = (t.training_phase, t.session_info['ADAPTIVE_REWARD_AMOUNT_UL'], t.session_info['ADAPTIVE_GAIN_VALUE'])
         self.assertEqual((4, 2.9, 6.0), result)
 
-        # no previous session -> should return default values
+        # no previous session -> should return default values with gain = AG_INIT_VALUE
         with patch('iblrig.choiceworld.iterate_previous_sessions', sreturn_value=[]):
             self.assertEqual(
                 (iblrig.choiceworld.DEFAULT_TRAINING_PHASE, t.task_params.REWARD_AMOUNT_UL, t.task_params.AG_INIT_VALUE),
@@ -141,7 +141,7 @@ class TestGetPreviousSession(unittest.TestCase):
             mock_sum.assert_called_once()
             self.assertEqual(t.task_params.STIM_GAIN, 4)
 
-        # exception while getting previous session -> should return default values
+        # exception while getting previous session -> should return default values with gain = STIM_GAIN
         with patch('iblrig.choiceworld.iterate_previous_sessions', side_effect=Exception()):
             self.assertEqual(
                 (iblrig.choiceworld.DEFAULT_TRAINING_PHASE, t.task_params.REWARD_AMOUNT_UL, t.task_params.STIM_GAIN),
