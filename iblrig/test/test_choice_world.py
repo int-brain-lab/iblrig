@@ -8,6 +8,7 @@ import shutil
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
@@ -118,13 +119,34 @@ class TestGetPreviousSession(unittest.TestCase):
         self.assertEqual((2, 2.1), (training_info['training_phase'], training_info['adaptive_reward']))
         self.assertIsInstance(session_info, dict)
 
-        # test the task instantiation, should be the same as above
+        # test the task instantiation
         t = TrainingChoiceWorldSession(**self.kwargs, training_phase=4, adaptive_reward=2.9, adaptive_gain=6.0)
         result = (t.training_phase, t.session_info['ADAPTIVE_REWARD_AMOUNT_UL'], t.session_info['ADAPTIVE_GAIN_VALUE'])
         self.assertEqual((4, 2.9, 6.0), result)
 
-        # using the method we should get the same as above
-        self.assertEqual((2, 2.1, 4.0), t.get_subject_training_info())
+        # no previous session -> should return default values
+        with patch('iblrig.choiceworld.iterate_previous_sessions', sreturn_value=[]):
+            self.assertEqual(
+                (iblrig.choiceworld.DEFAULT_TRAINING_PHASE, t.task_params.REWARD_AMOUNT_UL, t.task_params.AG_INIT_VALUE),
+                t.get_subject_training_info(),
+            )
+
+        # previous session with < 200 correct trials -> should return adaptive gain AG_INIT_VALUE = 8
+        self.assertEqual((2, 2.1, t.task_params.AG_INIT_VALUE), t.get_subject_training_info())
+        self.assertEqual(8, t.task_params.AG_INIT_VALUE)
+
+        # previous session with > 200 correct trials -> should return adaptive gain of STIM_GAIN = 4
+        with patch('iblrig.choiceworld.np.sum', return_value=400) as mock_sum:
+            self.assertEqual((2, 2.1, t.task_params.STIM_GAIN), t.get_subject_training_info())
+            mock_sum.assert_called_once()
+            self.assertEqual(t.task_params.STIM_GAIN, 4)
+
+        # exception while getting previous session -> should return default values
+        with patch('iblrig.choiceworld.iterate_previous_sessions', side_effect=Exception()):
+            self.assertEqual(
+                (iblrig.choiceworld.DEFAULT_TRAINING_PHASE, t.task_params.REWARD_AMOUNT_UL, t.task_params.STIM_GAIN),
+                t.get_subject_training_info(),
+            )
 
         # now the mouse is underfed
         self.session_b.session_info['ADAPTIVE_GAIN_VALUE'] = 5.0
