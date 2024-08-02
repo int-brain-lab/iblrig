@@ -47,6 +47,8 @@ class TestGetPreviousSession(unittest.TestCase):
         self.session_c.create_session()
         self.session_c._remove_file_loggers()
 
+        # QUESTION: this will currently return default values as the jsonable of session_b cannot be found.
+        #           Is this intended as such?
         self.session_d = TrainingChoiceWorldSession(**self.kwargs)
         self.session_d.create_session()
         self.session_d._remove_file_loggers()
