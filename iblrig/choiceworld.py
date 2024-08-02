@@ -100,7 +100,7 @@ def get_subject_training_info(
             log.warning(
                 f"Could not determine training status for subject '{subject_name}' - returning default values "
                 f'(training phase: {training_info["training_phase"]}, adaptive reward: '
-                f'{training_info["adaptive_reward"]:.1f} μL, adaptive gain: {training_info["adaptive_gain"]})'
+                f'{training_info["adaptive_reward"]}, adaptive gain: {training_info["adaptive_gain"]})'
             )
             return training_info, None
         else:

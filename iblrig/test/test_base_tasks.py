@@ -21,7 +21,7 @@ import ibllib.io.session_params as ses_params
 from ibllib.io.session_params import read_params
 from iblrig.base_choice_world import BiasedChoiceWorldSession, ChoiceWorldSession
 from iblrig.base_tasks import BaseSession, BonsaiRecordingMixin
-from iblrig.misc import _get_task_argument_parser, _post_parse_arguments
+from iblrig.misc import _post_parse_arguments, get_task_argument_parser
 from iblrig.path_helper import load_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings
 from iblrig.test.base import PATH_FIXTURES, TASK_KWARGS, IntegrationFullRuns
@@ -183,7 +183,7 @@ class TestPathCreation(unittest.TestCase):
 class TestTaskArguments(unittest.TestCase):
     @staticmethod
     def _parse_local(args, parents=None):
-        parser = _get_task_argument_parser(parents=parents)
+        parser = get_task_argument_parser(parents=parents)
         kwargs = vars(parser.parse_args(args))
         kwargs = _post_parse_arguments(**kwargs)
         return kwargs

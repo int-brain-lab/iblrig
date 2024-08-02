@@ -26,7 +26,7 @@ import iblrig.hardware_validation
 import iblrig.path_helper
 import iblrig_tasks
 from ibllib.io.raw_data_loaders import load_settings
-from iblrig.base_tasks import EmptySession
+from iblrig.base_tasks import BaseSession, EmptySession
 from iblrig.choiceworld import compute_adaptive_reward_volume, get_subject_training_info, training_phase_from_contrast_set
 from iblrig.constants import BASE_DIR
 from iblrig.gui.frame2ttl import Frame2TTLCalibrationDialog
@@ -43,14 +43,14 @@ from iblrig.gui.validation import SystemValidationDialog
 from iblrig.gui.valve import ValveCalibrationDialog
 from iblrig.hardware import Bpod
 from iblrig.hardware_validation import Status
-from iblrig.misc import _get_task_argument_parser
+from iblrig.misc import get_task_argument_parser
 from iblrig.path_helper import load_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings, RigSettings
 from iblrig.raw_data_loaders import load_task_jsonable
 from iblrig.tools import alyx_reachable, internet_available
 from iblrig.valve import Valve
 from iblrig.version_management import check_for_updates, get_changelog
-from iblutil.util import setup_logger
+from iblutil.util import Bunch, setup_logger
 from one.webclient import AlyxClient
 from pybpodapi.exceptions.bpod_error import BpodErrorException
 
@@ -143,18 +143,61 @@ class RigWizardModel:
                 [f.name for f in folder_subjects.glob('*') if f.is_dir() and f.name != self.test_subject_name]
             )
 
-    def get_task_extra_parser(self, task_name=None):
+    def get_session(self, task_name: str) -> BaseSession:
         """
-        Get the extra kwargs from the task, by importing the task and parsing the extra_parser static method
-        This parser will give us a list of arguments and their types so we can build a custom dialog for this task
-        :return:
+        Get a session object for the given task name
+
+        Parameters
+        ----------
+        task_name: str
+            The name of the task
+
+        Returns
+        -------
+        BaseSession
+            The session object for the given task name
         """
-        assert task_name
         spec = spec_from_file_location('task', self.all_tasks[task_name])
         task = module_from_spec(spec)
         sys.modules[spec.name] = task
         spec.loader.exec_module(task)
-        return task.Session.extra_parser()
+        return task.Session
+
+    def get_task_extra_parser(self, task_name: str):
+        """
+        Get an extra parser for the given task name
+
+        Parameters
+        ----------
+        task_name
+            The name of the task
+
+        Returns
+        -------
+        ArgumentParser
+            The extra parser for the given task name
+        """
+        return self.get_session(task_name).extra_parser()
+
+    def get_task_parameters(self, task_name: str) -> Bunch:
+        """
+        Return parameters for the given task
+
+        Parameters
+        ----------
+        task_name
+            The name of the task
+
+        Returns
+        -------
+        Bunch
+            The parameters for the given task
+        """
+        return self.get_session(task_name).read_task_parameter_files()
+
+    @property
+    def task_file(self) -> Path:
+        return self.all_tasks.get(self.task_name, None)
 
     def login(
         self,
@@ -232,8 +275,10 @@ class RigWizardModel:
 
 
 class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
-    subject_details: tuple[dict, dict] | None = None
-    new_subject_details = QtCore.pyqtSignal(dict, object)
+    training_info: dict = {}
+    session_info: dict = {}
+    task_parameters: dict | None = None
+    new_subject_details = QtCore.pyqtSignal()
 
     def __init__(self, **kwargs):
         super().__init__()
@@ -276,29 +321,25 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 )
             self._show_error_dialog(title=f'Error validating {yml}', description=description.strip())
             raise e
-        self.model2view()
 
-        # default to biasedChoiceWorld
-        if (idx := self.uiComboTask.findText('_iblrig_tasks_biasedChoiceWorld')) >= 0:
-            self.uiComboTask.setCurrentIndex(idx)
+        # task parameters and subject details
+        self.uiComboTask.currentTextChanged.connect(self._controls_for_task_arguments)
+        self.uiComboTask.currentTextChanged.connect(self._get_task_parameters)
+        self.uiComboSubject.currentTextChanged.connect(self._get_subject_details)
+        self.new_subject_details.connect(self._set_automatic_values)
+        self.model2view()
 
         # connect widgets signals to slots
         self.uiActionValidateHardware.triggered.connect(self._on_validate_hardware)
         self.uiActionCalibrateFrame2ttl.triggered.connect(self._on_calibrate_frame2ttl)
         self.uiActionCalibrateValve.triggered.connect(self._on_calibrate_valve)
         self.uiActionTrainingLevelV7.triggered.connect(self._on_menu_training_level_v7)
-        self.uiComboTask.currentTextChanged.connect(self.controls_for_extra_parameters)
 
-        self.uiComboSubject.currentTextChanged.connect(self._get_subject_details)
         self.uiPushStart.clicked.connect(self.start_stop)
         self.uiPushPause.clicked.connect(self.pause)
         self.uiListProjects.clicked.connect(self._enable_ui_elements)
         self.uiListProcedures.clicked.connect(self._enable_ui_elements)
         self.lineEditSubject.textChanged.connect(self._filter_subjects)
-
-        self._get_subject_details(self.uiComboSubject.currentText())
-        self.new_subject_details.connect(self._set_automatic_values)
-        self.uiComboTask.currentTextChanged.connect(lambda: self._set_automatic_values(*self.subject_details))
 
         self.running_task_process = None
         self.task_arguments = dict()
@@ -337,7 +378,6 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.uiDiskSpaceIndicator.setMaximumWidth(70)
         self.statusbar.addPermanentWidget(self.uiDiskSpaceIndicator)
         self.statusbar.setContentsMargins(0, 0, 6, 0)
-        self.controls_for_extra_parameters()
 
         # disable control of LED if Bpod does not have the respective capability
         try:
@@ -387,14 +427,32 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
     def hardware_settings(self) -> HardwareSettings:
         return self.model.hardware_settings
 
-    def _get_subject_details(self, subject):
-        worker = Worker(lambda: get_subject_training_info(subject))
+    def _get_task_parameters(self, task_name):
+        worker = Worker(self.model.get_task_parameters, task_name)
+        worker.signals.result.connect(self._on_task_parameters_result)
+        QThreadPool.globalInstance().start(worker)
+
+    def _on_task_parameters_result(self, result):
+        self.task_parameters = result
+        self._get_subject_details(self.uiComboSubject.currentText())
+
+    def _get_subject_details(self, subject_name: str):
+        if not isinstance(subject_name, str) or self.task_parameters is None:
+            return
+        worker = Worker(
+            get_subject_training_info,
+            subject_name=subject_name,
+            task_name=self.uiComboTask.currentText(),
+            stim_gain=self.task_parameters.get('AG_INIT_VALUE'),
+            stim_gain_on_error=self.task_parameters.get('STIM_GAIN'),
+            default_reward=self.task_parameters.get('REWARD_AMOUNT_UL'),
+        )
         worker.signals.result.connect(self._on_subject_details_result)
         QThreadPool.globalInstance().start(worker)
 
     def _on_subject_details_result(self, result):
-        self.subject_details = result
-        self.new_subject_details.emit(*result)
+        self.training_info, self.session_info = result
+        self.new_subject_details.emit()
 
     def _show_error_dialog(
         self,
@@ -653,12 +711,12 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.model.task_name = self.uiComboTask.currentText()
         self.model.subject = self.uiComboSubject.currentText()
 
-    def controls_for_extra_parameters(self):
+    def _controls_for_task_arguments(self, task_name: str):
         self.controller2model()
         self.task_arguments = dict()
 
         # collect & filter list of parser arguments (general & task specific)
-        args = sorted(_get_task_argument_parser()._actions, key=lambda x: x.dest)
+        args = sorted(get_task_argument_parser()._actions, key=lambda x: x.dest)
         args = [
             x
             for x in args
@@ -742,7 +800,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 widget.editingFinished.emit()
 
             # create widget for adaptive gain
-            if arg.dest == 'adaptive_gain':
+            elif arg.dest == 'adaptive_gain':
                 widget = QtWidgets.QDoubleSpinBox()
                 widget.setDecimals(1)
 
@@ -796,7 +854,6 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                     widget.setMaximum(5)
                     widget.setMinimum(-1)
                     widget.setValue(-1)
-                    widget.setObjectName('training_phase')
 
                 case 'adaptive_reward':
                     label = 'Reward Amount, μl'
@@ -810,7 +867,6 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                         lambda val, a=arg, m=minimum: self._set_task_arg(a.option_strings[0], str(val if val > m else -1))
                     )
                     widget.valueChanged.emit(widget.value())
-                    widget.setObjectName('adaptive_reward')
 
                 case 'reward_set_ul':
                     label = 'Reward Set, μl'
@@ -826,7 +882,6 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                         lambda val, a=arg, m=minimum: self._set_task_arg(a.option_strings[0], str(val) if val > m else 'None')
                     )
                     widget.valueChanged.emit(widget.value())
-                    widget.setObjectName('adaptive_gain')
 
                 case 'reward_amount_ul':
                     label = 'Reward Amount, μl'
@@ -853,20 +908,20 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
             layout.addRow(self.tr('(none)'), None)
             layout.itemAt(0, 0).widget().setEnabled(False)
 
-    def _set_automatic_values(self, training_info: dict, session_info: dict | None):
-        def _helper(name: str, format: str):
-            value = training_info.get(name)
-            if (widget := self.uiGroupTaskParameters.findChild(QtWidgets.QWidget, name)) is not None:
+    def _set_automatic_values(self):
+        def _helper(name: str, destination: str, str_format: str):
+            value = self.training_info.get(name)
+            if (widget := self.uiGroupTaskParameters.findChild(QtWidgets.QWidget, destination)) is not None:
                 if value is None:
-                    default = ' (default)' if session_info is None else ''
+                    default = ' (default)' if self.session_info is None else ''
                     widget.setSpecialValueText(f'automatic{default}')
                 else:
-                    default = ', default' if session_info is None else ''
-                    widget.setSpecialValueText(f'automatic ({value:{format}}{default})')
+                    default = ' (default)' if self.session_info is None else ''
+                    widget.setSpecialValueText(f'automatic: {value:{str_format}}{default}')
 
-        _helper('training_phase', 'd')
-        _helper('adaptive_reward', '0.1f')
-        _helper('adaptive_gain', '0.1f')
+        _helper('training_phase', '--training_phase', 'd')
+        _helper('adaptive_reward', '--adaptive_reward', '0.1f')
+        _helper('adaptive_gain', '--adaptive_gain', '0.1f')
 
     def _set_task_arg(self, key, value):
         self.task_arguments[key] = value
@@ -933,7 +988,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 # build the argument list for the subprocess
                 cmd = []
                 if self.model.task_name:
-                    cmd.extend([str(self.model.all_tasks[self.model.task_name])])
+                    cmd.extend([str(self.model.task_file)])
                 if self.model.user:
                     cmd.extend(['--user', self.model.user])
                 if self.model.subject:
