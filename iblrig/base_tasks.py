@@ -123,7 +123,7 @@ class BaseSession(ABC):
         self.wizard = wizard
 
         # Load the tasks settings, from the task folder or override with the input argument
-        self.task_params = self._get_task_parameters(task_parameter_file)
+        self.task_params = self.read_task_parameter_files(task_parameter_file)
 
         self.session_info = Bunch(
             {
@@ -156,13 +156,33 @@ class BaseSession(ABC):
         )
 
     @classmethod
-    def task_file(cls) -> Path:
+    def get_task_file(cls) -> Path:
+        """
+        Get the path to the task's python file.
+
+        Returns
+        -------
+        Path
+            The path to the task file.
+        """
         return Path(inspect.getfile(cls))
 
     @classmethod
-    def _get_task_parameters(cls, task_parameter_file: str | Path | None = None) -> Bunch:
+    def get_task_directory(cls) -> Path:
         """
-        Class method to get task parameters
+        Get the path to the task's directory.
+
+        Returns
+        -------
+        Path
+            The path to the task's directory.
+        """
+        return cls.get_task_file().parent
+
+    @classmethod
+    def read_task_parameter_files(cls, task_parameter_file: str | Path | None = None) -> Bunch:
+        """
+        Get the task's parameters from the various YAML files in the hierarchy.
 
         Parameters
         ----------
@@ -176,7 +196,7 @@ class BaseSession(ABC):
         """
 
         # Load the tasks settings, from the task folder or override with the input argument
-        base_parameters_files = [task_parameter_file or cls.task_file().parent.joinpath('task_parameters.yaml')]
+        base_parameters_files = [task_parameter_file or cls.get_task_directory().joinpath('task_parameters.yaml')]
 
         # loop through the task hierarchy to gather parameter files
         for c in cls.__mro__:
