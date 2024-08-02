@@ -119,9 +119,12 @@ def get_subject_training_info(
     if 'training_phase' in trials_data:
         training_info['training_phase'] = trials_data['training_phase'].values[-1]
 
-    # set adaptive gain depending on number of correct trials in previous session
+    # set adaptive gain depending on number of correct trials in previous session.
+    # also fix negative adaptive gain values (due to a bug in the GUI prior to v8.21.0
     if np.sum(trials_data['response_side'] != 0) > 200:
         training_info['adaptive_gain'] = task_settings.get('STIM_GAIN')
+    elif task_settings.get('ADAPTIVE_GAIN_VALUE', 1) < 0:
+        training_info['adaptive_gain'] = task_settings.get('AG_INIT_VALUE')
     else:
         training_info['adaptive_gain'] = task_settings.get('ADAPTIVE_GAIN_VALUE', task_settings.get('AG_INIT_VALUE'))
 
