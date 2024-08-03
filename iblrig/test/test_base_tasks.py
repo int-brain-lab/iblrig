@@ -330,9 +330,7 @@ class TestBaseChoiceWorld(IntegrationFullRuns):
         self.assertCountEqual(idx, [self.task.pause_trial], 'failed to correctly update pause_duration field')
 
 
-
 class TestClassMethods(unittest.TestCase):
-
     def test_get_task_file(self):
         task_file = tcw_task.Session.get_task_file()
         self.assertEqual(task_file, Path(tcw_task.__file__))
@@ -343,5 +341,5 @@ class TestClassMethods(unittest.TestCase):
 
     def test_read_task_parameter_files(self):
         task_params = tcw_task.Session.read_task_parameter_files()
-        self.assertTrue('AG_INIT_VALUE' in task_params)
-        self.assertTrue('NTRIALS' in task_params)
+        self.assertTrue('AG_INIT_VALUE' in task_params)  # from training choice world
+        self.assertTrue('NTRIALS' in task_params)  # from base parameters
