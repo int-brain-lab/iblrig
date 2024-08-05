@@ -14,11 +14,15 @@ Changelog
 * fix: values computed by "Get Training Phase" in "Tools" menu
 * fix: incorrect parsing of adaptive gain value in trainingChoiceWorld
 
+-------------------------------
+
 8.20.0
 ------
 * tab for displaying local sessions and their respective status
 * additional task parameters for passiveChoiceWorld
 * work on making the GUI code more modular
+
+-------------------------------
 
 8.19.6
 ------
