@@ -25,6 +25,7 @@ from iblrig.misc import _post_parse_arguments, get_task_argument_parser
 from iblrig.path_helper import load_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings
 from iblrig.test.base import PATH_FIXTURES, TASK_KWARGS, IntegrationFullRuns
+from iblrig_tasks._iblrig_tasks_trainingChoiceWorld import task as tcw_task
 
 
 class EmptyHardwareSession(BaseSession):
@@ -327,3 +328,18 @@ class TestBaseChoiceWorld(IntegrationFullRuns):
         # Check trials updated with pause duration
         (idx,) = np.where(self.task.trials_table['pause_duration'][: self.task.task_params.NTRIALS] > 0)
         self.assertCountEqual(idx, [self.task.pause_trial], 'failed to correctly update pause_duration field')
+
+
+class TestClassMethods(unittest.TestCase):
+    def test_get_task_file(self):
+        task_file = tcw_task.Session.get_task_file()
+        self.assertEqual(task_file, Path(tcw_task.__file__))
+
+    def test_get_task_directory(self):
+        task_dir = tcw_task.Session.get_task_directory()
+        self.assertEqual(task_dir, Path(tcw_task.__file__).parent)
+
+    def test_read_task_parameter_files(self):
+        task_params = tcw_task.Session.read_task_parameter_files()
+        self.assertTrue('AG_INIT_VALUE' in task_params)  # from training choice world
+        self.assertTrue('NTRIALS' in task_params)  # from base parameters
