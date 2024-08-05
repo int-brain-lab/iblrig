@@ -23,7 +23,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: true
       - name: Install requirements
-        run: pdm sync -dG test
+        run: pdm sync -dG doc
       - name: Sphinx build
         run: |
           pdm run sphinx-build docs/source docs/build/html
