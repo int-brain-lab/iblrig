@@ -447,7 +447,7 @@ class ChoiceWorldSession(
         )
         reward_amount = self.default_reward_amount if reward_amount is None else reward_amount
         stim_gain = (
-            self.session_info.ADAPTIVE_GAIN_VALUE if self.task_params.ADAPTIVE_GAIN is True else self.task_params.STIM_GAIN
+            self.session_info.ADAPTIVE_GAIN_VALUE if self.task_params.get('ADAPTIVE_GAIN', False) else self.task_params.STIM_GAIN
         )
         self.trials_table.at[self.trial_num, 'quiescent_period'] = quiescent_period
         self.trials_table.at[self.trial_num, 'contrast'] = contrast
