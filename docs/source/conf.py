@@ -11,6 +11,7 @@ version = '.'.join(__version__.split('.')[:3])
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = ['sphinx_lesson', 'sphinx.ext.autosectionlabel']
+autosectionlabel_prefix_document = True
 source_suffix = ['.rst', '.md']
 
 templates_path = ['_templates']
