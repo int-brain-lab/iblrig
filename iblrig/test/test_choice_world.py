@@ -2,12 +2,12 @@
 Unit tests for task logic functions
 """
 
-import copy
 import json
 import shutil
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
@@ -16,59 +16,55 @@ import iblrig.choiceworld
 from iblrig import session_creator
 from iblrig.path_helper import iterate_previous_sessions
 from iblrig.raw_data_loaders import load_task_jsonable
-from iblrig.test.base import TASK_KWARGS
+from iblrig.test.base import BaseTestCases
 from iblrig_tasks._iblrig_tasks_passiveChoiceWorld.task import Session as PassiveChoiceWorldSession
 from iblrig_tasks._iblrig_tasks_spontaneous.task import Session as SpontaneousSession
 from iblrig_tasks._iblrig_tasks_trainingChoiceWorld.task import Session as TrainingChoiceWorldSession
 
 
-class TestGetPreviousSession(unittest.TestCase):
+class TestGetPreviousSession(BaseTestCases.CommonTestTask):
     def setUp(self) -> None:
-        self.kwargs = copy.deepcopy(TASK_KWARGS)
-        self.kwargs.update({'subject_weight_grams': 25})
-        self.td = tempfile.TemporaryDirectory()
-        self.root_path = Path(self.td.name)
-        self.kwargs['iblrig_settings'] = dict(
-            iblrig_local_data_path=self.root_path, ALYX_LAB='cortexlab', iblrig_remote_data_path=None
-        )
-        self.sesa = SpontaneousSession(**self.kwargs)
-        self.sesa.create_session()
-        self.sesa._remove_file_loggers()
-        self.sesb = TrainingChoiceWorldSession(**self.kwargs)
-        # we make sure that the session has more than 42 trials in the settings, here sesd
-        # is not returned as it is a dud with no trial and we expect 1 session in history: sesb
-        self.sesb.session_info['NTRIALS'] = 400
-        self.sesb.create_session()
-        self.sesb._remove_file_loggers()
-        self.sesc = PassiveChoiceWorldSession(**self.kwargs)
-        self.sesc.create_session()
-        self.sesc._remove_file_loggers()
-        self.sesd = TrainingChoiceWorldSession(**self.kwargs)
-        self.sesd.create_session()
-        self.sesd._remove_file_loggers()
+        self.get_task_kwargs()
+        self.task_kwargs.update({'subject_weight_grams': 25})
+        self.session_a = SpontaneousSession(**self.task_kwargs)
+        self.session_a.create_session()
+
+        self.session_b = TrainingChoiceWorldSession(**self.task_kwargs)
+        # we make sure that the session has more than 42 trials in the settings, here session_d
+        # is not returned as it is a dud with no trial and we expect 1 session in history: session_b
+        self.session_b.session_info['NTRIALS'] = 400
+        self.session_b.create_session()
+
+        self.session_c = PassiveChoiceWorldSession(**self.task_kwargs)
+        self.session_c.create_session()
+
+        # QUESTION: this will currently return default values as the jsonable of session_b cannot be found.
+        #           Is this intended as such?
+        self.session_d = TrainingChoiceWorldSession(**self.task_kwargs)
+        self.session_d.create_session()
 
     def test_iterate_previous_sessions(self):
         previous_sessions = iterate_previous_sessions(
-            self.kwargs['subject'],
+            self.task_kwargs['subject'],
             task_name='_iblrig_tasks_trainingChoiceWorld',
-            local_path=Path(self.root_path),
+            local_path=self.tmp,
             lab='cortexlab',
             n=2,
-            iblrig_settings=self.kwargs['iblrig_settings'],
+            iblrig_settings=self.task_kwargs['iblrig_settings'],
         )
         self.assertEqual(len(previous_sessions), 1)
         # here we create a remote path, and copy over the sessions
-        # then sesb is removed from the local server and sesd gets completed
-        # we expect sesb from the remote server and sesd from the local server in history
+        # then session_b is removed from the local server and session_d gets completed
+        # we expect session_b from the remote server and session_d from the local server in history
         with tempfile.TemporaryDirectory() as tdd:
-            shutil.copytree(self.root_path.joinpath('cortexlab'), tdd, dirs_exist_ok=True)
-            shutil.rmtree(self.sesb.paths['SESSION_FOLDER'])
-            self.sesd.session_info['NTRIALS'] = 400
-            self.sesd.save_task_parameters_to_json_file()
+            shutil.copytree(self.tmp.joinpath('cortexlab'), tdd, dirs_exist_ok=True)
+            shutil.rmtree(self.session_b.paths['SESSION_FOLDER'])
+            self.session_d.session_info['NTRIALS'] = 400
+            self.session_d.save_task_parameters_to_json_file()
             previous_sessions = iterate_previous_sessions(
-                self.kwargs['subject'],
+                self.task_kwargs['subject'],
                 task_name='_iblrig_tasks_trainingChoiceWorld',
-                local_path=self.root_path,
+                local_path=self.tmp,
                 remote_path=Path(tdd),
                 lab='cortexlab',
                 n=2,
@@ -95,39 +91,58 @@ class TestGetPreviousSession(unittest.TestCase):
     def test_adaptive_training_level(self):
         """
         Makes sure that when we create new sessions, the statuses are recovered properly from previous data
-        :return:
         """
-        self.mock_jsonable(self.sesb.paths.DATA_FILE_PATH, training_phase=2, reward_amount=1050)
-        self.sesb.session_info['ADAPTIVE_REWARD_AMOUNT_UL'] = 2.1
-        self.sesb.session_info['SUBJECT_WEIGHT'] = 17
+        self.mock_jsonable(self.session_b.paths.DATA_FILE_PATH, training_phase=2, reward_amount=1050)
+        self.session_b.session_info['ADAPTIVE_REWARD_AMOUNT_UL'] = 2.1
+        self.session_b.session_info['SUBJECT_WEIGHT'] = 17
+        self.session_b.save_task_parameters_to_json_file()
 
-        self.sesb.save_task_parameters_to_json_file()
         # test the function entry point
-        tinfo, info = iblrig.choiceworld.get_subject_training_info(
-            self.kwargs['subject'],
-            local_path=Path(self.root_path),
+        training_info, session_info = iblrig.choiceworld.get_subject_training_info(
+            self.task_kwargs['subject'],
+            local_path=Path(self.tmp),
             lab='cortexlab',
             mode='raise',
-            iblrig_settings=self.sesb.iblrig_settings,
+            iblrig_settings=self.session_b.iblrig_settings,
         )
-        self.assertEqual((2, 2.1), (tinfo['training_phase'], tinfo['adaptive_reward']))
-        self.assertIsInstance(info, dict)
+        self.assertEqual((2, 2.1), (training_info['training_phase'], training_info['adaptive_reward']))
+        self.assertIsInstance(session_info, dict)
 
-        # test the task instantiation, should be the same as above
-        t = TrainingChoiceWorldSession(**self.kwargs, training_phase=4, adaptive_reward=2.9, adaptive_gain=6.0)
+        # test the task instantiation
+        t = TrainingChoiceWorldSession(**self.task_kwargs, training_phase=4, adaptive_reward=2.9, adaptive_gain=6.0)
         result = (t.training_phase, t.session_info['ADAPTIVE_REWARD_AMOUNT_UL'], t.session_info['ADAPTIVE_GAIN_VALUE'])
         self.assertEqual((4, 2.9, 6.0), result)
-        # using the method we should get the same as above
-        self.assertEqual(t.get_subject_training_info(), (2, 2.1, 4.0))
+
+        # no previous session -> should return default values with gain = AG_INIT_VALUE
+        with patch('iblrig.choiceworld.iterate_previous_sessions', sreturn_value=[]):
+            self.assertEqual(
+                (iblrig.choiceworld.DEFAULT_TRAINING_PHASE, t.task_params.REWARD_AMOUNT_UL, t.task_params.AG_INIT_VALUE),
+                t.get_subject_training_info(),
+            )
+
+        # previous session with < 200 correct trials -> should return adaptive gain AG_INIT_VALUE = 8
+        self.assertEqual((2, 2.1, t.task_params.AG_INIT_VALUE), t.get_subject_training_info())
+        self.assertEqual(8, t.task_params.AG_INIT_VALUE)
+
+        # previous session with > 200 correct trials -> should return adaptive gain of STIM_GAIN = 4
+        with patch('iblrig.choiceworld.np.sum', return_value=400) as mock_sum:
+            self.assertEqual((2, 2.1, t.task_params.STIM_GAIN), t.get_subject_training_info())
+            mock_sum.assert_called_once()
+            self.assertEqual(t.task_params.STIM_GAIN, 4)
+
+        # exception while getting previous session -> should return default values with gain = STIM_GAIN
+        with patch('iblrig.choiceworld.iterate_previous_sessions', side_effect=Exception()):
+            self.assertEqual(
+                (iblrig.choiceworld.DEFAULT_TRAINING_PHASE, t.task_params.REWARD_AMOUNT_UL, t.task_params.STIM_GAIN),
+                t.get_subject_training_info(),
+            )
+
         # now the mouse is underfed
-        self.sesb.session_info['ADAPTIVE_GAIN_VALUE'] = 5.0
-        self.sesb.save_task_parameters_to_json_file()
-        self.mock_jsonable(self.sesb.paths.DATA_FILE_PATH, training_phase=1, reward_amount=500)
+        self.session_b.session_info['ADAPTIVE_GAIN_VALUE'] = 5.0
+        self.session_b.save_task_parameters_to_json_file()
+        self.mock_jsonable(self.session_b.paths.DATA_FILE_PATH, training_phase=1, reward_amount=500)
         result = t.get_subject_training_info()
         self.assertEqual((1, 2.2, 5.0), result)
-
-    def tearDown(self) -> None:
-        self.td.cleanup()
 
 
 class TestAdaptiveReward(unittest.TestCase):

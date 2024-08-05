@@ -14,6 +14,7 @@ import inspect
 import json
 import logging
 import signal
+import sys
 import time
 import traceback
 from abc import ABC
@@ -34,7 +35,7 @@ import iblrig.graphic as graph
 import iblrig.path_helper
 import pybpodapi
 from ibllib.oneibl.registration import IBLRegistrationClient
-from iblrig import sound
+from iblrig import net, sound
 from iblrig.constants import BASE_PATH, BONSAI_EXE, PYSPIN_AVAILABLE
 from iblrig.frame2ttl import Frame2TTL
 from iblrig.hardware import SOFTCODE, Bpod, MyRotaryEncoder, sound_device_factory
@@ -43,10 +44,11 @@ from iblrig.path_helper import load_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings, RigSettings
 from iblrig.tools import call_bonsai
 from iblrig.transfer_experiments import BehaviorCopier, VideoCopier
+from iblutil.io.net.base import ExpMessage
 from iblutil.spacer import Spacer
-from iblutil.util import Bunch, setup_logger
+from iblutil.util import Bunch, flatten, setup_logger
 from one.alf.io import next_num_folder
-from one.api import ONE
+from one.api import ONE, OneAlyx
 from pybpodapi.protocol import StateMachine
 
 OSC_CLIENT_IP = '127.0.0.1'
@@ -58,11 +60,17 @@ class BaseSession(ABC):
     version = None
     """str: !!CURRENTLY UNUSED!! task version string."""
     protocol_name: str | None = None
+    """str: The name of the task protocol (NB: avoid spaces)."""
     base_parameters_file: Path | None = None
+    """Path: A YAML file containing base, default task parameters."""
     is_mock = False
     """list of str: One or more ibllib.pipes.tasks.Task names for task extraction."""
     logger: logging.Logger = None
     """logging.Logger: Log instance used solely to keep track of log level passed to constructor."""
+    experiment_description: dict = {}
+    """dict: The experiment description."""
+    extractor_tasks: list | None = None
+    """list of str: An optional list of pipeline task class names to instantiate when preprocessing task data."""
 
     def __init__(
         self,
@@ -104,6 +112,7 @@ class BaseSession(ABC):
         self._setup_loggers(level=log_level)
         if not isinstance(self, EmptySession):
             log.info(f'Running iblrig {iblrig.__version__}, pybpod version {pybpodapi.__version__}')
+        log.info(f'Session call: {" ".join(sys.argv)}')
         self.interactive = interactive
         self._one = one
         self.init_datetime = datetime.datetime.now()
@@ -113,33 +122,16 @@ class BaseSession(ABC):
         if hardware_settings is not None:
             self.hardware_settings.update(hardware_settings)
             HardwareSettings.model_validate(self.hardware_settings)
-        self.iblrig_settings = load_pydantic_yaml(RigSettings, file_iblrig_settings)
+        self.iblrig_settings: RigSettings = load_pydantic_yaml(RigSettings, file_iblrig_settings)
         if iblrig_settings is not None:
             self.iblrig_settings.update(iblrig_settings)
             RigSettings.model_validate(self.iblrig_settings)
 
         self.wizard = wizard
+
         # Load the tasks settings, from the task folder or override with the input argument
-        base_parameters_files = [
-            task_parameter_file or Path(inspect.getfile(self.__class__)).parent.joinpath('task_parameters.yaml')
-        ]
-        # loop through the task hierarchy to gather parameter files
-        for cls in self.__class__.__mro__:
-            base_file = getattr(cls, 'base_parameters_file', None)
-            if base_file is not None:
-                base_parameters_files.append(base_file)
-        # this is a trick to remove list duplicates while preserving order, we want the highest order first
-        base_parameters_files = list(reversed(list(dict.fromkeys(base_parameters_files))))
-        # now we loop into the files and update the dictionary, the latest files in the hierarchy have precedence
-        self.task_params = Bunch({})
-        for param_file in base_parameters_files:
-            if Path(param_file).exists():
-                with open(param_file) as fp:
-                    params = yaml.safe_load(fp)
-                if params is not None:
-                    self.task_params.update(Bunch(params))
-        # at last sort the dictionary so itś easier for a human to navigate the many keys
-        self.task_params = Bunch(dict(sorted(self.task_params.items())))
+        self.task_params = self.read_task_parameter_files(task_parameter_file)
+
         self.session_info = Bunch(
             {
                 'NTRIALS': 0,
@@ -158,11 +150,11 @@ class BaseSession(ABC):
         self._execute_mixins_shared_function('init_mixin')
         self.paths = self._init_paths(append=append)
         if not isinstance(self, EmptySession):
-            log.info(f'Session {self.paths.SESSION_RAW_DATA_FOLDER}')
+            log.info(f'Session raw data: {self.paths.SESSION_RAW_DATA_FOLDER}')
         # Prepare the experiment description dictionary
         self.experiment_description = self.make_experiment_description_dict(
             self.protocol_name,
-            self.paths.TASK_COLLECTION,
+            self.paths.get('TASK_COLLECTION'),
             procedures,
             projects,
             self.hardware_settings,
@@ -170,40 +162,114 @@ class BaseSession(ABC):
             extractors=self.extractor_tasks,
         )
 
-    def _init_paths(self, append: bool = False):
+    @classmethod
+    def get_task_file(cls) -> Path:
         """
-        :param existing_session_path: if we append a protocol to an existing session, this is the path
-        of the session in the form of /path/to/./lab/Subjects/[subject]/[date]/[number]
-        :return: Bunch with keys:
-        BONSAI: full path to the bonsai executable
-            >>> C:\iblrigv8\Bonsai\Bonsai.exe  # noqa
-        VISUAL_STIM_FOLDER: full path to the visual stim
-            >>> C:\iblrigv8\visual_stim  # noqa
-        LOCAL_SUBJECT_FOLDER: full path to the local subject folder
-            >>> C:\iblrigv8_data\mainenlab\Subjects  # noqa
-        REMOTE_SUBJECT_FOLDER: full path to the remote subject folder
-            >>> Y:\Subjects  # noqa
-        SESSION_FOLDER: full path to the current session:
-            >>> C:\iblrigv8_data\mainenlab\Subjects\SWC_043\2019-01-01\001  # noqa
-        TASK_COLLECTION: folder name of the current task
-            >>> raw_task_data_00  # noqa
-        SESSION_RAW_DATA_FOLDER: concatenation of the session folder and the task collection. This is where
-        the task data gets written
-            >>> C:\iblrigv8_data\mainenlab\Subjects\SWC_043\2019-01-01\001\raw_task_data_00  # noqa
-        DATA_FILE_PATH: contains the bpod trials
-            >>> C:\iblrigv8_data\mainenlab\Subjects\SWC_043\2019-01-01\001\raw_task_data_00\_iblrig_taskData.raw.jsonable  # noqa
-        SETTINGS_FILE_PATH: contains the task settings
-            >>>C:\iblrigv8_data\mainenlab\Subjects\SWC_043\2019-01-01\001\raw_task_data_00\_iblrig_taskSettings.raw.json  # noqa
+        Get the path to the task's python file.
+
+        Returns
+        -------
+        Path
+            The path to the task file.
+        """
+        return Path(inspect.getfile(cls))
+
+    @classmethod
+    def get_task_directory(cls) -> Path:
+        """
+        Get the path to the task's directory.
+
+        Returns
+        -------
+        Path
+            The path to the task's directory.
+        """
+        return cls.get_task_file().parent
+
+    @classmethod
+    def read_task_parameter_files(cls, task_parameter_file: str | Path | None = None) -> Bunch:
+        """
+        Get the task's parameters from the various YAML files in the hierarchy.
+
+        Parameters
+        ----------
+        task_parameter_file : str or Path, optional
+            Path to override the task parameter file
+
+        Returns
+        -------
+        Bunch
+            Task parameters
+        """
+
+        # Load the tasks settings, from the task folder or override with the input argument
+        base_parameters_files = [task_parameter_file or cls.get_task_directory().joinpath('task_parameters.yaml')]
+
+        # loop through the task hierarchy to gather parameter files
+        for c in cls.__mro__:
+            base_file = getattr(c, 'base_parameters_file', None)
+            if base_file is not None:
+                base_parameters_files.append(base_file)
+
+        # remove list duplicates while preserving order, we want the highest order first
+        base_parameters_files = list(reversed(list(dict.fromkeys(base_parameters_files))))
+
+        # loop through files and update the dictionary, the latest files in the hierarchy have precedence
+        task_params = dict()
+        for param_file in base_parameters_files:
+            if Path(param_file).exists():
+                with open(param_file) as fp:
+                    params = yaml.safe_load(fp)
+                if params is not None:
+                    task_params.update(params)
+
+        # at last sort the dictionary so itś easier for a human to navigate the many keys, return as a Bunch
+        return Bunch(sorted(task_params.items()))
+
+    def _init_paths(self, append: bool = False) -> Bunch:
+        r"""
+        Initialize session paths
+
+        Parameters
+        ----------
+        append : bool
+            Iterate task collection within today's most recent session folder for the selected subject, instead of
+            iterating session number.
+
+        Returns
+        -------
+        Bunch
+            Bunch with keys:
+
+            *   BONSAI: full path to the bonsai executable
+                `C:\iblrigv8\Bonsai\Bonsai.exe`
+            *   VISUAL_STIM_FOLDER: full path to the visual stimulus folder
+                `C:\iblrigv8\visual_stim`
+            *   LOCAL_SUBJECT_FOLDER: full path to the local subject folder
+                `C:\iblrigv8_data\mainenlab\Subjects`
+            *   REMOTE_SUBJECT_FOLDER: full path to the remote subject folder
+                `Y:\Subjects`
+            *   SESSION_FOLDER: full path to the current session:
+                `C:\iblrigv8_data\mainenlab\Subjects\SWC_043\2019-01-01\001`
+            *   TASK_COLLECTION: folder name of the current task
+                `raw_task_data_00`
+            *   SESSION_RAW_DATA_FOLDER: concatenation of the session folder and the task collection.
+                This is where the task data gets written
+                `C:\iblrigv8_data\mainenlab\Subjects\SWC_043\2019-01-01\001\raw_task_data_00`
+            *   DATA_FILE_PATH: contains the bpod trials
+                `C:\iblrigv8_data\mainenlab\Subjects\SWC_043\2019-01-01\001\raw_task_data_00\_iblrig_taskData.raw.jsonable`
+            *   SETTINGS_FILE_PATH: contains the task settings
+                `C:\iblrigv8_data\mainenlab\Subjects\SWC_043\2019-01-01\001\raw_task_data_00\_iblrig_taskSettings.raw.json`
         """
         rig_computer_paths = iblrig.path_helper.get_local_and_remote_paths(
-            local_path=self.iblrig_settings['iblrig_local_data_path'],
-            remote_path=self.iblrig_settings['iblrig_remote_data_path'],
-            lab=self.iblrig_settings['ALYX_LAB'],
+            local_path=self.iblrig_settings.iblrig_local_data_path,
+            remote_path=self.iblrig_settings.iblrig_remote_data_path,
+            lab=self.iblrig_settings.ALYX_LAB,
             iblrig_settings=self.iblrig_settings,
         )
         paths = Bunch({'IBLRIG_FOLDER': BASE_PATH})
         paths.BONSAI = BONSAI_EXE
-        paths.VISUAL_STIM_FOLDER = paths.IBLRIG_FOLDER.joinpath('visual_stim')
+        paths.VISUAL_STIM_FOLDER = BASE_PATH.joinpath('visual_stim')
         paths.LOCAL_SUBJECT_FOLDER = rig_computer_paths['local_subjects_folder']
         paths.REMOTE_SUBJECT_FOLDER = rig_computer_paths['remote_subjects_folder']
         # initialize the session path
@@ -236,6 +302,14 @@ class BaseSession(ABC):
         paths.SETTINGS_FILE_PATH = paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_taskSettings.raw.json')
         return paths
 
+    @property
+    def exp_ref(self):
+        """Construct an experiment reference string from the session info attribute."""
+        subject, date, number = (self.session_info[k] for k in ('SUBJECT_NAME', 'SESSION_START_TIME', 'SESSION_NUMBER'))
+        if not all([subject, date, number]):
+            return None
+        return self.one.dict2ref(dict(subject=subject, date=date[:10], sequence=str(number)))
+
     def _setup_loggers(self, level='INFO', level_bpod='WARNING', file=None):
         self._logger = setup_logger('iblrig', level=level, file=file)  # logger attr used by create_session to determine log level
         setup_logger('pybpodapi', level=level_bpod, file=file)
@@ -245,6 +319,7 @@ class BaseSession(ABC):
             logger = logging.getLogger(logger_name)
             file_handlers = [fh for fh in logger.handlers if isinstance(fh, logging.FileHandler)]
             for fh in file_handlers:
+                fh.close()
                 logger.removeHandler(fh)
 
     @staticmethod
@@ -305,13 +380,16 @@ class BaseSession(ABC):
         # Add projects and procedures
         description['procedures'] = list(set(description.get('procedures', []) + (procedures or [])))
         description['projects'] = list(set(description.get('projects', []) + (projects or [])))
+        is_main_sync = (hardware_settings or {}).get('MAIN_SYNC', False)
         # Add sync key if required
-        if (hardware_settings or {}).get('MAIN_SYNC', False) and 'sync' not in description:
+        if is_main_sync and 'sync' not in description:
             description['sync'] = {
                 'bpod': {'collection': task_collection, 'acquisition_software': 'pybpod', 'extension': '.jsonable'}
             }
         # Add task
-        task = {task_protocol: {'collection': task_collection, 'sync_label': 'bpod'}}
+        task = {task_protocol: {'collection': task_collection}}
+        if not is_main_sync:
+            task[task_protocol]['sync_label'] = 'bpod'
         if extractors:
             assert isinstance(extractors, list), 'extractors parameter must be a list of strings'
             task[task_protocol].update({'extractors': extractors})
@@ -414,6 +492,9 @@ class BaseSession(ABC):
         --------
         ibllib.oneibl.IBLRegistrationClient.register_session - The registration method.
         """
+        if self.session_info['SUBJECT_NAME'] in ('iblrig_test_subject', 'test', 'test_subject'):
+            log.warning('Not registering test subject to Alyx')
+            return
         if not self.one or self.one.offline:
             return
         try:
@@ -442,7 +523,7 @@ class BaseSession(ABC):
     def _execute_mixins_shared_function(self, pattern):
         """
         Loop over all methods of the class that start with pattern and execute them
-        :param pattern:'init_mixin', 'start_mixin' or 'stop_mixin'
+        :param pattern:'init_mixin', 'start_mixin', 'stop_mixin', or 'cleanup_mixin'
         :return:
         """
         method_names = [method for method in dir(self) if method.startswith(pattern)]
@@ -495,7 +576,7 @@ class BaseSession(ABC):
             self.paths.SESSION_FOLDER.joinpath('.stop').unlink()
 
         signal.signal(signal.SIGINT, sigint_handler)
-        self._run()  # runs the specific task logic ie. trial loop etc...
+        self._run()  # runs the specific task logic i.e. trial loop etc...
         # post task instructions
         log.critical('Graceful exit')
         log.info(f'Session {self.paths.SESSION_RAW_DATA_FOLDER}')
@@ -507,6 +588,7 @@ class BaseSession(ABC):
         self.save_task_parameters_to_json_file()
         self.register_to_alyx()
         self._execute_mixins_shared_function('stop_mixin')
+        self._execute_mixins_shared_function('cleanup_mixin')
 
     @abc.abstractmethod
     def start_hardware(self):
@@ -544,7 +626,7 @@ class EmptySession(BaseSession):
 
 class OSCClient(udp_client.SimpleUDPClient):
     """
-    Handles communication to Bonsai using an UDP Client
+    Handles communication to Bonsai using a UDP Client
     OSC channels:
         USED:
         /t  -> (int)    trial number current
@@ -1049,9 +1131,266 @@ class SoundMixin(BaseSession):
         return self.bpod.session.current_trial.export()
 
 
+class NetworkSession(BaseSession):
+    """A mixin for communicating to auxiliary acquisition PC over a network."""
+
+    remote_rigs = None
+    """net.Auxiliaries: An auxiliary services object for communicating with remote devices."""
+    exp_ref = None
+    """dict: The experiment reference (i.e. subject, date, sequence) as returned by main remote service."""
+
+    def __init__(self, *_, remote_rigs=None, **kwargs):
+        """
+        A mixin for communicating to auxiliary acquisition PC over a network.
+
+        This should retrieve the services list, i.e. the list of available auxiliary rigs,
+        and determine which is the main sync. The main sync is the rig that determines the
+        experiment.
+
+        The services list is in a yaml file somewhere, called 'remote_rigs.yaml' and should
+        be a map of device name to URI. These are then selectable in the GUI and the URI of
+        those selected are added to the experiment description.
+
+        Subclasses should add their callbacks within init by calling :meth:`self.remote_rigs.services.assign_callback`.
+
+        Parameters
+        ----------
+        remote_rigs : list, dict
+            Either a list of remote device names (in which case URI is looked up from remote devices
+            file), or a map of device name to URI.
+        kwargs
+            Optional args such as 'file_iblrig_settings' for defining location of remote data folder
+            when loading remote devices file.
+        """
+        if isinstance(remote_rigs, list):
+            # For now we flatten to list of remote rig names but could permit list of (name, URI) tuples
+            remote_rigs = list(filter(None, flatten(remote_rigs)))
+            all_remote_rigs = net.get_remote_devices(iblrig_settings=kwargs.get('iblrig_settings', None))
+            if not set(remote_rigs).issubset(all_remote_rigs.keys()):
+                raise ValueError('Selected remote rigs not in remote rigs list')
+            remote_rigs = {k: v for k, v in all_remote_rigs.items() if k in remote_rigs}
+        # Load and connect to remote services
+        self.connect(remote_rigs)
+        self.exp_ref = {}
+        try:
+            super().__init__(**kwargs)
+        except Exception as ex:
+            self.cleanup_mixin_network()
+            raise ex
+
+    @property
+    def one(self):
+        """Return ONE instance
+
+        Unlike super class getter, this method will always instantiate ONE, allowing subclasses to update with an Alyx
+        token from a remotely connected rig.  This instance is used for formatting the experiment reference string.
+
+        Returns
+        -------
+        one.api.One
+            An instance of ONE.
+        """
+        if super().one is None:
+            self._one = OneAlyx(silent=True, mode='local')
+        return self._one
+
+    def connect(self, remote_rigs):
+        """
+        Connect to remote services.
+
+        Instantiates the Communicator objects that establish connections with each remote device.
+        This also creates the thread that uses asynchronous callbacks.
+
+        Parameters
+        ----------
+        remote_rigs : dict
+            A map of name to URI.
+        """
+        self.remote_rigs = net.Auxiliaries(remote_rigs or {})
+        assert not remote_rigs or self.remote_rigs.is_connected
+        # Handle termination event by graciously completing thread
+        signal.signal(signal.SIGTERM, lambda sig, frame: self.cleanup_mixin_network())
+
+    def _init_paths(self, append: bool = False):
+        """
+        Determine session paths.
+
+        Unlike :meth:`BaseSession._init_paths`, this method determines the session number from the remote main sync if
+        connected.
+
+        Parameters
+        ----------
+        append : bool
+            Iterate task collection within today's most recent session folder for the selected subject, instead of
+            iterating session number.
+
+        Returns
+        -------
+        iblutil.util.Bunch
+            A bunch of paths.
+        """
+        if self.hardware_settings.MAIN_SYNC:
+            return BaseSession._init_paths(self, append)
+        # Check if we have rigs connected
+        if not self.remote_rigs.is_connected:
+            log.warning('No remote rigs; experiment reference may not match the main sync.')
+            return BaseSession._init_paths(self, append)
+        # Set paths in a similar way to the super class
+        rig_computer_paths = iblrig.path_helper.get_local_and_remote_paths(
+            local_path=self.iblrig_settings['iblrig_local_data_path'],
+            remote_path=self.iblrig_settings['iblrig_remote_data_path'],
+            lab=self.iblrig_settings['ALYX_LAB'],
+            iblrig_settings=self.iblrig_settings,
+        )
+        paths = Bunch({'IBLRIG_FOLDER': BASE_PATH})
+        paths.BONSAI = BONSAI_EXE
+        paths.VISUAL_STIM_FOLDER = paths.IBLRIG_FOLDER.joinpath('visual_stim')
+        paths.LOCAL_SUBJECT_FOLDER = rig_computer_paths['local_subjects_folder']
+        paths.REMOTE_SUBJECT_FOLDER = rig_computer_paths['remote_subjects_folder']
+        date_folder = paths.LOCAL_SUBJECT_FOLDER.joinpath(
+            self.session_info.SUBJECT_NAME, self.session_info.SESSION_START_TIME[:10]
+        )
+        assert self.exp_ref
+        paths.SESSION_FOLDER = date_folder / f'{self.exp_ref["sequence"]:03}'
+        paths.TASK_COLLECTION = iblrig.path_helper.iterate_collection(paths.SESSION_FOLDER)
+        if append == paths.TASK_COLLECTION.endswith('00'):
+            raise ValueError(
+                f'Append value incorrect. Either remove previous task collections from '
+                f'{paths.SESSION_FOLDER}, or select append in GUI (--append arg in cli)'
+            )
+
+        paths.SESSION_RAW_DATA_FOLDER = paths.SESSION_FOLDER.joinpath(paths.TASK_COLLECTION)
+        paths.DATA_FILE_PATH = paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_taskData.raw.jsonable')
+        paths.SETTINGS_FILE_PATH = paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_taskSettings.raw.json')
+        self.session_info.SESSION_NUMBER = int(paths.SESSION_FOLDER.name)
+        return paths
+
+    def run(self):
+        """Run session and report exceptions to remote services."""
+        self.start_mixin_network()
+        try:
+            return super().run()
+        except Exception as e:
+            # Communicate error to services
+            if self.remote_rigs.is_connected:
+                tb = e.__traceback__  # TODO maybe go one level down with tb_next?
+                details = {
+                    'error': e.__class__.__name__,  # exception name str
+                    'message': str(e),  # error str
+                    'traceback': traceback.format_exc(),  # stack str
+                    'file': tb.tb_frame.f_code.co_filename,  # filename str
+                    'line_no': (tb.tb_lineno, tb.tb_lasti),  # (int, int)
+                }
+                self.remote_rigs.push(ExpMessage.EXPINTERRUPT, details, wait=True)
+                self.cleanup_mixin_network()
+            raise e
+
+    def communicate(self, message, *args, raise_on_exception=True):
+        """
+        Communicate message to remote services.
+
+        This method is blocking and by default will raise if not all responses received in time.
+
+        Parameters
+        ----------
+        message : iblutil.io.net.base.ExpMessage, str, int
+            An experiment message to send to remote services.
+        args
+            One or more optional variables to send.
+        raise_on_exception : bool
+            If true, exceptions arising from message timeouts will be re-raised in main thread and
+            services will be cleaned up. Only applies when wait is true.
+
+        Returns
+        -------
+        Exception | dict
+            If raise_on_exception is False, returns an exception if failed to receive all responses
+            in time, otherwise a map of service name to response is returned.
+        """
+        r = self.remote_rigs.push(message, *args, wait=True)
+        if isinstance(r, Exception):
+            log.error('Error on %s network mixin: %s', message, r)
+            if raise_on_exception:
+                self.cleanup_mixin_network()
+                raise r
+        return r
+
+    def get_exp_info(self):
+        ref = self.exp_ref or None
+        if isinstance(ref, dict) and self.one:
+            ref = self.one.dict2ref(ref)
+        is_main_sync = self.hardware_settings.get('MAIN_SYNC', False)
+        info = net.ExpInfo(ref, is_main_sync, self.experiment_description, master=is_main_sync)
+        return info.to_dict()
+
+    def init_mixin_network(self):
+        """Initialize remote services.
+
+        This method sends an EXPINFO message to all services, expecting exactly one of the responses
+        to contain main_sync: True, along with the experiment reference to use. It then sends an
+        EXPINIT message to all services.
+        """
+        if not self.remote_rigs.is_connected:
+            return
+        # Determine experiment reference from main sync
+        is_main_sync = self.hardware_settings.get('MAIN_SYNC', False)
+        if is_main_sync:
+            raise NotImplementedError
+        assert self.one
+
+        expinfo = self.get_exp_info() | {'subject': self.session_info['SUBJECT_NAME']}
+        r = self.communicate('EXPINFO', 'CONNECTED', expinfo)
+        assert sum(x[-1]['main_sync'] for x in r.values()) == 1, 'one main sync expected'
+        main_rig_name, (status, info) = next((k, v) for k, v in r.items() if v[-1]['main_sync'])
+        self.exp_ref = self.one.ref2dict(info['exp_ref']) if isinstance(info['exp_ref'], str) else info['exp_ref']
+        if self.exp_ref['subject'] != self.session_info['SUBJECT_NAME']:
+            log.error(
+                'Running task for "%s" but main sync returned exp ref for "%s".',
+                self.session_info['SUBJECT_NAME'],
+                self.exp_ref['subject'],
+            )
+            raise ValueError("Subject name doesn't match remote session on " + main_rig_name)
+        if str(self.exp_ref['date']) != self.session_info['SESSION_START_TIME'][:10]:
+            raise RuntimeError(
+                f'Session dates do not match between this rig and {main_rig_name}. \n'
+                f'Running past or future sessions not currently supported. \n'
+                f'Please check the system date time settings on each rig.'
+            )
+
+        # exp_ref = ConversionMixin.path2ref(self.paths['SESSION_FOLDER'], as_dict=False)
+        exp_ref = self.one.dict2ref(self.exp_ref)
+        self.communicate('EXPINIT', {'exp_ref': exp_ref})
+
+    def start_mixin_network(self):
+        """Start remote services.
+
+        This method sends an EXPSTART message to all services, along with an exp_ref string.
+        Responses are required but ignored.
+        """
+        if not self.remote_rigs.is_connected:
+            return
+        self.communicate('EXPSTART', self.exp_ref)
+
+    def stop_mixin_network(self):
+        """Start remote services.
+
+        This method sends an EXPEND message to all services. Responses are required but ignored.
+        """
+        if not self.remote_rigs.is_connected:
+            return
+        self.communicate('EXPEND')
+
+    def cleanup_mixin_network(self):
+        """Clean up services."""
+        self.remote_rigs.close()
+        if self.remote_rigs.is_connected:
+            log.warning('Failed to properly clean up network mixin')
+
+
 class SpontaneousSession(BaseSession):
     """
-    A Spontaneous task doesn't have trials, it just runs until the user stops it
+    A Spontaneous task doesn't have trials, it just runs until the user stops it.
+
     It is used to get extraction structure for data streams
     """
 

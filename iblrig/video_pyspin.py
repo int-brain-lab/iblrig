@@ -31,9 +31,9 @@ class Cameras:
 def enable_camera_trigger(enable: bool, camera: PySpin.CameraPtr | None = None):
     if camera is None:
         with Cameras() as cameras:
-            for camera in cameras:
-                enable_camera_trigger(enable=enable, camera=camera)
-            del camera
+            for cam in cameras:
+                enable_camera_trigger(enable=enable, camera=cam)
+                del cam
     else:
         node_map = camera.GetNodeMap()
         node_trigger_mode = PySpin.CEnumerationPtr(node_map.GetNode('TriggerMode'))

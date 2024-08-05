@@ -19,14 +19,14 @@ FLAG_FILE_NAMES = ['transfer_me.flag', 'create_me.flag', 'poop_count.flag', 'pas
 log = logging.getLogger(__name__)
 
 
-def _get_task_argument_parser(parents=None):
+def get_task_argument_parser(parents=None):
     """
     This function returns the task argument parser with extra optional parameters if provided
     This function is kept separate from parsing for unit tests purposes.
     """
     parser = argparse.ArgumentParser(parents=parents or [])
-    parser.add_argument('-s', '--subject', required=True, help='--subject ZFM-05725')
-    parser.add_argument('-u', '--user', required=False, default=None, help='alyx username to register the session')
+    parser.add_argument('-s', '--subject', required=True, help='Subject name')
+    parser.add_argument('-u', '--user', required=False, default=None, help='Alyx username to register the session')
     parser.add_argument(
         '-p',
         '--projects',
@@ -54,7 +54,7 @@ def _get_task_argument_parser(parents=None):
         help='verbosity of the console logger (default: INFO)',
         choices=['NOTSET', 'DEBUG', 'INFO', 'WARN', 'ERROR', 'CRITICAL'],
     )
-    parser.add_argument('--wizard', dest='wizard', action='store_true')
+    parser.add_argument('--wizard', dest='wizard', action='store_true', help=argparse.SUPPRESS)
     return parser
 
 
@@ -82,7 +82,7 @@ def get_task_arguments(parents=None):
         get_task_arguments({'--toto', type=str, default='toto'}, {'--titi', action='store_true', default=False})
     :return:
     """
-    parser = _get_task_argument_parser(parents=parents)
+    parser = get_task_argument_parser(parents=parents)
     kwargs = vars(parser.parse_args())
     return _post_parse_arguments(**kwargs)
 

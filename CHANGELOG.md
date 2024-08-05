@@ -2,6 +2,18 @@ Changelog
 =========
 
 
+8.21.0
+------
+* display values of automatically inferred task parameters
+* store pause durations to trial info
+* add backend for UDP communication between rig computers
+* use PDM for managing dependencies
+* log session call / commandline parameters to disk
+* fix: potential deadlock with SerialSingleton
+* fix: "galloping" valve during valve calibration
+* fix: values computed by "Get Training Phase" in "Tools" menu
+* fix: incorrect parsing of adaptive gain value in trainingChoiceWorld
+
 8.20.0
 ------
 * tab for displaying local sessions and their respective status
@@ -317,5 +329,6 @@ Changelog
 8.9.0
 -----
 * major rework of the GUI
+* allow pausing between trials
 * task-specific settings
 * new dialogs for weight & droppings

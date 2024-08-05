@@ -23,23 +23,35 @@ log = logging.getLogger(__name__)
 T = TypeVar('T', bound=BaseModel)
 
 
-def iterate_previous_sessions(subject_name, task_name, n=1, **kwargs):
+def iterate_previous_sessions(subject_name: str, task_name: str, n: int = 1, **kwargs) -> list[dict]:
     """
     This function iterates over the sessions of a given subject in both the remote and local path
     and searches for a given protocol name. It returns the information of the last n found
-    matching protocols in the form of a dictionary
-    :param subject_name:
-    :param task_name: name of the protocol to look for in experiment description : '_iblrig_tasks_trainingChoiceWorld'
-    :param n: number of maximum protocols to return
-    :param kwargs: optional arguments to be passed to iblrig.path_helper.get_local_and_remote_paths
-    if not used, will use the arguments from iblrig/settings/iblrig_settings.yaml
-    :return:
-        list of dictionaries with keys: session_path, experiment_description, task_settings, file_task_data
+    matching protocols in the form of a dictionary.
+
+    Parameters
+    ----------
+    subject_name : str
+        Name of the subject.
+    task_name : str
+        Name of the protocol to look for in experiment description.
+    n : int, optional
+        maximum number of protocols to return
+    **kwargs
+        Optional arguments to be passed to iblrig.path_helper.get_local_and_remote_paths
+        If not used, will use the arguments from iblrig/settings/iblrig_settings.yaml
+
+    Returns
+    -------
+    list[dict]
+        List of dictionaries with keys: session_path, experiment_description, task_settings, file_task_data
     """
     rig_paths = get_local_and_remote_paths(**kwargs)
-    sessions = _iterate_protocols(rig_paths.local_subjects_folder.joinpath(subject_name), task_name=task_name, n=n)
-    if rig_paths.remote_subjects_folder is not None:
-        remote_sessions = _iterate_protocols(rig_paths.remote_subjects_folder.joinpath(subject_name), task_name=task_name, n=n)
+    local_subjects_folder = rig_paths['local_subjects_folder']
+    remote_subjects_folder = rig_paths['remote_subjects_folder']
+    sessions = _iterate_protocols(local_subjects_folder.joinpath(subject_name), task_name=task_name, n=n)
+    if remote_subjects_folder is not None:
+        remote_sessions = _iterate_protocols(remote_subjects_folder.joinpath(subject_name), task_name=task_name, n=n)
         if remote_sessions is not None:
             sessions.extend(remote_sessions)
         _, ises = np.unique([s['session_stub'] for s in sessions], return_index=True)
@@ -47,7 +59,7 @@ def iterate_previous_sessions(subject_name, task_name, n=1, **kwargs):
     return sessions
 
 
-def _iterate_protocols(subject_folder, task_name, n=1, min_trials=43):
+def _iterate_protocols(subject_folder: Path, task_name: str, n: int = 1, min_trials: int = 43) -> list[dict]:
     """
     Return information on the last n sessions with matching protocol.
 
@@ -55,7 +67,7 @@ def _iterate_protocols(subject_folder, task_name, n=1, min_trials=43):
 
     Parameters
     ----------
-    subject_folder : pathlib.Path
+    subject_folder : Path
         A subject folder containing dated folders.
     task_name : str
         The task protocol name to look for.
@@ -66,7 +78,7 @@ def _iterate_protocols(subject_folder, task_name, n=1, min_trials=43):
 
     Returns
     -------
-    list of dict
+    list[dict]
         list of dictionaries with keys: session_stub, session_path, experiment_description,
         task_settings, file_task_data.
     """
@@ -113,7 +125,9 @@ def _iterate_protocols(subject_folder, task_name, n=1, min_trials=43):
     return protocols
 
 
-def get_local_and_remote_paths(local_path=None, remote_path=None, lab=None, iblrig_settings=None):
+def get_local_and_remote_paths(
+    local_path: str | Path | None = None, remote_path: str | Path | None = None, lab: str | None = None, iblrig_settings=None
+) -> dict:
     """
     Function used to parse input arguments to transfer commands.
 
@@ -130,10 +144,12 @@ def get_local_and_remote_paths(local_path=None, remote_path=None, lab=None, iblr
         'local_subjects_folder': PosixPath('C:/iblrigv8_data/mainenlab/Subjects'),
         'remote_subjects_folder': PosixPath('Y:/Subjects')}
     """
-    paths = Bunch({'local_data_folder': local_path, 'remote_data_folder': remote_path})
+
     # we only want to attempt to load the settings file if necessary
     if (local_path is None) or (remote_path is None) or (lab is None):
         iblrig_settings = load_pydantic_yaml(RigSettings) if iblrig_settings is None else iblrig_settings
+
+    paths = Bunch({'local_data_folder': local_path, 'remote_data_folder': remote_path})
     if paths.local_data_folder is None:
         paths.local_data_folder = (
             Path(p) if (p := iblrig_settings['iblrig_local_data_path']) else Path.home().joinpath('iblrig_data')
@@ -145,7 +161,7 @@ def get_local_and_remote_paths(local_path=None, remote_path=None, lab=None, iblr
     elif isinstance(paths.remote_data_folder, str):
         paths.remote_data_folder = Path(paths.remote_data_folder)
 
-    # Get the subjects folders. If not defined in the settings, assume data path + /Subjects
+    # Get the subjects folders. If not defined in the settings, assume local_data_folder + /Subjects
     paths.local_subjects_folder = (iblrig_settings or {}).get('iblrig_local_subjects_path', None)
     lab = lab or (iblrig_settings or {}).get('ALYX_LAB', None)
     if paths.local_subjects_folder is None:
@@ -157,7 +173,8 @@ def get_local_and_remote_paths(local_path=None, remote_path=None, lab=None, iblr
             paths.local_subjects_folder = paths.local_data_folder.joinpath('subjects')
     else:
         paths.local_subjects_folder = Path(paths.local_subjects_folder)
-    # Same for remote subjects folder
+
+    #  Get the remote subjects folders. If not defined in the settings, assume remote_data_folder + /Subjects
     paths.remote_subjects_folder = (iblrig_settings or {}).get('iblrig_remote_subjects_path', None)
     if paths.remote_subjects_folder is None:
         if paths.remote_data_folder:
@@ -371,7 +388,7 @@ def create_bonsai_layout_from_template(workflow_file: Path) -> None:
         If the provided workflow_file does not exist.
     """
     if not workflow_file.exists():
-        FileNotFoundError(workflow_file)
+        raise FileNotFoundError(workflow_file)
     if not (layout_file := workflow_file.with_suffix('.bonsai.layout')).exists():
         template_file = workflow_file.with_suffix('.bonsai.layout_template')
         if template_file.exists():

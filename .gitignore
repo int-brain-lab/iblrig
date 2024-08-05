@@ -43,3 +43,6 @@ coverage.xml
 
 devices/camera_setup/*.layout
 devices/camera_recordings/*.layout
+.pdm-python
+/dist
+*~

@@ -6,6 +6,10 @@ from iblrig.serial_singleton import SerialSingleton
 
 log = logging.getLogger(__name__)
 
+# http://dmx.ohaus.com/WorkArea/downloadasset.aspx?id=3600
+# https://dmx.ohaus.com/WorkArea/showcontent.aspx?id=4294974227
+RE_PATTERN = re.compile(rb'\s*(\S+)\s+(\w+)\s(.)\s{1,3}(\w{0,2})')
+
 
 @dataclass
 class ScaleData:
@@ -16,10 +20,6 @@ class ScaleData:
 
 
 class Scale(SerialSingleton):
-    # http://dmx.ohaus.com/WorkArea/downloadasset.aspx?id=3600
-    # https://dmx.ohaus.com/WorkArea/showcontent.aspx?id=4294974227
-    _re_pattern = re.compile(rb'\s*(\S+)\s+(\w+)\s(.)\s{1,3}(\w{0,2})')
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, baudrate=9600, timeout=5, **kwargs)
         self.assert_setting('ON')
@@ -76,7 +76,7 @@ class Scale(SerialSingleton):
 
     def _split_query(self, query: str = 'IP') -> tuple[bytes, ...]:
         data = self.query_line(query)
-        if (match := re.fullmatch(self._re_pattern, data)) is None:
+        if (match := re.fullmatch(RE_PATTERN, data)) is None:
             return b'nan', b'g', b'?', b''
         else:
             return match.groups()

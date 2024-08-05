@@ -43,7 +43,7 @@ class CustomWebEnginePage(QWebEnginePage):
     """
 
     @override
-    def acceptNavigationRequest(self, url: QUrl, navigation_type: QWebEnginePage.NavigationType, is_main_frame: bool):
+    def acceptNavigationRequest(self, url: QUrl, navigationType: QWebEnginePage.NavigationType, is_main_frame: bool):
         """
         Decide whether to allow or block a navigation request.
 
@@ -52,7 +52,7 @@ class CustomWebEnginePage(QWebEnginePage):
         url : QUrl
             The URL being navigated to.
 
-        navigation_type : QWebEnginePage.NavigationType
+        navigationType : QWebEnginePage.NavigationType
             The type of navigation request.
 
         is_main_frame : bool
@@ -63,7 +63,7 @@ class CustomWebEnginePage(QWebEnginePage):
         bool
             True if the navigation request is accepted, False otherwise.
         """
-        if navigation_type == QWebEnginePage.NavigationTypeLinkClicked and not url.url().startswith(URL_DOC):
+        if navigationType == QWebEnginePage.NavigationTypeLinkClicked and not url.url().startswith(URL_DOC):
             webbrowser.open(url.url())
             return False
-        return super().acceptNavigationRequest(url, navigation_type, is_main_frame)
+        return super().acceptNavigationRequest(url, navigationType, is_main_frame)

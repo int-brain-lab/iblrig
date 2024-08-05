@@ -65,7 +65,7 @@ class HiFi(SerialSingleton):
         if sampling_rate not in [44100, 48e3, 96e3, 192e3]:
             raise ValueError('Valid values are 44100, 48000, 96000 or 192000')
         if not self._set_info_field('sampling_rate_hz', '<cI', b'S', sampling_rate):
-            RuntimeError('Error setting Sampling Rate')
+            raise RuntimeError('Error setting Sampling Rate')
 
     @property
     def attenuation_db(self) -> float:

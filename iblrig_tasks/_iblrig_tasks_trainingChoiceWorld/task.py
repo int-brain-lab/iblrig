@@ -5,6 +5,10 @@ TRAINING_PHASE = -1
 ADAPTIVE_REWARD = -1.0
 
 
+def float_or_none(string: str) -> float | None:
+    return None if string.lower() == 'none' else float(string)
+
+
 class Session(TrainingChoiceWorldSession):
     @staticmethod
     def extra_parser():
@@ -31,7 +35,7 @@ class Session(TrainingChoiceWorldSession):
             option_strings=['--adaptive_gain'],
             dest='adaptive_gain',
             default=None,
-            type=float,
+            type=float_or_none,
             help='Gain of the wheel in degrees/mm',
         )
         return parser
