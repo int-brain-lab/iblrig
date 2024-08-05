@@ -33,7 +33,7 @@ def enable_camera_trigger(enable: bool, camera: PySpin.CameraPtr | None = None):
         with Cameras() as cameras:
             for cam in cameras:
                 enable_camera_trigger(enable=enable, camera=cam)
-            del cam
+                del cam
     else:
         node_map = camera.GetNodeMap()
         node_trigger_mode = PySpin.CEnumerationPtr(node_map.GetNode('TriggerMode'))

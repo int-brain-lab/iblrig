@@ -237,6 +237,12 @@ To update the additional tasks and extractors (see :ref:`Installing iblrigv8`, p
   git pull
 
 
+.. tip::
+
+   While usually quite snappy, upgrading the virtual environment in some instances can take longer than expected.
+   Please be patient during the upgrade procedure.
+
+
 Switch to specific iblrig version
 ---------------------------------
 .. warning:: Downgrading is not recommended and may not work as some releases break compatibility with earlier versions.
