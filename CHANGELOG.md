@@ -2,16 +2,17 @@ Changelog
 =========
 
 
-8.20.1
+8.21.0
 ------
-* use PDM for managing dependencies
-* fixed potential deadlock with SerialSingleton
-* log session call / commandline parameters to disk
-* store pause durations to trial info
-* fix "galloping" valve during valve calibration
 * display values of automatically inferred task parameters
-* fix values computed by "Get Training Phase" in "Tools" menu
-* fix incorrect parsing of adaptive gain value in trainingChoiceWorld
+* store pause durations to trial info
+* add backend for UDP communication between rig computers
+* use PDM for managing dependencies
+* log session call / commandline parameters to disk
+* fix: potential deadlock with SerialSingleton
+* fix: "galloping" valve during valve calibration
+* fix: values computed by "Get Training Phase" in "Tools" menu
+* fix: incorrect parsing of adaptive gain value in trainingChoiceWorld
 
 8.20.0
 ------
