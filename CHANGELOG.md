@@ -2,6 +2,10 @@ Changelog
 =========
 
 
+8.21.1
+------
+* hotfix: add DISABLE_BEHAVIOR_INPUT_PORTS key to hardware_settings.yaml
+
 8.21.0
 ------
 * display values of automatically inferred task parameters
@@ -14,11 +18,15 @@ Changelog
 * fix: values computed by "Get Training Phase" in "Tools" menu
 * fix: incorrect parsing of adaptive gain value in trainingChoiceWorld
 
+-------------------------------
+
 8.20.0
 ------
 * tab for displaying local sessions and their respective status
 * additional task parameters for passiveChoiceWorld
 * work on making the GUI code more modular
+
+-------------------------------
 
 8.19.6
 ------

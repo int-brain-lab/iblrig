@@ -3,6 +3,7 @@ from datetime import date
 from pathlib import Path
 from typing import Annotated, Literal
 
+from annotated_types import Ge, Le
 from pydantic import (
     AnyUrl,
     BaseModel,
@@ -21,6 +22,8 @@ from iblrig.constants import BASE_PATH
 
 FilePath = Annotated[FilePath, PlainSerializer(lambda s: str(s), return_type=str)]
 """Validate that path exists and is file. Cast to str upon save."""
+
+BehaviourInputPort = Annotated[int, Ge(1), Le(4)]
 
 
 class BunchModel(BaseModel, abc.MutableMapping):
@@ -90,6 +93,7 @@ class HardwareSettingsBpod(BunchModel):
     BPOD_TTL_TEST_STATUS: str | None = None
     SOUND_BOARD_BPOD_PORT: Literal['Serial1', 'Serial2', 'Serial3', 'Serial4', 'Serial5', None] = None
     ROTARY_ENCODER_BPOD_PORT: Literal['Serial1', 'Serial2', 'Serial3', 'Serial4', 'Serial5', None] = None
+    DISABLE_BEHAVIOR_INPUT_PORTS: list[BehaviourInputPort] = [2, 3, 4]
 
 
 class HardwareSettingsFrame2TTL(BunchModel):
