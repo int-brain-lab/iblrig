@@ -25,6 +25,7 @@ FilePath = Annotated[FilePath, PlainSerializer(lambda s: str(s), return_type=str
 
 BehaviourInputPort = Annotated[int, Ge(1), Le(4)]
 
+
 class BunchModel(BaseModel, abc.MutableMapping):
     def __getitem__(self, key):
         return getattr(self, key)
