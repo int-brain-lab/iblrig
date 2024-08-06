@@ -887,7 +887,8 @@ class BpodMixin(BaseSession):
                 'settings/hardware_settings.yaml is null. Please '
                 'provide a valid port name.'
             )
-        self.bpod = Bpod(self.hardware_settings['device_bpod']['COM_BPOD'], disable_behavior_ports=[1, 2, 3])
+        disabled_ports = [x-1 for x in self.hardware_settings['device_bpod']['DISABLE_BEHAVIOR_INPUT_PORTS']]
+        self.bpod = Bpod(self.hardware_settings['device_bpod']['COM_BPOD'], disable_behavior_ports=disabled_ports)
         self.bpod.define_rotary_encoder_actions()
         self.bpod.set_status_led(False)
         assert self.bpod.is_connected
