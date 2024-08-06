@@ -6,6 +6,7 @@ device_bpod:
   BPOD_TTL_TEST_STATUS: null  # optional
   SOUND_BOARD_BPOD_PORT: null  # optional
   ROTARY_ENCODER_BPOD_PORT: null  # optional
+  DISABLE_BEHAVIOR_INPUT_PORTS: [2, 3, 4]
 device_frame2ttl:
   COM_F2TTL: null
   F2TTL_CALIBRATION_DATE: 2099-12-31

@@ -5,7 +5,7 @@
 groups = ["default", "dev", "doc", "test", "typing"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:7e544ae054bc92de55a5819c1686966216fe726f0b88c08b16c3ef3898326541"
+content_hash = "sha256:c167bb843937694619f76891362cdaffab85de4d1167589f9647043523619b85"
 
 [[metadata.targets]]
 requires_python = "==3.10.*"
@@ -1931,7 +1931,7 @@ name = "pyjwt"
 version = "2.8.0"
 requires_python = ">=3.7"
 summary = "JSON Web Token implementation in Python"
-groups = ["default", "dev"]
+groups = ["default"]
 dependencies = [
     "typing-extensions; python_version <= \"3.7\"",
 ]

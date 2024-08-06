@@ -2,6 +2,10 @@ Changelog
 =========
 
 
+8.21.1
+------
+* hotfix: add DISABLE_BEHAVIOR_INPUT_PORTS key to hardware_settings.yaml
+
 8.21.0
 ------
 * display values of automatically inferred task parameters
