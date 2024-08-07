@@ -280,7 +280,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
     task_parameters: dict | None = None
     new_subject_details = QtCore.pyqtSignal()
 
-    def __init__(self, **kwargs):
+    def __init__(self, debug: bool = False, remote_devices: bool = False):
         super().__init__()
         self.setupUi(self)
 
@@ -295,7 +295,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.tabWidget.addTab(self.tabAbout, QtGui.QIcon(':/images/about'), 'About')
         self.tabWidget.setCurrentIndex(0)
 
-        self.debug = kwargs.get('debug', False)
+        self.debug = debug
         self.settings = QtCore.QSettings()
 
         try:
@@ -323,9 +323,10 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
             raise e
 
         # remote devices (only show if at least one device was found)
-        self.remoteDevicesModel = RemoteDevicesItemModel(iblrig_settings=self.model.iblrig_settings)
-        self.listViewRemoteDevices.setModel(self.remoteDevicesModel)
-        if self.remoteDevicesModel.rowCount() == 0:
+        if remote_devices:
+            self.remoteDevicesModel = RemoteDevicesItemModel(iblrig_settings=self.model.iblrig_settings)
+            self.listViewRemoteDevices.setModel(self.remoteDevicesModel)
+        else:
             self.listViewRemoteDevices.setVisible(False)
             self.labelRemoteDevices.setVisible(False)
 
@@ -1246,7 +1247,10 @@ class UpdateNotice(QtWidgets.QDialog, Ui_update):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--debug', action='store_true', dest='debug', help='increase logging verbosity')
+    parser.add_argument('-d', '--debug', action='store_true', dest='debug', help='increase logging verbosity')
+    parser.add_argument(
+        '-r', '--remote_devices', action='store_true', dest='remote_devices', help='show controls for remote devices'
+    )
     args = parser.parse_args()
 
     if args.debug:
@@ -1262,7 +1266,7 @@ def main():
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(app_id)
     app = QtWidgets.QApplication(['', '--no-sandbox'])
     app.setStyle('Fusion')
-    w = RigWizard(debug=args.debug)
+    w = RigWizard(debug=args.debug, remote_devices=args.remote_devices)
     w.show()
     app.exec()
 
