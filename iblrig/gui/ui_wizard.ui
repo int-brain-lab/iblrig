@@ -125,6 +125,9 @@
              <property name="text">
               <string>&amp;User</string>
              </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
              <property name="buddy">
               <cstring>uiLineEditUser</cstring>
              </property>
@@ -178,6 +181,9 @@
             <widget class="QLabel" name="labelSubject">
              <property name="text">
               <string>&amp;Subject</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
              </property>
              <property name="buddy">
               <cstring>uiComboSubject</cstring>
@@ -250,6 +256,9 @@
             <widget class="QLabel" name="labelProject">
              <property name="text">
               <string>&amp;Project</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
              </property>
              <property name="buddy">
               <cstring>uiListProjects</cstring>
@@ -360,7 +369,10 @@
            <item row="3" column="0">
             <widget class="QLabel" name="labelProcedure">
              <property name="text">
-              <string>P&amp;rocedure</string>
+              <string>P&amp;rocedures</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
              </property>
              <property name="buddy">
               <cstring>uiListProcedures</cstring>
@@ -468,13 +480,22 @@
              </property>
             </widget>
            </item>
-           <item row="4" column="0">
-            <widget class="QLabel" name="labelTask">
-             <property name="text">
-              <string>&amp;Task</string>
+           <item row="6" column="1">
+            <widget class="QListView" name="listViewRemoteDevices">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
              </property>
-             <property name="buddy">
-              <cstring>uiComboTask</cstring>
+             <property name="statusTip">
+              <string>Select remote devices</string>
+             </property>
+             <property name="horizontalScrollBarPolicy">
+              <enum>Qt::ScrollBarAlwaysOff</enum>
+             </property>
+             <property name="sizeAdjustPolicy">
+              <enum>QAbstractScrollArea::AdjustToContents</enum>
              </property>
             </widget>
            </item>
@@ -497,13 +518,16 @@
              </property>
             </widget>
            </item>
-           <item row="5" column="0">
-            <widget class="QLabel" name="labelSettings">
+           <item row="4" column="0">
+            <widget class="QLabel" name="labelTask">
              <property name="text">
-              <string>Settings</string>
+              <string>&amp;Task</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
              </property>
              <property name="buddy">
-              <cstring>scrollArea</cstring>
+              <cstring>uiComboTask</cstring>
              </property>
             </widget>
            </item>
@@ -529,12 +553,36 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>357</width>
-                <height>161</height>
+                <width>332</width>
+                <height>110</height>
                </rect>
               </property>
               <layout class="QFormLayout" name="formLayout_2"/>
              </widget>
+            </widget>
+           </item>
+           <item row="5" column="0">
+            <widget class="QLabel" name="labelSettings">
+             <property name="text">
+              <string>Settings</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+             <property name="buddy">
+              <cstring>scrollArea</cstring>
+             </property>
+            </widget>
+           </item>
+           <item row="6" column="0">
+            <widget class="QLabel" name="labelRemoteDevices">
+             <property name="text">
+              <string>Remote
+Devices</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTop|Qt::AlignTrailing</set>
+             </property>
             </widget>
            </item>
           </layout>
@@ -548,7 +596,7 @@
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
-          <layout class="QHBoxLayout" name="horizontalLayout_8" stretch="1,1,1">
+          <layout class="QHBoxLayout" name="horizontalLayout_8" stretch="1,1">
            <property name="leftMargin">
             <number>0</number>
            </property>
@@ -561,35 +609,6 @@
            <property name="bottomMargin">
             <number>0</number>
            </property>
-           <item>
-            <widget class="QGroupBox" name="uiGroupRemoteDevices">
-             <property name="title">
-              <string>Remote Devices</string>
-             </property>
-             <layout class="QVBoxLayout" name="verticalLayout_2">
-              <item>
-               <widget class="QListView" name="listViewRemoteDevices">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Expanding" vsizetype="Ignored">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="horizontalScrollBarPolicy">
-                 <enum>Qt::ScrollBarAlwaysOff</enum>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QPushButton" name="pushButtonUpdateRemoteDevices">
-                <property name="text">
-                 <string>Update Status</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </widget>
-           </item>
            <item>
             <widget class="QGroupBox" name="uiGroupTools">
              <property name="title">
@@ -663,6 +682,16 @@
              </property>
              <layout class="QVBoxLayout" name="verticalLayout">
               <item>
+               <widget class="QCheckBox" name="uiCheckAppend">
+                <property name="statusTip">
+                 <string>append to previous session</string>
+                </property>
+                <property name="text">
+                 <string>append to previous Session</string>
+                </property>
+               </widget>
+              </item>
+              <item>
                <widget class="QPushButton" name="uiPushStart">
                 <property name="statusTip">
                  <string>Click to start the session</string>
@@ -691,16 +720,6 @@
                 </property>
                 <property name="checked">
                  <bool>false</bool>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QCheckBox" name="uiCheckAppend">
-                <property name="statusTip">
-                 <string>append to previous session</string>
-                </property>
-                <property name="text">
-                 <string>Append</string>
                 </property>
                </widget>
               </item>
@@ -733,7 +752,7 @@
      <x>0</x>
      <y>0</y>
      <width>450</width>
-     <height>21</height>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="uiMenuTools">

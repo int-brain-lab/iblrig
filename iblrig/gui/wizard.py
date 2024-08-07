@@ -325,7 +325,6 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         # remote devices
         self.remoteDevicesModel = RemoteDevicesItemModel(iblrig_settings=self.model.iblrig_settings)
         self.listViewRemoteDevices.setModel(self.remoteDevicesModel)
-        self.pushButtonUpdateRemoteDevices.clicked.connect(self.remoteDevicesModel.update)
 
         # task parameters and subject details
         self.uiComboTask.currentTextChanged.connect(self._controls_for_task_arguments)
