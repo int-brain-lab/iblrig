@@ -2,6 +2,10 @@ Changelog
 =========
 
 
+8.22.0
+------
+* add UI components for selecting remote devices
+
 8.21.2
 ------
 * fix: remote devices show as task parameters (regression)

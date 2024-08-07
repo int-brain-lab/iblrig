@@ -25,7 +25,7 @@
   <property name="maximumSize">
    <size>
     <width>600</width>
-    <height>800</height>
+    <height>1000</height>
    </size>
   </property>
   <property name="sizeIncrement">
@@ -125,6 +125,9 @@
              <property name="text">
               <string>&amp;User</string>
              </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
              <property name="buddy">
               <cstring>uiLineEditUser</cstring>
              </property>
@@ -178,6 +181,9 @@
             <widget class="QLabel" name="labelSubject">
              <property name="text">
               <string>&amp;Subject</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
              </property>
              <property name="buddy">
               <cstring>uiComboSubject</cstring>
@@ -250,6 +256,9 @@
             <widget class="QLabel" name="labelProject">
              <property name="text">
               <string>&amp;Project</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
              </property>
              <property name="buddy">
               <cstring>uiListProjects</cstring>
@@ -360,7 +369,10 @@
            <item row="3" column="0">
             <widget class="QLabel" name="labelProcedure">
              <property name="text">
-              <string>P&amp;rocedure</string>
+              <string>P&amp;rocedures</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
              </property>
              <property name="buddy">
               <cstring>uiListProcedures</cstring>
@@ -468,13 +480,25 @@
              </property>
             </widget>
            </item>
-           <item row="4" column="0">
-            <widget class="QLabel" name="labelTask">
-             <property name="text">
-              <string>&amp;Task</string>
+           <item row="6" column="1">
+            <widget class="RemoteDevicesListView" name="listViewRemoteDevices">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
              </property>
-             <property name="buddy">
-              <cstring>uiComboTask</cstring>
+             <property name="statusTip">
+              <string>Select remote devices</string>
+             </property>
+             <property name="horizontalScrollBarPolicy">
+              <enum>Qt::ScrollBarAlwaysOff</enum>
+             </property>
+             <property name="sizeAdjustPolicy">
+              <enum>QAbstractScrollArea::AdjustToContents</enum>
+             </property>
+             <property name="selectionMode">
+              <enum>QAbstractItemView::MultiSelection</enum>
              </property>
             </widget>
            </item>
@@ -497,13 +521,16 @@
              </property>
             </widget>
            </item>
-           <item row="5" column="0">
-            <widget class="QLabel" name="labelSettings">
+           <item row="4" column="0">
+            <widget class="QLabel" name="labelTask">
              <property name="text">
-              <string>Settings</string>
+              <string>&amp;Task</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
              </property>
              <property name="buddy">
-              <cstring>scrollArea</cstring>
+              <cstring>uiComboTask</cstring>
              </property>
             </widget>
            </item>
@@ -529,12 +556,39 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>357</width>
-                <height>161</height>
+                <width>352</width>
+                <height>108</height>
                </rect>
               </property>
               <layout class="QFormLayout" name="formLayout_2"/>
              </widget>
+            </widget>
+           </item>
+           <item row="5" column="0">
+            <widget class="QLabel" name="labelSettings">
+             <property name="text">
+              <string>Settings</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+             <property name="buddy">
+              <cstring>scrollArea</cstring>
+             </property>
+            </widget>
+           </item>
+           <item row="6" column="0">
+            <widget class="QLabel" name="labelRemoteDevices">
+             <property name="text">
+              <string>Remote
+&amp;Devices</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTop|Qt::AlignTrailing</set>
+             </property>
+             <property name="buddy">
+              <cstring>listViewRemoteDevices</cstring>
+             </property>
             </widget>
            </item>
           </layout>
@@ -548,7 +602,7 @@
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
-          <layout class="QHBoxLayout" name="horizontalLayout_8" stretch="3,5">
+          <layout class="QHBoxLayout" name="horizontalLayout_8" stretch="1,1">
            <property name="leftMargin">
             <number>0</number>
            </property>
@@ -632,18 +686,18 @@
              <property name="title">
               <string>Session Control</string>
              </property>
-             <layout class="QGridLayout" name="gridLayout_2">
-              <item row="3" column="2">
+             <layout class="QVBoxLayout" name="verticalLayout">
+              <item>
                <widget class="QCheckBox" name="uiCheckAppend">
                 <property name="statusTip">
                  <string>append to previous session</string>
                 </property>
                 <property name="text">
-                 <string>Append</string>
+                 <string>append to previous Session</string>
                 </property>
                </widget>
               </item>
-              <item row="2" column="2">
+              <item>
                <widget class="QPushButton" name="uiPushStart">
                 <property name="statusTip">
                  <string>Click to start the session</string>
@@ -656,7 +710,7 @@
                 </property>
                </widget>
               </item>
-              <item row="2" column="1">
+              <item>
                <widget class="QPushButton" name="uiPushPause">
                 <property name="enabled">
                  <bool>false</bool>
@@ -739,6 +793,31 @@
    </property>
   </action>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>RemoteDevicesListView</class>
+   <extends>QListView</extends>
+   <header>iblrig/gui/tools</header>
+  </customwidget>
+ </customwidgets>
+ <tabstops>
+  <tabstop>tabWidget</tabstop>
+  <tabstop>uiLineEditUser</tabstop>
+  <tabstop>uiPushButtonLogIn</tabstop>
+  <tabstop>uiComboSubject</tabstop>
+  <tabstop>lineEditSubject</tabstop>
+  <tabstop>uiListProjects</tabstop>
+  <tabstop>uiListProcedures</tabstop>
+  <tabstop>uiComboTask</tabstop>
+  <tabstop>scrollArea</tabstop>
+  <tabstop>listViewRemoteDevices</tabstop>
+  <tabstop>uiPushFlush</tabstop>
+  <tabstop>uiPushReward</tabstop>
+  <tabstop>uiPushStatusLED</tabstop>
+  <tabstop>uiCheckAppend</tabstop>
+  <tabstop>uiPushStart</tabstop>
+  <tabstop>uiPushPause</tabstop>
+ </tabstops>
  <resources>
   <include location="resources.qrc"/>
  </resources>

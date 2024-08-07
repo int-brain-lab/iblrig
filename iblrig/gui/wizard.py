@@ -35,7 +35,7 @@ from iblrig.gui.tab_about import TabAbout
 from iblrig.gui.tab_data import TabData
 from iblrig.gui.tab_docs import TabDocs
 from iblrig.gui.tab_log import TabLog
-from iblrig.gui.tools import DiskSpaceIndicator, Worker
+from iblrig.gui.tools import DiskSpaceIndicator, RemoteDevicesItemModel, Worker
 from iblrig.gui.ui_login import Ui_login
 from iblrig.gui.ui_update import Ui_update
 from iblrig.gui.ui_wizard import Ui_wizard
@@ -280,7 +280,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
     task_parameters: dict | None = None
     new_subject_details = QtCore.pyqtSignal()
 
-    def __init__(self, **kwargs):
+    def __init__(self, debug: bool = False, remote_devices: bool = False):
         super().__init__()
         self.setupUi(self)
 
@@ -295,7 +295,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.tabWidget.addTab(self.tabAbout, QtGui.QIcon(':/images/about'), 'About')
         self.tabWidget.setCurrentIndex(0)
 
-        self.debug = kwargs.get('debug', False)
+        self.debug = debug
         self.settings = QtCore.QSettings()
 
         try:
@@ -321,6 +321,14 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 )
             self._show_error_dialog(title=f'Error validating {yml}', description=description.strip())
             raise e
+
+        # remote devices (only show if at least one device was found)
+        if remote_devices:
+            self.remoteDevicesModel = RemoteDevicesItemModel(iblrig_settings=self.model.iblrig_settings)
+            self.listViewRemoteDevices.setModel(self.remoteDevicesModel)
+        else:
+            self.listViewRemoteDevices.setVisible(False)
+            self.labelRemoteDevices.setVisible(False)
 
         # task parameters and subject details
         self.uiComboTask.currentTextChanged.connect(self._controls_for_task_arguments)
@@ -998,6 +1006,8 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                     cmd.extend(['--procedures', *self.model.procedures])
                 if self.model.projects:
                     cmd.extend(['--projects', *self.model.projects])
+                if len(remotes := self.listViewRemoteDevices.getDevices()) > 0:
+                    cmd.extend(['--remote', *remotes])
                 for key, value in self.task_arguments.items():
                     if isinstance(value, list):
                         cmd.extend([key] + value)
@@ -1237,7 +1247,10 @@ class UpdateNotice(QtWidgets.QDialog, Ui_update):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--debug', action='store_true', dest='debug', help='increase logging verbosity')
+    parser.add_argument('-d', '--debug', action='store_true', dest='debug', help='increase logging verbosity')
+    parser.add_argument(
+        '-r', '--remote_devices', action='store_true', dest='remote_devices', help='show controls for remote devices'
+    )
     args = parser.parse_args()
 
     if args.debug:
@@ -1253,7 +1266,7 @@ def main():
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(app_id)
     app = QtWidgets.QApplication(['', '--no-sandbox'])
     app.setStyle('Fusion')
-    w = RigWizard(debug=args.debug)
+    w = RigWizard(debug=args.debug, remote_devices=args.remote_devices)
     w.show()
     app.exec()
 
