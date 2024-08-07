@@ -2,6 +2,10 @@ Changelog
 =========
 
 
+8.21.2
+------
+* fix: remote devices show as task parameters (regression)
+
 8.21.1
 ------
 * hotfix: add DISABLE_BEHAVIOR_INPUT_PORTS key to hardware_settings.yaml

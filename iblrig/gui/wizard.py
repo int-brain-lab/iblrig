@@ -717,6 +717,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
 
         # collect & filter list of parser arguments (general & task specific)
         args = sorted(get_task_argument_parser()._actions, key=lambda x: x.dest)
+        args = sorted(self.model.get_task_extra_parser(self.model.task_name)._actions, key=lambda x: x.dest) + args
         args = [
             x
             for x in args
@@ -734,11 +735,11 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                         '--no-interactive',
                         '--stub',
                         '--wizard',
+                        '--remote',
                     ]
                 )
             )
         ]
-        args = sorted(self.model.get_task_extra_parser(self.model.task_name)._actions, key=lambda x: x.dest) + args
 
         group = self.uiGroupTaskParameters
         layout = group.layout()
