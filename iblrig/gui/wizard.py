@@ -35,7 +35,7 @@ from iblrig.gui.tab_about import TabAbout
 from iblrig.gui.tab_data import TabData
 from iblrig.gui.tab_docs import TabDocs
 from iblrig.gui.tab_log import TabLog
-from iblrig.gui.tools import DiskSpaceIndicator, Worker
+from iblrig.gui.tools import DiskSpaceIndicator, RemoteDevicesItemModel, Worker
 from iblrig.gui.ui_login import Ui_login
 from iblrig.gui.ui_update import Ui_update
 from iblrig.gui.ui_wizard import Ui_wizard
@@ -321,6 +321,11 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 )
             self._show_error_dialog(title=f'Error validating {yml}', description=description.strip())
             raise e
+
+        # remote devices
+        self.remoteDevicesModel = RemoteDevicesItemModel(iblrig_settings=self.model.iblrig_settings)
+        self.listViewRemoteDevices.setModel(self.remoteDevicesModel)
+        self.pushButtonUpdateRemoteDevices.clicked.connect(self.remoteDevicesModel.update)
 
         # task parameters and subject details
         self.uiComboTask.currentTextChanged.connect(self._controls_for_task_arguments)
