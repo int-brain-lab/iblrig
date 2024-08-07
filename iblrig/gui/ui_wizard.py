@@ -21,7 +21,7 @@ class Ui_wizard(object):
         sizePolicy.setHeightForWidth(wizard.sizePolicy().hasHeightForWidth())
         wizard.setSizePolicy(sizePolicy)
         wizard.setMinimumSize(QtCore.QSize(450, 0))
-        wizard.setMaximumSize(QtCore.QSize(600, 800))
+        wizard.setMaximumSize(QtCore.QSize(600, 1000))
         wizard.setSizeIncrement(QtCore.QSize(0, 0))
         wizard.setContextMenuPolicy(QtCore.Qt.DefaultContextMenu)
         icon = QtGui.QIcon()
