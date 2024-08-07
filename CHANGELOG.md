@@ -4,7 +4,7 @@ Changelog
 
 8.22.0
 ------
-* added UI components for selecting remote devices
+* add UI components for selecting remote devices
 
 8.21.2
 ------
