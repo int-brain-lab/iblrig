@@ -322,9 +322,12 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
             self._show_error_dialog(title=f'Error validating {yml}', description=description.strip())
             raise e
 
-        # remote devices
+        # remote devices (only show if at least one device was found)
         self.remoteDevicesModel = RemoteDevicesItemModel(iblrig_settings=self.model.iblrig_settings)
         self.listViewRemoteDevices.setModel(self.remoteDevicesModel)
+        if self.remoteDevicesModel.rowCount() == 0:
+            self.listViewRemoteDevices.setVisible(False)
+            self.labelRemoteDevices.setVisible(False)
 
         # task parameters and subject details
         self.uiComboTask.currentTextChanged.connect(self._controls_for_task_arguments)
@@ -1002,6 +1005,8 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                     cmd.extend(['--procedures', *self.model.procedures])
                 if self.model.projects:
                     cmd.extend(['--projects', *self.model.projects])
+                if len(remotes := self.listViewRemoteDevices.getDevices()) > 0:
+                    cmd.extend(['--remote', *remotes])
                 for key, value in self.task_arguments.items():
                     if isinstance(value, list):
                         cmd.extend([key] + value)

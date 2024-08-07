@@ -24,7 +24,7 @@ from PyQt5.QtCore import (
     pyqtSlot,
 )
 from PyQt5.QtGui import QStandardItem, QStandardItemModel
-from PyQt5.QtWidgets import QProgressBar
+from PyQt5.QtWidgets import QListView, QProgressBar
 
 from iblrig.constants import BASE_PATH
 from iblrig.net import get_remote_devices
@@ -357,6 +357,18 @@ class DataFrameTableModel(QAbstractTableModel):
             self.dataChanged.emit(index, index, [role])
 
 
+class RemoteDevicesListView(QListView):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.setMouseTracking(True)  # needed for status tips
+
+    def getDevices(self):
+        out = []
+        for idx in self.selectedIndexes():
+            out.append(self.model().itemData(idx)[Qt.UserRole])
+        return out
+
+
 class RemoteDevicesItemModel(QStandardItemModel):
     def __init__(self, *args, iblrig_settings: RigSettings, **kwargs):
         super().__init__(*args, **kwargs)
@@ -368,5 +380,6 @@ class RemoteDevicesItemModel(QStandardItemModel):
         self.clear()
         for device_name, device_address in self.remote_devices.items():
             item = QStandardItem(device_name)
-            item.setData(device_address)
+            item.setStatusTip(f'Remote Device "{device_name}" - {device_address}')
+            item.setData(device_name, Qt.UserRole)
             self.appendRow(item)

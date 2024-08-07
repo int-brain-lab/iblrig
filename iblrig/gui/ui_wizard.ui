@@ -481,7 +481,7 @@
             </widget>
            </item>
            <item row="6" column="1">
-            <widget class="QListView" name="listViewRemoteDevices">
+            <widget class="RemoteDevicesListView" name="listViewRemoteDevices">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
                <horstretch>0</horstretch>
@@ -496,6 +496,9 @@
              </property>
              <property name="sizeAdjustPolicy">
               <enum>QAbstractScrollArea::AdjustToContents</enum>
+             </property>
+             <property name="selectionMode">
+              <enum>QAbstractItemView::MultiSelection</enum>
              </property>
             </widget>
            </item>
@@ -553,8 +556,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>332</width>
-                <height>110</height>
+                <width>352</width>
+                <height>108</height>
                </rect>
               </property>
               <layout class="QFormLayout" name="formLayout_2"/>
@@ -578,10 +581,13 @@
             <widget class="QLabel" name="labelRemoteDevices">
              <property name="text">
               <string>Remote
-Devices</string>
+&amp;Devices</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignRight|Qt::AlignTop|Qt::AlignTrailing</set>
+             </property>
+             <property name="buddy">
+              <cstring>listViewRemoteDevices</cstring>
              </property>
             </widget>
            </item>
@@ -752,7 +758,7 @@ Devices</string>
      <x>0</x>
      <y>0</y>
      <width>450</width>
-     <height>24</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="uiMenuTools">
@@ -787,6 +793,31 @@ Devices</string>
    </property>
   </action>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>RemoteDevicesListView</class>
+   <extends>QListView</extends>
+   <header>iblrig/gui/tools</header>
+  </customwidget>
+ </customwidgets>
+ <tabstops>
+  <tabstop>tabWidget</tabstop>
+  <tabstop>uiLineEditUser</tabstop>
+  <tabstop>uiPushButtonLogIn</tabstop>
+  <tabstop>uiComboSubject</tabstop>
+  <tabstop>lineEditSubject</tabstop>
+  <tabstop>uiListProjects</tabstop>
+  <tabstop>uiListProcedures</tabstop>
+  <tabstop>uiComboTask</tabstop>
+  <tabstop>scrollArea</tabstop>
+  <tabstop>listViewRemoteDevices</tabstop>
+  <tabstop>uiPushFlush</tabstop>
+  <tabstop>uiPushReward</tabstop>
+  <tabstop>uiPushStatusLED</tabstop>
+  <tabstop>uiCheckAppend</tabstop>
+  <tabstop>uiPushStart</tabstop>
+  <tabstop>uiPushPause</tabstop>
+ </tabstops>
  <resources>
   <include location="resources.qrc"/>
  </resources>

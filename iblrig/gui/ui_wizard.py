@@ -186,7 +186,7 @@ class Ui_wizard(object):
         self.uiListProcedures.setSelectionMode(QtWidgets.QAbstractItemView.MultiSelection)
         self.uiListProcedures.setObjectName("uiListProcedures")
         self.formLayout.setWidget(3, QtWidgets.QFormLayout.FieldRole, self.uiListProcedures)
-        self.listViewRemoteDevices = QtWidgets.QListView(self.uiGroupParameters)
+        self.listViewRemoteDevices = RemoteDevicesListView(self.uiGroupParameters)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -194,6 +194,7 @@ class Ui_wizard(object):
         self.listViewRemoteDevices.setSizePolicy(sizePolicy)
         self.listViewRemoteDevices.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.listViewRemoteDevices.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContents)
+        self.listViewRemoteDevices.setSelectionMode(QtWidgets.QAbstractItemView.MultiSelection)
         self.listViewRemoteDevices.setObjectName("listViewRemoteDevices")
         self.formLayout.setWidget(6, QtWidgets.QFormLayout.FieldRole, self.listViewRemoteDevices)
         self.uiComboTask = QtWidgets.QComboBox(self.uiGroupParameters)
@@ -215,7 +216,7 @@ class Ui_wizard(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setObjectName("scrollArea")
         self.uiGroupTaskParameters = QtWidgets.QWidget()
-        self.uiGroupTaskParameters.setGeometry(QtCore.QRect(0, 0, 332, 110))
+        self.uiGroupTaskParameters.setGeometry(QtCore.QRect(0, 0, 352, 108))
         self.uiGroupTaskParameters.setObjectName("uiGroupTaskParameters")
         self.formLayout_2 = QtWidgets.QFormLayout(self.uiGroupTaskParameters)
         self.formLayout_2.setObjectName("formLayout_2")
@@ -304,7 +305,7 @@ class Ui_wizard(object):
         self.statusbar.setObjectName("statusbar")
         wizard.setStatusBar(self.statusbar)
         self.uiMenuBar = QtWidgets.QMenuBar(wizard)
-        self.uiMenuBar.setGeometry(QtCore.QRect(0, 0, 450, 24))
+        self.uiMenuBar.setGeometry(QtCore.QRect(0, 0, 450, 21))
         self.uiMenuBar.setObjectName("uiMenuBar")
         self.uiMenuTools = QtWidgets.QMenu(self.uiMenuBar)
         self.uiMenuTools.setObjectName("uiMenuTools")
@@ -328,10 +329,26 @@ class Ui_wizard(object):
         self.labelProcedure.setBuddy(self.uiListProcedures)
         self.labelTask.setBuddy(self.uiComboTask)
         self.labelSettings.setBuddy(self.scrollArea)
+        self.labelRemoteDevices.setBuddy(self.listViewRemoteDevices)
 
         self.retranslateUi(wizard)
         self.tabWidget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(wizard)
+        wizard.setTabOrder(self.tabWidget, self.uiLineEditUser)
+        wizard.setTabOrder(self.uiLineEditUser, self.uiPushButtonLogIn)
+        wizard.setTabOrder(self.uiPushButtonLogIn, self.uiComboSubject)
+        wizard.setTabOrder(self.uiComboSubject, self.lineEditSubject)
+        wizard.setTabOrder(self.lineEditSubject, self.uiListProjects)
+        wizard.setTabOrder(self.uiListProjects, self.uiListProcedures)
+        wizard.setTabOrder(self.uiListProcedures, self.uiComboTask)
+        wizard.setTabOrder(self.uiComboTask, self.scrollArea)
+        wizard.setTabOrder(self.scrollArea, self.listViewRemoteDevices)
+        wizard.setTabOrder(self.listViewRemoteDevices, self.uiPushFlush)
+        wizard.setTabOrder(self.uiPushFlush, self.uiPushReward)
+        wizard.setTabOrder(self.uiPushReward, self.uiPushStatusLED)
+        wizard.setTabOrder(self.uiPushStatusLED, self.uiCheckAppend)
+        wizard.setTabOrder(self.uiCheckAppend, self.uiPushStart)
+        wizard.setTabOrder(self.uiPushStart, self.uiPushPause)
 
     def retranslateUi(self, wizard):
         _translate = QtCore.QCoreApplication.translate
@@ -354,7 +371,7 @@ class Ui_wizard(object):
         self.labelTask.setText(_translate("wizard", "&Task"))
         self.labelSettings.setText(_translate("wizard", "Settings"))
         self.labelRemoteDevices.setText(_translate("wizard", "Remote\n"
-"Devices"))
+"&Devices"))
         self.uiGroupTools.setTitle(_translate("wizard", "Tools"))
         self.uiPushFlush.setStatusTip(_translate("wizard", "Click to flush the Bpod\'s valve"))
         self.uiPushFlush.setText(_translate("wizard", " &Flush Valve  "))
@@ -375,6 +392,7 @@ class Ui_wizard(object):
         self.uiActionCalibrateFrame2ttl.setText(_translate("wizard", "Calibrate Frame2TTL"))
         self.uiActionCalibrateValve.setText(_translate("wizard", "Calibrate Valve"))
         self.uiActionValidateHardware.setText(_translate("wizard", "Validate System"))
+from iblrig.gui.tools import RemoteDevicesListView
 from iblrig.gui import resources_rc
 
 
