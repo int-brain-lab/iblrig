@@ -5,7 +5,7 @@
 groups = ["default", "dev", "doc", "test", "typing"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:c167bb843937694619f76891362cdaffab85de4d1167589f9647043523619b85"
+content_hash = "sha256:24ba4b4065d7e16cce6a838856981f1d96ba59fe7a21728d2bb1a8f360422c8b"
 
 [[metadata.targets]]
 requires_python = "==3.10.*"
@@ -775,7 +775,7 @@ dependencies = [
 
 [[package]]
 name = "iblutil"
-version = "1.11.0"
+version = "1.12.1"
 requires_python = ">=3.8"
 summary = "IBL utilities"
 groups = ["default"]
@@ -789,8 +789,8 @@ dependencies = [
     "tqdm>=4.32.1",
 ]
 files = [
-    {file = "iblutil-1.11.0-py3-none-any.whl", hash = "sha256:a5622c02571d1098f7fab09b7e58f6eb02335b6783cc0cc62579fc73553f8e5b"},
-    {file = "iblutil-1.11.0.tar.gz", hash = "sha256:498fc6f998d1c225555a7589c1c9a1c419d30a049ec415eb6d90bdcd04da30d8"},
+    {file = "iblutil-1.12.1-py3-none-any.whl", hash = "sha256:4f095730886773958e84b067f9ad7f452dcd85d4d5f442a54aa2e3a086a9b6ae"},
+    {file = "iblutil-1.12.1.tar.gz", hash = "sha256:87af10ada660ad71ff0769fe356f30617b51da062fba147d3b354211adb04096"},
 ]
 
 [[package]]

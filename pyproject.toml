@@ -26,7 +26,7 @@ dependencies = [
     "ibllib>=2.38.0",
     "iblpybpod @ git+https://github.com/int-brain-lab/iblpybpod.git@no-gui",
     "iblscripts @ git+https://github.com/int-brain-lab/iblscripts.git",
-    "iblutil>=1.11.0",
+    "iblutil>=1.12.1",
     "ipython>=8.26.0",
     "numpy>=1.26.4",
     "packaging>=24.1",
