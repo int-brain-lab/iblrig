@@ -16,6 +16,7 @@ from pydantic import (
     PositiveInt,
     field_serializer,
     field_validator,
+    RootModel
 )
 
 from iblrig.constants import BASE_PATH
@@ -199,3 +200,11 @@ class HardwareSettings(BunchModel):
     device_cameras: dict[str, dict[str, HardwareSettingsCameraWorkflow | HardwareSettingsCamera]] | None
     device_microphone: HardwareSettingsMicrophone | None = None
     VERSION: str
+
+
+class RemoteDevice(BunchModel):
+    name: str
+    uri: AnyUrl
+
+
+RemoteDevices = RootModel[dict[str, RemoteDevice]]
