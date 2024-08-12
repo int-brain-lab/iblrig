@@ -1,5 +1,6 @@
 """
-Purge data from RIG
+Purge data from RIG.
+
 - looks for datasets matching filename pattern
 - datasets that exist in ONE cache are removed
 """
@@ -26,7 +27,7 @@ def session_name(path, lab=None) -> str:
 
 
 def local_alf_paths(root_dir, filename):
-    """Yield session path and relative paths of ALFs that match filename pattern"""
+    """Yield session path and relative paths of ALFs that match filename pattern."""
     for session_path in iter_sessions(root_dir):
         for dataset in iter_datasets(session_path):
             if fnmatch(dataset, filename):

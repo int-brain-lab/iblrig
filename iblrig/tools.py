@@ -351,9 +351,7 @@ T = TypeVar('T', bound=object)
 
 
 def get_inheritors(cls: T) -> set[T]:
-    """
-    Obtain a set of all direct inheritors of a class
-    """
+    """Obtain a set of all direct inheritors of a class."""
     subclasses = set(cls.__subclasses__())
     for child in subclasses:
         subclasses = subclasses.union(get_inheritors(child))
@@ -361,7 +359,7 @@ def get_inheritors(cls: T) -> set[T]:
 
 
 class ANSI:
-    """ANSI Codes for formatting text on the CLI"""
+    """ANSI Codes for formatting text on the CLI."""
 
     PURPLE = '\033[95m'
     CYAN = '\033[96m'

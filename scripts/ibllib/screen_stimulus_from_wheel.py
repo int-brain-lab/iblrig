@@ -35,7 +35,6 @@ def get_stim_from_wheel(eid, tr):
     If the mouse wheels wrongly away from 0, the stimulus
     remains at the edge of the screen
     """
-
     # eid = '83e77b4b-dfa0-4af9-968b-7ea0c7a0c7e4'
     # tr = 0
     # For a given trial tr, the stim on screen responds to the wheel between

@@ -165,10 +165,7 @@ class ChoiceWorldSession(
             self.bpod.register_softcodes(self.softcode_dictionary())
 
     def _run(self):
-        """
-        This is the method that runs the task with the actual state machine
-        :return:
-        """
+        """Run the task with the actual state machine."""
         time_last_trial_end = time.time()
         for i in range(self.task_params.NTRIALS):  # Main loop
             # t_overhead = time.time()
@@ -260,7 +257,8 @@ class ChoiceWorldSession(
 
     def get_graphviz_task(self, output_file=None, view=True):
         """
-        For a given task, outputs the state machine states diagram in Digraph format
+        Get the state machine's states diagram in Digraph format.
+
         :param output_file:
         :return:
         """
@@ -808,7 +806,7 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
     def get_subject_training_info(self):
         """
         Get the previous session's according to this session parameters and deduce the
-        training level, adaptive reward amount and adaptive gain value
+        training level, adaptive reward amount and adaptive gain value.
 
         Returns
         -------
@@ -829,10 +827,7 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
         return training_info['training_phase'], training_info['adaptive_reward'], training_info['adaptive_gain']
 
     def compute_performance(self):
-        """
-        Aggregates the trials table to compute the performance of the mouse on each contrast
-        :return: None
-        """
+        """Aggregate the trials table to compute the performance of the mouse on each contrast."""
         self.trials_table['signed_contrast'] = self.trials_table['contrast'] * np.sign(self.trials_table['position'])
         performance = self.trials_table.groupby(['signed_contrast']).agg(
             last_50_perf=pd.NamedAgg(column='trial_correct', aggfunc=lambda x: np.sum(x[np.maximum(-50, -x.size) :]) / 50),
@@ -841,10 +836,7 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
         return performance
 
     def check_training_phase(self):
-        """
-        Checks if the mouse is ready to move to the next training phase
-        :return: None
-        """
+        """Check if the mouse is ready to move to the next training phase."""
         move_on = False
         if self.training_phase == 0:  # each of the -1, -.5, .5, 1 contrast should be above 80% perf to switch
             performance = self.compute_performance()

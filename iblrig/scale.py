@@ -83,7 +83,7 @@ class Scale(SerialSingleton):
 
     def get_grams(self) -> tuple[float, bool]:
         """
-        Obtain weight reading in grams and stability indicator
+        Obtain weight reading in grams and stability indicator.
 
         Returns
         -------

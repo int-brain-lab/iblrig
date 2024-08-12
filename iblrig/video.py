@@ -106,7 +106,6 @@ def install_spinnaker():
     Exception
         If the function is not run on Windows.
     """
-
     # Check prerequisites
     if os.name != 'nt':
         raise Exception('install_spinnaker can only be run on Windows.')
@@ -142,7 +141,6 @@ def install_pyspin():
         If the function is not run on Windows.
         If the function is not started in the IBLRIG virtual environment.
     """
-
     # Check prerequisites
     if os.name != 'nt':
         raise Exception('install_pyspin can only be run on Windows.')
@@ -586,7 +584,7 @@ class CameraSession(EmptySession):
 
     @property
     def one(self):
-        """Return ONE instance
+        """Return ONE instance.
 
         Unlike super class getter, this method will always instantiate ONE, allowing subclasses to update with an Alyx
         token from a remotely connected rig.  This instance is used for formatting the experiment reference string.

@@ -201,7 +201,6 @@ class BaseSession(ABC):
         Bunch
             Task parameters
         """
-
         # Load the tasks settings, from the task folder or override with the input argument
         base_parameters_files = [task_parameter_file or cls.get_task_directory().joinpath('task_parameters.yaml')]
 
@@ -228,7 +227,7 @@ class BaseSession(ABC):
 
     def _init_paths(self, append: bool = False) -> Bunch:
         r"""
-        Initialize session paths
+        Initialize session paths.
 
         Parameters
         ----------
@@ -401,8 +400,12 @@ class BaseSession(ABC):
 
     def _make_task_parameters_dict(self):
         """
-        This makes the dictionary that will be saved to the settings json file for extraction
-        :return:
+        Create dictionary that will be saved to the settings json file for extraction.
+
+        Returns
+        -------
+        dict
+            A dictionary that will be saved to the settings json file for extraction.
         """
         output_dict = dict(self.task_params)  # Grab parameters from task_params session
         output_dict.update(self.hardware_settings.model_dump())  # Update dict with hardware settings from session
@@ -420,11 +423,12 @@ class BaseSession(ABC):
 
     def save_task_parameters_to_json_file(self, destination_folder: Path | None = None) -> Path:
         """
-        Collects the various settings and parameters of the session and outputs them to a JSON file
+        Collects the various settings and parameters of the session and outputs them to a JSON file.
 
         Returns
         -------
-        Path to the resultant JSON file
+        Path
+            Path to the resultant JSON file
         """
         output_dict = self._make_task_parameters_dict()
         if destination_folder:
@@ -438,10 +442,7 @@ class BaseSession(ABC):
 
     @property
     def one(self):
-        """
-        One getter
-        :return:
-        """
+        """ONE getter."""
         if self._one is None:
             if self.iblrig_settings['ALYX_URL'] is None:
                 return
@@ -522,9 +523,12 @@ class BaseSession(ABC):
 
     def _execute_mixins_shared_function(self, pattern):
         """
-        Loop over all methods of the class that start with pattern and execute them
-        :param pattern:'init_mixin', 'start_mixin', 'stop_mixin', or 'cleanup_mixin'
-        :return:
+        Loop over all methods of the class that start with pattern and execute them.
+
+        Parameters
+        ----------
+        pattern : str
+            'init_mixin', 'start_mixin', 'stop_mixin', or 'cleanup_mixin'
         """
         method_names = [method for method in dir(self) if method.startswith(pattern)]
         methods = [getattr(self, method) for method in method_names if inspect.ismethod(getattr(self, method))]
@@ -539,8 +543,11 @@ class BaseSession(ABC):
         self.is_mock = True
 
     def create_session(self):
-        # create the session path and save json parameters in the task collection folder
-        # this will also create the protocol folder
+        """
+        Create the session path and save json parameters in the task collection folder.
+
+        This will also create the protocol folder.
+        """
         self.paths['TASK_PARAMETERS_FILE'] = self.save_task_parameters_to_json_file()
         # enable file logging
         logfile = self.paths.SESSION_RAW_DATA_FOLDER.joinpath('_ibl_log.info-acquisition.log')
@@ -552,8 +559,9 @@ class BaseSession(ABC):
 
     def run(self):
         """
-        Common pre-run instructions for all tasks: sigint handler for a graceful exit
-        :return:
+        Common pre-run instructions for all tasks.
+
+        Defines sigint handler for a graceful exit.
         """
         # here we make sure we connect to the hardware before writing the session to disk
         # this prevents from incrementing endlessly the session number if the hardware fails to connect
@@ -605,9 +613,14 @@ class BaseSession(ABC):
     @staticmethod
     def extra_parser():
         """
-        Optional method that specifies extra kwargs arguments to expose to the user prior running the task.
-        Make sure you instantiate the parser
-        :return: argparse.parser()
+        Specify extra kwargs arguments to expose to the user prior running the task.
+
+        Make sure you instantiate the parser.
+
+        Returns
+        -------
+        argparse.ArgumentParser
+            The extra parser instance.
         """
         parser = argparse.ArgumentParser(add_help=False)
         return parser
@@ -728,8 +741,10 @@ class BonsaiRecordingMixin(BaseSession):
 
     def start_mixin_bonsai_cameras(self):
         """
-        This prepares the cameras by starting the pipeline that aligns the camera focus with the
-        desired borders of rig features, the actual triggering of the cameras is done in the trigger_bonsai_cameras method.
+        Prepare the cameras.
+
+        Starts the pipeline that aligns the camera focus with the desired borders of rig features.
+        The actual triggering of the cameras is done in the trigger_bonsai_cameras method.
         """
         if not self.config:
             # Use the first key in the device_cameras map
@@ -789,7 +804,8 @@ class BonsaiVisualStimulusMixin(BaseSession):
 
     def send_trial_info_to_bonsai(self):
         """
-        This sends the trial information to the Bonsai UDP port for the stimulus
+        Send the trial information to Bonsai via UDP.
+
         The OSC protocol is documented in iblrig.base_tasks.BonsaiVisualStimulusMixin
         """
         bonsai_dict = {
@@ -906,9 +922,7 @@ class BpodMixin(BaseSession):
 
 
 class Frame2TTLMixin(BaseSession):
-    """
-    Frame 2 TTL interface for state machine
-    """
+    """Frame 2 TTL interface for state machine."""
 
     def init_mixin_frame2ttl(self, *args, **kwargs):
         pass
@@ -930,9 +944,7 @@ class Frame2TTLMixin(BaseSession):
 
 
 class RotaryEncoderMixin(BaseSession):
-    """
-    Rotary encoder interface for state machine
-    """
+    """Rotary encoder interface for state machine."""
 
     def init_mixin_rotary_encoder(self, *args, **kwargs):
         self.device_rotary_encoder = MyRotaryEncoder(
@@ -1007,9 +1019,12 @@ class ValveMixin(BaseSession):
 
     def valve_open(self, reward_valve_time):
         """
-        Opens the reward valve for a given amount of time and return bpod data
-        :param reward_valve_time:
-        :return:
+        Open the reward valve for a given amount of time and return bpod data.
+
+        Parameters
+        ----------
+        reward_valve_time : float
+            Amount of time in seconds to open the reward valve.
         """
         sma = StateMachine(self.bpod)
         sma.add_state(
@@ -1024,9 +1039,7 @@ class ValveMixin(BaseSession):
 
 
 class SoundMixin(BaseSession):
-    """
-    Sound interface methods for state machine
-    """
+    """Sound interface methods for state machine."""
 
     def init_mixin_sound(self):
         self.sound = Bunch({'GO_TONE': None, 'WHITE_NOISE': None})
@@ -1102,21 +1115,22 @@ class SoundMixin(BaseSession):
 
     def sound_play_noise(self, state_timer=0.510, state_name='play_noise'):
         """
-        Plays the noise sound for the error feedback using bpod state machine
+        Play the noise sound for the error feedback using bpod state machine.
         :return: bpod current trial export
         """
         return self._sound_play(state_name=state_name, output_actions=[self.bpod.actions.play_tone], state_timer=state_timer)
 
     def sound_play_tone(self, state_timer=0.102, state_name='play_tone'):
         """
-        Plays the ready tone beep using bpod state machine
+        Play the ready tone beep using bpod state machine.
         :return: bpod current trial export
         """
         return self._sound_play(state_name=state_name, output_actions=[self.bpod.actions.play_tone], state_timer=state_timer)
 
     def _sound_play(self, state_timer=None, output_actions=None, state_name='play_sound'):
-        """
-        Plays a sound using bpod state machine - the sound must be defined in the init_mixin_sound method
+        """Plays a sound using bpod state machine.
+
+        The sound must be defined in the init_mixin_sound method.
         """
         assert state_timer is not None, 'state_timer must be defined'
         assert output_actions is not None, 'output_actions must be defined'
@@ -1181,7 +1195,7 @@ class NetworkSession(BaseSession):
 
     @property
     def one(self):
-        """Return ONE instance
+        """Return ONE instance.
 
         Unlike super class getter, this method will always instantiate ONE, allowing subclasses to update with an Alyx
         token from a remotely connected rig.  This instance is used for formatting the experiment reference string.
@@ -1403,10 +1417,7 @@ class SpontaneousSession(BaseSession):
         pass  # no mixin here, life is but a dream
 
     def _run(self):
-        """
-        This is the method that runs the task with the actual state machine
-        :return:
-        """
+        """Run the task with the actual state machine."""
         log.info('Starting spontaneous acquisition')
         while True:
             time.sleep(1.5)

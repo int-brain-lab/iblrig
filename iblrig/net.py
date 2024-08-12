@@ -503,7 +503,7 @@ async def read_stdin(loop=None):
         An optional event loop to use.
 
     Yields
-    -------
+    ------
     str
         A line of text from the standard input, if available.
     """

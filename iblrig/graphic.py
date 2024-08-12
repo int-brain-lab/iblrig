@@ -1,11 +1,4 @@
-#!/usr/bin/env python
-# @Author: Niccolò Bonacchi
-# @Creation_Date: 2022-01-24
-# @Editor: Michele Fabbri
-# @Edit_Date: 2022-02-01
-"""
-Popup and string input prompts
-"""
+"""Popup and string input prompts"""
 
 import tkinter as tk
 from tkinter import simpledialog

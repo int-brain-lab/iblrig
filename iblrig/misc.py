@@ -109,8 +109,7 @@ def _is_datetime(x: str) -> bool:
 
 
 def get_session_path(path: str | Path) -> Path | None:
-    """Returns the session path from any filepath if the date/number
-    pattern is found"""
+    """Returns the session path from any filepath if the date/number pattern is found."""
     if path is None:
         return
     if isinstance(path, str):
@@ -217,7 +216,7 @@ def draw_contrast(
     idx_probability: float = 0.5,
 ) -> float:
     """
-    Draw a contrast value from a given iterable based to the specified probability type
+    Draw a contrast value from a given iterable based to the specified probability type.
 
     Parameters
     ----------
@@ -254,7 +253,7 @@ def draw_contrast(
 
 def online_std(new_sample: float, new_count: int, old_mean: float, old_std: float) -> tuple[float, float]:
     """
-    Updates the mean and standard deviation of a group of values after a sample update
+    Update the mean and standard deviation of a group of values after a sample update.
 
     Parameters
     ----------

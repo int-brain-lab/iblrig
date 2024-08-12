@@ -144,7 +144,6 @@ def get_local_and_remote_paths(
         'local_subjects_folder': PosixPath('C:/iblrigv8_data/mainenlab/Subjects'),
         'remote_subjects_folder': PosixPath('Y:/Subjects')}
     """
-
     # we only want to attempt to load the settings file if necessary
     if (local_path is None) or (remote_path is None) or (lab is None):
         iblrig_settings = load_pydantic_yaml(RigSettings) if iblrig_settings is None else iblrig_settings

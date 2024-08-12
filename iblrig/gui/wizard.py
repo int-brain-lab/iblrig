@@ -89,7 +89,7 @@ REGEX_STDOUT = re.compile(
 
 
 def _set_list_view_from_string_list(ui_list: QtWidgets.QListView, string_list: list):
-    """Small boiler plate util to set the selection of a list view from a list of strings"""
+    """Small boiler plate util to set the selection of a list view from a list of strings."""
     if string_list is None or len(string_list) == 0:
         return
     for i, s in enumerate(ui_list.model().stringList()):
@@ -145,7 +145,7 @@ class RigWizardModel:
 
     def get_session(self, task_name: str) -> BaseSession:
         """
-        Get a session object for the given task name
+        Get a session object for the given task name.
 
         Parameters
         ----------
@@ -165,7 +165,7 @@ class RigWizardModel:
 
     def get_task_extra_parser(self, task_name: str):
         """
-        Get an extra parser for the given task name
+        Get an extra parser for the given task name.
 
         Parameters
         ----------
@@ -181,7 +181,7 @@ class RigWizardModel:
 
     def get_task_parameters(self, task_name: str) -> Bunch:
         """
-        Return parameters for the given task
+        Return parameters for the given task.
 
         Parameters
         ----------
@@ -512,7 +512,6 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
 
         This code will be removed and is here only for convenience while users transition from v7 to v8
         """
-
         # get session path
         if not (local_path := Path(r'C:\iblrig_data\Subjects')).exists():
             local_path = self.iblrig_settings.iblrig_local_data_path

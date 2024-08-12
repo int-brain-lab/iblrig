@@ -39,8 +39,10 @@ def prepare_ephys_session(subject_name: str, nprobes: int = 2):
 
 def neuropixel24_micromanipulator_coordinates(ref_shank, pname, ba=None, shank_spacings_um=(0, 200, 400, 600)):
     """
-    Provided the micro-manipulator coordinates of the first shank, this function
-    returns the relative coordinates of all shanks, labeled as probe01a, probe01b, etc.
+    Provide the micro-manipulator coordinates of the first shank.
+
+    This function returns the relative coordinates of all shanks, labeled as probe01a, probe01b, etc.
+
     :param ref_shank: dictionary with keys x, y, z, phi, theta, depth, roll
     example: {'x': 2594.2, 'y': -3123.7, 'z': -711, 'phi': 0 + 15, 'theta': 15, 'depth': 1250.4, 'roll': 0}
     :param pname: str

@@ -63,5 +63,5 @@ class Splash(QDialog, Ui_splash):
 
     @override
     def eventFilter(self, obj, event):
-        """Disregard all key-presses"""
+        """Disregard all key-presses."""
         return obj is self and event.type() == QtCore.QEvent.KeyPress

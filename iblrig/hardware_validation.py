@@ -33,7 +33,7 @@ log = logging.getLogger(__name__)
 
 
 class Status(IntEnum):
-    """Possible status codes of hardware validations"""
+    """Possible status codes of hardware validations."""
 
     PEND = 0  # Test pending
     SKIP = 1  # Test not applicable (e.g., device not present)
@@ -45,7 +45,7 @@ class Status(IntEnum):
 
 @dataclass
 class Result:
-    """Dataclass holding the results of a single validation"""
+    """Dataclass holding the results of a single validation."""
 
     status: Status
     message: str
