@@ -21,12 +21,10 @@ dependencies = [
     "PyQtWebEngine-Qt5==5.15.2",    #
     "ONE-api>=2.9rc0",
     "PyYAML>=6.0.2",
-    "colorlog>=6.8.2",
     "graphviz>=0.20.3",
     "ibllib>=2.38.0",
     "iblpybpod @ git+https://github.com/int-brain-lab/iblpybpod.git@no-gui",
     "iblutil>=1.12.1",
-    "ipython>=8.26.0",
     "numpy>=1.26.4",
     "packaging>=24.1",
     "pandas>=2.2.2",

@@ -5,7 +5,7 @@
 groups = ["default", "dev", "doc", "test", "typing"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:de15adfd57609394d3a655a481afb8e418960329c6e619e5ad3b4985add1affa"
+content_hash = "sha256:9a4cca2a85c3bfc023c4e24778770b6e963e1c72d13916e9cab43528e2290a3f"
 
 [[metadata.targets]]
 requires_python = "==3.10.*"
@@ -78,7 +78,7 @@ files = [
 name = "asttokens"
 version = "2.4.1"
 summary = "Annotate AST trees with source code positions"
-groups = ["default", "dev", "doc"]
+groups = ["dev", "doc"]
 dependencies = [
     "six>=1.12.0",
     "typing; python_version < \"3.5\"",
@@ -465,7 +465,7 @@ name = "decorator"
 version = "5.1.1"
 requires_python = ">=3.5"
 summary = "Decorators for Humans"
-groups = ["default", "dev", "doc"]
+groups = ["dev", "doc"]
 files = [
     {file = "decorator-5.1.1-py3-none-any.whl", hash = "sha256:b8c3f85900b9dc423225913c5aace94729fe1fa9763b38939a95226f02d37186"},
     {file = "decorator-5.1.1.tar.gz", hash = "sha256:637996211036b6385ef91435e4fae22989472f9d571faba8927ba8253acbc330"},
@@ -508,7 +508,7 @@ name = "executing"
 version = "2.0.1"
 requires_python = ">=3.5"
 summary = "Get the currently executing AST node of a frame, and other information"
-groups = ["default", "dev", "doc"]
+groups = ["dev", "doc"]
 files = [
     {file = "executing-2.0.1-py2.py3-none-any.whl", hash = "sha256:eac49ca94516ccc753f9fb5ce82603156e590b27525a8bc32cce8ae302eb61bc"},
     {file = "executing-2.0.1.tar.gz", hash = "sha256:35afe2ce3affba8ee97f2d69927fa823b08b472b7b994e36a52a964b93d16147"},
@@ -894,7 +894,7 @@ name = "ipython"
 version = "8.26.0"
 requires_python = ">=3.10"
 summary = "IPython: Productive Interactive Computing"
-groups = ["default", "dev", "doc"]
+groups = ["dev", "doc"]
 dependencies = [
     "colorama; sys_platform == \"win32\"",
     "decorator",
@@ -918,7 +918,7 @@ name = "jedi"
 version = "0.19.1"
 requires_python = ">=3.6"
 summary = "An autocompletion tool for Python that can be used for text editors."
-groups = ["default", "dev", "doc"]
+groups = ["dev", "doc"]
 dependencies = [
     "parso<0.9.0,>=0.8.3",
 ]
@@ -1189,7 +1189,7 @@ name = "matplotlib-inline"
 version = "0.1.7"
 requires_python = ">=3.8"
 summary = "Inline Matplotlib backend for Jupyter"
-groups = ["default", "dev", "doc"]
+groups = ["dev", "doc"]
 dependencies = [
     "traitlets",
 ]
@@ -1541,7 +1541,7 @@ name = "parso"
 version = "0.8.4"
 requires_python = ">=3.6"
 summary = "A Python Parser"
-groups = ["default", "dev", "doc"]
+groups = ["dev", "doc"]
 files = [
     {file = "parso-0.8.4-py2.py3-none-any.whl", hash = "sha256:a418670a20291dacd2dddc80c377c5c3791378ee1e8d12bffc35420643d43f18"},
     {file = "parso-0.8.4.tar.gz", hash = "sha256:eb3a7b58240fb99099a345571deecc0f9540ea5f4dd2fe14c2a99d6b281ab92d"},
@@ -1580,7 +1580,7 @@ files = [
 name = "pexpect"
 version = "4.9.0"
 summary = "Pexpect allows easy control of interactive console applications."
-groups = ["default", "dev", "doc"]
+groups = ["dev", "doc"]
 marker = "sys_platform != \"win32\" and sys_platform != \"emscripten\""
 dependencies = [
     "ptyprocess>=0.5",
@@ -1692,7 +1692,7 @@ name = "prompt-toolkit"
 version = "3.0.47"
 requires_python = ">=3.7.0"
 summary = "Library for building powerful interactive command lines in Python"
-groups = ["default", "dev", "doc"]
+groups = ["dev", "doc"]
 dependencies = [
     "wcwidth",
 ]
@@ -1737,7 +1737,7 @@ files = [
 name = "ptyprocess"
 version = "0.7.0"
 summary = "Run a subprocess in a pseudo terminal"
-groups = ["default", "dev", "doc"]
+groups = ["dev", "doc"]
 marker = "sys_platform != \"win32\" and sys_platform != \"emscripten\""
 files = [
     {file = "ptyprocess-0.7.0-py2.py3-none-any.whl", hash = "sha256:4b41f3967fce3af57cc7e94b888626c18bf37a083e3651ca8feeb66d492fef35"},
@@ -1748,7 +1748,7 @@ files = [
 name = "pure-eval"
 version = "0.2.3"
 summary = "Safely evaluate AST nodes without side effects"
-groups = ["default", "dev", "doc"]
+groups = ["dev", "doc"]
 files = [
     {file = "pure_eval-0.2.3-py3-none-any.whl", hash = "sha256:1db8e35b67b3d218d818ae653e27f06c3aa420901fa7b081ca98cbedc874e0d0"},
     {file = "pure_eval-0.2.3.tar.gz", hash = "sha256:5f4e983f40564c576c7c8635ae88db5956bb2229d7e9237d03b3c0b0190eaf42"},
@@ -1862,7 +1862,7 @@ name = "pygments"
 version = "2.18.0"
 requires_python = ">=3.8"
 summary = "Pygments is a syntax highlighting package written in Python."
-groups = ["default", "dev", "doc"]
+groups = ["dev", "doc"]
 files = [
     {file = "pygments-2.18.0-py3-none-any.whl", hash = "sha256:b8e6aca0523f3ab76fee51799c488e38782ac06eafcf95e7ba832985c8e7b13a"},
     {file = "pygments-2.18.0.tar.gz", hash = "sha256:786ff802f32e91311bff3889f6e9a86e81505fe99f2735bb6d60ae0c5004f199"},
@@ -2724,7 +2724,7 @@ files = [
 name = "stack-data"
 version = "0.6.3"
 summary = "Extract data from python stack frames and tracebacks for informative displays"
-groups = ["default", "dev", "doc"]
+groups = ["dev", "doc"]
 dependencies = [
     "asttokens>=2.1.0",
     "executing>=1.2.0",
@@ -2870,7 +2870,7 @@ name = "traitlets"
 version = "5.14.3"
 requires_python = ">=3.8"
 summary = "Traitlets Python configuration system"
-groups = ["default", "dev", "doc"]
+groups = ["dev", "doc"]
 files = [
     {file = "traitlets-5.14.3-py3-none-any.whl", hash = "sha256:b74e89e397b1ed28cc831db7aea759ba6640cb3de13090ca145426688ff1ac4f"},
     {file = "traitlets-5.14.3.tar.gz", hash = "sha256:9ed0579d3502c94b4b3732ac120375cda96f923114522847de4b3bb98b96b6b7"},
@@ -3023,7 +3023,7 @@ files = [
 name = "wcwidth"
 version = "0.2.13"
 summary = "Measures the displayed width of unicode strings in a terminal"
-groups = ["default", "dev", "doc"]
+groups = ["dev", "doc"]
 dependencies = [
     "backports-functools-lru-cache>=1.2.1; python_version < \"3.2\"",
 ]
