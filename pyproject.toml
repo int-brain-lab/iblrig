@@ -25,7 +25,6 @@ dependencies = [
     "graphviz>=0.20.3",
     "ibllib>=2.38.0",
     "iblpybpod @ git+https://github.com/int-brain-lab/iblpybpod.git@no-gui",
-    "iblscripts @ git+https://github.com/int-brain-lab/iblscripts.git",
     "iblutil>=1.12.1",
     "ipython>=8.26.0",
     "numpy>=1.26.4",
