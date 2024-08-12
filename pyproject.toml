@@ -39,6 +39,7 @@ dependencies = [
     "scipy>=1.14.0",
     "sounddevice>=0.4.7",
     "annotated-types>=0.7.0",
+    "tycmd-wrapper>=0.2.1",
 ]
 
 [project.scripts]

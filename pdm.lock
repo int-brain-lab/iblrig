@@ -5,7 +5,7 @@
 groups = ["default", "dev", "doc", "test", "typing"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:c167bb843937694619f76891362cdaffab85de4d1167589f9647043523619b85"
+content_hash = "sha256:387488fcc1b3f5bc7a42ae8cf752d92c5bc0bd2afdc0a7752e74ef16d6215588"
 
 [[metadata.targets]]
 requires_python = "==3.10.*"
@@ -2971,6 +2971,18 @@ groups = ["default", "dev", "doc"]
 files = [
     {file = "traitlets-5.14.3-py3-none-any.whl", hash = "sha256:b74e89e397b1ed28cc831db7aea759ba6640cb3de13090ca145426688ff1ac4f"},
     {file = "traitlets-5.14.3.tar.gz", hash = "sha256:9ed0579d3502c94b4b3732ac120375cda96f923114522847de4b3bb98b96b6b7"},
+]
+
+[[package]]
+name = "tycmd-wrapper"
+version = "0.2.1"
+requires_python = ">=3.10"
+summary = "A python wrapper for tycmd"
+groups = ["default"]
+files = [
+    {file = "tycmd_wrapper-0.2.1-py3-none-macosx_10_9_x86_64.whl", hash = "sha256:b0db3787a9c85a2f79b7b9b867d5cec8c64bde54de3fdc13cb54243ff5aeaf2e"},
+    {file = "tycmd_wrapper-0.2.1-py3-none-manylinux_2_35_x86_64.whl", hash = "sha256:3730db1e9f066afbecc494eca6bb0bc98e318f9dab0d528a82636eeb2b825818"},
+    {file = "tycmd_wrapper-0.2.1-py3-none-win_amd64.whl", hash = "sha256:73c17d7c6d073d7dd2b050731988a5fabb3be69ec339c3ef5fcfaae42eefe090"},
 ]
 
 [[package]]
