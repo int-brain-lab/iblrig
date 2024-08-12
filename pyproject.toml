@@ -70,8 +70,9 @@ dev = [
     # Instead, use `pdm add -d [package-name]` / `pdm update [package-name]`.
     # This is to ensure that the lock-file is in sync with pyproject.toml
     # See https://pdm-project.org/en/latest/usage/dependency/ for details.
-    "pre-commit>=3.8.0",
     "iblrig[doc,test,typing]",
+    "deadcode>=2.4.1",
+    "pre-commit>=3.8.0",
 ]
 test = [
     "pytest>=8.3.2",
@@ -166,3 +167,6 @@ convention = "numpy"
 
 [tool.ruff.lint.isort]
 known-first-party = [ "ibl*", "one*", "pybpod*" ]
+
+[tool.deadcode]
+exclude = ["docs", "venv", "iblrig/test"]

@@ -5,7 +5,7 @@
 groups = ["default", "dev", "doc", "test", "typing"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:9a4cca2a85c3bfc023c4e24778770b6e963e1c72d13916e9cab43528e2290a3f"
+content_hash = "sha256:003691b7b64397c7711ec44248b43a73c6d2d90628f79810dffac8cdec37ad3e"
 
 [[metadata.targets]]
 requires_python = "==3.10.*"
@@ -443,6 +443,20 @@ dependencies = [
 files = [
     {file = "dask-2024.8.0-py3-none-any.whl", hash = "sha256:250ea3df30d4a25958290eec4f252850091c6cfaed82d098179c3b25bba18309"},
     {file = "dask-2024.8.0.tar.gz", hash = "sha256:f1fec39373d2f101bc045529ad4e9b30e34e6eb33b7aa0fa7073aec7b1bf9eee"},
+]
+
+[[package]]
+name = "deadcode"
+version = "2.4.1"
+requires_python = ">=3.10"
+summary = "Find and remove dead code."
+groups = ["dev"]
+dependencies = [
+    "tomli>=2.0.1",
+]
+files = [
+    {file = "deadcode-2.4.1-py3-none-any.whl", hash = "sha256:a16b28b601a82d5dc7ebfcab464a6f65e22a99d5684ec4c7907bdb75f8f64050"},
+    {file = "deadcode-2.4.1.tar.gz", hash = "sha256:1ba1e22425cf53c4b3f5ddd46e62a86d98479b47f2ac3430ae60910ac8cb318d"},
 ]
 
 [[package]]
