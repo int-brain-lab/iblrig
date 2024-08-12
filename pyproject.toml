@@ -120,6 +120,7 @@ target-version = "py310"
 select = [
     "B",   # flake8-bugbear
     "E",   # pycodestyle Error
+    "W",   # pycodestyle Warning
     "F",   # Pyflakes
     "I",   # isort
     "N",   # pep8-naming

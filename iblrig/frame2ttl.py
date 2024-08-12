@@ -18,7 +18,7 @@ class Frame2TTL(SerialSingleton):
     _calibration_stage: int = 0
     _calibrate_light: int | None = None
 
-    def __init__(self, port: str, threshold_light: int = None, threshold_dark: int = None, **kwargs) -> None:
+    def __init__(self, port: str, threshold_light: int | None = None, threshold_dark: int | None = None, **kwargs) -> None:
         # identify micro-controller
         port_info = next((p for p in comports() if p.device == port), None)
         if port_info is not None:

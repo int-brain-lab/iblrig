@@ -225,13 +225,13 @@ class Bpod(BpodIO):
         """Flushes valve 1."""
         self.toggle_valve()
 
-    def toggle_valve(self, duration: int = None):
+    def toggle_valve(self, duration: int | None = None):
         """
         Flush valve 1 for specified duration.
 
         Parameters
         ----------
-        duration : int
+        duration : int, optional
             Duration of valve opening in seconds.
         """
         if duration is None:

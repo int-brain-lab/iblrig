@@ -560,7 +560,7 @@ class CameraSession(EmptySession):
         except KeyError as ex:
             raise ValueError(f'Config "{config_name}" not in "device_cameras" hardware settings.') from ex
 
-    def _init_paths(self, exp_ref: dict = None, **_):
+    def _init_paths(self, exp_ref: dict | None = None, **_):
         if not exp_ref:
             self.paths = super()._init_paths(False)  # not sure why super class doesn't do the assignment...
             for key in ('VISUAL_STIM_FOLDER', 'TASK_COLLECTION', 'DATA_FILE_PATH'):
