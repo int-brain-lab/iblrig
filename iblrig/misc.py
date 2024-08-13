@@ -35,7 +35,7 @@ def get_task_argument_parser(parents: Sequence[argparse.ArgumentParser] = None):
         nargs='+',
         default=[],
         help="project name(s), something like 'psychedelics' or 'ibl_neuropixel_brainwide_01'; if specify "
-             'multiple projects, use a space to separate them',
+        'multiple projects, use a space to separate them',
     )
     parser.add_argument(
         '-c',
@@ -43,8 +43,8 @@ def get_task_argument_parser(parents: Sequence[argparse.ArgumentParser] = None):
         nargs='+',
         default=[],
         help="long description of what is occurring, something like 'Ephys recording with acute probe(s)'; "
-             'be sure to use the double quote characters to encapsulate the description and a space to separate '
-             'multiple procedures',
+        'be sure to use the double quote characters to encapsulate the description and a space to separate '
+        'multiple procedures',
     )
     parser.add_argument('-w', '--weight', type=float, dest='subject_weight_grams', required=False, default=None)
     parser.add_argument('--no-interactive', dest='interactive', action='store_false')
@@ -221,10 +221,10 @@ def get_biased_probs(n: int, idx: int = -1, p_idx: float = 0.5) -> list[float]:
 
 
 def draw_contrast(
-        contrast_set: list[float],
-        probability_type: Literal['skew_zero', 'biased', 'uniform'] = 'biased',
-        idx: int = -1,
-        idx_probability: float = 0.5,
+    contrast_set: list[float],
+    probability_type: Literal['skew_zero', 'biased', 'uniform'] = 'biased',
+    idx: int = -1,
+    idx_probability: float = 0.5,
 ) -> float:
     """
     Draw a contrast value from a given iterable based to the specified probability type.
@@ -285,5 +285,5 @@ def online_std(new_sample: float, new_count: int, old_mean: float, old_std: floa
     if new_count == 1:
         return new_sample, 0.0
     new_mean = (old_mean * (new_count - 1) + new_sample) / new_count
-    new_std = np.sqrt((old_std ** 2 * (new_count - 1) + (new_sample - old_mean) * (new_sample - new_mean)) / new_count)
+    new_std = np.sqrt((old_std**2 * (new_count - 1) + (new_sample - old_mean) * (new_sample - new_mean)) / new_count)
     return new_mean, new_std
