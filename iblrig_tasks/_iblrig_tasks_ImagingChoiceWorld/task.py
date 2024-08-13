@@ -12,6 +12,8 @@ class Session(BiasedChoiceWorldSession):
 
         For this task we double the quiescence period texp draw and remove the absolute offset of 200ms.
         The resulting is a truncated exp distribution between 400ms and 1 sec
+
+        TODO: This is a broken overload and never actually called - quiescent periods are not changed from BiasedCW
         """
         return truncated_exponential(scale=0.35 * 2, min_value=0.2 * 2, max_value=0.5 * 2)
 
