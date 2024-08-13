@@ -41,7 +41,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: true
       - name: Install requirements
-        run: pdm sync -G project-extraction -dG test
+        run: pdm sync -G project-extraction -dG test -dG ci
       - name: Install audio library (Ubuntu only)
         if: matrix.os == 'ubuntu-latest'
         run: sudo apt-get install -y libportaudio2
