@@ -6,6 +6,7 @@ import shutil
 import socket
 import subprocess
 from collections.abc import Callable
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, TypeVar
 
@@ -358,6 +359,7 @@ def get_inheritors(cls: T) -> set[T]:
     return subclasses
 
 
+@dataclass
 class ANSI:
     """ANSI Codes for formatting text on the CLI."""
 
