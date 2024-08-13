@@ -1,7 +1,7 @@
 """
-This module is intended to provide commonalities for all tasks.
+Commonalities for all tasks.
 
-It provides hardware mixins that can be used together with BaseSession to compose tasks.
+This module provides hardware mixins that can be used together with BaseSession to compose tasks.
 This module tries to exclude task related logic.
 """
 
@@ -601,6 +601,8 @@ class BaseSession(ABC):
     @abc.abstractmethod
     def start_hardware(self):
         """
+        Start the hardware.
+
         This method doesn't explicitly start the mixins as the order has to be defined in the child classes.
         This needs to be implemented in the child classes, and should start and connect to all hardware pieces.
         """

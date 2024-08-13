@@ -213,8 +213,9 @@ class ChoiceWorldSession(
 
     def mock(self, file_jsonable_fixture=None):
         """
-        This methods serves to instantiate a state machine and bpod object to simulate a task's run.
-        This is useful to test or display the state machine flow
+        Instantiate a state machine and Bpod object to simulate a task's run.
+
+        This is useful to test or display the state machine flow.
         """
         super().mock()
 

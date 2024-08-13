@@ -25,9 +25,8 @@ T = TypeVar('T', bound=BaseModel)
 
 def iterate_previous_sessions(subject_name: str, task_name: str, n: int = 1, **kwargs) -> list[dict]:
     """
-    This function iterates over the sessions of a given subject in both the remote and local path
-    and searches for a given protocol name. It returns the information of the last n found
-    matching protocols in the form of a dictionary.
+    Iterate over the sessions of a given subject in both the remote and local path and search for a given protocol name.
+    Return the information of the last n found matching protocols in the form of a dictionary.
 
     Parameters
     ----------

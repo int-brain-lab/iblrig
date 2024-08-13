@@ -17,17 +17,41 @@ from one.api import ONE
 log = logging.getLogger('iblrig')
 
 
-def session_name(path, lab=None) -> str:
+def session_name(path: str | Path, lab: str | None = None) -> str:
     """
-    Returns the session name (subject/date/number) string for a given session path. If lab is given
-    returns lab/Subjects/subject/date/number.
+    Return the session name (`subject/date/number`) string for a given session path.
+
+    If lab is given return `lab/Subjects/subject/date/number`.
+
+    Parameters
+    ----------
+    path : str or Path
+        Session path.
+    lab : str, optional
+        Lab name
     """
     lab = f'{lab}/Subjects/' if lab else ''
     return lab + '/'.join(get_session_path(path).parts[-3:])
 
 
-def local_alf_paths(root_dir, filename):
-    """Yield session path and relative paths of ALFs that match filename pattern."""
+def local_alf_paths(root_dir: str | Path, filename: str):
+    """
+    Yield session path and relative paths of ALFs that match filename pattern.
+
+    Parameters
+    ----------
+    root_dir : str or Path
+        The folder to look for sessions.
+    filename : str
+        Session filename.
+
+    Yields
+    ------
+    session_path : Path
+        Session path.
+    dataset : Path
+        Relative paths of ALFs.
+    """
     for session_path in iter_sessions(root_dir):
         for dataset in iter_datasets(session_path):
             if fnmatch(dataset, filename):

@@ -9,6 +9,7 @@ repo change over time.
 import argparse
 import datetime
 import logging
+from collections.abc import Sequence
 from pathlib import Path
 from typing import Literal
 
@@ -19,10 +20,11 @@ FLAG_FILE_NAMES = ['transfer_me.flag', 'create_me.flag', 'poop_count.flag', 'pas
 log = logging.getLogger(__name__)
 
 
-def get_task_argument_parser(parents=None):
+def get_task_argument_parser(parents: Sequence[argparse.ArgumentParser] = None):
     """
-    This function returns the task argument parser with extra optional parameters if provided
-    This function is kept separate from parsing for unit tests purposes.
+    Return the task's argument parser.
+
+    This function is kept separate from parsing for purposes of unit testing.
     """
     parser = argparse.ArgumentParser(parents=parents or [])
     parser.add_argument('-s', '--subject', required=True, help='Subject name')
@@ -33,7 +35,7 @@ def get_task_argument_parser(parents=None):
         nargs='+',
         default=[],
         help="project name(s), something like 'psychedelics' or 'ibl_neuropixel_brainwide_01'; if specify "
-        'multiple projects, use a space to separate them',
+             'multiple projects, use a space to separate them',
     )
     parser.add_argument(
         '-c',
@@ -41,8 +43,8 @@ def get_task_argument_parser(parents=None):
         nargs='+',
         default=[],
         help="long description of what is occurring, something like 'Ephys recording with acute probe(s)'; "
-        'be sure to use the double quote characters to encapsulate the description and a space to separate '
-        'multiple procedures',
+             'be sure to use the double quote characters to encapsulate the description and a space to separate '
+             'multiple procedures',
     )
     parser.add_argument('-w', '--weight', type=float, dest='subject_weight_grams', required=False, default=None)
     parser.add_argument('--no-interactive', dest='interactive', action='store_false')
@@ -60,22 +62,31 @@ def get_task_argument_parser(parents=None):
 
 def _post_parse_arguments(**kwargs):
     """
-    This is called to post-process the arguments after parsing. It is used to force the interactive
-    mode to True (as it is a call from a user) and to override the settings file value for the user.
-    This function is split for unit-test purposes.
-    :param kwargs:
-    :return:
+    Post-process arguments after parsing.
+
+    This function is used to force the interactive mode to True (as it is a call from a user) and to override the
+    settings file value for the user. This function is split for the purpos of unit-testing.
+
+    Parameters
+    ----------
+    kwargs : dict
+        Keyword arguments passed to argparse.ArgumentParser.
+
+    Returns
+    -------
+    kwargs : dict
+        Keyword arguments passed to argparse.ArgumentParser.
     """
-    # if the user is specified, then override the settings file value
+    # override the settings file value if the user is specified
     user = kwargs.pop('user')
     if user is not None:
         kwargs['iblrig_settings'] = {'ALYX_USER': user}
     return kwargs
 
 
-def get_task_arguments(parents=None):
+def get_task_arguments(parents: Sequence[argparse.ArgumentParser] = None):
     """
-    This function parses input to run the tasks. All the variables are fed to the Session instance
+    Parse input to run the tasks. All the variables are fed to the Session instance
     task.py -s subject_name -p projects_name -c procedures_name --no-interactive
     :param extra_args: list of dictionaries of additional argparse arguments to add to the parser
         For example, to add a new toto and titi arguments, use:
@@ -210,10 +221,10 @@ def get_biased_probs(n: int, idx: int = -1, p_idx: float = 0.5) -> list[float]:
 
 
 def draw_contrast(
-    contrast_set: list[float],
-    probability_type: Literal['skew_zero', 'biased', 'uniform'] = 'biased',
-    idx: int = -1,
-    idx_probability: float = 0.5,
+        contrast_set: list[float],
+        probability_type: Literal['skew_zero', 'biased', 'uniform'] = 'biased',
+        idx: int = -1,
+        idx_probability: float = 0.5,
 ) -> float:
     """
     Draw a contrast value from a given iterable based to the specified probability type.
@@ -274,5 +285,5 @@ def online_std(new_sample: float, new_count: int, old_mean: float, old_std: floa
     if new_count == 1:
         return new_sample, 0.0
     new_mean = (old_mean * (new_count - 1) + new_sample) / new_count
-    new_std = np.sqrt((old_std**2 * (new_count - 1) + (new_sample - old_mean) * (new_sample - new_mean)) / new_count)
+    new_std = np.sqrt((old_std ** 2 * (new_count - 1) + (new_sample - old_mean) * (new_sample - new_mean)) / new_count)
     return new_mean, new_std
