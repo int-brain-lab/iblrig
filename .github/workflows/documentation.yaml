@@ -10,6 +10,8 @@ on:
     paths:
       - '.github/workflows/documentation.yaml'
       - 'docs/**'
+      - 'CHANGELOG.md'
+      - 'pyproject.toml'
 permissions:
     contents: write
 jobs:
