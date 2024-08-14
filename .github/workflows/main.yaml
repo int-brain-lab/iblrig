@@ -1,6 +1,7 @@
-name: iblrigv8 CI
+name: CI
 
 on:
+  workflow_dispatch:
   push:
     branches: [iblrigv8]
     paths-ignore:

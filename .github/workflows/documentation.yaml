@@ -8,6 +8,7 @@ on:
       - '.github/workflows/documentation.yaml'
       - 'docs/**'
       - 'CHANGELOG.md'
+      - 'README.md'
       - 'pyproject.toml'
 permissions:
     contents: write
