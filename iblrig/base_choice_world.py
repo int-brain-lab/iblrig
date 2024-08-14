@@ -503,21 +503,19 @@ class ChoiceWorldSession(
         if not misc.get_port_events(events, name='Port1'):
             log.warning("NO CAMERA SYNC PULSES RECEIVED ON BPOD'S BEHAVIOR PORT 1")
 
-    def show_trial_log(self, extra_info=''):
+    def show_trial_log(self, extra_info='', log_level: int = logging.INFO):
         trial_info = self.trials_table.iloc[self.trial_num]
-        level = logging.INFO
-        log.log(level=level, msg=f'Outcome of Trial #{trial_info.trial_num}:')
-        log.log(level=level, msg=f'- Stim. Position:  {trial_info.position}')
-        log.log(level=level, msg=f'- Stim. Contrast:  {trial_info.contrast}')
-        log.log(level=level, msg=f'- Stim. Phase:     {trial_info.stim_phase}')
-        log.log(level=level, msg=f'- Stim. p Left:    {trial_info.stim_probability_left}')
-        log.log(level=level, msg=f'- Water delivered: {self.session_info.TOTAL_WATER_DELIVERED:.1f} µl')
-        log.log(level=level, msg=f'- Time from Start: {self.time_elapsed}')
-        log.log(level=level, msg=f'- Temperature:     {self.ambient_sensor_table.loc[self.trial_num, "Temperature_C"]:.1f} °C')
-        log.log(level=level, msg=f'- Air Pressure:    {self.ambient_sensor_table.loc[self.trial_num, "AirPressure_mb"]:.1f} mb')
-        log.log(
-            level=level, msg=f'- Rel. Humidity:   {self.ambient_sensor_table.loc[self.trial_num, "RelativeHumidity"]:.1f} %\n'
-        )
+
+        log.log(log_level, f'Outcome of Trial #{trial_info.trial_num}:')
+        log.log(log_level, f'- Stim. Position:  {trial_info.position}')
+        log.log(log_level, f'- Stim. Contrast:  {trial_info.contrast}')
+        log.log(log_level, f'- Stim. Phase:     {trial_info.stim_phase}')
+        log.log(log_level, f'- Stim. p Left:    {trial_info.stim_probability_left}')
+        log.log(log_level, f'- Water delivered: {self.session_info.TOTAL_WATER_DELIVERED:.1f} µl')
+        log.log(log_level, f'- Time from Start: {self.time_elapsed}')
+        log.log(log_level, f'- Temperature:     {self.ambient_sensor_table.loc[self.trial_num, "Temperature_C"]:.1f} °C')
+        log.log(log_level, f'- Air Pressure:    {self.ambient_sensor_table.loc[self.trial_num, "AirPressure_mb"]:.1f} mb')
+        log.log(log_level, f'- Rel. Humidity:   {self.ambient_sensor_table.loc[self.trial_num, "RelativeHumidity"]:.1f} %\n')
 
     @property
     def iti_reward(self):
