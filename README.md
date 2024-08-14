@@ -12,3 +12,4 @@ The task is implemented in the Bpod system (Sanworks) and uses the Bonsai visual
 ![License](https://img.shields.io/github/license/int-brain-lab/iblrig)
 ![GitHub tag](https://img.shields.io/github/v/tag/int-brain-lab/iblrig)
 [![GitHub Discussions](https://img.shields.io/github/discussions/int-brain-lab/iblrig)](https://github.com/int-brain-lab/iblrig/discussions)
+[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://github.com/pre-commit/pre-commit)

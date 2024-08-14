@@ -15,10 +15,10 @@ dependencies = [
     # Please refer to https://pdm-project.org/en/latest/usage/dependency/ for details.
     #
     # These packages are currently PINNED!
-    "PyQt5>=5.15.11",
-    "PyQt5-Qt5>=5.15.14",
-    "PyQtWebEngine>=5.15.7",
-    "PyQtWebEngine-Qt5>=5.15.14",
+    "PyQt5==5.15.10",
+    "PyQt5-Qt5==5.15.2",
+    "PyQtWebEngine==5.15.6",
+    "PyQtWebEngine-Qt5==5.15.2",
     # IBL packages
     "ibllib>=2.38.0",
     "iblpybpod @ git+https://github.com/int-brain-lab/iblpybpod.git@no-gui",

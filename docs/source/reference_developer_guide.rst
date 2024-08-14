@@ -94,6 +94,13 @@ To reformat your code according to the `Black code style <https://black.readthed
 Refer to `Ruff Formater's documentation <https://docs.astral.sh/ruff/formatter/>`_ for further details.
 
 
+pre-commit
+----------
+
+IBLRIG v8 supports pre-commit hooks.
+Install pre-commit according to the `official guide <https://pre-commit.com/#install>`_ to enable automated code-checks on commits.
+
+
 Release Checklist
 -----------------
 
