@@ -173,4 +173,7 @@ convention = "numpy"
 known-first-party = [ "ibl*", "one*", "pybpod*" ]
 
 [tool.deadcode]
-exclude = ["docs", "venv", "iblrig/test"]
+exclude = [ "docs", "venv", "iblrig/test" ]
+
+[tool.coverage.run]
+omit = [ "iblrig/test/**" ]
