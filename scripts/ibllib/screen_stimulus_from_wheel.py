@@ -26,16 +26,17 @@ def find_nearest(array, value):
     return idx
 
 
-def get_stim_from_wheel(eid, tr):
+def get_stim_from_wheel(eid: str, tr: int):
     """
-    for a given session (eid) and trial (tr)
+    Get position of the stimulus on the screen.
+
+    For a given session (eid) and trial (tr)
     return the position of the stimulus on the screen,
     where the one screen side is at 35 and the other at -35.
 
     If the mouse wheels wrongly away from 0, the stimulus
     remains at the edge of the screen
     """
-
     # eid = '83e77b4b-dfa0-4af9-968b-7ea0c7a0c7e4'
     # tr = 0
     # For a given trial tr, the stim on screen responds to the wheel between

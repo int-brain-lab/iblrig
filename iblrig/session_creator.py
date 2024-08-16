@@ -1,6 +1,4 @@
-"""
-Creates sessions, pre-generates stim and ephys sessions
-"""
+"""Creates sessions, pre-generates stim and ephys sessions."""
 
 import numpy as np
 
@@ -17,12 +15,15 @@ def draw_block_len(factor, min_=20, max_=100):
 
 # EPHYS CHOICE WORLD
 def make_ephyscw_pc(prob_type='biased'):
-    """make_ephysCW_pc Makes positions, contrasts and block lengths for ephysCW
-        Generates ~2000 trias
-    :prob_type: (str) 'biased': 0 contrast half has likely to be drawn, 'uniform': 0 contrast as
-    likely as other contrasts
-    :return: pc
-    :rtype: [type]
+    """
+    Create positions, contrasts and block lengths for ephysCW.
+
+    Generates ~2000 trials.
+
+    Parameters
+    ----------
+    prob_type : str
+        'biased': 0 contrast half has likely to be drawn, 'uniform': 0 contrast as likely as other contrasts
     """
     contrasts = [1.0, 0.25, 0.125, 0.0625, 0.0]
     len_block = [90]

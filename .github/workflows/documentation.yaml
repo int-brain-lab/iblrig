@@ -1,15 +1,15 @@
 name: Docs
 on:
   workflow_dispatch:
-    paths:
-      - '.github/workflows/documentation.yaml'
-      - 'docs/**'
   push:
     branches:
       - iblrigv8
     paths:
       - '.github/workflows/documentation.yaml'
       - 'docs/**'
+      - 'CHANGELOG.md'
+      - 'README.md'
+      - 'pyproject.toml'
 permissions:
     contents: write
 jobs:

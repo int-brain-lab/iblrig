@@ -16,14 +16,13 @@ To initiate a task through the graphical user interface, open a Windows PowerShe
    C:\iblrigv8\venv\scripts\Activate.ps1
    iblrig
 
-These commands activate the necessary environment and launch the IBL
-Rig Wizard GUI window, as shown below:
+These commands activate the necessary environment and launch the IBLRIG Wizard GUI as shown below:
 
-.. figure:: gui.png
+.. figure:: img/gui.png
    :alt: A screenshot of IBL Rig Wizard
    :align: center
 
-   A screenshot of IBL Rig Wizard
+   A screenshot of IBLRIG Wizard
 
 
 Starting a Task

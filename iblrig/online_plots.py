@@ -50,9 +50,6 @@ class DataModel:
     time_elapsed = 0.0
 
     def __init__(self, settings_file: Path | None):
-        """
-        :param settings_file:full path to the _iblrig_taskSettings.raw.json file
-        """
         self.session_path = one.alf.files.get_session_path(settings_file) or ''
         self.last_trials = pd.DataFrame(
             columns=['correct', 'signed_contrast', 'stim_on', 'play_tone', 'reward_time', 'error_time', 'response_time'],
@@ -144,10 +141,7 @@ class DataModel:
         self.percent_correct = self.ntrials_correct / self.ntrials_nan * 100
 
     def compute_end_session_criteria(self):
-        """
-        Implements critera to change the color of the figure display, according to the specifications of the task
-        :return:
-        """
+        """Implement critera to change the color of the figure display, according to the specifications of the task."""
         colour = {'red': '#eb5757', 'green': '#57eb8b', 'yellow': '#ede34e', 'white': '#ffffff'}
         # Within the first part of the session we don't apply response time criterion
         if self.time_elapsed < ENGAGED_CRITIERION['secs']:
@@ -279,9 +273,14 @@ class OnlinePlots:
 
     def update_trial(self, trial_data, bpod_data):
         """
-        This method updates both the data model and the graphics for an upcoming trial
-        :param trial data: pandas record
-        :param bpod data: dict interpreted from the bpod json dump
+        Update, both, the data model and the graphics for an upcoming trial.
+
+        Parameters
+        ----------
+        trial_data : pandas.DataFrame
+            pandas record
+        bpod_data : dict
+            doct interpreted from the bpod json dump
         :return:
         """
         self.data.update_trial(trial_data, bpod_data)
@@ -334,9 +333,12 @@ class OnlinePlots:
 
     def run(self, file_jsonable: Path | str) -> None:
         """
-        This methods is for online use, it will watch for a file in conjunction with an iblrigv8 running task
-        :param file_jsonable:
-        :return:
+        Watch a jsonable file in conjunction with an iblrigv8 running task (for online use).
+
+        Parameters
+        ----------
+        file_jsonable : Path or str
+            The sessions jsonable file
         """
         file_jsonable = Path(file_jsonable)
         self._set_session_string()

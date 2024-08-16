@@ -86,10 +86,7 @@ class Session(ChoiceWorldSession):
         pass
 
     def _run(self):
-        """
-        This is the method that runs the task with the actual state machine
-        :return:
-        """
+        """Run the task with the actual state machine."""
         self.trigger_bonsai_cameras()
 
         # Run the passive part i.e. spontaneous activity and RFMapping stim

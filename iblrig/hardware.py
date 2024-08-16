@@ -1,6 +1,4 @@
-"""
-This modules contains hardware classes used to interact with modules.
-"""
+"""Hardware classes used to interact with modules."""
 
 import logging
 import os
@@ -109,7 +107,7 @@ class Bpod(BpodIO):
         return self.get_module('^AmbientModule')
 
     def get_module(self, module_name: str) -> BpodModule | None:
-        """Get module by name
+        """Get module by name.
 
         Parameters
         ----------
@@ -135,7 +133,7 @@ class Bpod(BpodIO):
 
     @validate_call(config={'arbitrary_types_allowed': True})
     def _define_message(self, module: BpodModule | int, message: list[Uint8]) -> ActionIdx:
-        """Define a serial message to be sent to a Bpod module as an output action within a state
+        """Define a serial message to be sent to a Bpod module as an output action within a state.
 
         Parameters
         ----------
@@ -224,16 +222,17 @@ class Bpod(BpodIO):
         }
 
     def flush(self):
-        """
-        Flushes valve 1
-        :return:
-        """
+        """Flushes valve 1."""
         self.toggle_valve()
 
-    def toggle_valve(self, duration=None):
+    def toggle_valve(self, duration: int | None = None):
         """
-        Flushes valve 1 for duration (seconds)
-        :return:
+        Flush valve 1 for specified duration.
+
+        Parameters
+        ----------
+        duration : int, optional
+            Duration of valve opening in seconds.
         """
         if duration is None:
             self.open_valve(open=True, valve_number=1)
@@ -310,7 +309,7 @@ class Bpod(BpodIO):
     @validate_call
     def register_softcodes(self, softcode_dict: dict[int, Callable]) -> None:
         """
-        Register softcodes to be used in the state machine
+        Register softcodes to be used in the state machine.
 
         Parameters
         ----------
@@ -355,6 +354,7 @@ class MyRotaryEncoder:
 def sound_device_factory(output: Literal['xonar', 'harp', 'hifi', 'sysdefault'] = 'sysdefault', samplerate: int | None = None):
     """
     Will import, configure, and return sounddevice module to play sounds using onboard sound card.
+
     Parameters
     ----------
     output

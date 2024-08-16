@@ -23,7 +23,7 @@ class TabLog(QWidget, Ui_TabLog):
 
     @pyqtSlot()
     def clear(self):
-        """Clear the log"""
+        """Clear the log."""
         self.pushButtonClipboard.setEnabled(False)
         self.plainTextEditLog.clear()
 
@@ -39,10 +39,6 @@ class TabLog(QWidget, Ui_TabLog):
         color : str, optional
             The color of the text. Should be a valid color name recognized by
             QtGui.QColorConstants. Defaults to 'White'.
-
-        Returns
-        -------
-
         """
         self.pushButtonClipboard.setEnabled(True)
         self.setLogColor(color)

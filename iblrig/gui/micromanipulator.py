@@ -61,9 +61,7 @@ class GuiMicroManipulator(QtWidgets.QMainWindow, Ui_MainWindow):
 
 
 class MplCanvas(Canvas):
-    """
-    Matplotlib canvas class to create figure
-    """
+    """Matplotlib canvas class to create figure."""
 
     def __init__(self):
         self.fig, self.ax = plt.subplots(1, 2, gridspec_kw={'width_ratios': [1, 2]})

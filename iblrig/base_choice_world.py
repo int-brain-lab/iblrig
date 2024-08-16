@@ -165,10 +165,7 @@ class ChoiceWorldSession(
             self.bpod.register_softcodes(self.softcode_dictionary())
 
     def _run(self):
-        """
-        This is the method that runs the task with the actual state machine
-        :return:
-        """
+        """Run the task with the actual state machine."""
         time_last_trial_end = time.time()
         for i in range(self.task_params.NTRIALS):  # Main loop
             # t_overhead = time.time()
@@ -216,8 +213,9 @@ class ChoiceWorldSession(
 
     def mock(self, file_jsonable_fixture=None):
         """
-        This methods serves to instantiate a state machine and bpod object to simulate a task's run.
-        This is useful to test or display the state machine flow
+        Instantiate a state machine and Bpod object to simulate a task's run.
+
+        This is useful to test or display the state machine flow.
         """
         super().mock()
 
@@ -260,7 +258,8 @@ class ChoiceWorldSession(
 
     def get_graphviz_task(self, output_file=None, view=True):
         """
-        For a given task, outputs the state machine states diagram in Digraph format
+        Get the state machine's states diagram in Digraph format.
+
         :param output_file:
         :return:
         """
@@ -504,21 +503,19 @@ class ChoiceWorldSession(
         if not misc.get_port_events(events, name='Port1'):
             log.warning("NO CAMERA SYNC PULSES RECEIVED ON BPOD'S BEHAVIOR PORT 1")
 
-    def show_trial_log(self, extra_info=''):
+    def show_trial_log(self, extra_info='', log_level: int = logging.INFO):
         trial_info = self.trials_table.iloc[self.trial_num]
-        level = logging.INFO
-        log.log(level=level, msg=f'Outcome of Trial #{trial_info.trial_num}:')
-        log.log(level=level, msg=f'- Stim. Position:  {trial_info.position}')
-        log.log(level=level, msg=f'- Stim. Contrast:  {trial_info.contrast}')
-        log.log(level=level, msg=f'- Stim. Phase:     {trial_info.stim_phase}')
-        log.log(level=level, msg=f'- Stim. p Left:    {trial_info.stim_probability_left}')
-        log.log(level=level, msg=f'- Water delivered: {self.session_info.TOTAL_WATER_DELIVERED:.1f} µl')
-        log.log(level=level, msg=f'- Time from Start: {self.time_elapsed}')
-        log.log(level=level, msg=f'- Temperature:     {self.ambient_sensor_table.loc[self.trial_num, "Temperature_C"]:.1f} °C')
-        log.log(level=level, msg=f'- Air Pressure:    {self.ambient_sensor_table.loc[self.trial_num, "AirPressure_mb"]:.1f} mb')
-        log.log(
-            level=level, msg=f'- Rel. Humidity:   {self.ambient_sensor_table.loc[self.trial_num, "RelativeHumidity"]:.1f} %\n'
-        )
+
+        log.log(log_level, f'Outcome of Trial #{trial_info.trial_num}:')
+        log.log(log_level, f'- Stim. Position:  {trial_info.position}')
+        log.log(log_level, f'- Stim. Contrast:  {trial_info.contrast}')
+        log.log(log_level, f'- Stim. Phase:     {trial_info.stim_phase}')
+        log.log(log_level, f'- Stim. p Left:    {trial_info.stim_probability_left}')
+        log.log(log_level, f'- Water delivered: {self.session_info.TOTAL_WATER_DELIVERED:.1f} µl')
+        log.log(log_level, f'- Time from Start: {self.time_elapsed}')
+        log.log(log_level, f'- Temperature:     {self.ambient_sensor_table.loc[self.trial_num, "Temperature_C"]:.1f} °C')
+        log.log(log_level, f'- Air Pressure:    {self.ambient_sensor_table.loc[self.trial_num, "AirPressure_mb"]:.1f} mb')
+        log.log(log_level, f'- Rel. Humidity:   {self.ambient_sensor_table.loc[self.trial_num, "RelativeHumidity"]:.1f} %\n')
 
     @property
     def iti_reward(self):
@@ -808,7 +805,7 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
     def get_subject_training_info(self):
         """
         Get the previous session's according to this session parameters and deduce the
-        training level, adaptive reward amount and adaptive gain value
+        training level, adaptive reward amount and adaptive gain value.
 
         Returns
         -------
@@ -829,10 +826,7 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
         return training_info['training_phase'], training_info['adaptive_reward'], training_info['adaptive_gain']
 
     def compute_performance(self):
-        """
-        Aggregates the trials table to compute the performance of the mouse on each contrast
-        :return: None
-        """
+        """Aggregate the trials table to compute the performance of the mouse on each contrast."""
         self.trials_table['signed_contrast'] = self.trials_table['contrast'] * np.sign(self.trials_table['position'])
         performance = self.trials_table.groupby(['signed_contrast']).agg(
             last_50_perf=pd.NamedAgg(column='trial_correct', aggfunc=lambda x: np.sum(x[np.maximum(-50, -x.size) :]) / 50),
@@ -841,10 +835,7 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
         return performance
 
     def check_training_phase(self):
-        """
-        Checks if the mouse is ready to move to the next training phase
-        :return: None
-        """
+        """Check if the mouse is ready to move to the next training phase."""
         move_on = False
         if self.training_phase == 0:  # each of the -1, -.5, .5, 1 contrast should be above 80% perf to switch
             performance = self.compute_performance()
