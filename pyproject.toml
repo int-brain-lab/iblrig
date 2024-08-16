@@ -39,6 +39,7 @@ dependencies = [
     "scipy>=1.14.0",
     "sounddevice>=0.4.7",
     "annotated-types>=0.7.0",
+    "matplotlib>=3.9.2",
 ]
 
 [project.scripts]
