@@ -6,6 +6,7 @@ import shutil
 import socket
 import subprocess
 from collections.abc import Callable
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, TypeVar
 
@@ -351,17 +352,16 @@ T = TypeVar('T', bound=object)
 
 
 def get_inheritors(cls: T) -> set[T]:
-    """
-    Obtain a set of all direct inheritors of a class
-    """
+    """Obtain a set of all direct inheritors of a class."""
     subclasses = set(cls.__subclasses__())
     for child in subclasses:
         subclasses = subclasses.union(get_inheritors(child))
     return subclasses
 
 
+@dataclass
 class ANSI:
-    """ANSI Codes for formatting text on the CLI"""
+    """ANSI Codes for formatting text on the CLI."""
 
     PURPLE = '\033[95m'
     CYAN = '\033[96m'

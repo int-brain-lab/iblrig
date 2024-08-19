@@ -12,11 +12,13 @@ def load_task_jsonable(jsonable_file: str | Path, offset: int | None = None) -> 
     """
     Reads in a task data jsonable file and returns a trials dataframe and a bpod data list.
 
-    Parameters:
+    Parameters
+    ----------
     - jsonable_file (str): full path to jsonable file.
     - offset (int or None): The offset to start reading from (default: None).
 
-    Returns:
+    Returns
+    -------
     - tuple: A tuple containing:
         - trials_table (pandas.DataFrame): A DataFrame with the trial info in the same format as the Session trials table.
         - bpod_data (list): timing data for each trial

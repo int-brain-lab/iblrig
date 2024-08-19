@@ -21,7 +21,8 @@ def check_for_updates() -> tuple[bool, str]:
     This function compares the locally installed version of iblrig with the
     latest available version to determine if an update is available.
 
-    Returns:
+    Returns
+    -------
         tuple[bool, Union[str, None]]: A tuple containing two elements.
             - A boolean indicating whether an update is available.
             - A string representing the latest available version, or None if
@@ -90,7 +91,6 @@ def get_detailed_version_string(v_basic: str) -> str:
     -----
     This method will only work with installations managed through Git.
     """
-
     if not internet_available():
         return v_basic
 
@@ -276,7 +276,8 @@ def is_dirty() -> bool:
 
     Uses 'git diff --quiet' to determine if there are uncommitted changes in the Git repository.
 
-    Returns:
+    Returns
+    -------
         bool: True if the directory is dirty (has uncommitted changes) or an error occurs during execution,
               False if the directory is clean (no uncommitted changes).
     """

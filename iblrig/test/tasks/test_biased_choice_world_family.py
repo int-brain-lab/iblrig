@@ -18,7 +18,7 @@ class TestInstantiationBiased(BaseTestCases.CommonTestInstantiateTask):
         self.task = BiasedChoiceWorldSession(**self.task_kwargs)
         np.random.seed(12345)
 
-    def test_task(self, reward_set=None):
+    def test_task(self, reward_set: np.ndarray | None = None):
         if reward_set is None:
             reward_set = np.array([0, 1.5])
         task = self.task
@@ -65,20 +65,39 @@ class TestInstantiationBiased(BaseTestCases.CommonTestInstantiateTask):
         # assert the the trial outcomes are within 0.3 of the generating probability
         np.testing.assert_array_less(np.abs(df_blocks['position'] - df_blocks['stim_probability_left']), 0.4)
         np.testing.assert_array_equal(np.unique(task.trials_table['reward_amount']), reward_set)
+        # assert quiescent period
+        self.check_quiescent_period()
 
     def check_quiescent_period(self):
         """
-        Check that the quiescence period is between 0.4 and 0.8
+        Check the quiescence period
+
+        From Appendix 2:
+            At the beginning of each trial, the mouse must not move the wheel for a fixed, “quiescent” period for the
+            trial to continue. The duration of this period is between 400 and 700 milliseconds (computed as 200 ms +
+            a duration drawn from an exponential distribution with a mean of 350 milliseconds, min and max of 200-500
+            milliseconds).
+
         Overload this method for a change in quiescent period
         """
-        self.assertTrue(np.all(self.task.trials_table['quiescent_period'] > 0.4))
-        self.assertTrue(np.all(self.task.trials_table['quiescent_period'] < 0.8))
+        self.assertTrue(np.all(self.task.trials_table['quiescent_period'] >= 0.4))
+        self.assertTrue(np.all(self.task.trials_table['quiescent_period'] <= 0.7))
+        self.assertAlmostEqual(self.task.trials_table['quiescent_period'].mean() - 0.2, 0.35, delta=0.05)
 
 
 class TestImagingChoiceWorld(TestInstantiationBiased):
     def setUp(self) -> None:
         self.get_task_kwargs()
         self.task = ImagingChoiceWorldSession(**self.task_kwargs)
+
+    # TODO: Shouldn't the quiescent period for imaging choice world be different?
+    # def check_quiescent_period(self):
+    #     """
+    #     Check that the quiescence period is between 0.4 and 0.8
+    #     """
+    #     self.assertTrue(np.all(self.task.trials_table['quiescent_period'] > 0.4))
+    #     self.assertTrue(np.all(self.task.trials_table['quiescent_period'] < 1.0))
+    #     self.assertAlmostEqual(self.task.trials_table['quiescent_period'].mean(), 0.7, delta=0.05)
 
 
 class TestInstantiationEphys(TestInstantiationBiased):
@@ -92,7 +111,7 @@ class TestNeuroModulatorBiasedChoiceWorld(TestInstantiationBiased):
         self.get_task_kwargs()
         self.task = NeuroModulatorChoiceWorldSession(**self.task_kwargs)
 
-    def test_task(self):
+    def test_task(self, _=None):
         super().test_task(reward_set=np.array([0, 1.0, 1.5, 3.0]))
         # we expect 10% of null feedback trials
         assert np.abs(0.05 - np.mean(self.task.trials_table['omit_feedback'])) < 0.05

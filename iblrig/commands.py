@@ -91,18 +91,14 @@ def dir_path(directory: str) -> Path:
 
 
 def transfer_data_cli():
-    """
-    Command-line interface for transferring behavioral data to the local server.
-    """
+    """Command-line interface for transferring behavioral data to the local server."""
     setup_logger('iblrig', level='INFO')
     args = _transfer_parser('Copy data to the local server.').parse_args()
     transfer_data(**vars(args), interactive=True)
 
 
 def transfer_video_data_cli():
-    """
-    Command-line interface for transferring video data to the local server.
-    """
+    """Command-line interface for transferring video data to the local server."""
     setup_logger('iblrig', level='INFO')
     warnings.warn(
         'transfer_video_data will be removed in the future. Use "transfer_data video" instead.', FutureWarning, stacklevel=2
@@ -112,9 +108,7 @@ def transfer_video_data_cli():
 
 
 def transfer_ephys_data_cli():
-    """
-    Command-line interface for transferring ephys data to the local server.
-    """
+    """Command-line interface for transferring ephys data to the local server."""
     setup_logger('iblrig', level='INFO')
     warnings.warn(
         'transfer_ephys_data will be removed in the future. Use "transfer_data ephys" instead.', FutureWarning, stacklevel=2
@@ -360,10 +354,7 @@ def view_session():
 
 
 def flush():
-    """
-    Flushes the valve until the user hits enter
-    :return:
-    """
+    """Flush the valve until the user hits enter."""
     file_settings = Path(iblrig.__file__).parents[1].joinpath('settings', 'hardware_settings.yaml')
     hardware_settings = yaml.safe_load(file_settings.read_text())
     bpod = Bpod(hardware_settings['device_bpod']['COM_BPOD'])

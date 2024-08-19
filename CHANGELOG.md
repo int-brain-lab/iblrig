@@ -1,10 +1,15 @@
 Changelog
 =========
 
+8.22.1
+------
+* get past sessions bugfix when newer sessions are present only on the remote server
 
 8.22.0
 ------
 * add UI components for selecting remote devices
+
+-------------------------------
 
 8.21.2
 ------

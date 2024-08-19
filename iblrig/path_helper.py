@@ -25,9 +25,8 @@ T = TypeVar('T', bound=BaseModel)
 
 def iterate_previous_sessions(subject_name: str, task_name: str, n: int = 1, **kwargs) -> list[dict]:
     """
-    This function iterates over the sessions of a given subject in both the remote and local path
-    and searches for a given protocol name. It returns the information of the last n found
-    matching protocols in the form of a dictionary.
+    Iterate over the sessions of a given subject in both the remote and local path and search for a given protocol name.
+    Return the information of the last n found matching protocols in the form of a dictionary.
 
     Parameters
     ----------
@@ -54,8 +53,9 @@ def iterate_previous_sessions(subject_name: str, task_name: str, n: int = 1, **k
         remote_sessions = _iterate_protocols(remote_subjects_folder.joinpath(subject_name), task_name=task_name, n=n)
         if remote_sessions is not None:
             sessions.extend(remote_sessions)
+        # here we rely on the fact that np.unique sort and then we output sessions with the last one first
         _, ises = np.unique([s['session_stub'] for s in sessions], return_index=True)
-        sessions = [sessions[i] for i in ises]
+        sessions = [sessions[i] for i in np.flipud(ises)]
     return sessions
 
 
@@ -144,7 +144,6 @@ def get_local_and_remote_paths(
         'local_subjects_folder': PosixPath('C:/iblrigv8_data/mainenlab/Subjects'),
         'remote_subjects_folder': PosixPath('Y:/Subjects')}
     """
-
     # we only want to attempt to load the settings file if necessary
     if (local_path is None) or (remote_path is None) or (lab is None):
         iblrig_settings = load_pydantic_yaml(RigSettings) if iblrig_settings is None else iblrig_settings

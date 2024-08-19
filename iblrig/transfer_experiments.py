@@ -158,10 +158,10 @@ class SessionCopier:
 
     def run(self, number_of_expected_devices=None):
         """
-        Runs the copy of this device experiment. It will try to get as far as possible in the copy
-        process (from states 0 init experiment to state 3 finalize experiment) if possible, and
-        return earlier if the process can't be completed.
-        :return:
+        Run the copy of this device experiment.
+
+        Will try to get as far as possible in the copy process (from states 0 init experiment to state 3 finalize experiment)
+        if possible, and return earlier if the process can't be completed.
         """
         if self.state == CopyState.HARD_RESET:  # this case is not implemented automatically and corresponds to a hard reset
             log.info(f'{self.state}, {self.session_path}')
@@ -182,6 +182,7 @@ class SessionCopier:
     def get_state(self) -> tuple[CopyState | None, str]:
         """
         Gets the current copier state.
+
         State 0: this device experiment has not been initialized for this device
         State 1: this device experiment is initialized (the experiment description stub is present on the remote)
         State 2: this device experiment is copied on the remote server, but other devices copies are still pending

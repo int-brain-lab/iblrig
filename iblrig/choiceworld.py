@@ -74,7 +74,6 @@ def get_subject_training_info(
     session_info: dict or None
         Dictionary with keys: session_path, experiment_description, task_settings, file_task_data
     """
-
     # default values (if no previous session is available)
     training_info = {
         'training_phase': DEFAULT_TRAINING_PHASE,

@@ -232,7 +232,7 @@ class Session(BiasedChoiceWorldSession):
 
 class SessionRelatedBlocks(Session):
     """
-    IN this scenario, the blocks define a poor and a rich side.
+    In this scenario, the blocks define a poor and a rich side.
     The probability blocks and reward blocks structure is staggered so that we explore all configurations every 4 blocks
     P0 P1 P2 P1 P2 P1 P2 P1 P2
     R0 R1 R1 R2 R2 R1 R1 R2 R2

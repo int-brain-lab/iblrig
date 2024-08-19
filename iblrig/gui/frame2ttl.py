@@ -87,15 +87,28 @@ class Frame2TTLCalibrationTarget(QtWidgets.QDialog):
                 screen_index = idx
                 if screen.size().width() == 2048 and screen.size().height() == 1536:
                     break
-            else:
-                log.warning('Defaulting to screen index 0.')
+            else:  # if no break statement occurred, i.e. no iPad screen was found
                 screen_index = 0
                 screen = QtWidgets.QApplication.screens()[0]
+                log.warning(
+                    f'Could not identify iPad screen (2048x1536) - defaulting to Screen {screen_index} '
+                    f'({screen.geometry().width()}x{screen.geometry().height()}).'
+                )
 
         # convert relative parameters (used in bonsai scripts) to width and height
-        if width is None and height is None:
+        if width is None or height is None:
             screen_width = screen.geometry().width()
             screen_height = screen.geometry().height()
+            aspect_ratio = round(screen_width / screen_height, 2)
+
+            # the default relative parameters are meant for 4:3 screens and need to be adapted for other aspect ratios
+            if rel_pos_x == 1.33 and aspect_ratio != rel_pos_x:
+                log.warning(
+                    f'Screen {screen_index} has an unexpected aspect ratio of {aspect_ratio:0.2f}:1 - '
+                    f'setting rel_pos_x to {aspect_ratio} instead of {rel_pos_x} accordingly.'
+                )
+                rel_pos_x = aspect_ratio
+
             width = round(screen_width - (screen_width + (rel_pos_x - rel_extent_x / 2) * screen_height) / 2)
             height = round(screen_height - (1 - rel_pos_y - rel_extent_y / 2) * screen_height / 2)
 

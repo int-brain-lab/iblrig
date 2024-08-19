@@ -27,9 +27,12 @@ class Session(BiasedChoiceWorldSession):
     @staticmethod
     def get_session_template(session_template_id: int) -> pd.DataFrame:
         """
-        Returns the pre-generated trials dataframe from the 12 fixtures according to the template iD
-        :param session_template_id: int 0-11
-        :return:
+        Return the pre-generated trials dataframe from the 12 fixtures according to the template ID.
+
+        Parameters
+        ----------
+        session_template_id : int
+            Session template ID (0-11).
         """
         trials_table = pd.read_parquet(Path(__file__).parent.joinpath('trials_fixtures.pqt'))
         trials_table = (

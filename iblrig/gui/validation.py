@@ -131,9 +131,7 @@ class SystemValidationDialog(QtWidgets.QDialog, Ui_validation):
         self.run()
 
     def run(self):
-        """
-        Prepare GUI and start worker thread for running validators
-        """
+        """Prepare GUI and start worker thread for running validators."""
         self.pushButtonOK.setEnabled(False)
         self.pushButtonRerun.setEnabled(False)
         self.treeView.expandAll()
@@ -145,9 +143,7 @@ class SystemValidationDialog(QtWidgets.QDialog, Ui_validation):
         QThreadPool.globalInstance().tryStart(self.worker)
 
     def run_subprocess(self):
-        """
-        Run all validators in a subprocess
-        """
+        """Run all validators in a subprocess."""
         for idx, validator_item in enumerate(self.validator_items):
             self.item_started.emit(idx)
             results = []
