@@ -14,6 +14,8 @@ import numpy as np
 import sounddevice
 import usb
 from dateutil.relativedelta import relativedelta
+from PyQt5.QtGui import QColorConstants
+from PyQt5.QtWidgets import QApplication
 from serial import Serial, SerialException
 from serial.serialutil import SerialTimeoutException
 from serial.tools import list_ports
@@ -97,7 +99,10 @@ class Validator(ABC):
             yield Result(Status.INFO, f'Cannot complete validation of {self.name} without Bpod')
             return None
         try:
-            return Bpod(self.hardware_settings.device_bpod.COM_BPOD, skip_initialization=True)
+            disabled_ports = [x - 1 for x in self.hardware_settings['device_bpod']['DISABLE_BEHAVIOR_INPUT_PORTS']]
+            return Bpod(
+                self.hardware_settings.device_bpod.COM_BPOD, skip_initialization=True, disable_behavior_ports=disabled_ports
+            )
         except Exception as e:
             yield Result(Status.FAIL, f'Cannot complete validation of {self.name}: connection to Bpod failed', exception=e)
             return None
@@ -385,7 +390,7 @@ class ValidatorBpod(ValidatorSerial):
             rate = np.mean(1 / np.diff(timestamps))
             port = re.sub('(In)|(High)', '', event_name)
             port = re.sub('Port', 'Behavior Port ', port)
-            port = re.sub('BNC', 'BNC In ', port)
+            port = re.sub('BNC', 'BNC Input ', port)
             if event_name in ['Port1In']:
                 yield Result(Status.INFO, f"Expected input events on Bpod's '{port}' at ~{rate:0.0f} Hz")
             else:
@@ -576,6 +581,63 @@ class ValidatorFrame2TTL(ValidatorSerial):
         if bpod is None:
             return False
 
+        # prepare test of TTL output
+        from iblrig.gui.frame2ttl import Frame2TTLCalibrationTarget
+
+        app = QApplication.instance()
+        if app_created := app is None:
+            app = QApplication([])
+        calibration_target = Frame2TTLCalibrationTarget(color=QColorConstants.Black)
+        calibration_target.show()
+
+        # Define state-machine
+        def softcode_handler(softcode: int):
+            nonlocal calibration_target
+            calibration_target.color = QColorConstants.White if softcode == 1 else QColorConstants.Black
+
+        original_softcode_handler = bpod.softcode_handler_function
+        bpod.softcode_handler_function = softcode_handler
+        sma = StateMachine(bpod)
+        sma.add_state(
+            state_name='white',
+            state_timer=1,
+            state_change_conditions={'Tup': 'black', 'BNC1High': 'black'},
+            output_actions=[('SoftCode', 1)],
+        )
+        sma.add_state(
+            state_name='black',
+            state_timer=1,
+            state_change_conditions={'Tup': 'exit', 'BNC1Low': 'exit'},
+            output_actions=[('SoftCode', 2)],
+        )
+
+        # Run state-machine
+        try:
+            bpod.send_state_machine(sma)
+            bpod.run_state_machine(sma)
+            bpod_data = bpod.session.current_trial.export()
+            events: dict[str, list[float]] = bpod_data.get('Events timestamps', {})
+        except Exception as e:
+            yield Result(Status.FAIL, 'Error running state-machine', exception=e)
+            return False
+        finally:
+            bpod.softcode_handler_function = original_softcode_handler
+            calibration_target.close()
+            if app_created:
+                app.quit()
+
+        # Evaluate results
+        if (n_events := len(events.get('BNC1High', [])) + len(events.get('BNC1Low', []))) == 2:
+            yield Result(Status.PASS, "Detected the correct number of events on Bpod's 'TTL Input 1'")
+            return True
+        else:
+            yield Result(
+                Status.FAIL,
+                ('No' if n_events == 0 else 'too few' if n_events < 2 else 'too many') + " events detected on Bpod's 'BNC Input 1'",
+                solution='Check for proper installation and calibration of Frame2TTL module',
+            )
+            return False
+
 
 class ValidatorGit(Validator):
     _name = 'Git'
@@ -643,7 +705,7 @@ class ValidatorSound(ValidatorSerial):
     _module_name: str | None = None
 
     def __init__(self, *args, **kwargs):
-        output_type = kwargs['hardware_settings'].device_sound.OUTPUT
+        output_type = kwargs.get('hardware_settings', load_pydantic_yaml(HardwareSettings)).device_sound.OUTPUT
         match output_type:
             case 'harp':
                 self._name = 'HARP Sound Card'
@@ -727,7 +789,7 @@ class ValidatorSound(ValidatorSerial):
                     solution="Make sure to connect the sound-card to Bpod's TTL Input 2",
                 )
             elif n_events == 1:
-                yield Result(Status.PASS, "Detected Event on Bpod's TTL Input 2")
+                yield Result(Status.PASS, "Detected Event on Bpod's 'TTL Input 2'")
             else:
                 yield Result(
                     Status.FAIL,
