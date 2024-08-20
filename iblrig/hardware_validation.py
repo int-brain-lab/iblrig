@@ -706,7 +706,7 @@ class ValidatorSound(ValidatorSerial):
     _module_name: str | None = None
 
     def __init__(self, *args, **kwargs):
-        output_type = kwargs.get('hardware_settings', load_pydantic_yaml(HardwareSettings)).device_sound.OUTPUT
+        output_type = kwargs['hardware_settings'].device_sound.OUTPUT
         match output_type:
             case 'harp':
                 self._name = 'HARP Sound Card'
