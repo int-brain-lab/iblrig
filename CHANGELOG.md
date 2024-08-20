@@ -1,6 +1,10 @@
 Changelog
 =========
 
+8.22.2
+------
+* hardware validation: check for unexpected events
+
 8.22.1
 ------
 * get past sessions bugfix when newer sessions are present only on the remote server

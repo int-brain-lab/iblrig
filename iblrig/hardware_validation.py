@@ -339,7 +339,10 @@ class ValidatorBpod(ValidatorSerial):
 
         # try to connect to Bpod
         try:
-            bpod = Bpod(self.hardware_settings.device_bpod.COM_BPOD, skip_initialization=False)
+            disabled_ports = [x - 1 for x in self.hardware_settings['device_bpod']['DISABLE_BEHAVIOR_INPUT_PORTS']]
+            bpod = Bpod(
+                self.hardware_settings.device_bpod.COM_BPOD, skip_initialization=False, disable_behavior_ports=disabled_ports
+            )
             yield Result(Status.PASS, 'Successfully connected to Bpod using pybpod')
         except Exception as e:
             yield Result(
@@ -351,6 +354,36 @@ class ValidatorBpod(ValidatorSerial):
         for module in bpod.modules:
             if module.connected:
                 yield Result(Status.INFO, f'Module on port #{module.serial_port}: "{module.name}"')
+
+        # run a simple state machine to collect events on digital inputs
+        try:
+            sma = StateMachine(bpod)
+            sma.add_state(sma.add_state('state', 0.2, {'Tup': 'exit'}))
+            bpod.send_state_machine(sma)
+            bpod.run_state_machine(sma)
+            bpod_data = bpod.session.current_trial.export()
+            events: dict[str, list[float]] = bpod_data.get('Events timestamps', {})
+        except Exception as e:
+            yield Result(Status.FAIL, 'Error running state-machine', exception=e)
+            return False
+
+        # check for (un)expected input events
+        for event_name, timestamps in sorted(events.items()):
+            if event_name.endswith('Out') or event_name.endswith('Low') or event_name == 'Tup':
+                continue
+            rate = np.mean(1 / np.diff(timestamps))
+            port = re.sub('(In)|(High)', '', event_name)
+            port = re.sub('Port', 'Behavior Port ', port)
+            port = re.sub('BNC', 'BNC In ', port)
+            if event_name in ['Port1In']:
+                yield Result(Status.INFO, f"Expected input events on Bpod's '{port}' at ~{rate:0.0f} Hz")
+            else:
+                yield Result(
+                    Status.FAIL,
+                    f"Unexpected input events on Bpod's '{port}' at ~{rate:0.0f} Hz",
+                    solution=f"Check wiring / device connected on '{port}'.",
+                )
+
         return True
 
 
