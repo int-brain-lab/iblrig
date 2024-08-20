@@ -4,6 +4,7 @@ Changelog
 8.22.2
 ------
 * hardware validation: check for unexpected events
+* hardware validation: frame2ttl
 
 8.22.1
 ------

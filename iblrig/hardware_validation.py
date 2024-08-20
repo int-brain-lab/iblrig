@@ -15,11 +15,13 @@ import sounddevice
 import usb
 from dateutil.relativedelta import relativedelta
 from serial import Serial, SerialException
+from serial.serialutil import SerialTimeoutException
 from serial.tools import list_ports
 from serial.tools.list_ports_common import ListPortInfo
 
 from iblrig.base_tasks import BpodMixin, SoundMixin
 from iblrig.constants import BASE_PATH, HAS_PYSPIN, HAS_SPINNAKER, IS_GIT
+from iblrig.frame2ttl import Frame2TTL
 from iblrig.hardware import Bpod
 from iblrig.path_helper import load_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings, RigSettings
@@ -144,7 +146,7 @@ class Validator(ABC):
 
 class ValidatorSerial(Validator):
     port_properties: dict[str, Any] = {}
-    serial_queries: None | dict[tuple[object, int], bytes] = None
+    serial_queries: None | dict[tuple[bytes, int], bytes] = None
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -180,7 +182,7 @@ class ValidatorSerial(Validator):
             except SerialException as e:
                 yield Result(
                     Status.FAIL,
-                    f'{self.name} on {self.port} cannot be connected to',
+                    f'Serial device on {self.port} cannot be connected to',
                     solution='Try power-cycling the device',
                     exception=e,
                 )
@@ -193,13 +195,22 @@ class ValidatorSerial(Validator):
 
         # query the devices for characteristic responses
         if passed and getattr(self, 'serial_queries', None) is not None:
-            with Serial(self.port, timeout=1) as ser:
-                for query, regex_pattern in self.serial_queries.items():
-                    ser.write(query[0])
-                    return_string = ser.read(query[1])
-                    ser.flush()
-                    if not (passed := bool(re.search(regex_pattern, return_string))):
-                        break
+            with Serial(self.port, timeout=1, write_timeout=1) as ser:
+                try:
+                    for query, regex_pattern in self.serial_queries.items():
+                        ser.write(query[0])
+                        return_string = ser.read(query[1])
+                        ser.flush()
+                        if not (passed := bool(re.search(regex_pattern, return_string))):
+                            break
+                except SerialTimeoutException as e:
+                    yield Result(
+                        Status.FAIL,
+                        f'Writing to serial device on {self.port} timed out',
+                        solution='Try power-cycling the device',
+                        exception=e,
+                    )
+                    return False
 
         if passed:
             yield Result(Status.PASS, f'Serial device positively identified as {self.name}')
@@ -535,6 +546,37 @@ class ValidatorMic(Validator):
             return False
 
 
+class ValidatorFrame2TTL(ValidatorSerial):
+    _name = 'Frame2TTL'
+    serial_queries = {(b'C', 1): b'\xda'}
+
+    @property
+    def port(self):
+        return self.hardware_settings.device_frame2ttl.COM_F2TTL
+
+    def _run(self):
+        # invoke ValidateSerialDevice._run()
+        success = yield from super()._run()
+        if not success:
+            return False
+
+        # obtain information on versions and thresholds
+        with Frame2TTL(
+            port=self.port,
+            threshold_light=self.hardware_settings.device_frame2ttl.F2TTL_LIGHT_THRESH,
+            threshold_dark=self.hardware_settings.device_frame2ttl.F2TTL_DARK_THRESH,
+        ) as frame2ttl:
+            yield Result(Status.INFO, f'Hardware Version: {frame2ttl.hw_version}')
+            yield Result(Status.INFO, f'Firmware Version: {frame2ttl.fw_version}')
+            yield Result(Status.INFO, f'Light Threshold: {frame2ttl.threshold_light} {frame2ttl.unit_str}')
+            yield Result(Status.INFO, f'Dark Threshold: {frame2ttl.threshold_dark} {frame2ttl.unit_str}')
+
+        # try to get Bpod
+        bpod = yield from self._get_bpod()
+        if bpod is None:
+            return False
+
+
 class ValidatorGit(Validator):
     _name = 'Git'
 
@@ -590,6 +632,9 @@ class _SoundCheckTask(BpodMixin, SoundMixin):
         pass
 
     def create_session(self):
+        pass
+
+    def send_spacers(self):
         pass
 
 
