@@ -633,7 +633,8 @@ class ValidatorFrame2TTL(ValidatorSerial):
         else:
             yield Result(
                 Status.FAIL,
-                ('No' if n_events == 0 else 'too few' if n_events < 2 else 'too many') + " events detected on Bpod's 'BNC Input 1'",
+                ('No' if n_events == 0 else 'too few' if n_events < 2 else 'too many')
+                + " events detected on Bpod's 'BNC Input 1'",
                 solution='Check for proper installation and calibration of Frame2TTL module',
             )
             return False
