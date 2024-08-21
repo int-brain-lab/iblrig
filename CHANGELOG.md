@@ -1,6 +1,13 @@
 Changelog
 =========
 
+8.23.0
+------
+* hardware validation: check for unexpected events on Bpod's digital input ports
+* hardware validation: frame2ttl
+
+-------------------------------
+
 8.22.1
 ------
 * get past sessions bugfix when newer sessions are present only on the remote server
@@ -8,6 +15,8 @@ Changelog
 8.22.0
 ------
 * add UI components for selecting remote devices
+
+-------------------------------
 
 8.21.2
 ------

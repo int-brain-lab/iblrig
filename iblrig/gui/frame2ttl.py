@@ -2,6 +2,7 @@ import logging
 from datetime import date
 
 from PyQt5 import QtCore, QtGui, QtTest, QtWidgets
+from PyQt5.QtWidgets import QWidget
 
 from iblrig.frame2ttl import Frame2TTL
 from iblrig.gui.tools import Worker
@@ -70,7 +71,7 @@ class Frame2TTLCalibrationDialog(QtWidgets.QDialog, Ui_frame2ttl):
 class Frame2TTLCalibrationTarget(QtWidgets.QDialog):
     def __init__(
         self,
-        parent,
+        parent: QWidget | None = None,
         color: QtGui.QColor = QtGui.QColorConstants.White,
         screen_index: int | None = None,
         width: int | None = None,

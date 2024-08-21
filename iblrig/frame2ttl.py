@@ -127,7 +127,7 @@ class Frame2TTL(SerialSingleton):
 
     @property
     def threshold_light(self) -> int:
-        return self._threshold_dark
+        return self._threshold_light
 
     @threshold_light.setter
     def threshold_light(self, value: int) -> None:

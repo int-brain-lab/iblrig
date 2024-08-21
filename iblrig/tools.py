@@ -363,6 +363,7 @@ def get_inheritors(cls: T) -> set[T]:
 class ANSI:
     """ANSI Codes for formatting text on the CLI."""
 
+    WHITE = '\033[37m'
     PURPLE = '\033[95m'
     CYAN = '\033[96m'
     DARKCYAN = '\033[36m'
@@ -371,5 +372,6 @@ class ANSI:
     YELLOW = '\033[93m'
     RED = '\033[91m'
     BOLD = '\033[1m'
+    DIM = '\033[2m'
     UNDERLINE = '\033[4m'
     END = '\033[0m'
