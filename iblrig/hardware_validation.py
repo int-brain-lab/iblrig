@@ -96,7 +96,7 @@ class Validator(ABC):
 
     def _get_bpod(self) -> Generator[Result, None, Bpod | None]:
         if self.hardware_settings.device_bpod.COM_BPOD is None:
-            yield Result(Status.INFO, f'Cannot complete validation of {self.name} without Bpod')
+            yield Result(Status.WARN, f'Cannot complete validation of {self.name} without Bpod')
             return None
         try:
             disabled_ports = [x - 1 for x in self.hardware_settings['device_bpod']['DISABLE_BEHAVIOR_INPUT_PORTS']]
@@ -166,7 +166,11 @@ class ValidatorSerial(Validator):
 
     def _run(self):
         if self.port is None:
-            yield Result(Status.SKIP, f'No serial port defined for {self.name}')
+            yield Result(
+                Status.FAIL,
+                f'No serial port defined for {self.name}',
+                solution='Check serial port setting in hardware_settings.yaml',
+            )
             return False
         elif next((p for p in list_ports.comports() if p.device == self.port), None) is None:
             yield Result(
@@ -776,12 +780,14 @@ class ValidatorSound(ValidatorSerial):
 
         # run state machine
         if self.interactive:
+            logging.disable(logging.INFO)
             task = _SoundCheckTask(subject='toto')
             task.start_hardware()
             sma = task.get_state_machine()
             task.bpod.send_state_machine(sma)
             yield Result(Status.INFO, 'Playing audible sound - can you hear it?')
             task.bpod.run_state_machine(sma)
+            logging.disable(logging.NOTSET)
             bpod_data = task.bpod.session.current_trial.export()
             if (n_events := len(bpod_data['Events timestamps'].get('BNC2High', []))) == 0:
                 yield Result(
@@ -813,23 +819,38 @@ def run_all_validators(
 
 def run_all_validators_cli():
     validators = get_all_validators()
+    hardware_settings = load_pydantic_yaml(HardwareSettings)
+    iblrig_settings = load_pydantic_yaml(RigSettings)
     fail = 0
     warn = 0
     for validator in validators:
-        v = validator()
+        v = validator(hardware_settings=hardware_settings, iblrig_settings=iblrig_settings, interactive=True)
         print(f'{ANSI.BOLD + ANSI.UNDERLINE + v.name + ANSI.END}')
         for result in v.run():
-            if result.status == Status.FAIL:
-                color = ANSI.RED + ANSI.BOLD
-                fail += 1
-            elif result.status == Status.WARN:
-                color = ANSI.YELLOW + ANSI.BOLD
-                warn += 1
-            else:
-                color = ANSI.END
-            print(f'{color}- {result.message}{ANSI.END}')
+            match result.status:
+                case Status.PASS:
+                    color = ANSI.GREEN
+                    symbol = '✓'
+                case Status.FAIL:
+                    color = ANSI.RED + ANSI.BOLD
+                    fail += 1
+                    symbol = '✗'
+                case Status.WARN:
+                    color = ANSI.YELLOW + ANSI.BOLD
+                    warn += 1
+                    symbol = '!'
+                case Status.INFO:
+                    color = ANSI.BLUE
+                    symbol = 'i'
+                case Status.SKIP:
+                    color = ANSI.WHITE
+                    symbol = '∅'
+                case _:
+                    color = ANSI.END
+                    symbol = ' '
+            print(f'{color}  {symbol}  {result.message}{ANSI.END}')
             if result.solution is not None and len(result.solution) > 0:
-                print(f'{color}  Suggestion: {result.solution}{ANSI.END}')
+                print(f'{color}     Suggestion: {result.solution}{ANSI.END}')
         print('')
     if fail > 0:
         print(ANSI.RED + ANSI.BOLD + f'{fail} validation{"s" if fail > 1 else ""} failed.')
