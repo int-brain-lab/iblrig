@@ -1,8 +1,10 @@
 import logging
 import re
 from collections.abc import Callable
+from functools import cache
 from pathlib import Path
 from subprocess import STDOUT, CalledProcessError, SubprocessError, check_call, check_output
+from typing import Any, Literal
 
 import requests
 from packaging import version
@@ -125,35 +127,70 @@ def get_detailed_version_string(v_basic: str) -> str:
     return v_detailed
 
 
-@static_vars(branch=None)
+cached_check_output = cache(check_output)
+OnErrorLiteral = Literal['raise', 'log', 'silence']
+
+
+def call_git(*args: str, cache_output: bool = True, on_error: OnErrorLiteral = 'raise') -> str | None:
+    """
+    Call a git command with the specified arguments.
+
+    This function executes a git command with the provided arguments. It can cache the output of the command
+    and handle errors based on the specified behavior.
+
+    Parameters
+    ----------
+    *args : str
+        The arguments to pass to the git command.
+    cache_output : bool, optional
+        Whether to cache the output of the command. Default is True.
+    on_error : str, optional
+        The behavior when an error occurs. Either
+        - 'raise': raise the exception (default),
+        - 'log': log the exception, or
+        - 'silence': suppress the exception.
+
+    Returns
+    -------
+    str or None
+        The output of the git command as a string, or None if an error occurred.
+
+    Raises
+    ------
+    RuntimeError
+        If the installation is not managed through git and on_error is set to 'raise'.
+    SubprocessError
+        If the command fails and on_error is set to 'raise'.
+    """
+    kwargs: dict[str, Any] = {'args': ('git', *args), 'cwd': BASE_DIR, 'timeout': 5, 'text': True}
+    if not IS_GIT:
+        message = 'This installation of iblrig is not managed through git'
+        if on_error == 'raise':
+            raise RuntimeError(message)
+        elif on_error == 'log':
+            log.error(message)
+        return None
+    try:
+        output = cached_check_output(**kwargs) if cache_output else check_output(**kwargs)
+        return output.strip()
+    except SubprocessError as e:
+        if on_error == 'raise':
+            raise e
+        elif on_error == 'log':
+            log.exception(e)
+        return None
+
+
 def get_branch() -> str | None:
     """
     Get the Git branch of the iblrig installation.
 
-    This function retrieves and caches the Git branch of the iblrig installation.
-    If the branch is already cached, it returns the cached value. If not, it
-    attempts to obtain the branch from the Git repository.
-
     Returns
     -------
-    Union[str, None]
+    str or None
         The Git branch of the iblrig installation, or None if it cannot be determined.
-
-    Notes
-    -----
-    This method will only work with installations managed through Git.
     """
-    if get_branch.branch is not None:
-        return get_branch.branch
-    if not IS_GIT:
-        log.error('This installation of iblrig is not managed through git')
-    try:
-        get_branch.branch = check_output(
-            ['git', 'rev-parse', '--abbrev-ref', 'HEAD'], cwd=BASE_DIR, timeout=5, text=True
-        ).removesuffix('\n')
-        return get_branch.branch
-    except (SubprocessError, CalledProcessError):
-        return None
+    return call_git('rev-parse', '--abbrev-ref', 'HEAD', on_error='log')
 
 
 @static_vars(is_fetched_already=False)
@@ -177,8 +214,10 @@ def get_remote_tags() -> None:
         return
     if not IS_GIT:
         log.error('This installation of iblrig is not managed through git')
+    if (branch := get_branch()) is None:
+        return
     try:
-        check_call(['git', 'fetch', 'origin', get_branch(), '-t', '-q', '-f'], cwd=BASE_DIR, timeout=5)
+        check_call(['git', 'fetch', 'origin', branch, '-t', '-q', '-f'], cwd=BASE_DIR, timeout=5)
     except (SubprocessError, CalledProcessError):
         return
     get_remote_tags.is_fetched_already = True
