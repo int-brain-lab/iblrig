@@ -1,6 +1,6 @@
 import unittest
 
-from iblrig.hardware_validation import Result, Status, Validator, get_all_validators, run_all_validators
+from iblrig.hardware_validation import Result, Status, Validator, run_all_validators
 from iblrig.path_helper import load_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings, RigSettings
 
