@@ -1,6 +1,6 @@
 import unittest
 
-from iblrig.hardware_validation import Result, Status, Validator, get_all_validators
+from iblrig.hardware_validation import Result, Status, Validator, get_all_validators, run_all_validators
 from iblrig.path_helper import load_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings, RigSettings
 
@@ -13,9 +13,9 @@ VALIDATORS_INIT_KWARGS = dict(
 class DummyValidateHardware(Validator):
     def _run(self, passes=True):
         if passes:
-            return Result(status=Status.PASS, message='Dummy test passed')
+            yield Result(status=Status.PASS, message='Dummy test passed')
         else:
-            return Result(status=Status.FAIL, message='Dummy test failed')
+            yield Result(status=Status.FAIL, message='Dummy test failed')
 
 
 class TestHardwareValidationBase(unittest.TestCase):
@@ -27,10 +27,10 @@ class TestHardwareValidationBase(unittest.TestCase):
         td.run(passes=False)
 
 
-class TestInstantiateClasses(unittest.TestCase):
-    def test_hardware_classes(self):
-        for validator in get_all_validators():
-            validator(**VALIDATORS_INIT_KWARGS)
+class TestRunAllValidators(unittest.TestCase):
+    def test_run_all_validators(self):
+        for result in run_all_validators(**VALIDATORS_INIT_KWARGS):
+            self.assertIsInstance(result, Result)
 
 
 # class TestAlyxValidation(unittest.TestCase):
