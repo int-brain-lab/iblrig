@@ -1,10 +1,12 @@
 Changelog
 =========
 
-8.22.2
+8.23.0
 ------
-* hardware validation: check for unexpected events
+* hardware validation: check for unexpected events on Bpod's digital input ports
 * hardware validation: frame2ttl
+
+-------------------------------
 
 8.22.1
 ------

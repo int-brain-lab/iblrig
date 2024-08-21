@@ -847,7 +847,7 @@ def run_all_validators_cli():
                     symbol = '∅'
                 case _:
                     color = ANSI.END
-                    symbol = ' '
+                    symbol = '?'
             print(f'{color}  {symbol}  {result.message}{ANSI.END}')
             if result.solution is not None and len(result.solution) > 0:
                 print(f'{color}     Suggestion: {result.solution}{ANSI.END}')

@@ -6,7 +6,7 @@
 # 5) git tag the release in accordance to the version number below (after merge!)
 # >>> git tag 8.15.6
 # >>> git push origin --tags
-__version__ = '8.22.2'
+__version__ = '8.23.0'
 
 
 from iblrig.version_management import get_detailed_version_string
