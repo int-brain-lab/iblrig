@@ -104,7 +104,7 @@ files                  = [ "iblrig/[!test]**/*.py", "iblrig_tasks/**/*.py" ]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
-addopts    = "-ra --showlocals --cov=iblrig --cov=iblrig_tasks --cov-report=html --cov-report=xml --tb=short"
+addopts    = "-ra --showlocals --cov-report=html --cov-report=xml --tb=short"
 minversion = "6.0"
 testpaths  = [ "iblrig/test" ]
 python_files = [ "test_*.py" ]
@@ -176,4 +176,6 @@ known-first-party = [ "ibl*", "one*", "pybpod*" ]
 exclude = [ "docs", "venv", "iblrig/test" ]
 
 [tool.coverage.run]
+source = [ "iblrig", "iblrig_tasks" ]
 omit = [ "iblrig/test/**" ]
+relative_files = true
