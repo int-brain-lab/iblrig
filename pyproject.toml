@@ -170,12 +170,15 @@ quote-style = "single"
 convention = "numpy"
 
 [tool.ruff.lint.isort]
-known-first-party = [ "ibl*", "one*", "pybpod*" ]
+known-first-party = [ "ibl*", "one*", "pybpod*", "tycmd" ]
 
 [tool.deadcode]
-exclude = [ "docs", "venv", "iblrig/test" ]
+exclude = [ "docs", "venv", ".venv" ]
 
 [tool.coverage.run]
-source = [ "iblrig", "iblrig_tasks" ]
-omit = [ "iblrig/test/**" ]
+source_pkgs = [ "iblrig", "iblrig_tasks" ]
+omit = [ "iblrig/test/*" ]
 relative_files = true
+
+[tool.coverage.report]
+skip_empty = true
