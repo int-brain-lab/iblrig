@@ -1,6 +1,12 @@
 from datetime import date
 
-from iblrig import __version__
+try:
+    from iblrig import __version__
+except ModuleNotFoundError:
+    import sys
+    from pathlib import Path
+    sys.path.append(str(Path(__file__).parents[1].resolve()))
+    from iblrig import __version__
 
 project = 'iblrig'
 copyright = f'2018 – {date.today().year} International Brain Laboratory'
