@@ -22,7 +22,7 @@ jobs:
           packages: latexmk texlive-latex-recommended texlive-latex-extra texlive-fonts-recommended
           version: 1.0
       - name: Build PDF
-        run: make -C docs/ latexpdf
+        run: pdm run make -C docs/ latexpdf
       - uses: actions/upload-artifact@v4
         with:
           name: documentation
