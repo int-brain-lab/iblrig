@@ -15,6 +15,7 @@ jobs:
         uses: pdm-project/setup-pdm@v4
         with:
           cache: true
+          python-version-file: pyproject.toml
       - name: Install requirements
         run: pdm sync -dG doc
       - uses: awalsh128/cache-apt-pkgs-action@latest
