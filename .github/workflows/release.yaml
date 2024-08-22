@@ -18,13 +18,10 @@ jobs:
           python-version-file: pyproject.toml
       - name: Install requirements
         run: pdm sync -dG doc
-      - uses: awalsh128/cache-apt-pkgs-action@latest
+      - uses: xu-cheng/texlive-action@v2
         with:
-          packages: latexmk texlive-latex-recommended texlive-latex-extra texlive-fonts-recommended
-          version: 1.0
-          execute_install_scripts: true
-      - name: Build PDF
-        run: pdm run make -C docs/ latexpdf
+          scheme: full
+          run: pdm run make -C docs/ latexpdf
       - uses: actions/upload-artifact@v4
         with:
           name: documentation
