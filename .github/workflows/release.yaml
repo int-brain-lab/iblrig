@@ -17,10 +17,11 @@ jobs:
           cache: true
       - name: Install requirements
         run: pdm sync -dG doc
-      - name: Install TeX Live
-        uses: zauguin/install-texlive@v3
+      - uses: awalsh128/cache-apt-pkgs-action@latest
         with:
           packages: latexmk texlive-latex-recommended texlive-latex-extra texlive-fonts-recommended
+          version: 1.0
+          execute_install_scripts: true
       - name: Build PDF
         run: pdm run make -C docs/ latexpdf
       - uses: actions/upload-artifact@v4
