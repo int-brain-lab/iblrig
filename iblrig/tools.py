@@ -55,12 +55,15 @@ def ask_user(prompt: str, default: bool = False) -> bool:
             return False
 
 
-def get_anydesk_id(silent: bool = False) -> str | None:
+def get_anydesk_id(format_id: bool = True, silent: bool = False) -> str | None:
     """
     Retrieve the AnyDesk ID of the current machine.
 
     Parameters
     ----------
+    format_id : bool, optional
+        If True (default), format the ID in blocks separated by spaces.
+        If False, return the ID as one continuous block.
     silent : bool, optional
         If True, suppresses exceptions and logs them instead.
         If False (default), raises exceptions.
@@ -99,7 +102,7 @@ def get_anydesk_id(silent: bool = False) -> str | None:
 
         proc = subprocess.Popen([cmd, '--get-id'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         if proc.stdout and re.match(r'^\d{10}$', id_string := next(proc.stdout).decode()):
-            anydesk_id = f'{int(id_string):,}'.replace(',', ' ')
+            anydesk_id = f'{int(id_string):,}'.replace(',', ' ' if format_id else '')
     except (FileNotFoundError, subprocess.CalledProcessError, StopIteration, UnicodeDecodeError) as e:
         if silent:
             log.debug(e, exc_info=True)
@@ -397,7 +400,7 @@ def get_lab_location_dict(hardware_settings: HardwareSettings, iblrig_settings: 
     machine['fqdn'] = socket.getfqdn()
     machine['ip_address'] = socket.gethostbyname(machine['hostname'])
     machine['mac_address'] = get_mac()
-    machine['anydesk_id'] = get_anydesk_id(silent=True)
+    machine['anydesk_id'] = get_anydesk_id(format_id=False, silent=True)
     lab_location['machine'] = machine
 
     git = dict()
