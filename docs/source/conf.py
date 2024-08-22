@@ -5,7 +5,7 @@ try:
 except ModuleNotFoundError:
     import sys
     from pathlib import Path
-    sys.path.append(str(Path(__file__).parents[1].resolve()))
+    sys.path.append(str(Path(__file__).parents[1].joinpath('iblrig').resolve()))
     from iblrig import __version__
 
 project = 'iblrig'
