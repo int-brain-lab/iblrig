@@ -392,8 +392,9 @@ def get_lab_location_dict(hardware_settings: HardwareSettings, iblrig_settings: 
     lab_location['last_seen'] = date.today().isoformat()
 
     machine = dict()
-    machine['hostname'] = socket.gethostname()
     machine['platform'] = platform.platform()
+    machine['hostname'] = socket.gethostname()
+    machine['fqdn'] = socket.getfqdn()
     machine['ip_address'] = socket.gethostbyname(machine['hostname'])
     machine['mac_address'] = get_mac()
     machine['anydesk_id'] = get_anydesk_id(silent=True)
