@@ -11,17 +11,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Set up PDM
-        uses: pdm-project/setup-pdm@v4
+      - uses: ammaraskar/sphinx-action@master
         with:
-          cache: true
-          python-version-file: pyproject.toml
-      - name: Install requirements
-        run: pdm sync -dG doc
-      - uses: xu-cheng/texlive-action@v2
-        with:
-          scheme: full
-          run: pdm run make -C docs/ latexpdf
+          docs-folder: "docs/"
+          pre-build-command: "apt install -y latexmk texlive-latex-recommended texlive-latex-extra texlive-fonts-recommended"
+          build-command: "make latexpdf"
       - uses: actions/upload-artifact@v4
         with:
           name: documentation
