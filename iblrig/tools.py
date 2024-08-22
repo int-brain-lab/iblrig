@@ -410,13 +410,7 @@ def get_lab_location_dict(hardware_settings: HardwareSettings, iblrig_settings: 
     git['is_dirty'] = version_management.is_dirty()
     lab_location['git'] = git
 
-    # bpod
-    # sound
-    # rotary encoder
-    # frame2ttl
-    # ambient module
-
-    # validation errors
-    # validation warnings
+    # TODO: add hardware/firmware versions of bpod, soundcard, rotary encoder, frame2ttl, ambient module, etc
+    # TODO: add validation errors/warnings
 
     return lab_location
