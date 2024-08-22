@@ -1,18 +1,23 @@
 import asyncio
 import logging
 import os
+import platform
 import re
 import shutil
 import socket
 import subprocess
 from collections.abc import Callable
 from dataclasses import dataclass
+from datetime import date
+from functools import cache
 from pathlib import Path
 from typing import Any, TypeVar
 
-from iblrig.constants import BONSAI_EXE
+from iblrig import version_management
+from iblrig.constants import BONSAI_EXE, IS_GIT
 from iblrig.path_helper import create_bonsai_layout_from_template, load_pydantic_yaml
-from iblrig.pydantic_definitions import RigSettings
+from iblrig.pydantic_definitions import HardwareSettings, RigSettings
+from iblutil.util import get_mac
 
 log = logging.getLogger(__name__)
 
@@ -375,3 +380,39 @@ class ANSI:
     DIM = '\033[2m'
     UNDERLINE = '\033[4m'
     END = '\033[0m'
+
+
+cached_check_output = cache(subprocess.check_output)
+
+
+def get_lab_location_dict(hardware_settings: HardwareSettings, iblrig_settings: RigSettings) -> dict[str, Any]:
+    lab_location = dict()
+    lab_location['rig_name'] = hardware_settings.RIG_NAME
+    lab_location['iblrig_version'] = str(version_management.get_local_version())
+    lab_location['last_seen'] = date.today().isoformat()
+
+    machine = dict()
+    machine['hostname'] = socket.gethostname()
+    machine['platform'] = platform.platform()
+    machine['ip_address'] = socket.gethostbyname(machine['hostname'])
+    machine['mac_address'] = get_mac()
+    machine['anydesk_id'] = get_anydesk_id(silent=True)
+    lab_location['machine'] = machine
+
+    git = dict()
+    git['is_git'] = IS_GIT
+    git['branch'] = version_management.get_branch()
+    git['commit_id'] = version_management.get_commit_hash()
+    git['is_dirty'] = version_management.is_dirty()
+    lab_location['git'] = git
+
+    # bpod
+    # sound
+    # rotary encoder
+    # frame2ttl
+    # ambient module
+
+    # validation errors
+    # validation warnings
+
+    return lab_location

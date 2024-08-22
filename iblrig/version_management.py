@@ -1,7 +1,6 @@
 import logging
 import re
 from collections.abc import Callable
-from functools import cache
 from pathlib import Path
 from subprocess import STDOUT, CalledProcessError, SubprocessError, check_call, check_output
 from typing import Any, Literal
@@ -11,7 +10,7 @@ from packaging import version
 
 from iblrig import __version__
 from iblrig.constants import BASE_DIR, IS_GIT, IS_VENV
-from iblrig.tools import internet_available, static_vars
+from iblrig.tools import cached_check_output, internet_available, static_vars
 
 log = logging.getLogger(__name__)
 
@@ -127,7 +126,6 @@ def get_detailed_version_string(v_basic: str) -> str:
     return v_detailed
 
 
-cached_check_output = cache(check_output)
 OnErrorLiteral = Literal['raise', 'log', 'silence']
 
 
@@ -172,7 +170,7 @@ def call_git(*args: str, cache_output: bool = True, on_error: OnErrorLiteral = '
         return None
     try:
         output = cached_check_output(**kwargs) if cache_output else check_output(**kwargs)
-        return output.strip()
+        return str(output).strip()
     except SubprocessError as e:
         if on_error == 'raise':
             raise e
@@ -181,7 +179,7 @@ def call_git(*args: str, cache_output: bool = True, on_error: OnErrorLiteral = '
         return None
 
 
-def get_branch() -> str | None:
+def get_branch():
     """
     Get the Git branch of the iblrig installation.
 
@@ -191,6 +189,24 @@ def get_branch() -> str | None:
         The Git branch of the iblrig installation, or None if it cannot be determined.
     """
     return call_git('rev-parse', '--abbrev-ref', 'HEAD', on_error='log')
+
+
+def get_commit_hash(short: bool = True):
+    """
+    Get the hash of the currently checked out commit of the iblrig installation.
+
+    Parameters
+    ----------
+    short : bool, optional
+        Whether to return the short hash of the commit hash. Default is True.
+
+    Returns
+    -------
+    str or None
+        Hash of the currently checked out commit, or None if it cannot be determined.
+    """
+    args = ['rev-parse', '--short', 'HEAD'] if short else ['rev-parse', 'HEAD']
+    return call_git(*args, on_error='log')
 
 
 @static_vars(is_fetched_already=False)
