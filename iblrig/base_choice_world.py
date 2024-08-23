@@ -695,12 +695,12 @@ NTRIALS ERROR:        {self.trial_num - self.session_info.NTRIALS_CORRECT}
         except StopIteration as e:
             log.error(f'No outcome detected for trial {self.trial_num}.')
             log.error(f'raw_outcome: {raw_outcome}')
-            log.error("State names: " + ", ".join(bpod_data['States timestamps'].keys()))
+            log.error('State names: ' + ', '.join(bpod_data['States timestamps'].keys()))
             raise e
         except AssertionError as e:
             log.error(f'Assertion Error in trial {self.trial_num}.')
             log.error(f'raw_outcome: {raw_outcome}')
-            log.error("State names: " + ", ".join(bpod_data['States timestamps'].keys()))
+            log.error('State names: ' + ', '.join(bpod_data['States timestamps'].keys()))
             raise e
 
 
