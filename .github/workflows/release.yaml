@@ -11,13 +11,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: ammaraskar/sphinx-action@master
+      - name: Set up PDM
+        uses: pdm-project/setup-pdm@v4
         with:
-          pre-build-command: "apt-get update -y && apt-get install -y latexmk texlive-latex-recommended texlive-latex-extra texlive-fonts-recommended"
-          build-command: "make latexpdf"
-          docs-folder: "docs"
+          cache: true
+          python-version-file: pyproject.toml
+      - name: Install requirements
+        run: pdm sync -dG doc
+      - name: Sphinx build
+        run: pdm run make -C docs/ simplepdf
       - uses: actions/upload-artifact@v4
         with:
           name: documentation
-          path: docs/build/latex/iblrig.pdf
+          path: docs/build/simplepdf/*.pdf
           retention-days: 1
