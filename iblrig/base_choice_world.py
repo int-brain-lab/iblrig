@@ -693,12 +693,14 @@ NTRIALS ERROR:        {self.trial_num - self.session_info.NTRIALS_CORRECT}
             assert np.sum(list(raw_outcome.values())) == 1
             assert position != 0, 'the position value should be either 35 or -35'
         except StopIteration as e:
-            log.error(f'No outcome detected for trial {self.trial_num}. Bpod output:')
-            log.error(raw_outcome)
+            log.error(f'No outcome detected for trial {self.trial_num}.')
+            log.error(f'raw_outcome: {raw_outcome}')
+            log.error("State names: " + ", ".join(bpod_data['States timestamps'].keys()))
             raise e
         except AssertionError as e:
-            log.error(f'Error in trial {self.trial_num}: {e}. Bpod output:')
-            log.error(raw_outcome)
+            log.error(f'Assertion Error in trial {self.trial_num}.')
+            log.error(f'raw_outcome: {raw_outcome}')
+            log.error("State names: " + ", ".join(bpod_data['States timestamps'].keys()))
             raise e
 
 
