@@ -5,7 +5,7 @@ Developer Guide
 Versioning Scheme
 -----------------
 
-IBLRIG v8 uses `Semantic Versioning 2.0.0 <https://semver.org/spec/v2.0.0.html>`_.
+IBLRIG v8 uses `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_.
 Its version string (currently "|version|") is a combination of three fields, separated by dots:
 
 .. centered:: ``MAJOR`` . ``MINOR`` . ``PATCH``
@@ -32,18 +32,21 @@ Here,
 * ``post3`` indicates the third unversioned commit after the latest versioned release, and
 * ``dirty`` indicates the presence of uncommited changes in your local repository of IBLRIG.
 
-Both of these fields are inferred by means of git describe and do not require manual interaction from the developer.
+Both of these fields are automatically inferred (by means of ``git describe``) and do not require manual interaction from the
+developer.
 
 
-PDM
----
+Package Management and Development Workflows with PDM
+-----------------------------------------------------
 
 We use `PDM <https://pdm-project.org/en/latest/>`_ to manage dependencies of IBLRIG.
-See `PDM's documentation <https://pdm-project.org/en/latest/#installation>` for help with installing PDM.
+PDM can also be used to run various commands with relevance to the development process without having to activate a virtual
+environment first.
+Please refer to `PDM's documentation <https://pdm-project.org/en/latest/#installation>`_ for help with installing PDM.
 
 
 Installing Developer Dependencies
----------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 To install additional dependencies needed for working on IBLRIG's code-base, run:
 
@@ -52,8 +55,8 @@ To install additional dependencies needed for working on IBLRIG's code-base, run
    pdm sync -d
 
 
-Running Unit Tests Locally
---------------------------
+Running Unit Tests
+^^^^^^^^^^^^^^^^^^
 
 To run unit tests locally, run:
 
@@ -61,36 +64,30 @@ To run unit tests locally, run:
 
    pdm run pytest
 
-This will also generate a coverage report which can be found in the ``htmlcov`` directory.
+This will also generate a HTML based coverage report which can be found in the ``htmlcov`` directory.
 
 
 Linting & Formatting
---------------------
+^^^^^^^^^^^^^^^^^^^^
 
-To lint your code, run the:
+We use `Ruff <https://docs.astral.sh/ruff>`_ for linting and formatting our code-base in close accordance with `the Black code
+style <https://black.readthedocs.io/en/stable/the_black_code_style/current_style.html>`_.
+
+To lint your code, run:
 
 .. code-block:: console
 
    pdm run ruff check
 
-Adding the commandline flag ``--fix`` will automatically fix issues that are deemed safe to handle:
+Appending the flag ``--fix`` to the above command will automatically fix issues that are deemed safe to handle.
 
-.. code-block:: console
-
-   pdm run ruff check --fix
-
-To *check* if your code conforms to the `Black code style <https://black.readthedocs.io/en/stable/the_black_code_style/current_style.html>`_, run:
-
-.. code-block:: console
-
-   pdm run ruff format --check
-
-To reformat your code according to the `Black code style <https://black.readthedocs.io/en/stable/the_black_code_style/current_style.html>`_, run:
+To reformat your code according to the `Black code style <https://black.readthedocs.io/en/stable/the_black_code_style/current_style.html>`_ run:
 
 .. code-block:: console
 
    pdm run ruff format
 
+Appending the flag ``--check`` to the above command will check your code for formatting issues without applying any changes.
 Refer to `Ruff Formater's documentation <https://docs.astral.sh/ruff/formatter/>`_ for further details.
 
 
@@ -115,18 +112,29 @@ Release Checklist
 Building the documentation
 --------------------------
 
+To build the documentation, run:
+
 .. code-block:: console
 
    pdm run sphinx-autobuild ./docs/source ./docs/build
 
+You can also export the documentation to a PDF file:
+
+.. code-block:: console
+
+   pdm run make -C docs/ simplepdf
+
+Find the exported PDF file in ``docs/build/simplepdf``.
+
 
 Contribute to the documentation
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 To write the documentation:
 
 * Write the documentation in the ``iblrig/docs/source`` folder
 * If you are writing in a new file, add it to the ``index.rst`` so it appears in the table of content
-* Push all your changes to the ``iblrigv8dev`` branch ; if this branch does not exist, create it first
+* Push all your changes to the ``iblrigv8dev`` branch; if this branch does not exist, create it first
 
 To release the documentation onto the `website <https://int-brain-lab.github.io/iblrig>`_:
 

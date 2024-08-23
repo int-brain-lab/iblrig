@@ -1,15 +1,10 @@
-.. only:: html
+.. if-builder:: html
 
    .. include:: ../../README.md
       :parser: myst_parser.sphinx_
 
-.. only:: latex
-
-   Welcome to IBLRIG
-   =================
-
 .. toctree::
-   :caption: Contents:
+   :maxdepth: 3
    :hidden:
 
    installation
@@ -19,7 +14,7 @@
    reference_developer_guide
    faq
 
-.. only:: html
+.. if-builder:: html
 
    .. toctree::
       :hidden:
