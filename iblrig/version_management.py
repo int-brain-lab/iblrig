@@ -1,6 +1,7 @@
 import logging
 import re
 from collections.abc import Callable
+from functools import cache
 from pathlib import Path
 from subprocess import STDOUT, CalledProcessError, SubprocessError, check_call, check_output
 from typing import Any, Literal
@@ -10,7 +11,7 @@ from packaging import version
 
 from iblrig import __version__
 from iblrig.constants import BASE_DIR, IS_GIT, IS_VENV
-from iblrig.tools import cached_check_output, internet_available, static_vars
+from iblrig.tools import cached_check_output, internet_available
 
 log = logging.getLogger(__name__)
 
@@ -232,7 +233,7 @@ def get_remote_tags() -> None:
     call_git('fetch', 'origin', branch, '-t', '-q', '-f', on_error='log')
 
 
-@static_vars(changelog=None)
+@cache
 def get_changelog() -> str:
     """
     Retrieve the changelog for the iblrig installation.
@@ -252,8 +253,6 @@ def get_changelog() -> str:
     This method relies on the presence of a CHANGELOG.md file either in the
     repository or locally.
     """
-    if get_changelog.changelog is not None:
-        return get_changelog.changelog
     try:
         changelog = requests.get(
             f'https://raw.githubusercontent.com/int-brain-lab/iblrig/{get_branch()}/CHANGELOG.md', allow_redirects=True
@@ -261,8 +260,7 @@ def get_changelog() -> str:
     except requests.RequestException:
         with open(Path(BASE_DIR).joinpath('CHANGELOG.md')) as f:
             changelog = f.read()
-    get_changelog.changelog = changelog
-    return get_changelog.changelog
+    return changelog
 
 
 def get_remote_version() -> version.Version | None:
