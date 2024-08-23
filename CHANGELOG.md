@@ -5,6 +5,7 @@ Changelog
 ------
 * feature: post hardware information to alyx
 * generate PDF documentation
+* increase verbosity of error handling in base task
 * remove dead code
 
 8.23.0
