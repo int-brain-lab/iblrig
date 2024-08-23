@@ -1,6 +1,12 @@
 Changelog
 =========
 
+8.23.1
+------
+* feature: post hardware information to alyx
+* generate PDF documentation
+* remove dead code
+
 8.23.0
 ------
 * hardware validation: check for unexpected events on Bpod's digital input ports
