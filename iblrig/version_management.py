@@ -209,7 +209,6 @@ def get_commit_hash(short: bool = True):
     return call_git(*args, on_error='log')
 
 
-@static_vars(is_fetched_already=False)
 def get_remote_tags() -> None:
     """
     Fetch remote Git tags if not already fetched.
@@ -226,17 +225,11 @@ def get_remote_tags() -> None:
     -----
     This method will only work with installations managed through Git.
     """
-    if get_remote_tags.is_fetched_already or not internet_available():
+    if not internet_available():
         return
-    if not IS_GIT:
-        log.error('This installation of iblrig is not managed through git')
     if (branch := get_branch()) is None:
         return
-    try:
-        check_call(['git', 'fetch', 'origin', branch, '-t', '-q', '-f'], cwd=BASE_DIR, timeout=5)
-    except (SubprocessError, CalledProcessError):
-        return
-    get_remote_tags.is_fetched_already = True
+    call_git('fetch', 'origin', branch, '-t', '-q', '-f', on_error='log')
 
 
 @static_vars(changelog=None)
@@ -272,7 +265,6 @@ def get_changelog() -> str:
     return get_changelog.changelog
 
 
-@static_vars(remote_version=None)
 def get_remote_version() -> version.Version | None:
     """
     Retrieve the remote version of iblrig from the Git repository.
@@ -290,31 +282,11 @@ def get_remote_version() -> version.Version | None:
     -----
     This method will only work with installations managed through Git.
     """
-    if get_remote_version.remote_version is not None:
-        log.debug(f'Using cached remote version: {get_remote_version.remote_version}')
-        return get_remote_version.remote_version
-
-    if not IS_GIT:
-        log.error('Cannot obtain remote version: This installation of iblrig is not managed through git')
-        return None
-
     if not internet_available():
         log.error('Cannot obtain remote version: Not connected to internet')
         return None
 
-    try:
-        log.debug('Obtaining remote version from github')
-        get_remote_tags()
-        references = check_output(
-            ['git', 'ls-remote', '-t', '-q', '--exit-code', '--refs', 'origin', 'tags', '*'],
-            cwd=BASE_DIR,
-            timeout=5,
-            encoding='UTF-8',
-        )
-
-    except (SubprocessError, CalledProcessError, FileNotFoundError):
-        log.error('Could not obtain remote version string')
-        return None
+    references = call_git('ls-remote', '-t', '-q', '--exit-code', '--refs', 'origin', 'tags', '*', on_error='log')
 
     try:
         log.debug('Parsing local version string')
