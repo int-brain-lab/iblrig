@@ -233,7 +233,7 @@ class RigWizardModel:
                 'locations',
                 'partial_update',
                 id=self.hardware_settings.RIG_NAME,
-                data=json.dumps({'json': get_lab_location_dict(self.hardware_settings, self.iblrig_settings)}),
+                data={'json': get_lab_location_dict(self.hardware_settings, self.iblrig_settings)},
             )
         except HTTPError as ex:
             if ex.response.status_code not in (404, 400):  # file not found; auth error
