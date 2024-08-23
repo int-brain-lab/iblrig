@@ -254,10 +254,12 @@ def get_changelog() -> str:
     repository or locally.
     """
     try:
+        if (branch := get_branch()) is None:
+            raise RuntimeError()
         changelog = requests.get(
-            f'https://raw.githubusercontent.com/int-brain-lab/iblrig/{get_branch()}/CHANGELOG.md', allow_redirects=True
+            f'https://raw.githubusercontent.com/int-brain-lab/iblrig/{branch}/CHANGELOG.md', allow_redirects=True
         ).text
-    except requests.RequestException:
+    except (requests.RequestException, RuntimeError):
         with open(Path(BASE_DIR).joinpath('CHANGELOG.md')) as f:
             changelog = f.read()
     return changelog
