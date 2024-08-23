@@ -30,6 +30,7 @@ dependencies = [
     # Everything else
     "annotated-types>=0.7.0",
     "graphviz>=0.20.3",
+    "ipython>=8.26.0",
     "matplotlib>=3.9.2",
     "numpy>=1.26.4",
     "packaging>=24.1",
@@ -86,6 +87,7 @@ doc = [
     "sphinx>=7.4.7",
     "sphinx-autobuild>=2024.4.16",
     "sphinx-lesson>=0.8.18",
+    "sphinx-simplepdf>=1.6.0",
     "myst-parser>=4.0.0",
 ]
 typing = [
