@@ -1,7 +1,7 @@
 Changelog
 =========
 
-8.23.1
+8.23.2
 ------
 * add validation script for Bpod HiFi Module
 
