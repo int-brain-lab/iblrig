@@ -676,21 +676,32 @@ NTRIALS ERROR:        {self.trial_num - self.session_info.NTRIALS_CORRECT}
         # get the trial outcome
         state_names = ['correct', 'error', 'no_go', 'omit_correct', 'omit_error', 'omit_no_go']
         raw_outcome = {sn: ~np.isnan(bpod_data['States timestamps'].get(sn, [[np.NaN]])[0][0]) for sn in state_names}
-        outcome = next(k for k in raw_outcome if raw_outcome[k])
-        # Update response buffer -1 for left, 0 for nogo, and 1 for rightward
-        position = self.trials_table.at[self.trial_num, 'position']
-        if 'correct' in outcome:
-            self.trials_table.at[self.trial_num, 'trial_correct'] = True
-            self.session_info.NTRIALS_CORRECT += 1
-            self.trials_table.at[self.trial_num, 'response_side'] = -np.sign(position)
-        elif 'error' in outcome:
-            self.trials_table.at[self.trial_num, 'response_side'] = np.sign(position)
-        elif 'no_go' in outcome:
-            self.trials_table.at[self.trial_num, 'response_side'] = 0
-        super().trial_completed(bpod_data)
-        # here we throw potential errors after having written the trial to disk
-        assert np.sum(list(raw_outcome.values())) == 1
-        assert position != 0, 'the position value should be either 35 or -35'
+        try:
+            outcome = next(k for k in raw_outcome if raw_outcome[k])
+            # Update response buffer -1 for left, 0 for nogo, and 1 for rightward
+            position = self.trials_table.at[self.trial_num, 'position']
+            if 'correct' in outcome:
+                self.trials_table.at[self.trial_num, 'trial_correct'] = True
+                self.session_info.NTRIALS_CORRECT += 1
+                self.trials_table.at[self.trial_num, 'response_side'] = -np.sign(position)
+            elif 'error' in outcome:
+                self.trials_table.at[self.trial_num, 'response_side'] = np.sign(position)
+            elif 'no_go' in outcome:
+                self.trials_table.at[self.trial_num, 'response_side'] = 0
+            super().trial_completed(bpod_data)
+            # here we throw potential errors after having written the trial to disk
+            assert np.sum(list(raw_outcome.values())) == 1
+            assert position != 0, 'the position value should be either 35 or -35'
+        except StopIteration as e:
+            log.error(f'No outcome detected for trial {self.trial_num}.')
+            log.error(f'raw_outcome: {raw_outcome}')
+            log.error('State names: ' + ', '.join(bpod_data['States timestamps'].keys()))
+            raise e
+        except AssertionError as e:
+            log.error(f'Assertion Error in trial {self.trial_num}.')
+            log.error(f'raw_outcome: {raw_outcome}')
+            log.error('State names: ' + ', '.join(bpod_data['States timestamps'].keys()))
+            raise e
 
 
 class BiasedChoiceWorldSession(ActiveChoiceWorldSession):

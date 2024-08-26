@@ -1,15 +1,17 @@
 import logging
 import re
 from collections.abc import Callable
+from functools import cache
 from pathlib import Path
 from subprocess import STDOUT, CalledProcessError, SubprocessError, check_call, check_output
+from typing import Any, Literal
 
 import requests
 from packaging import version
 
 from iblrig import __version__
 from iblrig.constants import BASE_DIR, IS_GIT, IS_VENV
-from iblrig.tools import internet_available, static_vars
+from iblrig.tools import cached_check_output, internet_available
 
 log = logging.getLogger(__name__)
 
@@ -125,38 +127,89 @@ def get_detailed_version_string(v_basic: str) -> str:
     return v_detailed
 
 
-@static_vars(branch=None)
-def get_branch() -> str | None:
-    """
-    Get the Git branch of the iblrig installation.
+OnErrorLiteral = Literal['raise', 'log', 'silence']
 
-    This function retrieves and caches the Git branch of the iblrig installation.
-    If the branch is already cached, it returns the cached value. If not, it
-    attempts to obtain the branch from the Git repository.
+
+def call_git(*args: str, cache_output: bool = True, on_error: OnErrorLiteral = 'raise') -> str | None:
+    """
+    Call a git command with the specified arguments.
+
+    This function executes a git command with the provided arguments. It can cache the output of the command
+    and handle errors based on the specified behavior.
+
+    Parameters
+    ----------
+    *args : str
+        The arguments to pass to the git command.
+    cache_output : bool, optional
+        Whether to cache the output of the command. Default is True.
+    on_error : str, optional
+        The behavior when an error occurs. Either
+        - 'raise': raise the exception (default),
+        - 'log': log the exception, or
+        - 'silence': suppress the exception.
 
     Returns
     -------
-    Union[str, None]
-        The Git branch of the iblrig installation, or None if it cannot be determined.
+    str or None
+        The output of the git command as a string, or None if an error occurred.
 
-    Notes
-    -----
-    This method will only work with installations managed through Git.
+    Raises
+    ------
+    RuntimeError
+        If the installation is not managed through git and on_error is set to 'raise'.
+    SubprocessError
+        If the command fails and on_error is set to 'raise'.
     """
-    if get_branch.branch is not None:
-        return get_branch.branch
+    kwargs: dict[str, Any] = {'args': ('git', *args), 'cwd': BASE_DIR, 'timeout': 5, 'text': True}
     if not IS_GIT:
-        log.error('This installation of iblrig is not managed through git')
+        message = 'This installation of iblrig is not managed through git'
+        if on_error == 'raise':
+            raise RuntimeError(message)
+        elif on_error == 'log':
+            log.error(message)
+        return None
     try:
-        get_branch.branch = check_output(
-            ['git', 'rev-parse', '--abbrev-ref', 'HEAD'], cwd=BASE_DIR, timeout=5, text=True
-        ).removesuffix('\n')
-        return get_branch.branch
-    except (SubprocessError, CalledProcessError):
+        output = cached_check_output(**kwargs) if cache_output else check_output(**kwargs)
+        return str(output).strip()
+    except SubprocessError as e:
+        if on_error == 'raise':
+            raise e
+        elif on_error == 'log':
+            log.exception(e)
         return None
 
 
-@static_vars(is_fetched_already=False)
+def get_branch():
+    """
+    Get the Git branch of the iblrig installation.
+
+    Returns
+    -------
+    str or None
+        The Git branch of the iblrig installation, or None if it cannot be determined.
+    """
+    return call_git('rev-parse', '--abbrev-ref', 'HEAD', on_error='log')
+
+
+def get_commit_hash(short: bool = True):
+    """
+    Get the hash of the currently checked out commit of the iblrig installation.
+
+    Parameters
+    ----------
+    short : bool, optional
+        Whether to return the short hash of the commit hash. Default is True.
+
+    Returns
+    -------
+    str or None
+        Hash of the currently checked out commit, or None if it cannot be determined.
+    """
+    args = ['rev-parse', '--short', 'HEAD'] if short else ['rev-parse', 'HEAD']
+    return call_git(*args, on_error='log')
+
+
 def get_remote_tags() -> None:
     """
     Fetch remote Git tags if not already fetched.
@@ -173,18 +226,14 @@ def get_remote_tags() -> None:
     -----
     This method will only work with installations managed through Git.
     """
-    if get_remote_tags.is_fetched_already or not internet_available():
+    if not internet_available():
         return
-    if not IS_GIT:
-        log.error('This installation of iblrig is not managed through git')
-    try:
-        check_call(['git', 'fetch', 'origin', get_branch(), '-t', '-q', '-f'], cwd=BASE_DIR, timeout=5)
-    except (SubprocessError, CalledProcessError):
+    if (branch := get_branch()) is None:
         return
-    get_remote_tags.is_fetched_already = True
+    call_git('fetch', 'origin', branch, '-t', '-q', '-f', on_error='log')
 
 
-@static_vars(changelog=None)
+@cache
 def get_changelog() -> str:
     """
     Retrieve the changelog for the iblrig installation.
@@ -204,20 +253,18 @@ def get_changelog() -> str:
     This method relies on the presence of a CHANGELOG.md file either in the
     repository or locally.
     """
-    if get_changelog.changelog is not None:
-        return get_changelog.changelog
     try:
+        if (branch := get_branch()) is None:
+            raise RuntimeError()
         changelog = requests.get(
-            f'https://raw.githubusercontent.com/int-brain-lab/iblrig/{get_branch()}/CHANGELOG.md', allow_redirects=True
+            f'https://raw.githubusercontent.com/int-brain-lab/iblrig/{branch}/CHANGELOG.md', allow_redirects=True
         ).text
-    except requests.RequestException:
+    except (requests.RequestException, RuntimeError):
         with open(Path(BASE_DIR).joinpath('CHANGELOG.md')) as f:
             changelog = f.read()
-    get_changelog.changelog = changelog
-    return get_changelog.changelog
+    return changelog
 
 
-@static_vars(remote_version=None)
 def get_remote_version() -> version.Version | None:
     """
     Retrieve the remote version of iblrig from the Git repository.
@@ -235,31 +282,11 @@ def get_remote_version() -> version.Version | None:
     -----
     This method will only work with installations managed through Git.
     """
-    if get_remote_version.remote_version is not None:
-        log.debug(f'Using cached remote version: {get_remote_version.remote_version}')
-        return get_remote_version.remote_version
-
-    if not IS_GIT:
-        log.error('Cannot obtain remote version: This installation of iblrig is not managed through git')
-        return None
-
     if not internet_available():
         log.error('Cannot obtain remote version: Not connected to internet')
         return None
 
-    try:
-        log.debug('Obtaining remote version from github')
-        get_remote_tags()
-        references = check_output(
-            ['git', 'ls-remote', '-t', '-q', '--exit-code', '--refs', 'origin', 'tags', '*'],
-            cwd=BASE_DIR,
-            timeout=5,
-            encoding='UTF-8',
-        )
-
-    except (SubprocessError, CalledProcessError, FileNotFoundError):
-        log.error('Could not obtain remote version string')
-        return None
+    references = call_git('ls-remote', '-t', '-q', '--exit-code', '--refs', 'origin', 'tags', '*', on_error='log')
 
     try:
         log.debug('Parsing local version string')

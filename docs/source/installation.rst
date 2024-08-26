@@ -49,8 +49,8 @@ Now, run the following command at the prompt of Windows PowerShell:
    and usability.
 
 
-Installing MS Visual C++ Redistributable
-----------------------------------------
+Installing Visual C++ Redistributable
+-------------------------------------
 
 With the Administrator PowerShell still open, run the following commands:
 
@@ -67,7 +67,7 @@ With the Administrator PowerShell still open, run the following commands:
 .. admonition:: Background
    :class: seealso
 
-   These commands will create a temporary directory, download and silently install the Visual C++ Redistributable package for
+   These commands will create a temporary directory, download and install the Visual C++ Redistributable package for
    64-bit Windows systems. The installer is retrieved from a Microsoft server and executed with parameters to ensure a seamless
    and unobtrusive installation process.
 

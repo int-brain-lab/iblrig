@@ -1,0 +1,44 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - iblrigv8
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'
+
+jobs:
+  pdf:
+    name: Build PDF
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up PDM
+        uses: pdm-project/setup-pdm@v4
+        with:
+          cache: true
+          python-version-file: pyproject.toml
+      - name: Install requirements
+        run: pdm sync -dG doc
+      - name: Build PDF
+        run: pdm run make -C docs/ simplepdf
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: documentation
+          path: docs/build/simplepdf/*.pdf
+          retention-days: 1
+
+  release:
+    name: Publish GitHub Release
+    needs: pdf
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: documentation
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: documentation/*.pdf

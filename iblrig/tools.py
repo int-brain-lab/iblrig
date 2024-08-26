@@ -1,18 +1,23 @@
 import asyncio
 import logging
 import os
+import platform
 import re
 import shutil
 import socket
 import subprocess
 from collections.abc import Callable
 from dataclasses import dataclass
+from datetime import date
+from functools import cache
 from pathlib import Path
 from typing import Any, TypeVar
 
-from iblrig.constants import BONSAI_EXE
+from iblrig import version_management
+from iblrig.constants import BONSAI_EXE, IS_GIT
 from iblrig.path_helper import create_bonsai_layout_from_template, load_pydantic_yaml
-from iblrig.pydantic_definitions import RigSettings
+from iblrig.pydantic_definitions import HardwareSettings, RigSettings
+from iblutil.util import get_mac
 
 log = logging.getLogger(__name__)
 
@@ -50,12 +55,15 @@ def ask_user(prompt: str, default: bool = False) -> bool:
             return False
 
 
-def get_anydesk_id(silent: bool = False) -> str | None:
+def get_anydesk_id(format_id: bool = True, silent: bool = False) -> str | None:
     """
     Retrieve the AnyDesk ID of the current machine.
 
     Parameters
     ----------
+    format_id : bool, optional
+        If True (default), format the ID in blocks separated by spaces.
+        If False, return the ID as one continuous block.
     silent : bool, optional
         If True, suppresses exceptions and logs them instead.
         If False (default), raises exceptions.
@@ -94,7 +102,7 @@ def get_anydesk_id(silent: bool = False) -> str | None:
 
         proc = subprocess.Popen([cmd, '--get-id'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         if proc.stdout and re.match(r'^\d{10}$', id_string := next(proc.stdout).decode()):
-            anydesk_id = f'{int(id_string):,}'.replace(',', ' ')
+            anydesk_id = f'{int(id_string):,}'.replace(',', ' ' if format_id else '')
     except (FileNotFoundError, subprocess.CalledProcessError, StopIteration, UnicodeDecodeError) as e:
         if silent:
             log.debug(e, exc_info=True)
@@ -375,3 +383,34 @@ class ANSI:
     DIM = '\033[2m'
     UNDERLINE = '\033[4m'
     END = '\033[0m'
+
+
+cached_check_output = cache(subprocess.check_output)
+
+
+def get_lab_location_dict(hardware_settings: HardwareSettings, iblrig_settings: RigSettings) -> dict[str, Any]:
+    lab_location = dict()
+    lab_location['rig_name'] = hardware_settings.RIG_NAME
+    lab_location['iblrig_version'] = str(version_management.get_local_version())
+    lab_location['last_seen'] = date.today().isoformat()
+
+    machine = dict()
+    machine['platform'] = platform.platform()
+    machine['hostname'] = socket.gethostname()
+    machine['fqdn'] = socket.getfqdn()
+    machine['ip'] = socket.gethostbyname(machine['hostname'])
+    machine['mac'] = get_mac()
+    machine['anydesk'] = get_anydesk_id(format_id=False, silent=True)
+    lab_location['machine'] = machine
+
+    git = dict()
+    git['is_git'] = IS_GIT
+    git['branch'] = version_management.get_branch()
+    git['commit_id'] = version_management.get_commit_hash()
+    git['is_dirty'] = version_management.is_dirty()
+    lab_location['git'] = git
+
+    # TODO: add hardware/firmware versions of bpod, soundcard, rotary encoder, frame2ttl, ambient module, etc
+    # TODO: add validation errors/warnings
+
+    return lab_location

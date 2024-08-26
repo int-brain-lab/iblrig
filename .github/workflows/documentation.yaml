@@ -7,6 +7,7 @@ on:
     paths:
       - '.github/workflows/documentation.yaml'
       - 'docs/**'
+      - 'iblrig/__init__.py'
       - 'CHANGELOG.md'
       - 'README.md'
       - 'pyproject.toml'
@@ -20,13 +21,12 @@ jobs:
       - name: Set up PDM
         uses: pdm-project/setup-pdm@v4
         with:
-          python-version: ${{ matrix.python-version }}
           cache: true
+          python-version-file: pyproject.toml
       - name: Install requirements
         run: pdm sync -dG doc
       - name: Sphinx build
-        run: |
-          pdm run sphinx-build docs/source docs/build/html
+        run: pdm run sphinx-build docs/source docs/build/html
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:

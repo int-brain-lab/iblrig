@@ -30,6 +30,7 @@ dependencies = [
     # Everything else
     "annotated-types>=0.7.0",
     "graphviz>=0.20.3",
+    "ipython>=8.26.0",
     "matplotlib>=3.9.2",
     "numpy>=1.26.4",
     "packaging>=24.1",
@@ -86,6 +87,7 @@ doc = [
     "sphinx>=7.4.7",
     "sphinx-autobuild>=2024.4.16",
     "sphinx-lesson>=0.8.18",
+    "sphinx-simplepdf>=1.6.0",
     "myst-parser>=4.0.0",
 ]
 typing = [
@@ -104,7 +106,7 @@ files                  = [ "iblrig/[!test]**/*.py", "iblrig_tasks/**/*.py" ]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
-addopts    = "-ra --showlocals --cov=iblrig --cov=iblrig_tasks --cov-report=html --cov-report=xml --tb=short"
+addopts    = "-ra --showlocals --cov --cov-report=html --cov-report=xml --tb=short"
 minversion = "6.0"
 testpaths  = [ "iblrig/test" ]
 python_files = [ "test_*.py" ]
@@ -170,10 +172,15 @@ quote-style = "single"
 convention = "numpy"
 
 [tool.ruff.lint.isort]
-known-first-party = [ "ibl*", "one*", "pybpod*" ]
+known-first-party = [ "ibl*", "one*", "pybpod*", "tycmd" ]
 
 [tool.deadcode]
-exclude = [ "docs", "venv", "iblrig/test" ]
+exclude = [ "docs", "venv", ".venv" ]
 
 [tool.coverage.run]
-omit = [ "iblrig/test/**" ]
+source_pkgs = [ "iblrig", "iblrig_tasks" ]
+omit = [ "iblrig/test/*" ]
+relative_files = true
+
+[tool.coverage.report]
+skip_empty = true
