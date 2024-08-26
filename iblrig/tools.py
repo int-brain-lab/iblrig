@@ -398,9 +398,9 @@ def get_lab_location_dict(hardware_settings: HardwareSettings, iblrig_settings: 
     machine['platform'] = platform.platform()
     machine['hostname'] = socket.gethostname()
     machine['fqdn'] = socket.getfqdn()
-    machine['ip_address'] = socket.gethostbyname(machine['hostname'])
-    machine['mac_address'] = get_mac()
-    machine['anydesk_id'] = get_anydesk_id(format_id=False, silent=True)
+    machine['ip'] = socket.gethostbyname(machine['hostname'])
+    machine['mac'] = get_mac()
+    machine['anydesk'] = get_anydesk_id(format_id=False, silent=True)
     lab_location['machine'] = machine
 
     git = dict()

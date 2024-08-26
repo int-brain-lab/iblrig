@@ -28,10 +28,10 @@ html_static_path = ['_static']
 
 
 simplepdf_vars = {
-    'primary': '#FA2323',
-    'secondary': '#379683',
+    'primary': '#004f8c',
+    'secondary': '#004f8c',
     'cover': 'white',
-    'cover-bg': 'linear-gradient(180deg, rgb(0, 81, 142) 0%, rgb(0, 158, 214) 50%, rgb(201, 53, 154) 100%)',
+    'cover-bg': 'linear-gradient(180deg, #004f8c 0%, #00a1d9 50%, #cc3399 100%)',
 }
 simplepdf_file_name = f'iblrig_{__version__}_reference.pdf'
 simplepdf_weasyprint_flags = ['-j70', '-D150', '--hinting']

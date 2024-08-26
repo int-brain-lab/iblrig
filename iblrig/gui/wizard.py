@@ -47,7 +47,7 @@ from iblrig.misc import get_task_argument_parser
 from iblrig.path_helper import load_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings, RigSettings
 from iblrig.raw_data_loaders import load_task_jsonable
-from iblrig.tools import alyx_reachable, internet_available
+from iblrig.tools import alyx_reachable, get_lab_location_dict, internet_available
 from iblrig.valve import Valve
 from iblrig.version_management import check_for_updates, get_changelog
 from iblutil.util import Bunch, setup_logger
@@ -229,7 +229,12 @@ class RigWizardModel:
 
         # validate connection and some parameters now that we're connected
         try:
-            self.alyx.rest('locations', 'read', id=self.hardware_settings.RIG_NAME)
+            self.alyx.rest(
+                'locations',
+                'partial_update',
+                id=self.hardware_settings.RIG_NAME,
+                data={'json': get_lab_location_dict(self.hardware_settings, self.iblrig_settings)},
+            )
         except HTTPError as ex:
             if ex.response.status_code not in (404, 400):  # file not found; auth error
                 # Likely Alyx is down or server-side issue

@@ -1,23 +1,42 @@
 name: Release
 
 on:
-  workflow_dispatch:
   push:
-#    tags:
-#      - '[0-9]+.[0-9]+.[0-9]+'
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'
 
 jobs:
-  documentation:
+  pdf:
+    name: Build PDF
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: ammaraskar/sphinx-action@master
+      - name: Set up PDM
+        uses: pdm-project/setup-pdm@v4
         with:
-          pre-build-command: "apt-get update -y && apt-get install -y latexmk texlive-latex-recommended texlive-latex-extra texlive-fonts-recommended"
-          build-command: "make latexpdf"
-          docs-folder: "docs"
-      - uses: actions/upload-artifact@v4
+          cache: true
+          python-version-file: pyproject.toml
+      - name: Install requirements
+        run: pdm sync -dG doc
+      - name: Build PDF
+        run: pdm run make -C docs/ simplepdf
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
         with:
           name: documentation
-          path: docs/build/latex/iblrig.pdf
+          path: docs/build/simplepdf/*.pdf
           retention-days: 1
+
+  release:
+    name: Publish GitHub Release
+    needs: pdf
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: documentation
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: iblrig_*_reference.pdf
