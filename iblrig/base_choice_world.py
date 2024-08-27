@@ -298,6 +298,7 @@ class ChoiceWorldSession(
     def get_state_machine_trial(self, i):
         # we define the trial number here for subclasses that may need it
         sma = self._instantiate_state_machine(trial_number=i)
+
         if i == 0:  # First trial exception start camera
             session_delay_start = self.task_params.get('SESSION_DELAY_START', 0)
             log.info('First trial initializing, will move to next trial only if:')
@@ -323,6 +324,10 @@ class ChoiceWorldSession(
                 output_actions=[self.bpod.actions.stop_sound, ('BNC1', 255)],
             )  # stop all sounds
 
+        # Reset the rotary encoder by sending the following opcodes via the modules serial interface
+        # - 'Z' (ASCII 90): Set current rotary encoder position to zero
+        # - 'E' (ASCII 69): Enable all position thresholds (that may have been disabled by a threshold-crossing)
+        # cf. https://sanworks.github.io/Bpod_Wiki/serial-interfaces/rotary-encoder-module-serial-interface/
         sma.add_state(
             state_name='reset_rotary_encoder',
             state_timer=0,
@@ -330,7 +335,9 @@ class ChoiceWorldSession(
             state_change_conditions={'Tup': 'quiescent_period'},
         )
 
-        sma.add_state(  # '>back' | '>reset_timer'
+        # Quiescent Period. If the wheel is moved past one of the thresholds: Reset the rotary encoder and start over.
+        # Continue with the stimulation once the quiescent period has passed without triggering movement thresholds.
+        sma.add_state(
             state_name='quiescent_period',
             state_timer=self.quiescent_period,
             output_actions=[],
@@ -340,21 +347,26 @@ class ChoiceWorldSession(
                 self.movement_right: 'reset_rotary_encoder',
             },
         )
-        # show stimulus, move on to next state if a frame2ttl is detected, with a time-out of 0.1s
+
+        # Show the visual stimulus. This is achieved by sending a time-stamped byte-message to Bonsai via the Rotary
+        # Encoder Module's ongoing USB-stream. Move to the next state once the Frame2TTL has been triggered, i.e.,
+        # when the stimulus has been rendered on screen. Use the state-timer as a backup to prevent a stall.
         sma.add_state(
             state_name='stim_on',
             state_timer=0.1,
             output_actions=[self.bpod.actions.bonsai_show_stim],
-            state_change_conditions={'Tup': 'interactive_delay', 'BNC1High': 'interactive_delay', 'BNC1Low': 'interactive_delay'},
+            state_change_conditions={'BNC1High': 'interactive_delay', 'BNC1Low': 'interactive_delay', 'Tup': 'interactive_delay'},
         )
-        # this is a feature that can eventually add a delay between visual and auditory cue
+
+        # Defined delay between visual and auditory cue
         sma.add_state(
             state_name='interactive_delay',
             state_timer=self.task_params.INTERACTIVE_DELAY,
             output_actions=[],
             state_change_conditions={'Tup': 'play_tone'},
         )
-        # play tone, move on to next state if sound is detected, with a time-out of 0.1s
+
+        # Play tone. Move to next state if sound is detected. Use the state-timer as a backup to prevent a stall.
         sma.add_state(
             state_name='play_tone',
             state_timer=0.1,
@@ -362,12 +374,19 @@ class ChoiceWorldSession(
             state_change_conditions={'Tup': 'reset2_rotary_encoder', 'BNC2High': 'reset2_rotary_encoder'},
         )
 
+        # Reset rotary encoder (see above). Move on after brief delay (to avoid a race conditions in the bonsai flow).
         sma.add_state(
             state_name='reset2_rotary_encoder',
-            state_timer=0.05,  # the delay here is to avoid race conditions in the bonsai flow
+            state_timer=0.05,
             output_actions=[self.bpod.actions.rotary_encoder_reset],
             state_change_conditions={'Tup': 'closed_loop'},
         )
+
+        # Start the closed loop state in which the animal controls the position of the visual stimulus by means of the
+        # rotary encoder. The three possible outcomes are:
+        # 1) wheel has NOT been moved past a threshold: continue with no-go condition
+        # 2) wheel has been moved in WRONG direction: continue with error condition
+        # 3) wheel has been moved in CORRECT direction: continue with reward condition
 
         sma.add_state(
             state_name='closed_loop',
@@ -376,6 +395,7 @@ class ChoiceWorldSession(
             state_change_conditions={'Tup': 'no_go', self.event_error: 'freeze_error', self.event_reward: 'freeze_reward'},
         )
 
+        # No-go: hide the visual stimulus and play white noise. Go to exit_state after FEEDBACK_NOGO_DELAY_SECS.
         sma.add_state(
             state_name='no_go',
             state_timer=self.task_params.FEEDBACK_NOGO_DELAY_SECS,
@@ -383,13 +403,14 @@ class ChoiceWorldSession(
             state_change_conditions={'Tup': 'exit_state'},
         )
 
+        # Error: Freeze the stimulus and play white noise.
+        # Continue to hide_stim/exit_state once FEEDBACK_ERROR_DELAY_SECS have passed.
         sma.add_state(
             state_name='freeze_error',
             state_timer=0,
             output_actions=[self.bpod.actions.bonsai_freeze_stim],
             state_change_conditions={'Tup': 'error'},
         )
-
         sma.add_state(
             state_name='error',
             state_timer=self.task_params.FEEDBACK_ERROR_DELAY_SECS,
@@ -397,20 +418,20 @@ class ChoiceWorldSession(
             state_change_conditions={'Tup': 'hide_stim'},
         )
 
+        # Reward: open the valve for a defined duration (and set BNC1 to high), freeze stimulus in center of screen.
+        # Continue to hide_stim/exit_state once FEEDBACK_CORRECT_DELAY_SECS have passed.
         sma.add_state(
             state_name='freeze_reward',
             state_timer=0,
             output_actions=[self.bpod.actions.bonsai_show_center],
             state_change_conditions={'Tup': 'reward'},
         )
-
         sma.add_state(
             state_name='reward',
             state_timer=self.reward_time,
             output_actions=[('Valve1', 255), ('BNC1', 255)],
             state_change_conditions={'Tup': 'correct'},
         )
-
         sma.add_state(
             state_name='correct',
             state_timer=self.task_params.FEEDBACK_CORRECT_DELAY_SECS - self.reward_time,
@@ -418,6 +439,9 @@ class ChoiceWorldSession(
             state_change_conditions={'Tup': 'hide_stim'},
         )
 
+        # Hide the visual stimulus. This is achieved by sending a time-stamped byte-message to Bonsai via the Rotary
+        # Encoder Module's ongoing USB-stream. Move to the next state once the Frame2TTL has been triggered, i.e.,
+        # when the stimulus has been rendered on screen. Use the state-timer as a backup to prevent a stall.
         sma.add_state(
             state_name='hide_stim',
             state_timer=0.1,
@@ -425,12 +449,14 @@ class ChoiceWorldSession(
             state_change_conditions={'Tup': 'exit_state', 'BNC1High': 'exit_state', 'BNC1Low': 'exit_state'},
         )
 
+        # Wait for ITI_DELAY_SECS before ending the trial. Raise BNC1 to mark this event.
         sma.add_state(
             state_name='exit_state',
             state_timer=self.task_params.ITI_DELAY_SECS,
             output_actions=[('BNC1', 255)],
             state_change_conditions={'Tup': 'exit'},
         )
+
         return sma
 
     @abc.abstractmethod
