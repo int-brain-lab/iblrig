@@ -1,10 +1,15 @@
 Changelog
 =========
 
+8.23.2
+------
+* add validation script for Bpod HiFi Module
+
 8.23.1
 ------
 * feature: post hardware information to alyx
 * generate PDF documentation
+* increase verbosity of error handling in base task
 * remove dead code
 
 8.23.0

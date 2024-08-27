@@ -2,8 +2,6 @@ name: Release
 
 on:
   push:
-    branches:
-      - iblrigv8
     tags:
       - '[0-9]+.[0-9]+.[0-9]+'
 
@@ -41,4 +39,4 @@ jobs:
           name: documentation
       - uses: softprops/action-gh-release@v2
         with:
-          files: documentation/*.pdf
+          files: iblrig_*_reference.pdf
