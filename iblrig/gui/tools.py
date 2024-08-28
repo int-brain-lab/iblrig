@@ -447,8 +447,8 @@ class AlyxObject(QObject):
             self.client = alyxClient
 
     @pyqtSlot(str)
-    @pyqtSlot(str, object)
-    @pyqtSlot(str, object, bool)
+    @pyqtSlot(str, str)
+    @pyqtSlot(str, str, bool)
     def logIn(self, username: str, password: str | None = None, cacheToken: bool = False) -> bool:
         """
         Logs in a user with the provided username and password.
