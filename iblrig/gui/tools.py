@@ -389,13 +389,55 @@ class RemoteDevicesItemModel(QStandardItemModel):
             self.appendRow(item)
 
 
-class AlyxObject(QAction):
+class AlyxObject(QObject):
+    """
+    A class to manage user authentication with an AlyxClient.
+
+    This class provides methods to log in and log out users, emitting signals to indicate changes in authentication status.
+
+    Parameters
+    ----------
+    alyxUrl : str, optional
+        The base URL for the Alyx API. If provided, an AlyxClient will be created.
+    alyxClient : AlyxClient, optional
+        An existing AlyxClient instance. If provided, it will be used for authentication.
+
+    Attributes
+    ----------
+    isLoggedIn : bool
+        Indicates whether a user is currently logged in.
+    username : str or None
+        The username of the logged-in user, or None if not logged in.
+    statusChanged : pyqtSignal
+        Emitted when the login status changes (logged in or out). The signal carries a boolean indicating the new status.
+    loggedIn : pyqtSignal
+        Emitted when a user logs in. The signal carries a string representing the username.
+    loggedOut : pyqtSignal
+        Emitted when a user logs out. The signal carries a string representing the username.
+    loginFailed : pyqtSignal
+        Emitted when a login attempt fails. The signal carries a string representing the username.
+    """
+
     statusChanged = pyqtSignal(bool)
     loggedIn = pyqtSignal(str)
     loggedOut = pyqtSignal(str)
     loginFailed = pyqtSignal(str)
 
     def __init__(self, *args, alyxUrl: str | None = None, alyxClient: AlyxClient | None = None, **kwargs):
+        """
+        Initializes the AlyxObject.
+
+        Parameters
+        ----------
+        *args : tuple
+            Positional arguments for QObject.
+        alyxUrl : str, optional
+            The base URL for the Alyx API.
+        alyxClient : AlyxClient, optional
+            An existing AlyxClient instance.
+        **kwargs : dict
+            Keyword arguments for QObject.
+        """
         super().__init__(*args, **kwargs)
         self._icon = super().icon()
 
@@ -404,8 +446,27 @@ class AlyxObject(QAction):
         else:
             self.client = alyxClient
 
-    @pyqtSlot(str, object)
+    @pyqtSlot(str, object, bool)
     def logIn(self, username: str, password: str | None = None, cacheToken: bool = False) -> bool:
+        """
+        Logs in a user with the provided username and password.
+
+        Emits the loggedIn and statusChanged signals if the logout is successful, and the loginFailed signal otherwise.
+
+        Parameters
+        ----------
+        username : str
+            The username of the user attempting to log in.
+        password : str or None, optional
+            The password of the user. If None, the login will proceed without a password.
+        cacheToken : bool, optional
+            Whether to cache the authentication token.
+
+        Returns
+        -------
+        bool
+            True if the login was successful, False otherwise.
+        """
         if self.client is None:
             return False
         try:
@@ -423,7 +484,12 @@ class AlyxObject(QAction):
         return status
 
     @pyqtSlot()
-    def logOut(self):
+    def logOut(self) -> None:
+        """
+        Logs out the currently logged-in user.
+
+        Emits the loggedOut and statusChanged signals if the logout is successful.
+        """
         if self.client is None or not self.isLoggedIn:
             return
         username = self.client.user
@@ -435,15 +501,48 @@ class AlyxObject(QAction):
 
     @property
     def isLoggedIn(self):
+        """Indicates whether a user is currently logged in."""
         return self.client.is_logged_in if isinstance(self.client, AlyxClient) else False
 
     @property
     def username(self) -> str | None:
+        """The username of the logged-in user, or None if not logged in."""
         return self.client.user if self.isLoggedIn else None
 
 
 class LineEditAlyxUser(QLineEdit):
+    """
+    A custom QLineEdit widget for managing user login with an AlyxObject.
+
+    This widget displays a checkmark icon to indicate the connection status
+    and allows the user to input their username for logging in.
+
+    Parameters
+    ----------
+    *args : tuple
+        Positional arguments passed to the QLineEdit constructor.
+    alyx : AlyxObject
+        An instance of AlyxObject used to manage login and connection status.
+    **kwargs : dict
+        Keyword arguments passed to the QLineEdit constructor.
+    """
+
     def __init__(self, *args, alyx: AlyxObject, **kwargs):
+        """
+        Initializes the LineEditAlyxUser widget.
+
+        Sets up the checkmark icon, connects signals for login status,
+        and configures the line edit based on the AlyxObject's state.
+
+        Parameters
+        ----------
+        *args : tuple
+            Positional arguments passed to the QLineEdit constructor.
+        alyx : AlyxObject
+            An instance of AlyxObject.
+        **kwargs : dict
+            Keyword arguments passed to the QLineEdit constructor.
+        """
         super().__init__(*args, **kwargs)
         self.alyx = alyx
 
@@ -456,12 +555,12 @@ class LineEditAlyxUser(QLineEdit):
         else:
             self.setPlaceholderText('not logged in')
             self.alyx.statusChanged.connect(self._onStatusChanged)
-            self.alyx.loginFailed.connect(self._onLoginFailed)
             self.returnPressed.connect(self.logIn)
             self._onStatusChanged(self.alyx.isLoggedIn)
 
     @pyqtSlot(bool)
     def _onStatusChanged(self, connected: bool):
+        """Set some of the widget's properties depending on the current connection-status."""
         self._checkmarkIcon.setVisible(connected)
         self._checkmarkIcon.setToolTip(f'Connected to {self.alyx.client.base_url}' if connected else '')
         self.setText(self.alyx.username or '')
@@ -469,6 +568,7 @@ class LineEditAlyxUser(QLineEdit):
 
     @pyqtSlot()
     def logIn(self):
+        """Attempt to log in using the line edit's current text."""
         self.alyx.logIn(self.text())
 
 
