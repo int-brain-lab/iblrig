@@ -446,6 +446,8 @@ class AlyxObject(QObject):
         else:
             self.client = alyxClient
 
+    @pyqtSlot(str)
+    @pyqtSlot(str, object)
     @pyqtSlot(str, object, bool)
     def logIn(self, username: str, password: str | None = None, cacheToken: bool = False) -> bool:
         """
