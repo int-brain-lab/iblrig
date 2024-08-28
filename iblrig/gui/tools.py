@@ -1,4 +1,5 @@
 import argparse
+import logging
 import subprocess
 import sys
 import traceback
@@ -24,12 +25,17 @@ from PyQt5.QtCore import (
     pyqtSlot,
 )
 from PyQt5.QtGui import QStandardItem, QStandardItemModel
-from PyQt5.QtWidgets import QListView, QProgressBar
+from PyQt5.QtWidgets import QAction, QLineEdit, QListView, QProgressBar, QPushButton
+from requests import HTTPError
 
 from iblrig.constants import BASE_PATH
+from iblrig.gui import resources_rc  # noqa: F401
 from iblrig.net import get_remote_devices
 from iblrig.pydantic_definitions import RigSettings
 from iblutil.util import dir_size
+from one.webclient import AlyxClient
+
+log = logging.getLogger(__name__)
 
 
 def convert_uis():
@@ -381,3 +387,109 @@ class RemoteDevicesItemModel(QStandardItemModel):
             item.setStatusTip(f'Remote Device "{device_name}" - {device_address}')
             item.setData(device_name, Qt.UserRole)
             self.appendRow(item)
+
+
+class AlyxObject(QAction):
+    statusChanged = pyqtSignal(bool)
+    loggedIn = pyqtSignal(str)
+    loggedOut = pyqtSignal(str)
+    loginFailed = pyqtSignal(str)
+
+    def __init__(self, *args, alyxUrl: str | None = None, alyxClient: AlyxClient | None = None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._icon = super().icon()
+
+        if alyxUrl is not None:
+            self.client = AlyxClient(base_url=alyxUrl, silent=True)
+        else:
+            self.client = alyxClient
+
+    @pyqtSlot(str, object)
+    def logIn(self, username: str, password: str | None = None, cacheToken: bool = False) -> bool:
+        if self.client is None:
+            return False
+        try:
+            self.client.authenticate(username, password, cache_token=cacheToken, force=password is not None)
+        except HTTPError as e:
+            if e.errno == 400 and any(x in e.response.text for x in ('credentials', 'required')):
+                log.error(e.filename)
+                self.loginFailed.emit(username)
+            else:
+                raise e
+        if status := self.client.is_logged_in and self.client.user == username:
+            log.debug(f"Logged into {self.client.base_url} as user '{username}'")
+            self.statusChanged.emit(True)
+            self.loggedIn.emit(username)
+        return status
+
+    @pyqtSlot()
+    def logOut(self):
+        if self.client is None or not self.isLoggedIn:
+            return
+        username = self.client.user
+        self.client.logout()
+        if not (connected := self.client.is_logged_in):
+            log.debug(f"User '{username}' logged out of {self.client.base_url}")
+            self.statusChanged.emit(connected)
+            self.loggedOut.emit(username)
+
+    @property
+    def isLoggedIn(self):
+        return self.client.is_logged_in if isinstance(self.client, AlyxClient) else False
+
+    @property
+    def username(self) -> str | None:
+        return self.client.user if self.isLoggedIn else None
+
+
+class LineEditAlyxUser(QLineEdit):
+    def __init__(self, *args, alyx: AlyxObject, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.alyx = alyx
+
+        # Use a QAction to indicate the connection status
+        self._checkmarkIcon = QAction(parent=self, icon=QtGui.QIcon(':/images/check'))
+        self.addAction(self._checkmarkIcon, self.ActionPosition.TrailingPosition)
+
+        if self.alyx.client is None:
+            self.setEnabled(False)
+        else:
+            self.setPlaceholderText('not logged in')
+            self.alyx.statusChanged.connect(self._onStatusChanged)
+            self.alyx.loginFailed.connect(self._onLoginFailed)
+            self.returnPressed.connect(self.logIn)
+            self._onStatusChanged(self.alyx.isLoggedIn)
+
+    @pyqtSlot(bool)
+    def _onStatusChanged(self, connected: bool):
+        self._checkmarkIcon.setVisible(connected)
+        self._checkmarkIcon.setToolTip(f'Connected to {self.alyx.client.base_url}' if connected else '')
+        self.setText(self.alyx.username or '')
+        self.setReadOnly(connected)
+
+    @pyqtSlot()
+    def logIn(self):
+        self.alyx.logIn(self.text())
+
+
+class LoginPushButton(QPushButton):
+    clickedLogIn = pyqtSignal()
+    clickedLogOut = pyqtSignal()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._loggedIn = False
+        self.setLoggedIn(False)
+        self.clicked.connect(self._onClick)
+
+    @pyqtSlot(bool)
+    def setLoggedIn(self, loggedIn: bool):
+        self._loggedIn = loggedIn
+        self.setText('Log Out' if loggedIn else 'Log In')
+
+    @pyqtSlot()
+    def _onClick(self):
+        if self._loggedIn:
+            self.clickedLogOut.emit()
+        else:
+            self.clickedLogIn.emit()
