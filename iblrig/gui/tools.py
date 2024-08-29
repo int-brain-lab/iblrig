@@ -574,7 +574,6 @@ class LineEditAlyxUser(QLineEdit):
         self.alyx.logIn(self.text())
 
 
-
 class StatefulButton(QPushButton):
     """
     A QPushButton that maintains an active/inactive state and emits different signals
@@ -594,6 +593,7 @@ class StatefulButton(QPushButton):
     stateChanged : pyqtSignal
         Emitted when the button's state has changed. The signal carries the new state.
     """
+
     clickedWhileActive = pyqtSignal()
     clickedWhileInactive = pyqtSignal()
     stateChanged = pyqtSignal(bool)
