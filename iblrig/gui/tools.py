@@ -574,24 +574,84 @@ class LineEditAlyxUser(QLineEdit):
         self.alyx.logIn(self.text())
 
 
-class LoginPushButton(QPushButton):
-    clickedLogIn = pyqtSignal()
-    clickedLogOut = pyqtSignal()
 
-    def __init__(self, *args, **kwargs):
+class StatefulButton(QPushButton):
+    """
+    A QPushButton that maintains an active/inactive state and emits different signals
+    based on its state when clicked.
+
+    Parameters
+    ----------
+    active : bool, optional
+        Initial state of the button (default is False).
+
+    Attributes
+    ----------
+    clickedWhileActive : pyqtSignal
+        Emitted when the button is clicked while it is in the active state.
+    clickedWhileInactive : pyqtSignal
+        Emitted when the button is clicked while it is in the inactive state.
+    stateChanged : pyqtSignal
+        Emitted when the button's state has changed. The signal carries the new state.
+    """
+    clickedWhileActive = pyqtSignal()
+    clickedWhileInactive = pyqtSignal()
+    stateChanged = pyqtSignal(bool)
+
+    def __init__(self, *args, active: bool = False, **kwargs):
+        """
+        Initialize the StateButton with the specified active state.
+
+        Parameters
+        ----------
+        *args : tuple
+            Positional arguments to be passed to the QPushButton constructor.
+        active : bool, optional
+            Initial state of the button (default is False).
+        **kwargs : dict
+            Keyword arguments to be passed to the QPushButton constructor.
+        """
         super().__init__(*args, **kwargs)
-        self._loggedIn = False
-        self.setLoggedIn(False)
+        self._isActive = active
         self.clicked.connect(self._onClick)
 
+    @pyqtProperty(bool)
+    def isActive(self) -> bool:
+        """
+        Get the active state of the button.
+
+        Returns
+        -------
+        bool
+            True if the button is active, False otherwise.
+        """
+        return self._isActive
+
     @pyqtSlot(bool)
-    def setLoggedIn(self, loggedIn: bool):
-        self._loggedIn = loggedIn
-        self.setText('Log Out' if loggedIn else 'Log In')
+    def setActive(self, active: bool):
+        """
+        Set the active state of the button.
+
+        Emits `stateChanged` if the state has changed.
+
+        Parameters
+        ----------
+        active : bool
+            The new active state of the button.
+        """
+        if self._isActive != active:
+            self._isActive = active
+            self.stateChanged.emit(self._isActive)
 
     @pyqtSlot()
     def _onClick(self):
-        if self._loggedIn:
-            self.clickedLogOut.emit()
+        """
+        Handle the button click event.
+
+        Emits `clickedWhileActive` if the button is active,
+        otherwise emits `clickedWhileInactive`.
+        """
+        if self._isActive:
+            self.clickedWhileActive.emit()
         else:
-            self.clickedLogIn.emit()
+            self.clickedWhileInactive.emit()
