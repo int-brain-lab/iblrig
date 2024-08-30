@@ -9,6 +9,7 @@ import subprocess
 import time
 from pathlib import Path
 from string import ascii_letters
+from typing import final
 
 import numpy as np
 import pandas as pd
@@ -17,6 +18,7 @@ import iblrig.base_tasks
 import iblrig.graphic
 from iblrig import choiceworld, misc
 from iblrig.hardware import SOFTCODE
+from iblrig.pydantic_definitions import TrialData
 from iblutil.io import jsonable
 from iblutil.util import Bunch
 from pybpodapi.com.messaging.trial import Trial
@@ -84,6 +86,7 @@ class ChoiceWorldSession(
 ):
     # task_params = ChoiceWorldParams()
     base_parameters_file = Path(__file__).parent.joinpath('base_choice_world_params.yaml')
+    TrialDataDefinition = TrialData
 
     def __init__(self, *args, delay_secs=0, **kwargs):
         super().__init__(**kwargs)
@@ -507,15 +510,24 @@ class ChoiceWorldSession(
         self.session_info.TOTAL_WATER_DELIVERED += self.trials_table.at[self.trial_num, 'reward_amount']
         self.session_info.NTRIALS += 1
         # SAVE TRIAL DATA
-        save_dict = self.trials_table.iloc[self.trial_num].to_dict()
-        save_dict['behavior_data'] = bpod_data
-        # Dump and save
-        with open(self.paths['DATA_FILE_PATH'], 'a') as fp:
-            fp.write(json.dumps(save_dict) + '\n')
+        self.save_trial_data_to_json(bpod_data)
         # this is a flag for the online plots. If online plots were in pyqt5, there is a file watcher functionality
         Path(self.paths['DATA_FILE_PATH']).parent.joinpath('new_trial.flag').touch()
         self.paths.SESSION_FOLDER.joinpath('transfer_me.flag').touch()
         self.check_sync_pulses(bpod_data=bpod_data)
+
+    @final
+    def save_trial_data_to_json(self, bpod_data: dict):
+        # get trial's data as a dict, validate by passing through pydantic model
+        trial_data = self.trials_table.iloc[self.trial_num].to_dict()
+        trial_data = self.TrialDataDefinition.model_validate(trial_data).model_dump()
+
+        # add bpod_data as 'behavior_data'
+        trial_data['behavior_data'] = bpod_data
+
+        # write json data to file
+        with open(self.paths['DATA_FILE_PATH'], 'a') as fp:
+            fp.write(json.dumps(trial_data) + '\n')
 
     def check_sync_pulses(self, bpod_data):
         # todo move this in the post trial when we have a task flow

@@ -1,7 +1,7 @@
 from collections import abc
 from datetime import date
 from pathlib import Path
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal
 
 from annotated_types import Ge, Le
 from pydantic import (
@@ -199,3 +199,25 @@ class HardwareSettings(BunchModel):
     device_cameras: dict[str, dict[str, HardwareSettingsCameraWorkflow | HardwareSettingsCamera]] | None
     device_microphone: HardwareSettingsMicrophone | None = None
     VERSION: str
+
+
+class TrialData(BaseModel):
+    # allow adding extra fields
+    model_config = ConfigDict(extra='allow')
+
+    contrast: Annotated[float, Ge(0.0), Le(1.0)]
+    position: int
+    quiescent_period: Annotated[int, Ge(0.0)]
+    response_side: Literal[-1, 0, 1]
+    response_time: Annotated[float, Ge(0.0)]
+    reward_amount: Annotated[float, Ge(0.0)]
+    reward_valve_time: Annotated[float, Ge(0.0)]
+    stim_angle: Annotated[float, Ge(-180.0), Le(180.0)]
+    stim_freq: PositiveFloat
+    stim_gain: float
+    stim_phase: float
+    stim_reverse: bool
+    stim_sigma: float
+    trial_correct: bool
+    trial_num: Annotated[int, Ge(0.0)]
+    pause_duration: Annotated[float, Ge(0.0)]
