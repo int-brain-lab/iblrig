@@ -99,26 +99,7 @@ class ChoiceWorldSession(
         self.block_num = -1
         self.block_trial_num = -1
         # init the tables, there are 2 of them: a trials table and a ambient sensor data table
-        self.trials_table = pd.DataFrame(
-            {
-                'contrast': np.zeros(NTRIALS_INIT) * np.NaN,
-                'position': np.zeros(NTRIALS_INIT) * np.NaN,
-                'quiescent_period': np.zeros(NTRIALS_INIT) * np.NaN,
-                'response_side': np.zeros(NTRIALS_INIT, dtype=np.int8),
-                'response_time': np.zeros(NTRIALS_INIT) * np.NaN,
-                'reward_amount': np.zeros(NTRIALS_INIT) * np.NaN,
-                'reward_valve_time': np.zeros(NTRIALS_INIT) * np.NaN,
-                'stim_angle': np.zeros(NTRIALS_INIT) * np.NaN,
-                'stim_freq': np.zeros(NTRIALS_INIT) * np.NaN,
-                'stim_gain': np.zeros(NTRIALS_INIT) * np.NaN,
-                'stim_phase': np.zeros(NTRIALS_INIT) * np.NaN,
-                'stim_reverse': np.zeros(NTRIALS_INIT, dtype=bool),
-                'stim_sigma': np.zeros(NTRIALS_INIT) * np.NaN,
-                'trial_correct': np.zeros(NTRIALS_INIT, dtype=bool),
-                'trial_num': np.zeros(NTRIALS_INIT, dtype=np.int16),
-                'pause_duration': np.zeros(NTRIALS_INIT, dtype=float),
-            }
-        )
+        self.trials_table = TrialData.prepare_dataframe(NTRIALS_INIT)
 
         self.ambient_sensor_table = pd.DataFrame(
             {

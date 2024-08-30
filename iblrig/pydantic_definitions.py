@@ -3,6 +3,8 @@ from datetime import date
 from pathlib import Path
 from typing import Annotated, Literal
 
+import numpy as np
+import pandas as pd
 from annotated_types import Ge, Le
 from pydantic import (
     AnyUrl,
@@ -20,7 +22,7 @@ from pydantic import (
 
 from iblrig.constants import BASE_PATH
 
-FilePath = Annotated[FilePath, PlainSerializer(lambda s: str(s), return_type=str)]
+ExistingFilePath = Annotated[FilePath, PlainSerializer(lambda s: str(s), return_type=str)]
 """Validate that path exists and is file. Cast to str upon save."""
 
 BehaviourInputPort = Annotated[int, Ge(1), Le(4)]
@@ -108,7 +110,7 @@ class HardwareSettingsRotaryEncoder(BunchModel):
 
 
 class HardwareSettingsScreen(BunchModel):
-    DISPLAY_IDX: int = Field(gte=0, lte=1)  # -1 = Default, 0 = First, 1 = Second, 2 = Third, etc
+    DISPLAY_IDX: int = Field(ge=0, le=1)  # -1 = Default, 0 = First, 1 = Second, 2 = Third, etc
     SCREEN_FREQ_TARGET: int = Field(gt=0)
     SCREEN_FREQ_TEST_DATE: date | None = None
     SCREEN_FREQ_TEST_STATUS: str | None = None
@@ -161,12 +163,12 @@ class HardwareSettingsCamera(BunchModel):
 
 
 class HardwareSettingsCameraWorkflow(BunchModel):
-    setup: FilePath | None = Field(
+    setup: ExistingFilePath | None = Field(
         title='Optional camera setup workflow',
         default=None,
         description='An optional path to the camera setup Bonsai workflow.',
     )
-    recording: FilePath = Field(
+    recording: ExistingFilePath = Field(
         title='Camera recording workflow', description='The path to the Bonsai workflow for camera recording.'
     )
 
@@ -201,14 +203,21 @@ class HardwareSettings(BunchModel):
     VERSION: str
 
 
-class TrialData(BaseModel):
+class TrialDataModel(BaseModel):
     # allow adding extra fields
     model_config = ConfigDict(extra='allow')
 
+    @classmethod
+    def prepare_dataframe(cls, n_rows: int) -> pd.DataFrame:
+        dtypes = {field: field_info.annotation for field, field_info in cls.model_fields.items()}
+        return pd.DataFrame(np.zeros((n_rows, len(dtypes))), columns=dtypes.keys()).astype(dtypes)
+
+
+class TrialData(TrialDataModel):
     contrast: Annotated[float, Ge(0.0), Le(1.0)]
-    position: int
+    position: float
     quiescent_period: Annotated[float, Ge(0.0)]
-    response_side: Literal[-1, 0, 1]
+    response_side: Annotated[int, Ge(-1), Le(1)]
     response_time: Annotated[float, Ge(0.0)]
     reward_amount: Annotated[float, Ge(0.0)]
     reward_valve_time: Annotated[float, Ge(0.0)]
