@@ -207,7 +207,7 @@ class TrialData(BaseModel):
 
     contrast: Annotated[float, Ge(0.0), Le(1.0)]
     position: int
-    quiescent_period: Annotated[int, Ge(0.0)]
+    quiescent_period: Annotated[float, Ge(0.0)]
     response_side: Literal[-1, 0, 1]
     response_time: Annotated[float, Ge(0.0)]
     reward_amount: Annotated[float, Ge(0.0)]
