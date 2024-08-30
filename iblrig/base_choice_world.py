@@ -518,6 +518,17 @@ class ChoiceWorldSession(
 
     @final
     def save_trial_data_to_json(self, bpod_data: dict):
+        """Validate and save trial data.
+
+        This method retrieve's the current trial's data from the trial_table and validates it using a Pydantic model
+        (self.TrialDataDefinition). In merges in the trial's bpod_data dict and appends everything to the session's
+        JSON data file.
+
+        Parameters
+        ----------
+        bpod_data : dict
+            Trial data returned from pybpod.
+        """
         # get trial's data as a dict, validate by passing through pydantic model
         trial_data = self.trials_table.iloc[self.trial_num].to_dict()
         trial_data = self.TrialDataDefinition.model_validate(trial_data).model_dump()
