@@ -1,7 +1,7 @@
 from collections import abc
 from datetime import date
 from pathlib import Path
-from typing import Annotated, Any, Literal
+from typing import Annotated, Literal
 
 from annotated_types import Ge, Le
 from pydantic import (
