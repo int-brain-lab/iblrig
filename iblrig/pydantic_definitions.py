@@ -246,6 +246,7 @@ class TrialDataModel(BaseModel):
 
 class TrialDataChoiceWorld(TrialDataModel):
     """Definition of Trial Data for ChoiceWorldSession"""
+
     contrast: Annotated[float, Ge(0.0), Le(1.0)]
     position: float
     quiescent_period: Annotated[float, Ge(0.0)]
@@ -271,6 +272,7 @@ class TrialDataChoiceWorld(TrialDataModel):
 
 class TrialDataActiveChoiceWorld(TrialDataChoiceWorld):
     """Definition of Trial Data for ActiveChoiceWorldSession"""
+
     response_side: Annotated[int, Ge(-1), Le(1)]
     response_time: Annotated[float, Ge(0.0)]
     trial_correct: bool
