@@ -9,16 +9,17 @@ import subprocess
 import time
 from pathlib import Path
 from string import ascii_letters
-from typing import final
+from typing import Annotated, final
 
 import numpy as np
 import pandas as pd
+from annotated_types import Interval, IsNan
 
 import iblrig.base_tasks
 import iblrig.graphic
 from iblrig import choiceworld, misc
 from iblrig.hardware import SOFTCODE
-from iblrig.pydantic_definitions import TrialDataActiveChoiceWorld, TrialDataChoiceWorld
+from iblrig.pydantic_definitions import TrialDataModel
 from iblutil.io import jsonable
 from iblutil.util import Bunch
 from pybpodapi.com.messaging.trial import Trial
@@ -74,6 +75,32 @@ NBLOCKS_INIT = 100
 #     WHITE_NOISE_IDX: int = 3
 
 
+class ChoiceWorldTrialData(TrialDataModel):
+    """Pydantic Model for Trial Data."""
+
+    contrast: Annotated[float, Interval(ge=0.0, le=1.0)]
+    position: float
+    quiescent_period: Annotated[float, Interval(ge=0.0)]
+    reward_amount: Annotated[float, Interval(ge=0.0)]
+    reward_valve_time: Annotated[float, Interval(ge=0.0)]
+    stim_angle: Annotated[float, Interval(ge=-180.0, le=180.0)]
+    stim_freq: Annotated[float, Interval(ge=0.0)]
+    stim_gain: float
+    stim_phase: float
+    stim_reverse: bool
+    stim_sigma: float
+    trial_num: Annotated[int, Interval(ge=0.0)]
+    pause_duration: Annotated[float, Interval(ge=0.0)] = 0.0
+
+    # The following variables are only used in ActiveChoiceWorld
+    # We keep them here with fixed default values for sake of compatibility
+    #
+    # TODO: Yes, this should probably be done differently.
+    response_side: Annotated[int, Interval(ge=0, le=0)] = 0
+    response_time: IsNan[float] = np.nan
+    trial_correct: Annotated[int, Interval(ge=0, le=0)] = False
+
+
 class ChoiceWorldSession(
     iblrig.base_tasks.BonsaiRecordingMixin,
     iblrig.base_tasks.BonsaiVisualStimulusMixin,
@@ -86,7 +113,10 @@ class ChoiceWorldSession(
 ):
     # task_params = ChoiceWorldParams()
     base_parameters_file = Path(__file__).parent.joinpath('base_choice_world_params.yaml')
-    TrialDataDefinition = TrialDataChoiceWorld
+
+    @property
+    def get_trial_data_model(self):
+        return ChoiceWorldTrialData
 
     def __init__(self, *args, delay_secs=0, **kwargs):
         super().__init__(**kwargs)
@@ -99,7 +129,7 @@ class ChoiceWorldSession(
         self.block_num = -1
         self.block_trial_num = -1
         # init the tables, there are 2 of them: a trials table and a ambient sensor data table
-        self.trials_table = TrialDataChoiceWorld.preallocate_dataframe(NTRIALS_INIT)
+        self.trials_table = self.get_trial_data_model.preallocate_dataframe(NTRIALS_INIT)
 
         self.ambient_sensor_table = pd.DataFrame(
             {
@@ -513,7 +543,7 @@ class ChoiceWorldSession(
         """
         # get trial's data as a dict, validate by passing through pydantic model
         trial_data = self.trials_table.iloc[self.trial_num].to_dict()
-        trial_data = self.TrialDataDefinition.model_validate(trial_data).model_dump()
+        trial_data = self.get_trial_data_model.model_validate(trial_data).model_dump()
 
         # add bpod_data as 'behavior_data'
         trial_data['behavior_data'] = bpod_data
@@ -651,6 +681,14 @@ class HabituationChoiceWorldSession(ChoiceWorldSession):
         return sma
 
 
+class ActiveChoiceWorldTrialData(ChoiceWorldTrialData):
+    """Pydantic Model for Trial Data, extended from ChoiceWorldSession."""
+
+    response_side: Annotated[int, Interval(ge=-1, le=1)]
+    response_time: Annotated[float, Interval(ge=0.0)]
+    trial_correct: bool
+
+
 class ActiveChoiceWorldSession(ChoiceWorldSession):
     """
     The ActiveChoiceWorldSession is a base class for protocols where the mouse is actively making decisions
@@ -665,7 +703,8 @@ class ActiveChoiceWorldSession(ChoiceWorldSession):
     The TrainingChoiceWorld, BiasedChoiceWorld are all subclasses of this class
     """
 
-    TrialDataDefinition = TrialDataActiveChoiceWorld
+    def get_trial_data_model(self):
+        return ActiveChoiceWorldTrialData
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

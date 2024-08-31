@@ -1,11 +1,10 @@
 from collections import abc
 from datetime import date
-from math import isnan, nan
 from pathlib import Path
 from typing import Annotated, Literal
 
 import pandas as pd
-from annotated_types import Ge, Le, Predicate
+from annotated_types import Ge, Le
 from pydantic import (
     AnyUrl,
     BaseModel,
@@ -242,37 +241,3 @@ class TrialDataModel(BaseModel):
             default_value = field_info.default if field_info.default is not PydanticUndefined else pd.NA
             data[field] = [default_value] * n_rows
         return pd.DataFrame(data)
-
-
-class TrialDataChoiceWorld(TrialDataModel):
-    """Definition of Trial Data for ChoiceWorldSession"""
-
-    contrast: Annotated[float, Ge(0.0), Le(1.0)]
-    position: float
-    quiescent_period: Annotated[float, Ge(0.0)]
-    reward_amount: Annotated[float, Ge(0.0)]
-    reward_valve_time: Annotated[float, Ge(0.0)]
-    stim_angle: Annotated[float, Ge(-180.0), Le(180.0)]
-    stim_freq: PositiveFloat
-    stim_gain: float
-    stim_phase: float
-    stim_reverse: bool
-    stim_sigma: float
-    trial_num: Annotated[int, Ge(0.0)]
-    pause_duration: Annotated[float, Ge(0.0)] = 0.0
-
-    # The following variables are only used in ActiveChoiceWorld
-    # We keep them here with fixed default values for sake of compatibility
-    #
-    # TODO: Yes, this should probably be done differently.
-    response_side: Literal[0] = 0
-    response_time: Annotated[float, Predicate(isnan)] = nan
-    trial_correct: Literal[False] = False
-
-
-class TrialDataActiveChoiceWorld(TrialDataChoiceWorld):
-    """Definition of Trial Data for ActiveChoiceWorldSession"""
-
-    response_side: Annotated[int, Ge(-1), Le(1)]
-    response_time: Annotated[float, Ge(0.0)]
-    trial_correct: bool

@@ -5,7 +5,6 @@ This module provides hardware mixins that can be used together with BaseSession 
 This module tries to exclude task related logic.
 """
 
-import abc
 import argparse
 import contextlib
 import datetime
@@ -17,7 +16,7 @@ import signal
 import sys
 import time
 import traceback
-from abc import ABC
+from abc import ABC, abstractmethod
 from collections import OrderedDict
 from collections.abc import Callable
 from pathlib import Path
@@ -41,7 +40,7 @@ from iblrig.frame2ttl import Frame2TTL
 from iblrig.hardware import SOFTCODE, Bpod, MyRotaryEncoder, sound_device_factory
 from iblrig.hifi import HiFi
 from iblrig.path_helper import load_pydantic_yaml
-from iblrig.pydantic_definitions import HardwareSettings, RigSettings
+from iblrig.pydantic_definitions import HardwareSettings, RigSettings, TrialDataModel
 from iblrig.tools import call_bonsai
 from iblrig.transfer_experiments import BehaviorCopier, VideoCopier
 from iblutil.io.net.base import ExpMessage
@@ -71,6 +70,9 @@ class BaseSession(ABC):
     """dict: The experiment description."""
     extractor_tasks: list | None = None
     """list of str: An optional list of pipeline task class names to instantiate when preprocessing task data."""
+
+    @abstractmethod
+    def get_trial_data_model(self) -> type[TrialDataModel]: ...
 
     def __init__(
         self,
@@ -598,7 +600,7 @@ class BaseSession(ABC):
         self._execute_mixins_shared_function('stop_mixin')
         self._execute_mixins_shared_function('cleanup_mixin')
 
-    @abc.abstractmethod
+    @abstractmethod
     def start_hardware(self):
         """
         Start the hardware.
@@ -606,11 +608,10 @@ class BaseSession(ABC):
         This method doesn't explicitly start the mixins as the order has to be defined in the child classes.
         This needs to be implemented in the child classes, and should start and connect to all hardware pieces.
         """
-        pass
+        ...
 
-    @abc.abstractmethod
-    def _run(self):
-        pass
+    @abstractmethod
+    def _run(self): ...
 
     @staticmethod
     def extra_parser():
