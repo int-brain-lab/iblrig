@@ -45,7 +45,7 @@ class TestInstantiationBiased(BaseTestCases.CommonTestInstantiateTask):
         # makes sure the water reward counts check out
         assert task.trials_table['reward_amount'].sum() == task.session_info.TOTAL_WATER_DELIVERED
         assert np.sum(task.trials_table['reward_amount'] == 0) == task.trial_num + 1 - task.session_info.NTRIALS_CORRECT
-        assert np.all(~np.isnan(task.trials_table['reward_valve_time']))
+        assert not task.trials_table['reward_valve_time'].isna().any()
         # Test the blocks task logic
         df_blocks = task.trials_table.groupby('block_num').agg(
             count=pd.NamedAgg(column='stim_angle', aggfunc='count'),

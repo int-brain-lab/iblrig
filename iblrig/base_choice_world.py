@@ -18,7 +18,7 @@ import iblrig.base_tasks
 import iblrig.graphic
 from iblrig import choiceworld, misc
 from iblrig.hardware import SOFTCODE
-from iblrig.pydantic_definitions import TrialData
+from iblrig.pydantic_definitions import TrialDataActiveChoiceWorld, TrialDataChoiceWorld
 from iblutil.io import jsonable
 from iblutil.util import Bunch
 from pybpodapi.com.messaging.trial import Trial
@@ -86,7 +86,7 @@ class ChoiceWorldSession(
 ):
     # task_params = ChoiceWorldParams()
     base_parameters_file = Path(__file__).parent.joinpath('base_choice_world_params.yaml')
-    TrialDataDefinition = TrialData
+    TrialDataDefinition = TrialDataChoiceWorld
 
     def __init__(self, *args, delay_secs=0, **kwargs):
         super().__init__(**kwargs)
@@ -99,7 +99,7 @@ class ChoiceWorldSession(
         self.block_num = -1
         self.block_trial_num = -1
         # init the tables, there are 2 of them: a trials table and a ambient sensor data table
-        self.trials_table = TrialData.prepare_dataframe(NTRIALS_INIT)
+        self.trials_table = TrialDataChoiceWorld.preallocate_dataframe(NTRIALS_INIT)
 
         self.ambient_sensor_table = pd.DataFrame(
             {
@@ -184,6 +184,7 @@ class ChoiceWorldSession(
                 self.trials_table.at[self.trial_num, 'pause_duration'] = time.time() - time_last_trial_end
                 if not flag_stop.exists():
                     log.info('Resuming session')
+
             # save trial and update log
             self.trial_completed(self.bpod.session.current_trial.export())
             self.ambient_sensor_table.loc[i] = self.bpod.get_ambient_sensor_reading()
@@ -664,6 +665,8 @@ class ActiveChoiceWorldSession(ChoiceWorldSession):
     The TrainingChoiceWorld, BiasedChoiceWorld are all subclasses of this class
     """
 
+    TrialDataDefinition = TrialDataActiveChoiceWorld
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.trials_table['stim_probability_left'] = np.zeros(NTRIALS_INIT, dtype=np.float64)
@@ -710,8 +713,8 @@ NTRIALS ERROR:        {self.trial_num - self.session_info.NTRIALS_CORRECT}
             outcome = next(k for k in raw_outcome if raw_outcome[k])
             # Update response buffer -1 for left, 0 for nogo, and 1 for rightward
             position = self.trials_table.at[self.trial_num, 'position']
+            self.trials_table.at[self.trial_num, 'trial_correct'] = 'correct' in outcome
             if 'correct' in outcome:
-                self.trials_table.at[self.trial_num, 'trial_correct'] = True
                 self.session_info.NTRIALS_CORRECT += 1
                 self.trials_table.at[self.trial_num, 'response_side'] = -np.sign(position)
             elif 'error' in outcome:
@@ -868,7 +871,7 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
 
     def compute_performance(self):
         """Aggregate the trials table to compute the performance of the mouse on each contrast."""
-        self.trials_table['signed_contrast'] = self.trials_table['contrast'] * np.sign(self.trials_table['position'])
+        self.trials_table['signed_contrast'] = self.trials_table.contrast * self.trials_table.position
         performance = self.trials_table.groupby(['signed_contrast']).agg(
             last_50_perf=pd.NamedAgg(column='trial_correct', aggfunc=lambda x: np.sum(x[np.maximum(-50, -x.size) :]) / 50),
             ntrials=pd.NamedAgg(column='trial_correct', aggfunc='count'),

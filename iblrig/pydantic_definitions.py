@@ -1,11 +1,11 @@
 from collections import abc
 from datetime import date
+from math import isnan, nan
 from pathlib import Path
 from typing import Annotated, Literal
 
-import numpy as np
 import pandas as pd
-from annotated_types import Ge, Le
+from annotated_types import Ge, Le, Predicate
 from pydantic import (
     AnyUrl,
     BaseModel,
@@ -19,6 +19,7 @@ from pydantic import (
     field_serializer,
     field_validator,
 )
+from pydantic_core._pydantic_core import PydanticUndefined
 
 from iblrig.constants import BASE_PATH
 
@@ -204,21 +205,50 @@ class HardwareSettings(BunchModel):
 
 
 class TrialDataModel(BaseModel):
-    # allow adding extra fields
-    model_config = ConfigDict(extra='allow')
+    """
+    A data model for trial data that extends BaseModel.
+
+    This model allows for the addition of extra fields beyond those defined in the model.
+    """
+
+    model_config = ConfigDict(extra='allow')  # allow adding extra fields
 
     @classmethod
-    def prepare_dataframe(cls, n_rows: int) -> pd.DataFrame:
-        dtypes = {field: field_info.annotation for field, field_info in cls.model_fields.items()}
-        return pd.DataFrame(np.zeros((n_rows, len(dtypes))), columns=dtypes.keys()).astype(dtypes)
+    def preallocate_dataframe(cls, n_rows: int) -> pd.DataFrame:
+        """
+        Preallocate a DataFrame with specified number of rows, using default values or pandas.NA.
+
+        This method creates a pandas DataFrame with the same columns as the fields defined in the Pydantic model.
+        Each column is initialized with the field's default value if available, otherwise with pandas.NA.
+
+        We use Pandas.NA for default values rather than NaN, None or Zero. This allows
+
+        Parameters
+        ----------
+        n_rows : int
+            The number of rows to create in the DataFrame.
+
+        Returns
+        -------
+        pd.DataFrame
+            A DataFrame with `n_rows` rows and columns corresponding to the model's fields.
+        """
+        # dtypes = {field: field_info.annotation for field, field_info in cls.model_fields.items()}
+        # data = {field: [pd.NA] * n_rows for field in dtypes.keys()}
+        # return pd.DataFrame(data)
+
+        data = {}
+        for field, field_info in cls.model_fields.items():
+            default_value = field_info.default if field_info.default is not PydanticUndefined else pd.NA
+            data[field] = [default_value] * n_rows
+        return pd.DataFrame(data)
 
 
-class TrialData(TrialDataModel):
+class TrialDataChoiceWorld(TrialDataModel):
+    """Definition of Trial Data for ChoiceWorldSession"""
     contrast: Annotated[float, Ge(0.0), Le(1.0)]
     position: float
     quiescent_period: Annotated[float, Ge(0.0)]
-    response_side: Annotated[int, Ge(-1), Le(1)]
-    response_time: Annotated[float, Ge(0.0)]
     reward_amount: Annotated[float, Ge(0.0)]
     reward_valve_time: Annotated[float, Ge(0.0)]
     stim_angle: Annotated[float, Ge(-180.0), Le(180.0)]
@@ -227,6 +257,20 @@ class TrialData(TrialDataModel):
     stim_phase: float
     stim_reverse: bool
     stim_sigma: float
-    trial_correct: bool
     trial_num: Annotated[int, Ge(0.0)]
-    pause_duration: Annotated[float, Ge(0.0)]
+    pause_duration: Annotated[float, Ge(0.0)] = 0.0
+
+    # The following variables are only used in ActiveChoiceWorld
+    # We keep them here with fixed default values for sake of compatibility
+    #
+    # TODO: Yes, this should probably be done differently.
+    response_side: Literal[0] = 0
+    response_time: Annotated[float, Predicate(isnan)] = nan
+    trial_correct: Literal[False] = False
+
+
+class TrialDataActiveChoiceWorld(TrialDataChoiceWorld):
+    """Definition of Trial Data for ActiveChoiceWorldSession"""
+    response_side: Annotated[int, Ge(-1), Le(1)]
+    response_time: Annotated[float, Ge(0.0)]
+    trial_correct: bool
