@@ -29,12 +29,11 @@ import yaml
 from pythonosc import udp_client
 
 import ibllib.io.session_params as ses_params
-import iblrig
 import iblrig.graphic as graph
 import iblrig.path_helper
 import pybpodapi
 from ibllib.oneibl.registration import IBLRegistrationClient
-from iblrig import net, sound
+from iblrig import net, path_helper, sound
 from iblrig.constants import BASE_PATH, BONSAI_EXE, PYSPIN_AVAILABLE
 from iblrig.frame2ttl import Frame2TTL
 from iblrig.hardware import SOFTCODE, Bpod, MyRotaryEncoder, sound_device_factory
@@ -71,8 +70,8 @@ class BaseSession(ABC):
     extractor_tasks: list | None = None
     """list of str: An optional list of pipeline task class names to instantiate when preprocessing task data."""
 
-    @abstractmethod
-    def get_trial_data_model(self) -> type[TrialDataModel]: ...
+    def get_trial_data_model(self):
+        return TrialDataModel
 
     def __init__(
         self,
@@ -262,7 +261,7 @@ class BaseSession(ABC):
             *   SETTINGS_FILE_PATH: contains the task settings
                 `C:\iblrigv8_data\mainenlab\Subjects\SWC_043\2019-01-01\001\raw_task_data_00\_iblrig_taskSettings.raw.json`
         """
-        rig_computer_paths = iblrig.path_helper.get_local_and_remote_paths(
+        rig_computer_paths = path_helper.get_local_and_remote_paths(
             local_path=self.iblrig_settings.iblrig_local_data_path,
             remote_path=self.iblrig_settings.iblrig_remote_data_path,
             lab=self.iblrig_settings.ALYX_LAB,
@@ -315,7 +314,8 @@ class BaseSession(ABC):
         self._logger = setup_logger('iblrig', level=level, file=file)  # logger attr used by create_session to determine log level
         setup_logger('pybpodapi', level=level_bpod, file=file)
 
-    def _remove_file_loggers(self):
+    @staticmethod
+    def _remove_file_loggers():
         for logger_name in ['iblrig', 'pybpodapi']:
             logger = logging.getLogger(logger_name)
             file_handlers = [fh for fh in logger.handlers if isinstance(fh, logging.FileHandler)]

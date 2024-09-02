@@ -114,7 +114,6 @@ class ChoiceWorldSession(
     # task_params = ChoiceWorldParams()
     base_parameters_file = Path(__file__).parent.joinpath('base_choice_world_params.yaml')
 
-    @property
     def get_trial_data_model(self):
         return ChoiceWorldTrialData
 
@@ -129,7 +128,7 @@ class ChoiceWorldSession(
         self.block_num = -1
         self.block_trial_num = -1
         # init the tables, there are 2 of them: a trials table and a ambient sensor data table
-        self.trials_table = self.get_trial_data_model.preallocate_dataframe(NTRIALS_INIT)
+        self.trials_table = self.get_trial_data_model().preallocate_dataframe(NTRIALS_INIT)
 
         self.ambient_sensor_table = pd.DataFrame(
             {
@@ -543,7 +542,7 @@ class ChoiceWorldSession(
         """
         # get trial's data as a dict, validate by passing through pydantic model
         trial_data = self.trials_table.iloc[self.trial_num].to_dict()
-        trial_data = self.get_trial_data_model.model_validate(trial_data).model_dump()
+        trial_data = self.get_trial_data_model().model_validate(trial_data).model_dump()
 
         # add bpod_data as 'behavior_data'
         trial_data['behavior_data'] = bpod_data
