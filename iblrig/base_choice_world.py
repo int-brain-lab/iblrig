@@ -1,7 +1,6 @@
 """Extends the base_tasks modules by providing task logic around the Choice World protocol."""
 
 import abc
-import json
 import logging
 import math
 import random
@@ -9,7 +8,7 @@ import subprocess
 import time
 from pathlib import Path
 from string import ascii_letters
-from typing import Annotated, final
+from typing import Annotated
 
 import numpy as np
 import pandas as pd
@@ -113,9 +112,7 @@ class ChoiceWorldSession(
 ):
     # task_params = ChoiceWorldParams()
     base_parameters_file = Path(__file__).parent.joinpath('base_choice_world_params.yaml')
-
-    def get_trial_data_model(self):
-        return ChoiceWorldTrialData
+    TrialDataModel = ChoiceWorldTrialData
 
     def __init__(self, *args, delay_secs=0, **kwargs):
         super().__init__(**kwargs)
@@ -128,8 +125,7 @@ class ChoiceWorldSession(
         self.block_num = -1
         self.block_trial_num = -1
         # init the tables, there are 2 of them: a trials table and a ambient sensor data table
-        self.trials_table = self.get_trial_data_model().preallocate_dataframe(NTRIALS_INIT)
-
+        self.trials_table = self.TrialDataModel.preallocate_dataframe(NTRIALS_INIT)
         self.ambient_sensor_table = pd.DataFrame(
             {
                 'Temperature_C': np.zeros(NTRIALS_INIT) * np.NaN,
@@ -527,30 +523,6 @@ class ChoiceWorldSession(
         self.paths.SESSION_FOLDER.joinpath('transfer_me.flag').touch()
         self.check_sync_pulses(bpod_data=bpod_data)
 
-    @final
-    def save_trial_data_to_json(self, bpod_data: dict):
-        """Validate and save trial data.
-
-        This method retrieve's the current trial's data from the trial_table and validates it using a Pydantic model
-        (self.TrialDataDefinition). In merges in the trial's bpod_data dict and appends everything to the session's
-        JSON data file.
-
-        Parameters
-        ----------
-        bpod_data : dict
-            Trial data returned from pybpod.
-        """
-        # get trial's data as a dict, validate by passing through pydantic model
-        trial_data = self.trials_table.iloc[self.trial_num].to_dict()
-        trial_data = self.get_trial_data_model().model_validate(trial_data).model_dump()
-
-        # add bpod_data as 'behavior_data'
-        trial_data['behavior_data'] = bpod_data
-
-        # write json data to file
-        with open(self.paths['DATA_FILE_PATH'], 'a') as fp:
-            fp.write(json.dumps(trial_data) + '\n')
-
     def check_sync_pulses(self, bpod_data):
         # todo move this in the post trial when we have a task flow
         if not self.bpod.is_connected:
@@ -703,8 +675,7 @@ class ActiveChoiceWorldSession(ChoiceWorldSession):
     The TrainingChoiceWorld, BiasedChoiceWorld are all subclasses of this class
     """
 
-    def get_trial_data_model(self):
-        return ActiveChoiceWorldTrialData
+    TrialDataModel = ActiveChoiceWorldTrialData
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

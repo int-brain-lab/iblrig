@@ -20,6 +20,7 @@ from abc import ABC, abstractmethod
 from collections import OrderedDict
 from collections.abc import Callable
 from pathlib import Path
+from typing import final
 
 import numpy as np
 import pandas as pd
@@ -70,8 +71,7 @@ class BaseSession(ABC):
     extractor_tasks: list | None = None
     """list of str: An optional list of pipeline task class names to instantiate when preprocessing task data."""
 
-    def get_trial_data_model(self):
-        return TrialDataModel
+    TrialDataModel: type[TrialDataModel]
 
     def __init__(
         self,
@@ -441,6 +441,30 @@ class BaseSession(ABC):
         with open(json_file, 'w') as outfile:
             json.dump(output_dict, outfile, indent=4, sort_keys=True, default=str)  # converts datetime objects to string
         return json_file  # PosixPath
+
+    @final
+    def save_trial_data_to_json(self, bpod_data: dict):
+        """Validate and save trial data.
+
+        This method retrieve's the current trial's data from the trial_table and validates it using a Pydantic model
+        (self.TrialDataDefinition). In merges in the trial's bpod_data dict and appends everything to the session's
+        JSON data file.
+
+        Parameters
+        ----------
+        bpod_data : dict
+            Trial data returned from pybpod.
+        """
+        # get trial's data as a dict, validate by passing through pydantic model
+        trial_data = self.trials_table.iloc[self.trial_num].to_dict()
+        trial_data = self.TrialDataModel.model_validate(trial_data).model_dump()
+
+        # add bpod_data as 'behavior_data'
+        trial_data['behavior_data'] = bpod_data
+
+        # write json data to file
+        with open(self.paths['DATA_FILE_PATH'], 'a') as fp:
+            fp.write(json.dumps(trial_data) + '\n')
 
     @property
     def one(self):
