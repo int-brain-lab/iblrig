@@ -5,7 +5,7 @@
 groups = ["default", "ci", "dev", "doc", "project-extraction", "test", "typing"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:02c08779c288dce1bc517fc41e2c3d385fd24fc15a0e2fa491f87e5f94863e0b"
+content_hash = "sha256:330cd2b56b2399f658b3b05fbb715b5da2b8f6adf3b452435b779237209007a5"
 
 [[metadata.targets]]
 requires_python = "==3.10.*"
@@ -567,6 +567,7 @@ version = "1.2.2"
 requires_python = ">=3.7"
 summary = "Backport of PEP 654 (exception groups)"
 groups = ["default", "ci", "dev", "doc", "test"]
+marker = "python_version < \"3.11\""
 files = [
     {file = "exceptiongroup-1.2.2-py3-none-any.whl", hash = "sha256:3111b9d131c238bec2f8f516e123e14ba243563fb135d3fe885990585aa7795b"},
     {file = "exceptiongroup-1.2.2.tar.gz", hash = "sha256:47c2edf7c6738fafb49fd34290706d1a1a2f4d1c6df275526b62cbb4aa5393cc"},
@@ -700,7 +701,7 @@ version = "3.0.3"
 requires_python = ">=3.7"
 summary = "Lightweight in-process concurrent programming"
 groups = ["dev", "doc"]
-marker = "platform_machine == \"win32\" or platform_machine == \"WIN32\" or platform_machine == \"AMD64\" or platform_machine == \"amd64\" or platform_machine == \"x86_64\" or platform_machine == \"ppc64le\" or platform_machine == \"aarch64\""
+marker = "(platform_machine == \"win32\" or platform_machine == \"WIN32\" or platform_machine == \"AMD64\" or platform_machine == \"amd64\" or platform_machine == \"x86_64\" or platform_machine == \"ppc64le\" or platform_machine == \"aarch64\") and python_version < \"3.13\""
 files = [
     {file = "greenlet-3.0.3-cp310-cp310-macosx_11_0_universal2.whl", hash = "sha256:9da2bd29ed9e4f15955dd1595ad7bc9320308a3b766ef7f837e23ad4b4aac31a"},
     {file = "greenlet-3.0.3-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:d353cadd6083fdb056bb46ed07e4340b0869c305c8ca54ef9da3421acbdf6881"},
@@ -3037,6 +3038,17 @@ files = [
     {file = "tycmd_wrapper-0.2.1-py3-none-macosx_10_9_x86_64.whl", hash = "sha256:b0db3787a9c85a2f79b7b9b867d5cec8c64bde54de3fdc13cb54243ff5aeaf2e"},
     {file = "tycmd_wrapper-0.2.1-py3-none-manylinux_2_35_x86_64.whl", hash = "sha256:3730db1e9f066afbecc494eca6bb0bc98e318f9dab0d528a82636eeb2b825818"},
     {file = "tycmd_wrapper-0.2.1-py3-none-win_amd64.whl", hash = "sha256:73c17d7c6d073d7dd2b050731988a5fabb3be69ec339c3ef5fcfaae42eefe090"},
+]
+
+[[package]]
+name = "types-pyserial"
+version = "3.5.0.20240826"
+requires_python = ">=3.8"
+summary = "Typing stubs for pyserial"
+groups = ["dev", "typing"]
+files = [
+    {file = "types-pyserial-3.5.0.20240826.tar.gz", hash = "sha256:c88c603734410ad714fba85eb10f145dc592ccf1542bb958f12a8481722f37db"},
+    {file = "types_pyserial-3.5.0.20240826-py3-none-any.whl", hash = "sha256:f3fddafe593060afeec489ed6f6a18dcf05ae5eae1c8e9026b50c7960f00b076"},
 ]
 
 [[package]]

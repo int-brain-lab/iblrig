@@ -220,7 +220,8 @@ class TrialDataModel(BaseModel):
         This method creates a pandas DataFrame with the same columns as the fields defined in the Pydantic model.
         Each column is initialized with the field's default value if available, otherwise with pandas.NA.
 
-        We use Pandas.NA for default values rather than NaN, None or Zero. This allows
+        We use Pandas.NA for default values rather than NaN, None or Zero. This allows us to clearly indicate missing
+        values - which will raise a Pydantic ValidationError.
 
         Parameters
         ----------
@@ -232,10 +233,6 @@ class TrialDataModel(BaseModel):
         pd.DataFrame
             A DataFrame with `n_rows` rows and columns corresponding to the model's fields.
         """
-        # dtypes = {field: field_info.annotation for field, field_info in cls.model_fields.items()}
-        # data = {field: [pd.NA] * n_rows for field in dtypes.keys()}
-        # return pd.DataFrame(data)
-
         data = {}
         for field, field_info in cls.model_fields.items():
             default_value = field_info.default if field_info.default is not PydanticUndefined else pd.NA

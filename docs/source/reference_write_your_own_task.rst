@@ -8,18 +8,25 @@ During the lifetime of the IBL project, we realized that multiple task variants 
 
 This left us with the only option of developing a flexible task framework through hierarchical inheritance.
 
-All tasks inherit from the ``iblrig.base_tasks.BaseSession`` class, which provides the following functionalities:
+All tasks inherit from the :class:`iblrig.base_tasks.BaseSession` class, which provides the following functionalities:
     -   read hardware parameters and rig parameters
     -   optionally interfaces with the `Alyx experimental database <https://github.com/cortex-lab/alyx>`_
     -   creates the folder structure for the session
     -   writes the task and rig parameters, log, and :doc:`acquisition description files <../description_file>`
 
-Additionally the ``iblrig.base_tasks`` module provides "hardware mixins". Those are classes that provide hardware-specific functionalities, such as connecting to a Bpod or a rotary encoder. They are composed with the ``BaseSession`` class to create a task.
+Additionally the :mod:`iblrig.base_tasks` module provides "hardware mixins". Those are classes that provide hardware-specific functionalities, such as connecting to a Bpod or a rotary encoder. They are composed with the :class:`~.iblrig.base_tasks.BaseSession` class to create a task.
 
 .. warning::
 
     This sounds complicated ? It is !
     Forecasting all possible tasks and hardware add-ons and modification is fool's errand, however we can go through specific examples of task implementations.
+
+
+Just a test
+-----------
+
+Please see :class:`iblrig.pydantic_definitions.TrialDataModel`
+Please see :class:`pydantic.BaseModel`
 
 
 Guide to Creating Your Own Task
@@ -33,21 +40,21 @@ What Happens When Running an IBL Task?
    -  Reading of task parameters.
    -  Instantiation of hardware mixins.
 
-2. The task initiates the ``run()`` method. Prior to execution, this
+2. The task initiates the :meth:`~.iblrig.base_tasks.run` method. Prior to execution, this
    method:
 
    -  Launches the hardware modules.
    -  Establishes a session folder.
    -  Saves the parameters to disk.
 
-3. The experiment unfolds: the ``run()`` method triggers the ``_run()``
+3. The experiment unfolds: the :meth:`~.iblrig.base_tasks.run` method triggers the ``_run()``
    method within the child class:
 
    -  Typically, this involves a loop that generates a Bpod state
       machine for each trial and runs it.
 
 4. Upon SIGINT or when the maximum trial count is reached, the
-   experiment concludes. The end of the ``run()`` method includes:
+   experiment concludes. The end of the :meth:`~.iblrig.base_tasks.run` method includes:
 
    -  Saving the final parameter file.
    -  Recording administered water and session performance on Alyx.

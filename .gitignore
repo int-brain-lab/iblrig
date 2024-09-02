@@ -46,3 +46,4 @@ devices/camera_recordings/*.layout
 .pdm-python
 /dist
 *~
+docs/source/api/*

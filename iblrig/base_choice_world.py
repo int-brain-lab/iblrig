@@ -682,7 +682,7 @@ class HabituationChoiceWorldSession(ChoiceWorldSession):
 
 
 class ActiveChoiceWorldTrialData(ChoiceWorldTrialData):
-    """Pydantic Model for Trial Data, extended from ChoiceWorldSession."""
+    """Pydantic Model for Trial Data, extended from :class:`~.iblrig.base_choice_world.ChoiceWorldTrialData`."""
 
     response_side: Annotated[int, Interval(ge=-1, le=1)]
     response_time: Annotated[float, Interval(ge=0.0)]
@@ -693,6 +693,7 @@ class ActiveChoiceWorldSession(ChoiceWorldSession):
     """
     The ActiveChoiceWorldSession is a base class for protocols where the mouse is actively making decisions
     by turning the wheel. It has the following characteristics
+
     -   it is trial based
     -   it is decision based
     -   left and right simulus are equiprobable: there is no biased block
@@ -735,10 +736,12 @@ NTRIALS ERROR:        {self.trial_num - self.session_info.NTRIALS_CORRECT}
     def trial_completed(self, bpod_data):
         """
         The purpose of this method is to
-        -   update the trials table with information about the behaviour coming from the bpod
-        Constraints on the state machine data:
+
+        - update the trials table with information about the behaviour coming from the bpod
+          Constraints on the state machine data:
         - mandatory states: ['correct', 'error', 'no_go', 'reward']
         - optional states : ['omit_correct', 'omit_error', 'omit_no_go']
+
         :param bpod_data:
         :return:
         """
