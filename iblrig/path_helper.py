@@ -146,7 +146,11 @@ def get_local_and_remote_paths(
     """
     # we only want to attempt to load the settings file if necessary
     if (local_path is None) or (remote_path is None) or (lab is None):
-        iblrig_settings = load_pydantic_yaml(RigSettings) if iblrig_settings is None else iblrig_settings
+        if iblrig_settings is None:
+            iblrig_settings = load_pydantic_yaml(RigSettings)
+    
+    if isinstance(iblrig_settings, RigSettings):
+        iblrig_settings = iblrig_settings.model_dump()
 
     paths = Bunch({'local_data_folder': local_path, 'remote_data_folder': remote_path})
     if paths.local_data_folder is None:
