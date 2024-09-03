@@ -22,13 +22,6 @@ Additionally the :mod:`iblrig.base_tasks` module provides "hardware mixins". Tho
     Forecasting all possible tasks and hardware add-ons and modification is fool's errand, however we can go through specific examples of task implementations.
 
 
-Just a test
------------
-
-Please see :class:`iblrig.pydantic_definitions.TrialDataModel`
-Please see :class:`pydantic.BaseModel`
-
-
 Guide to Creating Your Own Task
 -------------------------------
 
