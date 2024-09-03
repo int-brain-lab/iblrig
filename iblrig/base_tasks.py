@@ -524,7 +524,7 @@ class BaseSession(ABC):
 
         See Also
         --------
-        ibllib.oneibl.IBLRegistrationClient.register_session - The registration method.
+        :external+iblenv:meth:`ibllib.oneibl.registration.IBLRegistrationClient.register_session` - The registration method.
         """
         if self.session_info['SUBJECT_NAME'] in ('iblrig_test_subject', 'test', 'test_subject'):
             log.warning('Not registering test subject to Alyx')
