@@ -20,7 +20,7 @@ from abc import ABC, abstractmethod
 from collections import OrderedDict
 from collections.abc import Callable
 from pathlib import Path
-from typing import final, Protocol
+from typing import Protocol, final
 
 import numpy as np
 import pandas as pd
