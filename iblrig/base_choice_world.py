@@ -13,6 +13,7 @@ from typing import Annotated, Any
 import numpy as np
 import pandas as pd
 from annotated_types import Interval, IsNan
+from pydantic import NonNegativeFloat, NonNegativeInt
 
 import iblrig.base_tasks
 import iblrig.graphic
@@ -79,17 +80,17 @@ class ChoiceWorldTrialData(TrialDataModel):
 
     contrast: Annotated[float, Interval(ge=0.0, le=1.0)]
     position: float
-    quiescent_period: Annotated[float, Interval(ge=0.0)]
-    reward_amount: Annotated[float, Interval(ge=0.0)]
-    reward_valve_time: Annotated[float, Interval(ge=0.0)]
+    quiescent_period: NonNegativeFloat
+    reward_amount: NonNegativeFloat
+    reward_valve_time: NonNegativeFloat
     stim_angle: Annotated[float, Interval(ge=-180.0, le=180.0)]
-    stim_freq: Annotated[float, Interval(ge=0.0)]
+    stim_freq: NonNegativeFloat
     stim_gain: float
     stim_phase: float
     stim_reverse: bool
     stim_sigma: float
-    trial_num: Annotated[int, Interval(ge=0.0)]
-    pause_duration: Annotated[float, Interval(ge=0.0)] = 0.0
+    trial_num: NonNegativeInt
+    pause_duration: NonNegativeFloat = 0.0
 
     # The following variables are only used in ActiveChoiceWorld
     # We keep them here with fixed default values for sake of compatibility
@@ -582,12 +583,15 @@ class ChoiceWorldSession(
         return self.device_rotary_encoder.THRESHOLD_EVENTS[(1 if self.task_params.STIM_REVERSE else -1) * self.position]
 
 
+class HabituationChoiceWorldTrialData(ChoiceWorldTrialData):
+    """Pydantic Model for Trial Data, extended from :class:`~.iblrig.base_choice_world.ChoiceWorldTrialData`."""
+
+    delay_to_stim_center: NonNegativeFloat
+
+
 class HabituationChoiceWorldSession(ChoiceWorldSession):
     protocol_name = '_iblrig_tasks_habituationChoiceWorld'
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.trials_table['delay_to_stim_center'] = np.zeros(NTRIALS_INIT) * np.NaN
+    TrialDataModel = HabituationChoiceWorldTrialData
 
     def next_trial(self):
         self.trial_num += 1
@@ -656,7 +660,7 @@ class ActiveChoiceWorldTrialData(ChoiceWorldTrialData):
     """Pydantic Model for Trial Data, extended from :class:`~.iblrig.base_choice_world.ChoiceWorldTrialData`."""
 
     response_side: Annotated[int, Interval(ge=-1, le=1)]
-    response_time: Annotated[float, Interval(ge=0.0)]
+    response_time: NonNegativeFloat
     trial_correct: bool
 
 
@@ -749,6 +753,13 @@ NTRIALS ERROR:        {self.trial_num - self.session_info.NTRIALS_CORRECT}
             raise e
 
 
+class BiasedChoiceWorldTrialData(ActiveChoiceWorldTrialData):
+    """Pydantic Model for Trial Data, extended from :class:`~.iblrig.base_choice_world.ChoiceWorldTrialData`."""
+
+    block_num: NonNegativeInt = 0
+    block_trial_num: NonNegativeInt = 0
+
+
 class BiasedChoiceWorldSession(ActiveChoiceWorldSession):
     """
     Biased choice world session is the instantiation of ActiveChoiceWorld where the notion of biased
@@ -757,14 +768,13 @@ class BiasedChoiceWorldSession(ActiveChoiceWorldSession):
 
     base_parameters_file = Path(__file__).parent.joinpath('base_biased_choice_world_params.yaml')
     protocol_name = '_iblrig_tasks_biasedChoiceWorld'
+    TrialDataModel = BiasedChoiceWorldTrialData
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.blocks_table = pd.DataFrame(
             {'probability_left': np.zeros(NBLOCKS_INIT) * np.NaN, 'block_length': np.zeros(NBLOCKS_INIT, dtype=np.int16) * -1}
         )
-        self.trials_table['block_num'] = np.zeros(NTRIALS_INIT, dtype=np.int16)
-        self.trials_table['block_trial_num'] = np.zeros(NTRIALS_INIT, dtype=np.int16)
 
     def new_block(self):
         """
@@ -820,6 +830,13 @@ TRIALS IN BLOCK:      {trial_info.block_trial_num}
         super().show_trial_log(extra_info=extra_info)
 
 
+class TrainingChoiceWorldTrialData(ActiveChoiceWorldTrialData):
+    """Pydantic Model for Trial Data, extended from :class:`~.iblrig.base_choice_world.ActiveChoiceWorldTrialData`."""
+
+    training_phase: NonNegativeInt
+    debias_trial: bool
+
+
 class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
     """
     The TrainingChoiceWorldSession corresponds to the first training protocol of the choice world task.
@@ -828,6 +845,7 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
     """
 
     protocol_name = '_iblrig_tasks_trainingChoiceWorld'
+    TrialDataModel = TrainingChoiceWorldTrialData
 
     def __init__(self, training_phase=-1, adaptive_reward=-1.0, adaptive_gain=None, **kwargs):
         super().__init__(**kwargs)
@@ -851,8 +869,6 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
             log.critical(f'Adaptive gain manually set to {adaptive_gain} degrees/mm')
             self.session_info['ADAPTIVE_GAIN_VALUE'] = adaptive_gain
         self.var = {'training_phase_trial_counts': np.zeros(6), 'last_10_responses_sides': np.zeros(10)}
-        self.trials_table['training_phase'] = np.zeros(NTRIALS_INIT, dtype=np.int8)
-        self.trials_table['debias_trial'] = np.zeros(NTRIALS_INIT, dtype=bool)
 
     @property
     def default_reward_amount(self):
@@ -934,6 +950,8 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
                 position = self.task_params.STIM_POSITIONS[int(np.random.normal(average_right, 0.5) >= 0.5)]
                 # contrast is the last contrast
                 contrast = last_contrast
+        else:
+            self.trials_table.at[self.trial_num, 'debias_trial'] = False
         # save and send trial info to bonsai
         self.draw_next_trial_info(pleft=self.task_params.PROBABILITY_LEFT, position=position, contrast=contrast)
         self.trials_table.at[self.trial_num, 'training_phase'] = self.training_phase
