@@ -249,12 +249,14 @@ class RigWizardModel:
             QtWidgets.QMessageBox().critical(None, 'Error', f'{message}\n\n{solution}')
 
         # get subjects from Alyx: this is the set of subjects that are alive and not stock in the lab defined in settings
-        rest_subjects = self.alyx.rest('subjects', 'list', alive=True, stock=False, lab=self.iblrig_settings['ALYX_LAB'])
+        rest_subjects = self.alyx.rest(
+            'subjects', 'list', alive=True, stock=False, lab=self.iblrig_settings['ALYX_LAB'], no_cache=True
+        )
         self.all_subjects.remove(self.test_subject_name)
         self.all_subjects = [self.test_subject_name] + sorted(set(self.all_subjects + [s['nickname'] for s in rest_subjects]))
 
         # then get the projects that map to the current user
-        rest_projects = self.alyx.rest('projects', 'list')
+        rest_projects = self.alyx.rest('projects', 'list', no_cache=True)
         projects = [p['name'] for p in rest_projects if (username in p['users'] or len(p['users']) == 0)]
         self.all_projects = sorted(set(projects + self.all_projects))
 
