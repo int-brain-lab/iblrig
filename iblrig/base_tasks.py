@@ -55,6 +55,10 @@ OSC_CLIENT_IP = '127.0.0.1'
 log = logging.getLogger(__name__)
 
 
+class HasBpod(Protocol):
+    bpod: Bpod
+
+
 class BaseSession(ABC):
     version = None
     """str: !!CURRENTLY UNUSED!! task version string."""
@@ -75,8 +79,7 @@ class BaseSession(ABC):
 
     @property
     @abstractmethod
-    def protocol_name(self) -> str:
-        ...
+    def protocol_name(self) -> str: ...
 
     def __init__(
         self,
@@ -721,6 +724,8 @@ class OSCClient(udp_client.SimpleUDPClient):
 
 
 class BonsaiRecordingMixin(BaseSession):
+    config: dict
+
     def init_mixin_bonsai_recordings(self, *args, **kwargs):
         self.bonsai_camera = Bunch({'udp_client': OSCClient(port=7111)})
         self.bonsai_microphone = Bunch({'udp_client': OSCClient(port=7112)})
@@ -1069,7 +1074,7 @@ class ValveMixin(BaseSession):
         return self.bpod.session.current_trial.export()
 
 
-class SoundMixin(BaseSession):
+class SoundMixin(BaseSession, HasBpod):
     """Sound interface methods for state machine."""
 
     def init_mixin_sound(self):
