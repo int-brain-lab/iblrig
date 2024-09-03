@@ -145,10 +145,9 @@ def get_local_and_remote_paths(
         'remote_subjects_folder': PosixPath('Y:/Subjects')}
     """
     # we only want to attempt to load the settings file if necessary
-    if (local_path is None) or (remote_path is None) or (lab is None):
-        if iblrig_settings is None:
-            iblrig_settings = load_pydantic_yaml(RigSettings)
-    
+    if ((local_path is None) or (remote_path is None) or (lab is None)) and iblrig_settings is None:
+        iblrig_settings = load_pydantic_yaml(RigSettings)
+
     if isinstance(iblrig_settings, RigSettings):
         iblrig_settings = iblrig_settings.model_dump()
 
