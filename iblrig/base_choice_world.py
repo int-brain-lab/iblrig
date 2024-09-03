@@ -8,7 +8,7 @@ import subprocess
 import time
 from pathlib import Path
 from string import ascii_letters
-from typing import Annotated
+from typing import Annotated, Any
 
 import numpy as np
 import pandas as pd
@@ -508,7 +508,7 @@ class ChoiceWorldSession(
         self.trials_table.at[self.trial_num, 'stim_probability_left'] = pleft
         self.send_trial_info_to_bonsai()
 
-    def trial_completed(self, bpod_data):
+    def trial_completed(self, bpod_data: dict[str, Any]) -> None:
         # if the reward state has not been triggered, null the reward
         if np.isnan(bpod_data['States timestamps']['reward'][0][0]):
             self.trials_table.at[self.trial_num, 'reward_amount'] = 0

@@ -27,7 +27,9 @@ extensions = [
     'sphinx.ext.inheritance_diagram',
     'sphinx.ext.viewcode',
 ]
-autodoc_typehints = 'none'
+# autodoc_mock_imports = ["PySpin"]
+autodoc_typehints = 'description'
+autodoc_member_order = 'groupwise'
 autosummary_generate = True
 autosummary_imported_members = False
 autosectionlabel_prefix_document = True
