@@ -1,10 +1,6 @@
 {{ fullname | escape | underline}}
 
 .. automodule:: {{ fullname }}
-   {%- if fullname=='iblrig_tasks' %}
-   :private-members:
-   {% endif %}
-
    {% block attributes %}
    {%- if attributes %}
    .. rubric:: {{ _('Module Attributes') }}
