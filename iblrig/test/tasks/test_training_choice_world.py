@@ -77,9 +77,9 @@ class TestTrainingPhaseChoiceWorld(BaseTestCases.CommonTestInstantiateTask):
                 normalized_counts = normalized_counts / (nt / contrast_set.size)
                 np.testing.assert_array_less(normalized_counts, 0.33)
                 if debias:
-                    assert np.sum(trials_table['debias_trial']) > 20
+                    assert trials_table.debias_trial.astype(int).sum() > 20
                 else:
-                    assert np.sum(trials_table['debias_trial']) == 0
+                    assert trials_table.debias_trial.astype(int).sum() == 0
 
 
 class TestInstantiationTraining(BaseTestCases.CommonTestInstantiateTask):
