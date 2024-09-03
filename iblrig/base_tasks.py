@@ -20,7 +20,7 @@ from abc import ABC, abstractmethod
 from collections import OrderedDict
 from collections.abc import Callable
 from pathlib import Path
-from typing import final
+from typing import final, Protocol
 
 import numpy as np
 import pandas as pd
@@ -58,7 +58,7 @@ log = logging.getLogger(__name__)
 class BaseSession(ABC):
     version = None
     """str: !!CURRENTLY UNUSED!! task version string."""
-    protocol_name: str | None = None
+    # protocol_name: str | None = None
     """str: The name of the task protocol (NB: avoid spaces)."""
     base_parameters_file: Path | None = None
     """Path: A YAML file containing base, default task parameters."""
@@ -72,6 +72,11 @@ class BaseSession(ABC):
     """list of str: An optional list of pipeline task class names to instantiate when preprocessing task data."""
 
     TrialDataModel: type[TrialDataModel]
+
+    @property
+    @abstractmethod
+    def protocol_name(self) -> str:
+        ...
 
     def __init__(
         self,
@@ -108,7 +113,6 @@ class BaseSession(ABC):
         :param append: bool, if True, append to the latest existing session of the same subject for the same day
         """
         self.extractor_tasks = getattr(self, 'extractor_tasks', None)
-        assert self.protocol_name is not None, 'Protocol name must be defined by the child class'
         self._logger = None
         self._setup_loggers(level=log_level)
         if not isinstance(self, EmptySession):
