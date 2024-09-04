@@ -26,14 +26,9 @@ class Session(BiasedChoiceWorldSession):
 
     def next_trial(self):
         self.trial_num += 1
-        trial_params = self.trials_table.iloc[self.trial_num]
+        trial_params = self.trials_table.iloc[self.trial_num].drop(['index', 'trial_num']).to_dict()
         self.block_num = trial_params['block_num']
-        self.draw_next_trial_info(
-            pleft=trial_params['stim_probability_left'],
-            contrast=trial_params['contrast'],
-            position=trial_params['position'],
-            reward_amount=trial_params['reward_amount'],
-        )
+        self.draw_next_trial_info(**trial_params)
 
     @staticmethod
     def get_session_template(session_template_id: int) -> pd.DataFrame:

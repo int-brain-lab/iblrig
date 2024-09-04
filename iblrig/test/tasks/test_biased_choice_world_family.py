@@ -111,7 +111,7 @@ class TestInstantiationEphys(TestInstantiationBiased):
         # check that the task in fact uses the pre-generated data
         cols = list(
             set(self.task.get_session_template(0).columns)
-            - {'index', 'reward_valve_time', 'response_side', 'response_time', 'trial_correct'}
+            - {'index', 'reward_amount', 'reward_valve_time', 'response_side', 'response_time', 'trial_correct'}
         )
         template = self.task.get_session_template(0).head(len(self.task.trials_table))
         assert (self.task.trials_table == template)[cols].all().all()

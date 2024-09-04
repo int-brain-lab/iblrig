@@ -79,6 +79,7 @@ class ChoiceWorldTrialData(TrialDataModel):
     """Pydantic Model for Trial Data."""
 
     contrast: Annotated[float, Interval(ge=0.0, le=1.0)]
+    stim_probability_left: Annotated[float, Interval(ge=0.0, le=1.0)]
     position: float
     quiescent_period: NonNegativeFloat
     reward_amount: NonNegativeFloat
@@ -86,7 +87,7 @@ class ChoiceWorldTrialData(TrialDataModel):
     stim_angle: Annotated[float, Interval(ge=-180.0, le=180.0)]
     stim_freq: NonNegativeFloat
     stim_gain: float
-    stim_phase: float
+    stim_phase: Annotated[float, Interval(ge=0.0, le=2 * math.pi)]
     stim_reverse: bool
     stim_sigma: float
     trial_num: NonNegativeInt
@@ -478,20 +479,18 @@ class ChoiceWorldSession(
     def default_reward_amount(self):
         return self.task_params.REWARD_AMOUNT_UL
 
-    def draw_next_trial_info(self, pleft=0.5, contrast=None, position=None, reward_amount=None):
+    def draw_next_trial_info(self, pleft=0.5, **kwargs):
         """Draw next trial variables.
 
         calls :meth:`send_trial_info_to_bonsai`.
         This is called by the `next_trial` method before updating the Bpod state machine.
         """
-        if contrast is None:
-            contrast = misc.draw_contrast(self.task_params.CONTRAST_SET, self.task_params.CONTRAST_SET_PROBABILITY_TYPE)
         assert len(self.task_params.STIM_POSITIONS) == 2, 'Only two positions are supported'
-        position = position or int(np.random.choice(self.task_params.STIM_POSITIONS, p=[pleft, 1 - pleft]))
+        contrast = misc.draw_contrast(self.task_params.CONTRAST_SET, self.task_params.CONTRAST_SET_PROBABILITY_TYPE)
+        position = int(np.random.choice(self.task_params.STIM_POSITIONS, p=[pleft, 1 - pleft]))
         quiescent_period = self.task_params.QUIESCENT_PERIOD + misc.truncated_exponential(
             scale=0.35, min_value=0.2, max_value=0.5
         )
-        reward_amount = self.default_reward_amount if reward_amount is None else reward_amount
         stim_gain = (
             self.session_info.ADAPTIVE_GAIN_VALUE if self.task_params.get('ADAPTIVE_GAIN', False) else self.task_params.STIM_GAIN
         )
@@ -505,8 +504,15 @@ class ChoiceWorldSession(
         self.trials_table.at[self.trial_num, 'stim_reverse'] = self.task_params.STIM_REVERSE
         self.trials_table.at[self.trial_num, 'trial_num'] = self.trial_num
         self.trials_table.at[self.trial_num, 'position'] = position
-        self.trials_table.at[self.trial_num, 'reward_amount'] = reward_amount
+        self.trials_table.at[self.trial_num, 'reward_amount'] = self.default_reward_amount
         self.trials_table.at[self.trial_num, 'stim_probability_left'] = pleft
+
+        # use the kwargs dict to override computed values
+        for key, value in kwargs.items():
+            if key == 'index':
+                pass
+            self.trials_table.at[self.trial_num, key] = value
+
         self.send_trial_info_to_bonsai()
 
     def trial_completed(self, bpod_data: dict[str, Any]) -> None:

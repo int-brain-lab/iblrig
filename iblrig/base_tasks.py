@@ -462,8 +462,18 @@ class BaseSession(ABC):
         bpod_data : dict
             Trial data returned from pybpod.
         """
-        # get trial's data as a dict, validate by passing through pydantic model
+        # get trial's data as a dict
         trial_data = self.trials_table.iloc[self.trial_num].to_dict()
+
+        # warn about entries not covered by pydantic model
+        if trial_data.get('trial_num', 1) == 0:
+            for key in set(trial_data.keys()) - set(self.TrialDataModel.model_fields) - {'index'}:
+                log.warning(
+                    f'Key "{key}" in trial_data is missing from TrialDataModel - '
+                    f'its value ({trial_data[key]}) will not be validated.'
+                )
+
+        # validate by passing through pydantic model
         trial_data = self.TrialDataModel.model_validate(trial_data).model_dump()
 
         # add bpod_data as 'behavior_data'
