@@ -105,6 +105,17 @@ class TestInstantiationEphys(TestInstantiationBiased):
         self.get_task_kwargs()
         self.task = EphysChoiceWorldSession(**self.task_kwargs)
 
+    def test_task(self, _=None):
+        super().test_task()
+
+        # check that the task in fact uses the pre-generated data
+        cols = list(
+            set(self.task.get_session_template(0).columns)
+            - {'index', 'reward_valve_time', 'response_side', 'response_time', 'trial_correct'}
+        )
+        template = self.task.get_session_template(0).head(len(self.task.trials_table))
+        assert (self.task.trials_table == template)[cols].all().all()
+
 
 class TestNeuroModulatorBiasedChoiceWorld(TestInstantiationBiased):
     def setUp(self) -> None:

@@ -815,8 +815,9 @@ class BiasedChoiceWorldSession(ActiveChoiceWorldSession):
         # get and store probability left
         pleft = self.blocks_table.loc[self.block_num, 'probability_left']
         # update trial table fields specific to biased choice world task
-        self.trials_table.at[self.trial_num, 'block_num'] = self.block_num
-        self.trials_table.at[self.trial_num, 'block_trial_num'] = self.block_trial_num
+        if self.trials_table.at[self.trial_num, 'block_num'] is pd.NA:
+            self.trials_table.at[self.trial_num, 'block_num'] = self.block_num
+            self.trials_table.at[self.trial_num, 'block_trial_num'] = self.block_trial_num
         # save and send trial info to bonsai
         self.draw_next_trial_info(pleft=pleft)
 

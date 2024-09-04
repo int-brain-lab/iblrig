@@ -3,7 +3,9 @@ Changelog
 
 8.23.2
 ------
-* add validation script for Bpod HiFi Module
+* add validation script for Bpod HiFi Module (folder `scripts`)
+* fix: issue with `_ephysChoiceWorld` - values from the pre-generated sessions were not actually used 
+* feature: validate values in `trials_table` using Pydantic 
 
 8.23.1
 ------
