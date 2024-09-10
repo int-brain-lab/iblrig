@@ -12,7 +12,7 @@ All tasks inherit from the :class:`iblrig.base_tasks.BaseSession` class, which p
     -   read hardware parameters and rig parameters
     -   optionally interfaces with the `Alyx experimental database <https://github.com/cortex-lab/alyx>`_
     -   creates the folder structure for the session
-    -   writes the task and rig parameters, log, and :doc:`acquisition description files <../description_file>`
+    -   writes the task and rig parameters, log, and :doc:`acquisition description files <../reference_description_file>`
 
 Additionally the :mod:`iblrig.base_tasks` module provides "hardware mixins". Those are classes that provide hardware-specific functionalities, such as connecting to a Bpod or a rotary encoder. They are composed with the :class:`~.iblrig.base_tasks.BaseSession` class to create a task.
 

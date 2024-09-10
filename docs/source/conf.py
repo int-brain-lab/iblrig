@@ -27,11 +27,6 @@ extensions = [
     'sphinx.ext.inheritance_diagram',
     'sphinx.ext.viewcode',
 ]
-# autodoc_mock_imports = ["PySpin"]
-autodoc_typehints = 'description'
-autodoc_member_order = 'groupwise'
-autosummary_generate = True
-autosummary_imported_members = False
 autosectionlabel_prefix_document = True
 source_suffix = ['.rst', '.md']
 exclude_patterns = []
@@ -54,6 +49,7 @@ intersphinx_mapping = {
 
 html_theme = 'sphinx_rtd_theme'
 
+# -- Options for PDF creation ------------------------------------------------
 simplepdf_vars = {
     'primary': '#004f8c',
     'secondary': '#004f8c',
@@ -67,17 +63,30 @@ html_context = {
     'cover_meta_data': 'International Brain Laboratory',
 }
 
-# -- Napoleon Settings -------------------------------------------------------
-napoleon_google_docstring = True
+# -- Settings for automatic API generation -----------------------------------
+autodoc_mock_imports = ["PySpin"]
+autodoc_class_signature = 'separated'  # 'mixed', 'separated'
+autodoc_member_order = 'groupwise'  # 'alphabetical', 'groupwise', 'bysource'
+autodoc_inherit_docstrings = False
+autodoc_typehints = 'description'  # 'description', 'signature', 'none', 'both'
+autodoc_typehints_description_target = 'all'  # 'all', 'documented', 'documented_params'
+autodoc_typehints_format = 'short'  # 'fully-qualified', 'short'
+
+autosummary_generate = True
+autosummary_imported_members = False
+
+napoleon_google_docstring = False
 napoleon_numpy_docstring = True
 napoleon_include_init_with_doc = True
+napoleon_include_private_with_doc = False
 napoleon_include_special_with_doc = False
 napoleon_use_admonition_for_examples = True
 napoleon_use_admonition_for_notes = True
 napoleon_use_admonition_for_references = True
-napoleon_use_ivar = True
-napoleon_use_param = True
+napoleon_use_ivar = False
+napoleon_use_param = False
 napoleon_use_rtype = True
+napoleon_use_keyword = True
 napoleon_preprocess_types = True
 napoleon_type_aliases = None
-napoleon_attr_annotations = True
+napoleon_attr_annotations = False

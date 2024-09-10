@@ -1023,7 +1023,7 @@ class RotaryEncoderMixin(BaseSession):
         log.info('Rotary encoder module loaded: OK')
 
 
-class ValveMixin(BaseSession):
+class ValveMixin(BaseSession, HasBpod):
     def init_mixin_valve(self: object):
         self.valve = Bunch({})
         # the template settings files have a date in 2099, so assume that the rig is not calibrated if that is the case
