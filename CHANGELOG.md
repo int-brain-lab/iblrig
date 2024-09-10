@@ -8,6 +8,7 @@ Changelog
 * changed: `show_trial_log()` now accepts a dict for including additional log items
 * fix: `_ephysChoiceWorld` - values from the pre-generated sessions were not actually used 
 * fix: `_ephysChoiceWorld` - trial fixtures contained inverted values for `probability_left`
+* fix: GUI - Subjects and Projects are not being cached
 * add script for validating audio output of Bpod HiFi Module (in `scripts/` folder)
 
 -------------------------------
