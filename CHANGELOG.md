@@ -8,6 +8,7 @@ Changelog
 * fix: `_ephysChoiceWorld` - trial fixtures contained inverted values for `probability_left`
 * feature: validate values in `trials_table` using Pydantic
 * feature: add API documentation
+* changed: show_trial_log() now accepts a dict for including additional log items
 
 -------------------------------
 

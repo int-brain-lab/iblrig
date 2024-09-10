@@ -542,19 +542,55 @@ class ChoiceWorldSession(
         if not misc.get_port_events(events, name='Port1'):
             log.warning("NO CAMERA SYNC PULSES RECEIVED ON BPOD'S BEHAVIOR PORT 1")
 
-    def show_trial_log(self, extra_info='', log_level: int = logging.INFO):
-        trial_info = self.trials_table.iloc[self.trial_num]
+    def show_trial_log(self, extra_info: dict[str, Any] | None = None, log_level: int = logging.INFO):
+        """
+        Log the details of the current trial.
 
+        This method retrieves information about the current trial from the
+        trials table and logs it. It can also incorporate additional information
+        provided through the `extra_info` parameter.
+
+        Parameters
+        ----------
+        extra_info : dict[str, Any], optional
+            A dictionary containing additional information to include in the
+            log.
+
+        log_level : int, optional
+            The logging level to use when logging the trial information.
+            Default is logging.INFO.
+
+        Notes
+        -----
+        When overloading, make sure to call the super class and pass additional
+        log items by means of the extra_info parameter. See the implementation
+        of :py:meth:`~iblrig.base_choice_world.ActiveChoiceWorldSession.show_trial_log` in
+        :mod:`~iblrig.base_choice_world.ActiveChoiceWorldSession` for reference.
+        """
+        # construct base info dict
+        trial_info = self.trials_table.iloc[self.trial_num]
+        info_dict = {
+            'Stim. Position': trial_info.position,
+            'Stim. Contrast': trial_info.contrast,
+            'Stim. Phase': f'{trial_info.stim_phase:.2f}',
+            'Stim. p Left': trial_info.stim_probability_left,
+            'Water delivered': f'{self.session_info.TOTAL_WATER_DELIVERED:.1f} µl',
+            'Time from Start': self.time_elapsed,
+            'Temperature': f'{self.ambient_sensor_table.loc[self.trial_num, "Temperature_C"]:.1f} °C',
+            'Air Pressure': f'{self.ambient_sensor_table.loc[self.trial_num, "AirPressure_mb"]:.1f} mb',
+            'Rel. Humidity': f'{self.ambient_sensor_table.loc[self.trial_num, "RelativeHumidity"]:.1f} %',
+        }
+
+        # update info dict with extra_info dict
+        if isinstance(extra_info, dict):
+            info_dict.update(extra_info)
+
+        # log info dict
         log.log(log_level, f'Outcome of Trial #{trial_info.trial_num}:')
-        log.log(log_level, f'- Stim. Position:  {trial_info.position}')
-        log.log(log_level, f'- Stim. Contrast:  {trial_info.contrast}')
-        log.log(log_level, f'- Stim. Phase:     {trial_info.stim_phase}')
-        log.log(log_level, f'- Stim. p Left:    {trial_info.stim_probability_left}')
-        log.log(log_level, f'- Water delivered: {self.session_info.TOTAL_WATER_DELIVERED:.1f} µl')
-        log.log(log_level, f'- Time from Start: {self.time_elapsed}')
-        log.log(log_level, f'- Temperature:     {self.ambient_sensor_table.loc[self.trial_num, "Temperature_C"]:.1f} °C')
-        log.log(log_level, f'- Air Pressure:    {self.ambient_sensor_table.loc[self.trial_num, "AirPressure_mb"]:.1f} mb')
-        log.log(log_level, f'- Rel. Humidity:   {self.ambient_sensor_table.loc[self.trial_num, "RelativeHumidity"]:.1f} %\n')
+        max_key_length = max(len(key) for key in info_dict)
+        for key, value in info_dict.items():
+            spaces = (max_key_length - len(key)) * ' '
+            log.log(log_level, f'- {key}: {spaces}{str(value)}')
 
     @property
     def iti_reward(self):
@@ -701,17 +737,22 @@ class ActiveChoiceWorldSession(ChoiceWorldSession):
             )
         super()._run()
 
-    def show_trial_log(self, extra_info=''):
+    def show_trial_log(self, extra_info: dict[str, Any] | None = None, log_level: int = logging.INFO):
+        # construct info dict
         trial_info = self.trials_table.iloc[self.trial_num]
-        extra_info = f"""
-RESPONSE TIME:        {trial_info.response_time}
-{extra_info}
+        info_dict = {
+            'Response Time': f'{trial_info.response_time:.2f} s',
+            'Trial Correct': trial_info.trial_correct,
+            'N Trials Correct': self.session_info.NTRIALS_CORRECT,
+            'N Trials Error': self.trial_num - self.session_info.NTRIALS_CORRECT,
+        }
 
-TRIAL CORRECT:        {trial_info.trial_correct}
-NTRIALS CORRECT:      {self.session_info.NTRIALS_CORRECT}
-NTRIALS ERROR:        {self.trial_num - self.session_info.NTRIALS_CORRECT}
-        """
-        super().show_trial_log(extra_info=extra_info)
+        # update info dict with extra_info dict
+        if isinstance(extra_info, dict):
+            info_dict.update(extra_info)
+
+        # call parent method
+        super().show_trial_log(extra_info=info_dict, log_level=log_level)
 
     def trial_completed(self, bpod_data):
         """
@@ -826,14 +867,21 @@ class BiasedChoiceWorldSession(ActiveChoiceWorldSession):
         # save and send trial info to bonsai
         self.draw_next_trial_info(pleft=pleft)
 
-    def show_trial_log(self):
+    def show_trial_log(self, extra_info: dict[str, Any] | None = None, log_level: int = logging.INFO):
+        # construct info dict
         trial_info = self.trials_table.iloc[self.trial_num]
-        extra_info = f"""
-BLOCK NUMBER:         {trial_info.block_num}
-BLOCK LENGTH:         {self.blocks_table.loc[self.block_num, 'block_length']}
-TRIALS IN BLOCK:      {trial_info.block_trial_num}
-        """
-        super().show_trial_log(extra_info=extra_info)
+        info_dict = {
+            'Block Number': trial_info.block_num,
+            'Block Length': self.blocks_table.loc[self.block_num, 'block_length'],
+            'N Trials in Block': trial_info.block_trial_num,
+        }
+
+        # update info dict with extra_info dict
+        if isinstance(extra_info, dict):
+            info_dict.update(extra_info)
+
+        # call parent method
+        super().show_trial_log(extra_info=info_dict, log_level=log_level)
 
 
 class TrainingChoiceWorldTrialData(ActiveChoiceWorldTrialData):
@@ -962,9 +1010,16 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
         self.draw_next_trial_info(pleft=self.task_params.PROBABILITY_LEFT, position=position, contrast=contrast)
         self.trials_table.at[self.trial_num, 'training_phase'] = self.training_phase
 
-    def show_trial_log(self):
-        extra_info = f"""
-CONTRAST SET:         {np.unique(np.abs(choiceworld.contrasts_set(self.training_phase)))}
-SUBJECT TRAINING PHASE (0-5):         {self.training_phase}
-            """
-        super().show_trial_log(extra_info=extra_info)
+    def show_trial_log(self, extra_info: dict[str, Any] | None = None, log_level: int = logging.INFO):
+        # construct info dict
+        info_dict = {
+            'Contrast Set': np.unique(np.abs(choiceworld.contrasts_set(self.training_phase))),
+            'Training Phase': self.training_phase,
+        }
+
+        # update info dict with extra_info dict
+        if isinstance(extra_info, dict):
+            info_dict.update(extra_info)
+
+        # call parent method
+        super().show_trial_log(extra_info=info_dict, log_level=log_level)
