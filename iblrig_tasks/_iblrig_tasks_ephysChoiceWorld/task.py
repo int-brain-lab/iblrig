@@ -24,6 +24,12 @@ class Session(BiasedChoiceWorldSession):
             block_length=pd.NamedAgg(column='stim_probability_left', aggfunc='count'),
         )
 
+    def next_trial(self):
+        self.trial_num += 1
+        trial_params = self.trials_table.iloc[self.trial_num].drop(['index', 'trial_num']).to_dict()
+        self.block_num = trial_params['block_num']
+        self.draw_next_trial_info(**trial_params)
+
     @staticmethod
     def get_session_template(session_template_id: int) -> pd.DataFrame:
         """

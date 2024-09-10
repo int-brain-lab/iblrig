@@ -10,6 +10,8 @@ neuropixel: '12.134.270.1'
 tasks: 'udp://123.654.8.8'
 ```
 
+Todo
+----
 TODO case study: starts services but times out due to one service.
  How to restart without stopping services? Perhaps it can throw a
  warning if the status is running but continue on anyway?

@@ -1,7 +1,6 @@
 """Extends the base_tasks modules by providing task logic around the Choice World protocol."""
 
 import abc
-import json
 import logging
 import math
 import random
@@ -9,14 +8,18 @@ import subprocess
 import time
 from pathlib import Path
 from string import ascii_letters
+from typing import Annotated, Any
 
 import numpy as np
 import pandas as pd
+from annotated_types import Interval, IsNan
+from pydantic import NonNegativeFloat, NonNegativeInt
 
 import iblrig.base_tasks
 import iblrig.graphic
 from iblrig import choiceworld, misc
 from iblrig.hardware import SOFTCODE
+from iblrig.pydantic_definitions import TrialDataModel
 from iblutil.io import jsonable
 from iblutil.util import Bunch
 from pybpodapi.com.messaging.trial import Trial
@@ -72,6 +75,33 @@ NBLOCKS_INIT = 100
 #     WHITE_NOISE_IDX: int = 3
 
 
+class ChoiceWorldTrialData(TrialDataModel):
+    """Pydantic Model for Trial Data."""
+
+    contrast: Annotated[float, Interval(ge=0.0, le=1.0)]
+    stim_probability_left: Annotated[float, Interval(ge=0.0, le=1.0)]
+    position: float
+    quiescent_period: NonNegativeFloat
+    reward_amount: NonNegativeFloat
+    reward_valve_time: NonNegativeFloat
+    stim_angle: Annotated[float, Interval(ge=-180.0, le=180.0)]
+    stim_freq: NonNegativeFloat
+    stim_gain: float
+    stim_phase: Annotated[float, Interval(ge=0.0, le=2 * math.pi)]
+    stim_reverse: bool
+    stim_sigma: float
+    trial_num: NonNegativeInt
+    pause_duration: NonNegativeFloat = 0.0
+
+    # The following variables are only used in ActiveChoiceWorld
+    # We keep them here with fixed default values for sake of compatibility
+    #
+    # TODO: Yes, this should probably be done differently.
+    response_side: Annotated[int, Interval(ge=0, le=0)] = 0
+    response_time: IsNan[float] = np.nan
+    trial_correct: Annotated[int, Interval(ge=0, le=0)] = False
+
+
 class ChoiceWorldSession(
     iblrig.base_tasks.BonsaiRecordingMixin,
     iblrig.base_tasks.BonsaiVisualStimulusMixin,
@@ -84,6 +114,7 @@ class ChoiceWorldSession(
 ):
     # task_params = ChoiceWorldParams()
     base_parameters_file = Path(__file__).parent.joinpath('base_choice_world_params.yaml')
+    TrialDataModel = ChoiceWorldTrialData
 
     def __init__(self, *args, delay_secs=0, **kwargs):
         super().__init__(**kwargs)
@@ -96,27 +127,7 @@ class ChoiceWorldSession(
         self.block_num = -1
         self.block_trial_num = -1
         # init the tables, there are 2 of them: a trials table and a ambient sensor data table
-        self.trials_table = pd.DataFrame(
-            {
-                'contrast': np.zeros(NTRIALS_INIT) * np.NaN,
-                'position': np.zeros(NTRIALS_INIT) * np.NaN,
-                'quiescent_period': np.zeros(NTRIALS_INIT) * np.NaN,
-                'response_side': np.zeros(NTRIALS_INIT, dtype=np.int8),
-                'response_time': np.zeros(NTRIALS_INIT) * np.NaN,
-                'reward_amount': np.zeros(NTRIALS_INIT) * np.NaN,
-                'reward_valve_time': np.zeros(NTRIALS_INIT) * np.NaN,
-                'stim_angle': np.zeros(NTRIALS_INIT) * np.NaN,
-                'stim_freq': np.zeros(NTRIALS_INIT) * np.NaN,
-                'stim_gain': np.zeros(NTRIALS_INIT) * np.NaN,
-                'stim_phase': np.zeros(NTRIALS_INIT) * np.NaN,
-                'stim_reverse': np.zeros(NTRIALS_INIT, dtype=bool),
-                'stim_sigma': np.zeros(NTRIALS_INIT) * np.NaN,
-                'trial_correct': np.zeros(NTRIALS_INIT, dtype=bool),
-                'trial_num': np.zeros(NTRIALS_INIT, dtype=np.int16),
-                'pause_duration': np.zeros(NTRIALS_INIT, dtype=float),
-            }
-        )
-
+        self.trials_table = self.TrialDataModel.preallocate_dataframe(NTRIALS_INIT)
         self.ambient_sensor_table = pd.DataFrame(
             {
                 'Temperature_C': np.zeros(NTRIALS_INIT) * np.NaN,
@@ -200,6 +211,7 @@ class ChoiceWorldSession(
                 self.trials_table.at[self.trial_num, 'pause_duration'] = time.time() - time_last_trial_end
                 if not flag_stop.exists():
                     log.info('Resuming session')
+
             # save trial and update log
             self.trial_completed(self.bpod.session.current_trial.export())
             self.ambient_sensor_table.loc[i] = self.bpod.get_ambient_sensor_reading()
@@ -298,6 +310,7 @@ class ChoiceWorldSession(
     def get_state_machine_trial(self, i):
         # we define the trial number here for subclasses that may need it
         sma = self._instantiate_state_machine(trial_number=i)
+
         if i == 0:  # First trial exception start camera
             session_delay_start = self.task_params.get('SESSION_DELAY_START', 0)
             log.info('First trial initializing, will move to next trial only if:')
@@ -323,6 +336,10 @@ class ChoiceWorldSession(
                 output_actions=[self.bpod.actions.stop_sound, ('BNC1', 255)],
             )  # stop all sounds
 
+        # Reset the rotary encoder by sending the following opcodes via the modules serial interface
+        # - 'Z' (ASCII 90): Set current rotary encoder position to zero
+        # - 'E' (ASCII 69): Enable all position thresholds (that may have been disabled by a threshold-crossing)
+        # cf. https://sanworks.github.io/Bpod_Wiki/serial-interfaces/rotary-encoder-module-serial-interface/
         sma.add_state(
             state_name='reset_rotary_encoder',
             state_timer=0,
@@ -330,7 +347,9 @@ class ChoiceWorldSession(
             state_change_conditions={'Tup': 'quiescent_period'},
         )
 
-        sma.add_state(  # '>back' | '>reset_timer'
+        # Quiescent Period. If the wheel is moved past one of the thresholds: Reset the rotary encoder and start over.
+        # Continue with the stimulation once the quiescent period has passed without triggering movement thresholds.
+        sma.add_state(
             state_name='quiescent_period',
             state_timer=self.quiescent_period,
             output_actions=[],
@@ -340,21 +359,26 @@ class ChoiceWorldSession(
                 self.movement_right: 'reset_rotary_encoder',
             },
         )
-        # show stimulus, move on to next state if a frame2ttl is detected, with a time-out of 0.1s
+
+        # Show the visual stimulus. This is achieved by sending a time-stamped byte-message to Bonsai via the Rotary
+        # Encoder Module's ongoing USB-stream. Move to the next state once the Frame2TTL has been triggered, i.e.,
+        # when the stimulus has been rendered on screen. Use the state-timer as a backup to prevent a stall.
         sma.add_state(
             state_name='stim_on',
             state_timer=0.1,
             output_actions=[self.bpod.actions.bonsai_show_stim],
-            state_change_conditions={'Tup': 'interactive_delay', 'BNC1High': 'interactive_delay', 'BNC1Low': 'interactive_delay'},
+            state_change_conditions={'BNC1High': 'interactive_delay', 'BNC1Low': 'interactive_delay', 'Tup': 'interactive_delay'},
         )
-        # this is a feature that can eventually add a delay between visual and auditory cue
+
+        # Defined delay between visual and auditory cue
         sma.add_state(
             state_name='interactive_delay',
             state_timer=self.task_params.INTERACTIVE_DELAY,
             output_actions=[],
             state_change_conditions={'Tup': 'play_tone'},
         )
-        # play tone, move on to next state if sound is detected, with a time-out of 0.1s
+
+        # Play tone. Move to next state if sound is detected. Use the state-timer as a backup to prevent a stall.
         sma.add_state(
             state_name='play_tone',
             state_timer=0.1,
@@ -362,12 +386,19 @@ class ChoiceWorldSession(
             state_change_conditions={'Tup': 'reset2_rotary_encoder', 'BNC2High': 'reset2_rotary_encoder'},
         )
 
+        # Reset rotary encoder (see above). Move on after brief delay (to avoid a race conditions in the bonsai flow).
         sma.add_state(
             state_name='reset2_rotary_encoder',
-            state_timer=0.05,  # the delay here is to avoid race conditions in the bonsai flow
+            state_timer=0.05,
             output_actions=[self.bpod.actions.rotary_encoder_reset],
             state_change_conditions={'Tup': 'closed_loop'},
         )
+
+        # Start the closed loop state in which the animal controls the position of the visual stimulus by means of the
+        # rotary encoder. The three possible outcomes are:
+        # 1) wheel has NOT been moved past a threshold: continue with no-go condition
+        # 2) wheel has been moved in WRONG direction: continue with error condition
+        # 3) wheel has been moved in CORRECT direction: continue with reward condition
 
         sma.add_state(
             state_name='closed_loop',
@@ -376,6 +407,7 @@ class ChoiceWorldSession(
             state_change_conditions={'Tup': 'no_go', self.event_error: 'freeze_error', self.event_reward: 'freeze_reward'},
         )
 
+        # No-go: hide the visual stimulus and play white noise. Go to exit_state after FEEDBACK_NOGO_DELAY_SECS.
         sma.add_state(
             state_name='no_go',
             state_timer=self.task_params.FEEDBACK_NOGO_DELAY_SECS,
@@ -383,13 +415,14 @@ class ChoiceWorldSession(
             state_change_conditions={'Tup': 'exit_state'},
         )
 
+        # Error: Freeze the stimulus and play white noise.
+        # Continue to hide_stim/exit_state once FEEDBACK_ERROR_DELAY_SECS have passed.
         sma.add_state(
             state_name='freeze_error',
             state_timer=0,
             output_actions=[self.bpod.actions.bonsai_freeze_stim],
             state_change_conditions={'Tup': 'error'},
         )
-
         sma.add_state(
             state_name='error',
             state_timer=self.task_params.FEEDBACK_ERROR_DELAY_SECS,
@@ -397,20 +430,20 @@ class ChoiceWorldSession(
             state_change_conditions={'Tup': 'hide_stim'},
         )
 
+        # Reward: open the valve for a defined duration (and set BNC1 to high), freeze stimulus in center of screen.
+        # Continue to hide_stim/exit_state once FEEDBACK_CORRECT_DELAY_SECS have passed.
         sma.add_state(
             state_name='freeze_reward',
             state_timer=0,
             output_actions=[self.bpod.actions.bonsai_show_center],
             state_change_conditions={'Tup': 'reward'},
         )
-
         sma.add_state(
             state_name='reward',
             state_timer=self.reward_time,
             output_actions=[('Valve1', 255), ('BNC1', 255)],
             state_change_conditions={'Tup': 'correct'},
         )
-
         sma.add_state(
             state_name='correct',
             state_timer=self.task_params.FEEDBACK_CORRECT_DELAY_SECS - self.reward_time,
@@ -418,6 +451,9 @@ class ChoiceWorldSession(
             state_change_conditions={'Tup': 'hide_stim'},
         )
 
+        # Hide the visual stimulus. This is achieved by sending a time-stamped byte-message to Bonsai via the Rotary
+        # Encoder Module's ongoing USB-stream. Move to the next state once the Frame2TTL has been triggered, i.e.,
+        # when the stimulus has been rendered on screen. Use the state-timer as a backup to prevent a stall.
         sma.add_state(
             state_name='hide_stim',
             state_timer=0.1,
@@ -425,12 +461,14 @@ class ChoiceWorldSession(
             state_change_conditions={'Tup': 'exit_state', 'BNC1High': 'exit_state', 'BNC1Low': 'exit_state'},
         )
 
+        # Wait for ITI_DELAY_SECS before ending the trial. Raise BNC1 to mark this event.
         sma.add_state(
             state_name='exit_state',
             state_timer=self.task_params.ITI_DELAY_SECS,
             output_actions=[('BNC1', 255)],
             state_change_conditions={'Tup': 'exit'},
         )
+
         return sma
 
     @abc.abstractmethod
@@ -441,20 +479,18 @@ class ChoiceWorldSession(
     def default_reward_amount(self):
         return self.task_params.REWARD_AMOUNT_UL
 
-    def draw_next_trial_info(self, pleft=0.5, contrast=None, position=None, reward_amount=None):
+    def draw_next_trial_info(self, pleft=0.5, **kwargs):
         """Draw next trial variables.
 
         calls :meth:`send_trial_info_to_bonsai`.
         This is called by the `next_trial` method before updating the Bpod state machine.
         """
-        if contrast is None:
-            contrast = misc.draw_contrast(self.task_params.CONTRAST_SET, self.task_params.CONTRAST_SET_PROBABILITY_TYPE)
         assert len(self.task_params.STIM_POSITIONS) == 2, 'Only two positions are supported'
-        position = position or int(np.random.choice(self.task_params.STIM_POSITIONS, p=[pleft, 1 - pleft]))
+        contrast = misc.draw_contrast(self.task_params.CONTRAST_SET, self.task_params.CONTRAST_SET_PROBABILITY_TYPE)
+        position = int(np.random.choice(self.task_params.STIM_POSITIONS, p=[pleft, 1 - pleft]))
         quiescent_period = self.task_params.QUIESCENT_PERIOD + misc.truncated_exponential(
             scale=0.35, min_value=0.2, max_value=0.5
         )
-        reward_amount = self.default_reward_amount if reward_amount is None else reward_amount
         stim_gain = (
             self.session_info.ADAPTIVE_GAIN_VALUE if self.task_params.get('ADAPTIVE_GAIN', False) else self.task_params.STIM_GAIN
         )
@@ -468,11 +504,18 @@ class ChoiceWorldSession(
         self.trials_table.at[self.trial_num, 'stim_reverse'] = self.task_params.STIM_REVERSE
         self.trials_table.at[self.trial_num, 'trial_num'] = self.trial_num
         self.trials_table.at[self.trial_num, 'position'] = position
-        self.trials_table.at[self.trial_num, 'reward_amount'] = reward_amount
+        self.trials_table.at[self.trial_num, 'reward_amount'] = self.default_reward_amount
         self.trials_table.at[self.trial_num, 'stim_probability_left'] = pleft
+
+        # use the kwargs dict to override computed values
+        for key, value in kwargs.items():
+            if key == 'index':
+                pass
+            self.trials_table.at[self.trial_num, key] = value
+
         self.send_trial_info_to_bonsai()
 
-    def trial_completed(self, bpod_data):
+    def trial_completed(self, bpod_data: dict[str, Any]) -> None:
         # if the reward state has not been triggered, null the reward
         if np.isnan(bpod_data['States timestamps']['reward'][0][0]):
             self.trials_table.at[self.trial_num, 'reward_amount'] = 0
@@ -481,11 +524,7 @@ class ChoiceWorldSession(
         self.session_info.TOTAL_WATER_DELIVERED += self.trials_table.at[self.trial_num, 'reward_amount']
         self.session_info.NTRIALS += 1
         # SAVE TRIAL DATA
-        save_dict = self.trials_table.iloc[self.trial_num].to_dict()
-        save_dict['behavior_data'] = bpod_data
-        # Dump and save
-        with open(self.paths['DATA_FILE_PATH'], 'a') as fp:
-            fp.write(json.dumps(save_dict) + '\n')
+        self.save_trial_data_to_json(bpod_data)
         # this is a flag for the online plots. If online plots were in pyqt5, there is a file watcher functionality
         Path(self.paths['DATA_FILE_PATH']).parent.joinpath('new_trial.flag').touch()
         self.paths.SESSION_FOLDER.joinpath('transfer_me.flag').touch()
@@ -503,19 +542,55 @@ class ChoiceWorldSession(
         if not misc.get_port_events(events, name='Port1'):
             log.warning("NO CAMERA SYNC PULSES RECEIVED ON BPOD'S BEHAVIOR PORT 1")
 
-    def show_trial_log(self, extra_info='', log_level: int = logging.INFO):
-        trial_info = self.trials_table.iloc[self.trial_num]
+    def show_trial_log(self, extra_info: dict[str, Any] | None = None, log_level: int = logging.INFO):
+        """
+        Log the details of the current trial.
 
+        This method retrieves information about the current trial from the
+        trials table and logs it. It can also incorporate additional information
+        provided through the `extra_info` parameter.
+
+        Parameters
+        ----------
+        extra_info : dict[str, Any], optional
+            A dictionary containing additional information to include in the
+            log.
+
+        log_level : int, optional
+            The logging level to use when logging the trial information.
+            Default is logging.INFO.
+
+        Notes
+        -----
+        When overloading, make sure to call the super class and pass additional
+        log items by means of the extra_info parameter. See the implementation
+        of :py:meth:`~iblrig.base_choice_world.ActiveChoiceWorldSession.show_trial_log` in
+        :mod:`~iblrig.base_choice_world.ActiveChoiceWorldSession` for reference.
+        """
+        # construct base info dict
+        trial_info = self.trials_table.iloc[self.trial_num]
+        info_dict = {
+            'Stim. Position': trial_info.position,
+            'Stim. Contrast': trial_info.contrast,
+            'Stim. Phase': f'{trial_info.stim_phase:.2f}',
+            'Stim. p Left': trial_info.stim_probability_left,
+            'Water delivered': f'{self.session_info.TOTAL_WATER_DELIVERED:.1f} µl',
+            'Time from Start': self.time_elapsed,
+            'Temperature': f'{self.ambient_sensor_table.loc[self.trial_num, "Temperature_C"]:.1f} °C',
+            'Air Pressure': f'{self.ambient_sensor_table.loc[self.trial_num, "AirPressure_mb"]:.1f} mb',
+            'Rel. Humidity': f'{self.ambient_sensor_table.loc[self.trial_num, "RelativeHumidity"]:.1f} %',
+        }
+
+        # update info dict with extra_info dict
+        if isinstance(extra_info, dict):
+            info_dict.update(extra_info)
+
+        # log info dict
         log.log(log_level, f'Outcome of Trial #{trial_info.trial_num}:')
-        log.log(log_level, f'- Stim. Position:  {trial_info.position}')
-        log.log(log_level, f'- Stim. Contrast:  {trial_info.contrast}')
-        log.log(log_level, f'- Stim. Phase:     {trial_info.stim_phase}')
-        log.log(log_level, f'- Stim. p Left:    {trial_info.stim_probability_left}')
-        log.log(log_level, f'- Water delivered: {self.session_info.TOTAL_WATER_DELIVERED:.1f} µl')
-        log.log(log_level, f'- Time from Start: {self.time_elapsed}')
-        log.log(log_level, f'- Temperature:     {self.ambient_sensor_table.loc[self.trial_num, "Temperature_C"]:.1f} °C')
-        log.log(log_level, f'- Air Pressure:    {self.ambient_sensor_table.loc[self.trial_num, "AirPressure_mb"]:.1f} mb')
-        log.log(log_level, f'- Rel. Humidity:   {self.ambient_sensor_table.loc[self.trial_num, "RelativeHumidity"]:.1f} %\n')
+        max_key_length = max(len(key) for key in info_dict)
+        for key, value in info_dict.items():
+            spaces = (max_key_length - len(key)) * ' '
+            log.log(log_level, f'- {key}: {spaces}{str(value)}')
 
     @property
     def iti_reward(self):
@@ -550,12 +625,15 @@ class ChoiceWorldSession(
         return self.device_rotary_encoder.THRESHOLD_EVENTS[(1 if self.task_params.STIM_REVERSE else -1) * self.position]
 
 
+class HabituationChoiceWorldTrialData(ChoiceWorldTrialData):
+    """Pydantic Model for Trial Data, extended from :class:`~.iblrig.base_choice_world.ChoiceWorldTrialData`."""
+
+    delay_to_stim_center: NonNegativeFloat
+
+
 class HabituationChoiceWorldSession(ChoiceWorldSession):
     protocol_name = '_iblrig_tasks_habituationChoiceWorld'
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.trials_table['delay_to_stim_center'] = np.zeros(NTRIALS_INIT) * np.NaN
+    TrialDataModel = HabituationChoiceWorldTrialData
 
     def next_trial(self):
         self.trial_num += 1
@@ -620,10 +698,19 @@ class HabituationChoiceWorldSession(ChoiceWorldSession):
         return sma
 
 
+class ActiveChoiceWorldTrialData(ChoiceWorldTrialData):
+    """Pydantic Model for Trial Data, extended from :class:`~.iblrig.base_choice_world.ChoiceWorldTrialData`."""
+
+    response_side: Annotated[int, Interval(ge=-1, le=1)]
+    response_time: NonNegativeFloat
+    trial_correct: bool
+
+
 class ActiveChoiceWorldSession(ChoiceWorldSession):
     """
     The ActiveChoiceWorldSession is a base class for protocols where the mouse is actively making decisions
     by turning the wheel. It has the following characteristics
+
     -   it is trial based
     -   it is decision based
     -   left and right simulus are equiprobable: there is no biased block
@@ -633,6 +720,8 @@ class ActiveChoiceWorldSession(ChoiceWorldSession):
 
     The TrainingChoiceWorld, BiasedChoiceWorld are all subclasses of this class
     """
+
+    TrialDataModel = ActiveChoiceWorldTrialData
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -648,25 +737,32 @@ class ActiveChoiceWorldSession(ChoiceWorldSession):
             )
         super()._run()
 
-    def show_trial_log(self, extra_info=''):
+    def show_trial_log(self, extra_info: dict[str, Any] | None = None, log_level: int = logging.INFO):
+        # construct info dict
         trial_info = self.trials_table.iloc[self.trial_num]
-        extra_info = f"""
-RESPONSE TIME:        {trial_info.response_time}
-{extra_info}
+        info_dict = {
+            'Response Time': f'{trial_info.response_time:.2f} s',
+            'Trial Correct': trial_info.trial_correct,
+            'N Trials Correct': self.session_info.NTRIALS_CORRECT,
+            'N Trials Error': self.trial_num - self.session_info.NTRIALS_CORRECT,
+        }
 
-TRIAL CORRECT:        {trial_info.trial_correct}
-NTRIALS CORRECT:      {self.session_info.NTRIALS_CORRECT}
-NTRIALS ERROR:        {self.trial_num - self.session_info.NTRIALS_CORRECT}
-        """
-        super().show_trial_log(extra_info=extra_info)
+        # update info dict with extra_info dict
+        if isinstance(extra_info, dict):
+            info_dict.update(extra_info)
+
+        # call parent method
+        super().show_trial_log(extra_info=info_dict, log_level=log_level)
 
     def trial_completed(self, bpod_data):
         """
         The purpose of this method is to
-        -   update the trials table with information about the behaviour coming from the bpod
-        Constraints on the state machine data:
+
+        - update the trials table with information about the behaviour coming from the bpod
+          Constraints on the state machine data:
         - mandatory states: ['correct', 'error', 'no_go', 'reward']
         - optional states : ['omit_correct', 'omit_error', 'omit_no_go']
+
         :param bpod_data:
         :return:
         """
@@ -680,8 +776,8 @@ NTRIALS ERROR:        {self.trial_num - self.session_info.NTRIALS_CORRECT}
             outcome = next(k for k in raw_outcome if raw_outcome[k])
             # Update response buffer -1 for left, 0 for nogo, and 1 for rightward
             position = self.trials_table.at[self.trial_num, 'position']
+            self.trials_table.at[self.trial_num, 'trial_correct'] = 'correct' in outcome
             if 'correct' in outcome:
-                self.trials_table.at[self.trial_num, 'trial_correct'] = True
                 self.session_info.NTRIALS_CORRECT += 1
                 self.trials_table.at[self.trial_num, 'response_side'] = -np.sign(position)
             elif 'error' in outcome:
@@ -704,6 +800,13 @@ NTRIALS ERROR:        {self.trial_num - self.session_info.NTRIALS_CORRECT}
             raise e
 
 
+class BiasedChoiceWorldTrialData(ActiveChoiceWorldTrialData):
+    """Pydantic Model for Trial Data, extended from :class:`~.iblrig.base_choice_world.ChoiceWorldTrialData`."""
+
+    block_num: NonNegativeInt = 0
+    block_trial_num: NonNegativeInt = 0
+
+
 class BiasedChoiceWorldSession(ActiveChoiceWorldSession):
     """
     Biased choice world session is the instantiation of ActiveChoiceWorld where the notion of biased
@@ -712,14 +815,13 @@ class BiasedChoiceWorldSession(ActiveChoiceWorldSession):
 
     base_parameters_file = Path(__file__).parent.joinpath('base_biased_choice_world_params.yaml')
     protocol_name = '_iblrig_tasks_biasedChoiceWorld'
+    TrialDataModel = BiasedChoiceWorldTrialData
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.blocks_table = pd.DataFrame(
             {'probability_left': np.zeros(NBLOCKS_INIT) * np.NaN, 'block_length': np.zeros(NBLOCKS_INIT, dtype=np.int16) * -1}
         )
-        self.trials_table['block_num'] = np.zeros(NTRIALS_INIT, dtype=np.int16)
-        self.trials_table['block_trial_num'] = np.zeros(NTRIALS_INIT, dtype=np.int16)
 
     def new_block(self):
         """
@@ -765,14 +867,28 @@ class BiasedChoiceWorldSession(ActiveChoiceWorldSession):
         # save and send trial info to bonsai
         self.draw_next_trial_info(pleft=pleft)
 
-    def show_trial_log(self):
+    def show_trial_log(self, extra_info: dict[str, Any] | None = None, log_level: int = logging.INFO):
+        # construct info dict
         trial_info = self.trials_table.iloc[self.trial_num]
-        extra_info = f"""
-BLOCK NUMBER:         {trial_info.block_num}
-BLOCK LENGTH:         {self.blocks_table.loc[self.block_num, 'block_length']}
-TRIALS IN BLOCK:      {trial_info.block_trial_num}
-        """
-        super().show_trial_log(extra_info=extra_info)
+        info_dict = {
+            'Block Number': trial_info.block_num,
+            'Block Length': self.blocks_table.loc[self.block_num, 'block_length'],
+            'N Trials in Block': trial_info.block_trial_num,
+        }
+
+        # update info dict with extra_info dict
+        if isinstance(extra_info, dict):
+            info_dict.update(extra_info)
+
+        # call parent method
+        super().show_trial_log(extra_info=info_dict, log_level=log_level)
+
+
+class TrainingChoiceWorldTrialData(ActiveChoiceWorldTrialData):
+    """Pydantic Model for Trial Data, extended from :class:`~.iblrig.base_choice_world.ActiveChoiceWorldTrialData`."""
+
+    training_phase: NonNegativeInt
+    debias_trial: bool
 
 
 class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
@@ -783,6 +899,7 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
     """
 
     protocol_name = '_iblrig_tasks_trainingChoiceWorld'
+    TrialDataModel = TrainingChoiceWorldTrialData
 
     def __init__(self, training_phase=-1, adaptive_reward=-1.0, adaptive_gain=None, **kwargs):
         super().__init__(**kwargs)
@@ -806,8 +923,6 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
             log.critical(f'Adaptive gain manually set to {adaptive_gain} degrees/mm')
             self.session_info['ADAPTIVE_GAIN_VALUE'] = adaptive_gain
         self.var = {'training_phase_trial_counts': np.zeros(6), 'last_10_responses_sides': np.zeros(10)}
-        self.trials_table['training_phase'] = np.zeros(NTRIALS_INIT, dtype=np.int8)
-        self.trials_table['debias_trial'] = np.zeros(NTRIALS_INIT, dtype=bool)
 
     @property
     def default_reward_amount(self):
@@ -838,7 +953,7 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
 
     def compute_performance(self):
         """Aggregate the trials table to compute the performance of the mouse on each contrast."""
-        self.trials_table['signed_contrast'] = self.trials_table['contrast'] * np.sign(self.trials_table['position'])
+        self.trials_table['signed_contrast'] = self.trials_table.contrast * self.trials_table.position
         performance = self.trials_table.groupby(['signed_contrast']).agg(
             last_50_perf=pd.NamedAgg(column='trial_correct', aggfunc=lambda x: np.sum(x[np.maximum(-50, -x.size) :]) / 50),
             ntrials=pd.NamedAgg(column='trial_correct', aggfunc='count'),
@@ -889,13 +1004,22 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
                 position = self.task_params.STIM_POSITIONS[int(np.random.normal(average_right, 0.5) >= 0.5)]
                 # contrast is the last contrast
                 contrast = last_contrast
+        else:
+            self.trials_table.at[self.trial_num, 'debias_trial'] = False
         # save and send trial info to bonsai
         self.draw_next_trial_info(pleft=self.task_params.PROBABILITY_LEFT, position=position, contrast=contrast)
         self.trials_table.at[self.trial_num, 'training_phase'] = self.training_phase
 
-    def show_trial_log(self):
-        extra_info = f"""
-CONTRAST SET:         {np.unique(np.abs(choiceworld.contrasts_set(self.training_phase)))}
-SUBJECT TRAINING PHASE (0-5):         {self.training_phase}
-            """
-        super().show_trial_log(extra_info=extra_info)
+    def show_trial_log(self, extra_info: dict[str, Any] | None = None, log_level: int = logging.INFO):
+        # construct info dict
+        info_dict = {
+            'Contrast Set': np.unique(np.abs(choiceworld.contrasts_set(self.training_phase))),
+            'Training Phase': self.training_phase,
+        }
+
+        # update info dict with extra_info dict
+        if isinstance(extra_info, dict):
+            info_dict.update(extra_info)
+
+        # call parent method
+        super().show_trial_log(extra_info=info_dict, log_level=log_level)

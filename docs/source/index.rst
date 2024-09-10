@@ -19,6 +19,7 @@
    .. toctree::
       :hidden:
 
+      api
       changelog
 
    .. toctree::

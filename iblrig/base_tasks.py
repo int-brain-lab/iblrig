@@ -5,7 +5,6 @@ This module provides hardware mixins that can be used together with BaseSession 
 This module tries to exclude task related logic.
 """
 
-import abc
 import argparse
 import contextlib
 import datetime
@@ -17,10 +16,11 @@ import signal
 import sys
 import time
 import traceback
-from abc import ABC
+from abc import ABC, abstractmethod
 from collections import OrderedDict
 from collections.abc import Callable
 from pathlib import Path
+from typing import Protocol, final
 
 import numpy as np
 import pandas as pd
@@ -30,18 +30,17 @@ import yaml
 from pythonosc import udp_client
 
 import ibllib.io.session_params as ses_params
-import iblrig
 import iblrig.graphic as graph
 import iblrig.path_helper
 import pybpodapi
 from ibllib.oneibl.registration import IBLRegistrationClient
-from iblrig import net, sound
+from iblrig import net, path_helper, sound
 from iblrig.constants import BASE_PATH, BONSAI_EXE, PYSPIN_AVAILABLE
 from iblrig.frame2ttl import Frame2TTL
 from iblrig.hardware import SOFTCODE, Bpod, MyRotaryEncoder, sound_device_factory
 from iblrig.hifi import HiFi
 from iblrig.path_helper import load_pydantic_yaml
-from iblrig.pydantic_definitions import HardwareSettings, RigSettings
+from iblrig.pydantic_definitions import HardwareSettings, RigSettings, TrialDataModel
 from iblrig.tools import call_bonsai
 from iblrig.transfer_experiments import BehaviorCopier, VideoCopier
 from iblutil.io.net.base import ExpMessage
@@ -56,10 +55,14 @@ OSC_CLIENT_IP = '127.0.0.1'
 log = logging.getLogger(__name__)
 
 
+class HasBpod(Protocol):
+    bpod: Bpod
+
+
 class BaseSession(ABC):
     version = None
     """str: !!CURRENTLY UNUSED!! task version string."""
-    protocol_name: str | None = None
+    # protocol_name: str | None = None
     """str: The name of the task protocol (NB: avoid spaces)."""
     base_parameters_file: Path | None = None
     """Path: A YAML file containing base, default task parameters."""
@@ -71,6 +74,12 @@ class BaseSession(ABC):
     """dict: The experiment description."""
     extractor_tasks: list | None = None
     """list of str: An optional list of pipeline task class names to instantiate when preprocessing task data."""
+
+    TrialDataModel: type[TrialDataModel]
+
+    @property
+    @abstractmethod
+    def protocol_name(self) -> str: ...
 
     def __init__(
         self,
@@ -107,7 +116,6 @@ class BaseSession(ABC):
         :param append: bool, if True, append to the latest existing session of the same subject for the same day
         """
         self.extractor_tasks = getattr(self, 'extractor_tasks', None)
-        assert self.protocol_name is not None, 'Protocol name must be defined by the child class'
         self._logger = None
         self._setup_loggers(level=log_level)
         if not isinstance(self, EmptySession):
@@ -260,7 +268,7 @@ class BaseSession(ABC):
             *   SETTINGS_FILE_PATH: contains the task settings
                 `C:\iblrigv8_data\mainenlab\Subjects\SWC_043\2019-01-01\001\raw_task_data_00\_iblrig_taskSettings.raw.json`
         """
-        rig_computer_paths = iblrig.path_helper.get_local_and_remote_paths(
+        rig_computer_paths = path_helper.get_local_and_remote_paths(
             local_path=self.iblrig_settings.iblrig_local_data_path,
             remote_path=self.iblrig_settings.iblrig_remote_data_path,
             lab=self.iblrig_settings.ALYX_LAB,
@@ -313,7 +321,8 @@ class BaseSession(ABC):
         self._logger = setup_logger('iblrig', level=level, file=file)  # logger attr used by create_session to determine log level
         setup_logger('pybpodapi', level=level_bpod, file=file)
 
-    def _remove_file_loggers(self):
+    @staticmethod
+    def _remove_file_loggers():
         for logger_name in ['iblrig', 'pybpodapi']:
             logger = logging.getLogger(logger_name)
             file_handlers = [fh for fh in logger.handlers if isinstance(fh, logging.FileHandler)]
@@ -440,6 +449,40 @@ class BaseSession(ABC):
             json.dump(output_dict, outfile, indent=4, sort_keys=True, default=str)  # converts datetime objects to string
         return json_file  # PosixPath
 
+    @final
+    def save_trial_data_to_json(self, bpod_data: dict):
+        """Validate and save trial data.
+
+        This method retrieve's the current trial's data from the trial_table and validates it using a Pydantic model
+        (self.TrialDataDefinition). In merges in the trial's bpod_data dict and appends everything to the session's
+        JSON data file.
+
+        Parameters
+        ----------
+        bpod_data : dict
+            Trial data returned from pybpod.
+        """
+        # get trial's data as a dict
+        trial_data = self.trials_table.iloc[self.trial_num].to_dict()
+
+        # warn about entries not covered by pydantic model
+        if trial_data.get('trial_num', 1) == 0:
+            for key in set(trial_data.keys()) - set(self.TrialDataModel.model_fields) - {'index'}:
+                log.warning(
+                    f'Key "{key}" in trial_data is missing from TrialDataModel - '
+                    f'its value ({trial_data[key]}) will not be validated.'
+                )
+
+        # validate by passing through pydantic model
+        trial_data = self.TrialDataModel.model_validate(trial_data).model_dump()
+
+        # add bpod_data as 'behavior_data'
+        trial_data['behavior_data'] = bpod_data
+
+        # write json data to file
+        with open(self.paths['DATA_FILE_PATH'], 'a') as fp:
+            fp.write(json.dumps(trial_data) + '\n')
+
     @property
     def one(self):
         """ONE getter."""
@@ -491,7 +534,7 @@ class BaseSession(ABC):
 
         See Also
         --------
-        ibllib.oneibl.IBLRegistrationClient.register_session - The registration method.
+        :external+iblenv:meth:`ibllib.oneibl.registration.IBLRegistrationClient.register_session` - The registration method.
         """
         if self.session_info['SUBJECT_NAME'] in ('iblrig_test_subject', 'test', 'test_subject'):
             log.warning('Not registering test subject to Alyx')
@@ -598,7 +641,7 @@ class BaseSession(ABC):
         self._execute_mixins_shared_function('stop_mixin')
         self._execute_mixins_shared_function('cleanup_mixin')
 
-    @abc.abstractmethod
+    @abstractmethod
     def start_hardware(self):
         """
         Start the hardware.
@@ -606,11 +649,10 @@ class BaseSession(ABC):
         This method doesn't explicitly start the mixins as the order has to be defined in the child classes.
         This needs to be implemented in the child classes, and should start and connect to all hardware pieces.
         """
-        pass
+        ...
 
-    @abc.abstractmethod
-    def _run(self):
-        pass
+    @abstractmethod
+    def _run(self): ...
 
     @staticmethod
     def extra_parser():
@@ -692,6 +734,8 @@ class OSCClient(udp_client.SimpleUDPClient):
 
 
 class BonsaiRecordingMixin(BaseSession):
+    config: dict
+
     def init_mixin_bonsai_recordings(self, *args, **kwargs):
         self.bonsai_camera = Bunch({'udp_client': OSCClient(port=7111)})
         self.bonsai_microphone = Bunch({'udp_client': OSCClient(port=7112)})
@@ -979,7 +1023,7 @@ class RotaryEncoderMixin(BaseSession):
         log.info('Rotary encoder module loaded: OK')
 
 
-class ValveMixin(BaseSession):
+class ValveMixin(BaseSession, HasBpod):
     def init_mixin_valve(self: object):
         self.valve = Bunch({})
         # the template settings files have a date in 2099, so assume that the rig is not calibrated if that is the case
@@ -1040,7 +1084,7 @@ class ValveMixin(BaseSession):
         return self.bpod.session.current_trial.export()
 
 
-class SoundMixin(BaseSession):
+class SoundMixin(BaseSession, HasBpod):
     """Sound interface methods for state machine."""
 
     def init_mixin_sound(self):

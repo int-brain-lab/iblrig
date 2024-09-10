@@ -45,7 +45,7 @@ class TestInstantiationBiased(BaseTestCases.CommonTestInstantiateTask):
         # makes sure the water reward counts check out
         assert task.trials_table['reward_amount'].sum() == task.session_info.TOTAL_WATER_DELIVERED
         assert np.sum(task.trials_table['reward_amount'] == 0) == task.trial_num + 1 - task.session_info.NTRIALS_CORRECT
-        assert np.all(~np.isnan(task.trials_table['reward_valve_time']))
+        assert not task.trials_table['reward_valve_time'].isna().any()
         # Test the blocks task logic
         df_blocks = task.trials_table.groupby('block_num').agg(
             count=pd.NamedAgg(column='stim_angle', aggfunc='count'),
@@ -104,6 +104,17 @@ class TestInstantiationEphys(TestInstantiationBiased):
     def setUp(self) -> None:
         self.get_task_kwargs()
         self.task = EphysChoiceWorldSession(**self.task_kwargs)
+
+    def test_task(self, _=None):
+        super().test_task()
+
+        # check that the task in fact uses the pre-generated data
+        cols = list(
+            set(self.task.get_session_template(0).columns)
+            - {'index', 'reward_amount', 'reward_valve_time', 'response_side', 'response_time', 'trial_correct'}
+        )
+        template = self.task.get_session_template(0).head(len(self.task.trials_table))
+        assert (self.task.trials_table == template)[cols].all().all()
 
 
 class TestNeuroModulatorBiasedChoiceWorld(TestInstantiationBiased):

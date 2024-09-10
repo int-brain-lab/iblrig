@@ -37,11 +37,13 @@ Sound Issues
 
 * Is ``hardware_settings.yaml`` set up correctly? Valid options for sound ``OUTPUT`` are:
 
+  - ``hifi``,
   - ``harp``,
   - ``xonar``, or
   - ``sysdefault``.
 
   Make sure that this value matches the actual soundcard used on your rig.
+  Note that ``sysdefault`` is only used in test scenarios and should not be used during actual experiments.
 
 
 Screen Issues

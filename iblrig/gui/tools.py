@@ -1,4 +1,5 @@
 import argparse
+import logging
 import subprocess
 import sys
 import traceback
@@ -24,12 +25,17 @@ from PyQt5.QtCore import (
     pyqtSlot,
 )
 from PyQt5.QtGui import QStandardItem, QStandardItemModel
-from PyQt5.QtWidgets import QListView, QProgressBar
+from PyQt5.QtWidgets import QAction, QLineEdit, QListView, QProgressBar, QPushButton
+from requests import HTTPError
 
 from iblrig.constants import BASE_PATH
+from iblrig.gui import resources_rc  # noqa: F401
 from iblrig.net import get_remote_devices
 from iblrig.pydantic_definitions import RigSettings
 from iblutil.util import dir_size
+from one.webclient import AlyxClient
+
+log = logging.getLogger(__name__)
 
 
 def convert_uis():
@@ -381,3 +387,271 @@ class RemoteDevicesItemModel(QStandardItemModel):
             item.setStatusTip(f'Remote Device "{device_name}" - {device_address}')
             item.setData(device_name, Qt.UserRole)
             self.appendRow(item)
+
+
+class AlyxObject(QObject):
+    """
+    A class to manage user authentication with an AlyxClient.
+
+    This class provides methods to log in and log out users, emitting signals to indicate changes in authentication status.
+
+    Parameters
+    ----------
+    alyxUrl : str, optional
+        The base URL for the Alyx API. If provided, an AlyxClient will be created.
+    alyxClient : AlyxClient, optional
+        An existing AlyxClient instance. If provided, it will be used for authentication.
+
+    Attributes
+    ----------
+    isLoggedIn : bool
+        Indicates whether a user is currently logged in.
+    username : str or None
+        The username of the logged-in user, or None if not logged in.
+    statusChanged : pyqtSignal
+        Emitted when the login status changes (logged in or out). The signal carries a boolean indicating the new status.
+    loggedIn : pyqtSignal
+        Emitted when a user logs in. The signal carries a string representing the username.
+    loggedOut : pyqtSignal
+        Emitted when a user logs out. The signal carries a string representing the username.
+    loginFailed : pyqtSignal
+        Emitted when a login attempt fails. The signal carries a string representing the username.
+    """
+
+    statusChanged = pyqtSignal(bool)
+    loggedIn = pyqtSignal(str)
+    loggedOut = pyqtSignal(str)
+    loginFailed = pyqtSignal(str)
+
+    def __init__(self, *args, alyxUrl: str | None = None, alyxClient: AlyxClient | None = None, **kwargs):
+        """
+        Initializes the AlyxObject.
+
+        Parameters
+        ----------
+        *args : tuple
+            Positional arguments for QObject.
+        alyxUrl : str, optional
+            The base URL for the Alyx API.
+        alyxClient : AlyxClient, optional
+            An existing AlyxClient instance.
+        **kwargs : dict
+            Keyword arguments for QObject.
+        """
+        super().__init__(*args, **kwargs)
+        self._icon = super().icon()
+
+        if alyxUrl is not None:
+            self.client = AlyxClient(base_url=alyxUrl, silent=True)
+        else:
+            self.client = alyxClient
+
+    @pyqtSlot(str)
+    @pyqtSlot(str, str)
+    @pyqtSlot(str, str, bool)
+    def logIn(self, username: str, password: str | None = None, cacheToken: bool = False) -> bool:
+        """
+        Logs in a user with the provided username and password.
+
+        Emits the loggedIn and statusChanged signals if the logout is successful, and the loginFailed signal otherwise.
+
+        Parameters
+        ----------
+        username : str
+            The username of the user attempting to log in.
+        password : str or None, optional
+            The password of the user. If None, the login will proceed without a password.
+        cacheToken : bool, optional
+            Whether to cache the authentication token.
+
+        Returns
+        -------
+        bool
+            True if the login was successful, False otherwise.
+        """
+        if self.client is None:
+            return False
+        try:
+            self.client.authenticate(username, password, cache_token=cacheToken, force=password is not None)
+        except HTTPError as e:
+            if e.errno == 400 and any(x in e.response.text for x in ('credentials', 'required')):
+                log.error(e.filename)
+                self.loginFailed.emit(username)
+            else:
+                raise e
+        if status := self.client.is_logged_in and self.client.user == username:
+            log.debug(f"Logged into {self.client.base_url} as user '{username}'")
+            self.statusChanged.emit(True)
+            self.loggedIn.emit(username)
+        return status
+
+    @pyqtSlot()
+    def logOut(self) -> None:
+        """
+        Logs out the currently logged-in user.
+
+        Emits the loggedOut and statusChanged signals if the logout is successful.
+        """
+        if self.client is None or not self.isLoggedIn:
+            return
+        username = self.client.user
+        self.client.logout()
+        if not (connected := self.client.is_logged_in):
+            log.debug(f"User '{username}' logged out of {self.client.base_url}")
+            self.statusChanged.emit(connected)
+            self.loggedOut.emit(username)
+
+    @property
+    def isLoggedIn(self):
+        """Indicates whether a user is currently logged in."""
+        return self.client.is_logged_in if isinstance(self.client, AlyxClient) else False
+
+    @property
+    def username(self) -> str | None:
+        """The username of the logged-in user, or None if not logged in."""
+        return self.client.user if self.isLoggedIn else None
+
+
+class LineEditAlyxUser(QLineEdit):
+    """
+    A custom QLineEdit widget for managing user login with an AlyxObject.
+
+    This widget displays a checkmark icon to indicate the connection status
+    and allows the user to input their username for logging in.
+
+    Parameters
+    ----------
+    *args : tuple
+        Positional arguments passed to the QLineEdit constructor.
+    alyx : AlyxObject
+        An instance of AlyxObject used to manage login and connection status.
+    **kwargs : dict
+        Keyword arguments passed to the QLineEdit constructor.
+    """
+
+    def __init__(self, *args, alyx: AlyxObject, **kwargs):
+        """
+        Initializes the LineEditAlyxUser widget.
+
+        Sets up the checkmark icon, connects signals for login status,
+        and configures the line edit based on the AlyxObject's state.
+
+        Parameters
+        ----------
+        *args : tuple
+            Positional arguments passed to the QLineEdit constructor.
+        alyx : AlyxObject
+            An instance of AlyxObject.
+        **kwargs : dict
+            Keyword arguments passed to the QLineEdit constructor.
+        """
+        super().__init__(*args, **kwargs)
+        self.alyx = alyx
+
+        # Use a QAction to indicate the connection status
+        self._checkmarkIcon = QAction(parent=self, icon=QtGui.QIcon(':/images/check'))
+        self.addAction(self._checkmarkIcon, self.ActionPosition.TrailingPosition)
+
+        if self.alyx.client is None:
+            self.setEnabled(False)
+        else:
+            self.setPlaceholderText('not logged in')
+            self.alyx.statusChanged.connect(self._onStatusChanged)
+            self.returnPressed.connect(self.logIn)
+            self._onStatusChanged(self.alyx.isLoggedIn)
+
+    @pyqtSlot(bool)
+    def _onStatusChanged(self, connected: bool):
+        """Set some of the widget's properties depending on the current connection-status."""
+        self._checkmarkIcon.setVisible(connected)
+        self._checkmarkIcon.setToolTip(f'Connected to {self.alyx.client.base_url}' if connected else '')
+        self.setText(self.alyx.username or '')
+        self.setReadOnly(connected)
+
+    @pyqtSlot()
+    def logIn(self):
+        """Attempt to log in using the line edit's current text."""
+        self.alyx.logIn(self.text())
+
+
+class StatefulButton(QPushButton):
+    """
+    A QPushButton that maintains an active/inactive state and emits different signals
+    based on its state when clicked.
+
+    Parameters
+    ----------
+    active : bool, optional
+        Initial state of the button (default is False).
+
+    Attributes
+    ----------
+    clickedWhileActive : pyqtSignal
+        Emitted when the button is clicked while it is in the active state.
+    clickedWhileInactive : pyqtSignal
+        Emitted when the button is clicked while it is in the inactive state.
+    stateChanged : pyqtSignal
+        Emitted when the button's state has changed. The signal carries the new state.
+    """
+
+    clickedWhileActive = pyqtSignal()
+    clickedWhileInactive = pyqtSignal()
+    stateChanged = pyqtSignal(bool)
+
+    def __init__(self, *args, active: bool = False, **kwargs):
+        """
+        Initialize the StateButton with the specified active state.
+
+        Parameters
+        ----------
+        *args : tuple
+            Positional arguments to be passed to the QPushButton constructor.
+        active : bool, optional
+            Initial state of the button (default is False).
+        **kwargs : dict
+            Keyword arguments to be passed to the QPushButton constructor.
+        """
+        super().__init__(*args, **kwargs)
+        self._isActive = active
+        self.clicked.connect(self._onClick)
+
+    @pyqtProperty(bool)
+    def isActive(self) -> bool:
+        """
+        Get the active state of the button.
+
+        Returns
+        -------
+        bool
+            True if the button is active, False otherwise.
+        """
+        return self._isActive
+
+    @pyqtSlot(bool)
+    def setActive(self, active: bool):
+        """
+        Set the active state of the button.
+
+        Emits `stateChanged` if the state has changed.
+
+        Parameters
+        ----------
+        active : bool
+            The new active state of the button.
+        """
+        if self._isActive != active:
+            self._isActive = active
+            self.stateChanged.emit(self._isActive)
+
+    @pyqtSlot()
+    def _onClick(self):
+        """
+        Handle the button click event.
+
+        Emits `clickedWhileActive` if the button is active,
+        otherwise emits `clickedWhileInactive`.
+        """
+        if self._isActive:
+            self.clickedWhileActive.emit()
+        else:
+            self.clickedWhileInactive.emit()

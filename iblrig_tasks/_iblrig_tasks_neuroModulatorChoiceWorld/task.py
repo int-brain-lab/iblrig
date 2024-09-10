@@ -1,9 +1,10 @@
 import logging
 
 import numpy as np
+from pydantic import NonNegativeFloat
 
 import iblrig.misc
-from iblrig.base_choice_world import BiasedChoiceWorldSession
+from iblrig.base_choice_world import BiasedChoiceWorldSession, BiasedChoiceWorldTrialData
 from iblrig.hardware import SOFTCODE
 from pybpodapi.protocol import StateMachine
 
@@ -11,13 +12,17 @@ REWARD_AMOUNTS_UL = (1, 3)
 log = logging.getLogger(__name__)
 
 
+class NeuroModulatorChoiceTrialData(BiasedChoiceWorldTrialData):
+    omit_feedback: bool
+    choice_delay: NonNegativeFloat
+
+
 class Session(BiasedChoiceWorldSession):
     protocol_name = '_iblrig_tasks_neuromodulatorChoiceWorld'
+    TrialDataModel = NeuroModulatorChoiceTrialData
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.trials_table['omit_feedback'] = np.zeros(self.trials_table.shape[0], dtype=bool)
-        self.trials_table['choice_delay'] = np.zeros(self.trials_table.shape[0], dtype=np.float32)
 
     def next_trial(self):
         super().next_trial()

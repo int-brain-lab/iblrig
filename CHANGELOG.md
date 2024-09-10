@@ -1,6 +1,18 @@
 Changelog
 =========
 
+8.24.0
+------
+* feature: validate values in `trials_table` using Pydantic
+* feature: add auto-generated API reference to documentation
+* changed: `show_trial_log()` now accepts a dict for including additional log items
+* fix: `_ephysChoiceWorld` - values from the pre-generated sessions were not actually used 
+* fix: `_ephysChoiceWorld` - trial fixtures contained inverted values for `probability_left`
+* fix: GUI - Subjects and Projects are not being cached
+* add script for validating audio output of Bpod HiFi Module (in `scripts/` folder)
+
+-------------------------------
+
 8.23.1
 ------
 * feature: post hardware information to alyx

@@ -188,7 +188,7 @@ class SerialSingleton(serial.Serial):
 
         Parameters
         ----------
-        query : any
+        query : Any
             Query to be sent to the serial device.
         data_specifier : int or str, default: 1
             The number of bytes to receive from the serial device, or a format string
@@ -222,7 +222,7 @@ class SerialSingleton(serial.Serial):
 
         Parameters
         ----------
-        data : any
+        data : Any
             Data to be converted to bytestring.
 
         Returns
