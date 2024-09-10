@@ -1,11 +1,15 @@
 Changelog
 =========
 
-8.23.2
+8.24.0
 ------
 * add validation script for Bpod HiFi Module (folder `scripts`)
-* fix: issue with `_ephysChoiceWorld` - values from the pre-generated sessions were not actually used 
-* feature: validate values in `trials_table` using Pydantic 
+* fix: `_ephysChoiceWorld` - values from the pre-generated sessions were not actually used 
+* fix: `_ephysChoiceWorld` - trial fixtures contained inverted values for `probability_left`
+* feature: validate values in `trials_table` using Pydantic
+* feature: add API documentation
+
+-------------------------------
 
 8.23.1
 ------
