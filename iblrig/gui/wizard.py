@@ -972,13 +972,16 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 # Manage appended session
                 self.append_session = False
                 if self.previous_subject == self.model.subject:
-                    self.append_session = QtWidgets.QMessageBox.question(
-                        self,
-                        'Appended Session',
-                        'Would you like to append to the previous session?',
-                        QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
-                        QtWidgets.QMessageBox.No
-                    ) == QtWidgets.QMessageBox.Yes
+                    self.append_session = (
+                        QtWidgets.QMessageBox.question(
+                            self,
+                            'Appended Session',
+                            'Would you like to append to the previous session?',
+                            QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
+                            QtWidgets.QMessageBox.No,
+                        )
+                        == QtWidgets.QMessageBox.Yes
+                    )
 
                 # Manage subject weight
                 dlg = QtWidgets.QInputDialog()
