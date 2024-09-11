@@ -1,6 +1,10 @@
 Changelog
 =========
 
+8.24.1
+------
+* change UI workflow for appending a session
+
 8.24.0
 ------
 * feature: validate values in `trials_table` using Pydantic

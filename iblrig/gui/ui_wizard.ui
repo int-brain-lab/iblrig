@@ -688,17 +688,13 @@
              </property>
              <layout class="QVBoxLayout" name="verticalLayout">
               <item>
-               <widget class="QCheckBox" name="uiCheckAppend">
-                <property name="statusTip">
-                 <string>append to previous session</string>
-                </property>
-                <property name="text">
-                 <string>append to previous Session</string>
-                </property>
-               </widget>
-              </item>
-              <item>
                <widget class="QPushButton" name="uiPushStart">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
                 <property name="statusTip">
                  <string>Click to start the session</string>
                 </property>
@@ -714,6 +710,12 @@
                <widget class="QPushButton" name="uiPushPause">
                 <property name="enabled">
                  <bool>false</bool>
+                </property>
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
                 </property>
                 <property name="statusTip">
                  <string>Click to pause the session after the current trial</string>
@@ -814,7 +816,6 @@
   <tabstop>uiPushFlush</tabstop>
   <tabstop>uiPushReward</tabstop>
   <tabstop>uiPushStatusLED</tabstop>
-  <tabstop>uiCheckAppend</tabstop>
   <tabstop>uiPushStart</tabstop>
   <tabstop>uiPushPause</tabstop>
  </tabstops>
