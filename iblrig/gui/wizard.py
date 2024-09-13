@@ -971,7 +971,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
 
                 # Manage appended session
                 self.append_session = False
-                if self.previous_subject == self.model.subject:
+                if self.previous_subject == self.model.subject and not self.model.hardware_settings.MAIN_SYNC:
                     self.append_session = (
                         QtWidgets.QMessageBox.question(
                             self,
