@@ -121,7 +121,7 @@ class Session(ChoiceWorldSession):
                 # we need to make sure Bonsai is in a state to display stimuli
                 self.send_trial_info_to_bonsai()
                 self.bonsai_visual_udp_client.send_message(r'/re', byte_show_stim)
-                time.sleep(0.3)
+                time.sleep(0.3)  # todo: this is a very inaccurate way of controlling stim duration!
                 self.bonsai_visual_udp_client.send_message(r'/re', byte_hide_stim)
             if self.paths.SESSION_FOLDER.joinpath('.stop').exists():
                 self.paths.SESSION_FOLDER.joinpath('.stop').unlink()

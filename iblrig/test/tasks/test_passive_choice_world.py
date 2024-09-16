@@ -1,4 +1,4 @@
-import numpy as np
+import pandas as pd
 
 import ibllib.pipes.dynamic_pipeline as dyn
 from ibllib.pipes.behavior_tasks import PassiveTaskNidq
@@ -8,18 +8,67 @@ from iblrig_tasks._iblrig_tasks_passiveChoiceWorld.task import Session as Passiv
 
 class TestInstantiatePassiveChoiceWorld(BaseTestCases.CommonTestInstantiateTask):
     def setUp(self) -> None:
-        session_id = 7
+        self.session_id = 7
         self.get_task_kwargs()
 
         # NB: Passive choice world not supported with Bpod as main sync
         assert self.task_kwargs['hardware_settings']['MAIN_SYNC']
         with self.assertLogs('iblrig.task', 40):
-            self.task = PassiveChoiceWorldSession(**self.task_kwargs, session_template_id=session_id)
+            self.task = PassiveChoiceWorldSession(**self.task_kwargs, session_template_id=self.session_id)
         self.task_kwargs['hardware_settings']['MAIN_SYNC'] = False
         with self.assertNoLogs('iblrig.task', 40):
-            self.task = PassiveChoiceWorldSession(**self.task_kwargs, session_template_id=session_id)
+            self.task = PassiveChoiceWorldSession(**self.task_kwargs, session_template_id=self.session_id)
         self.task.mock()
-        assert np.unique(self.task.trials_table['session_id']) == [session_id]
+
+    def test_fixtures(self) -> None:
+        # assert that fixture are loaded correctly
+        trials_table = self.task.trials_table
+        assert trials_table.session_id.unique() == [self.session_id]
+        pqt_file = self.task.get_task_directory().joinpath('passiveChoiceWorld_trials_fixtures.pqt')
+        fixtures = pd.read_parquet(pqt_file)
+        assert fixtures.session_id.unique().tolist() == list(range(12))
+        assert fixtures[fixtures.session_id == self.session_id].stim_type.equals(trials_table.stim_type)
+
+        # loop through fixtures
+        for session_id in fixtures.session_id.unique():
+            f = fixtures[fixtures.session_id == session_id]
+
+            # The task stimuli replays consist of 300 stimulus presentations ordered randomly.
+            assert len(f) == 300
+            assert f.stim_type.iloc[:10].nunique() > 1
+
+            # The pool of stimuli is generated as follows:
+            # 180 gabor patches with 300 ms duration, with 500-1900 ms uniform random delay before each stimulus
+            assert len(f[f.stim_type == 'G']) == 180
+            assert all(f[f.stim_type == 'G'].stim_delay >= 0.5)
+            assert all(f[f.stim_type == 'G'].stim_delay <= 1.9)
+
+            # - 20 gabor patches with 0% contrast
+            assert sum(f[f.stim_type == 'G'].contrast == 0.0) == 20
+
+            # - 20 gabor patches at 35 deg left side with 6.25%, 12.5%, 25%, 100% contrast (80 total)
+            # - 20 gabor patches at 35 deg right side with 6.25%, 12.5%, 25%, 100% contrast (80 total)
+            positions = f[f.stim_type == 'G'].position.unique()
+            assert set(positions) == {-35.0, 35.0}
+            for position in positions:
+                counts = f[(f.stim_type == 'G') & (f.position == position) & (f.contrast != 0.0)].contrast.value_counts()
+                assert set(counts.keys()) == {0.0625, 0.125, 0.25, 1.0}
+                assert all([v == 20 for v in counts.values])
+
+            # 40 openings of the water valve with a 1-11s delay drawn from a uniform distribution
+            assert len(f[f.stim_type == 'V']) == 40
+            assert all(f[f.stim_type == 'V'].stim_delay >= 1.0)
+            assert all(f[f.stim_type == 'V'].stim_delay <= 11.0)
+
+            # 40 go cues sounds with a 1-5s delay drawn from a uniform distribution
+            assert len(f[f.stim_type == 'T']) == 40
+            assert all(f[f.stim_type == 'T'].stim_delay >= 1.0)
+            assert all(f[f.stim_type == 'T'].stim_delay <= 5.0)
+
+            # 40 noise bursts sounds with a 1-5s delay drawn from a uniform distribution
+            assert len(f[f.stim_type == 'N']) == 40
+            assert all(f[f.stim_type == 'N'].stim_delay >= 1.0)
+            assert all(f[f.stim_type == 'N'].stim_delay <= 5.0)
 
     def test_pipeline(self) -> None:
         """Test passive pipeline creation.
