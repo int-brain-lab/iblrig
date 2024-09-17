@@ -35,10 +35,9 @@ def start_workflow(debug=False, ):
     call_bonsai(
         workflow_file=workflow_file,
         parameters=bonsai_params,
-        bonsai_executable=Path(Path.home().joinpath(r"AppData\Local\Bonsai\Bonsai.exe")),  # TODO: hardware settings
+        bonsai_executable=Path(Path.home().joinpath(r"AppData\Local\Bonsai\Bonsai.exe")),
         start=False,
     )
-
     # TODO we call the init sessions here
 
 def init_neurophotometrics_session():
@@ -58,8 +57,6 @@ def init_neurophotometrics_session():
 
     # copier = NeurophotometricsCopier(session_path=session_path, remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER)
     # copier.initialize_experiment(acquisition_description=copier.config2stub(config, raw_data_folder.name))
-    
-
     pass
 
 

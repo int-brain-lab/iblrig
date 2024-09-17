@@ -16,19 +16,23 @@ Setup
     device_neurophotometrics:
       BONSAI_WORKFLOW: devices/neurophotometrics/FP3002.bonsai
       COM_NEUROPHOTOMETRY: 'COM3'
-    VERSION: 1.0.0
 
 
 Starting a task
 ---------------
 
-Below shows how to start the electrophysiology for the subject 'example' with 2 probes:
-
+- Start the Bonsai workflow by running the following command in powershell:
 .. code:: powershell
 
    cd C:\iblrigv8\
    venv\scripts\Activate.ps1
    start_neurophotometrics
+- in Bonsai click on the FP3002 node and load the desired photometry settings file
+- start the task
+
+The task will start and the photometry data will be saved in the data local folder with the following stucture:
+- {local_data_folder}\neurophotometrics\yyyy-mm-dd\THHMMSS
+Where yyyy-mm-dd is the date of the recording and HHMMSS is the time of the recording.
 
 
 Copy command
