@@ -31,10 +31,11 @@ def start_workflow():
     folder_neurophotometrics.mkdir(parents=True, exist_ok=True)
 
     workflow_file = Path(iblrig.__file__).parents[1].joinpath(settings.BONSAI_WORKFLOW)
+
     call_bonsai(
         workflow_file=workflow_file,
         parameters=bonsai_params,
-        bonsai_executable=Path(r"C:\Users\IBLuser\AppData\Local\Bonsai\Bonsai.exe"),  # TODO: hardware settings
+        bonsai_executable=Path(Path.home().joinpath(r"AppData\Local\Bonsai\Bonsai.exe")),  # TODO: hardware settings
         start=False,
     )
 
