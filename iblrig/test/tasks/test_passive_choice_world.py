@@ -1,4 +1,5 @@
 import pandas as pd
+from scipy.stats import kstest
 
 import ibllib.pipes.dynamic_pipeline as dyn
 from ibllib.pipes.behavior_tasks import PassiveTaskNidq
@@ -42,6 +43,8 @@ class TestInstantiatePassiveChoiceWorld(BaseTestCases.CommonTestInstantiateTask)
             assert len(f[f.stim_type == 'G']) == 180
             assert all(f[f.stim_type == 'G'].stim_delay >= 0.5)
             assert all(f[f.stim_type == 'G'].stim_delay <= 1.9)
+            _, p = kstest(f[f.stim_type == 'G'].stim_delay, 'uniform', args=(0.5, 1.4))
+            assert p > 0.05
 
             # - 20 gabor patches with 0% contrast
             assert sum(f[f.stim_type == 'G'].contrast == 0.0) == 20
@@ -59,16 +62,22 @@ class TestInstantiatePassiveChoiceWorld(BaseTestCases.CommonTestInstantiateTask)
             assert len(f[f.stim_type == 'V']) == 40
             assert all(f[f.stim_type == 'V'].stim_delay >= 1.0)
             assert all(f[f.stim_type == 'V'].stim_delay <= 11.0)
+            _, p = kstest(f[f.stim_type == 'G'].stim_delay, 'uniform', args=(1.0, 10.0))
+            assert p > 0.05
 
             # 40 go cues sounds with a 1-5s delay drawn from a uniform distribution
             assert len(f[f.stim_type == 'T']) == 40
             assert all(f[f.stim_type == 'T'].stim_delay >= 1.0)
             assert all(f[f.stim_type == 'T'].stim_delay <= 5.0)
+            _, p = kstest(f[f.stim_type == 'G'].stim_delay, 'uniform', args=(1.0, 4.0))
+            assert p > 0.05
 
             # 40 noise bursts sounds with a 1-5s delay drawn from a uniform distribution
             assert len(f[f.stim_type == 'N']) == 40
             assert all(f[f.stim_type == 'N'].stim_delay >= 1.0)
             assert all(f[f.stim_type == 'N'].stim_delay <= 5.0)
+            _, p = kstest(f[f.stim_type == 'G'].stim_delay, 'uniform', args=(1.0, 4.0))
+            assert p > 0.05
 
     def test_pipeline(self) -> None:
         """Test passive pipeline creation.
