@@ -13,9 +13,11 @@ from iblrig.pydantic_definitions import HardwareSettings
 _logger = logging.getLogger(__name__)
 
 
-def start_workflow(debug: bool = False):
+def start_workflow():
     # TODO docstring
     # format the current date and time as a standard string
+    hardware_settings: HardwareSettings = iblrig.path_helper.load_pydantic_yaml(HardwareSettings)
+    settings = hardware_settings['device_neurophotometrics']
     datestr = datetime.datetime.now().strftime('%Y-%m-%d')
     timestr = datetime.datetime.now().strftime('T%H%M%S')
     dict_paths = iblrig.path_helper.get_local_and_remote_paths()
@@ -23,20 +25,19 @@ def start_workflow(debug: bool = False):
     bonsai_params = {
         'FileNamePhotometry': str(folder_neurophotometrics.joinpath('raw_photometry.csv')),
         'FileNameDigitalInput': str(folder_neurophotometrics.joinpath('digital_inputs.csv')),
-        'PortName': 'COM3'  # TODO: hardware settings
+        'PortName': settings.COM_NEUROPHOTOMETRY,
     }
     _logger.info(f'Creating folder for neurophotometrics data: {folder_neurophotometrics}')
-    rrmdir(folder_neurophotometrics)
     folder_neurophotometrics.mkdir(parents=True, exist_ok=True)
-    hardware_settings = iblrig.path_helper.load_pydantic_yaml(HardwareSettings)
-    # workflow_file = Path(iblrig.__file__).parents[1].joinpath(hardware_settings['device_neurophotometrics']['BONSAI_WORKFLOW'])
+
+    workflow_file = Path(iblrig.__file__).parents[1].joinpath(settings.BONSAI_WORKFLOW)
     call_bonsai(
-        workflow_file=Path(iblrig.__file__).parents[1].joinpath('devices', 'neurophotometrics', 'FP3002_digital_inputs.bonsai'),
+        workflow_file=workflow_file,
         parameters=bonsai_params,
-        bonsai_executable=Path(r"C:\Users\IBLuser\AppData\Local\Bonsai\Bonsai.exe"), # TODO: hardware settings
+        bonsai_executable=Path(r"C:\Users\IBLuser\AppData\Local\Bonsai\Bonsai.exe"),  # TODO: hardware settings
         start=False,
     )
-    rrmdir(folder_neurophotometrics)
+
     # TODO we call the init sessions here
 
 def init_neurophotometrics_session():
