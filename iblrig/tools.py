@@ -265,6 +265,7 @@ def call_bonsai(
     editor: bool = True,
     wait: bool = True,
     check: bool = False,
+    bonsai_executable: str | Path = None,
 ) -> subprocess.Popen[bytes] | subprocess.Popen[str | bytes | Any] | subprocess.CompletedProcess:
     """
     Execute a Bonsai workflow within a subprocess call.
@@ -302,7 +303,7 @@ def call_bonsai(
         If the specified workflow file does not exist.
 
     """
-    cmd = _build_bonsai_cmd(workflow_file, parameters, start, debug, bootstrap, editor)
+    cmd = _build_bonsai_cmd(workflow_file, parameters, start, debug, bootstrap, editor, bonsai_executable=bonsai_executable)
     cwd = Path(workflow_file).parent
     log.info(f'Starting Bonsai workflow `{workflow_file.name}`')
     log.debug(' '.join(map(str, cmd)))

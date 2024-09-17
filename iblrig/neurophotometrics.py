@@ -13,7 +13,7 @@ from iblrig.pydantic_definitions import HardwareSettings
 _logger = logging.getLogger(__name__)
 
 
-def start_workflow(debug=False):
+def start_workflow(debug=False, ):
     # TODO docstring
     # format the current date and time as a standard string
     hardware_settings: HardwareSettings = iblrig.path_helper.load_pydantic_yaml(HardwareSettings)
