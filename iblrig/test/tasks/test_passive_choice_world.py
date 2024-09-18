@@ -42,9 +42,9 @@ class TestInstantiatePassiveChoiceWorld(BaseTestCases.CommonTestInstantiateTask)
             # - 20 gabor patches with 0% contrast
             # - 20 gabor patches at 35 deg left side with 6.25%, 12.5%, 25%, 100% contrast (80 total)
             # - 20 gabor patches at 35 deg right side with 6.25%, 12.5%, 25%, 100% contrast (80 total)
-            # 40 openings of the water valve with a 1-11s delay drawn from a uniform distribution
-            # 40 go cues sounds with a 1-5s delay drawn from a uniform distribution
-            # 40 noise bursts sounds with a 1-5s delay drawn from a uniform distribution
+            # 40 openings of the water valve
+            # 40 go cues sounds
+            # 40 noise bursts sounds
             assert len(f[f.stim_type == 'G']) == 180
             assert sum(f[f.stim_type == 'G'].contrast == 0.0) == 20
             positions = f[f.stim_type == 'G'].position.unique()
