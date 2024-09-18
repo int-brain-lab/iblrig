@@ -1,5 +1,4 @@
 import pandas as pd
-from scipy.stats import kstest
 
 import ibllib.pipes.dynamic_pipeline as dyn
 from ibllib.pipes.behavior_tasks import PassiveTaskNidq
@@ -57,7 +56,6 @@ class TestInstantiatePassiveChoiceWorld(BaseTestCases.CommonTestInstantiateTask)
             assert len(f[f.stim_type == 'V']) == 40
             assert len(f[f.stim_type == 'T']) == 40
             assert len(f[f.stim_type == 'N']) == 40
-
 
     def test_pipeline(self) -> None:
         """Test passive pipeline creation.
