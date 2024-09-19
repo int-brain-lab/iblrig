@@ -337,9 +337,9 @@ def validate_video(video_path, config):
     # Check frame data
     count, gpio = load_embedded_frame_data(video_path.parents[1], label_from_path(video_path))
     dropped = count[-1] - (meta.length - 1)
-    if dropped != 0:  # Log ERROR if > .1% frames dropped, otherwise log WARN
+    if dropped != 0:  # Log ERROR if > .1% frames dropped, otherwise log INFO
         pct_dropped = dropped / (count[-1] + 1) * 100
-        level = 30 if pct_dropped < 0.1 else 40
+        level = logging.INFO if pct_dropped < 0.1 else logging.ERROR
         log.log(level, 'Missed frames (%.2f%%) - frame data N = %i; video file N = %i', pct_dropped, count[-1] + 1, meta.length)
         ok = False
     if len(count) != meta.length:

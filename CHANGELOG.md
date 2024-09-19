@@ -4,6 +4,7 @@ Changelog
 8.24.1
 ------
 * change UI workflow for appending a session
+* Video QC: changed log level from WARNING to INFO if less than 0.1% of frames have been dropped
 
 8.24.0
 ------
