@@ -222,7 +222,7 @@ class Auxiliaries:
                             #             yield x
                             #
                             # res = await anext(first(asyncio.as_completed(tasks), lambda r: r[-1]['main_sync']))
-                            responses = await self.services.info(event, *args)
+                            responses = await self.services.info(*args)
                         case net.base.ExpMessage.ALYX:
                             responses = await self.services.alyx(*args)
                         case _:

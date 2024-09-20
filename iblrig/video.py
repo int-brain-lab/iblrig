@@ -5,25 +5,22 @@ import logging
 import os
 import subprocess
 import sys
+import warnings
 import zipfile
 from pathlib import Path
 
-import yaml
-
 from ibllib.io.raw_data_loaders import load_embedded_frame_data
 from ibllib.io.video import get_video_meta, label_from_path
-from ibllib.pipes.misc import load_params_dict
 from iblrig.base_tasks import EmptySession
-from iblrig.constants import HARDWARE_SETTINGS_YAML, HAS_PYSPIN, HAS_SPINNAKER, RIG_SETTINGS_YAML
+from iblrig.constants import HARDWARE_SETTINGS_YAML, HAS_PYSPIN, HAS_SPINNAKER
 from iblrig.net import ExpInfo, get_server_communicator, read_stdin, update_alyx_token
-from iblrig.path_helper import load_pydantic_yaml, patch_settings
+from iblrig.path_helper import load_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings
 from iblrig.tools import ask_user, call_bonsai, call_bonsai_async
 from iblrig.transfer_experiments import VideoCopier
 from iblutil.io import (
     hashfile,  # type: ignore
     net,
-    params,
 )
 from iblutil.util import setup_logger
 from one.api import OneAlyx
@@ -166,63 +163,6 @@ def install_pyspin():
         file_zip.unlink()
 
 
-def patch_old_params(remove_old=False, update_paths=True):
-    """
-    Update old video parameters.
-
-    Parameters
-    ----------
-    remove_old : bool
-        If true, removes the old video pc settings file.
-    update_paths : bool
-        If true, replace data paths in iblrig settings with those in old video pc settings file.
-
-    """
-    if not (old_file := Path(params.getfile('videopc_params'))).exists():
-        return
-    old_settings = load_params_dict('videopc_params')
-
-    # Update hardware settings
-    if HARDWARE_SETTINGS_YAML.exists():
-        with open(HARDWARE_SETTINGS_YAML) as fp:
-            hardware_settings = patch_settings(yaml.safe_load(fp), HARDWARE_SETTINGS_YAML)
-    else:
-        hardware_settings = {}
-    cams = hardware_settings.get('device_cameras', {})
-    for v in cams.values():
-        for cam in filter(lambda k: k in v, ('left', 'right', 'body')):
-            v[cam]['INDEX'] = old_settings.get(cam.upper() + '_CAM_IDX')
-
-    # Save hardware settings
-    hardware_settings['device_cameras'] = cams
-    log.debug('Saving %s', HARDWARE_SETTINGS_YAML)
-    with open(HARDWARE_SETTINGS_YAML, 'w') as fp:
-        yaml.safe_dump(hardware_settings, fp)
-
-    # Update other settings
-    if update_paths:
-        if RIG_SETTINGS_YAML.exists():
-            with open(RIG_SETTINGS_YAML) as fp:
-                rig_settings = yaml.safe_load(fp)
-        else:
-            rig_settings = {}
-        path_map = {'iblrig_local_data_path': 'DATA_FOLDER_PATH', 'iblrig_remote_data_path': 'REMOTE_DATA_FOLDER_PATH'}
-        for new_key, old_key in path_map.items():
-            rig_settings[new_key] = old_settings[old_key].rstrip('\\')
-            if rig_settings[new_key].endswith(r'\Subjects'):
-                rig_settings[new_key] = rig_settings[new_key][: -len(r'\Subjects')]
-            else:  # Add a 'subjects' key so that '\Subjects' is not incorrectly appended
-                rig_settings[new_key.replace('data', 'subjects')] = rig_settings[new_key]
-        log.debug('Saving %s', RIG_SETTINGS_YAML)
-        with open(RIG_SETTINGS_YAML, 'w') as fp:
-            yaml.safe_dump(rig_settings, fp)
-
-    if remove_old:
-        # Deleting old file
-        log.info('Removing %s', old_file)
-        old_file.unlink()
-
-
 def prepare_video_session_cmd():
     if not HAS_SPINNAKER:
         if ask_user("Spinnaker SDK doesn't seem to be installed. Do you want to install it now?"):
@@ -234,7 +174,10 @@ def prepare_video_session_cmd():
         return
 
     parser = argparse.ArgumentParser(prog='start_video_session', description='Prepare video PC for video recording session.')
-    parser.add_argument('--subject_name', help='name of subject (optional if service-uri provided)', type=str)
+    parser.add_argument(
+        '--subject_name', help='(DEPRECATED) Use `--subject-name` (with hyphen) instead', type=str, dest='deprecated'
+    )
+    parser.add_argument('--subject-name', help='name of subject (optional if service-uri provided)', type=str)
     parser.add_argument(
         '--profile', default='default', help='camera configuration name, found in "device_cameras" map of hardware_settings.yaml'
     )
@@ -249,7 +192,13 @@ def prepare_video_session_cmd():
     parser.add_argument('--debug', action='store_true', help='enable debugging mode')
     args = parser.parse_args()
 
-    if args.subject_name is None and args.service_uri is False:
+    if args.deprecated:
+        # Unix-like CLI args typically use hyphens between words, not underscores.
+        # This deprecation should make the program more intuitive to CLI users.
+        warnings.warn('Please use `--subject-name` (with hyphen) instead', DeprecationWarning, stacklevel=1)
+    subject_name = args.subject_name or args.deprecated
+
+    if subject_name is None and args.service_uri is False:
         parser.error('--subject-name is mandatory if --service-uri has not been provided.')
 
     setup_logger(name='iblrig', level='DEBUG' if args.debug else 'INFO')
@@ -258,10 +207,10 @@ def prepare_video_session_cmd():
     # False but until fully tested, let's call the old function
     if service_uri is False:
         # TODO Use CameraSession object and remove prepare_video_session and prepare_video_service
-        prepare_video_session(args.subject_name, args.profile, debug=args.debug)
+        prepare_video_session(subject_name, args.profile, debug=args.debug)
     else:
         log_level = 'DEBUG' if args.debug else 'INFO'
-        session = CameraSessionNetworked(subject=args.subject_name, config_name=args.profile, log_level=log_level)
+        session = CameraSessionNetworked(subject=subject_name, config_name=args.profile, log_level=log_level)
         asyncio.run(session.run(service_uri))
 
 
