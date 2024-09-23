@@ -6,6 +6,7 @@ Changelog
 * change UI workflow for appending a session
 * Video QC: changed log level from WARNING to INFO if less than 0.1% of frames have been dropped
 * Valve: Use restricted quadratic fit when converting reward volume to valve opening time
+* TrainingCW: add `signed_contrast` to trials_table definition
 
 8.24.0
 ------
