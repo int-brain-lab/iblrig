@@ -24,7 +24,6 @@ from typing import Protocol, final
 
 import numpy as np
 import pandas as pd
-import scipy.interpolate
 import serial
 import yaml
 from pythonosc import udp_client
@@ -43,6 +42,7 @@ from iblrig.path_helper import load_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings, RigSettings, TrialDataModel
 from iblrig.tools import call_bonsai
 from iblrig.transfer_experiments import BehaviorCopier, VideoCopier
+from iblrig.valve import Valve
 from iblutil.io.net.base import ExpMessage
 from iblutil.spacer import Spacer
 from iblutil.util import Bunch, flatten, setup_logger
@@ -1025,43 +1025,32 @@ class RotaryEncoderMixin(BaseSession):
 
 class ValveMixin(BaseSession, HasBpod):
     def init_mixin_valve(self: object):
-        self.valve = Bunch({})
-        # the template settings files have a date in 2099, so assume that the rig is not calibrated if that is the case
-        # the assertion on calibration is thrown when starting the device
-        self.valve['is_calibrated'] = datetime.date.today() >= self.hardware_settings['device_valve']['WATER_CALIBRATION_DATE']
-        self.valve['fcn_vol2time'] = scipy.interpolate.pchip(
-            self.hardware_settings['device_valve']['WATER_CALIBRATION_WEIGHT_PERDROP'],
-            self.hardware_settings['device_valve']['WATER_CALIBRATION_OPEN_TIMES'],
-        )
+        self.valve = Valve(self.hardware_settings.device_valve)
 
     def start_mixin_valve(self):
-        # if the rig is not on manual settings, then the reward valve has to be calibrated to run the experiment
-        assert self.task_params.AUTOMATIC_CALIBRATION is False or self.valve['is_calibrated'], """
-            ##########################################
-            NO CALIBRATION INFORMATION FOUND IN HARDWARE SETTINGS:
-            Calibrate the rig or use a manual calibration
-            PLEASE GO TO the task settings yaml file and set:
-                'AUTOMATIC_CALIBRATION': false
-                'CALIBRATION_VALUE' = <MANUAL_CALIBRATION>
-            ##########################################"""
+        # assert that valve has been calibrated
+        assert self.valve.is_calibrated, """VALVE IS NOT CALIBRATED - PLEASE CALIBRATE THE VALVE"""
+
         # regardless of the calibration method, the reward valve time has to be lower than 1 second
-        assert self.compute_reward_time(amount_ul=1.5) < 1, """
-            ##########################################
-                REWARD VALVE TIME IS TOO HIGH!
-            Probably because of a BAD calibration file
-            Calibrate the rig or use a manual calibration
-            PLEASE GO TO the task settings yaml file and set:
-                AUTOMATIC_CALIBRATION = False
-                CALIBRATION_VALUE = <MANUAL_CALIBRATION>
-            ##########################################"""
+        assert self.compute_reward_time(amount_ul=1.5) < 1, """VALVE IS NOT PROPERLY CALIBRATED - PLEASE RECALIBRATE"""
         log.info('Water valve module loaded: OK')
 
-    def compute_reward_time(self, amount_ul=None):
+    def compute_reward_time(self, amount_ul: float | None = None) -> float:
+        """
+        Converts the valve opening time from a given volume.
+
+        Parameters
+        ----------
+        amount_ul : float, optional
+            The volume of liquid (μl) to be dispensed from the valve. Defaults to task_params.REWARD_AMOUNT_UL.
+
+        Returns
+        -------
+        float
+            Valve opening time in seconds.
+        """
         amount_ul = self.task_params.REWARD_AMOUNT_UL if amount_ul is None else amount_ul
-        if self.task_params.AUTOMATIC_CALIBRATION:
-            return self.valve['fcn_vol2time'](amount_ul) / 1e3
-        else:  # this is the manual manual calibration value
-            return self.task_params.CALIBRATION_VALUE / 3 * amount_ul
+        return self.valve.values.ul2ms(amount_ul) / 1e3
 
     def valve_open(self, reward_valve_time):
         """
