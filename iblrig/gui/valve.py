@@ -49,7 +49,7 @@ class CalibrationPlot:
         if len(self.values.open_times_ms) < 2:
             self._curve.setData(x=[], y=[])
         else:
-            time_range = list(np.linspace(self.values.open_times_ms[0], self.values.open_times_ms[-1], 100))
+            time_range = list(np.linspace(0, self.values.open_times_ms[-1], 100))
             self._curve.setData(x=time_range, y=self.values.ms2ul(time_range))
 
     def clear(self):

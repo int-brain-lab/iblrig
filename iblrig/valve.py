@@ -76,7 +76,7 @@ class ValveValues:
         elif time_ms == 0.0:
             return 0.0
         else:
-            return self._polynomial(time_ms)
+            return max(np.append(self._polynomial(time_ms), 0.0))
 
 
 class Valve:
