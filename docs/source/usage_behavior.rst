@@ -42,9 +42,9 @@ Starting a Task
 Supplementary Controls
 ~~~~~~~~~~~~~~~~~~~~~~
 
--  If you check the *Append* option before clicking *Start*, the task
-   you initiate will be linked to the preceding task, creating a
-   sequence of connected tasks.
+-  When starting a subsequent task with the same subject, you'll be asked if
+   you want to append to the preceding session. Doing so will result in a
+   sequence of connected tasks sharing the same data folder.
 
 -  The *Flush* button serves to toggle the valve for cleaning purposes.
 

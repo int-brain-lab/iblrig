@@ -1,11 +1,11 @@
 import datetime
 import warnings
-from collections.abc import Sequence
+from collections.abc import Iterable, Sequence
 
 import numpy as np
 import scipy
 from numpy.polynomial import Polynomial
-from pydantic import PositiveFloat, validate_call
+from pydantic import NonNegativeFloat, PositiveFloat, validate_call
 
 from iblrig.pydantic_definitions import HardwareSettingsValve
 
@@ -61,12 +61,22 @@ class ValveValues:
         self._polynomial = Polynomial(coef=c)
 
     @validate_call
-    def ul2ms(self, volume_ul: PositiveFloat) -> PositiveFloat:
-        return max((self._polynomial - volume_ul).roots())
+    def ul2ms(self, volume_ul: NonNegativeFloat | Iterable[NonNegativeFloat]) -> NonNegativeFloat | np.ndarray:
+        if isinstance(volume_ul, Iterable):
+            return np.array([self.ul2ms(v) for v in volume_ul])
+        elif volume_ul == 0.0:
+            return 0.0
+        else:
+            return max(np.append((self._polynomial - volume_ul).roots(), 0.0))
 
     @validate_call
-    def ms2ul(self, volume_ul: PositiveFloat | list[PositiveFloat]) -> PositiveFloat | np.ndarray:
-        return self._polynomial(np.array(volume_ul))
+    def ms2ul(self, time_ms: NonNegativeFloat | Iterable[NonNegativeFloat]) -> NonNegativeFloat | np.ndarray:
+        if isinstance(time_ms, Iterable):
+            return np.array([self.ms2ul(t) for t in time_ms])
+        elif time_ms == 0.0:
+            return 0.0
+        else:
+            return max(np.append(self._polynomial(time_ms), 0.0))
 
 
 class Valve:
@@ -79,6 +89,10 @@ class Valve:
     @property
     def calibration_date(self) -> datetime.date:
         return self._settings.WATER_CALIBRATION_DATE
+
+    @property
+    def is_calibrated(self) -> bool:
+        return datetime.date.today() >= self.calibration_date
 
     @property
     def calibration_range(self) -> list[float, float]:

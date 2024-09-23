@@ -286,6 +286,8 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
     session_info: dict = {}
     task_parameters: dict | None = None
     new_subject_details = QtCore.pyqtSignal()
+    append_session: bool = False
+    previous_subject: str | None = None
 
     def __init__(self, debug: bool = False, remote_devices: bool = False):
         super().__init__()
@@ -967,6 +969,21 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 self.uiPushStart.setIcon(self.style().standardIcon(QStyle.SP_MediaStop))
                 self._enable_ui_elements()
 
+                # Manage appended session
+                self.append_session = False
+                if self.previous_subject == self.model.subject and not self.model.hardware_settings.MAIN_SYNC:
+                    self.append_session = (
+                        QtWidgets.QMessageBox.question(
+                            self,
+                            'Appended Session',
+                            'Would you like to append to the previous session?',
+                            QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
+                            QtWidgets.QMessageBox.No,
+                        )
+                        == QtWidgets.QMessageBox.Yes
+                    )
+
+                # Manage subject weight
                 dlg = QtWidgets.QInputDialog()
                 weight, ok = dlg.getDouble(
                     self,
@@ -986,7 +1003,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 self.controller2model()
 
                 logging.disable(logging.INFO)
-                task = EmptySession(subject=self.model.subject, append=self.uiCheckAppend.isChecked(), interactive=False)
+                task = EmptySession(subject=self.model.subject, append=self.append_session, interactive=False)
                 logging.disable(logging.NOTSET)
                 self.model.session_folder = task.paths['SESSION_FOLDER']
                 if self.model.session_folder.joinpath('.stop').exists():
@@ -1027,7 +1044,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 cmd.extend(['--weight', f'{weight}'])
                 cmd.extend(['--log-level', 'DEBUG' if self.debug else 'INFO'])
                 cmd.append('--wizard')
-                if self.uiCheckAppend.isChecked():
+                if self.append_session:
                     cmd.append('--append')
                 if self.running_task_process is None:
                     self.tabLog.clear()
@@ -1109,7 +1126,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
             if (
                 (ntrials := session_data['NTRIALS']) < 42
                 and not any([x in self.model.task_name for x in ('spontaneous', 'passive')])
-                and not self.uiCheckAppend.isChecked()
+                and not self.append_session
             ):
                 answer = QtWidgets.QMessageBox.question(
                     self,
@@ -1120,7 +1137,9 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 )
                 if answer == QtWidgets.QMessageBox.Yes:
                     shutil.rmtree(self.model.session_folder)
+                    self.previous_subject = None
                     return
+            self.previous_subject = self.model.subject
 
             # manage poop count
             dlg = QtWidgets.QInputDialog()
@@ -1181,7 +1200,6 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.uiPushFlush.setEnabled(not is_running)
         self.uiPushReward.setEnabled(not is_running)
         self.uiPushStatusLED.setEnabled(not is_running)
-        self.uiCheckAppend.setEnabled(not is_running)
         self.uiGroupParameters.setEnabled(not is_running)
         self.uiGroupTaskParameters.setEnabled(not is_running)
         self.uiGroupTools.setEnabled(not is_running)

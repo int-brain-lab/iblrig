@@ -99,7 +99,7 @@ class ChoiceWorldTrialData(TrialDataModel):
     # TODO: Yes, this should probably be done differently.
     response_side: Annotated[int, Interval(ge=0, le=0)] = 0
     response_time: IsNan[float] = np.nan
-    trial_correct: Annotated[int, Interval(ge=0, le=0)] = False
+    trial_correct: Annotated[bool, Interval(ge=0, le=0)] = False
 
 
 class ChoiceWorldSession(
@@ -889,6 +889,7 @@ class TrainingChoiceWorldTrialData(ActiveChoiceWorldTrialData):
 
     training_phase: NonNegativeInt
     debias_trial: bool
+    signed_contrast: float | None = None
 
 
 class TrainingChoiceWorldSession(ActiveChoiceWorldSession):

@@ -25,6 +25,8 @@ jobs:
           python-version-file: pyproject.toml
       - name: Install requirements
         run: pdm sync -dG doc
+      - name: Install PortAudio and GraphViz
+        run: sudo apt-get install -y libportaudio2 graphviz
       - name: Sphinx build
         run: pdm run sphinx-build docs/source docs/build/html
       - name: Deploy
