@@ -1,11 +1,11 @@
 import logging
 from datetime import date
 
-from PyQt5 import QtCore, QtGui, QtTest, QtWidgets
+from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import QTimer, pyqtProperty, pyqtSignal, pyqtSlot
 from PyQt5.QtWidgets import QWidget
 
 from iblrig.frame2ttl import Frame2TTL
-from iblrig.gui.tools import Worker
 from iblrig.gui.ui_frame2ttl import Ui_frame2ttl
 from iblrig.path_helper import save_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings
@@ -14,6 +14,9 @@ log = logging.getLogger(__name__)
 
 
 class Frame2TTLCalibrationDialog(QtWidgets.QDialog, Ui_frame2ttl):
+    _success: bool = False
+    _waitForScreen = 500
+
     def __init__(self, *args, hardware_settings: HardwareSettings, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.setupUi(self)
@@ -23,7 +26,6 @@ class Frame2TTLCalibrationDialog(QtWidgets.QDialog, Ui_frame2ttl):
 
         self.hardware_settings = hardware_settings
         self.frame2ttl = Frame2TTL(port=hardware_settings.device_frame2ttl.COM_F2TTL)
-        self.target = Frame2TTLCalibrationTarget(self, color=QtGui.QColorConstants.White)
         self.light = None
         self.dark = None
         self._success = True
@@ -34,25 +36,22 @@ class Frame2TTLCalibrationDialog(QtWidgets.QDialog, Ui_frame2ttl):
         self.buttonBox.buttons()[0].setEnabled(False)
         self.show()
 
-        # start worker for first calibration step: light condition
-        worker = Worker(self.frame2ttl.calibrate, condition='light')
-        worker.signals.result.connect(self._on_calibrate_light_result)
-        QtCore.QThreadPool.globalInstance().tryStart(worker)
+        # start calibration of light value (use timer to allow for drawing of target)
         self.uiLabelLightValue.setText('calibrating ...')
+        self.target = Frame2TTLCalibrationTarget(self, color=QtGui.QColorConstants.White)
+        QTimer.singleShot(self._waitForScreen, self._calibrateLight)
 
-    def _on_calibrate_light_result(self, result: tuple[int, bool]):
-        (self.light, self._success) = result
+    def _calibrateLight(self):
+        self.light, self._success = self.frame2ttl.calibrate(condition='light')
         self.uiLabelLightValue.setText(f'{self.light} {self.frame2ttl.unit_str}')
+        self.target.setColor(QtGui.QColorConstants.Black)
 
-        # start worker for second calibration step: dark condition
-        self.target.color = QtGui.QColorConstants.Black
-        worker = Worker(self.frame2ttl.calibrate, condition='dark')
-        worker.signals.result.connect(self._on_calibrate_dark_result)
-        QtCore.QThreadPool.globalInstance().tryStart(worker)
+        # start calibration of dark value (use timer to allow for drawing of target)
         self.uiLabelDarkValue.setText('calibrating ...')
+        QTimer.singleShot(self._waitForScreen, self._calibrateDark)
 
-    def _on_calibrate_dark_result(self, result: tuple[int, bool]):
-        (self.dark, self._success) = result
+    def _calibrateDark(self):
+        self.dark, self._success = self.frame2ttl.calibrate(condition='dark')
         self.uiLabelDarkValue.setText(f'{self.dark} {self.frame2ttl.unit_str}')
 
         if self._success:
@@ -69,6 +68,8 @@ class Frame2TTLCalibrationDialog(QtWidgets.QDialog, Ui_frame2ttl):
 
 
 class Frame2TTLCalibrationTarget(QtWidgets.QDialog):
+    colorChanged = pyqtSignal(QtGui.QColor)
+
     def __init__(
         self,
         parent: QWidget | None = None,
@@ -117,8 +118,6 @@ class Frame2TTLCalibrationTarget(QtWidgets.QDialog):
         super().__init__(parent, **kwargs)
         self.setWindowModality(QtCore.Qt.WindowModality.NonModal)
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowStaysOnTopHint | QtCore.Qt.Dialog)
-        self.setAutoFillBackground(True)
-        self._set_color(color)
         self.setFixedSize(width, height)
         screen_geometry = QtWidgets.QApplication.desktop().screenGeometry(screen_index)
         self.move(
@@ -126,20 +125,21 @@ class Frame2TTLCalibrationTarget(QtWidgets.QDialog):
                 screen_geometry.x() + screen_geometry.width() - width, screen_geometry.y() + screen_geometry.height() - height
             )
         )
+        self.setAutoFillBackground(True)
         self.show()
-        QtTest.QTest.qWait(500)
+        self.focusWidget()
+        self.setColor(color)
 
-    def _set_color(self, color: QtGui.QColor):
-        palette = QtGui.QPalette()
+    @pyqtSlot(QtGui.QColor)
+    def setColor(self, color: QtGui.QColor):
+        palette = self.palette()
         palette.setColor(QtGui.QPalette.Window, color)
         self.setPalette(palette)
+        self.repaint()
+        self.colorChanged.emit(color)
+        QtWidgets.QApplication.processEvents()
 
-    @property
-    def color(self) -> QtGui.QColor:
+    def getColor(self) -> QtGui.QColor:
         return self.palette().color(QtGui.QPalette.Window)
 
-    @color.setter
-    def color(self, color: QtGui.QColor):
-        self._set_color(color)
-        self.update()
-        QtTest.QTest.qWait(500)
+    color = pyqtProperty(QtGui.QColor, fget=getColor, fset=setColor)
