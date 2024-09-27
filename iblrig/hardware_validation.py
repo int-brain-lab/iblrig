@@ -8,6 +8,7 @@ from enum import IntEnum
 from inspect import isabstract
 from math import isclose
 from struct import unpack
+from time import sleep
 from typing import Any, cast
 
 import numpy as np
@@ -589,10 +590,12 @@ class ValidatorFrame2TTL(ValidatorSerial):
         from iblrig.gui.frame2ttl import Frame2TTLCalibrationTarget
 
         app = QApplication.instance()
-        if app_created := app is None:
+        if app_created := (app is None):
             app = QApplication([])
+
+        # show calibration target
         calibration_target = Frame2TTLCalibrationTarget(color=QColorConstants.Black)
-        calibration_target.show()
+        sleep(0.1)  # allow for screen to update
 
         # Define state-machine
         def softcode_handler(softcode: int):
@@ -604,14 +607,14 @@ class ValidatorFrame2TTL(ValidatorSerial):
         sma = StateMachine(bpod)
         sma.add_state(
             state_name='white',
-            state_timer=1,
-            state_change_conditions={'Tup': 'black', 'BNC1High': 'black'},
+            state_timer=0.1,
+            state_change_conditions={'Tup': 'black'},
             output_actions=[('SoftCode', 1)],
         )
         sma.add_state(
             state_name='black',
-            state_timer=1,
-            state_change_conditions={'Tup': 'exit', 'BNC1Low': 'exit'},
+            state_timer=0.1,
+            state_change_conditions={'Tup': 'exit'},
             output_actions=[('SoftCode', 2)],
         )
 
@@ -626,6 +629,7 @@ class ValidatorFrame2TTL(ValidatorSerial):
             return False
         finally:
             bpod.softcode_handler_function = original_softcode_handler
+            sleep(0.1)  # allow state machine to finish
             calibration_target.close()
             if app_created:
                 app.quit()

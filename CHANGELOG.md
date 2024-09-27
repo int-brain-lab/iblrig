@@ -1,6 +1,10 @@
 Changelog
 =========
 
+8.24.2
+------
+* make Frame2TTL validation more robust
+
 8.24.1
 ------
 * change UI workflow for appending a session
