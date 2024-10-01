@@ -17,7 +17,7 @@ from PyQt5.QtCore import (
 )
 from PyQt5.QtWidgets import QHeaderView, QStyledItemDelegate, QWidget
 
-from iblrig.gui.tools import DataFrameTableModel
+from iblqt.core import DataFrameTableModel
 from iblrig.gui.ui_tab_data import Ui_TabData
 from iblrig.path_helper import get_local_and_remote_paths
 from iblrig.transfer_experiments import CopyState, SessionCopier
@@ -79,7 +79,7 @@ class TabData(QWidget, Ui_TabData):
 
         # create empty DataFrameTableModel
         data = pd.DataFrame(None, index=[], columns=[c.name for c in COLUMNS])
-        self.tableModel = DataFrameTableModel(df=data)
+        self.tableModel = DataFrameTableModel(dataFrame=data)
 
         # create filter proxy & assign it to view
         self.tableProxy = QSortFilterProxyModel()
