@@ -121,3 +121,32 @@ Frame2TTL
       Look for a voltage step in Frame2TTL's output when the calibration routine switches from dark to light.
    #. If you *do* see the change in the TTL signal, the Bpod might be faulty. Try using a different Bpod unit.
    #. If you do *not* see the voltage step, the Frame2TTL might be faulty. Try using a different Frame2TTL unit.
+
+
+Move a mouse onto a previous training stage
+===========================================
+Training phases enfold according to an automated procedure, see the `mouse training protocol on Figshare <https://
+figshare.com/articles/preprint/A_standardized_and_reproducible_method_to_measure_decision-making
+_in_mice_Appendix_2_IBL_protocol_for_mice_training/11634729?file=38099442>`_ for a description of these phases.
+
+However, it is possible that one wants to overwrite the automated progression, and bring back an animal onto a previous
+training stage.
+
+In this case:
+
+1. Select the training protocol on the GUI
+2. Select the wanted training phase manually
+
+
+   .. figure:: img/training_phase_manual_update.png
+      :width: 100%
+      :class: with-border
+
+      Select the training phase manually using the arrows.
+
+On the next day of training, the "automatic" criteria will be computed assuming the training phase last used, i.e.
+the one you manually selected in this instance.
+
+For example, if you have a mouse on Training Phase 5, and move it manually to Phase 4 (which can be useful when
+trying to debias an animal), the next session on "automatic" mode will compute the stage progression from stage 4,
+and disregard the fact that the mouse was on Phase 5 beforehand.
