@@ -139,4 +139,4 @@ To write the documentation:
 To release the documentation onto the `website <https://int-brain-lab.github.io/iblrig>`_:
 
 * Wait for the next release, or
-* Manually trigger the GitHub action by clicking "Run Workflow" (select ``master``) `here <https://github.com/int-brain-lab/iblrig/actions/workflows/docs.yaml>`_
+* Manually trigger the GitHub action by clicking "Run Workflow" (select ``iblrigv8dev``) `here <https://github.com/int-brain-lab/iblrig/actions/workflows/documentation.yaml>`_
