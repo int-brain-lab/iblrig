@@ -103,12 +103,12 @@ class TestOtherMixins(BaseTestHardwareMixins):
         """
         session = self.session
         RotaryEncoderMixin.init_mixin_rotary_encoder(session)
-        assert session.device_rotary_encoder.ENCODER_EVENTS == [
+        assert [
             'RotaryEncoder1_1',
             'RotaryEncoder1_2',
             'RotaryEncoder1_3',
             'RotaryEncoder1_4',
-        ]
+        ] == session.device_rotary_encoder.ENCODER_EVENTS
         assert {
             -35: 'RotaryEncoder1_1',
             35: 'RotaryEncoder1_2',
