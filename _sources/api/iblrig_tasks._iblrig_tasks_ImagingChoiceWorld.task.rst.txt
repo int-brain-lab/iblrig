@@ -1,0 +1,14 @@
+iblrig\_tasks.\_iblrig\_tasks\_ImagingChoiceWorld.task
+======================================================
+
+.. automodule:: iblrig_tasks._iblrig_tasks_ImagingChoiceWorld.task
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :nosignatures:
+      :toctree:
+      :template: custom-class-template.rst
+   
+      Session
+   

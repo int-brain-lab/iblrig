@@ -1,0 +1,6 @@
+iblrig.serial\_singleton.get\_serial\_number\_from\_port
+========================================================
+
+.. currentmodule:: iblrig.serial_singleton
+
+.. autofunction:: get_serial_number_from_port

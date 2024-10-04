@@ -1,0 +1,6 @@
+iblrig.commands.transfer\_data
+==============================
+
+.. currentmodule:: iblrig.commands
+
+.. autofunction:: transfer_data

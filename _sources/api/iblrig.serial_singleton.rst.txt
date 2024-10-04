@@ -1,0 +1,32 @@
+iblrig.serial\_singleton
+========================
+
+.. automodule:: iblrig.serial_singleton
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :nosignatures:
+      :toctree:
+   
+      filter_ports
+      get_port_from_serial_number
+      get_serial_number_from_port
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :nosignatures:
+      :toctree:
+      :template: custom-class-template.rst
+   
+      SerialSingleton
+   
+   .. rubric:: Exceptions
+
+   .. autosummary::
+      :nosignatures:
+      :toctree:
+   
+      SerialSingletonException
+   

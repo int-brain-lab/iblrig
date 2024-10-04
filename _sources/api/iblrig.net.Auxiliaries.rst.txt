@@ -1,0 +1,13 @@
+iblrig.net.Auxiliaries
+======================
+
+.. currentmodule:: iblrig.net
+
+.. inheritance-diagram:: Auxiliaries
+   :parts: 1
+
+|
+
+.. autoclass:: Auxiliaries
+   :members:
+   :undoc-members:

@@ -1,0 +1,6 @@
+iblrig.sound.configure\_sound\_card
+===================================
+
+.. currentmodule:: iblrig.sound
+
+.. autofunction:: configure_sound_card

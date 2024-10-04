@@ -1,0 +1,13 @@
+iblrig.gui.ui\_tab\_session.Ui\_tabSession
+==========================================
+
+.. currentmodule:: iblrig.gui.ui_tab_session
+
+.. inheritance-diagram:: Ui_tabSession
+   :parts: 1
+
+|
+
+.. autoclass:: Ui_tabSession
+   :members:
+   :undoc-members:

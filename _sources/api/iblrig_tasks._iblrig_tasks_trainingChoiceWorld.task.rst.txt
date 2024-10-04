@@ -1,0 +1,22 @@
+iblrig\_tasks.\_iblrig\_tasks\_trainingChoiceWorld.task
+=======================================================
+
+.. automodule:: iblrig_tasks._iblrig_tasks_trainingChoiceWorld.task
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :nosignatures:
+      :toctree:
+   
+      float_or_none
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :nosignatures:
+      :toctree:
+      :template: custom-class-template.rst
+   
+      Session
+   

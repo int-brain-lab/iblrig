@@ -1,0 +1,6 @@
+iblrig.ephys.prepare\_ephys\_session
+====================================
+
+.. currentmodule:: iblrig.ephys
+
+.. autofunction:: prepare_ephys_session

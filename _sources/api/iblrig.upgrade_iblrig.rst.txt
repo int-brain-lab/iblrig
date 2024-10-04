@@ -1,0 +1,14 @@
+iblrig.upgrade\_iblrig
+======================
+
+.. automodule:: iblrig.upgrade_iblrig
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :nosignatures:
+      :toctree:
+   
+      call_subprocesses
+      upgrade
+   

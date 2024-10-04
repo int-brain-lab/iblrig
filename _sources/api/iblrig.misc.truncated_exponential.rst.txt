@@ -1,0 +1,6 @@
+iblrig.misc.truncated\_exponential
+==================================
+
+.. currentmodule:: iblrig.misc
+
+.. autofunction:: truncated_exponential

@@ -1,0 +1,6 @@
+iblrig.choiceworld.compute\_adaptive\_reward\_volume
+====================================================
+
+.. currentmodule:: iblrig.choiceworld
+
+.. autofunction:: compute_adaptive_reward_volume

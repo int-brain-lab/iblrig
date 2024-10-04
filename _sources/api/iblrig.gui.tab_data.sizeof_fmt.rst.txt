@@ -1,0 +1,6 @@
+iblrig.gui.tab\_data.sizeof\_fmt
+================================
+
+.. currentmodule:: iblrig.gui.tab_data
+
+.. autofunction:: sizeof_fmt

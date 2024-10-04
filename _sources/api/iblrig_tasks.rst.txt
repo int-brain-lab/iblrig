@@ -1,0 +1,24 @@
+﻿iblrig\_tasks
+=============
+
+.. automodule:: iblrig_tasks
+   
+.. rubric:: Modules
+
+.. autosummary::
+   :nosignatures:
+   :toctree:
+   :template: custom-module-template.rst
+   :recursive:
+
+   _iblrig_tasks_advancedChoiceWorld
+   _iblrig_tasks_biasedChoiceWorld
+   _iblrig_tasks_ephysChoiceWorld
+   _iblrig_tasks_habituationChoiceWorld
+   _iblrig_tasks_ImagingChoiceWorld
+   _iblrig_tasks_neuroModulatorChoiceWorld
+   _iblrig_tasks_passiveChoiceWorld
+   _iblrig_tasks_spontaneous
+   _iblrig_tasks_trainingChoiceWorld
+   _iblrig_tasks_trainingPhaseChoiceWorld
+

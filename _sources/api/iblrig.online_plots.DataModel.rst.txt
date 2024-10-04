@@ -1,0 +1,13 @@
+iblrig.online\_plots.DataModel
+==============================
+
+.. currentmodule:: iblrig.online_plots
+
+.. inheritance-diagram:: DataModel
+   :parts: 1
+
+|
+
+.. autoclass:: DataModel
+   :members:
+   :undoc-members:

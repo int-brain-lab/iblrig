@@ -1,0 +1,6 @@
+iblrig.gui.wizard.main
+======================
+
+.. currentmodule:: iblrig.gui.wizard
+
+.. autofunction:: main

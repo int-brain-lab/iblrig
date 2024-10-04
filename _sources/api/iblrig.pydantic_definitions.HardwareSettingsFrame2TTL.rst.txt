@@ -1,0 +1,13 @@
+iblrig.pydantic\_definitions.HardwareSettingsFrame2TTL
+======================================================
+
+.. currentmodule:: iblrig.pydantic_definitions
+
+.. inheritance-diagram:: HardwareSettingsFrame2TTL
+   :parts: 1
+
+|
+
+.. autoclass:: HardwareSettingsFrame2TTL
+   :members:
+   :undoc-members:

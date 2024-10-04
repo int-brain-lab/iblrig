@@ -1,0 +1,6 @@
+iblrig.version\_management.get\_branch
+======================================
+
+.. currentmodule:: iblrig.version_management
+
+.. autofunction:: get_branch

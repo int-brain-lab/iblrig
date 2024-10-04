@@ -1,0 +1,6 @@
+iblrig.gui.resources\_rc.qCleanupResources
+==========================================
+
+.. currentmodule:: iblrig.gui.resources_rc
+
+.. autofunction:: qCleanupResources

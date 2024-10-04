@@ -1,0 +1,6 @@
+iblrig.tools.static\_vars
+=========================
+
+.. currentmodule:: iblrig.tools
+
+.. autofunction:: static_vars

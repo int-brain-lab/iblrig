@@ -1,0 +1,10 @@
+<map id="inheritance48a800bd3e" name="inheritance48a800bd3e">
+<area shape="rect" id="node1" title="QAbstractItemView(parent: Optional[QWidget] = None)" alt="" coords="488,17,568,31"/>
+<area shape="rect" id="node5" title="QListView(parent: Optional[QWidget] = None)" alt="" coords="594,17,641,31"/>
+<area shape="rect" id="node2" title="QAbstractScrollArea(parent: Optional[QWidget] = None)" alt="" coords="380,17,462,31"/>
+<area shape="rect" id="node3" title="QFrame(parent: Optional[QWidget] = None, flags: Union[Qt.WindowFlags, Qt.WindowType] = Qt.WindowFlags())" alt="" coords="314,17,354,31"/>
+<area shape="rect" id="node4" title="QWidget(parent: Optional[QWidget] = None, flags: Union[Qt.WindowFlags, Qt.WindowType] = Qt.WindowFlags())" alt="" coords="245,17,288,31"/>
+<area shape="rect" id="node10" href="#iblrig.gui.tools.RemoteDevicesListView" target="_top" title="RemoteDevicesListView" alt="" coords="667,17,765,31"/>
+<area shape="rect" id="node6" title="QObject(parent: Optional[QObject] = None)" alt="" coords="169,4,210,17"/>
+<area shape="rect" id="node8" title="QPaintDevice()" alt="" coords="160,30,219,44"/>
+</map>

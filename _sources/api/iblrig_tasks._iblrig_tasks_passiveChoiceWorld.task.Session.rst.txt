@@ -1,0 +1,13 @@
+iblrig\_tasks.\_iblrig\_tasks\_passiveChoiceWorld.task.Session
+==============================================================
+
+.. currentmodule:: iblrig_tasks._iblrig_tasks_passiveChoiceWorld.task
+
+.. inheritance-diagram:: Session
+   :parts: 1
+
+|
+
+.. autoclass:: Session
+   :members:
+   :undoc-members:

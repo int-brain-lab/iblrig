@@ -1,0 +1,6 @@
+iblrig.graphic.numinput
+=======================
+
+.. currentmodule:: iblrig.graphic
+
+.. autofunction:: numinput

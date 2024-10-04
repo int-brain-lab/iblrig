@@ -1,0 +1,13 @@
+iblrig.base\_tasks.HasBpod
+==========================
+
+.. currentmodule:: iblrig.base_tasks
+
+.. inheritance-diagram:: HasBpod
+   :parts: 1
+
+|
+
+.. autoclass:: HasBpod
+   :members:
+   :undoc-members:
