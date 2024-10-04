@@ -553,8 +553,9 @@ class EphysCopier(SessionCopier):
         self._experiment_description = acquisition_description
         super().initialize_experiment(acquisition_description=acquisition_description, **kwargs)
         # once the session folders have been initialized, create the probe folders
+        (ephys_path := self.session_path.joinpath('raw_ephys_data')).mkdir(exist_ok=True)
         for n in range(nprobes):
-            self.session_path.joinpath('raw_ephys_data', f'probe{n:02}').mkdir(exist_ok=True, parents=True)
+            ephys_path.joinpath(f'probe{n:02}').mkdir(exist_ok=True)
 
     def _copy_collections(self):
         """Here we overload the copy to be able to rename the probes properly and also create the insertions."""

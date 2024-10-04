@@ -3,6 +3,10 @@ Changelog
 
 8.24.2
 ------
+* fix: create the `raw_ephys_data` folder even if there are no probes (when running behavior sessions on ephys rig)
+
+8.24.2
+------
 * make Frame2TTL validation more robust
 
 8.24.1
