@@ -109,12 +109,12 @@ class TestOtherMixins(BaseTestHardwareMixins):
             'RotaryEncoder1_3',
             'RotaryEncoder1_4',
         ]
-        assert {
+        assert session.device_rotary_encoder.THRESHOLD_EVENTS == {
             -35: 'RotaryEncoder1_1',
             35: 'RotaryEncoder1_2',
             -2: 'RotaryEncoder1_3',
             2: 'RotaryEncoder1_4',
-        } == session.device_rotary_encoder.THRESHOLD_EVENTS
+        }
         with self.assertRaises(ValueError):
             RotaryEncoderMixin.start_mixin_rotary_encoder(session)
 

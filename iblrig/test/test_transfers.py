@@ -232,7 +232,7 @@ class TestIntegrationTransferExperiments(unittest.TestCase):
         self.assertEqual(set(final_experiment_description['sync'].keys()), {'nidq'})
 
     # Requires recent change to ibllib test fixture code supporting no probe ephys recording files
-    @unittest.skipIf(version.parse(ibllib.__version__) < version.parse('2.39'))
+    @unittest.skipIf(version.parse(ibllib.__version__) < version.parse('2.39'), 'ibllib < 2.39')
     def test_ephys_no_probe(self):
         """Test copying a session at ephys rig when no probes were used (DAQ only)."""
         # First create a behavior session
