@@ -9,17 +9,12 @@ from pathlib import Path
 from shutil import disk_usage
 from typing import Any
 
-import numpy as np
-import pandas as pd
 from PyQt5 import QtGui
 from PyQt5.QtCore import (
-    QAbstractTableModel,
-    QModelIndex,
     QObject,
     QRunnable,
     Qt,
     QThreadPool,
-    QVariant,
     pyqtProperty,
     pyqtSignal,
     pyqtSlot,
@@ -221,144 +216,6 @@ class Worker(QRunnable):
         finally:
             # Emit the finished signal to indicate completion
             self.signals.finished.emit()
-
-
-class DataFrameTableModel(QAbstractTableModel):
-    def __init__(self, *args, df: pd.DataFrame, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._dataFrame = df
-
-    def dataFrame(self):
-        return self._dataFrame
-
-    def setDataFrame(self, data_frame: pd.DataFrame):
-        self.beginResetModel()
-        self._dataFrame = data_frame.copy()
-        self.endResetModel()
-
-    dataFrame = pyqtProperty(pd.DataFrame, fget=dataFrame, fset=setDataFrame)
-
-    def headerData(self, section, orientation, role=...):
-        """
-        Get the header data for the specified section.
-
-        Parameters
-        ----------
-        section : int
-            The section index.
-        orientation : Qt.Orientation
-            The orientation of the header.
-        role : int, optional
-            The role of the header data.
-
-        Returns
-        -------
-        QVariant
-            The header data.
-        """
-        if role == Qt.DisplayRole:
-            if orientation == Qt.Horizontal:
-                return str(self._dataFrame.columns[section])
-            else:
-                return str(self._dataFrame.index[section])
-
-    def rowCount(self, parent=...):
-        """
-        Get the number of rows in the model.
-
-        Parameters
-        ----------
-        parent : QModelIndex, optional
-            The parent index.
-
-        Returns
-        -------
-        int
-            The number of rows.
-        """
-        if isinstance(parent, QModelIndex) and parent.isValid():
-            return 0
-        return self.dataFrame.shape[0]
-
-    def columnCount(self, parent=...):
-        """
-        Get the number of columns in the model.
-
-        Parameters
-        ----------
-        parent : QModelIndex, optional
-            The parent index.
-
-        Returns
-        -------
-        int
-            The number of columns.
-        """
-        if isinstance(parent, QModelIndex) and parent.isValid():
-            return 0
-        return self.dataFrame.shape[1]
-
-    def data(self, index, role=...):
-        """
-        Get the data for the specified index.
-
-        Parameters
-        ----------
-        index : QModelIndex
-            The index of the data.
-        role : int, optional
-            The role of the data.
-
-        Returns
-        -------
-        QVariant
-            The data for the specified index.
-        """
-        if index.isValid():
-            row = self._dataFrame.index[index.row()]
-            col = self._dataFrame.columns[index.column()]
-            dat = self._dataFrame.iloc[row][col]
-            if role == Qt.DisplayRole:
-                if isinstance(dat, np.generic):
-                    return dat.item()
-                return dat
-        return QVariant()
-
-    def sort(self, column, order=...):
-        """
-        Sort the data based on the specified column and order.
-
-        Parameters
-        ----------
-        column : int
-            The column index to sort by.
-        order : Qt.SortOrder, optional
-            The sort order.
-        """
-        self.layoutAboutToBeChanged.emit()
-        col_name = self._dataFrame.columns.values[column]
-        self._dataFrame.sort_values(by=col_name, ascending=order == Qt.AscendingOrder, inplace=True)
-        self._dataFrame.reset_index(inplace=True, drop=True)
-        self.layoutChanged.emit()
-
-    def setData(self, index, value, role=Qt.DisplayRole):
-        """
-        Set data at the specified index with the given value.
-
-        Parameters
-        ----------
-        index : QModelIndex
-            The index where the data will be set.
-        value : Any
-            The new value to be set at the specified index.
-        role : int, optional
-            The role of the data. Default is Qt.DisplayRole.
-        """
-        if index.isValid():
-            row = self._dataFrame.index[index.row()]
-            col = self._dataFrame.columns[index.column()]
-            self._dataFrame.at[row, col] = value
-            self.dataChanged.emit(index, index, [role])
 
 
 class RemoteDevicesListView(QListView):

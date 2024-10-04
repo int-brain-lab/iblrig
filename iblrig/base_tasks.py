@@ -1215,7 +1215,7 @@ class NetworkSession(BaseSession):
         if isinstance(remote_rigs, list):
             # For now we flatten to list of remote rig names but could permit list of (name, URI) tuples
             remote_rigs = list(filter(None, flatten(remote_rigs)))
-            all_remote_rigs = net.get_remote_devices(iblrig_settings=kwargs.get('iblrig_settings', None))
+            all_remote_rigs = net.get_remote_devices(iblrig_settings=kwargs.get('iblrig_settings'))
             if not set(remote_rigs).issubset(all_remote_rigs.keys()):
                 raise ValueError('Selected remote rigs not in remote rigs list')
             remote_rigs = {k: v for k, v in all_remote_rigs.items() if k in remote_rigs}

@@ -6,6 +6,9 @@ from datetime import datetime
 from pathlib import Path
 from unittest import mock
 
+from packaging import version
+
+import ibllib
 import iblrig.commands
 import iblrig.path_helper
 import iblrig.raw_data_loaders
@@ -226,6 +229,52 @@ class TestIntegrationTransferExperiments(unittest.TestCase):
         final_experiment_description = session_params.read_params(ic.remote_session_path)
         self.assertEqual(1, len(final_experiment_description['tasks']))
         self.assertEqual(set(final_experiment_description['devices']['cameras'].keys()), {'left'})
+        self.assertEqual(set(final_experiment_description['sync'].keys()), {'nidq'})
+
+    # Requires recent change to ibllib test fixture code supporting no probe ephys recording files
+    @unittest.skipIf(version.parse(ibllib.__version__) < version.parse('2.39'), 'ibllib < 2.39')
+    def test_ephys_no_probe(self):
+        """Test copying a session at ephys rig when no probes were used (DAQ only)."""
+        # First create a behavior session
+        task_kwargs = copy.deepcopy(self.session_kwargs)
+        task_kwargs['hardware_settings'].update(
+            {
+                'device_cameras': None,
+                'MAIN_SYNC': False,  # this is quite important for ephys sessions
+            }
+        )
+        session = _create_behavior_session(kwargs=task_kwargs, ntrials=50)
+        folder_session_ephys = Path(self.td.name).joinpath('ephys', 'Subjects', *session.paths.SESSION_FOLDER.parts[-3:])
+
+        # Create an ephys acquisition
+        n_probes = 0
+        # SpikeGLX then saves these files into the session folder
+        populate_raw_spikeglx(folder_session_ephys, model='3B', n_probes=n_probes)
+
+        # Test the copiers
+        sc = BehaviorCopier(session_path=session.paths.SESSION_FOLDER, remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER)
+        self.assertEqual('.status_pending', sc.glob_file_remote_copy_status().suffix)
+        self.assertEqual(1, sc.state)
+        sc.copy_collections()
+        self.assertEqual(2, sc.state)
+        self.assertEqual('.status_complete', sc.glob_file_remote_copy_status().suffix)
+        sc.copy_collections()
+        self.assertEqual(2, sc.state)
+        sc.finalize_copy(number_of_expected_devices=None)
+        self.assertEqual(2, sc.state)  # here we still don't have all devices so we stay in state 2
+
+        ec = EphysCopier(session_path=folder_session_ephys, remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER)
+        self.assertEqual(0, ec.state)
+        ec.initialize_experiment()
+        self.assertEqual(1, ec.state)
+        self.assertIn('sync', ec.experiment_description)
+        ec.copy_collections()
+        self.assertEqual(2, ec.state)
+        # this time it's all there and we move on
+        ec.finalize_copy(number_of_expected_devices=None)
+        self.assertEqual(3, ec.state)
+        final_experiment_description = session_params.read_params(ec.remote_session_path)
+        self.assertEqual(1, len(final_experiment_description['tasks']))
         self.assertEqual(set(final_experiment_description['sync'].keys()), {'nidq'})
 
     def test_copy_snapshots(self):
