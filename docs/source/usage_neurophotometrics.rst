@@ -10,16 +10,18 @@ Setup
 - `settings/iblrig_settings.yaml` file is configured with the local folder and remote folder for the data transfer.
 - `settings/hardware_settings.yaml` file is configured with the neurophotometrics device
 
-.. code:: yaml
-    RIG_NAME: photometry
-    MAIN_SYNC: False
-    device_neurophotometrics:
-      BONSAI_WORKFLOW: devices/neurophotometrics/FP3002.bonsai
-      COM_NEUROPHOTOMETRY: 'COM3'
+   .. code:: yaml
+      RIG_NAME: photometry
+      MAIN_SYNC: False
+      device_neurophotometrics:
+         DEVICE_MODEL: NP3002
+         BONSAI_EXECUTABLE: C:\Users\IBLuser\AppData\Local\Bonsai\Bonsai.exe
+         BONSAI_WORKFLOW: devices\neurophotometrics\FP3002.bonsai
+         COM_NEUROPHOTOMETRY: COM3
 
 
-Starting a task
----------------
+Starting a photometry recording
+--------------------------------
 
 - Start the Bonsai workflow by running the following command in powershell:
 .. code:: powershell
@@ -30,9 +32,22 @@ Starting a task
 - in Bonsai click on the FP3002 node and load the desired photometry settings file
 - start the task
 
-The task will start and the photometry data will be saved in the data local folder with the following stucture:
+The photometry recording will start and the photometry data will be saved in the data local folder with the following stucture:
 - {local_data_folder}\neurophotometrics\yyyy-mm-dd\THHMMSS
 Where yyyy-mm-dd is the date of the recording and HHMMSS is the time of the recording.
+
+
+
+Starting a photometry session
+--------------------------------
+
+- Start the Bonsai workflow by running the following command in powershell:
+.. code:: powershell
+
+   cd C:\iblrigv8\
+   venv\scripts\Activate.ps1
+   start_photometry_session --subject=Mickey --roi G0 G1 --location NBM SI
+
 
 
 Copy command

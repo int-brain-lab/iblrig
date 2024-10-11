@@ -17,7 +17,7 @@ def start_workflow(debug=False, ):
     # TODO docstring
     # format the current date and time as a standard string
     hardware_settings: HardwareSettings = iblrig.path_helper.load_pydantic_yaml(HardwareSettings)
-    settings = hardware_settings['device_neurophotometrics']
+    settings = hardware_settings.device_neurophotometrics
     datestr = datetime.datetime.now().strftime('%Y-%m-%d')
     timestr = datetime.datetime.now().strftime('T%H%M%S')
     dict_paths = iblrig.path_helper.get_local_and_remote_paths()
@@ -39,6 +39,7 @@ def start_workflow(debug=False, ):
         start=False,
     )
     # TODO we call the init sessions here
+
 
 def init_neurophotometrics_session():
     # TODO this needs to link the session (subject/date/number) to a photometry recording
