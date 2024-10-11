@@ -63,6 +63,7 @@ install_pyspin      = "iblrig.video:install_pyspin"
 start_video_session = "iblrig.video:prepare_video_session_cmd"
 start_ephys_session = "iblrig.ephys:prepare_ephys_session_cmd"
 start_neurophotometrics = 'iblrig.neurophotometrics:start_workflow_cmd'
+start_photometry_task = 'iblrig.neurophotometrics:start_photometry_task_cmd'
 convert_uis         = "iblrig.gui.tools:convert_uis"
 validate_iblrig     = "iblrig.hardware_validation:run_all_validators_cli"
 validate_video      = "iblrig.video:validate_video_cmd"

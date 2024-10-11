@@ -2,10 +2,9 @@ import argparse
 import datetime
 import logging
 from collections.abc import Iterable
-from pathlib import Path
 
-import iblrig
 import iblrig.path_helper
+from iblrig.constants import BASE_PATH
 from iblrig.pydantic_definitions import HardwareSettings
 from iblrig.tools import call_bonsai
 from iblutil.util import setup_logger
@@ -13,8 +12,10 @@ from iblutil.util import setup_logger
 _logger = logging.getLogger(__name__)
 
 
-def start_workflow(subject: str, rois: Iterable[str], locations: Iterable[str], debug: bool = False):
-    # TODO docstring
+def start_workflow_cmd(debug: bool = False):
+    """
+    Start a photometry recording regardless of behaviour.
+    """
     # format the current date and time as a standard string
     hardware_settings: HardwareSettings = iblrig.path_helper.load_pydantic_yaml(HardwareSettings)
     settings = hardware_settings.device_neurophotometrics
@@ -29,19 +30,16 @@ def start_workflow(subject: str, rois: Iterable[str], locations: Iterable[str], 
     }
     _logger.info(f'Creating folder for neurophotometrics data: {folder_neurophotometrics}')
     folder_neurophotometrics.mkdir(parents=True, exist_ok=True)
-
-    workflow_file = Path(iblrig.__file__).parents[1].joinpath(settings.BONSAI_WORKFLOW)
-
+    workflow_file = BASE_PATH.joinpath(settings.BONSAI_WORKFLOW)
     call_bonsai(
         workflow_file=workflow_file,
         parameters=bonsai_params,
-        bonsai_executable=Path(Path.home().joinpath(r'AppData\Local\Bonsai\Bonsai.exe')),
+        bonsai_executable=settings.BONSAI_EXECUTABLE,
         start=False,
     )
-    # TODO we call the init sessions here
 
 
-def init_neurophotometrics_session():
+def init_neurophotometrics_session(subject: str, rois: Iterable[str], locations: Iterable[str], sync_channel: int = 1):
     # TODO this needs to link the session (subject/date/number) to a photometry recording
     # this means
     # 1) link from one session to possibly several regions (ie. columns of the datafile)
@@ -61,9 +59,10 @@ def init_neurophotometrics_session():
     pass
 
 
-def start_workflow_cmd():
+def start_photometry_task_cmd():
     """
-    Command line interface for preparing a neurophotometrics session on the photometry computer
+    Command line interface for preparing a neurophotometrics session on the photometry computer.
+    start_photometry_recording -s Algernon --rois G0 G1 --locations
     :return:
     """
     parser = argparse.ArgumentParser(
@@ -79,12 +78,13 @@ def start_workflow_cmd():
         nargs='+',
         type=str,
         required=True,
-        help='Location of Fiber(s). Separate multiple values by spaces.',
+        help='Location of Fiber(s). Separate multiple values by spaces. Usually Allen brain acronyms.',
     )
     parser.add_argument('-d', '--debug', action='store_true', help='Enable debugging mode')
+    parser.add_argument('-c', '--sync-channel', type=int, default=1, help='Sync channel')
     args = parser.parse_args()
 
     assert len(args.roi) == len(args.location), 'The number of ROIs and locations must be the same.'
 
     setup_logger(name='iblrig', level='DEBUG' if args.debug else 'INFO')
-    start_workflow(subject=args.subject, rois=args.roi, locations=args.location, debug=args.debug)
+    init_neurophotometrics_session(subject=args.subject, rois=args.roi, locations=args.location, sync_channel=args.sync_channel)
