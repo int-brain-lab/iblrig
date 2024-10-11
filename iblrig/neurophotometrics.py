@@ -1,19 +1,19 @@
 import argparse
 import datetime
 import logging
+from collections.abc import Iterable
 from pathlib import Path
 
-from iblutil.util import setup_logger, rrmdir
 import iblrig
-from iblrig.tools import call_bonsai
 import iblrig.path_helper
-
 from iblrig.pydantic_definitions import HardwareSettings
+from iblrig.tools import call_bonsai
+from iblutil.util import setup_logger
 
 _logger = logging.getLogger(__name__)
 
 
-def start_workflow(debug=False, ):
+def start_workflow(subject: str, rois: Iterable[str], locations: Iterable[str], debug: bool = False):
     # TODO docstring
     # format the current date and time as a standard string
     hardware_settings: HardwareSettings = iblrig.path_helper.load_pydantic_yaml(HardwareSettings)
@@ -35,7 +35,7 @@ def start_workflow(debug=False, ):
     call_bonsai(
         workflow_file=workflow_file,
         parameters=bonsai_params,
-        bonsai_executable=Path(Path.home().joinpath(r"AppData\Local\Bonsai\Bonsai.exe")),
+        bonsai_executable=Path(Path.home().joinpath(r'AppData\Local\Bonsai\Bonsai.exe')),
         start=False,
     )
     # TODO we call the init sessions here
@@ -43,7 +43,7 @@ def start_workflow(debug=False, ):
 
 def init_neurophotometrics_session():
     # TODO this needs to link the session (subject/date/number) to a photometry recording
-    # this means 
+    # this means
     # 1) link from one session to possibly several regions (ie. columns of the datafile)
     # 2) link one session to a digital input number
     # we use a single entry point for both modes of acquisition (ie. with or without a daq)
@@ -66,9 +66,25 @@ def start_workflow_cmd():
     Command line interface for preparing a neurophotometrics session on the photometry computer
     :return:
     """
-    parser = argparse.ArgumentParser(prog='start_photometry_recording',
-                                     description='Prepare photometry computer PC for recording session.')
-    parser.add_argument('--debug', action='store_true', help='enable debugging mode')
+    parser = argparse.ArgumentParser(
+        prog='start_photometry_recording', description='Prepare photometry computer PC for recording session.'
+    )
+    parser.add_argument('-s', '--subject', type=str, required=True, help='Subject name')
+    parser.add_argument(
+        '-r', '--rois', nargs='+', type=str, required=True, help='Define ROI(s). Separate multiple values by spaces.'
+    )
+    parser.add_argument(
+        '-l',
+        '--locations',
+        nargs='+',
+        type=str,
+        required=True,
+        help='Location of Fiber(s). Separate multiple values by spaces.',
+    )
+    parser.add_argument('-d', '--debug', action='store_true', help='Enable debugging mode')
     args = parser.parse_args()
+
+    assert len(args.roi) == len(args.location), 'The number of ROIs and locations must be the same.'
+
     setup_logger(name='iblrig', level='DEBUG' if args.debug else 'INFO')
-    start_workflow(debug=args.debug)
+    start_workflow(subject=args.subject, rois=args.roi, locations=args.location, debug=args.debug)
