@@ -12,24 +12,24 @@
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="p1:FP3002">
           <p1:AcquisitionMode>StartPhotometry</p1:AcquisitionMode>
-          <p1:PortName>COM3</p1:PortName>
+          <p1:PortName>COM4</p1:PortName>
           <p1:Regions>
             <p1:PhotometryRegion>
               <p1:Index>0</p1:Index>
               <p1:Channel>Green</p1:Channel>
               <p1:Rectangle>
                 <p1:Location>
-                  <p1:X>928</p1:X>
-                  <p1:Y>224</p1:Y>
+                  <p1:X>824</p1:X>
+                  <p1:Y>492</p1:Y>
                 </p1:Location>
                 <p1:Size>
-                  <p1:Width>194</p1:Width>
-                  <p1:Height>194</p1:Height>
+                  <p1:Width>166</p1:Width>
+                  <p1:Height>180</p1:Height>
                 </p1:Size>
-                <p1:X>928</p1:X>
-                <p1:Y>224</p1:Y>
-                <p1:Width>194</p1:Width>
-                <p1:Height>194</p1:Height>
+                <p1:X>824</p1:X>
+                <p1:Y>492</p1:Y>
+                <p1:Width>166</p1:Width>
+                <p1:Height>180</p1:Height>
               </p1:Rectangle>
               <p1:Name>G0</p1:Name>
             </p1:PhotometryRegion>
@@ -38,19 +38,57 @@
               <p1:Channel>Green</p1:Channel>
               <p1:Rectangle>
                 <p1:Location>
-                  <p1:X>900</p1:X>
-                  <p1:Y>417</p1:Y>
+                  <p1:X>703</p1:X>
+                  <p1:Y>353</p1:Y>
                 </p1:Location>
                 <p1:Size>
-                  <p1:Width>194</p1:Width>
-                  <p1:Height>188</p1:Height>
+                  <p1:Width>154</p1:Width>
+                  <p1:Height>180</p1:Height>
                 </p1:Size>
-                <p1:X>900</p1:X>
-                <p1:Y>417</p1:Y>
-                <p1:Width>194</p1:Width>
-                <p1:Height>188</p1:Height>
+                <p1:X>703</p1:X>
+                <p1:Y>353</p1:Y>
+                <p1:Width>154</p1:Width>
+                <p1:Height>180</p1:Height>
               </p1:Rectangle>
               <p1:Name>G1</p1:Name>
+            </p1:PhotometryRegion>
+            <p1:PhotometryRegion>
+              <p1:Index>2</p1:Index>
+              <p1:Channel>Green</p1:Channel>
+              <p1:Rectangle>
+                <p1:Location>
+                  <p1:X>943</p1:X>
+                  <p1:Y>134</p1:Y>
+                </p1:Location>
+                <p1:Size>
+                  <p1:Width>180</p1:Width>
+                  <p1:Height>176</p1:Height>
+                </p1:Size>
+                <p1:X>943</p1:X>
+                <p1:Y>134</p1:Y>
+                <p1:Width>180</p1:Width>
+                <p1:Height>176</p1:Height>
+              </p1:Rectangle>
+              <p1:Name>G2</p1:Name>
+            </p1:PhotometryRegion>
+            <p1:PhotometryRegion>
+              <p1:Index>3</p1:Index>
+              <p1:Channel>Green</p1:Channel>
+              <p1:Rectangle>
+                <p1:Location>
+                  <p1:X>767</p1:X>
+                  <p1:Y>180</p1:Y>
+                </p1:Location>
+                <p1:Size>
+                  <p1:Width>176</p1:Width>
+                  <p1:Height>182</p1:Height>
+                </p1:Size>
+                <p1:X>767</p1:X>
+                <p1:Y>180</p1:Y>
+                <p1:Width>176</p1:Width>
+                <p1:Height>182</p1:Height>
+              </p1:Rectangle>
+              <p1:Name>G3</p1:Name>
             </p1:PhotometryRegion>
           </p1:Regions>
         </Combinator>
@@ -66,7 +104,7 @@
           <p1:IncludeRegions>false</p1:IncludeRegions>
           <p1:IncludePlots>false</p1:IncludePlots>
           <p1:IncludeVideo>false</p1:IncludeVideo>
-          <p1:FileName>D:\iblrigv8_data\neurophotometrics\2024-06-25\T115602\raw_photometry.csv</p1:FileName>
+          <p1:FileName>D:\iblrigv8_data\neurophotometrics\2024-10-10\T142948\raw_photometry.csv</p1:FileName>
           <p1:Suffix>None</p1:Suffix>
         </Combinator>
       </Expression>
@@ -82,7 +120,7 @@
         <Property Name="FileName" DisplayName="FileNameDigitalInput" />
       </Expression>
       <Expression xsi:type="io:CsvWriter">
-        <io:FileName>D:\iblrigv8_data\neurophotometrics\2024-06-25\T114558\digitial_input_1.csv</io:FileName>
+        <io:FileName>D:\iblrigv8_data\neurophotometrics\2024-10-10\T142948\digital_inputs.csv</io:FileName>
         <io:Append>false</io:Append>
         <io:Overwrite>false</io:Overwrite>
         <io:Suffix>None</io:Suffix>
