@@ -206,9 +206,9 @@ class Bpod(BpodIO):
     def get_ambient_sensor_reading(self):
         if self.ambient_module is None:
             return {
-                'Temperature_C': np.NaN,
-                'AirPressure_mb': np.NaN,
-                'RelativeHumidity': np.NaN,
+                'Temperature_C': np.nan,
+                'AirPressure_mb': np.nan,
+                'RelativeHumidity': np.nan,
             }
         self.ambient_module.start_module_relay()
         self.bpod_modules.module_write(self.ambient_module, 'R')
