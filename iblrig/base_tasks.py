@@ -20,12 +20,14 @@ from abc import ABC, abstractmethod
 from collections import OrderedDict
 from collections.abc import Callable
 from pathlib import Path
-from typing import Protocol, final
+from typing import Protocol, final, Any
 
 import numpy as np
 import pandas as pd
 import serial
 import yaml
+from pydantic import create_model
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from pythonosc import udp_client
 
 import ibllib.io.session_params as ses_params
@@ -57,7 +59,6 @@ log = logging.getLogger(__name__)
 
 class HasBpod(Protocol):
     bpod: Bpod
-
 
 class BaseSession(ABC):
     version = None
@@ -668,6 +669,15 @@ class BaseSession(ABC):
         """
         parser = argparse.ArgumentParser(add_help=False)
         return parser
+
+    @staticmethod
+    def get_settings_model() -> type[BaseSettings]:
+        config = SettingsConfigDict(cli_parse_args=True)
+        return create_model('Test', __base__=BaseSettings, __cls_kwargs__={'cli_parse_args': True})
+
+    @classmethod
+    def get_settings_dict(cls) -> dict[str, Any]:
+        return cls.get_settings_model()().model_dump()
 
 
 # this class gets called to get the path constructor utility to predict the session path

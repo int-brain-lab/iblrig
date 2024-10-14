@@ -13,7 +13,8 @@ from typing import Annotated, Any
 import numpy as np
 import pandas as pd
 from annotated_types import Interval, IsNan
-from pydantic import NonNegativeFloat, NonNegativeInt
+from pydantic import NonNegativeFloat, NonNegativeInt, create_model, Field
+from pydantic_settings import BaseSettings
 
 import iblrig.base_tasks
 import iblrig.graphic
@@ -158,6 +159,19 @@ class ChoiceWorldSession(
             help='specify one of the remote rigs to interact with over the network',
         )
         return parser
+
+    @staticmethod
+    def get_settings_model() -> type[BaseSettings]:
+        SuperSettings = super(ChoiceWorldSession, ChoiceWorldSession).get_settings_model()
+        return create_model(
+            SuperSettings.__name__,
+            delay_secs=(int, Field(description='initial delay before starting the first trial', default=0)),
+            remote_rigs=(
+                list[str] | None,
+                Field(description='remote rigs to interact with over the network', default=None),
+            ),
+            __base__=SuperSettings,
+        )
 
     def start_hardware(self):
         """

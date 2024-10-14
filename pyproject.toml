@@ -43,6 +43,7 @@ dependencies = [
     "scipy>=1.14.0",
     "sounddevice>=0.5.0",
     "iblqt>=0.1.1",
+    "pydantic-settings>=2.5.2",
 ]
 [project.optional-dependencies]
 project-extraction = [
