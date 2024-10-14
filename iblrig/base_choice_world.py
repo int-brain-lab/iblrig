@@ -130,9 +130,9 @@ class ChoiceWorldSession(
         self.trials_table = self.TrialDataModel.preallocate_dataframe(NTRIALS_INIT)
         self.ambient_sensor_table = pd.DataFrame(
             {
-                'Temperature_C': np.zeros(NTRIALS_INIT) * np.NaN,
-                'AirPressure_mb': np.zeros(NTRIALS_INIT) * np.NaN,
-                'RelativeHumidity': np.zeros(NTRIALS_INIT) * np.NaN,
+                'Temperature_C': np.zeros(NTRIALS_INIT) * np.nan,
+                'AirPressure_mb': np.zeros(NTRIALS_INIT) * np.nan,
+                'RelativeHumidity': np.zeros(NTRIALS_INIT) * np.nan,
             }
         )
 
@@ -771,7 +771,7 @@ class ActiveChoiceWorldSession(ChoiceWorldSession):
         self.trials_table.at[self.trial_num, 'response_time'] = response_time
         # get the trial outcome
         state_names = ['correct', 'error', 'no_go', 'omit_correct', 'omit_error', 'omit_no_go']
-        raw_outcome = {sn: ~np.isnan(bpod_data['States timestamps'].get(sn, [[np.NaN]])[0][0]) for sn in state_names}
+        raw_outcome = {sn: ~np.isnan(bpod_data['States timestamps'].get(sn, [[np.nan]])[0][0]) for sn in state_names}
         try:
             outcome = next(k for k in raw_outcome if raw_outcome[k])
             # Update response buffer -1 for left, 0 for nogo, and 1 for rightward
@@ -820,7 +820,7 @@ class BiasedChoiceWorldSession(ActiveChoiceWorldSession):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.blocks_table = pd.DataFrame(
-            {'probability_left': np.zeros(NBLOCKS_INIT) * np.NaN, 'block_length': np.zeros(NBLOCKS_INIT, dtype=np.int16) * -1}
+            {'probability_left': np.zeros(NBLOCKS_INIT) * np.nan, 'block_length': np.zeros(NBLOCKS_INIT, dtype=np.int16) * -1}
         )
 
     def new_block(self):
