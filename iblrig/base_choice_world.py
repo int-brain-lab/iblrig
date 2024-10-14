@@ -135,7 +135,6 @@ class ChoiceWorldSession(
                 'RelativeHumidity': np.zeros(NTRIALS_INIT) * np.nan,
             }
         )
-        self.settings = ChoiceWorldSettings()
 
     @staticmethod
     def extra_parser():
