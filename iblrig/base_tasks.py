@@ -20,13 +20,13 @@ from abc import ABC, abstractmethod
 from collections import OrderedDict
 from collections.abc import Callable
 from pathlib import Path
-from typing import Protocol, final, Any
+from typing import Protocol, final, Any, Literal
 
 import numpy as np
 import pandas as pd
 import serial
 import yaml
-from pydantic import create_model
+from pydantic import create_model, Field, AliasChoices, AliasPath, FilePath
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pythonosc import udp_client
 
@@ -60,6 +60,37 @@ log = logging.getLogger(__name__)
 class HasBpod(Protocol):
     bpod: Bpod
 
+
+class BaseParameters(BaseSettings):
+    """Parameters for abstract :class:`~.iblrig.base_tasks.BaseSession`"""
+
+    model_config = SettingsConfigDict(
+        cli_parse_args=True,
+        cli_hide_none_type=True,
+        cli_use_class_docs_for_groups=False,
+        cli_implicit_flags=True,
+        env_prefix='iblrig_session',
+        cli_ignore_unknown_args=True,
+    )
+    subject: str = Field(description='name of the subject', validation_alias=AliasChoices('s', 'subject'))
+    subject_weight_grams: float = Field(description='subject weight in grams', validation_alias=AliasChoices('w', 'weight'))
+    append: bool = Field(description='append to previous session', default=False)
+    projects: list[str] | None = Field(description='optional list of projects', default=None)
+    procedures: list[str] | None = Field(description='optional list of procedures', default=None)
+    # hardware_settings: HardwareSettings = None,
+    # iblrig_settings: RigSettings = None,
+    # one = None,
+    interactive: bool = Field(default=True, description='interactive mode')
+    wizard: bool = Field(default=False, description='wizard mode')
+    stub: FilePath | None = Field(description='path to an experiment description file', default=None)
+    task_parameter_file: FilePath | None = Field(description='path to parameter file', default=None)
+    file_hardware_settings: FilePath | None = Field(description='path to hardware settings file', default=None)
+    file_iblrig_settings: FilePath | None = Field(description='path to rig settings file', default=None)
+    log_level: int | Literal['NOTSET', 'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'] = Field(
+        description='log level', default='INFO'
+    )
+
+
 class BaseSession(ABC):
     version = None
     """str: !!CURRENTLY UNUSED!! task version string."""
@@ -77,6 +108,8 @@ class BaseSession(ABC):
     """list of str: An optional list of pipeline task class names to instantiate when preprocessing task data."""
 
     TrialDataModel: type[TrialDataModel]
+    ParameterModel: type[BaseParameters] = BaseParameters
+    parameters: BaseParameters
 
     @property
     @abstractmethod
@@ -84,22 +117,23 @@ class BaseSession(ABC):
 
     def __init__(
         self,
-        subject=None,
-        task_parameter_file=None,
-        file_hardware_settings=None,
-        hardware_settings: HardwareSettings = None,
-        file_iblrig_settings=None,
-        iblrig_settings: RigSettings = None,
-        one=None,
-        interactive=True,
-        projects=None,
-        procedures=None,
-        stub=None,
-        subject_weight_grams=None,
-        append=False,
-        wizard=False,
-        log_level='INFO',
         **kwargs,
+        # subject=None,
+        # task_parameter_file=None,
+        # file_hardware_settings=None,
+        # hardware_settings: HardwareSettings = None,
+        # file_iblrig_settings=None,
+        # iblrig_settings: RigSettings = None,
+        # one=None,
+        # interactive=True,
+        # projects=None,
+        # procedures=None,
+        # stub=None,
+        # subject_weight_grams=None,
+        # append=False,
+        # wizard=False,
+        # log_level='INFO',
+        # **kwargs,
     ):
         """
         :param subject: The subject nickname. Required.
@@ -116,6 +150,9 @@ class BaseSession(ABC):
         :param stub: A full path to an experiment description file containing experiment information.
         :param append: bool, if True, append to the latest existing session of the same subject for the same day
         """
+        # self.parameters = self.ParameterModel(**kwargs)
+        pass
+
         self.extractor_tasks = getattr(self, 'extractor_tasks', None)
         self._logger = None
         self._setup_loggers(level=log_level)
@@ -318,7 +355,7 @@ class BaseSession(ABC):
             return None
         return self.one.dict2ref(dict(subject=subject, date=date[:10], sequence=str(number)))
 
-    def _setup_loggers(self, level='INFO', level_bpod='WARNING', file=None):
+    def _setup_loggers(self, level: int | str = 'INFO', level_bpod: int | str = ' WARNING', file: str | Path = None):
         self._logger = setup_logger('iblrig', level=level, file=file)  # logger attr used by create_session to determine log level
         setup_logger('pybpodapi', level=level_bpod, file=file)
 
@@ -670,14 +707,9 @@ class BaseSession(ABC):
         parser = argparse.ArgumentParser(add_help=False)
         return parser
 
-    @staticmethod
-    def get_settings_model() -> type[BaseSettings]:
-        config = SettingsConfigDict(cli_parse_args=True)
-        return create_model('Test', __base__=BaseSettings, __cls_kwargs__={'cli_parse_args': True})
-
     @classmethod
-    def get_settings_dict(cls) -> dict[str, Any]:
-        return cls.get_settings_model()().model_dump()
+    def get_kwargs(cls) -> dict[str, Any]:
+        return cls.ParameterModel().model_dump()
 
 
 # this class gets called to get the path constructor utility to predict the session path

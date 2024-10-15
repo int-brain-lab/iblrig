@@ -8,12 +8,17 @@ repo change over time.
 
 import argparse
 import datetime
+import inspect
 import logging
+import sys
 from collections.abc import Sequence
+from importlib.util import spec_from_file_location, module_from_spec
 from pathlib import Path
 from typing import Literal
 
 import numpy as np
+
+from iblrig.base_tasks import BaseSession
 
 FLAG_FILE_NAMES = ['transfer_me.flag', 'create_me.flag', 'poop_count.flag', 'passive_data_for_ephys.flag']
 
@@ -86,15 +91,44 @@ def _post_parse_arguments(**kwargs):
 
 def get_task_arguments(parents: Sequence[argparse.ArgumentParser] = None):
     """
-    Parse input to run the tasks. All the variables are fed to the Session instance
+    Parse input to run the tasks.
+
+    All the variables are fed to the Session instance
     task.py -s subject_name -p projects_name -c procedures_name --no-interactive
-    :param extra_args: list of dictionaries of additional argparse arguments to add to the parser
-        For example, to add a new toto and titi arguments, use:
+
+    Parameters
+    ----------
+    parents : Sequence[argparse.ArgumentParser]
+        list of dictionaries of additional argparse arguments to add to the parser
+
+    Examples
+    --------
+        to add a new toto and titi arguments, use:
         get_task_arguments({'--toto', type=str, default='toto'}, {'--titi', action='store_true', default=False})
+
     :return:
     """
+
+    #
+    argv = sys.argv
+
+    # try to determine the task class
+    source_path = Path(argv.pop(0))
+    spec = spec_from_file_location(source_path.stem, source_path)
+    module = module_from_spec(spec)
+    spec.loader.exec_module(module)
+    classes = [obj for _, obj in inspect.getmembers(module, inspect.isclass) if issubclass(obj, BaseSession)]
+    task = max(classes, key=lambda obj: len(obj.__mro__))
+
+    # let's first get the arguments from argparse (deprecated)
     parser = get_task_argument_parser(parents=parents)
-    kwargs = vars(parser.parse_args())
+    known, unknown = parser.parse_known_args(argv)
+    kwargs_argparse = vars(known)
+
+    # now we see if there's something remaining to be parsed through the task's ParameterModel
+    task.ParameterModel(unknown)
+
+
     return _post_parse_arguments(**kwargs)
 
 
