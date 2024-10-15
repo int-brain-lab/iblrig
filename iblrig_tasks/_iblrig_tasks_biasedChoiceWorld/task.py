@@ -6,7 +6,7 @@ class Session(BiasedChoiceWorldSession): ...
 
 
 if __name__ == '__main__':  # pragma: no cover
-    # settings = BiasedChoiceWorldSession.get_settings_dict()
+    # kwargs = BiasedChoiceWorldSession.ParameterModel().model_dump()
     kwargs = iblrig.misc.get_task_arguments(parents=[Session.extra_parser()])
-    # sess = Session(**kwargs)
+    sess = Session(**kwargs)
     # sess.run()

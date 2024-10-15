@@ -15,6 +15,7 @@ from collections.abc import Sequence
 from importlib.util import spec_from_file_location, module_from_spec
 from pathlib import Path
 from typing import Literal
+from warnings import warn
 
 import numpy as np
 
@@ -32,36 +33,36 @@ def get_task_argument_parser(parents: Sequence[argparse.ArgumentParser] = None):
     This function is kept separate from parsing for purposes of unit testing.
     """
     parser = argparse.ArgumentParser(parents=parents or [])
-    parser.add_argument('-s', '--subject', required=True, help='Subject name')
-    parser.add_argument('-u', '--user', required=False, default=None, help='Alyx username to register the session')
-    parser.add_argument(
-        '-p',
-        '--projects',
-        nargs='+',
-        default=[],
-        help="project name(s), something like 'psychedelics' or 'ibl_neuropixel_brainwide_01'; if specify "
-        'multiple projects, use a space to separate them',
-    )
-    parser.add_argument(
-        '-c',
-        '--procedures',
-        nargs='+',
-        default=[],
-        help="long description of what is occurring, something like 'Ephys recording with acute probe(s)'; "
-        'be sure to use the double quote characters to encapsulate the description and a space to separate '
-        'multiple procedures',
-    )
-    parser.add_argument('-w', '--weight', type=float, dest='subject_weight_grams', required=False, default=None)
-    parser.add_argument('--no-interactive', dest='interactive', action='store_false')
-    parser.add_argument('--append', dest='append', action='store_true')
-    parser.add_argument('--stub', type=Path, help='Path to _ibl_experiment.description.yaml stub file.')
-    parser.add_argument(
-        '--log-level',
-        default='INFO',
-        help='verbosity of the console logger (default: INFO)',
-        choices=['NOTSET', 'DEBUG', 'INFO', 'WARN', 'ERROR', 'CRITICAL'],
-    )
-    parser.add_argument('--wizard', dest='wizard', action='store_true', help=argparse.SUPPRESS)
+    # parser.add_argument('-s', '--subject', required=True, help='Subject name')
+    # parser.add_argument('-u', '--user', required=False, default=None, help='Alyx username to register the session')
+    # parser.add_argument(
+    #     '-p',
+    #     '--projects',
+    #     nargs='+',
+    #     default=[],
+    #     help="project name(s), something like 'psychedelics' or 'ibl_neuropixel_brainwide_01'; if specify "
+    #     'multiple projects, use a space to separate them',
+    # )
+    # parser.add_argument(
+    #     '-c',
+    #     '--procedures',
+    #     nargs='+',
+    #     default=[],
+    #     help="long description of what is occurring, something like 'Ephys recording with acute probe(s)'; "
+    #     'be sure to use the double quote characters to encapsulate the description and a space to separate '
+    #     'multiple procedures',
+    # )
+    # parser.add_argument('-w', '--weight', type=float, dest='subject_weight_grams', required=False, default=None)
+    # parser.add_argument('--no-interactive', dest='interactive', action='store_false')
+    # parser.add_argument('--append', dest='append', action='store_true')
+    # parser.add_argument('--stub', type=Path, help='Path to _ibl_experiment.description.yaml stub file.')
+    # parser.add_argument(
+    #     '--log-level',
+    #     default='INFO',
+    #     help='verbosity of the console logger (default: INFO)',
+    #     choices=['NOTSET', 'DEBUG', 'INFO', 'WARN', 'ERROR', 'CRITICAL'],
+    # )
+    # parser.add_argument('--wizard', dest='wizard', action='store_true', help=argparse.SUPPRESS)
     return parser
 
 
@@ -83,7 +84,7 @@ def _post_parse_arguments(**kwargs):
         Keyword arguments passed to argparse.ArgumentParser.
     """
     # override the settings file value if the user is specified
-    user = kwargs.pop('user')
+    user = kwargs.pop('user', None)
     if user is not None:
         kwargs['iblrig_settings'] = {'ALYX_USER': user}
     return kwargs
@@ -109,26 +110,30 @@ def get_task_arguments(parents: Sequence[argparse.ArgumentParser] = None):
     :return:
     """
 
-    #
-    argv = sys.argv
+    # this function is horrible and needs to disappear, never to see the light of day again
+    warn('get_task_arguments() is deprecated.', DeprecationWarning, stacklevel=2)
 
-    # try to determine the task class
-    source_path = Path(argv.pop(0))
-    spec = spec_from_file_location(source_path.stem, source_path)
-    module = module_from_spec(spec)
-    spec.loader.exec_module(module)
-    classes = [obj for _, obj in inspect.getmembers(module, inspect.isclass) if issubclass(obj, BaseSession)]
-    task = max(classes, key=lambda obj: len(obj.__mro__))
+    # get script path and CLI args
+    script_name, *cli_args = sys.argv.copy()
+    source_path = Path(script_name).resolve()
 
-    # let's first get the arguments from argparse (deprecated)
+    # let's first get the arguments from argparse (the old way of doing things)
     parser = get_task_argument_parser(parents=parents)
-    known, unknown = parser.parse_known_args(argv)
-    kwargs_argparse = vars(known)
+    parsed_args, unparsed_args = parser.parse_known_args(cli_args)
+    kwargs = vars(parsed_args)
 
-    # now we see if there's something remaining to be parsed through the task's ParameterModel
-    task.ParameterModel(unknown)
+    # parse the remaining args through the task's ParameterModel (the new way of doing things)
+    if source_path.exists() and source_path.suffix == '.py':
+        spec = spec_from_file_location(source_path.stem, source_path)
+        module = module_from_spec(spec)
+        spec.loader.exec_module(module)
+        classes = [obj for _, obj in inspect.getmembers(module, inspect.isclass) if issubclass(obj, BaseSession)]
+        task = max(classes, key=lambda obj: len(obj.__mro__)) if len(classes) > 0 else None
+        if task is not None:
+            parameters = task.ParameterModel(_cli_parse_args=unparsed_args)
+            kwargs.update(parameters)
 
-
+    # return kwargs after jumbling things up a bit more
     return _post_parse_arguments(**kwargs)
 
 

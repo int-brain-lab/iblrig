@@ -72,8 +72,8 @@ class BaseParameters(BaseSettings):
         env_prefix='iblrig_session',
         cli_ignore_unknown_args=True,
     )
-    subject: str = Field(description='name of the subject', validation_alias=AliasChoices('s', 'subject'))
-    subject_weight_grams: float = Field(description='subject weight in grams', validation_alias=AliasChoices('w', 'weight'))
+    subject: str = Field(description='name of the subject', validation_alias=AliasChoices('subject', 's'))
+    subject_weight_grams: float = Field(description='subject weight in grams', validation_alias=AliasChoices('weight', 'w'))
     append: bool = Field(description='append to previous session', default=False)
     projects: list[str] | None = Field(description='optional list of projects', default=None)
     procedures: list[str] | None = Field(description='optional list of procedures', default=None)
@@ -150,12 +150,13 @@ class BaseSession(ABC):
         :param stub: A full path to an experiment description file containing experiment information.
         :param append: bool, if True, append to the latest existing session of the same subject for the same day
         """
-        # self.parameters = self.ParameterModel(**kwargs)
-        pass
+
+        # validate / store kwargs in ParameterModel
+        self.parameters = self.ParameterModel(**kwargs)
 
         self.extractor_tasks = getattr(self, 'extractor_tasks', None)
         self._logger = None
-        self._setup_loggers(level=log_level)
+        self._setup_loggers(level=self.parameters.log_level)
         if not isinstance(self, EmptySession):
             log.info(f'Running iblrig {iblrig.__version__}, pybpod version {pybpodapi.__version__}')
         log.info(f'Session call: {" ".join(sys.argv)}')
