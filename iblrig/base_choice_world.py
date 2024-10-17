@@ -479,6 +479,10 @@ class ChoiceWorldSession(
     def default_reward_amount(self):
         return self.task_params.REWARD_AMOUNT_UL
 
+    @property
+    def stimulus_gain(self) -> float:
+        return self.task_params.STIM_GAIN
+
     def draw_next_trial_info(self, pleft=0.5, **kwargs):
         """Draw next trial variables.
 
@@ -491,15 +495,12 @@ class ChoiceWorldSession(
         quiescent_period = self.task_params.QUIESCENT_PERIOD + misc.truncated_exponential(
             scale=0.35, min_value=0.2, max_value=0.5
         )
-        stim_gain = (
-            self.session_info.ADAPTIVE_GAIN_VALUE if self.task_params.get('ADAPTIVE_GAIN', False) else self.task_params.STIM_GAIN
-        )
         self.trials_table.at[self.trial_num, 'quiescent_period'] = quiescent_period
         self.trials_table.at[self.trial_num, 'contrast'] = contrast
         self.trials_table.at[self.trial_num, 'stim_phase'] = random.uniform(0, 2 * math.pi)
         self.trials_table.at[self.trial_num, 'stim_sigma'] = self.task_params.STIM_SIGMA
         self.trials_table.at[self.trial_num, 'stim_angle'] = self.task_params.STIM_ANGLE
-        self.trials_table.at[self.trial_num, 'stim_gain'] = stim_gain
+        self.trials_table.at[self.trial_num, 'stim_gain'] = self.stimulus_gain
         self.trials_table.at[self.trial_num, 'stim_freq'] = self.task_params.STIM_FREQ
         self.trials_table.at[self.trial_num, 'stim_reverse'] = self.task_params.STIM_REVERSE
         self.trials_table.at[self.trial_num, 'trial_num'] = self.trial_num
@@ -928,6 +929,10 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
     @property
     def default_reward_amount(self):
         return self.session_info.get('ADAPTIVE_REWARD_AMOUNT_UL', self.task_params.REWARD_AMOUNT_UL)
+
+    @property
+    def stimulus_gain(self) -> float:
+        return self.session_info.get('ADAPTIVE_GAIN_VALUE')
 
     def get_subject_training_info(self):
         """
