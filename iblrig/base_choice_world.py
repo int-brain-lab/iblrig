@@ -137,28 +137,29 @@ class ChoiceWorldSession(
             }
         )
 
-    @staticmethod
-    def extra_parser():
-        """:return: argparse.parser()"""
-        parser = super(ChoiceWorldSession, ChoiceWorldSession).extra_parser()
-        parser.add_argument(
-            '--delay_secs',
-            dest='delay_secs',
-            default=0,
-            type=int,
-            required=False,
-            help='initial delay before starting the first trial (default: 0s)',
-        )
-        parser.add_argument(
-            '--remote',
-            dest='remote_rigs',
-            type=str,
-            required=False,
-            action='append',
-            nargs='+',
-            help='specify one of the remote rigs to interact with over the network',
-        )
-        return parser
+    #
+    # @staticmethod
+    # def extra_parser():
+    #     """:return: argparse.parser()"""
+    #     parser = super(ChoiceWorldSession, ChoiceWorldSession).extra_parser()
+    #     parser.add_argument(
+    #         '--delay_secs',
+    #         dest='delay_secs',
+    #         default=0,
+    #         type=int,
+    #         required=False,
+    #         help='initial delay before starting the first trial (default: 0s)',
+    #     )
+    #     parser.add_argument(
+    #         '--remote',
+    #         dest='remote_rigs',
+    #         type=str,
+    #         required=False,
+    #         action='append',
+    #         nargs='+',
+    #         help='specify one of the remote rigs to interact with over the network',
+    #     )
+    #     return parser
 
     @staticmethod
     def get_settings_model() -> type[BaseSettings]:

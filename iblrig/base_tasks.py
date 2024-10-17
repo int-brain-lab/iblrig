@@ -61,8 +61,8 @@ class HasBpod(Protocol):
     bpod: Bpod
 
 
-class BaseParameters(BaseSettings):
-    """Parameters for abstract :class:`~.iblrig.base_tasks.BaseSession`"""
+class BaseKwargs(BaseSettings):
+    """Keyword arguments for abstract :class:`~.iblrig.base_tasks.BaseSession`"""
 
     model_config = SettingsConfigDict(
         cli_parse_args=True,
@@ -70,25 +70,21 @@ class BaseParameters(BaseSettings):
         cli_use_class_docs_for_groups=False,
         cli_implicit_flags=True,
         env_prefix='iblrig_session',
-        cli_ignore_unknown_args=True,
     )
     subject: str = Field(description='name of the subject', validation_alias=AliasChoices('subject', 's'))
     subject_weight_grams: float = Field(description='subject weight in grams', validation_alias=AliasChoices('weight', 'w'))
     append: bool = Field(description='append to previous session', default=False)
     projects: list[str] | None = Field(description='optional list of projects', default=None)
     procedures: list[str] | None = Field(description='optional list of procedures', default=None)
-    # hardware_settings: HardwareSettings = None,
-    # iblrig_settings: RigSettings = None,
-    # one = None,
-    interactive: bool = Field(default=True, description='interactive mode')
-    wizard: bool = Field(default=False, description='wizard mode')
+    interactive: bool = Field(default=True, description='interactive mode', env_prefix='APP_')
+    wizard: bool = Field(default=False, description='wizard mode', env_prefix='APP_')
     stub: FilePath | None = Field(description='path to an experiment description file', default=None)
     task_parameter_file: FilePath | None = Field(description='path to parameter file', default=None)
     file_hardware_settings: FilePath | None = Field(description='path to hardware settings file', default=None)
     file_iblrig_settings: FilePath | None = Field(description='path to rig settings file', default=None)
-    log_level: int | Literal['NOTSET', 'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'] = Field(
-        description='log level', default='INFO'
-    )
+    hardware_settings: dict[str, Any] | None = Field(description='override for hardware settings', default=None)
+    iblrig_settings: dict[str, Any] | None = Field(description='override for iblrig settings', default=None)
+    log_level: int | str = Field(description='log level', default='INFO')
 
 
 class BaseSession(ABC):
@@ -108,33 +104,14 @@ class BaseSession(ABC):
     """list of str: An optional list of pipeline task class names to instantiate when preprocessing task data."""
 
     TrialDataModel: type[TrialDataModel]
-    ParameterModel: type[BaseParameters] = BaseParameters
-    parameters: BaseParameters
+    ArgumentsModel: type[BaseKwargs] = BaseKwargs
+    parameters: BaseKwargs
 
     @property
     @abstractmethod
     def protocol_name(self) -> str: ...
 
-    def __init__(
-        self,
-        **kwargs,
-        # subject=None,
-        # task_parameter_file=None,
-        # file_hardware_settings=None,
-        # hardware_settings: HardwareSettings = None,
-        # file_iblrig_settings=None,
-        # iblrig_settings: RigSettings = None,
-        # one=None,
-        # interactive=True,
-        # projects=None,
-        # procedures=None,
-        # stub=None,
-        # subject_weight_grams=None,
-        # append=False,
-        # wizard=False,
-        # log_level='INFO',
-        # **kwargs,
-    ):
+    def __init__(self, one: ONE = None, **kwargs):
         """
         :param subject: The subject nickname. Required.
         :param task_parameter_file: an optional path to the task_parameters.yaml file
@@ -151,8 +128,8 @@ class BaseSession(ABC):
         :param append: bool, if True, append to the latest existing session of the same subject for the same day
         """
 
-        # validate / store kwargs in ParameterModel
-        self.parameters = self.ParameterModel(**kwargs)
+        # validate and store kwargs using ParameterModel
+        self.parameters = self.ArgumentsModel(**kwargs)
 
         self.extractor_tasks = getattr(self, 'extractor_tasks', None)
         self._logger = None
@@ -705,12 +682,11 @@ class BaseSession(ABC):
         argparse.ArgumentParser
             The extra parser instance.
         """
-        parser = argparse.ArgumentParser(add_help=False)
-        return parser
+        return argparse.ArgumentParser(add_help=False)
 
     @classmethod
     def get_kwargs(cls) -> dict[str, Any]:
-        return cls.ParameterModel().model_dump()
+        return cls.ArgumentsModel().model_dump()
 
 
 # this class gets called to get the path constructor utility to predict the session path

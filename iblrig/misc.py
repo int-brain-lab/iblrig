@@ -130,7 +130,7 @@ def get_task_arguments(parents: Sequence[argparse.ArgumentParser] = None):
         classes = [obj for _, obj in inspect.getmembers(module, inspect.isclass) if issubclass(obj, BaseSession)]
         task = max(classes, key=lambda obj: len(obj.__mro__)) if len(classes) > 0 else None
         if task is not None:
-            parameters = task.ParameterModel(_cli_parse_args=unparsed_args)
+            parameters = task.ArgumentsModel(_cli_parse_args=unparsed_args)
             kwargs.update(parameters)
 
     # return kwargs after jumbling things up a bit more
