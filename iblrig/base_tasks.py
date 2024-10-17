@@ -119,7 +119,10 @@ class BaseSession(ABC):
         self._logger = None
         self._setup_loggers(level=log_level)
         if not isinstance(self, EmptySession):
-            log.info(f'Running iblrig {iblrig.__version__}, pybpod version {pybpodapi.__version__}')
+            log.info(f'iblrig version {iblrig.__version__}')
+            log.info(f'pybpod version {pybpodapi.__version__}')
+            log.info(f'Session protocol: {self.protocol_name} ({f"version {self.version})" if self.version is not None else "undefined version"})')
+
         log.info(f'Session call: {" ".join(sys.argv)}')
         self.interactive = interactive
         self._one = one
