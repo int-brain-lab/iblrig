@@ -1,6 +1,10 @@
 Changelog
 =========
 
+8.24.5
+------
+* fix: visual stimulus not showing for first trial
+
 8.24.4
 ------
 * fix: correct gain for rotary encoder thresholds in trainingChoiceWorld
