@@ -363,8 +363,8 @@ class RotaryEncoderModule(PybpodRotaryEncoderModule):
         enabled_thresholds = [(x < len(scaled_thresholds_deg)) for x in range(8)]
 
         log.info(
-            f'Thresholds for {self._name} scaled to {", ".join([f"{x:0.2f}°" for x in scaled_thresholds_deg])} '
-            f'using gain of {self.gain:0.1f}°/mm and wheel diameter of {self.settings.WHEEL_DIAMETER_MM:0.1f}mm.'
+            f'Thresholds for {self._name} scaled to {", ".join([f"{x:0.2f}" for x in scaled_thresholds_deg])} '
+            f'using gain of {self.gain:0.1f} deg/mm and wheel diameter of {self.settings.WHEEL_DIAMETER_MM:0.1f} mm.'
         )
         self.set_zero_position()
         self.set_thresholds(scaled_thresholds_deg)
