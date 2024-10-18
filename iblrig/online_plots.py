@@ -103,7 +103,7 @@ class DataModel:
         # update psychometrics using online statistics method
         indexer = (trial_data.stim_probability_left, signed_contrast)
         if indexer not in self.psychometrics.index:
-            self.psychometrics.loc[indexer, :] = np.NaN
+            self.psychometrics.loc[indexer, :] = np.nan
             self.psychometrics.loc[indexer, ('count')] = 0
         self.psychometrics.loc[indexer, ('count')] += 1
         self.psychometrics.loc[indexer, ('response_time')], self.psychometrics.loc[indexer, ('response_time_std')] = online_std(

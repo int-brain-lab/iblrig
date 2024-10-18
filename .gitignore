@@ -34,6 +34,7 @@ XDG_CACHE_HOME/
 app.log
 /.idea/*
 /venv/
+/.venv/
 *.autosave
 iblrig/_version.py
 *.code-workspace

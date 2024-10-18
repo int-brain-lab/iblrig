@@ -260,5 +260,5 @@ Then switch to the desired version, for example `8.15.5`:
 
 .. code-block:: powershell
 
-  git checkout tag/8.15.5
+  git checkout tags/8.15.5
   pip install --upgrade -e .

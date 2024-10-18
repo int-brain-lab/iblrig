@@ -107,6 +107,7 @@ class HardwareSettingsFrame2TTL(BunchModel):
 
 class HardwareSettingsRotaryEncoder(BunchModel):
     COM_ROTARY_ENCODER: str | None
+    WHEEL_DIAMETER_MM: float = 62.0
 
 
 class HardwareSettingsScreen(BunchModel):

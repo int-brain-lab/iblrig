@@ -63,9 +63,9 @@ class TestInstantiatePassiveChoiceWorld(BaseTestCases.CommonTestInstantiateTask)
         In order for this to work we must add an external sync to the experiment description as
         Bpod only passive choice world is currently not supported.
         """
-        self.task.experiment_description['sync'] = dyn.get_acquisition_description('choice_world_recording')['sync']
+        self.task.experiment_description['sync'] = dyn.get_acquisition_description('ephys')['sync']
         self.task.create_session()
         pipeline = dyn.make_pipeline(self.task.paths.SESSION_FOLDER)
         self.assertIn('PassiveRegisterRaw_00', pipeline.tasks)
-        self.assertIn('PassiveTaskNidq_00', pipeline.tasks)
-        self.assertIsInstance(pipeline.tasks['PassiveTaskNidq_00'], PassiveTaskNidq)
+        self.assertIn('Trials_PassiveTaskNidq_00', pipeline.tasks)
+        self.assertIsInstance(pipeline.tasks['Trials_PassiveTaskNidq_00'], PassiveTaskNidq)

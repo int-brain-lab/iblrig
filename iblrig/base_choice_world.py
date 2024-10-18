@@ -130,9 +130,9 @@ class ChoiceWorldSession(
         self.trials_table = self.TrialDataModel.preallocate_dataframe(NTRIALS_INIT)
         self.ambient_sensor_table = pd.DataFrame(
             {
-                'Temperature_C': np.zeros(NTRIALS_INIT) * np.NaN,
-                'AirPressure_mb': np.zeros(NTRIALS_INIT) * np.NaN,
-                'RelativeHumidity': np.zeros(NTRIALS_INIT) * np.NaN,
+                'Temperature_C': np.zeros(NTRIALS_INIT) * np.nan,
+                'AirPressure_mb': np.zeros(NTRIALS_INIT) * np.nan,
+                'RelativeHumidity': np.zeros(NTRIALS_INIT) * np.nan,
             }
         )
 
@@ -491,15 +491,12 @@ class ChoiceWorldSession(
         quiescent_period = self.task_params.QUIESCENT_PERIOD + misc.truncated_exponential(
             scale=0.35, min_value=0.2, max_value=0.5
         )
-        stim_gain = (
-            self.session_info.ADAPTIVE_GAIN_VALUE if self.task_params.get('ADAPTIVE_GAIN', False) else self.task_params.STIM_GAIN
-        )
         self.trials_table.at[self.trial_num, 'quiescent_period'] = quiescent_period
         self.trials_table.at[self.trial_num, 'contrast'] = contrast
         self.trials_table.at[self.trial_num, 'stim_phase'] = random.uniform(0, 2 * math.pi)
         self.trials_table.at[self.trial_num, 'stim_sigma'] = self.task_params.STIM_SIGMA
         self.trials_table.at[self.trial_num, 'stim_angle'] = self.task_params.STIM_ANGLE
-        self.trials_table.at[self.trial_num, 'stim_gain'] = stim_gain
+        self.trials_table.at[self.trial_num, 'stim_gain'] = self.stimulus_gain
         self.trials_table.at[self.trial_num, 'stim_freq'] = self.task_params.STIM_FREQ
         self.trials_table.at[self.trial_num, 'stim_reverse'] = self.task_params.STIM_REVERSE
         self.trials_table.at[self.trial_num, 'trial_num'] = self.trial_num
@@ -771,7 +768,7 @@ class ActiveChoiceWorldSession(ChoiceWorldSession):
         self.trials_table.at[self.trial_num, 'response_time'] = response_time
         # get the trial outcome
         state_names = ['correct', 'error', 'no_go', 'omit_correct', 'omit_error', 'omit_no_go']
-        raw_outcome = {sn: ~np.isnan(bpod_data['States timestamps'].get(sn, [[np.NaN]])[0][0]) for sn in state_names}
+        raw_outcome = {sn: ~np.isnan(bpod_data['States timestamps'].get(sn, [[np.nan]])[0][0]) for sn in state_names}
         try:
             outcome = next(k for k in raw_outcome if raw_outcome[k])
             # Update response buffer -1 for left, 0 for nogo, and 1 for rightward
@@ -820,7 +817,7 @@ class BiasedChoiceWorldSession(ActiveChoiceWorldSession):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.blocks_table = pd.DataFrame(
-            {'probability_left': np.zeros(NBLOCKS_INIT) * np.NaN, 'block_length': np.zeros(NBLOCKS_INIT, dtype=np.int16) * -1}
+            {'probability_left': np.zeros(NBLOCKS_INIT) * np.nan, 'block_length': np.zeros(NBLOCKS_INIT, dtype=np.int16) * -1}
         )
 
     def new_block(self):
@@ -928,6 +925,10 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
     @property
     def default_reward_amount(self):
         return self.session_info.get('ADAPTIVE_REWARD_AMOUNT_UL', self.task_params.REWARD_AMOUNT_UL)
+
+    @property
+    def stimulus_gain(self) -> float:
+        return self.session_info.get('ADAPTIVE_GAIN_VALUE')
 
     def get_subject_training_info(self):
         """

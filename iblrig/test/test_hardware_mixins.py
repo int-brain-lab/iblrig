@@ -101,8 +101,8 @@ class TestOtherMixins(BaseTestHardwareMixins):
         """
         Instantiates a bare session with the rotary encoder mixin
         """
-        session = self.session
-        RotaryEncoderMixin.init_mixin_rotary_encoder(session)
+        RotaryEncoderSession = type('RotaryEncoderSession', (EmptyHardwareSession, RotaryEncoderMixin), {})  # noqa: N806
+        session = RotaryEncoderSession(task_parameter_file=ChoiceWorldSession.base_parameters_file, **TASK_KWARGS)
         assert session.device_rotary_encoder.ENCODER_EVENTS == [
             'RotaryEncoder1_1',
             'RotaryEncoder1_2',

@@ -21,10 +21,11 @@ dependencies = [
     "PyQtWebEngine-Qt5==5.15.2",
     #
     # IBL packages
-    "ibllib>=2.38.0",
+    "ibllib>=2.39.1",
     "iblpybpod @ git+https://github.com/int-brain-lab/iblpybpod.git@no-gui",
-    "iblutil>=1.12.1",
-    "ONE-api>=2.9rc0",
+    "iblutil>=1.13.0",
+    "iblqt>=0.2.0",
+    "ONE-api>=2.9.1",
     "tycmd-wrapper>=0.2.1",
     #
     # Everything else
@@ -42,7 +43,6 @@ dependencies = [
     "PyYAML>=6.0.2",
     "scipy>=1.14.0",
     "sounddevice>=0.5.0",
-    "iblqt>=0.1.1",
 ]
 [project.optional-dependencies]
 project-extraction = [

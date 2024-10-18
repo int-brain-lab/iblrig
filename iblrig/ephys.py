@@ -60,7 +60,7 @@ def neuropixel24_micromanipulator_coordinates(ref_shank, pname, ba=None, shank_s
         shank = {
             'x': x,
             'y': y,
-            'z': np.NaN,
+            'z': np.nan,
             'phi': ref_shank['phi'],
             'theta': ref_shank['theta'],
             'depth': ref_shank['depth'],

@@ -24,7 +24,6 @@ from typing import Protocol, final
 
 import numpy as np
 import pandas as pd
-import serial
 import yaml
 from pythonosc import udp_client
 
@@ -36,7 +35,7 @@ from ibllib.oneibl.registration import IBLRegistrationClient
 from iblrig import net, path_helper, sound
 from iblrig.constants import BASE_PATH, BONSAI_EXE, PYSPIN_AVAILABLE
 from iblrig.frame2ttl import Frame2TTL
-from iblrig.hardware import SOFTCODE, Bpod, MyRotaryEncoder, sound_device_factory
+from iblrig.hardware import SOFTCODE, Bpod, RotaryEncoderModule, sound_device_factory
 from iblrig.hifi import HiFi
 from iblrig.path_helper import load_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings, RigSettings, TrialDataModel
@@ -119,7 +118,13 @@ class BaseSession(ABC):
         self._logger = None
         self._setup_loggers(level=log_level)
         if not isinstance(self, EmptySession):
-            log.info(f'Running iblrig {iblrig.__version__}, pybpod version {pybpodapi.__version__}')
+            log.info(f'iblrig version {iblrig.__version__}')
+            log.info(f'pybpod version {pybpodapi.__version__}')
+            log.info(
+                f'Session protocol: {self.protocol_name} '
+                f'({f"version {self.version})" if self.version is not None else "undefined version"})'
+            )
+
         log.info(f'Session call: {" ".join(sys.argv)}')
         self.interactive = interactive
         self._one = one
@@ -989,38 +994,27 @@ class Frame2TTLMixin(BaseSession):
         log.info('Frame2TTL: Thresholds set.')
 
 
-class RotaryEncoderMixin(BaseSession):
+class RotaryEncoderMixin(BaseSession, HasBpod):
     """Rotary encoder interface for state machine."""
 
-    def init_mixin_rotary_encoder(self, *args, **kwargs):
-        self.device_rotary_encoder = MyRotaryEncoder(
-            all_thresholds=self.task_params.STIM_POSITIONS + self.task_params.QUIESCENCE_THRESHOLDS,
-            gain=self.task_params.STIM_GAIN,
-            com=self.hardware_settings.device_rotary_encoder['COM_ROTARY_ENCODER'],
-            connect=False,
+    device_rotary_encoder: RotaryEncoderModule
+
+    @property
+    def stimulus_gain(self) -> float:
+        return self.task_params.STIM_GAIN
+
+    def init_mixin_rotary_encoder(self):
+        thresholds_deg = self.task_params.STIM_POSITIONS + self.task_params.QUIESCENCE_THRESHOLDS
+        self.device_rotary_encoder = RotaryEncoderModule(
+            self.hardware_settings.device_rotary_encoder, thresholds_deg, self.stimulus_gain
         )
 
     def start_mixin_rotary_encoder(self):
-        if self.hardware_settings['device_rotary_encoder']['COM_ROTARY_ENCODER'] is None:
-            raise ValueError(
-                'The value for device_rotary_encoder:COM_ROTARY_ENCODER in '
-                'settings/hardware_settings.yaml is null. Please '
-                'provide a valid port name.'
-            )
-        try:
-            self.device_rotary_encoder.connect()
-        except serial.serialutil.SerialException as e:
-            raise serial.serialutil.SerialException(
-                f'The rotary encoder COM port {self.device_rotary_encoder.RE_PORT} is already in use. This is usually'
-                f' due to a Bonsai process currently running on the computer. Make sure all Bonsai windows are'
-                f' closed prior to running the task'
-            ) from e
-        except Exception as e:
-            raise Exception(
-                "The rotary encoder couldn't connect. If the bpod is glowing in green,"
-                'disconnect and reconnect bpod from the computer'
-            ) from e
-        log.info('Rotary encoder module loaded: OK')
+        self.device_rotary_encoder.gain = self.stimulus_gain
+        self.device_rotary_encoder.open()
+        self.device_rotary_encoder.write_parameters()
+        self.device_rotary_encoder.close()
+        log.info('Rotary Encoder Module loaded: OK')
 
 
 class ValveMixin(BaseSession, HasBpod):
