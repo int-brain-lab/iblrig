@@ -8,22 +8,18 @@ import sys
 import zipfile
 from pathlib import Path
 
-import yaml
-
 from ibllib.io.raw_data_loaders import load_embedded_frame_data
 from ibllib.io.video import get_video_meta, label_from_path
-from ibllib.pipes.misc import load_params_dict
 from iblrig.base_tasks import EmptySession
-from iblrig.constants import HARDWARE_SETTINGS_YAML, HAS_PYSPIN, HAS_SPINNAKER, RIG_SETTINGS_YAML
+from iblrig.constants import HARDWARE_SETTINGS_YAML, HAS_PYSPIN, HAS_SPINNAKER
 from iblrig.net import ExpInfo, get_server_communicator, read_stdin, update_alyx_token
-from iblrig.path_helper import load_pydantic_yaml, patch_settings
+from iblrig.path_helper import load_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings
 from iblrig.tools import ask_user, call_bonsai, call_bonsai_async
 from iblrig.transfer_experiments import VideoCopier
 from iblutil.io import (
     hashfile,  # type: ignore
     net,
-    params,
 )
 from iblutil.util import setup_logger
 from one.api import OneAlyx
@@ -164,63 +160,6 @@ def install_pyspin():
             print('Installation of PySpin was successful.')
         os.unlink(file_whl)
         file_zip.unlink()
-
-
-def patch_old_params(remove_old=False, update_paths=True):
-    """
-    Update old video parameters.
-
-    Parameters
-    ----------
-    remove_old : bool
-        If true, removes the old video pc settings file.
-    update_paths : bool
-        If true, replace data paths in iblrig settings with those in old video pc settings file.
-
-    """
-    if not (old_file := Path(params.getfile('videopc_params'))).exists():
-        return
-    old_settings = load_params_dict('videopc_params')
-
-    # Update hardware settings
-    if HARDWARE_SETTINGS_YAML.exists():
-        with open(HARDWARE_SETTINGS_YAML) as fp:
-            hardware_settings = patch_settings(yaml.safe_load(fp), HARDWARE_SETTINGS_YAML)
-    else:
-        hardware_settings = {}
-    cams = hardware_settings.get('device_cameras', {})
-    for v in cams.values():
-        for cam in filter(lambda k: k in v, ('left', 'right', 'body')):
-            v[cam]['INDEX'] = old_settings.get(cam.upper() + '_CAM_IDX')
-
-    # Save hardware settings
-    hardware_settings['device_cameras'] = cams
-    log.debug('Saving %s', HARDWARE_SETTINGS_YAML)
-    with open(HARDWARE_SETTINGS_YAML, 'w') as fp:
-        yaml.safe_dump(hardware_settings, fp)
-
-    # Update other settings
-    if update_paths:
-        if RIG_SETTINGS_YAML.exists():
-            with open(RIG_SETTINGS_YAML) as fp:
-                rig_settings = yaml.safe_load(fp)
-        else:
-            rig_settings = {}
-        path_map = {'iblrig_local_data_path': 'DATA_FOLDER_PATH', 'iblrig_remote_data_path': 'REMOTE_DATA_FOLDER_PATH'}
-        for new_key, old_key in path_map.items():
-            rig_settings[new_key] = old_settings[old_key].rstrip('\\')
-            if rig_settings[new_key].endswith(r'\Subjects'):
-                rig_settings[new_key] = rig_settings[new_key][: -len(r'\Subjects')]
-            else:  # Add a 'subjects' key so that '\Subjects' is not incorrectly appended
-                rig_settings[new_key.replace('data', 'subjects')] = rig_settings[new_key]
-        log.debug('Saving %s', RIG_SETTINGS_YAML)
-        with open(RIG_SETTINGS_YAML, 'w') as fp:
-            yaml.safe_dump(rig_settings, fp)
-
-    if remove_old:
-        # Deleting old file
-        log.info('Removing %s', old_file)
-        old_file.unlink()
 
 
 def prepare_video_session_cmd():
