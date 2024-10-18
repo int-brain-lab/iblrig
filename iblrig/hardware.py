@@ -366,12 +366,10 @@ class RotaryEncoderModule(PybpodRotaryEncoderModule):
             f'Thresholds for {self._name} scaled to {", ".join([f"{x:0.2f}°" for x in scaled_thresholds_deg])} '
             f'using gain of {self.gain:0.1f}°/mm and wheel diameter of {self.settings.WHEEL_DIAMETER_MM:0.1f}mm.'
         )
-        self.open()
         self.set_zero_position()
         self.set_thresholds(scaled_thresholds_deg)
         self.enable_thresholds(enabled_thresholds)
         self.enable_evt_transmission()
-        self.close()
 
     def close(self):
         if hasattr(self, 'arcom'):
