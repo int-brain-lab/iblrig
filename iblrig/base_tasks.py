@@ -999,13 +999,18 @@ class RotaryEncoderMixin(BaseSession, HasBpod):
 
     device_rotary_encoder: RotaryEncoderModule
 
+    @property
+    def stimulus_gain(self) -> float:
+        return self.task_params.STIM_GAIN()
+
     def init_mixin_rotary_encoder(self):
         thresholds_deg = self.task_params.STIM_POSITIONS + self.task_params.QUIESCENCE_THRESHOLDS
-        gain = self.task_params.STIM_GAIN
-        self.device_rotary_encoder = RotaryEncoderModule(self.hardware_settings.device_rotary_encoder, thresholds_deg, gain)
+        self.device_rotary_encoder = RotaryEncoderModule(self.hardware_settings.device_rotary_encoder,
+                                                         thresholds_deg,
+                                                         self.stimulus_gain)
 
     def start_mixin_rotary_encoder(self):
-        self.device_rotary_encoder.gain = getattr(self, 'stimulus_gain', self.task_params.STIM_GAIN)
+        self.device_rotary_encoder.gain = self.stimulus_gain
         self.device_rotary_encoder.open()
         self.device_rotary_encoder.write_parameters()
         self.device_rotary_encoder.close()
