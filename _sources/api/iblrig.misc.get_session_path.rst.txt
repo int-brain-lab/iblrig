@@ -1,0 +1,6 @@
+iblrig.misc.get\_session\_path
+==============================
+
+.. currentmodule:: iblrig.misc
+
+.. autofunction:: get_session_path

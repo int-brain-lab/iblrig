@@ -1,0 +1,6 @@
+iblrig.path\_helper.patch\_settings
+===================================
+
+.. currentmodule:: iblrig.path_helper
+
+.. autofunction:: patch_settings

@@ -1,0 +1,13 @@
+iblrig.gui.tools.DiskSpaceIndicator
+===================================
+
+.. currentmodule:: iblrig.gui.tools
+
+.. inheritance-diagram:: DiskSpaceIndicator
+   :parts: 1
+
+|
+
+.. autoclass:: DiskSpaceIndicator
+   :members:
+   :undoc-members:

@@ -1,0 +1,13 @@
+iblrig.pydantic\_definitions.BunchModel
+=======================================
+
+.. currentmodule:: iblrig.pydantic_definitions
+
+.. inheritance-diagram:: BunchModel
+   :parts: 1
+
+|
+
+.. autoclass:: BunchModel
+   :members:
+   :undoc-members:

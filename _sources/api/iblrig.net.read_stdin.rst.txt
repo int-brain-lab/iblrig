@@ -1,0 +1,6 @@
+iblrig.net.read\_stdin
+======================
+
+.. currentmodule:: iblrig.net
+
+.. autofunction:: read_stdin

@@ -1,0 +1,13 @@
+iblrig.gui.ui\_update.Ui\_update
+================================
+
+.. currentmodule:: iblrig.gui.ui_update
+
+.. inheritance-diagram:: Ui_update
+   :parts: 1
+
+|
+
+.. autoclass:: Ui_update
+   :members:
+   :undoc-members:

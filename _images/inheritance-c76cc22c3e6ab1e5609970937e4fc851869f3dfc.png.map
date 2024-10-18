@@ -1,0 +1,7 @@
+<map id="inheritancec9dcc91458" name="inheritancec9dcc91458">
+<area shape="rect" id="node1" href="#iblrig.gui.tools.DiskSpaceIndicator" target="_top" title="A custom progress bar widget that indicates the disk space usage of a specified directory." alt="" coords="637,28,763,50"/>
+<area shape="rect" id="node2" title="QProgressBar(parent: Optional[QWidget] = None)" alt="" coords="500,28,595,50"/>
+<area shape="rect" id="node3" title="QObject(parent: Optional[QObject] = None)" alt="" coords="269,6,334,28"/>
+<area shape="rect" id="node7" title="QWidget(parent: Optional[QWidget] = None, flags: Union[Qt.WindowFlags, Qt.WindowType] = Qt.WindowFlags())" alt="" coords="390,28,458,50"/>
+<area shape="rect" id="node5" title="QPaintDevice()" alt="" coords="254,48,349,70"/>
+</map>

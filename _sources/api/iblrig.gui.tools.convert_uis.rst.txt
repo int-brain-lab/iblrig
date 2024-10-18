@@ -1,0 +1,6 @@
+iblrig.gui.tools.convert\_uis
+=============================
+
+.. currentmodule:: iblrig.gui.tools
+
+.. autofunction:: convert_uis

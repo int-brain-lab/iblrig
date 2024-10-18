@@ -1,0 +1,6 @@
+iblrig.serial\_singleton.SerialSingletonException
+=================================================
+
+.. currentmodule:: iblrig.serial_singleton
+
+.. autoexception:: SerialSingletonException

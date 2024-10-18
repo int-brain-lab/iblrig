@@ -1,0 +1,15 @@
+iblrig.online\_plots
+====================
+
+.. automodule:: iblrig.online_plots
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :nosignatures:
+      :toctree:
+      :template: custom-class-template.rst
+   
+      DataModel
+      OnlinePlots
+   

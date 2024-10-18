@@ -1,0 +1,22 @@
+iblrig.hifi
+===========
+
+.. automodule:: iblrig.hifi
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :nosignatures:
+      :toctree:
+      :template: custom-class-template.rst
+   
+      HiFi
+   
+   .. rubric:: Exceptions
+
+   .. autosummary::
+      :nosignatures:
+      :toctree:
+   
+      HiFiException
+   

@@ -1,0 +1,35 @@
+iblrig.pydantic\_definitions
+============================
+
+.. automodule:: iblrig.pydantic_definitions
+   
+   .. rubric:: Module Attributes
+
+   .. autosummary::
+      :nosignatures:
+      :toctree:
+   
+      ExistingFilePath
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :nosignatures:
+      :toctree:
+      :template: custom-class-template.rst
+   
+      BunchModel
+      HardwareSettings
+      HardwareSettingsBpod
+      HardwareSettingsCamera
+      HardwareSettingsCameraWorkflow
+      HardwareSettingsFrame2TTL
+      HardwareSettingsMicrophone
+      HardwareSettingsRotaryEncoder
+      HardwareSettingsScale
+      HardwareSettingsScreen
+      HardwareSettingsSound
+      HardwareSettingsValve
+      RigSettings
+      TrialDataModel
+   

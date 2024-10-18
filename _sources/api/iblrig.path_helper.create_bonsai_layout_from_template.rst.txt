@@ -1,0 +1,6 @@
+iblrig.path\_helper.create\_bonsai\_layout\_from\_template
+==========================================================
+
+.. currentmodule:: iblrig.path_helper
+
+.. autofunction:: create_bonsai_layout_from_template

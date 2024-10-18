@@ -1,0 +1,13 @@
+iblrig.gui.wizard.RigWizardModel
+================================
+
+.. currentmodule:: iblrig.gui.wizard
+
+.. inheritance-diagram:: RigWizardModel
+   :parts: 1
+
+|
+
+.. autoclass:: RigWizardModel
+   :members:
+   :undoc-members:

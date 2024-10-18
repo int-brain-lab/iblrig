@@ -1,0 +1,13 @@
+iblrig.base\_tasks.NetworkSession
+=================================
+
+.. currentmodule:: iblrig.base_tasks
+
+.. inheritance-diagram:: NetworkSession
+   :parts: 1
+
+|
+
+.. autoclass:: NetworkSession
+   :members:
+   :undoc-members:

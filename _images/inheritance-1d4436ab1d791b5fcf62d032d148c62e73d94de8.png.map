@@ -1,0 +1,8 @@
+<map id="inheritance6deddf080d" name="inheritance6deddf080d">
+<area shape="rect" id="node1" title="QDialog(parent: Optional[QWidget] = None, flags: Union[Qt.WindowFlags, Qt.WindowType] = Qt.WindowFlags())" alt="" coords="498,46,560,67"/>
+<area shape="rect" id="node7" href="#iblrig.gui.validation.SystemValidationDialog" target="_top" title="SystemValidationDialog" alt="" coords="614,26,764,47"/>
+<area shape="rect" id="node2" title="QWidget(parent: Optional[QWidget] = None, flags: Union[Qt.WindowFlags, Qt.WindowType] = Qt.WindowFlags())" alt="" coords="378,46,444,67"/>
+<area shape="rect" id="node3" title="QObject(parent: Optional[QObject] = None)" alt="" coords="261,25,323,46"/>
+<area shape="rect" id="node5" title="QPaintDevice()" alt="" coords="246,66,338,87"/>
+<area shape="rect" id="node8" href="iblrig.gui.ui_validation.Ui_validation.html#iblrig.gui.ui_validation.Ui_validation" target="_top" title="Ui_validation" alt="" coords="484,4,574,26"/>
+</map>

@@ -1,0 +1,13 @@
+iblrig.valve.Valve
+==================
+
+.. currentmodule:: iblrig.valve
+
+.. inheritance-diagram:: Valve
+   :parts: 1
+
+|
+
+.. autoclass:: Valve
+   :members:
+   :undoc-members:

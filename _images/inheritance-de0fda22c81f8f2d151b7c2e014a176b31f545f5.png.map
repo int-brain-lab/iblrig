@@ -1,0 +1,7 @@
+<map id="inheritance10eb91c7fb" name="inheritance10eb91c7fb">
+<area shape="rect" id="node1" href="#iblrig.hardware.Bpod" target="_top" title="Bpod" alt="" coords="689,5,761,31"/>
+<area shape="rect" id="node2" title="Bpod I/O logic." alt="" coords="569,5,641,31"/>
+<area shape="rect" id="node3" title="API to interact with Bpod" alt="" coords="5,5,92,31"/>
+<area shape="rect" id="node4" title="Define command actions that can be requested to Bpod device." alt="" coords="140,5,279,31"/>
+<area shape="rect" id="node5" title="Define command actions that can be requested to Bpod device." alt="" coords="327,5,521,31"/>
+</map>

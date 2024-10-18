@@ -1,0 +1,6 @@
+iblrig.tools.get\_lab\_location\_dict
+=====================================
+
+.. currentmodule:: iblrig.tools
+
+.. autofunction:: get_lab_location_dict

@@ -1,0 +1,13 @@
+iblrig.gui.tools.Worker
+=======================
+
+.. currentmodule:: iblrig.gui.tools
+
+.. inheritance-diagram:: Worker
+   :parts: 1
+
+|
+
+.. autoclass:: Worker
+   :members:
+   :undoc-members:

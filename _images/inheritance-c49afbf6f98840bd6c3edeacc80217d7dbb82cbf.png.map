@@ -1,0 +1,18 @@
+<map id="inheritancef4159b435e" name="inheritancef4159b435e">
+<area shape="rect" id="node1" href="https://docs.python.org/3/library/abc.html#abc.ABC" target="_top" title="Helper class that provides a standard way to create an ABC using" alt="" coords="75,106,117,121"/>
+<area shape="rect" id="node4" href="iblrig.base_tasks.BaseSession.html#iblrig.base_tasks.BaseSession" target="_top" title="BaseSession" alt="" coords="147,106,208,121"/>
+<area shape="rect" id="node2" href="iblrig.base_choice_world.ActiveChoiceWorldSession.html#iblrig.base_choice_world.ActiveChoiceWorldSession" target="_top" title="The ActiveChoiceWorldSession is a base class for protocols where the mouse is actively making decisions" alt="" coords="501,106,616,121"/>
+<area shape="rect" id="node16" href="#iblrig.base_choice_world.TrainingChoiceWorldSession" target="_top" title="The TrainingChoiceWorldSession corresponds to the first training protocol of the choice world task." alt="" coords="644,106,765,121"/>
+<area shape="rect" id="node3" href="iblrig.base_choice_world.ChoiceWorldSession.html#iblrig.base_choice_world.ChoiceWorldSession" target="_top" title="ChoiceWorldSession" alt="" coords="382,106,473,121"/>
+<area shape="rect" id="node5" href="iblrig.base_tasks.BonsaiRecordingMixin.html#iblrig.base_tasks.BonsaiRecordingMixin" target="_top" title="BonsaiRecordingMixin" alt="" coords="246,120,344,135"/>
+<area shape="rect" id="node6" href="iblrig.base_tasks.BonsaiVisualStimulusMixin.html#iblrig.base_tasks.BonsaiVisualStimulusMixin" target="_top" title="BonsaiVisualStimulusMixin" alt="" coords="236,3,354,18"/>
+<area shape="rect" id="node7" href="iblrig.base_tasks.BpodMixin.html#iblrig.base_tasks.BpodMixin" target="_top" title="BpodMixin" alt="" coords="268,32,322,47"/>
+<area shape="rect" id="node8" href="iblrig.base_tasks.Frame2TTLMixin.html#iblrig.base_tasks.Frame2TTLMixin" target="_top" title="Frame 2 TTL interface for state machine." alt="" coords="256,61,334,76"/>
+<area shape="rect" id="node9" href="iblrig.base_tasks.RotaryEncoderMixin.html#iblrig.base_tasks.RotaryEncoderMixin" target="_top" title="Rotary encoder interface for state machine." alt="" coords="250,149,340,164"/>
+<area shape="rect" id="node10" href="iblrig.base_tasks.SoundMixin.html#iblrig.base_tasks.SoundMixin" target="_top" title="Sound interface methods for state machine." alt="" coords="266,178,324,193"/>
+<area shape="rect" id="node11" href="iblrig.base_tasks.ValveMixin.html#iblrig.base_tasks.ValveMixin" target="_top" title="ValveMixin" alt="" coords="267,207,323,222"/>
+<area shape="rect" id="node12" href="iblrig.base_tasks.NetworkSession.html#iblrig.base_tasks.NetworkSession" target="_top" title="A mixin for communicating to auxiliary acquisition PC over a network." alt="" coords="258,91,332,106"/>
+<area shape="rect" id="node13" href="https://docs.python.org/3/library/typing.html#typing.Generic" target="_top" title="Abstract base class for generic types." alt="" coords="3,178,46,193"/>
+<area shape="rect" id="node15" href="https://docs.python.org/3/library/typing.html#typing.Protocol" target="_top" title="Base class for protocol classes." alt="" coords="74,178,118,193"/>
+<area shape="rect" id="node14" href="iblrig.base_tasks.HasBpod.html#iblrig.base_tasks.HasBpod" target="_top" title="HasBpod" alt="" coords="154,178,201,193"/>
+</map>

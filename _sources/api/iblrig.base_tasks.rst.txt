@@ -1,0 +1,26 @@
+iblrig.base\_tasks
+==================
+
+.. automodule:: iblrig.base_tasks
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :nosignatures:
+      :toctree:
+      :template: custom-class-template.rst
+   
+      BaseSession
+      BonsaiRecordingMixin
+      BonsaiVisualStimulusMixin
+      BpodMixin
+      EmptySession
+      Frame2TTLMixin
+      HasBpod
+      NetworkSession
+      OSCClient
+      RotaryEncoderMixin
+      SoundMixin
+      SpontaneousSession
+      ValveMixin
+   

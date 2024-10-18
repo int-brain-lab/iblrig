@@ -1,0 +1,8 @@
+<map id="inheritanceef571ddc40" name="inheritanceef571ddc40">
+<area shape="rect" id="node1" title="QAbstractButton(parent: Optional[QWidget] = None)" alt="" coords="431,24,527,43"/>
+<area shape="rect" id="node7" title="QPushButton(parent: Optional[QWidget] = None)" alt="" coords="563,24,642,43"/>
+<area shape="rect" id="node2" title="QWidget(parent: Optional[QWidget] = None, flags: Union[Qt.WindowFlags, Qt.WindowType] = Qt.WindowFlags())" alt="" coords="336,24,395,43"/>
+<area shape="rect" id="node3" title="QObject(parent: Optional[QObject] = None)" alt="" coords="232,5,288,24"/>
+<area shape="rect" id="node5" title="QPaintDevice()" alt="" coords="219,42,301,61"/>
+<area shape="rect" id="node8" href="#iblrig.gui.tools.StatefulButton" target="_top" title="A QPushButton that maintains an active/inactive state and emits different signals" alt="" coords="678,24,764,43"/>
+</map>

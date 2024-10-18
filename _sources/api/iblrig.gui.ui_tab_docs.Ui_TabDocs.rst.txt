@@ -1,0 +1,13 @@
+iblrig.gui.ui\_tab\_docs.Ui\_TabDocs
+====================================
+
+.. currentmodule:: iblrig.gui.ui_tab_docs
+
+.. inheritance-diagram:: Ui_TabDocs
+   :parts: 1
+
+|
+
+.. autoclass:: Ui_TabDocs
+   :members:
+   :undoc-members:

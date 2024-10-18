@@ -1,0 +1,13 @@
+iblrig.gui.validation.ValidatorItem
+===================================
+
+.. currentmodule:: iblrig.gui.validation
+
+.. inheritance-diagram:: ValidatorItem
+   :parts: 1
+
+|
+
+.. autoclass:: ValidatorItem
+   :members:
+   :undoc-members:

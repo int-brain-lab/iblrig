@@ -1,0 +1,13 @@
+iblrig.graphic
+==============
+
+.. automodule:: iblrig.graphic
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :nosignatures:
+      :toctree:
+   
+      numinput
+   

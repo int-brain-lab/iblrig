@@ -1,0 +1,6 @@
+iblrig.misc.online\_std
+=======================
+
+.. currentmodule:: iblrig.misc
+
+.. autofunction:: online_std

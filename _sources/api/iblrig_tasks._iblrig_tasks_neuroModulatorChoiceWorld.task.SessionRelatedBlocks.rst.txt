@@ -1,0 +1,13 @@
+iblrig\_tasks.\_iblrig\_tasks\_neuroModulatorChoiceWorld.task.SessionRelatedBlocks
+==================================================================================
+
+.. currentmodule:: iblrig_tasks._iblrig_tasks_neuroModulatorChoiceWorld.task
+
+.. inheritance-diagram:: SessionRelatedBlocks
+   :parts: 1
+
+|
+
+.. autoclass:: SessionRelatedBlocks
+   :members:
+   :undoc-members:

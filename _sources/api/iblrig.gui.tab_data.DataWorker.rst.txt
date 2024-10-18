@@ -1,0 +1,13 @@
+iblrig.gui.tab\_data.DataWorker
+===============================
+
+.. currentmodule:: iblrig.gui.tab_data
+
+.. inheritance-diagram:: DataWorker
+   :parts: 1
+
+|
+
+.. autoclass:: DataWorker
+   :members:
+   :undoc-members:

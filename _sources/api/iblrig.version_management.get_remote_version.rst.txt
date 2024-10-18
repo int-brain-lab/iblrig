@@ -1,0 +1,6 @@
+iblrig.version\_management.get\_remote\_version
+===============================================
+
+.. currentmodule:: iblrig.version_management
+
+.. autofunction:: get_remote_version

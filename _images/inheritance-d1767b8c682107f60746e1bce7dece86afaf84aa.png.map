@@ -1,0 +1,8 @@
+<map id="inheritancee347d2605f" name="inheritancee347d2605f">
+<area shape="rect" id="node1" title="QDialog(parent: Optional[QWidget] = None, flags: Union[Qt.WindowFlags, Qt.WindowType] = Qt.WindowFlags())" alt="" coords="541,51,610,74"/>
+<area shape="rect" id="node8" href="#iblrig.gui.wizard.UpdateNotice" target="_top" title="A dialog for displaying update notices." alt="" coords="661,28,763,52"/>
+<area shape="rect" id="node2" title="QWidget(parent: Optional[QWidget] = None, flags: Union[Qt.WindowFlags, Qt.WindowType] = Qt.WindowFlags())" alt="" coords="418,51,491,74"/>
+<area shape="rect" id="node3" title="QObject(parent: Optional[QObject] = None)" alt="" coords="288,27,357,51"/>
+<area shape="rect" id="node5" title="QPaintDevice()" alt="" coords="272,73,374,96"/>
+<area shape="rect" id="node7" href="iblrig.gui.ui_update.Ui_update.html#iblrig.gui.ui_update.Ui_update" target="_top" title="Ui_update" alt="" coords="535,5,616,28"/>
+</map>

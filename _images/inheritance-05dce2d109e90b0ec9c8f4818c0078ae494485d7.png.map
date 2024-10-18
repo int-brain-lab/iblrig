@@ -1,0 +1,7 @@
+<map id="inheritance430a689ca7" name="inheritance430a689ca7">
+<area shape="rect" id="node1" href="#iblrig.gui.frame2ttl.Frame2TTLCalibrationTarget" target="_top" title="Frame2TTLCalibrationTarget" alt="" coords="591,27,764,48"/>
+<area shape="rect" id="node2" title="QDialog(parent: Optional[QWidget] = None, flags: Union[Qt.WindowFlags, Qt.WindowType] = Qt.WindowFlags())" alt="" coords="487,27,550,48"/>
+<area shape="rect" id="node3" title="QWidget(parent: Optional[QWidget] = None, flags: Union[Qt.WindowFlags, Qt.WindowType] = Qt.WindowFlags())" alt="" coords="381,27,447,48"/>
+<area shape="rect" id="node4" title="QObject(parent: Optional[QObject] = None)" alt="" coords="263,6,326,27"/>
+<area shape="rect" id="node6" title="QPaintDevice()" alt="" coords="248,47,340,68"/>
+</map>
