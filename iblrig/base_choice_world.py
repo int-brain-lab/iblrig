@@ -479,10 +479,6 @@ class ChoiceWorldSession(
     def default_reward_amount(self):
         return self.task_params.REWARD_AMOUNT_UL
 
-    @property
-    def stimulus_gain(self) -> float:
-        return self.task_params.STIM_GAIN
-
     def draw_next_trial_info(self, pleft=0.5, **kwargs):
         """Draw next trial variables.
 
