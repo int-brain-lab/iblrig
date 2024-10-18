@@ -906,6 +906,8 @@ class BonsaiVisualStimulusMixin(BaseSession):
             'Stim.TranslationZ': -self.task_params.STIM_TRANSLATION_Z,  # MINUS!!
         }
         call_bonsai(workflow_file, parameters, wait=False, editor=self.task_params.BONSAI_EDITOR, bootstrap=False)
+        log.info('Giving Bonsai some extra time to start ...')
+        time.sleep(5)
         log.info('Bonsai visual stimulus module loaded: OK')
 
 

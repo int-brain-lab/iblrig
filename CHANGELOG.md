@@ -1,15 +1,19 @@
 Changelog
 =========
 
+8.24.5
+------
+* fix: visual stimulus not showing for first trial
+
 8.24.4
 ------
 * fix: correct gain for rotary encoder thresholds in trainingChoiceWorld
+* fix: replace `np.NaN` with `np.nan`
 * overhaul of rotary encoder object
 
 8.24.3
 ------
 * fix: create the `raw_ephys_data` folder even if there are no probes (when running behavior sessions on ephys rig)
-* fix: replace `np.NaN` with `np.nan`
 * move some Qt related code to `iblqt` repository
 
 8.24.2
