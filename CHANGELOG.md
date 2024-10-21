@@ -1,6 +1,10 @@
 Changelog
 =========
 
+8.24.6
+------
+* add property getters for feedback delays (for NM custom task)
+
 8.24.5
 ------
 * fix: visual stimulus not showing for first trial
