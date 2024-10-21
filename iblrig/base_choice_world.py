@@ -410,7 +410,7 @@ class ChoiceWorldSession(
         # No-go: hide the visual stimulus and play white noise. Go to exit_state after FEEDBACK_NOGO_DELAY_SECS.
         sma.add_state(
             state_name='no_go',
-            state_timer=self.task_params.FEEDBACK_NOGO_DELAY_SECS,
+            state_timer=self.feedback_nogo_delay,
             output_actions=[self.bpod.actions.bonsai_hide_stim, self.bpod.actions.play_noise],
             state_change_conditions={'Tup': 'exit_state'},
         )
@@ -425,7 +425,7 @@ class ChoiceWorldSession(
         )
         sma.add_state(
             state_name='error',
-            state_timer=self.task_params.FEEDBACK_ERROR_DELAY_SECS,
+            state_timer=self.feedback_error_delay,
             output_actions=[self.bpod.actions.play_noise],
             state_change_conditions={'Tup': 'hide_stim'},
         )
@@ -446,7 +446,7 @@ class ChoiceWorldSession(
         )
         sma.add_state(
             state_name='correct',
-            state_timer=self.task_params.FEEDBACK_CORRECT_DELAY_SECS - self.reward_time,
+            state_timer=self.feedback_correct_delay - self.reward_time,
             output_actions=[],
             state_change_conditions={'Tup': 'hide_stim'},
         )
@@ -608,6 +608,18 @@ class ChoiceWorldSession(
     @property
     def quiescent_period(self):
         return self.trials_table.at[self.trial_num, 'quiescent_period']
+
+    @property
+    def feedback_correct_delay(self):
+        return self.task_params['FEEDBACK_CORRECT_DELAY_SECS']
+
+    @property
+    def feedback_error_delay(self):
+        return self.task_params['FEEDBACK_ERROR_DELAY_SECS']
+
+    @property
+    def feedback_nogo_delay(self):
+        return self.task_params['FEEDBACK_NOGO_DELAY_SECS']
 
     @property
     def position(self):
